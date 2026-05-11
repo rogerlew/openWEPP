@@ -1,0 +1,21 @@
+[workspace]
+resolver = "2"
+members = []
+
+[workspace.package]
+edition = "2024"
+license = "CC0-1.0"
+rust-version = "1.85"
+repository = "https://github.com/rogerlew/openWEPP"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "warn"
+unreachable_pub = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

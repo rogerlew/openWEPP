@@ -1,0 +1,15 @@
+target/
+**/*.rs.bk
+*.pdb
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Note: Cargo.lock IS committed (this workspace ships binaries).
