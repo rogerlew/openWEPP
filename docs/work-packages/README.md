@@ -23,4 +23,9 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Single-mechanism rule: one landed change per replay checkpoint.
 
 ## Queued packages
-None currently scheduled. The first work package will be authorized when the user determines the bootstrap shape.
+
+Authorized bootstrap package:
+
+- `20260511-openwepp-runner-bootstrap/`
+  - Purpose: establish runner boundary, release-sidecar contract, and release
+    lint gates before kernel implementation.

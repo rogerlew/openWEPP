@@ -10,6 +10,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0004](0004-subprocess-hillslope-orchestration.md) | Hillslope orchestration is subprocess-per-hillslope | Accepted |
 | [0005](0005-parquet-via-wepppyo3-interchange.md) | Parquet schemas inherit from wepppy / wepppyo3 interchange | Accepted |
 | [0006](0006-three-binaries-incl-replay.md) | Three production binaries including replay | Accepted |
+| [0007](0007-openwepp-runner-and-release-governance.md) | openWEPP owns runner boundary and release metadata contract | Accepted |
 
 ## ADR template
 

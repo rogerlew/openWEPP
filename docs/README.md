@@ -6,7 +6,9 @@
 | [specifications/README.md](specifications/README.md) | All | Science contract registry pointer (sourced from wepp-palimpsest) |
 | [contracts/README.md](contracts/README.md) | All | Interface contracts: `.run`, HBP, parquet schemas, CLI ABI |
 | [decisions/README.md](decisions/README.md) | All | Architecture decision records (ADRs) |
+| [governance/README.md](governance/README.md) | Maintainers | Governance policies, transition plans, lifecycle controls |
 | [numerics/README.md](numerics/README.md) | All | Floating-point, RNG, summation policy |
+| [standards/README.md](standards/README.md) | Maintainers | Rust coding, comments, and QA standards |
 | [work-packages/README.md](work-packages/README.md) | All | Dated initiative tracking convention |
 
 End-user documentation lives in [/usersum](../usersum/), following the wepppy `usersum` convention so it can be vendored into wepppy's in-app documentation engine.

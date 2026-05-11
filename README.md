@@ -32,8 +32,20 @@ openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generati
 - GIS preprocessing, DEM delineation (wepppy)
 - Climate generation / cligen (wepppy)
 - Run orchestration, NoDb state model (wepppy)
+- WEPP single-storm simulation modes (`ss`, `ss_batch`)
 - Legacy stdin-driven `.run` CLI compatibility
 - Sediment routing physics (deferred to the wepp-palimpsest sediment kernelization program)
+
+## Runner and release boundary
+
+openWEPP owns its own launcher boundary through `openwepp_runner` and does not
+inherit legacy `wepp_runner` fallback behavior by default.
+
+Release binaries follow `openwepp_YYMMDD*` naming and require JSON sidecars for
+all roles (watershed, hillslope, replay). See:
+
+- [docs/contracts/openwepp-runner-contract.md](docs/contracts/openwepp-runner-contract.md)
+- [docs/contracts/openwepp-binary-release-contract.md](docs/contracts/openwepp-binary-release-contract.md)
 
 ## Relationship to other repos
 
@@ -62,6 +74,7 @@ openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generati
 │   ├── contracts/         # Interface contracts (.run, HBP, parquet schemas)
 │   ├── architecture/      # Process architecture, data flow
 │   ├── numerics/          # Determinism, RNG, summation policy
+│   ├── standards/         # Rust coding, comments, and QA standards
 │   └── work-packages/     # Dated initiative tracking convention
 └── usersum/               # End-user docs (vendorable into wepppy's usersum)
 ```
