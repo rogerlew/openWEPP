@@ -15,6 +15,8 @@ openWEPP architecture and kernel work.
 ## Layout
 
 - `annotated_bibliography.md` (tracked): reference index and annotations.
+- `rights_classification_first_pass_2026-05-11.md` (tracked): first-pass
+  redistribution decisions and rationale.
 - `vendorable/` (tracked): files cleared for redistribution.
 - `copyrighted/` (gitignored): local-only cache for restricted files.
 

@@ -7,6 +7,8 @@ openWEPP note (2026-05-11):
 - This bibliography is tracked in git and maintained in this repository.
 - Local file paths in entries point to `references/copyrighted/` for
   restricted/local-cache artifacts per `docs/governance/reference-vendoring-policy.md`.
+- First-pass rights decisions are logged in
+  `references/rights_classification_first_pass_2026-05-11.md`.
 
 ## R-01: Lighthill & Whitham (1955) kinematic waves
 
@@ -51,8 +53,9 @@ openWEPP note (2026-05-11):
 ## R-04: USGS Professional Paper 1302 (1986)
 
 **Citation**: U.S. Geological Survey (1986). *Basic Concepts of Kinematic-Wave Models*. Professional Paper 1302.  
-**Local path**: `/workdir/openWEPP/references/copyrighted/USGS_PP1302_1986_Kinematic_Wave_Models.md`  
+**Local path**: `/workdir/openWEPP/references/vendorable/USGS_PP1302_1986_Kinematic_Wave_Models.md`  
 **Reference quality**: `verified-primary`  
+**Distribution status**: `redistributable-first-pass` (USGS publication policy).  
 **Topic**: Applied hydrologic synthesis of kinematic/dynamic approximations, celerity relations, and routing applicability.  
 **Key equations / concepts for WB-33**:
 - `[DIRECT]` Eq. (44) anchor in extract: `c = dQ/dA`.
@@ -216,8 +219,9 @@ openWEPP note (2026-05-11):
 ## R-16: HEC-RAS Hydraulic Reference Manual (current version)
 
 **Citation**: USACE Hydrologic Engineering Center (2024 export). *HEC-RAS Hydraulic Reference Manual*, Version 6.6.  
-**Local path**: `/workdir/openWEPP/references/copyrighted/R16_2024_HEC_RAS_Hydraulic_Reference_Manual_v6_6.md`  
+**Local path**: `/workdir/openWEPP/references/vendorable/R16_2024_HEC_RAS_Hydraulic_Reference_Manual_v6_6.md`  
 **Reference quality**: `verified-primary`  
+**Distribution status**: `redistributable-first-pass` (HEC-RAS front matter: public-domain + distribution language).  
 **Topic**: Current engineering practice reference for open-channel hydraulics, continuity/momentum forms, and numerical routing schemes.  
 **Key equations / concepts for WB-33**:
 - `[DIRECT]` Manual sections include continuity and momentum equation chapters, implicit finite-difference forms, and Manning roughness tables (see extract TOC anchors).
