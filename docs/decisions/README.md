@@ -11,6 +11,8 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0005](0005-parquet-via-wepppyo3-interchange.md) | Parquet schemas inherit from wepppy / wepppyo3 interchange | Accepted |
 | [0006](0006-three-binaries-incl-replay.md) | Three production binaries including replay | Accepted |
 | [0007](0007-openwepp-runner-and-release-governance.md) | openWEPP owns runner boundary and release metadata contract | Accepted |
+| [0008](0008-routine-lifecycle-and-replacement.md) | Routine lifecycle states and replacement catalog | Proposed |
+| [0009](0009-network-node-contract-and-extensibility.md) | Network node contract and extensibility policy | Proposed |
 
 ## ADR template
 

@@ -9,6 +9,7 @@ Pinned cross-component contracts. Changes require coordinated updates across pro
 | Parquet hillslope-trajectory schema | wepppy / wepppyo3 interchange | openWEPP emits via the existing consumer-side schema; no new schema authoring on this side until coordinated evolution is needed. |
 | openWEPP runner boundary | [openwepp-runner-contract.md](openwepp-runner-contract.md) | openWEPP owns `openwepp_runner`; engine selection is explicit (`legacy_wepp` vs `openwepp`); no silent fallback across engines/contracts. |
 | openWEPP binary release + sidecar | [openwepp-binary-release-contract.md](openwepp-binary-release-contract.md) | `openwepp_YYMMDD*` naming, mandatory sidecars, schema validation, and blocking release lint gate. |
+| Routine interface v1 | [routine-interface-v1.md](routine-interface-v1.md) | Routine identity, lifecycle (`experimental/active/deprecated/retired`), replacement metadata, and resolver contract for routine selection. |
 | WEPP soil file format | legacy WEPP / wepp-palimpsest | openWEPP parses; format pinned to existing producer compatibility. |
 | WEPP management file format | legacy WEPP / wepp-palimpsest | Same. |
 | WEPP climate (cligen) file format | legacy WEPP / wepp-palimpsest | Same. |

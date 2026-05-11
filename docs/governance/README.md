@@ -10,6 +10,8 @@ but are not model-physics contracts.
 - `legacy-source-attribution-and-contributors-policy.md` — required attribution
   and contributor-governance metadata for Rust files that port legacy WEPP
   source units.
+- `reference-vendoring-policy.md` — reference-corpus storage and rights policy
+  (`vendorable/` tracked, restricted files in gitignored local cache).
 
 ## Rules
 

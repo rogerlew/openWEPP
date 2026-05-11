@@ -12,4 +12,10 @@ target/
 .DS_Store
 Thumbs.db
 
+# References corpus policy
+# - `references/vendorable/` is tracked when redistribution is allowed.
+# - `references/copyrighted/` is local cache only.
+references/copyrighted/**
+!references/copyrighted/.gitkeep
+
 # Note: Cargo.lock IS committed (this workspace ships binaries).

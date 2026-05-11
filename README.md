@@ -76,6 +76,7 @@ all roles (watershed, hillslope, replay). See:
 │   ├── numerics/          # Determinism, RNG, summation policy
 │   ├── standards/         # Rust coding, comments, and QA standards
 │   └── work-packages/     # Dated initiative tracking convention
+├── references/            # Scientific references (tracked bibliography + local cache policy)
 └── usersum/               # End-user docs (vendorable into wepppy's usersum)
 ```
 

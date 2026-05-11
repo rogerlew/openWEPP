@@ -8,6 +8,7 @@
 | [decisions/README.md](decisions/README.md) | All | Architecture decision records (ADRs) |
 | [governance/README.md](governance/README.md) | Maintainers | Governance policies, transition plans, lifecycle controls |
 | [numerics/README.md](numerics/README.md) | All | Floating-point, RNG, summation policy |
+| [../references/README.md](../references/README.md) | Maintainers | Reference corpus policy, bibliography, and vendoring layout |
 | [standards/README.md](standards/README.md) | Maintainers | Rust coding, comments, and QA standards |
 | [work-packages/README.md](work-packages/README.md) | All | Dated initiative tracking convention |
 
