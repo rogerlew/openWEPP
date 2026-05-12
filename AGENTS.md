@@ -24,12 +24,13 @@
 ## Project Role
 openWEPP is the Rust simulation engine. `wepp-palimpsest` owns the authoritative F90 kernel source and science contracts; wepppy owns orchestration, GIS, climate, and run state. Do not duplicate wepppy concerns in this repo.
 
-## Clean-Room Model (Kernel-Mirror Port)
-- openWEPP Rust kernels port from `wepp-palimpsest` F90 kernels only after the upstream kernel has reached `active` status with oracle vectors published.
-- Agents may read both the upstream F90 source and the corresponding science contract (`SC-DOMAIN-NNN.md`) when authoring a Rust kernel port.
+## Source-Provenance Model (Explicitly Non-Clean-Room)
+- openWEPP is explicitly **not** a clean-room rewrite.
+- Rust kernels are direct ports from `wepp-palimpsest` F90 kernels after upstream kernels reach `active` status with oracle vectors published.
+- Agents may read upstream F90 source and corresponding science contracts (`SC-DOMAIN-NNN.md`) directly while implementing Rust ports.
 - Do not invent physics. Replacements citing only Rust idioms are not acceptable. Every kernel constant must trace to a hydraulic citation per the wepp-palimpsest anti-tuning rule.
 - Empirical multi-coefficient regressions are rejected per the process-based kernel preference rule carried forward from wepp-palimpsest WB-33 `WB33-C-20`.
-- See [docs/decisions/0002-clean-room-model.md](docs/decisions/0002-clean-room-model.md).
+- See [docs/decisions/0010-non-clean-room-direct-port-policy.md](docs/decisions/0010-non-clean-room-direct-port-policy.md).
 
 ## Validation Gates
 Before declaring a Rust kernel port complete:

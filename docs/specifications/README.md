@@ -15,7 +15,7 @@ SC-<DOMAIN>-<NNN>#INV-<DOMAIN>-<NNN>
 ## openWEPP usage
 
 - Kernel-port work packages cite the upstream contract by ID.
-- A Rust kernel is ported only after its upstream contract has reached `active` maturity (per [../decisions/0002-clean-room-model.md](../decisions/0002-clean-room-model.md)).
+- A Rust kernel is ported only after its upstream contract has reached `active` maturity (per [../decisions/0010-non-clean-room-direct-port-policy.md](../decisions/0010-non-clean-room-direct-port-policy.md)).
 - openWEPP does not create new science contracts. If a port surfaces an under-specified state surface, the gap is documented and routed back to wepp-palimpsest for contract authoring.
 
 ## Tolerance bounds

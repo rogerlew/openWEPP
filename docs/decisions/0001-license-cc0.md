@@ -5,7 +5,7 @@
 **Deciders:** Roger Lew, Claude Code
 
 ## Context
-WEPP originated as USDA-ARS public-domain software. The wepp-palimpsest clean-room rewrite program (LCR-01..LCR-07) standardized on CC0-1.0 for re-authored `.f90` kernels. openWEPP is a fresh Rust reimplementation and needs a license posture set before code lands.
+WEPP originated as USDA-ARS public-domain software. The wepp-palimpsest re-authoring program (LCR-01..LCR-07) standardized on CC0-1.0 for `.f90` kernels. openWEPP is a fresh Rust reimplementation and needs a license posture set before code lands.
 
 ## Decision
 openWEPP is licensed CC0-1.0. SPDX identifier `CC0-1.0` is required in per-crate `Cargo.toml` metadata and in per-file headers where convention warrants.

@@ -18,3 +18,6 @@ Root-level agent guides:
 - [../README.md](../README.md) — broad audience identity and scope
 - [../AGENTS.md](../AGENTS.md) — Codex coding playbook
 - [../CLAUDE.md](../CLAUDE.md) — Claude Code review / debug playbook
+
+Provenance policy:
+- [decisions/0010-non-clean-room-direct-port-policy.md](decisions/0010-non-clean-room-direct-port-policy.md) — openWEPP is explicitly non-clean-room.

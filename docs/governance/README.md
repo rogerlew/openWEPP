@@ -12,6 +12,8 @@ but are not model-physics contracts.
   source units.
 - `reference-vendoring-policy.md` — reference-corpus storage and rights policy
   (`vendorable/` tracked, restricted files in gitignored local cache).
+- `unsafe-and-interop-restrictions-policy.md` — hard restrictions for `unsafe`
+  Rust and foreign-language interoperability boundaries.
 
 ## Rules
 

@@ -1,8 +1,10 @@
 # openWEPP
 
-> Clean-slate Rust reimplementation of the WEPP (Water Erosion Prediction Project) hillslope and watershed simulation engine.
+> Rust reimplementation of the WEPP (Water Erosion Prediction Project) hillslope and watershed simulation engine.
 
 > **Status:** Pre-alpha. Repository is scaffolding only; no kernels implemented. Kernel cadence is downstream of [wepp-palimpsest](#relationship-to-other-repos) (formerly `wepp-forest`).
+
+> **Provenance policy:** openWEPP is explicitly **not** a clean-room rewrite. See [ADR-0010](docs/decisions/0010-non-clean-room-direct-port-policy.md).
 
 ## Overview
 

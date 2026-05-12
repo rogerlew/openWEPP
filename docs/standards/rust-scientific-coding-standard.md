@@ -1,7 +1,7 @@
 # Rust Scientific Coding Standard
 
 - **Status:** Active
-- **Last updated:** 2026-05-11
+- **Last updated:** 2026-05-12
 - **Applies to:** all Rust crates in openWEPP
 
 ## 1) Purpose
@@ -30,6 +30,8 @@ It implements a deliberate blend:
 7. Any module ported from legacy WEPP source must include the required
    attribution/governance header fields defined in
    `docs/governance/legacy-source-attribution-and-contributors-policy.md`.
+8. Unsafe code and FFI/interoperability boundaries must follow
+   `docs/governance/unsafe-and-interop-restrictions-policy.md`.
 
 ## 3) Naming and symbol policy
 
@@ -126,6 +128,26 @@ At minimum for non-clean-room ports:
 //! Contributors: <deduplicated semicolon-separated names>
 ```
 
+### 4.5 Unsafe code and interop restrictions (required)
+
+All unsafe/FFI work must satisfy:
+
+1. Safe Rust by default (`#![deny(unsafe_code)]` unless boundary exception is
+   documented).
+2. `unsafe` only in minimal boundary modules (no broad propagation into core
+   orchestration paths).
+3. Every `unsafe` block has a `// SAFETY:` invariant comment.
+4. Every public `unsafe fn` has rustdoc `# Safety` requirements.
+5. `extern` declarations must use explicit ABI and `unsafe extern`.
+6. Durable cross-language boundaries use `extern "C"` / `extern "system"`;
+   avoid `extern "Rust"` for stable interop contracts.
+7. FFI types require explicit layout contracts (`#[repr(C)]` /
+   `#[repr(transparent)]`) and C-compatible signatures.
+8. Panics/unwinds must not cross non-unwind foreign ABI boundaries.
+
+See normative policy:
+`docs/governance/unsafe-and-interop-restrictions-policy.md`.
+
 ## 5) File and module decomposition
 
 ### 5.1 Decompose by domain behavior
@@ -199,12 +221,14 @@ Every PR touching kernel math should confirm:
 
 ## 8) Relationship to other openWEPP governance docs
 
-- Clean-room kernel mirror policy: `AGENTS.md` and
-  `docs/decisions/0002-clean-room-model.md`
+- Non-clean-room direct-port policy: `AGENTS.md` and
+  `docs/decisions/0010-non-clean-room-direct-port-policy.md`
 - Parity target semantics: `docs/decisions/0003-parity-semantic-not-bit.md`
 - Runner/release governance: `docs/decisions/0007-openwepp-runner-and-release-governance.md`
 - Legacy attribution/contributor governance:
   `docs/governance/legacy-source-attribution-and-contributors-policy.md`
+- Unsafe/interop governance:
+  `docs/governance/unsafe-and-interop-restrictions-policy.md`
 
 This standard is implementation-focused and does not supersede those decisions.
 
@@ -222,6 +246,14 @@ This standard is implementation-focused and does not supersede those decisions.
 - Clippy docs:
   - https://doc.rust-lang.org/clippy/
   - https://doc.rust-lang.org/clippy/lints.html
+- Rust Reference (unsafe/FFI specifics):
+  - https://doc.rust-lang.org/reference/items/external-blocks.html
+  - https://doc.rust-lang.org/reference/unsafety.html
+  - https://doc.rust-lang.org/reference/type-layout.html
+  - https://doc.rust-lang.org/reference/panic.html
+- Rustonomicon (unsafe/FFI guidance):
+  - https://doc.rust-lang.org/nomicon/ffi.html
+  - https://doc.rust-lang.org/nomicon/safe-unsafe-meaning.html
 - cargo-deny docs: https://embarkstudios.github.io/cargo-deny/
 - Scientific software practice references:
   - Best Practices for Scientific Computing (PLOS Biology, 2014):
