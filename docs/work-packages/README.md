@@ -33,3 +33,7 @@ Authorized packages:
   - Purpose: architecture discovery for subsystem boundaries, state-surface
     ownership, top-down invariant cataloging, legacy `.run`/sidecar
     compatibility bridge definition, and comparator confidence-tier policy.
+- `20260520-sci01-50201000-process-contract-mapping/`
+  - Purpose: map `references/50201000` chapters to process-based science
+    contract domains and seed invariant families for top-down contract
+    authoring.

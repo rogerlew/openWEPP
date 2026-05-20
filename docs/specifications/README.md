@@ -21,6 +21,9 @@ Stable references use:
 SC-<DOMAIN>-<NNN>#INV-<DOMAIN>-<NNN>
 ```
 
+Current chapter-to-contract scaffold:
+- `docs/work-packages/20260520-sci01-50201000-process-contract-mapping/artifacts/50201000-chapter-process-contract-map.md`
+
 ## openWEPP usage
 
 - Architecture and module work may proceed before one-for-one legacy
