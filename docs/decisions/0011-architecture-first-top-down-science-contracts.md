@@ -35,6 +35,12 @@ gold behavioral oracle for all execution surfaces.
      trigger investigation rather than automatic rejection.
 5. openWEPP remains explicitly non-clean-room. Legacy source may be read
    directly for static analysis and provenance mapping.
+6. openWEPP supports an initial backward-compatibility bridge for legacy
+   stdin-driven `.run` plus `.txt` sidecar flags/inputs while architecture
+   and contracts mature.
+   - Compatibility support is explicit and validated.
+   - Missing/ambiguous sidecar requirements are hard errors.
+   - No silent fallback behavior is allowed.
 
 ## Consequences
 

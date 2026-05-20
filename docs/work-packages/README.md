@@ -24,8 +24,12 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Queued packages
 
-Authorized bootstrap package:
+Authorized packages:
 
 - `20260511-openwepp-runner-bootstrap/`
   - Purpose: establish runner boundary, release-sidecar contract, and release
     lint gates before kernel implementation.
+- `20260520-arch01-subsystem-map-and-contract-spine/`
+  - Purpose: architecture discovery for subsystem boundaries, state-surface
+    ownership, top-down invariant cataloging, legacy `.run`/sidecar
+    compatibility bridge definition, and comparator confidence-tier policy.

@@ -4,7 +4,7 @@ Pinned cross-component contracts. Changes require coordinated updates across pro
 
 | Contract | Authoritative source | Notes |
 |---|---|---|
-| `.run` formalized model-flag schema | (to be authored) | Replaces legacy stdin-driven `.run` plus sidecar `.txt` files (e.g. `frost.txt`, `wepp_ui.txt`). All flags and sidecar input files must be explicit in `.run`. Schema language and exact field set are not yet decided. |
+| `.run` input contract with legacy bridge | (to be authored) | Initial phase supports legacy stdin-driven `.run` plus `.txt` sidecar inputs/flags (e.g. `frost.txt`, `wepp_ui.txt`) through an explicit compatibility bridge. Target state is a declarative schema-versioned `.run` with explicit sidecar references. |
 | HBP (hillslope binary pass) | wepp-palimpsest `docs/contracts/hillslope-binary-pass-format.md` | openWEPP consumes and produces HBP shards per the upstream specification. Magic, header, day directory, and footer must match. |
 | Parquet hillslope-trajectory schema | wepppy / wepppyo3 interchange | openWEPP emits via the existing consumer-side schema; no new schema authoring on this side until coordinated evolution is needed. |
 | openWEPP runner boundary | [openwepp-runner-contract.md](openwepp-runner-contract.md) | openWEPP owns `openwepp_runner`; engine selection is explicit (`legacy_wepp` vs `openwepp`); no silent fallback across engines/contracts. |
@@ -16,15 +16,24 @@ Pinned cross-component contracts. Changes require coordinated updates across pro
 | Watershed structure file format | legacy WEPP / wepp-palimpsest | Same. |
 | `.json` release manifest | wepp-palimpsest release tooling | openWEPP binaries ship with manifest sidecars per the upstream convention. |
 
-## .run formalization (planned)
+## `.run` contract and legacy bridge (planned)
 
-Today the legacy WEPP `.run` is a multi-line stdin recipe paired with sidecar `.txt` files scattered through the run directory (`frost.txt`, `wepp_ui.txt`, and similar). openWEPP replaces this with a declarative, schema-versioned `.run` that:
+Today the legacy WEPP `.run` is a multi-line stdin recipe paired with sidecar
+`.txt` files scattered through the run directory (`frost.txt`, `wepp_ui.txt`,
+and similar).
 
-- enumerates every model flag explicitly (no implicit sidecar `.txt` reads)
+Initial openWEPP behavior includes a compatibility bridge that can ingest this
+legacy input surface while normalizing to typed internal config.
+
+Target-state `.run` still moves to a declarative schema-versioned contract that:
+- enumerates every model flag explicitly
 - references every sidecar input file by path
 - carries a schema version so consumers can detect upgrades
 
-Backward compatibility with legacy stdin `.run` is not a goal.
+Compatibility bridge constraints:
+- no silent fallback across ambiguous input modes
+- no silent defaulting when required sidecars are missing
+- hard error on missing/invalid compatibility prerequisites
 
 ## Parquet schema source-of-truth
 

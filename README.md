@@ -41,6 +41,8 @@ openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generati
 - Hillslope simulation (single OFE and multi-OFE)
 - Watershed channel routing and impoundment routing
 - WEPP soil, management, climate, and watershed input-file compatibility
+- Initial backward-compatibility bridge for legacy stdin `.run` plus `.txt`
+  sidecar inputs/flags
 - HBP (hillslope binary pass) shard production and consumption per the wepp-palimpsest contract
 - Parquet output via the wepppy / wepppyo3 interchange schemas
 - Three executables: single-hillslope CLI, watershed CLI, replay / debug CLI
@@ -52,7 +54,7 @@ openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generati
 - Climate generation / cligen (wepppy)
 - Run orchestration, NoDb state model (wepppy)
 - WEPP single-storm simulation modes (`ss`, `ss_batch`)
-- Legacy stdin-driven `.run` CLI compatibility
+- Silent fallback when legacy sidecar inputs are missing or ambiguous
 - Sediment routing physics (deferred to the wepp-palimpsest sediment kernelization program)
 
 ## Runner and release boundary
