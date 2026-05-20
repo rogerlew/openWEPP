@@ -3,7 +3,14 @@
 ## Parity target
 **Semantic parity, not bit-for-bit.** See [../decisions/0003-parity-semantic-not-bit.md](../decisions/0003-parity-semantic-not-bit.md).
 
-Semantic parity is defined per state surface in the corresponding science contract, with named tolerance bounds. The oracle harness diffs trajectories against named tolerances.
+Semantic parity is defined per state surface in the corresponding science
+contract, with named tolerance bounds. Comparator harnesses diff trajectories
+against named tolerances.
+
+Comparator interpretation follows confidence tiers from
+[ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md):
+- higher confidence: single OFE + daily water-balance surfaces
+- lower confidence: hourly/watershed surfaces (investigation triggers)
 
 ## Within-config determinism
 A single openWEPP run with a single thread of execution and a pinned RNG seed must be bit-reproducible run-to-run on the same target. Cross-thread and cross-platform bit reproducibility are not required.

@@ -1,6 +1,6 @@
 # ADR-0002: Clean-room model is kernel-mirror port
 
-**Status:** Superseded by ADR-0010
+**Status:** Superseded by ADR-0011
 **Date:** 2026-05-11
 **Deciders:** Roger Lew, Claude Code
 
@@ -9,8 +9,9 @@
 This ADR is retained for historical traceability only.
 
 Current provenance policy is defined by
-[ADR-0010](0010-non-clean-room-direct-port-policy.md), which states openWEPP is
-explicitly non-clean-room and uses direct ports from upstream F90 kernels.
+[ADR-0011](0011-architecture-first-top-down-science-contracts.md), which states
+openWEPP is explicitly non-clean-room and architecture-first with top-down
+science contracts.
 
 ## Context
 A Rust reimplementation of WEPP could be authored under several clean-room models:

@@ -2,13 +2,30 @@
 
 > Rust reimplementation of the WEPP (Water Erosion Prediction Project) hillslope and watershed simulation engine.
 
-> **Status:** Pre-alpha. Repository is scaffolding only; no kernels implemented. Kernel cadence is downstream of [wepp-palimpsest](#relationship-to-other-repos) (formerly `wepp-forest`).
+> **Status:** Pre-alpha. Repository is scaffolding only; no kernels implemented.
 
-> **Provenance policy:** openWEPP is explicitly **not** a clean-room rewrite. See [ADR-0010](docs/decisions/0010-non-clean-room-direct-port-policy.md).
+> **Strategy policy:** architecture-first with top-down science contracts, plus legacy-comparator investigation lanes. See [ADR-0011](docs/decisions/0011-architecture-first-top-down-science-contracts.md).
+
+> **Provenance posture:** explicitly non-clean-room; legacy source may be read for static analysis and provenance mapping.
 
 ## Overview
 
-openWEPP reimplements the WEPP simulation engine in Rust, taking modernized Fortran-90 kernels from `wepp-palimpsest` as the source of truth for hydrology, soil, plant, and erosion physics. The goal is a kernel-first, process-architected engine with explicit input contracts, parquet outputs, and the trajectory-ownership discipline established by the `wepp-palimpsest` (`wepp-forest` becomes `wepp-palimpsest`)  WB-xx kernelization program.
+openWEPP reimplements the WEPP simulation engine in Rust with an
+architecture-first approach: typed state, explicit module boundaries,
+contract-first interfaces, and deterministic orchestration.
+
+Science behavior is governed by top-down contracts derived from:
+- WEPP technical references (including `references/50201000`),
+- literature-backed invariants,
+- physical/common-sense invariants,
+- static legacy code inspection as secondary evidence.
+
+Legacy binary comparison is used as an investigation signal, not a universal
+gold oracle.
+
+Comparator confidence tiers:
+- higher confidence: single OFE and daily water-balance surfaces
+- lower confidence: hourly and watershed surfaces (investigation triggers)
 
 openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generation (cligen), DEM-to-watershed delineation (TOPAZ / WhiteboxTools), and run orchestration remain [wepppy](https://github.com/rogerlew/wepppy) concerns. openWEPP plugs into wepppy as a subprocess-per-hillslope replacement for the legacy WEPP binary, emitting parquet via the existing `wepppyo3` interchange schemas.
 
@@ -53,10 +70,10 @@ all roles (watershed, hillslope, replay). See:
 
 | Repo | Role |
 |---|---|
-| `wepp-palimpsest` (was `wepp-forest`) | Authoritative F90 kernel source; oracle for parity validation; science contracts; HBP format spec |
+| `wepp-palimpsest` (was `wepp-forest`) | Legacy implementation surface for static analysis and comparator signals; HBP format reference |
 | [wepppy](https://github.com/rogerlew/wepppy) | Consumer / orchestrator; provides GIS, climate, run state |
 | `wepppyo3` (in wepppy) | Defines parquet interchange schemas openWEPP emits |
-| `openWEPP` (this repo) | Rust simulation engine |
+| `openWEPP` (this repo) | Rust simulation engine and top-down contract authority for openWEPP behavior |
 
 ## Repository layout
 
@@ -72,7 +89,7 @@ all roles (watershed, hillslope, replay). See:
 ├── docs/
 │   ├── README.md          # Doc index
 │   ├── decisions/         # Architecture decision records
-│   ├── specifications/    # Science contract registry pointer (sourced from wepp-palimpsest)
+│   ├── specifications/    # openWEPP science-contract authority and source hierarchy
 │   ├── contracts/         # Interface contracts (.run, HBP, parquet schemas)
 │   ├── architecture/      # Process architecture, data flow
 │   ├── numerics/          # Determinism, RNG, summation policy
@@ -95,5 +112,5 @@ Dependency license posture: no viral copyleft (GPL / AGPL / LGPL denied at the `
 - [AGENTS.md](AGENTS.md) — Codex coding playbook
 - [CLAUDE.md](CLAUDE.md) — Claude Code review / debug playbook
 - [docs/README.md](docs/README.md) — Documentation index
-- wepp-palimpsest — kernel source-of-truth and oracle
+- [docs/decisions/0011-architecture-first-top-down-science-contracts.md](docs/decisions/0011-architecture-first-top-down-science-contracts.md) — strategy authority
 - [wepppy](https://github.com/rogerlew/wepppy) — consumer / orchestrator

@@ -17,8 +17,8 @@ It implements a deliberate blend:
 
 ## 2) Non-negotiable rules
 
-1. Kernel math must preserve upstream science intent from `wepp-palimpsest`; no
-   physics invention and no silent retuning.
+1. Kernel math must preserve science intent from governing openWEPP contracts;
+   no physics invention and no silent retuning.
 2. Fortran-style short variable names are allowed (and often preferred) inside
    kernel translation code, but each module must define those symbols clearly.
 3. Every kernel module must include a variable glossary with symbol meaning and
@@ -197,7 +197,9 @@ Before merge:
 
 For kernel-impacting changes:
 
-1. Run oracle/parity tests against `wepp-palimpsest` vectors.
+1. Run comparator/parity tests with confidence-tier interpretation per
+   ADR-0011 (single OFE + daily as high confidence; hourly/watershed as
+   investigation signals).
 2. Add/update regression tests for the exact changed behavior.
 3. Validate units and domain constraints for new variables at module level.
 4. Document any tolerance changes with rationale in the change artifact.
@@ -221,8 +223,8 @@ Every PR touching kernel math should confirm:
 
 ## 8) Relationship to other openWEPP governance docs
 
-- Non-clean-room direct-port policy: `AGENTS.md` and
-  `docs/decisions/0010-non-clean-room-direct-port-policy.md`
+- Architecture-first + provenance policy: `AGENTS.md` and
+  `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
 - Parity target semantics: `docs/decisions/0003-parity-semantic-not-bit.md`
 - Runner/release governance: `docs/decisions/0007-openwepp-runner-and-release-governance.md`
 - Legacy attribution/contributor governance:

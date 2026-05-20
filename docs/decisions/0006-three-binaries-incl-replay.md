@@ -22,4 +22,4 @@ All three share the same kernel crates. `openwepp-replay` is a thin CLI over the
 - Argument surfaces stay clean (replay's window / kernel selection and perturbation overrides do not pollute the main CLI).
 - I/O contracts are distinct (HBP-shaped input vs run-config-shaped input) and stay distinct.
 - Replay outputs must be distinguishable from production simulation outputs at the file-naming and parquet-metadata level so they are not confused with model results.
-- Replay is the oracle-harness driver in addition to its debugging role.
+- Replay is the comparator-harness driver in addition to its debugging role.

@@ -1,8 +1,15 @@
 # ADR-0010: Provenance model is explicitly non-clean-room direct port
 
-**Status:** Accepted
+**Status:** Superseded by ADR-0011
 **Date:** 2026-05-11
 **Deciders:** Roger Lew, Codex
+
+## Supersession note
+
+This ADR is retained for provenance history.
+
+Current execution strategy and authority model are defined in
+[ADR-0011](0011-architecture-first-top-down-science-contracts.md).
 
 ## Context
 

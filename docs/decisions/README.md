@@ -5,7 +5,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | ID | Title | Status |
 |---|---|---|
 | [0001](0001-license-cc0.md) | License is CC0-1.0 | Accepted |
-| [0002](0002-clean-room-model.md) | Clean-room model is kernel-mirror port | Superseded by 0010 |
+| [0002](0002-clean-room-model.md) | Clean-room model is kernel-mirror port | Superseded by 0011 |
 | [0003](0003-parity-semantic-not-bit.md) | Parity target is semantic, not bit-for-bit | Accepted |
 | [0004](0004-subprocess-hillslope-orchestration.md) | Hillslope orchestration is subprocess-per-hillslope | Accepted |
 | [0005](0005-parquet-via-wepppyo3-interchange.md) | Parquet schemas inherit from wepppy / wepppyo3 interchange | Accepted |
@@ -13,7 +13,8 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0007](0007-openwepp-runner-and-release-governance.md) | openWEPP owns runner boundary and release metadata contract | Accepted |
 | [0008](0008-routine-lifecycle-and-replacement.md) | Routine lifecycle states and replacement catalog | Proposed |
 | [0009](0009-network-node-contract-and-extensibility.md) | Network node contract and extensibility policy | Proposed |
-| [0010](0010-non-clean-room-direct-port-policy.md) | Provenance model is explicitly non-clean-room direct port | Accepted |
+| [0010](0010-non-clean-room-direct-port-policy.md) | Provenance model is explicitly non-clean-room direct port | Superseded by 0011 |
+| [0011](0011-architecture-first-top-down-science-contracts.md) | Architecture-first delivery with top-down science contracts | Accepted |
 
 ## ADR template
 

@@ -13,7 +13,7 @@
 - Documentation authoring and editing
 - Architecture and design guidance
 - Debugging and root-cause analysis
-- Review of Codex's kernel ports against wepp-palimpsest science contracts
+- Review of Codex implementations against openWEPP science contracts
 - Deployment and packaging support
 - Proactive security and bug review
 
@@ -36,15 +36,18 @@ When in doubt: the user should never be surprised to learn what wasn't actually 
 
 ## Project at a Glance
 
-openWEPP is the Rust simulation engine successor to legacy WEPP. It ports modernized F90 kernels from wepp-palimpsest (formerly wepp-forest) into Rust crates, orchestrated by two production CLIs (single-hillslope, watershed) plus one debug / oracle CLI (replay).
+openWEPP is the Rust simulation engine successor to legacy WEPP. It uses an
+architecture-first strategy with top-down science contracts, orchestrated by
+two production CLIs (single-hillslope, watershed) plus one debug/comparator CLI
+(replay).
 
 Key references:
 - [README.md](README.md) — project identity, scope, repo layout
 - [docs/architecture/README.md](docs/architecture/README.md) — process architecture and data flow
-- [docs/specifications/README.md](docs/specifications/README.md) — science contract registry pointer
+- [docs/specifications/README.md](docs/specifications/README.md) — science-contract authority model and source hierarchy
 - [docs/contracts/README.md](docs/contracts/README.md) — interface contracts (.run, HBP, parquet)
 - [docs/decisions/README.md](docs/decisions/README.md) — architecture decision records
-- wepp-palimpsest repo — authoritative F90 kernels and oracle
+- wepp-palimpsest repo — legacy implementation surface for static analysis and comparator signals
 
 ## Architecture Quick Reference
 
@@ -56,7 +59,7 @@ Subprocess-per-hillslope. The watershed CLI orchestrates hillslope CLI subproces
 |---|---|---|---|
 | `openwepp-cli-hill` | WEPP-format inputs + `.run` | HBP shard + parquet | Single hillslope, forward simulation |
 | `openwepp-cli-watershed` | watershed structure + hillslope HBP set | watershed parquet | Watershed routing over completed HBP shards |
-| `openwepp-replay` | HBP shard + replay spec | parquet diff / re-execution result | Debug, oracle parity, ablation re-execution |
+| `openwepp-replay` | HBP shard + replay spec | parquet diff / re-execution result | Debug, comparator analysis, ablation re-execution |
 
 ### Kernel boundary
 Pure functions over typed state. Orchestrators own time-stepping and topology; kernels own physics. Producer / consumer trajectory ownership is enforced by the Rust borrow checker.
@@ -68,14 +71,16 @@ Parquet via the wepppy / wepppyo3 interchange schemas. openWEPP does not define 
 
 (Populated as the engine matures. Pre-alpha placeholder.)
 
-### Parity failure against wepp-palimpsest oracle
+### Comparator delta against legacy binaries
 1. Reproduce the failing run with `openwepp-cli-hill`; capture the HBP shard.
 2. Run the same input through the wepp-palimpsest binary; capture its HBP shard.
 3. Use `openwepp-replay --diff <openwepp.hbp> <palimpsest.hbp>` to get trajectory-day attribution.
 4. Identify the first divergent day / OFE / kernel.
 5. Use `openwepp-replay --isolate <kernel-name> --day <N>` to verify the divergence is reproducible at kernel level.
-6. Compare kernel implementation against the corresponding science contract (`SC-DOMAIN-NNN.md` in wepp-palimpsest).
-7. Distinguish: tolerance violation (semantic-parity bound exceeded) vs structural divergence (different physics).
+6. Compare kernel implementation against governing openWEPP science contracts.
+7. Interpret divergence by comparator confidence tier:
+   - single OFE + daily water-balance: high-confidence acceptance signal
+   - hourly/watershed: investigation trigger
 
 ### Build / toolchain issues
 - `rust-toolchain.toml` pins the channel; check that file before assuming a global toolchain mismatch.
@@ -101,7 +106,7 @@ When proactively scanning openWEPP for vulnerabilities:
 | `AGENTS.md` | Codex | Conventions, validation gates |
 | `README.md` | All | Project identity, scope |
 | `docs/architecture/` | All contributors | Runtime topology |
-| `docs/specifications/` | All | Science contract registry pointer |
+| `docs/specifications/` | All | Science-contract authority model |
 | `docs/contracts/` | All | Interface contracts |
 | `docs/decisions/` | All | ADRs |
 | `docs/numerics/` | All | Determinism policy |

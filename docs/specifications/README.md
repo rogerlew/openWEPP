@@ -1,10 +1,19 @@
 # Science Contracts
 
-This directory hosts openWEPP's working copies and pointers to the authoritative science contracts maintained in wepp-palimpsest.
+This directory defines openWEPP science-contract authority and source hierarchy.
 
-## Authoritative source
+## Authority model
 
-`wepp-palimpsest/docs/science-contracts/` is the upstream registry. Each kernel in openWEPP corresponds to one or more `SC-DOMAIN-NNN.md` contracts there.
+openWEPP contracts are authored top-down for openWEPP behavior.
+
+Contract derivation order:
+1. WEPP technical references (including `references/50201000`)
+2. peer-reviewed literature invariants
+3. physical/common-sense invariants
+4. static legacy code inspection (secondary evidence)
+
+Legacy contracts and legacy runtime behavior are valuable references, but not
+automatic authority for acceptance decisions in all execution surfaces.
 
 Stable references use:
 
@@ -14,10 +23,15 @@ SC-<DOMAIN>-<NNN>#INV-<DOMAIN>-<NNN>
 
 ## openWEPP usage
 
-- Kernel-port work packages cite the upstream contract by ID.
-- A Rust kernel is ported only after its upstream contract has reached `active` maturity (per [../decisions/0010-non-clean-room-direct-port-policy.md](../decisions/0010-non-clean-room-direct-port-policy.md)).
-- openWEPP does not create new science contracts. If a port surfaces an under-specified state surface, the gap is documented and routed back to wepp-palimpsest for contract authoring.
+- Architecture and module work may proceed before one-for-one legacy
+  re-kernelization.
+- Kernel work packages must cite the governing openWEPP contract invariants.
+- If a legacy surface is under-specified, document it as a contract gap and
+  resolve via top-down contract authoring in this repo.
+- Legacy behavior deltas are triaged using the comparator confidence tiers from
+  [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md).
 
 ## Tolerance bounds
 
-Semantic-parity tolerance bounds for the openWEPP oracle harness are part of the contract. Per [../decisions/0003-parity-semantic-not-bit.md](../decisions/0003-parity-semantic-not-bit.md), contracts without explicit tolerance bounds block port acceptance.
+Semantic-parity tolerance bounds for openWEPP comparator harnesses are part of
+the contract. Per [../decisions/0003-parity-semantic-not-bit.md](../decisions/0003-parity-semantic-not-bit.md), contracts without explicit tolerance bounds block acceptance.

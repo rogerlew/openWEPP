@@ -83,7 +83,7 @@ When `replaces` is set, the replacing routine must document:
 
 - compatibility class (`compatible`, `breaking`)
 - migration note reference
-- parity/regression evidence reference
+- comparator/parity evidence reference
 
 Retiring a routine requires either:
 
@@ -135,7 +135,7 @@ Before promoting `experimental` -> `active`, attach:
 
 1. contract completeness evidence,
 2. regression test coverage for changed behavior,
-3. parity/oracle evidence where applicable,
+3. comparator/parity evidence where applicable,
 4. migration notes when replacing an existing active routine.
 
 ## Failure posture
