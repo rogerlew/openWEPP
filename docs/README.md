@@ -4,6 +4,7 @@
 |---|---|---|
 | [architecture/README.md](architecture/README.md) | All | Runtime topology, process model, data flow |
 | [specifications/README.md](specifications/README.md) | All | Science-contract authority model and source hierarchy |
+| [specifications/science-contracts/README.md](specifications/science-contracts/README.md) | Maintainers | Canonical location and registry for `SC-*` science contracts |
 | [contracts/README.md](contracts/README.md) | All | Interface contracts: `.run`, HBP, parquet schemas, CLI ABI |
 | [decisions/README.md](decisions/README.md) | All | Architecture decision records (ADRs) |
 | [governance/README.md](governance/README.md) | Maintainers | Governance policies, transition plans, lifecycle controls |

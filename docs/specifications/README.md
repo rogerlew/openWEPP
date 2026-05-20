@@ -21,8 +21,16 @@ Stable references use:
 SC-<DOMAIN>-<NNN>#INV-<DOMAIN>-<NNN>
 ```
 
+Canonical science-contract location:
+- [science-contracts/README.md](science-contracts/README.md)
+- Canonical `SC-*` files: `docs/specifications/science-contracts/contracts/`
+- Canonical registry: `docs/specifications/science-contracts/index.md`
+
 Current chapter-to-contract scaffold:
 - `docs/work-packages/20260520-sci01-50201000-process-contract-mapping/artifacts/50201000-chapter-process-contract-map.md`
+
+Authoring workflow:
+- [science-contract-authoring-procedure.md](science-contract-authoring-procedure.md) (required dual-agent review, disposition, and fix verification gate)
 
 ## openWEPP usage
 
