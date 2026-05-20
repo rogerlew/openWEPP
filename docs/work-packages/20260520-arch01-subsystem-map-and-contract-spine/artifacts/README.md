@@ -11,6 +11,7 @@ Required artifacts:
 - `comparator-confidence-tier-policy.md`
 - `architecture-decision-summary.md`
 - `legacy-run-sidecar-compatibility-bridge.md`
+- `arch01_disposition.md`
 
 Evidence annotation convention:
 - `[DIRECT]` = directly observed in source/reference/output

@@ -1,9 +1,11 @@
 # 20260520-arch01-subsystem-map-and-contract-spine
 
 ## Status
-- `state`: ready
+- `state`: closed
 - `date`: 2026-05-20
 - `timezone`: UTC
+- `closed_utc`: 2026-05-20 23:25 UTC
+- `outcome`: `GO_ARCHITECTURE_DISCOVERY_COMPLETE`
 
 ## Objective
 Establish a production-usable architecture baseline for openWEPP by mapping
@@ -47,6 +49,7 @@ re-kernelization.
 6. `artifacts/comparator-confidence-tier-policy.md`
 7. `artifacts/architecture-decision-summary.md`
 8. `artifacts/legacy-run-sidecar-compatibility-bridge.md`
+9. `artifacts/arch01_disposition.md`
 
 ## Phase Plan
 ### Phase 0 — Docs-Only Audit / Inventory
