@@ -1,7 +1,7 @@
 # Rust Scientific Coding Standard
 
 - **Status:** Active
-- **Last updated:** 2026-05-12
+- **Last updated:** 2026-05-20
 - **Applies to:** all Rust crates in openWEPP
 
 ## 1) Purpose
@@ -170,9 +170,136 @@ Do not combine in one file:
 - serialization/deserialization adapters
 - long integration tests
 
-## 6) Test organization and QA standard
+## 6) Ownership, borrowing, and mutation patterns (opinionated)
 
-### 6.1 Test placement
+### 6.1 State ownership contract
+
+1. Each mutable state surface has one owner at a time in a timestep.
+2. Orchestrators own mutable run state; kernels do not own global/shared state.
+3. Kernels read state through immutable borrows and emit typed deltas/fluxes.
+4. State mutation happens at explicit apply/writeback points, not ad hoc in math
+   helpers.
+
+### 6.2 Preferred function signature shapes
+
+Use one of these patterns by default:
+
+1. Pure compute (read-only):
+
+```rust
+pub fn compute(input: &KernelInput, state: &KernelState) -> Result<KernelFlux, KernelError>
+```
+
+2. Explicit apply/writeback:
+
+```rust
+pub fn apply(state: &mut KernelState, delta: &KernelDelta) -> Result<(), KernelError>
+```
+
+3. Thin orchestrator step:
+
+```rust
+pub fn step(ctx: &StepContext, state: &mut RunState) -> Result<StepReport, StepError>
+```
+
+Avoid multi-`&mut` signatures over related state surfaces when a single owned
+state struct plus explicit sub-borrows can express the same operation more
+clearly.
+
+### 6.3 Mutation and borrowing rules
+
+1. Prefer read -> compute -> apply phases in order.
+2. Keep mutable borrow lifetimes short; do not hold `&mut` across unrelated
+   work.
+3. No hidden mutation in getters/converters.
+4. No `RefCell`/`Cell`/`Mutex`/`RwLock` inside core physics kernels.
+5. Interior mutability is allowed only in bounded infrastructure surfaces
+   (for example metrics/cache shims) with rationale comments.
+6. Do not clone state to bypass borrow checker constraints in hot paths.
+   If cloning is intentional, document rationale and expected cost.
+
+### 6.4 Struct templates for scientific kernels
+
+Use explicit input/state/delta/diagnostic surfaces with unit-bearing fields.
+
+```rust
+#[derive(Debug, Clone)]
+pub struct InfiltrationInput {
+    /// mm
+    pub rain_mm: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct InfiltrationState {
+    /// mm
+    pub storage_mm: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct InfiltrationDelta {
+    /// mm
+    pub d_storage_mm: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct InfiltrationDiagnostics {
+    /// mm
+    pub closure_residual_mm: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct InfiltrationOutcome {
+    pub delta: InfiltrationDelta,
+    pub diagnostics: InfiltrationDiagnostics,
+}
+```
+
+For orchestration boundaries, prefer one owned aggregate state plus focused
+sub-structs (for example `HydrologyState`, `ErosionState`, `RoutingState`)
+instead of passing many unrelated mutable scalars through long call chains.
+
+### 6.5 Module organization templates
+
+Kernel-domain crate/module template:
+
+```text
+src/
+  lib.rs            # public exports only
+  types.rs          # input/state/delta/diagnostic structs
+  kernel.rs         # compute (read-only) logic
+  apply.rs          # writeback/apply logic
+  invariants.rs     # closure/physical checks
+  errors.rs         # typed error enums
+```
+
+Orchestrator crate/module template:
+
+```text
+src/
+  lib.rs
+  state.rs          # owned run-state aggregates
+  schedule.rs       # ordering/timestep policy
+  dispatch.rs       # kernel call wiring
+  io_boundary.rs    # HBP/parquet/CLI boundary mapping
+  errors.rs
+```
+
+`lib.rs` should re-export stable API surfaces and avoid embedding substantial
+kernel math.
+
+### 6.6 Borrow-checker conflict resolution order
+
+When borrow conflicts appear, resolve in this order:
+
+1. Narrow borrow scope and move last-use points earlier.
+2. Extract immutable scalars before mutable writeback.
+3. Split state structs by ownership domain.
+4. Introduce IDs/indices instead of long-lived references.
+5. Use interior mutability only at approved infrastructure boundaries.
+
+## 7) Test organization and QA standard
+
+### 7.1 Test placement
 
 Prefer separate files for tests:
 
@@ -183,7 +310,7 @@ Prefer separate files for tests:
 Use inline `#[cfg(test)]` blocks only for tightly local unit behavior that
 would be harder to test externally.
 
-### 6.2 Required quality gates
+### 7.2 Required quality gates
 
 Before merge:
 
@@ -193,7 +320,7 @@ Before merge:
 4. `cargo test --doc`
 5. `cargo deny check`
 
-### 6.3 Scientific-model verification requirements
+### 7.3 Scientific-model verification requirements
 
 For kernel-impacting changes:
 
@@ -204,7 +331,7 @@ For kernel-impacting changes:
 3. Validate units and domain constraints for new variables at module level.
 4. Document any tolerance changes with rationale in the change artifact.
 
-### 6.4 Review checklist for scientific PRs
+### 7.4 Review checklist for scientific PRs
 
 Every PR touching kernel math should confirm:
 
@@ -214,14 +341,14 @@ Every PR touching kernel math should confirm:
 4. Tests isolate the changed behavior and include negative/edge cases.
 5. Parity evidence is attached when numerical output can change.
 
-## 7) Recommended tooling profile
+## 8) Recommended tooling profile
 
 - Prefer workspace-wide checks (`--workspace`) for consistent quality.
 - Keep `clippy` strict (`-D warnings`) and use targeted `#[allow(...)]` only
   with justification comments.
 - Use rustdoc examples for behavioral documentation and executable examples.
 
-## 8) Relationship to other openWEPP governance docs
+## 9) Relationship to other openWEPP governance docs
 
 - Architecture-first + provenance policy: `AGENTS.md` and
   `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
@@ -234,15 +361,17 @@ Every PR touching kernel math should confirm:
 
 This standard is implementation-focused and does not supersede those decisions.
 
-## 9) Sources used
+## 10) Sources used
 
 - Rust Style Guide: https://doc.rust-lang.org/style-guide/
+- Rust Book (ownership and borrowing): https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html
 - Rust Book (comments): https://doc.rust-lang.org/book/ch03-04-comments.html
 - Rust Book (test organization): https://doc.rust-lang.org/book/ch11-03-test-organization.html
 - Cargo Book (`cargo test`): https://doc.rust-lang.org/cargo/commands/cargo-test.html
 - Rustdoc book (how to write documentation): https://doc.rust-lang.org/rustdoc/how-to-write-documentation.html
 - Rust API Guidelines (documentation, naming, dependability):
   - https://rust-lang.github.io/api-guidelines/documentation.html
+  - https://rust-lang.github.io/api-guidelines/flexibility.html
   - https://rust-lang.github.io/api-guidelines/naming.html
   - https://rust-lang.github.io/api-guidelines/dependability.html
 - Clippy docs:
