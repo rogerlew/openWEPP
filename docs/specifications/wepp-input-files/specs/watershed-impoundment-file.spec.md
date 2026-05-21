@@ -28,7 +28,7 @@
 | Explicit version header | First non-comment token is `datver` and `datver > 10.0` | `verchk` enforces `datver >= impchk` (`94.301`) | Accept when `datver >= 94.301`; otherwise typed version error |
 | Legacy/older unguarded form | First non-comment token `<= 10.0` | `verchk` path is skipped | Keep supported only under explicit legacy-compat mode; mark warning |
 
-- `impchk` is initialized to `94.301` in legacy startup data. [DIRECT]
+- `impchk` is initialized to `94.301` in legacy startup data. [DIRECT][EA-IMP-007]
 
 ## 4. Record Grammar and Line-by-Line Format Definition
 
@@ -59,16 +59,16 @@ impoundment_block ::= description3
 ```
 
 ### 4.2 Preamble (file-level)
-- Line 1: `datver` (real version number). [DIRECT]
-- Line 2: `jpond` (number of impoundments declared in the `.imp` file). [DIRECT]
+- Line 1: `datver` (real version number). [DIRECT][EA-IMP-002][EA-IMP-005]
+- Line 2: `jpond` (number of impoundments declared in the `.imp` file). [DIRECT][EA-IMP-002][EA-IMP-008]
 - Legacy compatibility form (no explicit `datver` line): first token is interpreted as `jpond` only when compatibility mode is explicitly enabled; strict mode rejects this form. [DIRECT][EA-IMP-005]
 
 ### 4.3 Per-impoundment block (repeated `jpond` times)
-- Lines 3-5: `impdes(1..3)` comment/description lines. [DIRECT]
+- Lines 3-5: `impdes(1..3)` comment/description lines. [DIRECT][EA-IMP-010]
 
 #### Drop spillway section
-- Line 6: `ids` (drop spillway index). [DIRECT]
-- `ids = 0`: no drop spillway; skip drop structure lines. [DIRECT]
+- Line 6: `ids` (drop spillway index). [DIRECT][EA-IMP-010]
+- `ids = 0`: no drop spillway; skip drop structure lines. [DIRECT][EA-IMP-010]
 - `ids = 1`:
 1. comment line `strdes`
 2. `diars hrs coefw coefo`
@@ -86,22 +86,22 @@ impoundment_block ::= description3
 4. `ke kb kc`
 
 #### Culvert sections
-- Culvert #1 header line: `icv ncv`. [DIRECT]
+- Culvert #1 header line: `icv ncv`. [DIRECT][EA-IMP-010]
 - If `icv >= 1`:
 1. comment line `strdes`
 2. `arcv hitcv hcv lcv scv hcvot`
 3. `ke kb kc kus mus cs ys`
-- Culvert #2 header line: `icv ncv` (read unconditionally after culvert #1 branch). [DIRECT]
+- Culvert #2 header line: `icv ncv` (read unconditionally after culvert #1 branch). [DIRECT][EA-IMP-010]
 - If Culvert #2 `icv >= 1`, same 3 lines as Culvert #1.
 
 #### Rock-fill check dam section
-- Line 15 conceptually: `irf`. [DIRECT]
+- Line 15 conceptually: `irf`. [DIRECT][EA-IMP-010]
 - If `irf != 0`:
 1. comment line `strdes`
 2. `lnrf hrf hotrf wdrf diarf`
 
 #### Emergency spillway section
-- Line 18 conceptually: `ies`. [DIRECT]
+- Line 18 conceptually: `ies`. [DIRECT][EA-IMP-010]
 - If `ies = 1` (open channel outlet):
 1. comment line `strdes`
 2. `bwes sses nes hes hmxes`
@@ -114,13 +114,13 @@ impoundment_block ::= description3
 5. `qes(1..npts)` list
 
 #### Filter fence / straw bale / trash barrier section
-- Line 24 conceptually: `iff`. [DIRECT]
+- Line 24 conceptually: `iff`. [DIRECT][EA-IMP-010]
 - If `iff != 0`:
 1. comment line `strdes`
 2. `vsl wdff hff hotff`
 
 #### Perforated riser section
-- Line 31 conceptually: `ipr`. [DIRECT]
+- Line 31 conceptually: `ipr`. [DIRECT][EA-IMP-010]
 - If `ipr != 0`:
 1. comment line `strdes`
 2. `hr hb hs hd diar as diab`
@@ -129,17 +129,17 @@ impoundment_block ::= description3
 5. `ke kb kc`
 
 #### Miscellaneous and stage-area-length section
-- Misc line: `hottmp hfltmp htmp dltimp qnftmp` (`hot`, `hfull`, `h`, `deltat`, `qinf`). [DIRECT]
-- Size line: `isztmp ndvtmp` (`isize`, `ndiv`). [DIRECT]
-- Geometry count line: `nalpts`. [DIRECT]
-- Minimum geometry line: `hmntmp a0tmp l0tmp` (`hmin`, `a0`, `l0`). [DIRECT]
-- Stage list line(s): `hal(1..nalpts)` (after optional comment/blank lines skipped by `eatcom`). [DIRECT]
-- Area list line(s): `area(1..nalpts)` (after `eatcom`). [DIRECT]
-- Length list line(s): `length(1..nalpts)` (after `eatcom`). [DIRECT]
+- Misc line: `hottmp hfltmp htmp dltimp qnftmp` (`hot`, `hfull`, `h`, `deltat`, `qinf`). [DIRECT][EA-IMP-010]
+- Size line: `isztmp ndvtmp` (`isize`, `ndiv`). [DIRECT][EA-IMP-010]
+- Geometry count line: `nalpts`. [DIRECT][EA-IMP-010]
+- Minimum geometry line: `hmntmp a0tmp l0tmp` (`hmin`, `a0`, `l0`). [DIRECT][EA-IMP-010]
+- Stage list line(s): `hal(1..nalpts)` (after optional comment/blank lines skipped by `eatcom`). [DIRECT][EA-IMP-010][EA-IMP-013]
+- Area list line(s): `area(1..nalpts)` (after `eatcom`). [DIRECT][EA-IMP-010][EA-IMP-013]
+- Length list line(s): `length(1..nalpts)` (after `eatcom`). [DIRECT][EA-IMP-010][EA-IMP-013]
 
 ### 4.4 Units at file boundary
-- Input file units are SI per users guide (`m`, `m2`, `m3/s`, `m/d`). [DIRECT]
-- Legacy runtime converts many geometric/hydraulic inputs to feet/imperial internal variables (`* 3.281`, `* 3.281**2`, `* 3.281**3`). [DIRECT]
+- Input file units are SI per users guide (`m`, `m2`, `m3/s`, `m/d`). [DIRECT][EA-IMP-001][EA-IMP-002]
+- Legacy runtime converts many geometric/hydraulic inputs to feet/imperial internal variables (`* 3.281`, `* 3.281**2`, `* 3.281**3`). [DIRECT][EA-IMP-011]
 
 ## 5. Field Dictionary and Alias Mapping
 
@@ -193,28 +193,28 @@ impoundment_block ::= description3
 | `hal/area/length` | `stage_area_length_curve.{stage_m,area_m2,length_m}` |
 
 ## 6. Conditional Branches and Optional Sections
-- Drop spillway branch is controlled by `ids` (`0/1/2/3`). [DIRECT]
-- Two culvert branches are always header-read (`icv ncv` twice), with parameter lines conditional on each `icv >= 1`. [DIRECT]
-- Rock-fill section is conditional on `irf != 0`. [DIRECT]
-- Emergency spillway section is conditional on `ies` with mutually exclusive shape: open-channel (`ies=1`) vs user stage-discharge (`ies=2`). [DIRECT]
-- Filter barrier section is conditional on `iff != 0`. [DIRECT]
-- Perforated riser section is conditional on `ipr != 0`. [DIRECT]
-- Geometry arrays (`hal/area/length`) are required regardless of branch choices. [DIRECT]
+- Drop spillway branch is controlled by `ids` (`0/1/2/3`). [DIRECT][EA-IMP-010]
+- Two culvert branches are always header-read (`icv ncv` twice), with parameter lines conditional on each `icv >= 1`. [DIRECT][EA-IMP-010]
+- Rock-fill section is conditional on `irf != 0`. [DIRECT][EA-IMP-010]
+- Emergency spillway section is conditional on `ies` with mutually exclusive shape: open-channel (`ies=1`) vs user stage-discharge (`ies=2`). [DIRECT][EA-IMP-010]
+- Filter barrier section is conditional on `iff != 0`. [DIRECT][EA-IMP-010]
+- Perforated riser section is conditional on `ipr != 0`. [DIRECT][EA-IMP-010]
+- Geometry arrays (`hal/area/length`) are required regardless of branch choices. [DIRECT][EA-IMP-010]
 
 ## 7. Cross-File Consistency Constraints and Coupling Dependencies
-- `.str` defines structural impoundment count (`npond`); `.imp` declares `jpond`; legacy stop condition triggers when `npond > jpond`. [DIRECT]
+- `.str` defines structural impoundment count (`npond`); `.imp` declares `jpond`; legacy stop condition triggers when `npond > jpond`. [DIRECT][EA-IMP-008]
 - Strict mode requires exact closure (`jpond == npond`); compatibility mode may allow `jpond > npond` with warning and must ignore surplus `.imp` blocks beyond `npond` for run assembly determinism. [INFERENCE]
-- Legacy enforces upper bound by internal `mximp` (`25`) on both `npond` and `jpond`. [DIRECT]
-- Users guide states a 10-impoundment limit for simulations; this conflicts with the internal `mximp=25` default in current legacy source. [DIRECT]
-- Watershed structure rules from users guide constrain whether impoundments can be fed by channels vs hillslopes and prohibit mixed channel+hillslope feeding into a single impoundment. [DIRECT]
+- Legacy enforces upper bound by internal `mximp` (`25`) on both `npond` and `jpond`. [DIRECT][EA-IMP-008][EA-IMP-009]
+- Users guide states a 10-impoundment limit for simulations; this conflicts with the internal `mximp=25` default in current legacy source. [DIRECT][EA-IMP-001][EA-IMP-009]
+- Watershed structure rules from users guide constrain whether impoundments can be fed by channels vs hillslopes and prohibit mixed channel+hillslope feeding into a single impoundment. [DIRECT][EA-IMP-003]
 - `.imp` is semantically coupled to `.str` element ordering and IDs; the per-impoundment block order is assumed to align with impoundment indexing used by watershed routines. [INFERENCE]
 
 ## 8. Defaulting, Missing-File Behavior, and Typed Error Expectations
 
 ### 8.1 Legacy behavior summary
-- Missing/invalid compatibility path can terminate with `stop` after console message. [DIRECT]
-- Count mismatch (`npond > jpond`) terminates with `stop`. [DIRECT]
-- Exceeding `mximp` terminates with `stop`. [DIRECT]
+- Missing/invalid compatibility path can terminate with `stop` after console message. [DIRECT][EA-IMP-005][EA-IMP-006]
+- Count mismatch (`npond > jpond`) terminates with `stop`. [DIRECT][EA-IMP-008]
+- Exceeding `mximp` terminates with `stop`. [DIRECT][EA-IMP-008][EA-IMP-009]
 - Branch/array parse failures propagate as Fortran read/runtime failures (non-recoverable). [INFERENCE]
 
 ### 8.2 openWEPP typed error expectations (contract draft)
@@ -232,7 +232,7 @@ impoundment_block ::= description3
 ### 8.3 Minimum invariants for parser guardrails
 - `jpond >= 0`; `nalpts >= 1`; `ndiv >= 1`. [INFERENCE]
 - `hot >= h`, `hfull >= hmin`, `hmxes >= hes` where those fields exist. [INFERENCE]
-- All geometry arrays must have equal cardinality `nalpts`. [DIRECT]
+- All geometry arrays must have equal cardinality `nalpts`. [DIRECT][EA-IMP-010]
 
 ## 9. Example Snippets
 
@@ -293,18 +293,18 @@ impoundment_block ::= description3
 ```
 
 ### 9.3 Invalid examples
-- `npond` in `.str` greater than `jpond` in `.imp` -> reject (`ImpoundmentCountMismatch`). [DIRECT]
-- `ies=2` but missing either `hest` or `qes` vectors -> reject (`ImpoundmentUnexpectedEof`). [DIRECT]
+- `npond` in `.str` greater than `jpond` in `.imp` -> reject (`ImpoundmentCountMismatch`). [DIRECT][EA-IMP-008]
+- `ies=2` but missing either `hest` or `qes` vectors -> reject (`ImpoundmentUnexpectedEof`). [DIRECT][EA-IMP-010]
 - `nalpts=4` but only 3 `area` values -> reject (`ImpoundmentArrayCardinalityError`). [INFERENCE]
 
 ## 10. Gap / Conflict Register
 
 | ID | Severity | Claim | Evidence tag | Provenance tags | Status | HOLD condition |
 |---|---|---|---|---|---|---|
-| G-IMP-001 | medium | users guide says up to 10 impoundments; legacy source enforces `mximp=25` | [DIRECT] | `usersum2024`, `legacy-code` | open | HOLD if openWEPP max-count policy is not explicitly chosen |
-| G-IMP-002 | medium | usersum Table 28 line-number narrative around filter-fence/perforated-riser sublines is partially ambiguous in text extraction | [DIRECT] | `usersum2024`, `legacy-code` | open | HOLD if unresolved ambiguity affects parser grammar decisions |
-| G-IMP-003 | low | usersum culvert brief table omits some coefficients (`kus/mus/cs/ys`) read by legacy parser | [DIRECT] | `usersum2024`, `legacy-code` | open | HOLD only if coefficients cannot be physically/algorithmically traced |
-| G-IMP-004 | low | wepppy canonical spec set currently lacks `.imp` spec and wepppyo3 scoped source search did not find explicit `.imp` parser logic | [DIRECT] | `wepppy`, `wepppyo3` | open | no hold; provenance-only note |
+| G-IMP-001 | medium | users guide says up to 10 impoundments; legacy source enforces `mximp=25` | [DIRECT][EA-IMP-001][EA-IMP-009] | `usersum2024`, `legacy-code` | open | HOLD if openWEPP max-count policy is not explicitly chosen |
+| G-IMP-002 | medium | usersum Table 28 line-number narrative around filter-fence/perforated-riser sublines is partially ambiguous in text extraction | [DIRECT][EA-IMP-002][EA-IMP-010] | `usersum2024`, `legacy-code` | open | HOLD if unresolved ambiguity affects parser grammar decisions |
+| G-IMP-003 | low | usersum culvert brief table omits some coefficients (`kus/mus/cs/ys`) read by legacy parser | [DIRECT][EA-IMP-002][EA-IMP-010] | `usersum2024`, `legacy-code` | open | HOLD only if coefficients cannot be physically/algorithmically traced |
+| G-IMP-004 | low | wepppy canonical spec set currently lacks `.imp` spec and wepppyo3 scoped source search did not find explicit `.imp` parser logic | [DIRECT][EA-IMP-014][EA-IMP-016] | `wepppy`, `wepppyo3` | open | no hold; provenance-only note |
 
 ## 11. Parser-Contract Handoff Map
 

@@ -9,9 +9,8 @@ Evidence: Static
 | `FROST-A-003` | `review_agent_a.md` | low | amend | Reclassified delimiter/comment completeness item from HOLD blocker to non-blocking provenance note (`FROST-NOTE-001`). | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:190` | Keeps promotion blockers focused on correctness impact. |
 | `FROST-B1` | `review_agent_b.md` | medium | amend | Resolved by same provenance-tagged gap table update as `FROST-A-002`. | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:185` | Duplicate finding closure. |
 | `FROST-B2` | `review_agent_b.md` | medium | amend | Reworded `kfactor(1..3)` field dictionary semantics to runtime class slots and retained unresolved class-mapping conflict in HOLD register. | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:87` | Removes internal contradiction between field dictionary and gap register. |
-| `FROST-B3` | `review_agent_b.md` | medium | amend | Replaced unresolved placeholder language with explicit strict/compat typed line-2 error/warning taxonomy. | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:133` | Mode-gated behavior now executable and testable. |
+| `FROST-B3` | `review_agent_b.md` | medium | amend | Ratified explicit strict/compat typed taxonomy for malformed line-2 and out-of-range numeric handling; closed `FROST-GAP-002` as a resolved policy note. | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:133` | Mode-gated behavior is now fully executable for both shape and range branches. |
 
 ## Unresolved / HOLD blockers
 - `FROST-GAP-001`: unresolved canonical mapping of `kfactor(1..3)` class semantics across conflicting legacy/comments (`[DIRECT][E-US-02]`, `[DIRECT][E-WF-01]`, `[DIRECT][E-WF-04]`, `[DIRECT][E-WF-05]`).
-- `FROST-GAP-002`: unresolved strict-vs-compat policy for out-of-range numeric normalization/clamping (`[DIRECT][E-WF-01]`, `[DIRECT][E-WP-02]`).
 - `FROST-GAP-003`: unresolved reject/accept policy for hypothetical version-prefixed variants (`[DIRECT][E-WF-01]`, `[DIRECT][E-US-02]`).

@@ -6,7 +6,7 @@ Evidence: Static
 
 | finding_id | source | severity | disposition decision | closure status | evidence (file:line) | verification note |
 |---|---|---|---|---|---|---|
-| `CHN-A-001` | `review_agent_a.md` | medium | amend | partially-closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:17`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:22`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:25` | Claim-local evidence labels were added, but per-claim citations are still not explicit for each bullet-level claim (citations are nearby, not bound to each bullet item). |
+| `CHN-A-001` | `review_agent_a.md` | medium | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:17`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:18`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:19` | Scope/applicability claims now carry explicit per-bullet claim-site evidence. |
 | `CHN-A-002` | `review_agent_a.md` | medium | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:298` | Gap register now includes provenance tags per conflict row. |
 | `CHN-A-003` | `review_agent_a.md` | low | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:10` | Metadata timestamp normalized to UTC timestamp format. |
 | `B1` | `review_agent_b.md` | high | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:212` | Strict/compat normative handling for `ipeak > 2` and `chan.inp` dependency is explicit with typed outcomes. |
@@ -14,12 +14,11 @@ Evidence: Static
 | `B3` | `review_agent_b.md` | low | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:10` | Duplicate timestamp issue closed by UTC metadata normalization. |
 
 ## Remaining High-Severity Open Items
-- `CHN-GAP-001` remains open (high): `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:300`
-- `CHN-GAP-002` remains open (high): `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:301`
+- None from reviewed findings.
 
 ## Verdict
-FAIL
+PASS-WITH-NOTES
 
 Notes:
 - High-severity review finding `B1` is closed.
-- Verification remains failed because `CHN-A-001` is only partially closed and still needs claim-level citation binding cleanup.
+- `CHN-GAP-001` and `CHN-GAP-002` are now explicitly dispositioned in-spec (`CHN-POL-001/002`) and demoted to medium provenance notes; medium HOLD items remain `CHN-GAP-003..005`.

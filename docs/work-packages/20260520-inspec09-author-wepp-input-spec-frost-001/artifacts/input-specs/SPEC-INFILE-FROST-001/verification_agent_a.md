@@ -11,7 +11,7 @@ Evidence: Static
 | `FROST-A-003` | `review_agent_a.md` | low | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:190` | Provenance/grammar completeness item is reclassified to non-blocking `FROST-NOTE-001`. |
 | `FROST-B1` | `review_agent_b.md` | medium | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:185` | Duplicate provenance-tag finding closed by the same register update. |
 | `FROST-B2` | `review_agent_b.md` | medium | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:87`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:88`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:89`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:187` | `kfactor(1..3)` dictionary wording now uses runtime class slots while unresolved canonical class mapping remains tracked as `FROST-GAP-001`. |
-| `FROST-B3` | `review_agent_b.md` | medium | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:133`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:134`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:135` | Mode-gated typed taxonomy for malformed line-2 paths is now explicit. |
+| `FROST-B3` | `review_agent_b.md` | medium | amend | closed | `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:133`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:134`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:135`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:136`, `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/frost.spec.md:188` | Mode-gated typed taxonomy now covers malformed line-2 paths and out-of-range numeric handling. |
 
 ## Package Verdict
 PASS
@@ -20,4 +20,4 @@ PASS
 - None from reviewed findings.
 
 Notes:
-- Section 10 still carries unresolved HOLD blockers (`FROST-GAP-001..003`) and spec status remains `draft-HOLD`.
+- Section 10 still carries unresolved HOLD blockers (`FROST-GAP-001`, `FROST-GAP-003`) and spec status remains `draft-HOLD`.

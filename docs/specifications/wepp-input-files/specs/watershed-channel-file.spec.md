@@ -14,9 +14,9 @@
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7227-7277`.
 
 ## 2. Surface scope and applicability
-- File extension/surface: `.chn` (`infile-watershed-channel-chn`). [DIRECT]
-- Applicability: watershed/channel routing runs (`ivers=3` lineage in legacy WEPP flow). [DIRECT]
-- Not applicable: hillslope-only runs. [INFERENCE]
+- File extension/surface: `.chn` (`infile-watershed-channel-chn`). [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7227-7232`.
+- Applicability: watershed/channel routing runs (`ivers=3` lineage in legacy WEPP flow). [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:6790-6799`, `/workdir/wepp-forest/src/infile.for:402-427`.
+- Not applicable: hillslope-only runs. [INFERENCE] Evidence: `/workdir/wepp-forest/src/infile.for:402-427`.
 
 [DIRECT] The watershed channel file contains routing method choice, channel shape/hydraulic parameters, and control structure parameters for each channel in increasing channel ID order.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7228-7232`.
@@ -219,6 +219,16 @@ Evidence: `/workdir/wepppyo3/wepp_interchange/src/loss.rs:294-298`, `/workdir/we
 - [DIRECT] Legacy fallback behavior and zeroed routing controls are observed in `wshinp.for`.
 Evidence: `/workdir/wepp-forest/src/wshinp.for:469-485`.
 
+### 8.4 Resolved high-severity policy decisions
+- `CHN-POL-001` (`ishape` domain reconciliation):
+  - strict mode accepts authoring-domain values `{1,2}` only (`1` triangular, `2` naturally eroded); any other token is `InputDomainError { field: ishape, allowed: [1,2] }`.
+  - compatibility mode accepts legacy-expanded values and normalizes to legacy runtime class behavior observed in `wshinp.for` (`ishape >= 2` coerced to naturally eroded runtime class code path under default channel-output mode) with `ChannelShapeCompatibilityNormalizationWarning`.
+  - [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7275-7277`, `/workdir/wepp-forest/src/wshinp.for:386-390`, `/workdir/wepp-forest/src/chnpar.for:83-85`.
+- `CHN-POL-002` (control-section roughness precedence reconciliation):
+  - canonical runtime rule is legacy precedence: when `icntrl == 0`, override control roughness with `ctln <- chnn` after legacy roughness guard (`chnn >= chnnbr`) is applied.
+  - line 14c remains syntactically required but semantically ignored in this branch; compat mode emits `ControlSectionOverrideAppliedWarning` for observability.
+  - [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7316-7340`, `/workdir/wepp-forest/src/wshinp.for:415-417`, `/workdir/wepp-forest/src/wshinp.for:428-431`.
+
 ## 9. Example snippets
 
 ### 9.1 Minimal valid example (`nchan=1`, no rating curve)
@@ -297,8 +307,8 @@ Expected: `ChannelCountMismatch` when compared with `.str`/management channel co
 
 | Gap ID | Severity | Description | Evidence tag | Provenance tags | HOLD condition |
 |---|---|---|---|---|---|
-| `CHN-GAP-001` | high | `ishape` conflict: usersum lists 1/2 only; legacy internal text and remap logic imply broader/internal shape encoding. | [DIRECT] | `usersum2024`, `legacy-code` | Maintain `draft-hold` until accepted input-domain mapping is explicitly dispositioned for openWEPP. |
-| `CHN-GAP-002` | high | Control-section Manning override conflict: usersum note implies override from `chnnbr` (line 12b), legacy sets `ctln <- chnn`. | [DIRECT] | `usersum2024`, `legacy-code` | Define canonical precedence rule and regression expectations before `active` promotion. |
+| `CHN-GAP-001` | medium | `ishape` conflict resolved by `CHN-POL-001`; usersum authoring domain and legacy runtime normalization are now both explicit. | [DIRECT] | `usersum2024`, `legacy-code` | Closed as high-severity blocker; retained as provenance note for strict/compat policy traceability. |
+| `CHN-GAP-002` | medium | Control-section roughness conflict resolved by `CHN-POL-002`; canonical precedence is `ctln <- chnn` for `icntrl==0` with explicit observability. | [DIRECT] | `usersum2024`, `legacy-code` | Closed as high-severity blocker; retained as provenance note for strict/compat policy traceability. |
 | `CHN-GAP-003` | medium | `flgout` semantic conflict: usersum documents line 11 flag, legacy immediately overrides with global `watsum`. | [DIRECT] | `usersum2024`, `legacy-code` | Decide strict/compat mode behavior for line 11 significance. |
 | `CHN-GAP-004` | medium | Legacy compatibility window (`>=94.301`) is accepted by version check, but this spec only normatively defines 99.1 line contract. | [DIRECT] | `usersum2024`, `legacy-code` | Add explicit migrated sub-spec or reject pre-99.1 with documented policy. |
 | `CHN-GAP-005` | medium | `slplst` is scalar in common block and used for `ctlslp` override when `icntrl=0`; per-channel semantics are not fully explicit in docs. | [DIRECT] | `legacy-code`, `literature` | Resolve and codify intended per-channel vs shared behavior for openWEPP contract. |
@@ -318,9 +328,9 @@ Evidence:
 | Canonical symbol continuity + alias map | Contract must expose canonical WEPP names and explicit boundary aliases. |
 | Count closure (`nchan` vs structure/management) | Contract must require multi-surface closure check before run assembly. |
 | Cross-file overrides (`ctlslp`, `flgout`, `chan.inp`, `tcr.txt`) | Contract must define compatibility-mode behavior and strict-mode diagnostics. |
-| Gap register HOLD items | Contract remains `HOLD` until high-severity gaps are dispositioned. |
+| Gap register HOLD items | Contract remains `HOLD` until remaining medium-gap policy items (`CHN-GAP-003..005`) are dispositioned. |
 
-[INFERENCE] `SC-INFILE-WATERSHED-CHANNEL-001` should be authored directly from this spec once `CHN-GAP-001` and `CHN-GAP-002` are resolved or accepted with explicit compatibility policy.
+[INFERENCE] `SC-INFILE-WATERSHED-CHANNEL-001` can now proceed with `CHN-POL-001/002` fixed; carry forward only medium-gap items (`CHN-GAP-003..005`) as explicit HOLD notes.
 
 ## Provenance index
 - Primary format authority:

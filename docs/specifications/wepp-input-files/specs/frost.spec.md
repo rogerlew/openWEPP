@@ -133,7 +133,7 @@ kfactor3        = real ;
 | line 2 missing or EOF before line 2 | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `InputRecordCountError(surface_id=infile-frost, expected=2)`; compatibility mode: `OptionalRecordGroupMissingDefaulted(..., record_group=line2)` |
 | line 2 wrong arity (<6 tokens) | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `InputRecordArityError(surface_id=infile-frost, line_no=2, expected=6)`; compatibility mode: `LegacyLine2DefaultAppliedWarning` |
 | line 2 non-numeric token | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `TokenParseError(surface_id=infile-frost, line_no=2)`; compatibility mode: `LegacyLine2DefaultAppliedWarning` |
-| out-of-range numeric values | [DIRECT][E-WF-01] clamp to legacy defaults/ranges | [INFERENCE][E-WF-01] strict rejection vs legacy-clamp mode must be explicit contract choice |
+| out-of-range numeric values | [DIRECT][E-WF-01] clamp to legacy defaults/ranges | strict mode: `InputValueOutOfRange(surface_id=infile-frost, field=..., allowed=...)`; compatibility mode: apply legacy clamp/default and emit `LegacyRangeClampAppliedWarning(surface_id=infile-frost, field=...)` |
 | non-finite numeric values | [DIRECT][E-WP-02] modern guards explicitly sanitize non-finite/unitized inputs | [INFERENCE][E-WP-02] must surface typed finite/range errors before kernel boundary in strict mode |
 
 ## 9. Example Snippets
@@ -185,11 +185,11 @@ Reason: violates documented/legacy clamp domains. [DIRECT][E-WF-01]
 | Gap ID | Statement | Evidence | Provenance tags | Disposition status |
 | --- | --- | --- | --- | --- |
 | `FROST-GAP-001` | Legacy comments conflict on `kfactor(1..3)` class mapping (`infile.for`/usersum vs `cwint.inc` comments vs `getfreezecond.for` comments). Runtime code path appears authoritative but comments disagree. | [DIRECT][E-US-02], [DIRECT][E-WF-01], [DIRECT][E-WF-04], [DIRECT][E-WF-05] | `usersum2024`, `legacy-code`, `literature` | `HOLD` until canonical class-index mapping is dispositioned and comment conflict handling rule is recorded. |
-| `FROST-GAP-002` | Out-of-range numeric normalization policy (strict reject vs compatibility clamping) remains unresolved even though malformed line-2 shape handling is now mode-gated. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `legacy-code`, `wepppy` | `HOLD` until range-policy mode behavior is ratified. |
+| `FROST-GAP-002` | Out-of-range numeric normalization policy is ratified: strict mode rejects out-of-range values; compatibility mode applies legacy clamp/default with explicit warning. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `legacy-code`, `wepppy` | `CLOSED` (non-blocking; carried as provenance of resolved policy decision). |
 | `FROST-GAP-003` | `datver`/version line is absent for this sidecar; compatibility expectations for any version-prefixed variants are unspecified. | [DIRECT][E-WF-01], [DIRECT][E-US-02] | `legacy-code`, `usersum2024` | `HOLD` until parser contract states reject/accept policy for prefixed variants. |
 | `FROST-NOTE-001` | Delimiter/comment grammar beyond list-directed numeric reads (quoted strings, inline comments) is not specified by usersum for `frost.txt`. | [DIRECT][E-US-02], [DIRECT][E-WF-01] | `usersum2024`, `legacy-code` | `NOTE` provenance/grammar completeness; non-blocking. |
 
-`status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
+`status` remains `draft-HOLD` until remaining unresolved high-impact gaps (`FROST-GAP-001`, `FROST-GAP-003`) are dispositioned.
 
 ## 11. Parser-Contract Handoff Map (`SC-INFILE-FROST-001`)
 
@@ -198,7 +198,7 @@ Reason: violates documented/legacy clamp domains. [DIRECT][E-WF-01]
 | Optional surface semantics | Section 3 Case A, Section 8 | Represent missing-file defaults explicitly with observable provenance. |
 | Record grammar | Section 4 | Parse line 1 mandatory; line 2 strict/compat behavior explicitly mode-gated. |
 | Symbol continuity and aliases | Section 5 | Keep legacy canonical symbols with boundary alias mapping (`frost_opts_*`). |
-| Range policy | Sections 5 and 8 | Define strict rejection vs legacy clamping policy per mode. |
+| Range policy | Sections 5 and 8 | Apply ratified strict-reject vs compatibility-clamp policy with explicit warnings. |
 | Class-mapping consistency | Sections 5, 7, 10 | Disposition `kfactor` class-index mapping conflict and lock canonical semantics. |
 | Typed error behavior | Section 8 | No silent parse corruption; typed errors for malformed present files in strict mode. |
 

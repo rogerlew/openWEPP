@@ -14,9 +14,10 @@ Evidence: Static
 | `B3` | `review_agent_b.md` | amend | closed | Same UTC timestamp normalization closes duplicate finding at `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:10`; disposition record at `.../disposition.md:12`. |
 
 ## Remaining High-Severity Open Items
-- `CHN-GAP-001` remains open high severity at `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:300`.
-- `CHN-GAP-002` remains open high severity at `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md:301`.
-- Both are also called out as unresolved promotion blockers in `/home/workdir/openWEPP/docs/work-packages/20260520-inspec03-author-wepp-input-spec-watershed-channel-001/artifacts/input-specs/SPEC-INFILE-WATERSHED-CHANNEL-CHN-001/disposition.md:15`.
+- None from reviewed findings.
 
 ## Verifier B Verdict
 `PASS-WITH-NOTES`
+
+Notes:
+- `CHN-GAP-001` and `CHN-GAP-002` are now explicitly dispositioned in-spec via `CHN-POL-001/002` and retained as medium provenance notes; medium HOLD items remain `CHN-GAP-003..005`.
