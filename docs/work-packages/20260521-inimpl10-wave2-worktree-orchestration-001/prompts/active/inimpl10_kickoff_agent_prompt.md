@@ -1,0 +1,28 @@
+# INIMPL10 Kickoff Agent Prompt
+
+You are executing `20260521-inimpl10-wave2-worktree-orchestration-001`.
+
+Objectives:
+1. Publish Wave 2 worktree execution governance for concurrent parser work.
+2. Define disjoint ownership for `INIMPL11..16`.
+3. Define deterministic integration order into `INIMPL17`.
+4. Define Wave 2 gate/promotion criteria and blocker policy.
+5. Produce review/disposition/verification closeout artifacts.
+
+Constraints:
+- Preserve correctness-over-completion posture; unresolved high-severity
+  findings remain `HOLD`.
+- Do not redefine science contracts in this package; reference existing
+  `SC-INFILE-*` authorities.
+- Keep governance explicit and executable (no ambiguous ownership boundaries).
+
+Required outputs:
+- `docs/planning/wave2-parser-worktree-execution-plan.md`
+- `artifacts/worktree-ownership-manifest.md`
+- `artifacts/worktree-branch-registry.md`
+- `artifacts/wave2-integration-sequence.md`
+- `artifacts/inimpl10_disposition.md`
+- `artifacts/review_agent_a.md`
+- `artifacts/review_agent_b.md`
+- `artifacts/verification_agent_a.md`
+- `artifacts/verification_agent_b.md`

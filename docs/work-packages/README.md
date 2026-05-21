@@ -169,6 +169,34 @@ Authorized packages:
 - `20260521-inimpl07-wave1-core-parser-integration-001/`
   - Purpose: integrate Wave 1 worker outputs and close global Wave 1
     validation gates.
+- `20260521-inimpl09-management-full-typed-datamodel-001/`
+  - Purpose: close `SC-INFILE-MANAGEMENT-001` execution HOLDs by implementing a
+    full typed `.man` datamodel across spec, parser contract, parser code, and
+    fixtures/tests.
+- `20260521-inimpl10-wave2-worktree-orchestration-001/`
+  - Purpose: establish Wave 2 concurrent worktree governance, ownership
+    manifests, and integration sequencing for sidecar parser surfaces.
+- `20260521-inimpl11-implement-sc-infile-pmetpara-parser-001/`
+  - Purpose: implement `SC-INFILE-PMETPARA-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl12-implement-sc-infile-irrigation-depletion-parser-001/`
+  - Purpose: implement `SC-INFILE-IRRIGATION-DEPLETION-001` parser surface in a
+    dedicated worker worktree.
+- `20260521-inimpl13-implement-sc-infile-irrigation-fixeddate-parser-001/`
+  - Purpose: implement `SC-INFILE-IRRIGATION-FIXEDDATE-001` parser surface in a
+    dedicated worker worktree.
+- `20260521-inimpl14-implement-sc-infile-frost-parser-001/`
+  - Purpose: implement `SC-INFILE-FROST-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl15-implement-sc-infile-snow-parser-001/`
+  - Purpose: implement `SC-INFILE-SNOW-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl16-implement-sc-infile-weppui-parser-001/`
+  - Purpose: implement `SC-INFILE-WEPPUI-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl17-wave2-sidecar-parser-integration-001/`
+  - Purpose: integrate Wave 2 worker outputs and close global Wave 2
+    validation gates.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
