@@ -43,6 +43,7 @@ two production CLIs (single-hillslope, watershed) plus one debug/comparator CLI
 
 Key references:
 - [README.md](README.md) — project identity, scope, repo layout
+- [docs/decisions/0011-architecture-first-top-down-science-contracts.md](docs/decisions/0011-architecture-first-top-down-science-contracts.md) — strategy authority: architecture-first, top-down contracts, comparator-tier policy
 - [docs/architecture/README.md](docs/architecture/README.md) — process architecture and data flow
 - [docs/specifications/README.md](docs/specifications/README.md) — science-contract authority model and source hierarchy
 - [docs/contracts/README.md](docs/contracts/README.md) — interface contracts (.run, HBP, parquet)
@@ -69,18 +70,41 @@ Parquet via the wepppy / wepppyo3 interchange schemas. openWEPP does not define 
 
 ## Debugging Playbook
 
-(Populated as the engine matures. Pre-alpha placeholder.)
+(Populated as the engine matures. Pre-alpha placeholder — no kernels or
+`openwepp-replay` exist yet. The ordering below is the policy for when
+debugging begins.)
 
-### Comparator delta against legacy binaries
-1. Reproduce the failing run with `openwepp-cli-hill`; capture the HBP shard.
-2. Run the same input through the wepp-palimpsest binary; capture its HBP shard.
-3. Use `openwepp-replay --diff <openwepp.hbp> <palimpsest.hbp>` to get trajectory-day attribution.
-4. Identify the first divergent day / OFE / kernel.
-5. Use `openwepp-replay --isolate <kernel-name> --day <N>` to verify the divergence is reproducible at kernel level.
-6. Compare kernel implementation against governing openWEPP science contracts.
-7. Interpret divergence by comparator confidence tier:
-   - single OFE + daily water-balance: high-confidence acceptance signal
-   - hourly/watershed: investigation trigger
+The correctness authority is the **science contract**, not a reference
+binary. Per [ADR-0011](docs/decisions/0011-architecture-first-top-down-science-contracts.md),
+legacy comparison is a flagging mechanism for investigation, not an
+acceptance oracle. Debug in this priority order.
+
+### Primary lane — contract-invariant and closure failures
+A kernel violates an `SC-<DOMAIN>-<NNN>#INV-<DOMAIN>-<NNN>` invariant, or a
+state surface fails its closure / conservation check (water balance, mass
+balance).
+1. Identify the violated invariant or the non-conserving state surface.
+2. Diagnose **within a single run**: read the kernel's typed state against
+   the contract invariant and localize the time step / OFE where
+   conservation first breaks. No second binary is required, and none should
+   be sought — the contract plus the in-process state is the authority.
+3. Fix the kernel to satisfy the invariant. The contract's named tolerance
+   bound ([ADR-0003](docs/decisions/0003-parity-semantic-not-bit.md)) defines
+   acceptance.
+
+### Secondary lane — comparator delta against legacy
+A legacy-binary comparison flagged a surface worth investigating. This is an
+**investigation signal, not an acceptance gate** — legacy behavior is
+forensic evidence, never authority.
+1. Reproduce with `openwepp-cli-hill`; capture the HBP shard.
+2. Capture the legacy wepp-palimpsest HBP for the same input.
+3. `openwepp-replay --diff` for trajectory-day attribution; identify the
+   first divergent day / OFE / kernel.
+4. Interpret by confidence tier (ADR-0011):
+   - single OFE + daily water-balance: higher-confidence signal
+   - hourly / watershed: investigation trigger only
+5. Resolve by checking the divergent kernel against its governing contract.
+   The contract decides which side is correct — not the legacy binary.
 
 ### Build / toolchain issues
 - `rust-toolchain.toml` pins the channel; check that file before assuming a global toolchain mismatch.
@@ -106,9 +130,12 @@ When proactively scanning openWEPP for vulnerabilities:
 | `AGENTS.md` | Codex | Conventions, validation gates |
 | `README.md` | All | Project identity, scope |
 | `docs/architecture/` | All contributors | Runtime topology |
-| `docs/specifications/` | All | Science-contract authority model |
+| `docs/specifications/` | All | Science-contract authority model; `SC-*` registry |
 | `docs/contracts/` | All | Interface contracts |
 | `docs/decisions/` | All | ADRs |
 | `docs/numerics/` | All | Determinism policy |
+| `docs/governance/` | Maintainers | Governance policies, transition plans, lifecycle controls |
+| `docs/standards/` | Maintainers | Rust coding, comments, QA standards |
+| `docs/backlog/` | Maintainers | Concept-stage ideas; promotion criteria before work-package activation |
 | `docs/work-packages/` | All | Initiative tracking convention |
 | `usersum/` | End users | User-facing documentation |

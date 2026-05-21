@@ -1,0 +1,49 @@
+# Parser Input Surface Registry
+
+Status: Active
+Last updated: 2026-05-20
+
+Purpose: canonical registry of parser-governed input surfaces across hillslope,
+watershed, and sidecar domains.
+
+Disposition meanings:
+- `active`: governed by an authored `SC-INFILE-*` contract
+- `planned`: contract ID assigned; authoring pending
+- `deferred`: intentionally postponed with rationale
+- `unsupported`: explicitly rejected with typed error behavior
+
+| Surface ID | Category | File surface | Disposition | Target contract |
+|---|---|---|---|---|
+| `infile-climate-cli` | hillslope | `.cli` | planned | `SC-INFILE-CLIMATE-001` |
+| `infile-soil-sol` | hillslope | `.sol` | planned | `SC-INFILE-SOIL-001` |
+| `infile-management-man` | hillslope | `.man` | planned | `SC-INFILE-MANAGEMENT-001` |
+| `infile-slope-slp` | hillslope | `.slp` | planned | `SC-INFILE-SLOPE-001` |
+| `infile-watershed-structure-str` | watershed | `.str` | planned | `SC-INFILE-WATERSHED-STRUCTURE-001` |
+| `infile-watershed-channel-chn` | watershed | `.chn` | planned | `SC-INFILE-WATERSHED-CHANNEL-001` |
+| `infile-watershed-impoundment-imp` | watershed | `.imp` | planned | `SC-INFILE-WATERSHED-IMPOUNDMENT-001` |
+| `infile-irrigation-depletion` | sidecar | legacy unit `15` depletion irrigation file | planned | `SC-INFILE-IRRIGATION-DEPLETION-001` |
+| `infile-irrigation-fixeddate` | sidecar | legacy unit `14` fixed-date irrigation file | planned | `SC-INFILE-IRRIGATION-FIXEDDATE-001` |
+| `infile-pmetpara` | sidecar | `pmetpara.txt` | planned | `SC-INFILE-PMETPARA-001` |
+| `infile-snow` | sidecar | `snow.txt` | planned | `SC-INFILE-SNOW-001` |
+| `infile-frost` | sidecar | `frost.txt` | planned | `SC-INFILE-FROST-001` |
+| `infile-gwcoeff` | sidecar | `gwcoeff.txt` | planned | `SC-INFILE-GWCOEFF-001` |
+| `infile-phosphorus` | sidecar | `phosphorus.txt` | planned | `SC-INFILE-PHOSPHORUS-001` |
+| `infile-wepp-ui` | sidecar | `wepp_ui.txt` | planned | `SC-INFILE-WEPPUI-001` |
+| `infile-channel-tc` | sidecar | `tc.txt` | planned | `SC-INFILE-TC-001` |
+| `infile-channel-tcr` | sidecar | `tcr.txt` | planned | `SC-INFILE-TCR-001` |
+| `infile-channel-lcwb` | sidecar | `lcwb.txt` | planned | `SC-INFILE-LCWB-001` |
+| `infile-channel-contrast` | sidecar | `chan.inp` | planned | `SC-INFILE-CHANINP-001` |
+| `infile-observe-on` | sidecar | `wepp_observe.on` | unsupported | `N/A (moved to first-class observability subsystem)` |
+| `infile-observe-frost-on` | sidecar | `wepp_observe_frost.on` | unsupported | `N/A (moved to first-class observability subsystem)` |
+| `infile-observe-probe-target` | sidecar | `wepp_observe_wb05e_target.dat` | unsupported | `N/A (moved to first-class observability subsystem)` |
+| `infile-firedate` | sidecar | `firedate.txt` | unsupported | `N/A (wepp-forest-revegetation out-of-scope)` |
+| `infile-cancov` | sidecar | `cancov.txt` | unsupported | `N/A (wepp-forest-revegetation out-of-scope)` |
+| `infile-simfire` | sidecar | `simfire.txt` | unsupported | `N/A (wepp-forest-revegetation out-of-scope)` |
+
+Notes:
+- This registry is the required source for completeness checks in parser
+  contract governance.
+- Any newly discovered sidecar must be added here before parser implementation
+  proceeds for that surface.
+- `unsupported` entries are explicit non-carry-forward decisions for parser
+  sidecar compatibility and must cite their successor subsystem or rationale.

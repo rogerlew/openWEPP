@@ -86,3 +86,7 @@ Authorized packages:
 - `20260520-sci17-author-sc-system-001/`
   - Purpose: author and disposition `SC-SYSTEM-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-obs01-observability-subsystem-foundation/`
+  - Purpose: define first-class observability subsystem architecture for
+    kernel stimulation, structured traces, replay windows, and migration away
+    from ad-hoc `wepp_observe*` debug sidecars.
