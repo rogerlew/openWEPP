@@ -41,3 +41,6 @@ Authorized packages:
 - `20260520-sci02-author-sc-plant-001/`
   - Purpose: author and disposition `SC-PLANT-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci03-author-sc-climate-001/`
+  - Purpose: author and disposition `SC-CLIMATE-001` using the required
+    dual-agent review and fix-verification workflow.
