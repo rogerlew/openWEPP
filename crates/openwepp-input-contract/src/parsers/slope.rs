@@ -11,6 +11,8 @@ use std::path::{Path, PathBuf};
 
 /// Canonical slope-file datver accepted in strict mode.
 pub const SLOPE_CANONICAL_DATVER: f64 = 97.5;
+/// Peridot hillslope slope datver accepted in strict mode.
+pub const SLOPE_PERIDOT_DATVER: f64 = 2023.3;
 /// Legacy compatibility floor from legacy `slpchk` threshold.
 pub const SLOPE_COMPAT_MIN_DATVER: f64 = 91.5;
 /// Absolute tolerance for closure checks.
@@ -81,6 +83,7 @@ pub struct SlopeOfe {
     pub index: usize,
     pub azm: f64,
     pub fwidth: f64,
+    pub elevation: Option<f64>,
     pub nslpts: usize,
     pub slplen: f64,
     pub distance_mode: DistanceMode,
@@ -175,7 +178,7 @@ impl fmt::Display for SlopeParserError {
                 compatibility_min_datver,
             } => write!(
                 f,
-                "unsupported datver {datver} for mode {:?} (strict requires {canonical_datver}, compat min {compatibility_min_datver})",
+                "unsupported datver {datver} for mode {:?} (strict requires {canonical_datver} or {SLOPE_PERIDOT_DATVER}, compat min {compatibility_min_datver})",
                 mode
             ),
             Self::FieldRangeError {
@@ -297,13 +300,19 @@ pub fn parse_slope_str(
         )
     };
 
+    let peridot_2023_3 = approx_eq(datver, SLOPE_PERIDOT_DATVER, options.abs_tolerance);
     let mut ofes = Vec::with_capacity(ofe_count);
 
     for ofe_index in 0..ofe_count {
-        let azm = parse_f64(cursor.next_required("missing azm", 2 * (ofe_count - ofe_index))?)?;
+        let (azm, azm_line) = {
+            let token = cursor.next_required("missing azm", 2 * (ofe_count - ofe_index))?;
+            (parse_f64(token)?, token.line)
+        };
 
-        let fwidth =
-            parse_f64(cursor.next_required("missing fwidth", 2 * (ofe_count - ofe_index))?)?;
+        let (fwidth, fwidth_line) = {
+            let token = cursor.next_required("missing fwidth", 2 * (ofe_count - ofe_index))?;
+            (parse_f64(token)?, token.line)
+        };
         if !fwidth.is_finite() || fwidth <= 0.0 {
             return Err(SlopeParserError::FieldRangeError {
                 field: "fwidth",
@@ -313,6 +322,35 @@ pub fn parse_slope_str(
                 ofe_index: Some(ofe_index),
             });
         }
+
+        let elevation = if peridot_2023_3 {
+            let (elevation, elevation_line) = {
+                let token = cursor
+                    .next_required("missing elevation for datver=2023.3 OFE metadata row", 2)?;
+                (parse_f64(token)?, token.line)
+            };
+
+            if azm_line != fwidth_line || azm_line != elevation_line {
+                return Err(SlopeParserError::RecordCountError {
+                    context: format!(
+                        "datver 2023.3 requires OFE {} metadata row arity 3: azm fwidth elevation",
+                        ofe_index + 1
+                    ),
+                });
+            }
+            if !elevation.is_finite() {
+                return Err(SlopeParserError::FieldRangeError {
+                    field: "elevation",
+                    value: elevation,
+                    expected: "finite",
+                    guard_id: "G-SLP-009",
+                    ofe_index: Some(ofe_index),
+                });
+            }
+            Some(elevation)
+        } else {
+            None
+        };
 
         let nslpts = parse_count(
             cursor.next_required("missing nslpts", 2 * (ofe_count - ofe_index))?,
@@ -376,6 +414,7 @@ pub fn parse_slope_str(
             index: ofe_index,
             azm,
             fwidth,
+            elevation,
             nslpts,
             slplen,
             distance_mode,
@@ -405,7 +444,9 @@ pub fn parse_slope_str(
 fn validate_datver(datver: f64, options: SlopeParserOptions) -> Result<(), SlopeParserError> {
     match options.mode {
         SlopeParserMode::Strict => {
-            if approx_eq(datver, options.canonical_datver, options.abs_tolerance) {
+            if approx_eq(datver, options.canonical_datver, options.abs_tolerance)
+                || approx_eq(datver, SLOPE_PERIDOT_DATVER, options.abs_tolerance)
+            {
                 Ok(())
             } else {
                 Err(SlopeParserError::UnsupportedDatver {
@@ -665,17 +706,28 @@ fn tokenize(contents: &str) -> Vec<Token> {
             continue;
         }
 
-        let mut scan_start = 0usize;
-        for part in raw_line.split_whitespace() {
-            if let Some(offset) = raw_line[scan_start..].find(part) {
-                let column = scan_start + offset + 1;
-                out.push(Token {
-                    text: part.to_string(),
-                    line: line_no,
-                    column,
-                });
-                scan_start = scan_start + offset + part.len();
+        let mut token_start: Option<usize> = None;
+        for (idx, ch) in raw_line.char_indices() {
+            let is_delimiter = ch.is_whitespace() || ch == ',';
+            if is_delimiter {
+                if let Some(start) = token_start.take() {
+                    out.push(Token {
+                        text: raw_line[start..idx].to_string(),
+                        line: line_no,
+                        column: start + 1,
+                    });
+                }
+            } else if token_start.is_none() {
+                token_start = Some(idx);
             }
+        }
+
+        if let Some(start) = token_start {
+            out.push(Token {
+                text: raw_line[start..].to_string(),
+                line: line_no,
+                column: start + 1,
+            });
         }
     }
 
@@ -693,5 +745,16 @@ mod tests {
         assert_eq!(tokens.len(), 2);
         assert_eq!(tokens[0].text, "97.5");
         assert_eq!(tokens[1].text, "1");
+    }
+
+    #[test]
+    fn tokenizer_splits_comma_delimited_pairs() {
+        let src = "0.0000,0.0300 1.0000, 0.0400\n";
+        let tokens = tokenize(src);
+        assert_eq!(tokens.len(), 4);
+        assert_eq!(tokens[0].text, "0.0000");
+        assert_eq!(tokens[1].text, "0.0300");
+        assert_eq!(tokens[2].text, "1.0000");
+        assert_eq!(tokens[3].text, "0.0400");
     }
 }

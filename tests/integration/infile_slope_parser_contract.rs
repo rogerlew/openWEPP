@@ -21,8 +21,25 @@ fn strict_mode_accepts_canonical_datver_profile() {
 
     assert_eq!(parsed.datver_source, DatverSource::Header);
     assert_eq!(parsed.ofe_count, 2);
+    assert_eq!(parsed.ofes[0].elevation, None);
+    assert_eq!(parsed.ofes[1].elevation, None);
     assert_eq!(parsed.ofes[0].distance_mode, DistanceMode::Normalized);
     assert_eq!(parsed.ofes[1].distance_mode, DistanceMode::Normalized);
+}
+
+#[test]
+fn strict_mode_accepts_peridot_2023_3_profile() {
+    let parsed = parse_slope_file(
+        &fixture_path("strict_valid_peridot_2023_3.slp"),
+        SlopeParserOptions::strict(),
+    )
+    .expect("strict peridot 2023.3 parse should succeed");
+
+    assert_eq!(parsed.datver_source, DatverSource::Header);
+    assert!((parsed.datver - 2023.3).abs() < 1e-9);
+    assert_eq!(parsed.ofe_count, 1);
+    assert_eq!(parsed.ofes[0].distance_mode, DistanceMode::Normalized);
+    assert_eq!(parsed.ofes[0].elevation, Some(1450.0));
 }
 
 #[test]
@@ -150,6 +167,39 @@ fn parser_rejects_non_numeric_tokens() {
         SlopeParserOptions::strict(),
     )
     .expect_err("non-numeric token must fail");
+
+    assert!(matches!(error, SlopeParserError::TokenParseError { .. }));
+}
+
+#[test]
+fn parser_rejects_peridot_metadata_arity_violation() {
+    let error = parse_slope_file(
+        &fixture_path("invalid_peridot_metadata_arity.slp"),
+        SlopeParserOptions::strict(),
+    )
+    .expect_err("peridot metadata arity violation must fail");
+
+    assert!(matches!(error, SlopeParserError::RecordCountError { .. }));
+}
+
+#[test]
+fn parser_rejects_peridot_pair_cardinality_violation() {
+    let error = parse_slope_file(
+        &fixture_path("invalid_peridot_pair_cardinality.slp"),
+        SlopeParserOptions::strict(),
+    )
+    .expect_err("peridot pair cardinality violation must fail");
+
+    assert!(matches!(error, SlopeParserError::RecordCountError { .. }));
+}
+
+#[test]
+fn parser_rejects_peridot_non_numeric_pair_token() {
+    let error = parse_slope_file(
+        &fixture_path("invalid_peridot_pair_token.slp"),
+        SlopeParserOptions::strict(),
+    )
+    .expect_err("peridot non-numeric pair token must fail");
 
     assert!(matches!(error, SlopeParserError::TokenParseError { .. }));
 }
