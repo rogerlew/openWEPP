@@ -4,7 +4,7 @@ title: Fixed-Date Irrigation Input Parser Contract (legacy unit 14)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.0
+contract_version: 0.1.1
 evidence_mode: Static
 last_updated_utc: 2026-05-21T00:00:00Z
 ---
@@ -211,6 +211,17 @@ No silent fallback/default masking is permitted in strict mode.
   - disables furrow fixed-date in contour/non-cropland contexts with `FDIR-W-005`.
 - Datver-floor enforcement remains provisional pending `FDIR-GAP-004`; strict/compat behavior above is not promoted to final authority until gap closure.
 
+### 10.1 Validation Surface Assignment (Normative)
+
+- File-local parser surface (`parse_fixeddate_str`) is responsible for parser-local guards only:
+  `G-FDIR-001`..`G-FDIR-008`, `G-FDIR-011`, `G-FDIR-012`, `G-FDIR-014`.
+- Downstream cross-validation surface is responsible for run-context and cross-file closure guards:
+  `G-FDIR-009`, `G-FDIR-010`, `G-FDIR-013`.
+- Strict/compat furrow disallow outcomes (`FDIR-E-009` / `FDIR-W-005`) are emitted by the downstream
+  cross-validation surface once contour/non-cropland context is available.
+- Parser packages scoped to file-local ingestion are not required to broaden parser function signatures
+  to carry run-context metadata solely to satisfy cross-file closure gates.
+
 ## 11. Guard Map and Invariant Linkage
 
 | Guard ID | Invariant / rule | Enforcement path | Failure behavior |
@@ -252,3 +263,4 @@ openWEPP boundary names are aliases only (Section 3).
 | Date UTC | Version | Change |
 | --- | --- | --- |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE09. |
+| `2026-05-21` | `0.1.1` | Codified validation-surface ownership split: parser-local guards stay in file parser; `G-FDIR-009/010/013` assigned to downstream cross-validation surface. |

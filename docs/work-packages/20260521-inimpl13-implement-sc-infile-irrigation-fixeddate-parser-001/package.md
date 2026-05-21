@@ -24,6 +24,8 @@ work can proceed concurrently without hidden path overlap.
 - Other Wave 2 parser surfaces.
 - Watershed parser surfaces.
 - Final integration/cherry-pick onto mainline.
+- Cross-file/run-context closure enforcement (`G-FDIR-009`, `G-FDIR-010`,
+  `G-FDIR-013`), which is owned by downstream cross-validation surface logic.
 
 ## Worktree Execution Model
 - Assigned worktree path: `/home/workdir/openWEPP/.worktrees/inimpl13-irrigation-fixeddate`

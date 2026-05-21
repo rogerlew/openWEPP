@@ -1,7 +1,7 @@
 # Parser Contract Data Model and Propagation Requirements
 
 Status: Active
-Last updated: 2026-05-20
+Last updated: 2026-05-21
 Scope: `SC-INFILE-*` parser contracts
 
 ## Purpose
@@ -88,7 +88,25 @@ Contracts must separate and type:
 
 No silent fallback/default masking for invalid required inputs.
 
-### 7) Cross-File Consistency Constraints
+### 7) Validation Surface Assignment (Required)
+
+Contracts must classify each guard to one enforcement surface:
+
+- parser-local surface (file-local parse function and model checks),
+- downstream cross-validation surface (cross-file/run-context checks),
+- runtime simulation guard surface (post-parse execution checks).
+
+For each guard, contracts must specify:
+
+- owning module/surface,
+- failure taxonomy code(s),
+- closure path used by verification gates.
+
+Parser-local packages are not required to broaden parser function signatures
+solely to satisfy run-context/cross-file guards when those guards are assigned
+to a downstream cross-validation surface.
+
+### 8) Cross-File Consistency Constraints
 
 Contracts must define consistency checks across primary and sidecar surfaces
 when fields are coupled (counts, IDs, structure expectations, and phase
@@ -101,7 +119,7 @@ At minimum this includes:
 - sidecars (for example irrigation sidecars, `pmetpara.txt`, `snow.txt`,
   `frost.txt`).
 
-### 8) Backward Compatibility Requirements
+### 9) Backward Compatibility Requirements
 
 Contracts must define backward compatibility policy for legacy text sidecars:
 
@@ -110,13 +128,13 @@ Contracts must define backward compatibility policy for legacy text sidecars:
 - round-trip expectations,
 - explicitly unsupported forms.
 
-### 9) Boundary Export Requirements
+### 10) Boundary Export Requirements
 
 Contracts must specify which parsed/derived fields cross process boundaries
 (HBP, parquet, CLI args, and other interface surfaces) and how names/units map
 across those boundaries.
 
-### 10) Surface Registry Completeness (Program-Level Required)
+### 11) Surface Registry Completeness (Program-Level Required)
 
 The parser-contract program must maintain a complete input-surface registry
 covering hillslope, watershed, and sidecar surfaces.
@@ -145,6 +163,7 @@ Each parser contract must include, at minimum:
 8. Cross-file consistency constraints.
 9. Compatibility policy.
 10. Guard map and invariant linkage.
+11. Validation-surface assignment and ownership mapping.
 
 ## Relation to Other Governance
 

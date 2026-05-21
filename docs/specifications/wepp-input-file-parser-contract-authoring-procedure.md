@@ -1,7 +1,7 @@
 # WEPP Input File Parser Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-05-20
+Last updated: 2026-05-21
 Scope: openWEPP parser contracts (`SC-INFILE-<SURFACE>-<NNN>`)
 
 ## Purpose
@@ -13,6 +13,7 @@ contracts with:
 2. required typed data-model definitions,
 3. required parse-to-simulation propagation mapping,
 4. required dual-agent review, disposition, and verification.
+5. required validation-surface assignment for each guard.
 
 Principle: correctness over completion. Parser-contract work must remain in
 `HOLD` until correctness criteria are satisfied.
@@ -63,6 +64,10 @@ canonical authority location.
    - openWEPP boundary names must be linked via explicit alias mapping.
 6. Every invariant and parser rule must map to an explicit guard path
    (runtime typed error, explicit branch rejection, or governance `HOLD` gate).
+7. Every guard must declare an enforcement surface:
+   - parser-local surface,
+   - downstream cross-validation surface, or
+   - runtime simulation guard surface.
 
 ## Required File Layout Per Contract Cycle
 
@@ -103,6 +108,8 @@ Minimum required content:
    and `frost.txt` where applicable).
 9. Backward-compatibility policy for legacy text sidecars.
 10. Guard map linking parser rules/invariants to enforcement paths.
+11. Validation-surface assignment table mapping each guard to the enforcement
+    surface and owning module.
 
 Drafts that omit any required section are non-compliant and must remain `HOLD`.
 
@@ -183,6 +190,9 @@ A parser-contract revision is promotable only if all conditions are true:
 7. Propagation map contains no unresolved ownership or mutability ambiguity.
 8. Surface is recorded in the parser input-surface registry with explicit
    disposition (`active`, `deferred`, or `unsupported`).
+9. Every cross-file or run-context guard is explicitly assigned either to the
+   parser-local surface or to a downstream cross-validation surface with an
+   owning module and closure path.
 
 If any condition fails, disposition is `HOLD`.
 

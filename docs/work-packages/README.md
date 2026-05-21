@@ -197,6 +197,21 @@ Authorized packages:
 - `20260521-inimpl17-wave2-sidecar-parser-integration-001/`
   - Purpose: integrate Wave 2 worker outputs and close global Wave 2
     validation gates.
+- `20260521-inimpl18-wave3-worktree-orchestration-001/`
+  - Purpose: establish Wave 3 concurrent worktree governance, ownership
+    manifests, and integration sequencing for watershed-core parser surfaces.
+- `20260521-inimpl19-implement-sc-infile-watershed-structure-parser-001/`
+  - Purpose: implement `SC-INFILE-WATERSHED-STRUCTURE-001` parser surface in a
+    dedicated worker worktree.
+- `20260521-inimpl20-implement-sc-infile-watershed-channel-parser-001/`
+  - Purpose: implement `SC-INFILE-WATERSHED-CHANNEL-001` parser surface in a
+    dedicated worker worktree.
+- `20260521-inimpl21-implement-sc-infile-watershed-impoundment-parser-001/`
+  - Purpose: implement `SC-INFILE-WATERSHED-IMPOUNDMENT-001` parser surface in a
+    dedicated worker worktree.
+- `20260521-inimpl22-wave3-core-parser-integration-001/`
+  - Purpose: integrate Wave 3 worker outputs and close global Wave 3
+    validation gates.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
