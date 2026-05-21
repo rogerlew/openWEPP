@@ -1,9 +1,6 @@
-#[path = "../../crates/openwepp-input-contract/src/parsers/climate.rs"]
-mod climate;
-
 use std::path::PathBuf;
 
-use climate::{
+use openwepp_input_contract::parsers::climate::{
     ClimateDailyRecord, ClimateParseError, CompatibilityOptions, ParserMode, parse_climate_file,
 };
 
@@ -86,7 +83,7 @@ fn compat_mode_can_override_breakpoint_cardinality_policy() {
             assert_eq!(day.nbrkpt, 51);
             assert_eq!(day.breakpoints.len(), 51);
         }
-        _ => panic!("expected breakpoint daily record"),
+        ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint daily record"),
     }
 }
 

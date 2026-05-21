@@ -1,7 +1,6 @@
-#[path = "../../crates/openwepp-input-contract/src/parsers/soil.rs"]
-mod soil;
-
-use soil::{parse_soil, ParserMode, SoilDatver, SoilErrorCode, SoilParserOptions, TopologyScope};
+use openwepp_input_contract::parsers::soil::{
+    ParserMode, SoilDatver, SoilErrorCode, SoilParserOptions, TopologyScope, parse_soil,
+};
 
 const VALID_97_5: &str = include_str!("../fixtures/infile/soil/valid_97_5.sol");
 const VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
@@ -43,7 +42,7 @@ fn strict_parses_9002_profile_with_policy_and_restrictive_footer() {
         .as_ref()
         .expect("9002 must include restrictive-layer footer");
     assert!(restrictive.slflag);
-    assert_eq!(restrictive.ui_bdrkth_mm, 500.0);
+    assert!((restrictive.ui_bdrkth_mm - 500.0).abs() < 1e-9);
 }
 
 #[test]

@@ -1,3 +1,10 @@
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::missing_errors_doc,
+    clippy::too_many_lines,
+    clippy::uninlined_format_args
+)]
+
 use std::fmt;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -24,6 +31,7 @@ pub struct SlopeParserOptions {
 }
 
 impl SlopeParserOptions {
+    #[must_use]
     pub const fn strict() -> Self {
         Self {
             mode: SlopeParserMode::Strict,
@@ -33,6 +41,7 @@ impl SlopeParserOptions {
         }
     }
 
+    #[must_use]
     pub const fn compatibility() -> Self {
         Self {
             mode: SlopeParserMode::Compatibility,
@@ -470,8 +479,7 @@ fn derive_distance_mode(
     let ends_as_absolute = approx_eq(last_x, slplen, abs_tolerance);
 
     let mode = match (ends_as_normalized, ends_as_absolute) {
-        (true, true) => DistanceMode::Normalized,
-        (true, false) => DistanceMode::Normalized,
+        (true, true | false) => DistanceMode::Normalized,
         (false, true) => DistanceMode::Absolute,
         (false, false) => {
             return Err(SlopeParserError::EndpointConstraintError {
@@ -479,7 +487,7 @@ fn derive_distance_mode(
                 message: format!(
                     "terminal xinput must equal 1.0 (normalized) or slplen ({slplen}) within +/- {abs_tolerance}; got {last_x}"
                 ),
-            })
+            });
         }
     };
 
@@ -641,8 +649,8 @@ impl TokenCursor {
         self.next_token()
             .ok_or_else(|| SlopeParserError::RecordCountError {
                 context: format!(
-                "{missing_context}; at least {remaining_required_tokens} more token(s) required"
-            ),
+                    "{missing_context}; at least {remaining_required_tokens} more token(s) required"
+                ),
             })
     }
 }

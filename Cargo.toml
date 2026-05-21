@@ -1,8 +1,18 @@
+[package]
+name = "openwepp"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
 [workspace]
 resolver = "2"
-members = []
+members = ["crates/openwepp-input-contract"]
 
 [workspace.package]
+version = "0.1.0"
 edition = "2024"
 license = "CC0-1.0"
 rust-version = "1.85"
@@ -15,6 +25,28 @@ unreachable_pub = "warn"
 [workspace.lints.clippy]
 all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-input-contract = { path = "crates/openwepp-input-contract", version = "0.1.0" }
+
+[[test]]
+name = "infile_slope_parser_contract"
+path = "tests/integration/infile_slope_parser_contract.rs"
+
+[[test]]
+name = "infile_soil_parser_contract"
+path = "tests/integration/infile_soil_parser_contract.rs"
+
+[[test]]
+name = "infile_climate_parser_contract"
+path = "tests/integration/infile_climate_parser_contract.rs"
+
+[[test]]
+name = "infile_management_parser_contract"
+path = "tests/integration/infile_management_parser_contract.rs"
 
 [profile.release]
 lto = "thin"

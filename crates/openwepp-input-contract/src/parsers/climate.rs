@@ -1,3 +1,5 @@
+#![allow(clippy::missing_errors_doc, clippy::too_many_lines)]
+
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use std::fs;

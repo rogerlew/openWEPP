@@ -1,3 +1,12 @@
+#![allow(
+    clippy::float_cmp,
+    clippy::manual_let_else,
+    clippy::missing_errors_doc,
+    clippy::similar_names,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
+
 use std::error::Error;
 use std::fmt;
 
@@ -29,6 +38,7 @@ pub enum SoilErrorCode {
 }
 
 impl SoilErrorCode {
+    #[must_use]
     pub fn as_str(self) -> &'static str {
         match self {
             Self::SolE001 => "SOL-E-001",
@@ -98,6 +108,7 @@ pub enum SoilDatver {
 }
 
 impl SoilDatver {
+    #[must_use]
     pub fn numeric(self) -> f64 {
         match self {
             Self::V97_5 => 97.5,

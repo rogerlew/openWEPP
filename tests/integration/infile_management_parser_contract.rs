@@ -1,9 +1,8 @@
-#[path = "../../crates/openwepp-input-contract/src/parsers/management.rs"]
-mod management;
-
 use std::path::{Path, PathBuf};
 
-use management::{ManagementParseError, ParseMode, parse_management_from_path};
+use openwepp_input_contract::parsers::management::{
+    ManagementParseError, ParseMode, parse_management_from_path,
+};
 
 fn fixture_path(name: &str) -> PathBuf {
     Path::new(file!())

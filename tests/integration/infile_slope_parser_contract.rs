@@ -1,11 +1,8 @@
-#[path = "../../crates/openwepp-input-contract/src/parsers/slope.rs"]
-mod slope;
-
 use std::path::PathBuf;
 
-use slope::{
-    parse_slope_file, parse_slope_str, DatverSource, DistanceMode, SlopeParserError,
-    SlopeParserOptions,
+use openwepp_input_contract::parsers::slope::{
+    DatverSource, DistanceMode, SlopeParserError, SlopeParserMode, SlopeParserOptions,
+    parse_slope_file, parse_slope_str,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -64,9 +61,9 @@ fn strict_mode_rejects_non_canonical_datver() {
             canonical_datver,
             ..
         } => {
-            assert_eq!(datver, 96.9);
-            assert_eq!(mode, slope::SlopeParserMode::Strict);
-            assert_eq!(canonical_datver, 97.5);
+            assert!((datver - 96.9).abs() < 1e-9);
+            assert_eq!(mode, SlopeParserMode::Strict);
+            assert!((canonical_datver - 97.5).abs() < 1e-9);
         }
         other => panic!("unexpected error: {other:?}"),
     }

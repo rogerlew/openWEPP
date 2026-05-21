@@ -1,3 +1,5 @@
+#![allow(clippy::missing_errors_doc, clippy::too_many_lines)]
+
 use std::fmt;
 use std::fs;
 use std::io;
@@ -87,14 +89,15 @@ pub enum ManagementParseError {
 }
 
 impl ManagementParseError {
+    #[must_use]
     pub fn contract_error_id(&self) -> &'static str {
         match self {
-            Self::InputOpenError { .. } => "MAN-E-002",
-            Self::MissingRecord { .. } => "MAN-E-002",
             Self::TokenParseError { .. } => "MAN-E-001",
             Self::UnsupportedDatver { .. } => "MAN-E-003",
             Self::InvalidCount { .. } => "MAN-E-005",
-            Self::NonZeroScenarioSectionUnsupported { .. } => "MAN-E-002",
+            Self::InputOpenError { .. }
+            | Self::MissingRecord { .. }
+            | Self::NonZeroScenarioSectionUnsupported { .. } => "MAN-E-002",
             Self::DanglingScenarioReference { .. } => "MAN-E-009",
             Self::TotalYearMismatch { .. } => "MAN-E-008",
             Self::TrailingInput { .. } => "MAN-E-006",
@@ -428,7 +431,7 @@ impl<'a> Cursor<'a> {
         if value < 0 {
             return Err(ManagementParseError::InvalidCount { field, value });
         }
-        Ok(value as usize)
+        usize::try_from(value).map_err(|_| ManagementParseError::InvalidCount { field, value })
     }
 
     fn first_unconsumed_line_number(&self) -> Option<usize> {
