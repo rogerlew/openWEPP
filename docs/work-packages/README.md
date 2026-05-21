@@ -212,6 +212,27 @@ Authorized packages:
 - `20260521-inimpl22-wave3-core-parser-integration-001/`
   - Purpose: integrate Wave 3 worker outputs and close global Wave 3
     validation gates.
+- `20260521-arch02-simulation-subsystem-kernel-architecture-discovery/`
+  - Purpose: investigate simulation/subsystem/kernel architecture requirements
+    via `wepp-forest` pattern extraction, `/workdir/rancor` architecture
+    assessment, and Rust exemplar comparison; publish an openWEPP ownership and
+    orchestration proposal before Wave 4 ratification.
+- `20260521-arch03-sim-contract-crate-and-status-taxonomy-001/`
+  - Purpose: implement the foundational simulation contract crate and typed
+    status taxonomy (including closure primitives and canonical symbol alias
+    registry) required to unblock downstream ARCH04+ implementation packages.
+- `20260521-arch04-topology-graph-and-validation-gate-001/`
+  - Purpose: implement typed watershed/hillslope topology graph modeling and a
+    deterministic pre-execution validation gate wired to ARCH03 status/closure
+    contracts.
+- `20260521-arch05-hillslope-phase-scheduler-graph-001/`
+  - Purpose: implement deterministic hillslope phase scheduler graph
+    orchestration with typed precondition enforcement using ARCH03/ARCH04
+    contract surfaces.
+- `20260521-arch06-watershed-dispatch-scheduler-graph-001/`
+  - Purpose: implement deterministic watershed dispatch scheduler graph
+    orchestration with typed precondition enforcement using ARCH03/ARCH04
+    contract surfaces.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

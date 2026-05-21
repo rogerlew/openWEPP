@@ -1,0 +1,5 @@
+# Channel contributor reference exceeds declared channel count
+HILLSLOPES 2
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 0 0 C 2 0 0 I 0 0 0

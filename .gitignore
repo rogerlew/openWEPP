@@ -13,6 +13,12 @@ target/
 .DS_Store
 Thumbs.db
 
+# Local agent/tooling state
+.claude/
+
+# Local/generated logs
+texput.log
+
 # References corpus policy
 # - `references/vendorable/` is tracked when redistribution is allowed.
 # - `references/copyrighted/` is local cache only.

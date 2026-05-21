@@ -7,8 +7,21 @@ name = "openwepp"
 version = "0.1.0"
 dependencies = [
  "openwepp-input-contract",
+ "openwepp-sim-contract",
+ "openwepp-topology",
 ]
 
 [[package]]
 name = "openwepp-input-contract"
 version = "0.1.0"
+
+[[package]]
+name = "openwepp-sim-contract"
+version = "0.1.0"
+
+[[package]]
+name = "openwepp-topology"
+version = "0.1.0"
+dependencies = [
+ "openwepp-sim-contract",
+]
