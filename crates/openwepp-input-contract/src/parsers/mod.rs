@@ -7,4 +7,7 @@ pub mod pmetpara;
 pub mod slope;
 pub mod snow;
 pub mod soil;
+pub mod watershed_channel;
+pub mod watershed_impoundment;
+pub mod watershed_structure;
 pub mod wepp_ui;

@@ -1,10 +1,8 @@
 use std::path::PathBuf;
 
-#[path = "../../crates/openwepp-input-contract/src/parsers/watershed_channel.rs"]
-mod watershed_channel;
-use watershed_channel::{
-    parse_watershed_channel_from_path, ChannelWarningCode, WatershedChannelParseError,
-    WatershedChannelParseMode, WatershedChannelParseOptions,
+use openwepp_input_contract::parsers::watershed_channel::{
+    ChannelWarningCode, WatershedChannelParseError, WatershedChannelParseMode,
+    WatershedChannelParseOptions, parse_watershed_channel_from_path,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -61,10 +59,12 @@ fn compatibility_mode_accepts_legacy_datver_with_warning() {
     )
     .expect("compat mode should accept legacy datver window");
 
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ChannelWarningCode::ChnW001));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ChannelWarningCode::ChnW001)
+    );
 }
 
 #[test]
@@ -91,10 +91,12 @@ fn compatibility_mode_normalizes_legacy_ishape() {
     .expect("compat mode should normalize ishape>2");
 
     assert_eq!(parsed.channels[0].ishape, 2);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ChannelWarningCode::ChnW003));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ChannelWarningCode::ChnW003)
+    );
 }
 
 #[test]
@@ -143,10 +145,12 @@ fn compatibility_mode_warns_for_missing_chan_inp_sidecar() {
     .expect("compat mode should allow missing chan.inp with warning");
 
     assert!(parsed.sidecar_required);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ChannelWarningCode::ChnW002));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ChannelWarningCode::ChnW002)
+    );
 }
 
 #[test]
@@ -199,10 +203,12 @@ fn compatibility_mode_applies_icntrl0_override_with_warning() {
     assert!((channel.ctlslp_effective - 0.35).abs() < 1e-12);
     assert!((channel.ctlz_effective - channel.chnz).abs() < 1e-12);
     assert!((channel.ctln_effective - channel.chnn).abs() < 1e-12);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ChannelWarningCode::ChnW004));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ChannelWarningCode::ChnW004)
+    );
 }
 
 #[test]
@@ -245,8 +251,10 @@ fn tcr_overlay_presence_is_exported_as_compatibility_warning_marker() {
     .expect("tcr overlay marker should parse");
 
     assert!(parsed.tcr_overlay_present);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ChannelWarningCode::ChnW005));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ChannelWarningCode::ChnW005)
+    );
 }

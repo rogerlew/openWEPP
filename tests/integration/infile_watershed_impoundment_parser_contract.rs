@@ -1,11 +1,8 @@
 use std::path::PathBuf;
 
-#[path = "../../crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs"]
-mod watershed_impoundment;
-
-use watershed_impoundment::{
-    parse_watershed_impoundment_from_path, parse_watershed_impoundment_from_str, ImpWarningCode,
-    ParseMode, WatershedImpoundmentParseError, WatershedImpoundmentParseOptions,
+use openwepp_input_contract::parsers::watershed_impoundment::{
+    ImpWarningCode, ParseMode, WatershedImpoundmentParseError, WatershedImpoundmentParseOptions,
+    parse_watershed_impoundment_from_path, parse_watershed_impoundment_from_str,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -67,10 +64,12 @@ fn compatibility_mode_accepts_legacy_no_datver_with_warning() {
     assert!(!parsed.datver_explicit);
     assert_eq!(parsed.declared_count, 1);
     assert_eq!(parsed.parsed_count, 1);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ImpWarningCode::ImpW001));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ImpWarningCode::ImpW001)
+    );
 }
 
 #[test]
@@ -125,10 +124,12 @@ fn compatibility_mode_truncates_surplus_impoundments_with_warning() {
     assert_eq!(parsed.declared_count, 2);
     assert_eq!(parsed.parsed_count, 1);
     assert_eq!(parsed.surplus_ignored_count, 1);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ImpWarningCode::ImpW002));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ImpWarningCode::ImpW002)
+    );
 }
 
 #[test]

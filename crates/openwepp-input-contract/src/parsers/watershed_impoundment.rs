@@ -1,6 +1,7 @@
 #![allow(
     clippy::missing_errors_doc,
     clippy::module_name_repetitions,
+    clippy::similar_names,
     clippy::struct_excessive_bools,
     clippy::too_many_lines
 )]
@@ -445,8 +446,7 @@ pub fn parse_watershed_impoundment_from_str(
                     ImpWarningCode::ImpW002,
                     jpond_line,
                     format!(
-                        "compatibility ignored surplus impoundments: jpond={} > npond={}",
-                        declared_count, expected_npond
+                        "compatibility ignored surplus impoundments: jpond={declared_count} > npond={expected_npond}"
                     ),
                 ));
             }
@@ -478,7 +478,7 @@ pub fn parse_watershed_impoundment_from_str(
 
 fn parse_impoundment(
     reader: &mut LineReader,
-    item_index: usize,
+    _item_index: usize,
 ) -> Result<ImpoundmentRecord, WatershedImpoundmentParseError> {
     let mut branch_comments = Vec::new();
 

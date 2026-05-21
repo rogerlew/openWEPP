@@ -1,6 +1,8 @@
 #![allow(
+    clippy::cast_sign_loss,
     clippy::missing_errors_doc,
     clippy::module_name_repetitions,
+    clippy::similar_names,
     clippy::too_many_lines
 )]
 
@@ -19,7 +21,7 @@ pub enum WatershedChannelParseMode {
     Compatibility,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct WatershedChannelParseOptions {
     pub mode: WatershedChannelParseMode,
     pub expected_channel_count: Option<usize>,

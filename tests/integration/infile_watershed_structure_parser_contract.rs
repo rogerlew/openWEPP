@@ -1,9 +1,6 @@
-#[path = "../../crates/openwepp-input-contract/src/parsers/watershed_structure.rs"]
-mod watershed_structure;
-
 use std::path::PathBuf;
 
-use watershed_structure::{
+use openwepp_input_contract::parsers::watershed_structure::{
     DatverSource, ParseMode, WatershedStructureParseError, WatershedStructureParseOptions,
     WatershedStructureWarningCode, parse_watershed_structure_from_path,
 };
