@@ -59,3 +59,6 @@ Authorized packages:
 - `20260520-sci08-author-sc-perc-001/`
   - Purpose: author and disposition `SC-PERC-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci09-author-sc-subhyd-001/`
+  - Purpose: author and disposition `SC-SUBHYD-001` using the required
+    dual-agent review and fix-verification workflow.
