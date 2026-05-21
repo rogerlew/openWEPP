@@ -90,3 +90,60 @@ Authorized packages:
   - Purpose: define first-class observability subsystem architecture for
     kernel stimulation, structured traces, replay windows, and migration away
     from ad-hoc `wepp_observe*` debug sidecars.
+- `20260520-infile01-author-sc-infile-climate-001/`
+  - Purpose: author and disposition `SC-INFILE-CLIMATE-001` and canonical
+    climate input specification (`.cli`).
+- `20260520-infile02-author-sc-infile-soil-001/`
+  - Purpose: author and disposition `SC-INFILE-SOIL-001` and canonical soil
+    input specification (`.sol`).
+- `20260520-infile03-author-sc-infile-management-001/`
+  - Purpose: author and disposition `SC-INFILE-MANAGEMENT-001` and canonical
+    management input specification (`.man`).
+- `20260520-infile04-author-sc-infile-slope-001/`
+  - Purpose: author and disposition `SC-INFILE-SLOPE-001` and canonical slope
+    input specification (`.slp`).
+- `20260520-infile05-author-sc-infile-watershed-structure-001/`
+  - Purpose: author and disposition `SC-INFILE-WATERSHED-STRUCTURE-001` and
+    canonical watershed structure specification (`.str`).
+- `20260520-infile06-author-sc-infile-watershed-channel-001/`
+  - Purpose: author and disposition `SC-INFILE-WATERSHED-CHANNEL-001` and
+    canonical watershed channel specification (`.chn`).
+- `20260520-infile07-author-sc-infile-watershed-impoundment-001/`
+  - Purpose: author and disposition `SC-INFILE-WATERSHED-IMPOUNDMENT-001` and
+    canonical watershed impoundment specification (`.imp`).
+- `20260520-infile08-author-sc-infile-irrigation-depletion-001/`
+  - Purpose: author and disposition `SC-INFILE-IRRIGATION-DEPLETION-001` and
+    canonical depletion-irrigation sidecar specification.
+- `20260520-infile09-author-sc-infile-irrigation-fixeddate-001/`
+  - Purpose: author and disposition `SC-INFILE-IRRIGATION-FIXEDDATE-001` and
+    canonical fixed-date irrigation sidecar specification.
+- `20260520-infile10-author-sc-infile-pmetpara-001/`
+  - Purpose: author and disposition `SC-INFILE-PMETPARA-001` and canonical
+    `pmetpara.txt` specification.
+- `20260520-infile11-author-sc-infile-snow-001/`
+  - Purpose: author and disposition `SC-INFILE-SNOW-001` and canonical
+    `snow.txt` specification.
+- `20260520-infile12-author-sc-infile-frost-001/`
+  - Purpose: author and disposition `SC-INFILE-FROST-001` and canonical
+    `frost.txt` specification.
+- `20260520-infile13-author-sc-infile-gwcoeff-001/`
+  - Purpose: author and disposition `SC-INFILE-GWCOEFF-001` and canonical
+    `gwcoeff.txt` specification.
+- `20260520-infile14-author-sc-infile-phosphorus-001/`
+  - Purpose: author and disposition `SC-INFILE-PHOSPHORUS-001` and canonical
+    `phosphorus.txt` specification.
+- `20260520-infile15-author-sc-infile-weppui-001/`
+  - Purpose: author and disposition `SC-INFILE-WEPPUI-001` and canonical
+    `wepp_ui.txt` specification.
+- `20260520-infile16-author-sc-infile-tc-001/`
+  - Purpose: author and disposition `SC-INFILE-TC-001` and canonical
+    `tc.txt` specification.
+- `20260520-infile17-author-sc-infile-tcr-001/`
+  - Purpose: author and disposition `SC-INFILE-TCR-001` and canonical
+    `tcr.txt` specification.
+- `20260520-infile18-author-sc-infile-lcwb-001/`
+  - Purpose: author and disposition `SC-INFILE-LCWB-001` and canonical
+    `lcwb.txt` specification.
+- `20260520-infile19-author-sc-infile-chaninp-001/`
+  - Purpose: author and disposition `SC-INFILE-CHANINP-001` and canonical
+    `chan.inp` specification.
