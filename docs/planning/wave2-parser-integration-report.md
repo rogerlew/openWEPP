@@ -1,92 +1,104 @@
 # Wave 2 Parser Integration Report
 
-Date: 2026-05-21
-Status: Intake-only (`INIMPL17`)
+Date: 2026-05-21  
+Status: Integrated (`INIMPL17`)  
 Evidence mode: `Ran` + `Static`
 
-## 1. Scope of This Execution
+## 1. Scope
 
-This `INIMPL17` execution is limited to Phase 0 intake and sequencing governance.
-Final integration/cherry-pick and global gate execution were intentionally not run because worker prerequisite outputs are not yet available.
+This execution completed Phase 0 intake/readiness, Phase 1 ordered integration,
+Phase 2 gate execution, and Phase 3 disposition/verification artifact updates
+for Wave 2 sidecar parser streams (`INIMPL11..16`).
 
 ## 2. Authority Inputs
 
 - [DIRECT] `/home/workdir/openWEPP/docs/planning/wave2-parser-worktree-execution-plan.md`
 - [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl10-wave2-worktree-orchestration-001/artifacts/wave2-integration-sequence.md`
 - [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl17-wave2-sidecar-parser-integration-001/package.md`
-- [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl11-implement-sc-infile-pmetpara-parser-001/artifacts/`
-- [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl12-implement-sc-infile-irrigation-depletion-parser-001/artifacts/`
-- [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl13-implement-sc-infile-irrigation-fixeddate-parser-001/artifacts/`
-- [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl14-implement-sc-infile-frost-parser-001/artifacts/`
-- [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl15-implement-sc-infile-snow-parser-001/artifacts/`
-- [DIRECT] `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl16-implement-sc-infile-weppui-parser-001/artifacts/`
+- [DIRECT] Worker package outputs under `INIMPL11..16` worktrees and package artifact bundles.
 
-## 3. Canonical Integration Order
+## 3. Intake and Readiness Results
 
-1. `INIMPL11` (`SC-INFILE-PMETPARA-001`)
-2. `INIMPL12` (`SC-INFILE-IRRIGATION-DEPLETION-001`)
-3. `INIMPL13` (`SC-INFILE-IRRIGATION-FIXEDDATE-001`)
-4. `INIMPL14` (`SC-INFILE-FROST-001`)
-5. `INIMPL15` (`SC-INFILE-SNOW-001`)
-6. `INIMPL16` (`SC-INFILE-WEPPUI-001`)
+### 3.1 Worker Artifact Bundle Readiness
 
-## 4. Intake Completeness Matrix
-
-Required worker artifacts per `INIMPL10` integration sequence:
+Required worker files were present in worktrees for all streams:
 - `worker-handoff.md`
 - `owned-file-manifest.md`
+- `review_agent_a.md`
+- `review_agent_b.md`
 - `inimpl1X_disposition.md`
 - `verification_agent_a.md`
 - `verification_agent_b.md`
 
-| Worker | Available artifact files observed | Intake status |
-| --- | --- | --- |
-| `INIMPL11` | `README.md` only | blocked |
-| `INIMPL12` | `README.md` only | blocked |
-| `INIMPL13` | `README.md` only | blocked |
-| `INIMPL14` | `README.md` only | blocked |
-| `INIMPL15` | `README.md` only | blocked |
-| `INIMPL16` | `README.md` only | blocked |
+### 3.2 Worktree Stream Readiness
 
-`Ran` checks:
-- `find docs/work-packages/20260521-inimpl1{1..6}-*/artifacts -maxdepth 1 -type f | sort`
-- `for d in docs/work-packages/20260521-inimpl1{1..6}-implement-*/artifacts; do ls "$d"; done`
+All Wave 2 worker worktrees were present at integration start:
+- `/home/workdir/openWEPP/.worktrees/inimpl11-pmetpara`
+- `/home/workdir/openWEPP/.worktrees/inimpl12-irrigation-depletion`
+- `/home/workdir/openWEPP/.worktrees/inimpl13-irrigation-fixeddate`
+- `/home/workdir/openWEPP/.worktrees/inimpl14-frost`
+- `/home/workdir/openWEPP/.worktrees/inimpl15-snow`
+- `/home/workdir/openWEPP/.worktrees/inimpl16-weppui`
 
-## 5. Worktree Readiness Matrix
+### 3.3 Gating Rule Compliance
 
-| Worker | Expected worktree path | Observed status |
-| --- | --- | --- |
-| `INIMPL11` | `/home/workdir/openWEPP/.worktrees/inimpl11-pmetpara` | present |
-| `INIMPL12` | `/home/workdir/openWEPP/.worktrees/inimpl12-irrigation-depletion` | present |
-| `INIMPL13` | `/home/workdir/openWEPP/.worktrees/inimpl13-irrigation-fixeddate` | present |
-| `INIMPL14` | `/home/workdir/openWEPP/.worktrees/inimpl14-frost` | present |
-| `INIMPL15` | `/home/workdir/openWEPP/.worktrees/inimpl15-snow` | missing |
-| `INIMPL16` | `/home/workdir/openWEPP/.worktrees/inimpl16-weppui` | missing |
+No merge/integration steps were executed until worker output readiness was
+verified.
 
-`Ran` checks:
-- `git worktree list --porcelain`
-- `ls -d .worktrees/inimpl1*`
+## 4. Canonical Integration Order and Applied Commits
 
-## 6. Integration and Conflict Activity
+| Order | Worker stream | Worker branch commit | Integrated commit on `main` | Result |
+| --- | --- | --- | --- | --- |
+| 1 | `INIMPL11` (`pmetpara`) | `47c27bc` | `d171b45` | cherry-pick applied |
+| 2 | `INIMPL12` (`irrigation-depletion`) | `ab650c3` | `ac5ab46` | cherry-pick applied |
+| 3 | `INIMPL13` (`irrigation-fixeddate`) | `5b9a578` | `825a5fd` | cherry-pick applied (manual conflict resolution) |
+| 4 | `INIMPL14` (`frost`) | `dcf8784` | `125c264` | cherry-pick applied (manual conflict resolution) |
+| 5 | `INIMPL15` (`snow`) | `977c3d4` | `6c38613` | cherry-pick applied |
+| 6 | `INIMPL16` (`wepp-ui`) | `2e63b42` | `ec34cde` | cherry-pick applied |
 
-No integration/cherry-pick steps were executed in this pass.
-No merge conflicts were encountered because no worker commits were integrated.
+## 5. Conflict Summary
 
-## 7. Gate Execution Status
+Two conflicts occurred, both in shared parser export surface:
+- `crates/openwepp-input-contract/src/parsers/mod.rs` during `INIMPL13` cherry-pick
+- `crates/openwepp-input-contract/src/parsers/mod.rs` during `INIMPL14` cherry-pick
 
-Wave 2 global gates were not run in this pass because intake prerequisites are incomplete.
-See `INIMPL17` gate evidence artifact for explicit deferred status.
+Both were resolved by preserving all previously integrated exports and adding
+the incoming module export from the current stream.
 
-## 8. Blocker Summary
+See:
+- `/home/workdir/openWEPP/docs/work-packages/20260521-inimpl17-wave2-sidecar-parser-integration-001/artifacts/merge-conflict-log.md`
 
-High-severity blockers:
-1. Missing worker handoff/disposition/verification artifact bundles for all `INIMPL11..16` streams.
-2. Unprovisioned worker worktrees for `INIMPL15` and `INIMPL16`.
+## 6. Global Gate Results
 
-## 9. Current Verdict
+- `cargo fmt --check`: pass (after formatting `parsers/mod.rs` ordering).
+- `cargo clippy --workspace --all-targets -- -D warnings`: pass.
+- `cargo test --workspace`: pass.
+- `cargo deny check`: pass (`license-not-encountered` warnings only; final status `advisories ok, bans ok, licenses ok, sources ok`).
 
-`HOLD`
+## 7. Parser Acceptance Checks
+
+Because Wave 2 test targets are not yet registered in root `Cargo.toml`, the
+new six integration suites were executed directly via `rustc --test`:
+
+- `infile_pmetpara_parser_contract`: 13 passed
+- `infile_irrigation_depletion_parser_contract`: 12 passed
+- `infile_irrigation_fixeddate_parser_contract`: 14 passed
+- `infile_frost_parser_contract`: 10 passed
+- `infile_snow_parser_contract`: 12 passed
+- `infile_weppui_parser_contract`: 11 passed
+
+## 8. Follow-Up Items
+
+1. Register Wave 2 integration tests in root `Cargo.toml` so `cargo test --workspace`
+   executes them natively.
+2. Keep deny license-allowlist warnings under observation (non-blocking in this run).
+
+## 9. Verdict
+
+`GO-WITH-AMENDMENTS`
 
 Rationale:
-- Intake sequencing is defined and validated.
-- Final integration execution is correctly deferred pending worker outputs.
+- Intake/readiness completed and respected prior to merge.
+- All six worker streams were integrated in canonical order.
+- Global gates and explicit parser acceptance checks passed.
+- No unresolved high-severity integration findings remain.
