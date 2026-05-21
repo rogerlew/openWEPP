@@ -47,3 +47,6 @@ Authorized packages:
 - `20260520-sci04-author-sc-watbal-001/`
   - Purpose: author and disposition `SC-WATBAL-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci05-author-sc-snowfreeze-001/`
+  - Purpose: author and disposition `SC-SNOWFREEZE-001` using the required
+    dual-agent review and fix-verification workflow.
