@@ -40,7 +40,7 @@
 | A | `tcr.txt` absent | [DIRECT][E-WF-01], [DIRECT][E-WF-06] `tcrflg=0`; no slope-to-`chntcr` override from sidecar. | [INFERENCE][E-WF-01] Treat as valid optional-surface absence with explicit provenance event. |
 | B | `tcr.txt` present with 4 parseable records | [DIRECT][E-WF-01] reads `taumin`, `taumax`, `kch`, `nch`; sets `tcrflg=1`. [DIRECT][E-WF-03] applies override formula to each channel element. | [INFERENCE][E-WF-01] Canonical parse path. |
 | C | `tcr.txt` present but malformed/incomplete | [DIRECT][E-WF-01] reads have no `err=`/`end=` handlers for records; malformed content enters runtime I/O failure path behavior. | [INFERENCE][E-WF-01] Must raise typed parse/arity error; do not silently default on parse failure. |
-| D | `tcr.txt` open fails for non-missing I/O reason | [DIRECT][E-WF-01] open `err=401` sets `tcrflg=0` without distinguishing error class. | [INFERENCE][E-WF-01] Differentiate `NotFound` from operational open errors in typed diagnostics. |
+| D | `tcr.txt` open fails for non-missing I/O reason | [DIRECT][E-WF-01] open `err=401` sets `tcrflg=0` without distinguishing error class. | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-tcr, cause=...)`; compat: `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-tcr, tcrflg=false)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)`. |
 
 - [DIRECT][E-WF-01] No `datver` record is read from `tcr.txt`.
 - [DIRECT][E-US-02] `usersum2024` sidecar section does not provide a dedicated `tcr.txt` format table.
@@ -58,7 +58,8 @@ nch_line      = real [trailing_tokens] ;
 
 - [DIRECT][E-WF-01] Legacy consumes exactly four sequential list-directed reads.
 - [DIRECT][E-WP-01] Modern producer emits value-first lines with trailing labels (e.g., `taumin`, `taumax`), so trailing non-required tokens are present in current producer output.
-- [INFERENCE][E-WP-01] Canonical parser should accept value-first lines and ignore trailing annotation tokens, while preserving strict arity/order.
+- [INFERENCE][E-WP-01] Compat mode accepts value-first lines and ignores trailing annotation tokens after the first parseable numeric token.
+- [INFERENCE][E-WP-01] Strict mode allows only empty trailing content or a canonical field-label token matching the current line (`taumin`, `taumax`, `kch`, `nch`); other trailing tokens raise `TrailingTokenPolicyError(surface_id=infile-channel-tcr, line_no=...)`.
 
 ### 4.2 Line definitions
 - Line 1: `taumin` (minimum critical shear parameter for sidecar slope curve). [DIRECT][E-WF-01], [DIRECT][E-WF-03]
@@ -70,8 +71,8 @@ nch_line      = real [trailing_tokens] ;
 
 | Canonical symbol | Meaning | Units | Type | Cardinality | Required | Constraints (draft) | openWEPP alias |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `taumin` | lower asymptote/offset for sidecar `chntcr` curve | N/m^2 | real | 0..1 per file | optional (default branch when file missing) | finite, non-negative; recommended `taumin <= taumax` | `tcr_opts.taumin` |
-| `taumax` | upper scale term for sidecar `chntcr` curve | N/m^2 | real | 0..1 per file | optional (default branch when file missing) | finite, non-negative; recommended `taumax >= taumin` | `tcr_opts.taumax` |
+| `taumin` | lower asymptote/offset for sidecar `chntcr` curve | N/m^2 | real | 0..1 per file | optional (default branch when file missing) | finite, non-negative; relational guard `taumin <= taumax` | `tcr_opts.taumin` |
+| `taumax` | upper scale term for sidecar `chntcr` curve | N/m^2 | real | 0..1 per file | optional (default branch when file missing) | finite, non-negative; relational guard `taumax >= taumin` | `tcr_opts.taumax` |
 | `kch` | slope-scale curve parameter | slope-domain parameter | real | 0..1 per file | optional (default branch when file missing) | finite, strictly positive | `tcr_opts.kch` |
 | `nch` | slope-curve exponent | dimensionless | real | 0..1 per file | optional (default branch when file missing) | finite, strictly positive | `tcr_opts.nch` |
 | `chntcr` | per-channel critical shear used downstream | N/m^2 | real array | `nchan` runtime values | derived | from `.chn` unless sidecar override active | `channel_state.chntcr` |
@@ -119,7 +120,9 @@ nch_line      = real [trailing_tokens] ;
 | `tcr.txt` missing | [DIRECT][E-WF-01], [DIRECT][E-WF-06] `tcrflg=0`; no sidecar override. | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-tcr, tcrflg=false)` |
 | `tcr.txt` present, < 4 parseable records | [DIRECT][E-WF-01] no explicit read error handlers on record reads. | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-channel-tcr, expected=4)` |
 | Non-numeric token in required field | [DIRECT][E-WF-01] no explicit parse guards on reads. | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-channel-tcr, line_no=...)` |
-| Open failure from permission/device error | [DIRECT][E-WF-01] collapsed to `tcrflg=0` via open `err=` branch. | [INFERENCE][E-WF-01] `InputOpenError(surface_id=infile-channel-tcr, cause=...)` (distinguish from `NotFound`) |
+| Trailing token after required numeric token | [DIRECT][E-WP-01] modern producer emits trailing labels. | [INFERENCE][E-WP-01] strict: `TrailingTokenPolicyError(surface_id=infile-channel-tcr, line_no=...)` unless token matches canonical field label; compat: ignore trailing tokens. |
+| Open failure from permission/device error | [DIRECT][E-WF-01] collapsed to `tcrflg=0` via open `err=` branch. | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-tcr, cause=...)`; compat: `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-tcr, tcrflg=false)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)` |
+| `taumin > taumax` after parse | [DIRECT][E-WF-03] both values feed sidecar override curve branch. | [INFERENCE][E-WF-03] strict: `RelationalInvariantError(lhs=taumin, op="<=", rhs=taumax)`; compat: `CompatibilityWarning(relational_invariant_violation="taumin<=taumax")` and preserve legacy value flow. |
 | Parsed values violate curve-domain invariants (`kch<=0`, `nch<=0`, non-finite) | [DIRECT][E-WF-03] values feed power/denominator expression directly. | [INFERENCE][E-WF-03] `FieldRangeError(field=...)` / `FieldFiniteError(field=...)` before kernel mapping |
 | Denominator degenerate near-zero (`kch**nch + slope**nch ~= 0`) | [DIRECT][E-WF-03] no legacy guard visible in formula branch. | [INFERENCE][E-WF-03] `InvariantViolation(curve_denominator_positive)` |
 
@@ -173,13 +176,13 @@ Reason: denominator/exponent invariants fail under strict numeric guard policy. 
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `TCR-GAP-001` | `usersum2024` sidecar section does not provide a dedicated `tcr.txt` format table. | [DIRECT][E-US-02] | `HOLD` until source-authority disposition resolves normative documentation basis. |
-| `TCR-GAP-002` | Legacy open error branch collapses missing and non-missing I/O failures into `tcrflg=0`. | [DIRECT][E-WF-01] | `HOLD` until typed open-error taxonomy is finalized. |
-| `TCR-GAP-003` | Legacy formula branch has no explicit numeric-domain guards (`kch`, `nch`, denominator positivity). | [DIRECT][E-WF-03] | `HOLD` until invariant guard policy is encoded in `SC-INFILE-TCR-001`. |
-| `TCR-GAP-004` | Bound policy divergence: legacy sidecar path has no explicit hard bounds; wepppy applies selected bounds/defaults for `taumin`/`taumax`. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `HOLD` until contract decides canonical range enforcement for all four fields. |
-| `TCR-GAP-005` | Modern producer may emit newline-only `tcr.txt` when `tcr_opts` are unset, but legacy read path expects 4 parseable values. | [DIRECT][E-WP-03], [DIRECT][E-WF-01] | `HOLD` until interoperability behavior is dispositioned (`error` vs producer hardening). |
+| Gap ID | Provenance tags | Statement | Evidence | Disposition status |
+| --- | --- | --- | --- | --- |
+| `TCR-GAP-001` | `usersum2024` | `usersum2024` sidecar section does not provide a dedicated `tcr.txt` format table. | [DIRECT][E-US-02] | `HOLD` until source-authority disposition resolves normative documentation basis. |
+| `TCR-GAP-002` | `legacy-code` | Legacy open error branch collapses missing and non-missing I/O failures into `tcrflg=0`. | [DIRECT][E-WF-01] | `HOLD` until typed open-error taxonomy is finalized. |
+| `TCR-GAP-003` | `legacy-code` | Legacy formula branch has no explicit numeric-domain guards (`kch`, `nch`, denominator positivity). | [DIRECT][E-WF-03] | `HOLD` until invariant guard policy is encoded in `SC-INFILE-TCR-001`. |
+| `TCR-GAP-004` | `legacy-code`, `wepppy` | Bound policy divergence: legacy sidecar path has no explicit hard bounds; wepppy applies selected bounds/defaults for `taumin`/`taumax`. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `HOLD` until contract decides canonical range enforcement for all four fields. |
+| `TCR-GAP-005` | `wepppy`, `legacy-code` | Modern producer may emit newline-only `tcr.txt` when `tcr_opts` are unset, but legacy read path expects 4 parseable values. | [DIRECT][E-WP-03], [DIRECT][E-WF-01] | `HOLD` until interoperability behavior is dispositioned (`error` vs producer hardening). |
 
 `status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
 

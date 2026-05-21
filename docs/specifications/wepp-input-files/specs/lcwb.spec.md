@@ -29,8 +29,9 @@
 - [DIRECT][E-WF-01] `lcwb.txt` is an optional watershed-sidecar sentinel file evaluated during watershed input setup.
 - [DIRECT][E-WF-01] The legacy contract is presence-based: open success sets `lcwbflg=1`; open failure sets `lcwbflg=0`; file contents are not parsed.
 - [DIRECT][E-WF-02] Canonical symbol continuity is `lcwbflg` (legacy common-block variable).
-- [INFERENCE][E-WF-06] Intended behavioral scope is channel OFE water-balance row emission selection (last OFE only vs all OFEs), based on historical writer logic.
+- [INFERENCE][E-WF-06] Historical snapshot provenance indicates channel OFE row-selection behavior (last OFE only vs all OFEs), but this remains compatibility provenance rather than active-source authority until `LCWB-GAP-002` is closed.
 - [DIRECT][E-WP-04] Modern consumers treat resulting output files (`chnwb.txt`, `chanwb.out`) as downstream interchange sources.
+- [INFERENCE][E-WF-01], [DIRECT][E-WF-06] Interim authority rule: openWEPP parser contract is normative for strict/compat typed handling; historical `watbalprint.for` behavior is cited as legacy-compat evidence only.
 
 ## 3. Version / `datver` Applicability Matrix
 
@@ -38,8 +39,8 @@
 | --- | --- | --- | --- |
 | A | `lcwb.txt` absent | [DIRECT][E-WF-01] `lcwbflg=0` via `err=` branch. | [INFERENCE][E-WF-01] optional-surface default branch; feature disabled. |
 | B | `lcwb.txt` present and readable | [DIRECT][E-WF-01] `lcwbflg=1`; no payload read. | [INFERENCE][E-WF-01] canonical enable branch. |
-| C | `lcwb.txt` present but unreadable/open-fails | [DIRECT][E-WF-01] falls through same `err=` branch (`lcwbflg=0`). | [INFERENCE][E-WF-01] requires strict-vs-compat typed policy decision (see gaps). |
-| D | Versioned payload (`datver`/header line) present | [DIRECT][E-WF-01] no reads are attempted from file body. | [INFERENCE][E-WF-01] treated as opaque payload with no parse semantics in compat mode. |
+| C | `lcwb.txt` present but unreadable/open-fails | [DIRECT][E-WF-01] falls through same `err=` branch (`lcwbflg=0`). | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-lcwb, cause=...)`; compat: `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-lcwb, enabled=false)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)`. |
+| D | Versioned payload (`datver`/header line) present | [DIRECT][E-WF-01] no reads are attempted from file body. | [INFERENCE][E-WF-01] strict: `SentinelPayloadNotEmptyError(surface_id=infile-channel-lcwb)`; compat: treated as opaque payload and ignored. |
 
 - [DIRECT][E-WF-01] No `datver` record is defined or parsed for this sidecar.
 - [DIRECT][E-US-01], [DIRECT][E-US-02] No `usersum2024` format table exists for `lcwb.txt`.
@@ -55,6 +56,7 @@ opaque_text_stream = { any_character } ;
 
 - [DIRECT][E-WF-01] Legacy code performs open/close only and does not issue `read` statements for `lcwb.txt`.
 - [INFERENCE][E-WF-01] Content bytes are non-authoritative for legacy behavior; existence/readability is the effective contract.
+- [INFERENCE][E-WF-01] Strict mode constrains sentinel body to empty/whitespace-only payload (`SentinelPayloadNotEmptyError` on non-empty body); compat mode preserves legacy content-insensitive behavior.
 
 ### 4.2 Line definitions
 - [DIRECT][E-WF-01] No line-level payload fields are defined or consumed.
@@ -75,11 +77,11 @@ opaque_text_stream = { any_character } ;
 1. Sentinel presence branch.
 - [DIRECT][E-WF-01] `open(...,err=403)` success sets `lcwbflg=1`; failure sets `lcwbflg=0`.
 
-2. Historical last-OFE write branch.
-- [DIRECT][E-WF-06] With `lunw=1` and `lcwbflg=1`, historical `watbalPrint` writes only when `iplane.eq.nplane`.
+2. Historical last-OFE write branch (compatibility provenance).
+- [DIRECT][E-WF-06] Retirement-snapshot `watbalPrint` shows `lunw=1` and `lcwbflg=1` writing only when `iplane.eq.nplane`; treat as historical behavior pending active-source trace closure.
 
-3. Historical all-OFE write branch.
-- [DIRECT][E-WF-06] With `lunw=1` and `lcwbflg=0`, historical `watbalPrint` writes all OFE rows.
+3. Historical all-OFE write branch (compatibility provenance).
+- [DIRECT][E-WF-06] Retirement-snapshot `watbalPrint` shows `lunw=1` and `lcwbflg=0` writing all OFE rows; treat as historical behavior pending active-source trace closure.
 
 4. Channel-routing output branch independent of `lcwb`.
 - [DIRECT][E-WF-03] `chanwb.out` output file creation is gated by `ichout`/`nchnum`, not by `lcwbflg`.
@@ -108,8 +110,8 @@ opaque_text_stream = { any_character } ;
 | Condition | Legacy behavior | openWEPP typed expectation (draft) |
 | --- | --- | --- |
 | `lcwb.txt` missing | [DIRECT][E-WF-01] `lcwbflg=0`; continue. | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-lcwb, enabled=false)`. |
-| `lcwb.txt` present with any payload text | [DIRECT][E-WF-01] payload is ignored; `lcwbflg=1` if open succeeds. | [INFERENCE][E-WF-01] no token parse path; emit sentinel enable event only. |
-| `lcwb.txt` open failure (`err=` path) | [DIRECT][E-WF-01] treated same as missing (`lcwbflg=0`). | [INFERENCE][E-WF-01] strict mode candidate: `InputOpenError(surface_id=infile-channel-lcwb)`; compat mode: missing-default branch. |
+| `lcwb.txt` present with non-empty payload text | [DIRECT][E-WF-01] payload is ignored; `lcwbflg=1` if open succeeds. | [INFERENCE][E-WF-01] strict: `SentinelPayloadNotEmptyError(surface_id=infile-channel-lcwb)`; compat: `SentinelPayloadIgnoredWarning(surface_id=infile-channel-lcwb)` and `SentinelPresent(...)`. |
+| `lcwb.txt` open failure (`err=` path) | [DIRECT][E-WF-01] treated same as missing (`lcwbflg=0`). | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-lcwb, cause=...)`; compat: `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-lcwb, enabled=false)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)`. |
 | `chnwb` output prompt disabled | [DIRECT][E-WP-03] `../output/chnwb.txt` line removed from run script. | [INFERENCE][E-WP-03] treat as orthogonal output contract condition, not `lcwb` parse failure. |
 
 ## 9. Example Snippets
@@ -120,28 +122,32 @@ opaque_text_stream = { any_character } ;
 ```
 - [DIRECT][E-WF-01] No reads are performed, so zero-byte file is valid sentinel.
 
-### 9.2 Valid representative example with ignored payload
+### 9.2 Compat-mode representative example with ignored payload
 ```text
 lcwb sentinel present; payload ignored by legacy reader
 ```
 - [DIRECT][E-WF-01] Legacy behavior depends only on open success, not payload parsing.
+- [INFERENCE][E-WF-01] Under strict mode this example is invalid (`SentinelPayloadNotEmptyError`).
 
-### 9.3 Invalid examples (path/state-level, not content-level)
+### 9.3 Invalid examples
 1. Path exists but cannot be opened (permission denied / non-regular inode in strict mode).
 Reason: open failure branch ambiguity requires policy; strict mode should surface typed open error. [INFERENCE][E-WF-01]
 
 2. `chnwb` output disabled while expecting channel OFE water-balance file.
 Reason: run-template contract removed `../output/chnwb.txt`; missing output is expected by configuration. [DIRECT][E-WP-03]
 
+3. Non-empty `lcwb.txt` body under strict mode.
+Reason: strict sentinel policy requires empty/whitespace-only payload. [INFERENCE][E-WF-01]
+
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `LCWB-GAP-001` | `usersum2024` does not publish a dedicated `lcwb.txt` format section. | [DIRECT][E-US-01], [DIRECT][E-US-02] | `HOLD` until source-authority disposition accepts legacy-code provenance for this surface. |
-| `LCWB-GAP-002` | Active `wepp-forest/src` snapshot declares/sets `lcwbflg` but does not expose a current in-tree `lcwbflg` consumer site; historical snapshot does. | [DIRECT][E-WF-01], [DIRECT][E-WF-02], [DIRECT][E-WF-06] | `HOLD` until current-release consumer path is fully traced and documented. |
-| `LCWB-GAP-003` | `lcwb.txt` semantics overlap with `chnwb.txt` output selection and may be confused with `chanwb.out` routing output controls. | [DIRECT][E-WF-03], [DIRECT][E-WP-02], [DIRECT][E-WP-04] | `HOLD` until parser/output contracts codify separation of concerns. |
-| `LCWB-GAP-004` | Modern input parsing surfaces (`wepppy`, `wepppyo3`) do not expose direct `lcwb` input parsing; behavior is mediated by run-template/output contracts. | [DIRECT][E-WP-01], [DIRECT][E-WP-03], [DIRECT][E-WP3-01] | `HOLD` until openWEPP decides whether to model `lcwb` as explicit input-surface entity or derived run-option compatibility flag. |
-| `LCWB-GAP-005` | Open-failure handling policy (missing-default vs typed error) is unresolved for strict correctness posture. | [DIRECT][E-WF-01] | `HOLD` until `SC-INFILE-LCWB-001` codifies strict/compat modes and observability requirements. |
+| Gap ID | Provenance tags | Statement | Evidence | Disposition status |
+| --- | --- | --- | --- | --- |
+| `LCWB-GAP-001` | `usersum2024`, `legacy-code` | `usersum2024` does not publish a dedicated `lcwb.txt` format section. | [DIRECT][E-US-01], [DIRECT][E-US-02] | `HOLD` until source-authority disposition accepts legacy-code provenance for this surface. |
+| `LCWB-GAP-002` | `legacy-code` | Active `wepp-forest/src` snapshot declares/sets `lcwbflg` but does not expose a current in-tree `lcwbflg` consumer site; historical snapshot does. | [DIRECT][E-WF-01], [DIRECT][E-WF-02], [DIRECT][E-WF-06] | `HOLD` until current-release consumer path is fully traced and documented. |
+| `LCWB-GAP-003` | `legacy-code`, `wepppy` | `lcwb.txt` semantics overlap with `chnwb.txt` output selection and may be confused with `chanwb.out` routing output controls. | [DIRECT][E-WF-03], [DIRECT][E-WP-02], [DIRECT][E-WP-04] | `HOLD` until parser/output contracts codify separation of concerns. |
+| `LCWB-GAP-004` | `wepppy`, `wepppyo3` | Modern input parsing surfaces (`wepppy`, `wepppyo3`) do not expose direct `lcwb` input parsing; behavior is mediated by run-template/output contracts. | [DIRECT][E-WP-01], [DIRECT][E-WP-03], [DIRECT][E-WP3-01] | `HOLD` until openWEPP decides whether to model `lcwb` as explicit input-surface entity or derived run-option compatibility flag. |
+| `LCWB-NOTE-001` | `legacy-code` | Strict/compat open-failure and payload policy is now codified in Section 8 and needs downstream implementation verification. | [DIRECT][E-WF-01] | `NOTE` non-blocking specification-closure item; carry to parser verification backlog. |
 
 `status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
 

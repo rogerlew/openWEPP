@@ -40,7 +40,7 @@ This specification defines the canonical `.slp` hillslope slope-input surface us
 | Input form | First non-comment line | Legacy interpretation | openWEPP draft interpretation | Evidence |
 |---|---|---|---|---|
 | Canonical current | `97.5` | Datver branch; compatibility check | `MUST` accept `97.5` | `[DIRECT][E-US-01]`, `[DIRECT][E-WF-01]` |
-| Legacy no-version-line | integer OFE count | Fallback branch: line 1 treated as `nwsofe` | `SHOULD` support via compatibility mode | `[DIRECT][E-US-04]`, `[DIRECT][E-WF-01]` |
+| Legacy no-version-line | integer OFE count | Fallback branch: line 1 treated as `nwsofe` | `SHOULD` support via compatibility mode; strict mode `MUST` reject with typed error | `[DIRECT][E-US-04]`, `[DIRECT][E-WF-01]` |
 | Older explicit datver | e.g., `91.5+` | Allowed when `datver >= slpchk` | `MAY` support in compatibility mode pending disposition | `[DIRECT][E-WF-09]` |
 | Unsupported datver | `< slpchk` when parsed as datver | Hard stop in legacy `verchk` | `MUST` raise typed error | `[DIRECT][E-WF-09]` |
 
@@ -131,6 +131,7 @@ openWEPP parser-contract targets should enforce typed outcomes instead of silent
 |---|---|
 | Missing `.slp` file | return `InputFileMissing(surface_id=infile-slope-slp)` |
 | Empty/insufficient records | return `RecordCountError` |
+| Missing `datver` line while compatibility mode is disabled | return `MissingDatverHeaderError` |
 | Unsupported datver | return `UnsupportedDatver` |
 | `nelem < 1` or above accepted cap | return `FieldRangeError(field=nelem)` |
 | `nslpts < 2` | return `FieldRangeError(field=nslpts)` |
@@ -179,10 +180,10 @@ openWEPP parser-contract targets should enforce typed outcomes instead of silent
 97.5
 1
 180.0 25.0
-2 100.0
-0.0 0.0500 100.0 0.0500
+3 100.0
+0.0 0.0500 0.5 0.0400 100.0 0.0500
 ```
-Reason: mixes nondimensional and meter encoding in one OFE. `[DIRECT][E-US-04]`
+Reason: mixes nondimensional and meter encoding in one OFE (`0.5` normalized interior point with `100.0` meter endpoint). `[DIRECT][E-US-04]`
 
 2. Invalid: missing terminal point
 ```text
@@ -206,12 +207,12 @@ Reason: minimum two points required. `[DIRECT][E-US-04]`
 
 ## 9. Gap/Conflict Register and HOLD Conditions
 
-| ID | Issue | Evidence | Draft disposition |
-|---|---|---|---|
-| `SLOPE-GAP-001` | usersum says max 10 OFEs; current legacy build gate allows up to `ntype=20` | `[DIRECT][E-US-03]`, `[DIRECT][E-WF-07]` | `HOLD` until canonical cap policy is set for openWEPP |
-| `SLOPE-GAP-002` | usersum table notes up to 20 slope pairs/OFE; current legacy arrays define `mxslp=100` | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-08]` | `HOLD` until canonical cap and compatibility behavior are fixed |
-| `SLOPE-GAP-003` | wepppy helper supports non-usersum `2023*` metadata variant (`azm fwidth z0`) | `[DIRECT][E-WP-01]` vs `[DIRECT][E-US-02]` | `HOLD` pending explicit acceptance/rejection of extension |
-| `SLOPE-GAP-004` | wepppyo3 MOFE parser is single-OFE utility, not full canonical multi-OFE parser | `[DIRECT][E-WP3-01]` | `HOLD` only for parser-provenance completeness; not a blocker for canonical format definition |
+| ID | Issue | Evidence | Provenance tags | Draft disposition |
+|---|---|---|---|---|
+| `SLOPE-GAP-001` | usersum says max 10 OFEs; current legacy build gate allows up to `ntype=20` | `[DIRECT][E-US-03]`, `[DIRECT][E-WF-07]` | `usersum2024`, `legacy-code` | `HOLD` until canonical cap policy is set for openWEPP |
+| `SLOPE-GAP-002` | usersum table notes up to 20 slope pairs/OFE; current legacy arrays define `mxslp=100` | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-08]` | `usersum2024`, `legacy-code` | `HOLD` until canonical cap and compatibility behavior are fixed |
+| `SLOPE-GAP-003` | wepppy helper supports non-usersum `2023*` metadata variant (`azm fwidth z0`) | `[DIRECT][E-WP-01]` vs `[DIRECT][E-US-02]` | `usersum2024`, `wepppy` | `HOLD` pending explicit acceptance/rejection of extension |
+| `SLOPE-NOTE-001` | wepppyo3 MOFE parser is single-OFE utility, not full canonical multi-OFE parser | `[DIRECT][E-WP3-01]` | `wepppyo3` | `NOTE` provenance-only, non-blocking |
 
 `status` remains `draft-HOLD` until all high-impact gaps above are dispositioned.
 
@@ -224,4 +225,3 @@ Reason: minimum two points required. `[DIRECT][E-US-04]`
   - endpoint and cross-OFE continuity constraints,
   - typed error surface.
 - Contract authoring package linkage: `docs/work-packages/20260520-infile04-author-sc-infile-slope-001/`.
-

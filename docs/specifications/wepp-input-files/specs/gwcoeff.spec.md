@@ -116,7 +116,9 @@ bftharea_line  = real [trailing_text] ;
 | Condition | Legacy behavior | openWEPP typed expectation (draft) |
 | --- | --- | --- |
 | `gwcoeff.txt` missing | [DIRECT][E-WF-01] set `lr_bf=0`; continue without sidecar parse. | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-gwcoeff)` with explicit observability event. |
+| Version/datver-prefixed first line | [DIRECT][E-WF-01] legacy parser expects `igwstrd` on line 1 and has no version preface branch | [INFERENCE][E-WF-01] `FormatVersionLineUnsupportedError(surface_id=infile-gwcoeff)` |
 | Present file with fewer than 4 records | [DIRECT][E-WF-01] no explicit read error branch for malformed present files. | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-gwcoeff, expected=4)`. |
+| Trailing text after numeric token | [DIRECT][E-WF-07] observed fixtures include trailing labels/comments | strict mode: `TrailingTokenError(surface_id=infile-gwcoeff)`; compatibility mode: allow with `TrailingTokenCompatibilityWarning` |
 | Non-numeric leading token on required line | [DIRECT][E-WF-01] list-directed read failure path not explicitly handled. | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-gwcoeff, line_no=...)`. |
 | Non-finite numeric (`NaN`/`Inf`) | [INFERENCE][E-WP-03] modern request path accepts float coercions before writing. | [INFERENCE][E-WP-03] `FieldFiniteError(field=...)`. |
 | Negative coefficient/depth/threshold | [DIRECT][E-WF-03] units imply physical non-negativity; legacy code does not clamp here. | [INFERENCE][E-WF-03] `FieldRangeError(field=...)` in strict mode; compat mode requires explicit disposition. |
@@ -175,13 +177,13 @@ Reason: threshold area must be non-negative in strict semantics. [INFERENCE][E-W
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `GWCOEFF-GAP-001` | `usersum2024` sidecar section does not publish a dedicated `gwcoeff.txt` format definition. | [DIRECT][E-US-01], [DIRECT][E-US-02] | `HOLD` until formal source-authority disposition records the legacy-code-first basis for this surface. |
-| `GWCOEFF-GAP-002` | Coefficient-name collision risk: `chan.inp` line-2 "unit area baseflow coefficient" differs semantically/units from `gwcoeff.txt` `bfcoeff`. | [DIRECT][E-US-03], [DIRECT][E-WF-03] | `HOLD` until parser contracts define explicit namespace separation and guard checks. |
-| `GWCOEFF-GAP-003` | Legacy missing-file behavior toggles `lr_bf` but does not document normative default values for all four fields in core source comments. | [DIRECT][E-WF-01], [DIRECT][E-WF-03], [DIRECT][E-WP-01] | `HOLD` until openWEPP default-policy decision is dispositioned (strict optional absence vs explicit value defaults). |
-| `GWCOEFF-GAP-004` | Legacy present-file parse failure semantics are implicit (no per-read `err=` branch). | [DIRECT][E-WF-01] | `HOLD` until typed error mapping and compat policy are codified in `SC-INFILE-GWCOEFF-001`. |
-| `GWCOEFF-GAP-005` | `wepppyo3` provenance currently covers output/interchange baseflow fields, not `gwcoeff.txt` input parsing ownership. | [DIRECT][E-WP3-01], [DIRECT][E-WP3-02] | `HOLD` for ownership clarity only; not a blocker for openWEPP canonical spec authority. |
+| Gap ID | Statement | Evidence | Provenance tags | Disposition status |
+| --- | --- | --- | --- | --- |
+| `GWCOEFF-GAP-001` | `usersum2024` sidecar section does not publish a dedicated `gwcoeff.txt` format definition. | [DIRECT][E-US-01], [DIRECT][E-US-02] | `usersum2024`, `legacy-code` | `HOLD` until formal source-authority disposition records the legacy-code-first basis for this surface. |
+| `GWCOEFF-GAP-002` | Coefficient-name collision risk: `chan.inp` line-2 "unit area baseflow coefficient" differs semantically/units from `gwcoeff.txt` `bfcoeff`. | [DIRECT][E-US-03], [DIRECT][E-WF-03] | `usersum2024`, `legacy-code` | `HOLD` until parser contracts define explicit namespace separation and guard checks. |
+| `GWCOEFF-GAP-003` | Legacy missing-file behavior toggles `lr_bf` but does not document normative default values for all four fields in core source comments. | [DIRECT][E-WF-01], [DIRECT][E-WF-03], [DIRECT][E-WP-01] | `legacy-code`, `wepppy` | `HOLD` until openWEPP default-policy decision is dispositioned (strict optional absence vs explicit value defaults). |
+| `GWCOEFF-GAP-004` | Legacy present-file parse failure semantics are implicit (no per-read `err=` branch). | [DIRECT][E-WF-01] | `legacy-code` | `HOLD` until typed error mapping and compat policy are codified in `SC-INFILE-GWCOEFF-001`. |
+| `GWCOEFF-NOTE-001` | `wepppyo3` provenance currently covers output/interchange baseflow fields, not `gwcoeff.txt` input parsing ownership. | [DIRECT][E-WP3-01], [DIRECT][E-WP3-02] | `wepppyo3` | `NOTE` ownership clarity only; non-blocking. |
 
 `status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
 

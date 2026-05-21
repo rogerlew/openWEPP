@@ -154,10 +154,12 @@ openWEPP parser-contract targets should expose typed outcomes and avoid silent m
 | Condition | Legacy behavior | openWEPP draft expectation |
 | --- | --- | --- |
 | Missing required depletion file | interactive reopen loop/stop path | `InputFileMissing(surface_id=infile-irrigation-depletion)` |
+| Omitted `datver` header while compatibility mode is disabled | legacy probe/backspace may accept pre-93 layout | `InputLegacyNoDatverDisallowed(surface_id=infile-irrigation-depletion)` |
+| Sprinkler row missing `nozzle` field (`idsver<94.21` legacy shape) | legacy sets `nozzle=1.0` | strict mode: `RecordArityError(field=sprinkler_period)`; compatibility mode: apply `nozzle=1.0` with `LegacyNozzleDefaultAppliedWarning` |
 | `ktemp != 1` for depletion file | legacy rejects and re-prompts | `ScheduleTypeMismatch(expected=1, observed=ktemp)` |
 | `jtemp != irsyst` | legacy rejects and re-prompts | `IrrigationSystemMismatch` |
 | `itemp != jstruc` | legacy rejects and re-prompts | `ElementCountMismatch` |
-| `ofeflg` not in expected order | legacy warning; run may continue with misordered periods | `ElementOrderingError` in strict mode |
+| `ofeflg` not in expected order for initialization or continuation stream | legacy warning; run may continue with misordered periods | strict mode: `ContinuationOrderingError`; compatibility mode: `ContinuationOrderingWarning` |
 | `irdmin < 0.001` | legacy mutates to `0.025` | `FieldRangeError(field=irdmin)` in strict mode; compatibility mode optional |
 | `depsrg == 3` or `depsrg > 6` (furrow) | legacy remaps/clamps (`3->4`, `>6->6`) | `FieldNormalizationRequired` or strict `FieldRangeError` policy pending disposition |
 | Furrow with contour/non-cropland | legacy disables irrigation and continues | `UnsupportedIrrigationConfiguration` or compatibility warning-mode policy pending disposition |
@@ -237,12 +239,12 @@ Reason: row count and run-level OFE structure mismatch (example run has 2 OFEs).
 
 ## 10. Gap/Conflict Register and HOLD Conditions
 
-| ID | Issue | Evidence | Draft disposition |
-| --- | --- | --- | --- |
-| `IRDEP-GAP-001` | usersum canonical datver is `95.7`, but legacy accepts no-datver/pre-93 branch and mixed compatibility constants (`94.21` / `91.5`) | `[DIRECT][E-US-03]`, `[DIRECT][E-WF-01]`, `[DIRECT][E-WF-07]` | `HOLD` until explicit openWEPP compatibility matrix is ratified |
-| `IRDEP-GAP-002` | legacy silently mutates `irdmin` and `depsrg` values; openWEPP correctness policy prefers explicit typed handling | `[DIRECT][E-WF-03]`, `[DIRECT][E-WF-08]` | `HOLD` until strict-vs-compat policy is dispositioned |
-| `IRDEP-GAP-003` | usersum defines a line-4 repetition stream, while initialization parser consumes first `itemp` rows and runtime consumes continuation rows; parser contract must define streaming model explicitly | `[DIRECT][E-US-04]`, `[DIRECT][E-WF-05]` | `HOLD` until data-model contract for continuation ingestion is finalized |
-| `IRDEP-GAP-004` | wepppy templates default to no irrigation, and wepppyo3 module map does not declare an irrigation input parser surface | `[DIRECT][E-WP-01]`, `[DIRECT][E-WP3-01]` | `HOLD` as provenance gap (no modern reference implementation to triangulate parser behavior) |
+| ID | Issue | Evidence | Provenance tags | Draft disposition |
+| --- | --- | --- | --- | --- |
+| `IRDEP-GAP-001` | usersum canonical datver is `95.7`, but legacy accepts no-datver/pre-93 branch and mixed compatibility constants (`94.21` / `91.5`) | `[DIRECT][E-US-03]`, `[DIRECT][E-WF-01]`, `[DIRECT][E-WF-07]` | `usersum2024`, `legacy-code` | `HOLD` until explicit openWEPP compatibility matrix is ratified |
+| `IRDEP-GAP-002` | legacy silently mutates `irdmin` and `depsrg` values; openWEPP correctness policy prefers explicit typed handling | `[DIRECT][E-WF-03]`, `[DIRECT][E-WF-08]` | `legacy-code`, `literature` | `HOLD` until strict-vs-compat policy is dispositioned |
+| `IRDEP-GAP-003` | usersum defines a line-4 repetition stream, while initialization parser consumes first `itemp` rows and runtime consumes continuation rows; parser contract must define streaming model explicitly | `[DIRECT][E-US-04]`, `[DIRECT][E-WF-05]` | `usersum2024`, `legacy-code` | `HOLD` until data-model contract for continuation ingestion is finalized |
+| `IRDEP-NOTE-001` | wepppy templates default to no irrigation, and wepppyo3 module map does not declare an irrigation input parser surface | `[DIRECT][E-WP-01]`, `[DIRECT][E-WP3-01]` | `wepppy`, `wepppyo3` | `NOTE` provenance completeness only; non-blocking |
 
 `status` remains `draft-HOLD` until all high-impact gaps are dispositioned.
 

@@ -110,7 +110,7 @@ canonical_wepp_ui_file = "" ;  # zero-byte file
 | `wepp_ui.txt` missing | [DIRECT][E-WF-01] `ui_run=0` (daily mode) | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-wepp-ui, ui_run=false)` |
 | `wepp_ui.txt` present, open succeeds | [DIRECT][E-WF-01] `ui_run=1` (hourly mode), no content parse | [INFERENCE][E-WF-01] `SentinelPresent(surface_id=infile-wepp-ui, ui_run=true)` |
 | open fails for non-not-found IO reason | [DIRECT][E-WF-01] collapsed into err branch (`ui_run=0`) | [INFERENCE][E-WF-01] `InputOpenError(surface_id=infile-wepp-ui, cause=...)` (do not silently downgrade to missing) |
-| non-empty file content | [DIRECT][E-WF-01] ignored | [INFERENCE][E-US-02] strict canonical mode should reject or warn on non-empty payload; compat policy unresolved |
+| non-empty file content | [DIRECT][E-WF-01] ignored | strict mode: `SentinelPayloadNotEmptyError(surface_id=infile-wepp-ui)`; compatibility mode: `SentinelPayloadIgnoredWarning(surface_id=infile-wepp-ui)` |
 
 ## 9. Example Snippets
 
@@ -144,12 +144,12 @@ Reason: usersum compatibility rule and modern orchestrator behavior diverge from
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `WEPPUI-GAP-001` | `usersum2024` says `wepp_ui.txt` should be empty, but legacy runtime ignores file content and checks presence only. | [DIRECT][E-US-02], [DIRECT][E-WF-01] | `HOLD` until strict-vs-compat content policy is dispositioned. |
-| `WEPPUI-GAP-002` | `usersum2024` recommends 7778 soils for hourly mode, but legacy does not hard-fail non-7778 at sentinel gate. | [DIRECT][E-US-02], [DIRECT][E-WF-01], [DIRECT][E-WF-05] | `HOLD` until enforcement severity (`error` vs `warning`) is fixed in `SC-INFILE-WEPPUI-001`. |
-| `WEPPUI-GAP-003` | Legacy open-error branch collapses missing and non-missing IO faults into `ui_run=0`, obscuring operational failures. | [DIRECT][E-WF-01] | `HOLD` until typed error taxonomy is finalized for openWEPP input consumers. |
-| `WEPPUI-GAP-004` | wepppyo3 does not currently claim `wepp_ui` parser ownership; cross-repo interoperability boundary is procedural rather than contract-bound. | [DIRECT][E-WP3-01] | `HOLD` for governance alignment; not a parser-authority blocker. |
+| Gap ID | Statement | Evidence | Provenance tags | Disposition status |
+| --- | --- | --- | --- | --- |
+| `WEPPUI-GAP-001` | `usersum2024` recommends 7778 soils for hourly mode, but legacy does not hard-fail non-7778 at sentinel gate. | [DIRECT][E-US-02], [DIRECT][E-WF-01], [DIRECT][E-WF-05] | `usersum2024`, `legacy-code` | `HOLD` until enforcement severity (`error` vs `warning`) is fixed in `SC-INFILE-WEPPUI-001`. |
+| `WEPPUI-GAP-002` | Legacy open-error branch collapses missing and non-missing IO faults into `ui_run=0`, obscuring operational failures. | [DIRECT][E-WF-01] | `legacy-code` | `HOLD` until typed error taxonomy is finalized for openWEPP input consumers. |
+| `WEPPUI-NOTE-001` | `usersum2024` says `wepp_ui.txt` should be empty, but legacy runtime ignores file content and checks presence only; this now has explicit strict/compat typed outcomes. | [DIRECT][E-US-02], [DIRECT][E-WF-01] | `usersum2024`, `legacy-code` | `NOTE` policy provenance retained; non-blocking. |
+| `WEPPUI-NOTE-002` | wepppyo3 does not currently claim `wepp_ui` parser ownership; cross-repo interoperability boundary is procedural rather than contract-bound. | [DIRECT][E-WP3-01] | `wepppyo3` | `NOTE` governance alignment; non-blocking. |
 
 `status` remains `draft-HOLD` until gaps above are dispositioned.
 

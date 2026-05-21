@@ -3,23 +3,23 @@
 ## 1. Header Metadata
 - `spec_id`: `SPEC-INFILE-WATERSHED-IMPOUNDMENT-IMP-001`
 - `surface_id`: `infile-watershed-impoundment-imp`
-- `status`: `draft`
+- `status`: `draft-HOLD`
 - `owner`: `openWEPP core`
 - `spec_version`: `0.1.0`
 - `last_updated_utc`: `2026-05-20T00:00:00Z`
 - `evidence_mode`: `Static`
 
 ## 2. Surface Scope and Applicability
-- The `.imp` file defines watershed impoundment geometry and outlet structures for WEPP watershed runs with impoundments enabled. [DIRECT]
-- This surface applies to watershed executions (not standalone hillslope mode). [DIRECT]
+- The `.imp` file defines watershed impoundment geometry and outlet structures for WEPP watershed runs with impoundments enabled. [DIRECT][EA-IMP-001]
+- This surface applies to watershed executions (not standalone hillslope mode). [DIRECT][EA-IMP-004]
 - The file is consumed across three legacy read stages:
-1. `infile.for` reads file version (`datver`) and performs compatibility checks.
-2. `wshini.for` reads declared impoundment count (`jpond`) and checks against structure-derived count (`npond`).
-3. `impint.for` reads per-impoundment content and derives outflow/geometry functions. [DIRECT]
+1. `infile.for` reads file version (`datver`) and performs compatibility checks. [DIRECT][EA-IMP-005]
+2. `wshini.for` reads declared impoundment count (`jpond`) and checks against structure-derived count (`npond`). [DIRECT][EA-IMP-008]
+3. `impint.for` reads per-impoundment content and derives outflow/geometry functions. [DIRECT][EA-IMP-010]
 
 ### Applicability notes
-- The users guide states watershed model versions 2 and 3 cover channel/impoundment workflows. [DIRECT]
-- If no impoundments are modeled, this file is not required. [DIRECT]
+- The users guide states watershed model versions 2 and 3 cover channel/impoundment workflows. [DIRECT][EA-IMP-004]
+- If no impoundments are modeled, this file is not required. [DIRECT][EA-IMP-001]
 
 ## 3. Version / `datver` Applicability Matrix
 
@@ -37,9 +37,11 @@
 ```text
 imp_file ::= preamble impoundment_block{jpond}
 
-preamble ::= datver_line jpond_line
+preamble ::= canonical_preamble | legacy_compat_preamble
 
-datver_line ::= REAL
+canonical_preamble ::= datver_line jpond_line
+legacy_compat_preamble ::= jpond_line   # compatibility-mode only (`first_token <= 10.0`)
+datver_line ::= REAL                     # canonical: datver > 10.0
 jpond_line ::= INT
 
 impoundment_block ::= description3
@@ -59,6 +61,7 @@ impoundment_block ::= description3
 ### 4.2 Preamble (file-level)
 - Line 1: `datver` (real version number). [DIRECT]
 - Line 2: `jpond` (number of impoundments declared in the `.imp` file). [DIRECT]
+- Legacy compatibility form (no explicit `datver` line): first token is interpreted as `jpond` only when compatibility mode is explicitly enabled; strict mode rejects this form. [DIRECT][EA-IMP-005]
 
 ### 4.3 Per-impoundment block (repeated `jpond` times)
 - Lines 3-5: `impdes(1..3)` comment/description lines. [DIRECT]
@@ -200,6 +203,7 @@ impoundment_block ::= description3
 
 ## 7. Cross-File Consistency Constraints and Coupling Dependencies
 - `.str` defines structural impoundment count (`npond`); `.imp` declares `jpond`; legacy stop condition triggers when `npond > jpond`. [DIRECT]
+- Strict mode requires exact closure (`jpond == npond`); compatibility mode may allow `jpond > npond` with warning and must ignore surplus `.imp` blocks beyond `npond` for run assembly determinism. [INFERENCE]
 - Legacy enforces upper bound by internal `mximp` (`25`) on both `npond` and `jpond`. [DIRECT]
 - Users guide states a 10-impoundment limit for simulations; this conflicts with the internal `mximp=25` default in current legacy source. [DIRECT]
 - Watershed structure rules from users guide constrain whether impoundments can be fed by channels vs hillslopes and prohibit mixed channel+hillslope feeding into a single impoundment. [DIRECT]
@@ -216,7 +220,9 @@ impoundment_block ::= description3
 ### 8.2 openWEPP typed error expectations (contract draft)
 - `InputFileMissing { surface: infile-watershed-impoundment-imp }`
 - `InputVersionIncompatible { datver, minimum_supported: 94.301 }`
+- `InputLegacyNoDatverDisallowed { observed_first_token }`
 - `ImpoundmentCountMismatch { structural_npond, declared_jpond }`
+- `ImpoundmentCountSurplusCompatibilityWarning { structural_npond, declared_jpond }`
 - `ImpoundmentCountExceeded { value, max_supported }`
 - `ImpoundmentBranchInvalid { field, value, allowed }`
 - `ImpoundmentUnexpectedEof { section, impoundment_index }`
@@ -293,12 +299,12 @@ impoundment_block ::= description3
 
 ## 10. Gap / Conflict Register
 
-| ID | Severity | Claim | Evidence tag | Status | HOLD condition |
-|---|---|---|---|---|---|
-| G-IMP-001 | medium | users guide says up to 10 impoundments; legacy source enforces `mximp=25` | [DIRECT] | open | HOLD if openWEPP max-count policy is not explicitly chosen |
-| G-IMP-002 | medium | usersum Table 28 line-number narrative around filter-fence/perforated-riser sublines is partially ambiguous in text extraction | [DIRECT] | open | HOLD if unresolved ambiguity affects parser grammar decisions |
-| G-IMP-003 | low | usersum culvert brief table omits some coefficients (`kus/mus/cs/ys`) read by legacy parser | [DIRECT] | open | HOLD only if coefficients cannot be physically/algorithmically traced |
-| G-IMP-004 | low | wepppy canonical spec set currently lacks `.imp` spec and wepppyo3 scoped source search did not find explicit `.imp` parser logic | [DIRECT] | open | no hold; provenance-only note |
+| ID | Severity | Claim | Evidence tag | Provenance tags | Status | HOLD condition |
+|---|---|---|---|---|---|---|
+| G-IMP-001 | medium | users guide says up to 10 impoundments; legacy source enforces `mximp=25` | [DIRECT] | `usersum2024`, `legacy-code` | open | HOLD if openWEPP max-count policy is not explicitly chosen |
+| G-IMP-002 | medium | usersum Table 28 line-number narrative around filter-fence/perforated-riser sublines is partially ambiguous in text extraction | [DIRECT] | `usersum2024`, `legacy-code` | open | HOLD if unresolved ambiguity affects parser grammar decisions |
+| G-IMP-003 | low | usersum culvert brief table omits some coefficients (`kus/mus/cs/ys`) read by legacy parser | [DIRECT] | `usersum2024`, `legacy-code` | open | HOLD only if coefficients cannot be physically/algorithmically traced |
+| G-IMP-004 | low | wepppy canonical spec set currently lacks `.imp` spec and wepppyo3 scoped source search did not find explicit `.imp` parser logic | [DIRECT] | `wepppy`, `wepppyo3` | open | no hold; provenance-only note |
 
 ## 11. Parser-Contract Handoff Map
 

@@ -48,14 +48,19 @@
 
 ### 4.1 Canonical grammar (draft)
 ```ebnf
-snow_file      = rst_line newsnw_line ssd_line ;
-rst_line       = real [trailing_tokens] ;
-newsnw_line    = real [trailing_tokens] ;
-ssd_line       = real [trailing_tokens] ;
+snow_file      = canonical_snow_file | compat_snow_file ;
+canonical_snow_file = rst_line_strict newsnw_line_strict ssd_line_strict ;
+compat_snow_file = rst_line_compat newsnw_line_compat ssd_line_compat ;
+rst_line_strict    = real ;
+newsnw_line_strict = real ;
+ssd_line_strict    = real ;
+rst_line_compat    = real [trailing_tokens] ;
+newsnw_line_compat = real [trailing_tokens] ;
+ssd_line_compat    = real [trailing_tokens] ;
 ```
 
 - [DIRECT][E-WF-01] Legacy reads exactly three list-directed records in sequence.
-- [INFERENCE][E-WP-01] Trailing tokens/comments after the first numeric value per line are tolerated by existing producer/consumer practice (wepppy emits inline annotations).
+- [INFERENCE][E-WP-01] Compatibility mode may allow trailing tokens/comments after the first numeric value per line because modern producer practice emits inline annotations.
 
 ### 4.2 Line definitions
 - Line 1: `rst` (rain-snow threshold temperature). [DIRECT][E-WF-01], [DIRECT][E-WF-03]
@@ -108,9 +113,12 @@ ssd_line       = real [trailing_tokens] ;
 | --- | --- | --- |
 | `snow.txt` missing | [DIRECT][E-WF-01] assign defaults and continue | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-snow, defaults={rst:0.0,newsnw:100.0,ssd:250.0})` |
 | File present, fewer than 3 records | [DIRECT][E-WF-01] read failure path is not explicitly handled | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-snow, expected=3)` |
+| File present, more than 3 records | [DIRECT][E-WF-01] legacy reads only first three records and ignores surplus | strict mode: `InputRecordCountError(surface_id=infile-snow, expected=3)`; compatibility mode: ignore extras with `SurplusRecordWarning` |
+| Trailing tokens after primary numeric on a line | [INFERENCE][E-WP-01] modern emitters may include inline annotations | strict mode: `TrailingTokenError(surface_id=infile-snow)`; compatibility mode: allow with `TrailingTokenCompatibilityWarning` |
 | Non-numeric token on required line | [DIRECT][E-WF-01] read failure path is not explicitly handled | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-snow, line_no=...)` |
-| Non-finite numeric (`NaN`/`Inf`) | [INFERENCE][E-WP-03] modern parser layers already parse floats from payloads | [INFERENCE][E-WP-03] `FieldFiniteError(field=...)` |
-| Non-positive density values | [DIRECT][E-WF-05] densities are physically represented in `kg/m^3` | [INFERENCE][E-WF-05] `FieldRangeError(field=newsnw|ssd)` |
+| Non-finite numeric (`NaN`/`Inf`) | [INFERENCE][E-WF-01] sidecar records must parse as numeric reals; non-finite values are non-physical parse payloads | [INFERENCE][E-WF-01] `FieldFiniteError(field=...)` |
+| Non-positive density values (`newsnw<=0` or `ssd<=0`) | [DIRECT][E-WF-05] densities are physically represented in `kg/m^3` | strict/compat baseline invariant: `FieldRangeError(field=newsnw|ssd)` |
+| Positive but extreme density/rst values outside unresolved policy bounds | [DIRECT][E-WP-02] modern toolchain applies additional bounds not yet canonically ratified | strict mode: policy pending `HOLD`; compatibility mode may emit `FieldRangePolicyPendingWarning` |
 
 - [INFERENCE][E-WF-01] Missing-file defaulting is part of legacy behavior and should be explicit in diagnostics, not silent parser mutation.
 
@@ -158,12 +166,12 @@ Reason: density parameters must be positive for physically meaningful snow-densi
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `SNOW-GAP-001` | `usersum2024` does not provide a dedicated `snow.txt` format table, while other sidecars are documented. | [DIRECT][E-US-02] | `HOLD` until explicit source-authority decision is dispositioned (legacy-code vs supplemental docs). |
-| `SNOW-GAP-002` | Unit labeling conflict: wepppy comments describe `newsnw`/`ssd` as `g/cm^3`, while legacy winter-state symbols operate with `kg/m^3` semantics and defaults (`100`, `250`). | [DIRECT][E-WF-02], [DIRECT][E-WF-05], [DIRECT][E-WP-01] | `HOLD` until canonical unit declaration and any conversion policy are dispositioned. |
-| `SNOW-GAP-003` | Bounds policy divergence: legacy code uses defaults but no explicit hard bounds; wepppy applies guard bounds for `newsnw` and `ssd`. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `HOLD` until openWEPP parser-contract decides normative range enforcement. |
-| `SNOW-GAP-004` | `rst` lacks documented canonical bounds in both legacy sidecar read path and modern guard tables. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `HOLD` until `SC-INFILE-SNOW-001` defines validated range policy. |
+| Gap ID | Statement | Evidence | Provenance tags | Disposition status |
+| --- | --- | --- | --- | --- |
+| `SNOW-GAP-001` | `usersum2024` does not provide a dedicated `snow.txt` format table, while other sidecars are documented. | [DIRECT][E-US-02] | `usersum2024`, `legacy-code` | `HOLD` until explicit source-authority decision is dispositioned (legacy-code vs supplemental docs). |
+| `SNOW-GAP-002` | Unit labeling conflict: wepppy comments describe `newsnw`/`ssd` as `g/cm^3`, while legacy winter-state symbols operate with `kg/m^3` semantics and defaults (`100`, `250`). | [DIRECT][E-WF-02], [DIRECT][E-WF-05], [DIRECT][E-WP-01] | `legacy-code`, `wepppy` | `HOLD` until canonical unit declaration and any conversion policy are dispositioned. |
+| `SNOW-GAP-003` | Bounds policy divergence: legacy code uses defaults but no explicit hard bounds; wepppy applies guard bounds for `newsnw` and `ssd`. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `legacy-code`, `wepppy` | `HOLD` until openWEPP parser-contract decides normative range enforcement. |
+| `SNOW-GAP-004` | `rst` lacks documented canonical bounds in both legacy sidecar read path and modern guard tables. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `legacy-code`, `wepppy` | `HOLD` until `SC-INFILE-SNOW-001` defines validated range policy. |
 
 `status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
 

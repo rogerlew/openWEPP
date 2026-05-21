@@ -7,22 +7,25 @@
 - `status`: `draft-hold`
 - `owner`: `openWEPP`
 - `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-20`
+- `last_updated_utc`: `2026-05-21T00:00:00Z`
 - `evidence_mode`: `Static`
 
 [DIRECT] This specification targets the watershed channel input file described as the “Watershed channel file” and “Table 25. Channel file description” in `usersum2024`.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7227-7277`.
 
 ## 2. Surface scope and applicability
-- File extension/surface: `.chn` (`infile-watershed-channel-chn`).
-- Applicability: watershed/channel routing runs (`ivers=3` lineage in legacy WEPP flow).
-- Not applicable: hillslope-only runs.
+- File extension/surface: `.chn` (`infile-watershed-channel-chn`). [DIRECT]
+- Applicability: watershed/channel routing runs (`ivers=3` lineage in legacy WEPP flow). [DIRECT]
+- Not applicable: hillslope-only runs. [INFERENCE]
 
 [DIRECT] The watershed channel file contains routing method choice, channel shape/hydraulic parameters, and control structure parameters for each channel in increasing channel ID order.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7228-7232`.
 
 [DIRECT] Legacy read path opens unit 18 as watershed channel data and then validates/loads it via `infile.for` and `wshinp.for`.
 Evidence: `/workdir/wepp-forest/src/infile.for:402-427`, `/workdir/wepp-forest/src/wshinp.for:351-404`.
+
+[INFERENCE] Hillslope-only run assemblies do not consume `.chn` because this surface is only invoked through watershed structure/channel loading paths.
+Evidence: `/workdir/wepp-forest/src/infile.for:402-427`.
 
 ## 3. Version/datver applicability matrix
 
@@ -206,6 +209,16 @@ Evidence: `/workdir/wepppyo3/wepp_interchange/src/loss.rs:294-298`, `/workdir/we
 
 [INFERENCE] openWEPP must disposition whether to preserve these overrides exactly or treat them as explicit warnings/errors in strict mode.
 
+### 8.3 `ipeak > 2` sidecar (`chan.inp`) normative handling
+- Strict mode (`compat_mode=false`):
+  - Missing or unreadable `chan.inp` when any channel uses `ipeak > 2` -> `ChannelSidecarMissing { sidecar: chan.inp }`.
+  - Parse failure in `chan.inp` -> `ChannelSidecarParseError { sidecar: chan.inp }`.
+- Compatibility mode (`compat_mode=true`):
+  - Missing/unreadable `chan.inp` -> permit legacy fallback (`ichplt=0`, `it=null`, `iwind=0`) and emit `ChannelSidecarCompatibilityFallbackWarning`.
+  - Parse failure -> apply same fallback and emit warning; never silently swallow the event.
+- [DIRECT] Legacy fallback behavior and zeroed routing controls are observed in `wshinp.for`.
+Evidence: `/workdir/wepp-forest/src/wshinp.for:469-485`.
+
 ## 9. Example snippets
 
 ### 9.1 Minimal valid example (`nchan=1`, no rating curve)
@@ -213,7 +226,7 @@ Evidence: `/workdir/wepppyo3/wepp_interchange/src/loss.rs:294-298`, `/workdir/we
 ```text
 99.1
 1
-4
+2
 1.500000
 channel 1 comment a
 channel 1 comment b
@@ -282,13 +295,13 @@ Expected: `ChannelCountMismatch` when compared with `.str`/management channel co
 
 ## 10. Gap/conflict register and HOLD conditions
 
-| Gap ID | Severity | Description | Evidence tag | HOLD condition |
-|---|---|---|---|---|
-| `CHN-GAP-001` | high | `ishape` conflict: usersum lists 1/2 only; legacy internal text and remap logic imply broader/internal shape encoding. | [DIRECT] | Maintain `draft-hold` until accepted input-domain mapping is explicitly dispositioned for openWEPP. |
-| `CHN-GAP-002` | high | Control-section Manning override conflict: usersum note implies override from `chnnbr` (line 12b), legacy sets `ctln <- chnn`. | [DIRECT] | Define canonical precedence rule and regression expectations before `active` promotion. |
-| `CHN-GAP-003` | medium | `flgout` semantic conflict: usersum documents line 11 flag, legacy immediately overrides with global `watsum`. | [DIRECT] | Decide strict/compat mode behavior for line 11 significance. |
-| `CHN-GAP-004` | medium | Legacy compatibility window (`>=94.301`) is accepted by version check, but this spec only normatively defines 99.1 line contract. | [DIRECT] | Add explicit migrated sub-spec or reject pre-99.1 with documented policy. |
-| `CHN-GAP-005` | medium | `slplst` is scalar in common block and used for `ctlslp` override when `icntrl=0`; per-channel semantics are not fully explicit in docs. | [DIRECT] | Resolve and codify intended per-channel vs shared behavior for openWEPP contract. |
+| Gap ID | Severity | Description | Evidence tag | Provenance tags | HOLD condition |
+|---|---|---|---|---|---|
+| `CHN-GAP-001` | high | `ishape` conflict: usersum lists 1/2 only; legacy internal text and remap logic imply broader/internal shape encoding. | [DIRECT] | `usersum2024`, `legacy-code` | Maintain `draft-hold` until accepted input-domain mapping is explicitly dispositioned for openWEPP. |
+| `CHN-GAP-002` | high | Control-section Manning override conflict: usersum note implies override from `chnnbr` (line 12b), legacy sets `ctln <- chnn`. | [DIRECT] | `usersum2024`, `legacy-code` | Define canonical precedence rule and regression expectations before `active` promotion. |
+| `CHN-GAP-003` | medium | `flgout` semantic conflict: usersum documents line 11 flag, legacy immediately overrides with global `watsum`. | [DIRECT] | `usersum2024`, `legacy-code` | Decide strict/compat mode behavior for line 11 significance. |
+| `CHN-GAP-004` | medium | Legacy compatibility window (`>=94.301`) is accepted by version check, but this spec only normatively defines 99.1 line contract. | [DIRECT] | `usersum2024`, `legacy-code` | Add explicit migrated sub-spec or reject pre-99.1 with documented policy. |
+| `CHN-GAP-005` | medium | `slplst` is scalar in common block and used for `ctlslp` override when `icntrl=0`; per-channel semantics are not fully explicit in docs. | [DIRECT] | `legacy-code`, `literature` | Resolve and codify intended per-channel vs shared behavior for openWEPP contract. |
 
 Evidence:
 - `CHN-GAP-001`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7275-7277`, `/workdir/wepp-forest/src/chnpar.for:83-85`, `/workdir/wepp-forest/src/wshinp.for:386-390`

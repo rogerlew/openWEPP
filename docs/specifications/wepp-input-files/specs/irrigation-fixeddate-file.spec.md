@@ -64,7 +64,9 @@ sprinkler_line4       = irint irdept [nozzle] ;
 
 furrow_stream         = { furrow_line4 furrow_line5{surges} line3 } ;
 furrow_line4          = surges ;
-furrow_line5          = qspply tstart tend [tdepl] ;
+furrow_line5          = furrow_line5_canonical | furrow_line5_legacy_compat ;
+furrow_line5_canonical = qspply tstart tend tdepl ;
+furrow_line5_legacy_compat = qspply tstart tend ;  (* compatibility mode only *)
 ```
 
 - First `itemp` occurrences of `line3` are required and are read at initialization in increasing OFE order. `[DIRECT][E-US-02]`, `[DIRECT][E-WF-02]`
@@ -78,6 +80,7 @@ furrow_line5          = qspply tstart tend [tdepl] ;
 - **Sprinkler Line 4:** `irint irdept nozzle` (real triplet), with legacy pre-94.21 two-field form allowed (`nozzle` implied `1.0`). `[DIRECT][E-US-02]`, `[DIRECT][E-WF-07]`
 - **Furrow Line 4:** `surges` (integer, max 20). `[DIRECT][E-US-02]`, `[DIRECT][E-WF-08]`
 - **Furrow Line 5:** usersum specifies `qspply tstart tend tdepl`; current legacy read path consumes `qspply tstart tend` only. `[DIRECT][E-US-02]`, `[DIRECT][E-WF-09]`
+- **Furrow Line 5 policy:** strict mode requires 4-field canonical row (`qspply tstart tend tdepl`); compatibility mode may accept 3-field legacy row (`qspply tstart tend`) and annotate omitted `tdepl` provenance. `[INFERENCE][E-US-02]`, `[INFERENCE][E-WF-09]`
 
 ## 5. Field Dictionary With Canonical Symbols and Alias Mapping
 
@@ -125,13 +128,16 @@ Draft openWEPP parser outcomes:
 | Condition | Expected behavior |
 |---|---|
 | Missing file | `InputFileMissing(surface_id=infile-irrigation-fixeddate)` |
+| Omitted `datver` header while compatibility mode is disabled | `InputLegacyNoDatverDisallowed(surface_id=infile-irrigation-fixeddate)` |
 | Non-numeric or malformed header tokens | `TokenParseError` |
 | `jtemp` not in `{1,2}` | `EnumDomainError(field=jtemp)` |
 | `ktemp != 2` | `EnumDomainError(field=ktemp)` |
 | `itemp` mismatch with hillslope OFE count | `CrossFileMismatch(field=itemp)` |
 | `ofeflg` not expected OFE index in required initialization phase | `OrderingConstraintError` |
 | `surges < 1` or `surges > 20` | `FieldRangeError(field=surges)` |
-| Furrow surge rows missing or arity mismatch | `RecordCountError` / `RecordArityError` |
+| Furrow surge rows missing | `RecordCountError` |
+| Furrow line-5 has 3 fields (`qspply,tstart,tend`) | strict mode: `RecordArityError(field=furrow_line5, expected=4)`; compatibility mode: accept with `LegacyFurrowLine5ArityWarning` |
+| Furrow line-5 has any arity other than 3 or 4 | `RecordArityError(field=furrow_line5)` |
 | Sprinkler pre-94.21 record missing `nozzle` | compatibility mode: apply `nozzle=1.0` with provenance flag |
 | Legacy-order warning condition (`ofeflg` mismatch at event read) | treat as hard `OrderingConstraintError` (not warning-only) |
 
@@ -188,13 +194,13 @@ Reason: first `itemp` line-3 entries must be OFE-ordered initialization records.
 
 ## 10. Gap / Conflict Register (`HOLD` Conditions)
 
-| Gap ID | Issue | Evidence | Status |
-|---|---|---|---|
-| `FDIRR-GAP-001` | Usersum furrow line 5 includes `tdepl`; current legacy read path only consumes `qspply,tstart,tend`. | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-09]` | `HOLD` |
-| `FDIRR-GAP-002` | `iryr` semantics conflict: usersum describes event year; `cirfixd.inc` describes simulation-relative year numbering. | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-10]` | `HOLD` |
-| `FDIRR-GAP-003` | Fixed-date compatibility floor constants exist, but fixed-date `verchk` call is commented out in current legacy path. | `[DIRECT][E-WF-05]`, `[DIRECT][E-WF-06]` | `HOLD` |
-| `FDIRR-GAP-004` | Usersum prescribes strict cross-OFE chronological organization; legacy code mainly emits warnings for OFE-order mismatch during event reads. | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-04]` | `HOLD` |
-| `FDIRR-GAP-005` | wepppyo3 does not currently expose a fixed-date input parser surface, so no modern rust parser behavior baseline exists there. | `[DIRECT][E-WP3-01]` | `HOLD` |
+| Gap ID | Issue | Evidence | Provenance tags | Status |
+|---|---|---|---|---|
+| `FDIRR-GAP-001` | Usersum furrow line 5 includes `tdepl`; current legacy read path only consumes `qspply,tstart,tend`. | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-09]` | `usersum2024`, `legacy-code` | `HOLD` |
+| `FDIRR-GAP-002` | `iryr` semantics conflict: usersum describes event year; `cirfixd.inc` describes simulation-relative year numbering. | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-10]` | `usersum2024`, `legacy-code` | `HOLD` |
+| `FDIRR-GAP-003` | Fixed-date compatibility floor constants exist, but fixed-date `verchk` call is commented out in current legacy path. | `[DIRECT][E-WF-05]`, `[DIRECT][E-WF-06]` | `legacy-code` | `HOLD` |
+| `FDIRR-GAP-004` | Usersum prescribes strict cross-OFE chronological organization; legacy code mainly emits warnings for OFE-order mismatch during event reads. | `[DIRECT][E-US-02]`, `[DIRECT][E-WF-04]` | `usersum2024`, `legacy-code` | `HOLD` |
+| `FDIRR-NOTE-001` | wepppyo3 does not currently expose a fixed-date input parser surface, so no modern rust parser behavior baseline exists there. | `[DIRECT][E-WP3-01]` | `wepppyo3` | `NOTE` provenance completeness only; non-blocking |
 
 ## 11. Parser-Contract Handoff Map
 

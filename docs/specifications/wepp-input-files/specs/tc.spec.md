@@ -27,6 +27,7 @@
 - [DIRECT][E-US-02] `tc.txt` is a presence-only sentinel input surface; no parameter payload is required.
 - [DIRECT][E-US-02] The behavior is specific to watershed simulation mode and controls creation of a supplemental watershed output (`tc_out.txt`).
 - [DIRECT][E-WF-01], [DIRECT][E-WF-02] Legacy execution path checks file open success and toggles `luntc` accordingly; output creation is gated by that latch.
+- [INFERENCE][E-WF-01], [DIRECT][E-WF-02] Interim source-authority rule: retirement-snapshot evidence anchors legacy-compat provenance for sentinel semantics, while openWEPP contracts remain authoritative for new strict-mode typed behavior until active-source parity trace is ratified.
 - [INFERENCE][E-WF-01] Applicability is watershed CLI/run modes only; hillslope-only mode does not own this surface contract.
 
 ## 3. Version / `datver` Applicability Matrix
@@ -35,7 +36,7 @@
 | --- | --- | --- | --- |
 | A | File absent | [DIRECT][E-WF-01] open fails to `err=401`, `luntc` remains `0`, no `tc_out.txt` open. | [INFERENCE][E-WF-01] `OptionalSurfaceMissing(surface_id=infile-channel-tc)`; no fatal error. |
 | B | File present and open succeeds | [DIRECT][E-WF-01], [DIRECT][E-WF-02] `luntc=1`; `tc_out.txt` opened and headers emitted. | [INFERENCE][E-WF-02] `SentinelPresent(surface_id=infile-channel-tc, enable_tc_out=true)` event. |
-| C | File present but open fails (permissions/IO) | [DIRECT][E-WF-01] handled by `err=401`, same runtime path as missing file. | [INFERENCE][E-WF-01] typed `InputOpenError` should be distinguishable from missing-file branch in strict mode. |
+| C | File present but open fails (permissions/IO) | [DIRECT][E-WF-01] handled by `err=401`, same runtime path as missing file. | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-tc, cause=...)`; compat: `OptionalSurfaceMissing(surface_id=infile-channel-tc)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)`. |
 | D | File present with arbitrary contents | [DIRECT][E-US-02], [DIRECT][E-WF-01] content is not parsed; existence/open controls behavior. | [INFERENCE][E-US-02] preserve presence-only semantics; parser must not infer values from file body. |
 
 - [DIRECT][E-US-02] No `datver` line exists for `tc.txt`.
@@ -104,7 +105,7 @@ tc_file = { byte } ;
 | --- | --- | --- |
 | `tc.txt` missing | [DIRECT][E-WF-01] no `tc_out` activation; run continues | [INFERENCE][E-WF-01] `OptionalSurfaceMissing(surface_id=infile-channel-tc)` |
 | `tc.txt` present, open succeeds | [DIRECT][E-WF-01], [DIRECT][E-WF-02] activate `tc_out` creation | [INFERENCE][E-WF-02] `SentinelPresent(surface_id=infile-channel-tc, enable_tc_out=true)` |
-| `tc.txt` present, open fails for non-ENOENT reason | [DIRECT][E-WF-01] merged into `err=401` branch | [INFERENCE][E-WF-01] `InputOpenError(surface_id=infile-channel-tc, cause=...)` in strict mode |
+| `tc.txt` present, open fails for non-ENOENT reason | [DIRECT][E-WF-01] merged into `err=401` branch | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-tc, cause=...)`; compat: `OptionalSurfaceMissing(surface_id=infile-channel-tc)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)` |
 | `tc.txt` contains malformed/non-text bytes | [DIRECT][E-US-02], [DIRECT][E-WF-01] ignored (not parsed) | [INFERENCE][E-US-02] do not raise parse errors based on body content |
 | `tc_out.txt` absent despite sentinel present | [DIRECT][E-WP-04] downstream tooling treats file as optional artifact | [INFERENCE][E-WP-04] emit `OutputExpectationWarning(output=tc_out.txt)` for diagnostics |
 
@@ -135,12 +136,12 @@ Reason: legacy open uses relative path in run cwd; out-of-dir file will not acti
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `TC-GAP-001` | Active legacy production source tree no longer exposes `tc.txt` handling in current `src/`; authoritative implementation is presently captured in retirement snapshot provenance. | [DIRECT][E-WF-01], [DIRECT][E-WF-02] | `HOLD` until source-authority order is ratified for `tc` (snapshot vs archival branch vs current binary behavior). |
-| `TC-GAP-002` | Legacy behavior collapses missing-file and open-failure branches; strict-mode diagnostics likely need split typed outcomes. | [DIRECT][E-WF-01] | `HOLD` until `SC-INFILE-TC-001` defines strict vs compatibility error policy. |
-| `TC-GAP-003` | Usersum states watershed output shape textually, but no formal machine grammar for `tc_out.txt` rows is provided in input spec context. | [DIRECT][E-US-02], [DIRECT][E-WF-03] | `HOLD` until `SC-INFILE-TC-001` and downstream output contract align on row grammar authority. |
-| `TC-GAP-004` | WEPPpy omni option key `tcr_out` currently drives `tc.txt` sentinel creation, which is naming-inconsistent and may obscure intent. | [DIRECT][E-WP-02], [DIRECT][E-WP-03] | `HOLD` until alias naming and UX contract are dispositioned. |
+| Gap ID | Provenance tags | Statement | Evidence | Disposition status |
+| --- | --- | --- | --- | --- |
+| `TC-GAP-001` | `legacy-code`, `usersum2024` | Active legacy production source tree no longer exposes `tc.txt` handling in current `src/`; authoritative implementation is presently captured in retirement snapshot provenance. | [DIRECT][E-WF-01], [DIRECT][E-WF-02] | `HOLD` until source-authority order is ratified for `tc` (snapshot vs archival branch vs current binary behavior). |
+| `TC-GAP-002` | `legacy-code` | Legacy behavior collapses missing-file and open-failure branches; strict-mode diagnostics likely need split typed outcomes. | [DIRECT][E-WF-01] | `HOLD` until `SC-INFILE-TC-001` defines strict vs compatibility error policy. |
+| `TC-GAP-003` | `usersum2024`, `legacy-code` | Usersum states watershed output shape textually, but no formal machine grammar for `tc_out.txt` rows is provided in input spec context. | [DIRECT][E-US-02], [DIRECT][E-WF-03] | `HOLD` until `SC-INFILE-TC-001` and downstream output contract align on row grammar authority. |
+| `TC-NOTE-001` | `wepppy` | WEPPpy omni option key `tcr_out` currently drives `tc.txt` sentinel creation, which is naming-inconsistent and may obscure intent. | [DIRECT][E-WP-02], [DIRECT][E-WP-03] | `NOTE` non-blocking naming-governance item; carry to UX alias backlog without blocking parser promotion. |
 
 `status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
 

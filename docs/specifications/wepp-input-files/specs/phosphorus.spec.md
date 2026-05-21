@@ -122,7 +122,7 @@ scp_line        = real [trailing_tokens] ;
 | File present, wrong record count | [DIRECT][E-WF-01] no explicit record-count guard | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-phosphorus, expected=5)` |
 | Non-numeric concentration token | [DIRECT][E-WF-01] Fortran list-directed read failure behavior | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-phosphorus, field=...)` |
 | Non-finite numeric (`NaN`/`Inf`) | [INFERENCE][E-WP-01] modern layers parse first tokens as float | [INFERENCE][E-WP-01] `FieldFiniteError(field=...)` |
-| Header mismatch (`Phosphorus concentration` vs other text) | [DIRECT][E-WF-01] legacy ignores header contents; [DIRECT][E-WP-01] wepppy validator requires exact string | [INFERENCE][E-WP-01] policy conflict; keep `HOLD` until strict/compat mode disposition |
+| Header mismatch (`Phosphorus concentration` vs other text) | [DIRECT][E-WF-01] legacy ignores header contents; [DIRECT][E-WP-01] wepppy validator requires exact string | strict mode: `HeaderLiteralMismatchError(expected=\"Phosphorus concentration\")`; compatibility mode: allow with `HeaderIgnoredCompatibilityWarning` |
 
 - [INFERENCE][E-WF-01] Parser failures on present files should be explicit typed errors rather than silent disablement.
 
@@ -180,13 +180,13 @@ Reason: concentration fields must be finite numeric values. [INFERENCE][E-WP-01]
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `PHOS-GAP-001` | `usersum2024` does not provide a `phosphorus.txt` format specification, even though it documents nearby sidecars. | [DIRECT][E-US-01] | `HOLD` until higher-rank format authority is identified or legacy-source authority is formally ratified. |
-| `PHOS-GAP-002` | Header policy conflict: legacy ignores first-line contents while wepppy validator requires exact literal `Phosphorus concentration`. | [DIRECT][E-WF-01], [DIRECT][E-WP-01] | `HOLD` until strict-vs-compat parse mode is dispositioned. |
-| `PHOS-GAP-003` | Concentration range bounds are not explicitly defined in legacy parser path; modern validity checks are type-only for file shape. | [DIRECT][E-WF-01], [DIRECT][E-WP-01] | `HOLD` until contract-level physical/risk bounds are set. |
-| `PHOS-GAP-004` | `wepppyo3` currently provides interchange surfaces but no declared ownership for phosphorus input parsing. | [DIRECT][E-WP3-01], [DIRECT][E-WP3-02] | `HOLD` for provenance-completeness tracking; does not block openWEPP spec authority. |
-| `PHOS-GAP-005` | Primary demonstrated consumption is watershed/channel routing/reporting; hillslope-only applicability semantics are not explicitly documented. | [DIRECT][E-WF-04], [DIRECT][E-WF-05], [DIRECT][E-WF-07] | `HOLD` until applicability matrix is finalized in parser contract. |
+| Gap ID | Statement | Evidence | Provenance tags | Disposition status |
+| --- | --- | --- | --- | --- |
+| `PHOS-GAP-001` | `usersum2024` does not provide a `phosphorus.txt` format specification, even though it documents nearby sidecars. | [DIRECT][E-US-01] | `usersum2024`, `legacy-code` | `HOLD` until higher-rank format authority is identified or legacy-source authority is formally ratified. |
+| `PHOS-GAP-002` | Concentration range bounds are not explicitly defined in legacy parser path; modern validity checks are type-only for file shape. | [DIRECT][E-WF-01], [DIRECT][E-WP-01] | `legacy-code`, `wepppy` | `HOLD` until contract-level physical/risk bounds are set. |
+| `PHOS-GAP-003` | Primary demonstrated consumption is watershed/channel routing/reporting; hillslope-only applicability semantics are not explicitly documented. | [DIRECT][E-WF-04], [DIRECT][E-WF-05], [DIRECT][E-WF-07] | `legacy-code` | `HOLD` until applicability matrix is finalized in parser contract. |
+| `PHOS-NOTE-001` | Header policy conflict remains a compatibility concern after mode-gated typed outcomes are defined; interoperability with strict external validators still needs governance tracking. | [DIRECT][E-WF-01], [DIRECT][E-WP-01] | `legacy-code`, `wepppy` | `NOTE` policy/compliance tracking; non-blocking. |
+| `PHOS-NOTE-002` | `wepppyo3` currently provides interchange surfaces but no declared ownership for phosphorus input parsing. | [DIRECT][E-WP3-01], [DIRECT][E-WP3-02] | `wepppyo3` | `NOTE` provenance-completeness tracking; non-blocking. |
 
 `status` remains `draft-HOLD` until high-impact gaps are dispositioned.
 

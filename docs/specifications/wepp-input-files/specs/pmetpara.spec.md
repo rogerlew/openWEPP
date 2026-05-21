@@ -74,6 +74,19 @@ parameter_record = crop_name kcb rawp line actlnam ;
 - [INFERENCE][E-WF-02] openWEPP aliases are transport names only; canonical provenance stays with legacy symbol names.
 - [DIRECT][E-WF-04] Symbol width continuity matters for compatibility: `names` and lookup key are `character*8`, `actlnam` is `character*20` in legacy parser.
 
+### 5.2 Deterministic crop-key normalization and match policy (draft)
+- Strict mode:
+  - Use trimmed keys without implicit truncation.
+  - Use case-sensitive matching on trimmed keys (no implicit case folding).
+  - Require `names` and lookup crop key widths `<= 8` characters; otherwise `CropNameWidthError`.
+  - Match policy is exact-key match on normalized key.
+- Compatibility mode:
+  - Apply uppercase normalization before width handling to emulate legacy corpus conventions.
+  - Emulate fixed-width compatibility by truncating keys to 8 characters for lookup parity with legacy `character*8` symbols.
+  - Emit `CropNameTruncationWarning` when truncation occurs.
+- [DIRECT][E-WF-04] Width constraints are anchored in legacy symbol declarations.
+- [INFERENCE][E-WF-03] Explicit match policy is required to avoid ambiguous first-row fallback behavior.
+
 ## 6. Conditional Branches and Optional Sections
 1. Sidecar presence branch.
 - Present `pmetpara.txt`: Penman-Monteith mode selected (`iflget=2`).
@@ -113,8 +126,10 @@ Legacy behavior includes fallback semantics that are not strict-format safe for 
 | Condition | Legacy behavior | openWEPP parser-contract draft expectation |
 | --- | --- | --- |
 | `pmetpara.txt` missing | ET reverts to non-PMET branch (`iflget=1`) | represent as optional sidecar absence, not parse failure |
+| Datver-prefixed header line present before `irecord` | not parsed by legacy PMET reader path | `FormatVersionLineUnsupportedError(surface_id=infile-pmetpara)` |
 | `irecord` row count mismatch | undefined/IO-failure-prone | `RecordCountError(surface_id=infile-pmetpara)` |
 | crop name not found | silently uses first row after notice | `CropNameMissingError` in strict mode; optional legacy-compat fallback mode must be explicit |
+| crop key width exceeds legacy-compatible width (`>8`) | legacy fixed-width symbols may truncate/alter match behavior | strict mode: `CropNameWidthError`; compatibility mode: truncate with `CropNameTruncationWarning` |
 | non-numeric `kcb`/`rawp`/`line` | list-directed read failure | `TokenParseError(field=...)` |
 | zero/negative `irecord` | undefined behavior | `FieldRangeError(field=irecord)` |
 | duplicate crop-name rows | first encountered match in scan order | `DuplicateCropKeyError` (strict) or deterministic first-row policy (compat), pending disposition |
@@ -169,12 +184,12 @@ Reason: canonical row requires 5 fields. [DIRECT][E-US-02]
 
 ## 10. Gap/Conflict Register and HOLD Conditions
 
-| ID | Issue | Evidence | Draft disposition |
-| --- | --- | --- | --- |
-| `PMET-GAP-001` | `usersum2024` says crop name should match management crop name, but legacy runtime silently falls back to first row when not found. | [DIRECT][E-US-02], [DIRECT][E-WF-03] | `HOLD` until strict-vs-compat policy is dispositioned for `SC-INFILE-PMETPARA-001`. |
-| `PMET-GAP-002` | Legacy parser uses fixed-width string symbols (`names` 8 chars, `actlnam` 20 chars), but modern pipelines emit potentially longer strings/descriptions. | [DIRECT][E-WF-04], [DIRECT][E-WP-01], [DIRECT][E-WP-03] | `HOLD` until canonical string-length and truncation policy is set. |
-| `PMET-GAP-003` | `usersum2024` does not define delimiter/quoting rules for `actlnam` with embedded spaces/commas; modern writers mostly use comma-delimited single-token descriptions. | [DIRECT][E-US-02], [DIRECT][E-WP-01], [DIRECT][E-WF-06] | `HOLD` pending explicit grammar decision for quoted strings and allowed character set. |
-| `PMET-GAP-004` | `wepppyo3` does not currently document an owned parser/writer surface for `pmetpara.txt`. | [DIRECT][E-WP3-01] | `HOLD` for provenance completeness only; not a blocker for openWEPP canonical spec authority. |
+| ID | Issue | Evidence | Provenance tags | Draft disposition |
+| --- | --- | --- | --- | --- |
+| `PMET-GAP-001` | `usersum2024` says crop name should match management crop name, but legacy runtime silently falls back to first row when not found. | [DIRECT][E-US-02], [DIRECT][E-WF-03] | `usersum2024`, `legacy-code` | `HOLD` until strict-vs-compat policy is dispositioned for `SC-INFILE-PMETPARA-001`. |
+| `PMET-GAP-002` | Legacy parser uses fixed-width string symbols (`names` 8 chars, `actlnam` 20 chars), but modern pipelines emit potentially longer strings/descriptions. | [DIRECT][E-WF-04], [DIRECT][E-WP-01], [DIRECT][E-WP-03] | `legacy-code`, `wepppy` | `HOLD` until canonical string-length and truncation policy is set. |
+| `PMET-GAP-003` | `usersum2024` does not define delimiter/quoting rules for `actlnam` with embedded spaces/commas; modern writers mostly use comma-delimited single-token descriptions. | [DIRECT][E-US-02], [DIRECT][E-WP-01], [DIRECT][E-WF-06] | `usersum2024`, `wepppy`, `legacy-code` | `HOLD` pending explicit grammar decision for quoted strings and allowed character set. |
+| `PMET-NOTE-001` | `wepppyo3` does not currently document an owned parser/writer surface for `pmetpara.txt`. | [DIRECT][E-WP3-01] | `wepppyo3` | `NOTE` provenance completeness only; non-blocking. |
 
 `status` remains `draft-HOLD` until gaps above are dispositioned.
 

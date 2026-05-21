@@ -37,7 +37,7 @@
 | --- | --- | --- | --- |
 | A | `frost.txt` absent | [DIRECT][E-US-02], [DIRECT][E-WF-01] Use defaults: `1 10 10` and `1.0 1.0 1.0 0.000010 0.000010 0.500000`. | [INFERENCE][E-WF-01] Treat as explicit optional-surface default branch with observable provenance event. |
 | B | `frost.txt` present with 2 valid lines | [DIRECT][E-US-02], [DIRECT][E-WF-01] Read all fields then apply bounds clamping. | [INFERENCE][E-WF-01] Canonical parse path. |
-| C | `frost.txt` present with only line 1 | [DIRECT][E-WF-01] Legacy falls through `err/end=300`, then defaults/clamps line-2 coefficients. | [INFERENCE][E-WF-01] Support as legacy-compat parse mode; strict mode policy remains unresolved (`HOLD`). |
+| C | `frost.txt` present with only line 1 | [DIRECT][E-WF-01] Legacy falls through `err/end=300`, then defaults/clamps line-2 coefficients. | [INFERENCE][E-WF-01] strict mode: reject missing line-2 record group; compatibility mode: default/clamp line-2 coefficients with explicit warning event. |
 | D | `frost.txt` present with malformed line 1 tokens | [DIRECT][E-WF-01] No explicit `err=` on first read; behavior is runtime-IO failure dependent. | [INFERENCE][E-WF-01] Must raise typed parse error; do not silently continue. |
 
 - [DIRECT][E-WF-01] No `datver` header/line exists for this sidecar.
@@ -84,9 +84,9 @@ kfactor3        = real ;
 | `ksnowf` | snow conductivity adjustment factor | unitless multiplier | real | 0..1 per file | optional | valid `0.1..10.0`; out-of-range clamped to `1.0` | `frost_opts.ksnowf` |
 | `kresf` | residue conductivity adjustment factor | unitless multiplier | real | 0..1 per file | optional | valid `0.1..10.0`; out-of-range clamped to `1.0` | `frost_opts.kresf` |
 | `ksoilf` | soil conductivity adjustment factor | unitless multiplier | real | 0..1 per file | optional | valid `0.1..10.0`; out-of-range clamped to `1.0` | `frost_opts.ksoilf` |
-| `kfactor(1)` | frozen-soil conductivity lower limit (annual/fallow branch per runtime logic) | unitless factor | real | 0..1 per file | optional | valid `(0,1]`; else `1e-5` | `frost_opts.kfactor1` |
-| `kfactor(2)` | frozen-soil conductivity lower limit (pasture/perennial branch per runtime logic) | unitless factor | real | 0..1 per file | optional | valid `(0,1]`; else `1e-5` | `frost_opts.kfactor2` |
-| `kfactor(3)` | frozen-soil conductivity lower limit (forest branch per runtime logic) | unitless factor | real | 0..1 per file | optional | valid `(0,1]`; else `0.5` | `frost_opts.kfactor3` |
+| `kfactor(1)` | frozen-soil conductivity lower-limit factor for runtime class slot 1 | unitless factor | real | 0..1 per file | optional | valid `(0,1]`; else `1e-5` | `frost_opts.kfactor1` |
+| `kfactor(2)` | frozen-soil conductivity lower-limit factor for runtime class slot 2 | unitless factor | real | 0..1 per file | optional | valid `(0,1]`; else `1e-5` | `frost_opts.kfactor2` |
+| `kfactor(3)` | frozen-soil conductivity lower-limit factor for runtime class slot 3 | unitless factor | real | 0..1 per file | optional | valid `(0,1]`; else `0.5` | `frost_opts.kfactor3` |
 
 ### 5.1 Alias mapping notes
 - [DIRECT][E-WF-02], [DIRECT][E-WF-03] Canonical symbols are the legacy WEPP names (`wintRed`, `fineTop`, `fineBot`, `ksnowf`, `kresf`, `ksoilf`, `kfactor(1..3)`).
@@ -130,7 +130,9 @@ kfactor3        = real ;
 | `frost.txt` missing | [DIRECT][E-US-02], [DIRECT][E-WF-01] defaults applied and run continues | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-frost, defaults=...)` |
 | `frost.txt` has line 1 only | [DIRECT][E-WF-01] line-2 values defaulted/clamped | [INFERENCE][E-WF-01] `OptionalRecordGroupMissingDefaulted(surface_id=infile-frost, record_group=line2)` in compatibility mode |
 | line 1 non-numeric or wrong arity | [DIRECT][E-WF-01] no explicit `err=` handler on first read | [INFERENCE][E-WF-01] `TokenParseError` / `InputRecordArityError` |
-| line 2 non-numeric/wrong arity | [DIRECT][E-WF-01] fallback branch then clamping | [INFERENCE][E-WF-01] strict-mode error vs compat defaulting is unresolved (`HOLD`) |
+| line 2 missing or EOF before line 2 | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `InputRecordCountError(surface_id=infile-frost, expected=2)`; compatibility mode: `OptionalRecordGroupMissingDefaulted(..., record_group=line2)` |
+| line 2 wrong arity (<6 tokens) | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `InputRecordArityError(surface_id=infile-frost, line_no=2, expected=6)`; compatibility mode: `LegacyLine2DefaultAppliedWarning` |
+| line 2 non-numeric token | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `TokenParseError(surface_id=infile-frost, line_no=2)`; compatibility mode: `LegacyLine2DefaultAppliedWarning` |
 | out-of-range numeric values | [DIRECT][E-WF-01] clamp to legacy defaults/ranges | [INFERENCE][E-WF-01] strict rejection vs legacy-clamp mode must be explicit contract choice |
 | non-finite numeric values | [DIRECT][E-WP-02] modern guards explicitly sanitize non-finite/unitized inputs | [INFERENCE][E-WP-02] must surface typed finite/range errors before kernel boundary in strict mode |
 
@@ -180,12 +182,12 @@ Reason: violates documented/legacy clamp domains. [DIRECT][E-WF-01]
 
 ## 10. Gap / Conflict Register and `HOLD` Conditions
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| `FROST-GAP-001` | Legacy comments conflict on `kfactor(1..3)` class mapping (`infile.for`/usersum vs `cwint.inc` comments vs `getfreezecond.for` comments). Runtime code path appears authoritative but comments disagree. | [DIRECT][E-US-02], [DIRECT][E-WF-01], [DIRECT][E-WF-04], [DIRECT][E-WF-05] | `HOLD` until canonical class-index mapping is dispositioned and comment conflict handling rule is recorded. |
-| `FROST-GAP-002` | Ambiguity on strict vs compatibility behavior for present-but-malformed line 2 (legacy defaults/clamps vs fail-fast parser policy). | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `HOLD` until `SC-INFILE-FROST-001` defines strict and compat modes explicitly. |
-| `FROST-GAP-003` | `datver`/version line is absent for this sidecar; compatibility expectations for any version-prefixed variants are unspecified. | [DIRECT][E-WF-01], [DIRECT][E-US-02] | `HOLD` until parser contract states reject/accept policy for prefixed variants. |
-| `FROST-GAP-004` | Delimiter/comment grammar beyond list-directed numeric reads (quoted strings, inline comments) is not specified by usersum for `frost.txt`. | [DIRECT][E-US-02], [DIRECT][E-WF-01] | `HOLD` until canonical tokenization rules are dispositioned. |
+| Gap ID | Statement | Evidence | Provenance tags | Disposition status |
+| --- | --- | --- | --- | --- |
+| `FROST-GAP-001` | Legacy comments conflict on `kfactor(1..3)` class mapping (`infile.for`/usersum vs `cwint.inc` comments vs `getfreezecond.for` comments). Runtime code path appears authoritative but comments disagree. | [DIRECT][E-US-02], [DIRECT][E-WF-01], [DIRECT][E-WF-04], [DIRECT][E-WF-05] | `usersum2024`, `legacy-code`, `literature` | `HOLD` until canonical class-index mapping is dispositioned and comment conflict handling rule is recorded. |
+| `FROST-GAP-002` | Out-of-range numeric normalization policy (strict reject vs compatibility clamping) remains unresolved even though malformed line-2 shape handling is now mode-gated. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `legacy-code`, `wepppy` | `HOLD` until range-policy mode behavior is ratified. |
+| `FROST-GAP-003` | `datver`/version line is absent for this sidecar; compatibility expectations for any version-prefixed variants are unspecified. | [DIRECT][E-WF-01], [DIRECT][E-US-02] | `legacy-code`, `usersum2024` | `HOLD` until parser contract states reject/accept policy for prefixed variants. |
+| `FROST-NOTE-001` | Delimiter/comment grammar beyond list-directed numeric reads (quoted strings, inline comments) is not specified by usersum for `frost.txt`. | [DIRECT][E-US-02], [DIRECT][E-WF-01] | `usersum2024`, `legacy-code` | `NOTE` provenance/grammar completeness; non-blocking. |
 
 `status` remains `draft-HOLD` until high-impact gaps above are dispositioned.
 

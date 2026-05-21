@@ -68,6 +68,7 @@ line_n  := elmt nhleft nhrght nhtop ncleft ncrght nctop nileft nirght nitop
 - [DIRECT] `line_1` is a real version number (`usersum2024` Table 21 line 1; legacy read path uses `datver` check).
 - [DIRECT] `line_n` is read as 10 integers by `wshinp`.
 - [DIRECT] `line_n` is repeated for each channel/impoundment in increasing element ID order (`usersum2024` note under Table 21).
+- [INFERENCE] Normative row-count rule: `structure_row_count MUST equal (nchan + npond)` derived from watershed topology context, and file record count `MUST` be exactly `1 + structure_row_count` logical records (`line_1` plus each `line_n`).
 - [INFERENCE] File uses list-directed Fortran parsing semantics (whitespace-delimited free format).
 
 ### 4.2 Element ID Model
@@ -124,6 +125,8 @@ line_n  := elmt nhleft nhrght nhtop ncleft ncrght nctop nileft nirght nitop
 Expected typed error classes (draft):
 - [INFERENCE] `InputFileMissing { path, surface_id }`
 - [INFERENCE] `InputVersionIncompatible { observed_ver, required_ver, surface_id }`
+- [INFERENCE] `InputLegacyNoDatverDisallowed { observed_first_token, surface_id }` when compatibility mode is disabled and Case B would otherwise apply.
+- [INFERENCE] `InputLegacyNoDatverCompatibilityWarning { observed_first_token, surface_id }` when compatibility mode is enabled and Case B is accepted.
 - [INFERENCE] `InputRecordArityMismatch { expected_fields: 10, observed_fields, line_no }`
 - [INFERENCE] `InputElementTypeInvalid { line_no, elmt }`
 - [INFERENCE] `InputTopologyDisconnected { line_no, element_id }`
@@ -165,12 +168,12 @@ paired with `.chn` line-2 channel count `2` and management `jstruc=2`
 
 ## 10. Gap / Conflict Register (`HOLD` Conditions)
 
-| Gap ID | Statement | Evidence | Disposition status |
-| --- | --- | --- | --- |
-| G1 | `usersum2024` Table 23 describes stronger structural rules than the explicit hard-stop checks observed in `wshinp/wshini`. | [DIRECT] `usersum2024:7093-7137` vs `wshinp:265-367`, `wshini:339-361` | `HOLD` until SC defines which rules are enforced at parse-time vs topology-validation stage. |
-| G2 | Legacy Case B (`ver <= 10`) behavior is accepted by code path but historical corpus compatibility is not yet characterized in openWEPP. | [DIRECT] `infile.for:383-396` | `HOLD` until fixture-based compatibility decision is dispositioned. |
-| G3 | `wepppy` structure emission path writes channel-only rows for non-minimal generated structures (`elmt` hardcoded `2`). | [DIRECT] `wepp.py:2383-2391` | `HOLD` as provenance note; does not redefine canonical `.str` grammar. |
-| G4 | `wepppyo3` currently documents output/pass interchange surfaces; no dedicated `.str` parser contract is documented there. | [DIRECT] `wepppyo3/README.md:70-73`, `128-146` | `HOLD` until openWEPP parser contract and ownership boundary are finalized. |
+| Gap ID | Statement | Evidence | Provenance tags | Disposition status |
+| --- | --- | --- | --- | --- |
+| G1 | `usersum2024` Table 23 describes stronger structural rules than the explicit hard-stop checks observed in `wshinp/wshini`. Additional constraints pending explicit parse-vs-validate placement: (a) channel/impoundment feed restrictions by element type, (b) no mixed hillslope+channel feeding for one impoundment, (c) no channel-to-channel left/right feed patterns that violate Table 23 topology class rules. | [DIRECT] `usersum2024:7093-7137` vs `wshinp:265-367`, `wshini:339-361` | `usersum2024`, `legacy-code` | `HOLD` until SC defines which rules are enforced at parse-time vs topology-validation stage. |
+| G2 | Legacy Case B (`ver <= 10`) behavior is accepted by code path but historical corpus compatibility is not yet characterized in openWEPP. | [DIRECT] `infile.for:383-396` | `legacy-code` | `HOLD` until fixture-based compatibility decision is dispositioned. |
+| G3 | `wepppy` structure emission path writes channel-only rows for non-minimal generated structures (`elmt` hardcoded `2`). | [DIRECT] `wepp.py:2383-2391` | `wepppy`, `legacy-code` | `HOLD` as provenance note; does not redefine canonical `.str` grammar. |
+| G4 | `wepppyo3` currently documents output/pass interchange surfaces; no dedicated `.str` parser contract is documented there. | [DIRECT] `wepppyo3/README.md:70-73`, `128-146` | `wepppyo3` | `HOLD` until openWEPP parser contract and ownership boundary are finalized. |
 
 ## 11. Parser-Contract Handoff Map (`SC-INFILE-WATERSHED-STRUCTURE-001`)
 
