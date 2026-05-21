@@ -118,7 +118,7 @@ furrow_line5_legacy_compat = qspply tstart tend ;  (* compatibility mode only *)
 2. Run-option coupling: file is only meaningful when run options select fixed-date scheduling participation. `[DIRECT][E-WF-11]`
 3. System coupling: `jtemp` must equal selected irrigation system (`irsyst`), else legacy rejects and re-prompts file selection. `[DIRECT][E-WF-01]`
 4. Scheduling coupling: `ktemp` must equal `2`; mismatch is rejected. `[DIRECT][E-WF-01]`
-5. Sequence coupling: first `itemp` `line3` records initialize next event date per OFE; subsequent records must maintain OFE/date ordering discipline from usersum for deterministic behavior. `[DIRECT][E-US-02]`, `[DIRECT][E-WF-02]`, `[DIRECT][E-WF-04]`
+5. Sequence coupling: first `itemp` `line3` records initialize next event date per OFE; subsequent records must maintain OFE/date ordering discipline from usersum for deterministic behavior. Strict mode rejects ordering anomalies; compatibility mode may preserve legacy warning-only continuation with explicit provenance. `[DIRECT][E-US-02]`, `[DIRECT][E-WF-02]`, `[DIRECT][E-WF-04]`
 6. Simulation-date coupling: event is triggered when simulation date/year equals `irday/iryr` (or single-event mode). `[DIRECT][E-WF-03]`
 
 ## 8. Defaulting and Missing-File Behavior (Typed Error Expectations)
@@ -139,7 +139,7 @@ Draft openWEPP parser outcomes:
 | Furrow line-5 has 3 fields (`qspply,tstart,tend`) | strict mode: `RecordArityError(field=furrow_line5, expected=4)`; compatibility mode: accept with `LegacyFurrowLine5ArityWarning` |
 | Furrow line-5 has any arity other than 3 or 4 | `RecordArityError(field=furrow_line5)` |
 | Sprinkler pre-94.21 record missing `nozzle` | compatibility mode: apply `nozzle=1.0` with provenance flag |
-| Legacy-order warning condition (`ofeflg` mismatch at event read) | treat as hard `OrderingConstraintError` (not warning-only) |
+| Legacy-order warning condition (`ofeflg` mismatch at event read) | strict mode: hard `OrderingConstraintError`; compatibility mode: accept with `LegacyOrderingWarning` provenance event |
 
 - Legacy runtime frequently warns and continues in some malformed-order cases; openWEPP contract draft prefers typed failures for correctness. `[DIRECT][E-WF-04]`, `[INFERENCE][E-WF-04]`
 
@@ -215,4 +215,9 @@ Target parser contract: `SC-INFILE-IRRIGATION-FIXEDDATE-001`
 | Error surface | Section 8 | Return typed errors; avoid silent mutation except documented compatibility defaulting (`nozzle=1.0`). |
 | Unresolved conflicts | Section 10 | Carry `HOLD` gaps into contract disposition; do not claim completion while unresolved. |
 
-Handoff status: `ready-for-contract-authoring (with HOLD gaps)`.
+Handoff status: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`.
+
+Handoff linkage:
+- `parser_contract_id`: `SC-INFILE-IRRIGATION-FIXEDDATE-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md`
+- `handoff_status`: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`

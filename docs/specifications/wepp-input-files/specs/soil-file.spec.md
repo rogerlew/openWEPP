@@ -1,5 +1,20 @@
 # Soil Input File
 
+## Header Metadata
+- `spec_id`: `SPEC-INFILE-SOIL-SOL-001`
+- `surface_id`: `infile-soil-sol`
+- `status`: `draft-HOLD`
+- `owner`: `openWEPP`
+- `spec_version`: `0.1.0`
+- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `evidence_mode`: `Static`
+
+## Parser-Contract Authority Note
+- Canonical parser-contract authority for this surface is:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md`
+- This specification is the source-grammar and symbol authority for `.sol` datver branches.
+- Legacy canonical symbols (`datver`, `ntemp`, `ksflag`, `slid`, `texid`, `nsl`, `salb`, `sat`, `ki`, `kr`, `shcrit`, `avke`, `solthk`, `ksat`, `slflag`, `kslast`) remain normative unless parser-contract alias mapping explicitly states otherwise.
+
 Information on soil properties to a maximum depth of 1.8 meters are input to the WEPP model through the soil input file. The user may input information on up to 8 different soil layers. WEPP internally creates a new set of soil layers based on the original set parameter values. If the entire 1.8 meters is parameterized, the new soil layers represent depths of 0-100 mm, 100-200 mm, 200-400 mm, 400-600 mm, 600-800 mm, 800-1000 mm, 1000-1200 mm, 1200-1400 mm, 1400-1600 mm, 1600-1800 mm.
 
 As with the slope file, soil parameters must be input for each and every Overland Flow Element (OFE) on the hillslope profile and for each channel in a watershed, even if the soil on all OFEs is the same.
@@ -213,3 +228,12 @@ Line 6: Applies to versions 2006.2, 7777, 7778, 9002, 9003, 9005 format soil fil
   b) thickness of restricting layer (mm) - real (`ui_bdrkth`)
 
   c) hydraulic conductivity of restricting layer (mm/h) - real (`kslast`)
+
+## Parser-Contract Handoff Map
+- Target parser contract ID: `SC-INFILE-SOIL-001`.
+- Canonical contract path:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md`
+- Contract authoring package linkage:
+  - `docs/work-packages/20260520-infile02-author-sc-infile-soil-001/`
+- Parser-contract Sections 3-4 and 9 govern canonical propagation/export handling for full `7777+` / `9002+` (`theta_r`, `theta_s`, `alpha`, `npar`, `ks`, appended Rosetta `wp`/`fc`) field surfaces.
+- Current specification status remains `draft-HOLD` until parser-contract HOLD gaps are dispositioned.

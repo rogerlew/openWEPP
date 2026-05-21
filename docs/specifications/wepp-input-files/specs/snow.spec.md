@@ -40,6 +40,7 @@
 | A | `snow.txt` absent | [DIRECT][E-WF-01] No hard failure; defaults assigned: `rst=0.0`, `newsnw=100.0`, `ssd=250.0`. | [INFERENCE][E-WF-01] Support as explicit optional-surface default branch, with provenance event in diagnostics. |
 | B | `snow.txt` present with three parseable records | [DIRECT][E-WF-01] Reads 3 list-directed values in fixed order (`rst`, `newsnw`, `ssd`). | [INFERENCE][E-WF-01] Treat as canonical parse path. |
 | C | `snow.txt` present but malformed/incomplete | [DIRECT][E-WF-01] No explicit `err=` on the `read` statements; runtime behavior is implementation-dependent read failure. | [INFERENCE][E-WF-01] Must raise typed parse/record error; do not silently revert to defaults after parse failure. |
+| D | prefixed/version-like extra leading record before canonical triplet | [INFERENCE][E-WF-01] legacy may consume shifted lines if not guarded | [INFERENCE][E-WF-01] reject in strict and compatibility modes as unsupported format to prevent semantic masking |
 
 - [DIRECT][E-WF-01] No `datver`/version line is used for this sidecar.
 - [DIRECT][E-US-02] `usersum2024` does not publish a dedicated `snow.txt` format table in the documented sidecar section.
@@ -113,8 +114,9 @@ ssd_line_compat    = real [trailing_tokens] ;
 | --- | --- | --- |
 | `snow.txt` missing | [DIRECT][E-WF-01] assign defaults and continue | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-snow, defaults={rst:0.0,newsnw:100.0,ssd:250.0})` |
 | File present, fewer than 3 records | [DIRECT][E-WF-01] read failure path is not explicitly handled | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-snow, expected=3)` |
-| File present, more than 3 records | [DIRECT][E-WF-01] legacy reads only first three records and ignores surplus | strict mode: `InputRecordCountError(surface_id=infile-snow, expected=3)`; compatibility mode: ignore extras with `SurplusRecordWarning` |
+| File present, more than 3 records | [DIRECT][E-WF-01] legacy reads only first three records and ignores surplus | strict mode: `InputRecordCountError(surface_id=infile-snow, expected=3)`; compatibility mode: allow only comment/annotation surplus after canonical first 3 lines; numeric surplus or leading-prefix shifts remain errors |
 | Trailing tokens after primary numeric on a line | [INFERENCE][E-WP-01] modern emitters may include inline annotations | strict mode: `TrailingTokenError(surface_id=infile-snow)`; compatibility mode: allow with `TrailingTokenCompatibilityWarning` |
+| Version/prefix line before canonical line 1 | [INFERENCE][E-WF-01] can shift parse semantics | strict and compatibility: `UnsupportedPrefixedVariantError(surface_id=infile-snow)` |
 | Non-numeric token on required line | [DIRECT][E-WF-01] read failure path is not explicitly handled | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-snow, line_no=...)` |
 | Non-finite numeric (`NaN`/`Inf`) | [INFERENCE][E-WF-01] sidecar records must parse as numeric reals; non-finite values are non-physical parse payloads | [INFERENCE][E-WF-01] `FieldFiniteError(field=...)` |
 | Non-positive density values (`newsnw<=0` or `ssd<=0`) | [DIRECT][E-WF-05] densities are physically represented in `kg/m^3` | strict/compat baseline invariant: `FieldRangeError(field=newsnw|ssd)` |
@@ -188,4 +190,5 @@ Reason: density parameters must be positive for physically meaningful snow-densi
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-SNOW-001`
-- `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md`
+- `handoff_status`: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`

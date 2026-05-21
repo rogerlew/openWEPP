@@ -1,4 +1,19 @@
 # WEPP Plant/Management Input File
+
+## Header Metadata
+- `spec_id`: `SPEC-INFILE-MANAGEMENT-MAN-001`
+- `surface_id`: `infile-management-man`
+- `status`: `draft-HOLD`
+- `owner`: `openWEPP`
+- `spec_version`: `0.1.0`
+- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `evidence_mode`: `Static`
+
+## Parser-Contract Authority Note
+- Canonical parser-contract authority for this surface is:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md`
+- This specification remains the canonical section/scenario grammar and symbol authority for `.man`.
+- Legacy canonical symbols and section labels (for example `datver`, `ncrop`, `nop`, `nini`, `nscen`, `nofe`, `nyears`, `nrots`, `manindx`) are normative unless parser-contract alias mapping explicitly states otherwise.
 The plant/management input file contains all of the information needed by the WEPP model related to plant parameters (rangeland plant communities and cropland annual and perennial crops), tillage sequences and tillage implement parameters, plant and residue management, initial conditions, contouring, subsurface drainage, and crop rotations.
 
 For readability, the WEPP management file is structured into **Sections**. A **Section** is a group of data which are related in some manner. The WEPP management file can become very complex, especially for multiple OFE simulations. It is recommend to use the WEPP user interface or other software to assist in creating these files.
@@ -644,3 +659,12 @@ Please convert Plant/Management Input File section to markdown being careful to 
 ```bash
 sed -E -i 's/ ?\[cite: [^]]*\]//g'  plant_file_specification.md 
 ```
+
+## Parser-Contract Handoff Map
+- Target parser contract ID: `SC-INFILE-MANAGEMENT-001`.
+- Canonical contract path:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md`
+- Contract authoring package linkage:
+  - `docs/work-packages/20260520-infile03-author-sc-infile-management-001/`
+- Parser-contract Sections 3-4 and 9 govern full section-local symbol coverage and boundary export mapping for `.man` scenario payloads and schedule/date surfaces.
+- Current specification status remains `draft-HOLD` until parser-contract HOLD gaps are dispositioned.

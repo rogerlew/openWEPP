@@ -150,6 +150,7 @@ impoundment_block ::= description3
 | `datver` | impoundment file version | unitless | real | 1/file | required |
 | `jpond` | declared number of impoundments in `.imp` | count | int | 1/file | required |
 | `impdes(i)` | impoundment description lines | text | char | 3/impoundment | required |
+| `strdes` | branch-local structure description/comment line | text | char | conditional per enabled branch (`ids`, `icv(1)`, `icv(2)`, `irf`, `ies`, `iff`, `ipr`) | conditional |
 | `ids` | drop spillway index | enum int | int | 1/impoundment | required |
 | `diars,lenrs,widrs,hrs,coefw,coefo,diabl,hitbl,wdbl,hrh,lbl,sbl,hblot,ke,kb,kc` | drop spillway parameters by `ids` branch | mixed SI | real | branch-specific | conditional |
 | `icv,ncv` | culvert enabled flag and multiplicity | enum/count | int | 2 pairs/impoundment | required |
@@ -315,6 +316,11 @@ impoundment_block ::= description3
 | Sections 7, 8 | `SC-INFILE-WATERSHED-IMPOUNDMENT-001` | Define cross-file constraints and typed error surface |
 | Section 9 | `SC-INFILE-WATERSHED-IMPOUNDMENT-001` | Seed parser conformance fixtures |
 | Section 10 | `SC-INFILE-WATERSHED-IMPOUNDMENT-001` | Track unresolved policy decisions and hold criteria |
+
+Handoff linkage:
+- `parser_contract_id`: `SC-INFILE-WATERSHED-IMPOUNDMENT-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md`
+- `handoff_status`: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`
 
 ## Evidence Anchors
 - `EA-IMP-001` [DIRECT]: `references/vendorable/usersum2024.pdf`, Table 28 (Impoundment input file description), Table 23 (structure rules), watershed input sections.

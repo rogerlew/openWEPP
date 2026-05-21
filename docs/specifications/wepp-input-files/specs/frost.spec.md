@@ -46,7 +46,9 @@
 
 ### 4.1 Canonical grammar (draft)
 ```ebnf
-frost_file      = line1 [line2] ;
+frost_file      = strict_frost_file | compat_frost_file ;
+strict_frost_file = line1 line2 ;
+compat_frost_file = line1 [line2] ;
 line1           = wintRed fineTop fineBot ;
 line2           = ksnowf kresf ksoilf kfactor1 kfactor2 kfactor3 ;
 wintRed         = integer ;
@@ -62,7 +64,7 @@ kfactor3        = real ;
 
 - [DIRECT][E-US-02] Usersum documents exactly two records with the listed field order.
 - [DIRECT][E-WF-01] Legacy parser reads line 1 with list-directed input and attempts line 2 via `read(...,err=300,end=300)`.
-- [INFERENCE][E-WF-01] `line2` is optional in compatibility mode due to explicit fallback branch.
+- [INFERENCE][E-WF-01] `line2` is optional only in compatibility mode due to explicit fallback branch; strict mode requires line 2.
 - [INFERENCE][E-WF-01] Delimiters are list-directed compatible (whitespace and comma tokenization), but quoting/comment grammar is not formally documented and remains open.
 
 ### 4.2 Line definitions
@@ -92,6 +94,7 @@ kfactor3        = real ;
 - [DIRECT][E-WF-02], [DIRECT][E-WF-03] Canonical symbols are the legacy WEPP names (`wintRed`, `fineTop`, `fineBot`, `ksnowf`, `kresf`, `ksoilf`, `kfactor(1..3)`).
 - [DIRECT][E-WP-01] `frost_opts_*` names are alias/boundary names for orchestration payloads and emitted files.
 - [INFERENCE][E-WF-04] openWEPP interfaces should preserve canonical symbols in specs and equation references while allowing alias mapping at API boundaries.
+- [DIRECT][E-WF-05] `kfactor(1..3)` class-label semantics remain unresolved; slot indices are canonical while class labels stay `HOLD`.
 
 ## 6. Conditional Branches and Optional Sections
 1. File-presence branch.
@@ -133,6 +136,7 @@ kfactor3        = real ;
 | line 2 missing or EOF before line 2 | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `InputRecordCountError(surface_id=infile-frost, expected=2)`; compatibility mode: `OptionalRecordGroupMissingDefaulted(..., record_group=line2)` |
 | line 2 wrong arity (<6 tokens) | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `InputRecordArityError(surface_id=infile-frost, line_no=2, expected=6)`; compatibility mode: `LegacyLine2DefaultAppliedWarning` |
 | line 2 non-numeric token | [DIRECT][E-WF-01] fallback branch then defaults/clamping | strict mode: `TokenParseError(surface_id=infile-frost, line_no=2)`; compatibility mode: `LegacyLine2DefaultAppliedWarning` |
+| prefixed/version-like leading line | [INFERENCE][E-WF-01] can shift line assignment and semantics | provisional policy: strict and compatibility both reject with `UnsupportedPrefixedVariantError(surface_id=infile-frost)` until `FROST-GAP-003` is dispositioned |
 | out-of-range numeric values | [DIRECT][E-WF-01] clamp to legacy defaults/ranges | strict mode: `InputValueOutOfRange(surface_id=infile-frost, field=..., allowed=...)`; compatibility mode: apply legacy clamp/default and emit `LegacyRangeClampAppliedWarning(surface_id=infile-frost, field=...)` |
 | non-finite numeric values | [DIRECT][E-WP-02] modern guards explicitly sanitize non-finite/unitized inputs | [INFERENCE][E-WP-02] must surface typed finite/range errors before kernel boundary in strict mode |
 
@@ -186,7 +190,7 @@ Reason: violates documented/legacy clamp domains. [DIRECT][E-WF-01]
 | --- | --- | --- | --- | --- |
 | `FROST-GAP-001` | Legacy comments conflict on `kfactor(1..3)` class mapping (`infile.for`/usersum vs `cwint.inc` comments vs `getfreezecond.for` comments). Runtime code path appears authoritative but comments disagree. | [DIRECT][E-US-02], [DIRECT][E-WF-01], [DIRECT][E-WF-04], [DIRECT][E-WF-05] | `usersum2024`, `legacy-code`, `literature` | `HOLD` until canonical class-index mapping is dispositioned and comment conflict handling rule is recorded. |
 | `FROST-GAP-002` | Out-of-range numeric normalization policy is ratified: strict mode rejects out-of-range values; compatibility mode applies legacy clamp/default with explicit warning. | [DIRECT][E-WF-01], [DIRECT][E-WP-02] | `legacy-code`, `wepppy` | `CLOSED` (non-blocking; carried as provenance of resolved policy decision). |
-| `FROST-GAP-003` | `datver`/version line is absent for this sidecar; compatibility expectations for any version-prefixed variants are unspecified. | [DIRECT][E-WF-01], [DIRECT][E-US-02] | `legacy-code`, `usersum2024` | `HOLD` until parser contract states reject/accept policy for prefixed variants. |
+| `FROST-GAP-003` | `datver`/version line is absent for this sidecar; compatibility expectations for any version-prefixed variants are unspecified. Current contract uses provisional reject policy until governance closure. | [DIRECT][E-WF-01], [DIRECT][E-US-02] | `legacy-code`, `usersum2024` | `HOLD` until parser contract governance ratifies final prefixed-variant policy. |
 | `FROST-NOTE-001` | Delimiter/comment grammar beyond list-directed numeric reads (quoted strings, inline comments) is not specified by usersum for `frost.txt`. | [DIRECT][E-US-02], [DIRECT][E-WF-01] | `usersum2024`, `legacy-code` | `NOTE` provenance/grammar completeness; non-blocking. |
 
 `status` remains `draft-HOLD` until remaining unresolved high-impact gaps (`FROST-GAP-001`, `FROST-GAP-003`) are dispositioned.
@@ -204,4 +208,5 @@ Reason: violates documented/legacy clamp domains. [DIRECT][E-WF-01]
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-FROST-001`
-- `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md`
+- `handoff_status`: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`

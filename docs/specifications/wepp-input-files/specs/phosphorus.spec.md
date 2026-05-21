@@ -203,5 +203,6 @@ Reason: concentration fields must be finite numeric values. [INFERENCE][E-WP-01]
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-PHOSPHORUS-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`
-- `linked_work_package`: `docs/work-packages/20260520-infile11-author-sc-infile-phosphorus-001/`
+- `linked_work_package`: `docs/work-packages/20260520-infile14-author-sc-infile-phosphorus-001/`

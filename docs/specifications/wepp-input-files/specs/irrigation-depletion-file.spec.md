@@ -39,10 +39,10 @@
 
 | Input form | First record interpretation | Legacy behavior | openWEPP draft stance | Evidence |
 | --- | --- | --- | --- | --- |
-| Canonical current | explicit `datver` line (Table 18 shows `95.7`) | accepted; `idsver/idfver` tracked | `MUST` accept explicit datver line | `[DIRECT][E-US-03]`, `[DIRECT][E-WF-01]` |
-| Pre-93 legacy compatibility | first numeric token treated as line-2 header when `datver <= 2.0` probe | legacy backspaces and treats first line as `itemp jtemp ktemp` | `MAY` support in explicit compatibility mode | `[DIRECT][E-WF-01]` |
-| Sprinkler depletion old variant | `idsver < 94.21` | nozzle not present; legacy sets `nozzle=1.0` | `MUST` decide compatibility behavior explicitly (see HOLD) | `[DIRECT][E-WF-02]`, `[DIRECT][E-WF-07]` |
-| Furrow depletion compatibility floor | `irdfch = 91.5` constant | constants exist; direct `verchk` call currently commented in this path | `MUST` codify acceptance policy in parser contract | `[DIRECT][E-WF-01]`, `[DIRECT][E-WF-07]` |
+| Canonical current | explicit `datver` line (Table 18 shows `95.7`) | accepted; `idsver/idfver` tracked | strict + compat accept `datver=95.7` | `[DIRECT][E-US-03]`, `[DIRECT][E-WF-01]` |
+| Pre-93 legacy compatibility | first numeric token treated as line-2 header when `datver <= 2.0` probe | legacy backspaces and treats first line as `itemp jtemp ktemp` | strict rejects; compat may accept with explicit warning | `[DIRECT][E-WF-01]` |
+| Sprinkler legacy datver window | explicit `datver` with sprinkler system (`jtemp=1`) | compatibility constants include `idsch=94.21` | strict rejects; compat accepts only `94.21 <= datver < 95.7` | `[DIRECT][E-WF-02]`, `[DIRECT][E-WF-07]` |
+| Furrow legacy datver window | explicit `datver` with furrow system (`jtemp=2`) | compatibility constants include `irdfch=91.5` | strict rejects; compat accepts only `91.5 <= datver < 95.7` | `[DIRECT][E-WF-01]`, `[DIRECT][E-WF-07]` |
 
 ## 4. Record Grammar and Line-by-Line Format Definition
 
@@ -162,7 +162,7 @@ openWEPP parser-contract targets should expose typed outcomes and avoid silent m
 | `ofeflg` not in expected order for initialization or continuation stream | legacy warning; run may continue with misordered periods | strict mode: `ContinuationOrderingError`; compatibility mode: `ContinuationOrderingWarning` |
 | `irdmin < 0.001` | legacy mutates to `0.025` | `FieldRangeError(field=irdmin)` in strict mode; compatibility mode optional |
 | `depsrg == 3` or `depsrg > 6` (furrow) | legacy remaps/clamps (`3->4`, `>6->6`) | `FieldNormalizationRequired` or strict `FieldRangeError` policy pending disposition |
-| Furrow with contour/non-cropland | legacy disables irrigation and continues | `UnsupportedIrrigationConfiguration` or compatibility warning-mode policy pending disposition |
+| Furrow with contour/non-cropland | legacy disables irrigation and continues | strict mode: `UnsupportedIrrigationConfiguration`; compatibility mode: disable irrigation for affected periods with explicit warning |
 
 - Error names above are draft targets for `SC-INFILE-IRRIGATION-DEPLETION-001`. `[INFERENCE][E-WF-01]`, `[INFERENCE][E-WF-03]`
 
@@ -263,3 +263,8 @@ Reason: row count and run-level OFE structure mismatch (example run has 2 OFEs).
 
 Handoff package linkage:
 - `docs/work-packages/20260520-infile08-author-sc-infile-irrigation-depletion-001/`
+
+Handoff linkage:
+- `parser_contract_id`: `SC-INFILE-IRRIGATION-DEPLETION-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md`
+- `handoff_status`: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`

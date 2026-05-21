@@ -2,7 +2,7 @@
 
 This directory stores review/disposition evidence for `SC-INFILE-CHANINP-001`.
 
-Planned artifact bundle:
+Parser-contract artifact bundle paths:
 - `parser-contracts/SC-INFILE-CHANINP-001/contract_ref.md`
 - `parser-contracts/SC-INFILE-CHANINP-001/review_agent_a.md`
 - `parser-contracts/SC-INFILE-CHANINP-001/review_agent_b.md`
@@ -16,6 +16,7 @@ Primary canonical outputs for this package:
 
 Spec intent:
 - author channel contrast sidecar specification
+- author parser-contract authority for channel routing-options sidecar behavior
 
 Evidence annotation convention:
 - `[DIRECT]` = directly observed in source/reference/output

@@ -2,7 +2,7 @@
 
 This directory stores review/disposition evidence for `SC-INFILE-MANAGEMENT-001`.
 
-Planned artifact bundle:
+Parser-contract artifact bundle paths:
 - `parser-contracts/SC-INFILE-MANAGEMENT-001/contract_ref.md`
 - `parser-contracts/SC-INFILE-MANAGEMENT-001/review_agent_a.md`
 - `parser-contracts/SC-INFILE-MANAGEMENT-001/review_agent_b.md`

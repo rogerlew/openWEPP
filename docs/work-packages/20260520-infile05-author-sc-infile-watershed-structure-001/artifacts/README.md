@@ -2,7 +2,7 @@
 
 This directory stores review/disposition evidence for `SC-INFILE-WATERSHED-STRUCTURE-001`.
 
-Planned artifact bundle:
+Parser-contract artifact bundle paths:
 - `parser-contracts/SC-INFILE-WATERSHED-STRUCTURE-001/contract_ref.md`
 - `parser-contracts/SC-INFILE-WATERSHED-STRUCTURE-001/review_agent_a.md`
 - `parser-contracts/SC-INFILE-WATERSHED-STRUCTURE-001/review_agent_b.md`
@@ -15,7 +15,7 @@ Primary canonical outputs for this package:
 - `docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md`
 
 Spec intent:
-- author watershed structure input specification
+- refine watershed structure input specification and define parser-contract authority
 
 Evidence annotation convention:
 - `[DIRECT]` = directly observed in source/reference/output

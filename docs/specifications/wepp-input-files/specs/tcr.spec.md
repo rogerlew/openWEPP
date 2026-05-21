@@ -58,8 +58,7 @@ nch_line      = real [trailing_tokens] ;
 
 - [DIRECT][E-WF-01] Legacy consumes exactly four sequential list-directed reads.
 - [DIRECT][E-WP-01] Modern producer emits value-first lines with trailing labels (e.g., `taumin`, `taumax`), so trailing non-required tokens are present in current producer output.
-- [INFERENCE][E-WP-01] Compat mode accepts value-first lines and ignores trailing annotation tokens after the first parseable numeric token.
-- [INFERENCE][E-WP-01] Strict mode allows only empty trailing content or a canonical field-label token matching the current line (`taumin`, `taumax`, `kch`, `nch`); other trailing tokens raise `TrailingTokenPolicyError(surface_id=infile-channel-tcr, line_no=...)`.
+- [INFERENCE][E-WP-01] Strict and compatibility modes both accept canonical numeric-leading records and preserve trailing annotation token provenance for observability.
 
 ### 4.2 Line definitions
 - Line 1: `taumin` (minimum critical shear parameter for sidecar slope curve). [DIRECT][E-WF-01], [DIRECT][E-WF-03]
@@ -120,7 +119,7 @@ nch_line      = real [trailing_tokens] ;
 | `tcr.txt` missing | [DIRECT][E-WF-01], [DIRECT][E-WF-06] `tcrflg=0`; no sidecar override. | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-tcr, tcrflg=false)` |
 | `tcr.txt` present, < 4 parseable records | [DIRECT][E-WF-01] no explicit read error handlers on record reads. | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-channel-tcr, expected=4)` |
 | Non-numeric token in required field | [DIRECT][E-WF-01] no explicit parse guards on reads. | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-channel-tcr, line_no=...)` |
-| Trailing token after required numeric token | [DIRECT][E-WP-01] modern producer emits trailing labels. | [INFERENCE][E-WP-01] strict: `TrailingTokenPolicyError(surface_id=infile-channel-tcr, line_no=...)` unless token matches canonical field label; compat: ignore trailing tokens. |
+| Trailing token after required numeric token | [DIRECT][E-WP-01] modern producer emits trailing labels. | [INFERENCE][E-WP-01] strict and compatibility modes accept canonical numeric-leading records with trailing labels/comments and preserve line-level provenance diagnostics. |
 | Open failure from permission/device error | [DIRECT][E-WF-01] collapsed to `tcrflg=0` via open `err=` branch. | [INFERENCE][E-WF-01] strict: `InputOpenError(surface_id=infile-channel-tcr, cause=...)`; compat: `OptionalSurfaceMissingDefaulted(surface_id=infile-channel-tcr, tcrflg=false)` plus `CompatibilityWarning(open_error_collapsed_with_missing=true)` |
 | `taumin > taumax` after parse | [DIRECT][E-WF-03] both values feed sidecar override curve branch. | [INFERENCE][E-WF-03] strict: `RelationalInvariantError(lhs=taumin, op="<=", rhs=taumax)`; compat: `CompatibilityWarning(relational_invariant_violation="taumin<=taumax")` and preserve legacy value flow. |
 | Parsed values violate curve-domain invariants (`kch<=0`, `nch<=0`, non-finite) | [DIRECT][E-WF-03] values feed power/denominator expression directly. | [INFERENCE][E-WF-03] `FieldRangeError(field=...)` / `FieldFiniteError(field=...)` before kernel mapping |
@@ -200,4 +199,5 @@ Reason: denominator/exponent invariants fail under strict numeric guard policy. 
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-TCR-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`

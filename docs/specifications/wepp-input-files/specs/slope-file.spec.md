@@ -218,10 +218,13 @@ Reason: minimum two points required. `[DIRECT][E-US-04]`
 
 ## 10. Parser-Contract Handoff Map
 - Target parser contract ID: `SC-INFILE-SLOPE-001`.
+- Canonical contract path:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md`
 - This specification is the governing source for:
   - tokenization and comment-skipping semantics,
   - datver branch behavior,
   - OFE/block cardinalities,
   - endpoint and cross-OFE continuity constraints,
   - typed error surface.
+- Parser-contract Sections 9-11 additionally govern boundary export mapping, explicit compat threshold handling (`datver >= 91.5` when enabled), and tolerance-bound closure checks.
 - Contract authoring package linkage: `docs/work-packages/20260520-infile04-author-sc-infile-slope-001/`.

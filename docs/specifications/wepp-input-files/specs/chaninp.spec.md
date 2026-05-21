@@ -219,4 +219,5 @@ Legacy path clamps to lower bound; strict openWEPP mode should raise `RoutingTim
 | Conflict/gap carry-forward | Section 10 | Keep contract `HOLD` until `cbase` semantics, `dtchr` error-path initialization policy, and `ichout` domain policy are dispositioned. |
 
 - `parser_contract_id`: `SC-INFILE-CHANINP-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps)`

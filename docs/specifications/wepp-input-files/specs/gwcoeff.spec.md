@@ -118,7 +118,7 @@ bftharea_line  = real [trailing_text] ;
 | `gwcoeff.txt` missing | [DIRECT][E-WF-01] set `lr_bf=0`; continue without sidecar parse. | [INFERENCE][E-WF-01] `OptionalSurfaceMissingDefaulted(surface_id=infile-gwcoeff)` with explicit observability event. |
 | Version/datver-prefixed first line | [DIRECT][E-WF-01] legacy parser expects `igwstrd` on line 1 and has no version preface branch | [INFERENCE][E-WF-01] `FormatVersionLineUnsupportedError(surface_id=infile-gwcoeff)` |
 | Present file with fewer than 4 records | [DIRECT][E-WF-01] no explicit read error branch for malformed present files. | [INFERENCE][E-WF-01] `InputRecordCountError(surface_id=infile-gwcoeff, expected=4)`. |
-| Trailing text after numeric token | [DIRECT][E-WF-07] observed fixtures include trailing labels/comments | strict mode: `TrailingTokenError(surface_id=infile-gwcoeff)`; compatibility mode: allow with `TrailingTokenCompatibilityWarning` |
+| Trailing text after numeric token | [DIRECT][E-WF-07] observed fixtures include trailing labels/comments | strict and compatibility modes accept canonical numeric-leading records with trailing labels/comments; preserve line-level provenance in parser observability surfaces |
 | Non-numeric leading token on required line | [DIRECT][E-WF-01] list-directed read failure path not explicitly handled. | [INFERENCE][E-WF-01] `TokenParseError(surface_id=infile-gwcoeff, line_no=...)`. |
 | Non-finite numeric (`NaN`/`Inf`) | [INFERENCE][E-WP-03] modern request path accepts float coercions before writing. | [INFERENCE][E-WP-03] `FieldFiniteError(field=...)`. |
 | Negative coefficient/depth/threshold | [DIRECT][E-WF-03] units imply physical non-negativity; legacy code does not clamp here. | [INFERENCE][E-WF-03] `FieldRangeError(field=...)` in strict mode; compat mode requires explicit disposition. |
@@ -200,4 +200,5 @@ Reason: threshold area must be non-negative in strict semantics. [INFERENCE][E-W
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-GWCOEFF-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`

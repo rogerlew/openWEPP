@@ -1,9 +1,11 @@
 # Artifacts
 
-This directory stores review/disposition evidence for `SC-INFILE-WEPPUI-001`.
+This directory stores parser-contract workflow artifacts for `SC-INFILE-WEPPUI-001`.
 
-Planned artifact bundle:
+Parser-contract artifact bundle paths:
 - `parser-contracts/SC-INFILE-WEPPUI-001/contract_ref.md`
+
+Planned downstream review/disposition/verification artifacts:
 - `parser-contracts/SC-INFILE-WEPPUI-001/review_agent_a.md`
 - `parser-contracts/SC-INFILE-WEPPUI-001/review_agent_b.md`
 - `parser-contracts/SC-INFILE-WEPPUI-001/disposition.md`
@@ -15,7 +17,8 @@ Primary canonical outputs for this package:
 - `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md`
 
 Spec intent:
-- author wepp UI sidecar specification
+- author WEPP UI sentinel parser specification
+- author parser-contract authority for WEPP UI sentinel behavior
 
 Evidence annotation convention:
 - `[DIRECT]` = directly observed in source/reference/output

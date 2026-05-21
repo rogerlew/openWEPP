@@ -1,5 +1,20 @@
 # Climate Input File Specification
 
+## Header Metadata
+- `spec_id`: `SPEC-INFILE-CLIMATE-CLI-001`
+- `surface_id`: `infile-climate-cli`
+- `status`: `draft-HOLD`
+- `owner`: `openWEPP`
+- `spec_version`: `0.1.0`
+- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `evidence_mode`: `Static`
+
+## Parser-Contract Authority Note
+- Canonical parser-contract authority for this surface is:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md`
+- This specification remains the source-grammar and symbol authority for `.cli`.
+- Legacy canonical symbols (`datver`, `itemp`, `ibrkpt`, `iwind`, `prcp`, `stmdur`, `timep`, `ip`, `nbrkpt`, `timem`, `pptcum`) are normative unless explicitly aliased by parser contract.
+
 _See also: [CLIGEN station statistics input file format](cligenparms.md)._
 
 **Single-storm modes are deprecated and unsupported in WEPPcloud.** Treat `itemp=2` as legacy-only; use continuous/multi-year climate inputs for supported runs.
@@ -151,3 +166,12 @@ _See also: [CLIGEN station statistics input file format](cligenparms.md)._
   a) time after midnight (hours) - real (timem)
 
   b) cumulative precipitation at this time (mm of water)- real (pptcum)
+
+## Parser-Contract Handoff Map
+- Target parser contract ID: `SC-INFILE-CLIMATE-001`.
+- Canonical contract path:
+  - `docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md`
+- Contract authoring package linkage:
+  - `docs/work-packages/20260520-infile01-author-sc-infile-climate-001/`
+- Boundary/export authority (process handoff mapping and strict/compat breakpoint cardinality policy) is governed by contract Sections 9-11.
+- Current specification status remains `draft-HOLD` until parser-contract HOLD gaps are dispositioned.

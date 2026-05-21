@@ -91,6 +91,7 @@ parameter_record = crop_name kcb rawp line actlnam ;
 1. Sidecar presence branch.
 - Present `pmetpara.txt`: Penman-Monteith mode selected (`iflget=2`).
 - Missing `pmetpara.txt`: original Penman mode (`iflget=1`).
+- Parser contract boundary must export both `sidecar_present` and resolved `iflget` mode value; this branch is not implicit.
 - [DIRECT][E-WF-01]
 
 2. Crop-name lookup branch per crop.
@@ -126,6 +127,7 @@ Legacy behavior includes fallback semantics that are not strict-format safe for 
 | Condition | Legacy behavior | openWEPP parser-contract draft expectation |
 | --- | --- | --- |
 | `pmetpara.txt` missing | ET reverts to non-PMET branch (`iflget=1`) | represent as optional sidecar absence, not parse failure |
+| PMET-required strict mode + `pmetpara.txt` missing | legacy often falls back to `iflget=1` | strict mode: `PMETRequiredSidecarMissingError(surface_id=infile-pmetpara)` |
 | Datver-prefixed header line present before `irecord` | not parsed by legacy PMET reader path | `FormatVersionLineUnsupportedError(surface_id=infile-pmetpara)` |
 | `irecord` row count mismatch | undefined/IO-failure-prone | `RecordCountError(surface_id=infile-pmetpara)` |
 | crop name not found | silently uses first row after notice | `CropNameMissingError` in strict mode; optional legacy-compat fallback mode must be explicit |
@@ -201,4 +203,9 @@ Reason: canonical row requires 5 fields. [DIRECT][E-US-02]
   - symbol continuity and alias mapping,
   - cross-file coupling with management crop names,
   - typed error semantics and explicit strict/compat branching.
-- Contract authoring linkage: `docs/work-packages/20260520-infile07-author-sc-infile-pmetpara-001/`.
+- Contract authoring linkage: `docs/work-packages/20260520-infile10-author-sc-infile-pmetpara-001/`.
+
+Handoff linkage:
+- `parser_contract_id`: `SC-INFILE-PMETPARA-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md`
+- `handoff_status`: `contract-authored-draft (HOLD gaps carried forward to review/disposition)`

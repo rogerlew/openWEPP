@@ -158,4 +158,5 @@ Reason: legacy open uses relative path in run cwd; out-of-dir file will not acti
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-TC-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`

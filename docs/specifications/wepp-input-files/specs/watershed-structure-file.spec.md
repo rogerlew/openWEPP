@@ -189,4 +189,5 @@ paired with `.chn` line-2 channel count `2` and management `jstruc=2`
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-WATERSHED-STRUCTURE-001`
-- `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md`
+- `handoff_status`: `contract-authored-draft (with HOLD gaps carried forward to review/disposition)`

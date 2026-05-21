@@ -332,6 +332,11 @@ Evidence:
 
 [INFERENCE] `SC-INFILE-WATERSHED-CHANNEL-001` can now proceed with `CHN-POL-001/002` fixed; carry forward only medium-gap items (`CHN-GAP-003..005`) as explicit HOLD notes.
 
+Handoff linkage:
+- `parser_contract_id`: `SC-INFILE-WATERSHED-CHANNEL-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md`
+- `handoff_status`: `contract-authored-draft (medium HOLD gaps carried forward to review/disposition)`
+
 ## Provenance index
 - Primary format authority:
   - `/home/workdir/openWEPP/references/vendorable/usersum2024.pdf`

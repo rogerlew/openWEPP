@@ -164,4 +164,5 @@ Reason: strict sentinel policy requires empty/whitespace-only payload. [INFERENC
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-LCWB-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`

@@ -166,4 +166,5 @@ Reason: usersum compatibility rule and modern orchestrator behavior diverge from
 
 ### Handoff ID
 - `parser_contract_id`: `SC-INFILE-WEPPUI-001`
+- `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md`
 - `handoff_status`: `ready-for-contract-authoring (with HOLD gaps carried forward)`
