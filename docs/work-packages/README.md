@@ -80,3 +80,6 @@ Authorized packages:
 - `20260520-sci15-author-sc-route-001/`
   - Purpose: author and disposition `SC-ROUTE-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci16-author-sc-impound-001/`
+  - Purpose: author and disposition `SC-IMPOUND-001` using the required
+    dual-agent review and fix-verification workflow.
