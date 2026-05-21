@@ -7,3 +7,4 @@ pub mod pmetpara;
 pub mod slope;
 pub mod snow;
 pub mod soil;
+pub mod wepp_ui;
