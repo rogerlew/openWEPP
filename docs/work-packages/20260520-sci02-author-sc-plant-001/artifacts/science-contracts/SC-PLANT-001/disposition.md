@@ -1,6 +1,6 @@
 # Disposition: SC-PLANT-001
 
-Status: complete
+Status: complete (cycle-1); reopened delta pending
 Date: 2026-05-20 UTC
 Evidence mode: `Static`
 
@@ -27,3 +27,8 @@ Disposition table:
 Disposition summary:
 - High-severity findings: 3 total, all closed via accepted/amended actions.
 - Final promotion state for this revision: `HOLD` (open `GAP-PLANT-004` is explicitly `non-promotable`).
+
+Reopen delta note (2026-05-20 UTC):
+- SCI-02 reopened after procedure updates added mandatory guard-map and
+  symbol-alias requirements. A follow-on review/disposition cycle is required
+  for contract version `3`.

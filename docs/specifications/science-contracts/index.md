@@ -24,7 +24,7 @@ This is the canonical lifecycle registry for openWEPP science contracts.
 
 | contract_id | title | status | maturity | owner | path | evidence_level | last_reviewed | replacement | notes |
 |---|---|---|---|---|---|---|---|---|---|
-| `SC-PLANT-001` | Plant Growth Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | `static` | `2026-05-20` |  | Dual-review/disposition/verification cycle completed in SCI-02; remains non-promotable while GAP-PLANT-004 is open. |
+| `SC-PLANT-001` | Plant Growth Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | `static` | `2026-05-20` |  | SCI-02 reopened for procedure-delta compliance (guard map + symbol alias map); remains non-promotable while GAP-PLANT-004 and GAP-PLANT-005 are open. |
 
 ## Entry Order
 

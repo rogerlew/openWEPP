@@ -14,6 +14,10 @@ science contracts with:
 3. explicit finding disposition,
 4. required agent verification of applied fixes.
 
+Principle: correctness over completion. Contract work must remain in `HOLD`
+until correctness criteria are satisfied; schedule pressure is not a valid
+reason to bypass invariant correctness.
+
 This procedure is normative for contract promotion readiness and complements:
 
 - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
@@ -48,6 +52,14 @@ authority location.
 4. Evidence mode at document/review level must be explicit:
    - `Static` for read/reasoned work
    - `Ran` for executed-command/runtime evidence
+5. Every invariant must have an explicit guard mapping:
+   - runtime guard (hard error / typed failure / explicit branch), or
+   - governance guard (non-runtime promotion gate with explicit `HOLD` rule).
+   Invariants without guard mapping are incomplete and block promotion.
+6. Variable-symbol continuity is mandatory:
+   - canonical contract symbols default to `wepp-forest` / legacy WEPP names,
+   - if openWEPP boundary names differ, contracts must include explicit alias
+     mappings from canonical symbols to boundary/API field names.
 
 ## Required File Layout Per Contract Cycle
 
@@ -82,6 +94,10 @@ A contract draft is review-ready only when it contains, at minimum:
 7. Boundary disposition definitions per invariant family.
 8. Tolerance statement or explicit link to tolerance authority.
 9. Gap register for unresolved science or evidence limits.
+10. Guard map table linking each invariant ID to its enforcement path
+    (runtime guard or governance guard), failure behavior, and gate impact.
+11. Symbol alias map table whenever canonical WEPP symbols and openWEPP
+    boundary/API names differ.
 
 The draft must exist in the canonical `SC-*` file path before dual-agent review
 begins.
@@ -162,8 +178,23 @@ Contract revision is promotable only if all conditions are true:
 4. Both verification agents return `PASS` or `PASS-WITH-NOTES`.
 5. Remaining open items are listed in the gap register with non-promotable
    labeling when applicable.
+6. No invariant is left without a declared guard mapping and enforcement path.
 
 If any condition fails, disposition is `HOLD`.
+
+## Symbol Alias Rules (Normative)
+
+1. The `Variables and Units` section in each `SC-*` file must use canonical
+   WEPP symbol names (from references and/or `wepp-forest` provenance) as the
+   primary symbol IDs.
+2. When external names differ (Rust structs, JSON fields, CLI args, parquet
+   columns), include an alias map table with at least:
+   - canonical symbol,
+   - boundary/API name,
+   - scope (runtime surface),
+   - units check.
+3. Symbol substitution without alias documentation is non-compliant and blocks
+   promotion.
 
 ## Minimal Prompt Templates
 

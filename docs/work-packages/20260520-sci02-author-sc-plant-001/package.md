@@ -1,9 +1,11 @@
 # 20260520-sci02-author-sc-plant-001
 
 ## Status
-- `state`: complete
+- `state`: active
 - `date`: 2026-05-20
 - `timezone`: UTC
+- `reopened`: 2026-05-20
+- `reopen_reason`: science-contract authoring procedure delta requires explicit guard-map and symbol-alias compliance updates for `SC-PLANT-001`.
 
 ## Objective
 Author and review `SC-PLANT-001` as a canonical openWEPP science contract for
@@ -22,6 +24,9 @@ executes that workflow for the first plant-domain contract.
 - Define plant-domain invariants (`INV-PLANT-*`) with citation anchors.
 - Define producer/consumer obligations and boundary dispositions for plant
   state surfaces.
+- Add and validate required invariant guard-map table for all `INV-PLANT-*`.
+- Add and validate required symbol-alias mapping table for canonical symbols and
+  boundary/API surfaces.
 - Run required dual independent agent review and capture findings.
 - Produce finding disposition and post-fix dual-agent verification records.
 - Update canonical science-contract registry entry for `SC-PLANT-001`.
@@ -69,6 +74,12 @@ executes that workflow for the first plant-domain contract.
 - Run Agent A/B verification on applied fixes.
 - Finalize promotion-ready disposition status for this revision.
 
+### Phase 4 — Procedure-Delta Reopen Compliance
+- Reopen SCI-02 for procedure-gap remediation.
+- Update `SC-PLANT-001` with guard-map and symbol-alias sections.
+- Re-run review/disposition/verification for reopened delta if additional
+  findings are identified.
+
 ## Exit Criteria
 - Canonical `SC-PLANT-001` exists and contains required draft sections.
 - Two independent review artifacts are completed.
@@ -77,6 +88,8 @@ executes that workflow for the first plant-domain contract.
   findings.
 - Registry entry for `SC-PLANT-001` is present and consistent with contract
   status/maturity.
+- `SC-PLANT-001` includes required guard map and symbol alias map per current
+  authoring procedure revision.
 
 ## Security Impact and Review Gate
 - `security_impact`: `none`

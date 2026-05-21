@@ -1,6 +1,6 @@
 # Review Agent A
 
-Status: complete
+Status: complete (cycle-1); reopen-delta review pending
 Date: 2026-05-20 UTC
 Evidence mode: `Static`
 Reviewed contract snapshot: `1a1b42d0d505304e3cc5e93a2b49d41bac3afd9d67d0208e72e8f4c05702917e`
@@ -50,3 +50,7 @@ Findings (severity-ordered):
 
 Recommendation:
 - `HOLD`
+
+Reopen delta note (2026-05-20 UTC):
+- This review applies to cycle-1 snapshot only and predates contract version `3`
+  guard-map/alias-map additions required by updated authoring procedure.

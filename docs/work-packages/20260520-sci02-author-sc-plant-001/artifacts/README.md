@@ -4,9 +4,9 @@ This directory stores SCI-02 outputs for authoring and disposition of
 `SC-PLANT-001`.
 
 Cycle status:
-- `state`: complete
+- `state`: active (reopened)
 - `date`: 2026-05-20 UTC
-- `contract_snapshot`: `fe68d679386055269e56964c0df057392f9515d677e9de7bcf59c7e5e331a4bc`
+- `contract_snapshot`: `367c2ca6612d10c7434288364fd8a114d70bf3c75957dbb2ec49c62185281b81`
 
 Required artifacts:
 - `science-contracts/SC-PLANT-001/contract_ref.md`

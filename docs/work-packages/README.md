@@ -21,6 +21,7 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Evidence classification per claim: `[DIRECT]` (read source / contract / output) vs `[INFERENCE]` (reasoned from evidence).
 - Evidence mode per assessment: **Static** (read and reasoned) vs **Ran** (commands actually invoked).
 - Single-mechanism rule: one landed change per replay checkpoint.
+- Correctness over completion: unresolved contract/invariant correctness gaps keep package disposition in `HOLD` until explicitly resolved or risk-accepted.
 
 ## Queued packages
 
@@ -37,3 +38,6 @@ Authorized packages:
   - Purpose: map `references/50201000` chapters to process-based science
     contract domains and seed invariant families for top-down contract
     authoring.
+- `20260520-sci02-author-sc-plant-001/`
+  - Purpose: author and disposition `SC-PLANT-001` using the required
+    dual-agent review and fix-verification workflow.

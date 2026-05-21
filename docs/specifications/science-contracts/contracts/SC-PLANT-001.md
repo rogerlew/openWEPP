@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -145,6 +145,53 @@ Out of scope:
 | Coupling completeness (`INV-PLANT-007`) | plant->consumer handoff | Hard error on missing/invalid field; no fallback payload synthesis | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Model-limit governance (`INV-PLANT-009`) | review/verification and runtime config audit | Governance failure; requires explicit contract amendment before promotion | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## Guard Map
+
+| Invariant ID | Guard class | Enforcement path | Failure behavior | Gate impact | Evidence |
+|---|---|---|---|---|---|
+| `INV-PLANT-001` | runtime | Plant-state validation before boundary publish | Typed hard error; payload rejected | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-002` | runtime | Cropland phenology update path (`HUI`/temperature gate checks) | Typed hard error; daily step invalidated | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-003` | runtime | Stress-regulation computation before biomass increment update | Typed hard error on out-of-domain stress/regulator | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-004` | runtime | Senescence transfer-accounting step | Typed hard error on residual > tolerance | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-005` | runtime | Root-depth computation and envelope check | Typed hard error when depth exceeds envelope | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-006` | runtime | Management-event biomass conversion/removal handlers | Typed hard error; operation rejected | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-007` | runtime | Plant-to-consumer boundary payload validator | Typed hard error on missing/invalid required field | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-008` | runtime | Rangeland drought-stress transfer update | Typed hard error on cap violation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-009` | governance | Review + verification + promotion checklist | Promotion `HOLD` until explicit contract amendment resolves mismatch | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-010` | runtime | Rangeland growth-curve/dormancy transition checks | Typed hard error on growth-domain violation | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## Symbol Alias Map
+
+Canonical symbols in this contract follow WEPP chapter notation and legacy
+lineage names by default. For this revision, no divergent openWEPP boundary/API
+field names are declared for the modeled surfaces; boundary names are therefore
+constrained to canonical symbols until downstream contracts introduce explicit
+aliases.
+
+| Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
+|---|---|---|---|---|
+| `HU` | `HU` (identity) | plant daily phenology surface | `degC day` -> `degC day` | `[DIRECT][Static]` |
+| `HUI` | `HUI` (identity) | plant daily phenology surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `Bm` | `Bm` (identity) | plant state export surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Brt` | `Brt` (identity) | plant state export surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Rd` | `Rd` (identity) | plant->ET coupling surface | `m` -> `m` | `[DIRECT][Static]` |
+| `LAI` | `LAI` (identity) | plant->ET/erosion coupling surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
+| `Cc` | `Cc` (identity) | plant->erosion coupling surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `Hc` | `Hc` (identity) | plant->erosion coupling surface | `m` -> `m` | `[DIRECT][Static]` |
+| `YLD` | `YLD` (identity) | output/reporting surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Mf` | `Mf` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Ms` | `Ms` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `WS` | `WS` (identity) | ET stress return surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `TS` | `TS` (identity) | plant stress surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `REG` | `REG` (identity) | plant growth regulator surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `EP` / `Etp` | `EP` / `Etp` (identity) | ET demand surface | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
+| `u_l` | `u_l` (identity) | layered uptake surface | `mm` -> `mm` | `[DIRECT][Static]` |
+| `DeltaBp`, `DeltaBi` | `DeltaBp`, `DeltaBi` (identity) | biomass increment surfaces | `kg m^-2 d^-1` -> `kg m^-2 d^-1` | `[DIRECT][Static]` |
+| `Rdx` | `Rdx` (identity) | root-envelope parameter surface | `m` -> `m` | `[DIRECT][Static]` |
+| `CRITVM` | `CRITVM` (identity) | grazing-floor parameter surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `gi` | `gi` (identity) | rangeland growth-curve surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `RGCMIN` | `RGCMIN` (identity) | evergreen floor parameter surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+
 ## Tolerance and Numeric Notes
 
 This contract follows `docs/numerics/README.md` (semantic parity, not bitwise
@@ -164,6 +211,7 @@ parity). Contract-specific tolerances used for comparator interpretation:
 | GAP-PLANT-002 | Nutrient/pest/aeration coupling is outside current WEPP plant routines and remains parameterization-only. | Reduces causal fidelity for yield stress attribution without external calibration workflow. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-PLANT-003 | Legacy routine provenance is mapped at domain level (`grow.for`, `growop.for`, `range.for`) but not yet per-invariant line anchor. | Traceability for implementation-level acceptance is partial. | promotable-with-risk | `[INFERENCE][Static]` |
 | GAP-PLANT-004 | Boundary contract IDs for plant consumers (`SC-WATBAL-001`, `SC-RESIDUE-001`, `SC-SED-001`) are not yet fully authored. | Cross-contract closure is provisional until downstream contracts reach draft status. | non-promotable | `[DIRECT][Static]` |
+| GAP-PLANT-005 | OpenWEPP concrete API/field aliases for canonical plant symbols are not yet fixed by downstream implementation contracts. | Alias map is identity-only and must be revised when concrete boundary names diverge. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -172,3 +220,4 @@ parity). Contract-specific tolerances used for comparator interpretation:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-02 package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with invariant set, boundary obligations, and citation anchors per SCI-02 kickoff prompt. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: scoped cropland/rangeland invariants, added missing symbols/anchors, added claim-level evidence tags, and labeled gap promotability. |
+| `2026-05-20` | `3` | `Codex` | Reopen delta for procedure update: added required invariant guard map and symbol alias map; added alias-governance gap entry. |

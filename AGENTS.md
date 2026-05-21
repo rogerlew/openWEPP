@@ -18,6 +18,7 @@
 - Ask for clarification when requirements or debug context are ambiguous.
 - Keep docs terse: Codex loads context in bulk and does not compress verbose guidance.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
+- Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Do not create or switch git branches unless the user explicitly asks.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
 
@@ -37,6 +38,10 @@ GIS, climate, and run state. Do not duplicate wepppy concerns in this repo.
   provenance mapping and static inspection.
 - Do not invent physics. Every kernel constant and invariant must trace to a
   citation or explicit physical rationale.
+- Variable naming continuity is required in science contracts: default to
+  `wepp-forest`/legacy WEPP symbols for canonical variable tables and equations;
+  when openWEPP boundary names differ, provide explicit alias mappings rather
+  than replacing canonical symbols.
 - Empirical multi-coefficient regressions are rejected per the process-based kernel preference rule carried forward from wepp-palimpsest WB-33 `WB33-C-20`.
 - See [docs/decisions/0011-architecture-first-top-down-science-contracts.md](docs/decisions/0011-architecture-first-top-down-science-contracts.md).
 
