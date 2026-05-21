@@ -1,0 +1,15 @@
+95.7 format
+1 channel_count
+2 declared_total_years
+0 ncrop
+0 nop
+0 nini
+0 nseq
+0 ncnt
+0 ndrain
+0 nscen
+0 ofeindx
+1 nrots
+2 nyears
+0 year_1
+0 year_2
