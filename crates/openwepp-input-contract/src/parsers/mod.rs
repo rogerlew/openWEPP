@@ -5,4 +5,5 @@ pub mod frost;
 pub mod management;
 pub mod pmetpara;
 pub mod slope;
+pub mod snow;
 pub mod soil;
