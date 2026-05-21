@@ -50,3 +50,6 @@ Authorized packages:
 - `20260520-sci05-author-sc-snowfreeze-001/`
   - Purpose: author and disposition `SC-SNOWFREEZE-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci06-author-sc-runoffpart-001/`
+  - Purpose: author and disposition `SC-RUNOFFPART-001` using the required
+    dual-agent review and fix-verification workflow.
