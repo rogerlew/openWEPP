@@ -1,0 +1,6 @@
+97.5
+Non-monotone depth profile
+1 1
+SOIL_A SILT_LOAM 2 0.23 0.60 1200000 0.004 3.5 12.0
+220 40 20 2.5 12 5
+180 38 22 2.2 10 8

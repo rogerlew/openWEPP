@@ -1,0 +1,5 @@
+97.0
+Legacy alias datver profile
+1 1
+SOIL_A SILT_LOAM 1 0.23 0.60 1200000 0.004 3.5 12.0
+150 40 20 2.5 12 5
