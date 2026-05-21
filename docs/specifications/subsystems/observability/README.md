@@ -13,13 +13,16 @@ This subsystem defines:
 
 ## Canonical Files
 
-- `observability-subsystem-contract.md`
-- `debug-intent-schema.md`
-- `trace-event-schema.md`
-- `replay-window-interface.md`
-- `legacy-observe-migration.md`
+- [observability-subsystem-contract.md](observability-subsystem-contract.md)
+- [debug-intent-schema.md](debug-intent-schema.md)
+- [trace-event-schema.md](trace-event-schema.md)
+- [replay-window-interface.md](replay-window-interface.md)
+- [legacy-observe-migration.md](legacy-observe-migration.md)
 
 ## Provenance
 
 Initial canonicalization source package:
-- `docs/work-packages/20260520-obs01-observability-subsystem-foundation/`
+- [docs/work-packages/20260520-obs01-observability-subsystem-foundation/](../../../work-packages/20260520-obs01-observability-subsystem-foundation/)
+
+Promotion disposition:
+- [obs01_disposition.md](../../../work-packages/20260520-obs01-observability-subsystem-foundation/artifacts/obs01_disposition.md)

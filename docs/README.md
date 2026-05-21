@@ -4,6 +4,8 @@
 |---|---|---|
 | [architecture/README.md](architecture/README.md) | All | Runtime topology, process model, data flow |
 | [specifications/README.md](specifications/README.md) | All | Science-contract authority model and source hierarchy |
+| [specifications/subsystems/README.md](specifications/subsystems/README.md) | Maintainers | Canonical subsystem specification authority and promotion model |
+| [specifications/subsystems/observability/README.md](specifications/subsystems/observability/README.md) | Maintainers | Observability subsystem contracts for intent, trace events, replay windows, and legacy migration |
 | [specifications/wepp-input-files/README.md](specifications/wepp-input-files/README.md) | Maintainers | Canonical openWEPP-owned WEPP input-file specifications used for parser/contract work |
 | [specifications/wepp-input-files/parser-contract-requirements.md](specifications/wepp-input-files/parser-contract-requirements.md) | Maintainers | Normative requirements for parser-contract data models and parse-to-simulation propagation maps |
 | [specifications/wepp-input-files/input-surface-registry.md](specifications/wepp-input-files/input-surface-registry.md) | Maintainers | Canonical registry of hillslope, watershed, and sidecar parser input surfaces and dispositions |
@@ -19,6 +21,8 @@
 | [work-packages/README.md](work-packages/README.md) | All | Dated initiative tracking convention |
 | [planning/wepp-input-file-parser-survey.md](planning/wepp-input-file-parser-survey.md) | Maintainers | Survey of parser coverage in `wepppy`/`wepppyo3`/`wepp-forest` and roadmap for hillslope, watershed, and sidecar input contracts |
 | [planning/openwepp-observability-subsystem-assessment.md](planning/openwepp-observability-subsystem-assessment.md) | Maintainers | Decision to replace ad-hoc `wepp_observe*` sidecar flags with a first-class observability subsystem |
+| [work-packages/20260520-obs01-observability-subsystem-foundation/package.md](work-packages/20260520-obs01-observability-subsystem-foundation/package.md) | Maintainers | OBS01 scope, deliverables, and promotion targets for observability subsystem foundation |
+| [work-packages/20260520-obs01-observability-subsystem-foundation/artifacts/obs01_disposition.md](work-packages/20260520-obs01-observability-subsystem-foundation/artifacts/obs01_disposition.md) | Maintainers | OBS01 artifact-to-canonical mapping and hold register |
 
 End-user documentation lives in [/usersum](../usersum/), following the wepppy `usersum` convention so it can be vendored into wepppy's in-app documentation engine.
 

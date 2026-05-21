@@ -3,7 +3,7 @@
 This directory stores OBS01 outputs for first-class openWEPP observability
 subsystem definition.
 
-Planned artifacts:
+Produced artifacts:
 - `observability-subsystem-charter.md`
 - `kernel-stimulation-use-cases.md`
 - `typed-observability-intent-schema.md`
