@@ -71,3 +71,6 @@ Authorized packages:
 - `20260520-sci12-author-sc-hydraulics-001/`
   - Purpose: author and disposition `SC-HYDRAULICS-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci13-author-sc-sed-001/`
+  - Purpose: author and disposition `SC-SED-001` using the required
+    dual-agent review and fix-verification workflow.
