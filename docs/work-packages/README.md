@@ -53,3 +53,6 @@ Authorized packages:
 - `20260520-sci06-author-sc-runoffpart-001/`
   - Purpose: author and disposition `SC-RUNOFFPART-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci07-author-sc-evap-001/`
+  - Purpose: author and disposition `SC-EVAP-001` using the required
+    dual-agent review and fix-verification workflow.
