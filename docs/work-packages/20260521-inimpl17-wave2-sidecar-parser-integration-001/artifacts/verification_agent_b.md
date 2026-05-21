@@ -12,13 +12,14 @@ Evidence: `Ran` + `Static`
   - `cargo clippy --workspace --all-targets -- -D warnings`
   - `cargo test --workspace`
   - `cargo deny check`
-- Confirmed all six new sidecar parser acceptance suites pass via direct `rustc --test`.
+- Confirmed all six new sidecar parser acceptance suites pass via
+  `cargo test --test <target>`.
 
 ## Verdict
 
-`PASS-WITH-NOTES`
+`PASS`
 
 ## Notes
 
-1. Wave 2 integration test targets remain unregistered in root `Cargo.toml`; this is
-   a medium follow-up and not a high-severity promotion blocker for this package.
+1. Prior medium follow-up is closed: root `Cargo.toml` now registers all six
+   Wave 2 sidecar integration test targets.

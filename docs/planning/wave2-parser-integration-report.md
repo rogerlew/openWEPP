@@ -1,7 +1,7 @@
 # Wave 2 Parser Integration Report
 
 Date: 2026-05-21  
-Status: Integrated (`INIMPL17`)  
+Status: Closed out (`INIMPL17`)  
 Evidence mode: `Ran` + `Static`
 
 ## 1. Scope
@@ -77,28 +77,26 @@ See:
 
 ## 7. Parser Acceptance Checks
 
-Because Wave 2 test targets are not yet registered in root `Cargo.toml`, the
-new six integration suites were executed directly via `rustc --test`:
+Wave 2 sidecar test targets are now registered in root `Cargo.toml`; the six
+integration suites pass as named cargo test targets:
 
-- `infile_pmetpara_parser_contract`: 13 passed
-- `infile_irrigation_depletion_parser_contract`: 12 passed
-- `infile_irrigation_fixeddate_parser_contract`: 14 passed
-- `infile_frost_parser_contract`: 10 passed
-- `infile_snow_parser_contract`: 12 passed
-- `infile_weppui_parser_contract`: 11 passed
+- `cargo test --test infile_pmetpara_parser_contract`: 13 passed
+- `cargo test --test infile_irrigation_depletion_parser_contract`: 12 passed
+- `cargo test --test infile_irrigation_fixeddate_parser_contract`: 14 passed
+- `cargo test --test infile_frost_parser_contract`: 10 passed
+- `cargo test --test infile_snow_parser_contract`: 12 passed
+- `cargo test --test infile_weppui_parser_contract`: 11 passed
 
 ## 8. Follow-Up Items
 
-1. Register Wave 2 integration tests in root `Cargo.toml` so `cargo test --workspace`
-   executes them natively.
-2. Keep deny license-allowlist warnings under observation (non-blocking in this run).
+1. Keep deny license-allowlist warnings under observation (non-blocking).
 
 ## 9. Verdict
 
-`GO-WITH-AMENDMENTS`
+`GO`
 
 Rationale:
 - Intake/readiness completed and respected prior to merge.
 - All six worker streams were integrated in canonical order.
-- Global gates and explicit parser acceptance checks passed.
+- Global gates and explicit parser acceptance checks pass after closeout rerun.
 - No unresolved high-severity integration findings remain.

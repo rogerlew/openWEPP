@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
 use openwepp_input_contract::parsers::wepp_ui::{
-    parse_wepp_ui_from_path, WeppUiOpenResult, WeppUiParseError, WeppUiParserMode,
-    WeppUiParserOptions, WeppUiSoilCompatibilityState, WeppUiWarningCode,
+    WeppUiOpenResult, WeppUiParseError, WeppUiParserMode, WeppUiParserOptions,
+    WeppUiSoilCompatibilityState, WeppUiWarningCode, parse_wepp_ui_from_path,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -51,7 +51,7 @@ fn strict_missing_sentinel_with_daily_request_defaults_daily_without_error() {
     assert_eq!(parsed.ui_run_requested, 0);
     assert_eq!(parsed.ui_run, 0);
     assert_eq!(parsed.open_result, WeppUiOpenResult::Missing);
-    assert!(parsed.mode_divergence == false);
+    assert!(!parsed.mode_divergence);
     assert!(parsed.warnings.is_empty());
 }
 
@@ -94,10 +94,12 @@ fn compatibility_missing_sentinel_with_hourly_request_warns_and_diverges() {
     assert_eq!(parsed.ui_run_requested, 1);
     assert_eq!(parsed.ui_run, 0);
     assert!(parsed.mode_divergence);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == WeppUiWarningCode::WuiW001));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == WeppUiWarningCode::WuiW001)
+    );
 }
 
 #[test]
@@ -134,10 +136,12 @@ fn compatibility_nonempty_payload_is_accepted_with_warning() {
     assert_eq!(parsed.ui_run, 1);
     assert_eq!(parsed.open_result, WeppUiOpenResult::OpenSuccess);
     assert!(parsed.payload_nonempty);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == WeppUiWarningCode::WuiW002));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == WeppUiWarningCode::WuiW002)
+    );
 }
 
 #[test]
@@ -175,10 +179,12 @@ fn compatibility_non_enoent_open_error_collapses_with_warning() {
         WeppUiOpenResult::OpenErrorCollapsedCompat
     );
     assert!(parsed.mode_divergence);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == WeppUiWarningCode::WuiW004));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == WeppUiWarningCode::WuiW004)
+    );
 }
 
 #[test]
@@ -217,10 +223,12 @@ fn compatibility_hourly_mode_with_legacy_soil_versions_warns() {
         WeppUiSoilCompatibilityState::Legacy2006
     );
     assert_eq!(parsed.solwpv_reduced_min, Some(2006.2));
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == WeppUiWarningCode::WuiW003));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == WeppUiWarningCode::WuiW003)
+    );
 }
 
 #[test]

@@ -1,9 +1,7 @@
 use std::path::PathBuf;
 
-#[path = "../../crates/openwepp-input-contract/src/parsers/pmetpara.rs"]
-mod pmetpara;
-use pmetpara::{
-    parse_pmetpara_file, ParseMode, PmetWarningCode, PmetparaParseError, PmetparaParseOptions,
+use openwepp_input_contract::parsers::pmetpara::{
+    ParseMode, PmetWarningCode, PmetparaParseError, PmetparaParseOptions, parse_pmetpara_file,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -105,10 +103,12 @@ fn compatibility_mode_normalizes_multitoken_actlnam_with_warning() {
 
     assert_eq!(parsed.records.len(), 1);
     assert_eq!(parsed.records[0].description, "default_description_text");
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|w| w.code == PmetWarningCode::PmetW004));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|w| w.code == PmetWarningCode::PmetW004)
+    );
 }
 
 #[test]
@@ -120,10 +120,12 @@ fn compatibility_mode_truncates_long_crop_key_with_warning() {
     let parsed = parse_pmetpara_file(fixture_path("compat_long_crop_name.txt"), options).unwrap();
 
     assert_eq!(parsed.records[0].normalized_crop_key.len(), 8);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|w| w.code == PmetWarningCode::PmetW002));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|w| w.code == PmetWarningCode::PmetW002)
+    );
 }
 
 #[test]
@@ -149,10 +151,12 @@ fn absent_sidecar_optional_sets_iflget_one_and_warning_in_compat() {
     assert!(!parsed.sidecar_present);
     assert_eq!(parsed.iflget, 1);
     assert_eq!(parsed.record_count, 0);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|w| w.code == PmetWarningCode::PmetW001));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|w| w.code == PmetWarningCode::PmetW001)
+    );
 }
 
 #[test]
@@ -199,8 +203,10 @@ fn compatibility_lookup_uses_first_row_fallback_and_marks_state() {
 
     assert_eq!(record.crop_name, "CORN");
     assert!(parsed.lookup.fallback_first_row_used);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|w| w.code == PmetWarningCode::PmetW003));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|w| w.code == PmetWarningCode::PmetW003)
+    );
 }

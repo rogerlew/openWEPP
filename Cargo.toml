@@ -48,6 +48,30 @@ path = "tests/integration/infile_climate_parser_contract.rs"
 name = "infile_management_parser_contract"
 path = "tests/integration/infile_management_parser_contract.rs"
 
+[[test]]
+name = "infile_frost_parser_contract"
+path = "tests/integration/infile_frost_parser_contract.rs"
+
+[[test]]
+name = "infile_irrigation_depletion_parser_contract"
+path = "tests/integration/infile_irrigation_depletion_parser_contract.rs"
+
+[[test]]
+name = "infile_irrigation_fixeddate_parser_contract"
+path = "tests/integration/infile_irrigation_fixeddate_parser_contract.rs"
+
+[[test]]
+name = "infile_pmetpara_parser_contract"
+path = "tests/integration/infile_pmetpara_parser_contract.rs"
+
+[[test]]
+name = "infile_snow_parser_contract"
+path = "tests/integration/infile_snow_parser_contract.rs"
+
+[[test]]
+name = "infile_weppui_parser_contract"
+path = "tests/integration/infile_weppui_parser_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

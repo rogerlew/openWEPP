@@ -1,8 +1,8 @@
 use std::path::PathBuf;
 
-#[path = "../../crates/openwepp-input-contract/src/parsers/snow.rs"]
-mod snow;
-use snow::{parse_snow_file, ParseMode, SnowParseError, SnowParseOptions, SnowWarningCode};
+use openwepp_input_contract::parsers::snow::{
+    ParseMode, SnowParseError, SnowParseOptions, SnowWarningCode, parse_snow_file,
+};
 
 fn fixture_path(name: &str) -> PathBuf {
     PathBuf::from("tests/fixtures/infile/snow").join(name)
@@ -55,10 +55,12 @@ fn compatibility_mode_missing_file_emits_default_warning() {
 
     assert!(!parsed.sidecar_present);
     assert!(parsed.defaults_applied);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == SnowWarningCode::SnowW001));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == SnowWarningCode::SnowW001)
+    );
 }
 
 #[test]
@@ -88,10 +90,12 @@ fn compatibility_mode_accepts_trailing_tokens_with_provenance_warning() {
 
     assert!((parsed.rst + 1.5).abs() < 1e-12);
     assert_eq!(parsed.trailing_token_lines, vec![1, 2, 3]);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == SnowWarningCode::SnowW002));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == SnowWarningCode::SnowW002)
+    );
 }
 
 #[test]
@@ -120,10 +124,12 @@ fn compatibility_mode_accepts_surplus_records_with_warning() {
     .expect("compat mode should ignore surplus records");
 
     assert_eq!(parsed.surplus_record_count, 1);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == SnowWarningCode::SnowW003));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == SnowWarningCode::SnowW003)
+    );
 }
 
 #[test]

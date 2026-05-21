@@ -33,26 +33,32 @@ Result:
 
 ## 4. Sidecar Acceptance Checks (`Ran`)
 
-Because these six new test targets are not yet declared in root `Cargo.toml`,
-they were executed directly via `rustc --test`:
+Wave 2 sidecar integration tests are registered in root `Cargo.toml` and are
+executed as named integration targets:
 
 | Surface | Test target file | Result |
 | --- | --- | --- |
-| `SC-INFILE-PMETPARA-001` | `infile_pmetpara_parser_contract.rs` | pass (13) |
-| `SC-INFILE-IRRIGATION-DEPLETION-001` | `infile_irrigation_depletion_parser_contract.rs` | pass (12) |
-| `SC-INFILE-IRRIGATION-FIXEDDATE-001` | `infile_irrigation_fixeddate_parser_contract.rs` | pass (14) |
-| `SC-INFILE-FROST-001` | `infile_frost_parser_contract.rs` | pass (10) |
-| `SC-INFILE-SNOW-001` | `infile_snow_parser_contract.rs` | pass (12) |
-| `SC-INFILE-WEPPUI-001` | `infile_weppui_parser_contract.rs` | pass (11) |
+| `SC-INFILE-PMETPARA-001` | `infile_pmetpara_parser_contract.rs` | `cargo test --test infile_pmetpara_parser_contract` pass (13) |
+| `SC-INFILE-IRRIGATION-DEPLETION-001` | `infile_irrigation_depletion_parser_contract.rs` | `cargo test --test infile_irrigation_depletion_parser_contract` pass (12) |
+| `SC-INFILE-IRRIGATION-FIXEDDATE-001` | `infile_irrigation_fixeddate_parser_contract.rs` | `cargo test --test infile_irrigation_fixeddate_parser_contract` pass (14) |
+| `SC-INFILE-FROST-001` | `infile_frost_parser_contract.rs` | `cargo test --test infile_frost_parser_contract` pass (10) |
+| `SC-INFILE-SNOW-001` | `infile_snow_parser_contract.rs` | `cargo test --test infile_snow_parser_contract` pass (12) |
+| `SC-INFILE-WEPPUI-001` | `infile_weppui_parser_contract.rs` | `cargo test --test infile_weppui_parser_contract` pass (11) |
 
-Note:
-- Frost/snow/weppui test compilation required `CARGO_MANIFEST_DIR=/home/workdir/openWEPP`
-  during direct `rustc --test` execution due `env!` usage in test code.
+## 5. Closeout Rerun Gates (`Ran`)
 
-## 5. Verdict
+Executed after root test-target registration and lint fixes:
 
-`GO-WITH-AMENDMENTS`
+- `cargo fmt --check` -> pass
+- `cargo clippy --workspace --all-targets -- -D warnings` -> pass
+- `cargo test --workspace` -> pass
+- `cargo deny check` -> pass (non-fatal `license-not-encountered` warnings only)
 
-Amendment:
-1. Add root `Cargo.toml` integration test registrations for Wave 2 sidecar test
-   targets so workspace test gate captures them automatically.
+## 6. Verdict
+
+`GO`
+
+Closeout:
+1. Root `Cargo.toml` now registers all six Wave 2 sidecar parser integration
+   tests, and workspace + sidecar acceptance gates re-pass on the integrated
+   state.

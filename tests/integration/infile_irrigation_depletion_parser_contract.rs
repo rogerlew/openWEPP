@@ -2,9 +2,9 @@ use std::collections::HashSet;
 use std::path::PathBuf;
 
 use openwepp_input_contract::parsers::irrigation_depletion::{
-    parse_irrigation_depletion_from_path, IrrigationDepletionParseError,
-    IrrigationDepletionParserOptions, IrrigationDepletionTopologyContext,
-    IrrigationDepletionWarningCode, IrrigationPeriodData, IrrigationSystemType, ParseMode,
+    IrrigationDepletionParseError, IrrigationDepletionParserOptions,
+    IrrigationDepletionTopologyContext, IrrigationDepletionWarningCode, IrrigationPeriodData,
+    IrrigationSystemType, ParseMode, parse_irrigation_depletion_from_path,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -33,7 +33,7 @@ fn strict_parses_valid_sprinkler_with_continuation_rows() {
         IrrigationPeriodData::Sprinkler(record) => {
             assert!((record.nozzle_factor - 1.0).abs() < 1e-12);
         }
-        _ => panic!("expected sprinkler row"),
+        IrrigationPeriodData::Furrow(_) => panic!("expected sprinkler row"),
     }
 }
 
@@ -76,7 +76,7 @@ fn compat_accepts_legacy_no_datver_and_injects_nozzle_defaults() {
             IrrigationPeriodData::Sprinkler(record) => {
                 assert!((record.nozzle_factor - 1.0).abs() < 1e-12);
             }
-            _ => panic!("expected sprinkler period rows"),
+            IrrigationPeriodData::Furrow(_) => panic!("expected sprinkler period rows"),
         }
     }
 }
@@ -100,7 +100,7 @@ fn compat_accepts_legacy_furrow_datver_and_normalizes_depsrg() {
     for period in &parsed.periods {
         match &period.data {
             IrrigationPeriodData::Furrow(record) => surge_codes.push(record.surge_code),
-            _ => panic!("expected furrow rows"),
+            IrrigationPeriodData::Sprinkler(_) => panic!("expected furrow rows"),
         }
     }
     assert_eq!(surge_codes, vec![4, 6]);
@@ -191,14 +191,18 @@ fn compat_mode_warns_and_marks_disabled_when_furrow_context_is_disallowed() {
     )
     .expect("compatibility mode should degrade to disabled furrow periods with warning");
 
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == IrrigationDepletionWarningCode::IrdW005));
-    assert!(parsed
-        .periods
-        .iter()
-        .all(|period| period.furrow_disabled_by_landuse));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == IrrigationDepletionWarningCode::IrdW005)
+    );
+    assert!(
+        parsed
+            .periods
+            .iter()
+            .all(|period| period.furrow_disabled_by_landuse)
+    );
 }
 
 #[test]
