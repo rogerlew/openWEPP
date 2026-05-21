@@ -147,6 +147,28 @@ Authorized packages:
 - `20260520-infile19-author-sc-infile-chaninp-001/`
   - Purpose: author and disposition `SC-INFILE-CHANINP-001` and canonical
     `chan.inp` specification.
+- `20260521-inimpl01-prioritize-parser-implementation-order/`
+  - Purpose: prioritize implementation order for all active `SC-INFILE-*`
+    parser surfaces and produce dependency-aware implementation waves plus
+    follow-on implementation work-package queue proposals.
+- `20260521-inimpl02-wave1-worktree-orchestration-001/`
+  - Purpose: establish Wave 1 shared scaffold governance for parallel agent
+    worktrees, including ownership manifests and integration sequencing rules.
+- `20260521-inimpl03-implement-sc-infile-slope-parser-001/`
+  - Purpose: implement `SC-INFILE-SLOPE-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl04-implement-sc-infile-soil-parser-001/`
+  - Purpose: implement `SC-INFILE-SOIL-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl05-implement-sc-infile-climate-parser-001/`
+  - Purpose: implement `SC-INFILE-CLIMATE-001` parser surface in a dedicated
+    worker worktree.
+- `20260521-inimpl06-implement-sc-infile-management-parser-001/`
+  - Purpose: implement `SC-INFILE-MANAGEMENT-001` parser surface in a
+    dedicated worker worktree.
+- `20260521-inimpl07-wave1-core-parser-integration-001/`
+  - Purpose: integrate Wave 1 worker outputs and close global Wave 1
+    validation gates.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
