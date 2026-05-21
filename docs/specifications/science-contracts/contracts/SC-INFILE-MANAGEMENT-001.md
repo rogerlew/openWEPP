@@ -4,9 +4,9 @@ title: Management Input Parser Contract (.man)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.2
+contract_version: 0.2.0
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-05-21T19:00:00Z
 ---
 
 # SC-INFILE-MANAGEMENT-001 Management Input Parser Contract
@@ -20,7 +20,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-SPEC-MAN-01]` `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/plant-file.spec.md` (canonical openWEPP management section/scenario structure and datver notes).
 - `[DIRECT][E-SURVEY-MAN-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (`.man` parser coverage and legacy/runtime provenance references).
 - `[DIRECT][E-WF-MAN-01]` `/home/workdir/wepp-forest/src/infile.for` and `/home/workdir/wepp-forest/src/tilage.for` (legacy management parse/consumption references cited by survey).
-- `[DIRECT][E-WP-MAN-01]` `/workdir/wepppy/wepp/management/managements.py` (`Management._parse` and downgrade behavior noted in spec text/survey).
+- `[DIRECT][E-WP-MAN-01]` `/home/workdir/wepppy/wepppy/wepp/management/managements.py` (`Management._parse` and downgrade behavior noted in spec text/survey).
 - `[INFERENCE][E-PHYS-MAN-01]` Physical/common-sense invariants: valid day/date domains, non-negative counts, index closure across section scenario arrays.
 
 ## 1. Scope and Version Applicability
@@ -39,6 +39,16 @@ This contract governs parser behavior for surface `infile-management-man` (`.man
 | `2017.1` | Accept. | Parse as `2016.3`-family extension until stricter divergence is identified. | `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-WP-MAN-01]` |
 | unknown | Strict reject. Compat reject unless explicitly allowlisted. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-MAN-01]` |
 
+### 1.3 Executable Parser Profile (INIMPL09)
+
+- Non-zero section parsing is executable for canonical cropland scenario loops across plant, operation, initial, surface, contour, drain, yearly, and management sections.
+- Parser output includes typed section registries and expanded management schedule slots.
+- Executable option support profile:
+  - annual/fallow residue option (`resmgt`) supports `1..6` for `95.7/98.4` and `1..7` for `2016.3/2017.1`;
+  - perennial management option (`mgtopt`) currently executes `1..3`; higher `2016.3+` options (`4..7`) are typed `MAN-E-004`.
+- Rangeland (`landuse=2`) paths are explicitly unsupported for openWEPP `.man` execution and rejected with typed `MAN-E-004`.
+- Date-domain guard `G-MAN-008` is executable for parsed cropland surface/yearly date fields (`1..366`, with explicit `0` sentinel support only for perennial `jdharv`, `jdplt`, `jdstop`).
+
 ## 2. Source Grammar and Source-vs-Simulation Model
 
 ### 2.1 Source Grammar (Normative Draft)
@@ -52,8 +62,8 @@ info_section = datver_line nofe_or_nchan_line total_years_line ;
 plant_section = ncrop plant_scenario{ncrop} ;
 operation_section = nop op_scenario{nop} ;
 initial_section = nini ini_scenario{nini} ;
-surface_section = ntill till_scenario{ntill} ;
-contour_section = ncont contour_scenario{ncont} ;
+surface_section = nseq surface_scenario{nseq} ;
+contour_section = ncnt contour_scenario{ncnt} ;
 drainage_section = ndrain drain_scenario{ndrain} ;
 yearly_section = nscen yearly_scenario{nscen} ;
 management_section = final_management_schedule ;
@@ -325,7 +335,7 @@ Closure hooks:
 | `MAN-E-001` | syntax | token parse failure for required numeric fields |
 | `MAN-E-002` | syntax | missing section/record before expected count closure |
 | `MAN-E-003` | semantic | unsupported datver |
-| `MAN-E-004` | semantic | invalid enum/options domain (`lanuse`, `iplant`, `iop`, `mgtopt`, etc.) |
+| `MAN-E-004` | semantic | invalid enum/options domain (`lanuse`, `iplant`, `iop`, `mgtopt`, etc.) and explicit unsupported `landuse=2` execution paths |
 | `MAN-E-005` | semantic | negative or invalid section counts |
 | `MAN-E-006` | semantic | section ordering violation |
 | `MAN-E-007` | cross-file | topology mismatch with slope/soil/watershed surfaces |
@@ -360,9 +370,11 @@ No silent fallback masking for invalid required management structure.
   - enforce section order and count closure;
   - reject unknown datver or datver-incompatible extension fields;
   - reject Julian-day/date fields outside contract domains;
+  - reject rangeland (`landuse=2`) execution paths with typed unsupported behavior;
   - reject unsupported option enums and dangling scenario references.
 - Compatibility mode:
   - may accept select legacy forms where mapping is lossless and explicit;
+  - accepts first-token parsing for single-token control records while preserving the same invariant/error checks;
   - may accept legacy date sentinels only where canonical spec already permits them (`0` for specific perennial fields such as `jdharv` and `jdplt`);
   - must still fail on broken index closure or invalid section counts.
 
@@ -391,7 +403,7 @@ openWEPP names are explicit aliases only (Section 3 table).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `MAN-GAP-001` | Field coverage matrix is now codified at contract level; remaining gap is executable fixture coverage for all 2016.3+ and rangeland branch combinations in parser test corpora. | `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-SURVEY-MAN-01]` | `HOLD` |
+| `MAN-GAP-001` | Full non-zero section parsing and executable fixture coverage for canonical cropland `.man` structures is implemented; remaining branch gap is only `mgtopt 4..7` execution coverage. | `[DIRECT][E-SPEC-MAN-01]`, `[DIRECT][E-WP-MAN-01]` | `amended` |
 | `MAN-GAP-002` | Formal openWEPP policy for accepting/translating 2016.3+ extended operation codes in strict mode vs external downgrade workflows is not fully ratified. | `[DIRECT][E-SPEC-MAN-01]`, `[DIRECT][E-WP-MAN-01]` | `HOLD` |
 | `MAN-GAP-003` | Cross-file governance for management-schedule year closure against run-control surfaces is not yet codified in a dedicated run-surface parser contract. | `[INFERENCE][E-SURVEY-MAN-01]` | `HOLD` |
 
@@ -399,6 +411,7 @@ openWEPP names are explicit aliases only (Section 3 table).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-21` | `0.2.0` | Ratified executable INIMPL09 parser profile: canonical section-order non-zero parsing, typed registry/schedule output, explicit rangeland unsupported policy, and executable date-domain guard linkage. |
 | `2026-05-21` | `0.1.2` | Replaced grouped payload rows in Section 3 with explicit per-symbol field rows for all externally relevant management inputs across plant/operation/initial/surface/contour/drain/yearly branches. |
 | `2026-05-21` | `0.1.1` | Expanded management field-coverage matrix, added boundary export mapping, added explicit date-domain guards/taxonomy, and evidence-tagged cross-file constraints. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE03. |

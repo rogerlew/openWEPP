@@ -3,10 +3,10 @@
 ## Header Metadata
 - `spec_id`: `SPEC-INFILE-MANAGEMENT-MAN-001`
 - `surface_id`: `infile-management-man`
-- `status`: `draft-HOLD`
+- `status`: `draft`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `spec_version`: `0.2.0`
+- `last_updated_utc`: `2026-05-21T19:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Parser-Contract Authority Note
@@ -14,11 +14,29 @@
   - `docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md`
 - This specification remains the canonical section/scenario grammar and symbol authority for `.man`.
 - Legacy canonical symbols and section labels (for example `datver`, `ncrop`, `nop`, `nini`, `nscen`, `nofe`, `nyears`, `nrots`, `manindx`) are normative unless parser-contract alias mapping explicitly states otherwise.
+
+## openWEPP Parser Profile (Executable)
+- Supported datver allowlist: `95.7`, `98.4`, `2016.3`, `2017.1`.
+- Parser reads section counts and scenario loops in canonical order:
+  - `ncrop` + plant loops, `nop` + operation loops, `nini` + initial loops, `nseq` + surface loops, `ncnt` + contour loops, `ndrain` + drain loops, `nscen` + yearly loops, then management loop (`nofes`, `ofeindx`, `nrots`, `nyears`, `nycrop`, `manindx`).
+- Parser output surface includes typed scenario registries and expanded management schedule slots (`rotation_index`, `year_in_rotation`, `ofe_index`, `crop_slots`, yearly refs).
+- Mandatory closure checks:
+  - declared years equals `nrots * nyears`;
+  - scenario references (`iresd`, `op`, `itype`, `tilseq`, `conset`, `drset`, `ofeindx`, `manindx`) resolve against declared section counts.
+- Date-domain guard (`G-MAN-008`) is executable for parsed cropland surfaces:
+  - strict day domain `1..366`;
+  - explicit `0` sentinel accepted only for perennial `jdharv`, `jdplt`, and `jdstop`.
+- openWEPP typed unsupported policy:
+  - rangeland landuse (`landuse=2`) is rejected with typed unsupported behavior;
+  - no implicit partial rangeland simulation path is provided.
+- Strict vs compatibility token policy:
+  - strict mode rejects trailing tokens on single-token control records;
+  - compatibility mode reads the first token for those records.
 The plant/management input file contains all of the information needed by the WEPP model related to plant parameters (rangeland plant communities and cropland annual and perennial crops), tillage sequences and tillage implement parameters, plant and residue management, initial conditions, contouring, subsurface drainage, and crop rotations.
 
 For readability, the WEPP management file is structured into **Sections**. A **Section** is a group of data which are related in some manner. The WEPP management file can become very complex, especially for multiple OFE simulations. It is recommend to use the WEPP user interface or other software to assist in creating these files.
 
-Although the rangeland section formatting is still accepted, the WEPP model has not been updated for rangeland applications. The WEPP cropland management scenarios can be adapted for some rangeland applications. Another option is to use the more recently developed USDAARS RHEM model for rangeland applications.
+Although canonical WEPP grammar includes rangeland sections, openWEPP does not execute rangeland simulation behavior for `.man` in this parser surface. Rangeland `landuse=2` inputs are rejected with typed unsupported errors instead of partial/implicit support.
 
 The management file contains the following **Sections** in the following order:
 * **Information Section** contains the WEPP version.

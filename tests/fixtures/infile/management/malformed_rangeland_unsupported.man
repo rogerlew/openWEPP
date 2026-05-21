@@ -1,4 +1,4 @@
-95.7 format
+98.4
 #
 #
 #
@@ -115,7 +115,7 @@ Year 1
 
 
 
-1  # landuse <cropland>
+2  # landuse <cropland>
 1  # plant growth scenario
 1  # surface effect scenario
 0  # contour scenario

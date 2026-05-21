@@ -1,4 +1,4 @@
-95.7 format
+98.4
 #
 #
 #
@@ -83,7 +83,7 @@ Your name, phone
 
 1  # landuse  - cropland
 1 # ntill - number of operations
-  130  # mdate  --- 5 / 10 
+  367  # mdate  --- 5 / 10 
   1  # op --- PLNTFC
       0.051  # depth
       2  # type

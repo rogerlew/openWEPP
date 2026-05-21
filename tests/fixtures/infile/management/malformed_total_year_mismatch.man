@@ -1,11 +1,11 @@
-95.7 format
+98.4
 #
 #
 #
 #
 
 1 # number of OFE's
-1 # (total) years in simulation
+2 # (total) years in simulation
 
 #######################
 # Plant Section       #

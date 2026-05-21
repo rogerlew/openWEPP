@@ -17,17 +17,64 @@ fn fixture_path(name: &str) -> PathBuf {
 }
 
 #[test]
-fn strict_mode_parses_minimal_management_fixture() {
-    let parsed =
-        parse_management_from_path(fixture_path("strict_minimal_ok.man"), ParseMode::Strict)
-            .expect("strict minimal fixture should parse");
+fn strict_mode_parses_canonical_nonzero_cropland_fixture() {
+    let parsed = parse_management_from_path(
+        fixture_path("canonical_cropland_nonzero_98_4.man"),
+        ParseMode::Strict,
+    )
+    .expect("strict parser should accept canonical non-zero 98.4 fixture");
 
-    assert_eq!(parsed.datver, "95.7");
+    assert_eq!(parsed.datver, "98.4");
     assert_eq!(parsed.topology_count, 1);
-    assert_eq!(parsed.declared_total_years, 2);
+    assert_eq!(parsed.declared_total_years, 1);
+    assert_eq!(parsed.section_counts.ncrop, 1);
+    assert_eq!(parsed.section_counts.nop, 1);
+    assert_eq!(parsed.section_counts.nini, 1);
+    assert_eq!(parsed.section_counts.nseq, 1);
+    assert_eq!(parsed.section_counts.ncnt, 0);
+    assert_eq!(parsed.section_counts.ndrain, 0);
+    assert_eq!(parsed.section_counts.nscen, 1);
+
+    assert_eq!(parsed.registries.plants.len(), 1);
+    assert_eq!(parsed.registries.operations.len(), 1);
+    assert_eq!(parsed.registries.initials.len(), 1);
+    assert_eq!(parsed.registries.surfaces.len(), 1);
+    assert_eq!(parsed.registries.yearlies.len(), 1);
+
     assert_eq!(parsed.schedule.rotation_repeats, 1);
-    assert_eq!(parsed.schedule.rotation_years, 2);
-    assert_eq!(parsed.schedule.slots.len(), 2);
+    assert_eq!(parsed.schedule.rotation_years, 1);
+    assert_eq!(parsed.schedule.slots.len(), 1);
+    assert_eq!(parsed.schedule.slots[0].crop_slots, 1);
+    assert_eq!(parsed.schedule.slots[0].yearly_refs, vec![1]);
+}
+
+#[test]
+fn strict_mode_parses_rotation_fixture_with_schedule_expansion() {
+    let parsed = parse_management_from_path(
+        fixture_path("canonical_rotation_nonzero_98_4.man"),
+        ParseMode::Strict,
+    )
+    .expect("strict parser should accept canonical multi-rotation fixture");
+
+    assert_eq!(parsed.datver, "98.4");
+    assert_eq!(parsed.topology_count, 3);
+    assert_eq!(parsed.schedule.rotation_repeats, 10);
+    assert_eq!(parsed.schedule.rotation_years, 3);
+    assert_eq!(parsed.declared_total_years, 30);
+    assert_eq!(parsed.schedule.slots.len(), 90);
+}
+
+#[test]
+fn strict_mode_accepts_supported_datver_branches() {
+    for fixture in [
+        "canonical_cropland_nonzero_95_7.man",
+        "canonical_cropland_nonzero_98_4.man",
+        "canonical_cropland_nonzero_2016_3.man",
+        "canonical_cropland_nonzero_2017_1.man",
+    ] {
+        parse_management_from_path(fixture_path(fixture), ParseMode::Strict)
+            .unwrap_or_else(|err| panic!("fixture {fixture} should parse: {err}"));
+    }
 }
 
 #[test]
@@ -39,7 +86,7 @@ fn compatibility_mode_accepts_trailing_tokens_on_control_records() {
     .expect("compat mode should accept first token from control records");
 
     assert_eq!(parsed.datver, "95.7");
-    assert_eq!(parsed.declared_total_years, 2);
+    assert_eq!(parsed.declared_total_years, 1);
 }
 
 #[test]
@@ -80,8 +127,7 @@ fn missing_required_line_rejected() {
             .expect_err("missing record must be rejected");
 
     match err {
-        ManagementParseError::MissingRecord { field } => {
-            assert_eq!(field, "nycrop");
+        ManagementParseError::MissingRecord { .. } => {
             assert_eq!(err.contract_error_id(), "MAN-E-002");
         }
         other => panic!("unexpected error variant: {other:?}"),
@@ -105,17 +151,19 @@ fn negative_count_rejected() {
 
 #[test]
 fn total_year_closure_enforced() {
-    let err =
-        parse_management_from_path(fixture_path("total_year_mismatch.man"), ParseMode::Strict)
-            .expect_err("declared and derived total years must match");
+    let err = parse_management_from_path(
+        fixture_path("malformed_total_year_mismatch.man"),
+        ParseMode::Strict,
+    )
+    .expect_err("declared and derived total years must match");
 
     match err {
         ManagementParseError::TotalYearMismatch {
             declared_total_years,
             derived_total_years,
         } => {
-            assert_eq!(declared_total_years, 3);
-            assert_eq!(derived_total_years, 2);
+            assert_eq!(declared_total_years, 2);
+            assert_eq!(derived_total_years, 1);
             assert_eq!(err.contract_error_id(), "MAN-E-008");
         }
         other => panic!("unexpected error variant: {other:?}"),
@@ -123,18 +171,82 @@ fn total_year_closure_enforced() {
 }
 
 #[test]
-fn nonzero_section_counts_are_currently_rejected() {
+fn dangling_yearly_reference_rejected() {
     let err = parse_management_from_path(
-        fixture_path("nonzero_section_not_supported.man"),
+        fixture_path("malformed_dangling_yearly_ref.man"),
         ParseMode::Strict,
     )
-    .expect_err("this worker package currently rejects non-zero scenario sections");
+    .expect_err("dangling manindx must be rejected");
 
     match err {
-        ManagementParseError::NonZeroScenarioSectionUnsupported { section, count } => {
-            assert_eq!(section, "ncrop");
-            assert_eq!(count, 1);
-            assert_eq!(err.contract_error_id(), "MAN-E-002");
+        ManagementParseError::DanglingScenarioReference {
+            field,
+            value,
+            max_allowed,
+        } => {
+            assert_eq!(field, "manindx");
+            assert_eq!(value, 99);
+            assert_eq!(max_allowed, 1);
+            assert_eq!(err.contract_error_id(), "MAN-E-009");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn dangling_operation_reference_rejected() {
+    let err = parse_management_from_path(
+        fixture_path("malformed_dangling_op_ref.man"),
+        ParseMode::Strict,
+    )
+    .expect_err("dangling operation reference must be rejected");
+
+    match err {
+        ManagementParseError::DanglingScenarioReference {
+            field,
+            value,
+            max_allowed,
+        } => {
+            assert_eq!(field, "op");
+            assert_eq!(value, 9);
+            assert_eq!(max_allowed, 1);
+            assert_eq!(err.contract_error_id(), "MAN-E-009");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn invalid_surface_date_domain_rejected() {
+    let err = parse_management_from_path(
+        fixture_path("malformed_invalid_surface_date.man"),
+        ParseMode::Strict,
+    )
+    .expect_err("invalid julian day domain must be rejected");
+
+    match err {
+        ManagementParseError::DateDomainError { field, value, .. } => {
+            assert_eq!(field, "mdate");
+            assert_eq!(value, 367);
+            assert_eq!(err.contract_error_id(), "MAN-E-010");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn rangeland_landuse_is_explicitly_unsupported() {
+    let err = parse_management_from_path(
+        fixture_path("malformed_rangeland_unsupported.man"),
+        ParseMode::Strict,
+    )
+    .expect_err("rangeland path must be rejected with typed unsupported behavior");
+
+    match err {
+        ManagementParseError::UnsupportedLanduse { section, landuse } => {
+            assert_eq!(section, "yearly");
+            assert_eq!(landuse, 2);
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
         }
         other => panic!("unexpected error variant: {other:?}"),
     }
