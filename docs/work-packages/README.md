@@ -83,3 +83,6 @@ Authorized packages:
 - `20260520-sci16-author-sc-impound-001/`
   - Purpose: author and disposition `SC-IMPOUND-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci17-author-sc-system-001/`
+  - Purpose: author and disposition `SC-SYSTEM-001` using the required
+    dual-agent review and fix-verification workflow.
