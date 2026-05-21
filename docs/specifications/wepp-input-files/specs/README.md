@@ -9,3 +9,7 @@ Current scope:
 - soil input files (`soil-file.spec.md`)
 
 These files are used to define parser contracts and backward-compatibility behavior for openWEPP input consumers.
+
+Authoring and governance:
+- `docs/specifications/wepp-input-specification-authoring-procedure.md`
+- `docs/specifications/wepp-input-file-parser-contract-authoring-procedure.md`

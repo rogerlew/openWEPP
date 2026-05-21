@@ -29,6 +29,8 @@ Canonical science-contract location:
 Canonical WEPP input-file specification location:
 - [wepp-input-files/README.md](wepp-input-files/README.md)
 - OpenWEPP-owned canonical specs: `docs/specifications/wepp-input-files/specs/`
+- Specification authoring procedure:
+  `docs/specifications/wepp-input-specification-authoring-procedure.md`
 - Parser contract data-model/propagation requirements:
   `docs/specifications/wepp-input-files/parser-contract-requirements.md`
 - Parser input-surface registry:
@@ -43,6 +45,7 @@ Current chapter-to-contract scaffold:
 
 Authoring workflow:
 - [science-contract-authoring-procedure.md](science-contract-authoring-procedure.md) (required dual-agent review, disposition, and fix verification gate)
+- [wepp-input-specification-authoring-procedure.md](wepp-input-specification-authoring-procedure.md) (required WEPP input specification authoring workflow and coverage/completeness gates)
 - [wepp-input-file-parser-contract-authoring-procedure.md](wepp-input-file-parser-contract-authoring-procedure.md) (required parser-contract authoring workflow with dual-agent review and verification)
 
 Promotion workflow:

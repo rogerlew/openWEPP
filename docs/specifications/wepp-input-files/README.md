@@ -39,6 +39,12 @@ Explicit out-of-scope parser carry-forward:
   including typed data-model requirements and parse-to-simulation propagation
   mapping obligations.
 
+## Specification Authoring Procedure (Normative)
+
+- `../wepp-input-specification-authoring-procedure.md` defines the required
+  workflow for authoring and promoting a comprehensive WEPP input
+  specification corpus across hillslope, watershed, and sidecar surfaces.
+
 ## Parser Authoring Procedure (Normative)
 
 - `../wepp-input-file-parser-contract-authoring-procedure.md` defines the

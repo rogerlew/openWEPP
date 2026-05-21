@@ -29,6 +29,10 @@ Canonical parser-specification corpus is stored in:
 
 - `docs/specifications/wepp-input-files/specs/`
 
+Canonical parser-specification authoring procedure is stored in:
+
+- `docs/specifications/wepp-input-specification-authoring-procedure.md`
+
 Normative parser-contract structure requirements are stored in:
 
 - `docs/specifications/wepp-input-files/parser-contract-requirements.md`
@@ -203,6 +207,7 @@ PASS / PASS-WITH-NOTES / FAIL."
 This procedure follows the same governance pattern as:
 
 - `docs/specifications/science-contract-authoring-procedure.md`
+- `docs/specifications/wepp-input-specification-authoring-procedure.md`
 
 and specializes it for parser-contract data modeling and state propagation
 obligations defined in:

@@ -147,3 +147,51 @@ Authorized packages:
 - `20260520-infile19-author-sc-infile-chaninp-001/`
   - Purpose: author and disposition `SC-INFILE-CHANINP-001` and canonical
     `chan.inp` specification.
+- `20260520-inspec01-author-wepp-input-spec-slope-001/`
+  - Purpose: author and disposition canonical slope input specification
+    (`slope-file.spec.md`, `.slp`).
+- `20260520-inspec02-author-wepp-input-spec-watershed-structure-001/`
+  - Purpose: author and disposition canonical watershed structure specification
+    (`watershed-structure-file.spec.md`, `.str`).
+- `20260520-inspec03-author-wepp-input-spec-watershed-channel-001/`
+  - Purpose: author and disposition canonical watershed channel specification
+    (`watershed-channel-file.spec.md`, `.chn`).
+- `20260520-inspec04-author-wepp-input-spec-watershed-impoundment-001/`
+  - Purpose: author and disposition canonical watershed impoundment
+    specification (`watershed-impoundment-file.spec.md`, `.imp`).
+- `20260520-inspec05-author-wepp-input-spec-irrigation-depletion-001/`
+  - Purpose: author and disposition canonical depletion irrigation sidecar
+    specification (`irrigation-depletion-file.spec.md`).
+- `20260520-inspec06-author-wepp-input-spec-irrigation-fixeddate-001/`
+  - Purpose: author and disposition canonical fixed-date irrigation sidecar
+    specification (`irrigation-fixeddate-file.spec.md`).
+- `20260520-inspec07-author-wepp-input-spec-pmetpara-001/`
+  - Purpose: author and disposition canonical `pmetpara.txt` specification
+    (`pmetpara.spec.md`).
+- `20260520-inspec08-author-wepp-input-spec-snow-001/`
+  - Purpose: author and disposition canonical `snow.txt` specification
+    (`snow.spec.md`).
+- `20260520-inspec09-author-wepp-input-spec-frost-001/`
+  - Purpose: author and disposition canonical `frost.txt` specification
+    (`frost.spec.md`).
+- `20260520-inspec10-author-wepp-input-spec-gwcoeff-001/`
+  - Purpose: author and disposition canonical `gwcoeff.txt` specification
+    (`gwcoeff.spec.md`).
+- `20260520-inspec11-author-wepp-input-spec-phosphorus-001/`
+  - Purpose: author and disposition canonical `phosphorus.txt` specification
+    (`phosphorus.spec.md`).
+- `20260520-inspec12-author-wepp-input-spec-weppui-001/`
+  - Purpose: author and disposition canonical `wepp_ui.txt` specification
+    (`wepp-ui.spec.md`).
+- `20260520-inspec13-author-wepp-input-spec-tc-001/`
+  - Purpose: author and disposition canonical `tc.txt` specification
+    (`tc.spec.md`).
+- `20260520-inspec14-author-wepp-input-spec-tcr-001/`
+  - Purpose: author and disposition canonical `tcr.txt` specification
+    (`tcr.spec.md`).
+- `20260520-inspec15-author-wepp-input-spec-lcwb-001/`
+  - Purpose: author and disposition canonical `lcwb.txt` specification
+    (`lcwb.spec.md`).
+- `20260520-inspec16-author-wepp-input-spec-chaninp-001/`
+  - Purpose: author and disposition canonical `chan.inp` specification
+    (`chaninp.spec.md`).
