@@ -68,3 +68,6 @@ Authorized packages:
 - `20260520-sci11-author-sc-residue-001/`
   - Purpose: author and disposition `SC-RESIDUE-001` using the required
     dual-agent review and fix-verification workflow.
+- `20260520-sci12-author-sc-hydraulics-001/`
+  - Purpose: author and disposition `SC-HYDRAULICS-001` using the required
+    dual-agent review and fix-verification workflow.
