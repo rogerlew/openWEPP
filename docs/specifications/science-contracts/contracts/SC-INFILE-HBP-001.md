@@ -23,6 +23,12 @@ Evidence mode: `Static`
 - `[DIRECT][E-WP3-HBP-01]` `/workdir/wepppyo3/wepp_interchange/src/hill_hbp.rs` (reference Rust implementation for schema checks and invariant enforcement).
 - `[DIRECT][E-OW-HBP-01]` `/home/workdir/openWEPP/crates/openwepp-input-contract/src/parsers/hbp.rs` (openWEPP parser implementation surface).
 
+Implementation authority note:
+- openWEPP HBP parser/serialization behavior is still implemented based on
+  `/workdir/wepp-forest` HBP contract surfaces (`E-WF-HBP-01`,
+  `E-WF-HBP-02`); the ADR-0012 pinned baseline does not replace this contract
+  authority.
+
 ## 1. Scope and Version Applicability
 
 ### 1.1 Scope

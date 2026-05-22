@@ -11,7 +11,9 @@ Survey existing WEPP input-file parser coverage in `wepppy`, `wepppyo3`, and `we
 
 - `wepppy`: `/workdir/wepppy`
 - `wepppyo3`: `/workdir/wepppyo3`
-- `wepp-forest`: `/home/workdir/wepp-forest`
+- `wepp-forest` active HEAD (exploratory): `/home/workdir/wepp-forest`
+- `wepp-forest` pinned baseline (normative for new provenance/comparator work):
+  `/workdir/wepp-forest_260430_baseline` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`)
 
 ## Coverage Matrix
 

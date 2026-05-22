@@ -36,6 +36,18 @@ GIS, climate, and run state. Do not duplicate wepppy concerns in this repo.
   code analysis.
 - Agents may read legacy F90 source and existing science contracts directly for
   provenance mapping and static inspection.
+- Canonical legacy provenance/comparator baseline is the pinned worktree
+  `/workdir/wepp-forest_260430_baseline` at commit
+  `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` (see
+  `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`).
+- Binary pass serialization (HBP shard format/reader-writer behavior) is still
+  implemented based on `/workdir/wepp-forest` contract authority; use
+  `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` and
+  `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md`
+  as upstream sources and record commit SHA provenance in work packages.
+- `/workdir/wepp-forest` HEAD remains valid for exploratory discovery, but
+  normative contract/spec provenance and baseline comparator references should
+  default to the pinned baseline unless explicitly justified.
 - Do not invent physics. Every kernel constant and invariant must trace to a
   citation or explicit physical rationale.
 - Variable naming continuity is required in science contracts: default to

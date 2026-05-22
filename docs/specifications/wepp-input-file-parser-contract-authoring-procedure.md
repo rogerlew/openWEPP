@@ -52,19 +52,32 @@ canonical authority location.
    2. WEPP technical references and literature invariants
    3. physical/common-sense invariants
    4. static legacy code inspection (`wepp-forest`, `wepppy`, `wepppyo3`) for provenance
-2. Every non-trivial rule must include explicit evidence anchors.
-3. Evidence tags are required per claim:
+2. Legacy WEPP static-code provenance default is the pinned baseline in
+   `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`:
+   - `/workdir/wepp-forest_260430_baseline`
+   - baseline commit:
+     `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
+   Citations to other legacy snapshots must include explicit commit SHA and
+   rationale in contract gap/disposition records.
+3. Binary pass serialization/parser contracts (`SC-INFILE-HBP-*`) remain based
+   on `/workdir/wepp-forest` HBP contract/implementation authority:
+   - `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`
+   - `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md`
+   HBP contract updates must record the `/workdir/wepp-forest` commit SHA used
+   for provenance.
+4. Every non-trivial rule must include explicit evidence anchors.
+5. Evidence tags are required per claim:
    - `[DIRECT]` for directly observed source/output facts
    - `[INFERENCE]` for reasoned interpretation
-4. Evidence mode at document/review level must be explicit:
+6. Evidence mode at document/review level must be explicit:
    - `Static` for read/reasoned work
    - `Ran` for executed-command/runtime evidence
-5. Variable-symbol continuity is mandatory:
+7. Variable-symbol continuity is mandatory:
    - canonical symbols default to legacy WEPP / `wepp-forest` names,
    - openWEPP boundary names must be linked via explicit alias mapping.
-6. Every invariant and parser rule must map to an explicit guard path
+8. Every invariant and parser rule must map to an explicit guard path
    (runtime typed error, explicit branch rejection, or governance `HOLD` gate).
-7. Every guard must declare an enforcement surface:
+9. Every guard must declare an enforcement surface:
    - parser-local surface,
    - downstream cross-validation surface, or
    - runtime simulation guard surface.

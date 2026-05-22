@@ -12,6 +12,14 @@ Contract derivation order:
 3. physical/common-sense invariants
 4. static legacy code inspection (secondary evidence)
 
+Legacy static-code provenance defaults to the pinned baseline defined in
+[ADR-0012](../decisions/0012-legacy-wepp-260430-baseline-anchor.md):
+`/workdir/wepp-forest_260430_baseline`
+(`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`).
+
+Exception: binary pass serialization (`H<hillslope_id>.hbp`) remains based on
+`/workdir/wepp-forest` HBP contract/implementation authority per ADR-0012.
+
 Legacy contracts and legacy runtime behavior are valuable references, but not
 automatic authority for acceptance decisions in all execution surfaces.
 

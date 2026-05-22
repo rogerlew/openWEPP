@@ -45,18 +45,25 @@ authority location.
    2. peer-reviewed literature invariants
    3. physical/common-sense invariants
    4. static legacy code inspection (secondary provenance only)
-2. Every non-trivial invariant must include explicit citation anchors.
-3. Evidence tags are required per claim:
+2. Legacy static-code provenance default is the pinned baseline in
+   `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`:
+   - `/workdir/wepp-forest_260430_baseline`
+   - baseline commit:
+     `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
+   Citations to a different legacy snapshot must include explicit commit SHA and
+   rationale in the contract gap/disposition register.
+3. Every non-trivial invariant must include explicit citation anchors.
+4. Evidence tags are required per claim:
    - `[DIRECT]` for directly observed source/output facts
    - `[INFERENCE]` for reasoned interpretation
-4. Evidence mode at document/review level must be explicit:
+5. Evidence mode at document/review level must be explicit:
    - `Static` for read/reasoned work
    - `Ran` for executed-command/runtime evidence
-5. Every invariant must have an explicit guard mapping:
+6. Every invariant must have an explicit guard mapping:
    - runtime guard (hard error / typed failure / explicit branch), or
    - governance guard (non-runtime promotion gate with explicit `HOLD` rule).
    Invariants without guard mapping are incomplete and block promotion.
-6. Variable-symbol continuity is mandatory:
+7. Variable-symbol continuity is mandatory:
    - canonical contract symbols default to `wepp-forest` / legacy WEPP names,
    - if openWEPP boundary names differ, contracts must include explicit alias
      mappings from canonical symbols to boundary/API field names.

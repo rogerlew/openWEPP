@@ -54,26 +54,29 @@ Specification claims must be derived from a fixed source hierarchy:
    - `/home/workdir/openWEPP/references/vendorable/`
    - `/home/workdir/openWEPP/references/copyrighted/` (local cache when available)
 3. Static legacy WEPP implementation provenance (secondary format behavior
-   authority):
-   - `/workdir/wepp-forest/src/readin.for`
-   - `/workdir/wepp-forest/src/input.for`
-   - `/workdir/wepp-forest/src/wshinp.for`
-   - `/workdir/wepp-forest/src/wshini.for`
-   - `/workdir/wepp-forest/src/verchk.for`
-   - `/workdir/wepp-forest/src/irrig.for`
-   - `/workdir/wepp-forest/src/depirr.for`
-   - `/workdir/wepp-forest/src/snowd.for`
-   - `/workdir/wepp-forest/src/frzng.for`
-   - `/workdir/wepp-forest/src/frostn.for`
-   - `/workdir/wepp-forest/src/chnpar.for`
-   - `/workdir/wepp-forest/src/chnvar.for`
-   - `/workdir/wepp-forest/src/chnero.for`
-   - `/workdir/wepp-forest/src/impyr.for`
-   - `/workdir/wepp-forest/src/impflo.for`
-   - `/workdir/wepp-forest/src/impday.for`
-   - `/workdir/wepp-forest/src/impsvb.f90`
-   - `/workdir/wepp-forest/src/impris.f90`
-   - `/workdir/wepp-forest/docs/` (legacy process notes and interface behavior context)
+   authority), pinned to the ADR-0012 baseline snapshot:
+   - baseline root: `/workdir/wepp-forest_260430_baseline`
+   - baseline commit:
+     `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
+   - `/workdir/wepp-forest_260430_baseline/src/readin.for`
+   - `/workdir/wepp-forest_260430_baseline/src/input.for`
+   - `/workdir/wepp-forest_260430_baseline/src/wshinp.for`
+   - `/workdir/wepp-forest_260430_baseline/src/wshini.for`
+   - `/workdir/wepp-forest_260430_baseline/src/verchk.for`
+   - `/workdir/wepp-forest_260430_baseline/src/irrig.for`
+   - `/workdir/wepp-forest_260430_baseline/src/depirr.for`
+   - `/workdir/wepp-forest_260430_baseline/src/snowd.for`
+   - `/workdir/wepp-forest_260430_baseline/src/frzng.for`
+   - `/workdir/wepp-forest_260430_baseline/src/frostn.for`
+   - `/workdir/wepp-forest_260430_baseline/src/chnpar.for`
+   - `/workdir/wepp-forest_260430_baseline/src/chnvar.for`
+   - `/workdir/wepp-forest_260430_baseline/src/chnero.for`
+   - `/workdir/wepp-forest_260430_baseline/src/impyr.for`
+   - `/workdir/wepp-forest_260430_baseline/src/impflo.for`
+   - `/workdir/wepp-forest_260430_baseline/src/impday.for`
+   - `/workdir/wepp-forest_260430_baseline/src/impsvb.f90`
+   - `/workdir/wepp-forest_260430_baseline/src/impris.f90`
+   - `/workdir/wepp-forest_260430_baseline/docs/` (legacy process notes and interface behavior context)
 4. Existing modern parser/spec implementations (secondary provenance):
    - `/workdir/wepppy/wepppy/weppcloud/routes/usersum/input-file-specifications/`
    - `/workdir/wepppy/wepppy/nodb/core/climate_input_parser.py`
@@ -90,10 +93,20 @@ Rules:
    documented there.
 2. `wepp-forest` static behavior is used to resolve ambiguities or undocumented
    branches and must be labeled as legacy-derived provenance.
-3. `wepppy` and `wepppyo3` are implementation references, not automatic
+   - default source snapshot is ADR-0012 baseline:
+     `/workdir/wepp-forest_260430_baseline`
+   - when a non-baseline snapshot is used, include the explicit commit SHA and
+     rationale in the gap/disposition record.
+3. Binary pass serialization specifications (`hbp-file.spec.md`) remain based
+   on `/workdir/wepp-forest` HBP contract/implementation authority:
+   - `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`
+   - `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md`
+   HBP spec updates must record the `/workdir/wepp-forest` commit SHA used for
+   provenance.
+4. `wepppy` and `wepppyo3` are implementation references, not automatic
    authority, unless their behavior is independently anchored to higher-ranked
    sources.
-4. If sources disagree, record the conflict explicitly and keep status `HOLD`
+5. If sources disagree, record the conflict explicitly and keep status `HOLD`
    until disposition rationale is documented.
 
 ## Mandatory usersum2024 Extraction Checklist
