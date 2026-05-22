@@ -41,6 +41,8 @@ Status: finalized.
   - `docs/work-packages/20260522-arch19-run-and-parquet-boundary-contracts-001/`
 - `ARCH20` provisioned:
   - `docs/work-packages/20260522-arch20-governance-throughput-and-build-hygiene-controls-001/`
+- `ARCH21` provisioned:
+  - `docs/work-packages/20260522-arch21-architecture-review-re-closeout-001/`
 
 ## Execution Status Snapshot (2026-05-22)
 
@@ -49,5 +51,9 @@ Status: finalized.
 - `ARCH17`: complete (`GO-WITH-AMENDMENTS`).
 - `ARCH18`: executed; currently `HOLD` pending hold-lift gate replay after
   ARCH17 stabilization.
-- `ARCH19`: pending.
+- `ARCH19`: executed; currently `HOLD` pending follow-on closure of
+  `RUN-HOLD-001..003` and `PRQ-HOLD-001..003`.
 - `ARCH20`: complete (`GO`).
+- `ARCH21`: complete (`HOLD_ARCH14_PENDING`), pending closure of `CRF-006`
+  full-gate replay (`cargo fmt --check`) and ARCH19 `RUN-HOLD-*`/`PRQ-HOLD-*`
+  follow-ons.
