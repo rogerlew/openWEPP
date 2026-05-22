@@ -6,7 +6,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 const ALLOWED_DATVERS: [f64; 4] = [0.0, 4.0, 4.3, 5.3];
-const MAX_BREAKPOINTS_PER_DAY: usize = 50;
+const MAX_BREAKPOINTS_PER_DAY: usize = 1_500;
 const FLOAT_EQ_TOLERANCE: f64 = 1e-9;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -19,6 +19,7 @@ pub enum ParserMode {
 pub struct CompatibilityOptions {
     pub allow_single_storm: bool,
     pub allow_breakpoint_cardinality_override: bool,
+    pub allow_legacy_zero_drain_non_positive_dtime: bool,
 }
 
 impl ParserMode {
@@ -33,6 +34,13 @@ impl ParserMode {
         match self {
             Self::Strict => false,
             Self::Compatibility(options) => options.allow_breakpoint_cardinality_override,
+        }
+    }
+
+    fn allow_legacy_zero_drain_non_positive_dtime(self) -> bool {
+        match self {
+            Self::Strict => false,
+            Self::Compatibility(options) => options.allow_legacy_zero_drain_non_positive_dtime,
         }
     }
 }
@@ -193,6 +201,11 @@ pub enum ClimateParseError {
         previous: f64,
         current: f64,
     },
+    BreakpointTimeMonotonicity {
+        line: usize,
+        previous: f64,
+        current: f64,
+    },
     RecordCount {
         context: &'static str,
         expected: usize,
@@ -277,6 +290,16 @@ impl Display for ClimateParseError {
                 write!(
                     f,
                     "line {line}: cumulative breakpoint precipitation must be monotone: previous={previous}, current={current}"
+                )
+            }
+            Self::BreakpointTimeMonotonicity {
+                line,
+                previous,
+                current,
+            } => {
+                write!(
+                    f,
+                    "line {line}: breakpoint timem must be strictly increasing: previous={previous}, current={current}"
                 )
             }
             Self::RecordCount {
@@ -642,6 +665,7 @@ fn parse_breakpoint_day(
     let tdpt = parse_f64(tokens[9], line.number, "tdpt")?;
 
     let mut breakpoints = Vec::with_capacity(nbrkpt);
+    let mut previous_timem: Option<f64> = None;
     let mut previous_pptcum = 0.0;
     for index in 0..nbrkpt {
         let point_line = require_line(lines, cursor, "breakpoint pair record")?;
@@ -669,6 +693,21 @@ fn parse_breakpoint_day(
                 value: pptcum,
             });
         }
+        if let Some(previous_timem_value) = previous_timem {
+            let delta_time_h = timem - previous_timem_value;
+            if delta_time_h <= FLOAT_EQ_TOLERANCE {
+                let drain = pptcum - previous_pptcum;
+                let allow_legacy_bug = mode.allow_legacy_zero_drain_non_positive_dtime()
+                    && drain.abs() <= FLOAT_EQ_TOLERANCE;
+                if !allow_legacy_bug {
+                    return Err(ClimateParseError::BreakpointTimeMonotonicity {
+                        line: point_line.number,
+                        previous: previous_timem_value,
+                        current: timem,
+                    });
+                }
+            }
+        }
         if index > 0 && pptcum + FLOAT_EQ_TOLERANCE < previous_pptcum {
             return Err(ClimateParseError::BreakpointMonotonicity {
                 line: point_line.number,
@@ -677,6 +716,7 @@ fn parse_breakpoint_day(
             });
         }
 
+        previous_timem = Some(timem);
         previous_pptcum = pptcum;
         breakpoints.push(BreakpointPoint { timem, pptcum });
     }

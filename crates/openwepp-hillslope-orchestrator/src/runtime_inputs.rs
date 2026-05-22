@@ -164,8 +164,10 @@ pub struct HillslopeBreakpointForcing {
     pub mon: i32,
     pub year: i32,
     pub nbrkpt: usize,
+    pub stmstr: f64,
     pub prcp: f64,
     pub stmdur: f64,
+    pub mxint: f64,
     pub timem: Vec<f64>,
     pub intsty: Vec<f64>,
     pub tmax: f64,
@@ -315,7 +317,7 @@ impl fmt::Display for ClimateRuntimeInputError {
                 current_s,
             } => write!(
                 f,
-                "{}: breakpoint timem must be monotone nondecreasing ({} -> {})",
+                "{}: breakpoint timem must be strictly increasing ({} -> {})",
                 self.code(),
                 previous_s,
                 current_s
@@ -606,12 +608,20 @@ pub fn seed_hillslope_runtime_surface_from_climate(
         HillslopeClimateDailyForcing::Breakpoint(day) => {
             insert_common_day_symbols(state_surface, day.day, day.mon, day.year);
             state_surface.insert(
+                BoundarySymbol::from("stmstr"),
+                BoundaryValue::scalar(day.stmstr),
+            );
+            state_surface.insert(
                 BoundarySymbol::from("prcp"),
                 BoundaryValue::scalar(day.prcp),
             );
             state_surface.insert(
                 BoundarySymbol::from("stmdur"),
                 BoundaryValue::scalar(day.stmdur),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("mxint"),
+                BoundaryValue::scalar(day.mxint),
             );
             state_surface.insert(
                 BoundarySymbol::from("tmax"),
@@ -755,16 +765,24 @@ fn adapt_breakpoint(
         return Err(ClimateRuntimeInputError::EmptyBreakpointSeries);
     }
 
+    let stmstr = day
+        .breakpoints
+        .first()
+        .map(|point| point.timem)
+        .ok_or(ClimateRuntimeInputError::EmptyBreakpointSeries)?;
+
     let mut timem = Vec::with_capacity(day.breakpoints.len());
     let mut pptcum = Vec::with_capacity(day.breakpoints.len());
     for point in &day.breakpoints {
         require_non_negative("timem", point.timem)?;
         require_non_negative("pptcum", point.pptcum)?;
-        timem.push(point.timem * HOURS_TO_SECONDS);
+        timem.push((point.timem - stmstr) * HOURS_TO_SECONDS);
         pptcum.push(point.pptcum * MILLIMETERS_TO_METERS);
     }
 
     let mut intsty = vec![0.0; timem.len()];
+    let mut stmdur = 0.0;
+    let mut mxint = 0.0;
     for index in 1..timem.len() {
         let previous_time = timem[index - 1];
         let current_time = timem[index];
@@ -792,16 +810,21 @@ fn adapt_breakpoint(
                 },
             );
         }
-        intsty[index - 1] = drain / delta_time_s;
+        let intensity = if drain == 0.0 {
+            0.0
+        } else {
+            drain / delta_time_s
+        };
+        intsty[index - 1] = intensity;
+        stmdur += delta_time_s;
+        if intensity > mxint {
+            mxint = intensity;
+        }
     }
 
     let prcp = *pptcum
         .last()
         .ok_or(ClimateRuntimeInputError::EmptyBreakpointSeries)?;
-    let stmdur = timem
-        .last()
-        .zip(timem.first())
-        .map_or(0.0, |(end, start)| end - start);
     if prcp > 0.0 && stmdur <= 0.0 {
         return Err(
             ClimateRuntimeInputError::PositivePrecipWithNonPositiveDuration { prcp, stmdur },
@@ -813,8 +836,10 @@ fn adapt_breakpoint(
         mon: day.mon,
         year: day.year,
         nbrkpt: day.nbrkpt,
+        stmstr,
         prcp,
         stmdur,
+        mxint,
         timem,
         intsty,
         tmax: day.tmax,
@@ -1115,6 +1140,12 @@ mod tests {
         include_str!("../../../tests/fixtures/infile/climate/single_storm_itemp2.cli");
     const BREAKPOINT_OVERFLOW_CLIMATE: &str =
         include_str!("../../../tests/fixtures/infile/climate/breakpoint_overflow_51.cli");
+    const WC1_BREAKPOINT_STMSTR_NONZERO: &str = include_str!(
+        "../../../tests/fixtures/infile/climate/wc1_major_restlessness_breakpoint_stmstr_nonzero.cli"
+    );
+    const WC1_BREAKPOINT_NBRKPT_42: &str = include_str!(
+        "../../../tests/fixtures/infile/climate/wc1_major_restlessness_breakpoint_nbrkpt_42.cli"
+    );
     const WC1_CANOGA_DAY1: &str =
         include_str!("../../../tests/fixtures/infile/climate/wc1_canoga_day1.cli");
     const WC1_CANOGA_STMDUR_CAP: &str =
@@ -1238,6 +1269,104 @@ mod tests {
     }
 
     #[test]
+    fn breakpoint_runtime_surface_projects_stmstr_elapsed_timem_and_mxint() {
+        let climate =
+            parse_climate_from_str(WC1_BREAKPOINT_STMSTR_NONZERO, ClimateParserMode::Strict)
+                .expect("curated wc1 breakpoint fixture should parse");
+        let surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+            .expect("breakpoint runtime surface should build");
+
+        let stmstr = surface
+            .state_surface
+            .get(&BoundarySymbol::from("stmstr"))
+            .expect("stmstr should exist")
+            .as_f64();
+        let prcp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("prcp"))
+            .expect("prcp should exist")
+            .as_f64();
+        let stmdur = surface
+            .state_surface
+            .get(&BoundarySymbol::from("stmdur"))
+            .expect("stmdur should exist")
+            .as_f64();
+        let mxint = surface
+            .state_surface
+            .get(&BoundarySymbol::from("mxint"))
+            .expect("mxint should exist")
+            .as_f64();
+        let timem_1 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("timem_0001"))
+            .expect("timem_0001 should exist")
+            .as_f64();
+        let timem_2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("timem_0002"))
+            .expect("timem_0002 should exist")
+            .as_f64();
+        let intsty_5 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("intsty_0005"))
+            .expect("intsty_0005 should exist")
+            .as_f64();
+
+        let times_h = [4.8667_f64, 17.2667, 19.4333, 21.3667, 23.9833];
+        let pptcum_mm = [0.0_f64, 2.01, 4.02, 6.04, 7.35];
+        let expected_stmdur = (times_h[4] - times_h[0]) * 3_600.0;
+        let expected_timem_2 = (times_h[1] - times_h[0]) * 3_600.0;
+        let mut expected_mxint: f64 = 0.0;
+        for index in 1..times_h.len() {
+            let drain_m = (pptcum_mm[index] - pptcum_mm[index - 1]) * 0.001;
+            let delta_time_s = (times_h[index] - times_h[index - 1]) * 3_600.0;
+            expected_mxint = expected_mxint.max(drain_m / delta_time_s);
+        }
+
+        assert!((stmstr - 4.8667).abs() < 1e-12);
+        assert!((prcp - 0.00735).abs() < 1e-12);
+        assert!((stmdur - expected_stmdur).abs() < 1e-6);
+        assert!((mxint - expected_mxint).abs() < 1e-12);
+        assert!(timem_1.abs() < 1e-12);
+        assert!((timem_2 - expected_timem_2).abs() < 1e-6);
+        assert!(intsty_5.abs() < 1e-12);
+    }
+
+    #[test]
+    fn breakpoint_runtime_surface_supports_curated_wc1_42_point_event_shape() {
+        let climate = parse_climate_from_str(WC1_BREAKPOINT_NBRKPT_42, ClimateParserMode::Strict)
+            .expect("42-point wc1 fixture should parse");
+        let surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+            .expect("42-point breakpoint surface should build");
+
+        let nbrkpt = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nbrkpt"))
+            .expect("nbrkpt should exist")
+            .as_f64();
+        let timem_first = surface
+            .state_surface
+            .get(&BoundarySymbol::from("timem_0001"))
+            .expect("timem_0001 should exist")
+            .as_f64();
+        let timem_last = surface
+            .state_surface
+            .get(&BoundarySymbol::from("timem_0042"))
+            .expect("timem_0042 should exist")
+            .as_f64();
+        let intsty_last = surface
+            .state_surface
+            .get(&BoundarySymbol::from("intsty_0042"))
+            .expect("intsty_0042 should exist")
+            .as_f64();
+
+        assert!((nbrkpt - 42.0).abs() < 1e-12);
+        assert!(timem_first.abs() < 1e-12);
+        assert!(timem_last > timem_first);
+        assert!(intsty_last.abs() < 1e-12);
+    }
+
+    #[test]
     fn climate_runtime_surface_supports_explicit_datver_zero_override() {
         let climate = parse_climate_from_str(LEGACY_DATVER_CLIMATE, ClimateParserMode::Strict)
             .expect("legacy datver fixture should parse");
@@ -1322,6 +1451,7 @@ mod tests {
             ClimateParserMode::Compatibility(CompatibilityOptions {
                 allow_single_storm: true,
                 allow_breakpoint_cardinality_override: false,
+                allow_legacy_zero_drain_non_positive_dtime: false,
             }),
         )
         .expect("compat parser should accept itemp=2 when explicitly enabled");
@@ -1342,6 +1472,7 @@ mod tests {
             ClimateParserMode::Compatibility(CompatibilityOptions {
                 allow_single_storm: false,
                 allow_breakpoint_cardinality_override: true,
+                allow_legacy_zero_drain_non_positive_dtime: false,
             }),
         )
         .expect("breakpoint fixture should parse in compatibility mode");

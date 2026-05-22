@@ -328,6 +328,11 @@ Authorized packages:
     behavior (including disaggregation/event-shape semantics and versioned
     `iclig` branch policy) into typed openWEPP runtime forcing with
     `/wc1/runs/**/wepp/runs/*.cli` fixture-backed parity evidence.
+- `20260522-clim04-breakpoint-runtime-port-and-policy-reconciliation-001/`
+  - Purpose: port breakpoint (`ibrkpt=1`) runtime semantics (`stmstr`,
+    elapsed-time normalization, interval intensities) and reconcile ratified
+    `1500` cardinality + strict `dtime>0` interval-timing policy with explicit
+    compatibility controls and `/wc1/runs/**/wepp/runs/*.cli` fixture evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

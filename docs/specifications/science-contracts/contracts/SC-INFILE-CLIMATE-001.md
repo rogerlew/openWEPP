@@ -169,12 +169,14 @@ No silent fallback/default masking is permitted for required invalid inputs. `[D
 - Strict mode:
   - accept allowlisted `datver` only;
   - reject `itemp=2` legacy single-storm mode;
-  - reject `nbrkpt > 50` (`CLI-POL-003`) for breakpoint days;
+  - reject `nbrkpt > 1500` (`CLI-POL-003`) for breakpoint days;
+  - reject duplicate/decreasing breakpoint `timem` (`dtime<=0`) for all intervals;
   - reject malformed breakpoint days and invalid cumulative rainfall structure.
 - Compatibility mode:
   - `itemp=2` may be accepted only under explicit legacy flag;
   - unrecognized but numerically parseable `datver` remains rejected by default pending explicit policy extension;
-  - `nbrkpt > 50` remains rejected unless explicit `allow_breakpoint_cardinality_override` is enabled for controlled investigations;
+  - `nbrkpt > 1500` remains rejected unless explicit `allow_breakpoint_cardinality_override` is enabled for controlled investigations;
+  - legacy zero-drain non-positive `dtime` acceptance is disabled by default and must be explicitly enabled with `allow_legacy_zero_drain_non_positive_dtime` for controlled investigations;
   - no silent data repair.
 
 Unsupported forms are hard errors with typed taxonomy entries from Section 7.
@@ -191,8 +193,8 @@ Unsupported forms are hard errors with typed taxonomy entries from Section 7.
 | `G-CLI-006` | valid calendar date | daily parse | `CLI-E-006` |
 | `G-CLI-007` | non-negative precipitation/duration and valid ratios | daily parse | `CLI-E-005` |
 | `G-CLI-008` | breakpoint arity closure (`nbrkpt`) | breakpoint parse | `CLI-E-008` |
-| `G-CLI-009` | breakpoint cardinality policy (`nbrkpt <= 50` unless compat override) | breakpoint parse policy gate | `CLI-E-010` |
-| `G-CLI-010` | met field completeness per day + monotone non-decreasing `pptcum` in breakpoint mode | daily parse + breakpoint closure hook | `CLI-E-002`/`CLI-E-009` |
+| `G-CLI-009` | breakpoint cardinality policy (`nbrkpt <= 1500` unless compat override) | breakpoint parse policy gate | `CLI-E-010` |
+| `G-CLI-010` | met field completeness per day + monotone non-decreasing `pptcum` in breakpoint mode + strict breakpoint `timem` monotonicity (`dtime>0`) unless explicit legacy compat control is enabled | daily parse + breakpoint closure hook | `CLI-E-002`/`CLI-E-009` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -209,11 +211,12 @@ openWEPP names are explicit aliases only (Section 3 table). `[DIRECT][E-SPEC-CLI
 | --- | --- | --- | --- |
 | `CLI-GAP-001` | Final openWEPP policy for `itemp=2` legacy single-storm acceptance is not ratified. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]` | `HOLD` |
 | `CLI-GAP-002` | Exact parser-vs-runtime responsibility boundary for historical `datver=4.0` `ip` handling is not yet encoded in executable architecture docs. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-01]` | `HOLD` |
-| `CLI-GAP-003` | `CLI-POL-003` codifies parser max breakpoint cardinality (`50`), but downstream runtime-array limits across non-openWEPP legacy ports remain to be benchmarked for comparator investigations. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-02]` | `HOLD` |
+| `CLI-GAP-003` | Parser/runtime breakpoint cardinality policy is aligned to `1500` in openWEPP; cross-port comparator limits outside openWEPP remain investigative only. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-02]` | `RESOLVED-IN-OPENWEPP` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.2` | Updated breakpoint policy to `1500`, added strict breakpoint-time monotonicity policy text, and documented explicit legacy timing compat control. |
 | `2026-05-21` | `0.1.1` | Added boundary export mapping, generator command propagation, and explicit strict/compat breakpoint cardinality guard policy. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE01. |
