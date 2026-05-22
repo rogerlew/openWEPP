@@ -40,6 +40,12 @@ pub enum SymbolAliasRegistryError {
         row: usize,
         canonical_symbol: String,
     },
+    InvalidBoundaryAliasTemplate {
+        row: usize,
+        canonical_symbol: String,
+        boundary_alias: String,
+        reason: String,
+    },
     DuplicateAliasMapping {
         canonical_symbol: String,
         boundary_alias: String,
@@ -75,6 +81,15 @@ impl fmt::Display for SymbolAliasRegistryError {
                     "boundary alias is empty at row {row} for canonical symbol {canonical_symbol}"
                 )
             }
+            Self::InvalidBoundaryAliasTemplate {
+                row,
+                canonical_symbol,
+                boundary_alias,
+                reason,
+            } => write!(
+                f,
+                "invalid boundary alias template at row {row} for canonical symbol {canonical_symbol} and alias {boundary_alias}: {reason}"
+            ),
             Self::DuplicateAliasMapping {
                 canonical_symbol,
                 boundary_alias,
@@ -106,11 +121,30 @@ impl fmt::Display for SymbolAliasRegistryError {
 
 impl Error for SymbolAliasRegistryError {}
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SymbolAliasTemplateEntry {
+    canonical_symbol: String,
+    boundary_alias_template: String,
+}
+
+impl SymbolAliasTemplateEntry {
+    fn new(
+        canonical_symbol: impl Into<String>,
+        boundary_alias_template: impl Into<String>,
+    ) -> Self {
+        Self {
+            canonical_symbol: canonical_symbol.into(),
+            boundary_alias_template: boundary_alias_template.into(),
+        }
+    }
+}
+
 /// Canonical symbol alias registry with deterministic reverse lookups.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SymbolAliasRegistry {
     canonical_to_aliases: BTreeMap<String, Vec<String>>,
     alias_to_canonical: BTreeMap<String, String>,
+    template_aliases: Vec<SymbolAliasTemplateEntry>,
 }
 
 impl SymbolAliasRegistry {
@@ -130,6 +164,8 @@ impl SymbolAliasRegistry {
     ) -> Result<Self, SymbolAliasRegistryError> {
         let mut canonical_to_aliases: BTreeMap<String, Vec<String>> = BTreeMap::new();
         let mut alias_to_canonical: BTreeMap<String, String> = BTreeMap::new();
+        let mut template_to_canonical: BTreeMap<String, String> = BTreeMap::new();
+        let mut template_aliases = Vec::new();
         let mut seen_pairs: BTreeSet<(String, String)> = BTreeSet::new();
 
         for (index, entry) in entries.into_iter().enumerate() {
@@ -158,7 +194,26 @@ impl SymbolAliasRegistry {
                 });
             }
 
-            if let Some(existing_canonical) = alias_to_canonical.get(alias_key.as_str()) {
+            if alias_uses_template(alias_key.as_str()) {
+                validate_boundary_alias_template(row, canonical_key.as_str(), alias_key.as_str())?;
+
+                if let Some(existing_canonical) = template_to_canonical.get(alias_key.as_str()) {
+                    if existing_canonical != &canonical_key {
+                        return Err(SymbolAliasRegistryError::AmbiguousBoundaryAlias {
+                            boundary_alias: alias_key,
+                            canonical_a: existing_canonical.clone(),
+                            canonical_b: canonical_key,
+                        });
+                    }
+                } else {
+                    template_to_canonical.insert(alias_key.clone(), canonical_key.clone());
+                }
+
+                template_aliases.push(SymbolAliasTemplateEntry::new(
+                    canonical_key.clone(),
+                    alias_key.clone(),
+                ));
+            } else if let Some(existing_canonical) = alias_to_canonical.get(alias_key.as_str()) {
                 if existing_canonical != &canonical_key {
                     return Err(SymbolAliasRegistryError::AmbiguousBoundaryAlias {
                         boundary_alias: alias_key,
@@ -187,6 +242,7 @@ impl SymbolAliasRegistry {
         Ok(Self {
             canonical_to_aliases,
             alias_to_canonical,
+            template_aliases,
         })
     }
 
@@ -212,6 +268,37 @@ impl SymbolAliasRegistry {
             SymbolAliasEntry::new("solthk", "soil_profile_depth_m"),
             SymbolAliasEntry::new("peakro", "peak_runoff_rate_m3s"),
             SymbolAliasEntry::new("watdur", "runoff_duration_s"),
+            SymbolAliasEntry::new("nelem", "nelem"),
+            SymbolAliasEntry::new("nwsofe", "nwsofe"),
+            SymbolAliasEntry::new("nslpts", "nslpts"),
+            SymbolAliasEntry::new("nslpts", "ofe{ofe}_nslpts"),
+            SymbolAliasEntry::new("slplen", "slplen"),
+            SymbolAliasEntry::new("slplen", "ofe{ofe}_slplen"),
+            SymbolAliasEntry::new("avgslp", "avgslp"),
+            SymbolAliasEntry::new("avgslp", "ofe{ofe}_avgslp"),
+            SymbolAliasEntry::new("xinput", "xinput_{idx4}"),
+            SymbolAliasEntry::new("xinput", "ofe{ofe}_xinput_{idx4}"),
+            SymbolAliasEntry::new("slpinp", "slpinp_{idx4}"),
+            SymbolAliasEntry::new("slpinp", "ofe{ofe}_slpinp_{idx4}"),
+            SymbolAliasEntry::new("ntemp", "ntemp"),
+            SymbolAliasEntry::new("nsl", "nsl"),
+            SymbolAliasEntry::new("nsl", "ofe{ofe}_nsl"),
+            SymbolAliasEntry::new("solthk", "solthk"),
+            SymbolAliasEntry::new("solthk", "solthk_{idx4}"),
+            SymbolAliasEntry::new("solthk", "ofe{ofe}_solthk"),
+            SymbolAliasEntry::new("solthk", "ofe{ofe}_solthk_{idx4}"),
+            SymbolAliasEntry::new("dg", "dg"),
+            SymbolAliasEntry::new("dg", "dg_{idx4}"),
+            SymbolAliasEntry::new("dg", "ofe{ofe}_dg_{idx4}"),
+            SymbolAliasEntry::new("thetdr", "thetdr"),
+            SymbolAliasEntry::new("thetdr", "thetdr_{idx4}"),
+            SymbolAliasEntry::new("thetdr", "ofe{ofe}_thetdr_{idx4}"),
+            SymbolAliasEntry::new("thetfc", "thetfc"),
+            SymbolAliasEntry::new("thetfc", "thetfc_{idx4}"),
+            SymbolAliasEntry::new("thetfc", "ofe{ofe}_thetfc_{idx4}"),
+            SymbolAliasEntry::new("ssc", "ssc"),
+            SymbolAliasEntry::new("ssc", "ssc_{idx4}"),
+            SymbolAliasEntry::new("ssc", "ofe{ofe}_ssc_{idx4}"),
         ])
     }
 
@@ -251,12 +338,36 @@ impl SymbolAliasRegistry {
         &self,
         boundary_alias: &str,
     ) -> Result<&str, SymbolAliasRegistryError> {
-        self.alias_to_canonical
-            .get(boundary_alias)
-            .map(String::as_str)
-            .ok_or_else(|| SymbolAliasRegistryError::BoundaryAliasNotFound {
+        if let Some(canonical) = self.alias_to_canonical.get(boundary_alias) {
+            return Ok(canonical.as_str());
+        }
+
+        let mut matching_canonicals: BTreeSet<&str> = BTreeSet::new();
+        for template_entry in &self.template_aliases {
+            if boundary_alias_matches_template(
+                boundary_alias,
+                template_entry.boundary_alias_template.as_str(),
+            ) {
+                matching_canonicals.insert(template_entry.canonical_symbol.as_str());
+            }
+        }
+
+        match (
+            matching_canonicals.iter().next(),
+            matching_canonicals.iter().nth(1),
+        ) {
+            (Some(canonical), None) => Ok(*canonical),
+            (Some(canonical_a), Some(canonical_b)) => {
+                Err(SymbolAliasRegistryError::AmbiguousBoundaryAlias {
+                    boundary_alias: boundary_alias.to_string(),
+                    canonical_a: (*canonical_a).to_string(),
+                    canonical_b: (*canonical_b).to_string(),
+                })
+            }
+            _ => Err(SymbolAliasRegistryError::BoundaryAliasNotFound {
                 boundary_alias: boundary_alias.to_string(),
-            })
+            }),
+        }
     }
 
     #[must_use]
@@ -274,4 +385,114 @@ impl SymbolAliasRegistry {
 
         entries
     }
+}
+
+fn alias_uses_template(alias: &str) -> bool {
+    alias.contains('{') || alias.contains('}')
+}
+
+fn validate_boundary_alias_template(
+    row: usize,
+    canonical_symbol: &str,
+    boundary_alias: &str,
+) -> Result<(), SymbolAliasRegistryError> {
+    let mut cursor = 0usize;
+    while let Some(offset) = boundary_alias[cursor..].find('{') {
+        let start = cursor + offset;
+        let Some(close_offset) = boundary_alias[start + 1..].find('}') else {
+            return Err(SymbolAliasRegistryError::InvalidBoundaryAliasTemplate {
+                row,
+                canonical_symbol: canonical_symbol.to_string(),
+                boundary_alias: boundary_alias.to_string(),
+                reason: "missing closing brace".to_string(),
+            });
+        };
+        let end = start + 1 + close_offset;
+        let token = &boundary_alias[start + 1..end];
+        if token != "ofe" && token != "idx4" {
+            return Err(SymbolAliasRegistryError::InvalidBoundaryAliasTemplate {
+                row,
+                canonical_symbol: canonical_symbol.to_string(),
+                boundary_alias: boundary_alias.to_string(),
+                reason: format!("unsupported token {{{token}}}"),
+            });
+        }
+        cursor = end + 1;
+    }
+
+    if boundary_alias[cursor..].contains('}') {
+        return Err(SymbolAliasRegistryError::InvalidBoundaryAliasTemplate {
+            row,
+            canonical_symbol: canonical_symbol.to_string(),
+            boundary_alias: boundary_alias.to_string(),
+            reason: "closing brace without matching opening brace".to_string(),
+        });
+    }
+
+    Ok(())
+}
+
+fn boundary_alias_matches_template(boundary_alias: &str, template: &str) -> bool {
+    let template_bytes = template.as_bytes();
+    let alias_bytes = boundary_alias.as_bytes();
+    let mut template_index = 0usize;
+    let mut alias_index = 0usize;
+
+    while template_index < template_bytes.len() {
+        if template_bytes[template_index] == b'{' {
+            let mut end = template_index + 1;
+            while end < template_bytes.len() && template_bytes[end] != b'}' {
+                end += 1;
+            }
+            if end == template_bytes.len() {
+                return false;
+            }
+
+            let token = &template[template_index + 1..end];
+            match token {
+                "ofe" => {
+                    let start = alias_index;
+                    while alias_index < alias_bytes.len()
+                        && alias_bytes[alias_index].is_ascii_digit()
+                    {
+                        alias_index += 1;
+                    }
+                    if alias_index == start {
+                        return false;
+                    }
+
+                    let parsed = boundary_alias[start..alias_index].parse::<u32>().ok();
+                    if parsed.is_none_or(|value| value == 0) {
+                        return false;
+                    }
+                }
+                "idx4" => {
+                    if alias_index + 4 > alias_bytes.len() {
+                        return false;
+                    }
+                    if !alias_bytes[alias_index..alias_index + 4]
+                        .iter()
+                        .all(u8::is_ascii_digit)
+                    {
+                        return false;
+                    }
+                    alias_index += 4;
+                }
+                _ => return false,
+            }
+
+            template_index = end + 1;
+            continue;
+        }
+
+        if alias_index >= alias_bytes.len()
+            || template_bytes[template_index] != alias_bytes[alias_index]
+        {
+            return false;
+        }
+        template_index += 1;
+        alias_index += 1;
+    }
+
+    alias_index == alias_bytes.len()
 }
