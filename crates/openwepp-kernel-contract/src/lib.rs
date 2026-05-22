@@ -332,6 +332,27 @@ impl KernelRunResponse {
     }
 }
 
+/// Consumer adapter class selected for the current hillslope phase invocation.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopeConsumerAdapter {
+    Runoff,
+    Soil,
+    Watbal,
+    Perc,
+}
+
+impl HillslopeConsumerAdapter {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Runoff => "runoff",
+            Self::Soil => "soil",
+            Self::Watbal => "watbal",
+            Self::Perc => "perc",
+        }
+    }
+}
+
 /// Hillslope kernel invocation request.
 ///
 /// Scheduler execution keeps state/flux ownership and lends immutable views to
@@ -339,6 +360,7 @@ impl KernelRunResponse {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct HillslopeKernelRequest<'a> {
     pub phase_name: &'a str,
+    pub consumer_adapter: HillslopeConsumerAdapter,
     pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
 }
@@ -347,11 +369,13 @@ impl<'a> HillslopeKernelRequest<'a> {
     #[must_use]
     pub fn new(
         phase_name: &'a str,
+        consumer_adapter: HillslopeConsumerAdapter,
         state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
         Self {
             phase_name,
+            consumer_adapter,
             state_surface,
             flux_surface,
         }

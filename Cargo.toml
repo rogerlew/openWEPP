@@ -162,6 +162,10 @@ name = "parser_runtime_seam_integration"
 path = "tests/integration/parser_runtime_seam_integration.rs"
 
 [[test]]
+name = "hillslope_consumer_boundary_integration"
+path = "tests/integration/hillslope_consumer_boundary_integration.rs"
+
+[[test]]
 name = "workspace_integration_ownership_acceptance"
 path = "tests/integration/workspace_integration_ownership_acceptance.rs"
 

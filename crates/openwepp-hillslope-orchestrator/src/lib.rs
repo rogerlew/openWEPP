@@ -7,9 +7,9 @@ use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest,
-    KernelWritebackApplyResult, WritebackDecisionOutcome, WritebackError, apply_kernel_writeback,
-    evaluate_kernel_writeback,
+    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
+    HillslopeKernelRequest, KernelWritebackApplyResult, WritebackDecisionOutcome, WritebackError,
+    apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
@@ -18,6 +18,14 @@ use openwepp_sim_contract::status::{
 use openwepp_topology::TopologyValidationReport;
 
 const PHASE_COUNT: usize = 9;
+const RUNOFF_SLOPE_REQUIRED_STATE_SYMBOLS: &[&str] =
+    &["nslpts", "slplen", "avgslp", "xinput_0001", "slpinp_0001"];
+const RUNOFF_SOIL_REQUIRED_STATE_SYMBOLS: &[&str] = &["nsl", "solthk", "thetdr", "thetfc", "ssc"];
+const SOIL_REQUIRED_STATE_SYMBOLS: &[&str] = &["nsl", "solthk", "dg", "thetdr", "thetfc", "ssc"];
+const WATBAL_REQUIRED_STATE_SYMBOLS: &[&str] = &["nsl", "solthk", "thetdr", "thetfc", "ssc"];
+const PERC_REQUIRED_STATE_SYMBOLS: &[&str] = &["nsl", "thetdr", "thetfc", "ssc"];
+const SLOPE_FAMILY_SENTINELS: &[&str] = &["nelem", "nwsofe", "nslpts", "slplen", "avgslp"];
+const SOIL_FAMILY_SENTINELS: &[&str] = &["nsl", "solthk", "dg", "thetdr", "thetfc", "ssc"];
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -90,6 +98,135 @@ impl HillslopePhase {
             Self::ClosureDiagnostics => "HSCHED-PHASE-OK-009",
         }
     }
+}
+
+/// Typed failure surface for hillslope phase-consumer boundary validation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum HillslopeConsumerBoundaryError {
+    MissingRequiredStateSymbol {
+        phase: HillslopePhase,
+        adapter: HillslopeConsumerAdapter,
+        symbol: BoundarySymbol,
+    },
+}
+
+impl HillslopeConsumerBoundaryError {
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        match self {
+            Self::MissingRequiredStateSymbol { .. } => "HS-CONSUMER-E-001",
+        }
+    }
+}
+
+impl fmt::Display for HillslopeConsumerBoundaryError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingRequiredStateSymbol {
+                phase,
+                adapter,
+                symbol,
+            } => write!(
+                f,
+                "{}: phase {} ({}) missing required state symbol {}",
+                self.code(),
+                phase.as_str(),
+                adapter.as_str(),
+                symbol
+            ),
+        }
+    }
+}
+
+impl Error for HillslopeConsumerBoundaryError {}
+
+#[must_use]
+pub const fn hillslope_consumer_adapter_for_phase(
+    phase: HillslopePhase,
+) -> HillslopeConsumerAdapter {
+    match phase {
+        HillslopePhase::Normalization | HillslopePhase::StorageBounds => {
+            HillslopeConsumerAdapter::Soil
+        }
+        HillslopePhase::Evapotranspiration
+        | HillslopePhase::LateralTransfer
+        | HillslopePhase::StorageReconciliation
+        | HillslopePhase::ClosureDiagnostics => HillslopeConsumerAdapter::Watbal,
+        HillslopePhase::PercolationDeepSeepage | HillslopePhase::Drainage => {
+            HillslopeConsumerAdapter::Perc
+        }
+        HillslopePhase::RunoffReconciliation => HillslopeConsumerAdapter::Runoff,
+    }
+}
+
+/// Resolve required consumer boundary state symbols for a phase against the
+/// currently seeded runtime families.
+#[must_use]
+pub fn required_hillslope_consumer_state_symbols(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Vec<&'static str> {
+    let adapter = hillslope_consumer_adapter_for_phase(phase);
+    let slope_family_present = state_family_is_present(state_surface, SLOPE_FAMILY_SENTINELS);
+    let soil_family_present = state_family_is_present(state_surface, SOIL_FAMILY_SENTINELS);
+    let mut required = Vec::new();
+
+    match adapter {
+        HillslopeConsumerAdapter::Runoff => {
+            if slope_family_present {
+                required.extend(RUNOFF_SLOPE_REQUIRED_STATE_SYMBOLS);
+            }
+            if soil_family_present {
+                required.extend(RUNOFF_SOIL_REQUIRED_STATE_SYMBOLS);
+            }
+        }
+        HillslopeConsumerAdapter::Soil => {
+            if soil_family_present {
+                required.extend(SOIL_REQUIRED_STATE_SYMBOLS);
+            }
+        }
+        HillslopeConsumerAdapter::Watbal => {
+            if soil_family_present {
+                required.extend(WATBAL_REQUIRED_STATE_SYMBOLS);
+            }
+        }
+        HillslopeConsumerAdapter::Perc => {
+            if soil_family_present {
+                required.extend(PERC_REQUIRED_STATE_SYMBOLS);
+            }
+        }
+    }
+
+    required
+}
+
+/// Validate required state symbols for the selected phase consumer boundary.
+pub fn validate_hillslope_consumer_boundary(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Result<(), HillslopeConsumerBoundaryError> {
+    let adapter = hillslope_consumer_adapter_for_phase(phase);
+
+    for symbol in required_hillslope_consumer_state_symbols(phase, state_surface) {
+        if !state_surface.contains_key(&BoundarySymbol::from(symbol)) {
+            return Err(HillslopeConsumerBoundaryError::MissingRequiredStateSymbol {
+                phase,
+                adapter,
+                symbol: BoundarySymbol::from(symbol),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+fn state_family_is_present(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    sentinels: &[&str],
+) -> bool {
+    sentinels
+        .iter()
+        .any(|symbol| state_surface.contains_key(&BoundarySymbol::from(*symbol)))
 }
 
 /// Explicit scheduler dependency edge.
@@ -591,9 +728,45 @@ impl HillslopePhaseScheduler {
                 return deferred_error_status.clone();
             }
 
+            let consumer_adapter = hillslope_consumer_adapter_for_phase(phase);
+            if let Err(source) =
+                validate_hillslope_consumer_boundary(phase, &writeback_surface.state_surface)
+            {
+                let boundary_status = match SimulationStatus::failure(
+                    SimulationPhase::HillslopeKernel,
+                    true,
+                    false,
+                    BoundaryClass::MissingRequiredInput,
+                    source.code(),
+                ) {
+                    Ok(status) => status,
+                    Err(status_error) => {
+                        deferred_error = Some(HillslopeSchedulerError::Status(status_error));
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status: deferred_error_status.clone(),
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: deferred_error_status.clone(),
+                            apply_result: None,
+                        });
+                        return deferred_error_status.clone();
+                    }
+                };
+
+                phase_reports.push(HillslopeKernelPhaseReport {
+                    phase,
+                    kernel_status: boundary_status.clone(),
+                    decision_outcome: WritebackDecisionOutcome::Reject,
+                    decision_status: boundary_status.clone(),
+                    apply_result: None,
+                });
+                return boundary_status;
+            }
+
             let response = {
                 let request = HillslopeKernelRequest::new(
                     phase.as_str(),
+                    consumer_adapter,
                     &writeback_surface.state_surface,
                     &writeback_surface.flux_surface,
                 );
@@ -705,18 +878,20 @@ impl Default for HillslopePhaseScheduler {
 #[cfg(test)]
 mod tests {
     use std::cell::Cell;
+    use std::collections::BTreeMap;
 
     use openwepp_kernel_contract::{
-        BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
-        KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
-        WritebackField,
+        BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
+        HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
+        WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
     };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
     use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 
     use super::{
         HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
-        SchedulerOutcomeClass,
+        SchedulerOutcomeClass, hillslope_consumer_adapter_for_phase,
+        required_hillslope_consumer_state_symbols, validate_hillslope_consumer_boundary,
     };
 
     const VALID_TOPOLOGY: &str = r"
@@ -898,6 +1073,88 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             report.scheduler_status.classification(),
             StatusClassification::Nominal
         );
+    }
+
+    #[test]
+    fn consumer_adapter_mapping_matches_phase_contract() {
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::Normalization),
+            HillslopeConsumerAdapter::Soil
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::StorageBounds),
+            HillslopeConsumerAdapter::Soil
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::Evapotranspiration),
+            HillslopeConsumerAdapter::Watbal
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::PercolationDeepSeepage),
+            HillslopeConsumerAdapter::Perc
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::LateralTransfer),
+            HillslopeConsumerAdapter::Watbal
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::Drainage),
+            HillslopeConsumerAdapter::Perc
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::RunoffReconciliation),
+            HillslopeConsumerAdapter::Runoff
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::StorageReconciliation),
+            HillslopeConsumerAdapter::Watbal
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::ClosureDiagnostics),
+            HillslopeConsumerAdapter::Watbal
+        );
+    }
+
+    #[test]
+    fn required_consumer_symbols_are_empty_without_slope_or_soil_families() {
+        let empty_surface = BTreeMap::new();
+
+        for phase in HillslopePhaseGraph::canonical_order() {
+            let required = required_hillslope_consumer_state_symbols(phase, &empty_surface);
+            assert!(
+                required.is_empty(),
+                "phase {} should not require slope/soil symbols when neither family is seeded",
+                phase.as_str()
+            );
+            validate_hillslope_consumer_boundary(phase, &empty_surface)
+                .expect("empty non-slope/non-soil surface should not trigger consumer guard");
+        }
+    }
+
+    #[test]
+    fn consumer_boundary_reports_typed_missing_symbol_for_seeded_family() {
+        let mut state_surface = BTreeMap::new();
+        state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+        state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.25));
+        state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(0.1));
+        state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.31));
+        state_surface.insert(
+            BoundarySymbol::from("ssc"),
+            BoundaryValue::scalar(0.000_004),
+        );
+
+        let error =
+            validate_hillslope_consumer_boundary(HillslopePhase::Normalization, &state_surface)
+                .expect_err("missing thetdr must fail with typed consumer boundary error");
+        assert_eq!(error.code(), "HS-CONSUMER-E-001");
+        assert!(matches!(
+            error,
+            super::HillslopeConsumerBoundaryError::MissingRequiredStateSymbol {
+                phase: HillslopePhase::Normalization,
+                adapter: HillslopeConsumerAdapter::Soil,
+                symbol,
+            } if symbol.as_str() == "thetdr"
+        ));
     }
 
     #[test]
