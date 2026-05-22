@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_hillslope_orchestrator::{
-    HillslopePhaseGraph, HillslopePhaseScheduler,
+    HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
     runtime_inputs::{
         HillslopeRuntimeInputError, build_hillslope_runtime_surface_from_climate,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
@@ -100,6 +100,10 @@ struct HillslopeSlopeProbeKernel {
     invocation_count: usize,
 }
 
+struct HillslopeSlopeSoilProbeKernel {
+    invocation_count: usize,
+}
+
 impl HillslopeKernel for HillslopeSlopeProbeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
         assert_state_value(request.state_surface, "nelem", 2.0);
@@ -119,6 +123,34 @@ impl HillslopeKernel for HillslopeSlopeProbeKernel {
         self.invocation_count += 1;
         KernelRunResponse::new(
             SimulationStatus::ok(SimulationPhase::HillslopeKernel, "ARCH17-HS-SLOPE-OK")
+                .expect("status should construct"),
+            KernelWritebackPayload::empty(),
+        )
+    }
+}
+
+impl HillslopeKernel for HillslopeSlopeSoilProbeKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        assert_state_value(request.state_surface, "solthk", 0.25);
+        assert_state_value(request.state_surface, "dg", 0.1);
+        assert_state_value(request.state_surface, "thetdr", 0.05);
+        assert_state_value(request.state_surface, "thetfc", 0.31);
+        assert_state_value(request.state_surface, "nsl", 2.0);
+        assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
+        assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
+        assert_state_value(request.state_surface, "nelem", 2.0);
+        assert_state_value(request.state_surface, "nwsofe", 2.0);
+        assert_state_value(request.state_surface, "nslpts", 3.0);
+        assert_state_value(request.state_surface, "slplen", 60.0);
+        assert_state_value(request.state_surface, "avgslp", 0.058);
+        assert_state_value(request.state_surface, "xinput_0002", 0.6);
+        assert_state_value(request.state_surface, "slpinp_0002", 0.08);
+        assert_state_value(request.state_surface, "ofe2_avgslp", 0.0425);
+        assert_state_value(request.state_surface, "ofe2_xinput_0003", 1.0);
+
+        self.invocation_count += 1;
+        KernelRunResponse::new(
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "ARCH17-HS-SLOPE-SOIL-OK")
                 .expect("status should construct"),
             KernelWritebackPayload::empty(),
         )
@@ -226,6 +258,39 @@ fn soil_runtime_surface_rejects_missing_saturated_conductivity_projection() {
 }
 
 #[test]
+fn slope_and_soil_parser_outputs_propagate_to_hillslope_runtime_surface_closure() {
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse for seam closure");
+    let slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+        .expect("slope fixture should parse for seam closure");
+
+    let soil_runtime_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build from parser output");
+    let slope_runtime_surface = build_hillslope_runtime_surface_from_slope(&slope)
+        .expect("slope runtime surface should build from parser output");
+    let runtime_surface =
+        merge_hillslope_runtime_surfaces(soil_runtime_surface, slope_runtime_surface);
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = HillslopeSlopeSoilProbeKernel {
+        invocation_count: 0,
+    };
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
+        .expect("hillslope execution should consume both slope and soil runtime symbols");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(
+        kernel.invocation_count,
+        HillslopePhaseGraph::canonical_order().len()
+    );
+}
+
+#[test]
 fn slope_parser_to_hillslope_runtime_surface_closure() {
     let slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
         .expect("slope fixture should parse for seam closure");
@@ -252,6 +317,25 @@ fn slope_parser_to_hillslope_runtime_surface_closure() {
 }
 
 #[test]
+fn slope_runtime_surface_rejects_declared_nslpts_mismatch_projection() {
+    let mut slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+        .expect("slope fixture should parse");
+    slope.ofes[0].nslpts += 1;
+
+    let error = build_hillslope_runtime_surface_from_slope(&slope)
+        .expect_err("nslpts mismatch must fail with typed seam guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-014");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::SlopePointCountMismatch {
+            ofe_index: 1,
+            declared_nslpts,
+            observed_points
+        } if declared_nslpts == observed_points + 1
+    ));
+}
+
+#[test]
 fn slope_runtime_surface_rejects_non_positive_avgslp_projection() {
     let mut slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
         .expect("slope fixture should parse");
@@ -268,6 +352,25 @@ fn slope_runtime_surface_rejects_non_positive_avgslp_projection() {
             ofe_index: 1,
             value
         } if value.abs() < 1e-12
+    ));
+}
+
+#[test]
+fn soil_runtime_surface_rejects_declared_nsl_mismatch_projection() {
+    let mut soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    soil.ofes[0].nsl += 1;
+
+    let error = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect_err("nsl mismatch must fail with typed seam guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-028");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::SoilLayerCountMismatch {
+            ofe_index: 1,
+            declared_nsl,
+            observed_layers
+        } if declared_nsl == observed_layers + 1
     ));
 }
 
@@ -441,4 +544,13 @@ fn assert_state_at_least(
         value >= minimum,
         "{symbol} expected >= {minimum}, got {value}"
     );
+}
+
+fn merge_hillslope_runtime_surfaces(
+    mut primary: HillslopeWritebackSurface,
+    overlay: HillslopeWritebackSurface,
+) -> HillslopeWritebackSurface {
+    primary.state_surface.extend(overlay.state_surface);
+    primary.flux_surface.extend(overlay.flux_surface);
+    primary
 }
