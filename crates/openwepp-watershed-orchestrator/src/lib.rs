@@ -1,5 +1,7 @@
 //! Deterministic watershed dispatch scheduler graph for openWEPP.
 
+pub mod runtime_inputs;
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fmt;
@@ -335,19 +337,21 @@ where
     let mut step_reports = Vec::new();
 
     for step in dispatch_report.steps.iter().cloned() {
-        let request = WatershedKernelRequest::new(
-            step.node.kind.as_str(),
-            step.node.id,
-            step.dependency_nodes
-                .iter()
-                .map(|node| format_node_key(*node))
-                .collect::<Vec<String>>(),
-            step.contributor_hillslopes.clone(),
-            writeback_surface.state_surface.clone(),
-            writeback_surface.flux_surface.clone(),
-        );
+        let response = {
+            let request = WatershedKernelRequest::new(
+                step.node.kind.as_str(),
+                step.node.id,
+                step.dependency_nodes
+                    .iter()
+                    .map(|node| format_node_key(*node))
+                    .collect::<Vec<String>>(),
+                &step.contributor_hillslopes,
+                &writeback_surface.state_surface,
+                &writeback_surface.flux_surface,
+            );
 
-        let response = kernel.run_watershed_node(&request);
+            kernel.run_watershed_node(&request)
+        };
         let kernel_status = response.status.clone();
 
         if kernel_status.phase() != SimulationPhase::WatershedKernel {
@@ -900,7 +904,7 @@ mod tests {
         impl WatershedKernel for NominalKernel {
             fn run_watershed_node(
                 &mut self,
-                _request: &WatershedKernelRequest,
+                _request: &WatershedKernelRequest<'_>,
             ) -> KernelRunResponse {
                 self.call_index += 1;
                 let status = SimulationStatus::ok(
@@ -977,13 +981,103 @@ mod tests {
     }
 
     #[test]
+    fn execute_with_kernel_lends_stable_surface_references() {
+        #[derive(Default)]
+        struct PointerProbeKernel {
+            call_index: u32,
+            state_surface_ptrs: Vec<usize>,
+            flux_surface_ptrs: Vec<usize>,
+        }
+
+        impl WatershedKernel for PointerProbeKernel {
+            fn run_watershed_node(
+                &mut self,
+                request: &WatershedKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                self.call_index += 1;
+                self.state_surface_ptrs
+                    .push(std::ptr::from_ref(request.state_surface) as usize);
+                self.flux_surface_ptrs
+                    .push(std::ptr::from_ref(request.flux_surface) as usize);
+                let status = SimulationStatus::ok(
+                    SimulationPhase::WatershedKernel,
+                    format!("WKERNEL-STEP-POINTER-{}", self.call_index),
+                )
+                .expect("status should construct");
+
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let graph = TopologyGraph::new(
+            3,
+            2,
+            1,
+            vec![
+                node(
+                    TopologyNodeKind::Channel,
+                    1,
+                    [1, 2, 0],
+                    [0, 0, 0],
+                    [0, 0, 0],
+                ),
+                node(
+                    TopologyNodeKind::Channel,
+                    2,
+                    [3, 0, 0],
+                    [1, 0, 0],
+                    [0, 0, 0],
+                ),
+                node(
+                    TopologyNodeKind::Impoundment,
+                    1,
+                    [0, 0, 0],
+                    [2, 0, 0],
+                    [0, 0, 0],
+                ),
+            ],
+        );
+        let topology_validation =
+            validate_pre_execution_topology(&graph).expect("topology validation should construct");
+        assert!(topology_validation.is_valid());
+
+        let mut kernel = PointerProbeKernel::default();
+        let report = execute_watershed_dispatch_with_kernel(
+            &graph,
+            &topology_validation,
+            &mut kernel,
+            WatershedWritebackSurface::default(),
+        )
+        .expect("kernel execution should succeed");
+
+        assert!(report.dispatch_report.is_success());
+        assert_eq!(report.step_reports.len(), 3);
+        assert_eq!(kernel.state_surface_ptrs.len(), 3);
+        assert_eq!(kernel.flux_surface_ptrs.len(), 3);
+        assert!(
+            kernel
+                .state_surface_ptrs
+                .windows(2)
+                .all(|pair| pair[0] == pair[1]),
+            "state surface reference should remain stable across dispatch calls"
+        );
+        assert!(
+            kernel
+                .flux_surface_ptrs
+                .windows(2)
+                .all(|pair| pair[0] == pair[1]),
+            "flux surface reference should remain stable across dispatch calls"
+        );
+    }
+
+    #[test]
     fn execute_with_kernel_rejects_non_finite_writeback() {
         struct RejectKernel;
 
         impl WatershedKernel for RejectKernel {
             fn run_watershed_node(
                 &mut self,
-                _request: &WatershedKernelRequest,
+                _request: &WatershedKernelRequest<'_>,
             ) -> KernelRunResponse {
                 let status = SimulationStatus::ok(
                     SimulationPhase::WatershedKernel,
@@ -1049,7 +1143,7 @@ mod tests {
         impl WatershedKernel for PhaseMismatchKernel {
             fn run_watershed_node(
                 &mut self,
-                _request: &WatershedKernelRequest,
+                _request: &WatershedKernelRequest<'_>,
             ) -> KernelRunResponse {
                 let status = SimulationStatus::ok(
                     SimulationPhase::PreExecutionValidation,

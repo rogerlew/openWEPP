@@ -223,22 +223,25 @@ impl KernelRunResponse {
 }
 
 /// Hillslope kernel invocation request.
-#[derive(Debug, Clone, PartialEq, Default)]
-pub struct HillslopeKernelRequest {
-    pub phase_name: String,
-    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+///
+/// Scheduler execution keeps state/flux ownership and lends immutable views to
+/// kernels to avoid full-surface cloning in hot paths.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeKernelRequest<'a> {
+    pub phase_name: &'a str,
+    pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
-impl HillslopeKernelRequest {
+impl<'a> HillslopeKernelRequest<'a> {
     #[must_use]
     pub fn new(
-        phase_name: impl Into<String>,
-        state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-        flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+        phase_name: &'a str,
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
         Self {
-            phase_name: phase_name.into(),
+            phase_name,
             state_surface,
             flux_surface,
         }
@@ -246,28 +249,31 @@ impl HillslopeKernelRequest {
 }
 
 /// Watershed kernel invocation request.
-#[derive(Debug, Clone, PartialEq, Default)]
-pub struct WatershedKernelRequest {
-    pub node_kind: String,
+///
+/// State/flux surfaces are borrowed from orchestrator-owned writeback maps to
+/// reduce scheduler hot-path allocation pressure.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WatershedKernelRequest<'a> {
+    pub node_kind: &'a str,
     pub node_id: u32,
     pub dependency_nodes: Vec<String>,
-    pub contributor_hillslopes: Vec<u32>,
-    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub contributor_hillslopes: &'a [u32],
+    pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
-impl WatershedKernelRequest {
+impl<'a> WatershedKernelRequest<'a> {
     #[must_use]
     pub fn new(
-        node_kind: impl Into<String>,
+        node_kind: &'a str,
         node_id: u32,
         dependency_nodes: Vec<String>,
-        contributor_hillslopes: Vec<u32>,
-        state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
-        flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+        contributor_hillslopes: &'a [u32],
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
         Self {
-            node_kind: node_kind.into(),
+            node_kind,
             node_id,
             dependency_nodes,
             contributor_hillslopes,
@@ -279,12 +285,12 @@ impl WatershedKernelRequest {
 
 /// Hillslope kernel trait boundary.
 pub trait HillslopeKernel {
-    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest) -> KernelRunResponse;
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse;
 }
 
 /// Watershed kernel trait boundary.
 pub trait WatershedKernel {
-    fn run_watershed_node(&mut self, request: &WatershedKernelRequest) -> KernelRunResponse;
+    fn run_watershed_node(&mut self, request: &WatershedKernelRequest<'_>) -> KernelRunResponse;
 }
 
 /// Outcome surface for writeback evaluation.

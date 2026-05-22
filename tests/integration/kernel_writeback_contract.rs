@@ -30,7 +30,10 @@ fn hillslope_writeback_success_applies_updates() {
     }
 
     impl HillslopeKernel for NominalKernel {
-        fn run_hillslope_phase(&mut self, _request: &HillslopeKernelRequest) -> KernelRunResponse {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
             self.call_index += 1;
             let status = SimulationStatus::ok(
                 SimulationPhase::HillslopeKernel,
@@ -102,7 +105,7 @@ fn watershed_writeback_reject_keeps_orchestrator_surface_unchanged() {
     impl openwepp_kernel_contract::WatershedKernel for RejectKernel {
         fn run_watershed_node(
             &mut self,
-            _request: &openwepp_kernel_contract::WatershedKernelRequest,
+            _request: &openwepp_kernel_contract::WatershedKernelRequest<'_>,
         ) -> KernelRunResponse {
             let status = SimulationStatus::ok(SimulationPhase::WatershedKernel, "IT-WKERNEL-OK")
                 .expect("status should construct");
