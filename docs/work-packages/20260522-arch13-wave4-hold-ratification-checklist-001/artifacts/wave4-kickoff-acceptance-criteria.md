@@ -24,6 +24,15 @@ Wave 4 kickoff is authorized only when all criteria below are satisfied:
 
 If any criterion fails, kickoff status is `HOLD`.
 
+## Ratification Pass Result (2026-05-22)
+
+- [DIRECT] `W4DR-001`..`W4DR-012` are `ratified`.
+- [DIRECT] Each decision includes selected option, decider, UTC decision date,
+  evidence citation set, and downstream action statement.
+- [DIRECT] Linked HOLD gaps in `SC-INFILE-CHANINP/TC/TCR/GWCOEFF/PHOSPHORUS/LCWB`
+  are dispositioned as `RATIFIED-W4DR-* (2026-05-22)`.
+- [INFERENCE] Kickoff status for these ratified decision surfaces is `GO`.
+
 ## Per-Decision Acceptance Criteria
 
 | decision_id | acceptance criteria |

@@ -12,11 +12,14 @@ Static: governance-structure and kickoff-gate interpretation review.
   HOLD contract entries dispositioned before Wave 4 kickoff authorization.
 - [RAN] Checklist/criteria decision-ID parity checks returned full match on
   `W4DR-001`..`W4DR-012`.
+- [RAN] Checklist decision-status closure check returned `12` rows with
+  `status = ratified`.
 - [RAN] Referenced HOLD gap IDs are present in the relevant `SC-INFILE-*`
   contracts; no orphan gap references were detected.
-- [INFERENCE] Governance ambiguity has been externalized into explicit
-  decision records; remaining blocker is ratification state, not missing
-  checklist design content.
+- [RAN] Linked `SC-INFILE-*` HOLD rows were dispositioned with explicit
+  `RATIFIED-W4DR-* (2026-05-22)` linkage.
+- [INFERENCE] Governance ambiguity has been externalized and ratified for the
+  listed Wave 4 decision surfaces.
 
 ## Verdict
 

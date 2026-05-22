@@ -1,0 +1,5 @@
+Phosphorus concentration
+0.01 Surface runoff concentration (mg/l)
+0.005 Subsurface lateral flow concentration (mg/l)
+0.002 Baseflow concentration (mg/l)
+250.0 Sediment concentration (mg/kg)

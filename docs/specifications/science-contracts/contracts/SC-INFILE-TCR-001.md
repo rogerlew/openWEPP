@@ -212,14 +212,15 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `TCR-GAP-001` | `usersum2024` sidecar section does not publish a dedicated `tcr.txt` format table. | `[DIRECT][E-SPEC-TCR-01]` | `HOLD` |
-| `TCR-GAP-002` | Legacy open-failure collapse behavior requires governance-ratified strict/compat policy closure. | `[DIRECT][E-SPEC-TCR-01]`, `[DIRECT][E-WF-TCR-01]` | `HOLD` |
-| `TCR-GAP-003` | Curve-domain guard severity for legacy-compatible flows needs fixture-backed closure. | `[DIRECT][E-SPEC-TCR-01]`, `[INFERENCE][E-PHYS-TCR-01]` | `HOLD` |
-| `TCR-GAP-004` | Bounds/default divergence between legacy path and modern producer policy remains unresolved for all four sidecar fields. | `[DIRECT][E-SPEC-TCR-01]`, `[DIRECT][E-WP-TCR-01]` | `HOLD` |
-| `TCR-GAP-005` | Producer-side blank/newline `tcr.txt` edge-case behavior requires explicit cross-repo disposition. | `[DIRECT][E-SPEC-TCR-01]`, `[DIRECT][E-WP-TCR-01]` | `HOLD` |
+| `TCR-GAP-001` | `usersum2024` sidecar section does not publish a dedicated `tcr.txt` format table. | `[DIRECT][E-SPEC-TCR-01]` | `RATIFIED-W4DR-001 (2026-05-22)` |
+| `TCR-GAP-002` | Legacy open-failure collapse behavior requires governance-ratified strict/compat policy closure. | `[DIRECT][E-SPEC-TCR-01]`, `[DIRECT][E-WF-TCR-01]` | `RATIFIED-W4DR-002 (2026-05-22)` |
+| `TCR-GAP-003` | Curve-domain guard severity for legacy-compatible flows needs fixture-backed closure. | `[DIRECT][E-SPEC-TCR-01]`, `[INFERENCE][E-PHYS-TCR-01]` | `RATIFIED-W4DR-010 (2026-05-22)` |
+| `TCR-GAP-004` | Bounds/default divergence between legacy path and modern producer policy remains unresolved for all four sidecar fields. | `[DIRECT][E-SPEC-TCR-01]`, `[DIRECT][E-WP-TCR-01]` | `RATIFIED-W4DR-010 (2026-05-22)` |
+| `TCR-GAP-005` | Producer-side blank/newline `tcr.txt` edge-case behavior requires explicit cross-repo disposition. | `[DIRECT][E-SPEC-TCR-01]`, `[DIRECT][E-WP-TCR-01]` | `RATIFIED-W4DR-010 (2026-05-22)` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-001/002/010`; strict bounds plus compatibility producer-edge policy accepted. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE17. |

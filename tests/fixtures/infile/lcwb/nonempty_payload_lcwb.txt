@@ -1,0 +1,1 @@
+lcwb sentinel payload should be ignored in compatibility mode

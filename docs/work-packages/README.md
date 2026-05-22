@@ -212,6 +212,31 @@ Authorized packages:
 - `20260521-inimpl22-wave3-core-parser-integration-001/`
   - Purpose: integrate Wave 3 worker outputs and close global Wave 3
     validation gates.
+- `20260522-inimpl23-wave4-worktree-orchestration-001/`
+  - Purpose: establish Wave 4 concurrent worktree governance, ownership
+    manifests, and integration sequencing for watershed-sidecar parser
+    surfaces (`chan.inp`, `tc`, `gwcoeff`, `phosphorus`, `tcr`, `lcwb`).
+- `20260522-inimpl24-implement-sc-infile-chaninp-parser-001/`
+  - Purpose: implement `SC-INFILE-CHANINP-001` parser surface in a dedicated
+    worker worktree.
+- `20260522-inimpl25-implement-sc-infile-tc-parser-001/`
+  - Purpose: implement `SC-INFILE-TC-001` parser surface in a dedicated worker
+    worktree.
+- `20260522-inimpl26-implement-sc-infile-gwcoeff-parser-001/`
+  - Purpose: implement `SC-INFILE-GWCOEFF-001` parser surface in a dedicated
+    worker worktree.
+- `20260522-inimpl27-implement-sc-infile-tcr-parser-001/`
+  - Purpose: implement `SC-INFILE-TCR-001` parser surface in a dedicated
+    worker worktree.
+- `20260522-inimpl28-implement-sc-infile-phosphorus-parser-001/`
+  - Purpose: implement `SC-INFILE-PHOSPHORUS-001` parser surface in a
+    dedicated worker worktree.
+- `20260522-inimpl29-implement-sc-infile-lcwb-parser-001/`
+  - Purpose: implement `SC-INFILE-LCWB-001` parser surface in a dedicated
+    worker worktree.
+- `20260522-inimpl30-wave4-sidecar-parser-integration-001/`
+  - Purpose: integrate Wave 4 worker outputs and close global Wave 4
+    validation gates plus `W4DR-001..012` closure reporting.
 - `20260521-arch02-simulation-subsystem-kernel-architecture-discovery/`
   - Purpose: investigate simulation/subsystem/kernel architecture requirements
     via `wepp-forest` pattern extraction, `/workdir/rancor` architecture

@@ -1,0 +1,5 @@
+Phosphorus concentration
+0.01
+-0.005
+0.002
+250.0

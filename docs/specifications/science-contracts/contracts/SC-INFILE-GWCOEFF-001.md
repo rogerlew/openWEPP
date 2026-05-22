@@ -187,13 +187,14 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `GWCOEFF-GAP-001` | `usersum2024` sidecar section does not publish a dedicated `gwcoeff.txt` format definition. | `[DIRECT][E-SPEC-GW-01]` | `HOLD` |
-| `GWCOEFF-GAP-002` | Coefficient-name collision risk with `chan.inp` baseflow-coefficient semantics requires governance-locked namespace guard tests. | `[DIRECT][E-SPEC-GW-01]` | `HOLD` |
-| `GWCOEFF-GAP-003` | Missing-file branch behavior and explicit default-value publication policy remain unresolved. | `[DIRECT][E-SPEC-GW-01]`, `[DIRECT][E-WF-GW-01]` | `HOLD` |
-| `GWCOEFF-GAP-004` | Present-file parse-failure behavior in legacy path is implicit and requires fixture-backed strict/compat validation policy closure. | `[DIRECT][E-SPEC-GW-01]`, `[DIRECT][E-WF-GW-01]` | `HOLD` |
+| `GWCOEFF-GAP-001` | `usersum2024` sidecar section does not publish a dedicated `gwcoeff.txt` format definition. | `[DIRECT][E-SPEC-GW-01]` | `RATIFIED-W4DR-001 (2026-05-22)` |
+| `GWCOEFF-GAP-002` | Coefficient-name collision risk with `chan.inp` baseflow-coefficient semantics requires governance-locked namespace guard tests. | `[DIRECT][E-SPEC-GW-01]` | `RATIFIED-W4DR-008 (2026-05-22)` |
+| `GWCOEFF-GAP-003` | Missing-file branch behavior and explicit default-value publication policy remain unresolved. | `[DIRECT][E-SPEC-GW-01]`, `[DIRECT][E-WF-GW-01]` | `RATIFIED-W4DR-007 (2026-05-22)` |
+| `GWCOEFF-GAP-004` | Present-file parse-failure behavior in legacy path is implicit and requires fixture-backed strict/compat validation policy closure. | `[DIRECT][E-SPEC-GW-01]`, `[DIRECT][E-WF-GW-01]` | `RATIFIED-W4DR-002 (2026-05-22)` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-001/002/007/008`; optional absence branch locked as typed mode without implicit coefficient defaults. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE13. |

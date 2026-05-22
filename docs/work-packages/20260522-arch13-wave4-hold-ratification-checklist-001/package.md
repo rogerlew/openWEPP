@@ -63,6 +63,12 @@ checklist with auditable records, required evidence, and acceptance criteria.
 ## Intended Write Set
 - `docs/work-packages/20260522-arch13-wave4-hold-ratification-checklist-001/**`
 - `docs/work-packages/README.md`
+- `docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md`
+- `docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md`
+- `docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md`
+- `docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md`
+- `docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md`
+- `docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md`
 
 ## Phase Plan
 ### Phase 0 - HOLD Intake

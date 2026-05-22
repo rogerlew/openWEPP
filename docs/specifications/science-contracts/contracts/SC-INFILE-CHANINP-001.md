@@ -222,13 +222,14 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `CHANINP-GAP-001` | Practical downstream semantics for `cbase` remain under-evidenced relative to usersum guidance. | `[DIRECT][E-SPEC-CHN-01]` | `HOLD` |
-| `CHANINP-GAP-002` | Legacy error-path initialization/normalization semantics around `dtchr` require fixture-backed closure. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` | `HOLD` |
-| `CHANINP-GAP-003` | `wepppy` `ichout` override domain (`{1,3}`) diverges from usersum/legacy domain (`0..3`) and requires governance closure. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WP-CHN-01]` | `HOLD` |
-| `CHANINP-GAP-004` | Program-level ownership for chaninp parsing vs interchange-only crates requires explicit ratification. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-SURVEY-CHN-01]` | `HOLD` |
+| `CHANINP-GAP-001` | Practical downstream semantics for `cbase` remain under-evidenced relative to usersum guidance. | `[DIRECT][E-SPEC-CHN-01]` | `RATIFIED-W4DR-006 (2026-05-22)` |
+| `CHANINP-GAP-002` | Legacy error-path initialization/normalization semantics around `dtchr` require fixture-backed closure. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` | `RATIFIED-W4DR-005 (2026-05-22)` |
+| `CHANINP-GAP-003` | `wepppy` `ichout` override domain (`{1,3}`) diverges from usersum/legacy domain (`0..3`) and requires governance closure. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WP-CHN-01]` | `RATIFIED-W4DR-004 (2026-05-22)` |
+| `CHANINP-GAP-004` | Program-level ownership for chaninp parsing vs interchange-only crates requires explicit ratification. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-SURVEY-CHN-01]` | `RATIFIED-W4DR-003 (2026-05-22)` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-003/004/005/006`; kickoff HOLD removed for this contract surface. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE19. |

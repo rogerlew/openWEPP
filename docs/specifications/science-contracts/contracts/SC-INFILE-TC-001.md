@@ -181,12 +181,13 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `TC-GAP-001` | Active source-authority provenance for `tc.txt` currently depends on retirement snapshot references and must be formally ratified. | `[DIRECT][E-SPEC-TC-01]`, `[DIRECT][E-WF-TC-01]` | `HOLD` |
-| `TC-GAP-002` | Strict vs compatibility policy for open-error collapse requires fixture-backed governance closure. | `[DIRECT][E-SPEC-TC-01]`, `[DIRECT][E-WF-TC-01]` | `HOLD` |
-| `TC-GAP-003` | `tc_out.txt` row-level output grammar authority remains unresolved in parser-contract scope and needs downstream output-contract alignment. | `[DIRECT][E-SPEC-TC-01]` | `HOLD` |
+| `TC-GAP-001` | Active source-authority provenance for `tc.txt` currently depends on retirement snapshot references and must be formally ratified. | `[DIRECT][E-SPEC-TC-01]`, `[DIRECT][E-WF-TC-01]` | `RATIFIED-W4DR-001 (2026-05-22)` |
+| `TC-GAP-002` | Strict vs compatibility policy for open-error collapse requires fixture-backed governance closure. | `[DIRECT][E-SPEC-TC-01]`, `[DIRECT][E-WF-TC-01]` | `RATIFIED-W4DR-002 (2026-05-22)` |
+| `TC-GAP-003` | `tc_out.txt` row-level output grammar authority remains unresolved in parser-contract scope and needs downstream output-contract alignment. | `[DIRECT][E-SPEC-TC-01]` | `RATIFIED-W4DR-012 (2026-05-22)` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-001/002/012`; parser/output boundary for `tc_out.txt` set to output-contract ownership. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE16. |

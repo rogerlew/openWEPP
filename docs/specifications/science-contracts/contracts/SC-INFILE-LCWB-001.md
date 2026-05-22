@@ -187,13 +187,14 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `LCWB-GAP-001` | `usersum2024` does not provide a dedicated `lcwb.txt` format definition. | `[DIRECT][E-SPEC-LCWB-01]` | `HOLD` |
-| `LCWB-GAP-002` | Active-source consumer closure for `lcwbflg` remains unresolved relative to historical snapshot evidence. | `[DIRECT][E-SPEC-LCWB-01]`, `[DIRECT][E-WF-LCWB-02]` | `HOLD` |
-| `LCWB-GAP-003` | Separation between `lcwb` mode semantics and channel-output option gating requires fixture-backed governance closure. | `[DIRECT][E-SPEC-LCWB-01]`, `[DIRECT][E-WP-LCWB-01]` | `HOLD` |
-| `LCWB-GAP-004` | Program-level decision on explicit `lcwb` input-surface ownership vs derived compatibility flag remains unresolved. | `[DIRECT][E-SPEC-LCWB-01]` | `HOLD` |
+| `LCWB-GAP-001` | `usersum2024` does not provide a dedicated `lcwb.txt` format definition. | `[DIRECT][E-SPEC-LCWB-01]` | `RATIFIED-W4DR-001 (2026-05-22)` |
+| `LCWB-GAP-002` | Active-source consumer closure for `lcwbflg` remains unresolved relative to historical snapshot evidence. | `[DIRECT][E-SPEC-LCWB-01]`, `[DIRECT][E-WF-LCWB-02]` | `RATIFIED-W4DR-011 (2026-05-22)` |
+| `LCWB-GAP-003` | Separation between `lcwb` mode semantics and channel-output option gating requires fixture-backed governance closure. | `[DIRECT][E-SPEC-LCWB-01]`, `[DIRECT][E-WP-LCWB-01]` | `RATIFIED-W4DR-003 (2026-05-22)` |
+| `LCWB-GAP-004` | Program-level decision on explicit `lcwb` input-surface ownership vs derived compatibility flag remains unresolved. | `[DIRECT][E-SPEC-LCWB-01]` | `RATIFIED-W4DR-003 (2026-05-22)` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-001/003/011`; current-source consumer authority adopted for `lcwbflg`. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE18. |

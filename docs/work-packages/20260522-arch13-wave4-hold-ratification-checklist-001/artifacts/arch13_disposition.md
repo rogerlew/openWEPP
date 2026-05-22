@@ -8,17 +8,17 @@ Static: review synthesis and governance outcome classification.
 | --- | --- | --- | --- | --- | --- |
 | `ARCH13-A-NONE` | `review_agent_a.md` | none | accept | No checklist-structure defects requiring amendment. | closed |
 | `ARCH13-B-NONE` | `review_agent_b.md` | none | accept | No acceptance-criteria contract defects requiring amendment. | closed |
-| `ARCH13-HOLD-001` | `wave4-kickoff-acceptance-criteria.md` | high | retain-hold | Preserved explicit HOLD gate: kickoff blocked until `W4DR-001`..`W4DR-012` are ratified with evidence and linked HOLD updates. | open |
+| `ARCH13-HOLD-001` | `wave4-kickoff-acceptance-criteria.md` | high | close-hold | Ratified `W4DR-001`..`W4DR-012` with evidence, deciders, dates, and linked contract HOLD disposition updates. | closed |
 
 ## Result
 
 - [INFERENCE] Package recommendation: `GO_ARCH13_COMPLETE` (documentation scope complete).
-- [DIRECT] Wave 4 kickoff recommendation: `HOLD_WAVE4_PENDING_RATIFICATION`.
+- [DIRECT] Wave 4 kickoff recommendation: `GO_WAVE4_READY`.
 - [DIRECT] Unresolved high-severity checklist-design findings: `none`.
-- [DIRECT] Active kickoff blocker: all 12 decisions remain `status = pending`.
+- [DIRECT] Active kickoff blockers: `none` for the 12 ratified decision surfaces.
 
 ## Carry-forward Notes
 
-- [INFERENCE] Next package/workstream must ratify each decision, assign deciders,
-  stamp UTC decision dates, and disposition linked contract HOLD entries before
-  implementation kickoff on affected parser sidecar surfaces.
+- [INFERENCE] Follow-on work should execute implementation actions implied by
+  ratified decisions (fixtures/guards/spec sync), not ratification-blocker
+  closure work.

@@ -205,12 +205,13 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `PHOS-GAP-001` | `usersum2024` does not publish a dedicated `phosphorus.txt` format specification. | `[DIRECT][E-SPEC-PHOS-01]` | `HOLD` |
-| `PHOS-GAP-002` | Final concentration-range policy bounds remain unresolved beyond non-negative and finite checks. | `[DIRECT][E-SPEC-PHOS-01]` | `HOLD` |
-| `PHOS-GAP-003` | Hillslope-only applicability semantics remain unresolved relative to watershed-centric routing evidence. | `[DIRECT][E-SPEC-PHOS-01]` | `HOLD` |
+| `PHOS-GAP-001` | `usersum2024` does not publish a dedicated `phosphorus.txt` format specification. | `[DIRECT][E-SPEC-PHOS-01]` | `RATIFIED-W4DR-001 (2026-05-22)` |
+| `PHOS-GAP-002` | Final concentration-range policy bounds remain unresolved beyond non-negative and finite checks. | `[DIRECT][E-SPEC-PHOS-01]` | `RATIFIED-W4DR-009 (2026-05-22)` |
+| `PHOS-GAP-003` | Hillslope-only applicability semantics remain unresolved relative to watershed-centric routing evidence. | `[DIRECT][E-SPEC-PHOS-01]` | `RATIFIED-W4DR-009 (2026-05-22)` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-001/009`; watershed-coupled applicability and bounded-range governance adopted. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE14. |
