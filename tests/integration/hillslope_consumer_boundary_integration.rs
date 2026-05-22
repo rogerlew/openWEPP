@@ -10,8 +10,8 @@ use openwepp_input_contract::parsers::{
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
-    BoundarySymbol, HillslopeConsumerAdapter, HillslopeKernel, HillslopeKernelRequest,
-    KernelRunResponse, KernelWritebackPayload,
+    BoundarySymbol, HillslopeConsumerAdapter, HillslopeKernel, HillslopeKernelPhaseClass,
+    HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
 };
 use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, SimulationStatus};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -44,21 +44,27 @@ impl HillslopeKernel for BoundaryProbeKernel {
 
         let required_symbols =
             required_hillslope_consumer_state_symbols(phase, request.state_surface);
-        assert!(
-            !required_symbols.is_empty(),
-            "combined slope+soil runtime should produce required symbols for phase {}",
-            request.phase_name
-        );
-        for symbol in required_symbols {
+        if request.consumer_adapter == HillslopeConsumerAdapter::Growth {
+            assert!(required_symbols.is_empty());
+            assert!(request.phase_class.is_growth_transition());
+        } else {
             assert!(
-                request
-                    .state_surface
-                    .contains_key(&BoundarySymbol::from(symbol)),
-                "missing required consumer symbol {} for phase {} ({})",
-                symbol,
-                request.phase_name,
-                request.consumer_adapter.as_str()
+                !required_symbols.is_empty(),
+                "combined slope+soil runtime should produce required symbols for phase {}",
+                request.phase_name
             );
+            for symbol in required_symbols {
+                assert!(
+                    request
+                        .state_surface
+                        .contains_key(&BoundarySymbol::from(symbol)),
+                    "missing required consumer symbol {} for phase {} ({})",
+                    symbol,
+                    request.phase_name,
+                    request.consumer_adapter.as_str()
+                );
+            }
+            assert_eq!(request.phase_class, HillslopeKernelPhaseClass::Hydrology);
         }
 
         KernelRunResponse::new(
@@ -157,18 +163,18 @@ fn missing_runoff_slope_symbol_fails_at_runoff_reconciliation_boundary() {
         report.scheduler_report.halted_phase,
         Some(HillslopePhase::RunoffReconciliation)
     );
-    assert_eq!(kernel.invocation_count, 6);
-    assert_eq!(report.phase_reports.len(), 7);
+    assert_eq!(kernel.invocation_count, 8);
+    assert_eq!(report.phase_reports.len(), 9);
     assert_eq!(
-        report.phase_reports[6].phase,
+        report.phase_reports[8].phase,
         HillslopePhase::RunoffReconciliation
     );
     assert_eq!(
-        report.phase_reports[6].decision_status.boundary_class(),
+        report.phase_reports[8].decision_status.boundary_class(),
         BoundaryClass::MissingRequiredInput
     );
     assert_eq!(
-        report.phase_reports[6].decision_status.message_id(),
+        report.phase_reports[8].decision_status.message_id(),
         "HS-CONSUMER-E-001"
     );
 }
@@ -204,6 +210,8 @@ fn phase_from_name(phase_name: &str) -> HillslopePhase {
     match phase_name {
         "normalization" => HillslopePhase::Normalization,
         "storage_bounds" => HillslopePhase::StorageBounds,
+        "annual_growth_transition" => HillslopePhase::AnnualGrowthTransition,
+        "perennial_growth_transition" => HillslopePhase::PerennialGrowthTransition,
         "evapotranspiration" => HillslopePhase::Evapotranspiration,
         "percolation_deep_seepage" => HillslopePhase::PercolationDeepSeepage,
         "lateral_transfer" => HillslopePhase::LateralTransfer,
@@ -225,6 +233,7 @@ fn phase_to_consumer_adapter_contract_remains_stable() {
                 | HillslopeConsumerAdapter::Soil
                 | HillslopeConsumerAdapter::Watbal
                 | HillslopeConsumerAdapter::Perc
+                | HillslopeConsumerAdapter::Growth
         ));
     }
 }

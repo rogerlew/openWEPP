@@ -332,6 +332,63 @@ impl KernelRunResponse {
     }
 }
 
+/// Management class for growth-phase scheduler dispatch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopeGrowthManagementClass {
+    AnnualOrFallow,
+    Perennial,
+}
+
+/// Typed phase class for hillslope kernel dispatch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopeKernelPhaseClass {
+    Hydrology,
+    GrowthAnnualTransition,
+    GrowthPerennialTransition,
+}
+
+impl HillslopeKernelPhaseClass {
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Hydrology => "hydrology",
+            Self::GrowthAnnualTransition => "growth_annual_transition",
+            Self::GrowthPerennialTransition => "growth_perennial_transition",
+        }
+    }
+
+    #[must_use]
+    pub const fn is_growth_transition(self) -> bool {
+        matches!(
+            self,
+            Self::GrowthAnnualTransition | Self::GrowthPerennialTransition
+        )
+    }
+}
+
+/// Typed growth scheduler context carried on hillslope kernel requests.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeGrowthKernelContext {
+    pub management_class: HillslopeGrowthManagementClass,
+    pub order_growth_after_decomp: f64,
+    pub order_watbal_after_growth: f64,
+}
+
+impl HillslopeGrowthKernelContext {
+    #[must_use]
+    pub const fn new(
+        management_class: HillslopeGrowthManagementClass,
+        order_growth_after_decomp: f64,
+        order_watbal_after_growth: f64,
+    ) -> Self {
+        Self {
+            management_class,
+            order_growth_after_decomp,
+            order_watbal_after_growth,
+        }
+    }
+}
+
 /// Consumer adapter class selected for the current hillslope phase invocation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HillslopeConsumerAdapter {
@@ -339,6 +396,7 @@ pub enum HillslopeConsumerAdapter {
     Soil,
     Watbal,
     Perc,
+    Growth,
 }
 
 impl HillslopeConsumerAdapter {
@@ -349,6 +407,7 @@ impl HillslopeConsumerAdapter {
             Self::Soil => "soil",
             Self::Watbal => "watbal",
             Self::Perc => "perc",
+            Self::Growth => "growth",
         }
     }
 }
@@ -360,7 +419,9 @@ impl HillslopeConsumerAdapter {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct HillslopeKernelRequest<'a> {
     pub phase_name: &'a str,
+    pub phase_class: HillslopeKernelPhaseClass,
     pub consumer_adapter: HillslopeConsumerAdapter,
+    pub growth_context: Option<HillslopeGrowthKernelContext>,
     pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
 }
@@ -373,9 +434,30 @@ impl<'a> HillslopeKernelRequest<'a> {
         state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
+        Self::with_phase_context(
+            phase_name,
+            HillslopeKernelPhaseClass::Hydrology,
+            consumer_adapter,
+            None,
+            state_surface,
+            flux_surface,
+        )
+    }
+
+    #[must_use]
+    pub fn with_phase_context(
+        phase_name: &'a str,
+        phase_class: HillslopeKernelPhaseClass,
+        consumer_adapter: HillslopeConsumerAdapter,
+        growth_context: Option<HillslopeGrowthKernelContext>,
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Self {
         Self {
             phase_name,
+            phase_class,
             consumer_adapter,
+            growth_context,
             state_surface,
             flux_surface,
         }
@@ -761,5 +843,36 @@ mod tests {
             } if count == MAX_CLIMATE_FORCING_SERIES_POINTS + 1
                 && supported_max == MAX_CLIMATE_FORCING_SERIES_POINTS
         ));
+    }
+
+    #[test]
+    fn phase_class_growth_predicate_matches_contract() {
+        assert!(!HillslopeKernelPhaseClass::Hydrology.is_growth_transition());
+        assert!(HillslopeKernelPhaseClass::GrowthAnnualTransition.is_growth_transition());
+        assert!(HillslopeKernelPhaseClass::GrowthPerennialTransition.is_growth_transition());
+    }
+
+    #[test]
+    fn request_with_growth_context_preserves_typed_phase_metadata() {
+        let state_surface = BTreeMap::new();
+        let flux_surface = BTreeMap::new();
+        let growth_context =
+            HillslopeGrowthKernelContext::new(HillslopeGrowthManagementClass::Perennial, 1.0, 1.0);
+
+        let request = HillslopeKernelRequest::with_phase_context(
+            "perennial_growth_transition",
+            HillslopeKernelPhaseClass::GrowthPerennialTransition,
+            HillslopeConsumerAdapter::Growth,
+            Some(growth_context),
+            &state_surface,
+            &flux_surface,
+        );
+
+        assert_eq!(
+            request.phase_class,
+            HillslopeKernelPhaseClass::GrowthPerennialTransition
+        );
+        assert_eq!(request.consumer_adapter, HillslopeConsumerAdapter::Growth);
+        assert_eq!(request.growth_context, Some(growth_context));
     }
 }
