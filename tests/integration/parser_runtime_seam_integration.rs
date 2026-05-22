@@ -3,12 +3,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use openwepp_hillslope_orchestrator::{
     HillslopePhaseGraph, HillslopePhaseScheduler,
     runtime_inputs::{
-        build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_soil,
+        HillslopeRuntimeInputError, build_hillslope_runtime_surface_from_climate,
+        build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
     },
 };
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
     climate::{ParserMode as ClimateParserMode, parse_climate_from_str},
+    slope::{SlopeParserOptions, parse_slope_str},
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
@@ -35,6 +37,8 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
 
 const SOIL_VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
+const SLOPE_STRICT_VALID_CANONICAL: &str =
+    include_str!("../fixtures/infile/slope/strict_valid_canonical.slp");
 const CHANINP_STRICT_VALID: &str = include_str!("../fixtures/infile/chaninp/strict_valid.chaninp");
 const CLIMATE_STRICT_VALID: &str = include_str!("../fixtures/infile/climate/strict_valid.cli");
 const CLIMATE_WC1_DAY1: &str = include_str!("../fixtures/infile/climate/wc1_canoga_day1.cli");
@@ -85,6 +89,35 @@ impl WatershedKernel for WatershedSeedProbeKernel {
 
 struct HillslopeClimateProbeKernel {
     invocation_count: usize,
+}
+
+struct HillslopeSlopeProbeKernel {
+    invocation_count: usize,
+}
+
+impl HillslopeKernel for HillslopeSlopeProbeKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        assert_state_value(request.state_surface, "nelem", 2.0);
+        assert_state_value(request.state_surface, "nwsofe", 2.0);
+        assert_state_value(request.state_surface, "nslpts", 3.0);
+        assert_state_value(request.state_surface, "slplen", 60.0);
+        assert_state_value(request.state_surface, "avgslp", 0.058);
+        assert_state_value(request.state_surface, "xinput_0001", 0.0);
+        assert_state_value(request.state_surface, "xinput_0002", 0.6);
+        assert_state_value(request.state_surface, "slpinp_0002", 0.08);
+        assert_state_value(request.state_surface, "ofe2_nslpts", 3.0);
+        assert_state_value(request.state_surface, "ofe2_slplen", 40.0);
+        assert_state_value(request.state_surface, "ofe2_avgslp", 0.0425);
+        assert_state_value(request.state_surface, "ofe2_xinput_0003", 1.0);
+        assert_state_value(request.state_surface, "ofe2_slpinp_0003", 0.03);
+
+        self.invocation_count += 1;
+        KernelRunResponse::new(
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "ARCH17-HS-SLOPE-OK")
+                .expect("status should construct"),
+            KernelWritebackPayload::empty(),
+        )
+    }
 }
 
 impl HillslopeKernel for HillslopeClimateProbeKernel {
@@ -167,6 +200,52 @@ fn parser_to_hillslope_runtime_surface_closure() {
         kernel.invocation_count,
         HillslopePhaseGraph::canonical_order().len()
     );
+}
+
+#[test]
+fn slope_parser_to_hillslope_runtime_surface_closure() {
+    let slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+        .expect("slope fixture should parse for seam closure");
+    let runtime_surface = build_hillslope_runtime_surface_from_slope(&slope)
+        .expect("runtime surface should build from slope parser output");
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = HillslopeSlopeProbeKernel {
+        invocation_count: 0,
+    };
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
+        .expect("hillslope execution should consume slope runtime symbols");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(
+        kernel.invocation_count,
+        HillslopePhaseGraph::canonical_order().len()
+    );
+}
+
+#[test]
+fn slope_runtime_surface_rejects_non_positive_avgslp_projection() {
+    let mut slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+        .expect("slope fixture should parse");
+    for point in &mut slope.ofes[0].points {
+        point.slpinp = 0.0;
+    }
+
+    let error = build_hillslope_runtime_surface_from_slope(&slope)
+        .expect_err("non-positive avgslp projection must fail with typed guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-023");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::NonPositiveDerivedAverageSlope {
+            ofe_index: 1,
+            value
+        } if value.abs() < 1e-12
+    ));
 }
 
 #[test]

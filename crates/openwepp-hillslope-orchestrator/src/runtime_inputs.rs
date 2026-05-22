@@ -8,7 +8,11 @@ use openwepp_climate_runtime_adapter::{
     SharedClimateRuntimeRequest as SharedHillslopeClimateRuntimeRequest,
     build_climate_runtime_request, select_day_forcing,
 };
-use openwepp_input_contract::parsers::{climate::ClimateFile, soil::SoilProfile};
+use openwepp_input_contract::parsers::{
+    climate::ClimateFile,
+    slope::{SlopePoint, SlopeProfile},
+    soil::SoilProfile,
+};
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
 };
@@ -22,12 +26,86 @@ pub enum HillslopeRuntimeInputError {
     MissingSoilLayer,
     MissingThetaResidual,
     MissingThetaFieldCapacity,
-    NonFiniteProfileDepth { value_mm: f64 },
-    NonPositiveProfileDepth { value_mm: f64 },
-    NonFiniteTopLayerDepth { value_mm: f64 },
-    NonPositiveTopLayerDepth { value_mm: f64 },
-    NonFiniteThetaResidual { value: f64 },
-    NonFiniteThetaFieldCapacity { value: f64 },
+    NonFiniteProfileDepth {
+        value_mm: f64,
+    },
+    NonPositiveProfileDepth {
+        value_mm: f64,
+    },
+    NonFiniteTopLayerDepth {
+        value_mm: f64,
+    },
+    NonPositiveTopLayerDepth {
+        value_mm: f64,
+    },
+    NonFiniteThetaResidual {
+        value: f64,
+    },
+    NonFiniteThetaFieldCapacity {
+        value: f64,
+    },
+    MissingSlopeOfe,
+    SlopeOfeCountMismatch {
+        declared_ofe_count: usize,
+        observed_ofes: usize,
+    },
+    SlopeOfeCountOutOfRange {
+        value: usize,
+    },
+    SlopePointCountMismatch {
+        ofe_index: usize,
+        declared_nslpts: usize,
+        observed_points: usize,
+    },
+    SlopePointCountOutOfRange {
+        ofe_index: usize,
+        value: usize,
+    },
+    InsufficientSlopePoints {
+        ofe_index: usize,
+        observed_points: usize,
+    },
+    NonFiniteSlopeLength {
+        ofe_index: usize,
+        value_m: f64,
+    },
+    NonPositiveSlopeLength {
+        ofe_index: usize,
+        value_m: f64,
+    },
+    NonFiniteXinput {
+        ofe_index: usize,
+        point_index: usize,
+        value: f64,
+    },
+    NonFiniteSlpinp {
+        ofe_index: usize,
+        point_index: usize,
+        value: f64,
+    },
+    NonMonotoneXinput {
+        ofe_index: usize,
+        left_point_index: usize,
+        left_value: f64,
+        right_point_index: usize,
+        right_value: f64,
+    },
+    NonFiniteDerivedAverageSlope {
+        ofe_index: usize,
+        value: f64,
+    },
+    NonPositiveDerivedAverageSlope {
+        ofe_index: usize,
+        value: f64,
+    },
+    NonFiniteDerivedSlopeLength {
+        ofe_index: usize,
+        value_m: f64,
+    },
+    NonPositiveDerivedSlopeLength {
+        ofe_index: usize,
+        value_m: f64,
+    },
 }
 
 impl HillslopeRuntimeInputError {
@@ -44,11 +122,27 @@ impl HillslopeRuntimeInputError {
             Self::NonPositiveTopLayerDepth { .. } => "HS-RUNTIME-E-008",
             Self::NonFiniteThetaResidual { .. } => "HS-RUNTIME-E-009",
             Self::NonFiniteThetaFieldCapacity { .. } => "HS-RUNTIME-E-010",
+            Self::MissingSlopeOfe => "HS-RUNTIME-E-011",
+            Self::SlopeOfeCountMismatch { .. } => "HS-RUNTIME-E-012",
+            Self::SlopeOfeCountOutOfRange { .. } => "HS-RUNTIME-E-013",
+            Self::SlopePointCountMismatch { .. } => "HS-RUNTIME-E-014",
+            Self::SlopePointCountOutOfRange { .. } => "HS-RUNTIME-E-015",
+            Self::InsufficientSlopePoints { .. } => "HS-RUNTIME-E-016",
+            Self::NonFiniteSlopeLength { .. } => "HS-RUNTIME-E-017",
+            Self::NonPositiveSlopeLength { .. } => "HS-RUNTIME-E-018",
+            Self::NonFiniteXinput { .. } => "HS-RUNTIME-E-019",
+            Self::NonFiniteSlpinp { .. } => "HS-RUNTIME-E-020",
+            Self::NonMonotoneXinput { .. } => "HS-RUNTIME-E-021",
+            Self::NonFiniteDerivedAverageSlope { .. } => "HS-RUNTIME-E-022",
+            Self::NonPositiveDerivedAverageSlope { .. } => "HS-RUNTIME-E-023",
+            Self::NonFiniteDerivedSlopeLength { .. } => "HS-RUNTIME-E-024",
+            Self::NonPositiveDerivedSlopeLength { .. } => "HS-RUNTIME-E-025",
         }
     }
 }
 
 impl fmt::Display for HillslopeRuntimeInputError {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingSoilOfe => {
@@ -97,6 +191,136 @@ impl fmt::Display for HillslopeRuntimeInputError {
             Self::NonFiniteThetaFieldCapacity { value } => {
                 write!(f, "{}: non-finite thetfc value {}", self.code(), value)
             }
+            Self::MissingSlopeOfe => {
+                write!(f, "{}: slope profile contains no OFE blocks", self.code())
+            }
+            Self::SlopeOfeCountMismatch {
+                declared_ofe_count,
+                observed_ofes,
+            } => write!(
+                f,
+                "{}: slope ofe_count {} does not match observed OFE blocks {}",
+                self.code(),
+                declared_ofe_count,
+                observed_ofes
+            ),
+            Self::SlopeOfeCountOutOfRange { value } => write!(
+                f,
+                "{}: slope OFE count {} exceeds lossless conversion range",
+                self.code(),
+                value
+            ),
+            Self::SlopePointCountMismatch {
+                ofe_index,
+                declared_nslpts,
+                observed_points,
+            } => write!(
+                f,
+                "{}: OFE {} declares nslpts={} but contains {} points",
+                self.code(),
+                ofe_index,
+                declared_nslpts,
+                observed_points
+            ),
+            Self::SlopePointCountOutOfRange { ofe_index, value } => write!(
+                f,
+                "{}: OFE {} nslpts {} exceeds lossless conversion range",
+                self.code(),
+                ofe_index,
+                value
+            ),
+            Self::InsufficientSlopePoints {
+                ofe_index,
+                observed_points,
+            } => write!(
+                f,
+                "{}: OFE {} requires at least 2 slope points; observed {}",
+                self.code(),
+                ofe_index,
+                observed_points
+            ),
+            Self::NonFiniteSlopeLength { ofe_index, value_m } => write!(
+                f,
+                "{}: OFE {} has non-finite slplen value {}",
+                self.code(),
+                ofe_index,
+                value_m
+            ),
+            Self::NonPositiveSlopeLength { ofe_index, value_m } => write!(
+                f,
+                "{}: OFE {} has non-positive slplen value {}",
+                self.code(),
+                ofe_index,
+                value_m
+            ),
+            Self::NonFiniteXinput {
+                ofe_index,
+                point_index,
+                value,
+            } => write!(
+                f,
+                "{}: OFE {} point {} has non-finite xinput {}",
+                self.code(),
+                ofe_index,
+                point_index,
+                value
+            ),
+            Self::NonFiniteSlpinp {
+                ofe_index,
+                point_index,
+                value,
+            } => write!(
+                f,
+                "{}: OFE {} point {} has non-finite slpinp {}",
+                self.code(),
+                ofe_index,
+                point_index,
+                value
+            ),
+            Self::NonMonotoneXinput {
+                ofe_index,
+                left_point_index,
+                left_value,
+                right_point_index,
+                right_value,
+            } => write!(
+                f,
+                "{}: OFE {} xinput must be monotonic non-decreasing (point {}={} -> point {}={})",
+                self.code(),
+                ofe_index,
+                left_point_index,
+                left_value,
+                right_point_index,
+                right_value
+            ),
+            Self::NonFiniteDerivedAverageSlope { ofe_index, value } => write!(
+                f,
+                "{}: OFE {} derived avgslp is non-finite ({})",
+                self.code(),
+                ofe_index,
+                value
+            ),
+            Self::NonPositiveDerivedAverageSlope { ofe_index, value } => write!(
+                f,
+                "{}: OFE {} derived avgslp must be > 0, observed {}",
+                self.code(),
+                ofe_index,
+                value
+            ),
+            Self::NonFiniteDerivedSlopeLength { ofe_index, value_m } => write!(
+                f,
+                "{}: OFE {} derived slope length (terminal xinput) is non-finite ({})",
+                self.code(),
+                ofe_index,
+                value_m
+            ),
+            Self::NonPositiveDerivedSlopeLength { ofe_index, value_m } => write!(
+                f,
+                "{}: OFE {} derived slope length (terminal xinput) must be > 0, observed {}",
+                self.code(),
+                ofe_index,
+                value_m
+            ),
         }
     }
 }
@@ -191,6 +415,126 @@ pub fn build_hillslope_runtime_surface_from_soil(
         BoundarySymbol::from("thetfc"),
         BoundaryValue::scalar(thetfc),
     );
+
+    Ok(HillslopeWritebackSurface {
+        state_surface,
+        flux_surface: BTreeMap::new(),
+    })
+}
+
+/// Build an orchestrator-owned hillslope runtime surface from parsed slope
+/// input.
+///
+/// Canonical slope symbols are projected with explicit index-qualified runtime
+/// keys while preserving first-OFE aliases for continuity:
+/// - per-OFE: `ofe{idx}_{nslpts|slplen|avgslp}`
+/// - per-point: `ofe{idx}_{xinput|slpinp}_{point:04}`
+/// - first-OFE aliases: `nslpts`, `slplen`, `avgslp`,
+///   `{xinput|slpinp}_{point:04}`
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when required slope parser outputs are
+/// missing, inconsistent, non-finite, or violate runtime guard policy.
+pub fn build_hillslope_runtime_surface_from_slope(
+    slope: &SlopeProfile,
+) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
+    validate_slope_profile_shape(slope)?;
+
+    let mut state_surface = BTreeMap::new();
+    let ofe_count = u32::try_from(slope.ofe_count).map_err(|_| {
+        HillslopeRuntimeInputError::SlopeOfeCountOutOfRange {
+            value: slope.ofe_count,
+        }
+    })?;
+    state_surface.insert(
+        BoundarySymbol::from("nelem"),
+        BoundaryValue::scalar(f64::from(ofe_count)),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("nwsofe"),
+        BoundaryValue::scalar(f64::from(ofe_count)),
+    );
+
+    for (ofe_position, ofe) in slope.ofes.iter().enumerate() {
+        let ofe_index = ofe_position + 1;
+        validate_slope_ofe_shape(ofe_index, ofe.nslpts, ofe.points.len())?;
+        validate_slope_points(ofe_index, &ofe.points)?;
+
+        let nslpts = u32::try_from(ofe.nslpts).map_err(|_| {
+            HillslopeRuntimeInputError::SlopePointCountOutOfRange {
+                ofe_index,
+                value: ofe.nslpts,
+            }
+        })?;
+
+        let slplen = ofe.slplen;
+        if !slplen.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteSlopeLength {
+                ofe_index,
+                value_m: slplen,
+            });
+        }
+        if slplen <= 0.0 {
+            return Err(HillslopeRuntimeInputError::NonPositiveSlopeLength {
+                ofe_index,
+                value_m: slplen,
+            });
+        }
+
+        let avgslp = derive_avgslp(ofe_index, &ofe.points)?;
+        state_surface.insert(
+            slope_ofe_symbol("nslpts", ofe_index),
+            BoundaryValue::scalar(f64::from(nslpts)),
+        );
+        state_surface.insert(
+            slope_ofe_symbol("slplen", ofe_index),
+            BoundaryValue::scalar(slplen),
+        );
+        state_surface.insert(
+            slope_ofe_symbol("avgslp", ofe_index),
+            BoundaryValue::scalar(avgslp),
+        );
+
+        for (point_position, point) in ofe.points.iter().enumerate() {
+            let point_index = point_position + 1;
+            state_surface.insert(
+                slope_ofe_point_symbol("xinput", ofe_index, point_index),
+                BoundaryValue::scalar(point.xinput),
+            );
+            state_surface.insert(
+                slope_ofe_point_symbol("slpinp", ofe_index, point_index),
+                BoundaryValue::scalar(point.slpinp),
+            );
+        }
+
+        if ofe_index == 1 {
+            state_surface.insert(
+                BoundarySymbol::from("nslpts"),
+                BoundaryValue::scalar(f64::from(nslpts)),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("slplen"),
+                BoundaryValue::scalar(slplen),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("avgslp"),
+                BoundaryValue::scalar(avgslp),
+            );
+
+            for (point_position, point) in ofe.points.iter().enumerate() {
+                let point_index = point_position + 1;
+                state_surface.insert(
+                    slope_primary_point_symbol("xinput", point_index),
+                    BoundaryValue::scalar(point.xinput),
+                );
+                state_surface.insert(
+                    slope_primary_point_symbol("slpinp", point_index),
+                    BoundaryValue::scalar(point.slpinp),
+                );
+            }
+        }
+    }
 
     Ok(HillslopeWritebackSurface {
         state_surface,
@@ -413,6 +757,145 @@ fn insert_common_day_symbols(
     );
 }
 
+fn validate_slope_profile_shape(slope: &SlopeProfile) -> Result<(), HillslopeRuntimeInputError> {
+    if slope.ofes.is_empty() {
+        return Err(HillslopeRuntimeInputError::MissingSlopeOfe);
+    }
+
+    if slope.ofe_count != slope.ofes.len() {
+        return Err(HillslopeRuntimeInputError::SlopeOfeCountMismatch {
+            declared_ofe_count: slope.ofe_count,
+            observed_ofes: slope.ofes.len(),
+        });
+    }
+
+    Ok(())
+}
+
+fn validate_slope_ofe_shape(
+    ofe_index: usize,
+    declared_nslpts: usize,
+    observed_points: usize,
+) -> Result<(), HillslopeRuntimeInputError> {
+    if declared_nslpts != observed_points {
+        return Err(HillslopeRuntimeInputError::SlopePointCountMismatch {
+            ofe_index,
+            declared_nslpts,
+            observed_points,
+        });
+    }
+
+    if observed_points < 2 {
+        return Err(HillslopeRuntimeInputError::InsufficientSlopePoints {
+            ofe_index,
+            observed_points,
+        });
+    }
+
+    Ok(())
+}
+
+fn validate_slope_points(
+    ofe_index: usize,
+    points: &[SlopePoint],
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (point_position, point) in points.iter().enumerate() {
+        let point_index = point_position + 1;
+        if !point.xinput.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteXinput {
+                ofe_index,
+                point_index,
+                value: point.xinput,
+            });
+        }
+
+        if !point.slpinp.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteSlpinp {
+                ofe_index,
+                point_index,
+                value: point.slpinp,
+            });
+        }
+    }
+
+    for (segment_position, window) in points.windows(2).enumerate() {
+        let left_point_index = segment_position + 1;
+        let right_point_index = segment_position + 2;
+        let left_value = window[0].xinput;
+        let right_value = window[1].xinput;
+        if right_value < left_value {
+            return Err(HillslopeRuntimeInputError::NonMonotoneXinput {
+                ofe_index,
+                left_point_index,
+                left_value,
+                right_point_index,
+                right_value,
+            });
+        }
+    }
+
+    Ok(())
+}
+
+fn derive_avgslp(
+    ofe_index: usize,
+    points: &[SlopePoint],
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let slen = points.last().map(|point| point.xinput).ok_or(
+        HillslopeRuntimeInputError::InsufficientSlopePoints {
+            ofe_index,
+            observed_points: 0,
+        },
+    )?;
+    if !slen.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteDerivedSlopeLength {
+            ofe_index,
+            value_m: slen,
+        });
+    }
+    if slen <= 0.0 {
+        return Err(HillslopeRuntimeInputError::NonPositiveDerivedSlopeLength {
+            ofe_index,
+            value_m: slen,
+        });
+    }
+
+    let mut top_elevation = 0.0;
+    for pair in points.windows(2) {
+        let left = &pair[0];
+        let right = &pair[1];
+        top_elevation += (right.xinput - left.xinput) * (left.slpinp + right.slpinp) / 2.0;
+    }
+
+    let avgslp = top_elevation / slen;
+    if !avgslp.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteDerivedAverageSlope {
+            ofe_index,
+            value: avgslp,
+        });
+    }
+    if avgslp <= 0.0 {
+        return Err(HillslopeRuntimeInputError::NonPositiveDerivedAverageSlope {
+            ofe_index,
+            value: avgslp,
+        });
+    }
+
+    Ok(avgslp)
+}
+
+fn slope_ofe_symbol(root: &str, ofe_index: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("ofe{ofe_index}_{root}"))
+}
+
+fn slope_ofe_point_symbol(root: &str, ofe_index: usize, point_index: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("ofe{ofe_index}_{root}_{point_index:04}"))
+}
+
+fn slope_primary_point_symbol(root: &str, point_index: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("{root}_{point_index:04}"))
+}
+
 fn build_hillslope_series_surface(
     forcing: &HillslopeClimateDailyForcing,
 ) -> Result<ClimateForcingSymbolSurface, ClimateRuntimeInputError> {
@@ -457,13 +940,15 @@ mod tests {
 
     use openwepp_input_contract::parsers::{
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
+        slope::{SlopeParserOptions, parse_slope_str},
         soil::{ParserMode, SoilParserOptions, parse_soil},
     };
     use openwepp_kernel_contract::BoundarySymbol;
 
     use super::{
         ClimateRuntimeInputError, HillslopeRuntimeInputError,
-        build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_soil,
+        build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_slope,
+        build_hillslope_runtime_surface_from_soil,
     };
 
     const VALID_CLIMATE: &str =
@@ -484,6 +969,8 @@ mod tests {
         include_str!("../../../tests/fixtures/infile/climate/wc1_canoga_day1.cli");
     const WC1_CANOGA_STMDUR_CAP: &str =
         include_str!("../../../tests/fixtures/infile/climate/wc1_canoga_stmdur_cap.cli");
+    const SLOPE_STRICT_VALID_CANONICAL: &str =
+        include_str!("../../../tests/fixtures/infile/slope/strict_valid_canonical.slp");
     const VALID_9002: &str = include_str!("../../../tests/fixtures/infile/soil/valid_9002.sol");
     const VALID_97_5: &str = include_str!("../../../tests/fixtures/infile/soil/valid_97_5.sol");
 
@@ -563,6 +1050,79 @@ mod tests {
         assert!(matches!(
             error,
             HillslopeRuntimeInputError::MissingThetaResidual
+        ));
+    }
+
+    #[test]
+    fn slope_runtime_surface_contains_canonical_state_symbols() {
+        let slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+            .expect("strict slope fixture should parse");
+        let surface = build_hillslope_runtime_surface_from_slope(&slope)
+            .expect("slope runtime surface should build");
+
+        let nelem = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nelem"))
+            .expect("nelem should be present")
+            .as_f64();
+        let slplen = surface
+            .state_surface
+            .get(&BoundarySymbol::from("slplen"))
+            .expect("slplen should be present")
+            .as_f64();
+        let nslpts = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nslpts"))
+            .expect("nslpts should be present")
+            .as_f64();
+        let avgslp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("avgslp"))
+            .expect("avgslp should be present")
+            .as_f64();
+        let xinput_2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("xinput_0002"))
+            .expect("xinput_0002 should be present")
+            .as_f64();
+        let slpinp_2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("slpinp_0002"))
+            .expect("slpinp_0002 should be present")
+            .as_f64();
+        let ofe2_avgslp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ofe2_avgslp"))
+            .expect("ofe2_avgslp should be present")
+            .as_f64();
+
+        assert!((nelem - 2.0).abs() < 1e-12);
+        assert!((slplen - 60.0).abs() < 1e-12);
+        assert!((nslpts - 3.0).abs() < 1e-12);
+        assert!((avgslp - 0.058).abs() < 1e-12);
+        assert!((xinput_2 - 0.6).abs() < 1e-12);
+        assert!((slpinp_2 - 0.08).abs() < 1e-12);
+        assert!((ofe2_avgslp - 0.0425).abs() < 1e-12);
+    }
+
+    #[test]
+    fn slope_runtime_surface_rejects_non_positive_derived_avgslp() {
+        let mut slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+            .expect("strict slope fixture should parse");
+
+        for point in &mut slope.ofes[0].points {
+            point.slpinp = 0.0;
+        }
+
+        let error = build_hillslope_runtime_surface_from_slope(&slope)
+            .expect_err("non-positive derived avgslp must fail runtime adaptation");
+        assert_eq!(error.code(), "HS-RUNTIME-E-023");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::NonPositiveDerivedAverageSlope {
+                ofe_index: 1,
+                value
+            } if value.abs() < 1e-12
         ));
     }
 
