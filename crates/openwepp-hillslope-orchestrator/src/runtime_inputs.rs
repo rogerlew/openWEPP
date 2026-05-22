@@ -430,9 +430,13 @@ fn forcing_series_point_count(forcing: &HillslopeClimateDailyForcing) -> usize {
 
 fn map_surface_build_error(error: &ClimateForcingSymbolSurfaceError) -> ClimateRuntimeInputError {
     match error {
-        ClimateForcingSymbolSurfaceError::PointCountOutOfRange { count, .. } => {
-            ClimateRuntimeInputError::BreakpointCountOutOfRange { value: *count }
-        }
+        ClimateForcingSymbolSurfaceError::PointCountOutOfRange {
+            count,
+            supported_max,
+        } => ClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+            value: *count,
+            max: *supported_max,
+        },
     }
 }
 
@@ -898,6 +902,52 @@ mod tests {
         assert!(matches!(
             error,
             ClimateRuntimeInputError::NonMonotoneBreakpointTime { .. }
+        ));
+    }
+
+    #[test]
+    fn climate_runtime_surface_rejects_negative_breakpoint_drain() {
+        let mut climate = parse_climate_from_str(
+            BREAKPOINT_OVERFLOW_CLIMATE,
+            ClimateParserMode::Compatibility(CompatibilityOptions {
+                allow_single_storm: false,
+                allow_breakpoint_cardinality_override: true,
+                allow_legacy_zero_drain_non_positive_dtime: false,
+            }),
+        )
+        .expect("breakpoint fixture should parse in compatibility mode");
+
+        let day = climate
+            .daily_records
+            .first_mut()
+            .expect("one breakpoint day expected");
+        match day {
+            openwepp_input_contract::parsers::climate::ClimateDailyRecord::Breakpoint(record) => {
+                record
+                    .breakpoints
+                    .first_mut()
+                    .expect("first breakpoint point should exist")
+                    .pptcum = 0.02;
+                record
+                    .breakpoints
+                    .get_mut(1)
+                    .expect("second breakpoint point should exist")
+                    .pptcum = 0.01;
+            }
+            openwepp_input_contract::parsers::climate::ClimateDailyRecord::NoBreakpoint(_) => {
+                panic!("expected breakpoint daily record")
+            }
+        }
+
+        let error = build_hillslope_runtime_surface_from_climate(&climate, 0)
+            .expect_err("negative breakpoint drain must fail seam guard");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-006");
+        assert!(matches!(
+            error,
+            ClimateRuntimeInputError::NegativeField {
+                field: "drain",
+                value
+            } if value < 0.0
         ));
     }
 }

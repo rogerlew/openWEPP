@@ -125,10 +125,6 @@ pub enum SharedClimateRuntimeInputError {
         previous_s: f64,
         current_s: f64,
     },
-    PositiveBreakpointDrainWithNonPositiveDeltaTime {
-        drain_m: f64,
-        delta_time_s: f64,
-    },
     BreakpointCardinalityPolicyExceeded {
         value: usize,
         max: usize,
@@ -165,7 +161,9 @@ impl SharedClimateRuntimeInputError {
             Self::PositivePrecipWithNonPositiveDuration { .. } => "CLIM-RUNTIME-E-007",
             Self::EmptyBreakpointSeries => "CLIM-RUNTIME-E-008",
             Self::NonMonotoneBreakpointTime { .. } => "CLIM-RUNTIME-E-009",
-            Self::PositiveBreakpointDrainWithNonPositiveDeltaTime { .. } => "CLIM-RUNTIME-E-010",
+            // CLIM-RUNTIME-E-010 is intentionally retired by CLIM15 because
+            // no reachable guard path can emit it under strict monotonic-time
+            // policy.
             Self::BreakpointCardinalityPolicyExceeded { .. } => "CLIM-RUNTIME-E-011",
             Self::BreakpointCountOutOfRange { .. } => "CLIM-RUNTIME-E-011",
             Self::DisaggregationTimeNotStrictlyIncreasing { .. } => "CLIM-RUNTIME-E-012",
@@ -242,16 +240,6 @@ impl fmt::Display for SharedClimateRuntimeInputError {
                 self.code(),
                 previous_s,
                 current_s
-            ),
-            Self::PositiveBreakpointDrainWithNonPositiveDeltaTime {
-                drain_m,
-                delta_time_s,
-            } => write!(
-                f,
-                "{}: positive breakpoint rainfall increment {} requires positive elapsed time, got {}",
-                self.code(),
-                drain_m,
-                delta_time_s
             ),
             Self::BreakpointCardinalityPolicyExceeded { value, max } => write!(
                 f,
@@ -476,14 +464,6 @@ fn adapt_breakpoint(
         }
 
         let delta_time_s = current_time - previous_time;
-        if delta_time_s <= 0.0 {
-            return Err(
-                SharedClimateRuntimeInputError::PositiveBreakpointDrainWithNonPositiveDeltaTime {
-                    drain_m: drain,
-                    delta_time_s,
-                },
-            );
-        }
         let intensity = if drain == 0.0 {
             0.0
         } else {
@@ -881,6 +861,68 @@ mod tests {
                 value: 1_501,
                 max: 1_500
             }
+        ));
+    }
+
+    #[test]
+    fn runtime_request_rejects_non_monotone_breakpoint_times_with_e009() {
+        let mut climate =
+            parse_climate_from_str(&build_breakpoint_fixture(3), ClimateParserMode::Strict)
+                .expect("strict parser should accept fixture");
+        let record = climate.daily_records.first_mut().expect("one forcing day");
+        match record {
+            ClimateDailyRecord::Breakpoint(day) => {
+                let first_timem = day
+                    .breakpoints
+                    .first()
+                    .expect("first breakpoint point should exist")
+                    .timem;
+                day.breakpoints
+                    .get_mut(1)
+                    .expect("second breakpoint point should exist")
+                    .timem = first_timem;
+            }
+            ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint forcing"),
+        }
+
+        let error = build_climate_runtime_request(&climate)
+            .expect_err("runtime seam must reject non-monotone breakpoint timem");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-009");
+        assert!(matches!(
+            error,
+            SharedClimateRuntimeInputError::NonMonotoneBreakpointTime { .. }
+        ));
+    }
+
+    #[test]
+    fn runtime_request_rejects_negative_breakpoint_drain_with_e006() {
+        let mut climate =
+            parse_climate_from_str(&build_breakpoint_fixture(3), ClimateParserMode::Strict)
+                .expect("strict parser should accept fixture");
+        let record = climate.daily_records.first_mut().expect("one forcing day");
+        match record {
+            ClimateDailyRecord::Breakpoint(day) => {
+                day.breakpoints
+                    .first_mut()
+                    .expect("first breakpoint point should exist")
+                    .pptcum = 0.02;
+                day.breakpoints
+                    .get_mut(1)
+                    .expect("second breakpoint point should exist")
+                    .pptcum = 0.01;
+            }
+            ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint forcing"),
+        }
+
+        let error = build_climate_runtime_request(&climate)
+            .expect_err("runtime seam must reject negative breakpoint drain");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-006");
+        assert!(matches!(
+            error,
+            SharedClimateRuntimeInputError::NegativeField {
+                field: "drain",
+                value
+            } if value < 0.0
         ));
     }
 }

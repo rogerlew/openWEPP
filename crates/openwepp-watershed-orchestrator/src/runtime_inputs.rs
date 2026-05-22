@@ -145,11 +145,6 @@ pub enum WatershedClimateRuntimeInputError {
         previous_s: f64,
         current_s: f64,
     },
-    PositiveBreakpointDrainWithNonPositiveDeltaTime {
-        hillslope_id: u32,
-        drain_m: f64,
-        delta_time_s: f64,
-    },
     BreakpointCardinalityPolicyExceeded {
         hillslope_id: u32,
         value: usize,
@@ -193,7 +188,9 @@ impl WatershedClimateRuntimeInputError {
             Self::PositivePrecipWithNonPositiveDuration { .. } => "CLIM-RUNTIME-E-007",
             Self::EmptyBreakpointSeries { .. } => "CLIM-RUNTIME-E-008",
             Self::NonMonotoneBreakpointTime { .. } => "CLIM-RUNTIME-E-009",
-            Self::PositiveBreakpointDrainWithNonPositiveDeltaTime { .. } => "CLIM-RUNTIME-E-010",
+            // CLIM-RUNTIME-E-010 is intentionally retired by CLIM15 because
+            // no reachable guard path can emit it under strict monotonic-time
+            // policy.
             Self::BreakpointCardinalityPolicyExceeded { .. }
             | Self::BreakpointCountOutOfRange { .. } => "CLIM-RUNTIME-E-011",
             Self::EmptyClimateAssignments => "CLIM-RUNTIME-E-012",
@@ -282,18 +279,6 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 hillslope_id,
                 previous_s,
                 current_s
-            ),
-            Self::PositiveBreakpointDrainWithNonPositiveDeltaTime {
-                hillslope_id,
-                drain_m,
-                delta_time_s,
-            } => write!(
-                f,
-                "{}: hillslope {} has positive breakpoint drain {} with non-positive elapsed time {}",
-                self.code(),
-                hillslope_id,
-                drain_m,
-                delta_time_s
             ),
             Self::BreakpointCardinalityPolicyExceeded {
                 hillslope_id,
@@ -687,14 +672,6 @@ fn map_shared_error_for_hillslope(
             hillslope_id,
             previous_s: *previous_s,
             current_s: *current_s,
-        },
-        SharedClimateRuntimeInputError::PositiveBreakpointDrainWithNonPositiveDeltaTime {
-            drain_m,
-            delta_time_s,
-        } => WatershedClimateRuntimeInputError::PositiveBreakpointDrainWithNonPositiveDeltaTime {
-            hillslope_id,
-            drain_m: *drain_m,
-            delta_time_s: *delta_time_s,
         },
         SharedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded { value, max } => {
             WatershedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
@@ -1243,6 +1220,53 @@ mod tests {
         assert!(matches!(
             error,
             WatershedClimateRuntimeInputError::NonMonotoneBreakpointTime { .. }
+        ));
+    }
+
+    #[test]
+    fn climate_runtime_surface_rejects_negative_breakpoint_drain() {
+        let mut climate = parse_climate_from_str(
+            BREAKPOINT_OVERFLOW_CLIMATE,
+            ClimateParserMode::Compatibility(CompatibilityOptions {
+                allow_single_storm: false,
+                allow_breakpoint_cardinality_override: true,
+                allow_legacy_zero_drain_non_positive_dtime: false,
+            }),
+        )
+        .expect("breakpoint fixture should parse in compatibility mode");
+
+        let day = climate
+            .daily_records
+            .first_mut()
+            .expect("one breakpoint day expected");
+        match day {
+            openwepp_input_contract::parsers::climate::ClimateDailyRecord::Breakpoint(record) => {
+                record
+                    .breakpoints
+                    .first_mut()
+                    .expect("first breakpoint point should exist")
+                    .pptcum = 0.02;
+                record
+                    .breakpoints
+                    .get_mut(1)
+                    .expect("second breakpoint point should exist")
+                    .pptcum = 0.01;
+            }
+            openwepp_input_contract::parsers::climate::ClimateDailyRecord::NoBreakpoint(_) => {
+                panic!("expected breakpoint daily record")
+            }
+        }
+        let assignments = BTreeMap::from([(2_u32, climate)]);
+
+        let error = build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+            .expect_err("negative breakpoint drain must fail seam guard");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-006");
+        assert!(matches!(
+            error,
+            WatershedClimateRuntimeInputError::NegativeField {
+                field: "drain",
+                value
+            } if value < 0.0
         ));
     }
 }
