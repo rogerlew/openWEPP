@@ -386,6 +386,15 @@ Authorized packages:
     plant/landuse/growth/decomposition runtime boundary contract, ownership
     matrix, canonical symbol alias requirements, and strict parser-to-runtime
     seam requirements for PL03+ execution.
+- `20260522-pl03-management-to-runtime-adapter-001/`
+  - Purpose: implement PL01/PL02 follow-on `PL03` by building the strict
+    typed management-to-runtime adapter (`PL-MAN-SEAM-001`) that projects
+    parser outputs into scheduler-facing PL runtime surfaces with typed errors
+    and no silent defaults.
+- `20260522-pl04-pl-symbol-alias-completion-001/`
+  - Purpose: implement PL01/PL02 follow-on `PL04` by expanding
+    `openwepp-sim-contract` canonical alias registry coverage for PL runtime
+    symbols and validating deterministic alias resolution behavior.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
