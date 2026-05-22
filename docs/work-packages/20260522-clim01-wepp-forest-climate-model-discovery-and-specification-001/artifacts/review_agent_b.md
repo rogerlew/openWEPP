@@ -18,7 +18,7 @@ Ran:
 - Evidence:
   - `/workdir/wepp-forest_260430_baseline/src/brkpt.for:76-83`
   - `/workdir/wepp-forest_260430_baseline/src/brkpt.for:96-99`
-- Disposition: `HOLD` (tracked as `HOLD-CLIM01-004` in behavior/spec docs).
+- Disposition: `closed-by-decision` (`DECISION-CLIM01-004`: treat behavior as legacy bug; enforce strict `dtime>0` guard for all breakpoint intervals).
 
 ### CLIM01-B-002
 - Severity: medium
@@ -40,4 +40,4 @@ Ran:
 ## Summary
 
 - No contradictions were found between CLIM01 exclusions and authored specs.
-- One behavior-critical ambiguity hold remains (`HOLD-CLIM01-004`) and should be closed before runtime implementation promotion.
+- Behavior-critical ambiguity hold for breakpoint zero-drain timing is closed by policy decision (`DECISION-CLIM01-004`) and now requires implementation closure evidence.

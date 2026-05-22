@@ -13,15 +13,16 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use flate2::write::ZlibEncoder;
 use flate2::Compression;
+use flate2::write::ZlibEncoder;
 use openwepp_input_contract::parsers::hbp::{
-    parse_hbp_from_bytes, parse_hbp_from_path, HbpFormatErrorCode, HbpParseError, HbpParseMode,
-    HbpParseOptions, HbpPathResolution, HbpSchemaProfile, HbpWarningCode as ParserHbpWarningCode,
+    HbpFormatErrorCode, HbpParseError, HbpParseMode, HbpParseOptions, HbpPathResolution,
+    HbpSchemaProfile, HbpWarningCode as ParserHbpWarningCode, parse_hbp_from_bytes,
+    parse_hbp_from_path,
 };
 use openwepp_legacy_bridge::hbp::{
-    adapt_hbp_header, HbpAdapterRequest, HbpHeaderContract, HbpMagicSource,
-    HbpWarningCode as BridgeHbpWarningCode,
+    HbpAdapterRequest, HbpHeaderContract, HbpMagicSource, HbpWarningCode as BridgeHbpWarningCode,
+    adapt_hbp_header,
 };
 use openwepp_legacy_bridge::policy::CompatibilityPolicy;
 
@@ -500,10 +501,12 @@ fn compatibility_mode_derives_hbp_path_from_pass_dat() {
         HbpPathResolution::DerivedFromLegacyPassDat
     );
     assert_eq!(parsed.resolved_path, temp_hbp_path);
-    assert!(parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ParserHbpWarningCode::HbpW001));
+    assert!(
+        parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ParserHbpWarningCode::HbpW001)
+    );
 }
 
 #[test]
@@ -697,10 +700,12 @@ fn compatibility_policy_accepts_legacy_forms_with_hbp_w_001() {
         parser_parsed.path_resolution,
         HbpPathResolution::DerivedFromLegacyPassDat
     );
-    assert!(parser_parsed
-        .warnings
-        .iter()
-        .any(|warning| warning.code == ParserHbpWarningCode::HbpW001));
+    assert!(
+        parser_parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.code == ParserHbpWarningCode::HbpW001)
+    );
 
     let bridge_response = adapt_hbp_header(&HbpAdapterRequest {
         policy: CompatibilityPolicy::Compat,

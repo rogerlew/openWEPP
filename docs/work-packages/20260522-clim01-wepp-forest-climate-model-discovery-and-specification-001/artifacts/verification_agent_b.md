@@ -21,7 +21,7 @@ Ran:
 
 3. Baseline provenance anchoring
 - check: climate behavior/spec/consumer artifacts reference `_260430_baseline` source path.
-- result: pass (`66` matching lines across target docs).
+- result: pass (`69` matching lines across target docs).
 
 ## Result
 

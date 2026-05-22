@@ -37,6 +37,7 @@ Evidence:
 
 1. `stmget` chunk-reads 10 daily records at a time (date, `prcp`, `stmdur`, `timep`, `ip`, met variables).
 2. `iclig` governs legacy CLIGEN corrections:
+- `iclig=0`: use input duration/intensity values without CLIGEN correction factors.
 - `imodel=1` and `iclig=2`: `stmdur *= 2.06`, `ip *= 1.44`.
 - `iclig=1`: `ip *= 0.70`.
 3. Storm duration is capped to `23.999` hours before conversion.
@@ -149,9 +150,10 @@ Evidence:
 - Legacy code keeps the dewpoint partition logic commented out and uses the active temperature-threshold branch.
 - Evidence: `/workdir/wepp-forest_260430_baseline/src/stmtim.for:67-136`.
 
-3. `DECISION-CLIM01-003`: openWEPP supports CLIGEN `4.0+` only (`iclig=1`) and must hard-guard `datver<4.0` inputs.
-- Clarification: this is not a `0.8` factor rule. Baseline legacy factors are `stmdur*2.06`, `ip*1.44` (`iclig=2`) and `ip*0.70` (`iclig=1`); openWEPP carry-forward policy is `iclig=1` only with explicit guard on pre-4.0 data versions.
-- Evidence: `/workdir/wepp-forest_260430_baseline/src/infile.for:1743-1765`, `/workdir/wepp-forest_260430_baseline/src/stmget.for:161-184`.
+3. `DECISION-CLIM01-003`: openWEPP supports CLIGEN `4.0+` policy branch and an explicit `datver=0.0` override branch; pre-4 nonzero branches are rejected by guard.
+- Clarification: this is not a `0.8` factor rule. `datver=0.0` maps to `iclig=0` (no duration/intensity correction), `datver>=4.0` uses `iclig=1` (`ip*0.70`), and pre-4 nonzero branch `iclig=2` (`stmdur*2.06`, `ip*1.44`) is not carried forward by default.
+- Evidence: `/workdir/wepp-forest_260430_baseline/src/infile.for:1743-1797`, `/workdir/wepp-forest_260430_baseline/src/stmget.for:161-184`.
 
-4. `HOLD-CLIM01-004`: For `drain==0`, breakpoint branch does not explicitly reject non-increasing time; `dtime` is still accumulated.
-- Evidence: `/workdir/wepp-forest_260430_baseline/src/brkpt.for:76-83`, `:96-99`.
+4. `DECISION-CLIM01-004`: Treat legacy zero-drain non-increasing-time behavior as a bug; openWEPP must hard-fail duplicate or decreasing breakpoint times for all intervals.
+- Clarification: `dtime<=0` is invalid regardless of `drain` value (`drain==0` or `drain>0`).
+- Evidence: `/workdir/wepp-forest_260430_baseline/src/brkpt.for:76-83`, `:88-92`, `:96-99`.

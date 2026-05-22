@@ -1,11 +1,14 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use openwepp_hillslope_orchestrator::{
     HillslopePhaseGraph, HillslopePhaseScheduler,
-    runtime_inputs::build_hillslope_runtime_surface_from_soil,
+    runtime_inputs::{
+        build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_soil,
+    },
 };
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
+    climate::{ParserMode as ClimateParserMode, parse_climate_from_str},
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
@@ -16,7 +19,10 @@ use openwepp_sim_contract::status::{SimulationPhase, SimulationStatus};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 use openwepp_watershed_orchestrator::{
     execute_watershed_dispatch_with_kernel,
-    runtime_inputs::build_watershed_runtime_surface_from_chaninp,
+    runtime_inputs::{
+        build_watershed_runtime_surface_from_chaninp,
+        build_watershed_runtime_surface_from_climate_assignments,
+    },
 };
 
 const VALID_TOPOLOGY: &str = r"
@@ -30,6 +36,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 
 const SOIL_VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
 const CHANINP_STRICT_VALID: &str = include_str!("../fixtures/infile/chaninp/strict_valid.chaninp");
+const CLIMATE_STRICT_VALID: &str = include_str!("../fixtures/infile/climate/strict_valid.cli");
 
 struct HillslopeSeedProbeKernel {
     invocation_count: usize,
@@ -67,6 +74,62 @@ impl WatershedKernel for WatershedSeedProbeKernel {
         self.invocation_count += 1;
         KernelRunResponse::new(
             SimulationStatus::ok(SimulationPhase::WatershedKernel, "ARCH17-WS-KERNEL-OK")
+                .expect("status should construct"),
+            KernelWritebackPayload::empty(),
+        )
+    }
+}
+
+struct HillslopeClimateProbeKernel {
+    invocation_count: usize,
+}
+
+impl HillslopeKernel for HillslopeClimateProbeKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        assert_state_value(request.state_surface, "datver", 5.3);
+        assert_state_value(request.state_surface, "iclig", 1.0);
+        assert_state_value(request.state_surface, "itemp", 1.0);
+        assert_state_value(request.state_surface, "ibrkpt", 0.0);
+        assert_state_value(request.state_surface, "iwind", 0.0);
+        assert_state_value(request.state_surface, "prcp", 0.01);
+        assert_state_value(request.state_surface, "stmdur", 7_200.0);
+        assert_state_value(request.state_surface, "timep", 0.25);
+        assert_state_value(request.state_surface, "ip", 3.0);
+        assert_state_value(request.state_surface, "tmax", 12.0);
+        assert_state_value(request.state_surface, "tmin", 2.0);
+        assert_state_value(request.state_surface, "rad", 200.0);
+        assert_state_value(request.state_surface, "tdpt", -1.0);
+        assert_state_value(request.state_surface, "vwind", 3.0);
+
+        self.invocation_count += 1;
+        KernelRunResponse::new(
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "CLIM02-HS-KERNEL-OK")
+                .expect("status should construct"),
+            KernelWritebackPayload::empty(),
+        )
+    }
+}
+
+struct WatershedClimateProbeKernel {
+    invocation_count: usize,
+}
+
+impl WatershedKernel for WatershedClimateProbeKernel {
+    fn run_watershed_node(&mut self, request: &WatershedKernelRequest<'_>) -> KernelRunResponse {
+        assert_state_value(request.state_surface, "nclimhs", 3.0);
+        assert_state_value(request.state_surface, "hs1_datver", 5.3);
+        assert_state_value(request.state_surface, "hs2_datver", 5.3);
+        assert_state_value(request.state_surface, "hs3_datver", 5.3);
+        assert_state_value(request.state_surface, "hs1_prcp", 0.01);
+        assert_state_value(request.state_surface, "hs2_stmdur", 7_200.0);
+        assert_state_value(request.state_surface, "hs3_timep", 0.25);
+        assert_state_value(request.state_surface, "hs1_ip", 3.0);
+        assert_state_value(request.state_surface, "hs2_tmax", 12.0);
+        assert_state_value(request.state_surface, "hs3_tmin", 2.0);
+
+        self.invocation_count += 1;
+        KernelRunResponse::new(
+            SimulationStatus::ok(SimulationPhase::WatershedKernel, "CLIM02-WS-KERNEL-OK")
                 .expect("status should construct"),
             KernelWritebackPayload::empty(),
         )
@@ -125,6 +188,63 @@ fn parser_to_watershed_runtime_surface_closure() {
         runtime_surface,
     )
     .expect("watershed execution should succeed");
+
+    assert!(report.dispatch_report.is_success());
+    assert_eq!(kernel.invocation_count, report.dispatch_report.steps.len());
+}
+
+#[test]
+fn climate_parser_to_hillslope_runtime_surface_closure() {
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse for hillslope seam closure");
+    let runtime_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("hillslope climate runtime surface should build from parser output");
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = HillslopeClimateProbeKernel {
+        invocation_count: 0,
+    };
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
+        .expect("hillslope execution should consume climate runtime symbols");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(
+        kernel.invocation_count,
+        HillslopePhaseGraph::canonical_order().len()
+    );
+}
+
+#[test]
+fn climate_parser_to_watershed_runtime_surface_closure() {
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse for watershed seam closure");
+    let assignments = BTreeMap::from([
+        (1_u32, climate.clone()),
+        (2_u32, climate.clone()),
+        (3_u32, climate),
+    ]);
+    let runtime_surface = build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+        .expect("watershed climate runtime surface should build from parser outputs");
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+
+    let mut kernel = WatershedClimateProbeKernel {
+        invocation_count: 0,
+    };
+    let report = execute_watershed_dispatch_with_kernel(
+        &graph,
+        &topology_report,
+        &mut kernel,
+        runtime_surface,
+    )
+    .expect("watershed execution should consume climate assignment runtime symbols");
 
     assert!(report.dispatch_report.is_success());
     assert_eq!(kernel.invocation_count, report.dispatch_report.steps.len());

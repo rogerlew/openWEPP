@@ -309,6 +309,19 @@ Authorized packages:
 - `20260522-arch20-governance-throughput-and-build-hygiene-controls-001/`
   - Purpose: implement `CRF-008`/`CRF-009` by defining governance throughput
     rubric, WIP/closure policy, and workspace build-discipline controls.
+- `20260522-arch21-architecture-review-re-closeout-001/`
+  - Purpose: re-close ARCH14 by reconciling `CRF-001..010` closure evidence,
+    replaying workspace gates, and issuing explicit ARCH14 hold-release
+    disposition (`GO_ARCH14_RELEASED` or `HOLD_ARCH14_PENDING`).
+- `20260522-clim01-wepp-forest-climate-model-discovery-and-specification-001/`
+  - Purpose: reconstruct exact legacy `wepp-forest` climate model behavior
+    for continuous-daily and breakfile flows, then author an openWEPP-owned
+    detailed climate spec, consumer requirements, and parser/architecture
+    integration mapping (single-storm explicitly excluded).
+- `20260522-clim02-climate-parser-to-runtime-seam-adapters-001/`
+  - Purpose: implement `HS-CLIM-SEAM-001`/`WS-CLIM-SEAM-001` climate
+    parser-to-runtime adapters with typed `CLIM-RUNTIME-E-*` errors,
+    `datver>=4.0` policy guards, and integration-test closure evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

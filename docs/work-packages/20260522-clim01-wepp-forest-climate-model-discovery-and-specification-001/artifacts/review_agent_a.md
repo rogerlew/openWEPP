@@ -34,13 +34,13 @@ Ran:
 ### CLIM01-A-003
 - Severity: medium
 - Issue: `iclig` carry-forward policy is now ratified, but parser/runtime guard enforcement is not implemented yet.
-- Why it matters: Unsupported pre-4.0 CLIGEN inputs may slip through without deterministic rejection.
+- Why it matters: Runtime seam policy must deterministically distinguish supported branches (`datver=0.0`, `datver>=4.0`) from rejected pre-4 nonzero branches.
 - Evidence:
   - `/workdir/wepp-forest_260430_baseline/src/infile.for:1743-1765`
   - `/workdir/wepp-forest_260430_baseline/src/stmget.for:161-184`
-- Disposition: `DECIDED-PENDING-IMPLEMENTATION` (`DECISION-CLIM01-003`: support CLIGEN `4.0+` (`iclig=1`) only and guard `datver<4.0`; baseline factors are `2.06`, `1.44`, `0.70`, not `0.8`).
+- Disposition: `DECIDED-PENDING-IMPLEMENTATION` (`DECISION-CLIM01-003`: support `datver=0.0` (`iclig=0`) and `datver>=4.0` (`iclig=1`), reject pre-4 nonzero branch (`iclig=2`); baseline factors remain `2.06`, `1.44`, `0.70`, not `0.8`).
 
 ## Summary
 
 - CLIM01 documentation goals are met for in-scope discovery/specification.
-- Promotion to implementation-ready `GO` requires closure of `CLIM-ARCH-GAP-001` and implementation of ratified `CLIM-ARCH-GAP-003` policy gates.
+- Promotion to implementation-ready `GO` requires closure of `CLIM-ARCH-GAP-001`, climate seam integration-test closure (`CLIM-ARCH-GAP-004`), and implementation of ratified policy gates (`CLIM-ARCH-GAP-003`, `CLIM-ARCH-GAP-005`).

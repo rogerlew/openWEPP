@@ -31,6 +31,7 @@ Evidence:
 | `ibrkpt` split between no-breakpoint and breakpoint records | implemented | `climate.rs:451-457`, `:532-697` |
 | breakpoint cardinality guard | implemented (`<=50` strict; override in compat mode) | `climate.rs:9`, `:629-635` |
 | date sequence, year coverage, monotone `pptcum` | implemented | `climate.rs:672-677`, `:720-761` |
+| strict breakpoint `timem` monotonicity (`dtime>0` all intervals) | not yet implemented as parser/runtime guard | legacy behavior reference `/workdir/wepp-forest_260430_baseline/src/brkpt.for:76-83`, `:88-92` |
 | typed error taxonomy | implemented | `climate.rs:143-205` |
 
 ## Runtime/Orchestrator Linkage
@@ -67,8 +68,9 @@ Evidence:
 |---|---|---|---|
 | `CLIM-ARCH-GAP-001` | Missing climate parser-to-runtime adapter seams in both orchestrator crates. | Climate parser is not yet integrated into runtime execution surfaces. | `HOLD` |
 | `CLIM-ARCH-GAP-002` | Decision ratified: align breakpoint cardinality target to legacy capacity (`1500`); parser/runtime implementation alignment is still pending. | Short-term parser/runtime mismatch risk remains until implementation lands. | `DECIDED-PENDING-IMPLEMENTATION` |
-| `CLIM-ARCH-GAP-003` | Decision ratified: support CLIGEN `4.0+` only (`iclig=1`) and reject `datver<4.0` pre-4 correction branch requests. | Parser/runtime policy gate implementation is still pending; until implemented, unsupported legacy climates may not be rejected at seam boundaries. | `DECIDED-PENDING-IMPLEMENTATION` |
+| `CLIM-ARCH-GAP-003` | Decision ratified: support explicit `datver=0.0` override (`iclig=0`) and `datver>=4.0` (`iclig=1`), and reject pre-4 nonzero correction branch requests (`iclig=2`). | Parser/runtime seam policy enforcement is still pending; until implemented, accepted parser versions may not be mapped with fully explicit runtime gating behavior. | `DECIDED-PENDING-IMPLEMENTATION` |
 | `CLIM-ARCH-GAP-004` | No climate-specific end-to-end seam integration tests analogous to `parser_runtime_seam_integration`. | Missing closure evidence for parser-to-kernel climate symbol propagation. | `HOLD` |
+| `CLIM-ARCH-GAP-005` | Decision ratified: treat legacy zero-drain non-increasing-time behavior as bug; require strict breakpoint `dtime>0` across all intervals. | Until parser/runtime guards are implemented, malformed duplicate/decreasing breakpoint times may still pass parser ingestion. | `DECIDED-PENDING-IMPLEMENTATION` |
 
 ## Integration Constraints
 

@@ -67,9 +67,9 @@ Evidence:
 
 1. Read per-day row: `day,mon,year,prcp,stmdur,timep,ip,tmax,tmin,rad,vwind,wind,tdpt`.
 2. Apply ratified `iclig` policy:
-- support CLIGEN `4.0+` inputs only (`iclig=1`);
-- apply `ip *= 0.70` for supported branch;
-- hard-fail on `datver<4.0` / pre-4 correction branch requests (no carry-forward of `stmdur *= 2.06`, `ip *= 1.44` behavior).
+- support explicit `datver=0.0` override branch (`iclig=0`) with no duration/intensity correction factors;
+- support CLIGEN `4.0+` branch (`iclig=1`) and apply `ip *= 0.70`;
+- hard-fail on pre-4 nonzero branch requests (`0.0<datver<4.0`, `iclig=2`; no carry-forward of `stmdur *= 2.06`, `ip *= 1.44` behavior).
 3. Cap `stmdur <= 23.999 h` before conversion.
 4. Convert `prcp` and `rain(*)` mm -> m; convert `stmdur` hr -> s.
 5. Compute `avrint = rain/stmdur` and `mxint = ip * avrint` for event forcing.
@@ -89,8 +89,9 @@ Evidence:
 3. Build interval intensities:
 - `drain = pptcum(i+1)-pptcum(i)`;
 - `dtime = timem(i+1)-timem(i)`;
+- if `dtime<=0` fail hard (all intervals);
 - if `drain<0` fail hard;
-- if `drain>0` and `dtime<=0` fail hard;
+- if `drain==0` set `intsty(i)=0`;
 - else `intsty(i)=drain/dtime`.
 4. Set `stmdur = sum(dtime)`, `mxint=max(intsty)`, terminal `intsty(nbrkpt)=0`, and `prcp=pptcum(nbrkpt)`.
 
@@ -132,18 +133,23 @@ Evidence:
 | `CLIM-G-006` | Breakpoint runtime checks: no cumulative decrease; no positive-rain interval with non-positive elapsed time. | runtime climate model | hard-fail |
 | `CLIM-G-007` | Runtime unit conversion and event-shape closure must preserve non-negative storm depth/duration semantics. | runtime climate model | hard-fail |
 | `CLIM-G-008` | No silent fallback on invalid required climate inputs or invalid event shape. | parser + runtime | hard-fail |
-| `CLIM-G-009` | Supported CLIGEN policy is `datver>=4.0` with `iclig=1`; pre-4.0 (`iclig=2`) branch is rejected by explicit guard. | parser + runtime policy gate | hard-fail |
+| `CLIM-G-009` | Supported climate-version policy is explicit `datver=0.0` override (`iclig=0`) plus `datver>=4.0` (`iclig=1`); pre-4 nonzero branch (`iclig=2`) is rejected by explicit guard. | parser + runtime policy gate | hard-fail |
+| `CLIM-G-010` | Breakpoint times must be strictly increasing for all intervals (`dtime>0`), including zero-drain intervals. | parser + runtime policy gate | hard-fail |
 
 ## Decision and HOLD Register
 
 1. `DECISION-CLIM01-SPEC-001`: breakpoint cardinality target should match legacy runtime capacity (`1500`); parser/runtime alignment implementation remains open.
 2. `DECISION-CLIM01-SPEC-002`: do not carry forward the disabled dewpoint partition branch; retain active temperature-threshold path unless superseding authority is adopted.
-3. `DECISION-CLIM01-SPEC-003`: openWEPP supports CLIGEN `4.0+` (`iclig=1`) only and must guard/reject `datver<4.0` inputs.
-- Clarification: baseline factors are `stmdur*2.06`, `ip*1.44`, and `ip*0.70` (not `0.8`); carry-forward policy keeps only the `iclig=1` branch.
+3. `DECISION-CLIM01-SPEC-003`: openWEPP supports explicit `datver=0.0` override (`iclig=0`) and `datver>=4.0` (`iclig=1`), and must guard/reject pre-4 nonzero inputs (`iclig=2` branch).
+- Clarification: baseline factors are `stmdur*2.06`, `ip*1.44`, and `ip*0.70` (not `0.8`); carry-forward policy keeps `iclig=0` and `iclig=1` only.
+4. `DECISION-CLIM01-SPEC-004`: treat legacy zero-drain non-increasing-time acceptance as a bug and enforce strict `dtime>0` guard for all breakpoint intervals.
 
 Evidence:
 - `/home/workdir/openWEPP/crates/openwepp-input-contract/src/parsers/climate.rs:9`
 - `/home/workdir/openWEPP/crates/openwepp-input-contract/src/parsers/climate.rs:629-634`
 - `/workdir/wepp-forest_260430_baseline/src/cdiss12.inc:7`
+- `/workdir/wepp-forest_260430_baseline/src/infile.for:1743-1797`
 - `/workdir/wepp-forest_260430_baseline/src/stmtim.for:67-136`
 - `/workdir/wepp-forest_260430_baseline/src/stmget.for:161-184`
+- `/workdir/wepp-forest_260430_baseline/src/brkpt.for:76-83`
+- `/workdir/wepp-forest_260430_baseline/src/brkpt.for:88-92`

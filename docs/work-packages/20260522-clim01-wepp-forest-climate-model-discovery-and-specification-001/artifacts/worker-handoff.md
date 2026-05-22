@@ -46,6 +46,6 @@ Ran:
 
 ## Outstanding Risks
 
-1. `DECISION-CLIM01-003` is ratified, but parser/runtime guard implementation is still pending: support CLIGEN `4.0+` (`iclig=1`) and reject `datver<4.0`.
-2. `HOLD-CLIM01-004`: breakpoint zero-drain interval timing edge case remains behaviorally ambiguous.
+1. `DECISION-CLIM01-003` is ratified, but parser/runtime guard implementation is still pending: support explicit `datver=0.0` override (`iclig=0`) and `datver>=4.0` (`iclig=1`), and reject pre-4 nonzero inputs.
+2. `DECISION-CLIM01-004` is ratified, but implementation is still pending: duplicate/decreasing breakpoint times must hard-fail (`dtime>0` required for all intervals).
 3. Climate parser-to-runtime adapter seam is not implemented yet.

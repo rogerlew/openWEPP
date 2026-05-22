@@ -20,7 +20,8 @@ Ran:
 | parser-to-runtime climate seam ownership | `implicit common-block coupling` | `missing` | `yes` | `HOLD`: no climate runtime adapter seam in orchestrators yet. |
 | breakpoint cardinality policy parity | `runtime arrays sized to 1500` | `target match 1500` | `yes` | `DECISION-CLIM01-001`: align parser/runtime to legacy capacity. |
 | dewpoint-based winter rain/snow branch | `commented out in baseline` | `do not carry forward` | `yes` | `DECISION-CLIM01-002`: retain active temperature-threshold branch. |
-| CLIGEN version policy (`datver`,`iclig`) | `legacy has pre-4 and 4+ correction branches` | `support 4.0+ only; guard datver<4.0` | `yes` | `DECISION-CLIM01-003`: carry forward `iclig=1` branch only and reject pre-4.0 inputs. |
+| CLIGEN version policy (`datver`,`iclig`) | `legacy has datver=0 override plus pre-4 and 4+ branches` | `support datver=0 override and 4.0+; guard pre-4 nonzero` | `yes` | `DECISION-CLIM01-003`: carry forward `iclig=0` (`datver=0.0`) and `iclig=1` (`datver>=4.0`) branches; reject `iclig=2` branch by default. |
+| breakpoint time monotonicity policy (`timem`) | `legacy zero-drain path can accept non-increasing time` | `strictly increasing breakpoint times required` | `yes` | `DECISION-CLIM01-004`: duplicate/decreasing breakpoint times hard-fail, regardless of `drain`. |
 | multi-storm-per-day scientific extension | `known limitation` | `not specified for implementation` | `no` | out-of-scope for CLIM01; retain as limitation signal from climate contract lineage. |
 | single-storm climate (`itemp=2`) | `legacy-supported` | `excluded` | `no` | explicit package exclusion and strict parser rejection by default. |
 | single-storm modeling path | `legacy-supported` | `excluded` | `no` | explicit package exclusion. |
