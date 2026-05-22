@@ -251,6 +251,9 @@ Authorized packages:
 - `20260522-arch12-wave4-readiness-closeout-001/`
   - Purpose: execute Wave 4 architecture readiness closeout and ratification
     by validating ARCH03..ARCH11 gate/disposition closure and issuing GO/HOLD.
+- `20260522-arch13-wave4-hold-ratification-checklist-001/`
+  - Purpose: ratify outstanding Wave 4 parser/sidecar HOLD decisions with
+    explicit decision records and kickoff acceptance criteria.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
