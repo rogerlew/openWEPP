@@ -13,12 +13,17 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use flate2::Compression;
 use flate2::write::ZlibEncoder;
+use flate2::Compression;
 use openwepp_input_contract::parsers::hbp::{
-    HbpFormatErrorCode, HbpParseError, HbpParseMode, HbpParseOptions, HbpPathResolution,
-    HbpSchemaProfile, HbpWarningCode, parse_hbp_from_bytes, parse_hbp_from_path,
+    parse_hbp_from_bytes, parse_hbp_from_path, HbpFormatErrorCode, HbpParseError, HbpParseMode,
+    HbpParseOptions, HbpPathResolution, HbpSchemaProfile, HbpWarningCode as ParserHbpWarningCode,
 };
+use openwepp_legacy_bridge::hbp::{
+    adapt_hbp_header, HbpAdapterRequest, HbpHeaderContract, HbpMagicSource,
+    HbpWarningCode as BridgeHbpWarningCode,
+};
+use openwepp_legacy_bridge::policy::CompatibilityPolicy;
 
 const MAGIC: &[u8; 8] = b"WFPHBP01";
 const FOOTER_MAGIC: &[u8; 8] = b"ENDHBP01";
@@ -495,12 +500,10 @@ fn compatibility_mode_derives_hbp_path_from_pass_dat() {
         HbpPathResolution::DerivedFromLegacyPassDat
     );
     assert_eq!(parsed.resolved_path, temp_hbp_path);
-    assert!(
-        parsed
-            .warnings
-            .iter()
-            .any(|warning| warning.code == HbpWarningCode::HbpW001)
-    );
+    assert!(parsed
+        .warnings
+        .iter()
+        .any(|warning| warning.code == ParserHbpWarningCode::HbpW001));
 }
 
 #[test]
@@ -628,6 +631,89 @@ fn expected_hillslope_id_mismatch_maps_to_hbp_e_014() {
 
     assert!(matches!(error, HbpParseError::HillslopeIdMismatch { .. }));
     assert_eq!(error.contract_error_id(), "HBP-E-014");
+}
+
+fn bridge_hbp_contract() -> HbpHeaderContract {
+    HbpHeaderContract::new(*b"HBP1", vec![*b"HBP0"], 8)
+}
+
+#[test]
+fn parser_and_bridge_share_hbp_w_001_warning_id() {
+    assert_eq!(
+        ParserHbpWarningCode::HbpW001.as_str(),
+        BridgeHbpWarningCode::LegacyMagicAliasApplied.message_id()
+    );
+    assert_eq!(ParserHbpWarningCode::HbpW001.as_str(), "HBP-W-001");
+}
+
+#[test]
+fn strict_policy_rejects_legacy_forms_across_parser_and_bridge() {
+    let parser_fixture = build_schema1_fixture(20);
+    let parser_path = unique_temp_path("H20.hbp");
+    write_fixture(&parser_path, &parser_fixture);
+    let parser_legacy_path = parser_path
+        .with_file_name("H20.pass.dat")
+        .to_string_lossy()
+        .to_string();
+
+    let parser_error = parse_hbp_from_path(
+        &parser_legacy_path,
+        HbpParseOptions {
+            mode: HbpParseMode::Strict,
+            expected_hillslope_id: None,
+        },
+    )
+    .expect_err("strict parser mode must reject .pass.dat legacy naming");
+    assert_eq!(parser_error.contract_error_id(), "HBP-E-001");
+
+    let bridge_error = adapt_hbp_header(&HbpAdapterRequest {
+        policy: CompatibilityPolicy::Strict,
+        contract: bridge_hbp_contract(),
+        shard_bytes: b"HBP0DATA",
+    })
+    .expect_err("strict bridge mode must reject legacy magic aliases");
+    assert_eq!(bridge_error.code(), "HBP-E-006");
+}
+
+#[test]
+fn compatibility_policy_accepts_legacy_forms_with_hbp_w_001() {
+    let parser_fixture = build_schema1_fixture(21);
+    let parser_path = unique_temp_path("H21.hbp");
+    write_fixture(&parser_path, &parser_fixture);
+    let parser_legacy_path = parser_path
+        .with_file_name("H21.pass.dat")
+        .to_string_lossy()
+        .to_string();
+
+    let parser_parsed = parse_hbp_from_path(
+        &parser_legacy_path,
+        HbpParseOptions {
+            mode: HbpParseMode::Compatibility,
+            expected_hillslope_id: Some(21),
+        },
+    )
+    .expect("compat parser mode should derive .hbp from .pass.dat");
+    assert_eq!(
+        parser_parsed.path_resolution,
+        HbpPathResolution::DerivedFromLegacyPassDat
+    );
+    assert!(parser_parsed
+        .warnings
+        .iter()
+        .any(|warning| warning.code == ParserHbpWarningCode::HbpW001));
+
+    let bridge_response = adapt_hbp_header(&HbpAdapterRequest {
+        policy: CompatibilityPolicy::Compat,
+        contract: bridge_hbp_contract(),
+        shard_bytes: b"HBP0DATA",
+    })
+    .expect("compat bridge mode should accept configured legacy alias");
+    assert_eq!(bridge_response.magic_source, HbpMagicSource::LegacyAlias);
+    assert_eq!(bridge_response.warnings.len(), 1);
+    assert_eq!(
+        bridge_response.warnings[0].code.message_id(),
+        ParserHbpWarningCode::HbpW001.as_str()
+    );
 }
 
 #[test]
