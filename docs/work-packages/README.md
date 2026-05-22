@@ -248,6 +248,9 @@ Authorized packages:
 - `20260522-arch11-comparator-tier-routing-metadata-integration-001/`
   - Purpose: implement comparator confidence-tier metadata propagation through
     reporting/comparator outputs aligned to ADR-0011 governance tiers.
+- `20260522-arch12-wave4-readiness-closeout-001/`
+  - Purpose: execute Wave 4 architecture readiness closeout and ratification
+    by validating ARCH03..ARCH11 gate/disposition closure and issuing GO/HOLD.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

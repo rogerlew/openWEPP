@@ -50,3 +50,14 @@ Ran evidence: none
 
 ## Gate note
 - Static: [INFERENCE] If any high-severity ownership ambiguity remains unresolved at `arch12`, disposition is `HOLD`.
+
+## Post-ratification update (ARCH12, 2026-05-22)
+
+- Static: `ARCH03`..`ARCH11` are dispositioned complete and consumed by Wave 4 ratification.
+- Ran: `ARCH12` replayed canonical workspace gates (`fmt`, `clippy`, `test`, `deny`) with passing results.
+- Static: The architecture queue is now closed for Wave 4 gate-ratification purposes; carry-forward items are implementation-wave activities, not architecture-ratification blockers.
+
+### Carry-forward priorities (non-blocking to Wave 4 ratification)
+1. Maintain comparator-governance and summary-routing surfaces as downstream reporting/replay integrations are implemented.
+2. Continue parser/kernel implementation waves under existing science-contract and status-taxonomy governance.
+3. Periodically prune or reconcile `deny.toml` license allowlist entries that are consistently not encountered.
