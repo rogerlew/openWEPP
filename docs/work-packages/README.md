@@ -333,6 +333,59 @@ Authorized packages:
     elapsed-time normalization, interval intensities) and reconcile ratified
     `1500` cardinality + strict `dtime>0` interval-timing policy with explicit
     compatibility controls and `/wc1/runs/**/wepp/runs/*.cli` fixture evidence.
+- `20260522-clim11-climate-ownership-boundary-reconciliation-001/`
+  - Purpose: reconcile climate forcing ownership boundary between hillslope and
+    watershed orchestration layers and publish explicit routing authority.
+- `20260522-clim12-shared-climate-runtime-adapter-extraction-001/`
+  - Purpose: remove duplicated climate runtime seam logic by extracting a
+    shared single-owner adapter surface consumed by both orchestrators.
+- `20260522-clim13-typed-climate-forcing-surface-closure-001/`
+  - Purpose: close typed-state drift by replacing dynamic breakpoint forcing
+    key synthesis with explicit typed climate forcing surfaces.
+- `20260522-clim14-runtime-breakpoint-cardinality-policy-closure-001/`
+  - Purpose: align runtime breakpoint cardinality behavior with the ratified
+    `1500` policy and codify strict vs override compatibility semantics.
+- `20260522-clim15-climate-runtime-error-taxonomy-reachability-reconciliation-001/`
+  - Purpose: reconcile climate runtime error taxonomy with reachable guard
+    paths, including cleanup of unreachable/misnamed variants.
+- `20260522-clim16-climate-governance-register-normalization-001/`
+  - Purpose: normalize CLIM disposition/register vocabulary and reconcile stale
+    status drift after CLIM11..15 closure, including corrected `0.70`
+    governance framing and explicit `datver>=4.0` branch-policy confirmation.
+- `20260522-sr02-slope-runtime-seam-contract-and-builder-001/`
+  - Purpose: implement SR01 follow-on `SR02` by defining and building the
+    typed slope parser-to-runtime seam for hillslope orchestration, including
+    explicit symbol projection guards and integration-test closure evidence.
+- `20260522-sr03-soil-runtime-seam-expansion-001/`
+  - Purpose: implement SR01 follow-on `SR03` by expanding the soil
+    parser-to-runtime seam from minimal seed symbols to contracted
+    layer/profile runtime surfaces required by soil and hydrology consumers.
+- `20260522-sr04-symbol-alias-continuity-completion-001/`
+  - Purpose: implement SR01 follow-on `SR04` by expanding canonical slope+soil
+    symbol alias continuity tables and `openwepp-sim-contract` registry
+    coverage after SR02/SR03 seam delivery.
+- `20260522-sr05-parser-to-runtime-integration-closure-001/`
+  - Purpose: implement SR01 follow-on `SR05` by adding integration closure
+    tests proving slope+soil parser outputs propagate into runtime scheduler
+    surfaces with typed failures and no silent defaults.
+- `20260522-sr06-consumer-ownership-wiring-hillslope-kernels-001/`
+  - Purpose: implement SR01 follow-on `SR06` by wiring slope+soil runtime
+    surfaces into hillslope consumer boundaries (runoff/soil/watbal/perc)
+    with typed error propagation only.
+- `20260522-sr07-comparator-confidence-tier-delta-review-001/`
+  - Purpose: implement SR01 follow-on `SR07` by running Tier-A
+    single-OFE daily water-balance comparator delta review after SR06 to
+    validate semantic-parity direction under confidence-tier policy.
+- `20260522-pl01-plant-landuse-growth-decomposition-model-representation-discovery-001/`
+  - Purpose: discover and map plant/landuse/growth/decomposition
+    representations downstream of `.man` surfaces, including consumer
+    ownership boundaries, architecture-fit analysis, and follow-on queue
+    sequencing.
+- `20260522-pl02-plant-runtime-boundary-contract-001/`
+  - Purpose: implement PL01 follow-on `PL02` by authoring the typed
+    plant/landuse/growth/decomposition runtime boundary contract, ownership
+    matrix, canonical symbol alias requirements, and strict parser-to-runtime
+    seam requirements for PL03+ execution.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
