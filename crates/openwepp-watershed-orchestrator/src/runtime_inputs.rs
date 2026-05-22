@@ -11,7 +11,9 @@ use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
     climate::ClimateFile,
 };
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
+};
 
 use crate::WatershedWritebackSurface;
 
@@ -94,7 +96,15 @@ impl Error for WatershedRuntimeInputError {}
 /// Immutable watershed climate assignment payload keyed by hillslope id.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedClimateRuntimeRequest {
-    pub hillslope_forcing: BTreeMap<u32, WatershedHillslopeClimateRequest>,
+    pub hillslope_forcing: BTreeMap<u32, WatershedHillslopeClimateAssignment>,
+}
+
+/// Typed per-hillslope climate assignment with precomputed forcing-series
+/// boundary projections.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WatershedHillslopeClimateAssignment {
+    forcing: WatershedHillslopeClimateRequest,
+    day_symbol_surfaces: Vec<ClimateForcingSymbolSurface>,
 }
 
 /// Typed climate runtime seam failures (`WS-CLIM-SEAM-001`).
@@ -140,6 +150,11 @@ pub enum WatershedClimateRuntimeInputError {
         drain_m: f64,
         delta_time_s: f64,
     },
+    BreakpointCardinalityPolicyExceeded {
+        hillslope_id: u32,
+        value: usize,
+        max: usize,
+    },
     BreakpointCountOutOfRange {
         hillslope_id: u32,
         value: usize,
@@ -179,7 +194,8 @@ impl WatershedClimateRuntimeInputError {
             Self::EmptyBreakpointSeries { .. } => "CLIM-RUNTIME-E-008",
             Self::NonMonotoneBreakpointTime { .. } => "CLIM-RUNTIME-E-009",
             Self::PositiveBreakpointDrainWithNonPositiveDeltaTime { .. } => "CLIM-RUNTIME-E-010",
-            Self::BreakpointCountOutOfRange { .. } => "CLIM-RUNTIME-E-011",
+            Self::BreakpointCardinalityPolicyExceeded { .. }
+            | Self::BreakpointCountOutOfRange { .. } => "CLIM-RUNTIME-E-011",
             Self::EmptyClimateAssignments => "CLIM-RUNTIME-E-012",
             Self::DisaggregationTimeNotStrictlyIncreasing { .. } => "CLIM-RUNTIME-E-013",
             Self::DisaggregationRootSolveDomain { .. } => "CLIM-RUNTIME-E-014",
@@ -278,6 +294,18 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 hillslope_id,
                 drain_m,
                 delta_time_s
+            ),
+            Self::BreakpointCardinalityPolicyExceeded {
+                hillslope_id,
+                value,
+                max,
+            } => write!(
+                f,
+                "{}: hillslope {} breakpoint count {} exceeds runtime policy max {}",
+                self.code(),
+                hillslope_id,
+                value,
+                max
             ),
             Self::BreakpointCountOutOfRange {
                 hillslope_id,
@@ -443,10 +471,18 @@ pub fn build_watershed_climate_runtime_request_from_assignments(
 
     let mut hillslope_forcing = BTreeMap::new();
     for (&hillslope_id, climate) in assignments {
+        let forcing = build_climate_runtime_request(climate)
+            .map_err(|error| map_shared_error_for_hillslope(hillslope_id, &error))?;
+        let mut day_symbol_surfaces = Vec::with_capacity(forcing.daily_forcing.len());
+        for daily_forcing in &forcing.daily_forcing {
+            day_symbol_surfaces.push(build_watershed_series_surface(hillslope_id, daily_forcing)?);
+        }
         hillslope_forcing.insert(
             hillslope_id,
-            build_climate_runtime_request(climate)
-                .map_err(|error| map_shared_error_for_hillslope(hillslope_id, &error))?,
+            WatershedHillslopeClimateAssignment {
+                forcing,
+                day_symbol_surfaces,
+            },
         );
     }
 
@@ -478,7 +514,8 @@ pub fn seed_watershed_runtime_surface_from_climate(
         BoundaryValue::scalar(f64::from(assignment_count)),
     );
 
-    for (&hillslope_id, request) in &climate.hillslope_forcing {
+    for (&hillslope_id, assignment) in &climate.hillslope_forcing {
+        let request = &assignment.forcing;
         insert_hillslope_symbol(state_surface, hillslope_id, "datver", request.datver);
         insert_hillslope_symbol(
             state_surface,
@@ -507,6 +544,13 @@ pub fn seed_watershed_runtime_surface_from_climate(
 
         let forcing = select_day_forcing(request, day_index)
             .map_err(|error| map_shared_error_for_hillslope(hillslope_id, &error))?;
+        let day_symbols = assignment.day_symbol_surfaces.get(day_index).ok_or(
+            WatershedClimateRuntimeInputError::DayIndexOutOfRange {
+                hillslope_id,
+                day_index,
+                available: assignment.day_symbol_surfaces.len(),
+            },
+        )?;
 
         match forcing {
             WatershedClimateDailyForcing::NoBreakpoint(day) => {
@@ -536,14 +580,8 @@ pub fn seed_watershed_runtime_surface_from_climate(
                 insert_hillslope_symbol(state_surface, hillslope_id, "vwind", day.vwind);
                 insert_hillslope_symbol(state_surface, hillslope_id, "wind", day.wind);
                 insert_hillslope_symbol(state_surface, hillslope_id, "tdpt", day.tdpt);
-                for (index, value) in day.timem.iter().enumerate() {
-                    let symbol = format!("timem_{:04}", index + 1);
-                    insert_hillslope_symbol(state_surface, hillslope_id, &symbol, *value);
-                }
-                for (index, value) in day.intsty.iter().enumerate() {
-                    let symbol = format!("intsty_{:04}", index + 1);
-                    insert_hillslope_symbol(state_surface, hillslope_id, &symbol, *value);
-                }
+                insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
+                insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
             }
             WatershedClimateDailyForcing::Breakpoint(day) => {
                 insert_hillslope_common_day_symbols(
@@ -572,14 +610,8 @@ pub fn seed_watershed_runtime_surface_from_climate(
                 })?;
                 insert_hillslope_symbol(state_surface, hillslope_id, "nbrkpt", f64::from(nbrkpt));
 
-                for (index, value) in day.timem.iter().enumerate() {
-                    let symbol = format!("timem_{:04}", index + 1);
-                    insert_hillslope_symbol(state_surface, hillslope_id, &symbol, *value);
-                }
-                for (index, value) in day.intsty.iter().enumerate() {
-                    let symbol = format!("intsty_{:04}", index + 1);
-                    insert_hillslope_symbol(state_surface, hillslope_id, &symbol, *value);
-                }
+                insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
+                insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
             }
         }
     }
@@ -664,6 +696,13 @@ fn map_shared_error_for_hillslope(
             drain_m: *drain_m,
             delta_time_s: *delta_time_s,
         },
+        SharedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded { value, max } => {
+            WatershedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                hillslope_id,
+                value: *value,
+                max: *max,
+            }
+        }
         SharedClimateRuntimeInputError::BreakpointCountOutOfRange { value } => {
             WatershedClimateRuntimeInputError::BreakpointCountOutOfRange {
                 hillslope_id,
@@ -701,6 +740,38 @@ fn map_shared_error_for_hillslope(
     }
 }
 
+fn build_watershed_series_surface(
+    hillslope_id: u32,
+    forcing: &WatershedClimateDailyForcing,
+) -> Result<ClimateForcingSymbolSurface, WatershedClimateRuntimeInputError> {
+    let point_count = forcing_series_point_count(forcing);
+    ClimateForcingSymbolSurface::watershed_hillslope(hillslope_id, point_count)
+        .map_err(|error| map_surface_build_error(hillslope_id, &error))
+}
+
+fn forcing_series_point_count(forcing: &WatershedClimateDailyForcing) -> usize {
+    match forcing {
+        WatershedClimateDailyForcing::NoBreakpoint(day) => day.timem.len(),
+        WatershedClimateDailyForcing::Breakpoint(day) => day.timem.len(),
+    }
+}
+
+fn map_surface_build_error(
+    hillslope_id: u32,
+    error: &ClimateForcingSymbolSurfaceError,
+) -> WatershedClimateRuntimeInputError {
+    match error {
+        ClimateForcingSymbolSurfaceError::PointCountOutOfRange {
+            count,
+            supported_max,
+        } => WatershedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+            hillslope_id,
+            value: *count,
+            max: *supported_max,
+        },
+    }
+}
+
 fn insert_hillslope_common_day_symbols(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     hillslope_id: u32,
@@ -723,9 +794,21 @@ fn insert_hillslope_symbol(
     surface.insert(BoundarySymbol::from(key), BoundaryValue::scalar(value));
 }
 
+fn insert_series_values(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbols: &[BoundarySymbol],
+    values: &[f64],
+) {
+    debug_assert_eq!(symbols.len(), values.len());
+    for (symbol, value) in symbols.iter().zip(values.iter()) {
+        surface.insert(symbol.clone(), BoundaryValue::scalar(*value));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
+    use std::fmt::Write as _;
 
     use openwepp_input_contract::parsers::{
         chaninp::{ChaninpParseOptions, ParseMode, parse_chaninp_from_str},
@@ -757,6 +840,28 @@ mod tests {
         include_str!("../../../tests/fixtures/infile/climate/wc1_canoga_stmdur_cap.cli");
     const STRICT_VALID_CHANINP: &str =
         include_str!("../../../tests/fixtures/infile/chaninp/strict_valid.chaninp");
+
+    fn build_breakpoint_fixture(nbrkpt: usize) -> String {
+        let mut climate = format!(
+            "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n45.0 -120.0 1000.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n1 1 2000 {nbrkpt} 11.0 1.0 180.0 2.0 170.0 -2.0\n"
+        );
+        if nbrkpt == 0 {
+            return climate;
+        }
+        let denom_u32 = u32::try_from((nbrkpt - 1).max(1))
+            .expect("breakpoint fixture helper expects small cardinalities");
+        let denom = f64::from(denom_u32);
+        for index in 0..nbrkpt {
+            let idx_u32 = u32::try_from(index)
+                .expect("breakpoint fixture helper expects small cardinalities");
+            let idx = f64::from(idx_u32);
+            let timem = (24.0 * idx) / denom;
+            let pptcum = (120.0 * idx) / denom;
+            writeln!(&mut climate, "{timem:.4} {pptcum:.3}")
+                .expect("writing synthetic breakpoint fixture should succeed");
+        }
+        climate
+    }
 
     #[test]
     fn chaninp_runtime_surface_contains_required_symbols() {
@@ -954,6 +1059,51 @@ mod tests {
         assert!(timem_first.abs() < 1e-12);
         assert!(timem_last > timem_first);
         assert!(intsty_last.abs() < 1e-12);
+    }
+
+    #[test]
+    fn climate_runtime_surface_accepts_breakpoint_cardinality_at_1500_boundary() {
+        let climate =
+            parse_climate_from_str(&build_breakpoint_fixture(1_500), ClimateParserMode::Strict)
+                .expect("strict parser should accept 1500 breakpoint rows");
+        let assignments = BTreeMap::from([(14_u32, climate)]);
+
+        let surface = build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+            .expect("runtime seam should accept 1500 breakpoint rows");
+        let nbrkpt = surface
+            .state_surface
+            .get(&BoundarySymbol::from("hs14_nbrkpt"))
+            .expect("hs14_nbrkpt should exist")
+            .as_f64();
+
+        assert!((nbrkpt - 1_500.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn climate_runtime_surface_rejects_breakpoint_cardinality_over_1500_even_with_parser_override()
+    {
+        let climate = parse_climate_from_str(
+            &build_breakpoint_fixture(1_501),
+            ClimateParserMode::Compatibility(CompatibilityOptions {
+                allow_single_storm: false,
+                allow_breakpoint_cardinality_override: true,
+                allow_legacy_zero_drain_non_positive_dtime: false,
+            }),
+        )
+        .expect("compat parser should allow >1500 breakpoint rows with explicit override");
+        let assignments = BTreeMap::from([(16_u32, climate)]);
+
+        let error = build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+            .expect_err("runtime seam must reject >1500 breakpoint rows");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-011");
+        assert!(matches!(
+            error,
+            WatershedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                hillslope_id: 16,
+                value: 1_501,
+                max: 1_500
+            }
+        ));
     }
 
     #[test]

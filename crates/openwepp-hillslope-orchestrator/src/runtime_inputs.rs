@@ -5,11 +5,13 @@ use std::fmt;
 use openwepp_climate_runtime_adapter::{
     SharedClimateDailyForcing as HillslopeClimateDailyForcing,
     SharedClimateRuntimeInputError as ClimateRuntimeInputError,
-    SharedClimateRuntimeRequest as HillslopeClimateRuntimeRequest, build_climate_runtime_request,
-    select_day_forcing,
+    SharedClimateRuntimeRequest as SharedHillslopeClimateRuntimeRequest,
+    build_climate_runtime_request, select_day_forcing,
 };
 use openwepp_input_contract::parsers::{climate::ClimateFile, soil::SoilProfile};
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
+};
 
 use crate::HillslopeWritebackSurface;
 
@@ -100,6 +102,14 @@ impl fmt::Display for HillslopeRuntimeInputError {
 }
 
 impl Error for HillslopeRuntimeInputError {}
+
+/// Typed hillslope climate runtime request with precomputed boundary alias
+/// projections for forcing series surfaces.
+#[derive(Debug, Clone, PartialEq)]
+pub struct HillslopeClimateRuntimeRequest {
+    shared: SharedHillslopeClimateRuntimeRequest,
+    day_symbol_surfaces: Vec<ClimateForcingSymbolSurface>,
+}
 
 /// Build an orchestrator-owned hillslope runtime surface from parsed soil input.
 ///
@@ -201,7 +211,16 @@ pub fn build_hillslope_runtime_surface_from_soil(
 pub fn build_hillslope_climate_runtime_request(
     climate: &ClimateFile,
 ) -> Result<HillslopeClimateRuntimeRequest, ClimateRuntimeInputError> {
-    build_climate_runtime_request(climate)
+    let shared = build_climate_runtime_request(climate)?;
+    let mut day_symbol_surfaces = Vec::with_capacity(shared.daily_forcing.len());
+    for forcing in &shared.daily_forcing {
+        day_symbol_surfaces.push(build_hillslope_series_surface(forcing)?);
+    }
+
+    Ok(HillslopeClimateRuntimeRequest {
+        shared,
+        day_symbol_surfaces,
+    })
 }
 
 /// Seed a hillslope runtime writeback surface with one climate forcing record.
@@ -216,28 +235,34 @@ pub fn seed_hillslope_runtime_surface_from_climate(
     climate: &HillslopeClimateRuntimeRequest,
     day_index: usize,
 ) -> Result<(), ClimateRuntimeInputError> {
-    let forcing = select_day_forcing(climate, day_index)?;
+    let forcing = select_day_forcing(&climate.shared, day_index)?;
+    let day_symbols = climate.day_symbol_surfaces.get(day_index).ok_or(
+        ClimateRuntimeInputError::DayIndexOutOfRange {
+            day_index,
+            available: climate.day_symbol_surfaces.len(),
+        },
+    )?;
 
     let state_surface = &mut runtime_surface.state_surface;
     state_surface.insert(
         BoundarySymbol::from("datver"),
-        BoundaryValue::scalar(climate.datver),
+        BoundaryValue::scalar(climate.shared.datver),
     );
     state_surface.insert(
         BoundarySymbol::from("iclig"),
-        BoundaryValue::scalar(f64::from(climate.iclig)),
+        BoundaryValue::scalar(f64::from(climate.shared.iclig)),
     );
     state_surface.insert(
         BoundarySymbol::from("itemp"),
-        BoundaryValue::scalar(f64::from(climate.itemp)),
+        BoundaryValue::scalar(f64::from(climate.shared.itemp)),
     );
     state_surface.insert(
         BoundarySymbol::from("ibrkpt"),
-        BoundaryValue::scalar(f64::from(climate.ibrkpt)),
+        BoundaryValue::scalar(f64::from(climate.shared.ibrkpt)),
     );
     state_surface.insert(
         BoundarySymbol::from("iwind"),
-        BoundaryValue::scalar(f64::from(climate.iwind)),
+        BoundaryValue::scalar(f64::from(climate.shared.iwind)),
     );
 
     match forcing {
@@ -292,14 +317,8 @@ pub fn seed_hillslope_runtime_surface_from_climate(
                 BoundarySymbol::from("tdpt"),
                 BoundaryValue::scalar(day.tdpt),
             );
-            for (index, value) in day.timem.iter().enumerate() {
-                let symbol = format!("timem_{:04}", index + 1);
-                state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(*value));
-            }
-            for (index, value) in day.intsty.iter().enumerate() {
-                let symbol = format!("intsty_{:04}", index + 1);
-                state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(*value));
-            }
+            insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
+            insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
         }
         HillslopeClimateDailyForcing::Breakpoint(day) => {
             insert_common_day_symbols(state_surface, day.day, day.mon, day.year);
@@ -349,14 +368,8 @@ pub fn seed_hillslope_runtime_surface_from_climate(
                 BoundaryValue::scalar(f64::from(nbrkpt)),
             );
 
-            for (index, value) in day.timem.iter().enumerate() {
-                let symbol = format!("timem_{:04}", index + 1);
-                state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(*value));
-            }
-            for (index, value) in day.intsty.iter().enumerate() {
-                let symbol = format!("intsty_{:04}", index + 1);
-                state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(*value));
-            }
+            insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
+            insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
         }
     }
 
@@ -400,8 +413,44 @@ fn insert_common_day_symbols(
     );
 }
 
+fn build_hillslope_series_surface(
+    forcing: &HillslopeClimateDailyForcing,
+) -> Result<ClimateForcingSymbolSurface, ClimateRuntimeInputError> {
+    let point_count = forcing_series_point_count(forcing);
+    ClimateForcingSymbolSurface::hillslope(point_count)
+        .map_err(|error| map_surface_build_error(&error))
+}
+
+fn forcing_series_point_count(forcing: &HillslopeClimateDailyForcing) -> usize {
+    match forcing {
+        HillslopeClimateDailyForcing::NoBreakpoint(day) => day.timem.len(),
+        HillslopeClimateDailyForcing::Breakpoint(day) => day.timem.len(),
+    }
+}
+
+fn map_surface_build_error(error: &ClimateForcingSymbolSurfaceError) -> ClimateRuntimeInputError {
+    match error {
+        ClimateForcingSymbolSurfaceError::PointCountOutOfRange { count, .. } => {
+            ClimateRuntimeInputError::BreakpointCountOutOfRange { value: *count }
+        }
+    }
+}
+
+fn insert_series_values(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbols: &[BoundarySymbol],
+    values: &[f64],
+) {
+    debug_assert_eq!(symbols.len(), values.len());
+    for (symbol, value) in symbols.iter().zip(values.iter()) {
+        surface.insert(symbol.clone(), BoundaryValue::scalar(*value));
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::fmt::Write as _;
+
     use openwepp_input_contract::parsers::{
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
         soil::{ParserMode, SoilParserOptions, parse_soil},
@@ -433,6 +482,28 @@ mod tests {
         include_str!("../../../tests/fixtures/infile/climate/wc1_canoga_stmdur_cap.cli");
     const VALID_9002: &str = include_str!("../../../tests/fixtures/infile/soil/valid_9002.sol");
     const VALID_97_5: &str = include_str!("../../../tests/fixtures/infile/soil/valid_97_5.sol");
+
+    fn build_breakpoint_fixture(nbrkpt: usize) -> String {
+        let mut climate = format!(
+            "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n45.0 -120.0 1000.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n1 1 2000 {nbrkpt} 11.0 1.0 180.0 2.0 170.0 -2.0\n"
+        );
+        if nbrkpt == 0 {
+            return climate;
+        }
+        let denom_u32 = u32::try_from((nbrkpt - 1).max(1))
+            .expect("breakpoint fixture helper expects small cardinalities");
+        let denom = f64::from(denom_u32);
+        for index in 0..nbrkpt {
+            let idx_u32 = u32::try_from(index)
+                .expect("breakpoint fixture helper expects small cardinalities");
+            let idx = f64::from(idx_u32);
+            let timem = (24.0 * idx) / denom;
+            let pptcum = (120.0 * idx) / denom;
+            writeln!(&mut climate, "{timem:.4} {pptcum:.3}")
+                .expect("writing synthetic breakpoint fixture should succeed");
+        }
+        climate
+    }
 
     #[test]
     fn soil_runtime_surface_contains_canonical_state_symbols() {
@@ -645,6 +716,47 @@ mod tests {
         assert!(timem_first.abs() < 1e-12);
         assert!(timem_last > timem_first);
         assert!(intsty_last.abs() < 1e-12);
+    }
+
+    #[test]
+    fn climate_runtime_surface_accepts_breakpoint_cardinality_at_1500_boundary() {
+        let climate =
+            parse_climate_from_str(&build_breakpoint_fixture(1_500), ClimateParserMode::Strict)
+                .expect("strict parser should accept 1500 breakpoint rows");
+        let surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+            .expect("runtime seam should accept 1500 breakpoint rows");
+
+        let nbrkpt = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nbrkpt"))
+            .expect("nbrkpt should exist")
+            .as_f64();
+        assert!((nbrkpt - 1_500.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn climate_runtime_surface_rejects_breakpoint_cardinality_over_1500_even_with_parser_override()
+    {
+        let climate = parse_climate_from_str(
+            &build_breakpoint_fixture(1_501),
+            ClimateParserMode::Compatibility(CompatibilityOptions {
+                allow_single_storm: false,
+                allow_breakpoint_cardinality_override: true,
+                allow_legacy_zero_drain_non_positive_dtime: false,
+            }),
+        )
+        .expect("compat parser should allow >1500 breakpoint rows with explicit override");
+
+        let error = build_hillslope_runtime_surface_from_climate(&climate, 0)
+            .expect_err("runtime seam must reject >1500 breakpoint rows");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-011");
+        assert!(matches!(
+            error,
+            ClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                value: 1_501,
+                max: 1_500
+            }
+        ));
     }
 
     #[test]

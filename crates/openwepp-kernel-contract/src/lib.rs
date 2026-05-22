@@ -61,6 +61,116 @@ impl From<String> for BoundarySymbol {
     }
 }
 
+/// Maximum supported climate forcing series points for runtime symbol
+/// projection.
+pub const MAX_CLIMATE_FORCING_SERIES_POINTS: usize = 1_500;
+
+/// Typed climate forcing symbol projection surface for `timem_*` and
+/// `intsty_*` boundary aliases.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClimateForcingSymbolSurface {
+    timem_symbols: Vec<BoundarySymbol>,
+    intsty_symbols: Vec<BoundarySymbol>,
+}
+
+impl ClimateForcingSymbolSurface {
+    /// Build canonical hillslope series symbols (`timem_XXXX`, `intsty_XXXX`).
+    ///
+    /// # Errors
+    ///
+    /// Returns `ClimateForcingSymbolSurfaceError` when point cardinality
+    /// exceeds supported runtime bounds.
+    pub fn hillslope(point_count: usize) -> Result<Self, ClimateForcingSymbolSurfaceError> {
+        Self::build(None, point_count)
+    }
+
+    /// Build canonical watershed-hillslope scoped series symbols
+    /// (`hs{id}_timem_XXXX`, `hs{id}_intsty_XXXX`).
+    ///
+    /// # Errors
+    ///
+    /// Returns `ClimateForcingSymbolSurfaceError` when point cardinality
+    /// exceeds supported runtime bounds.
+    pub fn watershed_hillslope(
+        hillslope_id: u32,
+        point_count: usize,
+    ) -> Result<Self, ClimateForcingSymbolSurfaceError> {
+        Self::build(Some(hillslope_id), point_count)
+    }
+
+    #[must_use]
+    pub fn timem_symbols(&self) -> &[BoundarySymbol] {
+        &self.timem_symbols
+    }
+
+    #[must_use]
+    pub fn intsty_symbols(&self) -> &[BoundarySymbol] {
+        &self.intsty_symbols
+    }
+
+    #[must_use]
+    pub fn point_count(&self) -> usize {
+        self.timem_symbols.len()
+    }
+
+    fn build(
+        hillslope_id: Option<u32>,
+        point_count: usize,
+    ) -> Result<Self, ClimateForcingSymbolSurfaceError> {
+        if point_count > MAX_CLIMATE_FORCING_SERIES_POINTS {
+            return Err(ClimateForcingSymbolSurfaceError::PointCountOutOfRange {
+                count: point_count,
+                supported_max: MAX_CLIMATE_FORCING_SERIES_POINTS,
+            });
+        }
+
+        let mut timem_symbols = Vec::with_capacity(point_count);
+        let mut intsty_symbols = Vec::with_capacity(point_count);
+        for index in 1..=point_count {
+            timem_symbols.push(build_series_symbol(hillslope_id, "timem", index));
+            intsty_symbols.push(build_series_symbol(hillslope_id, "intsty", index));
+        }
+
+        Ok(Self {
+            timem_symbols,
+            intsty_symbols,
+        })
+    }
+}
+
+/// Typed failure for climate forcing symbol-surface construction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClimateForcingSymbolSurfaceError {
+    PointCountOutOfRange { count: usize, supported_max: usize },
+}
+
+impl fmt::Display for ClimateForcingSymbolSurfaceError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::PointCountOutOfRange {
+                count,
+                supported_max,
+            } => write!(
+                f,
+                "climate forcing point count {count} exceeds supported maximum {supported_max}"
+            ),
+        }
+    }
+}
+
+impl Error for ClimateForcingSymbolSurfaceError {}
+
+fn build_series_symbol(
+    hillslope_id: Option<u32>,
+    series: &str,
+    one_based_index: usize,
+) -> BoundarySymbol {
+    match hillslope_id {
+        Some(id) => BoundarySymbol::from(format!("hs{id}_{series}_{one_based_index:04}")),
+        None => BoundarySymbol::from(format!("{series}_{one_based_index:04}")),
+    }
+}
+
 /// Unit-aware scalar value for kernel seam maps.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum BoundaryValue {
@@ -587,6 +697,45 @@ mod tests {
             WritebackError::DecisionNotAccept {
                 outcome: WritebackDecisionOutcome::Reject
             }
+        ));
+    }
+
+    #[test]
+    fn climate_forcing_symbol_surface_hillslope_uses_canonical_aliases() {
+        let surface = ClimateForcingSymbolSurface::hillslope(3)
+            .expect("hillslope symbol surface should build");
+
+        assert_eq!(surface.point_count(), 3);
+        assert_eq!(surface.timem_symbols()[0].as_str(), "timem_0001");
+        assert_eq!(surface.timem_symbols()[2].as_str(), "timem_0003");
+        assert_eq!(surface.intsty_symbols()[0].as_str(), "intsty_0001");
+        assert_eq!(surface.intsty_symbols()[2].as_str(), "intsty_0003");
+    }
+
+    #[test]
+    fn climate_forcing_symbol_surface_watershed_scope_uses_canonical_aliases() {
+        let surface = ClimateForcingSymbolSurface::watershed_hillslope(42, 2)
+            .expect("watershed symbol surface should build");
+
+        assert_eq!(surface.point_count(), 2);
+        assert_eq!(surface.timem_symbols()[0].as_str(), "hs42_timem_0001");
+        assert_eq!(surface.timem_symbols()[1].as_str(), "hs42_timem_0002");
+        assert_eq!(surface.intsty_symbols()[0].as_str(), "hs42_intsty_0001");
+        assert_eq!(surface.intsty_symbols()[1].as_str(), "hs42_intsty_0002");
+    }
+
+    #[test]
+    fn climate_forcing_symbol_surface_rejects_unsupported_point_count() {
+        let error = ClimateForcingSymbolSurface::hillslope(MAX_CLIMATE_FORCING_SERIES_POINTS + 1)
+            .expect_err("point count above supported maximum should fail");
+
+        assert!(matches!(
+            error,
+            ClimateForcingSymbolSurfaceError::PointCountOutOfRange {
+                count,
+                supported_max
+            } if count == MAX_CLIMATE_FORCING_SERIES_POINTS + 1
+                && supported_max == MAX_CLIMATE_FORCING_SERIES_POINTS
         ));
     }
 }

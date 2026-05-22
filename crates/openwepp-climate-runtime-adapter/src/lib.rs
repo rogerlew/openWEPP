@@ -12,6 +12,7 @@ use openwepp_input_contract::parsers::climate::{
 };
 
 const CLIMATE_MIN_SUPPORTED_DATVER: f64 = 4.0;
+const MAX_BREAKPOINTS_PER_DAY: usize = 1_500;
 const CLIGEN_POLICY_ICLIG: i32 = 1;
 const CLIGEN_LEGACY_OVERRIDE_ICLIG: i32 = 0;
 const DATVER_ZERO_TOLERANCE: f64 = 1e-9;
@@ -128,6 +129,10 @@ pub enum SharedClimateRuntimeInputError {
         drain_m: f64,
         delta_time_s: f64,
     },
+    BreakpointCardinalityPolicyExceeded {
+        value: usize,
+        max: usize,
+    },
     BreakpointCountOutOfRange {
         value: usize,
     },
@@ -161,6 +166,7 @@ impl SharedClimateRuntimeInputError {
             Self::EmptyBreakpointSeries => "CLIM-RUNTIME-E-008",
             Self::NonMonotoneBreakpointTime { .. } => "CLIM-RUNTIME-E-009",
             Self::PositiveBreakpointDrainWithNonPositiveDeltaTime { .. } => "CLIM-RUNTIME-E-010",
+            Self::BreakpointCardinalityPolicyExceeded { .. } => "CLIM-RUNTIME-E-011",
             Self::BreakpointCountOutOfRange { .. } => "CLIM-RUNTIME-E-011",
             Self::DisaggregationTimeNotStrictlyIncreasing { .. } => "CLIM-RUNTIME-E-012",
             Self::DisaggregationRootSolveDomain { .. } => "CLIM-RUNTIME-E-013",
@@ -246,6 +252,13 @@ impl fmt::Display for SharedClimateRuntimeInputError {
                 self.code(),
                 drain_m,
                 delta_time_s
+            ),
+            Self::BreakpointCardinalityPolicyExceeded { value, max } => write!(
+                f,
+                "{}: breakpoint count {} exceeds runtime policy max {}",
+                self.code(),
+                value,
+                max
             ),
             Self::BreakpointCountOutOfRange { value } => write!(
                 f,
@@ -415,6 +428,15 @@ fn adapt_breakpoint(
 
     if day.breakpoints.is_empty() {
         return Err(SharedClimateRuntimeInputError::EmptyBreakpointSeries);
+    }
+    let effective_breakpoint_count = day.nbrkpt.max(day.breakpoints.len());
+    if effective_breakpoint_count > MAX_BREAKPOINTS_PER_DAY {
+        return Err(
+            SharedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                value: effective_breakpoint_count,
+                max: MAX_BREAKPOINTS_PER_DAY,
+            },
+        );
     }
 
     let stmstr = day
@@ -754,4 +776,111 @@ struct DisaggregatedEventShape {
     mxint: f64,
     timem: Vec<f64>,
     intsty: Vec<f64>,
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fmt::Write as _;
+
+    use openwepp_input_contract::parsers::climate::{
+        ClimateDailyRecord, CompatibilityOptions, ParserMode as ClimateParserMode,
+        parse_climate_from_str,
+    };
+
+    use super::{
+        SharedClimateDailyForcing, SharedClimateRuntimeInputError, build_climate_runtime_request,
+    };
+
+    fn build_breakpoint_fixture(nbrkpt: usize) -> String {
+        let mut climate = format!(
+            "5.30\n1 1 0\nTEST STATION 1500\nDAY MON YEAR NBRKPT TMAX TMIN RAD VWIND WIND TDPT\n45.0 -120.0 1000.0 30 2000 1\nMONTHLY MAX TEMP HEADER\n1 2 3 4 5 6 7 8 9 10 11 12\nMONTHLY MIN TEMP HEADER\n-5 -4 -3 -2 -1 0 1 2 3 4 5 6\nMONTHLY RAD HEADER\n100 101 102 103 104 105 106 107 108 109 110 111\nMONTHLY RAIN HEADER\n10 11 12 13 14 15 16 17 18 19 20 21\nDAILY HEADER\nDAILY UNITS\n1 1 2000 {nbrkpt} 11.0 1.0 180.0 2.0 170.0 -2.0\n"
+        );
+        if nbrkpt == 0 {
+            return climate;
+        }
+        let denom_u32 = u32::try_from((nbrkpt - 1).max(1))
+            .expect("breakpoint fixture helper expects small cardinalities");
+        let denom = f64::from(denom_u32);
+        for index in 0..nbrkpt {
+            let idx_u32 = u32::try_from(index)
+                .expect("breakpoint fixture helper expects small cardinalities");
+            let idx = f64::from(idx_u32);
+            let timem = (24.0 * idx) / denom;
+            let pptcum = (120.0 * idx) / denom;
+            writeln!(&mut climate, "{timem:.4} {pptcum:.3}")
+                .expect("writing synthetic breakpoint fixture should succeed");
+        }
+        climate
+    }
+
+    #[test]
+    fn runtime_request_accepts_breakpoint_cardinality_at_1500_boundary() {
+        let climate =
+            parse_climate_from_str(&build_breakpoint_fixture(1_500), ClimateParserMode::Strict)
+                .expect("strict parser should accept 1500 breakpoint rows");
+
+        let request = build_climate_runtime_request(&climate)
+            .expect("runtime seam should accept 1500 breakpoint rows");
+
+        let forcing = request
+            .daily_forcing
+            .first()
+            .expect("one forcing day expected");
+        match forcing {
+            SharedClimateDailyForcing::Breakpoint(day) => {
+                assert_eq!(day.nbrkpt, 1_500);
+                assert_eq!(day.timem.len(), 1_500);
+            }
+            SharedClimateDailyForcing::NoBreakpoint(_) => panic!("expected breakpoint forcing"),
+        }
+    }
+
+    #[test]
+    fn runtime_request_rejects_breakpoint_cardinality_over_1500_even_with_parser_override() {
+        let climate = parse_climate_from_str(
+            &build_breakpoint_fixture(1_501),
+            ClimateParserMode::Compatibility(CompatibilityOptions {
+                allow_single_storm: false,
+                allow_breakpoint_cardinality_override: true,
+                allow_legacy_zero_drain_non_positive_dtime: false,
+            }),
+        )
+        .expect("compat parser should allow >1500 breakpoint rows with explicit override");
+
+        let error = build_climate_runtime_request(&climate)
+            .expect_err("runtime seam must reject >1500 breakpoint rows");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-011");
+        assert!(matches!(
+            error,
+            SharedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                value: 1_501,
+                max: 1_500
+            }
+        ));
+    }
+
+    #[test]
+    fn runtime_request_rejects_declared_cardinality_over_1500_when_rows_are_truncated() {
+        let mut climate =
+            parse_climate_from_str(&build_breakpoint_fixture(1_500), ClimateParserMode::Strict)
+                .expect("strict parser should accept 1500 breakpoint rows");
+        let record = climate.daily_records.first_mut().expect("one forcing day");
+        match record {
+            ClimateDailyRecord::Breakpoint(day) => {
+                day.nbrkpt = 1_501;
+            }
+            ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint forcing"),
+        }
+
+        let error = build_climate_runtime_request(&climate)
+            .expect_err("runtime seam must enforce declared cardinality policy");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-011");
+        assert!(matches!(
+            error,
+            SharedClimateRuntimeInputError::BreakpointCardinalityPolicyExceeded {
+                value: 1_501,
+                max: 1_500
+            }
+        ));
+    }
 }
