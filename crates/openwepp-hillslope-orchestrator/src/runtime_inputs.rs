@@ -44,6 +44,53 @@ pub enum HillslopeRuntimeInputError {
     NonFiniteThetaFieldCapacity {
         value: f64,
     },
+    SoilOfeCountMismatch {
+        declared_ofe_count: usize,
+        observed_ofes: usize,
+    },
+    SoilOfeCountOutOfRange {
+        value: usize,
+    },
+    SoilLayerCountMismatch {
+        ofe_index: usize,
+        declared_nsl: usize,
+        observed_layers: usize,
+    },
+    SoilLayerCountOutOfRange {
+        ofe_index: usize,
+        value: usize,
+    },
+    NonFiniteLayerDepth {
+        ofe_index: usize,
+        layer_index: usize,
+        value_mm: f64,
+    },
+    NonPositiveLayerDepth {
+        ofe_index: usize,
+        layer_index: usize,
+        value_mm: f64,
+    },
+    NonMonotoneLayerDepth {
+        ofe_index: usize,
+        upper_layer_index: usize,
+        upper_depth_mm: f64,
+        lower_layer_index: usize,
+        lower_depth_mm: f64,
+    },
+    MissingSaturatedConductivity {
+        ofe_index: usize,
+        layer_index: usize,
+    },
+    NonFiniteSaturatedConductivity {
+        ofe_index: usize,
+        layer_index: usize,
+        value_mm_h: f64,
+    },
+    NonPositiveSaturatedConductivity {
+        ofe_index: usize,
+        layer_index: usize,
+        value_mm_h: f64,
+    },
     MissingSlopeOfe,
     SlopeOfeCountMismatch {
         declared_ofe_count: usize,
@@ -137,6 +184,16 @@ impl HillslopeRuntimeInputError {
             Self::NonPositiveDerivedAverageSlope { .. } => "HS-RUNTIME-E-023",
             Self::NonFiniteDerivedSlopeLength { .. } => "HS-RUNTIME-E-024",
             Self::NonPositiveDerivedSlopeLength { .. } => "HS-RUNTIME-E-025",
+            Self::SoilOfeCountMismatch { .. } => "HS-RUNTIME-E-026",
+            Self::SoilOfeCountOutOfRange { .. } => "HS-RUNTIME-E-027",
+            Self::SoilLayerCountMismatch { .. } => "HS-RUNTIME-E-028",
+            Self::SoilLayerCountOutOfRange { .. } => "HS-RUNTIME-E-029",
+            Self::NonFiniteLayerDepth { .. } => "HS-RUNTIME-E-030",
+            Self::NonPositiveLayerDepth { .. } => "HS-RUNTIME-E-031",
+            Self::NonMonotoneLayerDepth { .. } => "HS-RUNTIME-E-032",
+            Self::MissingSaturatedConductivity { .. } => "HS-RUNTIME-E-033",
+            Self::NonFiniteSaturatedConductivity { .. } => "HS-RUNTIME-E-034",
+            Self::NonPositiveSaturatedConductivity { .. } => "HS-RUNTIME-E-035",
         }
     }
 }
@@ -191,6 +248,115 @@ impl fmt::Display for HillslopeRuntimeInputError {
             Self::NonFiniteThetaFieldCapacity { value } => {
                 write!(f, "{}: non-finite thetfc value {}", self.code(), value)
             }
+            Self::SoilOfeCountMismatch {
+                declared_ofe_count,
+                observed_ofes,
+            } => write!(
+                f,
+                "{}: soil ntemp {} does not match observed OFE blocks {}",
+                self.code(),
+                declared_ofe_count,
+                observed_ofes
+            ),
+            Self::SoilOfeCountOutOfRange { value } => write!(
+                f,
+                "{}: soil OFE count {} exceeds lossless conversion range",
+                self.code(),
+                value
+            ),
+            Self::SoilLayerCountMismatch {
+                ofe_index,
+                declared_nsl,
+                observed_layers,
+            } => write!(
+                f,
+                "{}: soil OFE {} declares nsl={} but contains {} layer rows",
+                self.code(),
+                ofe_index,
+                declared_nsl,
+                observed_layers
+            ),
+            Self::SoilLayerCountOutOfRange { ofe_index, value } => write!(
+                f,
+                "{}: soil OFE {} nsl {} exceeds lossless conversion range",
+                self.code(),
+                ofe_index,
+                value
+            ),
+            Self::NonFiniteLayerDepth {
+                ofe_index,
+                layer_index,
+                value_mm,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} has non-finite depth_mm {}",
+                self.code(),
+                ofe_index,
+                layer_index,
+                value_mm
+            ),
+            Self::NonPositiveLayerDepth {
+                ofe_index,
+                layer_index,
+                value_mm,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} has non-positive depth_mm {}",
+                self.code(),
+                ofe_index,
+                layer_index,
+                value_mm
+            ),
+            Self::NonMonotoneLayerDepth {
+                ofe_index,
+                upper_layer_index,
+                upper_depth_mm,
+                lower_layer_index,
+                lower_depth_mm,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer depth must increase strictly (layer {}={}mm -> layer {}={}mm)",
+                self.code(),
+                ofe_index,
+                upper_layer_index,
+                upper_depth_mm,
+                lower_layer_index,
+                lower_depth_mm
+            ),
+            Self::MissingSaturatedConductivity {
+                ofe_index,
+                layer_index,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} missing required ksat (ssc) value",
+                self.code(),
+                ofe_index,
+                layer_index
+            ),
+            Self::NonFiniteSaturatedConductivity {
+                ofe_index,
+                layer_index,
+                value_mm_h,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} has non-finite ksat_mm_h {}",
+                self.code(),
+                ofe_index,
+                layer_index,
+                value_mm_h
+            ),
+            Self::NonPositiveSaturatedConductivity {
+                ofe_index,
+                layer_index,
+                value_mm_h,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} has non-positive ksat_mm_h {}",
+                self.code(),
+                ofe_index,
+                layer_index,
+                value_mm_h
+            ),
             Self::MissingSlopeOfe => {
                 write!(f, "{}: slope profile contains no OFE blocks", self.code())
             }
@@ -344,6 +510,7 @@ pub struct HillslopeClimateRuntimeRequest {
 ///
 /// Returns `HillslopeRuntimeInputError` when required parser outputs are
 /// missing or non-finite.
+#[allow(clippy::too_many_lines)]
 pub fn build_hillslope_runtime_surface_from_soil(
     soil: &SoilProfile,
 ) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
@@ -351,70 +518,249 @@ pub fn build_hillslope_runtime_surface_from_soil(
         .ofes
         .first()
         .ok_or(HillslopeRuntimeInputError::MissingSoilOfe)?;
-    let top_layer = primary_ofe
+    let primary_top_layer = primary_ofe
         .layers
         .first()
         .ok_or(HillslopeRuntimeInputError::MissingSoilLayer)?;
-    let bottom_layer = primary_ofe
+
+    let primary_profile_depth_mm = primary_ofe
         .layers
         .last()
-        .ok_or(HillslopeRuntimeInputError::MissingSoilLayer)?;
-
-    let profile_depth_mm = bottom_layer.depth_mm;
-    if !profile_depth_mm.is_finite() {
+        .ok_or(HillslopeRuntimeInputError::MissingSoilLayer)?
+        .depth_mm;
+    if !primary_profile_depth_mm.is_finite() {
         return Err(HillslopeRuntimeInputError::NonFiniteProfileDepth {
-            value_mm: profile_depth_mm,
+            value_mm: primary_profile_depth_mm,
         });
     }
-    if profile_depth_mm <= 0.0 {
+    if primary_profile_depth_mm <= 0.0 {
         return Err(HillslopeRuntimeInputError::NonPositiveProfileDepth {
-            value_mm: profile_depth_mm,
+            value_mm: primary_profile_depth_mm,
         });
     }
 
-    let top_layer_depth_mm = top_layer.depth_mm;
-    if !top_layer_depth_mm.is_finite() {
+    let primary_top_layer_depth_mm = primary_top_layer.depth_mm;
+    if !primary_top_layer_depth_mm.is_finite() {
         return Err(HillslopeRuntimeInputError::NonFiniteTopLayerDepth {
-            value_mm: top_layer_depth_mm,
+            value_mm: primary_top_layer_depth_mm,
         });
     }
-    if top_layer_depth_mm <= 0.0 {
+    if primary_top_layer_depth_mm <= 0.0 {
         return Err(HillslopeRuntimeInputError::NonPositiveTopLayerDepth {
-            value_mm: top_layer_depth_mm,
+            value_mm: primary_top_layer_depth_mm,
         });
     }
 
-    let thetdr = top_layer
+    let primary_thetdr = primary_top_layer
         .theta_r_rosetta
         .ok_or(HillslopeRuntimeInputError::MissingThetaResidual)?;
-    if !thetdr.is_finite() {
-        return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual { value: thetdr });
+    if !primary_thetdr.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual {
+            value: primary_thetdr,
+        });
     }
 
-    let thetfc = top_layer
+    let primary_thetfc = primary_top_layer
         .fc_rosetta
         .ok_or(HillslopeRuntimeInputError::MissingThetaFieldCapacity)?;
-    if !thetfc.is_finite() {
-        return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity { value: thetfc });
+    if !primary_thetfc.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
+            value: primary_thetfc,
+        });
     }
+
+    if soil.ntemp != soil.ofes.len() {
+        return Err(HillslopeRuntimeInputError::SoilOfeCountMismatch {
+            declared_ofe_count: soil.ntemp,
+            observed_ofes: soil.ofes.len(),
+        });
+    }
+    let ntemp = u32::try_from(soil.ntemp)
+        .map_err(|_| HillslopeRuntimeInputError::SoilOfeCountOutOfRange { value: soil.ntemp })?;
 
     let mut state_surface = BTreeMap::new();
     state_surface.insert(
-        BoundarySymbol::from("solthk"),
-        BoundaryValue::scalar(profile_depth_mm / 1_000.0),
+        BoundarySymbol::from("ntemp"),
+        BoundaryValue::scalar(f64::from(ntemp)),
     );
-    state_surface.insert(
-        BoundarySymbol::from("dg"),
-        BoundaryValue::scalar(top_layer_depth_mm / 1_000.0),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("thetdr"),
-        BoundaryValue::scalar(thetdr),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("thetfc"),
-        BoundaryValue::scalar(thetfc),
-    );
+
+    for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
+        let ofe_index = ofe_position + 1;
+        if ofe.nsl != ofe.layers.len() {
+            return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
+                ofe_index,
+                declared_nsl: ofe.nsl,
+                observed_layers: ofe.layers.len(),
+            });
+        }
+        let nsl = u32::try_from(ofe.nsl).map_err(|_| {
+            HillslopeRuntimeInputError::SoilLayerCountOutOfRange {
+                ofe_index,
+                value: ofe.nsl,
+            }
+        })?;
+        state_surface.insert(
+            soil_ofe_symbol("nsl", ofe_index),
+            BoundaryValue::scalar(f64::from(nsl)),
+        );
+
+        let mut previous_depth_mm = 0.0_f64;
+        for (layer_position, layer) in ofe.layers.iter().enumerate() {
+            let layer_index = layer_position + 1;
+            let layer_depth_mm = layer.depth_mm;
+            if !layer_depth_mm.is_finite() {
+                return Err(HillslopeRuntimeInputError::NonFiniteLayerDepth {
+                    ofe_index,
+                    layer_index,
+                    value_mm: layer_depth_mm,
+                });
+            }
+            if layer_depth_mm <= 0.0 {
+                return Err(HillslopeRuntimeInputError::NonPositiveLayerDepth {
+                    ofe_index,
+                    layer_index,
+                    value_mm: layer_depth_mm,
+                });
+            }
+            if layer_depth_mm <= previous_depth_mm {
+                return Err(HillslopeRuntimeInputError::NonMonotoneLayerDepth {
+                    ofe_index,
+                    upper_layer_index: layer_index.saturating_sub(1),
+                    upper_depth_mm: previous_depth_mm,
+                    lower_layer_index: layer_index,
+                    lower_depth_mm: layer_depth_mm,
+                });
+            }
+
+            let layer_dg_m = (layer_depth_mm - previous_depth_mm) / 1_000.0;
+            let layer_solthk_m = layer_depth_mm / 1_000.0;
+
+            let layer_thetdr = layer
+                .theta_r_rosetta
+                .ok_or(HillslopeRuntimeInputError::MissingThetaResidual)?;
+            if !layer_thetdr.is_finite() {
+                return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual {
+                    value: layer_thetdr,
+                });
+            }
+
+            let layer_thetfc = layer
+                .fc_rosetta
+                .ok_or(HillslopeRuntimeInputError::MissingThetaFieldCapacity)?;
+            if !layer_thetfc.is_finite() {
+                return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
+                    value: layer_thetfc,
+                });
+            }
+
+            let layer_ksat_mm_h = layer.ksat_mm_h.ok_or(
+                HillslopeRuntimeInputError::MissingSaturatedConductivity {
+                    ofe_index,
+                    layer_index,
+                },
+            )?;
+            if !layer_ksat_mm_h.is_finite() {
+                return Err(HillslopeRuntimeInputError::NonFiniteSaturatedConductivity {
+                    ofe_index,
+                    layer_index,
+                    value_mm_h: layer_ksat_mm_h,
+                });
+            }
+            if layer_ksat_mm_h <= 0.0 {
+                return Err(
+                    HillslopeRuntimeInputError::NonPositiveSaturatedConductivity {
+                        ofe_index,
+                        layer_index,
+                        value_mm_h: layer_ksat_mm_h,
+                    },
+                );
+            }
+            let layer_ssc_m_s = layer_ksat_mm_h / 3.6e6;
+
+            state_surface.insert(
+                soil_ofe_layer_symbol("solthk", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_solthk_m),
+            );
+            state_surface.insert(
+                soil_ofe_layer_symbol("dg", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_dg_m),
+            );
+            state_surface.insert(
+                soil_ofe_layer_symbol("thetdr", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_thetdr),
+            );
+            state_surface.insert(
+                soil_ofe_layer_symbol("thetfc", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_thetfc),
+            );
+            state_surface.insert(
+                soil_ofe_layer_symbol("ssc", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_ssc_m_s),
+            );
+
+            if ofe_index == 1 {
+                state_surface.insert(
+                    soil_primary_layer_symbol("solthk", layer_index),
+                    BoundaryValue::scalar(layer_solthk_m),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("dg", layer_index),
+                    BoundaryValue::scalar(layer_dg_m),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("thetdr", layer_index),
+                    BoundaryValue::scalar(layer_thetdr),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("thetfc", layer_index),
+                    BoundaryValue::scalar(layer_thetfc),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("ssc", layer_index),
+                    BoundaryValue::scalar(layer_ssc_m_s),
+                );
+
+                if layer_index == 1 {
+                    state_surface.insert(
+                        BoundarySymbol::from("dg"),
+                        BoundaryValue::scalar(layer_dg_m),
+                    );
+                    state_surface.insert(
+                        BoundarySymbol::from("thetdr"),
+                        BoundaryValue::scalar(layer_thetdr),
+                    );
+                    state_surface.insert(
+                        BoundarySymbol::from("thetfc"),
+                        BoundaryValue::scalar(layer_thetfc),
+                    );
+                    state_surface.insert(
+                        BoundarySymbol::from("ssc"),
+                        BoundaryValue::scalar(layer_ssc_m_s),
+                    );
+                }
+            }
+
+            previous_depth_mm = layer_depth_mm;
+        }
+
+        if let Some(last_layer) = ofe.layers.last() {
+            state_surface.insert(
+                soil_ofe_symbol("solthk", ofe_index),
+                BoundaryValue::scalar(last_layer.depth_mm / 1_000.0),
+            );
+        }
+
+        if ofe_index == 1 {
+            state_surface.insert(
+                BoundarySymbol::from("nsl"),
+                BoundaryValue::scalar(f64::from(nsl)),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("solthk"),
+                BoundaryValue::scalar(primary_profile_depth_mm / 1_000.0),
+            );
+        }
+    }
 
     Ok(HillslopeWritebackSurface {
         state_surface,
@@ -896,6 +1242,18 @@ fn slope_primary_point_symbol(root: &str, point_index: usize) -> BoundarySymbol 
     BoundarySymbol::from(format!("{root}_{point_index:04}"))
 }
 
+fn soil_ofe_symbol(root: &str, ofe_index: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("ofe{ofe_index}_{root}"))
+}
+
+fn soil_ofe_layer_symbol(root: &str, ofe_index: usize, layer_index: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("ofe{ofe_index}_{root}_{layer_index:04}"))
+}
+
+fn soil_primary_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
+    BoundarySymbol::from(format!("{root}_{layer_index:04}"))
+}
+
 fn build_hillslope_series_surface(
     forcing: &HillslopeClimateDailyForcing,
 ) -> Result<ClimateForcingSymbolSurface, ClimateRuntimeInputError> {
@@ -1032,11 +1390,41 @@ mod tests {
             .get(&BoundarySymbol::from("thetfc"))
             .expect("thetfc should be present")
             .as_f64();
+        let nsl = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nsl"))
+            .expect("nsl should be present")
+            .as_f64();
+        let ssc = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ssc"))
+            .expect("ssc should be present")
+            .as_f64();
+        let dg_layer2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("dg_0002"))
+            .expect("dg_0002 should be present")
+            .as_f64();
+        let solthk_layer2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("solthk_0002"))
+            .expect("solthk_0002 should be present")
+            .as_f64();
+        let ssc_layer2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ssc_0002"))
+            .expect("ssc_0002 should be present")
+            .as_f64();
 
         assert!((solthk - 0.25).abs() < 1e-12);
         assert!((dg - 0.1).abs() < 1e-12);
         assert!((thetdr - 0.05).abs() < 1e-12);
         assert!((thetfc - 0.31).abs() < 1e-12);
+        assert!((nsl - 2.0).abs() < 1e-12);
+        assert!((ssc - (15.0 / 3.6e6)).abs() < 1e-12);
+        assert!((dg_layer2 - 0.15).abs() < 1e-12);
+        assert!((solthk_layer2 - 0.25).abs() < 1e-12);
+        assert!((ssc_layer2 - (8.0 / 3.6e6)).abs() < 1e-12);
     }
 
     #[test]
@@ -1050,6 +1438,24 @@ mod tests {
         assert!(matches!(
             error,
             HillslopeRuntimeInputError::MissingThetaResidual
+        ));
+    }
+
+    #[test]
+    fn soil_runtime_surface_rejects_missing_saturated_conductivity() {
+        let mut soil = parse_soil(VALID_9002, SoilParserOptions::default())
+            .expect("9002 soil fixture should parse");
+        soil.ofes[0].layers[0].ksat_mm_h = None;
+
+        let error = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect_err("missing ksat must fail runtime adaptation");
+        assert_eq!(error.code(), "HS-RUNTIME-E-033");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::MissingSaturatedConductivity {
+                ofe_index: 1,
+                layer_index: 1
+            }
         ));
     }
 

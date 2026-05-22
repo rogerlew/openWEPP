@@ -55,6 +55,11 @@ impl HillslopeKernel for HillslopeSeedProbeKernel {
         assert_state_value(request.state_surface, "dg", 0.1);
         assert_state_value(request.state_surface, "thetdr", 0.05);
         assert_state_value(request.state_surface, "thetfc", 0.31);
+        assert_state_value(request.state_surface, "nsl", 2.0);
+        assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
+        assert_state_value(request.state_surface, "dg_0002", 0.15);
+        assert_state_value(request.state_surface, "solthk_0002", 0.25);
+        assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
 
         self.invocation_count += 1;
         KernelRunResponse::new(
@@ -200,6 +205,24 @@ fn parser_to_hillslope_runtime_surface_closure() {
         kernel.invocation_count,
         HillslopePhaseGraph::canonical_order().len()
     );
+}
+
+#[test]
+fn soil_runtime_surface_rejects_missing_saturated_conductivity_projection() {
+    let mut soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    soil.ofes[0].layers[0].ksat_mm_h = None;
+
+    let error = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect_err("missing ksat must fail with typed seam guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-033");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::MissingSaturatedConductivity {
+            ofe_index: 1,
+            layer_index: 1
+        }
+    ));
 }
 
 #[test]
