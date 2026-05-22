@@ -9,8 +9,11 @@ dependencies = [
  "openwepp-hillslope-orchestrator",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
+ "openwepp-legacy-bridge",
  "openwepp-sim-contract",
+ "openwepp-summary-accumulator",
  "openwepp-topology",
+ "openwepp-unit-boundary",
  "openwepp-watershed-orchestrator",
 ]
 
@@ -35,8 +38,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "openwepp-legacy-bridge"
+version = "0.1.0"
+
+[[package]]
 name = "openwepp-sim-contract"
 version = "0.1.0"
+
+[[package]]
+name = "openwepp-summary-accumulator"
+version = "0.1.0"
+dependencies = [
+ "openwepp-sim-contract",
+]
 
 [[package]]
 name = "openwepp-topology"
@@ -44,6 +58,10 @@ version = "0.1.0"
 dependencies = [
  "openwepp-sim-contract",
 ]
+
+[[package]]
+name = "openwepp-unit-boundary"
+version = "0.1.0"
 
 [[package]]
 name = "openwepp-watershed-orchestrator"

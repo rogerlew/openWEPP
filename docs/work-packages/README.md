@@ -236,6 +236,15 @@ Authorized packages:
 - `20260521-arch07-kernel-trait-boundary-and-writeback-contract-001/`
   - Purpose: implement shared kernel trait boundaries and orchestrator-owned
     writeback contracts for hillslope/watershed execution surfaces.
+- `20260521-arch08-sidecar-and-legacy-bridge-adapter-isolation-001/`
+  - Purpose: isolate legacy sidecar/HBP compatibility behavior into dedicated
+    edge adapter modules so core kernels/orchestrators remain process-focused.
+- `20260521-arch09-unit-safe-boundary-types-001/`
+  - Purpose: introduce unit-safe boundary type wrappers for critical
+    runoff/flow/storage/rate interfaces used across kernel/orchestrator seams.
+- `20260521-arch10-summary-accumulator-kernelization-001/`
+  - Purpose: implement typed daily/monthly/yearly/EOS summary accumulation as
+    a standalone kernelized subsystem.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

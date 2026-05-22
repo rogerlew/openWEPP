@@ -16,6 +16,9 @@ members = [
     "crates/openwepp-topology",
     "crates/openwepp-hillslope-orchestrator",
     "crates/openwepp-watershed-orchestrator",
+    "crates/openwepp-legacy-bridge",
+    "crates/openwepp-unit-boundary",
+    "crates/openwepp-summary-accumulator",
 ]
 
 [workspace.package]
@@ -43,6 +46,9 @@ openwepp-kernel-contract = { path = "crates/openwepp-kernel-contract", version =
 openwepp-topology = { path = "crates/openwepp-topology", version = "0.1.0" }
 openwepp-hillslope-orchestrator = { path = "crates/openwepp-hillslope-orchestrator", version = "0.1.0" }
 openwepp-watershed-orchestrator = { path = "crates/openwepp-watershed-orchestrator", version = "0.1.0" }
+openwepp-legacy-bridge = { path = "crates/openwepp-legacy-bridge", version = "0.1.0" }
+openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
+openwepp-summary-accumulator = { path = "crates/openwepp-summary-accumulator", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"

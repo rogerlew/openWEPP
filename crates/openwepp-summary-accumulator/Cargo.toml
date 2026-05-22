@@ -1,0 +1,11 @@
+[package]
+name = "openwepp-summary-accumulator"
+version = "0.1.0"
+edition = "2024"
+license = "CC0-1.0"
+rust-version = "1.85"
+repository = "https://github.com/rogerlew/openWEPP"
+publish = false
+
+[dependencies]
+openwepp-sim-contract = { path = "../openwepp-sim-contract", version = "0.1.0" }

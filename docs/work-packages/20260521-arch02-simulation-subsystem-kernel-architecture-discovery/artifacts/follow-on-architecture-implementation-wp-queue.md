@@ -28,15 +28,15 @@ Ran evidence: none
 - Scope: kernel trait signatures and orchestrator-controlled writeback contracts.
 - Depends on: `arch03`, `arch05`, `arch06`.
 
-6. `20260522-arch08-sidecar-and-legacy-bridge-adapter-isolation-001`
+6. `20260521-arch08-sidecar-and-legacy-bridge-adapter-isolation-001`
 - Scope: isolate sidecar/HBP compatibility adapters into edge modules.
 - Depends on: `arch03`, `arch04`.
 
-7. `20260522-arch09-unit-safe-boundary-types-001`
+7. `20260521-arch09-unit-safe-boundary-types-001`
 - Scope: dimensional safety wrappers for runoff/flow/storage/rate interfaces.
 - Depends on: `arch03`, `arch07`.
 
-8. `20260522-arch10-summary-accumulator-kernelization-001`
+8. `20260521-arch10-summary-accumulator-kernelization-001`
 - Scope: daily/monthly/yearly/EOS accumulation kernels with typed status.
 - Depends on: `arch06`, `arch07`.
 
