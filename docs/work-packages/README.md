@@ -237,6 +237,10 @@ Authorized packages:
 - `20260522-inimpl30-wave4-sidecar-parser-integration-001/`
   - Purpose: integrate Wave 4 worker outputs and close global Wave 4
     validation gates plus `W4DR-001..012` closure reporting.
+- `20260522-inimpl31-implement-sc-infile-hbp-parser-001/`
+  - Purpose: implement `SC-INFILE-HBP-001` parser surface, including owned HBP
+    specification/contract, parser wiring, and integration tests aligned with
+    existing `SC-INFILE-*` execution patterns.
 - `20260521-arch02-simulation-subsystem-kernel-architecture-discovery/`
   - Purpose: investigate simulation/subsystem/kernel architecture requirements
     via `wepp-forest` pattern extraction, `/workdir/rancor` architecture

@@ -2,6 +2,7 @@ pub mod chaninp;
 pub mod climate;
 pub mod frost;
 pub mod gwcoeff;
+pub mod hbp;
 pub mod irrigation_depletion;
 pub mod irrigation_fixeddate;
 pub mod lcwb;

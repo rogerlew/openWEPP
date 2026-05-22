@@ -21,6 +21,7 @@ Disposition meanings:
 | `infile-watershed-structure-str` | watershed | `.str` | active | `SC-INFILE-WATERSHED-STRUCTURE-001` |
 | `infile-watershed-channel-chn` | watershed | `.chn` | active | `SC-INFILE-WATERSHED-CHANNEL-001` |
 | `infile-watershed-impoundment-imp` | watershed | `.imp` | active | `SC-INFILE-WATERSHED-IMPOUNDMENT-001` |
+| `infile-hillslope-binary-pass-hbp` | interchange | `H<hillslope_id>.hbp` | active | `SC-INFILE-HBP-001` |
 | `infile-irrigation-depletion` | sidecar | legacy unit `15` depletion irrigation file | active | `SC-INFILE-IRRIGATION-DEPLETION-001` |
 | `infile-irrigation-fixeddate` | sidecar | legacy unit `14` fixed-date irrigation file | active | `SC-INFILE-IRRIGATION-FIXEDDATE-001` |
 | `infile-pmetpara` | sidecar | `pmetpara.txt` | active | `SC-INFILE-PMETPARA-001` |
