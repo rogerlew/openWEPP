@@ -85,6 +85,7 @@ name = "openwepp-kernel-contract"
 version = "0.1.0"
 dependencies = [
  "openwepp-sim-contract",
+ "openwepp-unit-boundary",
 ]
 
 [[package]]

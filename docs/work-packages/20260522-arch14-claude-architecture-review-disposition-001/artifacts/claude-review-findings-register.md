@@ -1,0 +1,25 @@
+# Claude Architecture Review Findings Register
+
+Static: normalized from the external review narrative and current repository source inspection.
+Ran: none for this artifact.
+
+## Finding Inventory (`CRF-001..010`)
+
+| finding_id | severity | impact_surfaces | normalized_finding | evidence | disposition_required |
+|---|---|---|---|---|---|
+| `CRF-001` | high | kernel seam typing, writeback safety, symbol continuity | Kernel seam request/writeback surfaces are string-keyed (`BTreeMap<String, f64>` and `symbol: String`) rather than typed boundary/state surfaces. | [DIRECT] `crates/openwepp-kernel-contract/src/lib.rs:37`, `:113-114`, `:139-140` | yes |
+| `CRF-002` | high | unit safety, compile-time dimensional guards | Unit-safe types exist in `openwepp-unit-boundary`, but kernel/orchestrator seam contracts still expose raw `f64` maps and crate deps do not wire unit types into seam crates. | [DIRECT] `crates/openwepp-unit-boundary/src/lib.rs:80`, `:141`, `:188`; [DIRECT] `crates/openwepp-kernel-contract/Cargo.toml:18-19`; [DIRECT] `crates/openwepp-hillslope-orchestrator/Cargo.toml:18-21`; [DIRECT] `crates/openwepp-watershed-orchestrator/Cargo.toml:18-21` | yes |
+| `CRF-003` | high | scheduler hot path, allocation pressure, deterministic throughput | Hillslope/watershed kernel invocation clones full state and flux maps each phase/step, creating avoidable allocation/hash pressure on hot paths. | [DIRECT] `crates/openwepp-hillslope-orchestrator/src/lib.rs:591-595`; [DIRECT] `crates/openwepp-watershed-orchestrator/src/lib.rs:344-347` | yes |
+| `CRF-004` | medium | kernel purity contract, architecture/document consistency | Architecture docs state kernels are pure over typed state, while kernel traits currently require `&mut self` dispatch methods. | [DIRECT] `docs/architecture/README.md:43-45`; [DIRECT] `crates/openwepp-kernel-contract/src/lib.rs:165-171` | yes |
+| `CRF-005` | high | parser-to-runtime seam, contract execution closure | Parser surfaces are authored and implemented, but orchestrator crates do not depend on `openwepp-input-contract`; parse-to-simulation seam ownership is not explicitly codified in one integration contract. | [DIRECT] `crates/openwepp-input-contract/src/parsers/mod.rs:1-20`; [DIRECT] `crates/openwepp-hillslope-orchestrator/Cargo.toml:18-21`; [DIRECT] `crates/openwepp-watershed-orchestrator/Cargo.toml:18-21`; [INFERENCE] seam ownership gap from dependency and contract topology | yes |
+| `CRF-006` | high | HBP authority, adapter/parser convergence, provenance pinning | HBP behavior spans at least two code paths (`openwepp-input-contract` parser and `openwepp-legacy-bridge` adapter); convergence and single authority policy need explicit closure tracking tied to ADR-0012 provenance rules. | [DIRECT] `crates/openwepp-input-contract/src/parsers/hbp.rs`; [DIRECT] `crates/openwepp-legacy-bridge/src/hbp.rs`; [DIRECT] `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md:42-48` | yes |
+| `CRF-007` | medium | top-level boundary completeness (`.run`, parquet) | Parser governance procedure explicitly includes cross-file constraints including `.run`, but registry currently centers `SC-INFILE-*` parser surfaces; explicit top-level `.run`/parquet contract closure remains a separate sequencing item. | [DIRECT] `docs/specifications/wepp-input-file-parser-contract-authoring-procedure.md:118-121`; [DIRECT] `docs/specifications/wepp-input-files/input-surface-registry.md:15-36`; [INFERENCE] top-level boundary completion not yet ratified as dedicated package output | yes |
+| `CRF-008` | medium | delivery governance, implementation cadence | Package volume and governance scaffolding are high; explicit throughput controls should ensure architecture/process work does not outpace integrable runtime capability. | [DIRECT] `docs/work-packages/README.md`; [INFERENCE] cadence risk from package density and parallel wave orchestration | yes |
+| `CRF-009` | low | build hygiene, workspace discipline | Multiple nested `target/` directories exist under crate paths and worktrees; this is non-blocking but indicates inconsistent build-output discipline. | [DIRECT] `find /home/workdir/openWEPP -maxdepth 4 -type d -name target` output (ARCH14 run) | yes |
+| `CRF-010` | medium | workspace topology visibility, integration ownership | Root crate acts as both package and workspace aggregator; concern about integration visibility is valid, but "root re-export orphan crates" claim is not directly evidenced in `src/lib.rs`. Disposition should amend wording while preserving ownership-criteria remediation. | [DIRECT] `Cargo.toml:1-23`, `:43-53`; [DIRECT] `src/lib.rs:1`; [INFERENCE] visibility/ownership ambiguity risk | yes |
+
+## Normalization Notes
+
+- `CRF-001` and `CRF-002` are mandatory remediation tracks and are not eligible for `reject`.
+- openWEPP direction is explicit: migrate to typed kernel state surfaces and wire `openwepp-unit-boundary` at the kernel seam.
+- This register is governance-only and does not close any finding by code change.

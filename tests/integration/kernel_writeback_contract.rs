@@ -1,8 +1,8 @@
 use openwepp_hillslope_orchestrator::{HillslopePhaseScheduler, HillslopeWritebackSurface};
 use openwepp_kernel_contract::{
-    HillslopeKernel, HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
-    WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackError,
-    WritebackField, apply_kernel_writeback, evaluate_kernel_writeback,
+    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
+    KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
+    WritebackError, WritebackField, apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, SimulationStatus};
 use openwepp_topology::{
@@ -78,12 +78,20 @@ fn hillslope_writeback_success_applies_updates() {
             .all(|phase| phase.decision_outcome == WritebackDecisionOutcome::Apply)
     );
     assert_eq!(
-        report.writeback_surface.state_surface.get("st").copied(),
-        Some(9.0)
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from("st"))
+            .copied(),
+        Some(BoundaryValue::from(9.0))
     );
     assert_eq!(
-        report.writeback_surface.flux_surface.get("qout").copied(),
-        Some(0.9)
+        report
+            .writeback_surface
+            .flux_surface
+            .get(&BoundarySymbol::from("qout"))
+            .copied(),
+        Some(BoundaryValue::from(0.9))
     );
 }
 

@@ -13,6 +13,10 @@ use openwepp_sim_contract::closure::{
 use openwepp_sim_contract::status::{
     BoundaryClass, SimulationPhase, SimulationStatus, StatusError,
 };
+use openwepp_unit_boundary::{
+    FlowRateCubicMetersPerSecond, ProcessRateMillimetersPerHour, RunoffDepthMillimeters,
+    StorageVolumeCubicMeters, SurfaceAreaSquareMeters,
+};
 
 /// Message id emitted when writeback payload evaluation accepts all fields.
 pub const WRITEBACK_ACCEPT_MESSAGE_ID: &str = "KWRITEBACK-ACCEPT-001";
@@ -22,6 +26,118 @@ pub const WRITEBACK_APPLY_MESSAGE_ID: &str = "KWRITEBACK-APPLY-001";
 pub const WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID: &str = "KWRITEBACK-E-NON-FINITE";
 /// Message id emitted when writeback is rejected for domain/range violations.
 pub const WRITEBACK_REJECT_DOMAIN_MESSAGE_ID: &str = "KWRITEBACK-E-DOMAIN-VIOLATION";
+
+/// Type-safe state/flux symbol key for kernel seam maps.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct BoundarySymbol(String);
+
+impl BoundarySymbol {
+    #[must_use]
+    pub fn new(symbol: impl Into<String>) -> Self {
+        Self(symbol.into())
+    }
+
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+impl fmt::Display for BoundarySymbol {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl From<&str> for BoundarySymbol {
+    fn from(value: &str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<String> for BoundarySymbol {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+/// Unit-aware scalar value for kernel seam maps.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum BoundaryValue {
+    Scalar(f64),
+    RunoffDepthMillimeters(RunoffDepthMillimeters),
+    FlowRateCubicMetersPerSecond(FlowRateCubicMetersPerSecond),
+    StorageVolumeCubicMeters(StorageVolumeCubicMeters),
+    ProcessRateMillimetersPerHour(ProcessRateMillimetersPerHour),
+    SurfaceAreaSquareMeters(SurfaceAreaSquareMeters),
+}
+
+impl BoundaryValue {
+    #[must_use]
+    pub const fn scalar(value: f64) -> Self {
+        Self::Scalar(value)
+    }
+
+    #[must_use]
+    pub fn as_f64(self) -> f64 {
+        match self {
+            Self::Scalar(value) => value,
+            Self::RunoffDepthMillimeters(value) => value.as_millimeters(),
+            Self::FlowRateCubicMetersPerSecond(value) => value.as_cubic_meters_per_second(),
+            Self::StorageVolumeCubicMeters(value) => value.as_cubic_meters(),
+            Self::ProcessRateMillimetersPerHour(value) => value.as_millimeters_per_hour(),
+            Self::SurfaceAreaSquareMeters(value) => value.as_square_meters(),
+        }
+    }
+
+    #[must_use]
+    pub const fn unit_label(self) -> &'static str {
+        match self {
+            Self::Scalar(_) => "scalar",
+            Self::RunoffDepthMillimeters(_) => "mm",
+            Self::FlowRateCubicMetersPerSecond(_) => "m3/s",
+            Self::StorageVolumeCubicMeters(_) => "m3",
+            Self::ProcessRateMillimetersPerHour(_) => "mm/hr",
+            Self::SurfaceAreaSquareMeters(_) => "m2",
+        }
+    }
+}
+
+impl From<f64> for BoundaryValue {
+    fn from(value: f64) -> Self {
+        Self::Scalar(value)
+    }
+}
+
+impl From<RunoffDepthMillimeters> for BoundaryValue {
+    fn from(value: RunoffDepthMillimeters) -> Self {
+        Self::RunoffDepthMillimeters(value)
+    }
+}
+
+impl From<FlowRateCubicMetersPerSecond> for BoundaryValue {
+    fn from(value: FlowRateCubicMetersPerSecond) -> Self {
+        Self::FlowRateCubicMetersPerSecond(value)
+    }
+}
+
+impl From<StorageVolumeCubicMeters> for BoundaryValue {
+    fn from(value: StorageVolumeCubicMeters) -> Self {
+        Self::StorageVolumeCubicMeters(value)
+    }
+}
+
+impl From<ProcessRateMillimetersPerHour> for BoundaryValue {
+    fn from(value: ProcessRateMillimetersPerHour) -> Self {
+        Self::ProcessRateMillimetersPerHour(value)
+    }
+}
+
+impl From<SurfaceAreaSquareMeters> for BoundaryValue {
+    fn from(value: SurfaceAreaSquareMeters) -> Self {
+        Self::SurfaceAreaSquareMeters(value)
+    }
+}
 
 /// Outcome class for orchestrator writeback decisions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -34,18 +150,18 @@ pub enum WritebackDecisionOutcome {
 /// One scalar writeback field proposed by a kernel.
 #[derive(Debug, Clone, PartialEq)]
 pub struct WritebackField {
-    pub symbol: String,
-    pub value: f64,
+    pub symbol: BoundarySymbol,
+    pub value: BoundaryValue,
     pub minimum: Option<f64>,
     pub maximum: Option<f64>,
 }
 
 impl WritebackField {
     #[must_use]
-    pub fn unbounded(symbol: impl Into<String>, value: f64) -> Self {
+    pub fn unbounded(symbol: impl Into<BoundarySymbol>, value: impl Into<BoundaryValue>) -> Self {
         Self {
             symbol: symbol.into(),
-            value,
+            value: value.into(),
             minimum: None,
             maximum: None,
         }
@@ -53,14 +169,14 @@ impl WritebackField {
 
     #[must_use]
     pub fn bounded(
-        symbol: impl Into<String>,
-        value: f64,
+        symbol: impl Into<BoundarySymbol>,
+        value: impl Into<BoundaryValue>,
         minimum: Option<f64>,
         maximum: Option<f64>,
     ) -> Self {
         Self {
             symbol: symbol.into(),
-            value,
+            value: value.into(),
             minimum,
             maximum,
         }
@@ -110,16 +226,16 @@ impl KernelRunResponse {
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct HillslopeKernelRequest {
     pub phase_name: String,
-    pub state_surface: BTreeMap<String, f64>,
-    pub flux_surface: BTreeMap<String, f64>,
+    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
 impl HillslopeKernelRequest {
     #[must_use]
     pub fn new(
         phase_name: impl Into<String>,
-        state_surface: BTreeMap<String, f64>,
-        flux_surface: BTreeMap<String, f64>,
+        state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
         Self {
             phase_name: phase_name.into(),
@@ -136,8 +252,8 @@ pub struct WatershedKernelRequest {
     pub node_id: u32,
     pub dependency_nodes: Vec<String>,
     pub contributor_hillslopes: Vec<u32>,
-    pub state_surface: BTreeMap<String, f64>,
-    pub flux_surface: BTreeMap<String, f64>,
+    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
 impl WatershedKernelRequest {
@@ -147,8 +263,8 @@ impl WatershedKernelRequest {
         node_id: u32,
         dependency_nodes: Vec<String>,
         contributor_hillslopes: Vec<u32>,
-        state_surface: BTreeMap<String, f64>,
-        flux_surface: BTreeMap<String, f64>,
+        state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
         Self {
             node_kind: node_kind.into(),
@@ -184,8 +300,8 @@ pub struct KernelWritebackDecision {
 pub struct KernelWritebackApplyResult {
     pub outcome: WritebackDecisionOutcome,
     pub status: SimulationStatus,
-    pub applied_state_symbols: Vec<String>,
-    pub applied_flux_symbols: Vec<String>,
+    pub applied_state_symbols: Vec<BoundarySymbol>,
+    pub applied_flux_symbols: Vec<BoundarySymbol>,
 }
 
 /// Writeback-application errors.
@@ -274,8 +390,8 @@ pub fn apply_kernel_writeback(
     phase: SimulationPhase,
     decision: &KernelWritebackDecision,
     payload: &KernelWritebackPayload,
-    state_surface: &mut BTreeMap<String, f64>,
-    flux_surface: &mut BTreeMap<String, f64>,
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    flux_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
 ) -> Result<KernelWritebackApplyResult, WritebackError> {
     if decision.outcome != WritebackDecisionOutcome::Accept {
         return Err(WritebackError::DecisionNotAccept {
@@ -318,14 +434,15 @@ fn collect_field_violations(
     field: &WritebackField,
     output: &mut Vec<ClosureViolation>,
 ) {
-    let subject = format!("{scope}:{}", field.symbol);
+    let subject = format!("{scope}:{}[{}]", field.symbol, field.value.unit_label());
+    let value = field.value.as_f64();
 
     collect_check(
         check_finite(
             "INV-WRITEBACK-001",
             WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID,
             subject.as_str(),
-            field.value,
+            value,
         ),
         output,
     );
@@ -336,7 +453,7 @@ fn collect_field_violations(
                 "INV-WRITEBACK-002",
                 WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
                 subject.as_str(),
-                field.value,
+                value,
                 minimum,
                 maximum,
             ),
@@ -347,7 +464,7 @@ fn collect_field_violations(
                 "INV-WRITEBACK-003",
                 WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
                 subject.as_str(),
-                field.value,
+                value,
                 minimum,
             ),
             output,
@@ -357,7 +474,7 @@ fn collect_field_violations(
                 "INV-WRITEBACK-004",
                 WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
                 subject.as_str(),
-                field.value,
+                value,
                 maximum,
             ),
             output,
@@ -393,6 +510,22 @@ mod tests {
             decision.status.classification(),
             StatusClassification::Nominal
         );
+        assert!(decision.violations.is_empty());
+    }
+
+    #[test]
+    fn accepts_unit_boundary_typed_values() {
+        let storage = StorageVolumeCubicMeters::try_new(12.0).expect("storage should construct");
+        let flow = FlowRateCubicMetersPerSecond::try_new(0.25).expect("flow should construct");
+        let payload = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded("st", storage, Some(0.0), None)],
+            vec![WritebackField::bounded("qout", flow, Some(0.0), None)],
+        );
+
+        let decision = evaluate_kernel_writeback(SimulationPhase::HillslopeKernel, &payload)
+            .expect("decision should construct");
+
+        assert_eq!(decision.outcome, WritebackDecisionOutcome::Accept);
         assert!(decision.violations.is_empty());
     }
 

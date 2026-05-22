@@ -5,8 +5,9 @@ use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    KernelWritebackApplyResult, WatershedKernel, WatershedKernelRequest, WritebackDecisionOutcome,
-    WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
+    BoundarySymbol, BoundaryValue, KernelWritebackApplyResult, WatershedKernel,
+    WatershedKernelRequest, WritebackDecisionOutcome, WritebackError, apply_kernel_writeback,
+    evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::status::{
     BoundaryClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
@@ -97,8 +98,8 @@ impl WatershedDispatchReport {
 /// Mutable state/flux maps owned by the watershed orchestrator.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct WatershedWritebackSurface {
-    pub state_surface: BTreeMap<String, f64>,
-    pub flux_surface: BTreeMap<String, f64>,
+    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
 /// Per-step watershed kernel/writeback execution evidence.
@@ -637,8 +638,9 @@ fn format_node_key(key: TopologyNodeKey) -> String {
 #[cfg(test)]
 mod tests {
     use openwepp_kernel_contract::{
-        KernelRunResponse, KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID,
-        WatershedKernel, WatershedKernelRequest, WritebackDecisionOutcome, WritebackField,
+        BoundarySymbol, BoundaryValue, KernelRunResponse, KernelWritebackPayload,
+        WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WatershedKernel, WatershedKernelRequest,
+        WritebackDecisionOutcome, WritebackField,
     };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
     use openwepp_topology::{
@@ -960,17 +962,17 @@ mod tests {
             report
                 .writeback_surface
                 .state_surface
-                .get("channel_storage")
+                .get(&BoundarySymbol::from("channel_storage"))
                 .copied(),
-            Some(1.0)
+            Some(BoundaryValue::from(1.0))
         );
         assert_eq!(
             report
                 .writeback_surface
                 .flux_surface
-                .get("discharge_total")
+                .get(&BoundarySymbol::from("discharge_total"))
                 .copied(),
-            Some(0.5)
+            Some(BoundaryValue::from(0.5))
         );
     }
 

@@ -1,0 +1,19 @@
+# Gate Results
+
+Ran: required ARCH15 gates executed in `/home/workdir/openWEPP`.
+Status: pass.
+
+1. `cargo fmt --check`
+- Result: pass
+
+2. `cargo clippy --workspace --all-targets -- -D warnings`
+- Result: pass
+
+3. `cargo test --workspace`
+- Result: pass
+- Notes: `kernel_writeback_contract` plus all workspace parser/contract suites passed.
+
+4. `cargo deny check`
+- Result: pass
+- Notes: non-failing `license-not-encountered` warnings only; terminal status:
+  `advisories ok, bans ok, licenses ok, sources ok`.

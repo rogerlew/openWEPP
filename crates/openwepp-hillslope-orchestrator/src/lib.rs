@@ -5,8 +5,9 @@ use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    HillslopeKernel, HillslopeKernelRequest, KernelWritebackApplyResult, WritebackDecisionOutcome,
-    WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
+    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest,
+    KernelWritebackApplyResult, WritebackDecisionOutcome, WritebackError, apply_kernel_writeback,
+    evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
@@ -299,8 +300,8 @@ impl HillslopeSchedulerReport {
 /// Mutable state/flux maps owned by the hillslope orchestrator.
 #[derive(Debug, Clone, Default)]
 pub struct HillslopeWritebackSurface {
-    pub state_surface: BTreeMap<String, f64>,
-    pub flux_surface: BTreeMap<String, f64>,
+    pub state_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
+    pub flux_surface: BTreeMap<BoundarySymbol, BoundaryValue>,
 }
 
 /// Per-phase kernel/writeback execution evidence.
@@ -702,8 +703,9 @@ mod tests {
     use std::cell::Cell;
 
     use openwepp_kernel_contract::{
-        HillslopeKernel, HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
-        WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
+        BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
+        KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
+        WritebackField,
     };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
     use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -960,17 +962,17 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             report
                 .writeback_surface
                 .state_surface
-                .get("soil_storage")
+                .get(&BoundarySymbol::from("soil_storage"))
                 .copied(),
-            Some(9.0)
+            Some(BoundaryValue::from(9.0))
         );
         assert_eq!(
             report
                 .writeback_surface
                 .flux_surface
-                .get("runoff_total")
+                .get(&BoundarySymbol::from("runoff_total"))
                 .copied(),
-            Some(2.25)
+            Some(BoundaryValue::from(2.25))
         );
     }
 
@@ -1027,7 +1029,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             !report
                 .writeback_surface
                 .state_surface
-                .contains_key("soil_storage"),
+                .contains_key(&BoundarySymbol::from("soil_storage")),
             "rejected payload must not mutate orchestrator writeback state"
         );
     }

@@ -283,6 +283,14 @@ Authorized packages:
 - `20260522-arch13-wave4-hold-ratification-checklist-001/`
   - Purpose: ratify outstanding Wave 4 parser/sidecar HOLD decisions with
     explicit decision records and kickoff acceptance criteria.
+- `20260522-arch14-claude-architecture-review-disposition-001/`
+  - Purpose: normalize/disposition external architecture review findings
+    (`CRF-001..010`) with dual review/verification gates and publish a
+    dependency-ordered remediation package queue.
+- `20260522-arch15-typed-kernel-state-and-unit-boundary-seam-001/`
+  - Purpose: implement `CRF-001`/`CRF-002` closure by replacing stringly
+    kernel seam maps with typed symbol/value boundaries and wiring
+    `openwepp-unit-boundary` into hillslope/watershed kernel seam surfaces.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
