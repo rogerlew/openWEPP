@@ -16,6 +16,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0010](0010-non-clean-room-direct-port-policy.md) | Provenance model is explicitly non-clean-room direct port | Superseded by 0011 |
 | [0011](0011-architecture-first-top-down-science-contracts.md) | Architecture-first delivery with top-down science contracts | Accepted |
 | [0012](0012-legacy-wepp-260430-baseline-anchor.md) | Legacy provenance/comparator baseline is pinned to wepp_260430 hotfix snapshot | Accepted |
+| [0013](0013-climate-forcing-ownership-boundary.md) | Climate forcing ownership boundary across hillslope and watershed surfaces | Accepted |
 
 ## ADR template
 
