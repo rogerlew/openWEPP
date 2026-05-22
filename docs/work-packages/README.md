@@ -321,7 +321,13 @@ Authorized packages:
 - `20260522-clim02-climate-parser-to-runtime-seam-adapters-001/`
   - Purpose: implement `HS-CLIM-SEAM-001`/`WS-CLIM-SEAM-001` climate
     parser-to-runtime adapters with typed `CLIM-RUNTIME-E-*` errors,
-    `datver>=4.0` policy guards, and integration-test closure evidence.
+    `datver=0.0` override + `datver>=4.0` policy guards, and
+    integration-test closure evidence.
+- `20260522-clim03-continuous-daily-climate-runtime-kernel-port-001/`
+  - Purpose: port continuous-daily (`ibrkpt=0`) legacy climate runtime
+    behavior (including disaggregation/event-shape semantics and versioned
+    `iclig` branch policy) into typed openWEPP runtime forcing with
+    `/wc1/runs/**/wepp/runs/*.cli` fixture-backed parity evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
