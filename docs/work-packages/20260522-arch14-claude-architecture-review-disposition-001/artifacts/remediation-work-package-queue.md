@@ -37,11 +37,17 @@ Status: finalized.
   - `docs/work-packages/20260522-arch17-parser-to-simulation-seam-ownership-and-integration-closure-001/`
 - `ARCH18` provisioned:
   - `docs/work-packages/20260522-arch18-hbp-authority-and-convergence-closure-001/`
+- `ARCH19` provisioned:
+  - `docs/work-packages/20260522-arch19-run-and-parquet-boundary-contracts-001/`
+- `ARCH20` provisioned:
+  - `docs/work-packages/20260522-arch20-governance-throughput-and-build-hygiene-controls-001/`
 
 ## Execution Status Snapshot (2026-05-22)
 
 - `ARCH15`: complete (`GO-WITH-AMENDMENTS`).
 - `ARCH16`: complete (`GO-WITH-AMENDMENTS`).
-- `ARCH17`: in progress.
-- `ARCH18`: executed; currently `HOLD` pending full-workspace gate green after
-  concurrent ARCH17 runtime-input stabilization.
+- `ARCH17`: complete (`GO-WITH-AMENDMENTS`).
+- `ARCH18`: executed; currently `HOLD` pending hold-lift gate replay after
+  ARCH17 stabilization.
+- `ARCH19`: pending.
+- `ARCH20`: complete (`GO`).

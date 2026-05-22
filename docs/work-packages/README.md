@@ -291,6 +291,24 @@ Authorized packages:
   - Purpose: implement `CRF-001`/`CRF-002` closure by replacing stringly
     kernel seam maps with typed symbol/value boundaries and wiring
     `openwepp-unit-boundary` into hillslope/watershed kernel seam surfaces.
+- `20260522-arch16-scheduler-hot-path-surface-optimization-001/`
+  - Purpose: implement `CRF-003` hot-path optimization by reducing
+    scheduler clone/allocation pressure while preserving typed seam and
+    deterministic writeback/status semantics.
+- `20260522-arch17-parser-to-simulation-seam-ownership-and-integration-closure-001/`
+  - Purpose: implement `CRF-005`/`CRF-010` closure via explicit
+    parser-to-simulation seam ownership contracts and runtime integration
+    acceptance evidence.
+- `20260522-arch18-hbp-authority-and-convergence-closure-001/`
+  - Purpose: implement `CRF-006` closure by defining HBP authority split,
+    convergence constraints, and provenance pin evidence.
+- `20260522-arch19-run-and-parquet-boundary-contracts-001/`
+  - Purpose: implement `CRF-007` by authoring canonical top-level `.run` and
+    parquet boundary contracts with explicit schema authority and cross-file
+    parser/runtime closure mapping.
+- `20260522-arch20-governance-throughput-and-build-hygiene-controls-001/`
+  - Purpose: implement `CRF-008`/`CRF-009` by defining governance throughput
+    rubric, WIP/closure policy, and workspace build-discipline controls.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
