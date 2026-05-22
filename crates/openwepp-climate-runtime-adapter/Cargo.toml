@@ -1,0 +1,11 @@
+[package]
+name = "openwepp-climate-runtime-adapter"
+version = "0.1.0"
+edition = "2024"
+license = "CC0-1.0"
+rust-version = "1.85"
+repository = "https://github.com/rogerlew/openWEPP"
+publish = false
+
+[dependencies]
+openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }

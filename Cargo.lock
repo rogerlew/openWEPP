@@ -48,6 +48,7 @@ name = "openwepp"
 version = "0.1.0"
 dependencies = [
  "flate2",
+ "openwepp-climate-runtime-adapter",
  "openwepp-comparator-metadata",
  "openwepp-hillslope-orchestrator",
  "openwepp-input-contract",
@@ -61,6 +62,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "openwepp-climate-runtime-adapter"
+version = "0.1.0"
+dependencies = [
+ "openwepp-input-contract",
+]
+
+[[package]]
 name = "openwepp-comparator-metadata"
 version = "0.1.0"
 
@@ -68,6 +76,7 @@ version = "0.1.0"
 name = "openwepp-hillslope-orchestrator"
 version = "0.1.0"
 dependencies = [
+ "openwepp-climate-runtime-adapter",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
  "openwepp-sim-contract",
@@ -120,6 +129,7 @@ version = "0.1.0"
 name = "openwepp-watershed-orchestrator"
 version = "0.1.0"
 dependencies = [
+ "openwepp-climate-runtime-adapter",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
  "openwepp-sim-contract",

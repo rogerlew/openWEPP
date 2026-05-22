@@ -2,29 +2,18 @@ use std::collections::BTreeMap;
 use std::error::Error;
 use std::fmt;
 
+use openwepp_climate_runtime_adapter::{
+    SharedClimateDailyForcing as WatershedClimateDailyForcing, SharedClimateRuntimeInputError,
+    SharedClimateRuntimeRequest as WatershedHillslopeClimateRequest, build_climate_runtime_request,
+    select_day_forcing,
+};
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
-    climate::{BreakpointDay, ClimateDailyRecord, ClimateFile, NoBreakpointDay},
+    climate::ClimateFile,
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 
 use crate::WatershedWritebackSurface;
-
-const CLIMATE_MIN_SUPPORTED_DATVER: f64 = 4.0;
-const CLIGEN_POLICY_ICLIG: i32 = 1;
-const CLIGEN_LEGACY_OVERRIDE_ICLIG: i32 = 0;
-const DATVER_ZERO_TOLERANCE: f64 = 1e-9;
-const HOURS_TO_SECONDS: f64 = 3_600.0;
-const MILLIMETERS_TO_METERS: f64 = 0.001;
-const CLIGEN_V4_IP_CORRECTION_FACTOR: f64 = 0.70;
-const MAX_STORM_DURATION_HOURS: f64 = 23.999;
-const DISAG_DEFAULT_INTERVAL_COUNT: usize = 11;
-const DISAG_MIN_INTERVAL_SECONDS: f64 = 300.0;
-const DISAG_MIN_TIMEP: f64 = 0.01;
-const DISAG_MAX_TIMEP: f64 = 0.99;
-const DISAG_MAX_IP: f64 = 60.0;
-const DISAG_EQROOT_SOLVER_TOLERANCE: f64 = 0.59e-6;
-const DISAG_CLOSURE_TOLERANCE: f64 = 1e-9;
 
 /// Typed errors for parser-to-watershed runtime surface adaptation.
 #[derive(Debug, Clone, PartialEq)]
@@ -106,70 +95,6 @@ impl Error for WatershedRuntimeInputError {}
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedClimateRuntimeRequest {
     pub hillslope_forcing: BTreeMap<u32, WatershedHillslopeClimateRequest>,
-}
-
-/// Per-hillslope climate forcing request consumed by watershed runtime
-/// boundaries.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WatershedHillslopeClimateRequest {
-    pub datver: f64,
-    pub iclig: i32,
-    pub itemp: i32,
-    pub ibrkpt: i32,
-    pub iwind: i32,
-    pub station_id: String,
-    pub daily_forcing: Vec<WatershedClimateDailyForcing>,
-}
-
-/// Daily forcing variants for watershed climate assignment.
-#[derive(Debug, Clone, PartialEq)]
-pub enum WatershedClimateDailyForcing {
-    NoBreakpoint(WatershedNoBreakpointForcing),
-    Breakpoint(WatershedBreakpointForcing),
-}
-
-/// Runtime forcing row for `ibrkpt=0`.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WatershedNoBreakpointForcing {
-    pub day: i32,
-    pub mon: i32,
-    pub year: i32,
-    pub prcp: f64,
-    pub stmdur: f64,
-    pub timep: f64,
-    pub ip: f64,
-    pub ninten: usize,
-    pub avrint: f64,
-    pub mxint: f64,
-    pub timem: Vec<f64>,
-    pub intsty: Vec<f64>,
-    pub tmax: f64,
-    pub tmin: f64,
-    pub rad: f64,
-    pub vwind: f64,
-    pub wind: f64,
-    pub tdpt: f64,
-}
-
-/// Runtime forcing row for `ibrkpt=1`.
-#[derive(Debug, Clone, PartialEq)]
-pub struct WatershedBreakpointForcing {
-    pub day: i32,
-    pub mon: i32,
-    pub year: i32,
-    pub nbrkpt: usize,
-    pub stmstr: f64,
-    pub prcp: f64,
-    pub stmdur: f64,
-    pub mxint: f64,
-    pub timem: Vec<f64>,
-    pub intsty: Vec<f64>,
-    pub tmax: f64,
-    pub tmin: f64,
-    pub rad: f64,
-    pub vwind: f64,
-    pub wind: f64,
-    pub tdpt: f64,
 }
 
 /// Typed climate runtime seam failures (`WS-CLIM-SEAM-001`).
@@ -520,7 +445,8 @@ pub fn build_watershed_climate_runtime_request_from_assignments(
     for (&hillslope_id, climate) in assignments {
         hillslope_forcing.insert(
             hillslope_id,
-            adapt_hillslope_climate(hillslope_id, climate)?,
+            build_climate_runtime_request(climate)
+                .map_err(|error| map_shared_error_for_hillslope(hillslope_id, &error))?,
         );
     }
 
@@ -579,13 +505,8 @@ pub fn seed_watershed_runtime_surface_from_climate(
             f64::from(request.iwind),
         );
 
-        let forcing = request.daily_forcing.get(day_index).ok_or(
-            WatershedClimateRuntimeInputError::DayIndexOutOfRange {
-                hillslope_id,
-                day_index,
-                available: request.daily_forcing.len(),
-            },
-        )?;
+        let forcing = select_day_forcing(request, day_index)
+            .map_err(|error| map_shared_error_for_hillslope(hillslope_id, &error))?;
 
         match forcing {
             WatershedClimateDailyForcing::NoBreakpoint(day) => {
@@ -683,447 +604,101 @@ pub fn build_watershed_runtime_surface_from_climate_assignments(
     Ok(surface)
 }
 
-fn adapt_hillslope_climate(
+fn map_shared_error_for_hillslope(
     hillslope_id: u32,
-    climate: &ClimateFile,
-) -> Result<WatershedHillslopeClimateRequest, WatershedClimateRuntimeInputError> {
-    let iclig = resolve_iclig(climate.datver)?;
-    if climate.mode.itemp != 1 {
-        return Err(WatershedClimateRuntimeInputError::UnsupportedItemp {
-            itemp: climate.mode.itemp,
-        });
-    }
-    if climate.daily_records.is_empty() {
-        return Err(WatershedClimateRuntimeInputError::EmptyDailyRecords { hillslope_id });
-    }
-
-    let mut daily_forcing = Vec::with_capacity(climate.daily_records.len());
-    for record in &climate.daily_records {
-        daily_forcing.push(adapt_daily_forcing(hillslope_id, record, iclig)?);
-    }
-
-    Ok(WatershedHillslopeClimateRequest {
-        datver: climate.datver,
-        iclig,
-        itemp: climate.mode.itemp,
-        ibrkpt: i32::from(climate.mode.breakpoint_enabled),
-        iwind: climate.mode.iwind,
-        station_id: climate.station_id.clone(),
-        daily_forcing,
-    })
-}
-
-fn adapt_daily_forcing(
-    hillslope_id: u32,
-    record: &ClimateDailyRecord,
-    iclig: i32,
-) -> Result<WatershedClimateDailyForcing, WatershedClimateRuntimeInputError> {
-    match record {
-        ClimateDailyRecord::NoBreakpoint(day) => Ok(WatershedClimateDailyForcing::NoBreakpoint(
-            adapt_no_breakpoint(day, hillslope_id, iclig)?,
-        )),
-        ClimateDailyRecord::Breakpoint(day) => Ok(WatershedClimateDailyForcing::Breakpoint(
-            adapt_breakpoint(day, hillslope_id)?,
-        )),
-    }
-}
-
-fn adapt_no_breakpoint(
-    day: &NoBreakpointDay,
-    hillslope_id: u32,
-    iclig: i32,
-) -> Result<WatershedNoBreakpointForcing, WatershedClimateRuntimeInputError> {
-    require_non_negative("prcp", day.prcp)?;
-    require_non_negative("stmdur", day.stmdur)?;
-    require_non_negative("timep", day.timep)?;
-    require_non_negative("ip", day.ip)?;
-    require_finite("tmax", day.tmax)?;
-    require_finite("tmin", day.tmin)?;
-    require_finite("rad", day.rad)?;
-    require_finite("vwind", day.vwind)?;
-    require_finite("wind", day.wind)?;
-    require_finite("tdpt", day.tdpt)?;
-
-    let prcp = day.prcp * MILLIMETERS_TO_METERS;
-    let stmdur_h = day.stmdur.min(MAX_STORM_DURATION_HOURS);
-    let stmdur = stmdur_h * HOURS_TO_SECONDS;
-    if prcp > 0.0 && stmdur <= 0.0 {
-        return Err(
+    error: &SharedClimateRuntimeInputError,
+) -> WatershedClimateRuntimeInputError {
+    match error {
+        SharedClimateRuntimeInputError::UnsupportedDatver { datver } => {
+            WatershedClimateRuntimeInputError::UnsupportedDatver { datver: *datver }
+        }
+        SharedClimateRuntimeInputError::UnsupportedItemp { itemp } => {
+            WatershedClimateRuntimeInputError::UnsupportedItemp { itemp: *itemp }
+        }
+        SharedClimateRuntimeInputError::EmptyDailyRecords => {
+            WatershedClimateRuntimeInputError::EmptyDailyRecords { hillslope_id }
+        }
+        SharedClimateRuntimeInputError::DayIndexOutOfRange {
+            day_index,
+            available,
+        } => WatershedClimateRuntimeInputError::DayIndexOutOfRange {
+            hillslope_id,
+            day_index: *day_index,
+            available: *available,
+        },
+        SharedClimateRuntimeInputError::NonFiniteField { field, value } => {
+            WatershedClimateRuntimeInputError::NonFiniteField {
+                field,
+                value: *value,
+            }
+        }
+        SharedClimateRuntimeInputError::NegativeField { field, value } => {
+            WatershedClimateRuntimeInputError::NegativeField {
+                field,
+                value: *value,
+            }
+        }
+        SharedClimateRuntimeInputError::PositivePrecipWithNonPositiveDuration { prcp, stmdur } => {
             WatershedClimateRuntimeInputError::PositivePrecipWithNonPositiveDuration {
                 hillslope_id,
-                prcp,
-                stmdur,
-            },
-        );
-    }
-
-    let ip = if iclig == CLIGEN_POLICY_ICLIG {
-        day.ip * CLIGEN_V4_IP_CORRECTION_FACTOR
-    } else {
-        day.ip
-    };
-    let event_shape = build_no_breakpoint_event_shape(prcp, stmdur, day.timep, ip, hillslope_id)?;
-
-    Ok(WatershedNoBreakpointForcing {
-        day: day.day,
-        mon: day.mon,
-        year: day.year,
-        prcp,
-        stmdur,
-        timep: event_shape.timep,
-        ip: event_shape.ip,
-        ninten: event_shape.ninten,
-        avrint: event_shape.avrint,
-        mxint: event_shape.mxint,
-        timem: event_shape.timem,
-        intsty: event_shape.intsty,
-        tmax: day.tmax,
-        tmin: day.tmin,
-        rad: day.rad,
-        vwind: day.vwind,
-        wind: day.wind,
-        tdpt: day.tdpt,
-    })
-}
-
-fn adapt_breakpoint(
-    day: &BreakpointDay,
-    hillslope_id: u32,
-) -> Result<WatershedBreakpointForcing, WatershedClimateRuntimeInputError> {
-    require_finite("tmax", day.tmax)?;
-    require_finite("tmin", day.tmin)?;
-    require_finite("rad", day.rad)?;
-    require_finite("vwind", day.vwind)?;
-    require_finite("wind", day.wind)?;
-    require_finite("tdpt", day.tdpt)?;
-
-    if day.breakpoints.is_empty() {
-        return Err(WatershedClimateRuntimeInputError::EmptyBreakpointSeries { hillslope_id });
-    }
-
-    let stmstr = day
-        .breakpoints
-        .first()
-        .map(|point| point.timem)
-        .ok_or(WatershedClimateRuntimeInputError::EmptyBreakpointSeries { hillslope_id })?;
-
-    let mut timem = Vec::with_capacity(day.breakpoints.len());
-    let mut pptcum = Vec::with_capacity(day.breakpoints.len());
-    for point in &day.breakpoints {
-        require_non_negative("timem", point.timem)?;
-        require_non_negative("pptcum", point.pptcum)?;
-        timem.push((point.timem - stmstr) * HOURS_TO_SECONDS);
-        pptcum.push(point.pptcum * MILLIMETERS_TO_METERS);
-    }
-
-    let mut intsty = vec![0.0; timem.len()];
-    let mut stmdur = 0.0;
-    let mut mxint = 0.0;
-    for index in 1..timem.len() {
-        let previous_time = timem[index - 1];
-        let current_time = timem[index];
-        if current_time <= previous_time {
-            return Err(
-                WatershedClimateRuntimeInputError::NonMonotoneBreakpointTime {
-                    hillslope_id,
-                    previous_s: previous_time,
-                    current_s: current_time,
-                },
-            );
+                prcp: *prcp,
+                stmdur: *stmdur,
+            }
         }
-
-        let drain = pptcum[index] - pptcum[index - 1];
-        if drain < 0.0 {
-            return Err(WatershedClimateRuntimeInputError::NegativeField {
-                field: "drain",
-                value: drain,
-            });
+        SharedClimateRuntimeInputError::EmptyBreakpointSeries => {
+            WatershedClimateRuntimeInputError::EmptyBreakpointSeries { hillslope_id }
         }
-
-        let delta_time_s = current_time - previous_time;
-        if delta_time_s <= 0.0 {
-            return Err(
-                WatershedClimateRuntimeInputError::PositiveBreakpointDrainWithNonPositiveDeltaTime {
-                    hillslope_id,
-                    drain_m: drain,
-                    delta_time_s,
-                },
-            );
-        }
-        let intensity = if drain == 0.0 {
-            0.0
-        } else {
-            drain / delta_time_s
-        };
-        intsty[index - 1] = intensity;
-        stmdur += delta_time_s;
-        if intensity > mxint {
-            mxint = intensity;
-        }
-    }
-
-    let prcp = *pptcum
-        .last()
-        .ok_or(WatershedClimateRuntimeInputError::EmptyBreakpointSeries { hillslope_id })?;
-    if prcp > 0.0 && stmdur <= 0.0 {
-        return Err(
-            WatershedClimateRuntimeInputError::PositivePrecipWithNonPositiveDuration {
+        SharedClimateRuntimeInputError::NonMonotoneBreakpointTime {
+            previous_s,
+            current_s,
+        } => WatershedClimateRuntimeInputError::NonMonotoneBreakpointTime {
+            hillslope_id,
+            previous_s: *previous_s,
+            current_s: *current_s,
+        },
+        SharedClimateRuntimeInputError::PositiveBreakpointDrainWithNonPositiveDeltaTime {
+            drain_m,
+            delta_time_s,
+        } => WatershedClimateRuntimeInputError::PositiveBreakpointDrainWithNonPositiveDeltaTime {
+            hillslope_id,
+            drain_m: *drain_m,
+            delta_time_s: *delta_time_s,
+        },
+        SharedClimateRuntimeInputError::BreakpointCountOutOfRange { value } => {
+            WatershedClimateRuntimeInputError::BreakpointCountOutOfRange {
                 hillslope_id,
-                prcp,
-                stmdur,
-            },
-        );
-    }
-
-    Ok(WatershedBreakpointForcing {
-        day: day.day,
-        mon: day.mon,
-        year: day.year,
-        nbrkpt: day.nbrkpt,
-        stmstr,
-        prcp,
-        stmdur,
-        mxint,
-        timem,
-        intsty,
-        tmax: day.tmax,
-        tmin: day.tmin,
-        rad: day.rad,
-        vwind: day.vwind,
-        wind: day.wind,
-        tdpt: day.tdpt,
-    })
-}
-
-#[derive(Debug, Clone, PartialEq)]
-struct DisaggregatedEventShape {
-    timep: f64,
-    ip: f64,
-    ninten: usize,
-    avrint: f64,
-    mxint: f64,
-    timem: Vec<f64>,
-    intsty: Vec<f64>,
-}
-
-#[allow(clippy::similar_names)]
-fn build_no_breakpoint_event_shape(
-    prcp_m: f64,
-    stmdur_s: f64,
-    timep: f64,
-    ip: f64,
-    hillslope_id: u32,
-) -> Result<DisaggregatedEventShape, WatershedClimateRuntimeInputError> {
-    if prcp_m <= 0.0 || stmdur_s <= 0.0 {
-        return Ok(DisaggregatedEventShape {
-            timep,
-            ip,
-            ninten: 0,
-            avrint: 0.0,
-            mxint: 0.0,
-            timem: Vec::new(),
-            intsty: Vec::new(),
-        });
-    }
-
-    let mut resolved_ip = ip.max(1.0);
-    let mut resolved_timep = timep;
-    if resolved_timep > 1.0 || (resolved_ip - 1.0).abs() <= 1e-12 {
-        resolved_timep = 1.0;
-    } else if resolved_timep <= 0.0 {
-        resolved_timep = DISAG_MIN_TIMEP;
-    }
-
-    let (timedl, intdl) =
-        build_disaggregation_shape(resolved_timep, resolved_ip, stmdur_s, hillslope_id)?;
-    let ninten = timedl.len();
-    let avrint = prcp_m / stmdur_s;
-
-    let mut timem = Vec::with_capacity(ninten);
-    let mut intsty = Vec::with_capacity(ninten);
-    for (t, i) in timedl.iter().zip(intdl.iter()) {
-        timem.push(*t * stmdur_s);
-        intsty.push(*i * prcp_m / stmdur_s);
-    }
-
-    for index in 1..timem.len() {
-        let previous = timem[index - 1];
-        let current = timem[index];
-        if current <= previous {
-            return Err(
-                WatershedClimateRuntimeInputError::DisaggregationTimeNotStrictlyIncreasing {
-                    hillslope_id,
-                    previous_s: previous,
-                    current_s: current,
-                },
-            );
+                value: *value,
+            }
         }
-    }
-
-    let reconstructed_prcp_m = timem
-        .windows(2)
-        .zip(intsty.iter())
-        .map(|(window, intensity)| (window[1] - window[0]) * *intensity)
-        .sum::<f64>();
-    if (reconstructed_prcp_m - prcp_m).abs() > DISAG_CLOSURE_TOLERANCE {
-        return Err(
-            WatershedClimateRuntimeInputError::DisaggregationClosureResidual {
+        SharedClimateRuntimeInputError::DisaggregationTimeNotStrictlyIncreasing {
+            previous_s,
+            current_s,
+        } => WatershedClimateRuntimeInputError::DisaggregationTimeNotStrictlyIncreasing {
+            hillslope_id,
+            previous_s: *previous_s,
+            current_s: *current_s,
+        },
+        SharedClimateRuntimeInputError::DisaggregationRootSolveDomain { a } => {
+            WatershedClimateRuntimeInputError::DisaggregationRootSolveDomain {
                 hillslope_id,
-                expected_prcp_m: prcp_m,
-                reconstructed_prcp_m,
-            },
-        );
-    }
-
-    let mxint = intsty.iter().copied().fold(0.0, f64::max);
-    resolved_ip = resolved_ip.min(DISAG_MAX_IP);
-    resolved_timep = resolved_timep.min(DISAG_MAX_TIMEP);
-
-    Ok(DisaggregatedEventShape {
-        timep: resolved_timep,
-        ip: resolved_ip,
-        ninten,
-        avrint,
-        mxint,
-        timem,
-        intsty,
-    })
-}
-
-fn build_disaggregation_shape(
-    timep: f64,
-    ip: f64,
-    duration_s: f64,
-    hillslope_id: u32,
-) -> Result<(Vec<f64>, Vec<f64>), WatershedClimateRuntimeInputError> {
-    let mut ninten = DISAG_DEFAULT_INTERVAL_COUNT;
-    loop {
-        if ninten <= 2 {
-            return Ok((vec![0.0, 1.0], vec![1.0, 0.0]));
+                a: *a,
+            }
         }
-
-        let (timedl, mut intdl) = if timep >= 1.0 && ip <= 1.0 {
-            build_const_shape(ninten)
-        } else {
-            build_dblex_shape(ninten, timep, ip, hillslope_id)?
-        };
-        intdl[ninten - 1] = 0.0;
-
-        let minimum_spacing_ok = timedl
-            .windows(2)
-            .all(|window| (window[1] - window[0]) * duration_s >= DISAG_MIN_INTERVAL_SECONDS);
-        if minimum_spacing_ok {
-            return Ok((timedl, intdl));
+        SharedClimateRuntimeInputError::DisaggregationRootSolveNonConvergent { a } => {
+            WatershedClimateRuntimeInputError::DisaggregationRootSolveNonConvergent {
+                hillslope_id,
+                a: *a,
+            }
         }
-
-        ninten -= 1;
+        SharedClimateRuntimeInputError::DisaggregationClosureResidual {
+            expected_prcp_m,
+            reconstructed_prcp_m,
+        } => WatershedClimateRuntimeInputError::DisaggregationClosureResidual {
+            hillslope_id,
+            expected_prcp_m: *expected_prcp_m,
+            reconstructed_prcp_m: *reconstructed_prcp_m,
+        },
     }
-}
-
-#[allow(clippy::cast_precision_loss)]
-fn build_const_shape(ninten: usize) -> (Vec<f64>, Vec<f64>) {
-    let deltfq = 1.0 / (ninten as f64 - 1.0);
-    let mut timedl = vec![0.0; ninten];
-    let mut intdl = vec![0.0; ninten];
-    let mut fqx = 0.0;
-    for index in 1..ninten {
-        fqx += deltfq;
-        timedl[index] = fqx;
-        intdl[index - 1] = 1.0;
-    }
-    intdl[ninten - 1] = 0.0;
-    (timedl, intdl)
-}
-
-#[allow(clippy::cast_precision_loss)]
-fn build_dblex_shape(
-    ninten: usize,
-    timep: f64,
-    ip: f64,
-    hillslope_id: u32,
-) -> Result<(Vec<f64>, Vec<f64>), WatershedClimateRuntimeInputError> {
-    let ip = ip.min(DISAG_MAX_IP);
-    let timep = timep.min(DISAG_MAX_TIMEP);
-    let u = solve_eqroot(1.0 / ip, hillslope_id)?;
-    let b = u / timep;
-    let a = ip * (-u).exp();
-    let d = u / (1.0 - timep);
-    let deltfq = 1.0 / (ninten as f64 - 1.0);
-
-    let mut timedl = vec![0.0; ninten];
-    timedl[ninten - 1] = 1.0;
-    let mut intdl = vec![0.0; ninten];
-
-    let mut fqx = 0.0;
-    for index in 0..(ninten - 1) {
-        let next = index + 1;
-        if index < ninten - 2 {
-            fqx += deltfq;
-            timedl[next] = if fqx <= timep {
-                (1.0 / b) * (1.0 + (b / a) * fqx).ln()
-            } else {
-                timep - (1.0 / d) * (1.0 - (d / ip) * (fqx - timep)).ln()
-            };
-        }
-
-        let denominator = timedl[next] - timedl[index];
-        intdl[index] = if denominator > 0.0 {
-            deltfq / denominator
-        } else {
-            deltfq / 0.00001
-        };
-    }
-    intdl[ninten - 1] = 0.0;
-    Ok((timedl, intdl))
-}
-
-#[allow(clippy::many_single_char_names)]
-fn solve_eqroot(a: f64, hillslope_id: u32) -> Result<f64, WatershedClimateRuntimeInputError> {
-    if !(a > 0.0 && a <= 1.0) {
-        return Err(
-            WatershedClimateRuntimeInputError::DisaggregationRootSolveDomain { hillslope_id, a },
-        );
-    }
-
-    if a <= 0.06 {
-        return Ok(1.0 / a);
-    }
-    if a >= 1.0 {
-        return Ok(0.0);
-    }
-    if a >= 0.999 {
-        return Ok((3.0 / 2.0) - (6.0 * a - (15.0 / 4.0)).sqrt());
-    }
-
-    let mut u = if a <= 0.2 {
-        1.0 / a
-    } else if a <= 0.5 {
-        (0.968_732 / a) - 1.550_98 * a + 0.431_653
-    } else if a <= 0.94 {
-        (1.132_43 / a) - 0.928_240 * a - 0.207_111
-    } else {
-        (3.0 / 2.0) - (6.0 * a - (15.0 / 4.0)).sqrt()
-    };
-
-    for _ in 0..32 {
-        let e = (-u).exp();
-        let f = (1.0 - e) / u;
-        let d = a - f;
-        let tmp = ((u + 1.0) * f) - 1.0;
-        let r = a / tmp;
-        let s = if r <= 1.0 {
-            (d / a).abs()
-        } else {
-            (d / tmp).abs()
-        };
-        if s < DISAG_EQROOT_SOLVER_TOLERANCE {
-            return Ok(u);
-        }
-
-        u *= 1.0 + d / (e - f);
-    }
-
-    Err(WatershedClimateRuntimeInputError::DisaggregationRootSolveNonConvergent { hillslope_id, a })
 }
 
 fn insert_hillslope_common_day_symbols(
@@ -1146,40 +721,6 @@ fn insert_hillslope_symbol(
 ) {
     let key = format!("hs{hillslope_id}_{symbol}");
     surface.insert(BoundarySymbol::from(key), BoundaryValue::scalar(value));
-}
-
-fn require_finite(
-    field: &'static str,
-    value: f64,
-) -> Result<(), WatershedClimateRuntimeInputError> {
-    if value.is_finite() {
-        Ok(())
-    } else {
-        Err(WatershedClimateRuntimeInputError::NonFiniteField { field, value })
-    }
-}
-
-fn require_non_negative(
-    field: &'static str,
-    value: f64,
-) -> Result<(), WatershedClimateRuntimeInputError> {
-    require_finite(field, value)?;
-    if value < 0.0 {
-        Err(WatershedClimateRuntimeInputError::NegativeField { field, value })
-    } else {
-        Ok(())
-    }
-}
-
-fn resolve_iclig(datver: f64) -> Result<i32, WatershedClimateRuntimeInputError> {
-    require_finite("datver", datver)?;
-    if datver.abs() <= DATVER_ZERO_TOLERANCE {
-        Ok(CLIGEN_LEGACY_OVERRIDE_ICLIG)
-    } else if datver >= CLIMATE_MIN_SUPPORTED_DATVER {
-        Ok(CLIGEN_POLICY_ICLIG)
-    } else {
-        Err(WatershedClimateRuntimeInputError::UnsupportedDatver { datver })
-    }
 }
 
 #[cfg(test)]

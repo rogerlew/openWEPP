@@ -258,6 +258,39 @@ fn climate_parser_to_watershed_runtime_surface_closure() {
 }
 
 #[test]
+fn climate_runtime_projection_parity_hillslope_vs_watershed_adapter_path() {
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse for parity check");
+    let hillslope_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("hillslope climate runtime surface should build");
+
+    let assignments = BTreeMap::from([(7_u32, climate)]);
+    let watershed_surface =
+        build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+            .expect("watershed climate runtime surface should build");
+    assert_state_value(&watershed_surface.state_surface, "nclimhs", 1.0);
+
+    for (symbol, value) in &hillslope_surface.state_surface {
+        let watershed_symbol = format!("hs7_{}", symbol.as_str());
+        let watershed_value = watershed_surface
+            .state_surface
+            .get(&BoundarySymbol::from(watershed_symbol.as_str()))
+            .unwrap_or_else(|| panic!("missing watershed parity symbol {watershed_symbol}"))
+            .as_f64();
+        let hillslope_value = (*value).as_f64();
+
+        assert!(
+            (hillslope_value - watershed_value).abs() < 1e-12,
+            "parity mismatch for {} / {}: hillslope={} watershed={}",
+            symbol.as_str(),
+            watershed_symbol,
+            hillslope_value,
+            watershed_value
+        );
+    }
+}
+
+#[test]
 fn climate_wc1_fixture_applies_timep_floor_and_ip_policy_scaling() {
     let climate = parse_climate_from_str(CLIMATE_WC1_DAY1, ClimateParserMode::Strict)
         .expect("wc1 climate fixture should parse");
