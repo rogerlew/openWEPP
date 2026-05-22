@@ -37,6 +37,9 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 const SOIL_VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
 const CHANINP_STRICT_VALID: &str = include_str!("../fixtures/infile/chaninp/strict_valid.chaninp");
 const CLIMATE_STRICT_VALID: &str = include_str!("../fixtures/infile/climate/strict_valid.cli");
+const CLIMATE_WC1_DAY1: &str = include_str!("../fixtures/infile/climate/wc1_canoga_day1.cli");
+const CLIMATE_WC1_STMDUR_CAP: &str =
+    include_str!("../fixtures/infile/climate/wc1_canoga_stmdur_cap.cli");
 
 struct HillslopeSeedProbeKernel {
     invocation_count: usize,
@@ -94,7 +97,9 @@ impl HillslopeKernel for HillslopeClimateProbeKernel {
         assert_state_value(request.state_surface, "prcp", 0.01);
         assert_state_value(request.state_surface, "stmdur", 7_200.0);
         assert_state_value(request.state_surface, "timep", 0.25);
-        assert_state_value(request.state_surface, "ip", 3.0);
+        assert_state_value(request.state_surface, "ip", 2.1);
+        assert_state_at_least(request.state_surface, "ninten", 2.0);
+        assert_state_value(request.state_surface, "timem_0001", 0.0);
         assert_state_value(request.state_surface, "tmax", 12.0);
         assert_state_value(request.state_surface, "tmin", 2.0);
         assert_state_value(request.state_surface, "rad", 200.0);
@@ -123,7 +128,9 @@ impl WatershedKernel for WatershedClimateProbeKernel {
         assert_state_value(request.state_surface, "hs1_prcp", 0.01);
         assert_state_value(request.state_surface, "hs2_stmdur", 7_200.0);
         assert_state_value(request.state_surface, "hs3_timep", 0.25);
-        assert_state_value(request.state_surface, "hs1_ip", 3.0);
+        assert_state_value(request.state_surface, "hs1_ip", 2.1);
+        assert_state_at_least(request.state_surface, "hs2_ninten", 2.0);
+        assert_state_value(request.state_surface, "hs3_timem_0001", 0.0);
         assert_state_value(request.state_surface, "hs2_tmax", 12.0);
         assert_state_value(request.state_surface, "hs3_tmin", 2.0);
 
@@ -250,6 +257,27 @@ fn climate_parser_to_watershed_runtime_surface_closure() {
     assert_eq!(kernel.invocation_count, report.dispatch_report.steps.len());
 }
 
+#[test]
+fn climate_wc1_fixture_applies_timep_floor_and_ip_policy_scaling() {
+    let climate = parse_climate_from_str(CLIMATE_WC1_DAY1, ClimateParserMode::Strict)
+        .expect("wc1 climate fixture should parse");
+    let surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("hillslope runtime surface should build from wc1 fixture");
+    assert_state_value(&surface.state_surface, "timep", 0.01);
+    assert_state_value(&surface.state_surface, "ip", 2.94);
+}
+
+#[test]
+fn climate_wc1_fixture_caps_storm_duration_before_runtime_projection() {
+    let climate = parse_climate_from_str(CLIMATE_WC1_STMDUR_CAP, ClimateParserMode::Strict)
+        .expect("wc1 duration-cap fixture should parse");
+    let assignments = BTreeMap::from([(9_u32, climate)]);
+    let surface = build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+        .expect("watershed runtime surface should build from wc1 duration-cap fixture");
+    assert_state_value(&surface.state_surface, "hs9_stmdur", 23.999 * 3_600.0);
+    assert_state_value(&surface.state_surface, "hs9_ip", 22.589);
+}
+
 fn assert_state_value(
     surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
     symbol: &str,
@@ -262,5 +290,20 @@ fn assert_state_value(
     assert!(
         (value - expected).abs() < 1e-12,
         "{symbol} mismatch: {value}"
+    );
+}
+
+fn assert_state_at_least(
+    surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
+    symbol: &str,
+    minimum: f64,
+) {
+    let value = surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing runtime symbol {symbol}"))
+        .as_f64();
+    assert!(
+        value >= minimum,
+        "{symbol} expected >= {minimum}, got {value}"
     );
 }

@@ -1,0 +1,16 @@
+5.30
+   1   0   0
+  Station:  CANOGA PRK PIERCE CA                           CLIGEN VER. 5.32300 -r:12345 -I: 0
+ Latitude Longitude Elevation (m) Obs. Years   Beginning year  Years simulated Command Line:
+    34.18  -118.57         240          40           1             100          -ica041484.par -r12345 
+ Observed monthly ave max temperature (C)
+  19.7  19.6  20.8  21.1  23.0  25.1  27.8  29.1  28.9  26.3  23.0  19.5
+ Observed monthly ave min temperature (C)
+   9.9   9.4   9.8  10.7  12.3  14.0  15.9  16.5  16.2  14.5  11.8   9.7
+ Observed monthly ave solar radiation (Langleys/day)
+ 236.0 291.0 404.0 529.0 557.0 569.0 553.0 548.0 452.0 346.0 277.0 225.0
+ Observed monthly ave precipitation (mm)
+ 107.5 121.9  73.0  26.3  12.0   2.2   1.3   0.2   2.0  17.6  27.6  77.4
+ da mo year  prcp  dur   tp     ip  tmax  tmin  rad  w-vl w-dir  tdew
+             (mm)  (h)               (C)   (C) (l/d) (m/s)(Deg)   (C)
+  1  1    1 101.6  6.79 0.00   4.20  16.7   7.5 229.  3.7  188.  -2.1
