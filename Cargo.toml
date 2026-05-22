@@ -156,6 +156,14 @@ name = "kernel_writeback_contract"
 path = "tests/integration/kernel_writeback_contract.rs"
 
 [[test]]
+name = "parser_runtime_seam_integration"
+path = "tests/integration/parser_runtime_seam_integration.rs"
+
+[[test]]
+name = "workspace_integration_ownership_acceptance"
+path = "tests/integration/workspace_integration_ownership_acceptance.rs"
+
+[[test]]
 name = "comparator_tier_routing_metadata"
 path = "tests/integration/comparator_tier_routing_metadata.rs"
 

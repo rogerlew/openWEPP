@@ -68,6 +68,7 @@ version = "0.1.0"
 name = "openwepp-hillslope-orchestrator"
 version = "0.1.0"
 dependencies = [
+ "openwepp-input-contract",
  "openwepp-kernel-contract",
  "openwepp-sim-contract",
  "openwepp-topology",
@@ -119,6 +120,7 @@ version = "0.1.0"
 name = "openwepp-watershed-orchestrator"
 version = "0.1.0"
 dependencies = [
+ "openwepp-input-contract",
  "openwepp-kernel-contract",
  "openwepp-sim-contract",
  "openwepp-topology",
