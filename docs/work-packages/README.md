@@ -233,6 +233,9 @@ Authorized packages:
   - Purpose: implement deterministic watershed dispatch scheduler graph
     orchestration with typed precondition enforcement using ARCH03/ARCH04
     contract surfaces.
+- `20260521-arch07-kernel-trait-boundary-and-writeback-contract-001/`
+  - Purpose: implement shared kernel trait boundaries and orchestrator-owned
+    writeback contracts for hillslope/watershed execution surfaces.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

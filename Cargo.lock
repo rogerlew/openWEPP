@@ -6,7 +6,19 @@ version = 4
 name = "openwepp"
 version = "0.1.0"
 dependencies = [
+ "openwepp-hillslope-orchestrator",
  "openwepp-input-contract",
+ "openwepp-kernel-contract",
+ "openwepp-sim-contract",
+ "openwepp-topology",
+ "openwepp-watershed-orchestrator",
+]
+
+[[package]]
+name = "openwepp-hillslope-orchestrator"
+version = "0.1.0"
+dependencies = [
+ "openwepp-kernel-contract",
  "openwepp-sim-contract",
  "openwepp-topology",
 ]
@@ -14,6 +26,13 @@ dependencies = [
 [[package]]
 name = "openwepp-input-contract"
 version = "0.1.0"
+
+[[package]]
+name = "openwepp-kernel-contract"
+version = "0.1.0"
+dependencies = [
+ "openwepp-sim-contract",
+]
 
 [[package]]
 name = "openwepp-sim-contract"
@@ -24,4 +43,13 @@ name = "openwepp-topology"
 version = "0.1.0"
 dependencies = [
  "openwepp-sim-contract",
+]
+
+[[package]]
+name = "openwepp-watershed-orchestrator"
+version = "0.1.0"
+dependencies = [
+ "openwepp-kernel-contract",
+ "openwepp-sim-contract",
+ "openwepp-topology",
 ]

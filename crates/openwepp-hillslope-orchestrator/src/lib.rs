@@ -4,6 +4,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fmt;
 
+use openwepp_kernel_contract::{
+    HillslopeKernel, HillslopeKernelRequest, KernelWritebackApplyResult, WritebackDecisionOutcome,
+    WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
+};
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
     BoundaryClass, ClampClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
@@ -292,16 +296,43 @@ impl HillslopeSchedulerReport {
     }
 }
 
+/// Mutable state/flux maps owned by the hillslope orchestrator.
+#[derive(Debug, Clone, Default)]
+pub struct HillslopeWritebackSurface {
+    pub state_surface: BTreeMap<String, f64>,
+    pub flux_surface: BTreeMap<String, f64>,
+}
+
+/// Per-phase kernel/writeback execution evidence.
+#[derive(Debug, Clone)]
+pub struct HillslopeKernelPhaseReport {
+    pub phase: HillslopePhase,
+    pub kernel_status: SimulationStatus,
+    pub decision_outcome: WritebackDecisionOutcome,
+    pub decision_status: SimulationStatus,
+    pub apply_result: Option<KernelWritebackApplyResult>,
+}
+
+/// Kernel-integrated hillslope execution report.
+#[derive(Debug, Clone)]
+pub struct HillslopeKernelExecutionReport {
+    pub scheduler_report: HillslopeSchedulerReport,
+    pub phase_reports: Vec<HillslopeKernelPhaseReport>,
+    pub writeback_surface: HillslopeWritebackSurface,
+}
+
 /// Scheduler construction/operation error.
 #[derive(Debug)]
 pub enum HillslopeSchedulerError {
     Status(StatusError),
+    Writeback(WritebackError),
 }
 
 impl fmt::Display for HillslopeSchedulerError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Status(source) => write!(f, "status construction failed: {source}"),
+            Self::Writeback(source) => write!(f, "writeback application failed: {source}"),
         }
     }
 }
@@ -310,6 +341,7 @@ impl Error for HillslopeSchedulerError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Status(source) => Some(source),
+            Self::Writeback(source) => Some(source),
         }
     }
 }
@@ -317,6 +349,12 @@ impl Error for HillslopeSchedulerError {
 impl From<StatusError> for HillslopeSchedulerError {
     fn from(value: StatusError) -> Self {
         Self::Status(value)
+    }
+}
+
+impl From<WritebackError> for HillslopeSchedulerError {
+    fn from(value: WritebackError) -> Self {
+        Self::Writeback(value)
     }
 }
 
@@ -511,6 +549,146 @@ impl HillslopePhaseScheduler {
             halted_phase: None,
         })
     }
+
+    /// Execute deterministic hillslope scheduling against a typed kernel
+    /// boundary with explicit writeback accept/reject/apply handling.
+    ///
+    /// Kernel outputs are pure proposals; orchestrator-owned writeback surfaces
+    /// are the only mutable commit authority.
+    #[allow(clippy::too_many_lines)]
+    pub fn execute_with_kernel<K>(
+        &self,
+        topology_report: &TopologyValidationReport,
+        kernel: &mut K,
+        mut writeback_surface: HillslopeWritebackSurface,
+    ) -> Result<HillslopeKernelExecutionReport, HillslopeSchedulerError>
+    where
+        K: HillslopeKernel,
+    {
+        let mode_mismatch_status = SimulationStatus::failure(
+            SimulationPhase::HillslopeKernel,
+            true,
+            false,
+            BoundaryClass::ModeMismatch,
+            "HKERNEL-E-STATUS-PHASE-MISMATCH",
+        )?;
+        let deferred_error_status = SimulationStatus::failure(
+            SimulationPhase::HillslopeKernel,
+            true,
+            false,
+            BoundaryClass::ClosureViolation,
+            "HKERNEL-E-WRITEBACK-INTERNAL",
+        )?;
+
+        let mut phase_reports = Vec::new();
+        let mut deferred_error: Option<HillslopeSchedulerError> = None;
+
+        let scheduler_report = self.execute_with(topology_report, |phase| {
+            if deferred_error.is_some() {
+                return deferred_error_status.clone();
+            }
+
+            let request = HillslopeKernelRequest::new(
+                phase.as_str(),
+                writeback_surface.state_surface.clone(),
+                writeback_surface.flux_surface.clone(),
+            );
+            let response = kernel.run_hillslope_phase(&request);
+            let kernel_status = response.status.clone();
+
+            if kernel_status.phase() != SimulationPhase::HillslopeKernel {
+                phase_reports.push(HillslopeKernelPhaseReport {
+                    phase,
+                    kernel_status,
+                    decision_outcome: WritebackDecisionOutcome::Reject,
+                    decision_status: mode_mismatch_status.clone(),
+                    apply_result: None,
+                });
+                return mode_mismatch_status.clone();
+            }
+
+            if kernel_status.classification() == StatusClassification::Failure {
+                phase_reports.push(HillslopeKernelPhaseReport {
+                    phase,
+                    kernel_status: kernel_status.clone(),
+                    decision_outcome: WritebackDecisionOutcome::Reject,
+                    decision_status: kernel_status.clone(),
+                    apply_result: None,
+                });
+                return kernel_status;
+            }
+
+            let decision = match evaluate_kernel_writeback(
+                SimulationPhase::HillslopeKernel,
+                &response.writeback,
+            ) {
+                Ok(value) => value,
+                Err(source) => {
+                    deferred_error = Some(HillslopeSchedulerError::Status(source));
+                    phase_reports.push(HillslopeKernelPhaseReport {
+                        phase,
+                        kernel_status,
+                        decision_outcome: WritebackDecisionOutcome::Reject,
+                        decision_status: deferred_error_status.clone(),
+                        apply_result: None,
+                    });
+                    return deferred_error_status.clone();
+                }
+            };
+
+            if decision.outcome == WritebackDecisionOutcome::Reject {
+                phase_reports.push(HillslopeKernelPhaseReport {
+                    phase,
+                    kernel_status,
+                    decision_outcome: WritebackDecisionOutcome::Reject,
+                    decision_status: decision.status.clone(),
+                    apply_result: None,
+                });
+                return decision.status;
+            }
+
+            let apply_result = match apply_kernel_writeback(
+                SimulationPhase::HillslopeKernel,
+                &decision,
+                &response.writeback,
+                &mut writeback_surface.state_surface,
+                &mut writeback_surface.flux_surface,
+            ) {
+                Ok(value) => value,
+                Err(source) => {
+                    deferred_error = Some(HillslopeSchedulerError::Writeback(source));
+                    phase_reports.push(HillslopeKernelPhaseReport {
+                        phase,
+                        kernel_status,
+                        decision_outcome: WritebackDecisionOutcome::Reject,
+                        decision_status: deferred_error_status.clone(),
+                        apply_result: None,
+                    });
+                    return deferred_error_status.clone();
+                }
+            };
+
+            phase_reports.push(HillslopeKernelPhaseReport {
+                phase,
+                kernel_status: kernel_status.clone(),
+                decision_outcome: apply_result.outcome,
+                decision_status: apply_result.status.clone(),
+                apply_result: Some(apply_result),
+            });
+
+            kernel_status
+        })?;
+
+        if let Some(error) = deferred_error {
+            return Err(error);
+        }
+
+        Ok(HillslopeKernelExecutionReport {
+            scheduler_report,
+            phase_reports,
+            writeback_surface,
+        })
+    }
 }
 
 impl Default for HillslopePhaseScheduler {
@@ -523,11 +701,16 @@ impl Default for HillslopePhaseScheduler {
 mod tests {
     use std::cell::Cell;
 
+    use openwepp_kernel_contract::{
+        HillslopeKernel, HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
+        WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
+    };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
     use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 
     use super::{
-        HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, SchedulerOutcomeClass,
+        HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
+        SchedulerOutcomeClass,
     };
 
     const VALID_TOPOLOGY: &str = r"
@@ -708,6 +891,191 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         assert_eq!(
             report.scheduler_status.classification(),
             StatusClassification::Nominal
+        );
+    }
+
+    #[test]
+    fn execute_with_kernel_applies_writeback_updates() {
+        #[derive(Default)]
+        struct NominalKernel {
+            call_index: u32,
+        }
+
+        impl HillslopeKernel for NominalKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest,
+            ) -> KernelRunResponse {
+                self.call_index += 1;
+                let call_value = f64::from(self.call_index);
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    format!("HKERNEL-PHASE-OK-{}", self.call_index),
+                )
+                .expect("status should construct");
+                let writeback = KernelWritebackPayload::with_updates(
+                    vec![WritebackField::bounded(
+                        "soil_storage",
+                        call_value,
+                        Some(0.0),
+                        Some(1000.0),
+                    )],
+                    vec![WritebackField::bounded(
+                        "runoff_total",
+                        call_value * 0.25,
+                        Some(0.0),
+                        None,
+                    )],
+                );
+
+                KernelRunResponse::new(status, writeback)
+            }
+        }
+
+        let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+        let topology_report =
+            validate_pre_execution_topology(&graph).expect("topology report should build");
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NominalKernel::default();
+
+        let report = scheduler
+            .execute_with_kernel(
+                &topology_report,
+                &mut kernel,
+                HillslopeWritebackSurface::default(),
+            )
+            .expect("kernel execution should succeed");
+
+        assert!(report.scheduler_report.is_success());
+        assert_eq!(
+            report.scheduler_report.executed_phases(),
+            Vec::from(HillslopePhaseGraph::canonical_order())
+        );
+        assert_eq!(report.phase_reports.len(), 9);
+        assert!(report.phase_reports.iter().all(|phase| {
+            phase.decision_outcome == WritebackDecisionOutcome::Apply
+                && phase.apply_result.is_some()
+        }));
+        assert_eq!(
+            report
+                .writeback_surface
+                .state_surface
+                .get("soil_storage")
+                .copied(),
+            Some(9.0)
+        );
+        assert_eq!(
+            report
+                .writeback_surface
+                .flux_surface
+                .get("runoff_total")
+                .copied(),
+            Some(2.25)
+        );
+    }
+
+    #[test]
+    fn execute_with_kernel_rejects_non_finite_writeback() {
+        struct RejectKernel;
+
+        impl HillslopeKernel for RejectKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HKERNEL-PHASE-OK-REJECT",
+                )
+                .expect("status should construct");
+                let writeback = KernelWritebackPayload::with_updates(
+                    vec![WritebackField::unbounded("soil_storage", f64::NAN)],
+                    Vec::new(),
+                );
+                KernelRunResponse::new(status, writeback)
+            }
+        }
+
+        let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+        let topology_report =
+            validate_pre_execution_topology(&graph).expect("topology report should build");
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = RejectKernel;
+
+        let report = scheduler
+            .execute_with_kernel(
+                &topology_report,
+                &mut kernel,
+                HillslopeWritebackSurface::default(),
+            )
+            .expect("execution should return typed report");
+
+        assert_eq!(
+            report.scheduler_report.outcome_class,
+            SchedulerOutcomeClass::PhaseFailure
+        );
+        assert_eq!(report.phase_reports.len(), 1);
+        assert_eq!(
+            report.phase_reports[0].decision_outcome,
+            WritebackDecisionOutcome::Reject
+        );
+        assert_eq!(
+            report.phase_reports[0].decision_status.message_id(),
+            WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID
+        );
+        assert!(
+            !report
+                .writeback_surface
+                .state_surface
+                .contains_key("soil_storage"),
+            "rejected payload must not mutate orchestrator writeback state"
+        );
+    }
+
+    #[test]
+    fn execute_with_kernel_rejects_kernel_phase_mismatch() {
+        struct PhaseMismatchKernel;
+
+        impl HillslopeKernel for PhaseMismatchKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::PreExecutionValidation,
+                    "HKERNEL-PHASE-INVALID",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+        let topology_report =
+            validate_pre_execution_topology(&graph).expect("topology report should build");
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = PhaseMismatchKernel;
+
+        let report = scheduler
+            .execute_with_kernel(
+                &topology_report,
+                &mut kernel,
+                HillslopeWritebackSurface::default(),
+            )
+            .expect("execution should return typed report");
+
+        assert_eq!(
+            report.scheduler_report.outcome_class,
+            SchedulerOutcomeClass::PhaseFailure
+        );
+        assert_eq!(
+            report.scheduler_report.scheduler_status.boundary_class(),
+            BoundaryClass::ModeMismatch
+        );
+        assert_eq!(report.phase_reports.len(), 1);
+        assert_eq!(
+            report.phase_reports[0].decision_outcome,
+            WritebackDecisionOutcome::Reject
         );
     }
 }

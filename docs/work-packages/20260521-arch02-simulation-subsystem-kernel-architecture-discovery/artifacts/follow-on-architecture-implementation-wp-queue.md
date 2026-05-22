@@ -24,7 +24,7 @@ Ran evidence: none
 - Scope: deterministic watershed routing/impoundment dispatch scheduler.
 - Depends on: `arch03`, `arch04`.
 
-5. `20260522-arch07-kernel-trait-boundary-and-writeback-contract-001`
+5. `20260521-arch07-kernel-trait-boundary-and-writeback-contract-001`
 - Scope: kernel trait signatures and orchestrator-controlled writeback contracts.
 - Depends on: `arch03`, `arch05`, `arch06`.
 

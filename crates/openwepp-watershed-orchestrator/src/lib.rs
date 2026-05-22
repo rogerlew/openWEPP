@@ -4,6 +4,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::error::Error;
 use std::fmt;
 
+use openwepp_kernel_contract::{
+    KernelWritebackApplyResult, WatershedKernel, WatershedKernelRequest, WritebackDecisionOutcome,
+    WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
+};
 use openwepp_sim_contract::status::{
     BoundaryClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
 };
@@ -90,11 +94,37 @@ impl WatershedDispatchReport {
     }
 }
 
+/// Mutable state/flux maps owned by the watershed orchestrator.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct WatershedWritebackSurface {
+    pub state_surface: BTreeMap<String, f64>,
+    pub flux_surface: BTreeMap<String, f64>,
+}
+
+/// Per-step watershed kernel/writeback execution evidence.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WatershedKernelStepReport {
+    pub step: DispatchStep,
+    pub kernel_status: SimulationStatus,
+    pub decision_outcome: WritebackDecisionOutcome,
+    pub decision_status: SimulationStatus,
+    pub apply_result: Option<KernelWritebackApplyResult>,
+}
+
+/// Kernel-integrated watershed execution report.
+#[derive(Debug, Clone, PartialEq)]
+pub struct WatershedKernelExecutionReport {
+    pub dispatch_report: WatershedDispatchReport,
+    pub step_reports: Vec<WatershedKernelStepReport>,
+    pub writeback_surface: WatershedWritebackSurface,
+}
+
 /// Error surface for watershed dispatch scheduler orchestration.
 #[derive(Debug)]
 pub enum WatershedDispatchError {
     Status(StatusError),
     TopologyValidation(TopologyValidationError),
+    Writeback(WritebackError),
 }
 
 impl fmt::Display for WatershedDispatchError {
@@ -105,6 +135,9 @@ impl fmt::Display for WatershedDispatchError {
                 f,
                 "failed constructing topology validation gate report: {source}"
             ),
+            Self::Writeback(source) => {
+                write!(f, "failed applying watershed kernel writeback: {source}")
+            }
         }
     }
 }
@@ -114,6 +147,7 @@ impl Error for WatershedDispatchError {
         match self {
             Self::Status(source) => Some(source),
             Self::TopologyValidation(source) => Some(source),
+            Self::Writeback(source) => Some(source),
         }
     }
 }
@@ -127,6 +161,12 @@ impl From<StatusError> for WatershedDispatchError {
 impl From<TopologyValidationError> for WatershedDispatchError {
     fn from(value: TopologyValidationError) -> Self {
         Self::TopologyValidation(value)
+    }
+}
+
+impl From<WritebackError> for WatershedDispatchError {
+    fn from(value: WritebackError) -> Self {
+        Self::Writeback(value)
     }
 }
 
@@ -254,6 +294,146 @@ pub fn schedule_watershed_dispatch_with_gate(
     schedule_watershed_dispatch(graph, &topology_validation)
 }
 
+/// Execute watershed dispatch scheduling and invoke watershed kernels through
+/// the typed ARCH07 boundary.
+///
+/// Kernel writeback proposals are accepted/rejected/applied by orchestrator
+/// policy. Kernel code never mutates orchestrator state directly.
+///
+/// # Errors
+///
+/// Returns `WatershedDispatchError` when scheduler/status construction fails or
+/// when writeback apply surfaces return typed errors.
+pub fn execute_watershed_dispatch_with_kernel<K>(
+    graph: &TopologyGraph,
+    topology_validation: &TopologyValidationReport,
+    kernel: &mut K,
+    mut writeback_surface: WatershedWritebackSurface,
+) -> Result<WatershedKernelExecutionReport, WatershedDispatchError>
+where
+    K: WatershedKernel,
+{
+    let mut dispatch_report = schedule_watershed_dispatch(graph, topology_validation)?;
+
+    if !dispatch_report.is_success() {
+        return Ok(WatershedKernelExecutionReport {
+            dispatch_report,
+            step_reports: Vec::new(),
+            writeback_surface,
+        });
+    }
+
+    let mode_mismatch_status = SimulationStatus::failure(
+        SimulationPhase::WatershedKernel,
+        true,
+        false,
+        BoundaryClass::ModeMismatch,
+        "WKERNEL-E-STATUS-PHASE-MISMATCH",
+    )?;
+
+    let mut step_reports = Vec::new();
+
+    for step in dispatch_report.steps.iter().cloned() {
+        let request = WatershedKernelRequest::new(
+            step.node.kind.as_str(),
+            step.node.id,
+            step.dependency_nodes
+                .iter()
+                .map(|node| format_node_key(*node))
+                .collect::<Vec<String>>(),
+            step.contributor_hillslopes.clone(),
+            writeback_surface.state_surface.clone(),
+            writeback_surface.flux_surface.clone(),
+        );
+
+        let response = kernel.run_watershed_node(&request);
+        let kernel_status = response.status.clone();
+
+        if kernel_status.phase() != SimulationPhase::WatershedKernel {
+            step_reports.push(WatershedKernelStepReport {
+                step,
+                kernel_status,
+                decision_outcome: WritebackDecisionOutcome::Reject,
+                decision_status: mode_mismatch_status.clone(),
+                apply_result: None,
+            });
+            dispatch_report.dispatch_status = mode_mismatch_status.clone();
+            break;
+        }
+
+        if kernel_status.classification() == StatusClassification::Failure {
+            step_reports.push(WatershedKernelStepReport {
+                step,
+                kernel_status: kernel_status.clone(),
+                decision_outcome: WritebackDecisionOutcome::Reject,
+                decision_status: kernel_status.clone(),
+                apply_result: None,
+            });
+            dispatch_report.dispatch_status = kernel_status;
+            break;
+        }
+
+        let decision =
+            evaluate_kernel_writeback(SimulationPhase::WatershedKernel, &response.writeback)?;
+        if decision.outcome == WritebackDecisionOutcome::Reject {
+            step_reports.push(WatershedKernelStepReport {
+                step,
+                kernel_status,
+                decision_outcome: WritebackDecisionOutcome::Reject,
+                decision_status: decision.status.clone(),
+                apply_result: None,
+            });
+            dispatch_report.dispatch_status = decision.status;
+            break;
+        }
+
+        let apply_result = apply_kernel_writeback(
+            SimulationPhase::WatershedKernel,
+            &decision,
+            &response.writeback,
+            &mut writeback_surface.state_surface,
+            &mut writeback_surface.flux_surface,
+        )?;
+
+        step_reports.push(WatershedKernelStepReport {
+            step,
+            kernel_status: kernel_status.clone(),
+            decision_outcome: apply_result.outcome,
+            decision_status: apply_result.status.clone(),
+            apply_result: Some(apply_result),
+        });
+
+        if kernel_status.classification() == StatusClassification::Advisory {
+            dispatch_report.dispatch_status = kernel_status;
+        }
+    }
+
+    Ok(WatershedKernelExecutionReport {
+        dispatch_report,
+        step_reports,
+        writeback_surface,
+    })
+}
+
+/// Execute topology validation gate + watershed dispatch + kernel writeback
+/// protocol in one helper surface.
+///
+/// # Errors
+///
+/// Returns `WatershedDispatchError` when topology validation, dispatch status
+/// construction, or writeback apply surfaces return typed errors.
+pub fn execute_watershed_dispatch_with_gate_and_kernel<K>(
+    graph: &TopologyGraph,
+    kernel: &mut K,
+    writeback_surface: WatershedWritebackSurface,
+) -> Result<WatershedKernelExecutionReport, WatershedDispatchError>
+where
+    K: WatershedKernel,
+{
+    let topology_validation = validate_pre_execution_topology(graph)?;
+    execute_watershed_dispatch_with_kernel(graph, &topology_validation, kernel, writeback_surface)
+}
+
 #[derive(Debug)]
 enum DispatchPlanError {
     Status(StatusError),
@@ -274,66 +454,8 @@ fn build_dispatch_steps(graph: &TopologyGraph) -> Result<Vec<DispatchStep>, Disp
         .filter(|key| key.kind != TopologyNodeKind::Hillslope)
         .collect();
 
-    let mut dependencies: BTreeMap<TopologyNodeKey, BTreeSet<TopologyNodeKey>> = dispatch_nodes
-        .iter()
-        .copied()
-        .map(|key| (key, BTreeSet::new()))
-        .collect();
-
-    let mut hillslope_contributors: BTreeMap<TopologyNodeKey, BTreeSet<u32>> = dispatch_nodes
-        .iter()
-        .copied()
-        .map(|key| (key, BTreeSet::new()))
-        .collect();
-
-    for node in graph.nodes() {
-        if node.key.kind == TopologyNodeKind::Hillslope {
-            continue;
-        }
-
-        for (kind, _slot, contributor_id) in node.contributors.references() {
-            if contributor_id == 0 {
-                continue;
-            }
-
-            match kind {
-                TopologyNodeKind::Hillslope => {
-                    hillslope_contributors
-                        .entry(node.key)
-                        .or_default()
-                        .insert(contributor_id);
-                }
-                TopologyNodeKind::Channel | TopologyNodeKind::Impoundment => {
-                    let dependency = TopologyNodeKey::new(kind, contributor_id);
-                    if !dispatch_nodes.contains(&dependency) {
-                        return Err(DispatchPlanError::MissingDependency {
-                            node: node.key,
-                            dependency,
-                        });
-                    }
-
-                    dependencies.entry(node.key).or_default().insert(dependency);
-                }
-            }
-        }
-    }
-
-    let mut indegree: BTreeMap<TopologyNodeKey, usize> = dependencies
-        .iter()
-        .map(|(node, parents)| (*node, parents.len()))
-        .collect();
-
-    let mut dependents: BTreeMap<TopologyNodeKey, BTreeSet<TopologyNodeKey>> = dispatch_nodes
-        .iter()
-        .copied()
-        .map(|node| (node, BTreeSet::new()))
-        .collect();
-
-    for (node, parents) in &dependencies {
-        for parent in parents {
-            dependents.entry(*parent).or_default().insert(*node);
-        }
-    }
+    let (dependencies, hillslope_contributors) = collect_dependency_maps(graph, &dispatch_nodes)?;
+    let (mut indegree, dependents) = build_indegree_and_dependents(&dependencies, &dispatch_nodes);
 
     let mut ready: BTreeSet<TopologyNodeKey> = indegree
         .iter()
@@ -343,33 +465,12 @@ fn build_dispatch_steps(graph: &TopologyGraph) -> Result<Vec<DispatchStep>, Disp
     let mut steps: Vec<DispatchStep> = Vec::new();
 
     while let Some(node) = ready.pop_first() {
-        let parent_nodes: Vec<TopologyNodeKey> = dependencies
-            .get(&node)
-            .map(|parents| parents.iter().copied().collect())
-            .unwrap_or_default();
-
-        let hillslope_nodes: Vec<u32> = hillslope_contributors
-            .get(&node)
-            .map(|parents| parents.iter().copied().collect())
-            .unwrap_or_default();
-
-        let status = SimulationStatus::ok(
-            SimulationPhase::WatershedKernel,
-            format!(
-                "WATERSHED-DISPATCH-STEP-{}-{}-OK",
-                node_kind_message_token(node.kind),
-                node.id
-            ),
-        )
-        .map_err(DispatchPlanError::Status)?;
-
-        steps.push(DispatchStep {
-            sequence_index: steps.len(),
+        steps.push(build_dispatch_step(
             node,
-            dependency_nodes: parent_nodes,
-            contributor_hillslopes: hillslope_nodes,
-            status,
-        });
+            steps.len(),
+            &dependencies,
+            &hillslope_contributors,
+        )?);
 
         if let Some(children) = dependents.get(&node) {
             for child in children {
@@ -395,6 +496,132 @@ fn build_dispatch_steps(graph: &TopologyGraph) -> Result<Vec<DispatchStep>, Disp
     Ok(steps)
 }
 
+type DependencyMap = BTreeMap<TopologyNodeKey, BTreeSet<TopologyNodeKey>>;
+type HillslopeContributorMap = BTreeMap<TopologyNodeKey, BTreeSet<u32>>;
+type IndegreeMap = BTreeMap<TopologyNodeKey, usize>;
+type DependentMap = BTreeMap<TopologyNodeKey, BTreeSet<TopologyNodeKey>>;
+
+fn collect_dependency_maps(
+    graph: &TopologyGraph,
+    dispatch_nodes: &BTreeSet<TopologyNodeKey>,
+) -> Result<(DependencyMap, HillslopeContributorMap), DispatchPlanError> {
+    let mut dependencies: DependencyMap = dispatch_nodes
+        .iter()
+        .copied()
+        .map(|key| (key, BTreeSet::new()))
+        .collect();
+    let mut hillslope_contributors: HillslopeContributorMap = dispatch_nodes
+        .iter()
+        .copied()
+        .map(|key| (key, BTreeSet::new()))
+        .collect();
+
+    for node in graph.nodes() {
+        if node.key.kind == TopologyNodeKind::Hillslope {
+            continue;
+        }
+        for (kind, _slot, contributor_id) in node.contributors.references() {
+            if contributor_id == 0 {
+                continue;
+            }
+            record_contributor(
+                &mut dependencies,
+                &mut hillslope_contributors,
+                dispatch_nodes,
+                node.key,
+                kind,
+                contributor_id,
+            )?;
+        }
+    }
+
+    Ok((dependencies, hillslope_contributors))
+}
+
+fn record_contributor(
+    dependencies: &mut DependencyMap,
+    hillslope_contributors: &mut HillslopeContributorMap,
+    dispatch_nodes: &BTreeSet<TopologyNodeKey>,
+    node: TopologyNodeKey,
+    kind: TopologyNodeKind,
+    contributor_id: u32,
+) -> Result<(), DispatchPlanError> {
+    match kind {
+        TopologyNodeKind::Hillslope => {
+            hillslope_contributors
+                .entry(node)
+                .or_default()
+                .insert(contributor_id);
+            Ok(())
+        }
+        TopologyNodeKind::Channel | TopologyNodeKind::Impoundment => {
+            let dependency = TopologyNodeKey::new(kind, contributor_id);
+            if !dispatch_nodes.contains(&dependency) {
+                return Err(DispatchPlanError::MissingDependency { node, dependency });
+            }
+
+            dependencies.entry(node).or_default().insert(dependency);
+            Ok(())
+        }
+    }
+}
+
+fn build_indegree_and_dependents(
+    dependencies: &DependencyMap,
+    dispatch_nodes: &BTreeSet<TopologyNodeKey>,
+) -> (IndegreeMap, DependentMap) {
+    let indegree: IndegreeMap = dependencies
+        .iter()
+        .map(|(node, parents)| (*node, parents.len()))
+        .collect();
+    let mut dependents: DependentMap = dispatch_nodes
+        .iter()
+        .copied()
+        .map(|node| (node, BTreeSet::new()))
+        .collect();
+
+    for (node, parents) in dependencies {
+        for parent in parents {
+            dependents.entry(*parent).or_default().insert(*node);
+        }
+    }
+
+    (indegree, dependents)
+}
+
+fn build_dispatch_step(
+    node: TopologyNodeKey,
+    sequence_index: usize,
+    dependencies: &DependencyMap,
+    hillslope_contributors: &HillslopeContributorMap,
+) -> Result<DispatchStep, DispatchPlanError> {
+    let parent_nodes: Vec<TopologyNodeKey> = dependencies
+        .get(&node)
+        .map(|parents| parents.iter().copied().collect())
+        .unwrap_or_default();
+    let hillslope_nodes: Vec<u32> = hillslope_contributors
+        .get(&node)
+        .map(|parents| parents.iter().copied().collect())
+        .unwrap_or_default();
+    let status = SimulationStatus::ok(
+        SimulationPhase::WatershedKernel,
+        format!(
+            "WATERSHED-DISPATCH-STEP-{}-{}-OK",
+            node_kind_message_token(node.kind),
+            node.id
+        ),
+    )
+    .map_err(DispatchPlanError::Status)?;
+
+    Ok(DispatchStep {
+        sequence_index,
+        node,
+        dependency_nodes: parent_nodes,
+        contributor_hillslopes: hillslope_nodes,
+        status,
+    })
+}
+
 fn node_kind_message_token(kind: TopologyNodeKind) -> &'static str {
     match kind {
         TopologyNodeKind::Hillslope => "HILLSLOPE",
@@ -409,6 +636,10 @@ fn format_node_key(key: TopologyNodeKey) -> String {
 
 #[cfg(test)]
 mod tests {
+    use openwepp_kernel_contract::{
+        KernelRunResponse, KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID,
+        WatershedKernel, WatershedKernelRequest, WritebackDecisionOutcome, WritebackField,
+    };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
     use openwepp_topology::{
         ContributorTriplet, TopologyContributors, TopologyNode, validate_pre_execution_topology,
@@ -654,6 +885,212 @@ mod tests {
         assert_eq!(
             report.diagnostics[0].code,
             DispatchDiagnosticCode::MissingDependency
+        );
+    }
+
+    #[test]
+    fn execute_with_kernel_applies_writeback() {
+        #[derive(Default)]
+        struct NominalKernel {
+            call_index: u32,
+        }
+
+        impl WatershedKernel for NominalKernel {
+            fn run_watershed_node(
+                &mut self,
+                _request: &WatershedKernelRequest,
+            ) -> KernelRunResponse {
+                self.call_index += 1;
+                let status = SimulationStatus::ok(
+                    SimulationPhase::WatershedKernel,
+                    format!("WKERNEL-STEP-OK-{}", self.call_index),
+                )
+                .expect("status should construct");
+                let writeback = KernelWritebackPayload::with_updates(
+                    vec![WritebackField::bounded(
+                        "channel_storage",
+                        f64::from(self.call_index),
+                        Some(0.0),
+                        Some(10_000.0),
+                    )],
+                    vec![WritebackField::bounded(
+                        "discharge_total",
+                        f64::from(self.call_index) * 0.5,
+                        Some(0.0),
+                        None,
+                    )],
+                );
+
+                KernelRunResponse::new(status, writeback)
+            }
+        }
+
+        let graph = TopologyGraph::new(
+            2,
+            1,
+            0,
+            vec![node(
+                TopologyNodeKind::Channel,
+                1,
+                [1, 2, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+            )],
+        );
+        let topology_validation =
+            validate_pre_execution_topology(&graph).expect("topology validation should construct");
+        assert!(topology_validation.is_valid());
+
+        let mut kernel = NominalKernel::default();
+        let report = execute_watershed_dispatch_with_kernel(
+            &graph,
+            &topology_validation,
+            &mut kernel,
+            WatershedWritebackSurface::default(),
+        )
+        .expect("kernel execution should succeed");
+
+        assert!(report.dispatch_report.is_success());
+        assert_eq!(report.step_reports.len(), 1);
+        assert_eq!(
+            report.step_reports[0].decision_outcome,
+            WritebackDecisionOutcome::Apply
+        );
+        assert_eq!(
+            report
+                .writeback_surface
+                .state_surface
+                .get("channel_storage")
+                .copied(),
+            Some(1.0)
+        );
+        assert_eq!(
+            report
+                .writeback_surface
+                .flux_surface
+                .get("discharge_total")
+                .copied(),
+            Some(0.5)
+        );
+    }
+
+    #[test]
+    fn execute_with_kernel_rejects_non_finite_writeback() {
+        struct RejectKernel;
+
+        impl WatershedKernel for RejectKernel {
+            fn run_watershed_node(
+                &mut self,
+                _request: &WatershedKernelRequest,
+            ) -> KernelRunResponse {
+                let status = SimulationStatus::ok(
+                    SimulationPhase::WatershedKernel,
+                    "WKERNEL-STEP-OK-REJECT",
+                )
+                .expect("status should construct");
+                let writeback = KernelWritebackPayload::with_updates(
+                    vec![WritebackField::unbounded("channel_storage", f64::INFINITY)],
+                    Vec::new(),
+                );
+                KernelRunResponse::new(status, writeback)
+            }
+        }
+
+        let graph = TopologyGraph::new(
+            1,
+            1,
+            0,
+            vec![node(
+                TopologyNodeKind::Channel,
+                1,
+                [1, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+            )],
+        );
+        let topology_validation =
+            validate_pre_execution_topology(&graph).expect("topology validation should construct");
+        let mut kernel = RejectKernel;
+
+        let report = execute_watershed_dispatch_with_kernel(
+            &graph,
+            &topology_validation,
+            &mut kernel,
+            WatershedWritebackSurface::default(),
+        )
+        .expect("execution should return typed report");
+
+        assert!(!report.dispatch_report.is_success());
+        assert_eq!(report.step_reports.len(), 1);
+        assert_eq!(
+            report.step_reports[0].decision_outcome,
+            WritebackDecisionOutcome::Reject
+        );
+        assert_eq!(
+            report.step_reports[0].decision_status.message_id(),
+            WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID
+        );
+        assert_eq!(
+            report.dispatch_report.dispatch_status.message_id(),
+            WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID
+        );
+        assert!(
+            report.writeback_surface.state_surface.is_empty(),
+            "rejected payload must not mutate orchestrator writeback state"
+        );
+    }
+
+    #[test]
+    fn execute_with_kernel_rejects_status_phase_mismatch() {
+        struct PhaseMismatchKernel;
+
+        impl WatershedKernel for PhaseMismatchKernel {
+            fn run_watershed_node(
+                &mut self,
+                _request: &WatershedKernelRequest,
+            ) -> KernelRunResponse {
+                let status = SimulationStatus::ok(
+                    SimulationPhase::PreExecutionValidation,
+                    "WKERNEL-STEP-INVALID-PHASE",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let graph = TopologyGraph::new(
+            1,
+            1,
+            0,
+            vec![node(
+                TopologyNodeKind::Channel,
+                1,
+                [1, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0],
+            )],
+        );
+        let topology_validation =
+            validate_pre_execution_topology(&graph).expect("topology validation should construct");
+        let mut kernel = PhaseMismatchKernel;
+
+        let report = execute_watershed_dispatch_with_kernel(
+            &graph,
+            &topology_validation,
+            &mut kernel,
+            WatershedWritebackSurface::default(),
+        )
+        .expect("execution should return typed report");
+
+        assert!(!report.dispatch_report.is_success());
+        assert_eq!(
+            report.dispatch_report.dispatch_status.boundary_class(),
+            BoundaryClass::ModeMismatch
+        );
+        assert_eq!(report.step_reports.len(), 1);
+        assert_eq!(
+            report.step_reports[0].decision_outcome,
+            WritebackDecisionOutcome::Reject
         );
     }
 
