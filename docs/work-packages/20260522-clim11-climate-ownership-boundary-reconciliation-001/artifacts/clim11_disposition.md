@@ -34,3 +34,11 @@ Ran:
    hillslope/watershed logic).
 2. CLIM13: typed climate forcing surface closure.
 3. CLIM15: runtime taxonomy reachability reconciliation.
+
+## CLIM16 Follow-On Status Update (2026-05-22)
+
+Evidence mode: `Static`
+
+Static:
+- CLIM12, CLIM13, and CLIM15 are now closed with `GO` dispositions.
+- CLIM16 normalizes register state so this follow-on list is historical, not active hold state.

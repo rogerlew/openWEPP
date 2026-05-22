@@ -27,3 +27,11 @@ Ran:
 
 ## Severity Check
 - No unresolved high-severity implementation divergence found in CLIM12 write scope.
+
+## CLIM16 Status Reconciliation (2026-05-22)
+
+Evidence mode: `Static`
+
+Static:
+- Residual hold item 1 is closed by CLIM15 taxonomy reachability reconciliation.
+- Residual hold item 2 is closed by CLIM16 governance/register normalization.

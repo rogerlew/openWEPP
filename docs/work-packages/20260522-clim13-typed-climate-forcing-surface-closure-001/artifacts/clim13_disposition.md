@@ -24,3 +24,11 @@ Ran:
 ## Residual Hold
 1. Broader runtime taxonomy harmonization remains `HOLD` pending CLIM15.
 2. Cross-package governance/register normalization remains `HOLD` pending CLIM16.
+
+## CLIM16 Status Reconciliation (2026-05-22)
+
+Evidence mode: `Static`
+
+Static:
+- Residual hold item 1 is closed by CLIM15 runtime taxonomy reachability reconciliation.
+- Residual hold item 2 is closed by CLIM16 governance/register normalization.

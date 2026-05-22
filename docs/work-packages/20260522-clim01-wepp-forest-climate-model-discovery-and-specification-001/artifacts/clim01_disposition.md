@@ -1,6 +1,6 @@
 # CLIM01 Disposition
 
-Status: `HOLD`
+Status: `complete` (historical `HOLD` released by CLIM16 governance sync)
 Evidence mode: `Ran + Static`
 
 Static:
@@ -15,7 +15,7 @@ Ran:
 1. CLIM01 objectives 1-5 are complete at documentation/specification level.
 2. Scope boundaries were enforced: continuous-daily and breakpoint covered; single-storm explicitly excluded.
 3. Evidence traceability is complete and anchored to `/workdir/wepp-forest_260430_baseline`.
-4. Promotion remains blocked by unresolved implementation-governance items:
+4. Historical hold basis at original CLIM01 closeout:
 - `CLIM-ARCH-GAP-001`: no climate parser-to-runtime adapter seam in orchestrator crates yet.
 - `CLIM-ARCH-GAP-004`: no climate-specific parser-to-kernel seam integration tests yet.
 5. Ratified CLIM01 decisions:
@@ -26,4 +26,18 @@ Ran:
 
 ## Final Verdict
 
-`HOLD` (docs/spec package complete; implementation-governance closure unresolved).
+`complete` (docs/spec package complete; original hold conditions were resolved by
+downstream CLIM11..15 implementation/governance packages and reconciled in
+CLIM16).
+
+## CLIM16 Governance Sync Update (2026-05-22)
+
+Evidence mode: `Static`
+
+Static:
+- `CLIM-ARCH-GAP-001` closure evidence exists in CLIM12 shared
+  parser-to-runtime adapter extraction and orchestrator consumption artifacts.
+- `CLIM-ARCH-GAP-004` closure evidence exists in downstream CLIM12..15 runtime
+  seam integration and guard-path test artifacts.
+- CLIM01 decision set remains authoritative; no decision reversals were
+  introduced by CLIM16.
