@@ -1,0 +1,15 @@
+# Project-level Codex configuration for openWEPP review roles.
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 10
+
+[agents.rust_code_reviewer]
+description = "Primary correctness gate for Rust authoring/modification tasks."
+config_file = "agents/rust_code_reviewer.toml"
+
+[agents.rust_qa_reviewer]
+description = "Secondary QA gate for Rust quality, tests, and maintainability."
+config_file = "agents/rust_qa_reviewer.toml"
