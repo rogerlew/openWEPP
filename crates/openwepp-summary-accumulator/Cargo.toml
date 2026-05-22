@@ -8,4 +8,5 @@ repository = "https://github.com/rogerlew/openWEPP"
 publish = false
 
 [dependencies]
+openwepp-comparator-metadata = { path = "../openwepp-comparator-metadata", version = "0.1.0" }
 openwepp-sim-contract = { path = "../openwepp-sim-contract", version = "0.1.0" }

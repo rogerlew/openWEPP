@@ -8,6 +8,10 @@ use std::error::Error;
 use std::fmt;
 use std::mem;
 
+use openwepp_comparator_metadata::{
+    ComparatorTierRoutingError, ComparatorTierRoutingMetadata, ComparatorTierRoutingRequest,
+    route_comparator_tier_metadata,
+};
 use openwepp_sim_contract::status::{SimulationPhase, SimulationStatus, StatusError};
 
 /// Message id emitted when a daily window rollup is produced.
@@ -156,6 +160,7 @@ pub struct SummaryRollup {
     pub key: SummaryWindowKey,
     pub totals: SummaryScalarSurface,
     pub status: SimulationStatus,
+    pub comparator_metadata: ComparatorTierRoutingMetadata,
 }
 
 /// Output from a single accumulation step or finalize call.
@@ -172,8 +177,9 @@ impl SummaryAccumulatorStepOutcome {
 }
 
 /// Summary accumulation kernel state machine.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SummaryAccumulator {
+    routing_metadata: ComparatorTierRoutingMetadata,
     current_day: Option<CalendarDay>,
     current_month: Option<(i32, u8)>,
     current_year: Option<i32>,
@@ -185,9 +191,22 @@ pub struct SummaryAccumulator {
 }
 
 impl SummaryAccumulator {
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
+    /// Construct a new summary accumulator with explicit comparator tier routing metadata.
+    pub fn new(
+        routing_request: ComparatorTierRoutingRequest,
+    ) -> Result<Self, SummaryAccumulatorError> {
+        let routing_metadata = route_comparator_tier_metadata(routing_request)?;
+        Ok(Self {
+            routing_metadata,
+            current_day: None,
+            current_month: None,
+            current_year: None,
+            daily_totals: SummaryScalarSurface::default(),
+            monthly_totals: SummaryScalarSurface::default(),
+            yearly_totals: SummaryScalarSurface::default(),
+            eos_totals: SummaryScalarSurface::default(),
+            sample_count: 0,
+        })
     }
 
     #[must_use]
@@ -198,6 +217,11 @@ impl SummaryAccumulator {
     #[must_use]
     pub const fn current_day(&self) -> Option<CalendarDay> {
         self.current_day
+    }
+
+    #[must_use]
+    pub const fn routing_metadata(&self) -> ComparatorTierRoutingMetadata {
+        self.routing_metadata
     }
 
     /// Accumulate one typed daily input surface.
@@ -308,6 +332,7 @@ impl SummaryAccumulator {
             SummaryWindow::Daily,
             SummaryWindowKey::Daily(day),
             SUMMARY_DAILY_MESSAGE_ID,
+            self.routing_metadata,
             &mut self.daily_totals,
         )
     }
@@ -321,6 +346,7 @@ impl SummaryAccumulator {
             SummaryWindow::Monthly,
             SummaryWindowKey::Monthly { year, month },
             SUMMARY_MONTHLY_MESSAGE_ID,
+            self.routing_metadata,
             &mut self.monthly_totals,
         )
     }
@@ -330,6 +356,7 @@ impl SummaryAccumulator {
             SummaryWindow::Yearly,
             SummaryWindowKey::Yearly { year },
             SUMMARY_YEARLY_MESSAGE_ID,
+            self.routing_metadata,
             &mut self.yearly_totals,
         )
     }
@@ -339,6 +366,7 @@ impl SummaryAccumulator {
             SummaryWindow::EndOfSimulation,
             SummaryWindowKey::EndOfSimulation,
             SUMMARY_EOS_MESSAGE_ID,
+            self.routing_metadata,
             &mut self.eos_totals,
         )
     }
@@ -359,6 +387,7 @@ fn build_rollup(
     window: SummaryWindow,
     key: SummaryWindowKey,
     message_id: &str,
+    comparator_metadata: ComparatorTierRoutingMetadata,
     totals: &mut SummaryScalarSurface,
 ) -> Result<SummaryRollup, SummaryAccumulatorError> {
     if totals.is_empty() {
@@ -373,6 +402,7 @@ fn build_rollup(
         key,
         totals,
         status,
+        comparator_metadata,
     })
 }
 
@@ -405,6 +435,7 @@ pub enum SummaryAccumulatorError {
     },
     FinalizeWithoutSamples,
     Status(StatusError),
+    ComparatorMetadata(ComparatorTierRoutingError),
 }
 
 impl fmt::Display for SummaryAccumulatorError {
@@ -441,6 +472,9 @@ impl fmt::Display for SummaryAccumulatorError {
                 f.write_str("cannot finalize summary accumulator with zero samples")
             }
             Self::Status(source) => write!(f, "status construction failed: {source}"),
+            Self::ComparatorMetadata(source) => {
+                write!(f, "comparator metadata routing failed: {source}")
+            }
         }
     }
 }
@@ -449,6 +483,7 @@ impl Error for SummaryAccumulatorError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             Self::Status(source) => Some(source),
+            Self::ComparatorMetadata(source) => Some(source),
             _ => None,
         }
     }
@@ -457,6 +492,12 @@ impl Error for SummaryAccumulatorError {
 impl From<StatusError> for SummaryAccumulatorError {
     fn from(value: StatusError) -> Self {
         Self::Status(value)
+    }
+}
+
+impl From<ComparatorTierRoutingError> for SummaryAccumulatorError {
+    fn from(value: ComparatorTierRoutingError) -> Self {
+        Self::ComparatorMetadata(value)
     }
 }
 
@@ -508,10 +549,20 @@ fn is_leap_year(year: i32) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use openwepp_comparator_metadata::{
+        COMPMETA_HIGH_CONFIDENCE_SINGLE_OFE_DAILY_MESSAGE_ID, ComparatorConfidenceTier,
+        ComparatorSurfaceClass,
+    };
+
     use super::*;
 
     fn surface(pairs: &[(&str, f64)]) -> SummaryScalarSurface {
         SummaryScalarSurface::from_pairs(pairs.iter().copied()).expect("valid scalar surface")
+    }
+
+    fn accumulator() -> SummaryAccumulator {
+        SummaryAccumulator::new(ComparatorTierRoutingRequest::single_ofe_daily())
+            .expect("valid routing metadata")
     }
 
     fn expect_symbol(surface: &SummaryScalarSurface, symbol: &str, expected: f64) {
@@ -524,7 +575,7 @@ mod tests {
         let day_2 = CalendarDay::new(2026, 12, 31).expect("valid day");
         let day_3 = CalendarDay::new(2027, 1, 1).expect("valid day");
 
-        let mut accumulator = SummaryAccumulator::new();
+        let mut accumulator = accumulator();
 
         let first = accumulator
             .accumulate_day(day_1, surface(&[("runoff", 1.0), ("sed", 2.0)]))
@@ -553,6 +604,18 @@ mod tests {
         assert_eq!(daily.key, SummaryWindowKey::Daily(day_2));
         assert_eq!(daily.status.phase(), SimulationPhase::SummaryAccumulator);
         assert_eq!(daily.status.message_id(), SUMMARY_DAILY_MESSAGE_ID);
+        assert_eq!(
+            daily.comparator_metadata.surface_class,
+            ComparatorSurfaceClass::SingleOfeDailyWaterBalance
+        );
+        assert_eq!(
+            daily.comparator_metadata.confidence_tier,
+            ComparatorConfidenceTier::HigherConfidence
+        );
+        assert_eq!(
+            daily.comparator_metadata.message_id,
+            COMPMETA_HIGH_CONFIDENCE_SINGLE_OFE_DAILY_MESSAGE_ID
+        );
         expect_symbol(&daily.totals, "runoff", 2.0);
         expect_symbol(&daily.totals, "sed", 3.0);
 
@@ -619,7 +682,7 @@ mod tests {
         let day_1 = CalendarDay::new(2026, 5, 12).expect("valid day");
         let day_2 = CalendarDay::new(2026, 5, 13).expect("valid day");
 
-        let mut accumulator = SummaryAccumulator::new();
+        let mut accumulator = accumulator();
 
         let first = accumulator
             .accumulate_day(day_1, surface(&[("runoff", 1.5)]))
@@ -644,7 +707,7 @@ mod tests {
 
     #[test]
     fn rejects_non_monotonic_days() {
-        let mut accumulator = SummaryAccumulator::new();
+        let mut accumulator = accumulator();
         let day_2 = CalendarDay::new(2026, 1, 2).expect("valid day");
         let day_1 = CalendarDay::new(2026, 1, 1).expect("valid day");
 
@@ -684,7 +747,7 @@ mod tests {
 
     #[test]
     fn rejects_empty_scalar_surfaces() {
-        let mut accumulator = SummaryAccumulator::new();
+        let mut accumulator = accumulator();
         let day = CalendarDay::new(2026, 1, 1).expect("valid day");
 
         let error = accumulator
@@ -707,11 +770,27 @@ mod tests {
 
     #[test]
     fn finalize_without_samples_is_rejected() {
-        let mut accumulator = SummaryAccumulator::new();
+        let mut accumulator = accumulator();
         let error = accumulator
             .finalize()
             .expect_err("finalize without samples should fail");
 
         assert_eq!(error, SummaryAccumulatorError::FinalizeWithoutSamples);
+    }
+
+    #[test]
+    fn invalid_comparator_routing_is_rejected_at_construction() {
+        let error = SummaryAccumulator::new(ComparatorTierRoutingRequest::new(
+            ComparatorSurfaceClass::SingleOfeDailyWaterBalance,
+            None,
+        ))
+        .expect_err("invalid routing request should fail");
+
+        assert!(matches!(
+            error,
+            SummaryAccumulatorError::ComparatorMetadata(
+                ComparatorTierRoutingError::MissingRequiredMetadata { .. }
+            )
+        ));
     }
 }

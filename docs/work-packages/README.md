@@ -245,6 +245,9 @@ Authorized packages:
 - `20260521-arch10-summary-accumulator-kernelization-001/`
   - Purpose: implement typed daily/monthly/yearly/EOS summary accumulation as
     a standalone kernelized subsystem.
+- `20260522-arch11-comparator-tier-routing-metadata-integration-001/`
+  - Purpose: implement comparator confidence-tier metadata propagation through
+    reporting/comparator outputs aligned to ADR-0011 governance tiers.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

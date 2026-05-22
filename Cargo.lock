@@ -6,6 +6,7 @@ version = 4
 name = "openwepp"
 version = "0.1.0"
 dependencies = [
+ "openwepp-comparator-metadata",
  "openwepp-hillslope-orchestrator",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
@@ -16,6 +17,10 @@ dependencies = [
  "openwepp-unit-boundary",
  "openwepp-watershed-orchestrator",
 ]
+
+[[package]]
+name = "openwepp-comparator-metadata"
+version = "0.1.0"
 
 [[package]]
 name = "openwepp-hillslope-orchestrator"
@@ -49,6 +54,7 @@ version = "0.1.0"
 name = "openwepp-summary-accumulator"
 version = "0.1.0"
 dependencies = [
+ "openwepp-comparator-metadata",
  "openwepp-sim-contract",
 ]
 
