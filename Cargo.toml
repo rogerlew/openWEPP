@@ -189,6 +189,10 @@ path = "tests/integration/wb13_daily_water_balance_output_surface_contract.rs"
 name = "int10_plant_water_coupling_validation_contract"
 path = "tests/integration/int10_plant_water_coupling_validation_contract.rs"
 
+[[test]]
+name = "pl14_tier_a_candidate_replay_contract"
+path = "tests/integration/pl14_tier_a_candidate_replay_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

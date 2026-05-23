@@ -1,0 +1,48 @@
+{
+  "baseline": {
+    "label": "/tmp/pl14_tiera_cmp_20260523/baseline",
+    "resolved_root": "/tmp/pl14_tiera_cmp_20260523/baseline"
+  },
+  "candidate": {
+    "label": "/tmp/pl14_tiera_cmp_20260523/candidate",
+    "resolved_root": "/tmp/pl14_tiera_cmp_20260523/candidate"
+  },
+  "settings": {
+    "runs_root": "/wc1/runs",
+    "output_subdir": "output",
+    "include_globs": [
+      "H5.plot.dat"
+    ],
+    "exclude_globs": [],
+    "abs_tolerance": 0.0,
+    "rel_tolerance": 0.0,
+    "top_n": 20
+  },
+  "raw": {
+    "baseline_dir": "/tmp/pl14_tiera_cmp_20260523/baseline/output",
+    "candidate_dir": "/tmp/pl14_tiera_cmp_20260523/candidate/output",
+    "include_globs": [
+      "H5.plot.dat"
+    ],
+    "exclude_globs": [],
+    "abs_tolerance": 0.0,
+    "rel_tolerance": 0.0,
+    "baseline_file_count": 1,
+    "candidate_file_count": 0,
+    "common_file_count": 0,
+    "only_baseline_count": 1,
+    "only_candidate_count": 0,
+    "only_baseline_examples": [
+      "H5.plot.dat"
+    ],
+    "only_candidate_examples": [],
+    "identical_count": 0,
+    "changed_count": 0,
+    "status_counts": {},
+    "max_abs_any": 0.0,
+    "max_rel_any": 0.0,
+    "top_changed_files": [],
+    "strict_pass": false
+  },
+  "strict_pass": false
+}

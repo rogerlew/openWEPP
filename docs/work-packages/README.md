@@ -468,6 +468,10 @@ Authorized packages:
   - Purpose: validate coupled daily execution ordering and state coupling
     (`decomp -> growth -> watbal`) with required contract and contract-test
     implementation evidence.
+- `20260523-pl14-tier-a-candidate-emission-and-replay-001/`
+  - Purpose: execute strict Tier-A direct openWEPP-vs-legacy comparator replay
+    with required comparator JSON artifacts, command trace, provenance hashes,
+    and contract/contract-test implementation evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
