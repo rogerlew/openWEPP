@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -331,11 +331,53 @@ states and must hard-fail with typed hydrology guard posture.
 3. Missing/non-finite climate schedule key symbols hard-fail with typed missing
    or non-finite guard posture at irrigation-coupled runoff phase.
 
+## CLIM07 Comparator and Seam-Closure Addendum
+
+### CLIM07 Required Comparator Vector Families
+
+| Vector family | Mode | Primary invariants exercised |
+|---|---|---|
+| Continuous-daily runtime forcing vector | `ibrkpt=0` | `INV-CLIMATE-003`, `INV-CLIMATE-005`, `INV-CLIMATE-007` |
+| Breakpoint runtime forcing vector | `ibrkpt=1` | `INV-CLIMATE-004`, `INV-CLIMATE-005`, `INV-CLIMATE-007` |
+| Parser-to-kernel seam projection vector | hillslope + watershed assignment surfaces | `INV-CLIMATE-007` |
+| Comparator confidence-tier routing vector | single-OFE daily vs hourly/watershed classes | governance guidance tied to ADR-0011 tier semantics |
+
+### CLIM07 Deterministic Comparator Requirements
+
+1. Continuous-daily vector checks must assert deterministic projection of
+   required climate forcing symbols (`datver`, `iclig`, `itemp`, `ibrkpt`,
+   `prcp`, `stmdur`, `timep`, `ip`, `ninten`, `timem_####`, `intsty_####`)
+   at parser-to-kernel seams.
+2. Breakpoint vector checks must assert deterministic projection of breakpoint
+   forcing symbols (`stmstr`, `nbrkpt`, elapsed `timem_####`, interval
+   `intsty_####`, `mxint`) and verify non-monotone/negative-event guards stay
+   typed hard-fail.
+3. Watershed assignment projection must preserve hillslope-scoped climate
+   symbol namespaces (`hs{id}_*`) without silent omission/rewrite.
+4. Comparator confidence-tier routing evidence must explicitly demonstrate:
+   - single-OFE daily surfaces map to higher-confidence routing metadata,
+   - hourly and watershed surfaces map to investigation-tier metadata,
+   - missing required metadata remains typed hard-fail.
+
+### CLIM07 Contract-Test Vectors
+
+1. Continuous-daily comparator vector emits deterministic non-breakpoint
+   forcing projections and disaggregation-derived series symbols with stable
+   closure semantics.
+2. Breakpoint comparator vector emits deterministic breakpoint timing/intensity
+   projections (including elapsed-time conversion and peak-intensity closure)
+   from curated breakpoint fixtures.
+3. Parser-to-kernel seam vectors confirm both hillslope and watershed climate
+   runtime surfaces publish required symbol families for accepted policy
+   branches.
+4. Confidence-tier reporting vectors verify deterministic routing metadata and
+   typed missing-metadata failure behavior.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-CLIMATE-001 | Per-invariant comparator vectors for climate forcing and disaggregation surfaces are not yet curated. | Limits immediate automated regression-gating depth for each forcing invariant. | promotable-with-risk | `[DIRECT][Static]` |
+| GAP-CLIMATE-001 | CLIM07 curated comparator vectors now cover accepted continuous-daily and breakpoint runtime forcing seams plus confidence-tier routing metadata. Remaining fully per-invariant expansion across all climate branches is tracked as follow-on comparator depth, not a CLIM07 blocker. | Immediate CLIM07 comparator/seam closure is evidence-backed; deeper branch-family expansion remains future scope. | resolved-in-openWEPP | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-CLIMATE-002 | Chapter-2 notes that storm-duration and peak-intensity equations are tentative and may change as additional data are analyzed. This is treated as a legacy caveat (not a standalone promotion blocker) until superseding authority or targeted validation evidence is added. | Parameter/regional uncertainty remains and may alter forcing tails. Retirement criterion: add superseding authority citation or targeted validation evidence package and update this row. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-CLIMATE-003 | Multi-storm-per-day disaggregation behavior is identified as future work in Chapter 2 and is not fully modeled in current assumptions. | Can under-represent observed sub-daily event structure for some regions/events. | non-promotable | `[DIRECT][Static]` |
 | GAP-CLIMATE-004 | Downstream forcing-consumer contracts (`SC-SNOWFREEZE-001`, `SC-RUNOFFPART-001`, `SC-WATBAL-001`, `SC-IRRIG-001`) are not yet fully authored. | Cross-contract forcing closure is provisional. | non-promotable | `[DIRECT][Static]` |
@@ -353,3 +395,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-23` | `5` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling requirements, signed `S` term publication constraints, and typed active-coupling guard posture for snow boundary failures. |
 | `2026-05-23` | `6` | `Codex` | CLIM06 amendment: added parsed frost-control runtime coupling requirements, explicit climate freeze/thaw branch-selection authority, and typed active-coupling guard posture for frozen-soil boundary failures. |
 | `2026-05-23` | `7` | `Codex` | IRRIG10 amendment: added climate schedule-key authority (`day`, `year`) and downstream irrigation-coupled forcing closure requirements for fixed-date/depletion runtime scheduling. |
+| `2026-05-23` | `8` | `Codex` | CLIM07 amendment: added explicit comparator/seam vector obligations for continuous-daily and breakpoint climate modes, parser-to-kernel namespace projection checks, and confidence-tier routing evidence requirements; reclassified `GAP-CLIMATE-001` as resolved in openWEPP scope. |

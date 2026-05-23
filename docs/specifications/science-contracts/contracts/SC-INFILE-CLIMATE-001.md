@@ -4,9 +4,9 @@ title: Climate Input Parser Contract (.cli)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.1
+contract_version: 0.1.3
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-05-23T00:00:00Z
 ---
 
 # SC-INFILE-CLIMATE-001 Climate Input Parser Contract
@@ -205,7 +205,25 @@ Canonical variable names follow legacy WEPP/spec symbols and are not replaced:
 
 openWEPP names are explicit aliases only (Section 3 table). `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]`
 
-## 13. HOLD Gap Register
+## 13. CLIM07 Comparator/Seam Vector Obligations
+
+CLIM07 closure requires parser-to-runtime seam vectors that originate from this
+contract's canonical parser surfaces and feed climate runtime boundaries without
+silent field mutation.
+
+Required vector obligations:
+1. Continuous-daily (`ibrkpt=0`) parser output projects deterministic required
+   storm/met symbols into runtime climate seams.
+2. Breakpoint (`ibrkpt=1`) parser output projects deterministic `nbrkpt`,
+   `timem`, and `pptcum` lineage through runtime breakpoint symbols and
+   preserves strict monotonicity guard posture.
+3. Invalid breakpoint mutation vectors (duplicate/decreasing `timem` or
+   negative implied interval depth) remain typed hard-fail at runtime seams
+   with no fallback repair.
+4. Watershed assignment seams preserve hillslope-scoped climate symbol
+   namespaces (`hs{id}_*`) and required field completeness.
+
+## 14. HOLD Gap Register
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
@@ -213,10 +231,11 @@ openWEPP names are explicit aliases only (Section 3 table). `[DIRECT][E-SPEC-CLI
 | `CLI-GAP-002` | Exact parser-vs-runtime responsibility boundary for historical `datver=4.0` `ip` handling is not yet encoded in executable architecture docs. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-01]` | `HOLD` |
 | `CLI-GAP-003` | Parser/runtime breakpoint cardinality policy is aligned to `1500` in openWEPP; cross-port comparator limits outside openWEPP remain investigative only. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-02]` | `RESOLVED-IN-OPENWEPP` |
 
-## 14. Revision History
+## 15. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-23` | `0.1.3` | CLIM07 amendment: added comparator/seam vector obligations linking parser surfaces to runtime climate seam checks for continuous-daily and breakpoint modes. |
 | `2026-05-22` | `0.1.2` | Updated breakpoint policy to `1500`, added strict breakpoint-time monotonicity policy text, and documented explicit legacy timing compat control. |
 | `2026-05-21` | `0.1.1` | Added boundary export mapping, generator command propagation, and explicit strict/compat breakpoint cardinality guard policy. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE01. |
