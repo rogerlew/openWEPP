@@ -411,6 +411,14 @@ Authorized packages:
   - Purpose: implement PL01/PL05/PL06/PL07 follow-on `PL08` by running
     single-OFE daily water-balance and plant/residue comparator parity review
     with confidence-tier disposition semantics.
+- `20260522-pl09-openwepp-totality-and-pl08-hold-lift-discovery-001/`
+  - Purpose: assess total implemented openWEPP PL-relevant surfaces and perform
+    baseline representation/discovery decomposition to produce a dependency-ordered
+    hold-lift work-package queue for resolving `PL08` hold.
+- `20260523-pl09a-pre-execution-preconditions-clearance-001/`
+  - Purpose: clear Claude pre-execution preconditions (structure-diff
+    diagnosis, symbol-wiring clarification, typed-surface strategy decision)
+    and acknowledge secondary findings validity before PL10/WB10 queue start.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
