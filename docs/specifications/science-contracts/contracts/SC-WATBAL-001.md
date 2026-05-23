@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -660,6 +660,27 @@ canonical order:
 5. PL14 strict replay staging rejects missing WB13 replay artifacts and does
    not synthesize fallback rows/files to satisfy comparator include surfaces.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production water-balance interfaces must use typed ARCH22 symbol
+   surfaces for boundary-state and boundary-flux access:
+   `HillslopeProductionStateSymbol` and `HillslopeProductionFluxSymbol`.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Typed migration must preserve WB11/WB12/WB14/WB15/WB16 typed hard-fail
+   posture and message-ID continuity for missing/non-finite/domain failures.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered WB11/WB12/WB14/WB15/WB16 production guard
+   accessors use typed symbol families, not stringly `&str` parameters.
+2. Nominal migration vector: canonical hydrology lane execution preserves
+   deterministic state/flux publications under typed symbol resolution.
+3. Failure migration vectors: missing/non-finite/domain-invalid symbols retain
+   existing typed boundary classes and guard IDs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -688,3 +709,4 @@ canonical order:
 | `2026-05-23` | `12` | `Codex` | WB15 amendment: added canopy interception coupling authority from plant runtime surfaces (`cancov`, `lai`, `vdmt`) with Eq. [5.1.2] lineage, explicit runoff/storage closure integration of `I`, and typed hard-fail guard posture for missing/non-finite/domain-invalid canopy symbols. |
 | `2026-05-23` | `13` | `Codex` | IRRIG10 amendment: added explicit irrigation depth coupling (`Irr`) into WB12 storage reconciliation equation and typed guard/test-vector obligations for irrigation-triggered runoff/storage closure. |
 | `2026-05-23` | `14` | `Codex` | WB16 amendment: added closure-diagnostics peak-runoff authority (`peakro`, `watdur`) with three method branches (`tstar`/`tc`), explicit minimum-flow and max-duration rules, and typed WB16 guard/test-vector posture. |
+| `2026-05-23` | `15` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WB11/WB12/WB14/WB15/WB16 interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving existing failure-class/message continuity. |

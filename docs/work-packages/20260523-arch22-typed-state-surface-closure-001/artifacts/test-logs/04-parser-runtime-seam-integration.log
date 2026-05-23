@@ -1,0 +1,52 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running tests/integration/parser_runtime_seam_integration.rs (target/debug/deps/parser_runtime_seam_integration-bbb334348d9f4712)
+
+running 45 tests
+test climate_wc1_fixture_applies_timep_floor_and_ip_policy_scaling ... ok
+test frost_parser_to_hillslope_runtime_surface_closure ... ok
+test climate_wc1_fixture_caps_storm_duration_before_runtime_projection ... ok
+test climate_runtime_projection_parity_hillslope_vs_watershed_adapter_path ... ok
+test frost_runtime_surface_projects_missing_file_flag_as_inactive ... ok
+test frost_runtime_surface_rejects_invalid_kfactor_domain_projection ... ok
+test climate_parser_to_watershed_runtime_surface_closure ... ok
+test climate_parser_to_hillslope_runtime_surface_closure ... ok
+test management_runtime_surface_rejects_out_of_range_initial_reference_projection ... ok
+test management_runtime_surface_rejects_out_of_range_yearly_reference_projection ... ok
+test management_runtime_surface_rejects_non_finite_required_growth_projection ... ok
+test management_runtime_surface_rejects_overflowed_projection_count ... ok
+test management_fixture_projects_full_pl_runtime_surface_families ... ok
+test management_runtime_surface_rejects_schedule_ofe_index_out_of_range_projection ... ok
+test management_runtime_surface_rejects_slot_arity_mismatch_projection ... ok
+test management_runtime_surface_rejects_topology_count_mismatch_projection ... ok
+test management_runtime_surface_rejects_unsupported_landuse_projection ... ok
+test parser_to_watershed_runtime_surface_closure ... ok
+test management_runtime_surface_rejects_slot_count_mismatch_projection ... ok
+test management_runtime_surface_rejects_unsupported_perennial_option_projection ... ok
+test parser_to_hillslope_runtime_surface_closure ... ok
+test pl10b_contract_conformance_rejects_empty_perennial_grazing_cardinality ... ok
+test pl10b_contract_conformance_requires_perennial_cutday_indexed_projection ... ok
+test pl10b_contract_conformance_rejects_invalid_grazing_window_domain ... ok
+test pl10b_contract_conformance_requires_perennial_grazing_cycle_payload_projection ... ok
+test pl10b_contract_conformance_requires_annual_extension_projection_symbols ... ok
+test slope_runtime_surface_rejects_declared_nslpts_mismatch_projection ... ok
+test pl17_contract_conformance_requires_decomposition_rate_projection_symbols ... ok
+test slope_runtime_surface_rejects_non_positive_avgslp_projection ... ok
+test snow_parser_to_hillslope_runtime_surface_closure ... ok
+test snow_runtime_surface_projects_missing_file_flag_as_inactive ... ok
+test snow_runtime_surface_rejects_invalid_density_domain_projection ... ok
+test slope_parser_to_hillslope_runtime_surface_closure ... ok
+test soil_runtime_surface_rejects_declared_nsl_mismatch_projection ... ok
+test soil_runtime_surface_rejects_missing_saturated_conductivity_projection ... ok
+test pl13_contract_conformance_scheduler_emits_annual_growth_transition_payload ... ok
+test slope_and_soil_parser_outputs_propagate_to_hillslope_runtime_surface_closure ... ok
+test pl13_contract_conformance_scheduler_emits_perennial_growth_transition_payload ... ok
+test pl17_contract_conformance_rejects_missing_decomposition_equation_symbol ... ok
+test pl16_contract_conformance_rejects_missing_growth_equation_symbol ... ok
+test pl16_contract_conformance_scheduler_emits_equation_updated_annual_growth_state_on_active_day ... ok
+test pl17_contract_conformance_scheduler_emits_equation_updated_perennial_decomposition_state_on_active_day ... ok
+test pl16_contract_conformance_scheduler_emits_equation_updated_perennial_growth_state_on_active_day ... ok
+test pl17_contract_conformance_scheduler_emits_equation_updated_annual_decomposition_state_on_active_day ... ok
+test management_rotation_fixture_projects_schedule_growth_and_decomp_runtime_surface_families ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

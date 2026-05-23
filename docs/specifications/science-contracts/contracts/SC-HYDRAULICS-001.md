@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -255,6 +255,28 @@ Minimum WS10 coupling vectors:
 4. Domain/dependency WS10 coupling violation fails with corresponding `-E-003`
    code.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production hydraulics-consumer interfaces must use typed ARCH22
+   symbol surfaces (`HillslopeProductionStateSymbol`,
+   `HillslopeProductionFluxSymbol`, `WatershedProductionStateSymbol`,
+   `WatershedProductionFluxSymbol`) for boundary-state/flux resolution.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Typed migration must preserve WB14/WB16 and WS10 hydraulics-coupled
+   hard-fail posture for missing/non-finite/domain-invalid inputs.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered hydraulics-coupled production accessors use
+   typed symbol families, not stringly `&str` parameters.
+2. Nominal migration vector: hydraulics-coupled runtime lanes preserve
+   deterministic publication semantics under typed symbol resolution.
+3. Failure migration vectors: existing guard IDs and boundary classes remain
+   unchanged for missing/non-finite/domain violations.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -273,3 +295,4 @@ Minimum WS10 coupling vectors:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, standardized Chapter-10 source-path anchors, added missing `τfe` alias coverage, and evidence-tagged degenerate/tolerance claims. |
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added peak-flow coupling readiness authority requiring `peakro`/`watdur` boundary acceptance with WB16 diagnostic metadata and typed guard posture. |
 | `2026-05-23` | `4` | `Codex` | WS10 amendment: added routing/impoundment consumer coupling authority for production WS10 payload families, including typed WS10 guard family requirements and WS10 coupling test-vector obligations. |
+| `2026-05-23` | `5` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered hydraulics-coupled interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving WB14/WB16/WS10 failure-class/message continuity. |

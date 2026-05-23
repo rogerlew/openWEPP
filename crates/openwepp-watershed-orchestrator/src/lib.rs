@@ -8,8 +8,11 @@ use std::fmt;
 
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, KernelRunResponse, KernelWritebackApplyResult,
-    KernelWritebackPayload, WatershedKernel, WatershedKernelRequest, WritebackDecisionOutcome,
-    WritebackError, WritebackField, apply_kernel_writeback, evaluate_kernel_writeback,
+    KernelWritebackPayload, WatershedChannelFluxField, WatershedChannelStateField,
+    WatershedImpoundmentFluxField, WatershedImpoundmentStateField, WatershedKernel,
+    WatershedKernelRequest, WatershedProductionFluxSymbol, WatershedProductionStateSymbol,
+    WritebackDecisionOutcome, WritebackError, WritebackField, apply_kernel_writeback,
+    evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::status::{
     BoundaryClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
@@ -282,7 +285,7 @@ impl Ws10ChannelImpoundmentKernel {
     fn require_state_scalar(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
-        symbol: &str,
+        symbol: WatershedProductionStateSymbol,
     ) -> Result<f64, Ws10GuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.state_surface.get(&key) else {
@@ -298,7 +301,7 @@ impl Ws10ChannelImpoundmentKernel {
     fn require_flux_scalar(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
-        symbol: &str,
+        symbol: WatershedProductionFluxSymbol,
     ) -> Result<f64, Ws10GuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.flux_surface.get(&key) else {
@@ -313,7 +316,7 @@ impl Ws10ChannelImpoundmentKernel {
 
     fn require_state_range(
         node_class: Ws10NodeClass,
-        symbol: &str,
+        symbol: WatershedProductionStateSymbol,
         value: f64,
         minimum: Option<f64>,
         maximum: Option<f64>,
@@ -333,7 +336,7 @@ impl Ws10ChannelImpoundmentKernel {
 
     fn require_flux_range(
         node_class: Ws10NodeClass,
-        symbol: &str,
+        symbol: WatershedProductionFluxSymbol,
         value: f64,
         minimum: Option<f64>,
         maximum: Option<f64>,
@@ -381,31 +384,20 @@ impl Ws10ChannelImpoundmentKernel {
         }
     }
 
-    fn channel_state_symbol(node_id: u32, field: &str) -> String {
-        format!("ws10_channel_{node_id}_{field}")
-    }
-
-    fn impoundment_state_symbol(node_id: u32, field: &str) -> String {
-        format!("ws10_impoundment_{node_id}_{field}")
-    }
-
-    fn hillslope_symbol(hillslope_id: u32, field: &str) -> String {
-        format!("hs{hillslope_id}_{field}")
-    }
-
     fn read_hillslope_peak_payload(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
         hillslope_id: u32,
     ) -> Result<(f64, f64), Ws10GuardError> {
-        let peak_symbol = Self::hillslope_symbol(hillslope_id, "peakro");
-        let dur_symbol = Self::hillslope_symbol(hillslope_id, "watdur");
+        let peak_symbol = WatershedProductionStateSymbol::HillslopeContributorPeak { hillslope_id };
+        let dur_symbol =
+            WatershedProductionStateSymbol::HillslopeContributorDuration { hillslope_id };
 
-        let peak = Self::require_state_scalar(request, node_class, peak_symbol.as_str())?;
-        let duration = Self::require_state_scalar(request, node_class, dur_symbol.as_str())?;
+        let peak = Self::require_state_scalar(request, node_class, peak_symbol)?;
+        let duration = Self::require_state_scalar(request, node_class, dur_symbol)?;
 
-        Self::require_state_range(node_class, peak_symbol.as_str(), peak, Some(0.0), None)?;
-        Self::require_state_range(node_class, dur_symbol.as_str(), duration, Some(0.0), None)?;
+        Self::require_state_range(node_class, peak_symbol, peak, Some(0.0), None)?;
+        Self::require_state_range(node_class, dur_symbol, duration, Some(0.0), None)?;
 
         Ok((peak, duration))
     }
@@ -418,26 +410,32 @@ impl Ws10ChannelImpoundmentKernel {
     ) -> Result<(f64, f64), Ws10GuardError> {
         let (peak_symbol, duration_symbol) = match dependency_class {
             Ws10NodeClass::Channel => (
-                Self::channel_state_symbol(dependency_id, "qpo"),
-                Self::channel_state_symbol(dependency_id, "durrof"),
+                WatershedProductionStateSymbol::ChannelNode {
+                    node_id: dependency_id,
+                    field: WatershedChannelStateField::Qpo,
+                },
+                WatershedProductionStateSymbol::ChannelNode {
+                    node_id: dependency_id,
+                    field: WatershedChannelStateField::Durrof,
+                },
             ),
             Ws10NodeClass::Impoundment => (
-                Self::impoundment_state_symbol(dependency_id, "qo"),
-                Self::impoundment_state_symbol(dependency_id, "durout"),
+                WatershedProductionStateSymbol::ImpoundmentNode {
+                    node_id: dependency_id,
+                    field: WatershedImpoundmentStateField::Qo,
+                },
+                WatershedProductionStateSymbol::ImpoundmentNode {
+                    node_id: dependency_id,
+                    field: WatershedImpoundmentStateField::Durout,
+                },
             ),
         };
 
-        let peak = Self::require_state_scalar(request, node_class, peak_symbol.as_str())?;
-        let duration = Self::require_state_scalar(request, node_class, duration_symbol.as_str())?;
+        let peak = Self::require_state_scalar(request, node_class, peak_symbol)?;
+        let duration = Self::require_state_scalar(request, node_class, duration_symbol)?;
 
-        Self::require_state_range(node_class, peak_symbol.as_str(), peak, Some(0.0), None)?;
-        Self::require_state_range(
-            node_class,
-            duration_symbol.as_str(),
-            duration,
-            Some(0.0),
-            None,
-        )?;
+        Self::require_state_range(node_class, peak_symbol, peak, Some(0.0), None)?;
+        Self::require_state_range(node_class, duration_symbol, duration, Some(0.0), None)?;
 
         Ok((peak, duration))
     }
@@ -500,59 +498,62 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((incoming_peak, incoming_duration))
     }
 
-    fn channel_writeback_symbol(node_id: u32, field: &str) -> String {
-        Self::channel_state_symbol(node_id, field)
-    }
-
-    fn impoundment_writeback_symbol(node_id: u32, field: &str) -> String {
-        Self::impoundment_state_symbol(node_id, field)
-    }
-
     #[allow(clippy::too_many_lines)]
     fn run_channel_node(
         request: &WatershedKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Ws10GuardError> {
         let node_class = Ws10NodeClass::Channel;
-        let dtchr = Self::require_state_scalar(request, node_class, "dtchr")?;
-        Self::require_state_range(node_class, "dtchr", dtchr, Some(WS10_ZERO_THRESHOLD), None)?;
-
-        let nchnum = Self::require_state_scalar(request, node_class, "nchnum")?;
+        let dtchr_symbol = WatershedProductionStateSymbol::Dtchr;
+        let dtchr = Self::require_state_scalar(request, node_class, dtchr_symbol)?;
         Self::require_state_range(
             node_class,
-            "nchnum",
+            dtchr_symbol,
+            dtchr,
+            Some(WS10_ZERO_THRESHOLD),
+            None,
+        )?;
+
+        let nchnum_symbol = WatershedProductionStateSymbol::Nchnum;
+        let nchnum = Self::require_state_scalar(request, node_class, nchnum_symbol)?;
+        Self::require_state_range(
+            node_class,
+            nchnum_symbol,
             nchnum,
             Some(WS10_ZERO_THRESHOLD),
             None,
         )?;
 
-        let cbase = Self::require_flux_scalar(request, node_class, "cbase")?;
-        Self::require_flux_range(node_class, "cbase", cbase, Some(0.0), None)?;
+        let cbase_symbol = WatershedProductionFluxSymbol::Cbase;
+        let cbase = Self::require_flux_scalar(request, node_class, cbase_symbol)?;
+        Self::require_flux_range(node_class, cbase_symbol, cbase, Some(0.0), None)?;
 
-        let roughness_symbol = Self::channel_state_symbol(request.node_id, "chnn");
-        let slope_symbol = Self::channel_state_symbol(request.node_id, "ctlslp");
-        let conductivity_symbol = Self::channel_state_symbol(request.node_id, "chnk");
+        let roughness_symbol = WatershedProductionStateSymbol::ChannelNode {
+            node_id: request.node_id,
+            field: WatershedChannelStateField::Chnn,
+        };
+        let slope_symbol = WatershedProductionStateSymbol::ChannelNode {
+            node_id: request.node_id,
+            field: WatershedChannelStateField::Ctlslp,
+        };
+        let conductivity_symbol = WatershedProductionStateSymbol::ChannelNode {
+            node_id: request.node_id,
+            field: WatershedChannelStateField::Chnk,
+        };
 
-        let roughness = Self::require_state_scalar(request, node_class, roughness_symbol.as_str())?;
+        let roughness = Self::require_state_scalar(request, node_class, roughness_symbol)?;
         Self::require_state_range(
             node_class,
-            roughness_symbol.as_str(),
+            roughness_symbol,
             roughness,
             Some(WS10_ZERO_THRESHOLD),
             None,
         )?;
-        let control_slope = Self::require_state_scalar(request, node_class, slope_symbol.as_str())?;
+        let control_slope = Self::require_state_scalar(request, node_class, slope_symbol)?;
+        Self::require_state_range(node_class, slope_symbol, control_slope, Some(0.0), None)?;
+        let conductivity = Self::require_state_scalar(request, node_class, conductivity_symbol)?;
         Self::require_state_range(
             node_class,
-            slope_symbol.as_str(),
-            control_slope,
-            Some(0.0),
-            None,
-        )?;
-        let conductivity =
-            Self::require_state_scalar(request, node_class, conductivity_symbol.as_str())?;
-        Self::require_state_range(
-            node_class,
-            conductivity_symbol.as_str(),
+            conductivity_symbol,
             conductivity,
             Some(0.0),
             None,
@@ -618,21 +619,25 @@ impl Ws10ChannelImpoundmentKernel {
             unreachable!("status message ids are non-empty WS10 constants")
         };
 
-        let qpo_symbol = Self::channel_writeback_symbol(request.node_id, "qpo");
-        let durrof_symbol = Self::channel_writeback_symbol(request.node_id, "durrof");
-        let roff_symbol = Self::channel_writeback_symbol(request.node_id, "roff");
+        let qpo_symbol = WatershedProductionStateSymbol::ChannelNode {
+            node_id: request.node_id,
+            field: WatershedChannelStateField::Qpo,
+        };
+        let durrof_symbol = WatershedProductionStateSymbol::ChannelNode {
+            node_id: request.node_id,
+            field: WatershedChannelStateField::Durrof,
+        };
+        let roff_symbol = WatershedProductionFluxSymbol::ChannelNode {
+            node_id: request.node_id,
+            field: WatershedChannelFluxField::Roff,
+        };
 
         let writeback = KernelWritebackPayload::with_updates(
             vec![
-                WritebackField::bounded(qpo_symbol.as_str(), qpo, Some(0.0), None),
-                WritebackField::bounded(durrof_symbol.as_str(), durrof, Some(0.0), None),
+                WritebackField::bounded(qpo_symbol, qpo, Some(0.0), None),
+                WritebackField::bounded(durrof_symbol, durrof, Some(0.0), None),
             ],
-            vec![WritebackField::bounded(
-                roff_symbol.as_str(),
-                roff,
-                Some(0.0),
-                None,
-            )],
+            vec![WritebackField::bounded(roff_symbol, roff, Some(0.0), None)],
         );
 
         Ok(KernelRunResponse::new(status, writeback))
@@ -644,35 +649,47 @@ impl Ws10ChannelImpoundmentKernel {
     ) -> Result<KernelRunResponse, Ws10GuardError> {
         let node_class = Ws10NodeClass::Impoundment;
 
-        let h_symbol = Self::impoundment_state_symbol(request.node_id, "h");
-        let hfull_symbol = Self::impoundment_state_symbol(request.node_id, "hfull");
-        let deltat_symbol = Self::impoundment_state_symbol(request.node_id, "deltat");
-        let qinf_symbol = Self::impoundment_state_symbol(request.node_id, "qinf");
+        let h_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::H,
+        };
+        let hfull_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::Hfull,
+        };
+        let deltat_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::Deltat,
+        };
+        let qinf_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::Qinf,
+        };
 
-        let h = Self::require_state_scalar(request, node_class, h_symbol.as_str())?;
-        let hfull = Self::require_state_scalar(request, node_class, hfull_symbol.as_str())?;
-        let deltat = Self::require_state_scalar(request, node_class, deltat_symbol.as_str())?;
-        let qinf = Self::require_state_scalar(request, node_class, qinf_symbol.as_str())?;
+        let h = Self::require_state_scalar(request, node_class, h_symbol)?;
+        let hfull = Self::require_state_scalar(request, node_class, hfull_symbol)?;
+        let deltat = Self::require_state_scalar(request, node_class, deltat_symbol)?;
+        let qinf = Self::require_state_scalar(request, node_class, qinf_symbol)?;
 
-        Self::require_state_range(node_class, h_symbol.as_str(), h, Some(0.0), None)?;
+        Self::require_state_range(node_class, h_symbol, h, Some(0.0), None)?;
         Self::require_state_range(
             node_class,
-            hfull_symbol.as_str(),
+            hfull_symbol,
             hfull,
             Some(WS10_ZERO_THRESHOLD),
             None,
         )?;
         if h > hfull {
-            return Err(Self::domain_violation(node_class, h_symbol.as_str(), h));
+            return Err(Self::domain_violation(node_class, h_symbol, h));
         }
         Self::require_state_range(
             node_class,
-            deltat_symbol.as_str(),
+            deltat_symbol,
             deltat,
             Some(WS10_ZERO_THRESHOLD),
             None,
         )?;
-        Self::require_state_range(node_class, qinf_symbol.as_str(), qinf, Some(0.0), None)?;
+        Self::require_state_range(node_class, qinf_symbol, qinf, Some(0.0), None)?;
 
         let (incoming_peak, incoming_duration) =
             Self::assemble_incoming_peak_and_duration(request, node_class)?;
@@ -747,19 +764,31 @@ impl Ws10ChannelImpoundmentKernel {
             unreachable!("status message ids are non-empty WS10 constants")
         };
 
-        let qo_symbol = Self::impoundment_writeback_symbol(request.node_id, "qo");
-        let durout_symbol = Self::impoundment_writeback_symbol(request.node_id, "durout");
-        let hnext_symbol = Self::impoundment_writeback_symbol(request.node_id, "hnext");
-        let outflow_symbol = Self::impoundment_writeback_symbol(request.node_id, "outflow_volume");
+        let qo_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::Qo,
+        };
+        let durout_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::Durout,
+        };
+        let hnext_symbol = WatershedProductionStateSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentStateField::Hnext,
+        };
+        let outflow_symbol = WatershedProductionFluxSymbol::ImpoundmentNode {
+            node_id: request.node_id,
+            field: WatershedImpoundmentFluxField::OutflowVolume,
+        };
 
         let writeback = KernelWritebackPayload::with_updates(
             vec![
-                WritebackField::bounded(qo_symbol.as_str(), qo, Some(0.0), None),
-                WritebackField::bounded(durout_symbol.as_str(), durout, Some(0.0), None),
-                WritebackField::bounded(hnext_symbol.as_str(), hnext, Some(0.0), Some(hfull)),
+                WritebackField::bounded(qo_symbol, qo, Some(0.0), None),
+                WritebackField::bounded(durout_symbol, durout, Some(0.0), None),
+                WritebackField::bounded(hnext_symbol, hnext, Some(0.0), Some(hfull)),
             ],
             vec![WritebackField::bounded(
-                outflow_symbol.as_str(),
+                outflow_symbol,
                 outflow_volume,
                 Some(0.0),
                 None,

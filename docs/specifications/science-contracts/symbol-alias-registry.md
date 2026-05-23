@@ -77,6 +77,18 @@ Scoped exception class (explicitly non-canonical structural metadata):
 | `ncut/ncycle` | `pl_decomp_slot_{idx4}_crop_{idx4}_{root}` |
 | `cutday/gday/gend/animal/bodywt/area/digest` | `pl_decomp_slot_{idx4}_crop_{idx4}_{root}_{idx4}` |
 
+## ARCH22 Typed-Symbol Closure Note
+
+- ARCH22 production-kernel migration binds covered runtime boundary symbols to
+  typed symbol families in `openwepp-kernel-contract`:
+  - `HillslopeProductionStateSymbol`
+  - `HillslopeProductionFluxSymbol`
+  - `WatershedProductionStateSymbol`
+  - `WatershedProductionFluxSymbol`
+- Alias registry authority remains canonical-to-boundary naming authority.
+  Typed-symbol families consume these boundary aliases as explicit, enumerated
+  runtime surfaces for covered production lanes.
+
 ## Lookup Surfaces
 
 - canonical -> aliases: `aliases_for_canonical(...)`

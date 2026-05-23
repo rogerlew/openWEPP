@@ -13,12 +13,14 @@ use openwepp_kernel_contract::{
     HillslopeDecompositionManagementClass, HillslopeDecompositionTransitionControl,
     HillslopeDecompositionTransitionPayload, HillslopeGrowthKernelContext,
     HillslopeGrowthManagementClass, HillslopeGrowthStateSurface, HillslopeGrowthTransitionControl,
-    HillslopeGrowthTransitionPayload, HillslopeKernel, HillslopeKernelPhaseClass,
+    HillslopeGrowthTransitionPayload, HillslopeIrrigationDepletionPeriodField,
+    HillslopeIrrigationFixedDateEventField, HillslopeKernel, HillslopeKernelPhaseClass,
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
-    HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackApplyResult,
-    KernelWritebackPayload, MAX_CLIMATE_FORCING_SERIES_POINTS, WritebackDecisionOutcome,
-    WritebackError, WritebackField, apply_kernel_writeback, evaluate_kernel_writeback,
+    HillslopePerennialGrowthControl, HillslopeProductionFluxSymbol, HillslopeProductionStateSymbol,
+    KernelRunResponse, KernelWritebackApplyResult, KernelWritebackPayload,
+    MAX_CLIMATE_FORCING_SERIES_POINTS, WritebackDecisionOutcome, WritebackError, WritebackField,
+    apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
@@ -103,101 +105,182 @@ const PL_GROWTH_CANCOV_MAX: f64 = 0.999;
 const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
 const MANAGEMENT_CLASS_EPSILON: f64 = 1.0e-9;
 const WB11_ZERO_THRESHOLD: f64 = 1.0e-12;
-const WB11_SYMBOL_SOIL_WATER: &str = "wb11_soil_water";
-const WB11_SYMBOL_ET_DEMAND: &str = "wb11_et_demand";
-const WB11_SYMBOL_FIELD_CAPACITY: &str = "wb11_field_capacity";
-const WB11_SYMBOL_PERC_FRACTION: &str = "wb11_perc_fraction";
-const WB11_SYMBOL_LATERAL_FRACTION: &str = "wb11_lateral_fraction";
-const WB11_SYMBOL_DRAINAGE_FRACTION: &str = "wb11_drainage_fraction";
-const WB11_SYMBOL_DRAINAGE_COEFFICIENT: &str = "wb11_drainage_coefficient";
-const WB11_SYMBOL_DRAINABLE_STORAGE: &str = "wb11_drainable_storage";
-const WB11_SYMBOL_ET: &str = "ET";
-const WB11_SYMBOL_WS: &str = "Ws";
-const WB11_SYMBOL_PERC_LOSS_D: &str = "D";
-const WB11_SYMBOL_PERC_RECHARGE_PE: &str = "Pe";
-const WB11_SYMBOL_LATERAL_Q: &str = "q";
-const WB11_SYMBOL_DRAINAGE_QDD: &str = "Qdd";
-const WB11_SYMBOL_SUBHYD_QD: &str = "Qd";
-const WB12_SYMBOL_RAINFALL_INPUT: &str = "wb12_rainfall_input";
-const WB12_SYMBOL_RUNON_INPUT: &str = "wb12_runon_input";
-const WB12_SYMBOL_INFILTRATION: &str = "wb12_infiltration";
-const WB12_SYMBOL_DEPRESSION_STORAGE_DELTA: &str = "wb12_depression_storage_delta";
-const WB12_SYMBOL_RUNOFF_OBSERVED: &str = "wb12_runoff_observed";
-const WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE: &str = "wb12_runoff_closure_tolerance";
-const WB12_SYMBOL_RUNOFF_CLOSURE_DELTA: &str = "wb12_runoff_closure_delta";
-const WB12_SYMBOL_RUNOFF_RECONCILED: &str = "wb12_runoff_reconciled";
-const WB12_SYMBOL_STORAGE_INITIAL: &str = "wb12_storage_initial";
-const WB12_SYMBOL_STORAGE_OBSERVED: &str = "wb12_storage_observed";
-const WB12_SYMBOL_STORAGE_CLOSURE_TOLERANCE: &str = "wb12_storage_closure_tolerance";
-const WB12_SYMBOL_PRECIP_INPUT: &str = "wb12_precip_input";
-const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: &str = "wb12_storage_closure_delta";
-const WB12_SYMBOL_STORAGE_RECONCILED: &str = "wb12_storage_reconciled";
-const WB12_SYMBOL_RUNOFF_Q: &str = "Q";
-const WB12_SYMBOL_SNOW_COUPLING_S: &str = "S";
-const IRRIG_SYMBOL_DAILY_IRRIGATION: &str = "Irr";
-const IRRIG_SYMBOL_RUNTIME_SOURCE: &str = "irrigation.runtime_schedule_source";
-const IRRIG_SYMBOL_RUNTIME_DEPTH_M: &str = "irrigation.runtime_depth_m";
-const IRRIG_SYMBOL_RUNTIME_DURATION_S: &str = "irrigation.runtime_duration_s";
-const IRRIG_SYMBOL_RUNTIME_RATE_MPS: &str = "irrigation.runtime_rate_m_per_s";
-const IRRIG_SYMBOL_RUNTIME_EVENT_INDEX: &str = "irrigation.runtime_event_index";
-const IRRIG_SYMBOL_RUNTIME_SYSTEM_TYPE: &str = "irrigation.runtime_system_type";
-const IRRIG_SYMBOL_DEPLETION_ENABLED: &str = "irrigation.depletion.enabled";
-const IRRIG_SYMBOL_DEPLETION_SYSTEM_TYPE: &str = "irrigation.depletion.system_type";
-const IRRIG_SYMBOL_DEPLETION_MIN_DEPTH_M: &str = "irrigation.depletion.min_depth_m";
-const IRRIG_SYMBOL_DEPLETION_MAX_DEPTH_M: &str = "irrigation.depletion.max_depth_m";
-const IRRIG_SYMBOL_DEPLETION_PERIOD_COUNT: &str = "irrigation.depletion.period_count";
-const IRRIG_SYMBOL_FIXEDDATE_ENABLED: &str = "irrigation.fixeddate.enabled";
-const IRRIG_SYMBOL_FIXEDDATE_SYSTEM_TYPE: &str = "irrigation.fixeddate.system_type";
-const IRRIG_SYMBOL_FIXEDDATE_EVENT_COUNT: &str = "irrigation.fixeddate.event_count";
-const WB15_SYMBOL_INTERCEPTION_I: &str = "I";
-const WB15_SYMBOL_PLANT_CANCOV: &str = "cancov";
-const WB15_SYMBOL_PLANT_LAI: &str = "lai";
-const WB15_SYMBOL_PLANT_VDMT: &str = "vdmt";
+const WB11_SYMBOL_SOIL_WATER: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11SoilWater;
+const WB11_SYMBOL_ET_DEMAND: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11EtDemand;
+const WB11_SYMBOL_FIELD_CAPACITY: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11FieldCapacity;
+const WB11_SYMBOL_PERC_FRACTION: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11PercFraction;
+const WB11_SYMBOL_LATERAL_FRACTION: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11LateralFraction;
+const WB11_SYMBOL_DRAINAGE_FRACTION: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11DrainageFraction;
+const WB11_SYMBOL_DRAINAGE_COEFFICIENT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11DrainageCoefficient;
+const WB11_SYMBOL_DRAINABLE_STORAGE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb11DrainableStorage;
+const WB11_SYMBOL_ET: HillslopeProductionFluxSymbol = HillslopeProductionFluxSymbol::Wb11Et;
+const WB11_SYMBOL_WS: HillslopeProductionFluxSymbol = HillslopeProductionFluxSymbol::Wb11Ws;
+const WB11_SYMBOL_PERC_LOSS_D: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb11PercLossD;
+const WB11_SYMBOL_PERC_RECHARGE_PE: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb11PercRechargePe;
+const WB11_SYMBOL_LATERAL_Q: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb11LateralQ;
+const WB11_SYMBOL_DRAINAGE_QDD: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb11DrainageQdd;
+const WB11_SYMBOL_SUBHYD_QD: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb11SubhydQd;
+const WB12_SYMBOL_RAINFALL_INPUT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12RainfallInput;
+const WB12_SYMBOL_RUNON_INPUT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12RunonInput;
+const WB12_SYMBOL_INFILTRATION: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12Infiltration;
+const WB12_SYMBOL_DEPRESSION_STORAGE_DELTA: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12DepressionStorageDelta;
+const WB12_SYMBOL_RUNOFF_OBSERVED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12RunoffObserved;
+const WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12RunoffClosureTolerance;
+const WB12_SYMBOL_RUNOFF_CLOSURE_DELTA: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb12RunoffClosureDelta;
+const WB12_SYMBOL_RUNOFF_RECONCILED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12RunoffReconciled;
+const WB12_SYMBOL_STORAGE_INITIAL: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12StorageInitial;
+const WB12_SYMBOL_STORAGE_OBSERVED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12StorageObserved;
+const WB12_SYMBOL_STORAGE_CLOSURE_TOLERANCE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12StorageClosureTolerance;
+const WB12_SYMBOL_PRECIP_INPUT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12PrecipInput;
+const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb12StorageClosureDelta;
+const WB12_SYMBOL_STORAGE_RECONCILED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb12StorageReconciled;
+const WB12_SYMBOL_RUNOFF_Q: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb12RunoffQ;
+const WB12_SYMBOL_SNOW_COUPLING_S: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb12SnowCouplingS;
+const IRRIG_SYMBOL_DAILY_IRRIGATION: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::IrrigDailyIrrigation;
+const IRRIG_SYMBOL_RUNTIME_SOURCE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigRuntimeSource;
+const IRRIG_SYMBOL_RUNTIME_DEPTH_M: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigRuntimeDepthMeters;
+const IRRIG_SYMBOL_RUNTIME_DURATION_S: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigRuntimeDurationSeconds;
+const IRRIG_SYMBOL_RUNTIME_RATE_MPS: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigRuntimeRateMetersPerSecond;
+const IRRIG_SYMBOL_RUNTIME_EVENT_INDEX: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigRuntimeEventIndex;
+const IRRIG_SYMBOL_RUNTIME_SYSTEM_TYPE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigRuntimeSystemType;
+const IRRIG_SYMBOL_DEPLETION_ENABLED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigDepletionEnabled;
+const IRRIG_SYMBOL_DEPLETION_SYSTEM_TYPE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigDepletionSystemType;
+const IRRIG_SYMBOL_DEPLETION_MIN_DEPTH_M: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigDepletionMinDepthMeters;
+const IRRIG_SYMBOL_DEPLETION_MAX_DEPTH_M: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigDepletionMaxDepthMeters;
+const IRRIG_SYMBOL_DEPLETION_PERIOD_COUNT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigDepletionPeriodCount;
+const IRRIG_SYMBOL_FIXEDDATE_ENABLED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigFixedDateEnabled;
+const IRRIG_SYMBOL_FIXEDDATE_SYSTEM_TYPE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigFixedDateSystemType;
+const IRRIG_SYMBOL_FIXEDDATE_EVENT_COUNT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::IrrigFixedDateEventCount;
+const WB15_SYMBOL_INTERCEPTION_I: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb15InterceptionI;
+const WB15_SYMBOL_PLANT_CANCOV: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb15PlantCancov;
+const WB15_SYMBOL_PLANT_LAI: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb15PlantLai;
+const WB15_SYMBOL_PLANT_VDMT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb15PlantVdmt;
 const WB15_CANCOV_MAX: f64 = 0.999;
 const WB15_VDMT_MAX: f64 = 0.8;
 const WB15_BIOMASS_TO_KG_HA: f64 = 10_000.0;
 const WB15_INTERCEPT_LINEAR_COEFF: f64 = 0.000_627;
 const WB15_INTERCEPT_QUADRATIC_COEFF: f64 = 3.733_49e-8;
 const WB15_INTERCEPT_MM_TO_M: f64 = 1000.0;
-const WB14_SYMBOL_HYETOGRAPH_NINTEN: &str = "ninten";
-const WB14_SYMBOL_HYETOGRAPH_NBRKPT: &str = "nbrkpt";
-const WB14_SYMBOL_SOIL_CONDUCTIVITY: &str = "ssc";
-const WB14_SYMBOL_SOIL_LAYER_DEPTH: &str = "dg";
-const WB14_SYMBOL_SOIL_THETA_RESIDUAL: &str = "thetdr";
-const WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY: &str = "thetfc";
-const WB14_SYMBOL_SNOW_FILE_PRESENT: &str = "snow.options.snow_file_present";
-const WB14_SYMBOL_SNOW_RST: &str = "snow.options.rst";
-const WB14_SYMBOL_SNOW_NEWSNW: &str = "snow.options.newsnw";
-const WB14_SYMBOL_SNOW_SSD: &str = "snow.options.ssd";
-const WB14_SYMBOL_SNOW_RUNTIME_SWE: &str = "snow.runtime_swe";
-const WB14_SYMBOL_FROST_FILE_PRESENT: &str = "frost.options.frost_file_present";
-const WB14_SYMBOL_FROST_WINT_RED: &str = "frost.options.wintRed";
-const WB14_SYMBOL_FROST_FINE_TOP: &str = "frost.options.fineTop";
-const WB14_SYMBOL_FROST_FINE_BOT: &str = "frost.options.fineBot";
-const WB14_SYMBOL_FROST_KSNOWF: &str = "frost.options.ksnowf";
-const WB14_SYMBOL_FROST_KRESF: &str = "frost.options.kresf";
-const WB14_SYMBOL_FROST_KSOILF: &str = "frost.options.ksoilf";
-const WB14_SYMBOL_FROST_KFACTOR1: &str = "frost.options.kfactor1";
-const WB14_SYMBOL_FROST_KFACTOR2: &str = "frost.options.kfactor2";
-const WB14_SYMBOL_FROST_KFACTOR3: &str = "frost.options.kfactor3";
-const WB14_SYMBOL_FROST_RUNTIME_DFROST: &str = "frost.runtime_dfrost";
-const WB14_SYMBOL_FROST_RUNTIME_DTHAW: &str = "frost.runtime_dthaw";
-const WB14_SYMBOL_FROST_RUNTIME_NFT: &str = "frost.runtime_nft";
-const WB14_SYMBOL_FROST_RUNTIME_WS_FRZ: &str = "frost.runtime_ws_frz";
-const WB14_SYMBOL_FROST_RUNTIME_INFCAP_FRZ: &str = "frost.runtime_infcap_frz";
-const WB14_SYMBOL_TMAX: &str = "tmax";
-const WB14_SYMBOL_TMIN: &str = "tmin";
+const WB14_SYMBOL_HYETOGRAPH_NINTEN: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14HyetographNinten;
+const WB14_SYMBOL_HYETOGRAPH_NBRKPT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14HyetographNbrkpt;
+const WB14_SYMBOL_SOIL_CONDUCTIVITY: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SoilConductivity;
+const WB14_SYMBOL_SOIL_LAYER_DEPTH: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SoilLayerDepth;
+const WB14_SYMBOL_SOIL_THETA_RESIDUAL: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SoilThetaResidual;
+const WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SoilThetaFieldCapacity;
+const WB14_SYMBOL_SNOW_FILE_PRESENT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SnowFilePresent;
+const WB14_SYMBOL_SNOW_RST: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SnowRst;
+const WB14_SYMBOL_SNOW_NEWSNW: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SnowNewsnw;
+const WB14_SYMBOL_SNOW_SSD: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SnowSsd;
+const WB14_SYMBOL_SNOW_RUNTIME_SWE: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14SnowRuntimeSwe;
+const WB14_SYMBOL_FROST_FILE_PRESENT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostFilePresent;
+const WB14_SYMBOL_FROST_WINT_RED: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostWintRed;
+const WB14_SYMBOL_FROST_FINE_TOP: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostFineTop;
+const WB14_SYMBOL_FROST_FINE_BOT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostFineBot;
+const WB14_SYMBOL_FROST_KSNOWF: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostKsnowf;
+const WB14_SYMBOL_FROST_KRESF: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostKresf;
+const WB14_SYMBOL_FROST_KSOILF: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostKsoilf;
+const WB14_SYMBOL_FROST_KFACTOR1: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostKfactor1;
+const WB14_SYMBOL_FROST_KFACTOR2: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostKfactor2;
+const WB14_SYMBOL_FROST_KFACTOR3: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostKfactor3;
+const WB14_SYMBOL_FROST_RUNTIME_DFROST: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostRuntimeDfrost;
+const WB14_SYMBOL_FROST_RUNTIME_DTHAW: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostRuntimeDthaw;
+const WB14_SYMBOL_FROST_RUNTIME_NFT: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostRuntimeNft;
+const WB14_SYMBOL_FROST_RUNTIME_WS_FRZ: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostRuntimeWsFrz;
+const WB14_SYMBOL_FROST_RUNTIME_INFCAP_FRZ: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb14FrostRuntimeInfcapFrz;
+const WB14_SYMBOL_TMAX: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb14Tmax;
+const WB14_SYMBOL_TMIN: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb14Tmin;
 const WB14_FROST_MAX_DEPTH_M: f64 = 0.20;
-const WB16_SYMBOL_TIMEP: &str = "timep";
-const WB16_SYMBOL_EFFLEN: &str = "efflen";
-const WB16_SYMBOL_EALPHA: &str = "ealpha";
-const WB16_SYMBOL_EXPONENT_M: &str = "m";
-const WB16_SYMBOL_PEAKRO: &str = "peakro";
-const WB16_SYMBOL_WATDUR: &str = "watdur";
-const WB16_SYMBOL_METHOD_BRANCH: &str = "wb16_peak_method_branch";
-const WB16_SYMBOL_TSTAR: &str = "wb16_tstar";
-const WB16_SYMBOL_QPSTAR: &str = "wb16_qpstar";
-const WB16_SYMBOL_VSTAR: &str = "wb16_vstar";
+const WB16_SYMBOL_TIMEP: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb16Timep;
+const WB16_SYMBOL_EFFLEN: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16Efflen;
+const WB16_SYMBOL_EALPHA: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16Ealpha;
+const WB16_SYMBOL_EXPONENT_M: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16ExponentM;
+const WB16_SYMBOL_PEAKRO: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16Peakro;
+const WB16_SYMBOL_WATDUR: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16Watdur;
+const WB16_SYMBOL_METHOD_BRANCH: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16MethodBranch;
+const WB16_SYMBOL_TSTAR: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb16Tstar;
+const WB16_SYMBOL_QPSTAR: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb16Qpstar;
+const WB16_SYMBOL_VSTAR: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb16Vstar;
 const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
 const WB16_MAX_DURATION_S: f64 = 86_400.0;
 
@@ -1701,7 +1784,7 @@ impl Wb11HydrologyKernel {
     fn require_state_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionStateSymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.state_surface.get(&key) else {
@@ -1714,7 +1797,7 @@ impl Wb11HydrologyKernel {
         if !scalar.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                 phase_class,
-                symbol: BoundarySymbol::from(symbol),
+                symbol: key,
                 value: scalar,
             });
         }
@@ -1724,7 +1807,7 @@ impl Wb11HydrologyKernel {
     fn require_flux_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionFluxSymbol,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.flux_surface.get(&key) else {
@@ -1747,7 +1830,7 @@ impl Wb11HydrologyKernel {
     fn optional_state_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionStateSymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.state_surface.get(&key) else {
@@ -1767,7 +1850,7 @@ impl Wb11HydrologyKernel {
     fn optional_flux_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionFluxSymbol,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.flux_surface.get(&key) else {
@@ -1808,7 +1891,7 @@ impl Wb11HydrologyKernel {
 
     fn require_state_range(
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionStateSymbol,
         value: f64,
         minimum: Option<f64>,
         maximum: Option<f64>,
@@ -1840,7 +1923,7 @@ impl Wb11HydrologyKernel {
 
     fn require_flux_range(
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionFluxSymbol,
         value: f64,
         minimum: Option<f64>,
         maximum: Option<f64>,
@@ -1887,7 +1970,7 @@ impl Wb11HydrologyKernel {
     fn optional_state_non_negative_integral(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-        symbol: &'static str,
+        symbol: HillslopeProductionStateSymbol,
     ) -> Result<Option<usize>, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(symbol);
         let Some(value) = request.state_surface.get(&key) else {
@@ -2090,15 +2173,23 @@ impl Wb11HydrologyKernel {
         Ok((times, intensities))
     }
 
-    fn irrigation_depletion_period_symbol(period_index: usize, field: &str) -> BoundarySymbol {
+    fn irrigation_depletion_period_symbol(
+        period_index: usize,
+        field: HillslopeIrrigationDepletionPeriodField,
+    ) -> BoundarySymbol {
         BoundarySymbol::from(format!(
-            "irrigation.depletion.period_{period_index:04}.{field}"
+            "irrigation.depletion.period_{period_index:04}.{}",
+            field.as_str()
         ))
     }
 
-    fn irrigation_fixeddate_event_symbol(event_index: usize, field: &str) -> BoundarySymbol {
+    fn irrigation_fixeddate_event_symbol(
+        event_index: usize,
+        field: HillslopeIrrigationFixedDateEventField,
+    ) -> BoundarySymbol {
         BoundarySymbol::from(format!(
-            "irrigation.fixeddate.event_{event_index:04}.{field}"
+            "irrigation.fixeddate.event_{event_index:04}.{}",
+            field.as_str()
         ))
     }
 
@@ -2220,6 +2311,7 @@ impl Wb11HydrologyKernel {
         })
     }
 
+    #[allow(clippy::too_many_lines)]
     fn resolve_fixeddate_irrigation_event(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -2247,7 +2339,10 @@ impl Wb11HydrologyKernel {
         )?;
 
         for event_index in 1..=event_count {
-            let ofe_symbol = Self::irrigation_fixeddate_event_symbol(event_index, "ofe_id");
+            let ofe_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::OfeId,
+            );
             let event_ofe = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
@@ -2257,21 +2352,29 @@ impl Wb11HydrologyKernel {
                 continue;
             }
 
-            let day_symbol = Self::irrigation_fixeddate_event_symbol(event_index, "day");
+            let day_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::Day,
+            );
             let event_day = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
                 &day_symbol,
             )?;
-            let year_symbol = Self::irrigation_fixeddate_event_symbol(event_index, "year");
+            let year_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::Year,
+            );
             let event_year = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
                 &year_symbol,
             )?;
 
-            let termination_symbol =
-                Self::irrigation_fixeddate_event_symbol(event_index, "schedule_termination_flag");
+            let termination_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::ScheduleTerminationFlag,
+            );
             let termination_flag =
                 Self::require_state_scalar_for_symbol(request, phase_class, &termination_symbol)?;
             Self::require_state_range(
@@ -2299,16 +2402,22 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let depth_symbol =
-                Self::irrigation_fixeddate_event_symbol(event_index, "sprinkler_depth_m");
+            let depth_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::SprinklerDepthMeters,
+            );
             let depth_m =
                 Self::require_state_scalar_for_symbol(request, phase_class, &depth_symbol)?;
-            let rate_symbol =
-                Self::irrigation_fixeddate_event_symbol(event_index, "sprinkler_rate_m_per_s");
+            let rate_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::SprinklerRateMetersPerSecond,
+            );
             let base_rate =
                 Self::require_state_scalar_for_symbol(request, phase_class, &rate_symbol)?;
-            let nozzle_symbol =
-                Self::irrigation_fixeddate_event_symbol(event_index, "sprinkler_nozzle_factor");
+            let nozzle_symbol = Self::irrigation_fixeddate_event_symbol(
+                event_index,
+                HillslopeIrrigationFixedDateEventField::SprinklerNozzleFactor,
+            );
             let nozzle =
                 Self::require_state_scalar_for_symbol(request, phase_class, &nozzle_symbol)?;
             Self::require_state_range(
@@ -2408,8 +2517,10 @@ impl Wb11HydrologyKernel {
             .saturating_add(i64::try_from(runtime_day).unwrap_or(i64::MAX));
 
         for period_index in 1..=period_count {
-            let element_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "element_id");
+            let element_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::ElementId,
+            );
             let element_id = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
@@ -2419,28 +2530,37 @@ impl Wb11HydrologyKernel {
                 continue;
             }
 
-            let start_day_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "start_doy");
+            let start_day_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::StartDoy,
+            );
             let start_day = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
                 &start_day_symbol,
             )?;
-            let start_year_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "start_year");
+            let start_year_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::StartYear,
+            );
             let start_year = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
                 &start_year_symbol,
             )?;
-            let end_day_symbol = Self::irrigation_depletion_period_symbol(period_index, "end_doy");
+            let end_day_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::EndDoy,
+            );
             let end_day = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
                 &end_day_symbol,
             )?;
-            let end_year_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "end_year");
+            let end_year_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::EndYear,
+            );
             let end_year = Self::require_non_negative_integral_state_symbol(
                 request,
                 phase_class,
@@ -2468,8 +2588,10 @@ impl Wb11HydrologyKernel {
                 continue;
             }
 
-            let threshold_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "depletion_trigger_ratio");
+            let threshold_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::DepletionTriggerRatio,
+            );
             let threshold =
                 Self::require_state_scalar_for_symbol(request, phase_class, &threshold_symbol)?;
             Self::require_state_range(
@@ -2493,8 +2615,10 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let depth_ratio_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "sprinkler_depth_ratio");
+            let depth_ratio_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::SprinklerDepthRatio,
+            );
             let depth_ratio =
                 Self::require_state_scalar_for_symbol(request, phase_class, &depth_ratio_symbol)?;
             Self::require_state_range(
@@ -2508,12 +2632,16 @@ impl Wb11HydrologyKernel {
             let depth_from_ratio = depth_ratio * depth_cap;
             let depth_m = depth_from_ratio.max(min_depth);
 
-            let rate_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "sprinkler_rate_m_per_s");
+            let rate_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::SprinklerRateMetersPerSecond,
+            );
             let base_rate =
                 Self::require_state_scalar_for_symbol(request, phase_class, &rate_symbol)?;
-            let nozzle_symbol =
-                Self::irrigation_depletion_period_symbol(period_index, "sprinkler_nozzle_factor");
+            let nozzle_symbol = Self::irrigation_depletion_period_symbol(
+                period_index,
+                HillslopeIrrigationDepletionPeriodField::SprinklerNozzleFactor,
+            );
             let nozzle =
                 Self::require_state_scalar_for_symbol(request, phase_class, &nozzle_symbol)?;
             Self::require_state_range(
@@ -3064,7 +3192,7 @@ impl Wb11HydrologyKernel {
             * ((WB15_INTERCEPT_LINEAR_COEFF * biomass_kg_ha
                 - WB15_INTERCEPT_QUADRATIC_COEFF * biomass_kg_ha.powi(2))
                 / WB15_INTERCEPT_MM_TO_M);
-        Self::require_state_range(
+        Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
             potential_interception,
@@ -3073,7 +3201,7 @@ impl Wb11HydrologyKernel {
         )?;
 
         let interception = potential_interception.min(hyetograph_rainfall);
-        Self::require_state_range(
+        Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
             interception,
@@ -3172,7 +3300,7 @@ impl Wb11HydrologyKernel {
         interception: f64,
     ) -> Result<(f64, f64), Wb11HydrologyKernelGuardError> {
         let liquid_after_interception = hyetograph_rainfall - interception;
-        Self::require_state_range(
+        Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
             liquid_after_interception,
@@ -3185,7 +3313,7 @@ impl Wb11HydrologyKernel {
         }
 
         let rainfall_scale = liquid_after_interception / hyetograph_rainfall;
-        Self::require_state_range(
+        Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
             rainfall_scale,

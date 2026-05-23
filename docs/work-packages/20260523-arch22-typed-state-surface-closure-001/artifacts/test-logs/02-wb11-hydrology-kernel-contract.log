@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running tests/integration/wb11_hydrology_kernel_contract.rs (target/debug/deps/wb11_hydrology_kernel_contract-49c29b3b20473d94)
+
+running 3 tests
+test wb11_contract_conformance_rejects_non_finite_et_demand ... ok
+test wb11_contract_conformance_rejects_invalid_percolation_fraction ... ok
+test wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

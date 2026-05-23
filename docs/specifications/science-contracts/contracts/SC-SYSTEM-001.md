@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -280,6 +280,28 @@ Minimum WS10 integration vectors:
 3. Non-finite WS10 symbol halts node execution with `-E-002`.
 4. Domain/dependency WS10 violation halts node execution with `-E-003`.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production system-integration interfaces must resolve boundary-state
+   and boundary-flux surfaces via ARCH22 typed symbol families:
+   `HillslopeProductionStateSymbol`, `HillslopeProductionFluxSymbol`,
+   `WatershedProductionStateSymbol`, and `WatershedProductionFluxSymbol`.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Typed migration must preserve deterministic publication ordering, dependency
+   visibility, and existing hard-fail boundary classes/message IDs.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered production integration accessors use typed
+   symbol families, not stringly `&str` parameters.
+2. Nominal migration vector: coupled hillslope/watershed production execution
+   preserves deterministic state/flux publication semantics.
+3. Failure migration vectors: missing/non-finite/domain/dependency violations
+   preserve existing typed hard-fail boundary classes and guard IDs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -300,3 +322,4 @@ Minimum WS10 integration vectors:
 | `2026-05-23` | `4` | `Codex` | PL14 amendment: added strict replay artifact/provenance completeness invariant (`INV-SYSTEM-012`), replay-lane guard/disposition authority, and explicit strict Tier-A tolerance authority (`abs_tol=0`, `rel_tol=0`) for closeout staging. |
 | `2026-05-23` | `5` | `Codex` | PL15 amendment: added Tier-A residual closeout governance invariant (`INV-SYSTEM-013`) requiring explicit risk-acceptance references for unresolved blockers and prohibiting silent down-classification/implicit risk acceptance. |
 | `2026-05-23` | `6` | `Codex` | WS10 amendment: added system integration authority for WS10 production watershed runtime aliases, deterministic dependency payload publication rules, and WS10 typed guard-family/test-vector requirements. |
+| `2026-05-23` | `7` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered system integration interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving deterministic publication and existing failure-class/message continuity. |

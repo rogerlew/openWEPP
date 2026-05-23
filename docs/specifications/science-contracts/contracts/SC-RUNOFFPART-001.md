@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -569,6 +569,27 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 5. Domain-invalid WB16 symbol/intermediate hard-fails with
    `HKERNEL-WB16-PEAK-E-003`.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production runoff-partition interfaces must use typed ARCH22 symbol
+   surfaces (`HillslopeProductionStateSymbol`, `HillslopeProductionFluxSymbol`)
+   for boundary-state and boundary-flux resolution.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Typed migration must preserve WB14/WB15/WB16 runoff guard families and
+   failure behavior for missing/non-finite/domain-invalid payloads.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered runoff-partition production accessors use
+   typed symbol families, not stringly `&str` parameters.
+2. Nominal migration vector: runoff reconciliation + peak-runoff lanes preserve
+   deterministic outputs under typed symbol resolution.
+3. Failure migration vectors: existing typed hard-fail boundary classes and
+   guard IDs remain unchanged.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -593,3 +614,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `8` | `Codex` | WB15 amendment: added canopy interception runtime coupling authority using plant-state surfaces (`cancov`, `lai`, `vdmt`) with interception-before-infiltration reconciliation and explicit `I` runoff coupling output under typed guard posture. |
 | `2026-05-23` | `9` | `Codex` | IRRIG10 amendment: added runtime irrigation schedule-source coupling authority (`irrigation.depletion.*`, `irrigation.fixeddate.*`, `irrigation.runtime_*`) and explicit `Irr` runoff-forcing closure posture with typed WB14 guard requirements. |
 | `2026-05-23` | `10` | `Codex` | WB16 amendment: added closure-diagnostics peak-runoff authority (`peakro`, `watdur`) with deterministic `tstar` branch rules, explicit minimum-flow/duration-limit posture, and typed WB16 guard/test-vector requirements. |
+| `2026-05-23` | `11` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered runoff-partition interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving WB14/WB15/WB16 failure-class/message continuity. |

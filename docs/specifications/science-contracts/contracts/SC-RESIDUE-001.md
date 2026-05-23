@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -429,6 +429,27 @@ Minimum required scenario families for contract conformance:
    - non-finite `prcp` or out-of-domain `Ws` fails with typed status;
    - active branch does not silently default missing decomposition symbols.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production kernel interfaces that consume residue-coupled boundary
+   payloads must use typed ARCH22 symbol surfaces:
+   `HillslopeProductionStateSymbol` and `HillslopeProductionFluxSymbol`.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Typed migration must preserve PL17 and INT10 typed hard-fail posture for
+   missing/non-finite/domain-invalid residue-coupled payloads.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered residue-coupled production guard accessors
+   use typed symbol families, not stringly `&str` symbol parameters.
+2. Nominal migration vector: residue-coupled hydrology execution preserves
+   deterministic state/flux publication semantics with typed symbols.
+3. Failure migration vectors: missing/non-finite/domain-invalid residue-coupled
+   symbols still emit typed hard-fail boundary classifications and IDs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -451,3 +472,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `6` | `Codex` | INT10 amendment: added coupled replay lane-order authority (`decomp -> growth -> watbal`), explicit branch/guard and invariant coverage (`INV-RESIDUE-016`), and INT10 ordering/state-transfer test-vector obligations. |
 | `2026-05-23` | `7` | `Codex` | PL16 amendment: aligned growth transition authority to reset-only (`planting/harvest/stop`) plus equation-driven non-reset payload behavior, added explicit PL16 growth-equation guard branch, and updated PL16-oriented test-vector obligations/failure posture. |
 | `2026-05-23` | `8` | `Codex` | PL17 amendment: added decomposition equation/update addendum with legacy-aligned environmental factors and decay forms, introduced decomposition payload equation-updated seed-pool authority and event-transfer update obligations, added `INV-RESIDUE-017/018` plus guard-map rows, and expanded PL17 test-vector obligations for decomposition kinetics and required-symbol failure posture. |
+| `2026-05-23` | `9` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring residue-coupled production interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving PL17/INT10 typed failure semantics under migration. |

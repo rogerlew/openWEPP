@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -286,6 +286,29 @@ Minimum WS10 routing conformance vectors:
 4. Domain/dependency violation (e.g., invalid positive-domain parameter or
    unresolved upstream payload) fails with `WKERNEL-WS10-CHANNEL-E-003`.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production watershed routing interfaces must use typed ARCH22 symbol
+   surfaces (`WatershedProductionStateSymbol`,
+   `WatershedProductionFluxSymbol`) for boundary resolution.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Node-scoped channel/impoundment dependency symbol families must be resolved
+   through typed field builders and explicit node/hillslope identifiers.
+4. Typed migration must preserve WS10 routing guard families
+   (`WKERNEL-WS10-CHANNEL-E-001..003`) and failure behavior.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered routing production accessors use typed
+   symbol families, not stringly `&str` parameters.
+2. Nominal migration vector: channel routing execution preserves deterministic
+   output/state publication under typed symbol resolution.
+3. Failure migration vectors: missing/non-finite/domain/dependency violations
+   preserve existing typed boundary classes and WS10 guard IDs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -305,3 +328,4 @@ Minimum WS10 routing conformance vectors:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: made outlet method selection explicitly exclusive, promoted `roff <= 0.001 m^3` peak-threshold gating into invariant/guard tables, added `durrof` alias coverage, and added Chapter-13 applicability-bound governance controls. |
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added hillslope WB16 peak-flow intake authority (`peakro`, `watdur`) plus typed guard and traceability requirements for watershed routing coupling readiness. |
 | `2026-05-23` | `4` | `Codex` | WS10 amendment: added watershed production-kernel runtime alias surfaces (`ws10_channel_*`, dependency payloads), typed WS10 routing guard family (`WKERNEL-WS10-CHANNEL-E-001..003`), and contract-derived WS10 routing test-vector obligations. |
+| `2026-05-23` | `5` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WS10 routing interfaces to consume boundary symbols via ARCH22 typed symbol families (including node-scoped builders) while preserving WS10 guard-family continuity. |

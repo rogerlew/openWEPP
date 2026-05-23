@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -558,6 +558,27 @@ Minimum required scenario families for contract conformance:
 3. Non-finite or out-of-domain canopy symbol vector: coupled hydrology branch
    hard-fails with typed non-finite/domain status.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Production hydrology/plant coupling interfaces that consume plant state
+   payloads for covered lanes must use typed ARCH22 symbol surfaces:
+   `HillslopeProductionStateSymbol` and `HillslopeProductionFluxSymbol`.
+2. Covered production kernel guard/accessor helper signatures must not accept
+   raw `&str` symbol parameters when typed ARCH22 symbols are available.
+3. Typed-surface migration must preserve existing WB15 typed hard-fail posture
+   for missing/non-finite/domain-invalid `cancov`, `lai`, and `vdmt` payloads.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered production guard-accessor signatures use
+   typed symbol families, not stringly `&str` symbol identifiers.
+2. Nominal migration vector: canopy-interception coupling executes with typed
+   symbol resolution and preserves finite output semantics.
+3. Failure migration vectors: missing/non-finite/domain-invalid canopy symbols
+   still produce typed hard-fail boundary classifications and IDs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -587,3 +608,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `9` | `Codex` | PL16 amendment: added equation-authoritative growth-runtime state surfaces and algorithm steps (GDD/biomass/canopy/LAI/root/phenology/senescence), introduced `INV-PLANT-018..021` plus guard-map rows, expanded constants table to legacy growth-equation coefficients, and added PL16 test-vector obligations for equation updates and required-symbol failure posture. |
 | `2026-05-23` | `10` | `Codex` | PL17 amendment: added decomposition-kinetics parameter projection authority (`oratea`, `orater`) to PL transition-control runtime projection semantics, introduced `INV-PLANT-022` plus guard-map row, and expanded test-vector obligations for decomposition-rate projection and failure posture. |
 | `2026-05-23` | `11` | `Codex` | WB15 amendment: added plant-to-interception coupling authority for hydrology consumption of `cancov`, `lai`, and `vdmt`, including required producer-domain guarantees and coupled failure vectors for missing/non-finite/out-of-domain canopy-state payloads. |
+| `2026-05-23` | `12` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered hydrology/plant coupling interfaces to consume boundary symbols via ARCH22 typed symbol families and preserving WB15 guard/failure semantics under typed migration. |

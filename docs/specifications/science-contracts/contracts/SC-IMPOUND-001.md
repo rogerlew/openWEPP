@@ -4,7 +4,7 @@ title: Surface Impoundment Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Daily hydraulic routing state/flux surfaces for surface impoundments
   - Stage-discharge, stage-area, and evaporation/infiltration update surfaces
@@ -243,6 +243,30 @@ Minimum WS10 impoundment conformance vectors:
    upstream dependency payload) fails with
    `WKERNEL-WS10-IMPOUNDMENT-E-003`.
 
+## ARCH22 Typed Production-Surface Addendum
+
+### Typed Runtime Surface Authority
+
+1. Covered production impoundment interfaces must use typed ARCH22 symbol
+   surfaces (`WatershedProductionStateSymbol`,
+   `WatershedProductionFluxSymbol`) for boundary-state/flux resolution.
+2. Covered production guard/accessor helper signatures must not accept raw
+   `&str` symbol identifiers where typed ARCH22 symbols exist.
+3. Node-scoped impoundment symbol families (`h`, `hfull`, `deltat`, `qinf`,
+   `qo`, `durout`, `hnext`, `outflow_volume`) must be resolved through typed
+   node/field builders.
+4. Typed migration must preserve WS10 impoundment guard-family continuity
+   (`WKERNEL-WS10-IMPOUNDMENT-E-001..003`) and hard-fail behavior.
+
+### Contract-Derived Migration Vectors
+
+1. Static migration proof: covered impoundment production accessors use typed
+   symbol families, not stringly `&str` parameters.
+2. Nominal migration vector: impoundment execution preserves deterministic
+   output/state publication under typed symbol resolution.
+3. Failure migration vectors: missing/non-finite/domain/dependency violations
+   preserve existing typed boundary classes and WS10 guard IDs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -260,3 +284,4 @@ Minimum WS10 impoundment conformance vectors:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-14/13/1 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: completed symbol-alias continuity coverage, added evidence-tag columns for degenerate/tolerance sections, normalized evidence mode to `Static`, clarified Eq. [14.5.3] signed stage-delta semantics, and unified authority-path style. |
 | `2026-05-23` | `3` | `Codex` | WS10 amendment: added watershed production-kernel impoundment runtime alias surfaces (`ws10_impoundment_*` + dependency payloads), typed WS10 impoundment guard family (`WKERNEL-WS10-IMPOUNDMENT-E-001..003`), and contract-derived WS10 impoundment test-vector obligations. |
+| `2026-05-23` | `4` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WS10 impoundment interfaces to consume boundary symbols via ARCH22 typed symbol families and node-scoped builders while preserving WS10 guard-family continuity. |
