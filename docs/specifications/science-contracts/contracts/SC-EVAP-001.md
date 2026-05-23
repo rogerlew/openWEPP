@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Plant-growth and residue-state consumers influenced by ET stress signals
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -85,6 +85,44 @@ Out of scope:
 | `RA`, `Tmax`, `Tmin`, `Tdp`, `u_z` | `Ly`, `degC`, `degC`, `degC`, `m s^-1` | Climate forcing surfaces required by potential ET formulations. | climate forcing pathway | ET potential pathway |
 | `S` | `m` | Snow-water state that can satisfy evaporation demand before soil-water extraction. | winter hydrology pathway | ET withdrawal precedence logic |
 
+## Algorithm State Surfaces (WB10 Hydrology Phase-Entry Scaffolding)
+
+### Required Inputs
+
+| Surface | Symbols |
+|---|---|
+| Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
+| ET consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
+
+### Required Outputs
+
+| Surface | Output |
+|---|---|
+| Hydrology phase entry route | Deterministic route label for `evapotranspiration` phase class |
+| Scheduler failure surface | Typed hard-fail status for unsupported/mismatched ET phase-class routing |
+
+### Mutated State Surfaces
+
+WB10 routing scaffolding mutates only typed entry-route metadata and typed
+failure reporting; ET state/flux updates remain delegated to downstream kernels.
+
+## Algorithm Specification (WB10 ET Routing Skeleton)
+
+1. Scheduler maps `evapotranspiration` to WB10 typed ET phase class.
+2. Hydrology routing validates phase/class compatibility before kernel
+   invocation.
+3. Unsupported or mismatched class combinations are treated as invalid runtime
+   states and hard-fail with typed status.
+4. Valid ET routing preserves orchestrator-owned writeback surfaces and
+   forwards immutable phase metadata to kernel execution.
+
+## Branch and Guard Table (WB10 ET Phase Class)
+
+| Branch ID | Trigger | Required symbols | Guard class | Failure posture |
+|---|---|---|---|---|
+| `BR-EVAP-WB10-ET` | phase `evapotranspiration` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
+| `BR-EVAP-WB10-UNSUPPORTED` | any unsupported ET routing class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
+
 ## Invariants
 
 | Invariant ID | Statement | Severity | Authority | Evidence |
@@ -99,6 +137,8 @@ Out of scope:
 | INV-EVAP-008 | Stress-factor invariant: stress factor `Ws` must follow Eq. [5.5.1]/[8.2.15], remain within `[0,1]`, and be emitted with declared units/semantics for plant-growth consumers. | hard-fail | REF-EVAP-CH5-LINK, REF-EVAP-CH8-LINK, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-009 | Coupling completeness invariant: ET boundary payload must include required surfaces for water-balance closure (`ET` term context) and plant-growth stress coupling (`Ws`, demand/supply terms) with unit-consistent semantics. | hard-fail | REF-EVAP-CH5-BAL, REF-EVAP-CH5-LINK, REF-EVAP-CH8-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-010 | Governance limitation invariant: ET contract interpretation must remain explicit about daily-step process scope and cited method assumptions (modified Ritchie framework and pathway preconditions); missing scope labeling blocks promotion. | governance-fail | REF-EVAP-CH5-POT, REF-EVAP-CH5-STAGE | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-011 | WB10 ET routing invariant: scheduler `evapotranspiration` phase must route through explicit WB10 ET phase class with no silent fallback to generic hydrology class. | hard-fail | REF-EVAP-CH5-BAL, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-012 | Unsupported routing invariant: unsupported or mismatched ET phase-class routing states must surface typed hard failures and cannot be silently reassigned. | hard-fail | REF-EVAP-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -114,6 +154,8 @@ Out of scope:
 | `INV-EVAP-008` | runtime | Stress-factor calculator and boundary validator | Typed hard error on out-of-range/undefined `Ws` | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-009` | runtime | Cross-domain ET boundary payload validator | Typed hard error on missing required ET/stress surfaces or units mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-010` | governance | Contract review + promotion checklist | Promotion `HOLD` if method/scope caveats are not explicit in contract/disposition artifacts | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-011` | runtime | WB10 ET phase-class routing table | Typed hard error on unsupported/mismatched ET routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-012` | runtime | Unsupported ET routing guard | Typed hard error (`HS-HYDRO-E-001`) on unsupported ET routing class combinations | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -175,6 +217,14 @@ required until implementation surfaces diverge.
 | Root-zone extraction and uptake (`INV-EVAP-005/006/007`) | root-zone ET distribution stage | Hard error on bounds or branch mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Stress and boundary coupling (`INV-EVAP-008/009`) | ET-to-plant and ET-to-water-balance handoff | Hard error on malformed stress or missing boundary payload | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Scope/governance labeling (`INV-EVAP-010`) | review/verification/promotion | Governance `HOLD` until scope/method caveats are explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB10 ET phase-class routing (`INV-EVAP-011/012`) | scheduler ET entry dispatch | Hard error on unsupported/mismatched ET routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## Constants and Parameters Table
+
+| Constant/parameter | Units | Domain | Contract use | Authority |
+|---|---|---|---|---|
+| `WB10_PHASE_CLASS_ET` | class label | exact match | Required class label for `evapotranspiration` routing | REF-EVAP-CH5-BAL |
+| `WB10_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported WB10 ET routing states | REF-EVAP-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -187,6 +237,17 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-specific tolerances:
 | TOL-EVAP-002 | Non-negative comparator tolerance for ET rates/depths | lower bound `>= -1e-12` in declared ET units | Comparator-noise allowance only; runtime hard-fails on material negatives. | `[INFERENCE][Static]` |
 | TOL-EVAP-003 | Soil-evaporation depth bounds tolerance | `-1e-12 m <= ds <= dx + 1e-12 m` | Preserves explicit `0..dx` semantics with floating-noise allowance. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-EVAP-004 | Stress-factor bounds tolerance | `-1e-12 <= Ws <= 1 + 1e-12` | Runtime still enforces bounded stress semantics. | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## Test-Vector Obligations
+
+Minimum WB10 scheduler ET phase-entry conformance vectors:
+
+1. `evapotranspiration` routes with explicit WB10 ET phase class and succeeds
+   through kernel invocation when required symbols are present.
+2. Mismatched/unsupported ET phase-class combinations hard-fail with typed
+   scheduler status (`HS-HYDRO-E-001`).
+3. No silent fallback from ET typed phase class to generic hydrology class is
+   permitted.
 
 ## Gap Register
 
@@ -204,3 +265,4 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-specific tolerances:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-07 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/8 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-07 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added missing symbol/alias coverage (`Θc`, `ET`), normalized evidence-mode casing, strengthened snow provenance anchor wording, and evidence-tagged degenerate/tolerance claims. |
+| `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit ET phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 ET test-vector obligations. |

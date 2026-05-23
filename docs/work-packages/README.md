@@ -448,6 +448,10 @@ Authorized packages:
   - Purpose: close or explicitly disposition canonical PL symbol alias
     continuity (`PL09-GAP-007`) with registry/contract authority updates in a
     parallel governance lane.
+- `20260523-wb10-hydrology-phase-kernel-skeleton-001/`
+  - Purpose: add production hydrology phase-kernel skeleton entry routing
+    (ET/perc/lateral/drainage/runoff/storage classes) with contract-first
+    authority and pre-implementation contract-test gating.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

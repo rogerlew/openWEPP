@@ -493,6 +493,12 @@ pub struct HillslopeGrowthTransitionPayload {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HillslopeKernelPhaseClass {
     Hydrology,
+    HydrologyEvapotranspiration,
+    HydrologyPercolationDeepSeepage,
+    HydrologyLateralTransfer,
+    HydrologyDrainage,
+    HydrologyRunoffReconciliation,
+    HydrologyStorageReconciliation,
     DecompositionTransition,
     ResiduePartitionTransition,
     GrowthAnnualTransition,
@@ -504,11 +510,31 @@ impl HillslopeKernelPhaseClass {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Hydrology => "hydrology",
+            Self::HydrologyEvapotranspiration => "hydrology_evapotranspiration",
+            Self::HydrologyPercolationDeepSeepage => "hydrology_percolation_deep_seepage",
+            Self::HydrologyLateralTransfer => "hydrology_lateral_transfer",
+            Self::HydrologyDrainage => "hydrology_drainage",
+            Self::HydrologyRunoffReconciliation => "hydrology_runoff_reconciliation",
+            Self::HydrologyStorageReconciliation => "hydrology_storage_reconciliation",
             Self::DecompositionTransition => "decomposition_transition",
             Self::ResiduePartitionTransition => "residue_partition_transition",
             Self::GrowthAnnualTransition => "growth_annual_transition",
             Self::GrowthPerennialTransition => "growth_perennial_transition",
         }
+    }
+
+    #[must_use]
+    pub const fn is_hydrology_phase(self) -> bool {
+        matches!(
+            self,
+            Self::Hydrology
+                | Self::HydrologyEvapotranspiration
+                | Self::HydrologyPercolationDeepSeepage
+                | Self::HydrologyLateralTransfer
+                | Self::HydrologyDrainage
+                | Self::HydrologyRunoffReconciliation
+                | Self::HydrologyStorageReconciliation
+        )
     }
 
     #[must_use]
@@ -1082,6 +1108,12 @@ mod tests {
     #[test]
     fn phase_class_growth_predicate_matches_contract() {
         assert!(!HillslopeKernelPhaseClass::Hydrology.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyEvapotranspiration.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyLateralTransfer.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyDrainage.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyStorageReconciliation.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::DecompositionTransition.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::ResiduePartitionTransition.is_growth_transition());
         assert!(HillslopeKernelPhaseClass::GrowthAnnualTransition.is_growth_transition());
@@ -1091,6 +1123,22 @@ mod tests {
     #[test]
     fn phase_class_decomposition_predicate_matches_contract() {
         assert!(!HillslopeKernelPhaseClass::Hydrology.is_decomposition_transition());
+        assert!(
+            !HillslopeKernelPhaseClass::HydrologyEvapotranspiration.is_decomposition_transition()
+        );
+        assert!(
+            !HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage
+                .is_decomposition_transition()
+        );
+        assert!(!HillslopeKernelPhaseClass::HydrologyLateralTransfer.is_decomposition_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyDrainage.is_decomposition_transition());
+        assert!(
+            !HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_decomposition_transition()
+        );
+        assert!(
+            !HillslopeKernelPhaseClass::HydrologyStorageReconciliation
+                .is_decomposition_transition()
+        );
         assert!(HillslopeKernelPhaseClass::DecompositionTransition.is_decomposition_transition());
         assert!(
             HillslopeKernelPhaseClass::ResiduePartitionTransition.is_decomposition_transition()
@@ -1099,6 +1147,21 @@ mod tests {
         assert!(
             !HillslopeKernelPhaseClass::GrowthPerennialTransition.is_decomposition_transition()
         );
+    }
+
+    #[test]
+    fn phase_class_hydrology_predicate_matches_contract() {
+        assert!(HillslopeKernelPhaseClass::Hydrology.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyEvapotranspiration.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyLateralTransfer.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyDrainage.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyStorageReconciliation.is_hydrology_phase());
+        assert!(!HillslopeKernelPhaseClass::DecompositionTransition.is_hydrology_phase());
+        assert!(!HillslopeKernelPhaseClass::ResiduePartitionTransition.is_hydrology_phase());
+        assert!(!HillslopeKernelPhaseClass::GrowthAnnualTransition.is_hydrology_phase());
+        assert!(!HillslopeKernelPhaseClass::GrowthPerennialTransition.is_hydrology_phase());
     }
 
     #[test]

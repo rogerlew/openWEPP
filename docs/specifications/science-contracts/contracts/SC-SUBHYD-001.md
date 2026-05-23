@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -110,6 +110,48 @@ This identity is an accounting constraint for contract enforcement and does not
 replace the governing Chapter-6 process equations.
 `[DIRECT][Static] + [INFERENCE][Static]`
 
+## Algorithm State Surfaces (WB10 Hydrology Phase-Entry Scaffolding)
+
+### Required Inputs
+
+| Surface | Symbols |
+|---|---|
+| Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
+| Lateral-transfer consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
+| Drainage consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
+
+### Required Outputs
+
+| Surface | Output |
+|---|---|
+| Hydrology phase entry route | Deterministic route labels for `lateral_transfer` and `drainage` phase classes |
+| Scheduler failure surface | Typed hard-fail status for unsupported/mismatched lateral/drainage phase-class routing |
+
+### Mutated State Surfaces
+
+WB10 routing scaffolding mutates only typed entry-route metadata and typed
+failure reporting; lateral/drainage state/flux updates remain delegated to
+downstream kernels.
+
+## Algorithm Specification (WB10 Lateral/Drainage Routing Skeleton)
+
+1. Scheduler maps `lateral_transfer` and `drainage` to explicit WB10 typed
+   hydrology phase classes.
+2. Hydrology routing validates scheduler phase/class compatibility before
+   kernel invocation.
+3. Unsupported or mismatched lateral/drainage class combinations are invalid
+   runtime states and hard-fail with typed status.
+4. Valid routing preserves orchestrator-owned writeback surfaces and forwards
+   immutable phase metadata to kernel execution.
+
+## Branch and Guard Table (WB10 Lateral/Drainage Phase Classes)
+
+| Branch ID | Trigger | Required symbols | Guard class | Failure posture |
+|---|---|---|---|---|
+| `BR-SUBHYD-WB10-LATERAL` | phase `lateral_transfer` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
+| `BR-SUBHYD-WB10-DRAINAGE` | phase `drainage` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
+| `BR-SUBHYD-WB10-UNSUPPORTED` | any unsupported lateral/drainage routing class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
+
 ## Invariants
 
 | Invariant ID | Statement | Severity | Authority | Evidence |
@@ -125,6 +167,9 @@ replace the governing Chapter-6 process equations.
 | INV-SUBHYD-011 | Drainage-capacity invariant: emitted tile/ditch drainage flux cannot exceed declared drainage coefficient (`Qdd <= D.C.`); when Eq. [6.2.10] exceeds capacity, output is explicitly capped. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-009 | Cross-domain coupling invariant: daily subsurface/drain loss term exported as `Qd` is unit/sign-consistent with Chapter-5 daily closure and preserves subsurface-contribution semantics for watershed/channel runon accounting. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-010 | Governance scope invariant: contract claims remain within Chapter-6 subsurface/drainage scope; unsupported extrapolation to alternate groundwater/baseflow physics without companion authority is non-promotable. | governance-fail | REF-SUBHYD-CH6-INTRO, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-012 | WB10 lateral routing invariant: scheduler `lateral_transfer` phase must route through explicit WB10 lateral phase class with no silent generic fallback. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-013 | WB10 drainage routing invariant: scheduler `drainage` phase must route through explicit WB10 drainage phase class with no silent generic fallback. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-014 | Unsupported routing invariant: unsupported or mismatched lateral/drainage phase-class routing states must surface typed hard failures and cannot be silently reassigned. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -141,6 +186,9 @@ replace the governing Chapter-6 process equations.
 | `INV-SUBHYD-011` | runtime | Post-computation drainage-capacity validator | Typed hard error on uncapped `Qdd` output exceeding declared `D.C.` | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-009` | runtime | Subsurface boundary payload validator for `Qd` handoff | Typed hard error on missing malformed field or units/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-010` | governance | Contract review/disposition/verification + promotion checklist | Promotion `HOLD` when scope claims exceed declared authority boundary | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-012` | runtime | WB10 lateral phase-class routing table | Typed hard error on unsupported/mismatched lateral routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-013` | runtime | WB10 drainage phase-class routing table | Typed hard error on unsupported/mismatched drainage routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-014` | runtime | Unsupported lateral/drainage routing guard | Typed hard error (`HS-HYDRO-E-001`) on unsupported lateral/drainage routing class combinations | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -203,6 +251,15 @@ required until implementation surfaces diverge.
 | Water-table drawdown transition (`INV-SUBHYD-008`) | saturated-zone update stage | Hard error on invalid drawdown-domain or branch misuse | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Cross-domain coupling payload (`INV-SUBHYD-009`) | subsurface boundary handoff | Hard error on missing malformed field or unit/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Governance scope boundary (`INV-SUBHYD-010`) | review/verification/promotion | Governance `HOLD` until scope claims match declared authority | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB10 lateral/drainage phase-class routing (`INV-SUBHYD-012/013/014`) | scheduler lateral/drainage entry dispatch | Hard error on unsupported/mismatched lateral/drainage routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## Constants and Parameters Table
+
+| Constant/parameter | Units | Domain | Contract use | Authority |
+|---|---|---|---|---|
+| `WB10_PHASE_CLASS_LATERAL` | class label | exact match | Required class label for `lateral_transfer` routing | REF-SUBHYD-CH6-LATFLUX |
+| `WB10_PHASE_CLASS_DRAINAGE` | class label | exact match | Required class label for `drainage` routing | REF-SUBHYD-CH6-DRAINFLOW |
+| `WB10_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported WB10 lateral/drainage routing states | REF-SUBHYD-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -217,6 +274,18 @@ bit-for-bit parity). Contract-specific tolerances:
 | TOL-SUBHYD-004 | Positive-denominator tolerance for Eq. [6.2.5] and Eq. [6.2.14] updates | denominator `> 1e-12` in declared units | Prevents unstable division in thickness and water-table updates. |
 | TOL-SUBHYD-005 | Storage-branch transition tolerance around `FL - DS` | `abs(FL - DS) <= 1e-9 cm` treated as branch boundary | Prevents branch jitter near storage-satisfaction threshold. |
 | TOL-SUBHYD-006 | Drainage-capacity cap tolerance | `Qdd - D.C. <= 1e-12 cm d^-1` | Comparator-noise allowance around hard cap boundary; runtime still enforces explicit cap/failure behavior. |
+
+## Test-Vector Obligations
+
+Minimum WB10 scheduler lateral/drainage phase-entry conformance vectors:
+
+1. `lateral_transfer` routes with explicit WB10 lateral phase class and
+   succeeds through kernel invocation when required symbols are present.
+2. `drainage` routes with explicit WB10 drainage phase class and succeeds
+   through kernel invocation when required symbols are present.
+3. Unsupported/mismatched lateral or drainage phase-class combinations
+   hard-fail with typed scheduler status (`HS-HYDRO-E-001`) and do not fall
+   back to generic hydrology class routing.
 
 ## Gap Register
 
@@ -234,3 +303,4 @@ bit-for-bit parity). Contract-specific tolerances:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-09 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-09 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit Eq. [6.2.1] closure identity, added drainage-coefficient (`D.C.`) variable and capacity-cap invariant/guard/tolerance, and expanded producer obligations for hydraulic-capacity enforcement. |
+| `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit lateral/drainage phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 lateral/drainage test-vector obligations. |

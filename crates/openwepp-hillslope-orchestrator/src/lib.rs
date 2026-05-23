@@ -1212,6 +1212,58 @@ enum DecompositionPhaseDispatch {
     Execute(HillslopeDecompositionKernelContext),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum HydrologyPhaseDispatch {
+    Generic,
+    Evapotranspiration,
+    PercolationDeepSeepage,
+    LateralTransfer,
+    Drainage,
+    RunoffReconciliation,
+    StorageReconciliation,
+}
+
+/// Typed failure surface for scheduler hydrology phase-class routing.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HillslopeHydrologyRoutingError {
+    UnsupportedPhaseClass {
+        phase: HillslopePhase,
+        phase_class: HillslopeKernelPhaseClass,
+    },
+}
+
+impl HillslopeHydrologyRoutingError {
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        match self {
+            Self::UnsupportedPhaseClass { .. } => "HS-HYDRO-E-001",
+        }
+    }
+
+    #[must_use]
+    pub const fn boundary_class(&self) -> BoundaryClass {
+        match self {
+            Self::UnsupportedPhaseClass { .. } => BoundaryClass::DomainViolation,
+        }
+    }
+}
+
+impl fmt::Display for HillslopeHydrologyRoutingError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UnsupportedPhaseClass { phase, phase_class } => write!(
+                f,
+                "{}: phase {} unsupported hydrology phase class {}",
+                self.code(),
+                phase.as_str(),
+                phase_class.as_str()
+            ),
+        }
+    }
+}
+
+impl Error for HillslopeHydrologyRoutingError {}
+
 #[must_use]
 const fn is_decomposition_phase(phase: HillslopePhase) -> bool {
     matches!(
@@ -1241,7 +1293,58 @@ const fn hillslope_phase_class_for_phase(phase: HillslopePhase) -> HillslopeKern
         HillslopePhase::PerennialGrowthTransition => {
             HillslopeKernelPhaseClass::GrowthPerennialTransition
         }
+        HillslopePhase::Evapotranspiration => {
+            HillslopeKernelPhaseClass::HydrologyEvapotranspiration
+        }
+        HillslopePhase::PercolationDeepSeepage => {
+            HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage
+        }
+        HillslopePhase::LateralTransfer => HillslopeKernelPhaseClass::HydrologyLateralTransfer,
+        HillslopePhase::Drainage => HillslopeKernelPhaseClass::HydrologyDrainage,
+        HillslopePhase::RunoffReconciliation => {
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation
+        }
+        HillslopePhase::StorageReconciliation => {
+            HillslopeKernelPhaseClass::HydrologyStorageReconciliation
+        }
         _ => HillslopeKernelPhaseClass::Hydrology,
+    }
+}
+
+fn hydrology_phase_dispatch_for_phase(
+    phase: HillslopePhase,
+    phase_class: HillslopeKernelPhaseClass,
+) -> Result<HydrologyPhaseDispatch, HillslopeHydrologyRoutingError> {
+    match (phase, phase_class) {
+        (
+            HillslopePhase::Normalization
+            | HillslopePhase::StorageBounds
+            | HillslopePhase::ClosureDiagnostics,
+            HillslopeKernelPhaseClass::Hydrology,
+        ) => Ok(HydrologyPhaseDispatch::Generic),
+        (
+            HillslopePhase::Evapotranspiration,
+            HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+        ) => Ok(HydrologyPhaseDispatch::Evapotranspiration),
+        (
+            HillslopePhase::PercolationDeepSeepage,
+            HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        ) => Ok(HydrologyPhaseDispatch::PercolationDeepSeepage),
+        (HillslopePhase::LateralTransfer, HillslopeKernelPhaseClass::HydrologyLateralTransfer) => {
+            Ok(HydrologyPhaseDispatch::LateralTransfer)
+        }
+        (HillslopePhase::Drainage, HillslopeKernelPhaseClass::HydrologyDrainage) => {
+            Ok(HydrologyPhaseDispatch::Drainage)
+        }
+        (
+            HillslopePhase::RunoffReconciliation,
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        ) => Ok(HydrologyPhaseDispatch::RunoffReconciliation),
+        (
+            HillslopePhase::StorageReconciliation,
+            HillslopeKernelPhaseClass::HydrologyStorageReconciliation,
+        ) => Ok(HydrologyPhaseDispatch::StorageReconciliation),
+        _ => Err(HillslopeHydrologyRoutingError::UnsupportedPhaseClass { phase, phase_class }),
     }
 }
 
@@ -3689,38 +3792,72 @@ impl HillslopePhaseScheduler {
                 if let GrowthPhaseDispatch::Execute(context) = growth_dispatch {
                     growth_context = Some(context);
                 }
-            } else if let Err(source) =
-                validate_hillslope_consumer_boundary(phase, &writeback_surface.state_surface)
-            {
-                let boundary_status = match SimulationStatus::failure(
-                    SimulationPhase::HillslopeKernel,
-                    true,
-                    false,
-                    BoundaryClass::MissingRequiredInput,
-                    source.code(),
-                ) {
-                    Ok(status) => status,
-                    Err(status_error) => {
-                        deferred_error = Some(HillslopeSchedulerError::Status(status_error));
-                        phase_reports.push(HillslopeKernelPhaseReport {
-                            phase,
-                            kernel_status: deferred_error_status.clone(),
-                            decision_outcome: WritebackDecisionOutcome::Reject,
-                            decision_status: deferred_error_status.clone(),
-                            apply_result: None,
-                        });
-                        return deferred_error_status.clone();
-                    }
-                };
+            } else {
+                if let Err(source) = hydrology_phase_dispatch_for_phase(phase, phase_class) {
+                    let boundary_status = match SimulationStatus::failure(
+                        SimulationPhase::HillslopeKernel,
+                        true,
+                        false,
+                        source.boundary_class(),
+                        source.code(),
+                    ) {
+                        Ok(status) => status,
+                        Err(status_error) => {
+                            deferred_error = Some(HillslopeSchedulerError::Status(status_error));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status: deferred_error_status.clone(),
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    };
 
-                phase_reports.push(HillslopeKernelPhaseReport {
-                    phase,
-                    kernel_status: boundary_status.clone(),
-                    decision_outcome: WritebackDecisionOutcome::Reject,
-                    decision_status: boundary_status.clone(),
-                    apply_result: None,
-                });
-                return boundary_status;
+                    phase_reports.push(HillslopeKernelPhaseReport {
+                        phase,
+                        kernel_status: boundary_status.clone(),
+                        decision_outcome: WritebackDecisionOutcome::Reject,
+                        decision_status: boundary_status.clone(),
+                        apply_result: None,
+                    });
+                    return boundary_status;
+                }
+
+                if let Err(source) =
+                    validate_hillslope_consumer_boundary(phase, &writeback_surface.state_surface)
+                {
+                    let boundary_status = match SimulationStatus::failure(
+                        SimulationPhase::HillslopeKernel,
+                        true,
+                        false,
+                        BoundaryClass::MissingRequiredInput,
+                        source.code(),
+                    ) {
+                        Ok(status) => status,
+                        Err(status_error) => {
+                            deferred_error = Some(HillslopeSchedulerError::Status(status_error));
+                            phase_reports.push(HillslopeKernelPhaseReport {
+                                phase,
+                                kernel_status: deferred_error_status.clone(),
+                                decision_outcome: WritebackDecisionOutcome::Reject,
+                                decision_status: deferred_error_status.clone(),
+                                apply_result: None,
+                            });
+                            return deferred_error_status.clone();
+                        }
+                    };
+
+                    phase_reports.push(HillslopeKernelPhaseReport {
+                        phase,
+                        kernel_status: boundary_status.clone(),
+                        decision_outcome: WritebackDecisionOutcome::Reject,
+                        decision_status: boundary_status.clone(),
+                        apply_result: None,
+                    });
+                    return boundary_status;
+                }
             }
 
             let response = {
@@ -4804,6 +4941,92 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
     }
 
     #[test]
+    fn wb10_contract_conformance_hydrology_phase_classes_are_not_generic() {
+        #[derive(Default)]
+        struct ProbeKernel {
+            observed_phase_classes: BTreeMap<String, String>,
+        }
+
+        impl HillslopeKernel for ProbeKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                if matches!(
+                    request.phase_name,
+                    "evapotranspiration"
+                        | "percolation_deep_seepage"
+                        | "lateral_transfer"
+                        | "drainage"
+                        | "runoff_reconciliation"
+                        | "storage_reconciliation"
+                ) {
+                    self.observed_phase_classes.insert(
+                        request.phase_name.to_owned(),
+                        request.phase_class.as_str().to_owned(),
+                    );
+                }
+
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-WB10-PHASE-CLASS",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = ProbeKernel::default();
+        let surface = seeded_growth_runtime_surface(1.0);
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("wb10 phase-class conformance probe should execute");
+
+        assert!(report.scheduler_report.is_success());
+        assert_eq!(
+            kernel.observed_phase_classes.get("evapotranspiration"),
+            Some(&"hydrology_evapotranspiration".to_owned())
+        );
+        assert_eq!(
+            kernel
+                .observed_phase_classes
+                .get("percolation_deep_seepage"),
+            Some(&"hydrology_percolation_deep_seepage".to_owned())
+        );
+        assert_eq!(
+            kernel.observed_phase_classes.get("lateral_transfer"),
+            Some(&"hydrology_lateral_transfer".to_owned())
+        );
+        assert_eq!(
+            kernel.observed_phase_classes.get("drainage"),
+            Some(&"hydrology_drainage".to_owned())
+        );
+        assert_eq!(
+            kernel.observed_phase_classes.get("runoff_reconciliation"),
+            Some(&"hydrology_runoff_reconciliation".to_owned())
+        );
+        assert_eq!(
+            kernel.observed_phase_classes.get("storage_reconciliation"),
+            Some(&"hydrology_storage_reconciliation".to_owned())
+        );
+    }
+
+    #[test]
+    fn wb10_contract_conformance_rejects_unsupported_hydrology_phase_class() {
+        let error = super::hydrology_phase_dispatch_for_phase(
+            HillslopePhase::Evapotranspiration,
+            HillslopeKernelPhaseClass::Hydrology,
+        )
+        .expect_err("evapotranspiration must not accept generic hydrology class");
+
+        assert_eq!(error.code(), "HS-HYDRO-E-001");
+        assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+    }
+
+    #[test]
     fn required_consumer_symbols_are_empty_without_slope_or_soil_families() {
         let empty_surface = BTreeMap::new();
 
@@ -4913,10 +5136,11 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                         );
                         self.perennial += 1;
                     }
-                    HillslopeKernelPhaseClass::Hydrology => {
+                    phase_class if phase_class.is_hydrology_phase() => {
                         assert!(request.growth_context.is_none());
                         assert!(request.decomposition_context.is_none());
                     }
+                    _ => unreachable!("unexpected phase class for annual growth test"),
                 }
 
                 let status = openwepp_sim_contract::status::SimulationStatus::ok(
@@ -5013,10 +5237,11 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                         ));
                         self.perennial += 1;
                     }
-                    HillslopeKernelPhaseClass::Hydrology => {
+                    phase_class if phase_class.is_hydrology_phase() => {
                         assert!(request.growth_context.is_none());
                         assert!(request.decomposition_context.is_none());
                     }
+                    _ => unreachable!("unexpected phase class for perennial growth test"),
                 }
 
                 let status = openwepp_sim_contract::status::SimulationStatus::ok(
@@ -5072,7 +5297,8 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                     HillslopeKernelPhaseClass::GrowthPerennialTransition => {
                         self.saw_perennial_context = request.growth_context.is_some();
                     }
-                    HillslopeKernelPhaseClass::Hydrology => {}
+                    phase_class if phase_class.is_hydrology_phase() => {}
+                    _ => unreachable!("unexpected phase class for active-slot perennial test"),
                 }
 
                 let status = openwepp_sim_contract::status::SimulationStatus::ok(
@@ -5128,7 +5354,8 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                     HillslopeKernelPhaseClass::GrowthPerennialTransition => {
                         self.saw_perennial_context = request.growth_context.is_some();
                     }
-                    HillslopeKernelPhaseClass::Hydrology => {}
+                    phase_class if phase_class.is_hydrology_phase() => {}
+                    _ => unreachable!("unexpected phase class for active-slot annual test"),
                 }
 
                 let status = openwepp_sim_contract::status::SimulationStatus::ok(

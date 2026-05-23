@@ -10,8 +10,8 @@ use openwepp_input_contract::parsers::{
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
-    BoundarySymbol, HillslopeConsumerAdapter, HillslopeKernel, HillslopeKernelPhaseClass,
-    HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
+    BoundarySymbol, HillslopeConsumerAdapter, HillslopeKernel, HillslopeKernelRequest,
+    KernelRunResponse, KernelWritebackPayload,
 };
 use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, SimulationStatus};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -67,7 +67,12 @@ impl HillslopeKernel for BoundaryProbeKernel {
                     request.consumer_adapter.as_str()
                 );
             }
-            assert_eq!(request.phase_class, HillslopeKernelPhaseClass::Hydrology);
+            assert!(
+                request.phase_class.is_hydrology_phase(),
+                "phase {} should carry hydrology class but was {}",
+                request.phase_name,
+                request.phase_class.as_str()
+            );
         }
 
         KernelRunResponse::new(
