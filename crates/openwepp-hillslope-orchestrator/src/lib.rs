@@ -64,8 +64,17 @@ const PL_GROWTH_STATE_HIA_SYMBOL: &str = "hia";
 const PL_GROWTH_CLIMATE_TMAX_SYMBOL: &str = "tmax";
 const PL_GROWTH_CLIMATE_TMIN_SYMBOL: &str = "tmin";
 const PL_GROWTH_CLIMATE_RAD_SYMBOL: &str = "rad";
+const PL_DECOMP_CLIMATE_TMAX_SYMBOL: &str = "tmax";
+const PL_DECOMP_CLIMATE_TMIN_SYMBOL: &str = "tmin";
+const PL_DECOMP_CLIMATE_PRCP_SYMBOL: &str = "prcp";
 const PL_GROWTH_SOIL_DEPTH_SYMBOL: &str = "solthk";
 const PL_GROWTH_WATER_STRESS_SYMBOL: &str = "Ws";
+const PL_DECOMP_PARAM_ORATEA_ROOT: &str = "oratea";
+const PL_DECOMP_PARAM_ORATER_ROOT: &str = "orater";
+const PL_DECOMP_TEMP_ATEMP: f64 = 6.1;
+const PL_DECOMP_TEMP_ACTIVE_UPPER: f64 = 49.2;
+const PL_DECOMP_TEMP_T2: f64 = 1528.81;
+const PL_DECOMP_STANDING_RAIN_SATURATION: f64 = 0.004;
 const PL_GROWTH_PARAM_BTEMP_ROOT: &str = "btemp";
 const PL_GROWTH_PARAM_OTEMP_ROOT: &str = "otemp";
 const PL_GROWTH_PARAM_GDDMAX_ROOT: &str = "gddmax";
@@ -2932,6 +2941,16 @@ fn decomposition_phase_dispatch_for_state(
         }
     };
 
+    let (sumrtm_seed, sumsrm_seed) = compute_equation_decomposition_seed_surface(
+        phase,
+        state_surface,
+        active_slot_selection.slot_index,
+        active_slot_selection.crop_slot_index,
+        control,
+        sumrtm_seed,
+        sumsrm_seed,
+    )?;
+
     let management_class = if management_class == 2 {
         HillslopeDecompositionManagementClass::Perennial
     } else {
@@ -4170,6 +4189,361 @@ fn normalize_management_class(
         symbol: BoundarySymbol::from(symbol),
         value,
     })
+}
+
+#[derive(Debug, Clone, Copy)]
+struct DecompositionEquationInputs {
+    ws: f64,
+    tmax: f64,
+    tmin: f64,
+    prcp: f64,
+    oratea: f64,
+    orater: f64,
+}
+
+#[allow(clippy::too_many_lines)]
+fn compute_equation_decomposition_seed_surface(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    control: HillslopeDecompositionTransitionControl,
+    sumrtm_seed: f64,
+    sumsrm_seed: f64,
+) -> Result<(f64, f64), HillslopeDecompositionBoundaryError> {
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_SUMRTM_SEED_SYMBOL,
+        sumrtm_seed,
+        Some(0.0),
+        None,
+        "sumrtm_seed must be non-negative",
+    )?;
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_SUMSRM_SEED_SYMBOL,
+        sumsrm_seed,
+        Some(0.0),
+        None,
+        "sumsrm_seed must be non-negative",
+    )?;
+
+    let inputs =
+        require_decomposition_equation_inputs(phase, state_surface, slot_index, crop_slot_index)?;
+    let tave = f64::midpoint(inputs.tmax, inputs.tmin);
+
+    let tmpfac = if tave <= -PL_DECOMP_TEMP_ATEMP || tave >= PL_DECOMP_TEMP_ACTIVE_UPPER {
+        0.0
+    } else {
+        let t1 = (tave + PL_DECOMP_TEMP_ATEMP).powi(2);
+        let numerator = t1 * (2.0 * PL_DECOMP_TEMP_T2 - t1);
+        let denominator = PL_DECOMP_TEMP_T2.powi(2);
+        if denominator <= 0.0 {
+            return Err(
+                HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(PL_DECOMP_CLIMATE_TMAX_SYMBOL),
+                    value: denominator,
+                    reason: "temperature-factor denominator must be positive",
+                },
+            );
+        }
+        numerator / denominator
+    };
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_CLIMATE_TMAX_SYMBOL,
+        tmpfac,
+        Some(0.0),
+        Some(1.0),
+        "temperature decomposition factor must be within [0, 1]",
+    )?;
+
+    let swatfc = if tave <= 0.0 {
+        0.0
+    } else if inputs.prcp < PL_DECOMP_STANDING_RAIN_SATURATION {
+        inputs.prcp / PL_DECOMP_STANDING_RAIN_SATURATION
+    } else {
+        1.0
+    };
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_CLIMATE_PRCP_SYMBOL,
+        swatfc,
+        Some(0.0),
+        Some(1.0),
+        "standing-residue water factor must be within [0, 1]",
+    )?;
+
+    let fwatfc = inputs.ws.clamp(0.0, 1.0);
+    let _senvin = tmpfac.min(swatfc);
+    let envinx = tmpfac.min(fwatfc);
+    validate_decomposition_state_range(
+        phase,
+        PL_GROWTH_WATER_STRESS_SYMBOL,
+        envinx,
+        Some(0.0),
+        Some(1.0),
+        "environmental decomposition factor must be within [0, 1]",
+    )?;
+
+    let surface_exponent = -envinx * inputs.oratea;
+    let root_exponent = -envinx * inputs.orater;
+    if !surface_exponent.is_finite() {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_DECOMP_PARAM_ORATEA_ROOT),
+                value: surface_exponent,
+                reason: "surface decomposition exponent must be finite",
+            },
+        );
+    }
+    if !root_exponent.is_finite() {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_DECOMP_PARAM_ORATER_ROOT),
+                value: root_exponent,
+                reason: "root decomposition exponent must be finite",
+            },
+        );
+    }
+
+    let surface_decay = surface_exponent.exp();
+    let root_decay = root_exponent.exp();
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_PARAM_ORATEA_ROOT,
+        surface_decay,
+        Some(0.0),
+        Some(1.0),
+        "surface decomposition decay factor must be within [0, 1]",
+    )?;
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_PARAM_ORATER_ROOT,
+        root_decay,
+        Some(0.0),
+        Some(1.0),
+        "root decomposition decay factor must be within [0, 1]",
+    )?;
+
+    let mut sumsrm_next = sumsrm_seed * surface_decay;
+    let mut sumrtm_next = sumrtm_seed * root_decay;
+
+    match control {
+        HillslopeDecompositionTransitionControl::Annual(annual_control) => {
+            match annual_control.active_action {
+                HillslopeAnnualDecompositionAction::Burn => {
+                    sumsrm_next *= 1.0 - annual_control.fbrnog;
+                }
+                HillslopeAnnualDecompositionAction::Remove => {
+                    sumsrm_next *= 1.0 - annual_control.frmove;
+                }
+                HillslopeAnnualDecompositionAction::Cut => {
+                    let transfer = sumsrm_next * annual_control.frcut;
+                    sumsrm_next -= transfer;
+                    sumrtm_next += transfer;
+                }
+                HillslopeAnnualDecompositionAction::None
+                | HillslopeAnnualDecompositionAction::Herbicide
+                | HillslopeAnnualDecompositionAction::Silage => {}
+            }
+        }
+        HillslopeDecompositionTransitionControl::Perennial(perennial_control) => {
+            if let HillslopePerennialDecompositionAction::Grazing { cycle_index } =
+                perennial_control.active_action
+            {
+                let Some(active_cycle) = perennial_control.active_grazing_cycle else {
+                    return Err(
+                        HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                            phase,
+                            symbol: BoundarySymbol::from("active_grazing_cycle"),
+                            value: f64::from(cycle_index),
+                            reason: "grazing action requires active_grazing_cycle payload instance",
+                        },
+                    );
+                };
+                if active_cycle.cycle_index != cycle_index {
+                    return Err(
+                        HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                            phase,
+                            symbol: BoundarySymbol::from("active_grazing_cycle"),
+                            value: f64::from(active_cycle.cycle_index),
+                            reason: "active grazing cycle index must match active action",
+                        },
+                    );
+                }
+                validate_decomposition_state_range(
+                    phase,
+                    "digest",
+                    active_cycle.digest,
+                    Some(0.0),
+                    Some(1.0),
+                    "grazing digest fraction must be within [0, 1]",
+                )?;
+                sumsrm_next *= 1.0 - active_cycle.digest;
+            }
+        }
+    }
+
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_SUMRTM_SEED_SYMBOL,
+        sumrtm_next,
+        Some(0.0),
+        None,
+        "sumrtm_seed must remain non-negative",
+    )?;
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_SUMSRM_SEED_SYMBOL,
+        sumsrm_next,
+        Some(0.0),
+        None,
+        "sumsrm_seed must remain non-negative",
+    )?;
+
+    Ok((sumrtm_next, sumsrm_next))
+}
+
+fn require_decomposition_equation_inputs(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+) -> Result<DecompositionEquationInputs, HillslopeDecompositionBoundaryError> {
+    let ws = require_finite_state_value_for_decomposition(phase, state_surface, "Ws")?;
+    validate_decomposition_state_range(
+        phase,
+        PL_GROWTH_WATER_STRESS_SYMBOL,
+        ws,
+        Some(0.0),
+        Some(1.0),
+        "water-stress carryover must be within [0, 1]",
+    )?;
+
+    let tmax = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
+        PL_DECOMP_CLIMATE_TMAX_SYMBOL,
+    )?;
+    let tmin = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
+        PL_DECOMP_CLIMATE_TMIN_SYMBOL,
+    )?;
+    let prcp = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
+        PL_DECOMP_CLIMATE_PRCP_SYMBOL,
+    )?;
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_CLIMATE_PRCP_SYMBOL,
+        prcp,
+        Some(0.0),
+        None,
+        "precipitation forcing must be non-negative",
+    )?;
+
+    let annual_decay_rate = require_slot_decomposition_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_DECOMP_PARAM_ORATEA_ROOT,
+    )?;
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_PARAM_ORATEA_ROOT,
+        annual_decay_rate,
+        Some(f64::EPSILON),
+        None,
+        "oratea must be positive",
+    )?;
+
+    let root_decay_rate = require_slot_decomposition_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_DECOMP_PARAM_ORATER_ROOT,
+    )?;
+    validate_decomposition_state_range(
+        phase,
+        PL_DECOMP_PARAM_ORATER_ROOT,
+        root_decay_rate,
+        Some(f64::EPSILON),
+        None,
+        "orater must be positive",
+    )?;
+
+    Ok(DecompositionEquationInputs {
+        ws,
+        tmax,
+        tmin,
+        prcp,
+        oratea: annual_decay_rate,
+        orater: root_decay_rate,
+    })
+}
+
+fn require_slot_decomposition_value(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    let symbol = pl_decomp_slot_crop_symbol(root, slot_index, crop_slot_index);
+    require_finite_state_value_for_decomposition(phase, state_surface, symbol.as_str())
+}
+
+fn validate_decomposition_state_range(
+    phase: HillslopePhase,
+    symbol: &str,
+    value: f64,
+    minimum: Option<f64>,
+    maximum: Option<f64>,
+    reason: &'static str,
+) -> Result<(), HillslopeDecompositionBoundaryError> {
+    if !value.is_finite() {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason: "state value must be finite",
+            },
+        );
+    }
+    if let Some(minimum) = minimum {
+        if value < minimum {
+            return Err(
+                HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    reason,
+                },
+            );
+        }
+    }
+    if let Some(maximum) = maximum {
+        if value > maximum {
+            return Err(
+                HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    reason,
+                },
+            );
+        }
+    }
+    Ok(())
 }
 
 fn require_ordering_flag_for_decomposition(
@@ -6268,6 +6642,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         state_surface.insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(25.0));
         state_surface.insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(13.0));
         state_surface.insert(BoundarySymbol::from("rad"), BoundaryValue::scalar(210.0));
+        state_surface.insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.003));
         state_surface.insert(BoundarySymbol::from("Ws"), BoundaryValue::scalar(0.8));
         state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
         state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(2.0));
@@ -6294,6 +6669,13 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("sumsrm_seed"),
             BoundaryValue::scalar(1.5),
         );
+        for (root, value) in [("oratea", 0.0065), ("orater", 0.0065)] {
+            state_surface.insert(
+                BoundarySymbol::from(format!("pl_decomp_slot_0001_crop_0001_{root}")),
+                BoundaryValue::scalar(value),
+            );
+            state_surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+        }
 
         if (imngmt - 2.0).abs() < f64::EPSILON {
             state_surface.insert(
@@ -6435,6 +6817,14 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                 state.insert(
                     BoundarySymbol::from(format!(
                         "pl_growth_slot_{slot_index:04}_crop_0001_{root}"
+                    )),
+                    BoundaryValue::scalar(value),
+                );
+            }
+            for (root, value) in [("oratea", 0.0065), ("orater", 0.0065)] {
+                state.insert(
+                    BoundarySymbol::from(format!(
+                        "pl_decomp_slot_{slot_index:04}_crop_0001_{root}"
                     )),
                     BoundaryValue::scalar(value),
                 );

@@ -1164,8 +1164,18 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                 crop_slot_index,
                 plant_cropland,
             )?;
+            project_decomposition_equation_symbols(
+                &mut pl_decomp_surface,
+                slot_index,
+                crop_slot_index,
+                plant_cropland,
+            )?;
             if slot_index == 1 && crop_slot_index == 1 {
                 project_primary_growth_equation_aliases(&mut pl_growth_surface, plant_cropland)?;
+                project_primary_decomposition_equation_aliases(
+                    &mut pl_decomp_surface,
+                    plant_cropland,
+                )?;
             }
 
             match &cropland.branch {
@@ -2204,6 +2214,33 @@ fn project_primary_growth_equation_aliases(
     Ok(())
 }
 
+fn project_decomposition_equation_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in
+        decomposition_equation_parameter_values(slot_index, crop_slot_index, plant)?
+    {
+        surface.insert(
+            pl_decomp_slot_crop_symbol(root, slot_index, crop_slot_index),
+            BoundaryValue::scalar(value),
+        );
+    }
+    Ok(())
+}
+
+fn project_primary_decomposition_equation_aliases(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in decomposition_equation_parameter_values(1, 1, plant)? {
+        surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
 fn growth_equation_parameter_values(
     slot_index: usize,
     crop_slot_index: usize,
@@ -2300,6 +2337,18 @@ fn growth_equation_parameter_values(
         ("rtmmax", rtmmax),
         ("rdmax", rdmax),
     ])
+}
+
+fn decomposition_equation_parameter_values(
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
+) -> Result<[(&'static str, f64); 2], HillslopeRuntimeInputError> {
+    let annual_decay_rate =
+        validate_projection_positive("oratea", slot_index, crop_slot_index, plant.residue_line[0])?;
+    let root_decay_rate =
+        validate_projection_positive("orater", slot_index, crop_slot_index, plant.residue_line[1])?;
+    Ok([("oratea", annual_decay_rate), ("orater", root_decay_rate)])
 }
 
 fn validate_projection_finite(

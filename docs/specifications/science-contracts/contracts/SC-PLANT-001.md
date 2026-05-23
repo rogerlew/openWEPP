@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -139,7 +139,7 @@ Out of scope:
 |---|---|
 | Schedule surface | `pl_schedule_slot_{slot:04}_crop_{crop:04}_{root}` for `lanuse`, `imngmt`, `jdplt`, `jdharv`, `jdstop`, `resmgt`, `mgtopt`, `ncut`, `ncycle` |
 | Growth surface | `pl_growth_slot_{slot:04}_crop_{crop:04}_{root}` for branch selectors and date controls used by growth transition gating |
-| Decomposition surface | `pl_decomp_slot_{slot:04}_crop_{crop:04}_{root}` for residue-management controls and perennial cycle controls |
+| Decomposition surface | `pl_decomp_slot_{slot:04}_crop_{crop:04}_{root}` for residue-management controls, perennial cycle controls, and decomposition-kinetics parameters (`oratea`, `orater`) |
 | Annual extension controls | `..._jdherb`, `..._jdburn`, `..._jdslge`, `..._jdcut`, `..._jdmove`, `..._fbrnag`, `..._fbrnog`, `..._frcut`, `..._frmove` |
 | Perennial cut arrays | `..._cutday_{event:04}` for `event=1..ncut` |
 | Perennial grazing arrays | `..._gday_{cycle:04}`, `..._gend_{cycle:04}`, `..._animal_{cycle:04}`, `..._bodywt_{cycle:04}`, `..._area_{cycle:04}`, `..._digest_{cycle:04}` for `cycle=1..ncycle` |
@@ -192,6 +192,13 @@ This projection algorithm is pure with respect to plant-process state:
    - perennial branch emits deterministic same-day action selector from
      `mgtopt`, `cutday[*]`, and `gday/gend/payload[*]`;
    - invalid domains/cardinality/window states remain typed hard failures.
+10. PL17 decomposition-kinetics parameter projection authority:
+   - project crop decomposition-rate constants into decomposition payload
+     surfaces as slot/crop symbols (`oratea`, `orater`);
+   - primary slot/crop aliases for these parameters are emitted when
+     `slot=1,crop=1` to satisfy deterministic single-slot replay seams;
+   - missing/non-finite/out-of-domain decomposition-rate parameters are typed
+     hard failures with no silent fallback.
 
 ## Algorithm State Surfaces (PL16 Growth Physics Runtime Update)
 
@@ -310,6 +317,7 @@ algorithm.
 | INV-PLANT-019 | GDD and phenology boundedness: `gdd = max(0, ((tmax+tmin)/2)-btemp)`, cumulative `sumgdd` is monotone non-decreasing between explicit reset events, and `fphu=sumgdd/gddmax` is bounded to `[0,1]`. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-LEGACY-GROW | `[DIRECT][Static]` |
 | INV-PLANT-020 | Senescence/harvest dynamics: post-threshold senescence uses explicit decline equations/parameters (`dropfc`, `decfct`, `spriod`) and preserves non-negative biomass/canopy state while enforcing explicit reset only for canonical reset-class actions (`planting`, `harvest`, `stop`). | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-PTGRA | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-021 | Growth-physics required-symbol guard: climate/stress/parameter inputs required by PL16 equations (`tmax`, `tmin`, `rad`, `Ws`, `btemp`, `otemp`, `gddmax`, `bb`, `beinp`, `extnct`, `rdmax`, `rsr`, `xmxlai`, etc.) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error. | hard-fail | REF-PLANT-CH8-GROWTH, REF-PLANT-CH8-STRESS, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-022 | PL17 decomposition-kinetics parameter projection invariant: transition-control runtime projection must emit slot/crop decomposition-rate symbols (`oratea`, `orater`) on decomposition surfaces for active crops, preserving finite positive domains and typed hard-fail posture on invalid projection input. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -389,6 +397,7 @@ algorithm.
 | `INV-PLANT-019` | runtime | Daily GDD / phenology update path | Typed hard error on out-of-domain GDD/fphu or non-monotone cumulative heat units outside reset actions | Tier-A gate | `[DIRECT][Static]` |
 | `INV-PLANT-020` | runtime | Senescence/harvest branch update path | Typed hard error on invalid senescence-rate parameters, negative post-update state, or unauthorized implicit reset | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/non-positive decomposition-rate projection symbols | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -515,6 +524,12 @@ Minimum required scenario families for contract conformance:
    - non-finite `Ws` or out-of-domain crop parameters fail with typed
      domain/non-finite status;
    - active branch does not silently default missing physics symbols.
+12. PL17 decomposition-kinetics parameter vectors:
+   - canonical management projection emits slot/crop `oratea` and `orater`
+     symbols on decomposition surfaces;
+   - primary slot/crop alias projection emits root `oratea`/`orater` symbols;
+   - missing/non-finite/non-positive decomposition-rate parameters fail with
+     typed projection status.
 
 ## Gap Register
 
@@ -543,3 +558,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `7` | `Codex` | PL13A alias-continuity amendment: reconciled projected PL slot/crop alias mappings (including `conset/drset` continuity), added explicit PL13A closure gap row (`GAP-PLANT-007`), and aligned canonical-to-boundary template authority with registry behavior. |
 | `2026-05-23` | `8` | `Codex` | INT10 amendment: added coupled lane-ordering invariant (`INV-PLANT-017`), explicit guard-map authority for `decomp -> growth -> watbal` sequencing, and INT10 coupled replay test-vector obligations for ordering and state-transfer semantics. |
 | `2026-05-23` | `9` | `Codex` | PL16 amendment: added equation-authoritative growth-runtime state surfaces and algorithm steps (GDD/biomass/canopy/LAI/root/phenology/senescence), introduced `INV-PLANT-018..021` plus guard-map rows, expanded constants table to legacy growth-equation coefficients, and added PL16 test-vector obligations for equation updates and required-symbol failure posture. |
+| `2026-05-23` | `10` | `Codex` | PL17 amendment: added decomposition-kinetics parameter projection authority (`oratea`, `orater`) to PL transition-control runtime projection semantics, introduced `INV-PLANT-022` plus guard-map row, and expanded test-vector obligations for decomposition-rate projection and failure posture. |

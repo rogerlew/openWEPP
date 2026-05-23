@@ -485,6 +485,15 @@ Authorized packages:
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
     contract tests, pre-implementation gate, then kernel code).
+- `20260523-pl16-growth-physics-kernelization-001/`
+  - Purpose: replace PL13 growth plumbing-only behavior with equation-driven
+    production growth physics and contract-first sequencing (contract
+    amendments, contract tests, pre-implementation gate, then kernel code).
+- `20260523-pl17-decomposition-physics-kernelization-001/`
+  - Purpose: replace PL12 decomposition plumbing-only behavior with
+    equation-driven decomposition/residue kinetics and contract-first
+    sequencing (contract amendments, contract tests, pre-implementation gate,
+    then kernel code).
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

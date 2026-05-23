@@ -25,9 +25,10 @@ use openwepp_input_contract::parsers::{
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
-    BoundarySymbol, HillslopeAnnualGrowthAction, HillslopeGrowthTransitionControl, HillslopeKernel,
-    HillslopeKernelRequest, HillslopePerennialGrowthAction, KernelRunResponse,
-    KernelWritebackPayload, WatershedKernel, WatershedKernelRequest,
+    BoundarySymbol, HillslopeAnnualDecompositionAction, HillslopeAnnualGrowthAction,
+    HillslopeDecompositionTransitionControl, HillslopeGrowthTransitionControl, HillslopeKernel,
+    HillslopeKernelRequest, HillslopePerennialDecompositionAction, HillslopePerennialGrowthAction,
+    KernelRunResponse, KernelWritebackPayload, WatershedKernel, WatershedKernelRequest,
 };
 use openwepp_sim_contract::status::{SimulationPhase, SimulationStatus};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -295,7 +296,15 @@ fn slope_and_soil_parser_outputs_propagate_to_hillslope_runtime_surface_closure(
         .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
         .expect("hillslope execution should consume both slope and soil runtime symbols");
 
-    assert!(report.scheduler_report.is_success());
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler failed at {:?} with {:?}",
+        report.scheduler_report.halted_phase,
+        report
+            .phase_reports
+            .last()
+            .map(|phase_report| phase_report.decision_status.message_id())
+    );
     assert_eq!(
         kernel.invocation_count,
         HillslopePhaseGraph::canonical_order().len()
@@ -985,6 +994,7 @@ fn pl13_contract_conformance_scheduler_emits_annual_growth_transition_payload() 
     let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
     let mut surface = build_hillslope_runtime_surface_from_management(&management)
         .expect("management runtime surface should build");
+    seed_pl17_decomposition_symbols(&mut surface);
 
     let harvest_day = surface
         .state_surface
@@ -1077,6 +1087,7 @@ fn pl13_contract_conformance_scheduler_emits_perennial_growth_transition_payload
 
     let mut surface = build_hillslope_runtime_surface_from_management(&management)
         .expect("management runtime surface should build for perennial branch");
+    seed_pl17_decomposition_symbols(&mut surface);
     surface
         .state_surface
         .insert(BoundarySymbol::from("day"), 330.0.into());
@@ -1359,6 +1370,316 @@ fn pl16_contract_conformance_rejects_missing_growth_equation_symbol() {
     );
 }
 
+#[test]
+fn pl17_contract_conformance_requires_decomposition_rate_projection_symbols() {
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect("management runtime surfaces should build");
+
+    assert_surface_has_symbol(
+        &pl_surfaces.pl_decomp_surface,
+        "pl_decomp_slot_0001_crop_0001_oratea",
+    );
+    assert_surface_has_symbol(
+        &pl_surfaces.pl_decomp_surface,
+        "pl_decomp_slot_0001_crop_0001_orater",
+    );
+    assert_surface_has_symbol(&pl_surfaces.pl_decomp_surface, "oratea");
+    assert_surface_has_symbol(&pl_surfaces.pl_decomp_surface, "orater");
+}
+
+#[test]
+fn pl17_contract_conformance_scheduler_emits_equation_updated_annual_decomposition_state_on_active_day()
+ {
+    struct AnnualDecompEquationProbeKernel {
+        saw_equation_update: bool,
+        before_sumrtm: f64,
+        before_sumsrm: f64,
+    }
+
+    impl HillslopeKernel for AnnualDecompEquationProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::DecompositionTransition
+            {
+                let context = request
+                    .decomposition_context
+                    .expect("decomposition phase should carry decomposition context");
+                let payload = context
+                    .transition_payload
+                    .expect("decomposition context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeDecompositionTransitionControl::Annual(control)
+                        if control.active_action == HillslopeAnnualDecompositionAction::None
+                ));
+                assert!(
+                    payload.sumrtm_seed < self.before_sumrtm,
+                    "active annual decomposition day must decrease dead-root residue mass"
+                );
+                assert!(
+                    payload.sumsrm_seed < self.before_sumsrm,
+                    "active annual decomposition day must decrease submerged residue mass"
+                );
+                self.saw_equation_update = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL17-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl16_equation_symbols(&mut surface, Pl16EquationSeed { ws: 0.8 });
+    seed_pl17_decomposition_symbols(&mut surface);
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 200.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let before_sumrtm = surface
+        .state_surface
+        .get(&BoundarySymbol::from("sumrtm_seed"))
+        .expect("sumrtm_seed should be present")
+        .as_f64();
+    let before_sumsrm = surface
+        .state_surface
+        .get(&BoundarySymbol::from("sumsrm_seed"))
+        .expect("sumsrm_seed should be present")
+        .as_f64();
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = AnnualDecompEquationProbeKernel {
+        saw_equation_update: false,
+        before_sumrtm,
+        before_sumsrm,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute annual decomposition equation path");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_equation_update);
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn pl17_contract_conformance_scheduler_emits_equation_updated_perennial_decomposition_state_on_active_day()
+ {
+    struct PerennialDecompEquationProbeKernel {
+        saw_equation_update: bool,
+        before_sumrtm: f64,
+        before_sumsrm: f64,
+    }
+
+    impl HillslopeKernel for PerennialDecompEquationProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::DecompositionTransition
+            {
+                let context = request
+                    .decomposition_context
+                    .expect("decomposition phase should carry decomposition context");
+                let payload = context
+                    .transition_payload
+                    .expect("decomposition context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeDecompositionTransitionControl::Perennial(control)
+                        if control.active_action
+                            == HillslopePerennialDecompositionAction::Grazing { cycle_index: 1 }
+                ));
+                assert!(
+                    payload.sumrtm_seed < self.before_sumrtm,
+                    "active perennial decomposition day must decrease dead-root residue mass"
+                );
+                assert!(
+                    payload.sumsrm_seed < self.before_sumsrm,
+                    "active perennial decomposition day must decrease submerged residue mass"
+                );
+                self.saw_equation_update = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL17-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 2,
+        cut_days: Vec::new(),
+        grazing_cycles: vec![YearlyPerennialGrazingCycle {
+            animal: 20.0,
+            area: 1200.0,
+            bodywt: 450.0,
+            digest: 0.62,
+            gday: 150,
+            gend: 200,
+        }],
+    });
+
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build for perennial branch");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl17_decomposition_symbols(&mut surface);
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 180.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let before_sumrtm = surface
+        .state_surface
+        .get(&BoundarySymbol::from("sumrtm_seed"))
+        .expect("sumrtm_seed should be present")
+        .as_f64();
+    let before_sumsrm = surface
+        .state_surface
+        .get(&BoundarySymbol::from("sumsrm_seed"))
+        .expect("sumsrm_seed should be present")
+        .as_f64();
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = PerennialDecompEquationProbeKernel {
+        saw_equation_update: false,
+        before_sumrtm,
+        before_sumsrm,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute perennial decomposition equation path");
+
+    assert!(kernel.saw_equation_update);
+    if let Some(halted_phase) = report.scheduler_report.halted_phase {
+        assert!(
+            halted_phase.rank()
+                >= openwepp_hillslope_orchestrator::HillslopePhase::PerennialGrowthTransition
+                    .rank(),
+            "unexpected halt before perennial growth transition: {halted_phase:?}"
+        );
+    }
+}
+
+#[test]
+fn pl17_contract_conformance_rejects_missing_decomposition_equation_symbol() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL17-NOOP-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl17_decomposition_symbols(&mut surface);
+    surface.state_surface.remove(&BoundarySymbol::from(
+        "pl_decomp_slot_0001_crop_0001_oratea",
+    ));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 200.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("missing decomposition equation symbol should return typed failure");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(openwepp_hillslope_orchestrator::HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-001"
+    );
+}
+
 fn assert_state_value(
     surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
     symbol: &str,
@@ -1430,6 +1751,23 @@ fn seed_pl16_equation_symbols(surface: &mut HillslopeWritebackSurface, seed: Pl1
             BoundarySymbol::from(format!("pl_growth_slot_0001_crop_0001_{root}")),
             value.into(),
         );
+    }
+}
+
+fn seed_pl17_decomposition_symbols(surface: &mut HillslopeWritebackSurface) {
+    for (symbol, value) in [("Ws", 0.8), ("tmax", 25.0), ("tmin", 13.0), ("prcp", 0.003)] {
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from(symbol), value.into());
+    }
+    for (root, value) in [("oratea", 0.0065), ("orater", 0.0065)] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("pl_decomp_slot_0001_crop_0001_{root}")),
+            value.into(),
+        );
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from(root), value.into());
     }
 }
 
@@ -1631,7 +1969,7 @@ fn assert_slot_crop_branch_symbols(
             }
             for decomp_root in [
                 "resmgt", "jdherb", "jdburn", "jdslge", "jdcut", "jdmove", "fbrnag", "fbrnog",
-                "frcut", "frmove",
+                "frcut", "frmove", "oratea", "orater",
             ] {
                 assert_surface_has_symbol(
                     &pl_surfaces.pl_decomp_surface,
@@ -1650,7 +1988,7 @@ fn assert_slot_crop_branch_symbols(
                     ),
                 );
             }
-            for decomp_root in ["mgtopt", "ncut", "ncycle"] {
+            for decomp_root in ["mgtopt", "ncut", "ncycle", "oratea", "orater"] {
                 assert_surface_has_symbol(
                     &pl_surfaces.pl_decomp_surface,
                     &format!(
@@ -1741,6 +2079,8 @@ fn assert_merged_pl_seed_aliases(
         "iresd_seed",
         "sumrtm_seed",
         "sumsrm_seed",
+        "oratea",
+        "orater",
     ] {
         assert_surface_has_symbol(surface, symbol);
     }

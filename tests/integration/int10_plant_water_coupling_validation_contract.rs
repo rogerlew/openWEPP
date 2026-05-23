@@ -325,6 +325,7 @@ fn seeded_int10_surface() -> HillslopeWritebackSurface {
     insert_scalar(state, "tmax", 25.0);
     insert_scalar(state, "tmin", 13.0);
     insert_scalar(state, "rad", 210.0);
+    insert_scalar(state, "prcp", 0.003);
     insert_scalar(state, "Ws", 0.8);
 
     insert_scalar(state, "sumgdd", 640.0);
@@ -349,6 +350,14 @@ fn seeded_int10_surface() -> HillslopeWritebackSurface {
     insert_scalar(state, "pl_decomp_slot_0001_crop_0001_fbrnog", 0.0);
     insert_scalar(state, "pl_decomp_slot_0001_crop_0001_frcut", 0.0);
     insert_scalar(state, "pl_decomp_slot_0001_crop_0001_frmove", 0.0);
+    for (root, value) in [("oratea", 0.0065), ("orater", 0.0065)] {
+        insert_scalar(
+            state,
+            &format!("pl_decomp_slot_0001_crop_0001_{root}"),
+            value,
+        );
+        insert_scalar(state, root, value);
+    }
 
     surface
 }

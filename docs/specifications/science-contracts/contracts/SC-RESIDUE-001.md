@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -89,7 +89,7 @@ Out of scope:
 | `FERIND`, `PSZIND` | `fraction` | Fertility and residue particle-size decomposition modifiers. | residue updater | cropland decomposition branch logic |
 | `Bc` | `kg m^-2` | Daily disappearance of rangeland litter from insects/rodents. | rangeland updater | rangeland decomposition branch logic |
 
-## Algorithm State Surfaces (PL12/PL16 Transition Execution)
+## Algorithm State Surfaces (PL12/PL16/PL17 Transition Execution)
 
 ### Required Inputs
 
@@ -99,6 +99,7 @@ Out of scope:
 | Decomposition seed state | `iresd_seed`, `sumrtm_seed`, `sumsrm_seed` |
 | Annual transition controls | `resmgt`, `jdherb`, `jdburn`, `jdslge`, `jdcut`, `jdmove`, `fbrnag`, `fbrnog`, `frcut`, `frmove` |
 | Perennial transition controls | `mgtopt`, `ncut`, `ncycle`, `cutday[*]`, `gday[*]`, `gend[*]`, `animal[*]`, `bodywt[*]`, `area[*]`, `digest[*]` |
+| Decomposition equation controls | `tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater` |
 | Growth transition controls | `jdplt`, `jdharv`, `jdstop`, `rw`, `mgtopt`, runtime day-window checks |
 | Growth transition state surface | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
 | Ordering constraints | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` |
@@ -107,18 +108,19 @@ Out of scope:
 
 | Surface | Output |
 |---|---|
-| Typed decomposition context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, seed state, transition-control payload, and active day transition selector |
+| Typed decomposition context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, seed state, transition-control payload, active day transition selector, and equation-updated tracked seed-pool values |
 | Typed growth context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, growth transition-control payload, and pre/post transition state snapshot for key growth surfaces |
 | Scheduler failure surface | typed hard-fail status when required transition-control inputs are missing/non-finite/out-of-domain/non-contiguous |
 
 ### Mutated State Surfaces
 
 At scheduler transition-dispatch boundaries, mutation authority is limited to
-typed transition-context assembly and typed failure reporting; direct residue
-or growth state mutation is delegated to kernel handlers consuming the typed
-contexts.
+typed transition-context assembly and typed failure reporting. PL17 extends this
+authority to include equation-updated tracked decomposition seed-pool values
+inside the typed payload, while direct global runtime-surface mutation remains
+delegated to kernel handlers consuming the typed contexts.
 
-## Algorithm Specification (PL12/PL16 Scheduler Transition Authority)
+## Algorithm Specification (PL12/PL16/PL17 Scheduler Transition Authority)
 
 1. Resolve active PL slot/crop from schedule topology and runtime `day/year`
    controls.
@@ -172,7 +174,46 @@ contexts.
     watbal/hydrology phases occurs only after successful decomposition and
     growth transition dispatch completion.
 
-## Branch and Guard Table (PL12/PL16 Transition Controls)
+### PL17 Decomposition Runtime Update Addendum
+
+1. Decomposition transition payload assembly must emit equation-updated tracked
+   seed-pool values (`sumrtm_seed`, `sumsrm_seed`) with the active residue-type
+   selector (`iresd_seed`).
+2. On active decomposition days, compute legacy-aligned temperature and water
+   modifiers:
+   - `tave = (tmax + tmin) / 2`
+   - `tmpfac = 0` outside `(-6.1, 49.2) degC`, else
+     `tmpfac = t1 * (2*t2 - t1) / t2^2`, where `t1=(tave+6.1)^2` and
+     `t2=1528.81`
+   - `swatfc = 0` for `tave <= 0`, `swatfc = prcp/0.004` for
+     `0 < prcp < 0.004`, else `swatfc = 1`
+   - `fwatfc = clamp(Ws, 0, 1)` for transition payload update closure
+3. Compute environmental indices and exponential decay factors:
+   - `senvin = min(tmpfac, swatfc)`
+   - `envinx = min(tmpfac, fwatfc)`
+   - `surface_decay = exp(-envinx * oratea)`
+   - `root_decay = exp(-envinx * orater)`
+4. Apply decomposition kinetics to tracked pools:
+   - `sumsrm_next = sumsrm_prev * surface_decay`
+   - `sumrtm_next = sumrtm_prev * root_decay`
+5. Apply same-day annual transition modifiers when active:
+   - `burn`: `sumsrm_next *= (1 - fbrnog)`
+   - `remove`: `sumsrm_next *= (1 - frmove)`
+   - `cut`: explicit transition-pool transfer update
+     `transfer = sumsrm_next * frcut`,
+     `sumsrm_next -= transfer`, `sumrtm_next += transfer`
+6. Apply same-day perennial transition modifiers when active:
+   - `grazing(cycle)`: remove digest-dependent fraction from tracked surface
+     pool, bounded to `[0,1]`.
+7. Decomposition payload state domains are hard-fail validated:
+   non-finite values, negative pool masses, invalid fraction domains, or
+   non-finite exponential arguments are typed failures; silent
+   clamp/default/fallback behavior is prohibited.
+8. Growth and hydrology ordering obligations from PL16/INT10 remain unchanged:
+   decomposition payload update completion is a prerequisite for downstream
+   growth/watbal lane progression.
+
+## Branch and Guard Table (PL12/PL16/PL17 Transition Controls)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
@@ -188,6 +229,8 @@ contexts.
 | `BR-RES-PL16-GROWTH-PERENNIAL` | perennial branch active | `jdplt`, `jdharv`, `jdstop`, `mgtopt`, growth state surface, PL16 growth-physics symbol set | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
 | `BR-RES-PL16-GROWTH-RESET` | planting/harvest/stop action day | growth state surface | runtime | typed hard-fail if reset payload cannot be emitted from valid pre-state domain |
 | `BR-RES-PL16-GROWTH-EQUATION` | active non-reset growth day | climate (`tmax/tmin/rad`), stress (`Ws`), projected crop-parameter symbols, growth state surface | runtime | typed hard-fail on missing/non-finite/out-of-domain equation symbols or non-equation fallback behavior |
+| `BR-RES-PL17-DECOMP-EQUATION` | decomposition transition branch active | `sumrtm_seed`, `sumsrm_seed`, `tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater` | runtime | typed hard-fail on missing/non-finite/out-of-domain decomposition equation inputs or non-equation fallback behavior |
+| `BR-RES-PL17-DECOMP-EVENT-TRANSFER` | active annual/perennial decomposition management action day | `resmgt`/`mgtopt` action controls + event fractions/payloads | runtime | typed hard-fail on invalid event-domain/transfer behavior; no silent no-op fallback for covered event branches |
 | `BR-RES-INT10-ORDER` | coupled replay lane closure (`decomp -> growth -> watbal`) | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` | runtime | typed hard-fail on missing/non-finite/out-of-domain ordering symbols; hydrology phase entry blocked |
 
 ## Invariants
@@ -210,6 +253,8 @@ contexts.
 | INV-RESIDUE-014 | Growth transition state-domain invariant: scheduler growth transition payload assembly requires finite/non-negative growth state surfaces with bounded canopy and harvest-index domains (`cancov in [0,0.999]`, `hia in [0,1]`). | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-015 | Growth transition reset invariant: reset-class actions (`planting`, `harvest`, `stop`) emit explicit zero-state payloads for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` and do not rely on implicit defaults. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-016 | INT10 coupled replay invariant: daily coupled transition/hydrology execution preserves `decomp -> growth -> watbal` ordering, with typed context and writeback state transfer observable by downstream hydrology phases; ordering-symbol violations are hard-fail with no silent fallback. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH5-ET, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-017 | PL17 decomposition equation-update invariant: active decomposition payload assembly updates tracked seed residue/root pools (`sumsrm_seed`, `sumrtm_seed`) using explicit equation-driven exponential decay factors derived from environmental indices and decomposition-rate constants; pass-through/no-op fallback is prohibited for covered branches. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-018 | PL17 decomposition required-symbol guard invariant: decomposition equation and event-transfer inputs (`tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater`, event fractions/payloads) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error; silent defaults/clamps are prohibited. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -231,6 +276,8 @@ contexts.
 | `INV-RESIDUE-014` | runtime | Growth transition payload state validator | Typed hard error on invalid growth state domain for transition payload assembly | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-015` | runtime | Growth transition reset payload assembler | Typed hard error when required reset-class state projection is missing or malformed | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-016` | runtime | Coupled replay transition/hydrology lane-order guard and state-transfer boundary checks | Typed hard error on missing/non-finite/invalid ordering symbols or failed transition preconditions before watbal lane | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-017` | runtime | Decomposition transition payload equation updater (`state_after`) for tracked residue/root seed pools | Typed hard error when covered decomposition branches emit pass-through/no-op state in place of equation update | Tier-A gate for PL17 decomposition physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-018` | runtime | Decomposition equation/event input validator before payload update execution | Typed hard error on missing/non-finite/out-of-domain required decomposition symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -370,6 +417,17 @@ Minimum required scenario families for contract conformance:
      observable by hydrology phases;
    - missing/non-finite ordering-symbol vectors fail with typed status and
      prevent watbal-lane completion.
+12. PL17 decomposition equation/update obligations:
+   - active annual non-reset decomposition day emits equation-updated
+     `state_after.sumsrm_seed` and `state_after.sumrtm_seed` values;
+   - active perennial non-reset decomposition day emits equation-updated
+     `state_after.sumsrm_seed` and `state_after.sumrtm_seed` values;
+   - covered event-action days (`burn`, `cut`, `remove`, grazing) apply explicit
+     transfer/removal updates to tracked pools in addition to daily decay.
+13. PL17 decomposition required-symbol guard obligations:
+   - missing `pl_decomp_slot_*_oratea` or `..._orater` fails with typed status;
+   - non-finite `prcp` or out-of-domain `Ws` fails with typed status;
+   - active branch does not silently default missing decomposition symbols.
 
 ## Gap Register
 
@@ -392,3 +450,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `5` | `Codex` | PL13 amendment: added growth-transition branch/reset authority, growth state-domain invariants (`INV-RESIDUE-014/015`), and PL13 growth transition test-vector obligations. |
 | `2026-05-23` | `6` | `Codex` | INT10 amendment: added coupled replay lane-order authority (`decomp -> growth -> watbal`), explicit branch/guard and invariant coverage (`INV-RESIDUE-016`), and INT10 ordering/state-transfer test-vector obligations. |
 | `2026-05-23` | `7` | `Codex` | PL16 amendment: aligned growth transition authority to reset-only (`planting/harvest/stop`) plus equation-driven non-reset payload behavior, added explicit PL16 growth-equation guard branch, and updated PL16-oriented test-vector obligations/failure posture. |
+| `2026-05-23` | `8` | `Codex` | PL17 amendment: added decomposition equation/update addendum with legacy-aligned environmental factors and decay forms, introduced decomposition payload equation-updated seed-pool authority and event-transfer update obligations, added `INV-RESIDUE-017/018` plus guard-map rows, and expanded PL17 test-vector obligations for decomposition kinetics and required-symbol failure posture. |
