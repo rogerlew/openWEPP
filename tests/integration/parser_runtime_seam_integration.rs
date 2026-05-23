@@ -1,15 +1,25 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    path::{Path, PathBuf},
+};
 
 use openwepp_hillslope_orchestrator::{
     HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
     runtime_inputs::{
-        HillslopeRuntimeInputError, build_hillslope_runtime_surface_from_climate,
+        HillslopePlRuntimeSurfaces, HillslopeRuntimeInputError,
+        build_hillslope_pl_runtime_surfaces_from_management,
+        build_hillslope_runtime_surface_from_climate,
+        build_hillslope_runtime_surface_from_management,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
     },
 };
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
     climate::{ParserMode as ClimateParserMode, parse_climate_from_str},
+    management::{
+        ManagementParseOutput, ParseMode as ManagementParseMode, YearlyCroplandBranch,
+        YearlyPerennialData, YearlyScenarioData, parse_management_from_path,
+    },
     slope::{SlopeParserOptions, parse_slope_str},
     soil::{SoilParserOptions, parse_soil},
 };
@@ -516,6 +526,242 @@ fn climate_wc1_fixture_caps_storm_duration_before_runtime_projection() {
     assert_state_value(&surface.state_surface, "hs9_ip", 22.589);
 }
 
+#[test]
+fn management_fixture_projects_full_pl_runtime_surface_families() {
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect("canonical 98.4 fixture should project PL runtime surfaces");
+    assert_full_pl_family_coverage(&management, &pl_surfaces);
+
+    let merged = build_hillslope_runtime_surface_from_management(&management)
+        .expect("merged PL runtime surface should build");
+    assert_merged_pl_seed_aliases(&merged.state_surface);
+}
+
+#[test]
+fn management_rotation_fixture_projects_schedule_growth_and_decomp_runtime_surface_families() {
+    let management = parse_management_fixture("canonical_rotation_nonzero_98_4.man");
+    let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect("canonical rotation fixture should project PL runtime surfaces");
+    assert_full_pl_family_coverage(&management, &pl_surfaces);
+
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_schedule_nofe",
+        usize_to_scalar(management.topology_count),
+    );
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_schedule_rotation_repeats",
+        usize_to_scalar(management.schedule.rotation_repeats),
+    );
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_schedule_rotation_years",
+        usize_to_scalar(management.schedule.rotation_years),
+    );
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_schedule_slot_count",
+        usize_to_scalar(management.schedule.slots.len()),
+    );
+}
+
+#[test]
+fn management_runtime_surface_rejects_topology_count_mismatch_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.ofe_initial_refs.pop();
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("topology mismatch must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-036");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::ManagementTopologyCountMismatch {
+            expected_ofes: 1,
+            schedule_initial_refs: 0,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_slot_count_mismatch_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.slots.pop();
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("slot-count mismatch must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-037");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::ManagementScheduleSlotCountMismatch {
+            expected_slots: 1,
+            observed_slots: 0,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_slot_arity_mismatch_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.slots[0].crop_slots += 1;
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("slot arity mismatch must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-038");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::ManagementScheduleSlotArityMismatch {
+            slot_index: 1,
+            crop_slots: 2,
+            yearly_refs: 1,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_schedule_ofe_index_out_of_range_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.slots[0].ofe_index = management.topology_count;
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("schedule OFE index overflow must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-045");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::ManagementScheduleOfeIndexOutOfRange {
+            slot_index: 1,
+            ofe_index: 2,
+            max_ofe_index: 1,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_out_of_range_initial_reference_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.ofe_initial_refs[0] = 0;
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("zero initial reference must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-039");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::ManagementInitialReferenceOutOfRange {
+            ofe_index: 1,
+            initial_ref: 0,
+            max_initial_ref: 1,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_out_of_range_yearly_reference_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.slots[0].yearly_refs[0] = 0;
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("zero yearly reference must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-040");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::ManagementYearlyReferenceOutOfRange {
+            slot_index: 1,
+            crop_slot_index: 1,
+            yearly_ref: 0,
+            max_yearly_ref: 1,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_unsupported_landuse_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.registries.initials[0].meta.landuse = 2;
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("unsupported PL landuse must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-041");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::UnsupportedPlLanduse {
+            section: "initial",
+            value: 2,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_non_finite_required_growth_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    match &mut cropland.branch {
+        YearlyCroplandBranch::AnnualOrFallow(annual) => annual.rw = f64::NAN,
+        YearlyCroplandBranch::Perennial(_) => panic!("fixture should use annual branch"),
+    }
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("non-finite required growth value must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-043");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field: "rw",
+            slot_index: 1,
+            crop_slot_index: 1,
+            value,
+        } if value.is_nan()
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_overflowed_projection_count() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    management.schedule.rotation_repeats = usize::MAX;
+    management.schedule.rotation_years = 2;
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("overflowed projection count must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-044");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::PlProjectionCountOutOfRange {
+            field: "schedule.expected_slots",
+            value: usize::MAX,
+        }
+    ));
+}
+
+#[test]
+fn management_runtime_surface_rejects_unsupported_perennial_option_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 0,
+        rw: 0.762,
+        mgtopt: 4,
+        cut_days: Vec::new(),
+        grazing_cycles: Vec::new(),
+    });
+
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("unsupported perennial mgtopt must fail with typed seam error");
+    assert_eq!(error.code(), "HS-RUNTIME-E-042");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+            field: "mgtopt",
+            value: 4,
+            allowed: "1..3",
+        }
+    ));
+}
+
 fn assert_state_value(
     surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
     symbol: &str,
@@ -553,4 +799,249 @@ fn merge_hillslope_runtime_surfaces(
     primary.state_surface.extend(overlay.state_surface);
     primary.flux_surface.extend(overlay.flux_surface);
     primary
+}
+
+fn parse_management_fixture(name: &str) -> ManagementParseOutput {
+    parse_management_from_path(management_fixture_path(name), ManagementParseMode::Strict)
+        .unwrap_or_else(|error| panic!("management fixture {name} should parse: {error}"))
+}
+
+fn management_fixture_path(name: &str) -> PathBuf {
+    Path::new(file!())
+        .parent()
+        .expect("integration file parent exists")
+        .parent()
+        .expect("tests directory exists")
+        .join("fixtures")
+        .join("infile")
+        .join("management")
+        .join(name)
+}
+
+fn assert_full_pl_family_coverage(
+    management: &ManagementParseOutput,
+    pl_surfaces: &HillslopePlRuntimeSurfaces,
+) {
+    assert_pl_ordering_flags(pl_surfaces);
+    assert_pl_ofe_seed_coverage(management, pl_surfaces);
+    assert_pl_slot_projection_coverage(management, pl_surfaces);
+}
+
+fn assert_pl_ordering_flags(pl_surfaces: &HillslopePlRuntimeSurfaces) {
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_order_decomp_before_soil",
+        1.0,
+    );
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_order_growth_after_decomp",
+        1.0,
+    );
+    assert_state_value(
+        &pl_surfaces.pl_schedule_surface,
+        "pl_order_watbal_after_growth",
+        1.0,
+    );
+}
+
+fn assert_pl_ofe_seed_coverage(
+    management: &ManagementParseOutput,
+    pl_surfaces: &HillslopePlRuntimeSurfaces,
+) {
+    for (ofe_position, initial_ref) in management.schedule.ofe_initial_refs.iter().enumerate() {
+        let ofe_index = ofe_position + 1;
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_ofe{ofe_index}_initial_ref"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_ofe{ofe_index}_lanuse"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_growth_surface,
+            &format!("pl_growth_ofe{ofe_index}_imngmt_seed"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_growth_surface,
+            &format!("pl_growth_ofe{ofe_index}_rtyp_seed"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_decomp_surface,
+            &format!("pl_decomp_ofe{ofe_index}_iresd_seed"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_decomp_surface,
+            &format!("pl_decomp_ofe{ofe_index}_sumrtm_seed"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_decomp_surface,
+            &format!("pl_decomp_ofe{ofe_index}_sumsrm_seed"),
+        );
+
+        let initial = &management.registries.initials[*initial_ref - 1];
+        let openwepp_input_contract::parsers::management::InitialScenarioData::Cropland(data) =
+            &initial.data;
+        if data.understory_line.is_some() {
+            assert_surface_has_symbol(
+                &pl_surfaces.pl_decomp_surface,
+                &format!("pl_decomp_ofe{ofe_index}_usinrcol_seed"),
+            );
+            assert_surface_has_symbol(
+                &pl_surfaces.pl_decomp_surface,
+                &format!("pl_decomp_ofe{ofe_index}_usrilcol_seed"),
+            );
+        }
+    }
+}
+
+fn assert_pl_slot_projection_coverage(
+    management: &ManagementParseOutput,
+    pl_surfaces: &HillslopePlRuntimeSurfaces,
+) {
+    for (slot_position, slot) in management.schedule.slots.iter().enumerate() {
+        let slot_index = slot_position + 1;
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_slot_{slot_index:04}_rotation_index"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_slot_{slot_index:04}_year_in_rotation"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_slot_{slot_index:04}_ofe_index"),
+        );
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_slot_{slot_index:04}_crop_slots"),
+        );
+
+        for (crop_slot_position, yearly_ref) in slot.yearly_refs.iter().enumerate() {
+            let crop_slot_index = crop_slot_position + 1;
+            let yearly = &management.registries.yearlies[*yearly_ref - 1];
+            let YearlyScenarioData::Cropland(cropland) = &yearly.data;
+            assert_slot_crop_schedule_symbols(slot_index, crop_slot_index, pl_surfaces);
+            assert_slot_crop_growth_common_symbols(slot_index, crop_slot_index, pl_surfaces);
+            assert_slot_crop_branch_symbols(
+                slot_index,
+                crop_slot_index,
+                &cropland.branch,
+                pl_surfaces,
+            );
+        }
+    }
+}
+
+fn assert_slot_crop_schedule_symbols(
+    slot_index: usize,
+    crop_slot_index: usize,
+    pl_surfaces: &HillslopePlRuntimeSurfaces,
+) {
+    for schedule_root in [
+        "yearly_ref",
+        "lanuse",
+        "itype",
+        "tilseq",
+        "conset",
+        "drset",
+        "imngmt",
+    ] {
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_schedule_surface,
+            &format!("pl_schedule_slot_{slot_index:04}_crop_{crop_slot_index:04}_{schedule_root}"),
+        );
+    }
+}
+
+fn assert_slot_crop_growth_common_symbols(
+    slot_index: usize,
+    crop_slot_index: usize,
+    pl_surfaces: &HillslopePlRuntimeSurfaces,
+) {
+    for growth_root in ["itype", "imngmt"] {
+        assert_surface_has_symbol(
+            &pl_surfaces.pl_growth_surface,
+            &format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{growth_root}"),
+        );
+    }
+}
+
+fn assert_slot_crop_branch_symbols(
+    slot_index: usize,
+    crop_slot_index: usize,
+    branch: &YearlyCroplandBranch,
+    pl_surfaces: &HillslopePlRuntimeSurfaces,
+) {
+    match branch {
+        YearlyCroplandBranch::AnnualOrFallow(_) => {
+            for growth_root in ["jdharv", "jdplt", "rw"] {
+                assert_surface_has_symbol(
+                    &pl_surfaces.pl_growth_surface,
+                    &format!(
+                        "pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{growth_root}"
+                    ),
+                );
+            }
+            assert_surface_has_symbol(
+                &pl_surfaces.pl_decomp_surface,
+                &format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_resmgt"),
+            );
+        }
+        YearlyCroplandBranch::Perennial(_) => {
+            for growth_root in ["jdharv", "jdplt", "jdstop", "rw", "mgtopt"] {
+                assert_surface_has_symbol(
+                    &pl_surfaces.pl_growth_surface,
+                    &format!(
+                        "pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{growth_root}"
+                    ),
+                );
+            }
+            for decomp_root in ["mgtopt", "ncut", "ncycle"] {
+                assert_surface_has_symbol(
+                    &pl_surfaces.pl_decomp_surface,
+                    &format!(
+                        "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{decomp_root}"
+                    ),
+                );
+            }
+        }
+    }
+}
+
+fn assert_surface_has_symbol(
+    surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
+    symbol: &str,
+) {
+    assert!(
+        surface.contains_key(&BoundarySymbol::from(symbol)),
+        "missing projected runtime symbol {symbol}"
+    );
+}
+
+fn assert_merged_pl_seed_aliases(
+    surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
+) {
+    for symbol in [
+        "lanuse",
+        "itype",
+        "imngmt",
+        "jdharv",
+        "jdplt",
+        "rw",
+        "resmgt",
+        "iresd_seed",
+        "sumrtm_seed",
+        "sumsrm_seed",
+    ] {
+        assert_surface_has_symbol(surface, symbol);
+    }
+}
+
+fn usize_to_scalar(value: usize) -> f64 {
+    let value_u32 = u32::try_from(value)
+        .unwrap_or_else(|_| panic!("value {value} exceeds lossless u32->f64 conversion"));
+    f64::from(value_u32)
 }
