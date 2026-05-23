@@ -47,22 +47,30 @@ fn canonical_wepp_registry_contains_pl04_schedule_growth_and_decomp_alias_entrie
     let lanuse_aliases = registry
         .aliases_for_canonical("lanuse")
         .expect("lanuse canonical symbol should exist");
-    assert_eq!(lanuse_aliases, ["lanuse", "ofe{ofe}_lanuse"]);
+    assert!(
+        lanuse_aliases.contains(&"lanuse".to_string())
+            && lanuse_aliases.contains(&"ofe{ofe}_lanuse".to_string()),
+        "lanuse canonical alias set must preserve baseline aliases"
+    );
 
     let itype_aliases = registry
         .aliases_for_canonical("itype")
         .expect("itype canonical symbol should exist");
-    assert_eq!(
-        itype_aliases,
-        ["itype", "itype_{idx4}", "ofe{ofe}_itype_{idx4}"]
+    assert!(
+        itype_aliases.contains(&"itype".to_string())
+            && itype_aliases.contains(&"itype_{idx4}".to_string())
+            && itype_aliases.contains(&"ofe{ofe}_itype_{idx4}".to_string()),
+        "itype canonical alias set must preserve baseline aliases"
     );
 
     let gday_aliases = registry
         .aliases_for_canonical("gday")
         .expect("gday canonical symbol should exist");
-    assert_eq!(
-        gday_aliases,
-        ["gday", "gday_{idx4}", "ofe{ofe}_gday_{idx4}"]
+    assert!(
+        gday_aliases.contains(&"gday".to_string())
+            && gday_aliases.contains(&"gday_{idx4}".to_string())
+            && gday_aliases.contains(&"ofe{ofe}_gday_{idx4}".to_string()),
+        "gday canonical alias set must preserve baseline aliases"
     );
 
     let vdmt_aliases = registry
@@ -79,6 +87,44 @@ fn canonical_wepp_registry_contains_pl04_schedule_growth_and_decomp_alias_entrie
         .aliases_for_canonical("senvin")
         .expect("senvin canonical symbol should exist");
     assert_eq!(senvin_aliases, ["ofe{ofe}_senvin", "senvin"]);
+}
+
+#[test]
+fn canonical_wepp_registry_contains_pl11_slot_crop_projection_alias_entries() {
+    let registry = SymbolAliasRegistry::canonical_wepp_registry()
+        .expect("canonical WEPP alias registry should construct");
+
+    let conseq_aliases = registry
+        .aliases_for_canonical("conseq")
+        .expect("conseq canonical symbol should exist");
+    assert!(
+        conseq_aliases.contains(&"pl_schedule_slot_{idx4}_crop_{idx4}_conset".to_string()),
+        "conseq aliases must include slot/crop conset continuity template"
+    );
+
+    let drseq_aliases = registry
+        .aliases_for_canonical("drseq")
+        .expect("drseq canonical symbol should exist");
+    assert!(
+        drseq_aliases.contains(&"pl_schedule_slot_{idx4}_crop_{idx4}_drset".to_string()),
+        "drseq aliases must include slot/crop drset continuity template"
+    );
+
+    let ncycle_aliases = registry
+        .aliases_for_canonical("ncycle")
+        .expect("ncycle canonical symbol should exist");
+    assert!(
+        ncycle_aliases.contains(&"pl_decomp_slot_{idx4}_crop_{idx4}_ncycle".to_string()),
+        "ncycle aliases must include slot/crop decomp template"
+    );
+
+    let digest_aliases = registry
+        .aliases_for_canonical("digest")
+        .expect("digest canonical symbol should exist");
+    assert!(
+        digest_aliases.contains(&"pl_decomp_slot_{idx4}_crop_{idx4}_digest_{idx4}".to_string()),
+        "digest aliases must include indexed slot/crop decomp template"
+    );
 }
 
 #[test]
@@ -173,6 +219,57 @@ fn reverse_lookup_resolves_pl04_aliases_to_single_canonical_symbol() {
             .expect_err("invalid idx width must remain unresolved"),
         SymbolAliasRegistryError::BoundaryAliasNotFound {
             boundary_alias: "ofe5_rmogt_002".to_string(),
+        }
+    );
+}
+
+#[test]
+fn reverse_lookup_resolves_pl11_slot_crop_projection_aliases() {
+    let registry = SymbolAliasRegistry::canonical_wepp_registry()
+        .expect("canonical WEPP alias registry should construct");
+
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_schedule_slot_0001_crop_0001_conset")
+            .expect("conset schedule projection should resolve"),
+        "conseq"
+    );
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_schedule_slot_0001_crop_0001_drset")
+            .expect("drset schedule projection should resolve"),
+        "drseq"
+    );
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_growth_slot_0003_crop_0002_mgtopt")
+            .expect("growth slot/crop mgtopt projection should resolve"),
+        "mgtopt"
+    );
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_decomp_slot_0003_crop_0002_ncut")
+            .expect("decomp slot/crop ncut projection should resolve"),
+        "ncut"
+    );
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_decomp_slot_0003_crop_0002_gday_0002")
+            .expect("decomp slot/crop indexed gday projection should resolve"),
+        "gday"
+    );
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_decomp_slot_0003_crop_0002_digest_0002")
+            .expect("decomp slot/crop indexed digest projection should resolve"),
+        "digest"
+    );
+    assert_eq!(
+        registry
+            .canonical_for_boundary_alias("pl_decomp_slot_003_crop_0002_ncut")
+            .expect_err("invalid slot index width must remain unresolved"),
+        SymbolAliasRegistryError::BoundaryAliasNotFound {
+            boundary_alias: "pl_decomp_slot_003_crop_0002_ncut".to_string(),
         }
     );
 }

@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -316,6 +316,16 @@ states required deterministic alias mapping for transition-control projections.
 | `CRITVM` | `CRITVM` (identity) | grazing-floor parameter surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `gi` | `gi` (identity) | rangeland growth-curve surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `RGCMIN` | `RGCMIN` (identity) | evergreen floor parameter surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `lanuse` | `pl_schedule_ofe{ofe}_lanuse`, `pl_schedule_slot_{slot:04}_crop_{crop:04}_lanuse` | projected schedule topology/branch surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `itype` | `pl_schedule_slot_{slot:04}_crop_{crop:04}_itype`, `pl_growth_slot_{slot:04}_crop_{crop:04}_itype` | projected schedule/growth branch surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `imngmt` | `pl_schedule_slot_{slot:04}_crop_{crop:04}_imngmt`, `pl_growth_slot_{slot:04}_crop_{crop:04}_imngmt`, `pl_growth_ofe{ofe}_imngmt_seed` | projected schedule/growth management-class surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `tilseq` | `pl_schedule_slot_{slot:04}_crop_{crop:04}_tilseq` | projected schedule tillage-sequence surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `conseq` | `conset`, `conset_{idx4}`, `ofe{ofe}_conset_{idx4}`, `pl_schedule_slot_{slot:04}_crop_{crop:04}_conset` | projected schedule continuity-set surface | count/index integer -> count/index integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `drseq` | `drset`, `drset_{idx4}`, `ofe{ofe}_drset_{idx4}`, `pl_schedule_slot_{slot:04}_crop_{crop:04}_drset` | projected schedule decomposition-sequence surface | count/index integer -> count/index integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `jdharv` / `jdplt` / `jdstop` | `pl_growth_slot_{slot:04}_crop_{crop:04}_jdharv` / `..._jdplt` / `..._jdstop` | projected growth day-control surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `rw` | `pl_growth_slot_{slot:04}_crop_{crop:04}_rw` | projected growth root-weight surface | fraction -> fraction | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `mgtopt` | `pl_growth_slot_{slot:04}_crop_{crop:04}_mgtopt`, `pl_decomp_slot_{slot:04}_crop_{crop:04}_mgtopt` | projected perennial branch-option surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `resmgt` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_resmgt` | projected annual/fallow residue-management option surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `jdherb` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdherb` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `jdburn` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdburn` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `jdslge` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdslge` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -381,6 +391,7 @@ Minimum required scenario families for contract conformance:
 | GAP-PLANT-004 | Boundary contract IDs for plant consumers (`SC-WATBAL-001`, `SC-RESIDUE-001`, `SC-SED-001`) are not yet fully authored. | Cross-contract closure is provisional until downstream contracts reach draft status. | non-promotable | `[DIRECT][Static]` |
 | GAP-PLANT-005 | Transition-control projection families are implemented and contract-conformance tests pass for PL11 scope (`annual extension symbols`, `cutday indexed projection`, `grazing cycle payload projection`, and typed rejects for grazing window/cardinality). | Closed by PL11 runtime implementation and explicit conformance execution evidence. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but full cross-domain consumer harmonization of error labels is still open. | Residual traceability work remains for downstream consumers; runtime projection labels are implemented. | promotable-with-risk | `[INFERENCE][Static] + [Ran]` |
+| GAP-PLANT-007 | Alias continuity for projected PL slot/crop runtime naming required explicit closure (`conset/drset` schedule drift and PL11 projected family template continuity). | Closed by PL13A canonical registry + contract alias-map reconciliation; remaining non-canonical structural scheduler symbols are explicitly exceptioned. | closed | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
@@ -393,3 +404,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `4` | `Codex` | PL10b blind-authority amendment: added transition-control runtime-projection algorithm authority, branch/guard table, invariant family `INV-PLANT-011..015`, constants table, test-vector obligations, and explicit symbol-family alias mappings for annual/perennial payload controls. |
 | `2026-05-23` | `5` | `Codex` | PL11 reconciliation amendment: aligned alias-map rows to emitted decomp surfaces, removed unsupported harvest-seed claim, and recorded PL11 conformance closure for runtime projection gap `GAP-PLANT-005`. |
 | `2026-05-23` | `6` | `Codex` | PL12 amendment: added typed decomposition-transition context-consumption invariant (`INV-PLANT-016`) and explicit scheduler action-selector authority in algorithm/guard sections. |
+| `2026-05-23` | `7` | `Codex` | PL13A alias-continuity amendment: reconciled projected PL slot/crop alias mappings (including `conset/drset` continuity), added explicit PL13A closure gap row (`GAP-PLANT-007`), and aligned canonical-to-boundary template authority with registry behavior. |
