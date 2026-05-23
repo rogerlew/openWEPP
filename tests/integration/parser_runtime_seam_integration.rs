@@ -10,7 +10,8 @@ use openwepp_hillslope_orchestrator::{
         build_hillslope_pl_runtime_surfaces_from_management,
         build_hillslope_runtime_surface_from_climate,
         build_hillslope_runtime_surface_from_management,
-        build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
+        build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_snow,
+        build_hillslope_runtime_surface_from_soil,
     },
 };
 use openwepp_input_contract::parsers::{
@@ -22,6 +23,7 @@ use openwepp_input_contract::parsers::{
         parse_management_from_path,
     },
     slope::{SlopeParserOptions, parse_slope_str},
+    snow::{SnowParseOptions, parse_snow_file},
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
@@ -450,6 +452,65 @@ fn climate_parser_to_hillslope_runtime_surface_closure() {
         kernel.invocation_count,
         HillslopePhaseGraph::canonical_order().len()
     );
+}
+
+#[test]
+fn snow_parser_to_hillslope_runtime_surface_closure() {
+    let snow = parse_snow_file(
+        snow_fixture_path("strict_valid.txt"),
+        SnowParseOptions::default(),
+    )
+    .expect("snow fixture should parse for seam closure");
+    let runtime_surface = build_hillslope_runtime_surface_from_snow(&snow)
+        .expect("snow runtime surface should build from parser output");
+
+    assert_state_value(&runtime_surface.state_surface, "snow.options.rst", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "snow.options.newsnw", 100.0);
+    assert_state_value(&runtime_surface.state_surface, "snow.options.ssd", 250.0);
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "snow.options.snow_file_present",
+        1.0,
+    );
+    assert_state_value(&runtime_surface.state_surface, "snow.runtime_swe", 0.0);
+}
+
+#[test]
+fn snow_runtime_surface_projects_missing_file_flag_as_inactive() {
+    let snow = parse_snow_file(
+        snow_fixture_path("does_not_exist.txt"),
+        SnowParseOptions::default(),
+    )
+    .expect("missing snow sidecar should parse via default branch");
+    let runtime_surface = build_hillslope_runtime_surface_from_snow(&snow)
+        .expect("snow runtime surface should build from default parser output");
+
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "snow.options.snow_file_present",
+        0.0,
+    );
+}
+
+#[test]
+fn snow_runtime_surface_rejects_invalid_density_domain_projection() {
+    let mut snow = parse_snow_file(
+        snow_fixture_path("strict_valid.txt"),
+        SnowParseOptions::default(),
+    )
+    .expect("snow fixture should parse");
+    snow.newsnw = 300.0;
+
+    let error = build_hillslope_runtime_surface_from_snow(&snow)
+        .expect_err("new snow density above settled density must fail runtime seam");
+    assert_eq!(error.code(), "HS-RUNTIME-E-053");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::SnowControlOutOfDomain {
+            field: "snow.options.newsnw",
+            ..
+        }
+    ));
 }
 
 #[test]
@@ -1794,6 +1855,18 @@ fn management_fixture_path(name: &str) -> PathBuf {
         .join("fixtures")
         .join("infile")
         .join("management")
+        .join(name)
+}
+
+fn snow_fixture_path(name: &str) -> PathBuf {
+    Path::new(file!())
+        .parent()
+        .expect("integration file parent exists")
+        .parent()
+        .expect("tests directory exists")
+        .join("fixtures")
+        .join("infile")
+        .join("snow")
         .join(name)
 }
 

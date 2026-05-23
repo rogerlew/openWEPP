@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -157,6 +157,7 @@ orchestrator-owned writeback commit authority.
 | INV-WATBAL-010 | WB11 guard + routing invariant: unsupported hydrology phase classes and missing/non-finite/out-of-range WB11 domains must surface typed hard failures (`HS-HYDRO-E-001`, `HKERNEL-WB11-*-E-*`) without silent reassignment/clamping/defaulting. | hard-fail | REF-WATBAL-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-WATBAL-011 | INT10 coupled lane-entry invariant: watbal/hydrology phases execute only after successful plant-lane decomposition/growth transition completion with valid ordering preconditions (`pl_order_growth_after_decomp = 1`, `pl_order_watbal_after_growth = 1`); ordering-symbol violations must hard-fail before watbal-lane completion. | hard-fail | REF-WATBAL-CH5-LINK, REF-WATBAL-CH8-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-012 | PL14 replay-candidate emission invariant: WB13 candidate rows staged for strict Tier-A replay must preserve canonical 25-column schema and deterministic `(Y, J, OFE)` ordering; missing required symbols/artifacts or schema/arity violations must hard-fail replay staging without truncation, padding, or legacy-surface substitution. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-013 | CLIM05 snow-coupled closure invariant: when active snow coupling publishes signed `S`, WB12 storage reconciliation must use `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd` and hard-fail on missing/non-finite/domain-invalid `S`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -174,6 +175,7 @@ orchestrator-owned writeback commit authority.
 | `INV-WATBAL-010` | runtime | WB11 routing + guard tables | Typed hard error on unsupported phase classes or WB11 domain-invalid inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-WATBAL-011` | runtime | Scheduler phase closure and coupled lane-entry guard between growth dispatch and hydrology execution | Typed hard error on ordering-precondition violation and halt before watbal completion | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-012` | runtime | WB13 replay-candidate staging gate before strict comparator execution | Typed hard error on missing/invalid WB13 replay rows or missing replay artifacts; no schema rewrite/fallback padding | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-013` | runtime | WB12 storage reconciliation with active CLIM05 snow-coupled `S` term | Typed hard error on missing/non-finite/domain-invalid `S` or violated CLIM05 storage closure equation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -243,6 +245,7 @@ implementation contracts introduce explicit aliases.
 | Governance boundary (`INV-WATBAL-008`) | review/verification/promotion | Governance `HOLD` until cross-contract ownership of `D` reuse is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB11 hydrology production execution + guards (`INV-WATBAL-009/010`) | ET/perc/lateral/drain kernel execution and routing/guard validation | Hard error on malformed WB11 domains or unsupported hydrology phase classes | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB13 replay-candidate schema/order and artifact completeness (`INV-WATBAL-012`) | WB13 output staging and replay boundary | Hard error when strict replay staging sees missing required WB13 symbols/artifacts or schema/ordering violations | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| CLIM05 snow-coupled WB12 storage closure (`INV-WATBAL-013`) | WB12 storage reconciliation stage | Hard error on missing/non-finite/domain-invalid signed `S` term or CLIM05 storage equation violation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -296,7 +299,7 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 | Surface | Symbols |
 |---|---|
 | Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
-| Storage reconciliation inputs | `wb12_storage_initial`, `wb12_storage_observed`, `wb12_storage_closure_tolerance`, `wb12_precip_input`, `Q`, `ET`, `D`, `Qd` |
+| Storage reconciliation inputs | `wb12_storage_initial`, `wb12_storage_observed`, `wb12_storage_closure_tolerance`, `wb12_precip_input`, `S`, `Q`, `ET`, `D`, `Qd` |
 | Runoff reconciliation outputs | `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 | Storage reconciliation outputs | `wb12_storage_closure_delta`, `wb12_storage_reconciled` |
 
@@ -306,7 +309,7 @@ Minimum WB11 hydrology production-kernel conformance vectors:
    - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
    - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
 2. Storage reconciliation emits:
-   - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input - Q - ET - D - Qd`
+   - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd`
    - `wb12_storage_closure_delta = wb12_storage_reconciled - wb12_storage_observed`
 3. Absolute closure deltas above declared per-phase tolerances are invalid closure states.
 4. Missing/non-finite/out-of-range inputs and invalid closure states hard-fail with typed status and do not apply writeback.
@@ -323,6 +326,31 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 1. Valid WB12 runoff/storage inputs produce deterministic reconciliation outputs and state updates.
 2. Non-finite WB12 runoff/state input hard-fails at the corresponding reconciliation phase with typed non-finite guard code.
 3. Closure-delta overflow beyond tolerance hard-fails with typed domain/closure guard code and no writeback mutation.
+
+## CLIM05 Snow-Coupled Reconciliation Addendum
+
+### CLIM05 Required Coupling Surface
+
+| Surface | Symbols |
+|---|---|
+| Signed snow-water coupling term | `S` (daily `+` melt, `-` accumulation) |
+
+### CLIM05 Deterministic Coupling Rule
+
+1. Runoff reconciliation consumes snow-coupled liquid input through signed `S`
+   authority and emits `S` to downstream storage reconciliation.
+2. WB12 storage reconciliation must include `S` exactly once in the storage
+   closure equation (additive signed term).
+3. Missing/non-finite/domain-invalid `S` is a hard-fail storage state.
+
+### CLIM05 Contract-Test Vectors
+
+1. Active snow coupling nominal vector changes both runoff closure (`Q`) and
+   WB12 storage closure through signed `S`.
+2. Missing `S` at storage reconciliation hard-fails with typed missing-input
+   posture.
+3. Non-finite or domain-invalid `S` hard-fails with typed non-finite/domain
+   posture and no writeback mutation.
 
 ## WB14 Infiltration and Hyetograph Coupling Addendum
 
@@ -459,3 +487,4 @@ canonical order:
 | `2026-05-23` | `7` | `Codex` | INT10 amendment: added coupled watbal lane-entry invariant (`INV-WATBAL-011`), scheduler ordering-precondition guard authority, and INT10 coupled replay test-vector obligations for ordering/state-transfer validation. |
 | `2026-05-23` | `8` | `Codex` | PL14 amendment: added replay-candidate emission invariant (`INV-WATBAL-012`) with strict WB13 schema/order + artifact completeness guard authority for Tier-A closeout staging. |
 | `2026-05-23` | `9` | `Codex` | WB14 amendment: added computed infiltration + hyetograph coupling authority for runoff reconciliation, replacing required externally seeded infiltration input in acceptance paths and adding typed WB14 runoff guards. |
+| `2026-05-23` | `10` | `Codex` | CLIM05 amendment: added signed `S` snow-coupling authority for WB12 storage reconciliation, including required storage-surface inputs, deterministic storage equation update, and typed active-coupling guard vectors. |

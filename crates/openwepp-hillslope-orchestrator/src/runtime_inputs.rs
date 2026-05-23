@@ -15,6 +15,7 @@ use openwepp_input_contract::parsers::{
         YearlyCroplandBranch, YearlyScenarioData,
     },
     slope::{SlopePoint, SlopeProfile},
+    snow::SnowParseOutput,
     soil::SoilProfile,
 };
 use openwepp_kernel_contract::{
@@ -246,6 +247,15 @@ pub enum HillslopeRuntimeInputError {
         crop_slot_index: usize,
         reason: &'static str,
     },
+    NonFiniteSnowControl {
+        field: &'static str,
+        value: f64,
+    },
+    SnowControlOutOfDomain {
+        field: &'static str,
+        value: f64,
+        allowed: &'static str,
+    },
 }
 
 impl HillslopeRuntimeInputError {
@@ -303,6 +313,8 @@ impl HillslopeRuntimeInputError {
             Self::PlGrazingWindowOutOfDomain { .. } => "HS-RUNTIME-E-049",
             Self::PlProjectionFieldOutOfDomain { .. } => "HS-RUNTIME-E-050",
             Self::PlProjectionUnsupportedPayloadCombination { .. } => "HS-RUNTIME-E-051",
+            Self::NonFiniteSnowControl { .. } => "HS-RUNTIME-E-052",
+            Self::SnowControlOutOfDomain { .. } => "HS-RUNTIME-E-053",
         }
     }
 }
@@ -799,6 +811,25 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 slot_index,
                 crop_slot_index,
                 reason
+            ),
+            Self::NonFiniteSnowControl { field, value } => write!(
+                f,
+                "{}: non-finite snow control {}={}",
+                self.code(),
+                field,
+                value
+            ),
+            Self::SnowControlOutOfDomain {
+                field,
+                value,
+                allowed,
+            } => write!(
+                f,
+                "{}: snow control {} is out of domain ({}, allowed {})",
+                self.code(),
+                field,
+                value,
+                allowed
             ),
         }
     }
@@ -2036,6 +2067,82 @@ pub fn build_hillslope_runtime_surface_from_climate(
     Ok(surface)
 }
 
+/// Build a hillslope runtime surface from parsed snow-control input.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when snow controls are non-finite or
+/// outside required CLIM05 domains.
+pub fn build_hillslope_runtime_surface_from_snow(
+    snow: &SnowParseOutput,
+) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
+    let mut surface = HillslopeWritebackSurface::default();
+    seed_hillslope_runtime_surface_from_snow(&mut surface, snow)?;
+    Ok(surface)
+}
+
+/// Seed parsed snow-control runtime symbols into an existing hillslope runtime
+/// surface.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when parsed snow controls are
+/// non-finite or violate required CLIM05 domains.
+pub fn seed_hillslope_runtime_surface_from_snow(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    snow: &SnowParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let rst = validate_snow_control_finite("snow.options.rst", snow.rst)?;
+    let newsnw = validate_snow_control_finite("snow.options.newsnw", snow.newsnw)?;
+    let ssd = validate_snow_control_finite("snow.options.ssd", snow.ssd)?;
+
+    if newsnw <= 0.0 {
+        return Err(HillslopeRuntimeInputError::SnowControlOutOfDomain {
+            field: "snow.options.newsnw",
+            value: newsnw,
+            allowed: "> 0.0",
+        });
+    }
+    if ssd <= 0.0 {
+        return Err(HillslopeRuntimeInputError::SnowControlOutOfDomain {
+            field: "snow.options.ssd",
+            value: ssd,
+            allowed: "> 0.0",
+        });
+    }
+    if newsnw > ssd {
+        return Err(HillslopeRuntimeInputError::SnowControlOutOfDomain {
+            field: "snow.options.newsnw",
+            value: newsnw,
+            allowed: "<= snow.options.ssd",
+        });
+    }
+
+    let state_surface = &mut runtime_surface.state_surface;
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.rst"),
+        BoundaryValue::scalar(rst),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.newsnw"),
+        BoundaryValue::scalar(newsnw),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.ssd"),
+        BoundaryValue::scalar(ssd),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.options.snow_file_present"),
+        BoundaryValue::scalar(if snow.sidecar_present { 1.0 } else { 0.0 }),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_swe"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    Ok(())
+}
+
 fn insert_common_day_symbols(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     day: i32,
@@ -2054,6 +2161,16 @@ fn insert_common_day_symbols(
         BoundarySymbol::from("year"),
         BoundaryValue::scalar(f64::from(year)),
     );
+}
+
+fn validate_snow_control_finite(
+    field: &'static str,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteSnowControl { field, value });
+    }
+    Ok(value)
 }
 
 fn validate_slope_profile_shape(slope: &SlopeProfile) -> Result<(), HillslopeRuntimeInputError> {

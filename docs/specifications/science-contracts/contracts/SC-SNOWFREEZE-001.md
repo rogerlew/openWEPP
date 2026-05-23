@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -110,6 +110,7 @@ Out of scope:
 | INV-SNOWFREEZE-007 | Winter coupling payload completeness: hourly winter outputs required for downstream consumers are emitted with valid units/domains, including `hrmelt`, `Dfrost`, `Dthaw`, `Nft`, `Ws_frz`, and `InfCap_frz`, and daily snow-water term `S` is consistently reflected in water balance semantics. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH3-FROST, REF-SNOWFREEZE-CH4-COUPLING, REF-SNOWFREEZE-CH5-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-008 | Snow drifting governance invariant: process claims requiring active drift transport equations are non-promotable until authority confirms an active drift implementation path for the target lineage. | governance-fail | REF-SNOWFREEZE-CH3-DRIFT-INACTIVE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-009 | Winter-routine activation branch is explicit: winter hourly processing is invoked when at least one trigger condition is true (existing snowpack, existing soil frost layer, or average daily temperature below `0 degC`), with no silent bypass. | hard-fail | REF-SNOWFREEZE-CH3-INTRO | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-010 | CLIM05 parsed snow-control coupling invariant: when parsed `snow.options.*` controls are projected to runtime, coupling must enforce finite/valid control domains (`newsnw > 0`, `ssd > 0`, `newsnw <= ssd`), publish signed `S = melt - accumulation`, and maintain non-negative `snow.runtime_swe` without silent fallback/defaulting. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH5-COUPLING, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -124,6 +125,7 @@ Out of scope:
 | `INV-SNOWFREEZE-007` | runtime | Winter payload boundary validator (hourly + daily coupling fields) | Typed hard error on missing/invalid required payload fields | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SNOWFREEZE-008` | governance | Review/disposition/verification promotion check | Promotion `HOLD` when drift-active claims appear without authority-backed implementation status update | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SNOWFREEZE-009` | runtime | Winter-routine trigger-condition branch gate | Typed hard error on silent skip when trigger condition is true | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SNOWFREEZE-010` | runtime | CLIM05 snow-control adapter + hydrology snow-coupling branch | Typed hard error on missing/non-finite/domain-invalid `snow.options.*` controls or invalid `S`/`snow.runtime_swe` closure | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -148,6 +150,8 @@ once concrete runtime schemas are finalized.
 | `Snowd`, `Resd`, `Tilld`, `Utilld` | identity | layered conductivity state inputs | `m` -> `m` | `[DIRECT][Static]` |
 | `Dfrost`, `Dthaw` | identity | hourly frost/thaw depth boundary outputs | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `S` | identity | daily snow-water term in water-balance closure | `m` -> `m` | `[DIRECT][Static]` |
+| `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` | identity | parsed snow sidecar controls projected to runtime seam | scalar controls preserved; `snow_file_present` in `{0,1}` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow.runtime_swe` | identity | runtime snow-water-equivalent storage state | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ws_frz`, `Nft` | provisional identity | frozen-soil coupling boundary outputs | units preserved as declared | `[INFERENCE][Static]` |
 | `InfCap_frz` | provisional identity | frozen-soil infiltration-capacity boundary output | `m s^-1` required at exported boundary | `[INFERENCE][Static]` |
 
@@ -169,6 +173,7 @@ once concrete runtime schemas are finalized.
 - `ρsnew > 522 kg m^-3`. `[DIRECT][Static]`
 - `Dsnew = 0` while `ρsnew > 0`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Missing required winter boundary payload fields for runoff/infiltration/water-balance coupling. `[DIRECT][Static] + [INFERENCE][Static]`
+- Active CLIM05 coupling with missing/non-finite/out-of-domain `snow.options.*` controls or negative `snow.runtime_swe`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Drift-active process claims in promotion evidence without updated active-lineage authority. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
@@ -178,6 +183,7 @@ once concrete runtime schemas are finalized.
 - OBL-SNOWFREEZE-P-003: Route meltwater to downstream runoff/infiltration only when density-gate conditions are satisfied. `[DIRECT][Static]`
 - OBL-SNOWFREEZE-P-004: Surface typed errors for violated melt bounds, snow-state domains, and frost-branch inconsistencies; no silent fallback values. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SNOWFREEZE-P-005: Keep drift-activation assumptions explicit; do not imply active drift transport without authority-backed contract amendment. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-006: When parsed snow controls are projected, publish `S` and `snow.runtime_swe` as explicit coupled boundary/state outputs and hard-fail on active-coupling symbol/domain violations. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -185,6 +191,7 @@ once concrete runtime schemas are finalized.
 - OBL-SNOWFREEZE-C-002: Daily water-balance consumer treats melted snow as rainfall contribution in Eq. [5.1.1] accounting semantics. `[DIRECT][Static]`
 - OBL-SNOWFREEZE-C-003: Soil/erosion-related consumers receiving frost outputs (`Dfrost`, `Dthaw`, `Nft`, `Ws_frz`, `InfCap_frz`) must fail explicitly on missing or invalid winter payloads. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SNOWFREEZE-C-004: Consumers propagate invariant-violation context as typed errors without silent clamping/defaulting. `[INFERENCE][Static]`
+- OBL-SNOWFREEZE-C-005: Runoff and storage reconciliation consumers must apply signed `S` coupling semantics and reject active-coupling payloads missing required `snow.options.*` controls. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -195,6 +202,7 @@ once concrete runtime schemas are finalized.
 | Partition and activation branches (`INV-SNOWFREEZE-005/009`) | daily/hourly branch selection | Hard error on branch mismatch or silent bypass | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Frost heat-flow semantics (`INV-SNOWFREEZE-006`) | frost routine bookkeeping | Hard error on invalid equation domain; investigate hourly-heavy deltas per ADR confidence tiers | Tier-B investigation gate | `[DIRECT][Static]` |
 | Coupling completeness (`INV-SNOWFREEZE-007`) | winter payload boundary handoff | Hard error on missing/invalid field or unit mismatch | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| CLIM05 parsed snow-control coupling (`INV-SNOWFREEZE-010`) | runtime snow-control adaptation and hydrology coupling branch | Hard error on missing/non-finite/out-of-domain controls or invalid `S`/`snow.runtime_swe` closure | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Drift activation governance (`INV-SNOWFREEZE-008`) | review/disposition/promotion gate | Governance `HOLD` until active-implementation authority is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
@@ -209,6 +217,41 @@ parity). Contract-specific interpretation tolerances:
 | TOL-SNOWFREEZE-003 | Density threshold gate proximity tolerance around `350 kg m^-3` | `1e-9 kg m^-3` | Prevents floating-point noise from flipping density-gate branch semantics. |
 | TOL-SNOWFREEZE-004 | Zero-depth/zero-density closure tolerance | If `Dsnew <= 1e-12 m`, require `ρsnew <= 1e-9 kg m^-3` | Prevents false closure from product-only checks that can mask invalid nonzero density. |
 | TOL-SNOWFREEZE-005 | Frost heat-flow equation residual tolerance for iterative closure diagnostics | `<= 1e-8` in routine-native flux units | Diagnostic/comparator aid; not a silent runtime correction mechanism. |
+
+## CLIM05 Parsed Snow-Control Runtime Coupling Addendum
+
+### CLIM05 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed sidecar controls | `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` |
+| Climate drivers | `Tmax`, `Tmin`, hyetograph precipitation depth |
+| Coupled runtime state/output | `snow.runtime_swe`, `S` |
+
+### CLIM05 Deterministic Rules
+
+1. Active coupling is explicit when `snow.options.snow_file_present` is present
+   on runtime state surface.
+2. Partition logic uses `rst` threshold:
+   - `Tmax <= rst`: all precipitation accumulates as snow;
+   - `Tmin >= rst`: precipitation is rain pathway;
+   - mixed-day branch: deterministic partition driven by `Tmin/Tmax/rst`.
+3. Signed snow-water term is `S = melt - accumulation`; snow storage update is
+   `snow.runtime_swe(new) = snow.runtime_swe(old) + accumulation - melt` with
+   non-negative closure.
+4. Parsed control domains must remain finite and physically valid:
+   `newsnw > 0`, `ssd > 0`, and `newsnw <= ssd`.
+5. Active-coupling missing/non-finite/domain-invalid controls or invalid
+   `S`/`snow.runtime_swe` closure are hard-fail states.
+
+### CLIM05 Contract-Test Vectors
+
+1. Active coupling nominal vector produces deterministic `S`, updated
+   `snow.runtime_swe`, and valid hydrology-coupled closure.
+2. Missing active-coupling required parsed control symbol hard-fails with typed
+   missing-input posture.
+3. Non-finite or out-of-domain active-coupling control/state hard-fails with
+   typed non-finite/domain posture and no fallback.
 
 ## Known Gaps
 
@@ -227,3 +270,4 @@ parity). Contract-specific interpretation tolerances:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-05 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: resolved drift runtime/governance conflict, added missing frost/thaw symbols, fixed `InfCap_frz` unit declaration, clarified melt bound timing semantics, and tightened zero-depth/zero-density tolerance rule. |
+| `2026-05-23` | `3` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling authority (`snow.options.*`), signed `S` and `snow.runtime_swe` closure requirements, and active-coupling typed guard posture. |

@@ -133,12 +133,20 @@ const WB12_SYMBOL_PRECIP_INPUT: &str = "wb12_precip_input";
 const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: &str = "wb12_storage_closure_delta";
 const WB12_SYMBOL_STORAGE_RECONCILED: &str = "wb12_storage_reconciled";
 const WB12_SYMBOL_RUNOFF_Q: &str = "Q";
+const WB12_SYMBOL_SNOW_COUPLING_S: &str = "S";
 const WB14_SYMBOL_HYETOGRAPH_NINTEN: &str = "ninten";
 const WB14_SYMBOL_HYETOGRAPH_NBRKPT: &str = "nbrkpt";
 const WB14_SYMBOL_SOIL_CONDUCTIVITY: &str = "ssc";
 const WB14_SYMBOL_SOIL_LAYER_DEPTH: &str = "dg";
 const WB14_SYMBOL_SOIL_THETA_RESIDUAL: &str = "thetdr";
 const WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY: &str = "thetfc";
+const WB14_SYMBOL_SNOW_FILE_PRESENT: &str = "snow.options.snow_file_present";
+const WB14_SYMBOL_SNOW_RST: &str = "snow.options.rst";
+const WB14_SYMBOL_SNOW_NEWSNW: &str = "snow.options.newsnw";
+const WB14_SYMBOL_SNOW_SSD: &str = "snow.options.ssd";
+const WB14_SYMBOL_SNOW_RUNTIME_SWE: &str = "snow.runtime_swe";
+const WB14_SYMBOL_TMAX: &str = "tmax";
+const WB14_SYMBOL_TMIN: &str = "tmin";
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -1592,6 +1600,13 @@ impl Error for Wb11HydrologyKernelGuardError {}
 #[derive(Debug, Clone, Default)]
 pub struct Wb11HydrologyKernel;
 
+#[derive(Debug, Clone, Copy)]
+struct SnowCouplingOutcome {
+    signed_s: f64,
+    runtime_swe: f64,
+    liquid_input: f64,
+}
+
 impl Wb11HydrologyKernel {
     fn require_state_scalar(
         request: &HillslopeKernelRequest<'_>,
@@ -1911,6 +1926,193 @@ impl Wb11HydrologyKernel {
         }
 
         Ok((times, intensities))
+    }
+
+    fn resolve_active_snow_coupling(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let key = BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT);
+        let Some(value) = request.state_surface.get(&key) else {
+            return Ok(false);
+        };
+
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: key,
+                value: scalar,
+            });
+        }
+        if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&scalar) {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            });
+        }
+
+        let rounded = scalar.round();
+        if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            });
+        }
+
+        Ok(rounded >= 1.0 - WB11_ZERO_THRESHOLD)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn compute_active_snow_coupling(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        hyetograph_rainfall: f64,
+    ) -> Result<SnowCouplingOutcome, Wb11HydrologyKernelGuardError> {
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            hyetograph_rainfall,
+            Some(0.0),
+            None,
+        )?;
+
+        let rst = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SNOW_RST)?;
+        let newsnw = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SNOW_NEWSNW)?;
+        let ssd = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SNOW_SSD)?;
+        let runtime_swe =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SNOW_RUNTIME_SWE)?;
+        let tmax = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
+        let tmin = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
+
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SNOW_NEWSNW,
+            newsnw,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(phase_class, WB14_SYMBOL_SNOW_SSD, ssd, Some(0.0), None)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+            runtime_swe,
+            Some(0.0),
+            None,
+        )?;
+
+        if newsnw > ssd + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW),
+                value: newsnw,
+                minimum: Some(0.0),
+                maximum: Some(ssd),
+            });
+        }
+
+        let snow_fraction = if tmax <= rst + WB11_ZERO_THRESHOLD {
+            1.0
+        } else if tmin >= rst - WB11_ZERO_THRESHOLD {
+            0.0
+        } else {
+            let span = tmax - tmin;
+            if span <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_TMAX),
+                    value: tmax,
+                    minimum: Some(tmin + WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            let fraction = (rst - tmin) / span;
+            if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&fraction) {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RST),
+                    value: rst,
+                    minimum: Some(tmin),
+                    maximum: Some(tmax),
+                });
+            }
+            fraction.clamp(0.0, 1.0)
+        };
+
+        let accumulation = hyetograph_rainfall * snow_fraction;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            accumulation,
+            Some(0.0),
+            Some(hyetograph_rainfall),
+        )?;
+
+        let available_swe = runtime_swe + accumulation;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+            available_swe,
+            Some(0.0),
+            None,
+        )?;
+
+        let temp_surplus = (tmax - rst).max(0.0);
+        let melt_fraction = if temp_surplus <= WB11_ZERO_THRESHOLD {
+            0.0
+        } else {
+            temp_surplus / (temp_surplus + 1.0)
+        };
+        let density_factor = newsnw / ssd;
+        let melt = available_swe * melt_fraction * density_factor;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            melt,
+            Some(0.0),
+            Some(available_swe),
+        )?;
+
+        let runtime_swe_after = available_swe - melt;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+            runtime_swe_after,
+            Some(0.0),
+            None,
+        )?;
+
+        let signed_s = melt - accumulation;
+        if !signed_s.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_SNOW_COUPLING_S),
+                value: signed_s,
+                minimum: None,
+                maximum: None,
+            });
+        }
+
+        let liquid_input = hyetograph_rainfall + signed_s;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            liquid_input,
+            Some(0.0),
+            None,
+        )?;
+
+        Ok(SnowCouplingOutcome {
+            signed_s,
+            runtime_swe: runtime_swe_after,
+            liquid_input,
+        })
     }
 
     #[allow(clippy::too_many_lines)]
@@ -2623,6 +2825,17 @@ impl Wb11HydrologyKernel {
             });
         }
 
+        let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
+        let snow_coupling = if active_snow_coupling {
+            Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
+        } else {
+            SnowCouplingOutcome {
+                signed_s: 0.0,
+                runtime_swe: 0.0,
+                liquid_input: hyetograph_rainfall,
+            }
+        };
+
         let runon_input =
             Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNON_INPUT)?;
         Self::require_state_range(
@@ -2653,8 +2866,9 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let q_runoff =
-            hyetograph_rainfall + runon_input - cumulative_infiltration - depression_storage_delta;
+        let q_runoff = snow_coupling.liquid_input + runon_input
+            - cumulative_infiltration
+            - depression_storage_delta;
         Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
 
         let closure_delta = q_runoff - runoff_observed;
@@ -2674,24 +2888,36 @@ impl Wb11HydrologyKernel {
         ) else {
             unreachable!("status message ids are non-empty WB14 constants")
         };
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![
-                WritebackField::bounded(
-                    WB12_SYMBOL_INFILTRATION,
-                    cumulative_infiltration,
-                    Some(0.0),
-                    None,
-                ),
-                WritebackField::bounded(WB12_SYMBOL_RUNOFF_RECONCILED, q_runoff, Some(0.0), None),
-            ],
-            vec![
-                WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
-                WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
-            ],
-        );
+
+        let mut state_updates = vec![
+            WritebackField::bounded(
+                WB12_SYMBOL_INFILTRATION,
+                cumulative_infiltration,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(WB12_SYMBOL_RUNOFF_RECONCILED, q_runoff, Some(0.0), None),
+        ];
+        if active_snow_coupling {
+            state_updates.push(WritebackField::bounded(
+                WB14_SYMBOL_SNOW_RUNTIME_SWE,
+                snow_coupling.runtime_swe,
+                Some(0.0),
+                None,
+            ));
+        }
+
+        let flux_updates = vec![
+            WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
+            WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
+            WritebackField::unbounded(WB12_SYMBOL_SNOW_COUPLING_S, snow_coupling.signed_s),
+        ];
+
+        let writeback = KernelWritebackPayload::with_updates(state_updates, flux_updates);
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    #[allow(clippy::too_many_lines)]
     fn run_storage_reconciliation(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
@@ -2742,6 +2968,9 @@ impl Wb11HydrologyKernel {
         let q_runoff = Self::require_flux_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_Q)?;
         Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
 
+        let snow_coupling_s =
+            Self::require_flux_scalar(request, phase_class, WB12_SYMBOL_SNOW_COUPLING_S)?;
+
         let et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
         Self::require_flux_range(phase_class, WB11_SYMBOL_ET, et, Some(0.0), None)?;
 
@@ -2765,8 +2994,11 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let storage_reconciled =
-            storage_initial + precip_input - q_runoff - et - percolation_loss - subsurface_loss;
+        let storage_reconciled = storage_initial + precip_input + snow_coupling_s
+            - q_runoff
+            - et
+            - percolation_loss
+            - subsurface_loss;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_STORAGE_RECONCILED,

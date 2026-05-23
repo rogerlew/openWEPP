@@ -190,6 +190,10 @@ name = "wb14_infiltration_hyetograph_kernel_contract"
 path = "tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs"
 
 [[test]]
+name = "clim05_snow_runtime_kernel_contract"
+path = "tests/integration/clim05_snow_runtime_kernel_contract.rs"
+
+[[test]]
 name = "int10_plant_water_coupling_validation_contract"
 path = "tests/integration/int10_plant_water_coupling_validation_contract.rs"
 

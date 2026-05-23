@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -338,6 +338,46 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Non-monotone hyetograph time, negative intensity, rainfall-mismatch, or
    runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
 
+## CLIM05 Snow Runtime Coupling Addendum
+
+### CLIM05 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed snow controls | `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` |
+| Runtime snow state/output | `snow.runtime_swe`, `S` |
+| Climate partition drivers | `Tmax`, `Tmin`, `timem_####`, `intsty_####` |
+| Runoff reconciliation outputs | `Q`, `wb12_infiltration`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+
+### CLIM05 Deterministic Runoff Rule
+
+1. When active snow coupling controls are projected (`snow.options.snow_file_present`),
+   runoff reconciliation uses signed snow term `S = melt - accumulation`.
+2. Snow-coupled liquid input depth is:
+   - `wb14_liquid_input = wb14_hyetograph_rainfall + S`
+3. Reconciled runoff becomes:
+   - `Q = wb14_liquid_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+4. Active-coupling missing/non-finite/domain-invalid `snow.options.*` controls,
+   `S`, or `snow.runtime_swe` are hard-fail runoff states; no fallback/default
+   branch is allowed.
+
+### CLIM05 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB14-RUNOFF-E-001` |
+| Non-finite required symbol | `HKERNEL-WB14-RUNOFF-E-002` |
+| Domain/closure violation | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### CLIM05 Contract-Test Vectors
+
+1. Active-coupling nominal vector changes reconciled `Q` according to signed
+   `S` while preserving typed closure diagnostics.
+2. Missing required active-coupling snow control symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite/out-of-domain active-coupling snow control/state hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-002/003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -357,3 +397,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `3` | `Codex` | WB12 amendment: added runoff reconciliation kernel authority with deterministic closure diagnostics, typed WB12 runoff guard codes, and WB12 contract-derived vectors. |
 | `2026-05-23` | `4` | `Codex` | WB13 amendment: added canonical daily output coupling authority for runoff/runon symbols (`Q`, `QOFE`, `UpStrmQ`, `RM`, `P`) with explicit WB13 malformed-output hard-fail posture. |
 | `2026-05-23` | `5` | `Codex` | WB14 amendment: added production infiltration + subdaily hyetograph kernel authority with Green-Ampt lineage branch rules, typed WB14 runoff guards, and WB14 contract-derived vectors. |
+| `2026-05-23` | `6` | `Codex` | CLIM05 amendment: added active snow-control runoff coupling authority via signed `S`, required `snow.options.*`/`snow.runtime_swe` surfaces, and typed hard-fail guard posture for active-coupling symbol/domain violations. |

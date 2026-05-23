@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -228,6 +228,42 @@ states and must hard-fail through typed consumer guard posture (`HKERNEL-WB14-RU
 3. Non-monotone breakpoint/disaggregation time sequence or negative intensity
    fails with typed domain posture and no fallback re-assembly.
 
+## CLIM05 Snow-Control Runtime Coupling Addendum
+
+### CLIM05 Required Snow-Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed snow-control payload | `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` |
+| Climate partition drivers | `Tmax`, `Tmin`, hyetograph rainfall (`timem_####`, `intsty_####`) |
+| Snow-coupled runtime state/output | `snow.runtime_swe`, `S` |
+
+### CLIM05 Deterministic Coupling Requirements
+
+1. When snow coupling is active (`snow.options.snow_file_present` projected at
+   runtime seam), hydrology consumers must use `rst` as the rain/snow
+   partition threshold for daily forcing handoff.
+2. Snow accumulation/melt coupling must publish signed daily snow-water term
+   `S` where `S = melt - accumulation` and retain non-negative runtime snow
+   storage state (`snow.runtime_swe`).
+3. Snow-coupled liquid input to runoff/water-balance closure must be explicit;
+   no silent reinterpretation of malformed/missing snow controls is allowed.
+
+### CLIM05 Typed-Guard Alignment
+
+When CLIM05 snow coupling is active, missing/non-finite/out-of-domain
+`snow.options.*` symbols or snow-state closure failures are invalid boundary
+states and must hard-fail with typed hydrology guard posture.
+
+### CLIM05 Contract-Test Vectors
+
+1. Active snow coupling emits deterministic `S` and runtime `snow.runtime_swe`
+   with valid domain closure.
+2. Missing required active-coupling snow control symbol hard-fails with typed
+   missing-input posture.
+3. Non-finite/out-of-domain snow-control or snow-state values hard-fail with
+   typed non-finite/domain posture and no fallback defaulting.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -247,3 +283,4 @@ states and must hard-fail through typed consumer guard posture (`HKERNEL-WB14-RU
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: canonical symbol continuity fixes, added missing `Ak`/`Nk`/`N` and alias coverage, and scoped breakpoint invariant to storm events. |
 | `2026-05-20` | `3` | `Codex` | Reclassified `GAP-CLIMATE-002` from non-promotable to promotable-with-risk, with explicit retirement criterion for future authority/validation updates. |
 | `2026-05-23` | `4` | `Codex` | WB14 amendment: added explicit runoff hyetograph-coupling forcing requirements, typed-guard alignment for malformed subdaily series, and WB14 vector obligations. |
+| `2026-05-23` | `5` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling requirements, signed `S` term publication constraints, and typed active-coupling guard posture for snow boundary failures. |
