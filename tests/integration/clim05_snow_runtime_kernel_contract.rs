@@ -142,6 +142,10 @@ fn seeded_clim05_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("intsty_0004"),
         BoundaryValue::scalar(0.0),
     );
+    state_surface.insert(BoundarySymbol::from("timep"), BoundaryValue::scalar(0.25));
+    state_surface.insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
 
     state_surface.insert(
         BoundarySymbol::from("snow.options.snow_file_present"),

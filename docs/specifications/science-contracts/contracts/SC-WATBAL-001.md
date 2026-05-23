@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -527,6 +527,68 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 4. Non-finite/out-of-domain irrigation scheduling/storage symbols hard-fail
    with typed non-finite/domain guard posture.
 
+## WB16 Peak Runoff Closure-Diagnostics Addendum
+
+### WB16 Required Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Closure-diagnostics required inputs | `Q`, `timem_####`, `intsty_####`, `timep`, `efflen`, `ealpha`, `m`, `I`, `irrigation.runtime_rate_m_per_s` |
+| Closure-diagnostics peak outputs | `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
+
+### WB16 Deterministic Peak-Flow Rules
+
+1. WB16 executes at closure diagnostics and consumes reconciled runoff depth
+   `Q` from WB14 plus coupled runtime forcing metadata from the accepted event.
+2. Event duration for WB16 is derived from hyetograph elapsed time:
+   - `effdrr = timem_last - timem_first` (`s`)
+3. Mean runoff rate and runoff-maximum ratio terms are:
+   - `vave = Q / effdrr`
+   - `remax = max(intsty_####) + irrigation.runtime_rate_m_per_s`
+   - `vstar = vave / remax`
+4. Kinematic-wave time ratio and branch selector terms follow Chapter-4
+   lineage (`appmth.for`):
+   - `te = (efflen / (ealpha * vave^(m-1)))^(1/m)`
+   - `tstar = te / effdrr`
+   - `tc = timep`
+5. Peak-runoff nondimensional ratio `qpstar` is branch-authoritative:
+   - partial-equilibrium branch (`tstar >= 1`): `qpstar = 1 / tstar^m`
+   - quasi-equilibrium branch A (`tc < tstar < 1`): `qpstar = 1 / tstar`
+   - quasi-equilibrium branch B (`0 < tstar <= tc`):
+     `qpstar = 1/vstar - 0.6 * ((1 - vstar) / vstar) * tstar`
+6. Peak runoff and duration outputs are:
+   - `peakro_raw = vave * qpstar`
+   - `peakro = max(peakro_raw, 3.63e-8)` (legacy minimum-flow floor from
+     `conrun.for`)
+   - `watdur = Q / peakro`
+7. Duration cap rule is explicit:
+   - if `watdur > 86400`, set `watdur = 86400`.
+8. WB16 domain posture is hard-fail for missing/non-finite/out-of-domain
+   symbols and non-physical intermediates (`effdrr <= 0`, `vave <= 0`,
+   `remax <= 0`, `vstar <= 0`, `vstar > 1`, `m <= 1`, `ealpha <= 0`,
+   `efflen <= 0`, `timep` outside `[0,1]`, or non-finite `peakro`/`watdur`).
+   No fallback/default branch is allowed.
+
+### WB16 Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Closure diagnostics | `HKERNEL-WB16-PEAK-E-001` | `HKERNEL-WB16-PEAK-E-002` | `HKERNEL-WB16-PEAK-E-003` |
+
+### WB16 Contract-Test Vectors
+
+1. Nominal WB16 vector emits finite `peakro` and `watdur` with continuity
+   `watdur = Q/peakro` and one authoritative method branch id.
+2. Branch-selector vectors independently trigger:
+   - `tstar >= 1`,
+   - `tc < tstar < 1`,
+   - `0 < tstar <= tc`.
+3. Missing required WB16 symbol hard-fails in closure diagnostics with
+   `HKERNEL-WB16-PEAK-E-001`.
+4. Non-finite WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-002`.
+5. Domain-invalid WB16 symbol/intermediate hard-fails with
+   `HKERNEL-WB16-PEAK-E-003`.
+
 ## WB13 Daily Output-Surface Authority Addendum
 
 ### WB13 Canonical Daily Output Schema (`H5.wat.dat` Equivalent)
@@ -625,3 +687,4 @@ canonical order:
 | `2026-05-23` | `11` | `Codex` | CLIM06 amendment: added frozen-soil infiltration-capacity coupling authority (`frost.runtime_infcap_frz`) for WB14 runoff reconciliation, bounded frozen-state surface requirements, and typed active-coupling guard vectors. |
 | `2026-05-23` | `12` | `Codex` | WB15 amendment: added canopy interception coupling authority from plant runtime surfaces (`cancov`, `lai`, `vdmt`) with Eq. [5.1.2] lineage, explicit runoff/storage closure integration of `I`, and typed hard-fail guard posture for missing/non-finite/domain-invalid canopy symbols. |
 | `2026-05-23` | `13` | `Codex` | IRRIG10 amendment: added explicit irrigation depth coupling (`Irr`) into WB12 storage reconciliation equation and typed guard/test-vector obligations for irrigation-triggered runoff/storage closure. |
+| `2026-05-23` | `14` | `Codex` | WB16 amendment: added closure-diagnostics peak-runoff authority (`peakro`, `watdur`) with three method branches (`tstar`/`tc`), explicit minimum-flow and max-duration rules, and typed WB16 guard/test-vector posture. |

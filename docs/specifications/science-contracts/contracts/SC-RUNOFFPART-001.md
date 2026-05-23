@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -514,6 +514,61 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Out-of-domain active-coupling frost control/state hard-fails with
    `HKERNEL-WB14-RUNOFF-E-003`.
 
+## WB16 Peak-Runoff Kernel Addendum
+
+### WB16 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Closure-diagnostics runoff inputs | `Q`, `timem_####`, `intsty_####`, `Irr`, `I` |
+| Peak-branch parameters | `timep`, `efflen`, `ealpha`, `m` |
+| WB16 outputs | `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
+
+### WB16 Deterministic Peak-Runoff Rule
+
+1. WB16 peak runoff consumes accepted WB14/WB15/IRRIG10-coupled runoff depth
+   `Q` at closure diagnostics.
+2. Event duration is derived from hyetograph elapsed time:
+   - `effdrr = timem_last - timem_first`.
+3. Mean runoff and maximum-rate terms are:
+   - `vave = Q / effdrr`
+   - `remax = max(intsty_####) + irrigation.runtime_rate_m_per_s`
+   - `vstar = vave / remax`
+4. Time-ratio branch terms use Chapter-4 lineage:
+   - `te = (efflen / (ealpha * vave^(m-1)))^(1/m)`
+   - `tstar = te / effdrr`
+   - `tc = timep`
+5. Branch authority is deterministic:
+   - `tstar >= 1`: `qpstar = 1 / tstar^m`
+   - `tc < tstar < 1`: `qpstar = 1 / tstar`
+   - `0 < tstar <= tc`:
+     `qpstar = 1/vstar - 0.6 * ((1 - vstar) / vstar) * tstar`
+6. Peak/runoff-duration outputs are:
+   - `peakro_raw = vave * qpstar`
+   - `peakro = max(peakro_raw, 3.63e-8)`
+   - `watdur = min(Q / peakro, 86400)`
+7. Missing/non-finite/out-of-domain WB16 symbol/intermediate states are
+   hard-fail and must not silently default/branch-repair.
+
+### WB16 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB16-PEAK-E-001` |
+| Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
+| Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
+
+### WB16 Contract-Test Vectors
+
+1. Nominal WB16 vector emits finite `peakro` and `watdur` with continuity
+   `watdur = Q/peakro`.
+2. Method-branch vectors trigger each WB16 branch (`tstar >= 1`,
+   `tc < tstar < 1`, `0 < tstar <= tc`) deterministically.
+3. Missing WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-001`.
+4. Non-finite WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-002`.
+5. Domain-invalid WB16 symbol/intermediate hard-fails with
+   `HKERNEL-WB16-PEAK-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -537,3 +592,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `7` | `Codex` | CLIM06 amendment: added active frost/frozen-soil runoff coupling authority, required `frost.options.*` and `frost.runtime_*` surfaces, and typed hard-fail posture for active-coupling symbol/domain violations in WB14 reconciliation. |
 | `2026-05-23` | `8` | `Codex` | WB15 amendment: added canopy interception runtime coupling authority using plant-state surfaces (`cancov`, `lai`, `vdmt`) with interception-before-infiltration reconciliation and explicit `I` runoff coupling output under typed guard posture. |
 | `2026-05-23` | `9` | `Codex` | IRRIG10 amendment: added runtime irrigation schedule-source coupling authority (`irrigation.depletion.*`, `irrigation.fixeddate.*`, `irrigation.runtime_*`) and explicit `Irr` runoff-forcing closure posture with typed WB14 guard requirements. |
+| `2026-05-23` | `10` | `Codex` | WB16 amendment: added closure-diagnostics peak-runoff authority (`peakro`, `watdur`) with deterministic `tstar` branch rules, explicit minimum-flow/duration-limit posture, and typed WB16 guard/test-vector requirements. |

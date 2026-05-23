@@ -499,6 +499,7 @@ pub enum HillslopeKernelPhaseClass {
     HydrologyDrainage,
     HydrologyRunoffReconciliation,
     HydrologyStorageReconciliation,
+    HydrologyPeakRunoff,
     DecompositionTransition,
     ResiduePartitionTransition,
     GrowthAnnualTransition,
@@ -516,6 +517,7 @@ impl HillslopeKernelPhaseClass {
             Self::HydrologyDrainage => "hydrology_drainage",
             Self::HydrologyRunoffReconciliation => "hydrology_runoff_reconciliation",
             Self::HydrologyStorageReconciliation => "hydrology_storage_reconciliation",
+            Self::HydrologyPeakRunoff => "hydrology_peak_runoff",
             Self::DecompositionTransition => "decomposition_transition",
             Self::ResiduePartitionTransition => "residue_partition_transition",
             Self::GrowthAnnualTransition => "growth_annual_transition",
@@ -534,6 +536,7 @@ impl HillslopeKernelPhaseClass {
                 | Self::HydrologyDrainage
                 | Self::HydrologyRunoffReconciliation
                 | Self::HydrologyStorageReconciliation
+                | Self::HydrologyPeakRunoff
         )
     }
 
@@ -1114,6 +1117,7 @@ mod tests {
         assert!(!HillslopeKernelPhaseClass::HydrologyDrainage.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyStorageReconciliation.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyPeakRunoff.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::DecompositionTransition.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::ResiduePartitionTransition.is_growth_transition());
         assert!(HillslopeKernelPhaseClass::GrowthAnnualTransition.is_growth_transition());
@@ -1139,6 +1143,7 @@ mod tests {
             !HillslopeKernelPhaseClass::HydrologyStorageReconciliation
                 .is_decomposition_transition()
         );
+        assert!(!HillslopeKernelPhaseClass::HydrologyPeakRunoff.is_decomposition_transition());
         assert!(HillslopeKernelPhaseClass::DecompositionTransition.is_decomposition_transition());
         assert!(
             HillslopeKernelPhaseClass::ResiduePartitionTransition.is_decomposition_transition()
@@ -1158,6 +1163,7 @@ mod tests {
         assert!(HillslopeKernelPhaseClass::HydrologyDrainage.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyStorageReconciliation.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyPeakRunoff.is_hydrology_phase());
         assert!(!HillslopeKernelPhaseClass::DecompositionTransition.is_hydrology_phase());
         assert!(!HillslopeKernelPhaseClass::ResiduePartitionTransition.is_hydrology_phase());
         assert!(!HillslopeKernelPhaseClass::GrowthAnnualTransition.is_hydrology_phase());

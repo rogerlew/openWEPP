@@ -188,6 +188,18 @@ const WB14_SYMBOL_FROST_RUNTIME_INFCAP_FRZ: &str = "frost.runtime_infcap_frz";
 const WB14_SYMBOL_TMAX: &str = "tmax";
 const WB14_SYMBOL_TMIN: &str = "tmin";
 const WB14_FROST_MAX_DEPTH_M: f64 = 0.20;
+const WB16_SYMBOL_TIMEP: &str = "timep";
+const WB16_SYMBOL_EFFLEN: &str = "efflen";
+const WB16_SYMBOL_EALPHA: &str = "ealpha";
+const WB16_SYMBOL_EXPONENT_M: &str = "m";
+const WB16_SYMBOL_PEAKRO: &str = "peakro";
+const WB16_SYMBOL_WATDUR: &str = "watdur";
+const WB16_SYMBOL_METHOD_BRANCH: &str = "wb16_peak_method_branch";
+const WB16_SYMBOL_TSTAR: &str = "wb16_tstar";
+const WB16_SYMBOL_QPSTAR: &str = "wb16_qpstar";
+const WB16_SYMBOL_VSTAR: &str = "wb16_vstar";
+const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
+const WB16_MAX_DURATION_S: f64 = 86_400.0;
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -1347,6 +1359,7 @@ enum HydrologyPhaseDispatch {
     Drainage,
     RunoffReconciliation,
     StorageReconciliation,
+    PeakRunoff,
 }
 
 /// Typed failure surface for scheduler hydrology phase-class routing.
@@ -1433,6 +1446,7 @@ const fn hillslope_phase_class_for_phase(phase: HillslopePhase) -> HillslopeKern
         HillslopePhase::StorageReconciliation => {
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation
         }
+        HillslopePhase::ClosureDiagnostics => HillslopeKernelPhaseClass::HydrologyPeakRunoff,
         _ => HillslopeKernelPhaseClass::Hydrology,
     }
 }
@@ -1443,9 +1457,7 @@ fn hydrology_phase_dispatch_for_phase(
 ) -> Result<HydrologyPhaseDispatch, HillslopeHydrologyRoutingError> {
     match (phase, phase_class) {
         (
-            HillslopePhase::Normalization
-            | HillslopePhase::StorageBounds
-            | HillslopePhase::ClosureDiagnostics,
+            HillslopePhase::Normalization | HillslopePhase::StorageBounds,
             HillslopeKernelPhaseClass::Hydrology,
         ) => Ok(HydrologyPhaseDispatch::Generic),
         (
@@ -1470,6 +1482,9 @@ fn hydrology_phase_dispatch_for_phase(
             HillslopePhase::StorageReconciliation,
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation,
         ) => Ok(HydrologyPhaseDispatch::StorageReconciliation),
+        (HillslopePhase::ClosureDiagnostics, HillslopeKernelPhaseClass::HydrologyPeakRunoff) => {
+            Ok(HydrologyPhaseDispatch::PeakRunoff)
+        }
         _ => Err(HillslopeHydrologyRoutingError::UnsupportedPhaseClass { phase, phase_class }),
     }
 }
@@ -1545,6 +1560,7 @@ impl Wb11HydrologyKernelGuardError {
             HillslopeKernelPhaseClass::HydrologyDrainage => ("WB11", "DRAIN"),
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => ("WB14", "RUNOFF"),
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation => ("WB12", "STORAGE"),
+            HillslopeKernelPhaseClass::HydrologyPeakRunoff => ("WB16", "PEAK"),
             _ => ("WB11", "GEN"),
         };
 
@@ -4357,6 +4373,250 @@ impl Wb11HydrologyKernel {
         );
         Ok(KernelRunResponse::new(status, writeback))
     }
+
+    #[allow(clippy::too_many_lines)]
+    fn run_peak_runoff(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyPeakRunoff;
+
+        let q_runoff = Self::require_flux_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_Q)?;
+        Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
+        if q_runoff <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RUNOFF_Q),
+                value: q_runoff,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let hyetograph_point_count = Self::resolve_hyetograph_point_count(request, phase_class)?;
+        let (hyetograph_times, hyetograph_intensities) =
+            Self::load_hyetograph_series(request, phase_class, hyetograph_point_count)?;
+        let effdrr = if hyetograph_times.len() >= 2 {
+            hyetograph_times[hyetograph_times.len() - 1] - hyetograph_times[0]
+        } else {
+            0.0
+        };
+        if !effdrr.is_finite() || effdrr <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("timem_0001"),
+                value: effdrr,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let vave = q_runoff / effdrr;
+        if !vave.is_finite() || vave <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RUNOFF_Q),
+                value: vave,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let irrigation_rate_m_per_s =
+            Self::require_state_scalar(request, phase_class, IRRIG_SYMBOL_RUNTIME_RATE_MPS)?;
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_RUNTIME_RATE_MPS,
+            irrigation_rate_m_per_s,
+            Some(0.0),
+            None,
+        )?;
+
+        let interception_i =
+            Self::require_flux_scalar(request, phase_class, WB15_SYMBOL_INTERCEPTION_I)?;
+        Self::require_flux_range(
+            phase_class,
+            WB15_SYMBOL_INTERCEPTION_I,
+            interception_i,
+            Some(0.0),
+            None,
+        )?;
+
+        let timep = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_TIMEP)?;
+        Self::require_state_range(phase_class, WB16_SYMBOL_TIMEP, timep, Some(0.0), Some(1.0))?;
+
+        let efflen = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_EFFLEN)?;
+        if efflen <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_EFFLEN),
+                value: efflen,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let ealpha = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_EALPHA)?;
+        if ealpha <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_EALPHA),
+                value: ealpha,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let exponent_m = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_EXPONENT_M)?;
+        if exponent_m <= 1.0 + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_EXPONENT_M),
+                value: exponent_m,
+                minimum: Some(1.0 + WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let remax = hyetograph_intensities
+            .iter()
+            .copied()
+            .fold(0.0_f64, f64::max)
+            + irrigation_rate_m_per_s;
+        if !remax.is_finite() || remax <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("intsty_0001"),
+                value: remax,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let vstar = vave / remax;
+        if !vstar.is_finite() || vstar <= WB11_ZERO_THRESHOLD || vstar > 1.0 + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_VSTAR),
+                value: vstar,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: Some(1.0),
+            });
+        }
+
+        let vave_power = vave.powf(exponent_m - 1.0);
+        let te_base = efflen / (ealpha * vave_power);
+        if !te_base.is_finite() || te_base <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_EFFLEN),
+                value: te_base,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let te = te_base.powf(1.0 / exponent_m);
+        let tstar = te / effdrr;
+        if !tstar.is_finite() || tstar <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_TSTAR),
+                value: tstar,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let (method_branch, qpstar) = if tstar >= 1.0 {
+            (1.0, 1.0 / tstar.powf(exponent_m))
+        } else if tstar > timep {
+            (2.0, 1.0 / tstar)
+        } else {
+            (3.0, (1.0 / vstar) - 0.6 * (((1.0 - vstar) / vstar) * tstar))
+        };
+        if !qpstar.is_finite() || qpstar <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_QPSTAR),
+                value: qpstar,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let peakro_raw = vave * qpstar;
+        if !peakro_raw.is_finite() || peakro_raw <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_PEAKRO),
+                value: peakro_raw,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let peakro = peakro_raw.max(WB16_PEAKRO_FLOOR);
+        if !peakro.is_finite() || peakro <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_PEAKRO),
+                value: peakro,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let watdur_raw = q_runoff / peakro;
+        if !watdur_raw.is_finite() || watdur_raw < 0.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB16_SYMBOL_WATDUR),
+                value: watdur_raw,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let watdur = watdur_raw.min(WB16_MAX_DURATION_S);
+
+        let Ok(status) =
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB16-PEAK-OK-001")
+        else {
+            unreachable!("status message ids are non-empty WB16 constants")
+        };
+
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![
+                WritebackField::bounded(WB16_SYMBOL_PEAKRO, peakro, Some(WB16_PEAKRO_FLOOR), None),
+                WritebackField::bounded(
+                    WB16_SYMBOL_WATDUR,
+                    watdur,
+                    Some(0.0),
+                    Some(WB16_MAX_DURATION_S),
+                ),
+                WritebackField::bounded(
+                    WB16_SYMBOL_METHOD_BRANCH,
+                    method_branch,
+                    Some(1.0),
+                    Some(3.0),
+                ),
+                WritebackField::bounded(WB16_SYMBOL_TSTAR, tstar, Some(WB11_ZERO_THRESHOLD), None),
+                WritebackField::bounded(
+                    WB16_SYMBOL_QPSTAR,
+                    qpstar,
+                    Some(WB11_ZERO_THRESHOLD),
+                    None,
+                ),
+                WritebackField::bounded(
+                    WB16_SYMBOL_VSTAR,
+                    vstar,
+                    Some(WB11_ZERO_THRESHOLD),
+                    Some(1.0),
+                ),
+            ],
+            Vec::new(),
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
 }
 
 impl HillslopeKernel for Wb11HydrologyKernel {
@@ -4378,6 +4638,7 @@ impl HillslopeKernel for Wb11HydrologyKernel {
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation => {
                 Self::run_storage_reconciliation(request)
             }
+            HillslopeKernelPhaseClass::HydrologyPeakRunoff => Self::run_peak_runoff(request),
             _ => {
                 let Ok(status) =
                     SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-NOP-001")
@@ -9104,6 +9365,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                         | "drainage"
                         | "runoff_reconciliation"
                         | "storage_reconciliation"
+                        | "closure_diagnostics"
                 ) {
                     self.observed_phase_classes.insert(
                         request.phase_name.to_owned(),
@@ -9155,6 +9417,10 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         assert_eq!(
             kernel.observed_phase_classes.get("storage_reconciliation"),
             Some(&"hydrology_storage_reconciliation".to_owned())
+        );
+        assert_eq!(
+            kernel.observed_phase_classes.get("closure_diagnostics"),
+            Some(&"hydrology_peak_runoff".to_owned())
         );
     }
 

@@ -114,6 +114,10 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("intsty_0003"),
         BoundaryValue::scalar(0.0),
     );
+    state_surface.insert(BoundarySymbol::from("timep"), BoundaryValue::scalar(0.25));
+    state_surface.insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_initial"),
         BoundaryValue::scalar(12.0),

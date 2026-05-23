@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -14,7 +14,7 @@ consumer_scope:
   - Soil and management consumers that provide roughness/cover/canopy controls
   - Hillslope erosion consumers requiring soil-active shear and transport-capacity inputs
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -198,6 +198,34 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-level tolerance declarations:
 | TOL-HYD-004 | Rill-width non-negative tolerance for Eq. [10.7.1] | lower bound `>= -1e-12 m` | Negative widths beyond tolerance are invariant failures. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-HYD-005 | Shear-partition ratio tolerance for `fs/ft` | `-1e-12 <= fs/ft <= 1 + 1e-12` | Runtime rejects materially out-of-domain partition ratios. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## WB16 Peak-Flow Coupling Readiness Addendum
+
+### WB16 Required Incoming Hydrology Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Peak-runoff coupling inputs | `peakro`, `watdur`, `Q` |
+| WB16 diagnostics metadata | `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
+
+### WB16 Coupling Rules
+
+1. Hydraulics coupling acceptance for WB16 requires finite, non-negative
+   `peakro` and `watdur` with explicit continuity `watdur = Q/peakro`
+   (within declared numeric tolerance).
+2. WB16 branch metadata is required for traceability and comparator
+   diagnostics; missing branch metadata is a typed boundary failure.
+3. Hydraulics consumers must not reconstruct peak-runoff by fallback formulas
+   when WB16 peak surfaces are present; WB16 outputs are authoritative.
+4. Missing/non-finite/out-of-domain WB16 peak surfaces are hard-fail states.
+
+### WB16 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB16-PEAK-E-001` |
+| Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
+| Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -214,3 +242,4 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-level tolerance declarations:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-12 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-10/11 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register for SCI-12 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, standardized Chapter-10 source-path anchors, added missing `τfe` alias coverage, and evidence-tagged degenerate/tolerance claims. |
+| `2026-05-23` | `3` | `Codex` | WB16 amendment: added peak-flow coupling readiness authority requiring `peakro`/`watdur` boundary acceptance with WB16 diagnostic metadata and typed guard posture. |

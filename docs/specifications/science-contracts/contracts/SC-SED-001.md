@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -14,7 +14,7 @@ consumer_scope:
   - Comparator and replay consumers using erosion closure and sign-consistency surfaces
   - Adjacent soil/runoff/hydraulics domains providing required coupling inputs
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -192,6 +192,34 @@ bit-for-bit parity).
 | TOL-SED-004 | Deposition denominator floor tolerance for `q` | `q >= 1e-12 m^2 s^-1` for deposition-branch evaluation | Values below floor are invalid for Eq. [11.2.4] denominator semantics. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-SED-005 | Class-fraction closure tolerance in enrichment updates | `abs(sum(sed_frac_i) - 1.0) <= 1e-9` | Ensures exported sediment class fractions remain normalized. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## WB16 Hydrologic Peak/Duration Intake Addendum
+
+### WB16 Required Hydrology Inputs
+
+| Surface | Symbols |
+|---|---|
+| Peak-flow forcing inputs | `peakro`, `watdur`, `Q` |
+| WB16 diagnostics payload | `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
+
+### WB16 Coupling Rules
+
+1. Sediment-kernel readiness requires finite/non-negative `peakro` and
+   `watdur` for erosion forcing derived from Chapter-11 hydrologic inputs.
+2. WB16 continuity constraint remains explicit:
+   - `watdur = Q/peakro` (within tolerance).
+3. Missing or malformed WB16 trace payload symbols are typed boundary failures
+   for erosion observability/replay diagnostics.
+4. Sediment consumers must not synthesize fallback peak-flow inputs when WB16
+   peak/duration symbols are absent or invalid.
+
+### WB16 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB16-PEAK-E-001` |
+| Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
+| Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -208,3 +236,4 @@ bit-for-bit parity).
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-13 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-11 authority anchors, erosion invariants, guard map, symbol alias map, obligations, tolerances, and gap register for SCI-13 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode casing, corrected `Di` non-negative continuity language, added `ER` alias coverage, added per-row evidence tags in degenerate states, and narrowed companion-gap wording. |
+| `2026-05-23` | `3` | `Codex` | WB16 amendment: added hydrologic WB16 peak/duration intake authority (`peakro`, `watdur`) with continuity, traceability, and typed guard requirements for erosion coupling readiness. |

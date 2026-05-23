@@ -194,6 +194,10 @@ name = "wb15_canopy_interception_kernel_contract"
 path = "tests/integration/wb15_canopy_interception_kernel_contract.rs"
 
 [[test]]
+name = "wb16_peak_runoff_kernel_contract"
+path = "tests/integration/wb16_peak_runoff_kernel_contract.rs"
+
+[[test]]
 name = "irrig10_irrigation_runtime_kernel_contract"
 path = "tests/integration/irrig10_irrigation_runtime_kernel_contract.rs"
 

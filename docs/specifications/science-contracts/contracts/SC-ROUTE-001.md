@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -211,6 +211,35 @@ bit-for-bit parity). Contract-specific tolerances:
 | TOL-ROUTE-004 | Outlet peak and duration positivity tolerance (`qpo`, `durrof`) | lower bound `>= -1e-12` in declared units | Required only for floating-noise interpretation; physical domain remains non-negative. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-ROUTE-005 | Sediment continuity residual per segment/class | `<= 1e-9 lb ft^-1 s^-1` | Continuity residual for Eq. [13.5.17] diagnostics. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## WB16 Hillslope Peak-Flow Intake Addendum
+
+### WB16 Required Upstream Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Hillslope peak-flow payload | `peakro`, `watdur` |
+| Hillslope runoff coupling payload | `Q` |
+| WB16 method trace payload | `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
+
+### WB16 Coupling Rules
+
+1. Watershed routing intake must accept WB16 peak-flow payload as the
+   authoritative hillslope peak/duration source for downstream assembly.
+2. Intake validity requires finite/non-negative `peakro`, `watdur`, and `Q`
+   with continuity `watdur = Q/peakro` (within tolerance).
+3. Missing WB16 method-trace symbols is a typed boundary failure for
+   observability and replay diagnostics.
+4. Routing consumers must not silently synthesize replacement peak values when
+   WB16 payloads are missing or malformed.
+
+### WB16 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB16-PEAK-E-001` |
+| Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
+| Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -228,3 +257,4 @@ bit-for-bit parity). Contract-specific tolerances:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-15 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-13 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-15 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: made outlet method selection explicitly exclusive, promoted `roff <= 0.001 m^3` peak-threshold gating into invariant/guard tables, added `durrof` alias coverage, and added Chapter-13 applicability-bound governance controls. |
+| `2026-05-23` | `3` | `Codex` | WB16 amendment: added hillslope WB16 peak-flow intake authority (`peakro`, `watdur`) plus typed guard and traceability requirements for watershed routing coupling readiness. |
