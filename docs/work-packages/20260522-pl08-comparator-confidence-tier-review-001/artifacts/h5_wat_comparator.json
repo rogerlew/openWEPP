@@ -1,0 +1,62 @@
+{
+  "baseline": {
+    "label": "/tmp/pl08_tiera_cmp_20260522/baseline",
+    "resolved_root": "/tmp/pl08_tiera_cmp_20260522/baseline"
+  },
+  "candidate": {
+    "label": "/tmp/pl08_tiera_cmp_20260522/candidate",
+    "resolved_root": "/tmp/pl08_tiera_cmp_20260522/candidate"
+  },
+  "settings": {
+    "runs_root": "/wc1/runs",
+    "output_subdir": "output",
+    "include_globs": [
+      "H5.wat.dat"
+    ],
+    "exclude_globs": [],
+    "abs_tolerance": 0.0,
+    "rel_tolerance": 0.0,
+    "top_n": 20
+  },
+  "raw": {
+    "baseline_dir": "/tmp/pl08_tiera_cmp_20260522/baseline/output",
+    "candidate_dir": "/tmp/pl08_tiera_cmp_20260522/candidate/output",
+    "include_globs": [
+      "H5.wat.dat"
+    ],
+    "exclude_globs": [],
+    "abs_tolerance": 0.0,
+    "rel_tolerance": 0.0,
+    "baseline_file_count": 1,
+    "candidate_file_count": 1,
+    "common_file_count": 1,
+    "only_baseline_count": 0,
+    "only_candidate_count": 0,
+    "only_baseline_examples": [],
+    "only_candidate_examples": [],
+    "identical_count": 0,
+    "changed_count": 1,
+    "status_counts": {
+      "structure_diff": 1
+    },
+    "max_abs_any": 360.0,
+    "max_rel_any": 1.0,
+    "top_changed_files": [
+      {
+        "path": "H5.wat.dat",
+        "status": "structure_diff",
+        "line_count_baseline": 1123,
+        "line_count_candidate": 1118,
+        "line_count_mismatch": 5,
+        "numeric_arity_mismatch_lines": 1096,
+        "text_mismatch_lines": 4,
+        "numeric_values_compared": 21802,
+        "numeric_values_exceeding_tolerance": 5568,
+        "max_abs_diff": 360.0,
+        "max_rel_diff": 1.0
+      }
+    ],
+    "strict_pass": false
+  },
+  "strict_pass": false
+}
