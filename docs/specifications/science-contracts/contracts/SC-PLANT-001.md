@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -212,6 +212,7 @@ This projection algorithm is pure with respect to plant-process state:
 | INV-PLANT-014 | Event-day domain validity: all projected day controls are integer Julian values in contract domain (`1..366`), with `0` allowed only for explicitly documented sentinel fields/branches. | hard-fail | REF-PLANT-INFILE-CONTRACT, REF-PLANT-LEGACY-INIDAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-015 | Projection failure posture: invalid transition-control runtime projection domains must hard-fail as typed errors; silent defaults or clamps are prohibited. | hard-fail | REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[INFERENCE][Static]` |
 | INV-PLANT-016 | Decomposition-transition dispatch determinism: scheduler assembly of typed decomposition context consumes projected annual/perennial control families and produces deterministic per-day transition selector semantics; invalid payload/index/window states are hard-fail typed errors. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-017 | INT10 coupled lane-ordering invariant: daily coupled execution must preserve `decomp -> growth -> watbal` ordering through explicit ordering flags (`pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth`) and typed transition-context carriage. Missing/non-finite/out-of-domain ordering symbols are hard-fail and must block hydrology lane entry. | hard-fail | REF-PLANT-CH8-INTRO, REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-DECOMP | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -286,6 +287,7 @@ This projection algorithm is pure with respect to plant-process state:
 | `INV-PLANT-014` | runtime | Date-domain validator for transition-control symbols | Typed hard error; reject out-of-domain date | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-015` | runtime | Projection error policy guard | Typed hard error only; silent default/clamp is forbidden | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-PLANT-016` | runtime | Scheduler decomposition-transition typed-context assembler | Typed hard error on invalid payload/index/window/action state | Tier-A gate for PL12 decomposition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-017` | runtime | Coupled lane ordering guard at decomposition/growth dispatch and scheduler phase closure | Typed hard error on missing/non-finite/invalid ordering symbols; hydrology lane is not executed after growth failure | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -380,6 +382,14 @@ Minimum required scenario families for contract conformance:
    - invalid day domain (non-integral, `<0`, `>366`).
 7. Failure posture assertion: invalid projection states surface typed failures
    and never silent defaults/clamps.
+8. INT10 coupled replay vectors:
+   - canonical annual coupled replay preserves `decomp -> growth -> watbal`
+     execution ordering in scheduler report;
+   - decomposition/growth writeback state markers are observable by subsequent
+     hydrology phases (state-transfer continuity);
+   - missing ordering symbol (`pl_order_watbal_after_growth`) and non-finite
+     ordering value (`pl_order_growth_after_decomp = NaN`) hard-fail with typed
+     status and halt before watbal-lane completion.
 
 ## Gap Register
 
@@ -405,3 +415,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `5` | `Codex` | PL11 reconciliation amendment: aligned alias-map rows to emitted decomp surfaces, removed unsupported harvest-seed claim, and recorded PL11 conformance closure for runtime projection gap `GAP-PLANT-005`. |
 | `2026-05-23` | `6` | `Codex` | PL12 amendment: added typed decomposition-transition context-consumption invariant (`INV-PLANT-016`) and explicit scheduler action-selector authority in algorithm/guard sections. |
 | `2026-05-23` | `7` | `Codex` | PL13A alias-continuity amendment: reconciled projected PL slot/crop alias mappings (including `conset/drset` continuity), added explicit PL13A closure gap row (`GAP-PLANT-007`), and aligned canonical-to-boundary template authority with registry behavior. |
+| `2026-05-23` | `8` | `Codex` | INT10 amendment: added coupled lane-ordering invariant (`INV-PLANT-017`), explicit guard-map authority for `decomp -> growth -> watbal` sequencing, and INT10 coupled replay test-vector obligations for ordering and state-transfer semantics. |

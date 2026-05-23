@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -101,7 +101,7 @@ Out of scope:
 | Perennial transition controls | `mgtopt`, `ncut`, `ncycle`, `cutday[*]`, `gday[*]`, `gend[*]`, `animal[*]`, `bodywt[*]`, `area[*]`, `digest[*]` |
 | Growth transition controls | `jdplt`, `jdharv`, `jdstop`, `rw`, `mgtopt`, runtime day-window checks |
 | Growth transition state surface | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
-| Ordering constraints | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp` |
+| Ordering constraints | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` |
 
 ### Required Outputs
 
@@ -166,6 +166,10 @@ contexts.
 12. Growth transition payload domains are hard-fail validated (`cancov in
     [0,0.999]`, `hia in [0,1]`, remaining surfaces non-negative); silent
     clamping/default behavior is prohibited.
+13. INT10 coupled replay closure requires that growth transition dispatch
+    carries `order_watbal_after_growth = 1` and that scheduler progression into
+    watbal/hydrology phases occurs only after successful decomposition and
+    growth transition dispatch completion.
 
 ## Branch and Guard Table (PL12/PL13 Transition Controls)
 
@@ -182,6 +186,7 @@ contexts.
 | `BR-RES-PL13-GROWTH-ANNUAL` | annual/fallow branch active | `jdplt`, `jdharv`, growth state surface | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
 | `BR-RES-PL13-GROWTH-PERENNIAL` | perennial branch active | `jdplt`, `jdharv`, `jdstop`, `mgtopt`, growth state surface | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
 | `BR-RES-PL13-GROWTH-RESET` | planting/harvest/stop/senescence action day | growth state surface | runtime | typed hard-fail if reset payload cannot be emitted from valid pre-state domain |
+| `BR-RES-INT10-ORDER` | coupled replay lane closure (`decomp -> growth -> watbal`) | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` | runtime | typed hard-fail on missing/non-finite/out-of-domain ordering symbols; hydrology phase entry blocked |
 
 ## Invariants
 
@@ -202,6 +207,7 @@ contexts.
 | INV-RESIDUE-013 | Governance-range invariant: when crop/operation parameters are applied outside chapter-declared tables or documented limits/assumptions, outputs are non-promotable unless labeled and dispositioned with explicit risk rationale. | governance-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-014 | Growth transition state-domain invariant: scheduler growth transition payload assembly requires finite/non-negative growth state surfaces with bounded canopy and harvest-index domains (`cancov in [0,0.999]`, `hia in [0,1]`). | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-015 | Growth transition reset invariant: reset-class actions (`planting`, `harvest`, `stop`, `senescence`) emit explicit zero-state payloads for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` and do not rely on implicit defaults. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-016 | INT10 coupled replay invariant: daily coupled transition/hydrology execution preserves `decomp -> growth -> watbal` ordering, with typed context and writeback state transfer observable by downstream hydrology phases; ordering-symbol violations are hard-fail with no silent fallback. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH5-ET, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -222,6 +228,7 @@ contexts.
 | `INV-RESIDUE-013` | governance | Review/disposition/promotion checklist | Promotion `HOLD` when out-of-range use lacks explicit labeling/rationale | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-014` | runtime | Growth transition payload state validator | Typed hard error on invalid growth state domain for transition payload assembly | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-015` | runtime | Growth transition reset payload assembler | Typed hard error when required reset-class state projection is missing or malformed | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-016` | runtime | Coupled replay transition/hydrology lane-order guard and state-transfer boundary checks | Typed hard error on missing/non-finite/invalid ordering symbols or failed transition preconditions before watbal lane | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -344,6 +351,13 @@ Minimum required scenario families for contract conformance:
      post-transition payloads;
    - perennial `stop_reset` emits explicit zero-state post-transition payload;
    - no implicit defaults are accepted for reset-class state zeroing.
+10. INT10 coupled replay obligations:
+   - canonical annual replay preserves scheduler order
+     `decomp -> growth -> watbal`;
+   - decomposition/growth writeback state emitted in transition phases is
+     observable by hydrology phases;
+   - missing/non-finite ordering-symbol vectors fail with typed status and
+     prevent watbal-lane completion.
 
 ## Gap Register
 
@@ -364,3 +378,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-20` | `3` | `Codex` | Verification-fix amendment: completed alias-map coverage for `P` stubble-population state and `Wn` rangeland woody biomass symbol. |
 | `2026-05-23` | `4` | `Codex` | PL12 amendment: added scheduler decomposition-transition algorithm authority, branch/guard table for PL11 payload consumption, constants table, and PL12 test-vector obligations. |
 | `2026-05-23` | `5` | `Codex` | PL13 amendment: added growth-transition branch/reset authority, growth state-domain invariants (`INV-RESIDUE-014/015`), and PL13 growth transition test-vector obligations. |
+| `2026-05-23` | `6` | `Codex` | INT10 amendment: added coupled replay lane-order authority (`decomp -> growth -> watbal`), explicit branch/guard and invariant coverage (`INV-RESIDUE-016`), and INT10 ordering/state-transfer test-vector obligations. |

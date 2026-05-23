@@ -464,6 +464,10 @@ Authorized packages:
   - Purpose: emit comparator-ready daily water-balance output surface
     (`H5.wat.dat` equivalent) with required contract and contract-test
     implementation evidence.
+- `20260523-int10-plant-water-coupling-validation-001/`
+  - Purpose: validate coupled daily execution ordering and state coupling
+    (`decomp -> growth -> watbal`) with required contract and contract-test
+    implementation evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

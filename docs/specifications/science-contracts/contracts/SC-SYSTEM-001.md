@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed outlet hydrograph/sediment-yield accounting consumers
   - Comparator/replay and governance-gate consumers
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -111,6 +111,7 @@ Out of scope:
 | INV-SYSTEM-008 | Impoundment outflow aggregation invariant: total outflow equals sum of active outlet-structure contributions (`Qtotal`) and each inactive structure contributes exactly zero when stage is below its inlet threshold. | hard-fail | REF-SYSTEM-CH14-OUTFLOW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-009 | Sediment continuity invariant: channel sediment continuity and impoundment sediment continuity equations are enforced with explicit upstream/lateral loads and deposition terms; no untracked mass creation/loss across handoff boundaries is allowed. | hard-fail | REF-SYSTEM-CH13-SEDCONT, REF-SYSTEM-CH14-SEDCONT, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-010 | Breakpoint forcing invariant: when channel runoff is event-driven, rainfall inputs preserve breakpoint sequence semantics required by Chapter-2 conventions (explicit interval times/intensities and end-of-storm zero-intensity termination). | governance-fail | REF-SYSTEM-CH13-RUNON, REF-SYSTEM-CH2-BRKPT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-011 | INT10 cross-lane publication invariant: hillslope boundary publication to watershed/channel integration is allowed only after canonical daily plant/hydrology lane closure (`decomp -> growth -> watbal`) has completed without typed ordering/state-transfer violations. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-CH13-PASSFILE, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -126,6 +127,7 @@ Out of scope:
 | `INV-SYSTEM-008` | runtime | Impoundment outflow aggregator | Typed hard error on structure-sum mismatch or inactive-structure non-zero contribution | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-009` | runtime | Channel and impoundment sediment continuity routines | Typed hard error on continuity residual beyond tolerance or missing load term | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-010` | governance | Review/disposition/verification and promotion checklist | Promotion `HOLD` until breakpoint forcing semantics are contractually closed with companion climate/runoff contracts | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-011` | runtime | Hillslope daily-lane closure gate at system boundary publish handoff | Typed hard error and publish block when coupled plant/hydrology lane ordering or transfer closure fails | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -211,6 +213,7 @@ explicit divergent names.
 | Impoundment hydraulic/outflow continuity (`INV-SYSTEM-007/008`) | impoundment routing integration loop | Hard error on continuity/regime-transition/outflow-sum failure | Tier-B gate | `[DIRECT][Static]` |
 | Sediment continuity (`INV-SYSTEM-009`) | channel and impoundment sediment routines | Hard error on unresolved continuity residual | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Breakpoint forcing governance (`INV-SYSTEM-010`) | review/verification/promotion cycle | Governance `HOLD` until companion forcing/route contracts close boundary semantics | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Coupled lane publication closure (`INV-SYSTEM-011`) | hillslope->watershed publish boundary | Hard error when publish is attempted after failed/invalid plant-water coupled lane closure | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -242,3 +245,4 @@ surfaces are:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-17 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with integration invariants, guard map, alias map, tolerances, and gap register for SCI-17 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence metadata, added duration-family alias coverage, added evidence labels for degenerate/tolerance rows, and clarified CREAMS dataset applicability range in gap text. |
+| `2026-05-23` | `3` | `Codex` | INT10 amendment: added cross-lane publication invariant (`INV-SYSTEM-011`) and guard/disposition authority requiring successful `decomp -> growth -> watbal` closure before system-boundary publication. |
