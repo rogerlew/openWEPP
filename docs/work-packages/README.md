@@ -472,6 +472,10 @@ Authorized packages:
   - Purpose: execute strict Tier-A direct openWEPP-vs-legacy comparator replay
     with required comparator JSON artifacts, command trace, provenance hashes,
     and contract/contract-test implementation evidence.
+- `20260523-pl15-tier-a-delta-closeout-and-hold-lift-001/`
+  - Purpose: disposition residual Tier-A deltas and issue the PL08 hold-lift
+    verdict with explicit risk-acceptance references when blockers remain,
+    plus required contract/contract-test implementation evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

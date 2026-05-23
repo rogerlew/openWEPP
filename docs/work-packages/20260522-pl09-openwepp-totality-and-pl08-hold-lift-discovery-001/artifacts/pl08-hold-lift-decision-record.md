@@ -3,6 +3,7 @@
 Status: `complete`
 Evidence mode: `Static + Ran`
 Decision: `RETAIN PL08 HOLD`
+Superseded by: `docs/work-packages/20260523-pl15-tier-a-delta-closeout-and-hold-lift-001/artifacts/pl15-pl08-hold-lift-decision-record.md` (final PL15 decision, 2026-05-23)
 
 Static:
 - Decision authority follows ADR-0011 confidence-tier policy and PL08 package

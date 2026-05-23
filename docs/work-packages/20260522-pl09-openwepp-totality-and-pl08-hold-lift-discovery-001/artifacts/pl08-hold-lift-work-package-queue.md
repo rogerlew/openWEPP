@@ -61,7 +61,35 @@ Static:
    runtime kernel implementation (`PL13`) vs alias continuity governance lane
    (`PL13A`).
 
+## PL15 Post-Closeout Physics Gap Addendum (2026-05-23 UTC)
+
+Disposition source:
+- `docs/work-packages/20260523-pl15-tier-a-delta-closeout-and-hold-lift-001/artifacts/claude-pl15-pre-closeout-physics-review.md`
+- `docs/work-packages/20260523-pl15-tier-a-delta-closeout-and-hold-lift-001/artifacts/pl15-pl08-hold-lift-decision-record.md`
+
+Purpose:
+- Convert `KERNEL-GAP-001..012` into actionable follow-on queue rows with
+  explicit acceptance evidence.
+
+| wp_id | lane | gap ids | objective | depends_on | acceptance criteria | required evidence |
+|---|---|---|---|---|---|---|
+| `WB14-infiltration-and-subdaily-hyetograph-kernel` | `water-balance` | `KERNEL-GAP-001`, `KERNEL-GAP-004` | Implement production infiltration kernel (Green-Ampt lineage authority) and within-day hyetograph integration, replacing externally-seeded infiltration bookkeeping posture. | `PL15` | infiltration is computed by openWEPP kernel (not fixture-seeded), sub-daily forcing is consumed by hydrology execution loop, and strict replay provenance documents infiltration-source lineage. | contract amendments (`SC-RUNOFFPART-001`, `SC-WATBAL-001`), kernel tests, replay traces proving computed infiltration path |
+| `PL16-growth-physics-kernelization` | `plant` | `KERNEL-GAP-002` | Replace PL13 growth plumbing-only path with production growth equations (GDD, biomass, canopy, phenology, senescence/harvest dynamics). | `PL15` | growth transition updates are equation-driven and no default skip/zero-reset fallback remains for active growth branches. | growth contract-test vectors, state-trajectory evidence, regression parity traces |
+| `PL17-decomposition-physics-kernelization` | `plant` | `KERNEL-GAP-003` | Replace PL12 decomposition plumbing-only path with production residue/decomposition kinetics and transition pool transfers. | `PL15` | decomposition outputs are equation-driven and transition payloads drive real residue/pool updates under typed guards. | decomposition contract updates, kinetic tests, residue trajectory evidence |
+| `CLIM05-snow-runtime-kernel-port` | `climate+hydrology` | `KERNEL-GAP-005` | Implement runtime snow accumulation/melt kernel coupling from parsed snow controls into hydrology boundary surfaces. | `WB14` | snow forcing is no longer orphan parser output; snow accumulation/melt affects water-balance terms with typed invariants. | snow contract/test vectors, fixture replay with snow scenarios |
+| `CLIM06-frost-frozen-soil-kernel-port` | `climate+hydrology` | `KERNEL-GAP-006` | Implement frozen-soil/frost runtime kernel and infiltration coupling effects under typed failure semantics. | `CLIM05`, `WB14` | frozen-soil state surfaces drive infiltration/runoff branch behavior in runtime execution. | frost contract/test vectors, cold-season replay evidence |
+| `WB15-canopy-interception-kernel-coupling` | `water-balance+plant` | `KERNEL-GAP-007` | Implement canopy interception kernel consuming plant state (`lai`, `cancov`, biomass context) before soil-water accounting. | `PL16`, `WB14` | interception is computed in production path and explicitly coupled into runoff/infiltration/watbal closure semantics. | interception contract updates, integration tests, daily closure evidence |
+| `IRRIG10-irrigation-runtime-kernel-port` | `irrigation` | `KERNEL-GAP-008` | Implement irrigation runtime kernels consuming parsed depletion/fixed-date surfaces with typed scheduling and hydrology coupling. | `WB14` | irrigation parsers are no longer orphan surfaces; irrigation events alter runtime water-balance/forcing surfaces deterministically. | irrigation contract/test vectors, replay evidence for irrigated fixtures |
+| `WB16-peak-runoff-kernel` | `water-balance+routing` | `KERNEL-GAP-009` | Implement peak runoff calculation required for downstream sediment/routing coupling. | `WB14`, `WB15` | peak runoff outputs are produced in canonical runtime path with documented method branches and typed guards. | peak-flow contract authority, kernel tests, trace outputs |
+| `EROD10-sediment-kernelization-intake` | `erosion` | `KERNEL-GAP-010` | Convert acknowledged erosion-kernel deferral into an executable intake/phase plan with gated package wave ownership. | `WB16` | sediment kernelization roadmap is ratified with explicit package IDs, ownership, and acceptance gates. | intake decision artifact, dependency graph, contract-authority mapping |
+| `WS10-channel-impoundment-production-kernels` | `watershed` | `KERNEL-GAP-011` | Replace watershed test/probe kernel posture with production channel/impoundment kernels and typed boundary integration. | `WB16` | at least one production `impl WatershedKernel` path exists for channel/impoundment execution under typed guards. | watershed kernel tests, routing/impoundment contract evidence |
+| `ARCH22-typed-state-surface-closure` | `architecture` | `KERNEL-GAP-012` | Close CRF-001 carry-forward by migrating stringly `BoundarySymbol(String)` kernel surfaces to typed state surfaces. | `PL16`, `PL17`, `WB14` | runtime kernel interfaces no longer rely on stringly symbol keys for production state surfaces. | typed-surface contract updates, migration proof tests, ARCH closure artifact |
+
 ## Release Rule
 
 - PL08 hold is not eligible for lift before `PL15` closure and Tier-A blocker
   clearance under policy.
+- After PL15 retained hold, lift remains ineligible until:
+  1. Tier-A strict replay blockers are closed or explicitly risk-accepted, and
+  2. critical kernel gaps (`KERNEL-GAP-001..004`) are closed or explicitly
+     risk-accepted under recorded approval authority.

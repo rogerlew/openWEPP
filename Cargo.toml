@@ -193,6 +193,10 @@ path = "tests/integration/int10_plant_water_coupling_validation_contract.rs"
 name = "pl14_tier_a_candidate_replay_contract"
 path = "tests/integration/pl14_tier_a_candidate_replay_contract.rs"
 
+[[test]]
+name = "pl15_tier_a_delta_closeout_contract"
+path = "tests/integration/pl15_tier_a_delta_closeout_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -113,6 +113,7 @@ Out of scope:
 | INV-SYSTEM-010 | Breakpoint forcing invariant: when channel runoff is event-driven, rainfall inputs preserve breakpoint sequence semantics required by Chapter-2 conventions (explicit interval times/intensities and end-of-storm zero-intensity termination). | governance-fail | REF-SYSTEM-CH13-RUNON, REF-SYSTEM-CH2-BRKPT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-011 | INT10 cross-lane publication invariant: hillslope boundary publication to watershed/channel integration is allowed only after canonical daily plant/hydrology lane closure (`decomp -> growth -> watbal`) has completed without typed ordering/state-transfer violations. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-CH13-PASSFILE, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-012 | PL14 strict replay provenance invariant: Tier-A replay lane execution must explicitly surface missing required replay artifacts (`H5.wat.dat`, `H5.plot.dat`), strict-diff status, and provenance-hash gaps as typed gate failures or `HOLD` signals; no synthetic fallback artifact substitution is allowed. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-013 | PL15 Tier-A closeout governance invariant: unresolved strict Tier-A deltas remain blocking unless explicit risk-acceptance approval reference (owner, rationale, and scope) is recorded; silent tier down-classification and implicit risk acceptance are forbidden. | governance-fail | REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -130,6 +131,7 @@ Out of scope:
 | `INV-SYSTEM-010` | governance | Review/disposition/verification and promotion checklist | Promotion `HOLD` until breakpoint forcing semantics are contractually closed with companion climate/runoff contracts | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-011` | runtime | Hillslope daily-lane closure gate at system boundary publish handoff | Typed hard error and publish block when coupled plant/hydrology lane ordering or transfer closure fails | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-012` | runtime + governance | Comparator replay harness staging + disposition gate | Typed hard error or explicit `HOLD` when required replay artifacts/provenance hashes are missing, or strict comparator failure is masked | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-013` | governance | PL15 closeout criteria matrix + final decision record + conditional risk-acceptance artifact reference | Promotion `HOLD` when unresolved Tier-A deltas lack explicit approval reference; reject implicit risk-accept posture | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -221,6 +223,7 @@ explicit divergent names.
 | Breakpoint forcing governance (`INV-SYSTEM-010`) | review/verification/promotion cycle | Governance `HOLD` until companion forcing/route contracts close boundary semantics | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Coupled lane publication closure (`INV-SYSTEM-011`) | hillslope->watershed publish boundary | Hard error when publish is attempted after failed/invalid plant-water coupled lane closure | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Strict replay artifact/provenance completeness (`INV-SYSTEM-012`) | comparator staging + replay disposition boundary | Hard error / `HOLD` when required replay artifacts or provenance hashes are missing; no fallback artifact substitution | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| PL15 residual Tier-A governance closeout (`INV-SYSTEM-013`) | comparator disposition and PL08 hold-lift decision boundary | Governance `HOLD` unless unresolved Tier-A deltas are either closed or explicitly risk-accepted with approval reference; no silent down-classification | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -255,3 +258,4 @@ surfaces are:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence metadata, added duration-family alias coverage, added evidence labels for degenerate/tolerance rows, and clarified CREAMS dataset applicability range in gap text. |
 | `2026-05-23` | `3` | `Codex` | INT10 amendment: added cross-lane publication invariant (`INV-SYSTEM-011`) and guard/disposition authority requiring successful `decomp -> growth -> watbal` closure before system-boundary publication. |
 | `2026-05-23` | `4` | `Codex` | PL14 amendment: added strict replay artifact/provenance completeness invariant (`INV-SYSTEM-012`), replay-lane guard/disposition authority, and explicit strict Tier-A tolerance authority (`abs_tol=0`, `rel_tol=0`) for closeout staging. |
+| `2026-05-23` | `5` | `Codex` | PL15 amendment: added Tier-A residual closeout governance invariant (`INV-SYSTEM-013`) requiring explicit risk-acceptance references for unresolved blockers and prohibiting silent down-classification/implicit risk acceptance. |
