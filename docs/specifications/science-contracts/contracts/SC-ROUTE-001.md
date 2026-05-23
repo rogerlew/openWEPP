@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -240,12 +240,58 @@ bit-for-bit parity). Contract-specific tolerances:
 | Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
 | Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
 
+## WS10 Watershed Production-Kernel Addendum
+
+### WS10 Runtime Boundary Symbols
+
+| Surface | Symbols |
+|---|---|
+| Channel global routing controls | `dtchr`, `nchnum`, `cbase` |
+| Channel per-node controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk` |
+| Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
+| Upstream node payloads | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout` |
+| Channel published outputs | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` |
+
+### WS10 Coupling Rules
+
+1. WS10 channel production execution consumes parser-projected per-channel
+   controls plus contributor peak payloads and upstream node payloads; missing
+   required symbols are typed hard failures.
+2. Channel routing execution must keep explicit branch behavior for no-runoff
+   domain (`incoming_peak <= 0`) and positive-runoff domain
+   (`incoming_peak > 0`) without silent default substitution.
+3. Published channel outputs (`qpo`, `durrof`, `roff`) are deterministic and
+   finite, and must remain non-negative.
+4. Downstream consumers must use upstream node payload symbols explicitly and
+   fail hard if dependency payloads are missing, non-finite, or out-of-domain.
+
+### WS10 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `WKERNEL-WS10-CHANNEL-E-001` |
+| Non-finite symbol | `WKERNEL-WS10-CHANNEL-E-002` |
+| Domain/dependency violation | `WKERNEL-WS10-CHANNEL-E-003` |
+
+### WS10 Contract-Derived Test Vectors
+
+Minimum WS10 routing conformance vectors:
+1. Nominal channel execution with hillslope contributor payloads and finite
+   parser-projected controls emits finite non-negative
+   `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff`.
+2. Missing required channel control symbol fails with
+   `WKERNEL-WS10-CHANNEL-E-001`.
+3. Non-finite required contributor/control symbol fails with
+   `WKERNEL-WS10-CHANNEL-E-002`.
+4. Domain/dependency violation (e.g., invalid positive-domain parameter or
+   unresolved upstream payload) fails with `WKERNEL-WS10-CHANNEL-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-ROUTE-001 | Per-invariant comparator vectors for watershed/channel Tier-B surfaces are not yet curated for all `INV-ROUTE-*` families. | Limits immediate automation depth for watershed routing acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-ROUTE-002 | Concrete openWEPP runtime field aliases for channel routing and sediment payloads are not yet fixed. | Alias map remains identity-only pending runtime-boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-002 | Concrete openWEPP runtime field aliases for full Chapter-13 routing and sediment payload families are not yet fixed. | WS10 production path pins initial runtime aliases (`ws10_channel_*`, `ws10_impoundment_*`) but complete alias closure remains pending. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-003 | Companion contracts (`SC-HYDRAULICS-001`, `SC-SED-001`, `SC-IMPOUND-001`, `SC-SYSTEM-001`) are not fully authored, so cross-domain ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion and consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-ROUTE-004 | Chapter-13 routing and erosion formulations include mixed SI/English-unit equations and regression-derived terms that require additional unit-test evidence for implementation confidence. | Raises implementation risk until explicit unit-conversion conformance vectors are added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-005 | Runtime workload guards for Chapter-13 applicability limits (small watershed intent and excluded process classes) are not yet bound to a concrete input-contract validator surface. | Applicability enforcement is governance-only until companion system/input contracts add explicit runtime selectors/guards. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -258,3 +304,4 @@ bit-for-bit parity). Contract-specific tolerances:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-13 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-15 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: made outlet method selection explicitly exclusive, promoted `roff <= 0.001 m^3` peak-threshold gating into invariant/guard tables, added `durrof` alias coverage, and added Chapter-13 applicability-bound governance controls. |
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added hillslope WB16 peak-flow intake authority (`peakro`, `watdur`) plus typed guard and traceability requirements for watershed routing coupling readiness. |
+| `2026-05-23` | `4` | `Codex` | WS10 amendment: added watershed production-kernel runtime alias surfaces (`ws10_channel_*`, dependency payloads), typed WS10 routing guard family (`WKERNEL-WS10-CHANNEL-E-001..003`), and contract-derived WS10 routing test-vector obligations. |

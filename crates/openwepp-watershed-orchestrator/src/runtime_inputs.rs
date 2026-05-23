@@ -10,6 +10,8 @@ use openwepp_climate_runtime_adapter::{
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
     climate::ClimateFile,
+    watershed_channel::WatershedChannelFile,
+    watershed_impoundment::WatershedImpoundmentFile,
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
@@ -20,14 +22,46 @@ use crate::WatershedWritebackSurface;
 /// Typed errors for parser-to-watershed runtime surface adaptation.
 #[derive(Debug, Clone, PartialEq)]
 pub enum WatershedRuntimeInputError {
-    ParseOutcomeNotRuntimeReady { observed: ChaninpParseOutcome },
+    ParseOutcomeNotRuntimeReady {
+        observed: ChaninpParseOutcome,
+    },
     MissingOptions,
-    NonFiniteDtchrInput { value_s: f64 },
-    NonPositiveDtchrInput { value_s: f64 },
-    NonFiniteCbase { value: f64 },
-    NegativeCbase { value: f64 },
-    NonPositiveNtchr { value: i32 },
-    ChannelCountOutOfRange { value: usize },
+    NonFiniteDtchrInput {
+        value_s: f64,
+    },
+    NonPositiveDtchrInput {
+        value_s: f64,
+    },
+    NonFiniteCbase {
+        value: f64,
+    },
+    NegativeCbase {
+        value: f64,
+    },
+    NonPositiveNtchr {
+        value: i32,
+    },
+    ChannelCountOutOfRange {
+        value: usize,
+    },
+    ChannelSymbolNonFinite {
+        symbol: String,
+        value: f64,
+    },
+    ChannelSymbolOutOfDomain {
+        symbol: String,
+        value: f64,
+        rule: &'static str,
+    },
+    ImpoundmentSymbolNonFinite {
+        symbol: String,
+        value: f64,
+    },
+    ImpoundmentSymbolOutOfDomain {
+        symbol: String,
+        value: f64,
+        rule: &'static str,
+    },
 }
 
 impl WatershedRuntimeInputError {
@@ -42,6 +76,10 @@ impl WatershedRuntimeInputError {
             Self::NegativeCbase { .. } => "WS-RUNTIME-E-006",
             Self::NonPositiveNtchr { .. } => "WS-RUNTIME-E-007",
             Self::ChannelCountOutOfRange { .. } => "WS-RUNTIME-E-008",
+            Self::ChannelSymbolNonFinite { .. } => "WS-RUNTIME-E-009",
+            Self::ChannelSymbolOutOfDomain { .. } => "WS-RUNTIME-E-010",
+            Self::ImpoundmentSymbolNonFinite { .. } => "WS-RUNTIME-E-011",
+            Self::ImpoundmentSymbolOutOfDomain { .. } => "WS-RUNTIME-E-012",
         }
     }
 }
@@ -86,6 +124,44 @@ impl fmt::Display for WatershedRuntimeInputError {
                 "{}: nchan value {} exceeds lossless conversion range",
                 self.code(),
                 value
+            ),
+            Self::ChannelSymbolNonFinite { symbol, value } => write!(
+                f,
+                "{}: channel runtime symbol {} is non-finite ({})",
+                self.code(),
+                symbol,
+                value
+            ),
+            Self::ChannelSymbolOutOfDomain {
+                symbol,
+                value,
+                rule,
+            } => write!(
+                f,
+                "{}: channel runtime symbol {}={} violates {}",
+                self.code(),
+                symbol,
+                value,
+                rule
+            ),
+            Self::ImpoundmentSymbolNonFinite { symbol, value } => write!(
+                f,
+                "{}: impoundment runtime symbol {} is non-finite ({})",
+                self.code(),
+                symbol,
+                value
+            ),
+            Self::ImpoundmentSymbolOutOfDomain {
+                symbol,
+                value,
+                rule,
+            } => write!(
+                f,
+                "{}: impoundment runtime symbol {}={} violates {}",
+                self.code(),
+                symbol,
+                value,
+                rule
             ),
         }
     }
@@ -435,6 +511,183 @@ pub fn build_watershed_runtime_surface_from_chaninp(
         state_surface,
         flux_surface,
     })
+}
+
+/// Seed WS10 channel runtime symbols from parsed watershed channel input.
+///
+/// Inserts per-channel production-kernel controls:
+/// - `ws10_channel_{id}_chnn`
+/// - `ws10_channel_{id}_ctlslp`
+/// - `ws10_channel_{id}_chnk`
+///
+/// # Errors
+///
+/// Returns `WatershedRuntimeInputError` when required symbols are non-finite or
+/// violate declared domains.
+pub fn seed_watershed_runtime_surface_from_watershed_channel(
+    runtime_surface: &mut WatershedWritebackSurface,
+    channel: &WatershedChannelFile,
+) -> Result<(), WatershedRuntimeInputError> {
+    for definition in &channel.channels {
+        let node_id = definition.channel_id;
+        let chnn_symbol = format!("ws10_channel_{node_id}_chnn");
+        let ctlslp_symbol = format!("ws10_channel_{node_id}_ctlslp");
+        let conductivity_symbol = format!("ws10_channel_{node_id}_chnk");
+
+        validate_ws10_channel_value(chnn_symbol.as_str(), definition.chnn, Some(0.0), false)?;
+        validate_ws10_channel_value(
+            ctlslp_symbol.as_str(),
+            definition.ctlslp_effective,
+            Some(0.0),
+            true,
+        )?;
+        validate_ws10_channel_value(
+            conductivity_symbol.as_str(),
+            definition.chnk,
+            Some(0.0),
+            true,
+        )?;
+
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(chnn_symbol.as_str()),
+            BoundaryValue::scalar(definition.chnn),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(ctlslp_symbol.as_str()),
+            BoundaryValue::scalar(definition.ctlslp_effective),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(conductivity_symbol.as_str()),
+            BoundaryValue::scalar(definition.chnk),
+        );
+    }
+
+    Ok(())
+}
+
+/// Seed WS10 impoundment runtime symbols from parsed watershed impoundment
+/// input.
+///
+/// Inserts per-impoundment production-kernel controls:
+/// - `ws10_impoundment_{id}_h`
+/// - `ws10_impoundment_{id}_hfull`
+/// - `ws10_impoundment_{id}_deltat`
+/// - `ws10_impoundment_{id}_qinf`
+///
+/// # Errors
+///
+/// Returns `WatershedRuntimeInputError` when required symbols are non-finite or
+/// violate declared domains.
+pub fn seed_watershed_runtime_surface_from_watershed_impoundment(
+    runtime_surface: &mut WatershedWritebackSurface,
+    impoundment: &WatershedImpoundmentFile,
+) -> Result<(), WatershedRuntimeInputError> {
+    for (index, record) in impoundment.items.iter().enumerate() {
+        let node_id = index + 1;
+        let h_symbol = format!("ws10_impoundment_{node_id}_h");
+        let hfull_symbol = format!("ws10_impoundment_{node_id}_hfull");
+        let deltat_symbol = format!("ws10_impoundment_{node_id}_deltat");
+        let qinf_symbol = format!("ws10_impoundment_{node_id}_qinf");
+
+        validate_ws10_impoundment_value(h_symbol.as_str(), record.h, Some(0.0), true)?;
+        validate_ws10_impoundment_value(hfull_symbol.as_str(), record.hfull, Some(0.0), false)?;
+        validate_ws10_impoundment_value(deltat_symbol.as_str(), record.deltat, Some(0.0), false)?;
+        validate_ws10_impoundment_value(qinf_symbol.as_str(), record.qinf, Some(0.0), true)?;
+        if record.h > record.hfull {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: h_symbol,
+                value: record.h,
+                rule: "<= ws10_impoundment_{id}_hfull",
+            });
+        }
+
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(h_symbol.as_str()),
+            BoundaryValue::scalar(record.h),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(hfull_symbol.as_str()),
+            BoundaryValue::scalar(record.hfull),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(deltat_symbol.as_str()),
+            BoundaryValue::scalar(record.deltat),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(qinf_symbol.as_str()),
+            BoundaryValue::scalar(record.qinf),
+        );
+    }
+
+    Ok(())
+}
+
+fn validate_ws10_channel_value(
+    symbol: &str,
+    value: f64,
+    minimum: Option<f64>,
+    allow_equal_minimum: bool,
+) -> Result<(), WatershedRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(WatershedRuntimeInputError::ChannelSymbolNonFinite {
+            symbol: symbol.to_owned(),
+            value,
+        });
+    }
+    if let Some(minimum_value) = minimum {
+        let violated = if allow_equal_minimum {
+            value < minimum_value
+        } else {
+            value <= minimum_value
+        };
+        if violated {
+            let rule = if allow_equal_minimum {
+                ">= minimum"
+            } else {
+                "> minimum"
+            };
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: symbol.to_owned(),
+                value,
+                rule,
+            });
+        }
+    }
+    Ok(())
+}
+
+fn validate_ws10_impoundment_value(
+    symbol: &str,
+    value: f64,
+    minimum: Option<f64>,
+    allow_equal_minimum: bool,
+) -> Result<(), WatershedRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+            symbol: symbol.to_owned(),
+            value,
+        });
+    }
+    if let Some(minimum_value) = minimum {
+        let violated = if allow_equal_minimum {
+            value < minimum_value
+        } else {
+            value <= minimum_value
+        };
+        if violated {
+            let rule = if allow_equal_minimum {
+                ">= minimum"
+            } else {
+                "> minimum"
+            };
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: symbol.to_owned(),
+                value,
+                rule,
+            });
+        }
+    }
+    Ok(())
 }
 
 /// Build a watershed climate runtime request from per-hillslope parser outputs
@@ -790,13 +1043,19 @@ mod tests {
     use openwepp_input_contract::parsers::{
         chaninp::{ChaninpParseOptions, ParseMode, parse_chaninp_from_str},
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
+        watershed_channel::{WatershedChannelParseOptions, parse_watershed_channel_from_str},
+        watershed_impoundment::{
+            WatershedImpoundmentParseOptions, parse_watershed_impoundment_from_str,
+        },
     };
     use openwepp_kernel_contract::BoundarySymbol;
 
     use super::{
-        WatershedClimateRuntimeInputError, WatershedRuntimeInputError,
+        WatershedClimateRuntimeInputError, WatershedRuntimeInputError, WatershedWritebackSurface,
         build_watershed_runtime_surface_from_chaninp,
         build_watershed_runtime_surface_from_climate_assignments,
+        seed_watershed_runtime_surface_from_watershed_channel,
+        seed_watershed_runtime_surface_from_watershed_impoundment,
     };
 
     const STRICT_VALID_CLIMATE: &str =
@@ -817,6 +1076,12 @@ mod tests {
         include_str!("../../../tests/fixtures/infile/climate/wc1_canoga_stmdur_cap.cli");
     const STRICT_VALID_CHANINP: &str =
         include_str!("../../../tests/fixtures/infile/chaninp/strict_valid.chaninp");
+    const STRICT_VALID_WATERSHED_CHANNEL: &str = include_str!(
+        "../../../tests/fixtures/infile/watershed_channel/strict_valid_single_channel.chn"
+    );
+    const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str = include_str!(
+        "../../../tests/fixtures/infile/watershed_impoundment/strict_valid_minimal.imp"
+    );
 
     fn build_breakpoint_fixture(nbrkpt: usize) -> String {
         let mut climate = format!(
@@ -893,6 +1158,115 @@ mod tests {
         assert!(matches!(
             error,
             WatershedRuntimeInputError::ParseOutcomeNotRuntimeReady { .. }
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_projects_ws10_symbols() {
+        let parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+
+        let mut surface = WatershedWritebackSurface::default();
+        seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect("ws10 channel runtime seed should project symbols");
+
+        let chnn = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chnn"))
+            .expect("ws10_channel_1_chnn should be present")
+            .as_f64();
+        let ctlslp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_ctlslp"))
+            .expect("ws10_channel_1_ctlslp should be present")
+            .as_f64();
+        let conductivity = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chnk"))
+            .expect("ws10_channel_1_chnk should be present")
+            .as_f64();
+
+        assert!((chnn - 0.04).abs() < 1e-12);
+        assert!((ctlslp - 0.02).abs() < 1e-12);
+        assert!((conductivity - 0.000_001).abs() < 1e-12);
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_symbol() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].chnn = 0.0;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("non-positive channel roughness must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_chnn"
+        ));
+    }
+
+    #[test]
+    fn watershed_impoundment_runtime_seed_projects_ws10_symbols() {
+        let parsed = parse_watershed_impoundment_from_str(
+            STRICT_VALID_WATERSHED_IMPOUNDMENT,
+            WatershedImpoundmentParseOptions::strict(),
+        )
+        .expect("strict watershed impoundment fixture should parse");
+
+        let mut surface = WatershedWritebackSurface::default();
+        seed_watershed_runtime_surface_from_watershed_impoundment(&mut surface, &parsed)
+            .expect("ws10 impoundment runtime seed should project symbols");
+
+        let h = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_h"))
+            .expect("ws10_impoundment_1_h should be present")
+            .as_f64();
+        let hfull = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_hfull"))
+            .expect("ws10_impoundment_1_hfull should be present")
+            .as_f64();
+        let deltat = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_deltat"))
+            .expect("ws10_impoundment_1_deltat should be present")
+            .as_f64();
+
+        assert!((h - 0.70).abs() < 1e-12);
+        assert!((hfull - 0.75).abs() < 1e-12);
+        assert!((deltat - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn watershed_impoundment_runtime_seed_rejects_h_above_hfull() {
+        let mut parsed = parse_watershed_impoundment_from_str(
+            STRICT_VALID_WATERSHED_IMPOUNDMENT,
+            WatershedImpoundmentParseOptions::strict(),
+        )
+        .expect("strict watershed impoundment fixture should parse");
+        parsed.items[0].h = parsed.items[0].hfull + 0.1;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error =
+            seed_watershed_runtime_surface_from_watershed_impoundment(&mut surface, &parsed)
+                .expect_err("impoundment stage above hfull must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-012");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_impoundment_1_h"
         ));
     }
 

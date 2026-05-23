@@ -4,7 +4,7 @@ title: Surface Impoundment Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Daily hydraulic routing state/flux surfaces for surface impoundments
   - Stage-discharge, stage-area, and evaporation/infiltration update surfaces
@@ -197,12 +197,58 @@ Contract-level tolerances for comparator interpretation:
 | TOL-IMPOUND-004 | No-flow discharge threshold for regime validation | `Qo <= 1e-9 ft^3 s^-1` treated as numerical zero | Applies only at declared no-flow branches. | `[INFERENCE][Static]` |
 | TOL-IMPOUND-005 | Regime-transition stage comparison tolerance | `abs(H - Htransition) <= 1e-6 ft` | Prevents false branch flips from roundoff near transition stages. | `[INFERENCE][Static]` |
 
+## WS10 Watershed Production-Kernel Addendum
+
+### WS10 Runtime Boundary Symbols
+
+| Surface | Symbols |
+|---|---|
+| Impoundment per-node controls | `ws10_impoundment_{id}_h`, `ws10_impoundment_{id}_hfull`, `ws10_impoundment_{id}_deltat`, `ws10_impoundment_{id}_qinf` |
+| Upstream dependency payloads | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout` |
+| Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
+| Impoundment published outputs | `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`, `ws10_impoundment_{id}_hnext`, `ws10_impoundment_{id}_outflow_volume` |
+
+### WS10 Coupling Rules
+
+1. WS10 impoundment production execution consumes parser-projected impoundment
+   controls plus routed upstream payloads from dependency nodes.
+2. Impoundment execution must hard-fail on missing/non-finite required symbols
+   and on invalid storage/headroom domains (including `h > hfull` and
+   non-positive `deltat`).
+3. Overflow/retention branch behavior must be explicit and deterministic;
+   silent default replacement and silent domain clamping are prohibited.
+4. Published impoundment outputs must be finite and non-negative for discharge
+   and routed outflow volume.
+
+### WS10 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `WKERNEL-WS10-IMPOUNDMENT-E-001` |
+| Non-finite symbol | `WKERNEL-WS10-IMPOUNDMENT-E-002` |
+| Domain/dependency violation | `WKERNEL-WS10-IMPOUNDMENT-E-003` |
+
+### WS10 Contract-Derived Test Vectors
+
+Minimum WS10 impoundment conformance vectors:
+1. Nominal impoundment execution with finite parser-projected controls and
+   routed upstream payloads emits finite non-negative
+   `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`,
+   `ws10_impoundment_{id}_outflow_volume`.
+2. Missing required impoundment control symbol fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-001`.
+3. Non-finite required symbol fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-002`.
+4. Domain/dependency violation (e.g., `h > hfull`, invalid `deltat`, or missing
+   upstream dependency payload) fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-IMPOUND-001 | Chapter-14 calibration models for `Ct`/`cd` are legacy-derived from CSTRS-generated datasets and pilot-scale studies; openWEPP has not yet completed dedicated revalidation for its target scenarios. | Sediment-trapping confidence is provisional for full production claims. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-IMPOUND-002 | Concrete openWEPP boundary/API names and conversion carriers for mixed-unit Chapter-14 symbols are not yet fixed. | Alias map remains identity-first and conversion governance remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-IMPOUND-002 | Concrete openWEPP boundary/API names and conversion carriers for full mixed-unit Chapter-14 symbol families are not yet fixed. | WS10 production path pins initial runtime aliases (`ws10_impoundment_*`) but complete mixed-unit alias/conversion closure remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-003 | Coupled canonical contracts (`SC-ROUTE-001`, `SC-SED-001`, `SC-SYSTEM-001`) are not yet all at draft `in_review` maturity. | Cross-contract closure of routing/sediment ownership boundaries remains provisional. | non-promotable | `[DIRECT][Static]` |
 | GAP-IMPOUND-004 | Filter-fence/straw-bale outflow behavior depends on slurry/clogging assumptions that Chapter 14 flags as user-sensitive and not fully captured by current coefficients. | High-flow performance interpretation for those structure types retains elevated uncertainty. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -213,3 +259,4 @@ Contract-level tolerances for comparator interpretation:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-16 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-14/13/1 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: completed symbol-alias continuity coverage, added evidence-tag columns for degenerate/tolerance sections, normalized evidence mode to `Static`, clarified Eq. [14.5.3] signed stage-delta semantics, and unified authority-path style. |
+| `2026-05-23` | `3` | `Codex` | WS10 amendment: added watershed production-kernel impoundment runtime alias surfaces (`ws10_impoundment_*` + dependency payloads), typed WS10 impoundment guard family (`WKERNEL-WS10-IMPOUNDMENT-E-001..003`), and contract-derived WS10 impoundment test-vector obligations. |

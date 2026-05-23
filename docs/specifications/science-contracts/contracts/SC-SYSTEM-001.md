@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -240,6 +240,46 @@ surfaces are:
 | TOL-SYSTEM-005 | Sediment continuity residual for Eq. [13.5.17] and Eq. [14.6.1] | `<= 1e-8` in native mass units | Unit-aware residual check by component (`lb` vs `kg` surfaces). | `[INFERENCE][Static]` |
 | TOL-SYSTEM-006 | Tier-A strict replay numeric tolerance for PL14 closeout lane | `abs_tol = 0`, `rel_tol = 0` | Comparator-lane authority is strict diff detection; residual disposition belongs to PL15. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## WS10 Watershed Production-Kernel Integration Addendum
+
+### WS10 Integration Runtime Aliases
+
+| Surface | Symbols |
+|---|---|
+| Channel runtime controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk` |
+| Channel runtime outputs | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` |
+| Impoundment runtime controls | `ws10_impoundment_{id}_h`, `ws10_impoundment_{id}_hfull`, `ws10_impoundment_{id}_deltat`, `ws10_impoundment_{id}_qinf` |
+| Impoundment runtime outputs | `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`, `ws10_impoundment_{id}_hnext`, `ws10_impoundment_{id}_outflow_volume` |
+| Hillslope contributor payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
+
+### WS10 Integration Rules
+
+1. Watershed-node execution order must honor topology dependencies and consume
+   upstream WS10 payloads through explicit symbol references, not implicit
+   fallback defaults.
+2. Missing/non-finite/out-of-domain WS10 boundary payloads are hard-fail system
+   integration states and must propagate typed guard IDs unchanged.
+3. System integration must preserve deterministic publish ordering and make
+   WS10 dependency payload availability observable at the node boundary.
+4. WS10 integration pathways must not silently clamp or synthesize replacement
+   state/flux values to repair invalid boundary inputs.
+
+### WS10 Guard Families
+
+| Kernel lane | Guard IDs |
+|---|---|
+| Channel lane | `WKERNEL-WS10-CHANNEL-E-001..003` |
+| Impoundment lane | `WKERNEL-WS10-IMPOUNDMENT-E-001..003` |
+
+### WS10 Contract-Derived System Vectors
+
+Minimum WS10 integration vectors:
+1. Deterministic `channel -> impoundment -> downstream channel` topology run
+   emits finite non-negative WS10 outputs at each node boundary.
+2. Missing required WS10 symbol halts node execution with `-E-001`.
+3. Non-finite WS10 symbol halts node execution with `-E-002`.
+4. Domain/dependency WS10 violation halts node execution with `-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -259,3 +299,4 @@ surfaces are:
 | `2026-05-23` | `3` | `Codex` | INT10 amendment: added cross-lane publication invariant (`INV-SYSTEM-011`) and guard/disposition authority requiring successful `decomp -> growth -> watbal` closure before system-boundary publication. |
 | `2026-05-23` | `4` | `Codex` | PL14 amendment: added strict replay artifact/provenance completeness invariant (`INV-SYSTEM-012`), replay-lane guard/disposition authority, and explicit strict Tier-A tolerance authority (`abs_tol=0`, `rel_tol=0`) for closeout staging. |
 | `2026-05-23` | `5` | `Codex` | PL15 amendment: added Tier-A residual closeout governance invariant (`INV-SYSTEM-013`) requiring explicit risk-acceptance references for unresolved blockers and prohibiting silent down-classification/implicit risk acceptance. |
+| `2026-05-23` | `6` | `Codex` | WS10 amendment: added system integration authority for WS10 production watershed runtime aliases, deterministic dependency payload publication rules, and WS10 typed guard-family/test-vector requirements. |

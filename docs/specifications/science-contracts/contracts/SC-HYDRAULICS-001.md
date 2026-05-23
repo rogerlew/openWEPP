@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -226,6 +226,35 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-level tolerance declarations:
 | Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
 | Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
 
+## WS10 Routing/Impoundment Consumer Coupling Addendum
+
+### WS10 Consumer Coupling Rules
+
+1. Watershed routing/impoundment consumers must treat WB16-derived peak-flow
+   payloads (`peakro`, `watdur`) as authoritative inputs for downstream WS10
+   assembly and must not silently reconstruct substitute peaks when payloads are
+   present.
+2. WS10 consumers must preserve branch provenance emitted by WS10 channel and
+   impoundment kernels (`ws10_channel_*`, `ws10_impoundment_*`) as typed
+   boundary payloads for downstream continuity diagnostics.
+3. Missing/non-finite/out-of-domain coupling symbols at WS10 consumers are
+   typed hard failures with explicit WS10 guard families:
+   - `WKERNEL-WS10-CHANNEL-E-001..003`
+   - `WKERNEL-WS10-IMPOUNDMENT-E-001..003`
+4. Consumer-side fallback defaulting/clamping that masks invalid WS10 coupling
+   payloads is prohibited.
+
+### WS10 Contract-Derived Coupling Vectors
+
+Minimum WS10 coupling vectors:
+1. Nominal WS10 channel/impoundment payload consumption preserves finite
+   non-negative routed peak/discharge terms.
+2. Missing required WS10 coupling payload fails with corresponding `-E-001`
+   guard family code.
+3. Non-finite WS10 coupling payload fails with corresponding `-E-002` code.
+4. Domain/dependency WS10 coupling violation fails with corresponding `-E-003`
+   code.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -243,3 +272,4 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-level tolerance declarations:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-10/11 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register for SCI-12 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, standardized Chapter-10 source-path anchors, added missing `τfe` alias coverage, and evidence-tagged degenerate/tolerance claims. |
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added peak-flow coupling readiness authority requiring `peakro`/`watdur` boundary acceptance with WB16 diagnostic metadata and typed guard posture. |
+| `2026-05-23` | `4` | `Codex` | WS10 amendment: added routing/impoundment consumer coupling authority for production WS10 payload families, including typed WS10 guard family requirements and WS10 coupling test-vector obligations. |
