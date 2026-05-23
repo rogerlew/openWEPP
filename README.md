@@ -2,7 +2,7 @@
 
 > Rust reimplementation of the WEPP (Water Erosion Prediction Project) hillslope and watershed simulation engine.
 
-> **Status:** Pre-alpha. Repository is scaffolding only; no kernels implemented.
+> **Status:** Pre-alpha. In development in the open
 
 > **Strategy policy:** architecture-first with top-down science contracts, plus legacy-comparator investigation lanes. See [ADR-0011](docs/decisions/0011-architecture-first-top-down-science-contracts.md).
 
@@ -13,6 +13,9 @@
 openWEPP reimplements the WEPP simulation engine in Rust with an
 architecture-first approach: typed state, explicit module boundaries,
 contract-first interfaces, and deterministic orchestration.
+
+openWEPP is un-affiliated and has no endorsement or affiliation with
+USDA-ARS National Soil Erosion Research Laboratory WEPP.
 
 Science behavior is governed by top-down contracts derived from:
 - WEPP technical references (including `references/50201000`),
@@ -72,7 +75,7 @@ all roles (watershed, hillslope, replay). See:
 
 | Repo | Role |
 |---|---|
-| `wepp-palimpsest` (was `wepp-forest`) | Legacy implementation surface for static analysis and comparator signals; HBP format reference |
+| `wepp-palimpsest` (was `wepp-forest`) | Legacy implementation surface for static analysis and comparator signals; HBP format reference; Public Domain under 17 U.S. Code § 105 |
 | [wepppy](https://github.com/rogerlew/wepppy) | Consumer / orchestrator; provides GIS, climate, run state |
 | `wepppyo3` (in wepppy) | Defines parquet interchange schemas openWEPP emits |
 | `openWEPP` (this repo) | Rust simulation engine and top-down contract authority for openWEPP behavior |
