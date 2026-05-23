@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -489,6 +489,44 @@ Minimum WB11 hydrology production-kernel conformance vectors:
    coupled closure overflow hard-fails with `HKERNEL-WB14-RUNOFF-E-003` or
    `HKERNEL-WB12-STORAGE-E-003` at the affected phase.
 
+## IRRIG10 Irrigation Storage-Coupling Addendum
+
+### IRRIG10 Required Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Runtime irrigation schedule traces | `irrigation.runtime_schedule_source`, `irrigation.runtime_depth_m`, `Irr` |
+| Runoff reconciliation coupled outputs | `Q`, `wb12_runoff_reconciled`, `wb12_runoff_closure_delta` |
+| Storage reconciliation outputs | `wb12_storage_reconciled`, `wb12_storage_closure_delta` |
+
+### IRRIG10 Deterministic Storage Rules
+
+1. Storage reconciliation consumes daily irrigation depth as explicit input:
+   `Irr = irrigation.runtime_depth_m`.
+2. Storage closure equation under irrigation is explicit:
+   `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S + Irr - I - Q - ET - D - Qd`.
+3. `Irr` must be finite and non-negative whenever published.
+4. Missing/non-finite/out-of-domain irrigation storage symbols are hard-fail
+   invalid states; no fallback/default branch is allowed.
+
+### IRRIG10 Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Runoff reconciliation | `HKERNEL-WB14-RUNOFF-E-001` | `HKERNEL-WB14-RUNOFF-E-002` | `HKERNEL-WB14-RUNOFF-E-003` |
+| Storage reconciliation | `HKERNEL-WB12-STORAGE-E-001` | `HKERNEL-WB12-STORAGE-E-002` | `HKERNEL-WB12-STORAGE-E-003` |
+
+### IRRIG10 Contract-Test Vectors
+
+1. Active fixed-date sprinkler event emits positive `Irr` and deterministic
+   irrigation-coupled `wb12_storage_reconciled`.
+2. Active depletion sprinkler event emits positive `Irr` and deterministic
+   irrigation-coupled `wb12_storage_reconciled`.
+3. Missing irrigation scheduling/storage symbols hard-fail with typed missing
+   guard posture.
+4. Non-finite/out-of-domain irrigation scheduling/storage symbols hard-fail
+   with typed non-finite/domain guard posture.
+
 ## WB13 Daily Output-Surface Authority Addendum
 
 ### WB13 Canonical Daily Output Schema (`H5.wat.dat` Equivalent)
@@ -586,3 +624,4 @@ canonical order:
 | `2026-05-23` | `10` | `Codex` | CLIM05 amendment: added signed `S` snow-coupling authority for WB12 storage reconciliation, including required storage-surface inputs, deterministic storage equation update, and typed active-coupling guard vectors. |
 | `2026-05-23` | `11` | `Codex` | CLIM06 amendment: added frozen-soil infiltration-capacity coupling authority (`frost.runtime_infcap_frz`) for WB14 runoff reconciliation, bounded frozen-state surface requirements, and typed active-coupling guard vectors. |
 | `2026-05-23` | `12` | `Codex` | WB15 amendment: added canopy interception coupling authority from plant runtime surfaces (`cancov`, `lai`, `vdmt`) with Eq. [5.1.2] lineage, explicit runoff/storage closure integration of `I`, and typed hard-fail guard posture for missing/non-finite/domain-invalid canopy symbols. |
+| `2026-05-23` | `13` | `Codex` | IRRIG10 amendment: added explicit irrigation depth coupling (`Irr`) into WB12 storage reconciliation equation and typed guard/test-vector obligations for irrigation-triggered runoff/storage closure. |

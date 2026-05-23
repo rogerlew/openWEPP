@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -387,6 +387,46 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Out-of-domain canopy interception symbol or coupled runoff-closure overflow
    hard-fails with `HKERNEL-WB14-RUNOFF-E-003`.
 
+## IRRIG10 Irrigation Runtime Coupling Addendum
+
+### IRRIG10 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Runtime irrigation scheduling traces | `irrigation.runtime_schedule_source`, `irrigation.runtime_depth_m`, `irrigation.runtime_duration_s`, `irrigation.runtime_rate_m_per_s` |
+| Parser-projected irrigation schedules | `irrigation.depletion.*`, `irrigation.fixeddate.*` |
+| Coupled runoff outputs | `Irr`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+
+### IRRIG10 Deterministic Runoff Rules
+
+1. Runoff reconciliation consumes irrigation additions as explicit forcing
+   depth term: `wb12_rainfall_input = wb14_hyetograph_rainfall + irrigation.runtime_depth_m`.
+2. Irrigation forcing is applied through explicit schedule-source resolution
+   (fixed-date priority, then depletion) and emitted as `Irr`.
+3. Coupled runoff equation remains explicit under irrigation:
+   - `Q = wb14_hyetograph_liquid_after_interception + S + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+4. Missing/non-finite/out-of-domain irrigation scheduling payloads are invalid
+   runoff states; no fallback/default branch is allowed.
+
+### IRRIG10 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB14-RUNOFF-E-001` |
+| Non-finite required symbol | `HKERNEL-WB14-RUNOFF-E-002` |
+| Domain/closure violation | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### IRRIG10 Contract-Test Vectors
+
+1. Matching fixed-date sprinkler event emits positive `Irr` and deterministic
+   runoff closure outputs.
+2. Matching depletion sprinkler period emits positive `Irr` with deterministic
+   runoff closure outputs.
+3. Missing irrigation scheduling key symbols hard-fail with
+   `HKERNEL-WB14-RUNOFF-E-001`.
+4. Non-finite/out-of-domain irrigation scheduling payloads hard-fail with
+   `HKERNEL-WB14-RUNOFF-E-002/003`.
+
 ## CLIM05 Snow Runtime Coupling Addendum
 
 ### CLIM05 Required Surfaces
@@ -496,3 +536,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `6` | `Codex` | CLIM05 amendment: added active snow-control runoff coupling authority via signed `S`, required `snow.options.*`/`snow.runtime_swe` surfaces, and typed hard-fail guard posture for active-coupling symbol/domain violations. |
 | `2026-05-23` | `7` | `Codex` | CLIM06 amendment: added active frost/frozen-soil runoff coupling authority, required `frost.options.*` and `frost.runtime_*` surfaces, and typed hard-fail posture for active-coupling symbol/domain violations in WB14 reconciliation. |
 | `2026-05-23` | `8` | `Codex` | WB15 amendment: added canopy interception runtime coupling authority using plant-state surfaces (`cancov`, `lai`, `vdmt`) with interception-before-infiltration reconciliation and explicit `I` runoff coupling output under typed guard posture. |
+| `2026-05-23` | `9` | `Codex` | IRRIG10 amendment: added runtime irrigation schedule-source coupling authority (`irrigation.depletion.*`, `irrigation.fixeddate.*`, `irrigation.runtime_*`) and explicit `Irr` runoff-forcing closure posture with typed WB14 guard requirements. |

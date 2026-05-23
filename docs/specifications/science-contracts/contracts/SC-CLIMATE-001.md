@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -299,6 +299,38 @@ states and must hard-fail with typed hydrology guard posture.
 4. Out-of-domain active-coupling frost symbol/state hard-fails with typed
    domain posture and no fallback defaulting.
 
+## IRRIG10 Irrigation Scheduler Climate-Key Addendum
+
+### IRRIG10 Required Climate-Key Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Daily schedule keys | `day`, `year` |
+| Event forcing series | `timem_####`, `intsty_####`, `ninten`/`nbrkpt` |
+| Irrigation-coupled runoff closure key | `wb12_rainfall_input` |
+
+### IRRIG10 Deterministic Climate Coupling Requirements
+
+1. Climate runtime seam must publish finite `day` and `year` keys for each
+   simulated day consumed by irrigation fixed-date scheduling.
+2. Hyetograph forcing-series symbols remain authoritative forcing inputs under
+   irrigation coupling; irrigation additions are coupled downstream without
+   mutating climate-source parser records.
+3. When irrigation coupling is active, rainfall-input closure remains explicit:
+   `wb12_rainfall_input = wb14_hyetograph_rainfall + irrigation.runtime_depth_m`.
+4. Missing/non-finite schedule keys or malformed forcing-series symbols are
+   invalid downstream irrigation-coupled boundary states and must hard-fail via
+   typed hydrology guard posture.
+
+### IRRIG10 Contract-Test Vectors
+
+1. Fixed-date irrigation vector consumes climate `day`/`year` and activates
+   scheduled irrigation deterministically.
+2. Depletion scheduling vector consumes climate day key with deterministic
+   event-period gating.
+3. Missing/non-finite climate schedule key symbols hard-fail with typed missing
+   or non-finite guard posture at irrigation-coupled runoff phase.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -320,3 +352,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-23` | `4` | `Codex` | WB14 amendment: added explicit runoff hyetograph-coupling forcing requirements, typed-guard alignment for malformed subdaily series, and WB14 vector obligations. |
 | `2026-05-23` | `5` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling requirements, signed `S` term publication constraints, and typed active-coupling guard posture for snow boundary failures. |
 | `2026-05-23` | `6` | `Codex` | CLIM06 amendment: added parsed frost-control runtime coupling requirements, explicit climate freeze/thaw branch-selection authority, and typed active-coupling guard posture for frozen-soil boundary failures. |
+| `2026-05-23` | `7` | `Codex` | IRRIG10 amendment: added climate schedule-key authority (`day`, `year`) and downstream irrigation-coupled forcing closure requirements for fixed-date/depletion runtime scheduling. |

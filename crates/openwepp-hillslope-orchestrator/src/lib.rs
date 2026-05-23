@@ -134,6 +134,21 @@ const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: &str = "wb12_storage_closure_delta";
 const WB12_SYMBOL_STORAGE_RECONCILED: &str = "wb12_storage_reconciled";
 const WB12_SYMBOL_RUNOFF_Q: &str = "Q";
 const WB12_SYMBOL_SNOW_COUPLING_S: &str = "S";
+const IRRIG_SYMBOL_DAILY_IRRIGATION: &str = "Irr";
+const IRRIG_SYMBOL_RUNTIME_SOURCE: &str = "irrigation.runtime_schedule_source";
+const IRRIG_SYMBOL_RUNTIME_DEPTH_M: &str = "irrigation.runtime_depth_m";
+const IRRIG_SYMBOL_RUNTIME_DURATION_S: &str = "irrigation.runtime_duration_s";
+const IRRIG_SYMBOL_RUNTIME_RATE_MPS: &str = "irrigation.runtime_rate_m_per_s";
+const IRRIG_SYMBOL_RUNTIME_EVENT_INDEX: &str = "irrigation.runtime_event_index";
+const IRRIG_SYMBOL_RUNTIME_SYSTEM_TYPE: &str = "irrigation.runtime_system_type";
+const IRRIG_SYMBOL_DEPLETION_ENABLED: &str = "irrigation.depletion.enabled";
+const IRRIG_SYMBOL_DEPLETION_SYSTEM_TYPE: &str = "irrigation.depletion.system_type";
+const IRRIG_SYMBOL_DEPLETION_MIN_DEPTH_M: &str = "irrigation.depletion.min_depth_m";
+const IRRIG_SYMBOL_DEPLETION_MAX_DEPTH_M: &str = "irrigation.depletion.max_depth_m";
+const IRRIG_SYMBOL_DEPLETION_PERIOD_COUNT: &str = "irrigation.depletion.period_count";
+const IRRIG_SYMBOL_FIXEDDATE_ENABLED: &str = "irrigation.fixeddate.enabled";
+const IRRIG_SYMBOL_FIXEDDATE_SYSTEM_TYPE: &str = "irrigation.fixeddate.system_type";
+const IRRIG_SYMBOL_FIXEDDATE_EVENT_COUNT: &str = "irrigation.fixeddate.event_count";
 const WB15_SYMBOL_INTERCEPTION_I: &str = "I";
 const WB15_SYMBOL_PLANT_CANCOV: &str = "cancov";
 const WB15_SYMBOL_PLANT_LAI: &str = "lai";
@@ -1641,6 +1656,31 @@ struct FrostCouplingOutcome {
     infcap_frz: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+enum IrrigationScheduleSource {
+    Depletion,
+    FixedDate,
+}
+
+impl IrrigationScheduleSource {
+    const fn as_scalar(self) -> f64 {
+        match self {
+            Self::Depletion => 1.0,
+            Self::FixedDate => 2.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct ActiveIrrigationEvent {
+    source: IrrigationScheduleSource,
+    event_index: usize,
+    system_type: f64,
+    depth_m: f64,
+    duration_s: f64,
+    rate_m_per_s: f64,
+}
+
 impl Wb11HydrologyKernel {
     fn require_state_scalar(
         request: &HillslopeKernelRequest<'_>,
@@ -1682,6 +1722,68 @@ impl Wb11HydrologyKernel {
             return Err(Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
                 phase_class,
                 symbol: BoundarySymbol::from(symbol),
+                value: scalar,
+            });
+        }
+        Ok(scalar)
+    }
+
+    fn optional_state_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let key = BoundarySymbol::from(symbol);
+        let Some(value) = request.state_surface.get(&key) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: key,
+                value: scalar,
+            });
+        }
+        Ok(Some(scalar))
+    }
+
+    fn optional_flux_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let key = BoundarySymbol::from(symbol);
+        let Some(value) = request.flux_surface.get(&key) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+                phase_class,
+                symbol: key,
+                value: scalar,
+            });
+        }
+        Ok(Some(scalar))
+    }
+
+    fn require_state_scalar_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.state_surface.get(symbol) else {
+            return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                phase_class,
+                symbol: symbol.clone(),
+            });
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: symbol.clone(),
                 value: scalar,
             });
         }
@@ -1754,6 +1856,16 @@ impl Wb11HydrologyKernel {
 
     fn diagnostic_count_to_f64(value: usize) -> f64 {
         value.to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+    }
+
+    fn diagnostic_i64_to_f64(value: i64) -> f64 {
+        value.to_string().parse::<f64>().unwrap_or_else(|_| {
+            if value.is_negative() {
+                f64::NEG_INFINITY
+            } else {
+                f64::INFINITY
+            }
+        })
     }
 
     fn optional_state_non_negative_integral(
@@ -1960,6 +2072,528 @@ impl Wb11HydrologyKernel {
         }
 
         Ok((times, intensities))
+    }
+
+    fn irrigation_depletion_period_symbol(period_index: usize, field: &str) -> BoundarySymbol {
+        BoundarySymbol::from(format!(
+            "irrigation.depletion.period_{period_index:04}.{field}"
+        ))
+    }
+
+    fn irrigation_fixeddate_event_symbol(event_index: usize, field: &str) -> BoundarySymbol {
+        BoundarySymbol::from(format!(
+            "irrigation.fixeddate.event_{event_index:04}.{field}"
+        ))
+    }
+
+    fn require_non_negative_integral_state_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+    ) -> Result<usize, Wb11HydrologyKernelGuardError> {
+        let scalar = Self::require_state_scalar_for_symbol(request, phase_class, symbol)?;
+        if scalar < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let rounded = scalar.round();
+        if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let rounded_text = format!("{rounded:.0}");
+        let Ok(parsed) = rounded_text.parse::<usize>() else {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
+            });
+        };
+        Ok(parsed)
+    }
+
+    fn normalize_irrigation_event(
+        phase_class: HillslopeKernelPhaseClass,
+        source: IrrigationScheduleSource,
+        event_index: usize,
+        system_type: f64,
+        depth_m: f64,
+        rate_m_per_s: f64,
+        hyetograph_duration_s: f64,
+    ) -> Result<ActiveIrrigationEvent, Wb11HydrologyKernelGuardError> {
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_RUNTIME_DEPTH_M,
+            depth_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_RUNTIME_RATE_MPS,
+            rate_m_per_s,
+            Some(0.0),
+            None,
+        )?;
+        if depth_m <= WB11_ZERO_THRESHOLD {
+            return Ok(ActiveIrrigationEvent {
+                source,
+                event_index,
+                system_type,
+                depth_m: 0.0,
+                duration_s: 0.0,
+                rate_m_per_s: 0.0,
+            });
+        }
+        if rate_m_per_s <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(IRRIG_SYMBOL_RUNTIME_RATE_MPS),
+                value: rate_m_per_s,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let raw_duration = depth_m / rate_m_per_s;
+        if !raw_duration.is_finite() || raw_duration <= 0.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(IRRIG_SYMBOL_RUNTIME_DURATION_S),
+                value: raw_duration,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        if hyetograph_duration_s <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(IRRIG_SYMBOL_RUNTIME_DURATION_S),
+                value: hyetograph_duration_s,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let (duration_s, adjusted_rate) = if raw_duration > hyetograph_duration_s {
+            (hyetograph_duration_s, depth_m / hyetograph_duration_s)
+        } else {
+            (raw_duration, rate_m_per_s)
+        };
+
+        Ok(ActiveIrrigationEvent {
+            source,
+            event_index,
+            system_type,
+            depth_m,
+            duration_s,
+            rate_m_per_s: adjusted_rate,
+        })
+    }
+
+    fn resolve_fixeddate_irrigation_event(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        runtime_day: usize,
+        runtime_year: usize,
+        hyetograph_duration_s: f64,
+    ) -> Result<Option<ActiveIrrigationEvent>, Wb11HydrologyKernelGuardError> {
+        let event_count = Self::require_non_negative_integral_state_symbol(
+            request,
+            phase_class,
+            &BoundarySymbol::from(IRRIG_SYMBOL_FIXEDDATE_EVENT_COUNT),
+        )?;
+        if event_count == 0 {
+            return Ok(None);
+        }
+
+        let system_type =
+            Self::require_state_scalar(request, phase_class, IRRIG_SYMBOL_FIXEDDATE_SYSTEM_TYPE)?;
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_FIXEDDATE_SYSTEM_TYPE,
+            system_type,
+            Some(1.0),
+            Some(2.0),
+        )?;
+
+        for event_index in 1..=event_count {
+            let ofe_symbol = Self::irrigation_fixeddate_event_symbol(event_index, "ofe_id");
+            let event_ofe = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &ofe_symbol,
+            )?;
+            if event_ofe != 1 {
+                continue;
+            }
+
+            let day_symbol = Self::irrigation_fixeddate_event_symbol(event_index, "day");
+            let event_day = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &day_symbol,
+            )?;
+            let year_symbol = Self::irrigation_fixeddate_event_symbol(event_index, "year");
+            let event_year = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &year_symbol,
+            )?;
+
+            let termination_symbol =
+                Self::irrigation_fixeddate_event_symbol(event_index, "schedule_termination_flag");
+            let termination_flag =
+                Self::require_state_scalar_for_symbol(request, phase_class, &termination_symbol)?;
+            Self::require_state_range(
+                phase_class,
+                IRRIG_SYMBOL_RUNTIME_SOURCE,
+                termination_flag,
+                Some(0.0),
+                Some(1.0),
+            )?;
+            if termination_flag >= 1.0 - WB11_ZERO_THRESHOLD {
+                continue;
+            }
+
+            if event_day != runtime_day || event_year != runtime_year {
+                continue;
+            }
+
+            if system_type >= 2.0 - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(IRRIG_SYMBOL_FIXEDDATE_SYSTEM_TYPE),
+                    value: system_type,
+                    minimum: Some(1.0),
+                    maximum: Some(1.0),
+                });
+            }
+
+            let depth_symbol =
+                Self::irrigation_fixeddate_event_symbol(event_index, "sprinkler_depth_m");
+            let depth_m =
+                Self::require_state_scalar_for_symbol(request, phase_class, &depth_symbol)?;
+            let rate_symbol =
+                Self::irrigation_fixeddate_event_symbol(event_index, "sprinkler_rate_m_per_s");
+            let base_rate =
+                Self::require_state_scalar_for_symbol(request, phase_class, &rate_symbol)?;
+            let nozzle_symbol =
+                Self::irrigation_fixeddate_event_symbol(event_index, "sprinkler_nozzle_factor");
+            let nozzle =
+                Self::require_state_scalar_for_symbol(request, phase_class, &nozzle_symbol)?;
+            Self::require_state_range(
+                phase_class,
+                IRRIG_SYMBOL_RUNTIME_RATE_MPS,
+                nozzle,
+                Some(0.0),
+                None,
+            )?;
+            let rate_m_per_s = base_rate * nozzle;
+            return Ok(Some(Self::normalize_irrigation_event(
+                phase_class,
+                IrrigationScheduleSource::FixedDate,
+                event_index,
+                system_type,
+                depth_m,
+                rate_m_per_s,
+                hyetograph_duration_s,
+            )?));
+        }
+
+        Ok(None)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn resolve_depletion_irrigation_event(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        runtime_day: usize,
+        runtime_year: usize,
+        hyetograph_duration_s: f64,
+    ) -> Result<Option<ActiveIrrigationEvent>, Wb11HydrologyKernelGuardError> {
+        let period_count = Self::require_non_negative_integral_state_symbol(
+            request,
+            phase_class,
+            &BoundarySymbol::from(IRRIG_SYMBOL_DEPLETION_PERIOD_COUNT),
+        )?;
+        if period_count == 0 {
+            return Ok(None);
+        }
+
+        let system_type =
+            Self::require_state_scalar(request, phase_class, IRRIG_SYMBOL_DEPLETION_SYSTEM_TYPE)?;
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_DEPLETION_SYSTEM_TYPE,
+            system_type,
+            Some(1.0),
+            Some(2.0),
+        )?;
+
+        let min_depth =
+            Self::require_state_scalar(request, phase_class, IRRIG_SYMBOL_DEPLETION_MIN_DEPTH_M)?;
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_DEPLETION_MIN_DEPTH_M,
+            min_depth,
+            Some(0.0),
+            None,
+        )?;
+        let max_depth =
+            Self::optional_state_scalar(request, phase_class, IRRIG_SYMBOL_DEPLETION_MAX_DEPTH_M)?;
+        if let Some(value) = max_depth {
+            Self::require_state_range(
+                phase_class,
+                IRRIG_SYMBOL_DEPLETION_MAX_DEPTH_M,
+                value,
+                Some(min_depth),
+                None,
+            )?;
+        }
+
+        let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        let field_capacity =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_FIELD_CAPACITY)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_FIELD_CAPACITY,
+            field_capacity,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        let depletion_ratio = soil_water / field_capacity;
+        if !depletion_ratio.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("irrigation.depletion.trigger_ratio"),
+                value: depletion_ratio,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let runtime_date_key = i64::try_from(runtime_year)
+            .unwrap_or(i64::MAX)
+            .saturating_mul(1000)
+            .saturating_add(i64::try_from(runtime_day).unwrap_or(i64::MAX));
+
+        for period_index in 1..=period_count {
+            let element_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "element_id");
+            let element_id = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &element_symbol,
+            )?;
+            if element_id != 1 {
+                continue;
+            }
+
+            let start_day_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "start_doy");
+            let start_day = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &start_day_symbol,
+            )?;
+            let start_year_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "start_year");
+            let start_year = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &start_year_symbol,
+            )?;
+            let end_day_symbol = Self::irrigation_depletion_period_symbol(period_index, "end_doy");
+            let end_day = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &end_day_symbol,
+            )?;
+            let end_year_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "end_year");
+            let end_year = Self::require_non_negative_integral_state_symbol(
+                request,
+                phase_class,
+                &end_year_symbol,
+            )?;
+
+            let start_key = i64::try_from(start_year)
+                .unwrap_or(i64::MAX)
+                .saturating_mul(1000)
+                .saturating_add(i64::try_from(start_day).unwrap_or(i64::MAX));
+            let end_key = i64::try_from(end_year)
+                .unwrap_or(i64::MAX)
+                .saturating_mul(1000)
+                .saturating_add(i64::try_from(end_day).unwrap_or(i64::MAX));
+            if end_key < start_key {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("irrigation.depletion.period_window"),
+                    value: Self::diagnostic_i64_to_f64(end_key),
+                    minimum: Some(Self::diagnostic_i64_to_f64(start_key)),
+                    maximum: None,
+                });
+            }
+            if runtime_date_key < start_key || runtime_date_key > end_key {
+                continue;
+            }
+
+            let threshold_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "depletion_trigger_ratio");
+            let threshold =
+                Self::require_state_scalar_for_symbol(request, phase_class, &threshold_symbol)?;
+            Self::require_state_range(
+                phase_class,
+                IRRIG_SYMBOL_RUNTIME_SOURCE,
+                threshold,
+                Some(0.0),
+                Some(1.0),
+            )?;
+            if depletion_ratio > threshold + WB11_ZERO_THRESHOLD {
+                continue;
+            }
+
+            if system_type >= 2.0 - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(IRRIG_SYMBOL_DEPLETION_SYSTEM_TYPE),
+                    value: system_type,
+                    minimum: Some(1.0),
+                    maximum: Some(1.0),
+                });
+            }
+
+            let depth_ratio_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "sprinkler_depth_ratio");
+            let depth_ratio =
+                Self::require_state_scalar_for_symbol(request, phase_class, &depth_ratio_symbol)?;
+            Self::require_state_range(
+                phase_class,
+                IRRIG_SYMBOL_RUNTIME_DEPTH_M,
+                depth_ratio,
+                Some(0.0),
+                None,
+            )?;
+            let depth_cap = max_depth.unwrap_or(min_depth);
+            let depth_from_ratio = depth_ratio * depth_cap;
+            let depth_m = depth_from_ratio.max(min_depth);
+
+            let rate_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "sprinkler_rate_m_per_s");
+            let base_rate =
+                Self::require_state_scalar_for_symbol(request, phase_class, &rate_symbol)?;
+            let nozzle_symbol =
+                Self::irrigation_depletion_period_symbol(period_index, "sprinkler_nozzle_factor");
+            let nozzle =
+                Self::require_state_scalar_for_symbol(request, phase_class, &nozzle_symbol)?;
+            Self::require_state_range(
+                phase_class,
+                IRRIG_SYMBOL_RUNTIME_RATE_MPS,
+                nozzle,
+                Some(0.0),
+                None,
+            )?;
+            let rate_m_per_s = base_rate * nozzle;
+            return Ok(Some(Self::normalize_irrigation_event(
+                phase_class,
+                IrrigationScheduleSource::Depletion,
+                period_index,
+                system_type,
+                depth_m,
+                rate_m_per_s,
+                hyetograph_duration_s,
+            )?));
+        }
+
+        Ok(None)
+    }
+
+    fn resolve_active_irrigation_event(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        hyetograph_duration_s: f64,
+    ) -> Result<Option<ActiveIrrigationEvent>, Wb11HydrologyKernelGuardError> {
+        let fixeddate_enabled =
+            Self::optional_state_scalar(request, phase_class, IRRIG_SYMBOL_FIXEDDATE_ENABLED)?;
+        let depletion_enabled =
+            Self::optional_state_scalar(request, phase_class, IRRIG_SYMBOL_DEPLETION_ENABLED)?;
+
+        if fixeddate_enabled.is_none() && depletion_enabled.is_none() {
+            return Ok(None);
+        }
+
+        let runtime_day = Self::require_non_negative_integral_state_symbol(
+            request,
+            phase_class,
+            &BoundarySymbol::from("day"),
+        )?;
+        if !(1..=366).contains(&runtime_day) {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("day"),
+                value: Self::diagnostic_count_to_f64(runtime_day),
+                minimum: Some(1.0),
+                maximum: Some(366.0),
+            });
+        }
+        let runtime_year = Self::require_non_negative_integral_state_symbol(
+            request,
+            phase_class,
+            &BoundarySymbol::from("year"),
+        )?;
+
+        if fixeddate_enabled.unwrap_or(0.0) >= 1.0 - WB11_ZERO_THRESHOLD {
+            if let Some(event) = Self::resolve_fixeddate_irrigation_event(
+                request,
+                phase_class,
+                runtime_day,
+                runtime_year,
+                hyetograph_duration_s,
+            )? {
+                return Ok(Some(event));
+            }
+        }
+
+        if depletion_enabled.unwrap_or(0.0) >= 1.0 - WB11_ZERO_THRESHOLD {
+            if let Some(event) = Self::resolve_depletion_irrigation_event(
+                request,
+                phase_class,
+                runtime_day,
+                runtime_year,
+                hyetograph_duration_s,
+            )? {
+                return Ok(Some(event));
+            }
+        }
+
+        Ok(None)
+    }
+
+    fn interval_overlap_duration(
+        interval_start: f64,
+        interval_end: f64,
+        active_duration: f64,
+    ) -> f64 {
+        if active_duration <= 0.0 {
+            return 0.0;
+        }
+        let overlap_start = interval_start.max(0.0);
+        let overlap_end = interval_end.min(active_duration);
+        (overlap_end - overlap_start).max(0.0)
     }
 
     fn resolve_active_snow_coupling(
@@ -2433,6 +3067,7 @@ impl Wb11HydrologyKernel {
         Ok(interception)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn compute_coupled_infiltration_depth(
         phase_class: HillslopeKernelPhaseClass,
         infiltration_conductivity: f64,
@@ -2440,17 +3075,53 @@ impl Wb11HydrologyKernel {
         times: &[f64],
         intensities: &[f64],
         rainfall_scale: f64,
+        irrigation_rate_m_per_s: f64,
+        irrigation_duration_s: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
         let mut cumulative_infiltration = 0.0_f64;
         for index in 0..times.len().saturating_sub(1) {
             let interval_duration = times[index + 1] - times[index];
-            let rainfall_rate = intensities[index] * rainfall_scale;
-            let interval_rainfall = rainfall_rate * interval_duration;
+            let scaled_rainfall_rate = intensities[index] * rainfall_scale;
+            let interval_rainfall = scaled_rainfall_rate * interval_duration;
             if !interval_rainfall.is_finite() || interval_rainfall < -WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
                     symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
                     value: interval_rainfall,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+
+            let interval_irrigation_duration = Self::interval_overlap_duration(
+                times[index],
+                times[index + 1],
+                irrigation_duration_s,
+            );
+            let interval_irrigation_depth = irrigation_rate_m_per_s * interval_irrigation_duration;
+            if !interval_irrigation_depth.is_finite()
+                || interval_irrigation_depth < -WB11_ZERO_THRESHOLD
+            {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(IRRIG_SYMBOL_DAILY_IRRIGATION),
+                    value: interval_irrigation_depth,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+
+            let interval_liquid_depth = interval_rainfall + interval_irrigation_depth.max(0.0);
+            if interval_duration <= WB11_ZERO_THRESHOLD {
+                continue;
+            }
+
+            let rainfall_rate = interval_liquid_depth / interval_duration;
+            if !rainfall_rate.is_finite() || rainfall_rate < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                    value: rainfall_rate,
                     minimum: Some(0.0),
                     maximum: None,
                 });
@@ -2563,18 +3234,20 @@ impl Wb11HydrologyKernel {
         storage_initial: f64,
         precip_input: f64,
         snow_coupling_s: f64,
+        irrigation_input: f64,
         interception: f64,
         q_runoff: f64,
         et: f64,
         percolation_loss: f64,
         subsurface_loss: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let storage_reconciled = storage_initial + precip_input + snow_coupling_s
-            - interception
-            - q_runoff
-            - et
-            - percolation_loss
-            - subsurface_loss;
+        let storage_reconciled =
+            storage_initial + precip_input + snow_coupling_s + irrigation_input
+                - interception
+                - q_runoff
+                - et
+                - percolation_loss
+                - subsurface_loss;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_STORAGE_RECONCILED,
@@ -3288,11 +3961,43 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        if (rainfall_input - hyetograph_rainfall).abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
+        let hyetograph_duration_s = if times.len() >= 2 {
+            times[times.len() - 1] - times[0]
+        } else {
+            0.0
+        };
+        let active_irrigation_event =
+            Self::resolve_active_irrigation_event(request, phase_class, hyetograph_duration_s)?;
+        let irrigation_depth_m = active_irrigation_event.map_or(0.0, |event| event.depth_m);
+        let irrigation_duration_s = active_irrigation_event.map_or(0.0, |event| event.duration_s);
+        let irrigation_rate_m_per_s =
+            active_irrigation_event.map_or(0.0, |event| event.rate_m_per_s);
+
+        Self::require_state_range(
+            phase_class,
+            IRRIG_SYMBOL_RUNTIME_DEPTH_M,
+            irrigation_depth_m,
+            Some(0.0),
+            None,
+        )?;
+
+        let coupled_rainfall_input = hyetograph_rainfall + irrigation_depth_m;
+        if !coupled_rainfall_input.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
                 symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
-                value: rainfall_input - hyetograph_rainfall,
+                value: coupled_rainfall_input,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        if (rainfall_input - coupled_rainfall_input).abs() > closure_tolerance + WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: rainfall_input - coupled_rainfall_input,
                 minimum: Some(-closure_tolerance),
                 maximum: Some(closure_tolerance),
             });
@@ -3300,7 +4005,7 @@ impl Wb11HydrologyKernel {
 
         let interception =
             Self::compute_canopy_interception_depth(request, phase_class, hyetograph_rainfall)?;
-        let (liquid_after_interception, rainfall_scale) =
+        let (hyetograph_liquid_after_interception, rainfall_scale) =
             Self::resolve_interception_rainfall_scale(
                 phase_class,
                 hyetograph_rainfall,
@@ -3313,7 +4018,21 @@ impl Wb11HydrologyKernel {
             &times,
             &intensities,
             rainfall_scale,
+            irrigation_rate_m_per_s,
+            irrigation_duration_s,
         )?;
+        let liquid_after_interception = hyetograph_liquid_after_interception + irrigation_depth_m;
+        if !liquid_after_interception.is_finite()
+            || liquid_after_interception < -WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: liquid_after_interception,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
         Self::require_infiltration_liquid_closure(
             phase_class,
             cumulative_infiltration,
@@ -3395,6 +4114,44 @@ impl Wb11HydrologyKernel {
                 None,
             ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_RECONCILED, q_runoff, Some(0.0), None),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_RUNTIME_SOURCE,
+                active_irrigation_event.map_or(0.0, |event| event.source.as_scalar()),
+                Some(0.0),
+                Some(2.0),
+            ),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_RUNTIME_DEPTH_M,
+                irrigation_depth_m,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_RUNTIME_DURATION_S,
+                irrigation_duration_s,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_RUNTIME_RATE_MPS,
+                irrigation_rate_m_per_s,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_RUNTIME_EVENT_INDEX,
+                active_irrigation_event.map_or(0.0, |event| {
+                    Self::diagnostic_count_to_f64(event.event_index)
+                }),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_RUNTIME_SYSTEM_TYPE,
+                active_irrigation_event.map_or(0.0, |event| event.system_type),
+                Some(0.0),
+                Some(2.0),
+            ),
         ];
         if active_snow_coupling {
             state_updates.push(WritebackField::bounded(
@@ -3443,6 +4200,12 @@ impl Wb11HydrologyKernel {
                 interception,
                 Some(0.0),
                 Some(hyetograph_rainfall),
+            ),
+            WritebackField::bounded(
+                IRRIG_SYMBOL_DAILY_IRRIGATION,
+                irrigation_depth_m,
+                Some(0.0),
+                None,
             ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
             WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
@@ -3516,6 +4279,16 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        let irrigation_input =
+            Self::optional_flux_scalar(request, phase_class, IRRIG_SYMBOL_DAILY_IRRIGATION)?
+                .unwrap_or(0.0);
+        Self::require_flux_range(
+            phase_class,
+            IRRIG_SYMBOL_DAILY_IRRIGATION,
+            irrigation_input,
+            Some(0.0),
+            None,
+        )?;
 
         let et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
         Self::require_flux_range(phase_class, WB11_SYMBOL_ET, et, Some(0.0), None)?;
@@ -3545,6 +4318,7 @@ impl Wb11HydrologyKernel {
             storage_initial,
             precip_input,
             snow_coupling_s,
+            irrigation_input,
             interception_i,
             q_runoff,
             et,

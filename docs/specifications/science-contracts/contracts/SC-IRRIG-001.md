@@ -4,7 +4,7 @@ title: Irrigation Event Coupling Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Sprinkler and furrow irrigation event-definition/scheduling surfaces
   - Rainfall-irrigation concurrency handling and furrow hydraulic state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Daily water-balance and soil-water consumers requiring irrigation-addition accounting
   - Comparator/replay surfaces using irrigation event/state confidence signals
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -132,17 +132,25 @@ Out of scope:
 ## Symbol Alias Map
 
 Canonical symbols in this contract follow Chapter-12 notation (with retained
-WEPP-style symbols). Concrete openWEPP runtime-field names are not yet fixed,
-so identity aliases are required until implementation surfaces diverge.
+WEPP-style symbols). IRRIG10 defines concrete runtime aliases for sprinkler
+coupling and scheduling traces while retaining canonical Chapter-12 symbols as
+the authority basis.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
-| `D_irr`, `D_rain`, `I_irr` | identity names | sprinkler scheduling and concurrency surfaces | `s`, `s`, `m s^-1` preserved | `[DIRECT][Static]` |
-| `i_k`, `N_blk` | identity names | concurrent-event hydrograph surfaces | intensity and block-count semantics preserved | `[DIRECT][Static]` |
+| `D_irr` | `irrigation.runtime_duration_s` | active irrigation event duration | `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `D_rain` | `wb14_hyetograph_duration_s` | rainfall-event duration at runoff reconciliation boundary | `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `I_irr` | `irrigation.runtime_rate_m_per_s` | active sprinkler application rate at runtime boundary | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `i_k`, `N_blk` | `intsty_####`, `ninten`/`nbrkpt` | concurrent-event forcing surfaces | intensity and block-count semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Z`, `Ix`, `Iy`, `(Ix)_max` | identity names | furrow infiltration state surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Ke`, `k`, `a`, `fo` | identity names | furrow infiltration parameter surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Q`, `A`, `So`, `Sf`, `alpha`, `m`, `dt`, `dx` | identity names | furrow hydraulics solver surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
-| `DL`, `DL_crit`, `I_req`, `I_min`, `I_max`, `p_req` | identity names | scheduling/requirement surfaces | depth/fraction semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `DL` | `wb11_soil_water / wb11_field_capacity` | depletion trigger ratio proxy at runtime scheduler boundary | ratio semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `DL_crit` | `irrigation.depletion.period_####.depletion_trigger_ratio` | depletion threshold from parsed period stream | fraction semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `I_req` | `irrigation.runtime_depth_m` | active irrigation depth contribution used in runoff/storage closure | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `I_min`, `I_max` | `irrigation.depletion.min_depth_m`, `irrigation.depletion.max_depth_m` | depletion sprinkler depth policy controls | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `p_req` | `irrigation.depletion.period_####.sprinkler_depth_ratio` | depletion depth scaling factor | fraction semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| irrigation daily addition | `Irr` | WB12/WB13 coupled daily irrigation depth surface | `m` preserved (converted downstream as needed) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `qp` | `qp` (primary), `Qp` (legacy alias) | erosion-coupling peak-runoff surface | `m^3 s^-1` preserved across aliases | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `De` | identity name | erosion-coupling duration surface | `s` preserved | `[DIRECT][Static]` |
 
@@ -202,12 +210,64 @@ bit-for-bit parity). Contract-specific tolerances:
 | TOL-IRRIG-003 | Furrow-rainfall exception threshold | rainfall depth must satisfy `< 0.001 m` exactly, and peak intensity must remain below all-layer effective conductivity | Rule from §12.3.2 is treated as a hard branch threshold, not a smoothing region. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-IRRIG-004 | Scheduling trigger comparator tolerance for depletion ratio | `abs(DL - DL_crit) <= 1e-12` treated as threshold-equality boundary | Explicitly prevents floating-noise oscillation around the trigger boundary. | `[INFERENCE][Static]` |
 
+## IRRIG10 Runtime Scheduling and Coupling Addendum
+
+### IRRIG10 Required Runtime Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Depletion parser projection | `irrigation.depletion.enabled`, `irrigation.depletion.period_count`, `irrigation.depletion.period_####.*` |
+| Fixed-date parser projection | `irrigation.fixeddate.enabled`, `irrigation.fixeddate.event_count`, `irrigation.fixeddate.event_####.*` |
+| Climate day-key surfaces | `day`, `year`, hyetograph forcing (`timem_####`, `intsty_####`, `ninten`/`nbrkpt`) |
+| Coupled irrigation outputs | `irrigation.runtime_depth_m`, `irrigation.runtime_duration_s`, `irrigation.runtime_rate_m_per_s`, `irrigation.runtime_schedule_source`, `Irr` |
+| Coupled hydrology outputs | `wb12_infiltration`, `Q`, `wb12_runoff_reconciled`, `wb12_storage_reconciled` |
+
+### IRRIG10 Deterministic Scheduling and Coupling Rules
+
+1. Daily schedule-source priority is explicit:
+   fixed-date match on `(day, year, ofe=1)` is evaluated first, then
+   depletion-period scheduling if no fixed-date event is active.
+2. Fixed-date scheduling consumes parser-projected event dates and payloads
+   (`irrigation.fixeddate.event_####.*`) without mutating parser-owned records.
+3. Depletion scheduling consumes parser-projected period rows and evaluates
+   trigger ratio using runtime proxy `DL = wb11_soil_water / wb11_field_capacity`
+   against period threshold `DL_crit` from parsed rows.
+4. Active sprinkler event payload derives deterministic runtime traces:
+   `irrigation.runtime_depth_m`, `irrigation.runtime_duration_s`,
+   `irrigation.runtime_rate_m_per_s`, and schedule-source marker.
+5. Runoff forcing closure under irrigation is explicit:
+   `wb12_rainfall_input = wb14_hyetograph_rainfall + irrigation.runtime_depth_m`.
+6. Coupled runoff reconciliation consumes irrigation depth in the liquid-input
+   balance and emits irrigation flux alias `Irr = irrigation.runtime_depth_m`.
+7. Coupled storage reconciliation consumes `Irr` explicitly:
+   `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S + Irr - I - Q - ET - D - Qd`.
+8. Silent defaults/clamps for missing/non-finite/out-of-domain scheduling
+   payloads are prohibited; failures are typed and phase-local.
+
+### IRRIG10 Typed Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Runoff reconciliation | `HKERNEL-WB14-RUNOFF-E-001` | `HKERNEL-WB14-RUNOFF-E-002` | `HKERNEL-WB14-RUNOFF-E-003` |
+| Storage reconciliation | `HKERNEL-WB12-STORAGE-E-001` | `HKERNEL-WB12-STORAGE-E-002` | `HKERNEL-WB12-STORAGE-E-003` |
+
+### IRRIG10 Contract-Test Vectors
+
+1. Fixed-date sprinkler event on matching `(day, year)` emits positive `Irr`
+   and deterministic coupled runoff/storage outputs.
+2. Depletion sprinkler period trigger emits positive `Irr` with explicit
+   schedule-source trace surfaces.
+3. Missing irrigation scheduling key symbols (`day`, `year`, or required parsed
+   event fields) hard-fail with typed missing-input posture.
+4. Non-finite/out-of-domain irrigation scheduling payloads hard-fail with typed
+   non-finite/domain posture.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-IRRIG-001 | Per-invariant comparator vectors for all `INV-IRRIG-*` families are not yet curated in this package. | Limits immediate automation depth for irrigation-specific invariant gating. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-IRRIG-002 | Concrete openWEPP runtime-field aliases for canonical irrigation symbols are not yet fixed. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-IRRIG-002 | IRRIG10 ports sprinkler scheduling/coupling first; furrow hydraulics/runtime coupling remains deferred pending dedicated furrow process-kernel authority and geometry closure. | Furrow scheduling payloads are parsed/projected but do not yet provide full Chapter-12 furrow hydraulics behavior. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IRRIG-003 | Downstream coupled contracts (`SC-HYDRAULICS-001`, `SC-SED-001`, `SC-ROUTE-001`) remain incomplete, so irrigation-output ownership boundaries are provisional. | Promotion-readiness depends on downstream contract completion and consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-IRRIG-004 | Chapter-12 simplifications omit overlapping surge-wave interactions and constrain depletion scheduling to one OFE/day. | Some real-world irrigation regimes may require richer coupling semantics than this contract currently permits. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -218,3 +278,4 @@ bit-for-bit parity). Contract-specific tolerances:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-14 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-12 authority anchors, irrigation invariants, guard map, alias map, obligations, tolerance notes, and gap register for SCI-14 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token, added claim-level evidence tags in scope/degenerate/tolerance sections, added explicit `qp`/`Qp` alias continuity row, and replaced broad Chapter-11 coupling citation with precise §11.2.2 Eq. [11.2.5] anchor. |
+| `2026-05-23` | `3` | `Codex` | IRRIG10 amendment: fixed concrete runtime alias mappings for sprinkler/depletion/fixed-date seams, added deterministic runtime schedule-source precedence and coupled `Irr` runoff/storage authority, and codified typed guard/test-vector obligations for irrigation-triggered WB14/WB12 coupling. |

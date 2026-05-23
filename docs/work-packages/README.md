@@ -507,6 +507,15 @@ Authorized packages:
     into runoff/infiltration/water-balance closure with contract-first
     sequencing (contract amendments, contract tests, pre-implementation gate,
     then kernel code).
+- `20260523-irrig10-irrigation-runtime-kernel-port-001/`
+  - Purpose: implement irrigation runtime kernels consuming depletion/fixed-date
+    parser surfaces with typed scheduling and hydrology coupling, using
+    contract-first sequencing (contract amendments, contract tests,
+    pre-implementation gate, then kernel code).
+- `20260523-wb16-peak-runoff-kernel-001/`
+  - Purpose: implement peak runoff kernel outputs for downstream
+    sediment/routing coupling with contract-first sequencing (contract
+    amendments, contract tests, pre-implementation gate, then kernel code).
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
