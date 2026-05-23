@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -324,6 +324,47 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 2. Non-finite WB12 runoff/state input hard-fails at the corresponding reconciliation phase with typed non-finite guard code.
 3. Closure-delta overflow beyond tolerance hard-fails with typed domain/closure guard code and no writeback mutation.
 
+## WB14 Infiltration and Hyetograph Coupling Addendum
+
+### WB14 Required Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Runoff reconciliation forcing | `ninten` or `nbrkpt`; `timem_####`; `intsty_####`; `ssc`; `dg`; `thetdr`; `thetfc` |
+| Runoff reconciliation state inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+
+### WB14 Deterministic Coupling Rules
+
+1. Runoff reconciliation computes infiltration from subdaily hyetograph forcing
+   within the runoff kernel branch; externally seeded `wb12_infiltration` is no
+   longer a required input for acceptance paths.
+2. Reconciliation uses computed infiltration and hyetograph rainfall depth in:
+   - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+3. `wb12_rainfall_input` remains a required closure-consistency surface and must
+   match hyetograph-integrated rainfall depth within
+   `wb12_runoff_closure_tolerance`.
+4. Reconciliation and downstream storage closure (`wb12_storage_reconciled`)
+   remain deterministic and typed-fail on missing/non-finite/domain-invalid
+   inputs.
+
+### WB14 Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Runoff reconciliation | `HKERNEL-WB14-RUNOFF-E-001` | `HKERNEL-WB14-RUNOFF-E-002` | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### WB14 Contract-Test Vectors
+
+1. Valid hyetograph + soil infiltration forcing emits deterministic
+   `wb12_infiltration`, `Q`, and WB12 runoff closure diagnostics.
+2. Missing required WB14 forcing symbol hard-fails at runoff reconciliation
+   with `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite WB14 forcing/reconciliation symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-002`.
+4. Non-monotone hyetograph time, negative intensity, rainfall mismatch, or
+   runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
+
 ## WB13 Daily Output-Surface Authority Addendum
 
 ### WB13 Canonical Daily Output Schema (`H5.wat.dat` Equivalent)
@@ -417,3 +458,4 @@ canonical order:
 | `2026-05-23` | `6` | `Codex` | WB13 amendment: added canonical daily water-balance output surface authority (`H5.wat.dat` equivalent) with fixed 25-column schema, deterministic row-order key rules, typed WB13 output guards, and WB13 contract-derived vectors. |
 | `2026-05-23` | `7` | `Codex` | INT10 amendment: added coupled watbal lane-entry invariant (`INV-WATBAL-011`), scheduler ordering-precondition guard authority, and INT10 coupled replay test-vector obligations for ordering/state-transfer validation. |
 | `2026-05-23` | `8` | `Codex` | PL14 amendment: added replay-candidate emission invariant (`INV-WATBAL-012`) with strict WB13 schema/order + artifact completeness guard authority for Tier-A closeout staging. |
+| `2026-05-23` | `9` | `Codex` | WB14 amendment: added computed infiltration + hyetograph coupling authority for runoff reconciliation, replacing required externally seeded infiltration input in acceptance paths and adding typed WB14 runoff guards. |

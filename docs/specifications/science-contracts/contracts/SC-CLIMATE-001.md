@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration forcing consumers
   - Water-balance and irrigation event-coupling consumers
 evidence_level: static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -197,6 +197,37 @@ parity). Contract-specific interpretation tolerances:
 | TOL-CLIMATE-003 | Storm-duration closure residual after disaggregation restore | `<= 1e-10 h` | Applies to breakpoint sequence end-time consistency. |
 | TOL-CLIMATE-004 | Monotonicity tolerance for cumulative breakpoint time/depth sequences | nondecreasing within `1e-12` numeric noise | Negative steps beyond tolerance are invalid-state failures. |
 
+## WB14 Hyetograph-Coupling Addendum
+
+### WB14 Runoff-Coupling Forcing Requirements
+
+For event days consumed by runoff reconciliation:
+
+1. The runtime climate payload must expose point-count metadata (`ninten` for
+   no-breakpoint forcing, `nbrkpt` for breakpoint forcing) and the matching
+   `timem_####` / `intsty_####` series.
+2. `timem_####` values are elapsed-seconds offsets from event start and must be
+   strictly increasing for indexed points.
+3. `intsty_####` values are interval rainfall intensities (`m s^-1`), finite,
+   and non-negative; terminal zero-intensity endpoint semantics are retained.
+4. Forcing surfaces must remain compatible with Chapter-4 Green-Ampt lineage
+   infiltration consumers without implicit unit conversion.
+
+### WB14 Typed-Guard Alignment
+
+Malformed hyetograph payloads at runoff-consumer boundary (missing symbols,
+non-finite values, non-monotone times, or negative intensities) are invalid
+states and must hard-fail through typed consumer guard posture (`HKERNEL-WB14-RUNOFF-E-00x`).
+
+### WB14 Contract-Test Vectors
+
+1. Valid climate forcing projects deterministic hyetograph symbol families into
+   runtime surfaces for runoff consumers.
+2. Missing required hyetograph symbol family fails at runoff consumer boundary
+   with typed missing-input posture.
+3. Non-monotone breakpoint/disaggregation time sequence or negative intensity
+   fails with typed domain posture and no fallback re-assembly.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -215,3 +246,4 @@ parity). Contract-specific interpretation tolerances:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with climate invariants, guard map, symbol alias map, and dual-review workflow readiness for SCI-03. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: canonical symbol continuity fixes, added missing `Ak`/`Nk`/`N` and alias coverage, and scoped breakpoint invariant to storm events. |
 | `2026-05-20` | `3` | `Codex` | Reclassified `GAP-CLIMATE-002` from non-promotable to promotable-with-risk, with explicit retirement criterion for future authority/validation updates. |
+| `2026-05-23` | `4` | `Codex` | WB14 amendment: added explicit runoff hyetograph-coupling forcing requirements, typed-guard alignment for malformed subdaily series, and WB14 vector obligations. |

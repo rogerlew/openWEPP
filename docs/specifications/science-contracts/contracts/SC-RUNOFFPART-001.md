@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -276,6 +276,68 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 3. Missing/non-finite/out-of-domain runoff/runon symbols are invalid WB13
    output states and must hard-fail with WB13 typed guard posture.
 
+## WB14 Infiltration and Subdaily Hyetograph Kernel Authority Addendum
+
+### WB14 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Hyetograph forcing inputs | `ninten` or `nbrkpt`; `timem_####`; `intsty_####` |
+| Soil-derived infiltration inputs | `ssc`, `dg`, `thetdr`, `thetfc` |
+| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+
+### WB14 Deterministic Infiltration and Runoff Rules
+
+1. Build event subdaily intervals from `timem_####` and `intsty_####` with
+   strict time monotonicity and non-negative interval intensities.
+2. Derive Green-Ampt lineage parameters from runtime symbols:
+   - `Ke = ssc`
+   - `θd = thetfc - thetdr`
+   - `Sm = dg * θd`
+3. For each interval `j`, compute rainfall depth
+   `Rj = intsty_j * (timem_{j+1} - timem_j)` and cumulative infiltration `F`:
+   - if `intsty_j <= Ke`, interval infiltration increment is `Rj`;
+   - if `intsty_j > Ke`, evaluate ponding threshold
+     `Fp = (Ke * Sm) / (intsty_j - Ke)` and apply explicit branch:
+     - no-ponding branch: rainfall-controlled increment when interval end
+       cumulative infiltration remains below `Fp`;
+     - ponded branch: solve the Green-Ampt implicit cumulative relation
+       `(F - Fp) - Sm * ln((F + Sm)/(Fp + Sm)) = Ke * Δtp`
+       for the ponded sub-interval duration `Δtp`.
+4. Interval rainfall excess is `max(Rj - ΔFj, 0)` where `ΔFj` is interval
+   infiltration increment.
+5. Event totals are:
+   - `wb14_hyetograph_rainfall = Σ Rj`
+   - `wb12_infiltration = Σ ΔFj`
+6. `wb14_hyetograph_rainfall` and `wb12_rainfall_input` must agree within
+   `wb12_runoff_closure_tolerance`; mismatch is an invalid state.
+7. Reconciled runoff is:
+   - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+8. Missing/non-finite/out-of-domain symbols and closure violations hard-fail;
+   no silent clamping/defaulting of hyetograph or infiltration terms is
+   allowed.
+
+### WB14 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB14-RUNOFF-E-001` |
+| Non-finite required symbol | `HKERNEL-WB14-RUNOFF-E-002` |
+| Domain/closure violation | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### WB14 Contract-Test Vectors
+
+1. Valid hyetograph + soil infiltration symbols produce deterministic
+   `wb12_infiltration`, `Q`, and closure diagnostics.
+2. Missing required hyetograph or infiltration symbols hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite hyetograph/infiltration/reconciliation symbols hard-fail with
+   `HKERNEL-WB14-RUNOFF-E-002`.
+4. Non-monotone hyetograph time, negative intensity, rainfall-mismatch, or
+   runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -294,3 +356,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit event-closure term identity, added normative multi-OFE case outcome table, added alias row for `De`, and split rate tolerances for clearer unit-specific governance. |
 | `2026-05-23` | `3` | `Codex` | WB12 amendment: added runoff reconciliation kernel authority with deterministic closure diagnostics, typed WB12 runoff guard codes, and WB12 contract-derived vectors. |
 | `2026-05-23` | `4` | `Codex` | WB13 amendment: added canonical daily output coupling authority for runoff/runon symbols (`Q`, `QOFE`, `UpStrmQ`, `RM`, `P`) with explicit WB13 malformed-output hard-fail posture. |
+| `2026-05-23` | `5` | `Codex` | WB14 amendment: added production infiltration + subdaily hyetograph kernel authority with Green-Ampt lineage branch rules, typed WB14 runoff guards, and WB14 contract-derived vectors. |

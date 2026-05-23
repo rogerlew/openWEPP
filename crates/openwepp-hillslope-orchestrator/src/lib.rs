@@ -17,8 +17,8 @@ use openwepp_kernel_contract::{
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
     HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackApplyResult,
-    KernelWritebackPayload, WritebackDecisionOutcome, WritebackError, WritebackField,
-    apply_kernel_writeback, evaluate_kernel_writeback,
+    KernelWritebackPayload, MAX_CLIMATE_FORCING_SERIES_POINTS, WritebackDecisionOutcome,
+    WritebackError, WritebackField, apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
@@ -94,6 +94,12 @@ const WB12_SYMBOL_PRECIP_INPUT: &str = "wb12_precip_input";
 const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: &str = "wb12_storage_closure_delta";
 const WB12_SYMBOL_STORAGE_RECONCILED: &str = "wb12_storage_reconciled";
 const WB12_SYMBOL_RUNOFF_Q: &str = "Q";
+const WB14_SYMBOL_HYETOGRAPH_NINTEN: &str = "ninten";
+const WB14_SYMBOL_HYETOGRAPH_NBRKPT: &str = "nbrkpt";
+const WB14_SYMBOL_SOIL_CONDUCTIVITY: &str = "ssc";
+const WB14_SYMBOL_SOIL_LAYER_DEPTH: &str = "dg";
+const WB14_SYMBOL_SOIL_THETA_RESIDUAL: &str = "thetdr";
+const WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY: &str = "thetfc";
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -1449,7 +1455,7 @@ impl Wb11HydrologyKernelGuardError {
             HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage => ("WB11", "PERC"),
             HillslopeKernelPhaseClass::HydrologyLateralTransfer => ("WB11", "LAT"),
             HillslopeKernelPhaseClass::HydrologyDrainage => ("WB11", "DRAIN"),
-            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => ("WB12", "RUNOFF"),
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => ("WB14", "RUNOFF"),
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation => ("WB12", "STORAGE"),
             _ => ("WB11", "GEN"),
         };
@@ -1656,6 +1662,441 @@ impl Wb11HydrologyKernel {
             }
         }
         Ok(())
+    }
+
+    fn diagnostic_count_to_f64(value: usize) -> f64 {
+        value.to_string().parse::<f64>().unwrap_or(f64::INFINITY)
+    }
+
+    fn optional_state_non_negative_integral(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<Option<usize>, Wb11HydrologyKernelGuardError> {
+        let key = BoundarySymbol::from(symbol);
+        let Some(value) = request.state_surface.get(&key) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: key,
+                value: scalar,
+            });
+        }
+        if scalar < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: key,
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let rounded = scalar.round();
+        if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: key,
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let rounded_text = format!("{rounded:.0}");
+        let Ok(parsed_count) = rounded_text.parse::<usize>() else {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: key,
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
+            });
+        };
+
+        Ok(Some(parsed_count))
+    }
+
+    fn resolve_hyetograph_point_count(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<usize, Wb11HydrologyKernelGuardError> {
+        let ninten = Self::optional_state_non_negative_integral(
+            request,
+            phase_class,
+            WB14_SYMBOL_HYETOGRAPH_NINTEN,
+        )?;
+        let nbrkpt = Self::optional_state_non_negative_integral(
+            request,
+            phase_class,
+            WB14_SYMBOL_HYETOGRAPH_NBRKPT,
+        )?;
+
+        let point_count = match (ninten, nbrkpt) {
+            (None, None) => {
+                return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_HYETOGRAPH_NINTEN),
+                });
+            }
+            (Some(ninten_points), Some(nbrkpt_points)) => {
+                if ninten_points > 0 && nbrkpt_points > 0 && ninten_points != nbrkpt_points {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: BoundarySymbol::from(WB14_SYMBOL_HYETOGRAPH_NINTEN),
+                        value: Self::diagnostic_count_to_f64(ninten_points),
+                        minimum: Some(Self::diagnostic_count_to_f64(nbrkpt_points)),
+                        maximum: Some(Self::diagnostic_count_to_f64(nbrkpt_points)),
+                    });
+                }
+                ninten_points.max(nbrkpt_points)
+            }
+            (Some(ninten_points), None) => ninten_points,
+            (None, Some(nbrkpt_points)) => nbrkpt_points,
+        };
+
+        if point_count > MAX_CLIMATE_FORCING_SERIES_POINTS {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_HYETOGRAPH_NINTEN),
+                value: Self::diagnostic_count_to_f64(point_count),
+                minimum: Some(0.0),
+                maximum: Some(Self::diagnostic_count_to_f64(
+                    MAX_CLIMATE_FORCING_SERIES_POINTS,
+                )),
+            });
+        }
+
+        Ok(point_count)
+    }
+
+    fn load_hyetograph_series(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        point_count: usize,
+    ) -> Result<(Vec<f64>, Vec<f64>), Wb11HydrologyKernelGuardError> {
+        if point_count == 0 {
+            return Ok((Vec::new(), Vec::new()));
+        }
+
+        let mut times = Vec::with_capacity(point_count);
+        let mut intensities = Vec::with_capacity(point_count);
+
+        for index in 1..=point_count {
+            let time_symbol = format!("timem_{index:04}");
+            let intensity_symbol = format!("intsty_{index:04}");
+
+            let time_key = BoundarySymbol::from(time_symbol.clone());
+            let Some(time_value) = request.state_surface.get(&time_key) else {
+                return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: time_key,
+                });
+            };
+            let time_scalar = time_value.as_f64();
+            if !time_scalar.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(time_symbol.as_str()),
+                    value: time_scalar,
+                });
+            }
+            if time_scalar < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(time_symbol.as_str()),
+                    value: time_scalar,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            times.push(if time_scalar < 0.0 { 0.0 } else { time_scalar });
+
+            let intensity_key = BoundarySymbol::from(intensity_symbol.clone());
+            let Some(intensity_value) = request.state_surface.get(&intensity_key) else {
+                return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: intensity_key,
+                });
+            };
+            let intensity_scalar = intensity_value.as_f64();
+            if !intensity_scalar.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(intensity_symbol.as_str()),
+                    value: intensity_scalar,
+                });
+            }
+            if intensity_scalar < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(intensity_symbol.as_str()),
+                    value: intensity_scalar,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            intensities.push(if intensity_scalar < 0.0 {
+                0.0
+            } else {
+                intensity_scalar
+            });
+        }
+
+        if point_count == 1 && intensities[0] > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("intsty_0001"),
+                value: intensities[0],
+                minimum: Some(0.0),
+                maximum: Some(0.0),
+            });
+        }
+
+        for index in 1..point_count {
+            let previous = times[index - 1];
+            let current = times[index];
+            if current <= previous + WB11_ZERO_THRESHOLD {
+                let symbol = format!("timem_{:04}", index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(symbol),
+                    value: current,
+                    minimum: Some(previous + WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+        }
+
+        Ok((times, intensities))
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn solve_ponded_cumulative_infiltration(
+        phase_class: HillslopeKernelPhaseClass,
+        conductivity: f64,
+        matric_potential: f64,
+        cumulative_start: f64,
+        duration: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if duration <= WB11_ZERO_THRESHOLD {
+            return Ok(cumulative_start);
+        }
+        if matric_potential <= WB11_ZERO_THRESHOLD {
+            return Ok(cumulative_start + conductivity * duration);
+        }
+
+        let rhs = conductivity * duration;
+        let start_plus_matric = cumulative_start + matric_potential;
+        if start_plus_matric <= 0.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: cumulative_start,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let residual = |candidate: f64| {
+            (candidate - cumulative_start)
+                - matric_potential * ((candidate + matric_potential) / start_plus_matric).ln()
+                - rhs
+        };
+
+        let mut lower = cumulative_start;
+        let mut upper = cumulative_start + conductivity * duration + matric_potential;
+        if upper <= lower {
+            upper = lower + 1.0;
+        }
+
+        let mut upper_residual = residual(upper);
+        if !upper_residual.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: upper,
+                minimum: Some(cumulative_start),
+                maximum: None,
+            });
+        }
+
+        let mut expansion_steps = 0_usize;
+        while upper_residual < 0.0 {
+            upper = upper * 2.0 + 1.0;
+            if !upper.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                    value: upper,
+                    minimum: Some(cumulative_start),
+                    maximum: None,
+                });
+            }
+            upper_residual = residual(upper);
+            if !upper_residual.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                    value: upper,
+                    minimum: Some(cumulative_start),
+                    maximum: None,
+                });
+            }
+            expansion_steps += 1;
+            if expansion_steps > 128 {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                    value: upper,
+                    minimum: Some(cumulative_start),
+                    maximum: None,
+                });
+            }
+        }
+
+        for _ in 0..128 {
+            let midpoint = 0.5 * (lower + upper);
+            let midpoint_residual = residual(midpoint);
+            if !midpoint_residual.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                    value: midpoint,
+                    minimum: Some(cumulative_start),
+                    maximum: Some(upper),
+                });
+            }
+            if midpoint_residual > 0.0 {
+                upper = midpoint;
+            } else {
+                lower = midpoint;
+            }
+
+            let tolerance = 1.0e-10 * upper.max(1.0);
+            if (upper - lower) <= tolerance {
+                break;
+            }
+        }
+
+        let solution = 0.5 * (lower + upper);
+        if !solution.is_finite() || solution < cumulative_start - WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: solution,
+                minimum: Some(cumulative_start),
+                maximum: None,
+            });
+        }
+
+        Ok(solution)
+    }
+
+    fn compute_interval_infiltration_depth(
+        phase_class: HillslopeKernelPhaseClass,
+        conductivity: f64,
+        matric_potential: f64,
+        cumulative_infiltration_start: f64,
+        rainfall_rate: f64,
+        interval_duration: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if interval_duration <= 0.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_HYETOGRAPH_NINTEN),
+                value: interval_duration,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let interval_rainfall_depth = rainfall_rate * interval_duration;
+        if !interval_rainfall_depth.is_finite() || interval_rainfall_depth < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: interval_rainfall_depth,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        if rainfall_rate <= conductivity + WB11_ZERO_THRESHOLD {
+            return Ok(interval_rainfall_depth.max(0.0));
+        }
+
+        let interval_infiltration = if matric_potential <= WB11_ZERO_THRESHOLD {
+            conductivity * interval_duration
+        } else {
+            let denominator = rainfall_rate - conductivity;
+            if denominator <= WB11_ZERO_THRESHOLD {
+                interval_rainfall_depth
+            } else {
+                let ponding_threshold = (conductivity * matric_potential) / denominator;
+                if !ponding_threshold.is_finite() || ponding_threshold < 0.0 {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                        value: ponding_threshold,
+                        minimum: Some(0.0),
+                        maximum: None,
+                    });
+                }
+
+                if cumulative_infiltration_start >= ponding_threshold - WB11_ZERO_THRESHOLD {
+                    let cumulative_end = Self::solve_ponded_cumulative_infiltration(
+                        phase_class,
+                        conductivity,
+                        matric_potential,
+                        cumulative_infiltration_start,
+                        interval_duration,
+                    )?;
+                    cumulative_end - cumulative_infiltration_start
+                } else {
+                    let infiltration_to_ponding =
+                        (ponding_threshold - cumulative_infiltration_start).max(0.0);
+                    let time_to_ponding = infiltration_to_ponding / rainfall_rate;
+
+                    if time_to_ponding >= interval_duration - WB11_ZERO_THRESHOLD {
+                        interval_rainfall_depth
+                    } else {
+                        let ponded_duration = interval_duration - time_to_ponding;
+                        let cumulative_end = Self::solve_ponded_cumulative_infiltration(
+                            phase_class,
+                            conductivity,
+                            matric_potential,
+                            ponding_threshold,
+                            ponded_duration,
+                        )?;
+                        infiltration_to_ponding + (cumulative_end - ponding_threshold)
+                    }
+                }
+            }
+        };
+
+        if !interval_infiltration.is_finite()
+            || interval_infiltration < -WB11_ZERO_THRESHOLD
+            || interval_infiltration > interval_rainfall_depth + WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: interval_infiltration,
+                minimum: Some(0.0),
+                maximum: Some(interval_rainfall_depth),
+            });
+        }
+
+        let non_negative_infiltration = if interval_infiltration < 0.0 {
+            0.0
+        } else {
+            interval_infiltration
+        };
+        Ok(non_negative_infiltration.min(interval_rainfall_depth))
     }
 
     fn status_from_guard_error(error: &Wb11HydrologyKernelGuardError) -> SimulationStatus {
@@ -1998,6 +2439,7 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    #[allow(clippy::too_many_lines)]
     fn run_runoff_reconciliation(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
@@ -2011,6 +2453,136 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        let closure_tolerance =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE,
+            closure_tolerance,
+            Some(0.0),
+            None,
+        )?;
+
+        let soil_conductivity =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_CONDUCTIVITY)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_CONDUCTIVITY,
+            soil_conductivity,
+            Some(0.0),
+            None,
+        )?;
+
+        let soil_layer_depth =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_LAYER_DEPTH)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_LAYER_DEPTH,
+            soil_layer_depth,
+            Some(0.0),
+            None,
+        )?;
+
+        let theta_residual =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_THETA_RESIDUAL)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_RESIDUAL,
+            theta_residual,
+            Some(0.0),
+            None,
+        )?;
+
+        let theta_field_capacity = Self::require_state_scalar(
+            request,
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY,
+            theta_field_capacity,
+            Some(0.0),
+            None,
+        )?;
+
+        let moisture_deficit = theta_field_capacity - theta_residual;
+        if moisture_deficit < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY),
+                value: theta_field_capacity,
+                minimum: Some(theta_residual),
+                maximum: None,
+            });
+        }
+        let effective_moisture_deficit = if moisture_deficit < 0.0 {
+            0.0
+        } else {
+            moisture_deficit
+        };
+        let matric_potential = soil_layer_depth * effective_moisture_deficit;
+        if !matric_potential.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: matric_potential,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let hyetograph_point_count = Self::resolve_hyetograph_point_count(request, phase_class)?;
+        let (times, intensities) =
+            Self::load_hyetograph_series(request, phase_class, hyetograph_point_count)?;
+
+        let mut hyetograph_rainfall = 0.0_f64;
+        let mut cumulative_infiltration = 0.0_f64;
+        for index in 0..times.len().saturating_sub(1) {
+            let interval_duration = times[index + 1] - times[index];
+            let rainfall_rate = intensities[index];
+            let interval_rainfall = rainfall_rate * interval_duration;
+            if !interval_rainfall.is_finite() || interval_rainfall < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                    value: interval_rainfall,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            hyetograph_rainfall += interval_rainfall.max(0.0);
+
+            let interval_infiltration = Self::compute_interval_infiltration_depth(
+                phase_class,
+                soil_conductivity,
+                matric_potential,
+                cumulative_infiltration,
+                rainfall_rate,
+                interval_duration,
+            )?;
+            cumulative_infiltration += interval_infiltration;
+        }
+
+        if !hyetograph_rainfall.is_finite() || !cumulative_infiltration.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: cumulative_infiltration,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        if (rainfall_input - hyetograph_rainfall).abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: rainfall_input - hyetograph_rainfall,
+                minimum: Some(-closure_tolerance),
+                maximum: Some(closure_tolerance),
+            });
+        }
 
         let runon_input =
             Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNON_INPUT)?;
@@ -2018,16 +2590,6 @@ impl Wb11HydrologyKernel {
             phase_class,
             WB12_SYMBOL_RUNON_INPUT,
             runon_input,
-            Some(0.0),
-            None,
-        )?;
-
-        let infiltration =
-            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_INFILTRATION)?;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_INFILTRATION,
-            infiltration,
             Some(0.0),
             None,
         )?;
@@ -2052,17 +2614,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let closure_tolerance =
-            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE)?;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE,
-            closure_tolerance,
-            Some(0.0),
-            None,
-        )?;
-
-        let q_runoff = rainfall_input + runon_input - infiltration - depression_storage_delta;
+        let q_runoff =
+            hyetograph_rainfall + runon_input - cumulative_infiltration - depression_storage_delta;
         Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
 
         let closure_delta = q_runoff - runoff_observed;
@@ -2078,17 +2631,20 @@ impl Wb11HydrologyKernel {
 
         let Ok(status) = SimulationStatus::ok(
             SimulationPhase::HillslopeKernel,
-            "HKERNEL-WB12-RUNOFF-OK-001",
+            "HKERNEL-WB14-RUNOFF-OK-001",
         ) else {
-            unreachable!("status message ids are non-empty WB12 constants")
+            unreachable!("status message ids are non-empty WB14 constants")
         };
         let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                WB12_SYMBOL_RUNOFF_RECONCILED,
-                q_runoff,
-                Some(0.0),
-                None,
-            )],
+            vec![
+                WritebackField::bounded(
+                    WB12_SYMBOL_INFILTRATION,
+                    cumulative_infiltration,
+                    Some(0.0),
+                    None,
+                ),
+                WritebackField::bounded(WB12_SYMBOL_RUNOFF_RECONCILED, q_runoff, Some(0.0), None),
+            ],
             vec![
                 WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
                 WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),

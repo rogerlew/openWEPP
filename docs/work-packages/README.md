@@ -26,6 +26,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   - `docs/specifications/science-contract-authoring-procedure.md`
   - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
   as dependencies, and must include a kernel-profile compliance checklist artifact.
+- Code-authoring work packages should use contract-first sequencing when applicable:
+  1. implement/ratify canonical contract amendments,
+  2. implement contract-derived tests,
+  3. record a pre-implementation contract gate, then
+  4. modify production code.
 - Missing kernel-profile/procedure compliance keeps disposition in `HOLD`.
 
 ## Queued packages
@@ -476,6 +481,10 @@ Authorized packages:
   - Purpose: disposition residual Tier-A deltas and issue the PL08 hold-lift
     verdict with explicit risk-acceptance references when blockers remain,
     plus required contract/contract-test implementation evidence.
+- `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
+  - Purpose: implement production infiltration kernel authority and within-day
+    hyetograph integration with contract-first sequencing (contract amendments,
+    contract tests, pre-implementation gate, then kernel code).
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

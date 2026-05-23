@@ -24,6 +24,11 @@
 - For kernel-affecting behavior (including runtime projection that controls kernel branches), treat canonical `SC-*` contracts as implementation authority and satisfy:
   - `docs/specifications/science-contract-authoring-procedure.md`
   - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+- For code-authoring work packages when contract authority is applicable, use contract-first sequencing:
+  1. implement required contract amendments,
+  2. implement contract-derived tests,
+  3. record pre-implementation contract-gate evidence, then
+  4. modify production code.
 
 ## Project Role
 openWEPP is the Rust simulation engine. openWEPP owns its architecture and

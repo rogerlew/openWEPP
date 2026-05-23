@@ -14,6 +14,7 @@ NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
 NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
 
+#[allow(clippy::too_many_lines)]
 fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     let mut state_surface = std::collections::BTreeMap::new();
 
@@ -23,10 +24,7 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.3));
-    state_surface.insert(
-        BoundarySymbol::from("ssc"),
-        BoundaryValue::scalar(0.000_004),
-    );
+    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
 
     // WB11 kernel state inputs.
     state_surface.insert(
@@ -66,7 +64,7 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     // beyond WB11 hydrology phases in the nominal success vector.
     state_surface.insert(
         BoundarySymbol::from("wb12_rainfall_input"),
-        BoundaryValue::scalar(6.0),
+        BoundaryValue::scalar(4.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runon_input"),
@@ -74,7 +72,7 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_infiltration"),
-        BoundaryValue::scalar(4.0),
+        BoundaryValue::scalar(0.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_depression_storage_delta"),
@@ -82,11 +80,36 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runoff_observed"),
-        BoundaryValue::scalar(2.5),
+        BoundaryValue::scalar(0.5),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runoff_closure_tolerance"),
-        BoundaryValue::scalar(1.0e-9),
+        BoundaryValue::scalar(1.0e-6),
+    );
+    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(3.0));
+    state_surface.insert(
+        BoundarySymbol::from("timem_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("timem_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("timem_0003"),
+        BoundaryValue::scalar(2.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0001"),
+        BoundaryValue::scalar(2.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0002"),
+        BoundaryValue::scalar(2.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0003"),
+        BoundaryValue::scalar(0.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_initial"),
@@ -98,11 +121,11 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
-        BoundaryValue::scalar(1.0e-9),
+        BoundaryValue::scalar(1.0e-6),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_precip_input"),
-        BoundaryValue::scalar(6.0),
+        BoundaryValue::scalar(4.0),
     );
 
     HillslopeWritebackSurface {
