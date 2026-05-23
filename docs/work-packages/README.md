@@ -419,6 +419,10 @@ Authorized packages:
   - Purpose: clear Claude pre-execution preconditions (structure-diff
     diagnosis, symbol-wiring clarification, typed-surface strategy decision)
     and acknowledge secondary findings validity before PL10/WB10 queue start.
+- `20260523-pl10-active-slot-authority-001/`
+  - Purpose: replace hard-coded `slot_0001/crop_0001` dispatch coupling with
+    deterministic day-aware active slot/crop authority and typed failure
+    behavior for PL growth/decomposition routing.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
