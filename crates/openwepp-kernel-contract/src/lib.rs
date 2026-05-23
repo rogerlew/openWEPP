@@ -346,6 +346,82 @@ pub enum HillslopeDecompositionManagementClass {
     Perennial,
 }
 
+/// Active annual decomposition/residue transition selected for runtime day.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopeAnnualDecompositionAction {
+    None,
+    Herbicide,
+    Burn,
+    Silage,
+    Cut,
+    Remove,
+}
+
+/// Annual transition-control payload consumed by decomposition dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeAnnualDecompositionControl {
+    pub resmgt: u8,
+    pub jdherb: u16,
+    pub jdburn: u16,
+    pub jdslge: u16,
+    pub jdcut: u16,
+    pub jdmove: u16,
+    pub fbrnag: f64,
+    pub fbrnog: f64,
+    pub frcut: f64,
+    pub frmove: f64,
+    pub active_action: HillslopeAnnualDecompositionAction,
+}
+
+/// Active perennial decomposition/residue transition selected for runtime day.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopePerennialDecompositionAction {
+    None,
+    Cut { event_index: u16 },
+    Grazing { cycle_index: u16 },
+}
+
+/// Active grazing payload selected for runtime day.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeActiveGrazingCycle {
+    pub cycle_index: u16,
+    pub gday: u16,
+    pub gend: u16,
+    pub animal: f64,
+    pub bodywt: f64,
+    pub area: f64,
+    pub digest: f64,
+}
+
+/// Perennial transition-control payload consumed by decomposition dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopePerennialDecompositionControl {
+    pub mgtopt: u8,
+    pub ncut: u16,
+    pub ncycle: u16,
+    pub active_action: HillslopePerennialDecompositionAction,
+    pub active_grazing_cycle: Option<HillslopeActiveGrazingCycle>,
+}
+
+/// Typed transition-control payload consumed by decomposition dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HillslopeDecompositionTransitionControl {
+    Annual(HillslopeAnnualDecompositionControl),
+    Perennial(HillslopePerennialDecompositionControl),
+}
+
+/// Typed decomposition transition payload assembled by scheduler dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeDecompositionTransitionPayload {
+    pub active_slot_index: usize,
+    pub active_crop_slot_index: usize,
+    pub runtime_day_of_year: u16,
+    pub iresd_seed: f64,
+    pub sumrtm_seed: f64,
+    pub sumsrm_seed: f64,
+    pub control: HillslopeDecompositionTransitionControl,
+}
+
 /// Typed phase class for hillslope kernel dispatch.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HillslopeKernelPhaseClass {
@@ -415,6 +491,7 @@ pub struct HillslopeDecompositionKernelContext {
     pub management_class: HillslopeDecompositionManagementClass,
     pub order_decomp_before_soil: f64,
     pub order_growth_after_decomp: f64,
+    pub transition_payload: Option<HillslopeDecompositionTransitionPayload>,
 }
 
 impl HillslopeDecompositionKernelContext {
@@ -428,7 +505,17 @@ impl HillslopeDecompositionKernelContext {
             management_class,
             order_decomp_before_soil,
             order_growth_after_decomp,
+            transition_payload: None,
         }
+    }
+
+    #[must_use]
+    pub const fn with_transition_payload(
+        mut self,
+        transition_payload: HillslopeDecompositionTransitionPayload,
+    ) -> Self {
+        self.transition_payload = Some(transition_payload);
+        self
     }
 }
 
@@ -991,5 +1078,40 @@ mod tests {
         );
         assert_eq!(request.decomposition_context, Some(decomposition_context));
         assert_eq!(request.growth_context, None);
+    }
+
+    #[test]
+    fn decomposition_context_can_carry_typed_transition_payload() {
+        let payload = HillslopeDecompositionTransitionPayload {
+            active_slot_index: 1,
+            active_crop_slot_index: 1,
+            runtime_day_of_year: 200,
+            iresd_seed: 3.0,
+            sumrtm_seed: 2.5,
+            sumsrm_seed: 1.5,
+            control: HillslopeDecompositionTransitionControl::Annual(
+                HillslopeAnnualDecompositionControl {
+                    resmgt: 1,
+                    jdherb: 200,
+                    jdburn: 0,
+                    jdslge: 0,
+                    jdcut: 0,
+                    jdmove: 0,
+                    fbrnag: 0.0,
+                    fbrnog: 0.0,
+                    frcut: 0.0,
+                    frmove: 0.0,
+                    active_action: HillslopeAnnualDecompositionAction::Herbicide,
+                },
+            ),
+        };
+        let context = HillslopeDecompositionKernelContext::new(
+            HillslopeDecompositionManagementClass::AnnualOrFallow,
+            1.0,
+            1.0,
+        )
+        .with_transition_payload(payload);
+
+        assert_eq!(context.transition_payload, Some(payload));
     }
 }

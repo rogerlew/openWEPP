@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -15,7 +15,7 @@ consumer_scope:
   - Soil and erosion consumers using residue placement/cover effects on erodibility and transport
   - Plant-management and snow/freeze consumers requiring residue boundary continuity
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -88,6 +88,75 @@ Out of scope:
 | `Cn`, `αf`, `αr`, `ωL`, `χ`, `τ`, `ν` | `fraction` | Rangeland decomposition coefficients/factors and weighted-time terms. | rangeland environment pathway | rangeland residue/root decomposition |
 | `FERIND`, `PSZIND` | `fraction` | Fertility and residue particle-size decomposition modifiers. | residue updater | cropland decomposition branch logic |
 | `Bc` | `kg m^-2` | Daily disappearance of rangeland litter from insects/rodents. | rangeland updater | rangeland decomposition branch logic |
+
+## Algorithm State Surfaces (PL12 Decomposition/Resup Transition Execution)
+
+### Required Inputs
+
+| Surface | Symbols |
+|---|---|
+| Active-slot dispatch controls | `day`, `year`, `pl_schedule_slot_*`, `pl_growth_slot_*_imngmt` |
+| Decomposition seed state | `iresd_seed`, `sumrtm_seed`, `sumsrm_seed` |
+| Annual transition controls | `resmgt`, `jdherb`, `jdburn`, `jdslge`, `jdcut`, `jdmove`, `fbrnag`, `fbrnog`, `frcut`, `frmove` |
+| Perennial transition controls | `mgtopt`, `ncut`, `ncycle`, `cutday[*]`, `gday[*]`, `gend[*]`, `animal[*]`, `bodywt[*]`, `area[*]`, `digest[*]` |
+| Ordering constraints | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp` |
+
+### Required Outputs
+
+| Surface | Output |
+|---|---|
+| Typed decomposition context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, seed state, transition-control payload, and active day transition selector |
+| Scheduler failure surface | typed hard-fail status when required transition-control inputs are missing/non-finite/out-of-domain/non-contiguous |
+
+### Mutated State Surfaces
+
+At scheduler/decomposition-dispatch boundary, mutation authority is limited to
+typed transition-context assembly and typed failure reporting; direct residue
+mass mutation is delegated to decomposition kernel handlers consuming that
+context.
+
+## Algorithm Specification (PL12 Scheduler Decomposition Transition Authority)
+
+1. Resolve active PL slot/crop from schedule topology and runtime `day/year`
+   controls.
+2. Read `imngmt` and enforce supported management-class domain:
+   - annual/fallow: `imngmt in {1,3}`;
+   - perennial: `imngmt = 2`.
+3. Enforce decomposition-order flags (`pl_order_decomp_before_soil`,
+   `pl_order_growth_after_decomp`) and required seed-state finiteness
+   (`iresd_seed`, `sumrtm_seed`, `sumsrm_seed`).
+4. Annual/fallow branch:
+   - read `resmgt` and branch-required annual control family;
+   - enforce day/fraction domains and mutually exclusive event-family
+     expectations;
+   - compute deterministic same-day active annual transition selector
+     (`none`, `herbicide`, `burn`, `silage`, `cut`, `remove`).
+5. Perennial branch:
+   - read `mgtopt`, `ncut`, `ncycle`;
+   - enforce indexed-family closure (contiguous `1..N`, no holes, no overflow
+     indices) for `cutday` and grazing payload arrays;
+   - enforce grazing-window ordering (`gday[k] < gend[k]`) and positive payload
+     domains (`animal`, `bodywt`, `area`, `digest`);
+   - compute deterministic same-day active perennial selector:
+     `none`, `cut(event_index)`, or `grazing(cycle_index, payload)`.
+6. Impossible transfer/removal state domains (for example fractions outside
+   `[0,1]`, non-positive grazing payload magnitudes, or invalid day windows)
+   are typed hard failures and must not be silently clamped/defaulted.
+7. Emit typed decomposition context for downstream kernel execution only after
+   all guards pass.
+
+## Branch and Guard Table (PL12 Decomposition Transition Controls)
+
+| Branch ID | Trigger | Required symbols | Guard class | Failure posture |
+|---|---|---|---|---|
+| `BR-RES-PL12-ANNUAL` | `imngmt in {1,3}` | `resmgt` + annual transition controls | runtime | typed hard-fail on missing/non-finite/out-of-domain controls |
+| `BR-RES-PL12-ANNUAL-BURN` | `resmgt=2` | `jdburn`, `fbrnag`, `fbrnog` | runtime | typed hard-fail on day/fraction domain violations |
+| `BR-RES-PL12-ANNUAL-CUT` | `resmgt=4` | `jdcut`, `frcut` | runtime | typed hard-fail on day/fraction domain violations |
+| `BR-RES-PL12-ANNUAL-REMOVE` | `resmgt=5` | `jdmove`, `frmove` | runtime | typed hard-fail on day/fraction domain violations |
+| `BR-RES-PL12-PERENNIAL` | `imngmt=2` | `mgtopt`, `ncut`, `ncycle` | runtime | typed hard-fail on missing/non-integral/out-of-domain controls |
+| `BR-RES-PL12-PERENNIAL-CUT` | `mgtopt=1` | `cutday[1..ncut]` | runtime | typed hard-fail on cardinality/index closure or day domain violation |
+| `BR-RES-PL12-PERENNIAL-GRAZE` | `mgtopt=2` | `gday/gend/payload[1..ncycle]` | runtime | typed hard-fail on cardinality/index closure, day-window ordering, or payload domain violations |
+| `BR-RES-PL12-PERENNIAL-DORMANT` | `mgtopt=3` | no indexed families | runtime | typed hard-fail if cut/graze payload symbols are present unexpectedly |
 
 ## Invariants
 
@@ -190,6 +259,17 @@ field names remain provisional and must preserve these mappings.
 | Coupling payload and update order (`INV-RESIDUE-011/012`) | residue boundary publish and workflow validator | Hard error on missing payloads or sequencing divergence | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Parameter-range governance (`INV-RESIDUE-013`) | review/verification/promotion | Governance `HOLD` until explicit labeling/rationale is recorded | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## Constants and Parameters Table
+
+| Constant/parameter | Units | Domain | Contract use | Authority |
+|---|---|---|---|---|
+| `JULIAN_DAY_MIN` | day-of-year | `1` | lower bound for active transition days | REF-RESIDUE-CH9-CROP-SUMMARY |
+| `JULIAN_DAY_MAX` | day-of-year | `366` | upper bound for active transition days | REF-RESIDUE-CH9-CROP-SUMMARY |
+| `ZERO_SENTINEL` | day/count | `0` | inactive branch sentinel where explicitly authorized | REF-RESIDUE-CH9-CROP-SUMMARY, REF-RESIDUE-CH9-MGMT |
+| `FRACTION_MIN` | fraction | `0.0` | lower bound for transition fractions (`Fcut`, `Fbs`, `Fbf`, `Frm`) | REF-RESIDUE-CH9-MGMT |
+| `FRACTION_MAX` | fraction | `1.0` | upper bound for transition fractions (`Fcut`, `Fbs`, `Fbf`, `Frm`) | REF-RESIDUE-CH9-MGMT |
+| `INDEX_ORIGIN` | index | `1` | first valid index for `cutday[*]` and grazing cycle families | REF-RESIDUE-CH9-CROP-SUMMARY |
+
 ## Tolerance and Numeric Notes
 
 This contract follows `docs/numerics/README.md` (semantic parity, not
@@ -202,6 +282,29 @@ bit-for-bit parity). `[DIRECT][Static]`
 | TOL-RESIDUE-003 | Environmental-factor bounds tolerance (`ENVIND`, `WFC*`, `TFC`) | `-1e-12 <= value <= 1 + 1e-12` | Branch formulas are bounded; out-of-range beyond tolerance is invalid. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-RESIDUE-004 | Exponential update argument finiteness (`Eq. 9.2.4`, Eq. [9.5.2]) | finite real required | Non-finite exponent inputs are invariant failures. | `[INFERENCE][Static]` |
 | TOL-RESIDUE-005 | Management fraction domain tolerance (`Fpc`, `Fcut`, `Fbs`, `Fbf`, `Frm`) | `-1e-12 <= value <= 1 + 1e-12` | Parameters are fractions; out-of-domain beyond tolerance is invalid. | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## Test-Vector Obligations
+
+Minimum required scenario families for contract conformance:
+
+1. Annual burn transition (`resmgt=2`) with same-day trigger and valid
+   `fbrnag/fbrnog` fractions.
+2. Annual cut transition (`resmgt=4`) with same-day trigger and valid `frcut`.
+3. Annual removal transition (`resmgt=5`) with same-day trigger and valid
+   `frmove`.
+4. Perennial cutting transition (`mgtopt=1`) with contiguous `cutday[1..ncut]`
+   and deterministic `cut(event_index)` selection on matching day.
+5. Perennial grazing transition (`mgtopt=2`) with contiguous
+   `gday/gend/payload[1..ncycle]`, valid `gday<gend`, and deterministic active
+   grazing-cycle selection by day window.
+6. Invalid-domain rejects for:
+   - non-integral/out-of-range `resmgt`, `mgtopt`, `ncut`, `ncycle`;
+   - missing indexed symbols within declared cardinality;
+   - overflow indexed symbols above declared cardinality;
+   - fraction-domain violations and non-positive grazing payloads;
+   - invalid grazing window ordering (`gday>=gend`).
+7. Failure-posture assertion: all invalid transition-control states surface
+   typed hard failures with no silent clamp/default behavior.
 
 ## Gap Register
 
@@ -220,3 +323,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-9 residue authority anchors, invariant/guard map coverage, alias map, obligations, tolerances, and gap register for SCI-11 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit `Cr` variable coverage, replaced mixed-unit rows with explicit unit declarations, and mapped canonical symbols to legacy Chapter-9 variable tokens. |
 | `2026-05-20` | `3` | `Codex` | Verification-fix amendment: completed alias-map coverage for `P` stubble-population state and `Wn` rangeland woody biomass symbol. |
+| `2026-05-23` | `4` | `Codex` | PL12 amendment: added scheduler decomposition-transition algorithm authority, branch/guard table for PL11 payload consumption, constants table, and PL12 test-vector obligations. |

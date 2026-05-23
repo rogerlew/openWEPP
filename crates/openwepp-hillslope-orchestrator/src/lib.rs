@@ -7,11 +7,14 @@ use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeDecompositionKernelContext,
-    HillslopeDecompositionManagementClass, HillslopeGrowthKernelContext,
-    HillslopeGrowthManagementClass, HillslopeKernel, HillslopeKernelPhaseClass,
-    HillslopeKernelRequest, KernelWritebackApplyResult, WritebackDecisionOutcome, WritebackError,
-    apply_kernel_writeback, evaluate_kernel_writeback,
+    BoundarySymbol, BoundaryValue, HillslopeActiveGrazingCycle, HillslopeAnnualDecompositionAction,
+    HillslopeAnnualDecompositionControl, HillslopeConsumerAdapter,
+    HillslopeDecompositionKernelContext, HillslopeDecompositionManagementClass,
+    HillslopeDecompositionTransitionControl, HillslopeDecompositionTransitionPayload,
+    HillslopeGrowthKernelContext, HillslopeGrowthManagementClass, HillslopeKernel,
+    HillslopeKernelPhaseClass, HillslopeKernelRequest, HillslopePerennialDecompositionAction,
+    HillslopePerennialDecompositionControl, KernelWritebackApplyResult, WritebackDecisionOutcome,
+    WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
@@ -497,6 +500,43 @@ pub enum HillslopeDecompositionBoundaryError {
         symbol: BoundarySymbol,
         value: f64,
     },
+    NonIntegralRequiredStateSymbol {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    StateSymbolValueOutOfRange {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: usize,
+        min_allowed: usize,
+        max_allowed: usize,
+    },
+    MissingIndexedStateSymbol {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        index: usize,
+    },
+    UnexpectedIndexedStateSymbol {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        index: usize,
+        max_expected: usize,
+    },
+    InvalidGrazingWindow {
+        phase: HillslopePhase,
+        cycle_index: usize,
+        gday_symbol: BoundarySymbol,
+        gend_symbol: BoundarySymbol,
+        gday: usize,
+        gend: usize,
+    },
+    InvalidTransitionPayloadState {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: f64,
+        reason: &'static str,
+    },
     ActiveSlotResolution {
         phase: HillslopePhase,
         source: HillslopePlActiveSlotResolutionError,
@@ -511,6 +551,12 @@ impl HillslopeDecompositionBoundaryError {
             Self::NonFiniteRequiredStateSymbol { .. } => "HS-DECOMP-E-002",
             Self::InvalidOrderingFlagValue { .. } => "HS-DECOMP-E-003",
             Self::UnsupportedManagementClass { .. } => "HS-DECOMP-E-004",
+            Self::NonIntegralRequiredStateSymbol { .. } => "HS-DECOMP-E-005",
+            Self::StateSymbolValueOutOfRange { .. } => "HS-DECOMP-E-006",
+            Self::MissingIndexedStateSymbol { .. } => "HS-DECOMP-E-007",
+            Self::UnexpectedIndexedStateSymbol { .. } => "HS-DECOMP-E-008",
+            Self::InvalidGrazingWindow { .. } => "HS-DECOMP-E-009",
+            Self::InvalidTransitionPayloadState { .. } => "HS-DECOMP-E-010",
             Self::ActiveSlotResolution { source, .. } => source.code(),
         }
     }
@@ -518,17 +564,24 @@ impl HillslopeDecompositionBoundaryError {
     #[must_use]
     pub fn boundary_class(&self) -> BoundaryClass {
         match self {
-            Self::MissingRequiredStateSymbol { .. } => BoundaryClass::MissingRequiredInput,
-            Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
-            Self::InvalidOrderingFlagValue { .. } | Self::UnsupportedManagementClass { .. } => {
-                BoundaryClass::DomainViolation
+            Self::MissingRequiredStateSymbol { .. } | Self::MissingIndexedStateSymbol { .. } => {
+                BoundaryClass::MissingRequiredInput
             }
+            Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
+            Self::InvalidOrderingFlagValue { .. }
+            | Self::UnsupportedManagementClass { .. }
+            | Self::NonIntegralRequiredStateSymbol { .. }
+            | Self::StateSymbolValueOutOfRange { .. }
+            | Self::UnexpectedIndexedStateSymbol { .. }
+            | Self::InvalidGrazingWindow { .. }
+            | Self::InvalidTransitionPayloadState { .. } => BoundaryClass::DomainViolation,
             Self::ActiveSlotResolution { source, .. } => source.boundary_class(),
         }
     }
 }
 
 impl fmt::Display for HillslopeDecompositionBoundaryError {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingRequiredStateSymbol { phase, symbol } => write!(
@@ -575,6 +628,92 @@ impl fmt::Display for HillslopeDecompositionBoundaryError {
                 phase.as_str(),
                 symbol,
                 value
+            ),
+            Self::NonIntegralRequiredStateSymbol {
+                phase,
+                symbol,
+                value,
+            } => write!(
+                f,
+                "{}: phase {} decomposition state symbol {} must be integral, observed {}",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value
+            ),
+            Self::StateSymbolValueOutOfRange {
+                phase,
+                symbol,
+                value,
+                min_allowed,
+                max_allowed,
+            } => write!(
+                f,
+                "{}: phase {} decomposition state symbol {}={} outside allowed range [{}..={}]",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value,
+                min_allowed,
+                max_allowed
+            ),
+            Self::MissingIndexedStateSymbol {
+                phase,
+                symbol,
+                index,
+            } => write!(
+                f,
+                "{}: phase {} missing indexed decomposition symbol {} for index {}",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                index
+            ),
+            Self::UnexpectedIndexedStateSymbol {
+                phase,
+                symbol,
+                index,
+                max_expected,
+            } => write!(
+                f,
+                "{}: phase {} unexpected indexed decomposition symbol {} with index {} above declared maximum {}",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                index,
+                max_expected
+            ),
+            Self::InvalidGrazingWindow {
+                phase,
+                cycle_index,
+                gday_symbol,
+                gend_symbol,
+                gday,
+                gend,
+            } => write!(
+                f,
+                "{}: phase {} invalid grazing window at cycle {} ({}={}, {}={}); expected gday < gend",
+                self.code(),
+                phase.as_str(),
+                cycle_index,
+                gday_symbol,
+                gday,
+                gend_symbol,
+                gend
+            ),
+            Self::InvalidTransitionPayloadState {
+                phase,
+                symbol,
+                value,
+                reason,
+            } => write!(
+                f,
+                "{}: phase {} invalid transition payload {}={} ({})",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value,
+                reason
             ),
             Self::ActiveSlotResolution { phase, source } => {
                 write!(f, "{}: phase {} {}", self.code(), phase.as_str(), source)
@@ -695,6 +834,15 @@ fn pl_growth_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: us
 
 fn pl_decomp_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: usize) -> String {
     format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn pl_decomp_slot_crop_indexed_symbol(
+    root: &str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    index: usize,
+) -> String {
+    format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}_{index:04}")
 }
 
 fn require_finite_pl_dispatch_symbol(
@@ -1022,6 +1170,7 @@ const fn hillslope_phase_class_for_phase(phase: HillslopePhase) -> HillslopeKern
     }
 }
 
+#[allow(clippy::too_many_lines)]
 fn decomposition_phase_dispatch_for_state(
     phase: HillslopePhase,
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
@@ -1034,6 +1183,15 @@ fn decomposition_phase_dispatch_for_state(
         resolve_active_pl_slot_selection(state_surface).map_err(|source| {
             HillslopeDecompositionBoundaryError::ActiveSlotResolution { phase, source }
         })?;
+
+    let runtime_day =
+        require_integral_pl_dispatch_symbol_in_range(state_surface, PL_RUNTIME_DAY_SYMBOL, 1, 366)
+            .map_err(
+                |source| HillslopeDecompositionBoundaryError::ActiveSlotResolution {
+                    phase,
+                    source,
+                },
+            )?;
 
     let imngmt_symbol = pl_growth_slot_crop_symbol(
         "imngmt",
@@ -1057,52 +1215,41 @@ fn decomposition_phase_dispatch_for_state(
         1.0,
     )?;
 
-    for symbol in [
+    let iresd_seed = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
         PL_DECOMP_IRESD_SEED_SYMBOL,
+    )?;
+    let sumrtm_seed = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
         PL_DECOMP_SUMRTM_SEED_SYMBOL,
+    )?;
+    let sumsrm_seed = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
         PL_DECOMP_SUMSRM_SEED_SYMBOL,
-    ] {
-        let _ = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
-    }
+    )?;
 
-    match management_class {
+    let control = match management_class {
         1 | 3 => {
-            let resmgt_symbol = pl_decomp_slot_crop_symbol(
-                "resmgt",
-                active_slot_selection.slot_index,
-                active_slot_selection.crop_slot_index,
-            );
-            let _ = require_finite_state_value_for_decomposition(
+            HillslopeDecompositionTransitionControl::Annual(build_annual_decomposition_control(
                 phase,
                 state_surface,
-                resmgt_symbol.as_str(),
-            )?;
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+                runtime_day,
+            )?)
         }
-        2 => {
-            for symbol in [
-                pl_decomp_slot_crop_symbol(
-                    "mgtopt",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_decomp_slot_crop_symbol(
-                    "ncut",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_decomp_slot_crop_symbol(
-                    "ncycle",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-            ] {
-                let _ = require_finite_state_value_for_decomposition(
-                    phase,
-                    state_surface,
-                    symbol.as_str(),
-                )?;
-            }
-        }
+        2 => HillslopeDecompositionTransitionControl::Perennial(
+            build_perennial_decomposition_control(
+                phase,
+                state_surface,
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+                runtime_day,
+            )?,
+        ),
         _ => {
             return Err(
                 HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
@@ -1112,7 +1259,7 @@ fn decomposition_phase_dispatch_for_state(
                 },
             );
         }
-    }
+    };
 
     let management_class = if management_class == 2 {
         HillslopeDecompositionManagementClass::Perennial
@@ -1120,12 +1267,27 @@ fn decomposition_phase_dispatch_for_state(
         HillslopeDecompositionManagementClass::AnnualOrFallow
     };
 
+    let transition_payload = HillslopeDecompositionTransitionPayload {
+        active_slot_index: active_slot_selection.slot_index,
+        active_crop_slot_index: active_slot_selection.crop_slot_index,
+        runtime_day_of_year: usize_to_u16_for_decomposition(
+            phase,
+            BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
+            runtime_day,
+        )?,
+        iresd_seed,
+        sumrtm_seed,
+        sumsrm_seed,
+        control,
+    };
+
     Ok(DecompositionPhaseDispatch::Execute(
         HillslopeDecompositionKernelContext::new(
             management_class,
             order_decomp_before_soil,
             order_growth_after_decomp,
-        ),
+        )
+        .with_transition_payload(transition_payload),
     ))
 }
 
@@ -1422,6 +1584,1072 @@ fn normalize_management_class_for_decomposition(
             value,
         },
     )
+}
+
+fn usize_to_u16_for_decomposition(
+    phase: HillslopePhase,
+    symbol: BoundarySymbol,
+    value: usize,
+) -> Result<u16, HillslopeDecompositionBoundaryError> {
+    u16::try_from(value).map_err(|_| {
+        HillslopeDecompositionBoundaryError::StateSymbolValueOutOfRange {
+            phase,
+            symbol,
+            value,
+            min_allowed: 0,
+            max_allowed: usize::from(u16::MAX),
+        }
+    })
+}
+
+fn usize_to_u8_for_decomposition(
+    phase: HillslopePhase,
+    symbol: BoundarySymbol,
+    value: usize,
+) -> Result<u8, HillslopeDecompositionBoundaryError> {
+    u8::try_from(value).map_err(|_| {
+        HillslopeDecompositionBoundaryError::StateSymbolValueOutOfRange {
+            phase,
+            symbol,
+            value,
+            min_allowed: 0,
+            max_allowed: usize::from(u8::MAX),
+        }
+    })
+}
+
+#[allow(
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
+fn require_integral_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeDecompositionBoundaryError> {
+    let value = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
+    let rounded = value.round();
+    if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
+        return Err(
+            HillslopeDecompositionBoundaryError::NonIntegralRequiredStateSymbol {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+            },
+        );
+    }
+
+    let min_f64 = min_allowed as f64;
+    let max_f64 = max_allowed as f64;
+    if rounded < min_f64 || rounded > max_f64 {
+        return Err(
+            HillslopeDecompositionBoundaryError::StateSymbolValueOutOfRange {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value: rounded as usize,
+                min_allowed,
+                max_allowed,
+            },
+        );
+    }
+
+    Ok(rounded as usize)
+}
+
+fn require_day_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    allow_zero: bool,
+) -> Result<usize, HillslopeDecompositionBoundaryError> {
+    let min_allowed = usize::from(!allow_zero);
+    require_integral_state_value_for_decomposition(phase, state_surface, symbol, min_allowed, 366)
+}
+
+fn require_fraction_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    let value = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
+    if !(0.0..=1.0).contains(&value) {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason: "expected fraction in [0,1]",
+            },
+        );
+    }
+    Ok(value)
+}
+
+fn require_zero_state_value_for_decomposition(
+    phase: HillslopePhase,
+    symbol: &str,
+    value: f64,
+    reason: &'static str,
+) -> Result<(), HillslopeDecompositionBoundaryError> {
+    if value.abs() > ORDER_FLAG_EPSILON {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason,
+            },
+        );
+    }
+    Ok(())
+}
+
+fn parse_indexed_suffix_for_decomposition(suffix: &str) -> Option<usize> {
+    if suffix.len() != 4 {
+        return None;
+    }
+    if !suffix.chars().all(|ch| ch.is_ascii_digit()) {
+        return None;
+    }
+    suffix.parse::<usize>().ok()
+}
+
+fn ensure_no_overflow_indexed_symbols_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    root: &str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    max_expected: usize,
+) -> Result<(), HillslopeDecompositionBoundaryError> {
+    let prefix = format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}_");
+    for symbol in state_surface.keys() {
+        if let Some(suffix) = symbol.as_str().strip_prefix(prefix.as_str())
+            && let Some(index) = parse_indexed_suffix_for_decomposition(suffix)
+            && (index == 0 || index > max_expected)
+        {
+            return Err(
+                HillslopeDecompositionBoundaryError::UnexpectedIndexedStateSymbol {
+                    phase,
+                    symbol: symbol.clone(),
+                    index,
+                    max_expected,
+                },
+            );
+        }
+    }
+    Ok(())
+}
+
+fn require_indexed_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    index: usize,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    if !state_surface.contains_key(&BoundarySymbol::from(symbol)) {
+        return Err(
+            HillslopeDecompositionBoundaryError::MissingIndexedStateSymbol {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                index,
+            },
+        );
+    }
+    require_finite_state_value_for_decomposition(phase, state_surface, symbol)
+}
+
+#[allow(
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
+fn require_indexed_integral_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    index: usize,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeDecompositionBoundaryError> {
+    let value = require_indexed_state_value_for_decomposition(phase, state_surface, symbol, index)?;
+    let rounded = value.round();
+    if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
+        return Err(
+            HillslopeDecompositionBoundaryError::NonIntegralRequiredStateSymbol {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+            },
+        );
+    }
+
+    let min_f64 = min_allowed as f64;
+    let max_f64 = max_allowed as f64;
+    if rounded < min_f64 || rounded > max_f64 {
+        return Err(
+            HillslopeDecompositionBoundaryError::StateSymbolValueOutOfRange {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value: rounded as usize,
+                min_allowed,
+                max_allowed,
+            },
+        );
+    }
+
+    Ok(rounded as usize)
+}
+
+fn require_indexed_positive_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    index: usize,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    let value = require_indexed_state_value_for_decomposition(phase, state_surface, symbol, index)?;
+    if value <= 0.0 {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason: "expected positive value",
+            },
+        );
+    }
+    Ok(value)
+}
+
+fn require_indexed_fraction_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    index: usize,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    let value = require_indexed_state_value_for_decomposition(phase, state_surface, symbol, index)?;
+    if !(0.0..=1.0).contains(&value) {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason: "expected fraction in [0,1]",
+            },
+        );
+    }
+    Ok(value)
+}
+
+#[allow(
+    clippy::too_many_lines,
+    clippy::cast_precision_loss,
+    clippy::similar_names
+)]
+fn build_annual_decomposition_control(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    runtime_day: usize,
+) -> Result<HillslopeAnnualDecompositionControl, HillslopeDecompositionBoundaryError> {
+    let resmgt_symbol = pl_decomp_slot_crop_symbol("resmgt", slot_index, crop_slot_index);
+    let resmgt = require_integral_state_value_for_decomposition(
+        phase,
+        state_surface,
+        resmgt_symbol.as_str(),
+        1,
+        6,
+    )?;
+
+    let jdherb_symbol = pl_decomp_slot_crop_symbol("jdherb", slot_index, crop_slot_index);
+    let jdburn_symbol = pl_decomp_slot_crop_symbol("jdburn", slot_index, crop_slot_index);
+    let jdslge_symbol = pl_decomp_slot_crop_symbol("jdslge", slot_index, crop_slot_index);
+    let jdcut_symbol = pl_decomp_slot_crop_symbol("jdcut", slot_index, crop_slot_index);
+    let jdmove_symbol = pl_decomp_slot_crop_symbol("jdmove", slot_index, crop_slot_index);
+    let fbrnag_symbol = pl_decomp_slot_crop_symbol("fbrnag", slot_index, crop_slot_index);
+    let fbrnog_symbol = pl_decomp_slot_crop_symbol("fbrnog", slot_index, crop_slot_index);
+    let frcut_symbol = pl_decomp_slot_crop_symbol("frcut", slot_index, crop_slot_index);
+    let frmove_symbol = pl_decomp_slot_crop_symbol("frmove", slot_index, crop_slot_index);
+
+    let jdherb = require_day_state_value_for_decomposition(
+        phase,
+        state_surface,
+        jdherb_symbol.as_str(),
+        true,
+    )?;
+    let jdburn = require_day_state_value_for_decomposition(
+        phase,
+        state_surface,
+        jdburn_symbol.as_str(),
+        true,
+    )?;
+    let jdslge = require_day_state_value_for_decomposition(
+        phase,
+        state_surface,
+        jdslge_symbol.as_str(),
+        true,
+    )?;
+    let jdcut = require_day_state_value_for_decomposition(
+        phase,
+        state_surface,
+        jdcut_symbol.as_str(),
+        true,
+    )?;
+    let jdmove = require_day_state_value_for_decomposition(
+        phase,
+        state_surface,
+        jdmove_symbol.as_str(),
+        true,
+    )?;
+    let fbrnag = require_fraction_state_value_for_decomposition(
+        phase,
+        state_surface,
+        fbrnag_symbol.as_str(),
+    )?;
+    let fbrnog = require_fraction_state_value_for_decomposition(
+        phase,
+        state_surface,
+        fbrnog_symbol.as_str(),
+    )?;
+    let frcut = require_fraction_state_value_for_decomposition(
+        phase,
+        state_surface,
+        frcut_symbol.as_str(),
+    )?;
+    let frmove = require_fraction_state_value_for_decomposition(
+        phase,
+        state_surface,
+        frmove_symbol.as_str(),
+    )?;
+
+    let active_action = match resmgt {
+        1 => {
+            if jdherb == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(jdherb_symbol.as_str()),
+                        value: 0.0,
+                        reason: "resmgt=1 requires jdherb in 1..366",
+                    },
+                );
+            }
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdburn_symbol.as_str(),
+                jdburn as f64,
+                "resmgt=1 requires jdburn=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdslge_symbol.as_str(),
+                jdslge as f64,
+                "resmgt=1 requires jdslge=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdcut_symbol.as_str(),
+                jdcut as f64,
+                "resmgt=1 requires jdcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdmove_symbol.as_str(),
+                jdmove as f64,
+                "resmgt=1 requires jdmove=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnag_symbol.as_str(),
+                fbrnag,
+                "resmgt=1 requires fbrnag=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnog_symbol.as_str(),
+                fbrnog,
+                "resmgt=1 requires fbrnog=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frcut_symbol.as_str(),
+                frcut,
+                "resmgt=1 requires frcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frmove_symbol.as_str(),
+                frmove,
+                "resmgt=1 requires frmove=0",
+            )?;
+            if runtime_day == jdherb {
+                HillslopeAnnualDecompositionAction::Herbicide
+            } else {
+                HillslopeAnnualDecompositionAction::None
+            }
+        }
+        2 => {
+            if jdburn == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(jdburn_symbol.as_str()),
+                        value: 0.0,
+                        reason: "resmgt=2 requires jdburn in 1..366",
+                    },
+                );
+            }
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdherb_symbol.as_str(),
+                jdherb as f64,
+                "resmgt=2 requires jdherb=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdslge_symbol.as_str(),
+                jdslge as f64,
+                "resmgt=2 requires jdslge=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdcut_symbol.as_str(),
+                jdcut as f64,
+                "resmgt=2 requires jdcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdmove_symbol.as_str(),
+                jdmove as f64,
+                "resmgt=2 requires jdmove=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frcut_symbol.as_str(),
+                frcut,
+                "resmgt=2 requires frcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frmove_symbol.as_str(),
+                frmove,
+                "resmgt=2 requires frmove=0",
+            )?;
+            if runtime_day == jdburn {
+                HillslopeAnnualDecompositionAction::Burn
+            } else {
+                HillslopeAnnualDecompositionAction::None
+            }
+        }
+        3 => {
+            if jdslge == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(jdslge_symbol.as_str()),
+                        value: 0.0,
+                        reason: "resmgt=3 requires jdslge in 1..366",
+                    },
+                );
+            }
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdherb_symbol.as_str(),
+                jdherb as f64,
+                "resmgt=3 requires jdherb=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdburn_symbol.as_str(),
+                jdburn as f64,
+                "resmgt=3 requires jdburn=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdcut_symbol.as_str(),
+                jdcut as f64,
+                "resmgt=3 requires jdcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdmove_symbol.as_str(),
+                jdmove as f64,
+                "resmgt=3 requires jdmove=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnag_symbol.as_str(),
+                fbrnag,
+                "resmgt=3 requires fbrnag=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnog_symbol.as_str(),
+                fbrnog,
+                "resmgt=3 requires fbrnog=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frcut_symbol.as_str(),
+                frcut,
+                "resmgt=3 requires frcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frmove_symbol.as_str(),
+                frmove,
+                "resmgt=3 requires frmove=0",
+            )?;
+            if runtime_day == jdslge {
+                HillslopeAnnualDecompositionAction::Silage
+            } else {
+                HillslopeAnnualDecompositionAction::None
+            }
+        }
+        4 => {
+            if jdcut == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(jdcut_symbol.as_str()),
+                        value: 0.0,
+                        reason: "resmgt=4 requires jdcut in 1..366",
+                    },
+                );
+            }
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdherb_symbol.as_str(),
+                jdherb as f64,
+                "resmgt=4 requires jdherb=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdburn_symbol.as_str(),
+                jdburn as f64,
+                "resmgt=4 requires jdburn=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdslge_symbol.as_str(),
+                jdslge as f64,
+                "resmgt=4 requires jdslge=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdmove_symbol.as_str(),
+                jdmove as f64,
+                "resmgt=4 requires jdmove=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnag_symbol.as_str(),
+                fbrnag,
+                "resmgt=4 requires fbrnag=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnog_symbol.as_str(),
+                fbrnog,
+                "resmgt=4 requires fbrnog=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frmove_symbol.as_str(),
+                frmove,
+                "resmgt=4 requires frmove=0",
+            )?;
+            if runtime_day == jdcut {
+                HillslopeAnnualDecompositionAction::Cut
+            } else {
+                HillslopeAnnualDecompositionAction::None
+            }
+        }
+        5 => {
+            if jdmove == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(jdmove_symbol.as_str()),
+                        value: 0.0,
+                        reason: "resmgt=5 requires jdmove in 1..366",
+                    },
+                );
+            }
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdherb_symbol.as_str(),
+                jdherb as f64,
+                "resmgt=5 requires jdherb=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdburn_symbol.as_str(),
+                jdburn as f64,
+                "resmgt=5 requires jdburn=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdslge_symbol.as_str(),
+                jdslge as f64,
+                "resmgt=5 requires jdslge=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdcut_symbol.as_str(),
+                jdcut as f64,
+                "resmgt=5 requires jdcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnag_symbol.as_str(),
+                fbrnag,
+                "resmgt=5 requires fbrnag=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnog_symbol.as_str(),
+                fbrnog,
+                "resmgt=5 requires fbrnog=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frcut_symbol.as_str(),
+                frcut,
+                "resmgt=5 requires frcut=0",
+            )?;
+            if runtime_day == jdmove {
+                HillslopeAnnualDecompositionAction::Remove
+            } else {
+                HillslopeAnnualDecompositionAction::None
+            }
+        }
+        6 => {
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdherb_symbol.as_str(),
+                jdherb as f64,
+                "resmgt=6 requires jdherb=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdburn_symbol.as_str(),
+                jdburn as f64,
+                "resmgt=6 requires jdburn=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdslge_symbol.as_str(),
+                jdslge as f64,
+                "resmgt=6 requires jdslge=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdcut_symbol.as_str(),
+                jdcut as f64,
+                "resmgt=6 requires jdcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                jdmove_symbol.as_str(),
+                jdmove as f64,
+                "resmgt=6 requires jdmove=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnag_symbol.as_str(),
+                fbrnag,
+                "resmgt=6 requires fbrnag=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                fbrnog_symbol.as_str(),
+                fbrnog,
+                "resmgt=6 requires fbrnog=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frcut_symbol.as_str(),
+                frcut,
+                "resmgt=6 requires frcut=0",
+            )?;
+            require_zero_state_value_for_decomposition(
+                phase,
+                frmove_symbol.as_str(),
+                frmove,
+                "resmgt=6 requires frmove=0",
+            )?;
+            HillslopeAnnualDecompositionAction::None
+        }
+        _ => unreachable!("resmgt domain is validated above"),
+    };
+
+    Ok(HillslopeAnnualDecompositionControl {
+        resmgt: usize_to_u8_for_decomposition(phase, BoundarySymbol::from(resmgt_symbol), resmgt)?,
+        jdherb: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdherb_symbol), jdherb)?,
+        jdburn: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdburn_symbol), jdburn)?,
+        jdslge: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdslge_symbol), jdslge)?,
+        jdcut: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdcut_symbol), jdcut)?,
+        jdmove: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(jdmove_symbol), jdmove)?,
+        fbrnag,
+        fbrnog,
+        frcut,
+        frmove,
+        active_action,
+    })
+}
+
+#[allow(clippy::too_many_lines, clippy::cast_precision_loss)]
+fn build_perennial_decomposition_control(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    runtime_day: usize,
+) -> Result<HillslopePerennialDecompositionControl, HillslopeDecompositionBoundaryError> {
+    let mgtopt_symbol = pl_decomp_slot_crop_symbol("mgtopt", slot_index, crop_slot_index);
+    let ncut_symbol = pl_decomp_slot_crop_symbol("ncut", slot_index, crop_slot_index);
+    let ncycle_symbol = pl_decomp_slot_crop_symbol("ncycle", slot_index, crop_slot_index);
+    let mgtopt = require_integral_state_value_for_decomposition(
+        phase,
+        state_surface,
+        mgtopt_symbol.as_str(),
+        1,
+        3,
+    )?;
+    let ncut = require_integral_state_value_for_decomposition(
+        phase,
+        state_surface,
+        ncut_symbol.as_str(),
+        0,
+        usize::from(u16::MAX),
+    )?;
+    let ncycle = require_integral_state_value_for_decomposition(
+        phase,
+        state_surface,
+        ncycle_symbol.as_str(),
+        0,
+        usize::from(u16::MAX),
+    )?;
+
+    let mut active_action = HillslopePerennialDecompositionAction::None;
+    let mut active_grazing_cycle = None;
+
+    match mgtopt {
+        1 => {
+            if ncut == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(ncut_symbol.as_str()),
+                        value: 0.0,
+                        reason: "mgtopt=1 requires ncut>=1",
+                    },
+                );
+            }
+            if ncycle != 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(ncycle_symbol.as_str()),
+                        value: ncycle as f64,
+                        reason: "mgtopt=1 requires ncycle=0",
+                    },
+                );
+            }
+
+            ensure_no_overflow_indexed_symbols_for_decomposition(
+                phase,
+                state_surface,
+                "cutday",
+                slot_index,
+                crop_slot_index,
+                ncut,
+            )?;
+            for root in ["gday", "gend", "animal", "bodywt", "area", "digest"] {
+                ensure_no_overflow_indexed_symbols_for_decomposition(
+                    phase,
+                    state_surface,
+                    root,
+                    slot_index,
+                    crop_slot_index,
+                    0,
+                )?;
+            }
+
+            let mut active_cut_index = None;
+            for event_index in 1..=ncut {
+                let cut_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "cutday",
+                    slot_index,
+                    crop_slot_index,
+                    event_index,
+                );
+                let cutday = require_indexed_integral_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    cut_symbol.as_str(),
+                    event_index,
+                    1,
+                    366,
+                )?;
+                if runtime_day == cutday {
+                    if active_cut_index.is_some() {
+                        return Err(
+                            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                                phase,
+                                symbol: BoundarySymbol::from(cut_symbol.as_str()),
+                                value: cutday as f64,
+                                reason: "multiple cutday entries active on runtime day",
+                            },
+                        );
+                    }
+                    active_cut_index = Some(event_index);
+                }
+            }
+
+            if let Some(event_index) = active_cut_index {
+                active_action = HillslopePerennialDecompositionAction::Cut {
+                    event_index: usize_to_u16_for_decomposition(
+                        phase,
+                        BoundarySymbol::from("cutday"),
+                        event_index,
+                    )?,
+                };
+            }
+        }
+        2 => {
+            if ncycle == 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(ncycle_symbol.as_str()),
+                        value: 0.0,
+                        reason: "mgtopt=2 requires ncycle>=1",
+                    },
+                );
+            }
+            if ncut != 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(ncut_symbol.as_str()),
+                        value: ncut as f64,
+                        reason: "mgtopt=2 requires ncut=0",
+                    },
+                );
+            }
+
+            ensure_no_overflow_indexed_symbols_for_decomposition(
+                phase,
+                state_surface,
+                "cutday",
+                slot_index,
+                crop_slot_index,
+                0,
+            )?;
+            for root in ["gday", "gend", "animal", "bodywt", "area", "digest"] {
+                ensure_no_overflow_indexed_symbols_for_decomposition(
+                    phase,
+                    state_surface,
+                    root,
+                    slot_index,
+                    crop_slot_index,
+                    ncycle,
+                )?;
+            }
+
+            for cycle_index in 1..=ncycle {
+                let gday_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "gday",
+                    slot_index,
+                    crop_slot_index,
+                    cycle_index,
+                );
+                let gend_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "gend",
+                    slot_index,
+                    crop_slot_index,
+                    cycle_index,
+                );
+                let animal_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "animal",
+                    slot_index,
+                    crop_slot_index,
+                    cycle_index,
+                );
+                let bodywt_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "bodywt",
+                    slot_index,
+                    crop_slot_index,
+                    cycle_index,
+                );
+                let area_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "area",
+                    slot_index,
+                    crop_slot_index,
+                    cycle_index,
+                );
+                let digest_symbol = pl_decomp_slot_crop_indexed_symbol(
+                    "digest",
+                    slot_index,
+                    crop_slot_index,
+                    cycle_index,
+                );
+
+                let gday = require_indexed_integral_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    gday_symbol.as_str(),
+                    cycle_index,
+                    1,
+                    366,
+                )?;
+                let gend = require_indexed_integral_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    gend_symbol.as_str(),
+                    cycle_index,
+                    1,
+                    366,
+                )?;
+                if gday >= gend {
+                    return Err(HillslopeDecompositionBoundaryError::InvalidGrazingWindow {
+                        phase,
+                        cycle_index,
+                        gday_symbol: BoundarySymbol::from(gday_symbol.as_str()),
+                        gend_symbol: BoundarySymbol::from(gend_symbol.as_str()),
+                        gday,
+                        gend,
+                    });
+                }
+
+                let animal = require_indexed_positive_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    animal_symbol.as_str(),
+                    cycle_index,
+                )?;
+                let bodywt = require_indexed_positive_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    bodywt_symbol.as_str(),
+                    cycle_index,
+                )?;
+                let area = require_indexed_positive_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    area_symbol.as_str(),
+                    cycle_index,
+                )?;
+                let digest = require_indexed_fraction_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    digest_symbol.as_str(),
+                    cycle_index,
+                )?;
+                if digest == 0.0 {
+                    return Err(
+                        HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                            phase,
+                            symbol: BoundarySymbol::from(digest_symbol.as_str()),
+                            value: digest,
+                            reason: "grazing digest must be positive",
+                        },
+                    );
+                }
+
+                let in_window = runtime_day >= gday && runtime_day < gend;
+                if in_window {
+                    if active_grazing_cycle.is_some() {
+                        return Err(
+                            HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                                phase,
+                                symbol: BoundarySymbol::from(gday_symbol.as_str()),
+                                value: runtime_day as f64,
+                                reason: "multiple grazing cycles active on runtime day",
+                            },
+                        );
+                    }
+                    active_grazing_cycle = Some(HillslopeActiveGrazingCycle {
+                        cycle_index: usize_to_u16_for_decomposition(
+                            phase,
+                            BoundarySymbol::from("cycle_index"),
+                            cycle_index,
+                        )?,
+                        gday: usize_to_u16_for_decomposition(
+                            phase,
+                            BoundarySymbol::from(gday_symbol.as_str()),
+                            gday,
+                        )?,
+                        gend: usize_to_u16_for_decomposition(
+                            phase,
+                            BoundarySymbol::from(gend_symbol.as_str()),
+                            gend,
+                        )?,
+                        animal,
+                        bodywt,
+                        area,
+                        digest,
+                    });
+                }
+            }
+
+            if let Some(cycle) = active_grazing_cycle {
+                active_action = HillslopePerennialDecompositionAction::Grazing {
+                    cycle_index: cycle.cycle_index,
+                };
+            }
+        }
+        3 => {
+            if ncut != 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(ncut_symbol.as_str()),
+                        value: ncut as f64,
+                        reason: "mgtopt=3 requires ncut=0",
+                    },
+                );
+            }
+            if ncycle != 0 {
+                return Err(
+                    HillslopeDecompositionBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(ncycle_symbol.as_str()),
+                        value: ncycle as f64,
+                        reason: "mgtopt=3 requires ncycle=0",
+                    },
+                );
+            }
+
+            for root in [
+                "cutday", "gday", "gend", "animal", "bodywt", "area", "digest",
+            ] {
+                ensure_no_overflow_indexed_symbols_for_decomposition(
+                    phase,
+                    state_surface,
+                    root,
+                    slot_index,
+                    crop_slot_index,
+                    0,
+                )?;
+            }
+        }
+        _ => unreachable!("mgtopt domain is validated above"),
+    }
+
+    Ok(HillslopePerennialDecompositionControl {
+        mgtopt: usize_to_u8_for_decomposition(phase, BoundarySymbol::from(mgtopt_symbol), mgtopt)?,
+        ncut: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(ncut_symbol), ncut)?,
+        ncycle: usize_to_u16_for_decomposition(phase, BoundarySymbol::from(ncycle_symbol), ncycle)?,
+        active_action,
+        active_grazing_cycle,
+    })
 }
 
 /// Explicit scheduler dependency edge.
@@ -2185,11 +3413,13 @@ mod tests {
     use std::collections::BTreeMap;
 
     use openwepp_kernel_contract::{
-        BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter,
-        HillslopeDecompositionManagementClass, HillslopeGrowthManagementClass, HillslopeKernel,
-        HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
-        KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
-        WritebackField,
+        BoundarySymbol, BoundaryValue, HillslopeAnnualDecompositionAction,
+        HillslopeAnnualDecompositionControl, HillslopeConsumerAdapter,
+        HillslopeDecompositionManagementClass, HillslopeDecompositionTransitionControl,
+        HillslopeGrowthManagementClass, HillslopeKernel, HillslopeKernelPhaseClass,
+        HillslopeKernelRequest, HillslopePerennialDecompositionAction,
+        HillslopePerennialDecompositionControl, KernelRunResponse, KernelWritebackPayload,
+        WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
     };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
     use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
@@ -2318,11 +3548,35 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             );
             state_surface.insert(
                 BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
-                BoundaryValue::scalar(1.0),
+                BoundaryValue::scalar(0.0),
             );
             state_surface.insert(
                 BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
                 BoundaryValue::scalar(1.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gday_0001"),
+                BoundaryValue::scalar(150.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gend_0001"),
+                BoundaryValue::scalar(250.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_animal_0001"),
+                BoundaryValue::scalar(20.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_bodywt_0001"),
+                BoundaryValue::scalar(450.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_area_0001"),
+                BoundaryValue::scalar(1200.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_digest_0001"),
+                BoundaryValue::scalar(0.62),
             );
             state_surface.insert(
                 BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdstop"),
@@ -2336,6 +3590,42 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             state_surface.insert(
                 BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_resmgt"),
                 BoundaryValue::scalar(1.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdherb"),
+                BoundaryValue::scalar(200.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdburn"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdslge"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdcut"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdmove"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnag"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnog"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frcut"),
+                BoundaryValue::scalar(0.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frmove"),
+                BoundaryValue::scalar(0.0),
             );
         }
 
@@ -2412,6 +3702,42 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_resmgt"),
             BoundaryValue::scalar(1.0),
         );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdherb"),
+            BoundaryValue::scalar(200.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdburn"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdslge"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdmove"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnag"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnog"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frmove"),
+            BoundaryValue::scalar(0.0),
+        );
 
         // Slot 2 / year 2 / annual-fallow.
         state.insert(
@@ -2453,6 +3779,42 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         state.insert(
             BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_resmgt"),
             BoundaryValue::scalar(6.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdherb"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdburn"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdslge"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdmove"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_fbrnag"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_fbrnog"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_frcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_frmove"),
+            BoundaryValue::scalar(0.0),
         );
 
         // Slot 3 / year 3 / perennial.
@@ -2506,11 +3868,35 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         );
         state.insert(
             BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_ncut"),
-            BoundaryValue::scalar(1.0),
+            BoundaryValue::scalar(0.0),
         );
         state.insert(
             BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_ncycle"),
             BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_gday_0001"),
+            BoundaryValue::scalar(150.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_gend_0001"),
+            BoundaryValue::scalar(220.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_animal_0001"),
+            BoundaryValue::scalar(20.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_bodywt_0001"),
+            BoundaryValue::scalar(450.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_area_0001"),
+            BoundaryValue::scalar(1200.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_digest_0001"),
+            BoundaryValue::scalar(0.62),
         );
 
         // Slot 4 / year 1 / annual (rotation repeat 2).
@@ -2554,6 +3940,42 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_resmgt"),
             BoundaryValue::scalar(1.0),
         );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdherb"),
+            BoundaryValue::scalar(200.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdburn"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdslge"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdmove"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_fbrnag"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_fbrnog"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_frcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_frmove"),
+            BoundaryValue::scalar(0.0),
+        );
 
         // Slot 5 / year 2 / annual-fallow (rotation repeat 2).
         state.insert(
@@ -2595,6 +4017,42 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         state.insert(
             BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_resmgt"),
             BoundaryValue::scalar(6.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdherb"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdburn"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdslge"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdmove"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_fbrnag"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_fbrnog"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_frcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_frmove"),
+            BoundaryValue::scalar(0.0),
         );
 
         // Slot 6 / year 3 / perennial (rotation repeat 2).
@@ -2648,11 +4106,35 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         );
         state.insert(
             BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_ncut"),
-            BoundaryValue::scalar(1.0),
+            BoundaryValue::scalar(0.0),
         );
         state.insert(
             BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_ncycle"),
             BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_gday_0001"),
+            BoundaryValue::scalar(150.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_gend_0001"),
+            BoundaryValue::scalar(220.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_animal_0001"),
+            BoundaryValue::scalar(20.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_bodywt_0001"),
+            BoundaryValue::scalar(450.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_area_0001"),
+            BoundaryValue::scalar(1200.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_digest_0001"),
+            BoundaryValue::scalar(0.62),
         );
 
         surface
@@ -2947,6 +4429,18 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                             context.management_class,
                             HillslopeDecompositionManagementClass::AnnualOrFallow
                         );
+                        let transition_payload = context
+                            .transition_payload
+                            .expect("decomposition context should carry transition payload");
+                        assert!(matches!(
+                            transition_payload.control,
+                            HillslopeDecompositionTransitionControl::Annual(
+                                HillslopeAnnualDecompositionControl {
+                                    active_action: HillslopeAnnualDecompositionAction::Herbicide,
+                                    ..
+                                }
+                            )
+                        ));
                         assert!(request.growth_context.is_none());
                         self.decomp += 1;
                     }
@@ -3021,6 +4515,20 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                             context.management_class,
                             HillslopeDecompositionManagementClass::Perennial
                         );
+                        let transition_payload = context
+                            .transition_payload
+                            .expect("decomposition context should carry transition payload");
+                        assert!(matches!(
+                            transition_payload.control,
+                            HillslopeDecompositionTransitionControl::Perennial(
+                                HillslopePerennialDecompositionControl {
+                                    active_action: HillslopePerennialDecompositionAction::Grazing {
+                                        cycle_index: 1
+                                    },
+                                    ..
+                                }
+                            )
+                        ));
                         assert!(request.growth_context.is_none());
                         self.decomp += 1;
                     }
@@ -3482,6 +4990,150 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         assert_eq!(
             report.phase_reports[2].decision_status.message_id(),
             "HS-DECOMP-E-003"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+    }
+
+    #[test]
+    fn pl12_contract_conformance_rejects_missing_perennial_cutday_payload() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_growth_runtime_surface(2.0);
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+            BoundaryValue::scalar(1.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+            BoundaryValue::scalar(2.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+            BoundaryValue::scalar(0.0),
+        );
+        for symbol in [
+            "pl_decomp_slot_0001_crop_0001_gday_0001",
+            "pl_decomp_slot_0001_crop_0001_gend_0001",
+            "pl_decomp_slot_0001_crop_0001_animal_0001",
+            "pl_decomp_slot_0001_crop_0001_bodywt_0001",
+            "pl_decomp_slot_0001_crop_0001_area_0001",
+            "pl_decomp_slot_0001_crop_0001_digest_0001",
+        ] {
+            surface.state_surface.remove(&BoundarySymbol::from(symbol));
+        }
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("missing perennial cutday payload should return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-DECOMP-E-007"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::MissingRequiredInput
+        );
+    }
+
+    #[test]
+    fn pl12_contract_conformance_rejects_invalid_perennial_grazing_window() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_growth_runtime_surface(2.0);
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+            BoundaryValue::scalar(1.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gday_0001"),
+            BoundaryValue::scalar(220.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gend_0001"),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_animal_0001"),
+            BoundaryValue::scalar(20.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_bodywt_0001"),
+            BoundaryValue::scalar(450.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_area_0001"),
+            BoundaryValue::scalar(1200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_digest_0001"),
+            BoundaryValue::scalar(0.62),
+        );
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("invalid perennial grazing window should return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-DECOMP-E-009"
         );
         assert_eq!(
             report.phase_reports[2].decision_status.boundary_class(),

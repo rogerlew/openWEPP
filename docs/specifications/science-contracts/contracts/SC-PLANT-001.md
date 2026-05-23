@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -169,6 +169,13 @@ This projection algorithm is pure with respect to plant-process state:
      semantics from legacy routines.
 8. Invalid branch-domain, cardinality, indexing, or date-window states are
    hard-fail typed errors. Silent clamp/default behavior is prohibited.
+9. Scheduler decomposition-transition execution must consume these projected
+   controls through typed context assembly:
+   - annual branch emits deterministic same-day action selector from
+     `resmgt` + annual extension controls;
+   - perennial branch emits deterministic same-day action selector from
+     `mgtopt`, `cutday[*]`, and `gday/gend/payload[*]`;
+   - invalid domains/cardinality/window states remain typed hard failures.
 
 ## Branch and Guard Table (Transition Controls)
 
@@ -204,6 +211,7 @@ This projection algorithm is pure with respect to plant-process state:
 | INV-PLANT-013 | Grazing-window ordering: for each cycle `k`, `gday[k] < gend[k]`; cycle progression is bounded by `ncycle`, and harvest progression follows cycle-end day ordering semantics. | hard-fail | REF-PLANT-LEGACY-PTGRP, REF-PLANT-LEGACY-CUTGRZ, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-014 | Event-day domain validity: all projected day controls are integer Julian values in contract domain (`1..366`), with `0` allowed only for explicitly documented sentinel fields/branches. | hard-fail | REF-PLANT-INFILE-CONTRACT, REF-PLANT-LEGACY-INIDAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-015 | Projection failure posture: invalid transition-control runtime projection domains must hard-fail as typed errors; silent defaults or clamps are prohibited. | hard-fail | REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[INFERENCE][Static]` |
+| INV-PLANT-016 | Decomposition-transition dispatch determinism: scheduler assembly of typed decomposition context consumes projected annual/perennial control families and produces deterministic per-day transition selector semantics; invalid payload/index/window states are hard-fail typed errors. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -277,6 +285,7 @@ This projection algorithm is pure with respect to plant-process state:
 | `INV-PLANT-013` | runtime | Grazing window validator before cycle dispatch | Typed hard error; reject invalid cycle | Tier-A gate for PL transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-014` | runtime | Date-domain validator for transition-control symbols | Typed hard error; reject out-of-domain date | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-015` | runtime | Projection error policy guard | Typed hard error only; silent default/clamp is forbidden | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-PLANT-016` | runtime | Scheduler decomposition-transition typed-context assembler | Typed hard error on invalid payload/index/window/action state | Tier-A gate for PL12 decomposition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -383,3 +392,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-20` | `3` | `Codex` | Reopen delta for procedure update: added required invariant guard map and symbol alias map; added alias-governance gap entry. |
 | `2026-05-23` | `4` | `Codex` | PL10b blind-authority amendment: added transition-control runtime-projection algorithm authority, branch/guard table, invariant family `INV-PLANT-011..015`, constants table, test-vector obligations, and explicit symbol-family alias mappings for annual/perennial payload controls. |
 | `2026-05-23` | `5` | `Codex` | PL11 reconciliation amendment: aligned alias-map rows to emitted decomp surfaces, removed unsupported harvest-seed claim, and recorded PL11 conformance closure for runtime projection gap `GAP-PLANT-005`. |
+| `2026-05-23` | `6` | `Codex` | PL12 amendment: added typed decomposition-transition context-consumption invariant (`INV-PLANT-016`) and explicit scheduler action-selector authority in algorithm/guard sections. |
