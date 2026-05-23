@@ -181,6 +181,10 @@ path = "tests/integration/wb11_hydrology_kernel_contract.rs"
 name = "wb12_reconciliation_kernel_contract"
 path = "tests/integration/wb12_reconciliation_kernel_contract.rs"
 
+[[test]]
+name = "wb13_daily_water_balance_output_surface_contract"
+path = "tests/integration/wb13_daily_water_balance_output_surface_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

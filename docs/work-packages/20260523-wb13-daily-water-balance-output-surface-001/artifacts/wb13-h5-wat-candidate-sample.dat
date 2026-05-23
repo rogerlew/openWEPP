@@ -1,0 +1,5 @@
+ DAILY WATER BALANCE - HOURLY SEEPAGE UPDATE FROM UI
+
+ J=julian day, Y=simulation year
+ OFE J Y P RM Q Ep Es Er Dp UpStrmQ SubRIn latqcc Total-Soil frozwt Snow-Water QOFE Tile Irr Area SoilWaterTotal ProfileDepth ProfilePorosityCap ProfileFCStore ProfileWPStore
+1 1 2008 4.40 0.00 0.0000000E0 0.57 0.61 0.00 0.02 0.0000000E0 0.00 0.80 71.30 0.00 4.40 0.0000000E0 0.00 0.00 9891.92 71.30 400.00 171.48 38.75 14.38

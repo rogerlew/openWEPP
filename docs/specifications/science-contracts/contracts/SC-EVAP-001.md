@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -257,6 +257,25 @@ Minimum WB11 ET production-kernel conformance vectors:
 3. Domain-invalid ET inputs/outputs hard-fail with typed status
    `HKERNEL-WB11-ET-E-003` and do not mutate orchestrator writeback surfaces.
 
+## WB13 Daily Output Coupling Addendum
+
+### WB13 ET-Coupled Output Symbols
+
+| WB13 column | ET coupling surface | Units |
+|---|---|---|
+| `Ep` | Plant-transpiration component exported for daily reporting | `mm` |
+| `Es` | Soil-evaporation component exported for daily reporting | `mm` |
+| `Er` | Residue-evaporation component exported for daily reporting | `mm` |
+
+### WB13 Coupling Requirements
+
+1. WB13 daily rows must include finite ET-component symbols `Ep`, `Es`, and
+   `Er` with non-negative daily magnitudes.
+2. ET-component omission or malformed ET-component values are invalid WB13
+   output states and must hard-fail via WB13 typed guards.
+3. ET-component boundaries emitted to WB13 remain unit-consistent with
+   Chapter-5 daily water-balance closure expectations.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -275,3 +294,4 @@ Minimum WB11 ET production-kernel conformance vectors:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added missing symbol/alias coverage (`Θc`, `ET`), normalized evidence-mode casing, strengthened snow provenance anchor wording, and evidence-tagged degenerate/tolerance claims. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit ET phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 ET test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted ET section from routing-only scaffolding to production-kernel authority with deterministic `ET`/`Ws` updates, typed ET guard codes (`HKERNEL-WB11-ET-E-001..003`), and WB11 contract-derived vectors. |
+| `2026-05-23` | `5` | `Codex` | WB13 amendment: added ET component coupling authority for canonical daily output columns (`Ep`, `Es`, `Er`) with explicit WB13 malformed-output hard-fail posture. |

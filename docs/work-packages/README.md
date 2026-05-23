@@ -460,6 +460,10 @@ Authorized packages:
   - Purpose: implement runoff/storage reconciliation production kernels with
     explicit closure diagnostics, plus required kernel-contract and
     contract-test implementation evidence.
+- `20260523-wb13-daily-water-balance-output-surface-001/`
+  - Purpose: emit comparator-ready daily water-balance output surface
+    (`H5.wat.dat` equivalent) with required contract and contract-test
+    implementation evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

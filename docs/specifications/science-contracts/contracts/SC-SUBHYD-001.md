@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -314,6 +314,26 @@ Minimum WB11 lateral/drainage production-kernel conformance vectors:
 1. Nominal WB12 reconciliation vector consumes finite `Qd` and preserves deterministic storage closure diagnostics.
 2. Missing or non-finite `Qd` during WB12 storage reconciliation hard-fails before writeback mutation.
 
+## WB13 Daily Output Coupling Addendum
+
+### WB13 Subsurface/Drainage Output Symbols
+
+| WB13 column | Subsurface/drainage coupling surface | Units |
+|---|---|---|
+| `latqcc` | Daily lateral subsurface flow contribution exported for WB13 reporting | `mm` |
+| `Tile` | Daily tile/ditch drainage contribution exported for WB13 reporting | `mm` |
+| `SubRIn` | Daily subsurface runon contribution added to OFE | `mm` |
+| `Qd` | Daily aggregate subsurface/drainage loss term used in closure diagnostics | `mm` |
+
+### WB13 Coupling Requirements
+
+1. WB13 rows must include finite, non-negative `latqcc`, `Tile`, and `SubRIn`
+   symbols.
+2. Where `Qd` is exported concurrently, WB13 coupling remains deterministic
+   under `Qd = latqcc + Tile`.
+3. Missing/non-finite/out-of-domain subsurface/drainage WB13 symbols are
+   invalid runtime states and must hard-fail with WB13 typed guard posture.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -333,3 +353,4 @@ Minimum WB11 lateral/drainage production-kernel conformance vectors:
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit lateral/drainage phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 lateral/drainage test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted lateral/drainage sections from routing-only scaffolding to production-kernel authority with deterministic `q`/`Qdd`/`Qd` updates, typed WB11 guard codes, and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB12 amendment: added explicit storage-reconciliation coupling authority for `Qd` consumption and typed WB12 closure-diagnostic failure posture. |
+| `2026-05-23` | `6` | `Codex` | WB13 amendment: added canonical daily output coupling authority for subsurface/drainage symbols (`latqcc`, `Tile`, `SubRIn`) and deterministic `Qd` relation posture with malformed-output hard-fail requirements. |

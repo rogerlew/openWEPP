@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -257,6 +257,25 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 2. Non-finite WB12 runoff input hard-fails with `HKERNEL-WB12-RUNOFF-E-002`.
 3. Closure-delta overflow beyond tolerance hard-fails with `HKERNEL-WB12-RUNOFF-E-003` and no writeback mutation.
 
+## WB13 Daily Output Coupling Addendum
+
+### WB13 Runoff/Runon Output Symbols
+
+| WB13 column | Runoff-partition coupling surface | Units |
+|---|---|---|
+| `Q` | Daily runoff depth exported to Chapter-5 closure boundary | `mm` |
+| `QOFE` | Single-OFE runoff output alias (`QOFE = Q`) | `mm` |
+| `UpStrmQ` | Upstream runon contribution added to OFE | `mm` |
+| `RM` | Rainfall + irrigation + snowmelt daily input depth for runoff accounting | `mm` |
+| `P` | Daily precipitation contribution included in runoff/accounting surfaces | `mm` |
+
+### WB13 Coupling Requirements
+
+1. WB13 daily rows must carry finite, non-negative runoff/runon symbols.
+2. `QOFE` must be equal to `Q` for single-OFE WB13 rows.
+3. Missing/non-finite/out-of-domain runoff/runon symbols are invalid WB13
+   output states and must hard-fail with WB13 typed guard posture.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -274,3 +293,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-4 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit event-closure term identity, added normative multi-OFE case outcome table, added alias row for `De`, and split rate tolerances for clearer unit-specific governance. |
 | `2026-05-23` | `3` | `Codex` | WB12 amendment: added runoff reconciliation kernel authority with deterministic closure diagnostics, typed WB12 runoff guard codes, and WB12 contract-derived vectors. |
+| `2026-05-23` | `4` | `Codex` | WB13 amendment: added canonical daily output coupling authority for runoff/runon symbols (`Q`, `QOFE`, `UpStrmQ`, `RM`, `P`) with explicit WB13 malformed-output hard-fail posture. |

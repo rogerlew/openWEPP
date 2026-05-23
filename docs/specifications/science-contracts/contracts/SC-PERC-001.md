@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -249,6 +249,27 @@ Minimum WB11 percolation production-kernel conformance vectors:
 3. Domain-invalid percolation inputs hard-fail with typed status
    `HKERNEL-WB11-PERC-E-003` and do not mutate orchestrator writeback surfaces.
 
+## WB13 Daily Output Coupling Addendum
+
+### WB13 Percolation/Profile Output Symbols
+
+| WB13 column | Percolation/profile coupling surface | Units |
+|---|---|---|
+| `Dp` | Daily deep-percolation loss term exported from percolation closure surface (`D`) | `mm` |
+| `ProfileDepth` | Full-profile depth aggregate for output-surface closure diagnostics | `mm` |
+| `ProfilePorosityCap` | Full-profile porosity-capacity aggregate | `mm` |
+| `ProfileFCStore` | Full-profile field-capacity storage aggregate | `mm` |
+| `ProfileWPStore` | Full-profile wilting-point storage aggregate | `mm` |
+
+### WB13 Coupling Requirements
+
+1. WB13 rows must include finite, non-negative `Dp` and profile-storage symbols
+   used by daily water-balance output reconciliation.
+2. Profile-storage ordering must satisfy
+   `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
+3. Missing/non-finite/out-of-domain WB13 percolation/profile symbols are
+   invalid runtime states and must hard-fail with WB13 typed guard posture.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -274,3 +295,4 @@ guard `INV-PERC-009` requires explicit `HOLD` until alias finalization and
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added direct Chapter-7 anchors for conductivity modifiers, normalized evidence-mode tokens, clarified lower-layer restriction tolerance vs runtime hard-fail semantics, added evidence tags to degenerate-state/tolerance rows, and made non-promotable `HOLD` state explicit. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit percolation phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 percolation test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted percolation section from routing-only scaffolding to production-kernel authority with deterministic `D`/`Pe` updates, typed percolation guard codes (`HKERNEL-WB11-PERC-E-001..003`), and WB11 contract-derived vectors. |
+| `2026-05-23` | `5` | `Codex` | WB13 amendment: added percolation/profile coupling authority for canonical daily output columns (`Dp`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) with explicit malformed-output hard-fail posture. |

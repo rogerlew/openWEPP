@@ -23,6 +23,35 @@ pub const SUMMARY_YEARLY_MESSAGE_ID: &str = "SUMACC-YEARLY-001";
 /// Message id emitted when an EOS window rollup is produced.
 pub const SUMMARY_EOS_MESSAGE_ID: &str = "SUMACC-EOS-001";
 
+/// Canonical WB13 daily output column order (`H5.wat.dat` equivalent surface).
+pub const WB13_H5_WAT_COLUMNS: [&str; 25] = [
+    "OFE",
+    "J",
+    "Y",
+    "P",
+    "RM",
+    "Q",
+    "Ep",
+    "Es",
+    "Er",
+    "Dp",
+    "UpStrmQ",
+    "SubRIn",
+    "latqcc",
+    "Total-Soil",
+    "frozwt",
+    "Snow-Water",
+    "QOFE",
+    "Tile",
+    "Irr",
+    "Area",
+    "SoilWaterTotal",
+    "ProfileDepth",
+    "ProfilePorosityCap",
+    "ProfileFCStore",
+    "ProfileWPStore",
+];
+
 /// Summary accumulation windows.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SummaryWindow {
@@ -150,6 +179,237 @@ impl SummaryScalarSurface {
             let entry = self.scalars.entry(symbol.clone()).or_insert(0.0);
             *entry += value;
         }
+    }
+}
+
+/// Deterministic WB13 row key for canonical daily output ordering.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Wb13RowKey {
+    pub year: i32,
+    pub julian_day: u16,
+    pub ofe: u16,
+}
+
+/// One canonical WB13 daily output row (`H5.wat.dat` equivalent).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Wb13DailyWaterBalanceRow {
+    pub ofe: u16,
+    pub julian_day: u16,
+    pub year: i32,
+    pub p: f64,
+    pub rm: f64,
+    pub q: f64,
+    pub ep: f64,
+    pub es: f64,
+    pub er: f64,
+    pub dp: f64,
+    pub upstrmq: f64,
+    pub subrin: f64,
+    pub latqcc: f64,
+    pub total_soil: f64,
+    pub frozwt: f64,
+    pub snow_water: f64,
+    pub qofe: f64,
+    pub tile: f64,
+    pub irr: f64,
+    pub area: f64,
+    pub soil_water_total: f64,
+    pub profile_depth: f64,
+    pub profile_porosity_cap: f64,
+    pub profile_fc_store: f64,
+    pub profile_wp_store: f64,
+}
+
+impl Wb13DailyWaterBalanceRow {
+    /// Build one WB13 row from a validated summary scalar surface.
+    pub fn from_surface(
+        ofe: u16,
+        julian_day: u16,
+        year: i32,
+        surface: &SummaryScalarSurface,
+    ) -> Result<Self, SummaryAccumulatorError> {
+        validate_range("OFE", f64::from(ofe), Some(1.0), None)?;
+        validate_range("J", f64::from(julian_day), Some(1.0), Some(366.0))?;
+
+        let p = require_output_symbol(surface, "P", Some(0.0), None)?;
+        let rm = require_output_symbol(surface, "RM", Some(0.0), None)?;
+        let q = require_output_symbol(surface, "Q", Some(0.0), None)?;
+        let ep = require_output_symbol(surface, "Ep", Some(0.0), None)?;
+        let es = require_output_symbol(surface, "Es", Some(0.0), None)?;
+        let er = require_output_symbol(surface, "Er", Some(0.0), None)?;
+        let dp = require_output_symbol(surface, "Dp", Some(0.0), None)?;
+        let upstrmq = require_output_symbol(surface, "UpStrmQ", Some(0.0), None)?;
+        let subrin = require_output_symbol(surface, "SubRIn", Some(0.0), None)?;
+        let latqcc = require_output_symbol(surface, "latqcc", Some(0.0), None)?;
+        let total_soil = require_output_symbol(surface, "Total-Soil", Some(0.0), None)?;
+        let frozwt = require_output_symbol(surface, "frozwt", Some(0.0), None)?;
+        let snow_water = require_output_symbol(surface, "Snow-Water", Some(0.0), None)?;
+        let qofe = require_output_symbol(surface, "QOFE", Some(0.0), None)?;
+        let tile = require_output_symbol(surface, "Tile", Some(0.0), None)?;
+        let irr = require_output_symbol(surface, "Irr", Some(0.0), None)?;
+        let area = require_output_symbol(surface, "Area", Some(0.0), None)?;
+        let soil_water_total = require_output_symbol(surface, "SoilWaterTotal", Some(0.0), None)?;
+        let profile_depth = require_output_symbol(surface, "ProfileDepth", Some(0.0), None)?;
+        let profile_porosity_cap =
+            require_output_symbol(surface, "ProfilePorosityCap", Some(0.0), None)?;
+        let profile_fc_store = require_output_symbol(surface, "ProfileFCStore", Some(0.0), None)?;
+        let profile_wp_store = require_output_symbol(surface, "ProfileWPStore", Some(0.0), None)?;
+
+        if (qofe - q).abs() > 1.0e-9 {
+            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+                symbol: "QOFE".to_string(),
+                value: qofe,
+                minimum: Some(q),
+                maximum: Some(q),
+            });
+        }
+
+        let expected_soil_water_total = total_soil + frozwt;
+        if (soil_water_total - expected_soil_water_total).abs() > 1.0e-6 {
+            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+                symbol: "SoilWaterTotal".to_string(),
+                value: soil_water_total,
+                minimum: Some(expected_soil_water_total),
+                maximum: Some(expected_soil_water_total),
+            });
+        }
+
+        if profile_porosity_cap + 1.0e-9 < profile_fc_store {
+            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+                symbol: "ProfileFCStore".to_string(),
+                value: profile_fc_store,
+                minimum: None,
+                maximum: Some(profile_porosity_cap),
+            });
+        }
+        if profile_fc_store + 1.0e-9 < profile_wp_store {
+            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+                symbol: "ProfileWPStore".to_string(),
+                value: profile_wp_store,
+                minimum: None,
+                maximum: Some(profile_fc_store),
+            });
+        }
+
+        Ok(Self {
+            ofe,
+            julian_day,
+            year,
+            p,
+            rm,
+            q,
+            ep,
+            es,
+            er,
+            dp,
+            upstrmq,
+            subrin,
+            latqcc,
+            total_soil,
+            frozwt,
+            snow_water,
+            qofe,
+            tile,
+            irr,
+            area,
+            soil_water_total,
+            profile_depth,
+            profile_porosity_cap,
+            profile_fc_store,
+            profile_wp_store,
+        })
+    }
+
+    #[must_use]
+    pub const fn row_key(&self) -> Wb13RowKey {
+        Wb13RowKey {
+            year: self.year,
+            julian_day: self.julian_day,
+            ofe: self.ofe,
+        }
+    }
+
+    #[must_use]
+    pub fn to_data_row_line(&self) -> String {
+        [
+            self.ofe.to_string(),
+            self.julian_day.to_string(),
+            self.year.to_string(),
+            format!("{:.2}", self.p),
+            format!("{:.2}", self.rm),
+            format!("{:.7E}", self.q),
+            format!("{:.2}", self.ep),
+            format!("{:.2}", self.es),
+            format!("{:.2}", self.er),
+            format!("{:.2}", self.dp),
+            format!("{:.7E}", self.upstrmq),
+            format!("{:.2}", self.subrin),
+            format!("{:.2}", self.latqcc),
+            format!("{:.2}", self.total_soil),
+            format!("{:.2}", self.frozwt),
+            format!("{:.2}", self.snow_water),
+            format!("{:.7E}", self.qofe),
+            format!("{:.2}", self.tile),
+            format!("{:.2}", self.irr),
+            format!("{:.2}", self.area),
+            format!("{:.2}", self.soil_water_total),
+            format!("{:.2}", self.profile_depth),
+            format!("{:.2}", self.profile_porosity_cap),
+            format!("{:.2}", self.profile_fc_store),
+            format!("{:.2}", self.profile_wp_store),
+        ]
+        .join(" ")
+    }
+}
+
+/// Deterministic WB13 daily output surface assembler.
+#[derive(Debug, Clone, PartialEq, Default)]
+pub struct Wb13DailyWaterBalanceSurface {
+    rows: Vec<Wb13DailyWaterBalanceRow>,
+    last_key: Option<Wb13RowKey>,
+}
+
+impl Wb13DailyWaterBalanceSurface {
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    #[must_use]
+    pub const fn column_headers() -> &'static [&'static str; 25] {
+        &WB13_H5_WAT_COLUMNS
+    }
+
+    /// Append one validated row while enforcing deterministic key ordering.
+    pub fn append_row(
+        &mut self,
+        row: Wb13DailyWaterBalanceRow,
+    ) -> Result<(), SummaryAccumulatorError> {
+        let incoming = row.row_key();
+        if let Some(previous) = self.last_key
+            && incoming <= previous
+        {
+            return Err(SummaryAccumulatorError::NonMonotonicOutputRow { previous, incoming });
+        }
+
+        self.rows.push(row);
+        self.last_key = Some(incoming);
+        Ok(())
+    }
+
+    #[must_use]
+    pub fn render_h5_wat_dat(&self) -> String {
+        let mut output = String::new();
+        output.push_str(" DAILY WATER BALANCE - HOURLY SEEPAGE UPDATE FROM UI\n\n");
+        output.push_str(" J=julian day, Y=simulation year\n");
+        output.push_str(" OFE ");
+        output.push_str(&WB13_H5_WAT_COLUMNS[1..].join(" "));
+        output.push('\n');
+        for row in &self.rows {
+            output.push_str(&row.to_data_row_line());
+            output.push('\n');
+        }
+        output
     }
 }
 
@@ -434,6 +694,19 @@ pub enum SummaryAccumulatorError {
         window: SummaryWindow,
     },
     FinalizeWithoutSamples,
+    MissingRequiredOutputSymbol {
+        symbol: String,
+    },
+    OutputSymbolOutOfRange {
+        symbol: String,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    },
+    NonMonotonicOutputRow {
+        previous: Wb13RowKey,
+        incoming: Wb13RowKey,
+    },
     Status(StatusError),
     ComparatorMetadata(ComparatorTierRoutingError),
 }
@@ -471,6 +744,22 @@ impl fmt::Display for SummaryAccumulatorError {
             Self::FinalizeWithoutSamples => {
                 f.write_str("cannot finalize summary accumulator with zero samples")
             }
+            Self::MissingRequiredOutputSymbol { symbol } => {
+                write!(f, "missing required WB13 output symbol: {symbol}")
+            }
+            Self::OutputSymbolOutOfRange {
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => write!(
+                f,
+                "WB13 output symbol {symbol} out of range: value={value}, minimum={minimum:?}, maximum={maximum:?}"
+            ),
+            Self::NonMonotonicOutputRow { previous, incoming } => write!(
+                f,
+                "non-monotonic WB13 output row order: previous={previous:?}, incoming={incoming:?}"
+            ),
             Self::Status(source) => write!(f, "status construction failed: {source}"),
             Self::ComparatorMetadata(source) => {
                 write!(f, "comparator metadata routing failed: {source}")
@@ -531,6 +820,53 @@ fn validate_finite(symbol: &str, value: f64) -> Result<(), SummaryAccumulatorErr
     }
 
     Ok(())
+}
+
+fn validate_range(
+    symbol: &str,
+    value: f64,
+    minimum: Option<f64>,
+    maximum: Option<f64>,
+) -> Result<(), SummaryAccumulatorError> {
+    if let Some(minimum) = minimum
+        && value < minimum
+    {
+        return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+            symbol: symbol.to_string(),
+            value,
+            minimum: Some(minimum),
+            maximum,
+        });
+    }
+
+    if let Some(maximum) = maximum
+        && value > maximum
+    {
+        return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+            symbol: symbol.to_string(),
+            value,
+            minimum,
+            maximum: Some(maximum),
+        });
+    }
+
+    Ok(())
+}
+
+fn require_output_symbol(
+    surface: &SummaryScalarSurface,
+    symbol: &str,
+    minimum: Option<f64>,
+    maximum: Option<f64>,
+) -> Result<f64, SummaryAccumulatorError> {
+    let value = surface.value(symbol).ok_or_else(|| {
+        SummaryAccumulatorError::MissingRequiredOutputSymbol {
+            symbol: symbol.to_string(),
+        }
+    })?;
+    validate_finite(symbol, value)?;
+    validate_range(symbol, value, minimum, maximum)?;
+    Ok(value)
 }
 
 fn days_in_month(year: i32, month: u8) -> u8 {

@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -247,6 +247,10 @@ implementation contracts introduce explicit aliases.
 | `WB11_PERC_GUARD_CODES` | status message id range | `HKERNEL-WB11-PERC-E-001..003` | Typed percolation guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB11_LATERAL_GUARD_CODES` | status message id range | `HKERNEL-WB11-LAT-E-001..003` | Typed lateral guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB11_DRAINAGE_GUARD_CODES` | status message id range | `HKERNEL-WB11-DRAIN-E-001..003` | Typed drainage guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
+| `WB13_OUTPUT_STATUS_OK` | status message id | `HKERNEL-WB13-HWAT-OK-001` | Typed nominal status for WB13 daily output-row emission success | REF-WATBAL-PHYS-BOUNDS |
+| `WB13_OUTPUT_GUARD_MISSING` | status message id | `HKERNEL-WB13-HWAT-E-001` | Typed missing-required-symbol guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
+| `WB13_OUTPUT_GUARD_NONFINITE` | status message id | `HKERNEL-WB13-HWAT-E-002` | Typed non-finite-value guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
+| `WB13_OUTPUT_GUARD_DOMAIN` | status message id | `HKERNEL-WB13-HWAT-E-003` | Typed domain/order/schema guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -307,6 +311,75 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 2. Non-finite WB12 runoff/state input hard-fails at the corresponding reconciliation phase with typed non-finite guard code.
 3. Closure-delta overflow beyond tolerance hard-fails with typed domain/closure guard code and no writeback mutation.
 
+## WB13 Daily Output-Surface Authority Addendum
+
+### WB13 Canonical Daily Output Schema (`H5.wat.dat` Equivalent)
+
+WB13 daily output rows are authoritative at exactly 25 numeric columns in this
+canonical order:
+
+1. `OFE`
+2. `J`
+3. `Y`
+4. `P`
+5. `RM`
+6. `Q`
+7. `Ep`
+8. `Es`
+9. `Er`
+10. `Dp`
+11. `UpStrmQ`
+12. `SubRIn`
+13. `latqcc`
+14. `Total-Soil`
+15. `frozwt`
+16. `Snow-Water`
+17. `QOFE`
+18. `Tile`
+19. `Irr`
+20. `Area`
+21. `SoilWaterTotal`
+22. `ProfileDepth`
+23. `ProfilePorosityCap`
+24. `ProfileFCStore`
+25. `ProfileWPStore`
+
+### WB13 Deterministic Row Keys and Ordering
+
+1. WB13 row keys are authoritative as `(Y, J, OFE)` and must be strictly
+   monotonic non-decreasing in emitted order.
+2. Duplicate row keys within one emitted daily surface are invalid.
+3. Output rows must remain deterministic under identical accepted upstream
+   daily kernel surfaces.
+
+### WB13 Output-Surface Invariants
+
+1. `QOFE = Q` for single-OFE daily Tier-A rows.
+2. `SoilWaterTotal = Total-Soil + frozwt` within `1e-6 mm`.
+3. `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
+4. Required depth-like and storage-like columns in this WB13 surface are
+   non-negative.
+5. Missing required symbols, non-finite values, and schema/order violations
+   are hard-fail invalid states.
+
+### WB13 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB13-HWAT-E-001` |
+| Non-finite required symbol | `HKERNEL-WB13-HWAT-E-002` |
+| Domain/order/schema violation | `HKERNEL-WB13-HWAT-E-003` |
+
+### WB13 Contract-Test Vectors
+
+1. Nominal WB13 vector emits deterministic 25-column rows in canonical schema
+   order and deterministic `(Y, J, OFE)` ordering.
+2. Missing required WB13 symbol (for example `ProfileDepth`) hard-fails with
+   `HKERNEL-WB13-HWAT-E-001`.
+3. Non-finite WB13 symbol hard-fails with `HKERNEL-WB13-HWAT-E-002`.
+4. Domain/order/schema violations hard-fail with `HKERNEL-WB13-HWAT-E-003`
+   and do not emit malformed rows.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -326,3 +399,4 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added scheduler hydrology phase-entry routing authority for runoff/storage classes with explicit unsupported-class hard-fail posture and WB10 test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted hydrology section from routing-only scaffolding to ET/percolation/lateral/drain production-kernel authority with deterministic WB11 updates, typed WB11 guard codes, and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB12 amendment: added runoff/storage reconciliation kernel authority with deterministic closure diagnostics, typed WB12 guard codes, and WB12 contract-derived vectors. |
+| `2026-05-23` | `6` | `Codex` | WB13 amendment: added canonical daily water-balance output surface authority (`H5.wat.dat` equivalent) with fixed 25-column schema, deterministic row-order key rules, typed WB13 output guards, and WB13 contract-derived vectors. |
