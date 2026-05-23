@@ -7,7 +7,8 @@ use std::error::Error;
 use std::fmt;
 
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeGrowthKernelContext,
+    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeDecompositionKernelContext,
+    HillslopeDecompositionManagementClass, HillslopeGrowthKernelContext,
     HillslopeGrowthManagementClass, HillslopeKernel, HillslopeKernelPhaseClass,
     HillslopeKernelRequest, KernelWritebackApplyResult, WritebackDecisionOutcome, WritebackError,
     apply_kernel_writeback, evaluate_kernel_writeback,
@@ -18,7 +19,7 @@ use openwepp_sim_contract::status::{
 };
 use openwepp_topology::TopologyValidationReport;
 
-const PHASE_COUNT: usize = 11;
+const PHASE_COUNT: usize = 13;
 const RUNOFF_SLOPE_REQUIRED_STATE_SYMBOLS: &[&str] =
     &["nslpts", "slplen", "avgslp", "xinput_0001", "slpinp_0001"];
 const RUNOFF_SOIL_REQUIRED_STATE_SYMBOLS: &[&str] = &["nsl", "solthk", "thetdr", "thetfc", "ssc"];
@@ -28,13 +29,22 @@ const PERC_REQUIRED_STATE_SYMBOLS: &[&str] = &["nsl", "thetdr", "thetfc", "ssc"]
 const SLOPE_FAMILY_SENTINELS: &[&str] = &["nelem", "nwsofe", "nslpts", "slplen", "avgslp"];
 const SOIL_FAMILY_SENTINELS: &[&str] = &["nsl", "solthk", "dg", "thetdr", "thetfc", "ssc"];
 const PL_GROWTH_RUNTIME_SENTINEL: &str = "pl_schedule_slot_count";
+const PL_DECOMP_RUNTIME_SENTINEL: &str = "pl_schedule_slot_count";
+const PL_DECOMP_IMNGMT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_imngmt";
+const PL_DECOMP_RESMGT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_resmgt";
+const PL_DECOMP_MGTOPT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_mgtopt";
+const PL_DECOMP_NCUT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_ncut";
+const PL_DECOMP_NCYCLE_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_ncycle";
+const PL_DECOMP_IRESD_SEED_SYMBOL: &str = "iresd_seed";
+const PL_DECOMP_SUMRTM_SEED_SYMBOL: &str = "sumrtm_seed";
+const PL_DECOMP_SUMSRM_SEED_SYMBOL: &str = "sumsrm_seed";
+const PL_ORDER_DECOMP_BEFORE_SOIL_SYMBOL: &str = "pl_order_decomp_before_soil";
 const PL_GROWTH_IMNGMT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_imngmt";
 const PL_GROWTH_JDHARV_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_jdharv";
 const PL_GROWTH_JDPLT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_jdplt";
 const PL_GROWTH_RW_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_rw";
 const PL_GROWTH_JDSTOP_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_jdstop";
 const PL_GROWTH_MGTOPT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_mgtopt";
-const PL_DECOMP_RESMGT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_resmgt";
 const PL_ORDER_GROWTH_AFTER_DECOMP_SYMBOL: &str = "pl_order_growth_after_decomp";
 const PL_ORDER_WATBAL_AFTER_GROWTH_SYMBOL: &str = "pl_order_watbal_after_growth";
 const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
@@ -45,6 +55,8 @@ const MANAGEMENT_CLASS_EPSILON: f64 = 1.0e-9;
 pub enum HillslopePhase {
     Normalization,
     StorageBounds,
+    DecompositionTransition,
+    ResiduePartitionTransition,
     AnnualGrowthTransition,
     PerennialGrowthTransition,
     Evapotranspiration,
@@ -60,6 +72,8 @@ impl HillslopePhase {
     const ORDERED: [Self; PHASE_COUNT] = [
         Self::Normalization,
         Self::StorageBounds,
+        Self::DecompositionTransition,
+        Self::ResiduePartitionTransition,
         Self::AnnualGrowthTransition,
         Self::PerennialGrowthTransition,
         Self::Evapotranspiration,
@@ -76,6 +90,8 @@ impl HillslopePhase {
         match self {
             Self::Normalization => "normalization",
             Self::StorageBounds => "storage_bounds",
+            Self::DecompositionTransition => "decomposition_transition",
+            Self::ResiduePartitionTransition => "residue_partition_transition",
             Self::AnnualGrowthTransition => "annual_growth_transition",
             Self::PerennialGrowthTransition => "perennial_growth_transition",
             Self::Evapotranspiration => "evapotranspiration",
@@ -93,15 +109,17 @@ impl HillslopePhase {
         match self {
             Self::Normalization => 0,
             Self::StorageBounds => 1,
-            Self::AnnualGrowthTransition => 2,
-            Self::PerennialGrowthTransition => 3,
-            Self::Evapotranspiration => 4,
-            Self::PercolationDeepSeepage => 5,
-            Self::LateralTransfer => 6,
-            Self::Drainage => 7,
-            Self::RunoffReconciliation => 8,
-            Self::StorageReconciliation => 9,
-            Self::ClosureDiagnostics => 10,
+            Self::DecompositionTransition => 2,
+            Self::ResiduePartitionTransition => 3,
+            Self::AnnualGrowthTransition => 4,
+            Self::PerennialGrowthTransition => 5,
+            Self::Evapotranspiration => 6,
+            Self::PercolationDeepSeepage => 7,
+            Self::LateralTransfer => 8,
+            Self::Drainage => 9,
+            Self::RunoffReconciliation => 10,
+            Self::StorageReconciliation => 11,
+            Self::ClosureDiagnostics => 12,
         }
     }
 
@@ -110,6 +128,8 @@ impl HillslopePhase {
         match self {
             Self::Normalization => "HSCHED-PHASE-OK-001",
             Self::StorageBounds => "HSCHED-PHASE-OK-002",
+            Self::DecompositionTransition => "HSCHED-PHASE-OK-012",
+            Self::ResiduePartitionTransition => "HSCHED-PHASE-OK-013",
             Self::AnnualGrowthTransition => "HSCHED-PHASE-OK-010",
             Self::PerennialGrowthTransition => "HSCHED-PHASE-OK-011",
             Self::Evapotranspiration => "HSCHED-PHASE-OK-003",
@@ -265,6 +285,109 @@ impl fmt::Display for HillslopeGrowthBoundaryError {
 
 impl Error for HillslopeGrowthBoundaryError {}
 
+/// Typed failure surface for scheduler-to-decomposition kernel boundary
+/// validation.
+#[derive(Debug, Clone, PartialEq)]
+pub enum HillslopeDecompositionBoundaryError {
+    MissingRequiredStateSymbol {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+    },
+    NonFiniteRequiredStateSymbol {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    InvalidOrderingFlagValue {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        observed: f64,
+        expected: f64,
+    },
+    UnsupportedManagementClass {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+}
+
+impl HillslopeDecompositionBoundaryError {
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        match self {
+            Self::MissingRequiredStateSymbol { .. } => "HS-DECOMP-E-001",
+            Self::NonFiniteRequiredStateSymbol { .. } => "HS-DECOMP-E-002",
+            Self::InvalidOrderingFlagValue { .. } => "HS-DECOMP-E-003",
+            Self::UnsupportedManagementClass { .. } => "HS-DECOMP-E-004",
+        }
+    }
+
+    #[must_use]
+    pub const fn boundary_class(&self) -> BoundaryClass {
+        match self {
+            Self::MissingRequiredStateSymbol { .. } => BoundaryClass::MissingRequiredInput,
+            Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
+            Self::InvalidOrderingFlagValue { .. } | Self::UnsupportedManagementClass { .. } => {
+                BoundaryClass::DomainViolation
+            }
+        }
+    }
+}
+
+impl fmt::Display for HillslopeDecompositionBoundaryError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingRequiredStateSymbol { phase, symbol } => write!(
+                f,
+                "{}: phase {} missing required decomposition state symbol {}",
+                self.code(),
+                phase.as_str(),
+                symbol
+            ),
+            Self::NonFiniteRequiredStateSymbol {
+                phase,
+                symbol,
+                value,
+            } => write!(
+                f,
+                "{}: phase {} decomposition state symbol {} is non-finite ({})",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value
+            ),
+            Self::InvalidOrderingFlagValue {
+                phase,
+                symbol,
+                observed,
+                expected,
+            } => write!(
+                f,
+                "{}: phase {} decomposition ordering flag {}={} but expected {}",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                observed,
+                expected
+            ),
+            Self::UnsupportedManagementClass {
+                phase,
+                symbol,
+                value,
+            } => write!(
+                f,
+                "{}: phase {} unsupported decomposition management class {}={}",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value
+            ),
+        }
+    }
+}
+
+impl Error for HillslopeDecompositionBoundaryError {}
+
 #[must_use]
 pub const fn hillslope_consumer_adapter_for_phase(
     phase: HillslopePhase,
@@ -272,6 +395,9 @@ pub const fn hillslope_consumer_adapter_for_phase(
     match phase {
         HillslopePhase::Normalization | HillslopePhase::StorageBounds => {
             HillslopeConsumerAdapter::Soil
+        }
+        HillslopePhase::DecompositionTransition | HillslopePhase::ResiduePartitionTransition => {
+            HillslopeConsumerAdapter::Decomposition
         }
         HillslopePhase::AnnualGrowthTransition | HillslopePhase::PerennialGrowthTransition => {
             HillslopeConsumerAdapter::Growth
@@ -323,7 +449,7 @@ pub fn required_hillslope_consumer_state_symbols(
                 required.extend(PERC_REQUIRED_STATE_SYMBOLS);
             }
         }
-        HillslopeConsumerAdapter::Growth => {}
+        HillslopeConsumerAdapter::Decomposition | HillslopeConsumerAdapter::Growth => {}
     }
 
     required
@@ -364,6 +490,20 @@ enum GrowthPhaseDispatch {
     Execute(HillslopeGrowthKernelContext),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum DecompositionPhaseDispatch {
+    Skip,
+    Execute(HillslopeDecompositionKernelContext),
+}
+
+#[must_use]
+const fn is_decomposition_phase(phase: HillslopePhase) -> bool {
+    matches!(
+        phase,
+        HillslopePhase::DecompositionTransition | HillslopePhase::ResiduePartitionTransition
+    )
+}
+
 #[must_use]
 const fn is_growth_phase(phase: HillslopePhase) -> bool {
     matches!(
@@ -375,12 +515,96 @@ const fn is_growth_phase(phase: HillslopePhase) -> bool {
 #[must_use]
 const fn hillslope_phase_class_for_phase(phase: HillslopePhase) -> HillslopeKernelPhaseClass {
     match phase {
+        HillslopePhase::DecompositionTransition => {
+            HillslopeKernelPhaseClass::DecompositionTransition
+        }
+        HillslopePhase::ResiduePartitionTransition => {
+            HillslopeKernelPhaseClass::ResiduePartitionTransition
+        }
         HillslopePhase::AnnualGrowthTransition => HillslopeKernelPhaseClass::GrowthAnnualTransition,
         HillslopePhase::PerennialGrowthTransition => {
             HillslopeKernelPhaseClass::GrowthPerennialTransition
         }
         _ => HillslopeKernelPhaseClass::Hydrology,
     }
+}
+
+fn decomposition_phase_dispatch_for_state(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Result<DecompositionPhaseDispatch, HillslopeDecompositionBoundaryError> {
+    if !state_surface.contains_key(&BoundarySymbol::from(PL_DECOMP_RUNTIME_SENTINEL)) {
+        return Ok(DecompositionPhaseDispatch::Skip);
+    }
+
+    let imngmt = require_finite_state_value_for_decomposition(
+        phase,
+        state_surface,
+        PL_DECOMP_IMNGMT_SYMBOL,
+    )?;
+    let management_class = normalize_management_class_for_decomposition(phase, imngmt)?;
+    let order_decomp_before_soil = require_ordering_flag_for_decomposition(
+        phase,
+        state_surface,
+        PL_ORDER_DECOMP_BEFORE_SOIL_SYMBOL,
+        1.0,
+    )?;
+    let order_growth_after_decomp = require_ordering_flag_for_decomposition(
+        phase,
+        state_surface,
+        PL_ORDER_GROWTH_AFTER_DECOMP_SYMBOL,
+        1.0,
+    )?;
+
+    for symbol in [
+        PL_DECOMP_IRESD_SEED_SYMBOL,
+        PL_DECOMP_SUMRTM_SEED_SYMBOL,
+        PL_DECOMP_SUMSRM_SEED_SYMBOL,
+    ] {
+        let _ = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
+    }
+
+    match management_class {
+        1 | 3 => {
+            let _ = require_finite_state_value_for_decomposition(
+                phase,
+                state_surface,
+                PL_DECOMP_RESMGT_SYMBOL,
+            )?;
+        }
+        2 => {
+            for symbol in [
+                PL_DECOMP_MGTOPT_SYMBOL,
+                PL_DECOMP_NCUT_SYMBOL,
+                PL_DECOMP_NCYCLE_SYMBOL,
+            ] {
+                let _ = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
+            }
+        }
+        _ => {
+            return Err(
+                HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
+                    phase,
+                    symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+                    value: imngmt,
+                },
+            );
+        }
+    }
+
+    let management_class = if management_class == 2 {
+        HillslopeDecompositionManagementClass::Perennial
+    } else {
+        HillslopeDecompositionManagementClass::AnnualOrFallow
+    };
+
+    Ok(DecompositionPhaseDispatch::Execute(
+        HillslopeDecompositionKernelContext::new(
+            management_class,
+            order_decomp_before_soil,
+            order_growth_after_decomp,
+        ),
+    ))
 }
 
 fn growth_phase_dispatch_for_state(
@@ -540,6 +764,98 @@ fn normalize_management_class(
     })
 }
 
+fn require_ordering_flag_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    expected: f64,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    let observed = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
+    if (observed - expected).abs() > ORDER_FLAG_EPSILON {
+        return Err(
+            HillslopeDecompositionBoundaryError::InvalidOrderingFlagValue {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                observed,
+                expected,
+            },
+        );
+    }
+
+    Ok(observed)
+}
+
+fn require_finite_state_value_for_decomposition(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+) -> Result<f64, HillslopeDecompositionBoundaryError> {
+    let symbol_key = BoundarySymbol::from(symbol);
+    let value = state_surface
+        .get(&symbol_key)
+        .ok_or_else(
+            || HillslopeDecompositionBoundaryError::MissingRequiredStateSymbol {
+                phase,
+                symbol: symbol_key.clone(),
+            },
+        )?
+        .as_f64();
+
+    if !value.is_finite() {
+        return Err(
+            HillslopeDecompositionBoundaryError::NonFiniteRequiredStateSymbol {
+                phase,
+                symbol: symbol_key,
+                value,
+            },
+        );
+    }
+
+    Ok(value)
+}
+
+fn normalize_management_class_for_decomposition(
+    phase: HillslopePhase,
+    value: f64,
+) -> Result<u8, HillslopeDecompositionBoundaryError> {
+    let rounded = value.round();
+    if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
+        return Err(
+            HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
+                phase,
+                symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+                value,
+            },
+        );
+    }
+    if !(1.0..=3.0).contains(&rounded) {
+        return Err(
+            HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
+                phase,
+                symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+                value,
+            },
+        );
+    }
+    if (rounded - 1.0).abs() <= MANAGEMENT_CLASS_EPSILON {
+        return Ok(1);
+    }
+    if (rounded - 2.0).abs() <= MANAGEMENT_CLASS_EPSILON {
+        return Ok(2);
+    }
+    if (rounded - 3.0).abs() <= MANAGEMENT_CLASS_EPSILON {
+        return Ok(3);
+    }
+
+    Err(
+        HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
+            phase,
+            symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+            value,
+        },
+    )
+}
+
 /// Explicit scheduler dependency edge.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PhaseDependency {
@@ -669,8 +985,16 @@ impl HillslopePhaseGraph {
                 depends_on: HillslopePhase::Normalization,
             },
             PhaseDependency {
-                phase: HillslopePhase::AnnualGrowthTransition,
+                phase: HillslopePhase::DecompositionTransition,
                 depends_on: HillslopePhase::StorageBounds,
+            },
+            PhaseDependency {
+                phase: HillslopePhase::ResiduePartitionTransition,
+                depends_on: HillslopePhase::DecompositionTransition,
+            },
+            PhaseDependency {
+                phase: HillslopePhase::AnnualGrowthTransition,
+                depends_on: HillslopePhase::ResiduePartitionTransition,
             },
             PhaseDependency {
                 phase: HillslopePhase::PerennialGrowthTransition,
@@ -1049,9 +1373,53 @@ impl HillslopePhaseScheduler {
 
             let consumer_adapter = hillslope_consumer_adapter_for_phase(phase);
             let phase_class = hillslope_phase_class_for_phase(phase);
+            let mut decomposition_context = None;
             let mut growth_context = None;
 
-            if is_growth_phase(phase) {
+            if is_decomposition_phase(phase) {
+                let decomposition_dispatch = match decomposition_phase_dispatch_for_state(
+                    phase,
+                    &writeback_surface.state_surface,
+                ) {
+                    Ok(value) => value,
+                    Err(source) => {
+                        let boundary_status = match SimulationStatus::failure(
+                            SimulationPhase::HillslopeKernel,
+                            true,
+                            false,
+                            source.boundary_class(),
+                            source.code(),
+                        ) {
+                            Ok(status) => status,
+                            Err(status_error) => {
+                                deferred_error =
+                                    Some(HillslopeSchedulerError::Status(status_error));
+                                phase_reports.push(HillslopeKernelPhaseReport {
+                                    phase,
+                                    kernel_status: deferred_error_status.clone(),
+                                    decision_outcome: WritebackDecisionOutcome::Reject,
+                                    decision_status: deferred_error_status.clone(),
+                                    apply_result: None,
+                                });
+                                return deferred_error_status.clone();
+                            }
+                        };
+
+                        phase_reports.push(HillslopeKernelPhaseReport {
+                            phase,
+                            kernel_status: boundary_status.clone(),
+                            decision_outcome: WritebackDecisionOutcome::Reject,
+                            decision_status: boundary_status.clone(),
+                            apply_result: None,
+                        });
+                        return boundary_status;
+                    }
+                };
+
+                if let DecompositionPhaseDispatch::Execute(context) = decomposition_dispatch {
+                    decomposition_context = Some(context);
+                }
+            } else if is_growth_phase(phase) {
                 let growth_dispatch = match growth_phase_dispatch_for_state(
                     phase,
                     &writeback_surface.state_surface,
@@ -1129,10 +1497,11 @@ impl HillslopePhaseScheduler {
             }
 
             let response = {
-                let request = HillslopeKernelRequest::with_phase_context(
+                let request = HillslopeKernelRequest::with_transition_context(
                     phase.as_str(),
                     phase_class,
                     consumer_adapter,
+                    decomposition_context,
                     growth_context,
                     &writeback_surface.state_surface,
                     &writeback_surface.flux_surface,
@@ -1248,8 +1617,9 @@ mod tests {
     use std::collections::BTreeMap;
 
     use openwepp_kernel_contract::{
-        BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeGrowthManagementClass,
-        HillslopeKernel, HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
+        BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter,
+        HillslopeDecompositionManagementClass, HillslopeGrowthManagementClass, HillslopeKernel,
+        HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
         KernelWritebackPayload, WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome,
         WritebackField,
     };
@@ -1292,6 +1662,10 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundaryValue::scalar(1.0),
         );
         state_surface.insert(
+            BoundarySymbol::from("pl_order_decomp_before_soil"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
             BoundarySymbol::from("pl_order_growth_after_decomp"),
             BoundaryValue::scalar(1.0),
         );
@@ -1315,8 +1689,32 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"),
             BoundaryValue::scalar(1.3),
         );
+        state_surface.insert(
+            BoundarySymbol::from("iresd_seed"),
+            BoundaryValue::scalar(3.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("sumrtm_seed"),
+            BoundaryValue::scalar(2.5),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("sumsrm_seed"),
+            BoundaryValue::scalar(1.5),
+        );
 
         if (imngmt - 2.0).abs() < f64::EPSILON {
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+                BoundaryValue::scalar(2.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+                BoundaryValue::scalar(1.0),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+                BoundaryValue::scalar(1.0),
+            );
             state_surface.insert(
                 BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdstop"),
                 BoundaryValue::scalar(310.0),
@@ -1350,7 +1748,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             Vec::from(HillslopePhaseGraph::canonical_order()),
             "ARCH05 requires explicit deterministic scheduler order"
         );
-        assert_eq!(graph.dependency_edges().len(), 10);
+        assert_eq!(graph.dependency_edges().len(), 12);
     }
 
     #[test]
@@ -1428,6 +1826,8 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             vec![
                 HillslopePhase::Normalization,
                 HillslopePhase::StorageBounds,
+                HillslopePhase::DecompositionTransition,
+                HillslopePhase::ResiduePartitionTransition,
                 HillslopePhase::AnnualGrowthTransition,
                 HillslopePhase::PerennialGrowthTransition,
                 HillslopePhase::Evapotranspiration,
@@ -1514,6 +1914,14 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             HillslopeConsumerAdapter::Soil
         );
         assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::DecompositionTransition),
+            HillslopeConsumerAdapter::Decomposition
+        );
+        assert_eq!(
+            hillslope_consumer_adapter_for_phase(HillslopePhase::ResiduePartitionTransition),
+            HillslopeConsumerAdapter::Decomposition
+        );
+        assert_eq!(
             hillslope_consumer_adapter_for_phase(HillslopePhase::AnnualGrowthTransition),
             HillslopeConsumerAdapter::Growth
         );
@@ -1597,8 +2005,9 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
     fn annual_growth_phase_emits_typed_growth_context() {
         #[derive(Default)]
         struct ProbeKernel {
-            annual_context_count: usize,
-            perennial_context_count: usize,
+            decomp: usize,
+            annual: usize,
+            perennial: usize,
         }
 
         impl HillslopeKernel for ProbeKernel {
@@ -1607,6 +2016,18 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                 request: &HillslopeKernelRequest<'_>,
             ) -> KernelRunResponse {
                 match request.phase_class {
+                    HillslopeKernelPhaseClass::DecompositionTransition
+                    | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                        let context = request
+                            .decomposition_context
+                            .expect("decomposition phases should carry decomposition context");
+                        assert_eq!(
+                            context.management_class,
+                            HillslopeDecompositionManagementClass::AnnualOrFallow
+                        );
+                        assert!(request.growth_context.is_none());
+                        self.decomp += 1;
+                    }
                     HillslopeKernelPhaseClass::GrowthAnnualTransition => {
                         let context = request
                             .growth_context
@@ -1615,17 +2036,18 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                             context.management_class,
                             HillslopeGrowthManagementClass::AnnualOrFallow
                         );
-                        self.annual_context_count += 1;
+                        self.annual += 1;
                     }
                     HillslopeKernelPhaseClass::GrowthPerennialTransition => {
                         assert!(
                             request.growth_context.is_none(),
                             "perennial phase should skip context when annual branch is active"
                         );
-                        self.perennial_context_count += 1;
+                        self.perennial += 1;
                     }
                     HillslopeKernelPhaseClass::Hydrology => {
                         assert!(request.growth_context.is_none());
+                        assert!(request.decomposition_context.is_none());
                     }
                 }
 
@@ -1648,16 +2070,18 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             .expect("annual growth context execution should succeed");
 
         assert!(report.scheduler_report.is_success());
-        assert_eq!(kernel.annual_context_count, 1);
-        assert_eq!(kernel.perennial_context_count, 1);
+        assert_eq!(kernel.decomp, 2);
+        assert_eq!(kernel.annual, 1);
+        assert_eq!(kernel.perennial, 1);
     }
 
     #[test]
     fn perennial_growth_phase_emits_typed_growth_context() {
         #[derive(Default)]
         struct ProbeKernel {
-            annual_context_count: usize,
-            perennial_context_count: usize,
+            decomp: usize,
+            annual: usize,
+            perennial: usize,
         }
 
         impl HillslopeKernel for ProbeKernel {
@@ -1666,12 +2090,24 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                 request: &HillslopeKernelRequest<'_>,
             ) -> KernelRunResponse {
                 match request.phase_class {
+                    HillslopeKernelPhaseClass::DecompositionTransition
+                    | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                        let context = request
+                            .decomposition_context
+                            .expect("decomposition phases should carry decomposition context");
+                        assert_eq!(
+                            context.management_class,
+                            HillslopeDecompositionManagementClass::Perennial
+                        );
+                        assert!(request.growth_context.is_none());
+                        self.decomp += 1;
+                    }
                     HillslopeKernelPhaseClass::GrowthAnnualTransition => {
                         assert!(
                             request.growth_context.is_none(),
                             "annual phase should skip context when perennial branch is active"
                         );
-                        self.annual_context_count += 1;
+                        self.annual += 1;
                     }
                     HillslopeKernelPhaseClass::GrowthPerennialTransition => {
                         let context = request
@@ -1681,10 +2117,11 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                             context.management_class,
                             HillslopeGrowthManagementClass::Perennial
                         );
-                        self.perennial_context_count += 1;
+                        self.perennial += 1;
                     }
                     HillslopeKernelPhaseClass::Hydrology => {
                         assert!(request.growth_context.is_none());
+                        assert!(request.decomposition_context.is_none());
                     }
                 }
 
@@ -1707,8 +2144,110 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             .expect("perennial growth context execution should succeed");
 
         assert!(report.scheduler_report.is_success());
-        assert_eq!(kernel.annual_context_count, 1);
-        assert_eq!(kernel.perennial_context_count, 1);
+        assert_eq!(kernel.decomp, 2);
+        assert_eq!(kernel.annual, 1);
+        assert_eq!(kernel.perennial, 1);
+    }
+
+    #[test]
+    fn decomposition_boundary_missing_required_symbol_returns_typed_failure() {
+        #[derive(Default)]
+        struct NoopKernel {
+            invocation_count: usize,
+        }
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                self.invocation_count += 1;
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel::default();
+        let mut surface = seeded_growth_runtime_surface(1.0);
+        surface.state_surface.remove(&BoundarySymbol::from(
+            "pl_decomp_slot_0001_crop_0001_resmgt",
+        ));
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("typed decomposition guard failure should produce report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(kernel.invocation_count, 2);
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-DECOMP-E-001"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::MissingRequiredInput
+        );
+    }
+
+    #[test]
+    fn decomposition_boundary_invalid_ordering_flag_returns_typed_failure() {
+        #[derive(Default)]
+        struct NoopKernel {
+            invocation_count: usize,
+        }
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                self.invocation_count += 1;
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel::default();
+        let mut surface = seeded_growth_runtime_surface(1.0);
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_order_decomp_before_soil"),
+            BoundaryValue::scalar(0.0),
+        );
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("typed decomposition guard failure should produce report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(kernel.invocation_count, 2);
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-DECOMP-E-003"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
     }
 
     #[test]
@@ -1749,14 +2288,14 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             report.scheduler_report.halted_phase,
             Some(HillslopePhase::AnnualGrowthTransition)
         );
-        assert_eq!(kernel.invocation_count, 2);
-        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(kernel.invocation_count, 4);
+        assert_eq!(report.phase_reports.len(), 5);
         assert_eq!(
-            report.phase_reports[2].decision_status.message_id(),
+            report.phase_reports[4].decision_status.message_id(),
             "HS-GROWTH-E-001"
         );
         assert_eq!(
-            report.phase_reports[2].decision_status.boundary_class(),
+            report.phase_reports[4].decision_status.boundary_class(),
             BoundaryClass::MissingRequiredInput
         );
     }
@@ -1788,7 +2327,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         let mut kernel = NoopKernel::default();
         let mut surface = seeded_growth_runtime_surface(1.0);
         surface.state_surface.insert(
-            BoundarySymbol::from("pl_order_growth_after_decomp"),
+            BoundarySymbol::from("pl_order_watbal_after_growth"),
             BoundaryValue::scalar(f64::NAN),
         );
 
@@ -1800,14 +2339,14 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             report.scheduler_report.halted_phase,
             Some(HillslopePhase::AnnualGrowthTransition)
         );
-        assert_eq!(kernel.invocation_count, 2);
-        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(kernel.invocation_count, 4);
+        assert_eq!(report.phase_reports.len(), 5);
         assert_eq!(
-            report.phase_reports[2].decision_status.message_id(),
+            report.phase_reports[4].decision_status.message_id(),
             "HS-GROWTH-E-002"
         );
         assert_eq!(
-            report.phase_reports[2].decision_status.boundary_class(),
+            report.phase_reports[4].decision_status.boundary_class(),
             BoundaryClass::NonFinite
         );
     }
@@ -1883,7 +2422,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                 .state_surface
                 .get(&BoundarySymbol::from("soil_storage"))
                 .copied(),
-            Some(BoundaryValue::from(11.0))
+            Some(BoundaryValue::from(13.0))
         );
         assert_eq!(
             report
@@ -1891,7 +2430,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                 .flux_surface
                 .get(&BoundarySymbol::from("runoff_total"))
                 .copied(),
-            Some(BoundaryValue::from(2.75))
+            Some(BoundaryValue::from(3.25))
         );
     }
 
@@ -1939,8 +2478,8 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             .expect("kernel execution should succeed");
 
         assert!(report.scheduler_report.is_success());
-        assert_eq!(kernel.state_surface_ptrs.len(), 11);
-        assert_eq!(kernel.flux_surface_ptrs.len(), 11);
+        assert_eq!(kernel.state_surface_ptrs.len(), 13);
+        assert_eq!(kernel.flux_surface_ptrs.len(), 13);
         assert!(
             kernel
                 .state_surface_ptrs

@@ -339,10 +339,19 @@ pub enum HillslopeGrowthManagementClass {
     Perennial,
 }
 
+/// Management class for decomposition/resup phase scheduler dispatch.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopeDecompositionManagementClass {
+    AnnualOrFallow,
+    Perennial,
+}
+
 /// Typed phase class for hillslope kernel dispatch.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HillslopeKernelPhaseClass {
     Hydrology,
+    DecompositionTransition,
+    ResiduePartitionTransition,
     GrowthAnnualTransition,
     GrowthPerennialTransition,
 }
@@ -352,6 +361,8 @@ impl HillslopeKernelPhaseClass {
     pub const fn as_str(self) -> &'static str {
         match self {
             Self::Hydrology => "hydrology",
+            Self::DecompositionTransition => "decomposition_transition",
+            Self::ResiduePartitionTransition => "residue_partition_transition",
             Self::GrowthAnnualTransition => "growth_annual_transition",
             Self::GrowthPerennialTransition => "growth_perennial_transition",
         }
@@ -362,6 +373,14 @@ impl HillslopeKernelPhaseClass {
         matches!(
             self,
             Self::GrowthAnnualTransition | Self::GrowthPerennialTransition
+        )
+    }
+
+    #[must_use]
+    pub const fn is_decomposition_transition(self) -> bool {
+        matches!(
+            self,
+            Self::DecompositionTransition | Self::ResiduePartitionTransition
         )
     }
 }
@@ -389,6 +408,30 @@ impl HillslopeGrowthKernelContext {
     }
 }
 
+/// Typed decomposition/resup scheduler context carried on hillslope kernel
+/// requests.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeDecompositionKernelContext {
+    pub management_class: HillslopeDecompositionManagementClass,
+    pub order_decomp_before_soil: f64,
+    pub order_growth_after_decomp: f64,
+}
+
+impl HillslopeDecompositionKernelContext {
+    #[must_use]
+    pub const fn new(
+        management_class: HillslopeDecompositionManagementClass,
+        order_decomp_before_soil: f64,
+        order_growth_after_decomp: f64,
+    ) -> Self {
+        Self {
+            management_class,
+            order_decomp_before_soil,
+            order_growth_after_decomp,
+        }
+    }
+}
+
 /// Consumer adapter class selected for the current hillslope phase invocation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HillslopeConsumerAdapter {
@@ -396,6 +439,7 @@ pub enum HillslopeConsumerAdapter {
     Soil,
     Watbal,
     Perc,
+    Decomposition,
     Growth,
 }
 
@@ -407,6 +451,7 @@ impl HillslopeConsumerAdapter {
             Self::Soil => "soil",
             Self::Watbal => "watbal",
             Self::Perc => "perc",
+            Self::Decomposition => "decomposition",
             Self::Growth => "growth",
         }
     }
@@ -421,6 +466,7 @@ pub struct HillslopeKernelRequest<'a> {
     pub phase_name: &'a str,
     pub phase_class: HillslopeKernelPhaseClass,
     pub consumer_adapter: HillslopeConsumerAdapter,
+    pub decomposition_context: Option<HillslopeDecompositionKernelContext>,
     pub growth_context: Option<HillslopeGrowthKernelContext>,
     pub state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     pub flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
@@ -434,14 +480,36 @@ impl<'a> HillslopeKernelRequest<'a> {
         state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
-        Self::with_phase_context(
+        Self::with_transition_context(
             phase_name,
             HillslopeKernelPhaseClass::Hydrology,
             consumer_adapter,
             None,
+            None,
             state_surface,
             flux_surface,
         )
+    }
+
+    #[must_use]
+    pub fn with_transition_context(
+        phase_name: &'a str,
+        phase_class: HillslopeKernelPhaseClass,
+        consumer_adapter: HillslopeConsumerAdapter,
+        decomposition_context: Option<HillslopeDecompositionKernelContext>,
+        growth_context: Option<HillslopeGrowthKernelContext>,
+        state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
+    ) -> Self {
+        Self {
+            phase_name,
+            phase_class,
+            consumer_adapter,
+            decomposition_context,
+            growth_context,
+            state_surface,
+            flux_surface,
+        }
     }
 
     #[must_use]
@@ -453,14 +521,15 @@ impl<'a> HillslopeKernelRequest<'a> {
         state_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
         flux_surface: &'a BTreeMap<BoundarySymbol, BoundaryValue>,
     ) -> Self {
-        Self {
+        Self::with_transition_context(
             phase_name,
             phase_class,
             consumer_adapter,
+            None,
             growth_context,
             state_surface,
             flux_surface,
-        }
+        )
     }
 }
 
@@ -848,8 +917,23 @@ mod tests {
     #[test]
     fn phase_class_growth_predicate_matches_contract() {
         assert!(!HillslopeKernelPhaseClass::Hydrology.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::DecompositionTransition.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::ResiduePartitionTransition.is_growth_transition());
         assert!(HillslopeKernelPhaseClass::GrowthAnnualTransition.is_growth_transition());
         assert!(HillslopeKernelPhaseClass::GrowthPerennialTransition.is_growth_transition());
+    }
+
+    #[test]
+    fn phase_class_decomposition_predicate_matches_contract() {
+        assert!(!HillslopeKernelPhaseClass::Hydrology.is_decomposition_transition());
+        assert!(HillslopeKernelPhaseClass::DecompositionTransition.is_decomposition_transition());
+        assert!(
+            HillslopeKernelPhaseClass::ResiduePartitionTransition.is_decomposition_transition()
+        );
+        assert!(!HillslopeKernelPhaseClass::GrowthAnnualTransition.is_decomposition_transition());
+        assert!(
+            !HillslopeKernelPhaseClass::GrowthPerennialTransition.is_decomposition_transition()
+        );
     }
 
     #[test]
@@ -873,6 +957,39 @@ mod tests {
             HillslopeKernelPhaseClass::GrowthPerennialTransition
         );
         assert_eq!(request.consumer_adapter, HillslopeConsumerAdapter::Growth);
+        assert_eq!(request.decomposition_context, None);
         assert_eq!(request.growth_context, Some(growth_context));
+    }
+
+    #[test]
+    fn request_with_decomposition_context_preserves_typed_phase_metadata() {
+        let state_surface = BTreeMap::new();
+        let flux_surface = BTreeMap::new();
+        let decomposition_context = HillslopeDecompositionKernelContext::new(
+            HillslopeDecompositionManagementClass::AnnualOrFallow,
+            1.0,
+            1.0,
+        );
+
+        let request = HillslopeKernelRequest::with_transition_context(
+            "decomposition_transition",
+            HillslopeKernelPhaseClass::DecompositionTransition,
+            HillslopeConsumerAdapter::Decomposition,
+            Some(decomposition_context),
+            None,
+            &state_surface,
+            &flux_surface,
+        );
+
+        assert_eq!(
+            request.phase_class,
+            HillslopeKernelPhaseClass::DecompositionTransition
+        );
+        assert_eq!(
+            request.consumer_adapter,
+            HillslopeConsumerAdapter::Decomposition
+        );
+        assert_eq!(request.decomposition_context, Some(decomposition_context));
+        assert_eq!(request.growth_context, None);
     }
 }

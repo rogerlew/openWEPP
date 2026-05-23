@@ -47,6 +47,9 @@ impl HillslopeKernel for BoundaryProbeKernel {
         if request.consumer_adapter == HillslopeConsumerAdapter::Growth {
             assert!(required_symbols.is_empty());
             assert!(request.phase_class.is_growth_transition());
+        } else if request.consumer_adapter == HillslopeConsumerAdapter::Decomposition {
+            assert!(required_symbols.is_empty());
+            assert!(request.phase_class.is_decomposition_transition());
         } else {
             assert!(
                 !required_symbols.is_empty(),
@@ -163,18 +166,18 @@ fn missing_runoff_slope_symbol_fails_at_runoff_reconciliation_boundary() {
         report.scheduler_report.halted_phase,
         Some(HillslopePhase::RunoffReconciliation)
     );
-    assert_eq!(kernel.invocation_count, 8);
-    assert_eq!(report.phase_reports.len(), 9);
+    assert_eq!(kernel.invocation_count, 10);
+    assert_eq!(report.phase_reports.len(), 11);
     assert_eq!(
-        report.phase_reports[8].phase,
+        report.phase_reports[10].phase,
         HillslopePhase::RunoffReconciliation
     );
     assert_eq!(
-        report.phase_reports[8].decision_status.boundary_class(),
+        report.phase_reports[10].decision_status.boundary_class(),
         BoundaryClass::MissingRequiredInput
     );
     assert_eq!(
-        report.phase_reports[8].decision_status.message_id(),
+        report.phase_reports[10].decision_status.message_id(),
         "HS-CONSUMER-E-001"
     );
 }
@@ -210,6 +213,8 @@ fn phase_from_name(phase_name: &str) -> HillslopePhase {
     match phase_name {
         "normalization" => HillslopePhase::Normalization,
         "storage_bounds" => HillslopePhase::StorageBounds,
+        "decomposition_transition" => HillslopePhase::DecompositionTransition,
+        "residue_partition_transition" => HillslopePhase::ResiduePartitionTransition,
         "annual_growth_transition" => HillslopePhase::AnnualGrowthTransition,
         "perennial_growth_transition" => HillslopePhase::PerennialGrowthTransition,
         "evapotranspiration" => HillslopePhase::Evapotranspiration,
@@ -233,6 +238,7 @@ fn phase_to_consumer_adapter_contract_remains_stable() {
                 | HillslopeConsumerAdapter::Soil
                 | HillslopeConsumerAdapter::Watbal
                 | HillslopeConsumerAdapter::Perc
+                | HillslopeConsumerAdapter::Decomposition
                 | HillslopeConsumerAdapter::Growth
         ));
     }

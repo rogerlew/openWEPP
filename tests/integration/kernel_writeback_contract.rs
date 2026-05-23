@@ -73,7 +73,7 @@ fn hillslope_writeback_success_applies_updates() {
         .expect("kernel execution should succeed");
 
     assert!(report.scheduler_report.is_success());
-    assert_eq!(report.phase_reports.len(), 11);
+    assert_eq!(report.phase_reports.len(), 13);
     assert!(
         report
             .phase_reports
@@ -86,7 +86,7 @@ fn hillslope_writeback_success_applies_updates() {
             .state_surface
             .get(&BoundarySymbol::from("st"))
             .copied(),
-        Some(BoundaryValue::from(11.0))
+        Some(BoundaryValue::from(13.0))
     );
     assert_eq!(
         report
@@ -94,7 +94,7 @@ fn hillslope_writeback_success_applies_updates() {
             .flux_surface
             .get(&BoundarySymbol::from("qout"))
             .copied(),
-        Some(BoundaryValue::from(1.1))
+        Some(BoundaryValue::from(1.3))
     );
 }
 
