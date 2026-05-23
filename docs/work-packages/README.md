@@ -395,6 +395,22 @@ Authorized packages:
   - Purpose: implement PL01/PL02 follow-on `PL04` by expanding
     `openwepp-sim-contract` canonical alias registry coverage for PL runtime
     symbols and validating deterministic alias resolution behavior.
+- `20260522-pl05-growth-kernel-surface-scaffolding-001/`
+  - Purpose: implement PL01/PL02/PL03/PL04 follow-on `PL05` by adding typed
+    growth-kernel interfaces and placeholder annual/perennial scheduler phases
+    for deterministic growth state transitions.
+- `20260522-pl06-decomposition-resup-kernel-surface-scaffolding-001/`
+  - Purpose: implement PL01/PL02/PL03/PL04 follow-on `PL06` by adding typed
+    decomposition/resup kernel interfaces and scheduler scaffolding for residue
+    partition transitions while preserving baseline phase order.
+- `20260522-pl07-parser-to-runtime-integration-tests-001/`
+  - Purpose: implement PL01/PL03/PL04 follow-on `PL07` by adding fixture-backed
+    integration tests that assert full PL runtime surface projection from `.man`
+    inputs, including typed reject paths.
+- `20260522-pl08-comparator-confidence-tier-review-001/`
+  - Purpose: implement PL01/PL05/PL06/PL07 follow-on `PL08` by running
+    single-OFE daily water-balance and plant/residue comparator parity review
+    with confidence-tier disposition semantics.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
