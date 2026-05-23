@@ -28,6 +28,9 @@ fn seeded_wb14_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(1.0));
     state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(0.5));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
 
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),

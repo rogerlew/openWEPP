@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -437,6 +437,58 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 4. Non-monotone hyetograph time, negative intensity, rainfall mismatch, or
    runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
 
+## WB15 Canopy Interception Coupling Addendum
+
+### WB15 Required Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Plant runtime interception inputs | `cancov`, `lai`, `vdmt` |
+| Runoff/infiltration forcing inputs | `timem_####`, `intsty_####`, `wb12_rainfall_input` |
+| Interception + closure outputs | `I`, `wb12_infiltration`, `Q`, `wb12_storage_reconciled` |
+
+### WB15 Deterministic Coupling Rules
+
+1. Canopy interception is computed before runoff/infiltration reconciliation
+   and before daily storage closure acceptance.
+2. Biomass context for interception uses live above-ground biomass proxy:
+   - `VE = vdmt * 10000` (`kg ha^-1`)
+3. Canopy-interception potential follows Chapter-5 Eq. [5.1.2] lineage:
+   - `Ipot = cancov * ((0.000627 * VE - 3.73349e-8 * VE^2) / 1000)` (`m`)
+4. Runtime interception is bounded by available hyetograph rainfall:
+   - `I = min(Ipot, wb14_hyetograph_rainfall)` when `lai > 0` and `cancov > 0`
+   - `I = 0` when `lai <= 0` or `cancov <= 0`
+5. Domain requirements are hard-fail:
+   - `0 <= cancov <= 0.999`
+   - `lai >= 0`
+   - `0 <= vdmt <= 0.8` (`kg m^-2`) so `0 <= VE <= 8000` (`kg ha^-1`)
+6. Runoff/infiltration reconciliation consumes interception explicitly:
+   - `wb14_hyetograph_liquid_after_interception = wb14_hyetograph_rainfall - I`
+   - `Q = wb14_hyetograph_liquid_after_interception + S + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+7. Daily storage closure consumes interception as an explicit Chapter-5 term:
+   - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - I - Q - ET - D - Qd`
+8. Missing/non-finite/out-of-domain canopy interception symbols are hard-fail
+   invalid states. No fallback/default/clamp behavior is allowed.
+
+### WB15 Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Runoff reconciliation | `HKERNEL-WB14-RUNOFF-E-001` | `HKERNEL-WB14-RUNOFF-E-002` | `HKERNEL-WB14-RUNOFF-E-003` |
+| Storage reconciliation | `HKERNEL-WB12-STORAGE-E-001` | `HKERNEL-WB12-STORAGE-E-002` | `HKERNEL-WB12-STORAGE-E-003` |
+
+### WB15 Contract-Test Vectors
+
+1. Valid `cancov`/`lai`/`vdmt` inputs emit finite `I` and deterministic
+   coupled `wb12_infiltration`, `Q`, and `wb12_storage_reconciled`.
+2. Missing canopy interception input symbol (`cancov`, `lai`, or `vdmt`)
+   hard-fails with `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite canopy interception input hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-002`.
+4. Out-of-domain canopy interception input (`cancov`, `lai`, `vdmt`) or
+   coupled closure overflow hard-fails with `HKERNEL-WB14-RUNOFF-E-003` or
+   `HKERNEL-WB12-STORAGE-E-003` at the affected phase.
+
 ## WB13 Daily Output-Surface Authority Addendum
 
 ### WB13 Canonical Daily Output Schema (`H5.wat.dat` Equivalent)
@@ -533,3 +585,4 @@ canonical order:
 | `2026-05-23` | `9` | `Codex` | WB14 amendment: added computed infiltration + hyetograph coupling authority for runoff reconciliation, replacing required externally seeded infiltration input in acceptance paths and adding typed WB14 runoff guards. |
 | `2026-05-23` | `10` | `Codex` | CLIM05 amendment: added signed `S` snow-coupling authority for WB12 storage reconciliation, including required storage-surface inputs, deterministic storage equation update, and typed active-coupling guard vectors. |
 | `2026-05-23` | `11` | `Codex` | CLIM06 amendment: added frozen-soil infiltration-capacity coupling authority (`frost.runtime_infcap_frz`) for WB14 runoff reconciliation, bounded frozen-state surface requirements, and typed active-coupling guard vectors. |
+| `2026-05-23` | `12` | `Codex` | WB15 amendment: added canopy interception coupling authority from plant runtime surfaces (`cancov`, `lai`, `vdmt`) with Eq. [5.1.2] lineage, explicit runoff/storage closure integration of `I`, and typed hard-fail guard posture for missing/non-finite/domain-invalid canopy symbols. |

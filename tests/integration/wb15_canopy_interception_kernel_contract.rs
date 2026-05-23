@@ -14,22 +14,27 @@ NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
 NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
 
+const WB15_TEST_TOLERANCE: f64 = 1.0e-9;
+const EXPECTED_INTERCEPTION_I: f64 = 0.001_571_663_34;
+const EXPECTED_INFILTRATION: f64 = 2.998_428_336_66;
+const EXPECTED_RUNOFF_Q: f64 = 0.0;
+const EXPECTED_STORAGE_RECONCILED: f64 = 10.248_428_336_66;
+
 #[allow(clippy::too_many_lines)]
-fn seeded_wb12_surface() -> HillslopeWritebackSurface {
+fn seeded_wb15_surface() -> HillslopeWritebackSurface {
     let mut state_surface = std::collections::BTreeMap::new();
 
-    // Seed required consumer-boundary soil symbols.
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.3));
     state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.3));
-    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
-    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
-    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
-    state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(10.0));
 
-    // WB11 prerequisite hydrology inputs.
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.65));
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.1));
+    state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.6));
+
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),
         BoundaryValue::scalar(12.0),
@@ -63,14 +68,13 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
         BoundaryValue::scalar(2.0),
     );
 
-    // WB12 runoff reconciliation inputs.
     state_surface.insert(
         BoundarySymbol::from("wb12_rainfall_input"),
-        BoundaryValue::scalar(4.0),
+        BoundaryValue::scalar(3.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runon_input"),
-        BoundaryValue::scalar(1.0),
+        BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_infiltration"),
@@ -78,17 +82,35 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_depression_storage_delta"),
-        BoundaryValue::scalar(0.5),
+        BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runoff_observed"),
-        BoundaryValue::scalar(0.5),
+        BoundaryValue::scalar(EXPECTED_RUNOFF_Q),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runoff_closure_tolerance"),
-        BoundaryValue::scalar(1.0e-6),
+        BoundaryValue::scalar(WB15_TEST_TOLERANCE),
     );
-    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(3.0));
+
+    state_surface.insert(
+        BoundarySymbol::from("wb12_storage_initial"),
+        BoundaryValue::scalar(12.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_storage_observed"),
+        BoundaryValue::scalar(EXPECTED_STORAGE_RECONCILED),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(WB15_TEST_TOLERANCE),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_precip_input"),
+        BoundaryValue::scalar(3.0),
+    );
+
+    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(4.0));
     state_surface.insert(
         BoundarySymbol::from("timem_0001"),
         BoundaryValue::scalar(0.0),
@@ -102,34 +124,24 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
         BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
+        BoundarySymbol::from("timem_0004"),
+        BoundaryValue::scalar(3.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("intsty_0001"),
-        BoundaryValue::scalar(2.0),
+        BoundaryValue::scalar(1.0),
     );
     state_surface.insert(
         BoundarySymbol::from("intsty_0002"),
-        BoundaryValue::scalar(2.0),
+        BoundaryValue::scalar(1.0),
     );
     state_surface.insert(
         BoundarySymbol::from("intsty_0003"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0004"),
         BoundaryValue::scalar(0.0),
-    );
-
-    // WB12 storage reconciliation inputs.
-    state_surface.insert(
-        BoundarySymbol::from("wb12_storage_initial"),
-        BoundaryValue::scalar(12.0),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(10.75),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("wb12_storage_closure_tolerance"),
-        BoundaryValue::scalar(1.0e-6),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("wb12_precip_input"),
-        BoundaryValue::scalar(4.0),
     );
 
     HillslopeWritebackSurface {
@@ -139,7 +151,7 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
 }
 
 #[test]
-fn wb12_contract_conformance_reconciles_runoff_and_storage_surfaces() {
+fn wb15_contract_conformance_couples_canopy_interception_into_runoff_and_storage_closure() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
@@ -147,85 +159,100 @@ fn wb12_contract_conformance_reconciles_runoff_and_storage_surfaces() {
     let mut kernel = Wb11HydrologyKernel;
 
     let report = scheduler
-        .execute_with_kernel(&topology_report, &mut kernel, seeded_wb12_surface())
-        .expect("wb12 execution should return typed report");
+        .execute_with_kernel(&topology_report, &mut kernel, seeded_wb15_surface())
+        .expect("wb15 execution should return typed report");
 
     assert!(report.scheduler_report.is_success());
 
-    assert_eq!(
-        report
-            .writeback_surface
-            .flux_surface
-            .get(&BoundarySymbol::from("Q"))
-            .copied(),
-        Some(BoundaryValue::scalar(0.5))
-    );
-    assert_eq!(
-        report
-            .writeback_surface
-            .state_surface
-            .get(&BoundarySymbol::from("wb12_infiltration"))
-            .copied(),
-        Some(BoundaryValue::scalar(4.0))
-    );
-    assert_eq!(
-        report
-            .writeback_surface
-            .flux_surface
-            .get(&BoundarySymbol::from("wb12_runoff_closure_delta"))
-            .copied(),
-        Some(BoundaryValue::scalar(0.0))
-    );
-    assert_eq!(
-        report
-            .writeback_surface
-            .state_surface
-            .get(&BoundarySymbol::from("wb12_runoff_reconciled"))
-            .copied(),
-        Some(BoundaryValue::scalar(0.5))
-    );
+    let interception = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("I"))
+        .expect("I should be present")
+        .as_f64();
+    assert!((interception - EXPECTED_INTERCEPTION_I).abs() <= WB15_TEST_TOLERANCE);
 
-    assert_eq!(
-        report
-            .writeback_surface
-            .state_surface
-            .get(&BoundarySymbol::from("wb12_storage_reconciled"))
-            .copied(),
-        Some(BoundaryValue::scalar(10.75))
-    );
-    assert_eq!(
-        report
-            .writeback_surface
-            .flux_surface
-            .get(&BoundarySymbol::from("wb12_storage_closure_delta"))
-            .copied(),
-        Some(BoundaryValue::scalar(0.0))
-    );
+    let infiltration = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb12_infiltration"))
+        .expect("wb12_infiltration should be present")
+        .as_f64();
+    assert!((infiltration - EXPECTED_INFILTRATION).abs() <= WB15_TEST_TOLERANCE);
+
+    let runoff = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Q"))
+        .expect("Q should be present")
+        .as_f64();
+    assert!((runoff - EXPECTED_RUNOFF_Q).abs() <= WB15_TEST_TOLERANCE);
+
+    let storage_reconciled = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb12_storage_reconciled"))
+        .expect("wb12_storage_reconciled should be present")
+        .as_f64();
+    assert!((storage_reconciled - EXPECTED_STORAGE_RECONCILED).abs() <= WB15_TEST_TOLERANCE);
 }
 
 #[test]
-fn wb12_contract_conformance_rejects_non_finite_runoff_input() {
+fn wb15_contract_conformance_rejects_missing_canopy_state_symbol() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
 
-    let mut surface = seeded_wb12_surface();
-    surface.state_surface.insert(
-        BoundarySymbol::from("wb12_rainfall_input"),
-        BoundaryValue::scalar(f64::NAN),
-    );
+    let mut surface = seeded_wb15_surface();
+    surface.state_surface.remove(&BoundarySymbol::from("lai"));
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("wb12 failure should return typed report");
+        .expect("wb15 missing-symbol failure should return typed report");
 
     assert_eq!(
         report.scheduler_report.halted_phase,
         Some(HillslopePhase::RunoffReconciliation)
     );
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-001"
+    );
+    assert_eq!(
+        runoff_phase.decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
 
+#[test]
+fn wb15_contract_conformance_rejects_non_finite_canopy_state_symbol() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb15_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("vdmt"),
+        BoundaryValue::scalar(f64::NAN),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("wb15 non-finite failure should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
     let runoff_phase = report
         .phase_reports
         .iter()
@@ -242,43 +269,37 @@ fn wb12_contract_conformance_rejects_non_finite_runoff_input() {
 }
 
 #[test]
-fn wb12_contract_conformance_rejects_storage_closure_delta_over_tolerance() {
+fn wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
 
-    let mut surface = seeded_wb12_surface();
-    surface.state_surface.insert(
-        BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(0.0),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("wb12_storage_closure_tolerance"),
-        BoundaryValue::scalar(0.01),
-    );
+    let mut surface = seeded_wb15_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(1.2));
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("wb12 failure should return typed report");
+        .expect("wb15 domain failure should return typed report");
 
     assert_eq!(
         report.scheduler_report.halted_phase,
-        Some(HillslopePhase::StorageReconciliation)
+        Some(HillslopePhase::RunoffReconciliation)
     );
-
-    let storage_phase = report
+    let runoff_phase = report
         .phase_reports
         .iter()
-        .find(|phase| phase.phase == HillslopePhase::StorageReconciliation)
-        .expect("storage phase report should exist");
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
     assert_eq!(
-        storage_phase.decision_status.message_id(),
-        "HKERNEL-WB12-STORAGE-E-003"
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-003"
     );
     assert_eq!(
-        storage_phase.decision_status.boundary_class(),
+        runoff_phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
     );
 }

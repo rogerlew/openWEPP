@@ -134,6 +134,16 @@ const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: &str = "wb12_storage_closure_delta";
 const WB12_SYMBOL_STORAGE_RECONCILED: &str = "wb12_storage_reconciled";
 const WB12_SYMBOL_RUNOFF_Q: &str = "Q";
 const WB12_SYMBOL_SNOW_COUPLING_S: &str = "S";
+const WB15_SYMBOL_INTERCEPTION_I: &str = "I";
+const WB15_SYMBOL_PLANT_CANCOV: &str = "cancov";
+const WB15_SYMBOL_PLANT_LAI: &str = "lai";
+const WB15_SYMBOL_PLANT_VDMT: &str = "vdmt";
+const WB15_CANCOV_MAX: f64 = 0.999;
+const WB15_VDMT_MAX: f64 = 0.8;
+const WB15_BIOMASS_TO_KG_HA: f64 = 10_000.0;
+const WB15_INTERCEPT_LINEAR_COEFF: f64 = 0.000_627;
+const WB15_INTERCEPT_QUADRATIC_COEFF: f64 = 3.733_49e-8;
+const WB15_INTERCEPT_MM_TO_M: f64 = 1000.0;
 const WB14_SYMBOL_HYETOGRAPH_NINTEN: &str = "ninten";
 const WB14_SYMBOL_HYETOGRAPH_NBRKPT: &str = "nbrkpt";
 const WB14_SYMBOL_SOIL_CONDUCTIVITY: &str = "ssc";
@@ -1620,7 +1630,6 @@ pub struct Wb11HydrologyKernel;
 struct SnowCouplingOutcome {
     signed_s: f64,
     runtime_swe: f64,
-    liquid_input: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -2354,7 +2363,173 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let liquid_input = hyetograph_rainfall + signed_s;
+        Ok(SnowCouplingOutcome {
+            signed_s,
+            runtime_swe: runtime_swe_after,
+        })
+    }
+
+    fn compute_canopy_interception_depth(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        hyetograph_rainfall: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let cancov = Self::require_state_scalar(request, phase_class, WB15_SYMBOL_PLANT_CANCOV)?;
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_PLANT_CANCOV,
+            cancov,
+            Some(0.0),
+            Some(WB15_CANCOV_MAX),
+        )?;
+
+        let lai = Self::require_state_scalar(request, phase_class, WB15_SYMBOL_PLANT_LAI)?;
+        Self::require_state_range(phase_class, WB15_SYMBOL_PLANT_LAI, lai, Some(0.0), None)?;
+
+        let vdmt = Self::require_state_scalar(request, phase_class, WB15_SYMBOL_PLANT_VDMT)?;
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_PLANT_VDMT,
+            vdmt,
+            Some(0.0),
+            Some(WB15_VDMT_MAX),
+        )?;
+
+        if cancov <= WB11_ZERO_THRESHOLD || lai <= WB11_ZERO_THRESHOLD {
+            return Ok(0.0);
+        }
+
+        let biomass_kg_ha = vdmt * WB15_BIOMASS_TO_KG_HA;
+        if !biomass_kg_ha.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB15_SYMBOL_PLANT_VDMT),
+                value: biomass_kg_ha,
+                minimum: Some(0.0),
+                maximum: Some(WB15_VDMT_MAX * WB15_BIOMASS_TO_KG_HA),
+            });
+        }
+
+        let potential_interception = cancov
+            * ((WB15_INTERCEPT_LINEAR_COEFF * biomass_kg_ha
+                - WB15_INTERCEPT_QUADRATIC_COEFF * biomass_kg_ha.powi(2))
+                / WB15_INTERCEPT_MM_TO_M);
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_INTERCEPTION_I,
+            potential_interception,
+            Some(0.0),
+            None,
+        )?;
+
+        let interception = potential_interception.min(hyetograph_rainfall);
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_INTERCEPTION_I,
+            interception,
+            Some(0.0),
+            Some(hyetograph_rainfall),
+        )?;
+        Ok(interception)
+    }
+
+    fn compute_coupled_infiltration_depth(
+        phase_class: HillslopeKernelPhaseClass,
+        infiltration_conductivity: f64,
+        matric_potential: f64,
+        times: &[f64],
+        intensities: &[f64],
+        rainfall_scale: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let mut cumulative_infiltration = 0.0_f64;
+        for index in 0..times.len().saturating_sub(1) {
+            let interval_duration = times[index + 1] - times[index];
+            let rainfall_rate = intensities[index] * rainfall_scale;
+            let interval_rainfall = rainfall_rate * interval_duration;
+            if !interval_rainfall.is_finite() || interval_rainfall < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                    value: interval_rainfall,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+
+            let interval_infiltration = Self::compute_interval_infiltration_depth(
+                phase_class,
+                infiltration_conductivity,
+                matric_potential,
+                cumulative_infiltration,
+                rainfall_rate,
+                interval_duration,
+            )?;
+            cumulative_infiltration += interval_infiltration;
+        }
+
+        if !cumulative_infiltration.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: cumulative_infiltration,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        Ok(cumulative_infiltration)
+    }
+
+    fn resolve_interception_rainfall_scale(
+        phase_class: HillslopeKernelPhaseClass,
+        hyetograph_rainfall: f64,
+        interception: f64,
+    ) -> Result<(f64, f64), Wb11HydrologyKernelGuardError> {
+        let liquid_after_interception = hyetograph_rainfall - interception;
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_INTERCEPTION_I,
+            liquid_after_interception,
+            Some(0.0),
+            Some(hyetograph_rainfall),
+        )?;
+
+        if hyetograph_rainfall <= WB11_ZERO_THRESHOLD {
+            return Ok((liquid_after_interception, 0.0));
+        }
+
+        let rainfall_scale = liquid_after_interception / hyetograph_rainfall;
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_INTERCEPTION_I,
+            rainfall_scale,
+            Some(0.0),
+            Some(1.0),
+        )?;
+        Ok((liquid_after_interception, rainfall_scale))
+    }
+
+    fn require_infiltration_liquid_closure(
+        phase_class: HillslopeKernelPhaseClass,
+        cumulative_infiltration: f64,
+        liquid_after_interception: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if cumulative_infiltration > liquid_after_interception + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: cumulative_infiltration,
+                minimum: Some(0.0),
+                maximum: Some(liquid_after_interception),
+            });
+        }
+
+        Ok(())
+    }
+
+    fn require_non_negative_liquid_input(
+        phase_class: HillslopeKernelPhaseClass,
+        liquid_input: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_RAINFALL_INPUT,
@@ -2362,14 +2537,56 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
-
-        Ok(SnowCouplingOutcome {
-            signed_s,
-            runtime_swe: runtime_swe_after,
-            liquid_input,
-        })
+        Ok(())
     }
 
+    fn compute_runoff_after_interception(
+        phase_class: HillslopeKernelPhaseClass,
+        liquid_after_interception: f64,
+        signed_s: f64,
+        runon_input: f64,
+        cumulative_infiltration: f64,
+        depression_storage_delta: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let liquid_input = liquid_after_interception + signed_s;
+        Self::require_non_negative_liquid_input(phase_class, liquid_input)?;
+
+        let q_runoff =
+            liquid_input + runon_input - cumulative_infiltration - depression_storage_delta;
+        Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
+        Ok(q_runoff)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn compute_storage_reconciled_with_interception(
+        phase_class: HillslopeKernelPhaseClass,
+        storage_initial: f64,
+        precip_input: f64,
+        snow_coupling_s: f64,
+        interception: f64,
+        q_runoff: f64,
+        et: f64,
+        percolation_loss: f64,
+        subsurface_loss: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let storage_reconciled = storage_initial + precip_input + snow_coupling_s
+            - interception
+            - q_runoff
+            - et
+            - percolation_loss
+            - subsurface_loss;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_RECONCILED,
+            storage_reconciled,
+            Some(0.0),
+            None,
+        )?;
+        Ok(storage_reconciled)
+    }
+}
+
+impl Wb11HydrologyKernel {
     #[allow(clippy::too_many_lines)]
     fn solve_ponded_cumulative_infiltration(
         phase_class: HillslopeKernelPhaseClass,
@@ -3045,7 +3262,6 @@ impl Wb11HydrologyKernel {
             Self::load_hyetograph_series(request, phase_class, hyetograph_point_count)?;
 
         let mut hyetograph_rainfall = 0.0_f64;
-        let mut cumulative_infiltration = 0.0_f64;
         for index in 0..times.len().saturating_sub(1) {
             let interval_duration = times[index + 1] - times[index];
             let rainfall_rate = intensities[index];
@@ -3060,23 +3276,13 @@ impl Wb11HydrologyKernel {
                 });
             }
             hyetograph_rainfall += interval_rainfall.max(0.0);
-
-            let interval_infiltration = Self::compute_interval_infiltration_depth(
-                phase_class,
-                infiltration_conductivity,
-                matric_potential,
-                cumulative_infiltration,
-                rainfall_rate,
-                interval_duration,
-            )?;
-            cumulative_infiltration += interval_infiltration;
         }
 
-        if !hyetograph_rainfall.is_finite() || !cumulative_infiltration.is_finite() {
+        if !hyetograph_rainfall.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
-                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
-                value: cumulative_infiltration,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: hyetograph_rainfall,
                 minimum: Some(0.0),
                 maximum: None,
             });
@@ -3092,6 +3298,28 @@ impl Wb11HydrologyKernel {
             });
         }
 
+        let interception =
+            Self::compute_canopy_interception_depth(request, phase_class, hyetograph_rainfall)?;
+        let (liquid_after_interception, rainfall_scale) =
+            Self::resolve_interception_rainfall_scale(
+                phase_class,
+                hyetograph_rainfall,
+                interception,
+            )?;
+        let cumulative_infiltration = Self::compute_coupled_infiltration_depth(
+            phase_class,
+            infiltration_conductivity,
+            matric_potential,
+            &times,
+            &intensities,
+            rainfall_scale,
+        )?;
+        Self::require_infiltration_liquid_closure(
+            phase_class,
+            cumulative_infiltration,
+            liquid_after_interception,
+        )?;
+
         let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
         let snow_coupling = if active_snow_coupling {
             Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
@@ -3099,7 +3327,6 @@ impl Wb11HydrologyKernel {
             SnowCouplingOutcome {
                 signed_s: 0.0,
                 runtime_swe: 0.0,
-                liquid_input: hyetograph_rainfall,
             }
         };
 
@@ -3133,10 +3360,14 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let q_runoff = snow_coupling.liquid_input + runon_input
-            - cumulative_infiltration
-            - depression_storage_delta;
-        Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
+        let q_runoff = Self::compute_runoff_after_interception(
+            phase_class,
+            liquid_after_interception,
+            snow_coupling.signed_s,
+            runon_input,
+            cumulative_infiltration,
+            depression_storage_delta,
+        )?;
 
         let closure_delta = q_runoff - runoff_observed;
         if closure_delta.abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
@@ -3207,6 +3438,12 @@ impl Wb11HydrologyKernel {
         }
 
         let flux_updates = vec![
+            WritebackField::bounded(
+                WB15_SYMBOL_INTERCEPTION_I,
+                interception,
+                Some(0.0),
+                Some(hyetograph_rainfall),
+            ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
             WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
             WritebackField::unbounded(WB12_SYMBOL_SNOW_COUPLING_S, snow_coupling.signed_s),
@@ -3270,6 +3507,16 @@ impl Wb11HydrologyKernel {
         let snow_coupling_s =
             Self::require_flux_scalar(request, phase_class, WB12_SYMBOL_SNOW_COUPLING_S)?;
 
+        let interception_i =
+            Self::require_flux_scalar(request, phase_class, WB15_SYMBOL_INTERCEPTION_I)?;
+        Self::require_flux_range(
+            phase_class,
+            WB15_SYMBOL_INTERCEPTION_I,
+            interception_i,
+            Some(0.0),
+            None,
+        )?;
+
         let et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
         Self::require_flux_range(phase_class, WB11_SYMBOL_ET, et, Some(0.0), None)?;
 
@@ -3293,17 +3540,16 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let storage_reconciled = storage_initial + precip_input + snow_coupling_s
-            - q_runoff
-            - et
-            - percolation_loss
-            - subsurface_loss;
-        Self::require_state_range(
+        let storage_reconciled = Self::compute_storage_reconciled_with_interception(
             phase_class,
-            WB12_SYMBOL_STORAGE_RECONCILED,
-            storage_reconciled,
-            Some(0.0),
-            None,
+            storage_initial,
+            precip_input,
+            snow_coupling_s,
+            interception_i,
+            q_runoff,
+            et,
+            percolation_loss,
+            subsurface_loss,
         )?;
 
         let closure_delta = storage_reconciled - storage_observed;

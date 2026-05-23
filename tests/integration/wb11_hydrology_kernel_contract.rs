@@ -25,6 +25,9 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.3));
     state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
 
     // WB11 kernel state inputs.
     state_surface.insert(

@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -338,6 +338,55 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Non-monotone hyetograph time, negative intensity, rainfall-mismatch, or
    runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
 
+## WB15 Canopy Interception Runtime Coupling Addendum
+
+### WB15 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Plant runtime interception inputs | `cancov`, `lai`, `vdmt` |
+| Hyetograph forcing inputs | `ninten` or `nbrkpt`; `timem_####`; `intsty_####` |
+| Runoff reconciliation outputs | `I`, `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+
+### WB15 Deterministic Runoff Rule
+
+1. Compute hyetograph rainfall first (`wb14_hyetograph_rainfall`) from subdaily
+   forcing.
+2. Compute canopy interception from plant runtime state using Eq. [5.1.2]
+   lineage (Chapter-5 coupling) with biomass proxy `VE = vdmt * 10000`:
+   - `Ipot = cancov * ((0.000627 * VE - 3.73349e-8 * VE^2) / 1000)`
+3. Apply interception-before-infiltration coupling:
+   - `I = min(Ipot, wb14_hyetograph_rainfall)` for `lai > 0` and `cancov > 0`
+   - `I = 0` for `lai <= 0` or `cancov <= 0`
+4. Reconcile with intercepted liquid depth:
+   - `wb14_hyetograph_liquid_after_interception = wb14_hyetograph_rainfall - I`
+   - `Q = wb14_hyetograph_liquid_after_interception + S + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+5. Canopy-state domain policy is hard-fail:
+   - `0 <= cancov <= 0.999`
+   - `lai >= 0`
+   - `0 <= vdmt <= 0.8` (`kg m^-2`; `VE <= 8000 kg ha^-1`)
+6. Missing/non-finite/out-of-domain canopy symbols are invalid runoff states.
+   Silent defaults/clamps are prohibited.
+
+### WB15 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB14-RUNOFF-E-001` |
+| Non-finite required symbol | `HKERNEL-WB14-RUNOFF-E-002` |
+| Domain/closure violation | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### WB15 Contract-Test Vectors
+
+1. Nominal canopy-coupled vector emits finite `I` and deterministic coupled
+   `wb12_infiltration` + `Q`.
+2. Missing canopy interception symbol (`cancov`, `lai`, `vdmt`) hard-fails
+   with `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite canopy interception symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-002`.
+4. Out-of-domain canopy interception symbol or coupled runoff-closure overflow
+   hard-fails with `HKERNEL-WB14-RUNOFF-E-003`.
+
 ## CLIM05 Snow Runtime Coupling Addendum
 
 ### CLIM05 Required Surfaces
@@ -446,3 +495,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `5` | `Codex` | WB14 amendment: added production infiltration + subdaily hyetograph kernel authority with Green-Ampt lineage branch rules, typed WB14 runoff guards, and WB14 contract-derived vectors. |
 | `2026-05-23` | `6` | `Codex` | CLIM05 amendment: added active snow-control runoff coupling authority via signed `S`, required `snow.options.*`/`snow.runtime_swe` surfaces, and typed hard-fail guard posture for active-coupling symbol/domain violations. |
 | `2026-05-23` | `7` | `Codex` | CLIM06 amendment: added active frost/frozen-soil runoff coupling authority, required `frost.options.*` and `frost.runtime_*` surfaces, and typed hard-fail posture for active-coupling symbol/domain violations in WB14 reconciliation. |
+| `2026-05-23` | `8` | `Codex` | WB15 amendment: added canopy interception runtime coupling authority using plant-state surfaces (`cancov`, `lai`, `vdmt`) with interception-before-infiltration reconciliation and explicit `I` runoff coupling output under typed guard posture. |

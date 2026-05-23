@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -276,6 +276,36 @@ Minimum WB11 ET production-kernel conformance vectors:
 3. ET-component boundaries emitted to WB13 remain unit-consistent with
    Chapter-5 daily water-balance closure expectations.
 
+## WB15 Canopy-Interception Coupling Addendum
+
+### WB15 Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Interception closure surface | `I` |
+| ET closure surfaces | `ET`, `Ws` |
+| Plant-state interception drivers (external producer) | `cancov`, `lai`, `vdmt` |
+
+### WB15 Coupling Requirements
+
+1. Canopy interception remains an explicit Chapter-5 closure term (`I`) and is
+   not implicitly folded into `ET` by boundary consumers.
+2. ET kernel outputs (`ET`, `Ws`) must remain finite and domain-valid when
+   interception coupling is active.
+3. Missing/non-finite/out-of-domain interception symbol `I` at storage-closure
+   consumers is a typed hard-fail state; no silent ET-side substitution is
+   allowed.
+4. Plant-runtime canopy interception drivers are owned by plant-domain
+   producers; ET consumers must not redefine or clamp producer payloads.
+
+### WB15 Contract-Test Vectors
+
+1. Canopy-coupled storage closure vector verifies `I` is consumed as a distinct
+   closure term alongside ET and does not overwrite ET semantics.
+2. Missing interception symbol `I` at closure consumer boundaries hard-fails
+   with typed missing-input status.
+3. Non-finite interception symbol `I` hard-fails with typed non-finite status.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -295,3 +325,4 @@ Minimum WB11 ET production-kernel conformance vectors:
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit ET phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 ET test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted ET section from routing-only scaffolding to production-kernel authority with deterministic `ET`/`Ws` updates, typed ET guard codes (`HKERNEL-WB11-ET-E-001..003`), and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB13 amendment: added ET component coupling authority for canonical daily output columns (`Ep`, `Es`, `Er`) with explicit WB13 malformed-output hard-fail posture. |
+| `2026-05-23` | `6` | `Codex` | WB15 amendment: added explicit canopy-interception coupling requirements so `I` remains a distinct closure term relative to ET outputs (`ET`, `Ws`) under typed consumer guard posture. |

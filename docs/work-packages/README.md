@@ -502,6 +502,11 @@ Authorized packages:
   - Purpose: implement frozen-soil/frost runtime kernel behavior and
     infiltration/runoff coupling with contract-first sequencing (contract
     amendments, contract tests, pre-implementation gate, then kernel code).
+- `20260523-wb15-canopy-interception-kernel-coupling-001/`
+  - Purpose: implement canopy interception coupling from plant runtime state
+    into runoff/infiltration/water-balance closure with contract-first
+    sequencing (contract amendments, contract tests, pre-implementation gate,
+    then kernel code).
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).
