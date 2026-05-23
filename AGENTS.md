@@ -21,6 +21,9 @@
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Do not create or switch git branches unless the user explicitly asks.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
+- For kernel-affecting behavior (including runtime projection that controls kernel branches), treat canonical `SC-*` contracts as implementation authority and satisfy:
+  - `docs/specifications/science-contract-authoring-procedure.md`
+  - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
 
 ## Project Role
 openWEPP is the Rust simulation engine. openWEPP owns its architecture and
@@ -56,6 +59,16 @@ GIS, climate, and run state. Do not duplicate wepppy concerns in this repo.
   than replacing canonical symbols.
 - Empirical multi-coefficient regressions are rejected per the process-based kernel preference rule carried forward from wepp-palimpsest WB-33 `WB33-C-20`.
 - See [docs/decisions/0011-architecture-first-top-down-science-contracts.md](docs/decisions/0011-architecture-first-top-down-science-contracts.md).
+
+## Kernel Contract Governance (Normative)
+- Canonical authority location for process contracts is `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`.
+- Work-package artifacts are evidence, not authority replacement.
+- Kernel-affecting packages must include a kernel-profile compliance checklist artifact and remain in `HOLD` when profile/procedure requirements are incomplete.
+- Agent discovery order for kernel-contract work:
+  1. `AGENTS.md` (this file)
+  2. `docs/specifications/science-contract-authoring-procedure.md`
+  3. `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+  4. `docs/specifications/science-contracts/index.md`
 
 ## Validation Gates
 Before declaring a Rust kernel implementation complete:
