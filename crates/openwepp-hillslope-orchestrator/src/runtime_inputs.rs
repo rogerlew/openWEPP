@@ -11,7 +11,8 @@ use openwepp_climate_runtime_adapter::{
 use openwepp_input_contract::parsers::{
     climate::ClimateFile,
     management::{
-        InitialScenarioData, ManagementParseOutput, YearlyCroplandBranch, YearlyScenarioData,
+        InitialScenarioData, ManagementParseOutput, YearlyAnnualExtension, YearlyCroplandBranch,
+        YearlyScenarioData,
     },
     slope::{SlopePoint, SlopeProfile},
     soil::SoilProfile,
@@ -204,6 +205,47 @@ pub enum HillslopeRuntimeInputError {
         field: &'static str,
         value: usize,
     },
+    PlProjectionDayOutOfDomain {
+        field: &'static str,
+        slot_index: usize,
+        crop_slot_index: usize,
+        value: usize,
+        allowed: &'static str,
+    },
+    PlAnnualExtensionMismatch {
+        slot_index: usize,
+        crop_slot_index: usize,
+        resmgt: usize,
+        expected: &'static str,
+        observed: &'static str,
+    },
+    PlProjectionCardinalityInvalid {
+        field: &'static str,
+        slot_index: usize,
+        crop_slot_index: usize,
+        value: usize,
+        expected: &'static str,
+    },
+    PlGrazingWindowOutOfDomain {
+        slot_index: usize,
+        crop_slot_index: usize,
+        cycle_index: usize,
+        gday: usize,
+        gend: usize,
+    },
+    PlProjectionFieldOutOfDomain {
+        field: &'static str,
+        slot_index: usize,
+        crop_slot_index: usize,
+        value: f64,
+        allowed: &'static str,
+    },
+    PlProjectionUnsupportedPayloadCombination {
+        field: &'static str,
+        slot_index: usize,
+        crop_slot_index: usize,
+        reason: &'static str,
+    },
 }
 
 impl HillslopeRuntimeInputError {
@@ -255,6 +297,12 @@ impl HillslopeRuntimeInputError {
             Self::NonFinitePlProjectionField { .. } => "HS-RUNTIME-E-043",
             Self::PlProjectionCountOutOfRange { .. } => "HS-RUNTIME-E-044",
             Self::ManagementScheduleOfeIndexOutOfRange { .. } => "HS-RUNTIME-E-045",
+            Self::PlProjectionDayOutOfDomain { .. } => "HS-RUNTIME-E-046",
+            Self::PlAnnualExtensionMismatch { .. } => "HS-RUNTIME-E-047",
+            Self::PlProjectionCardinalityInvalid { .. } => "HS-RUNTIME-E-048",
+            Self::PlGrazingWindowOutOfDomain { .. } => "HS-RUNTIME-E-049",
+            Self::PlProjectionFieldOutOfDomain { .. } => "HS-RUNTIME-E-050",
+            Self::PlProjectionUnsupportedPayloadCombination { .. } => "HS-RUNTIME-E-051",
         }
     }
 }
@@ -658,6 +706,100 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 field,
                 value
             ),
+            Self::PlProjectionDayOutOfDomain {
+                field,
+                slot_index,
+                crop_slot_index,
+                value,
+                allowed,
+            } => write!(
+                f,
+                "{}: PL projection day field {} at slot {} crop-slot {} has invalid value {} (allowed {})",
+                self.code(),
+                field,
+                slot_index,
+                crop_slot_index,
+                value,
+                allowed
+            ),
+            Self::PlAnnualExtensionMismatch {
+                slot_index,
+                crop_slot_index,
+                resmgt,
+                expected,
+                observed,
+            } => write!(
+                f,
+                "{}: annual extension mismatch at slot {} crop-slot {} for resmgt {} (expected {}, observed {})",
+                self.code(),
+                slot_index,
+                crop_slot_index,
+                resmgt,
+                expected,
+                observed
+            ),
+            Self::PlProjectionCardinalityInvalid {
+                field,
+                slot_index,
+                crop_slot_index,
+                value,
+                expected,
+            } => write!(
+                f,
+                "{}: invalid cardinality for {} at slot {} crop-slot {} (value {}, expected {})",
+                self.code(),
+                field,
+                slot_index,
+                crop_slot_index,
+                value,
+                expected
+            ),
+            Self::PlGrazingWindowOutOfDomain {
+                slot_index,
+                crop_slot_index,
+                cycle_index,
+                gday,
+                gend,
+            } => write!(
+                f,
+                "{}: invalid grazing window at slot {} crop-slot {} cycle {} (gday {} must be < gend {})",
+                self.code(),
+                slot_index,
+                crop_slot_index,
+                cycle_index,
+                gday,
+                gend
+            ),
+            Self::PlProjectionFieldOutOfDomain {
+                field,
+                slot_index,
+                crop_slot_index,
+                value,
+                allowed,
+            } => write!(
+                f,
+                "{}: PL projection field {} at slot {} crop-slot {} is out of domain ({}, allowed {})",
+                self.code(),
+                field,
+                slot_index,
+                crop_slot_index,
+                value,
+                allowed
+            ),
+            Self::PlProjectionUnsupportedPayloadCombination {
+                field,
+                slot_index,
+                crop_slot_index,
+                reason,
+            } => write!(
+                f,
+                "{}: unsupported PL payload combination for {} at slot {} crop-slot {} ({})",
+                self.code(),
+                field,
+                slot_index,
+                crop_slot_index,
+                reason
+            ),
         }
     }
 }
@@ -1004,13 +1146,27 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                             value: annual.rw,
                         });
                     }
+                    let jdharv = validate_projection_day(
+                        "jdharv",
+                        slot_index,
+                        crop_slot_index,
+                        annual.jdharv,
+                        false,
+                    )?;
+                    let jdplt = validate_projection_day(
+                        "jdplt",
+                        slot_index,
+                        crop_slot_index,
+                        annual.jdplt,
+                        false,
+                    )?;
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdharv", annual.jdharv)?),
+                        BoundaryValue::scalar(usize_to_f64("jdharv", jdharv)?),
                     );
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdplt", annual.jdplt)?),
+                        BoundaryValue::scalar(usize_to_f64("jdplt", jdplt)?),
                     );
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index),
@@ -1020,6 +1176,18 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                         pl_decomp_slot_crop_symbol("resmgt", slot_index, crop_slot_index),
                         BoundaryValue::scalar(usize_to_f64("resmgt", annual.resmgt)?),
                     );
+                    let annual_extension_projection = project_annual_extension_controls(
+                        slot_index,
+                        crop_slot_index,
+                        annual.resmgt,
+                        annual.extension.as_ref(),
+                    )?;
+                    project_annual_extension_symbols(
+                        &mut pl_decomp_surface,
+                        slot_index,
+                        crop_slot_index,
+                        &annual_extension_projection,
+                    )?;
 
                     if slot_index == 1 && crop_slot_index == 1 {
                         pl_growth_surface.insert(
@@ -1032,11 +1200,11 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                         );
                         pl_growth_surface.insert(
                             BoundarySymbol::from("jdharv"),
-                            BoundaryValue::scalar(usize_to_f64("jdharv", annual.jdharv)?),
+                            BoundaryValue::scalar(usize_to_f64("jdharv", jdharv)?),
                         );
                         pl_growth_surface.insert(
                             BoundarySymbol::from("jdplt"),
-                            BoundaryValue::scalar(usize_to_f64("jdplt", annual.jdplt)?),
+                            BoundaryValue::scalar(usize_to_f64("jdplt", jdplt)?),
                         );
                         pl_growth_surface
                             .insert(BoundarySymbol::from("rw"), BoundaryValue::scalar(annual.rw));
@@ -1044,6 +1212,10 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                             BoundarySymbol::from("resmgt"),
                             BoundaryValue::scalar(usize_to_f64("resmgt", annual.resmgt)?),
                         );
+                        project_primary_annual_extension_aliases(
+                            &mut pl_decomp_surface,
+                            &annual_extension_projection,
+                        )?;
                     }
                 }
                 YearlyCroplandBranch::Perennial(perennial) => {
@@ -1062,17 +1234,38 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                             value: perennial.rw,
                         });
                     }
+                    let jdharv = validate_projection_day(
+                        "jdharv",
+                        slot_index,
+                        crop_slot_index,
+                        perennial.jdharv,
+                        true,
+                    )?;
+                    let jdplt = validate_projection_day(
+                        "jdplt",
+                        slot_index,
+                        crop_slot_index,
+                        perennial.jdplt,
+                        true,
+                    )?;
+                    let jdstop = validate_projection_day(
+                        "jdstop",
+                        slot_index,
+                        crop_slot_index,
+                        perennial.jdstop,
+                        true,
+                    )?;
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdharv", perennial.jdharv)?),
+                        BoundaryValue::scalar(usize_to_f64("jdharv", jdharv)?),
                     );
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdplt", perennial.jdplt)?),
+                        BoundaryValue::scalar(usize_to_f64("jdplt", jdplt)?),
                     );
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("jdstop", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("jdstop", perennial.jdstop)?),
+                        BoundaryValue::scalar(usize_to_f64("jdstop", jdstop)?),
                     );
                     pl_growth_surface.insert(
                         pl_growth_slot_crop_symbol("rw", slot_index, crop_slot_index),
@@ -1087,16 +1280,109 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                         pl_decomp_slot_crop_symbol("mgtopt", slot_index, crop_slot_index),
                         BoundaryValue::scalar(usize_to_f64("mgtopt", perennial.mgtopt)?),
                     );
+                    let (ncut, ncycle) = match perennial.mgtopt {
+                        1 => {
+                            if perennial.cut_days.is_empty() {
+                                return Err(
+                                    HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+                                        field: "ncut",
+                                        slot_index,
+                                        crop_slot_index,
+                                        value: 0,
+                                        expected: ">=1 for mgtopt=1",
+                                    },
+                                );
+                            }
+                            if !perennial.grazing_cycles.is_empty() {
+                                return Err(
+                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                                        field: "grazing_cycles",
+                                        slot_index,
+                                        crop_slot_index,
+                                        reason: "mgtopt=1 requires empty grazing_cycles",
+                                    },
+                                );
+                            }
+
+                            project_perennial_cutday_symbols(
+                                &mut pl_decomp_surface,
+                                slot_index,
+                                crop_slot_index,
+                                perennial,
+                            )?;
+                            (perennial.cut_days.len(), 0)
+                        }
+                        2 => {
+                            if perennial.grazing_cycles.is_empty() {
+                                return Err(
+                                    HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+                                        field: "ncycle",
+                                        slot_index,
+                                        crop_slot_index,
+                                        value: 0,
+                                        expected: ">=1 for mgtopt=2",
+                                    },
+                                );
+                            }
+                            if !perennial.cut_days.is_empty() {
+                                return Err(
+                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                                        field: "cut_days",
+                                        slot_index,
+                                        crop_slot_index,
+                                        reason: "mgtopt=2 requires empty cut_days",
+                                    },
+                                );
+                            }
+
+                            project_perennial_grazing_cycle_symbols(
+                                &mut pl_decomp_surface,
+                                slot_index,
+                                crop_slot_index,
+                                perennial,
+                            )?;
+                            (0, perennial.grazing_cycles.len())
+                        }
+                        3 => {
+                            if !perennial.cut_days.is_empty() {
+                                return Err(
+                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                                        field: "cut_days",
+                                        slot_index,
+                                        crop_slot_index,
+                                        reason: "mgtopt=3 requires empty cut_days",
+                                    },
+                                );
+                            }
+                            if !perennial.grazing_cycles.is_empty() {
+                                return Err(
+                                    HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                                        field: "grazing_cycles",
+                                        slot_index,
+                                        crop_slot_index,
+                                        reason: "mgtopt=3 requires empty grazing_cycles",
+                                    },
+                                );
+                            }
+                            (0, 0)
+                        }
+                        _ => {
+                            return Err(
+                                HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+                                    field: "mgtopt",
+                                    value: perennial.mgtopt,
+                                    allowed: "1..3",
+                                },
+                            );
+                        }
+                    };
                     pl_decomp_surface.insert(
                         pl_decomp_slot_crop_symbol("ncut", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64("ncut", perennial.cut_days.len())?),
+                        BoundaryValue::scalar(usize_to_f64("ncut", ncut)?),
                     );
                     pl_decomp_surface.insert(
                         pl_decomp_slot_crop_symbol("ncycle", slot_index, crop_slot_index),
-                        BoundaryValue::scalar(usize_to_f64(
-                            "ncycle",
-                            perennial.grazing_cycles.len(),
-                        )?),
+                        BoundaryValue::scalar(usize_to_f64("ncycle", ncycle)?),
                     );
                 }
             }
@@ -1861,6 +2147,423 @@ fn usize_to_f64(field: &'static str, value: usize) -> Result<f64, HillslopeRunti
     Ok(f64::from(value_u32))
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct AnnualExtensionProjection {
+    jdherb: usize,
+    jdburn: usize,
+    jdslge: usize,
+    jdcut: usize,
+    jdmove: usize,
+    fbrnag: f64,
+    fbrnog: f64,
+    frcut: f64,
+    frmove: f64,
+}
+
+impl AnnualExtensionProjection {
+    const fn zeroed() -> Self {
+        Self {
+            jdherb: 0,
+            jdburn: 0,
+            jdslge: 0,
+            jdcut: 0,
+            jdmove: 0,
+            fbrnag: 0.0,
+            fbrnog: 0.0,
+            frcut: 0.0,
+            frmove: 0.0,
+        }
+    }
+}
+
+fn validate_projection_day(
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    value: usize,
+    allow_zero: bool,
+) -> Result<usize, HillslopeRuntimeInputError> {
+    if (allow_zero && value == 0) || (1..=366).contains(&value) {
+        return Ok(value);
+    }
+
+    Err(HillslopeRuntimeInputError::PlProjectionDayOutOfDomain {
+        field,
+        slot_index,
+        crop_slot_index,
+        value,
+        allowed: if allow_zero { "0 or 1..366" } else { "1..366" },
+    })
+}
+
+fn validate_projection_fraction(
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+        });
+    }
+    if !(0.0..=1.0).contains(&value) {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: "0.0..=1.0",
+        });
+    }
+    Ok(value)
+}
+
+fn validate_projection_positive(
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+        });
+    }
+    if value <= 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: ">0.0",
+        });
+    }
+    Ok(value)
+}
+
+fn annual_extension_variant_name(extension: Option<&YearlyAnnualExtension>) -> &'static str {
+    match extension {
+        Some(YearlyAnnualExtension::Herbicide { .. }) => "herbicide",
+        Some(YearlyAnnualExtension::Burn { .. }) => "burn",
+        Some(YearlyAnnualExtension::Silage { .. }) => "silage",
+        Some(YearlyAnnualExtension::Cut { .. }) => "cut",
+        Some(YearlyAnnualExtension::Remove { .. }) => "remove",
+        None => "none",
+    }
+}
+
+fn annual_extension_mismatch(
+    slot_index: usize,
+    crop_slot_index: usize,
+    resmgt: usize,
+    expected: &'static str,
+    observed: Option<&YearlyAnnualExtension>,
+) -> HillslopeRuntimeInputError {
+    HillslopeRuntimeInputError::PlAnnualExtensionMismatch {
+        slot_index,
+        crop_slot_index,
+        resmgt,
+        expected,
+        observed: annual_extension_variant_name(observed),
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+fn project_annual_extension_controls(
+    slot_index: usize,
+    crop_slot_index: usize,
+    resmgt: usize,
+    extension: Option<&YearlyAnnualExtension>,
+) -> Result<AnnualExtensionProjection, HillslopeRuntimeInputError> {
+    let mut projection = AnnualExtensionProjection::zeroed();
+    match resmgt {
+        1 => match extension {
+            Some(YearlyAnnualExtension::Herbicide { jdherb }) => {
+                projection.jdherb =
+                    validate_projection_day("jdherb", slot_index, crop_slot_index, *jdherb, false)?;
+            }
+            _ => {
+                return Err(annual_extension_mismatch(
+                    slot_index,
+                    crop_slot_index,
+                    resmgt,
+                    "herbicide",
+                    extension,
+                ));
+            }
+        },
+        2 => match extension {
+            Some(YearlyAnnualExtension::Burn {
+                jdburn,
+                fbmag,
+                fbrnog,
+            }) => {
+                projection.jdburn =
+                    validate_projection_day("jdburn", slot_index, crop_slot_index, *jdburn, false)?;
+                projection.fbrnag =
+                    validate_projection_fraction("fbrnag", slot_index, crop_slot_index, *fbmag)?;
+                projection.fbrnog =
+                    validate_projection_fraction("fbrnog", slot_index, crop_slot_index, *fbrnog)?;
+            }
+            _ => {
+                return Err(annual_extension_mismatch(
+                    slot_index,
+                    crop_slot_index,
+                    resmgt,
+                    "burn",
+                    extension,
+                ));
+            }
+        },
+        3 => match extension {
+            Some(YearlyAnnualExtension::Silage { jdslge }) => {
+                projection.jdslge =
+                    validate_projection_day("jdslge", slot_index, crop_slot_index, *jdslge, false)?;
+            }
+            _ => {
+                return Err(annual_extension_mismatch(
+                    slot_index,
+                    crop_slot_index,
+                    resmgt,
+                    "silage",
+                    extension,
+                ));
+            }
+        },
+        4 => match extension {
+            Some(YearlyAnnualExtension::Cut { jdcut, frcut }) => {
+                projection.jdcut =
+                    validate_projection_day("jdcut", slot_index, crop_slot_index, *jdcut, false)?;
+                projection.frcut =
+                    validate_projection_fraction("frcut", slot_index, crop_slot_index, *frcut)?;
+            }
+            _ => {
+                return Err(annual_extension_mismatch(
+                    slot_index,
+                    crop_slot_index,
+                    resmgt,
+                    "cut",
+                    extension,
+                ));
+            }
+        },
+        5 => match extension {
+            Some(YearlyAnnualExtension::Remove { jdmove, frmove }) => {
+                projection.jdmove =
+                    validate_projection_day("jdmove", slot_index, crop_slot_index, *jdmove, false)?;
+                projection.frmove =
+                    validate_projection_fraction("frmove", slot_index, crop_slot_index, *frmove)?;
+            }
+            _ => {
+                return Err(annual_extension_mismatch(
+                    slot_index,
+                    crop_slot_index,
+                    resmgt,
+                    "remove",
+                    extension,
+                ));
+            }
+        },
+        6 => {
+            if extension.is_some() {
+                return Err(annual_extension_mismatch(
+                    slot_index,
+                    crop_slot_index,
+                    resmgt,
+                    "none",
+                    extension,
+                ));
+            }
+        }
+        7 => {
+            return Err(
+                HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                    field: "resmgt",
+                    slot_index,
+                    crop_slot_index,
+                    reason: "resmgt=7 annual-cut payload is not represented by runtime projection",
+                },
+            );
+        }
+        _ => {
+            return Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
+                field: "resmgt",
+                value: resmgt,
+                allowed: "1..7",
+            });
+        }
+    }
+    Ok(projection)
+}
+
+fn project_annual_extension_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    projection: &AnnualExtensionProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    surface.insert(
+        pl_decomp_slot_crop_symbol("jdherb", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("jdherb", projection.jdherb)?),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("jdburn", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("jdburn", projection.jdburn)?),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("jdslge", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("jdslge", projection.jdslge)?),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("jdcut", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("jdcut", projection.jdcut)?),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("jdmove", slot_index, crop_slot_index),
+        BoundaryValue::scalar(usize_to_f64("jdmove", projection.jdmove)?),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("fbrnag", slot_index, crop_slot_index),
+        BoundaryValue::scalar(projection.fbrnag),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("fbrnog", slot_index, crop_slot_index),
+        BoundaryValue::scalar(projection.fbrnog),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("frcut", slot_index, crop_slot_index),
+        BoundaryValue::scalar(projection.frcut),
+    );
+    surface.insert(
+        pl_decomp_slot_crop_symbol("frmove", slot_index, crop_slot_index),
+        BoundaryValue::scalar(projection.frmove),
+    );
+    Ok(())
+}
+
+fn project_primary_annual_extension_aliases(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    projection: &AnnualExtensionProjection,
+) -> Result<(), HillslopeRuntimeInputError> {
+    surface.insert(
+        BoundarySymbol::from("jdherb"),
+        BoundaryValue::scalar(usize_to_f64("jdherb", projection.jdherb)?),
+    );
+    surface.insert(
+        BoundarySymbol::from("jdburn"),
+        BoundaryValue::scalar(usize_to_f64("jdburn", projection.jdburn)?),
+    );
+    surface.insert(
+        BoundarySymbol::from("jdslge"),
+        BoundaryValue::scalar(usize_to_f64("jdslge", projection.jdslge)?),
+    );
+    surface.insert(
+        BoundarySymbol::from("jdcut"),
+        BoundaryValue::scalar(usize_to_f64("jdcut", projection.jdcut)?),
+    );
+    surface.insert(
+        BoundarySymbol::from("jdmove"),
+        BoundaryValue::scalar(usize_to_f64("jdmove", projection.jdmove)?),
+    );
+    surface.insert(
+        BoundarySymbol::from("fbrnag"),
+        BoundaryValue::scalar(projection.fbrnag),
+    );
+    surface.insert(
+        BoundarySymbol::from("fbrnog"),
+        BoundaryValue::scalar(projection.fbrnog),
+    );
+    surface.insert(
+        BoundarySymbol::from("frcut"),
+        BoundaryValue::scalar(projection.frcut),
+    );
+    surface.insert(
+        BoundarySymbol::from("frmove"),
+        BoundaryValue::scalar(projection.frmove),
+    );
+    Ok(())
+}
+
+fn project_perennial_cutday_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &openwepp_input_contract::parsers::management::YearlyPerennialData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (position, cutday) in perennial.cut_days.iter().enumerate() {
+        let cut_index = position + 1;
+        let day = validate_projection_day("cutday", slot_index, crop_slot_index, *cutday, false)?;
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("cutday", slot_index, crop_slot_index, cut_index),
+            BoundaryValue::scalar(usize_to_f64("cutday", day)?),
+        );
+    }
+    Ok(())
+}
+
+fn project_perennial_grazing_cycle_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    perennial: &openwepp_input_contract::parsers::management::YearlyPerennialData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (position, cycle) in perennial.grazing_cycles.iter().enumerate() {
+        let cycle_index = position + 1;
+        let gday = validate_projection_day("gday", slot_index, crop_slot_index, cycle.gday, false)?;
+        let gend = validate_projection_day("gend", slot_index, crop_slot_index, cycle.gend, false)?;
+        if gday >= gend {
+            return Err(HillslopeRuntimeInputError::PlGrazingWindowOutOfDomain {
+                slot_index,
+                crop_slot_index,
+                cycle_index,
+                gday,
+                gend,
+            });
+        }
+
+        let animal =
+            validate_projection_positive("animal", slot_index, crop_slot_index, cycle.animal)?;
+        let bodywt =
+            validate_projection_positive("bodywt", slot_index, crop_slot_index, cycle.bodywt)?;
+        let area = validate_projection_positive("area", slot_index, crop_slot_index, cycle.area)?;
+        let digest =
+            validate_projection_fraction("digest", slot_index, crop_slot_index, cycle.digest)?;
+
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("gday", slot_index, crop_slot_index, cycle_index),
+            BoundaryValue::scalar(usize_to_f64("gday", gday)?),
+        );
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("gend", slot_index, crop_slot_index, cycle_index),
+            BoundaryValue::scalar(usize_to_f64("gend", gend)?),
+        );
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("animal", slot_index, crop_slot_index, cycle_index),
+            BoundaryValue::scalar(animal),
+        );
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("bodywt", slot_index, crop_slot_index, cycle_index),
+            BoundaryValue::scalar(bodywt),
+        );
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("area", slot_index, crop_slot_index, cycle_index),
+            BoundaryValue::scalar(area),
+        );
+        surface.insert(
+            pl_decomp_slot_crop_indexed_symbol("digest", slot_index, crop_slot_index, cycle_index),
+            BoundaryValue::scalar(digest),
+        );
+    }
+    Ok(())
+}
+
 fn pl_schedule_ofe_symbol(root: &str, ofe_index: usize) -> BoundarySymbol {
     BoundarySymbol::from(format!("pl_schedule_ofe{ofe_index}_{root}"))
 }
@@ -1904,6 +2607,17 @@ fn pl_decomp_slot_crop_symbol(
 ) -> BoundarySymbol {
     BoundarySymbol::from(format!(
         "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}"
+    ))
+}
+
+fn pl_decomp_slot_crop_indexed_symbol(
+    root: &str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    index: usize,
+) -> BoundarySymbol {
+    BoundarySymbol::from(format!(
+        "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}_{index:04}"
     ))
 }
 

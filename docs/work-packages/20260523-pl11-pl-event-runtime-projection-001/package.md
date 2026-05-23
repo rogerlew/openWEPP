@@ -1,7 +1,7 @@
 # 20260523-pl11-pl-event-runtime-projection-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-05-23
 - timezone: UTC
 
@@ -33,6 +33,8 @@ science-contract artifacts before implementation is considered complete.
   non-finite values, and unsupported payload combinations.
 - Author contract-first algorithm authority for projected transition-control
   surfaces (top-down provenance, canonical symbols, guard expectations).
+- Author/update contract-derived conformance tests and run a documented
+  pre-implementation contract gate before runtime projection code edits.
 - Add fixture-backed projection tests covering annual extension and perennial
   cycles.
 - Close PL10b conformance-gate failures captured as ignored tests in
@@ -58,18 +60,20 @@ science-contract artifacts before implementation is considered complete.
    - `artifacts/pl11-sc-plant-001-amendment-plan.md`
 4. Symbol projection map for annual/perennial payload families:
    - `artifacts/pl11-symbol-projection-map.md`
-5. Implementation and test evidence:
+5. Pre-implementation contract gate evidence:
+   - `artifacts/pl11-preimplementation-contract-gate.md`
+6. Implementation and test evidence:
    - `artifacts/pl11-implementation-and-test-evidence.md`
-6. Typed-seam non-regression evidence:
+7. Typed-seam non-regression evidence:
    - `artifacts/pl11-typed-seam-non-regression-evidence.md`
-7. Kernel profile compliance checklist:
+8. Kernel profile compliance checklist:
    - `artifacts/pl11-kernel-profile-compliance-checklist.md`
-8. Package governance artifacts:
+9. Package governance artifacts:
    - `artifacts/worker-handoff.md`
    - `artifacts/owned-file-manifest.md`
    - `artifacts/gate-results.md`
    - `artifacts/pl11_disposition.md`
-9. Dual review/verification artifacts:
+10. Dual review/verification artifacts:
    - `artifacts/review_agent_a.md`
    - `artifacts/review_agent_b.md`
    - `artifacts/verification_agent_a.md`
@@ -116,14 +120,19 @@ science-contract artifacts before implementation is considered complete.
 - Ratify projection algorithm authority and canonical symbol obligations in
   `SC-PLANT-001` before considering implementation complete.
 
-### Phase 2 - Implementation
+### Phase 2 - Contract-Test Gate (Pre-Implementation)
+- Author/update contract-derived conformance tests from the ratified contract.
+- Execute and record pre-implementation gate results (expected failing surfaces
+  are allowed at this checkpoint, but must be explicitly enumerated).
+
+### Phase 3 - Implementation
 - Extend runtime projection surfaces for annual and perennial payload families
   with deterministic naming and typed guards.
 
-### Phase 3 - Verification
+### Phase 4 - Verification
 - Add fixture-backed projection tests and run required gates.
 
-### Phase 4 - Disposition
+### Phase 5 - Disposition
 - Publish contract amendment evidence, implementation evidence, and
   review/verification artifacts.
 
@@ -135,6 +144,8 @@ science-contract artifacts before implementation is considered complete.
   violations.
 - `SC-PLANT-001` includes contract-level authority for projected
   transition-control payload semantics and guards.
+- Pre-implementation contract-gate evidence exists and shows contract-derived
+  test authoring/update completed before runtime projection code edits.
 - `SC-PLANT-001` changes satisfy the kernel profile requirements in
   `kernel-process-contract-profile.md`, with checklist evidence captured.
 - PL10b ignored contract-conformance tests listed in Scope are executed

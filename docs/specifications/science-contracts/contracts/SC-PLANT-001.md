@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -149,10 +149,10 @@ This projection algorithm is pure with respect to plant-process state:
 4. For perennial branch:
    - emit `jdplt`, `jdharv`, `jdstop`, `mgtopt`;
    - when `mgtopt=1`, emit `ncut` and full `cutday[k]` array for
-     `k=1..ncut`, and set initial harvest progression seed to `cutday[1]`;
+     `k=1..ncut`;
    - when `mgtopt=2`, emit `ncycle` and full grazing arrays
      (`gday[k]`, `gend[k]`, `animal[k]`, `bodywt[k]`, `area[k]`, `digest[k]`)
-     for `k=1..ncycle`, and set initial harvest progression seed to `gend[1]`.
+     for `k=1..ncycle`.
 5. Cardinality closure rules:
    - every projected per-index symbol family must have exactly one scalar value;
    - per-index families must be contiguous from `1..N` with no holes;
@@ -307,9 +307,9 @@ states required deterministic alias mapping for transition-control projections.
 | `CRITVM` | `CRITVM` (identity) | grazing-floor parameter surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `gi` | `gi` (identity) | rangeland growth-curve surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `RGCMIN` | `RGCMIN` (identity) | evergreen floor parameter surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
-| `jdherb` | `pl_growth_slot_{slot:04}_crop_{crop:04}_jdherb` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `jdherb` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdherb` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `jdburn` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdburn` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `jdslge` | `pl_growth_slot_{slot:04}_crop_{crop:04}_jdslge` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `jdslge` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdslge` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `jdcut` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdcut` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `jdmove` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_jdmove` | annual extension trigger surface | day-of-year integer -> day-of-year integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `fbrnag` / `fbrnog` | `pl_decomp_slot_{slot:04}_crop_{crop:04}_fbrnag` / `..._fbrnog` | annual extension fraction controls | fraction -> fraction | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -370,8 +370,8 @@ Minimum required scenario families for contract conformance:
 | GAP-PLANT-002 | Nutrient/pest/aeration coupling is outside current WEPP plant routines and remains parameterization-only. | Reduces causal fidelity for yield stress attribution without external calibration workflow. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-PLANT-003 | Legacy routine provenance is mapped at domain level (`grow.for`, `growop.for`, `range.for`) but not yet per-invariant line anchor. | Traceability for implementation-level acceptance is partial. | promotable-with-risk | `[INFERENCE][Static]` |
 | GAP-PLANT-004 | Boundary contract IDs for plant consumers (`SC-WATBAL-001`, `SC-RESIDUE-001`, `SC-SED-001`) are not yet fully authored. | Cross-contract closure is provisional until downstream contracts reach draft status. | non-promotable | `[DIRECT][Static]` |
-| GAP-PLANT-005 | Concrete openWEPP runtime symbol implementations for new transition-control payload families are not yet proven by conformance evidence in this contract cycle. | Prevents closing PL event-projection parity until implementation/package follow-on closes. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but final one-to-one mapping to runtime error codes remains open pending PL11 implementation closure. | Risk of temporary mismatch between contract and runtime failure labels. | promotable-with-risk | `[INFERENCE][Static]` |
+| GAP-PLANT-005 | Transition-control projection families are implemented and contract-conformance tests pass for PL11 scope (`annual extension symbols`, `cutday indexed projection`, `grazing cycle payload projection`, and typed rejects for grazing window/cardinality). | Closed by PL11 runtime implementation and explicit conformance execution evidence. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but full cross-domain consumer harmonization of error labels is still open. | Residual traceability work remains for downstream consumers; runtime projection labels are implemented. | promotable-with-risk | `[INFERENCE][Static] + [Ran]` |
 
 ## Revision History
 
@@ -382,3 +382,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: scoped cropland/rangeland invariants, added missing symbols/anchors, added claim-level evidence tags, and labeled gap promotability. |
 | `2026-05-20` | `3` | `Codex` | Reopen delta for procedure update: added required invariant guard map and symbol alias map; added alias-governance gap entry. |
 | `2026-05-23` | `4` | `Codex` | PL10b blind-authority amendment: added transition-control runtime-projection algorithm authority, branch/guard table, invariant family `INV-PLANT-011..015`, constants table, test-vector obligations, and explicit symbol-family alias mappings for annual/perennial payload controls. |
+| `2026-05-23` | `5` | `Codex` | PL11 reconciliation amendment: aligned alias-map rows to emitted decomp surfaces, removed unsupported harvest-seed claim, and recorded PL11 conformance closure for runtime projection gap `GAP-PLANT-005`. |

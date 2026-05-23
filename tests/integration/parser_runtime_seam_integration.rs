@@ -764,7 +764,6 @@ fn management_runtime_surface_rejects_unsupported_perennial_option_projection() 
 }
 
 #[test]
-#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
 fn pl10b_contract_conformance_requires_annual_extension_projection_symbols() {
     let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
     let yearly = &mut management.registries.yearlies[0];
@@ -793,7 +792,6 @@ fn pl10b_contract_conformance_requires_annual_extension_projection_symbols() {
 }
 
 #[test]
-#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
 fn pl10b_contract_conformance_requires_perennial_cutday_indexed_projection() {
     let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
     let yearly = &mut management.registries.yearlies[0];
@@ -823,7 +821,6 @@ fn pl10b_contract_conformance_requires_perennial_cutday_indexed_projection() {
 }
 
 #[test]
-#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
 fn pl10b_contract_conformance_requires_perennial_grazing_cycle_payload_projection() {
     let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
     let yearly = &mut management.registries.yearlies[0];
@@ -878,7 +875,6 @@ fn pl10b_contract_conformance_requires_perennial_grazing_cycle_payload_projectio
 }
 
 #[test]
-#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
 fn pl10b_contract_conformance_rejects_invalid_grazing_window_domain() {
     let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
     let yearly = &mut management.registries.yearlies[0];
@@ -901,12 +897,22 @@ fn pl10b_contract_conformance_rejects_invalid_grazing_window_domain() {
         }],
     });
 
-    build_hillslope_pl_runtime_surfaces_from_management(&management)
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
         .expect_err("gday >= gend must fail conformance guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-049");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::PlGrazingWindowOutOfDomain {
+            slot_index: 1,
+            crop_slot_index: 1,
+            cycle_index: 1,
+            gday: 220,
+            gend: 200,
+        }
+    ));
 }
 
 #[test]
-#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
 fn pl10b_contract_conformance_rejects_empty_perennial_grazing_cardinality() {
     let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
     let yearly = &mut management.registries.yearlies[0];
@@ -922,8 +928,19 @@ fn pl10b_contract_conformance_rejects_empty_perennial_grazing_cardinality() {
         grazing_cycles: Vec::new(),
     });
 
-    build_hillslope_pl_runtime_surfaces_from_management(&management)
+    let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
         .expect_err("empty grazing cycle cardinality must fail conformance guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-048");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::PlProjectionCardinalityInvalid {
+            field: "ncycle",
+            slot_index: 1,
+            crop_slot_index: 1,
+            value: 0,
+            expected: ">=1 for mgtopt=2",
+        }
+    ));
 }
 
 fn assert_state_value(
@@ -1149,12 +1166,19 @@ fn assert_slot_crop_branch_symbols(
                     ),
                 );
             }
-            assert_surface_has_symbol(
-                &pl_surfaces.pl_decomp_surface,
-                &format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_resmgt"),
-            );
+            for decomp_root in [
+                "resmgt", "jdherb", "jdburn", "jdslge", "jdcut", "jdmove", "fbrnag", "fbrnog",
+                "frcut", "frmove",
+            ] {
+                assert_surface_has_symbol(
+                    &pl_surfaces.pl_decomp_surface,
+                    &format!(
+                        "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{decomp_root}"
+                    ),
+                );
+            }
         }
-        YearlyCroplandBranch::Perennial(_) => {
+        YearlyCroplandBranch::Perennial(perennial) => {
             for growth_root in ["jdharv", "jdplt", "jdstop", "rw", "mgtopt"] {
                 assert_surface_has_symbol(
                     &pl_surfaces.pl_growth_surface,
@@ -1170,6 +1194,30 @@ fn assert_slot_crop_branch_symbols(
                         "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{decomp_root}"
                     ),
                 );
+            }
+            if perennial.mgtopt == 1 {
+                for (position, _) in perennial.cut_days.iter().enumerate() {
+                    let cut_index = position + 1;
+                    assert_surface_has_symbol(
+                        &pl_surfaces.pl_decomp_surface,
+                        &format!(
+                            "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_cutday_{cut_index:04}"
+                        ),
+                    );
+                }
+            }
+            if perennial.mgtopt == 2 {
+                for (position, _) in perennial.grazing_cycles.iter().enumerate() {
+                    let cycle_index = position + 1;
+                    for grazing_root in ["gday", "gend", "animal", "bodywt", "area", "digest"] {
+                        assert_surface_has_symbol(
+                            &pl_surfaces.pl_decomp_surface,
+                            &format!(
+                                "pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{grazing_root}_{cycle_index:04}"
+                            ),
+                        );
+                    }
+                }
             }
         }
     }
@@ -1194,6 +1242,15 @@ fn assert_merged_pl_seed_aliases(
         "imngmt",
         "jdharv",
         "jdplt",
+        "jdherb",
+        "jdburn",
+        "jdslge",
+        "jdcut",
+        "jdmove",
+        "fbrnag",
+        "fbrnog",
+        "frcut",
+        "frmove",
         "rw",
         "resmgt",
         "iresd_seed",
