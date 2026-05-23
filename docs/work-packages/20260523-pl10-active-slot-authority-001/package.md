@@ -1,7 +1,7 @@
 # 20260523-pl10-active-slot-authority-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-05-23
 - timezone: UTC
 

@@ -30,21 +30,21 @@ const SLOPE_FAMILY_SENTINELS: &[&str] = &["nelem", "nwsofe", "nslpts", "slplen",
 const SOIL_FAMILY_SENTINELS: &[&str] = &["nsl", "solthk", "dg", "thetdr", "thetfc", "ssc"];
 const PL_GROWTH_RUNTIME_SENTINEL: &str = "pl_schedule_slot_count";
 const PL_DECOMP_RUNTIME_SENTINEL: &str = "pl_schedule_slot_count";
-const PL_DECOMP_IMNGMT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_imngmt";
-const PL_DECOMP_RESMGT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_resmgt";
-const PL_DECOMP_MGTOPT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_mgtopt";
-const PL_DECOMP_NCUT_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_ncut";
-const PL_DECOMP_NCYCLE_SYMBOL: &str = "pl_decomp_slot_0001_crop_0001_ncycle";
+const PL_SCHEDULE_SLOT_COUNT_SYMBOL: &str = "pl_schedule_slot_count";
+const PL_SCHEDULE_ROTATION_REPEATS_SYMBOL: &str = "pl_schedule_rotation_repeats";
+const PL_SCHEDULE_ROTATION_YEARS_SYMBOL: &str = "pl_schedule_rotation_years";
+const PL_SCHEDULE_SLOT_ROTATION_INDEX_ROOT: &str = "rotation_index";
+const PL_SCHEDULE_SLOT_OFE_INDEX_ROOT: &str = "ofe_index";
+const PL_SCHEDULE_SLOT_YEAR_IN_ROTATION_ROOT: &str = "year_in_rotation";
+const PL_SCHEDULE_SLOT_CROP_SLOTS_ROOT: &str = "crop_slots";
+const PL_SCHEDULE_SLOT_CROP_IMNGMT_ROOT: &str = "imngmt";
+const PL_RUNTIME_DAY_SYMBOL: &str = "day";
+const PL_RUNTIME_YEAR_SYMBOL: &str = "year";
+const PL_PRIMARY_OFE_INDEX: usize = 1;
 const PL_DECOMP_IRESD_SEED_SYMBOL: &str = "iresd_seed";
 const PL_DECOMP_SUMRTM_SEED_SYMBOL: &str = "sumrtm_seed";
 const PL_DECOMP_SUMSRM_SEED_SYMBOL: &str = "sumsrm_seed";
 const PL_ORDER_DECOMP_BEFORE_SOIL_SYMBOL: &str = "pl_order_decomp_before_soil";
-const PL_GROWTH_IMNGMT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_imngmt";
-const PL_GROWTH_JDHARV_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_jdharv";
-const PL_GROWTH_JDPLT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_jdplt";
-const PL_GROWTH_RW_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_rw";
-const PL_GROWTH_JDSTOP_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_jdstop";
-const PL_GROWTH_MGTOPT_SYMBOL: &str = "pl_growth_slot_0001_crop_0001_mgtopt";
 const PL_ORDER_GROWTH_AFTER_DECOMP_SYMBOL: &str = "pl_order_growth_after_decomp";
 const PL_ORDER_WATBAL_AFTER_GROWTH_SYMBOL: &str = "pl_order_watbal_after_growth";
 const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
@@ -183,6 +183,185 @@ impl fmt::Display for HillslopeConsumerBoundaryError {
 
 impl Error for HillslopeConsumerBoundaryError {}
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ActivePlSlotSelection {
+    slot_index: usize,
+    crop_slot_index: usize,
+}
+
+/// Typed failure surface for PL schedule slot/crop activation resolution.
+#[derive(Debug, Clone, PartialEq)]
+pub enum HillslopePlActiveSlotResolutionError {
+    MissingRequiredStateSymbol {
+        symbol: BoundarySymbol,
+    },
+    NonFiniteRequiredStateSymbol {
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    NonIntegralRequiredStateSymbol {
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    StateSymbolValueOutOfRange {
+        symbol: BoundarySymbol,
+        value: usize,
+        min_allowed: usize,
+        max_allowed: usize,
+    },
+    MissingActiveSlotForOfeYear {
+        ofe_index: usize,
+        year_in_rotation: usize,
+    },
+    AmbiguousActiveSlotForOfeYear {
+        ofe_index: usize,
+        year_in_rotation: usize,
+        slot_indexes: Vec<usize>,
+    },
+    InvalidCropSlotCount {
+        slot_index: usize,
+        crop_slots: usize,
+    },
+    MissingActiveCropForDay {
+        slot_index: usize,
+        day_of_year: usize,
+    },
+    AmbiguousActiveCropForDay {
+        slot_index: usize,
+        day_of_year: usize,
+        crop_slot_indexes: Vec<usize>,
+    },
+}
+
+impl HillslopePlActiveSlotResolutionError {
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        match self {
+            Self::MissingRequiredStateSymbol { .. } => "HS-PLDISP-E-001",
+            Self::NonFiniteRequiredStateSymbol { .. } => "HS-PLDISP-E-002",
+            Self::NonIntegralRequiredStateSymbol { .. } => "HS-PLDISP-E-003",
+            Self::StateSymbolValueOutOfRange { .. } => "HS-PLDISP-E-004",
+            Self::MissingActiveSlotForOfeYear { .. } => "HS-PLDISP-E-005",
+            Self::AmbiguousActiveSlotForOfeYear { .. } => "HS-PLDISP-E-006",
+            Self::InvalidCropSlotCount { .. } => "HS-PLDISP-E-007",
+            Self::MissingActiveCropForDay { .. } => "HS-PLDISP-E-008",
+            Self::AmbiguousActiveCropForDay { .. } => "HS-PLDISP-E-009",
+        }
+    }
+
+    #[must_use]
+    pub const fn boundary_class(&self) -> BoundaryClass {
+        match self {
+            Self::MissingRequiredStateSymbol { .. } => BoundaryClass::MissingRequiredInput,
+            Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
+            Self::NonIntegralRequiredStateSymbol { .. }
+            | Self::StateSymbolValueOutOfRange { .. }
+            | Self::MissingActiveSlotForOfeYear { .. }
+            | Self::AmbiguousActiveSlotForOfeYear { .. }
+            | Self::InvalidCropSlotCount { .. }
+            | Self::MissingActiveCropForDay { .. }
+            | Self::AmbiguousActiveCropForDay { .. } => BoundaryClass::DomainViolation,
+        }
+    }
+}
+
+impl fmt::Display for HillslopePlActiveSlotResolutionError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingRequiredStateSymbol { symbol } => write!(
+                f,
+                "{}: missing required PL dispatch symbol {}",
+                self.code(),
+                symbol
+            ),
+            Self::NonFiniteRequiredStateSymbol { symbol, value } => write!(
+                f,
+                "{}: PL dispatch symbol {} is non-finite ({})",
+                self.code(),
+                symbol,
+                value
+            ),
+            Self::NonIntegralRequiredStateSymbol { symbol, value } => write!(
+                f,
+                "{}: PL dispatch symbol {} must be integral but is {}",
+                self.code(),
+                symbol,
+                value
+            ),
+            Self::StateSymbolValueOutOfRange {
+                symbol,
+                value,
+                min_allowed,
+                max_allowed,
+            } => write!(
+                f,
+                "{}: PL dispatch symbol {}={} outside allowed [{}, {}]",
+                self.code(),
+                symbol,
+                value,
+                min_allowed,
+                max_allowed
+            ),
+            Self::MissingActiveSlotForOfeYear {
+                ofe_index,
+                year_in_rotation,
+            } => write!(
+                f,
+                "{}: no active schedule slot for ofe={} year_in_rotation={}",
+                self.code(),
+                ofe_index,
+                year_in_rotation
+            ),
+            Self::AmbiguousActiveSlotForOfeYear {
+                ofe_index,
+                year_in_rotation,
+                slot_indexes,
+            } => write!(
+                f,
+                "{}: ambiguous schedule slot for ofe={} year_in_rotation={} candidates={:?}",
+                self.code(),
+                ofe_index,
+                year_in_rotation,
+                slot_indexes
+            ),
+            Self::InvalidCropSlotCount {
+                slot_index,
+                crop_slots,
+            } => write!(
+                f,
+                "{}: slot {} has invalid crop_slots={} (must be >= 1)",
+                self.code(),
+                slot_index,
+                crop_slots
+            ),
+            Self::MissingActiveCropForDay {
+                slot_index,
+                day_of_year,
+            } => write!(
+                f,
+                "{}: slot {} has no active crop for day {}",
+                self.code(),
+                slot_index,
+                day_of_year
+            ),
+            Self::AmbiguousActiveCropForDay {
+                slot_index,
+                day_of_year,
+                crop_slot_indexes,
+            } => write!(
+                f,
+                "{}: slot {} has ambiguous active crops for day {} candidates={:?}",
+                self.code(),
+                slot_index,
+                day_of_year,
+                crop_slot_indexes
+            ),
+        }
+    }
+}
+
+impl Error for HillslopePlActiveSlotResolutionError {}
+
 /// Typed failure surface for scheduler-to-growth kernel boundary validation.
 #[derive(Debug, Clone, PartialEq)]
 pub enum HillslopeGrowthBoundaryError {
@@ -206,27 +385,33 @@ pub enum HillslopeGrowthBoundaryError {
         symbol: BoundarySymbol,
         value: f64,
     },
+    ActiveSlotResolution {
+        phase: HillslopePhase,
+        source: HillslopePlActiveSlotResolutionError,
+    },
 }
 
 impl HillslopeGrowthBoundaryError {
     #[must_use]
-    pub const fn code(&self) -> &'static str {
+    pub fn code(&self) -> &'static str {
         match self {
             Self::MissingRequiredStateSymbol { .. } => "HS-GROWTH-E-001",
             Self::NonFiniteRequiredStateSymbol { .. } => "HS-GROWTH-E-002",
             Self::InvalidOrderingFlagValue { .. } => "HS-GROWTH-E-003",
             Self::UnsupportedManagementClass { .. } => "HS-GROWTH-E-004",
+            Self::ActiveSlotResolution { source, .. } => source.code(),
         }
     }
 
     #[must_use]
-    pub const fn boundary_class(&self) -> BoundaryClass {
+    pub fn boundary_class(&self) -> BoundaryClass {
         match self {
             Self::MissingRequiredStateSymbol { .. } => BoundaryClass::MissingRequiredInput,
             Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
             Self::InvalidOrderingFlagValue { .. } | Self::UnsupportedManagementClass { .. } => {
                 BoundaryClass::DomainViolation
             }
+            Self::ActiveSlotResolution { source, .. } => source.boundary_class(),
         }
     }
 }
@@ -279,6 +464,9 @@ impl fmt::Display for HillslopeGrowthBoundaryError {
                 symbol,
                 value
             ),
+            Self::ActiveSlotResolution { phase, source } => {
+                write!(f, "{}: phase {} {}", self.code(), phase.as_str(), source)
+            }
         }
     }
 }
@@ -309,27 +497,33 @@ pub enum HillslopeDecompositionBoundaryError {
         symbol: BoundarySymbol,
         value: f64,
     },
+    ActiveSlotResolution {
+        phase: HillslopePhase,
+        source: HillslopePlActiveSlotResolutionError,
+    },
 }
 
 impl HillslopeDecompositionBoundaryError {
     #[must_use]
-    pub const fn code(&self) -> &'static str {
+    pub fn code(&self) -> &'static str {
         match self {
             Self::MissingRequiredStateSymbol { .. } => "HS-DECOMP-E-001",
             Self::NonFiniteRequiredStateSymbol { .. } => "HS-DECOMP-E-002",
             Self::InvalidOrderingFlagValue { .. } => "HS-DECOMP-E-003",
             Self::UnsupportedManagementClass { .. } => "HS-DECOMP-E-004",
+            Self::ActiveSlotResolution { source, .. } => source.code(),
         }
     }
 
     #[must_use]
-    pub const fn boundary_class(&self) -> BoundaryClass {
+    pub fn boundary_class(&self) -> BoundaryClass {
         match self {
             Self::MissingRequiredStateSymbol { .. } => BoundaryClass::MissingRequiredInput,
             Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
             Self::InvalidOrderingFlagValue { .. } | Self::UnsupportedManagementClass { .. } => {
                 BoundaryClass::DomainViolation
             }
+            Self::ActiveSlotResolution { source, .. } => source.boundary_class(),
         }
     }
 }
@@ -382,6 +576,9 @@ impl fmt::Display for HillslopeDecompositionBoundaryError {
                 symbol,
                 value
             ),
+            Self::ActiveSlotResolution { phase, source } => {
+                write!(f, "{}: phase {} {}", self.code(), phase.as_str(), source)
+            }
         }
     }
 }
@@ -484,6 +681,302 @@ fn state_family_is_present(
         .any(|symbol| state_surface.contains_key(&BoundarySymbol::from(*symbol)))
 }
 
+fn pl_schedule_slot_symbol(root: &str, slot_index: usize) -> String {
+    format!("pl_schedule_slot_{slot_index:04}_{root}")
+}
+
+fn pl_schedule_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: usize) -> String {
+    format!("pl_schedule_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn pl_growth_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: usize) -> String {
+    format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn pl_decomp_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: usize) -> String {
+    format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn require_finite_pl_dispatch_symbol(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+) -> Result<f64, HillslopePlActiveSlotResolutionError> {
+    let symbol_key = BoundarySymbol::from(symbol);
+    let value = state_surface
+        .get(&symbol_key)
+        .ok_or_else(
+            || HillslopePlActiveSlotResolutionError::MissingRequiredStateSymbol {
+                symbol: symbol_key.clone(),
+            },
+        )?
+        .as_f64();
+
+    if !value.is_finite() {
+        return Err(
+            HillslopePlActiveSlotResolutionError::NonFiniteRequiredStateSymbol {
+                symbol: symbol_key,
+                value,
+            },
+        );
+    }
+
+    Ok(value)
+}
+
+#[allow(
+    clippy::cast_precision_loss,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
+fn require_integral_pl_dispatch_symbol_in_range(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopePlActiveSlotResolutionError> {
+    let value = require_finite_pl_dispatch_symbol(state_surface, symbol)?;
+    let rounded = value.round();
+    if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
+        return Err(
+            HillslopePlActiveSlotResolutionError::NonIntegralRequiredStateSymbol {
+                symbol: BoundarySymbol::from(symbol),
+                value,
+            },
+        );
+    }
+
+    let min_f64 = min_allowed as f64;
+    let max_f64 = max_allowed as f64;
+    if rounded < min_f64 || rounded > max_f64 {
+        return Err(
+            HillslopePlActiveSlotResolutionError::StateSymbolValueOutOfRange {
+                symbol: BoundarySymbol::from(symbol),
+                value: rounded as usize,
+                min_allowed,
+                max_allowed,
+            },
+        );
+    }
+
+    Ok(rounded as usize)
+}
+
+fn day_is_within_julian_window(day_of_year: usize, start_day: usize, end_day: usize) -> bool {
+    if start_day <= end_day {
+        day_of_year >= start_day && day_of_year <= end_day
+    } else {
+        day_of_year >= start_day || day_of_year <= end_day
+    }
+}
+
+fn select_active_crop_slot_for_day(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slots: usize,
+    day_of_year: usize,
+) -> Result<usize, HillslopePlActiveSlotResolutionError> {
+    let mut candidates = Vec::new();
+
+    for crop_slot_index in 1..=crop_slots {
+        let imngmt_symbol = pl_schedule_slot_crop_symbol(
+            PL_SCHEDULE_SLOT_CROP_IMNGMT_ROOT,
+            slot_index,
+            crop_slot_index,
+        );
+        let imngmt = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            imngmt_symbol.as_str(),
+            1,
+            3,
+        )?;
+
+        let growth_imngmt_symbol =
+            pl_growth_slot_crop_symbol("imngmt", slot_index, crop_slot_index);
+        let _ = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            growth_imngmt_symbol.as_str(),
+            1,
+            3,
+        )?;
+
+        let jdplt_symbol = pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index);
+        let jdplt = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            jdplt_symbol.as_str(),
+            1,
+            366,
+        )?;
+        let jdharv_symbol = pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index);
+        let jdharv = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            jdharv_symbol.as_str(),
+            0,
+            366,
+        )?;
+
+        let is_active = if imngmt == 2 {
+            // PL11+ carries full perennial event payloads; PL10 keeps slot
+            // selection bounded to existing day-window symbols.
+            let jdstop_symbol = pl_growth_slot_crop_symbol("jdstop", slot_index, crop_slot_index);
+            let jdstop = require_integral_pl_dispatch_symbol_in_range(
+                state_surface,
+                jdstop_symbol.as_str(),
+                0,
+                366,
+            )?;
+            if jdstop == 0 {
+                day_is_within_julian_window(day_of_year, jdplt, jdharv.max(1))
+            } else {
+                day_is_within_julian_window(day_of_year, jdplt, jdstop)
+            }
+        } else {
+            day_is_within_julian_window(day_of_year, jdplt, jdharv.max(1))
+        };
+
+        if is_active {
+            candidates.push(crop_slot_index);
+        }
+    }
+
+    match candidates.as_slice() {
+        [crop_slot_index] => Ok(*crop_slot_index),
+        [] => Err(
+            HillslopePlActiveSlotResolutionError::MissingActiveCropForDay {
+                slot_index,
+                day_of_year,
+            },
+        ),
+        _ => Err(
+            HillslopePlActiveSlotResolutionError::AmbiguousActiveCropForDay {
+                slot_index,
+                day_of_year,
+                crop_slot_indexes: candidates,
+            },
+        ),
+    }
+}
+
+#[allow(clippy::too_many_lines)]
+fn resolve_active_pl_slot_selection(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Result<ActivePlSlotSelection, HillslopePlActiveSlotResolutionError> {
+    let slot_count = require_integral_pl_dispatch_symbol_in_range(
+        state_surface,
+        PL_SCHEDULE_SLOT_COUNT_SYMBOL,
+        1,
+        usize::MAX,
+    )?;
+    let rotation_years = require_integral_pl_dispatch_symbol_in_range(
+        state_surface,
+        PL_SCHEDULE_ROTATION_YEARS_SYMBOL,
+        1,
+        usize::MAX,
+    )?;
+    let rotation_repeats = require_integral_pl_dispatch_symbol_in_range(
+        state_surface,
+        PL_SCHEDULE_ROTATION_REPEATS_SYMBOL,
+        1,
+        usize::MAX,
+    )?;
+    let runtime_year = require_integral_pl_dispatch_symbol_in_range(
+        state_surface,
+        PL_RUNTIME_YEAR_SYMBOL,
+        1,
+        usize::MAX,
+    )?;
+    let max_runtime_year = rotation_repeats.saturating_mul(rotation_years);
+    if runtime_year > max_runtime_year {
+        return Err(
+            HillslopePlActiveSlotResolutionError::StateSymbolValueOutOfRange {
+                symbol: BoundarySymbol::from(PL_RUNTIME_YEAR_SYMBOL),
+                value: runtime_year,
+                min_allowed: 1,
+                max_allowed: max_runtime_year,
+            },
+        );
+    }
+    let day_of_year =
+        require_integral_pl_dispatch_symbol_in_range(state_surface, PL_RUNTIME_DAY_SYMBOL, 1, 366)?;
+    let rotation_index = ((runtime_year - 1) / rotation_years) + 1;
+    let year_in_rotation = ((runtime_year - 1) % rotation_years) + 1;
+
+    let mut slot_candidates = Vec::new();
+    for slot_index in 1..=slot_count {
+        let slot_ofe_symbol = pl_schedule_slot_symbol(PL_SCHEDULE_SLOT_OFE_INDEX_ROOT, slot_index);
+        let ofe_index = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            slot_ofe_symbol.as_str(),
+            1,
+            usize::MAX,
+        )?;
+        if ofe_index != PL_PRIMARY_OFE_INDEX {
+            continue;
+        }
+
+        let slot_year_symbol =
+            pl_schedule_slot_symbol(PL_SCHEDULE_SLOT_YEAR_IN_ROTATION_ROOT, slot_index);
+        let slot_year_in_rotation = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            slot_year_symbol.as_str(),
+            1,
+            rotation_years,
+        )?;
+        let slot_rotation_symbol =
+            pl_schedule_slot_symbol(PL_SCHEDULE_SLOT_ROTATION_INDEX_ROOT, slot_index);
+        let slot_rotation_index = require_integral_pl_dispatch_symbol_in_range(
+            state_surface,
+            slot_rotation_symbol.as_str(),
+            1,
+            rotation_repeats,
+        )?;
+        if slot_year_in_rotation == year_in_rotation && slot_rotation_index == rotation_index {
+            slot_candidates.push(slot_index);
+        }
+    }
+
+    let slot_index = match slot_candidates.as_slice() {
+        [slot_index] => *slot_index,
+        [] => {
+            return Err(
+                HillslopePlActiveSlotResolutionError::MissingActiveSlotForOfeYear {
+                    ofe_index: PL_PRIMARY_OFE_INDEX,
+                    year_in_rotation,
+                },
+            );
+        }
+        _ => {
+            return Err(
+                HillslopePlActiveSlotResolutionError::AmbiguousActiveSlotForOfeYear {
+                    ofe_index: PL_PRIMARY_OFE_INDEX,
+                    year_in_rotation,
+                    slot_indexes: slot_candidates,
+                },
+            );
+        }
+    };
+
+    let crop_slots_symbol = pl_schedule_slot_symbol(PL_SCHEDULE_SLOT_CROP_SLOTS_ROOT, slot_index);
+    let crop_slots = require_integral_pl_dispatch_symbol_in_range(
+        state_surface,
+        crop_slots_symbol.as_str(),
+        0,
+        usize::MAX,
+    )?;
+    if crop_slots == 0 {
+        return Err(HillslopePlActiveSlotResolutionError::InvalidCropSlotCount {
+            slot_index,
+            crop_slots,
+        });
+    }
+
+    let crop_slot_index =
+        select_active_crop_slot_for_day(state_surface, slot_index, crop_slots, day_of_year)?;
+    Ok(ActivePlSlotSelection {
+        slot_index,
+        crop_slot_index,
+    })
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum GrowthPhaseDispatch {
     Skip,
@@ -537,12 +1030,20 @@ fn decomposition_phase_dispatch_for_state(
         return Ok(DecompositionPhaseDispatch::Skip);
     }
 
-    let imngmt = require_finite_state_value_for_decomposition(
-        phase,
-        state_surface,
-        PL_DECOMP_IMNGMT_SYMBOL,
-    )?;
-    let management_class = normalize_management_class_for_decomposition(phase, imngmt)?;
+    let active_slot_selection =
+        resolve_active_pl_slot_selection(state_surface).map_err(|source| {
+            HillslopeDecompositionBoundaryError::ActiveSlotResolution { phase, source }
+        })?;
+
+    let imngmt_symbol = pl_growth_slot_crop_symbol(
+        "imngmt",
+        active_slot_selection.slot_index,
+        active_slot_selection.crop_slot_index,
+    );
+    let imngmt =
+        require_finite_state_value_for_decomposition(phase, state_surface, imngmt_symbol.as_str())?;
+    let management_class =
+        normalize_management_class_for_decomposition(phase, imngmt, imngmt_symbol.as_str())?;
     let order_decomp_before_soil = require_ordering_flag_for_decomposition(
         phase,
         state_surface,
@@ -566,26 +1067,47 @@ fn decomposition_phase_dispatch_for_state(
 
     match management_class {
         1 | 3 => {
+            let resmgt_symbol = pl_decomp_slot_crop_symbol(
+                "resmgt",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
             let _ = require_finite_state_value_for_decomposition(
                 phase,
                 state_surface,
-                PL_DECOMP_RESMGT_SYMBOL,
+                resmgt_symbol.as_str(),
             )?;
         }
         2 => {
             for symbol in [
-                PL_DECOMP_MGTOPT_SYMBOL,
-                PL_DECOMP_NCUT_SYMBOL,
-                PL_DECOMP_NCYCLE_SYMBOL,
+                pl_decomp_slot_crop_symbol(
+                    "mgtopt",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_decomp_slot_crop_symbol(
+                    "ncut",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_decomp_slot_crop_symbol(
+                    "ncycle",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
             ] {
-                let _ = require_finite_state_value_for_decomposition(phase, state_surface, symbol)?;
+                let _ = require_finite_state_value_for_decomposition(
+                    phase,
+                    state_surface,
+                    symbol.as_str(),
+                )?;
             }
         }
         _ => {
             return Err(
                 HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
                     phase,
-                    symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+                    symbol: BoundarySymbol::from(imngmt_symbol.as_str()),
                     value: imngmt,
                 },
             );
@@ -607,6 +1129,7 @@ fn decomposition_phase_dispatch_for_state(
     ))
 }
 
+#[allow(clippy::too_many_lines)]
 fn growth_phase_dispatch_for_state(
     phase: HillslopePhase,
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
@@ -615,8 +1138,15 @@ fn growth_phase_dispatch_for_state(
         return Ok(GrowthPhaseDispatch::Skip);
     }
 
-    let imngmt = require_finite_state_value(phase, state_surface, PL_GROWTH_IMNGMT_SYMBOL)?;
-    let management_class = normalize_management_class(phase, imngmt)?;
+    let active_slot_selection = resolve_active_pl_slot_selection(state_surface)
+        .map_err(|source| HillslopeGrowthBoundaryError::ActiveSlotResolution { phase, source })?;
+    let imngmt_symbol = pl_growth_slot_crop_symbol(
+        "imngmt",
+        active_slot_selection.slot_index,
+        active_slot_selection.crop_slot_index,
+    );
+    let imngmt = require_finite_state_value(phase, state_surface, imngmt_symbol.as_str())?;
+    let management_class = normalize_management_class(phase, imngmt, imngmt_symbol.as_str())?;
     let order_growth_after_decomp = require_ordering_flag(
         phase,
         state_surface,
@@ -638,12 +1168,28 @@ fn growth_phase_dispatch_for_state(
             debug_assert!(management_class == 1 || management_class == 3);
 
             for symbol in [
-                PL_GROWTH_JDHARV_SYMBOL,
-                PL_GROWTH_JDPLT_SYMBOL,
-                PL_GROWTH_RW_SYMBOL,
-                PL_DECOMP_RESMGT_SYMBOL,
+                pl_growth_slot_crop_symbol(
+                    "jdharv",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_growth_slot_crop_symbol(
+                    "jdplt",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_growth_slot_crop_symbol(
+                    "rw",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_decomp_slot_crop_symbol(
+                    "resmgt",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
             ] {
-                let _ = require_finite_state_value(phase, state_surface, symbol)?;
+                let _ = require_finite_state_value(phase, state_surface, symbol.as_str())?;
             }
 
             Ok(GrowthPhaseDispatch::Execute(
@@ -661,13 +1207,33 @@ fn growth_phase_dispatch_for_state(
             debug_assert!(management_class == 2);
 
             for symbol in [
-                PL_GROWTH_JDHARV_SYMBOL,
-                PL_GROWTH_JDPLT_SYMBOL,
-                PL_GROWTH_RW_SYMBOL,
-                PL_GROWTH_JDSTOP_SYMBOL,
-                PL_GROWTH_MGTOPT_SYMBOL,
+                pl_growth_slot_crop_symbol(
+                    "jdharv",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_growth_slot_crop_symbol(
+                    "jdplt",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_growth_slot_crop_symbol(
+                    "rw",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_growth_slot_crop_symbol(
+                    "jdstop",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
+                pl_growth_slot_crop_symbol(
+                    "mgtopt",
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                ),
             ] {
-                let _ = require_finite_state_value(phase, state_surface, symbol)?;
+                let _ = require_finite_state_value(phase, state_surface, symbol.as_str())?;
             }
 
             Ok(GrowthPhaseDispatch::Execute(
@@ -731,19 +1297,20 @@ fn require_finite_state_value(
 fn normalize_management_class(
     phase: HillslopePhase,
     value: f64,
+    symbol: &str,
 ) -> Result<u8, HillslopeGrowthBoundaryError> {
     let rounded = value.round();
     if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
         return Err(HillslopeGrowthBoundaryError::UnsupportedManagementClass {
             phase,
-            symbol: BoundarySymbol::from(PL_GROWTH_IMNGMT_SYMBOL),
+            symbol: BoundarySymbol::from(symbol),
             value,
         });
     }
     if !(1.0..=3.0).contains(&rounded) {
         return Err(HillslopeGrowthBoundaryError::UnsupportedManagementClass {
             phase,
-            symbol: BoundarySymbol::from(PL_GROWTH_IMNGMT_SYMBOL),
+            symbol: BoundarySymbol::from(symbol),
             value,
         });
     }
@@ -759,7 +1326,7 @@ fn normalize_management_class(
 
     Err(HillslopeGrowthBoundaryError::UnsupportedManagementClass {
         phase,
-        symbol: BoundarySymbol::from(PL_GROWTH_IMNGMT_SYMBOL),
+        symbol: BoundarySymbol::from(symbol),
         value,
     })
 }
@@ -817,13 +1384,14 @@ fn require_finite_state_value_for_decomposition(
 fn normalize_management_class_for_decomposition(
     phase: HillslopePhase,
     value: f64,
+    symbol: &str,
 ) -> Result<u8, HillslopeDecompositionBoundaryError> {
     let rounded = value.round();
     if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
         return Err(
             HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
                 phase,
-                symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+                symbol: BoundarySymbol::from(symbol),
                 value,
             },
         );
@@ -832,7 +1400,7 @@ fn normalize_management_class_for_decomposition(
         return Err(
             HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
                 phase,
-                symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+                symbol: BoundarySymbol::from(symbol),
                 value,
             },
         );
@@ -850,7 +1418,7 @@ fn normalize_management_class_for_decomposition(
     Err(
         HillslopeDecompositionBoundaryError::UnsupportedManagementClass {
             phase,
-            symbol: BoundarySymbol::from(PL_DECOMP_IMNGMT_SYMBOL),
+            symbol: BoundarySymbol::from(symbol),
             value,
         },
     )
@@ -1655,11 +2223,52 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         validate_pre_execution_topology(&graph).expect("topology report should build")
     }
 
-    fn seeded_growth_runtime_surface(imngmt: f64) -> HillslopeWritebackSurface {
+    #[allow(clippy::too_many_lines)]
+    fn seeded_growth_runtime_surface_for_day_year(
+        imngmt: f64,
+        day_of_year: f64,
+        runtime_year: f64,
+    ) -> HillslopeWritebackSurface {
         let mut state_surface = BTreeMap::new();
         state_surface.insert(
             BoundarySymbol::from("pl_schedule_slot_count"),
             BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_rotation_years"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_rotation_repeats"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("day"),
+            BoundaryValue::scalar(day_of_year),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("year"),
+            BoundaryValue::scalar(runtime_year),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_rotation_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_year_in_rotation"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_0001_imngmt"),
+            BoundaryValue::scalar(imngmt),
         );
         state_surface.insert(
             BoundarySymbol::from("pl_order_decomp_before_soil"),
@@ -1734,6 +2343,319 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             state_surface,
             flux_surface: BTreeMap::new(),
         }
+    }
+
+    fn seeded_growth_runtime_surface(imngmt: f64) -> HillslopeWritebackSurface {
+        seeded_growth_runtime_surface_for_day_year(imngmt, 200.0, 1.0)
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn seeded_multislot_rotation_surface(
+        runtime_year: f64,
+        day_of_year: f64,
+    ) -> HillslopeWritebackSurface {
+        let mut surface =
+            seeded_growth_runtime_surface_for_day_year(1.0, day_of_year, runtime_year);
+        let state = &mut surface.state_surface;
+
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_count"),
+            BoundaryValue::scalar(6.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_rotation_years"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_rotation_repeats"),
+            BoundaryValue::scalar(2.0),
+        );
+
+        // Slot 1 / year 1 / annual.
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_rotation_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_year_in_rotation"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_0001_imngmt"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_imngmt"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+            BoundaryValue::scalar(240.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+            BoundaryValue::scalar(120.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"),
+            BoundaryValue::scalar(1.1),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_resmgt"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        // Slot 2 / year 2 / annual-fallow.
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0002_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0002_rotation_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0002_year_in_rotation"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0002_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0002_crop_0001_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0002_crop_0001_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0002_crop_0001_jdharv"),
+            BoundaryValue::scalar(365.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0002_crop_0001_jdplt"),
+            BoundaryValue::scalar(228.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0002_crop_0001_rw"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_resmgt"),
+            BoundaryValue::scalar(6.0),
+        );
+
+        // Slot 3 / year 3 / perennial.
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0003_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0003_rotation_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0003_year_in_rotation"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0003_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0003_crop_0001_imngmt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0003_crop_0001_imngmt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0003_crop_0001_jdharv"),
+            BoundaryValue::scalar(288.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0003_crop_0001_jdplt"),
+            BoundaryValue::scalar(130.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0003_crop_0001_jdstop"),
+            BoundaryValue::scalar(310.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0003_crop_0001_rw"),
+            BoundaryValue::scalar(0.762),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0003_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_ncut"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_ncycle"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        // Slot 4 / year 1 / annual (rotation repeat 2).
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0004_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0004_rotation_index"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0004_year_in_rotation"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0004_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0004_crop_0001_imngmt"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0004_crop_0001_imngmt"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0004_crop_0001_jdharv"),
+            BoundaryValue::scalar(240.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0004_crop_0001_jdplt"),
+            BoundaryValue::scalar(120.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0004_crop_0001_rw"),
+            BoundaryValue::scalar(1.1),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_resmgt"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        // Slot 5 / year 2 / annual-fallow (rotation repeat 2).
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0005_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0005_rotation_index"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0005_year_in_rotation"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0005_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0005_crop_0001_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0005_crop_0001_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0005_crop_0001_jdharv"),
+            BoundaryValue::scalar(365.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0005_crop_0001_jdplt"),
+            BoundaryValue::scalar(228.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0005_crop_0001_rw"),
+            BoundaryValue::scalar(0.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_resmgt"),
+            BoundaryValue::scalar(6.0),
+        );
+
+        // Slot 6 / year 3 / perennial (rotation repeat 2).
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0006_ofe_index"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0006_rotation_index"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0006_year_in_rotation"),
+            BoundaryValue::scalar(3.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0006_crop_slots"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_schedule_slot_0006_crop_0001_imngmt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0006_crop_0001_imngmt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0006_crop_0001_jdharv"),
+            BoundaryValue::scalar(288.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0006_crop_0001_jdplt"),
+            BoundaryValue::scalar(130.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0006_crop_0001_jdstop"),
+            BoundaryValue::scalar(310.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0006_crop_0001_rw"),
+            BoundaryValue::scalar(0.762),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_growth_slot_0006_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_ncut"),
+            BoundaryValue::scalar(1.0),
+        );
+        state.insert(
+            BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_ncycle"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        surface
     }
 
     #[test]
@@ -2150,6 +3072,323 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
     }
 
     #[test]
+    fn active_slot_resolution_uses_year_three_perennial_slot() {
+        #[derive(Default)]
+        struct ProbeKernel {
+            saw_decomp_perennial: bool,
+            saw_annual_context: bool,
+            saw_perennial_context: bool,
+        }
+
+        impl HillslopeKernel for ProbeKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                match request.phase_class {
+                    HillslopeKernelPhaseClass::DecompositionTransition
+                    | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                        let context = request
+                            .decomposition_context
+                            .expect("decomposition phases should carry decomposition context");
+                        self.saw_decomp_perennial = context.management_class
+                            == HillslopeDecompositionManagementClass::Perennial;
+                    }
+                    HillslopeKernelPhaseClass::GrowthAnnualTransition => {
+                        self.saw_annual_context = request.growth_context.is_some();
+                    }
+                    HillslopeKernelPhaseClass::GrowthPerennialTransition => {
+                        self.saw_perennial_context = request.growth_context.is_some();
+                    }
+                    HillslopeKernelPhaseClass::Hydrology => {}
+                }
+
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-ACTIVE-SLOT",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = ProbeKernel::default();
+        let surface = seeded_multislot_rotation_surface(3.0, 200.0);
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("year-three slot resolution should succeed");
+
+        assert!(report.scheduler_report.is_success());
+        assert!(kernel.saw_decomp_perennial);
+        assert!(!kernel.saw_annual_context);
+        assert!(kernel.saw_perennial_context);
+    }
+
+    #[test]
+    fn active_slot_resolution_wraps_rotation_boundary_to_year_one() {
+        #[derive(Default)]
+        struct ProbeKernel {
+            saw_decomp_annual: bool,
+            saw_annual_context: bool,
+            saw_perennial_context: bool,
+        }
+
+        impl HillslopeKernel for ProbeKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                match request.phase_class {
+                    HillslopeKernelPhaseClass::DecompositionTransition
+                    | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                        let context = request
+                            .decomposition_context
+                            .expect("decomposition phases should carry decomposition context");
+                        self.saw_decomp_annual = context.management_class
+                            == HillslopeDecompositionManagementClass::AnnualOrFallow;
+                    }
+                    HillslopeKernelPhaseClass::GrowthAnnualTransition => {
+                        self.saw_annual_context = request.growth_context.is_some();
+                    }
+                    HillslopeKernelPhaseClass::GrowthPerennialTransition => {
+                        self.saw_perennial_context = request.growth_context.is_some();
+                    }
+                    HillslopeKernelPhaseClass::Hydrology => {}
+                }
+
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-ACTIVE-SLOT",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = ProbeKernel::default();
+        let surface = seeded_multislot_rotation_surface(4.0, 200.0);
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("rotation-boundary slot resolution should succeed");
+
+        assert!(report.scheduler_report.is_success());
+        assert!(kernel.saw_decomp_annual);
+        assert!(kernel.saw_annual_context);
+        assert!(!kernel.saw_perennial_context);
+    }
+
+    #[test]
+    fn active_slot_resolution_rejects_ambiguous_slot_candidates() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_multislot_rotation_surface(1.0, 200.0);
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0002_year_in_rotation"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("ambiguous slot candidate must return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-PLDISP-E-006"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+    }
+
+    #[test]
+    fn active_slot_resolution_rejects_missing_active_crop_for_day() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 30.0, 1.0);
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+            BoundaryValue::scalar(2.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_0002_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+            BoundaryValue::scalar(120.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+            BoundaryValue::scalar(150.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdplt"),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdharv"),
+            BoundaryValue::scalar(240.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_rw"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0002_resmgt"),
+            BoundaryValue::scalar(6.0),
+        );
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("missing active crop must return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-PLDISP-E-008"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+    }
+
+    #[test]
+    fn active_slot_resolution_rejects_ambiguous_active_crops_for_day() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 210.0, 1.0);
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+            BoundaryValue::scalar(2.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_schedule_slot_0001_crop_0002_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_imngmt"),
+            BoundaryValue::scalar(3.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+            BoundaryValue::scalar(180.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+            BoundaryValue::scalar(300.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdplt"),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdharv"),
+            BoundaryValue::scalar(240.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0002_rw"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0002_resmgt"),
+            BoundaryValue::scalar(6.0),
+        );
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("ambiguous active crop must return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::DecompositionTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 3);
+        assert_eq!(
+            report.phase_reports[2].decision_status.message_id(),
+            "HS-PLDISP-E-009"
+        );
+        assert_eq!(
+            report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+    }
+
+    #[test]
     fn decomposition_boundary_missing_required_symbol_returns_typed_failure() {
         #[derive(Default)]
         struct NoopKernel {
@@ -2278,7 +3517,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         let mut surface = seeded_growth_runtime_surface(1.0);
         surface
             .state_surface
-            .remove(&BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"));
+            .remove(&BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"));
 
         let report = scheduler
             .execute_with_kernel(&topology_report, &mut kernel, surface)
