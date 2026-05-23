@@ -8,12 +8,15 @@ use std::fmt;
 
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeActiveGrazingCycle, HillslopeAnnualDecompositionAction,
-    HillslopeAnnualDecompositionControl, HillslopeConsumerAdapter,
-    HillslopeDecompositionKernelContext, HillslopeDecompositionManagementClass,
-    HillslopeDecompositionTransitionControl, HillslopeDecompositionTransitionPayload,
-    HillslopeGrowthKernelContext, HillslopeGrowthManagementClass, HillslopeKernel,
-    HillslopeKernelPhaseClass, HillslopeKernelRequest, HillslopePerennialDecompositionAction,
-    HillslopePerennialDecompositionControl, KernelWritebackApplyResult, WritebackDecisionOutcome,
+    HillslopeAnnualDecompositionControl, HillslopeAnnualGrowthAction, HillslopeAnnualGrowthControl,
+    HillslopeConsumerAdapter, HillslopeDecompositionKernelContext,
+    HillslopeDecompositionManagementClass, HillslopeDecompositionTransitionControl,
+    HillslopeDecompositionTransitionPayload, HillslopeGrowthKernelContext,
+    HillslopeGrowthManagementClass, HillslopeGrowthStateSurface, HillslopeGrowthTransitionControl,
+    HillslopeGrowthTransitionPayload, HillslopeKernel, HillslopeKernelPhaseClass,
+    HillslopeKernelRequest, HillslopePerennialDecompositionAction,
+    HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
+    HillslopePerennialGrowthControl, KernelWritebackApplyResult, WritebackDecisionOutcome,
     WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
@@ -50,6 +53,13 @@ const PL_DECOMP_SUMSRM_SEED_SYMBOL: &str = "sumsrm_seed";
 const PL_ORDER_DECOMP_BEFORE_SOIL_SYMBOL: &str = "pl_order_decomp_before_soil";
 const PL_ORDER_GROWTH_AFTER_DECOMP_SYMBOL: &str = "pl_order_growth_after_decomp";
 const PL_ORDER_WATBAL_AFTER_GROWTH_SYMBOL: &str = "pl_order_watbal_after_growth";
+const PL_GROWTH_STATE_SUMGDD_SYMBOL: &str = "sumgdd";
+const PL_GROWTH_STATE_VDMT_SYMBOL: &str = "vdmt";
+const PL_GROWTH_STATE_CANCOV_SYMBOL: &str = "cancov";
+const PL_GROWTH_STATE_LAI_SYMBOL: &str = "lai";
+const PL_GROWTH_STATE_RTMASS_SYMBOL: &str = "rtmass";
+const PL_GROWTH_STATE_RTD_SYMBOL: &str = "rtd";
+const PL_GROWTH_STATE_HIA_SYMBOL: &str = "hia";
 const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
 const MANAGEMENT_CLASS_EPSILON: f64 = 1.0e-9;
 
@@ -388,6 +398,24 @@ pub enum HillslopeGrowthBoundaryError {
         symbol: BoundarySymbol,
         value: f64,
     },
+    NonIntegralRequiredStateSymbol {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    StateSymbolValueOutOfRange {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: usize,
+        min_allowed: usize,
+        max_allowed: usize,
+    },
+    InvalidTransitionPayloadState {
+        phase: HillslopePhase,
+        symbol: BoundarySymbol,
+        value: f64,
+        reason: &'static str,
+    },
     ActiveSlotResolution {
         phase: HillslopePhase,
         source: HillslopePlActiveSlotResolutionError,
@@ -402,6 +430,9 @@ impl HillslopeGrowthBoundaryError {
             Self::NonFiniteRequiredStateSymbol { .. } => "HS-GROWTH-E-002",
             Self::InvalidOrderingFlagValue { .. } => "HS-GROWTH-E-003",
             Self::UnsupportedManagementClass { .. } => "HS-GROWTH-E-004",
+            Self::NonIntegralRequiredStateSymbol { .. } => "HS-GROWTH-E-005",
+            Self::StateSymbolValueOutOfRange { .. } => "HS-GROWTH-E-006",
+            Self::InvalidTransitionPayloadState { .. } => "HS-GROWTH-E-007",
             Self::ActiveSlotResolution { source, .. } => source.code(),
         }
     }
@@ -411,9 +442,11 @@ impl HillslopeGrowthBoundaryError {
         match self {
             Self::MissingRequiredStateSymbol { .. } => BoundaryClass::MissingRequiredInput,
             Self::NonFiniteRequiredStateSymbol { .. } => BoundaryClass::NonFinite,
-            Self::InvalidOrderingFlagValue { .. } | Self::UnsupportedManagementClass { .. } => {
-                BoundaryClass::DomainViolation
-            }
+            Self::InvalidOrderingFlagValue { .. }
+            | Self::UnsupportedManagementClass { .. }
+            | Self::NonIntegralRequiredStateSymbol { .. }
+            | Self::StateSymbolValueOutOfRange { .. }
+            | Self::InvalidTransitionPayloadState { .. } => BoundaryClass::DomainViolation,
             Self::ActiveSlotResolution { source, .. } => source.boundary_class(),
         }
     }
@@ -466,6 +499,48 @@ impl fmt::Display for HillslopeGrowthBoundaryError {
                 phase.as_str(),
                 symbol,
                 value
+            ),
+            Self::NonIntegralRequiredStateSymbol {
+                phase,
+                symbol,
+                value,
+            } => write!(
+                f,
+                "{}: phase {} growth state symbol {} must be integral, observed {}",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value
+            ),
+            Self::StateSymbolValueOutOfRange {
+                phase,
+                symbol,
+                value,
+                min_allowed,
+                max_allowed,
+            } => write!(
+                f,
+                "{}: phase {} growth state symbol {}={} outside allowed range [{}..={}]",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value,
+                min_allowed,
+                max_allowed
+            ),
+            Self::InvalidTransitionPayloadState {
+                phase,
+                symbol,
+                value,
+                reason,
+            } => write!(
+                f,
+                "{}: phase {} invalid growth transition payload {}={} ({})",
+                self.code(),
+                phase.as_str(),
+                symbol,
+                value,
+                reason
             ),
             Self::ActiveSlotResolution { phase, source } => {
                 write!(f, "{}: phase {} {}", self.code(), phase.as_str(), source)
@@ -1309,6 +1384,13 @@ fn growth_phase_dispatch_for_state(
     );
     let imngmt = require_finite_state_value(phase, state_surface, imngmt_symbol.as_str())?;
     let management_class = normalize_management_class(phase, imngmt, imngmt_symbol.as_str())?;
+    let runtime_day = require_integral_state_value_in_range_for_growth(
+        phase,
+        state_surface,
+        PL_RUNTIME_DAY_SYMBOL,
+        1,
+        366,
+    )?;
     let order_growth_after_decomp = require_ordering_flag(
         phase,
         state_surface,
@@ -1321,6 +1403,7 @@ fn growth_phase_dispatch_for_state(
         PL_ORDER_WATBAL_AFTER_GROWTH_SYMBOL,
         1.0,
     )?;
+    let state_before = require_growth_state_surface(phase, state_surface)?;
 
     match phase {
         HillslopePhase::AnnualGrowthTransition => {
@@ -1329,37 +1412,102 @@ fn growth_phase_dispatch_for_state(
             }
             debug_assert!(management_class == 1 || management_class == 3);
 
-            for symbol in [
-                pl_growth_slot_crop_symbol(
-                    "jdharv",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_growth_slot_crop_symbol(
-                    "jdplt",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_growth_slot_crop_symbol(
-                    "rw",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_decomp_slot_crop_symbol(
-                    "resmgt",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-            ] {
-                let _ = require_finite_state_value(phase, state_surface, symbol.as_str())?;
-            }
+            let jdharv_symbol = pl_growth_slot_crop_symbol(
+                "jdharv",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let jdplt_symbol = pl_growth_slot_crop_symbol(
+                "jdplt",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let rw_symbol = pl_growth_slot_crop_symbol(
+                "rw",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let resmgt_symbol = pl_decomp_slot_crop_symbol(
+                "resmgt",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+
+            let jdharv = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                jdharv_symbol.as_str(),
+                1,
+                366,
+            )?;
+            let jdplt = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                jdplt_symbol.as_str(),
+                1,
+                366,
+            )?;
+            let rw = require_finite_state_value(phase, state_surface, rw_symbol.as_str())?;
+            let _resmgt = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                resmgt_symbol.as_str(),
+                1,
+                6,
+            )?;
+
+            let active_action = if runtime_day == jdplt {
+                HillslopeAnnualGrowthAction::PlantingReset
+            } else if runtime_day == jdharv {
+                HillslopeAnnualGrowthAction::HarvestReset
+            } else if day_within_closed_window(runtime_day, jdplt, jdharv) {
+                HillslopeAnnualGrowthAction::None
+            } else {
+                HillslopeAnnualGrowthAction::SenescenceReset
+            };
+
+            let state_after = match active_action {
+                HillslopeAnnualGrowthAction::None => state_before,
+                HillslopeAnnualGrowthAction::PlantingReset
+                | HillslopeAnnualGrowthAction::HarvestReset
+                | HillslopeAnnualGrowthAction::SenescenceReset => {
+                    reset_growth_state_surface(state_before)
+                }
+            };
+
+            let transition_payload = HillslopeGrowthTransitionPayload {
+                active_slot_index: active_slot_selection.slot_index,
+                active_crop_slot_index: active_slot_selection.crop_slot_index,
+                runtime_day_of_year: usize_to_u16_for_growth(
+                    phase,
+                    BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
+                    runtime_day,
+                )?,
+                state_before,
+                state_after,
+                control: HillslopeGrowthTransitionControl::Annual(HillslopeAnnualGrowthControl {
+                    jdharv: usize_to_u16_for_growth(
+                        phase,
+                        BoundarySymbol::from(jdharv_symbol.as_str()),
+                        jdharv,
+                    )?,
+                    jdplt: usize_to_u16_for_growth(
+                        phase,
+                        BoundarySymbol::from(jdplt_symbol.as_str()),
+                        jdplt,
+                    )?,
+                    rw,
+                    active_action,
+                }),
+            };
 
             Ok(GrowthPhaseDispatch::Execute(
                 HillslopeGrowthKernelContext::new(
                     HillslopeGrowthManagementClass::AnnualOrFallow,
                     order_growth_after_decomp,
                     order_watbal_after_growth,
-                ),
+                )
+                .with_transition_payload(transition_payload),
             ))
         }
         HillslopePhase::PerennialGrowthTransition => {
@@ -1368,46 +1516,329 @@ fn growth_phase_dispatch_for_state(
             }
             debug_assert!(management_class == 2);
 
-            for symbol in [
-                pl_growth_slot_crop_symbol(
-                    "jdharv",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
+            let jdharv_symbol = pl_growth_slot_crop_symbol(
+                "jdharv",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let jdplt_symbol = pl_growth_slot_crop_symbol(
+                "jdplt",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let rw_symbol = pl_growth_slot_crop_symbol(
+                "rw",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let jdstop_symbol = pl_growth_slot_crop_symbol(
+                "jdstop",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+            let mgtopt_symbol = pl_growth_slot_crop_symbol(
+                "mgtopt",
+                active_slot_selection.slot_index,
+                active_slot_selection.crop_slot_index,
+            );
+
+            let jdharv = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                jdharv_symbol.as_str(),
+                0,
+                366,
+            )?;
+            let jdplt = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                jdplt_symbol.as_str(),
+                0,
+                366,
+            )?;
+            let rw = require_finite_state_value(phase, state_surface, rw_symbol.as_str())?;
+            let jdstop = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                jdstop_symbol.as_str(),
+                0,
+                366,
+            )?;
+            let mgtopt = require_integral_state_value_in_range_for_growth(
+                phase,
+                state_surface,
+                mgtopt_symbol.as_str(),
+                1,
+                3,
+            )?;
+
+            let active_action = if runtime_day == jdplt {
+                HillslopePerennialGrowthAction::PlantingReset
+            } else if jdstop != 0 && runtime_day == jdstop {
+                HillslopePerennialGrowthAction::StopReset
+            } else {
+                HillslopePerennialGrowthAction::None
+            };
+
+            let state_after = match active_action {
+                HillslopePerennialGrowthAction::None => state_before,
+                HillslopePerennialGrowthAction::PlantingReset
+                | HillslopePerennialGrowthAction::StopReset => {
+                    reset_growth_state_surface(state_before)
+                }
+            };
+
+            let transition_payload = HillslopeGrowthTransitionPayload {
+                active_slot_index: active_slot_selection.slot_index,
+                active_crop_slot_index: active_slot_selection.crop_slot_index,
+                runtime_day_of_year: usize_to_u16_for_growth(
+                    phase,
+                    BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL),
+                    runtime_day,
+                )?,
+                state_before,
+                state_after,
+                control: HillslopeGrowthTransitionControl::Perennial(
+                    HillslopePerennialGrowthControl {
+                        jdharv: usize_to_u16_for_growth(
+                            phase,
+                            BoundarySymbol::from(jdharv_symbol.as_str()),
+                            jdharv,
+                        )?,
+                        jdplt: usize_to_u16_for_growth(
+                            phase,
+                            BoundarySymbol::from(jdplt_symbol.as_str()),
+                            jdplt,
+                        )?,
+                        jdstop: usize_to_u16_for_growth(
+                            phase,
+                            BoundarySymbol::from(jdstop_symbol.as_str()),
+                            jdstop,
+                        )?,
+                        mgtopt: usize_to_u8_for_growth(
+                            phase,
+                            BoundarySymbol::from(mgtopt_symbol.as_str()),
+                            mgtopt,
+                        )?,
+                        rw,
+                        active_action,
+                    },
                 ),
-                pl_growth_slot_crop_symbol(
-                    "jdplt",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_growth_slot_crop_symbol(
-                    "rw",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_growth_slot_crop_symbol(
-                    "jdstop",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-                pl_growth_slot_crop_symbol(
-                    "mgtopt",
-                    active_slot_selection.slot_index,
-                    active_slot_selection.crop_slot_index,
-                ),
-            ] {
-                let _ = require_finite_state_value(phase, state_surface, symbol.as_str())?;
-            }
+            };
 
             Ok(GrowthPhaseDispatch::Execute(
                 HillslopeGrowthKernelContext::new(
                     HillslopeGrowthManagementClass::Perennial,
                     order_growth_after_decomp,
                     order_watbal_after_growth,
-                ),
+                )
+                .with_transition_payload(transition_payload),
             ))
         }
         _ => Ok(GrowthPhaseDispatch::Skip),
     }
+}
+
+fn require_growth_state_surface(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Result<HillslopeGrowthStateSurface, HillslopeGrowthBoundaryError> {
+    let sumgdd = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_SUMGDD_SYMBOL)?;
+    let vdmt = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_VDMT_SYMBOL)?;
+    let cancov = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_CANCOV_SYMBOL)?;
+    let lai = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_LAI_SYMBOL)?;
+    let rtmass = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_RTMASS_SYMBOL)?;
+    let rtd = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_RTD_SYMBOL)?;
+    let hia = require_finite_state_value(phase, state_surface, PL_GROWTH_STATE_HIA_SYMBOL)?;
+
+    for (symbol, value, minimum, maximum, reason) in [
+        (
+            PL_GROWTH_STATE_SUMGDD_SYMBOL,
+            sumgdd,
+            Some(0.0),
+            None,
+            "sumgdd must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_VDMT_SYMBOL,
+            vdmt,
+            Some(0.0),
+            None,
+            "vdmt must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_CANCOV_SYMBOL,
+            cancov,
+            Some(0.0),
+            Some(0.999),
+            "cancov must be within [0, 0.999]",
+        ),
+        (
+            PL_GROWTH_STATE_LAI_SYMBOL,
+            lai,
+            Some(0.0),
+            None,
+            "lai must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_RTMASS_SYMBOL,
+            rtmass,
+            Some(0.0),
+            None,
+            "rtmass must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_RTD_SYMBOL,
+            rtd,
+            Some(0.0),
+            None,
+            "rtd must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_HIA_SYMBOL,
+            hia,
+            Some(0.0),
+            Some(1.0),
+            "hia must be within [0, 1]",
+        ),
+    ] {
+        if let Some(minimum) = minimum {
+            if value < minimum {
+                return Err(
+                    HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(symbol),
+                        value,
+                        reason,
+                    },
+                );
+            }
+        }
+        if let Some(maximum) = maximum {
+            if value > maximum {
+                return Err(
+                    HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                        phase,
+                        symbol: BoundarySymbol::from(symbol),
+                        value,
+                        reason,
+                    },
+                );
+            }
+        }
+    }
+
+    Ok(HillslopeGrowthStateSurface {
+        sumgdd,
+        vdmt,
+        cancov,
+        lai,
+        rtmass,
+        rtd,
+        hia,
+    })
+}
+
+fn reset_growth_state_surface(_state: HillslopeGrowthStateSurface) -> HillslopeGrowthStateSurface {
+    HillslopeGrowthStateSurface {
+        sumgdd: 0.0,
+        vdmt: 0.0,
+        cancov: 0.0,
+        lai: 0.0,
+        rtmass: 0.0,
+        rtd: 0.0,
+        hia: 0.0,
+    }
+}
+
+fn day_within_closed_window(day: usize, start: usize, end: usize) -> bool {
+    if start <= end {
+        day >= start && day <= end
+    } else {
+        day >= start || day <= end
+    }
+}
+
+#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+fn require_integral_state_value_for_growth(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+) -> Result<usize, HillslopeGrowthBoundaryError> {
+    let value = require_finite_state_value(phase, state_surface, symbol)?;
+    let rounded = value.round();
+    if (value - rounded).abs() > MANAGEMENT_CLASS_EPSILON {
+        return Err(
+            HillslopeGrowthBoundaryError::NonIntegralRequiredStateSymbol {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+            },
+        );
+    }
+    if rounded < 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason: "integral growth symbol must be non-negative",
+            },
+        );
+    }
+    Ok(rounded as usize)
+}
+
+fn require_integral_state_value_in_range_for_growth(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &str,
+    min_allowed: usize,
+    max_allowed: usize,
+) -> Result<usize, HillslopeGrowthBoundaryError> {
+    let value = require_integral_state_value_for_growth(phase, state_surface, symbol)?;
+    if value < min_allowed || value > max_allowed {
+        return Err(HillslopeGrowthBoundaryError::StateSymbolValueOutOfRange {
+            phase,
+            symbol: BoundarySymbol::from(symbol),
+            value,
+            min_allowed,
+            max_allowed,
+        });
+    }
+    Ok(value)
+}
+
+fn usize_to_u16_for_growth(
+    phase: HillslopePhase,
+    symbol: BoundarySymbol,
+    value: usize,
+) -> Result<u16, HillslopeGrowthBoundaryError> {
+    u16::try_from(value).map_err(
+        |_| HillslopeGrowthBoundaryError::StateSymbolValueOutOfRange {
+            phase,
+            symbol,
+            value,
+            min_allowed: 0,
+            max_allowed: usize::from(u16::MAX),
+        },
+    )
+}
+
+fn usize_to_u8_for_growth(
+    phase: HillslopePhase,
+    symbol: BoundarySymbol,
+    value: usize,
+) -> Result<u8, HillslopeGrowthBoundaryError> {
+    u8::try_from(value).map_err(
+        |_| HillslopeGrowthBoundaryError::StateSymbolValueOutOfRange {
+            phase,
+            symbol,
+            value,
+            min_allowed: 0,
+            max_allowed: usize::from(u8::MAX),
+        },
+    )
 }
 
 fn require_ordering_flag(
@@ -3414,11 +3845,13 @@ mod tests {
 
     use openwepp_kernel_contract::{
         BoundarySymbol, BoundaryValue, HillslopeAnnualDecompositionAction,
-        HillslopeAnnualDecompositionControl, HillslopeConsumerAdapter,
+        HillslopeAnnualDecompositionControl, HillslopeAnnualGrowthAction,
+        HillslopeAnnualGrowthControl, HillslopeConsumerAdapter,
         HillslopeDecompositionManagementClass, HillslopeDecompositionTransitionControl,
-        HillslopeGrowthManagementClass, HillslopeKernel, HillslopeKernelPhaseClass,
-        HillslopeKernelRequest, HillslopePerennialDecompositionAction,
-        HillslopePerennialDecompositionControl, KernelRunResponse, KernelWritebackPayload,
+        HillslopeGrowthManagementClass, HillslopeGrowthTransitionControl, HillslopeKernel,
+        HillslopeKernelPhaseClass, HillslopeKernelRequest, HillslopePerennialDecompositionAction,
+        HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
+        HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackPayload,
         WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
     };
     use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
@@ -3528,6 +3961,13 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"),
             BoundaryValue::scalar(1.3),
         );
+        state_surface.insert(BoundarySymbol::from("sumgdd"), BoundaryValue::scalar(640.0));
+        state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(2.4));
+        state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.65));
+        state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.1));
+        state_surface.insert(BoundarySymbol::from("rtmass"), BoundaryValue::scalar(1.0));
+        state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.35));
+        state_surface.insert(BoundarySymbol::from("hia"), BoundaryValue::scalar(0.45));
         state_surface.insert(
             BoundarySymbol::from("iresd_seed"),
             BoundaryValue::scalar(3.0),
@@ -4452,6 +4892,18 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                             context.management_class,
                             HillslopeGrowthManagementClass::AnnualOrFallow
                         );
+                        let transition_payload = context
+                            .transition_payload
+                            .expect("annual growth context should carry transition payload");
+                        assert!(matches!(
+                            transition_payload.control,
+                            HillslopeGrowthTransitionControl::Annual(
+                                HillslopeAnnualGrowthControl {
+                                    active_action: HillslopeAnnualGrowthAction::None,
+                                    ..
+                                }
+                            )
+                        ));
                         self.annual += 1;
                     }
                     HillslopeKernelPhaseClass::GrowthPerennialTransition => {
@@ -4547,6 +4999,18 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                             context.management_class,
                             HillslopeGrowthManagementClass::Perennial
                         );
+                        let transition_payload = context
+                            .transition_payload
+                            .expect("perennial growth context should carry transition payload");
+                        assert!(matches!(
+                            transition_payload.control,
+                            HillslopeGrowthTransitionControl::Perennial(
+                                HillslopePerennialGrowthControl {
+                                    active_action: HillslopePerennialGrowthAction::None,
+                                    ..
+                                }
+                            )
+                        ));
                         self.perennial += 1;
                     }
                     HillslopeKernelPhaseClass::Hydrology => {
@@ -5137,6 +5601,98 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
         );
         assert_eq!(
             report.phase_reports[2].decision_status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+    }
+
+    #[test]
+    fn pl13_contract_conformance_rejects_missing_growth_state_surface() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_growth_runtime_surface(1.0);
+        surface
+            .state_surface
+            .remove(&BoundarySymbol::from("sumgdd"));
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("missing growth transition state should return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::AnnualGrowthTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 5);
+        assert_eq!(
+            report.phase_reports[4].decision_status.message_id(),
+            "HS-GROWTH-E-001"
+        );
+        assert_eq!(
+            report.phase_reports[4].decision_status.boundary_class(),
+            BoundaryClass::MissingRequiredInput
+        );
+    }
+
+    #[test]
+    fn pl13_contract_conformance_rejects_growth_state_domain_violation() {
+        #[derive(Default)]
+        struct NoopKernel;
+
+        impl HillslopeKernel for NoopKernel {
+            fn run_hillslope_phase(
+                &mut self,
+                _request: &HillslopeKernelRequest<'_>,
+            ) -> KernelRunResponse {
+                let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                    SimulationPhase::HillslopeKernel,
+                    "HSCHED-TEST-NOOP",
+                )
+                .expect("status should construct");
+                KernelRunResponse::new(status, KernelWritebackPayload::empty())
+            }
+        }
+
+        let topology_report = valid_topology_report();
+        let scheduler = HillslopePhaseScheduler::canonical();
+        let mut kernel = NoopKernel;
+        let mut surface = seeded_growth_runtime_surface(1.0);
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(1.1));
+
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, surface)
+            .expect("invalid growth transition state should return typed report");
+
+        assert_eq!(
+            report.scheduler_report.halted_phase,
+            Some(HillslopePhase::AnnualGrowthTransition)
+        );
+        assert_eq!(report.phase_reports.len(), 5);
+        assert_eq!(
+            report.phase_reports[4].decision_status.message_id(),
+            "HS-GROWTH-E-007"
+        );
+        assert_eq!(
+            report.phase_reports[4].decision_status.boundary_class(),
             BoundaryClass::DomainViolation
         );
     }

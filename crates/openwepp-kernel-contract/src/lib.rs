@@ -422,6 +422,73 @@ pub struct HillslopeDecompositionTransitionPayload {
     pub control: HillslopeDecompositionTransitionControl,
 }
 
+/// Growth state surface consumed and updated by growth transition controls.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeGrowthStateSurface {
+    pub sumgdd: f64,
+    pub vdmt: f64,
+    pub cancov: f64,
+    pub lai: f64,
+    pub rtmass: f64,
+    pub rtd: f64,
+    pub hia: f64,
+}
+
+/// Active annual growth transition selected for runtime day.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopeAnnualGrowthAction {
+    None,
+    PlantingReset,
+    HarvestReset,
+    SenescenceReset,
+}
+
+/// Annual growth transition-control payload consumed by growth dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeAnnualGrowthControl {
+    pub jdharv: u16,
+    pub jdplt: u16,
+    pub rw: f64,
+    pub active_action: HillslopeAnnualGrowthAction,
+}
+
+/// Active perennial growth transition selected for runtime day.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HillslopePerennialGrowthAction {
+    None,
+    PlantingReset,
+    StopReset,
+}
+
+/// Perennial growth transition-control payload consumed by growth dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopePerennialGrowthControl {
+    pub jdharv: u16,
+    pub jdplt: u16,
+    pub jdstop: u16,
+    pub mgtopt: u8,
+    pub rw: f64,
+    pub active_action: HillslopePerennialGrowthAction,
+}
+
+/// Typed transition-control payload consumed by growth dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HillslopeGrowthTransitionControl {
+    Annual(HillslopeAnnualGrowthControl),
+    Perennial(HillslopePerennialGrowthControl),
+}
+
+/// Typed growth transition payload assembled by scheduler dispatch.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HillslopeGrowthTransitionPayload {
+    pub active_slot_index: usize,
+    pub active_crop_slot_index: usize,
+    pub runtime_day_of_year: u16,
+    pub state_before: HillslopeGrowthStateSurface,
+    pub state_after: HillslopeGrowthStateSurface,
+    pub control: HillslopeGrowthTransitionControl,
+}
+
 /// Typed phase class for hillslope kernel dispatch.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum HillslopeKernelPhaseClass {
@@ -467,6 +534,7 @@ pub struct HillslopeGrowthKernelContext {
     pub management_class: HillslopeGrowthManagementClass,
     pub order_growth_after_decomp: f64,
     pub order_watbal_after_growth: f64,
+    pub transition_payload: Option<HillslopeGrowthTransitionPayload>,
 }
 
 impl HillslopeGrowthKernelContext {
@@ -480,7 +548,17 @@ impl HillslopeGrowthKernelContext {
             management_class,
             order_growth_after_decomp,
             order_watbal_after_growth,
+            transition_payload: None,
         }
+    }
+
+    #[must_use]
+    pub const fn with_transition_payload(
+        mut self,
+        transition_payload: HillslopeGrowthTransitionPayload,
+    ) -> Self {
+        self.transition_payload = Some(transition_payload);
+        self
     }
 }
 
@@ -1107,6 +1185,47 @@ mod tests {
         };
         let context = HillslopeDecompositionKernelContext::new(
             HillslopeDecompositionManagementClass::AnnualOrFallow,
+            1.0,
+            1.0,
+        )
+        .with_transition_payload(payload);
+
+        assert_eq!(context.transition_payload, Some(payload));
+    }
+
+    #[test]
+    fn growth_context_can_carry_typed_transition_payload() {
+        let payload = HillslopeGrowthTransitionPayload {
+            active_slot_index: 1,
+            active_crop_slot_index: 1,
+            runtime_day_of_year: 200,
+            state_before: HillslopeGrowthStateSurface {
+                sumgdd: 800.0,
+                vdmt: 2.4,
+                cancov: 0.65,
+                lai: 2.1,
+                rtmass: 1.0,
+                rtd: 0.35,
+                hia: 0.45,
+            },
+            state_after: HillslopeGrowthStateSurface {
+                sumgdd: 0.0,
+                vdmt: 0.0,
+                cancov: 0.0,
+                lai: 0.0,
+                rtmass: 0.0,
+                rtd: 0.0,
+                hia: 0.0,
+            },
+            control: HillslopeGrowthTransitionControl::Annual(HillslopeAnnualGrowthControl {
+                jdharv: 240,
+                jdplt: 120,
+                rw: 1.3,
+                active_action: HillslopeAnnualGrowthAction::HarvestReset,
+            }),
+        };
+        let context = HillslopeGrowthKernelContext::new(
+            HillslopeGrowthManagementClass::AnnualOrFallow,
             1.0,
             1.0,
         )

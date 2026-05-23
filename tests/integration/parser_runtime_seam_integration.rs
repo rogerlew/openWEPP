@@ -25,7 +25,8 @@ use openwepp_input_contract::parsers::{
     soil::{SoilParserOptions, parse_soil},
 };
 use openwepp_kernel_contract::{
-    BoundarySymbol, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
+    BoundarySymbol, HillslopeAnnualGrowthAction, HillslopeGrowthTransitionControl, HillslopeKernel,
+    HillslopeKernelRequest, HillslopePerennialGrowthAction, KernelRunResponse,
     KernelWritebackPayload, WatershedKernel, WatershedKernelRequest,
 };
 use openwepp_sim_contract::status::{SimulationPhase, SimulationStatus};
@@ -943,6 +944,162 @@ fn pl10b_contract_conformance_rejects_empty_perennial_grazing_cardinality() {
     ));
 }
 
+#[test]
+fn pl13_contract_conformance_scheduler_emits_annual_growth_transition_payload() {
+    struct AnnualGrowthProbeKernel {
+        saw_annual_payload: bool,
+    }
+
+    impl HillslopeKernel for AnnualGrowthProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::GrowthAnnualTransition
+            {
+                let context = request
+                    .growth_context
+                    .expect("annual growth phase should carry growth context");
+                let payload = context
+                    .transition_payload
+                    .expect("annual growth context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeGrowthTransitionControl::Annual(control)
+                        if control.active_action == HillslopeAnnualGrowthAction::HarvestReset
+                ));
+                assert!(payload.state_after.sumgdd.abs() <= f64::EPSILON);
+                assert!(payload.state_after.vdmt.abs() <= f64::EPSILON);
+                self.saw_annual_payload = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL13-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let mut surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build");
+
+    let harvest_day = surface
+        .state_surface
+        .get(&BoundarySymbol::from(
+            "pl_growth_slot_0001_crop_0001_jdharv",
+        ))
+        .expect("annual projection should include jdharv")
+        .as_f64();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), harvest_day.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = AnnualGrowthProbeKernel {
+        saw_annual_payload: false,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute annual growth payload path");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_annual_payload);
+}
+
+#[test]
+fn pl13_contract_conformance_scheduler_emits_perennial_growth_transition_payload() {
+    struct PerennialGrowthProbeKernel {
+        saw_perennial_payload: bool,
+    }
+
+    impl HillslopeKernel for PerennialGrowthProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::GrowthPerennialTransition
+            {
+                let context = request
+                    .growth_context
+                    .expect("perennial growth phase should carry growth context");
+                let payload = context
+                    .transition_payload
+                    .expect("perennial growth context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeGrowthTransitionControl::Perennial(control)
+                        if control.active_action == HillslopePerennialGrowthAction::StopReset
+                ));
+                assert!(payload.state_after.sumgdd.abs() <= f64::EPSILON);
+                assert!(payload.state_after.vdmt.abs() <= f64::EPSILON);
+                self.saw_perennial_payload = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL13-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 2,
+        cut_days: Vec::new(),
+        grazing_cycles: vec![YearlyPerennialGrazingCycle {
+            animal: 20.0,
+            area: 1200.0,
+            bodywt: 450.0,
+            digest: 0.62,
+            gday: 150,
+            gend: 200,
+        }],
+    });
+
+    let mut surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build for perennial branch");
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 330.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = PerennialGrowthProbeKernel {
+        saw_perennial_payload: false,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute perennial growth payload path");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_perennial_payload);
+}
+
 fn assert_state_value(
     surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
     symbol: &str,
@@ -1253,6 +1410,13 @@ fn assert_merged_pl_seed_aliases(
         "frmove",
         "rw",
         "resmgt",
+        "sumgdd",
+        "vdmt",
+        "cancov",
+        "lai",
+        "rtmass",
+        "rtd",
+        "hia",
         "iresd_seed",
         "sumrtm_seed",
         "sumsrm_seed",

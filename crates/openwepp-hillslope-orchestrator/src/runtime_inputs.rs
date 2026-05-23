@@ -914,6 +914,17 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         BoundarySymbol::from("pl_order_watbal_after_growth"),
         BoundaryValue::scalar(1.0),
     );
+    for (symbol, value) in [
+        ("sumgdd", 0.0),
+        ("vdmt", 0.0),
+        ("cancov", 0.0),
+        ("lai", 0.0),
+        ("rtmass", 0.0),
+        ("rtd", 0.0),
+        ("hia", 0.0),
+    ] {
+        pl_growth_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
 
     for (ofe_position, initial_ref) in management.schedule.ofe_initial_refs.iter().enumerate() {
         let ofe_index = ofe_position + 1;

@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -89,7 +89,7 @@ Out of scope:
 | `FERIND`, `PSZIND` | `fraction` | Fertility and residue particle-size decomposition modifiers. | residue updater | cropland decomposition branch logic |
 | `Bc` | `kg m^-2` | Daily disappearance of rangeland litter from insects/rodents. | rangeland updater | rangeland decomposition branch logic |
 
-## Algorithm State Surfaces (PL12 Decomposition/Resup Transition Execution)
+## Algorithm State Surfaces (PL12/PL13 Transition Execution)
 
 ### Required Inputs
 
@@ -99,6 +99,8 @@ Out of scope:
 | Decomposition seed state | `iresd_seed`, `sumrtm_seed`, `sumsrm_seed` |
 | Annual transition controls | `resmgt`, `jdherb`, `jdburn`, `jdslge`, `jdcut`, `jdmove`, `fbrnag`, `fbrnog`, `frcut`, `frmove` |
 | Perennial transition controls | `mgtopt`, `ncut`, `ncycle`, `cutday[*]`, `gday[*]`, `gend[*]`, `animal[*]`, `bodywt[*]`, `area[*]`, `digest[*]` |
+| Growth transition controls | `jdplt`, `jdharv`, `jdstop`, `rw`, `mgtopt`, runtime day-window checks |
+| Growth transition state surface | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
 | Ordering constraints | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp` |
 
 ### Required Outputs
@@ -106,16 +108,17 @@ Out of scope:
 | Surface | Output |
 |---|---|
 | Typed decomposition context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, seed state, transition-control payload, and active day transition selector |
+| Typed growth context | management class (`annual/fallow` or `perennial`), active slot/crop identity, runtime day, growth transition-control payload, and pre/post transition state snapshot for key growth surfaces |
 | Scheduler failure surface | typed hard-fail status when required transition-control inputs are missing/non-finite/out-of-domain/non-contiguous |
 
 ### Mutated State Surfaces
 
-At scheduler/decomposition-dispatch boundary, mutation authority is limited to
+At scheduler transition-dispatch boundaries, mutation authority is limited to
 typed transition-context assembly and typed failure reporting; direct residue
-mass mutation is delegated to decomposition kernel handlers consuming that
-context.
+or growth state mutation is delegated to kernel handlers consuming the typed
+contexts.
 
-## Algorithm Specification (PL12 Scheduler Decomposition Transition Authority)
+## Algorithm Specification (PL12/PL13 Scheduler Transition Authority)
 
 1. Resolve active PL slot/crop from schedule topology and runtime `day/year`
    controls.
@@ -144,8 +147,27 @@ context.
    are typed hard failures and must not be silently clamped/defaulted.
 7. Emit typed decomposition context for downstream kernel execution only after
    all guards pass.
+8. Growth-transition dispatch consumes active slot/crop controls and runtime
+   day, and validates key growth state surfaces:
+   `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
+9. Annual/fallow growth branch emits deterministic action signaling using
+   day-window logic:
+   - `planting_reset` on `day == jdplt`,
+   - `harvest_reset` on `day == jdharv`,
+   - `senescence_reset` outside the active annual growth window,
+   - `none` otherwise.
+10. Perennial growth branch emits deterministic action signaling:
+   - `planting_reset` on `day == jdplt`,
+   - `stop_reset` on `day == jdstop` when `jdstop > 0`,
+   - `none` otherwise.
+11. For reset actions, scheduler emits typed growth transition payload with
+    explicit post-transition zero state for:
+    `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
+12. Growth transition payload domains are hard-fail validated (`cancov in
+    [0,0.999]`, `hia in [0,1]`, remaining surfaces non-negative); silent
+    clamping/default behavior is prohibited.
 
-## Branch and Guard Table (PL12 Decomposition Transition Controls)
+## Branch and Guard Table (PL12/PL13 Transition Controls)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
@@ -157,6 +179,9 @@ context.
 | `BR-RES-PL12-PERENNIAL-CUT` | `mgtopt=1` | `cutday[1..ncut]` | runtime | typed hard-fail on cardinality/index closure or day domain violation |
 | `BR-RES-PL12-PERENNIAL-GRAZE` | `mgtopt=2` | `gday/gend/payload[1..ncycle]` | runtime | typed hard-fail on cardinality/index closure, day-window ordering, or payload domain violations |
 | `BR-RES-PL12-PERENNIAL-DORMANT` | `mgtopt=3` | no indexed families | runtime | typed hard-fail if cut/graze payload symbols are present unexpectedly |
+| `BR-RES-PL13-GROWTH-ANNUAL` | annual/fallow branch active | `jdplt`, `jdharv`, growth state surface | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
+| `BR-RES-PL13-GROWTH-PERENNIAL` | perennial branch active | `jdplt`, `jdharv`, `jdstop`, `mgtopt`, growth state surface | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
+| `BR-RES-PL13-GROWTH-RESET` | planting/harvest/stop/senescence action day | growth state surface | runtime | typed hard-fail if reset payload cannot be emitted from valid pre-state domain |
 
 ## Invariants
 
@@ -175,6 +200,8 @@ context.
 | INV-RESIDUE-011 | Coupling payload invariant: residue mass/cover outputs required by ET (`Cr` attenuation in Eq. [5.2.13]) and erosion-adjustment pathways must be present, unit-consistent, and temporally aligned with daily update sequencing. | hard-fail | REF-RESIDUE-CH5-ET, REF-RESIDUE-CH11-EROSION, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-012 | Update-order invariant: daily residue updates must preserve explicit sequence from §9.4 (decomposition, standing-to-flat conversion, cover update, management-day branch, and harvest repartition) without silent reordering. | hard-fail | REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-013 | Governance-range invariant: when crop/operation parameters are applied outside chapter-declared tables or documented limits/assumptions, outputs are non-promotable unless labeled and dispositioned with explicit risk rationale. | governance-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-014 | Growth transition state-domain invariant: scheduler growth transition payload assembly requires finite/non-negative growth state surfaces with bounded canopy and harvest-index domains (`cancov in [0,0.999]`, `hia in [0,1]`). | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-015 | Growth transition reset invariant: reset-class actions (`planting`, `harvest`, `stop`, `senescence`) emit explicit zero-state payloads for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` and do not rely on implicit defaults. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -193,6 +220,8 @@ context.
 | `INV-RESIDUE-011` | runtime | Residue boundary payload validator | Typed hard error on missing/invalid ET or erosion coupling residue payloads | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-012` | runtime | Daily update-order validator | Typed hard error on silent sequencing divergence from §9.4 workflow | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-013` | governance | Review/disposition/promotion checklist | Promotion `HOLD` when out-of-range use lacks explicit labeling/rationale | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-014` | runtime | Growth transition payload state validator | Typed hard error on invalid growth state domain for transition payload assembly | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-015` | runtime | Growth transition reset payload assembler | Typed hard error when required reset-class state projection is missing or malformed | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -305,6 +334,16 @@ Minimum required scenario families for contract conformance:
    - invalid grazing window ordering (`gday>=gend`).
 7. Failure-posture assertion: all invalid transition-control states surface
    typed hard failures with no silent clamp/default behavior.
+8. Growth transition domain rejects for:
+   - missing growth state symbols in transition payload assembly;
+   - out-of-domain growth state values (`cancov > 0.999`, `hia > 1`,
+     negative state surfaces);
+   - non-integral runtime day and growth control day symbols.
+9. Growth transition reset payload obligations:
+   - annual `harvest_reset` and `senescence_reset` emit explicit zero-state
+     post-transition payloads;
+   - perennial `stop_reset` emits explicit zero-state post-transition payload;
+   - no implicit defaults are accepted for reset-class state zeroing.
 
 ## Gap Register
 
@@ -324,3 +363,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit `Cr` variable coverage, replaced mixed-unit rows with explicit unit declarations, and mapped canonical symbols to legacy Chapter-9 variable tokens. |
 | `2026-05-20` | `3` | `Codex` | Verification-fix amendment: completed alias-map coverage for `P` stubble-population state and `Wn` rangeland woody biomass symbol. |
 | `2026-05-23` | `4` | `Codex` | PL12 amendment: added scheduler decomposition-transition algorithm authority, branch/guard table for PL11 payload consumption, constants table, and PL12 test-vector obligations. |
+| `2026-05-23` | `5` | `Codex` | PL13 amendment: added growth-transition branch/reset authority, growth state-domain invariants (`INV-RESIDUE-014/015`), and PL13 growth transition test-vector obligations. |
