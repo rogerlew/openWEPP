@@ -17,8 +17,9 @@ use openwepp_input_contract::parsers::{
     chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
     climate::{ParserMode as ClimateParserMode, parse_climate_from_str},
     management::{
-        ManagementParseOutput, ParseMode as ManagementParseMode, YearlyCroplandBranch,
-        YearlyPerennialData, YearlyScenarioData, parse_management_from_path,
+        ManagementParseOutput, ParseMode as ManagementParseMode, YearlyAnnualExtension,
+        YearlyCroplandBranch, YearlyPerennialData, YearlyPerennialGrazingCycle, YearlyScenarioData,
+        parse_management_from_path,
     },
     slope::{SlopeParserOptions, parse_slope_str},
     soil::{SoilParserOptions, parse_soil},
@@ -760,6 +761,169 @@ fn management_runtime_surface_rejects_unsupported_perennial_option_projection() 
             allowed: "1..3",
         }
     ));
+}
+
+#[test]
+#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
+fn pl10b_contract_conformance_requires_annual_extension_projection_symbols() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 1;
+    match &mut cropland.branch {
+        YearlyCroplandBranch::AnnualOrFallow(annual) => {
+            annual.resmgt = 2;
+            annual.extension = Some(YearlyAnnualExtension::Burn {
+                jdburn: 250,
+                fbmag: 0.30,
+                fbrnog: 0.45,
+            });
+        }
+        YearlyCroplandBranch::Perennial(_) => panic!("fixture should use annual branch"),
+    }
+
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("PL runtime projection should build for annual branch");
+
+    for symbol in [
+        "jdherb", "jdburn", "jdslge", "jdcut", "jdmove", "fbrnag", "fbrnog", "frcut", "frmove",
+    ] {
+        assert_surface_has_symbol(&surface.state_surface, symbol);
+    }
+}
+
+#[test]
+#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
+fn pl10b_contract_conformance_requires_perennial_cutday_indexed_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 1,
+        cut_days: vec![180, 240],
+        grazing_cycles: Vec::new(),
+    });
+
+    let surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect("PL runtime projection should build for perennial cut branch");
+
+    assert_surface_has_symbol(
+        &surfaces.pl_decomp_surface,
+        "pl_decomp_slot_0001_crop_0001_cutday_0001",
+    );
+    assert_surface_has_symbol(
+        &surfaces.pl_decomp_surface,
+        "pl_decomp_slot_0001_crop_0001_cutday_0002",
+    );
+}
+
+#[test]
+#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
+fn pl10b_contract_conformance_requires_perennial_grazing_cycle_payload_projection() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 2,
+        cut_days: Vec::new(),
+        grazing_cycles: vec![
+            YearlyPerennialGrazingCycle {
+                animal: 20.0,
+                area: 1200.0,
+                bodywt: 450.0,
+                digest: 0.62,
+                gday: 150,
+                gend: 170,
+            },
+            YearlyPerennialGrazingCycle {
+                animal: 18.0,
+                area: 1150.0,
+                bodywt: 430.0,
+                digest: 0.60,
+                gday: 200,
+                gend: 220,
+            },
+        ],
+    });
+
+    let surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect("PL runtime projection should build for perennial grazing branch");
+
+    for symbol in [
+        "pl_decomp_slot_0001_crop_0001_gday_0001",
+        "pl_decomp_slot_0001_crop_0001_gend_0001",
+        "pl_decomp_slot_0001_crop_0001_animal_0001",
+        "pl_decomp_slot_0001_crop_0001_bodywt_0001",
+        "pl_decomp_slot_0001_crop_0001_area_0001",
+        "pl_decomp_slot_0001_crop_0001_digest_0001",
+        "pl_decomp_slot_0001_crop_0001_gday_0002",
+        "pl_decomp_slot_0001_crop_0001_gend_0002",
+        "pl_decomp_slot_0001_crop_0001_animal_0002",
+        "pl_decomp_slot_0001_crop_0001_bodywt_0002",
+        "pl_decomp_slot_0001_crop_0001_area_0002",
+        "pl_decomp_slot_0001_crop_0001_digest_0002",
+    ] {
+        assert_surface_has_symbol(&surfaces.pl_decomp_surface, symbol);
+    }
+}
+
+#[test]
+#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
+fn pl10b_contract_conformance_rejects_invalid_grazing_window_domain() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 2,
+        cut_days: Vec::new(),
+        grazing_cycles: vec![YearlyPerennialGrazingCycle {
+            animal: 20.0,
+            area: 1200.0,
+            bodywt: 450.0,
+            digest: 0.62,
+            gday: 220,
+            gend: 200,
+        }],
+    });
+
+    build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("gday >= gend must fail conformance guard");
+}
+
+#[test]
+#[ignore = "PL10b contract conformance gate; expected to fail until PL11 projection implementation"]
+fn pl10b_contract_conformance_rejects_empty_perennial_grazing_cardinality() {
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 2,
+        cut_days: Vec::new(),
+        grazing_cycles: Vec::new(),
+    });
+
+    build_hillslope_pl_runtime_surfaces_from_management(&management)
+        .expect_err("empty grazing cycle cardinality must fail conformance guard");
 }
 
 fn assert_state_value(

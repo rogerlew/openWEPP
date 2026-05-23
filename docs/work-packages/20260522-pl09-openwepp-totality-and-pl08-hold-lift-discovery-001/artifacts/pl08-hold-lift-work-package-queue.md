@@ -14,7 +14,8 @@ Static:
 | wp_id | lane | objective | depends_on | acceptance criteria | required evidence |
 |---|---|---|---|---|---|
 | `PL10-active-slot-authority` | `plant` | Replace first-slot dispatch constants with day-aware active slot/crop resolution per OFE and schedule slot state. | `PL09`, `PL09A` | scheduler dispatch no longer hard-codes `slot_0001/crop_0001`; multi-slot activation tests pass; typed ambiguity/empty-slot errors added | unit/integration tests demonstrating branch selection across rotation year boundaries |
-| `PL11-pl-event-runtime-projection` | `plant` | Expand PL runtime projection to include annual extension controls and perennial event-day/cycle payload arrays (not just counts). | `PL10` | runtime projection emits indexed symbols for cut/grazing/event controls with deterministic naming and bounds checks; typed errors extended | fixture-backed projection tests including annual extension branches and perennial cycles |
+| `PL10b-contract-blind-authority-and-conformance` | `governance+plant` | Author transition-control contract authority blind to openWEPP implementation, derive contract tests, run conformance against implementation, and reconcile gaps before PL11 execution. | `PL10` | canonical contract authority amended with algorithm detail; contract-derived tests authored and executed; gaps classified (`contract`, `implementation`, `authority`) with explicit dispositions | blind-authoring attestation, contract-test spec, execution evidence, and gap-reconciliation matrix |
+| `PL11-pl-event-runtime-projection` | `plant` | Expand PL runtime projection to include annual extension controls and perennial event-day/cycle payload arrays (not just counts). | `PL10b` | runtime projection emits indexed symbols for cut/grazing/event controls with deterministic naming and bounds checks; typed errors extended; PL10b ignored conformance gates pass | fixture-backed projection tests including annual extension branches and perennial cycles; explicit pass of `pl10b_contract_conformance_*` ignored tests |
 | `PL12-decomp-resup-transition-kernel` | `plant` | Implement production decomposition/residue transition execution against typed contexts and projected event controls. | `PL11` | decomposition/residue phases update required pool/state symbols with contract checks and typed failures; no placeholder no-op path | targeted kernel tests, invariants, and residue trajectory checks |
 | `PL13-growth-transition-kernel` | `plant` | Implement production annual/perennial growth transition execution with senescence/harvest transition signaling. | `PL12` | annual/perennial growth transitions execute with day-window logic and state updates (`sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`) | kernel transition tests plus parser/runtime/scheduler integration coverage for both branches |
 | `PL13A-alias-continuity-closure` | `governance` | Close or explicitly disposition canonical symbol continuity for projected PL runtime naming (`GAP-007`) before hold-lift closeout. | `PL11` | either alias continuity gaps are closed in canonical tables/contracts, or a scoped exception is formally approved and recorded | alias table diff + contract update evidence, or approval artifact reference with rationale and owner |
@@ -28,7 +29,7 @@ Static:
 
 ## Dependency Edges (Condensed)
 
-1. `PL10 -> PL11 -> PL12 -> PL13`
+1. `PL10 -> PL10b -> PL11 -> PL12 -> PL13`
 2. `WB10 -> WB11 -> WB12 -> WB13`
 3. `PL13 -> WB11` (water-balance kernels consume growth-updated state surfaces)
 4. `PL11 -> PL13A -> PL14`
@@ -40,16 +41,19 @@ Static:
 
 1. Plant lane (`PL10..PL13`) closes known PL representation and transition
    blockers before final Tier-A replay.
-2. Water-balance lane (`WB10..WB13`) is explicit and separate so hydrology
+2. `PL10b` enforces contract-first blind authority and conformance testing so
+   PL11 implementation is driven by ratified algorithm intent rather than
+   implementation-backfit.
+3. Water-balance lane (`WB10..WB13`) is explicit and separate so hydrology
    kernels are implemented as production code rather than probe placeholders.
-3. `WB11` depends on `PL13` to ensure hydrology integration tests evaluate
+4. `WB11` depends on `PL13` to ensure hydrology integration tests evaluate
    coupled post-growth state semantics.
-4. `PL13A` enforces explicit naming-continuity governance closure (or formal
+5. `PL13A` enforces explicit naming-continuity governance closure (or formal
    scoped exception) before comparator closeout.
-5. `INT10` is the cross-lane gate that verifies coupled execution ordering
+6. `INT10` is the cross-lane gate that verifies coupled execution ordering
    before comparator closeout.
-6. `PL14` and `PL15` remain the authoritative hold-lift closure stages.
-7. PL10/WB10 execution must preserve ARCH15/ARCH21 CRF-001/CRF-002 typed-seam
+7. `PL14` and `PL15` remain the authoritative hold-lift closure stages.
+8. PL10/WB10/PL10b execution must preserve ARCH15/ARCH21 CRF-001/CRF-002 typed-seam
    closure posture as a non-regression constraint.
 
 ## Release Rule

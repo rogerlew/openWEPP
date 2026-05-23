@@ -1,9 +1,19 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-05-20
+Last updated: 2026-05-23
 
 This is the canonical lifecycle registry for openWEPP science contracts.
+
+## Governance Pointers
+
+Kernel-process contract governance is mandatory and integrated through:
+
+1. `docs/specifications/science-contract-authoring-procedure.md`
+2. `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+
+For kernel-affecting changes, missing profile/procedure compliance keeps
+disposition in `HOLD`.
 
 ## Registry Fields
 
@@ -30,7 +40,7 @@ This is the canonical lifecycle registry for openWEPP science contracts.
 | `SC-IMPOUND-001` | Surface Impoundment Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md` | `Static` | `2026-05-20` |  | SCI-16 cycle-1 dual review/disposition/verification complete; remains non-promotable while `GAP-IMPOUND-001`..`GAP-IMPOUND-003` are open (`GAP-IMPOUND-004` is promotable-with-risk). |
 | `SC-IRRIG-001` | Irrigation Event Coupling Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-IRRIG-001.md` | `static` | `2026-05-20` |  | SCI-14 cycle-1 dual review/disposition/verification complete; remains non-promotable while `GAP-IRRIG-002` and `GAP-IRRIG-003` are open. |
 | `SC-PERC-001` | Percolation Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PERC-001.md` | `static` | `2026-05-20` |  | SCI-08 cycle-1 dual review/disposition/verification complete; remains non-promotable while `GAP-PERC-002` and `GAP-PERC-003` are open. |
-| `SC-PLANT-001` | Plant Growth Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | `static` | `2026-05-20` |  | SCI-02 reopened for procedure-delta compliance (guard map + symbol alias map); remains non-promotable while GAP-PLANT-004 and GAP-PLANT-005 are open. |
+| `SC-PLANT-001` | Plant Growth Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | `static` | `2026-05-23` |  | PL10b blind-authority amendment added transition-control runtime-projection authority (algorithm, guards, test-vector obligations); remains non-promotable while GAP-PLANT-004 and GAP-PLANT-005 are open. |
 | `SC-RESIDUE-001` | Residue Management Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md` | `static` | `2026-05-20` |  | SCI-11 cycle-1 dual review/disposition/verification complete; remains non-promotable while `GAP-RESIDUE-002` and `GAP-RESIDUE-003` are open. |
 | `SC-ROUTE-001` | Watershed Routing and Channel Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md` | `static` | `2026-05-20` |  | SCI-15 cycle-1 dual review/disposition/verification complete; remains non-promotable while `GAP-ROUTE-002`, `GAP-ROUTE-003`, and `GAP-ROUTE-005` are open. |
 | `SC-RUNOFFPART-001` | Surface Runoff Partition Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md` | `static` | `2026-05-20` |  | SCI-06 cycle-1 dual review/disposition/verification complete; remains non-promotable while `GAP-RUNOFFPART-002`..`GAP-RUNOFFPART-004` are open. |
