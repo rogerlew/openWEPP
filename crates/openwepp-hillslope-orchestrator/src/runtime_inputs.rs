@@ -10,6 +10,7 @@ use openwepp_climate_runtime_adapter::{
 };
 use openwepp_input_contract::parsers::{
     climate::ClimateFile,
+    frost::FrostParseOutput,
     management::{
         InitialScenarioData, ManagementParseOutput, PlantScenarioData, YearlyAnnualExtension,
         YearlyCroplandBranch, YearlyScenarioData,
@@ -256,6 +257,15 @@ pub enum HillslopeRuntimeInputError {
         value: f64,
         allowed: &'static str,
     },
+    NonFiniteFrostControl {
+        field: &'static str,
+        value: f64,
+    },
+    FrostControlOutOfDomain {
+        field: &'static str,
+        value: f64,
+        allowed: &'static str,
+    },
 }
 
 impl HillslopeRuntimeInputError {
@@ -315,6 +325,8 @@ impl HillslopeRuntimeInputError {
             Self::PlProjectionUnsupportedPayloadCombination { .. } => "HS-RUNTIME-E-051",
             Self::NonFiniteSnowControl { .. } => "HS-RUNTIME-E-052",
             Self::SnowControlOutOfDomain { .. } => "HS-RUNTIME-E-053",
+            Self::NonFiniteFrostControl { .. } => "HS-RUNTIME-E-054",
+            Self::FrostControlOutOfDomain { .. } => "HS-RUNTIME-E-055",
         }
     }
 }
@@ -826,6 +838,25 @@ impl fmt::Display for HillslopeRuntimeInputError {
             } => write!(
                 f,
                 "{}: snow control {} is out of domain ({}, allowed {})",
+                self.code(),
+                field,
+                value,
+                allowed
+            ),
+            Self::NonFiniteFrostControl { field, value } => write!(
+                f,
+                "{}: non-finite frost control {}={}",
+                self.code(),
+                field,
+                value
+            ),
+            Self::FrostControlOutOfDomain {
+                field,
+                value,
+                allowed,
+            } => write!(
+                f,
+                "{}: frost control {} is out of domain ({}, allowed {})",
                 self.code(),
                 field,
                 value,
@@ -2081,6 +2112,20 @@ pub fn build_hillslope_runtime_surface_from_snow(
     Ok(surface)
 }
 
+/// Build a hillslope runtime surface from parsed frost-control input.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when frost controls are non-finite or
+/// outside required CLIM06 domains.
+pub fn build_hillslope_runtime_surface_from_frost(
+    frost: &FrostParseOutput,
+) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
+    let mut surface = HillslopeWritebackSurface::default();
+    seed_hillslope_runtime_surface_from_frost(&mut surface, frost)?;
+    Ok(surface)
+}
+
 /// Seed parsed snow-control runtime symbols into an existing hillslope runtime
 /// surface.
 ///
@@ -2143,6 +2188,141 @@ pub fn seed_hillslope_runtime_surface_from_snow(
     Ok(())
 }
 
+/// Seed parsed frost-control runtime symbols into an existing hillslope runtime
+/// surface.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when parsed frost controls are
+/// non-finite or violate required CLIM06 domains.
+#[allow(clippy::too_many_lines)]
+pub fn seed_hillslope_runtime_surface_from_frost(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    frost: &FrostParseOutput,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let wint_red = f64::from(frost.wint_red);
+    let fine_top = f64::from(frost.fine_top);
+    let fine_bot = f64::from(frost.fine_bot);
+    let ksnowf = validate_frost_control_finite("frost.options.ksnowf", frost.ksnowf)?;
+    let kresf = validate_frost_control_finite("frost.options.kresf", frost.kresf)?;
+    let ksoilf = validate_frost_control_finite("frost.options.ksoilf", frost.ksoilf)?;
+    let kfactor1 = validate_frost_control_finite("frost.options.kfactor1", frost.kfactor1)?;
+    let kfactor2 = validate_frost_control_finite("frost.options.kfactor2", frost.kfactor2)?;
+    let kfactor3 = validate_frost_control_finite("frost.options.kfactor3", frost.kfactor3)?;
+
+    if frost.wint_red != 0 && frost.wint_red != 1 {
+        return Err(HillslopeRuntimeInputError::FrostControlOutOfDomain {
+            field: "frost.options.wintRed",
+            value: wint_red,
+            allowed: "{0,1}",
+        });
+    }
+    if !(1..=10).contains(&frost.fine_top) {
+        return Err(HillslopeRuntimeInputError::FrostControlOutOfDomain {
+            field: "frost.options.fineTop",
+            value: fine_top,
+            allowed: "integer [1,10]",
+        });
+    }
+    if !(1..=10).contains(&frost.fine_bot) {
+        return Err(HillslopeRuntimeInputError::FrostControlOutOfDomain {
+            field: "frost.options.fineBot",
+            value: fine_bot,
+            allowed: "integer [1,10]",
+        });
+    }
+    for (field, value) in [
+        ("frost.options.ksnowf", ksnowf),
+        ("frost.options.kresf", kresf),
+        ("frost.options.ksoilf", ksoilf),
+    ] {
+        if !(0.1..=10.0).contains(&value) {
+            return Err(HillslopeRuntimeInputError::FrostControlOutOfDomain {
+                field,
+                value,
+                allowed: "real [0.1,10.0]",
+            });
+        }
+    }
+    for (field, value) in [
+        ("frost.options.kfactor1", kfactor1),
+        ("frost.options.kfactor2", kfactor2),
+        ("frost.options.kfactor3", kfactor3),
+    ] {
+        if !(value > 0.0 && value <= 1.0) {
+            return Err(HillslopeRuntimeInputError::FrostControlOutOfDomain {
+                field,
+                value,
+                allowed: "real (0.0,1.0]",
+            });
+        }
+    }
+
+    let state_surface = &mut runtime_surface.state_surface;
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.wintRed"),
+        BoundaryValue::scalar(wint_red),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.fineTop"),
+        BoundaryValue::scalar(fine_top),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.fineBot"),
+        BoundaryValue::scalar(fine_bot),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.ksnowf"),
+        BoundaryValue::scalar(ksnowf),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.kresf"),
+        BoundaryValue::scalar(kresf),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.ksoilf"),
+        BoundaryValue::scalar(ksoilf),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor1"),
+        BoundaryValue::scalar(kfactor1),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor2"),
+        BoundaryValue::scalar(kfactor2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor3"),
+        BoundaryValue::scalar(kfactor3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.options.frost_file_present"),
+        BoundaryValue::scalar(if frost.frost_file_present { 1.0 } else { 0.0 }),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_dfrost"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_dthaw"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_nft"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_ws_frz"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_infcap_frz"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    Ok(())
+}
+
 fn insert_common_day_symbols(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     day: i32,
@@ -2169,6 +2349,16 @@ fn validate_snow_control_finite(
 ) -> Result<f64, HillslopeRuntimeInputError> {
     if !value.is_finite() {
         return Err(HillslopeRuntimeInputError::NonFiniteSnowControl { field, value });
+    }
+    Ok(value)
+}
+
+fn validate_frost_control_finite(
+    field: &'static str,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteFrostControl { field, value });
     }
     Ok(value)
 }

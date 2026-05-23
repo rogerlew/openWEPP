@@ -494,6 +494,14 @@ Authorized packages:
     equation-driven decomposition/residue kinetics and contract-first
     sequencing (contract amendments, contract tests, pre-implementation gate,
     then kernel code).
+- `20260523-clim05-snow-runtime-kernel-port-001/`
+  - Purpose: implement runtime snow accumulation/melt kernel coupling into
+    hydrology boundary surfaces with contract-first sequencing (contract
+    amendments, contract tests, pre-implementation gate, then kernel code).
+- `20260523-clim06-frost-frozen-soil-kernel-port-001/`
+  - Purpose: implement frozen-soil/frost runtime kernel behavior and
+    infiltration/runoff coupling with contract-first sequencing (contract
+    amendments, contract tests, pre-implementation gate, then kernel code).
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

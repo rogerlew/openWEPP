@@ -8,7 +8,7 @@ use openwepp_hillslope_orchestrator::{
     runtime_inputs::{
         HillslopePlRuntimeSurfaces, HillslopeRuntimeInputError,
         build_hillslope_pl_runtime_surfaces_from_management,
-        build_hillslope_runtime_surface_from_climate,
+        build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_frost,
         build_hillslope_runtime_surface_from_management,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_snow,
         build_hillslope_runtime_surface_from_soil,
@@ -17,6 +17,7 @@ use openwepp_hillslope_orchestrator::{
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
     climate::{ParserMode as ClimateParserMode, parse_climate_from_str},
+    frost::{ParseMode as FrostParseMode, parse_frost_from_path},
     management::{
         ManagementParseOutput, ParseMode as ManagementParseMode, YearlyAnnualExtension,
         YearlyCroplandBranch, YearlyPerennialData, YearlyPerennialGrazingCycle, YearlyScenarioData,
@@ -508,6 +509,95 @@ fn snow_runtime_surface_rejects_invalid_density_domain_projection() {
         error,
         HillslopeRuntimeInputError::SnowControlOutOfDomain {
             field: "snow.options.newsnw",
+            ..
+        }
+    ));
+}
+
+#[test]
+fn frost_parser_to_hillslope_runtime_surface_closure() {
+    let frost = parse_frost_from_path(
+        frost_fixture_path("strict_valid_two_line.txt"),
+        FrostParseMode::Strict,
+    )
+    .expect("frost fixture should parse for seam closure");
+    let runtime_surface = build_hillslope_runtime_surface_from_frost(&frost)
+        .expect("frost runtime surface should build from parser output");
+
+    assert_state_value(&runtime_surface.state_surface, "frost.options.wintRed", 1.0);
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.options.fineTop",
+        10.0,
+    );
+    assert_state_value(&runtime_surface.state_surface, "frost.options.fineBot", 8.0);
+    assert_state_value(&runtime_surface.state_surface, "frost.options.ksnowf", 0.1);
+    assert_state_value(&runtime_surface.state_surface, "frost.options.kresf", 0.2);
+    assert_state_value(&runtime_surface.state_surface, "frost.options.ksoilf", 0.3);
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.options.kfactor1",
+        0.00001,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.options.kfactor2",
+        0.00002,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.options.kfactor3",
+        0.5,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.options.frost_file_present",
+        1.0,
+    );
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_dfrost", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_dthaw", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_nft", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_ws_frz", 0.0);
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_infcap_frz",
+        0.0,
+    );
+}
+
+#[test]
+fn frost_runtime_surface_projects_missing_file_flag_as_inactive() {
+    let frost = parse_frost_from_path(
+        frost_fixture_path("does_not_exist_frost.txt"),
+        FrostParseMode::Strict,
+    )
+    .expect("missing frost sidecar should parse via default branch");
+    let runtime_surface = build_hillslope_runtime_surface_from_frost(&frost)
+        .expect("frost runtime surface should build from default parser output");
+
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.options.frost_file_present",
+        0.0,
+    );
+}
+
+#[test]
+fn frost_runtime_surface_rejects_invalid_kfactor_domain_projection() {
+    let mut frost = parse_frost_from_path(
+        frost_fixture_path("strict_valid_two_line.txt"),
+        FrostParseMode::Strict,
+    )
+    .expect("frost fixture should parse");
+    frost.kfactor1 = 1.5;
+
+    let error = build_hillslope_runtime_surface_from_frost(&frost)
+        .expect_err("kfactor above unity must fail runtime seam");
+    assert_eq!(error.code(), "HS-RUNTIME-E-055");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::FrostControlOutOfDomain {
+            field: "frost.options.kfactor1",
             ..
         }
     ));
@@ -1867,6 +1957,18 @@ fn snow_fixture_path(name: &str) -> PathBuf {
         .join("fixtures")
         .join("infile")
         .join("snow")
+        .join(name)
+}
+
+fn frost_fixture_path(name: &str) -> PathBuf {
+    Path::new(file!())
+        .parent()
+        .expect("integration file parent exists")
+        .parent()
+        .expect("tests directory exists")
+        .join("fixtures")
+        .join("infile")
+        .join("frost")
         .join(name)
 }
 

@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -378,6 +378,53 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 3. Non-finite/out-of-domain active-coupling snow control/state hard-fails with
    `HKERNEL-WB14-RUNOFF-E-002/003`.
 
+## CLIM06 Frozen-Soil Runtime Coupling Addendum
+
+### CLIM06 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed frost controls | `frost.options.wintRed`, `frost.options.fineTop`, `frost.options.fineBot`, `frost.options.ksnowf`, `frost.options.kresf`, `frost.options.ksoilf`, `frost.options.kfactor1`, `frost.options.kfactor2`, `frost.options.kfactor3`, `frost.options.frost_file_present` |
+| Frozen-state runtime outputs | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+| WB14 runoff reconciliation surfaces | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+
+### CLIM06 Deterministic Runoff Rule
+
+1. Active CLIM06 coupling is explicit when
+   `frost.options.frost_file_present = 1` and `frost.options.wintRed = 1`.
+2. Runoff reconciliation must consume frozen-soil effective infiltration
+   capacity from `frost.runtime_infcap_frz` when active CLIM06 coupling is
+   enabled.
+3. CLIM06 frozen-state domains are bounded and non-negative:
+   - `0 <= frost.runtime_dfrost <= 0.20`
+   - `0 <= frost.runtime_dthaw <= 0.20`
+   - `frost.runtime_nft >= 0`
+   - `frost.runtime_ws_frz >= 0`
+   - `0 <= frost.runtime_infcap_frz <= ssc`
+4. Active-coupling missing/non-finite/out-of-domain frost controls or
+   frozen-state runtime symbols are hard-fail runoff states; no fallback/default
+   branch is allowed.
+
+### CLIM06 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB14-RUNOFF-E-001` |
+| Non-finite required symbol | `HKERNEL-WB14-RUNOFF-E-002` |
+| Domain/closure violation | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### CLIM06 Contract-Test Vectors
+
+1. Active-coupling nominal vector updates `frost.runtime_*` symbols,
+   reduces infiltration-capacity with `frost.runtime_infcap_frz`, and emits
+   deterministic runoff reconciliation closure.
+2. Missing required active-coupling frost symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite active-coupling frost symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-002`.
+4. Out-of-domain active-coupling frost control/state hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -398,3 +445,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `4` | `Codex` | WB13 amendment: added canonical daily output coupling authority for runoff/runon symbols (`Q`, `QOFE`, `UpStrmQ`, `RM`, `P`) with explicit WB13 malformed-output hard-fail posture. |
 | `2026-05-23` | `5` | `Codex` | WB14 amendment: added production infiltration + subdaily hyetograph kernel authority with Green-Ampt lineage branch rules, typed WB14 runoff guards, and WB14 contract-derived vectors. |
 | `2026-05-23` | `6` | `Codex` | CLIM05 amendment: added active snow-control runoff coupling authority via signed `S`, required `snow.options.*`/`snow.runtime_swe` surfaces, and typed hard-fail guard posture for active-coupling symbol/domain violations. |
+| `2026-05-23` | `7` | `Codex` | CLIM06 amendment: added active frost/frozen-soil runoff coupling authority, required `frost.options.*` and `frost.runtime_*` surfaces, and typed hard-fail posture for active-coupling symbol/domain violations in WB14 reconciliation. |

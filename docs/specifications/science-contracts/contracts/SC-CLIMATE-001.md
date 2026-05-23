@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -264,6 +264,41 @@ states and must hard-fail with typed hydrology guard posture.
 3. Non-finite/out-of-domain snow-control or snow-state values hard-fail with
    typed non-finite/domain posture and no fallback defaulting.
 
+## CLIM06 Frost-Control Runtime Coupling Addendum
+
+### CLIM06 Required Frost-Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed frost-control payload | `frost.options.wintRed`, `frost.options.fineTop`, `frost.options.fineBot`, `frost.options.ksnowf`, `frost.options.kresf`, `frost.options.ksoilf`, `frost.options.kfactor1`, `frost.options.kfactor2`, `frost.options.kfactor3`, `frost.options.frost_file_present` |
+| Climate freeze/thaw drivers | `Tmax`, `Tmin`, hyetograph rainfall (`timem_####`, `intsty_####`) |
+| Frost-coupled runtime state/output | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+
+### CLIM06 Deterministic Coupling Requirements
+
+1. Frost coupling is active only when runtime seam projects
+   `frost.options.frost_file_present = 1` and `frost.options.wintRed = 1`.
+2. Climate-driven freeze/thaw branch selection for CLIM06 coupling is explicit
+   (`Tmin <= 0 degC` freeze-active branch, `Tmin > 0 degC` thaw/inactive
+   branch); no silent branch fallback is allowed.
+3. Active CLIM06 coupling must publish bounded frozen-soil state surfaces
+   (`Dfrost`, `Dthaw`, `Nft`, `Ws_frz`) and frozen infiltration-capacity
+   surface (`InfCap_frz`) used by runoff/infiltration consumers.
+4. Missing/non-finite/out-of-domain active-coupling frost controls or derived
+   frost runtime surfaces are invalid boundary states and must hard-fail with
+   typed hydrology guard posture.
+
+### CLIM06 Contract-Test Vectors
+
+1. Active frost coupling vector emits deterministic frozen-soil state surfaces
+   and reduced infiltration-capacity coupling with valid runoff closure.
+2. Missing required active-coupling frost symbol hard-fails with typed
+   missing-input posture.
+3. Non-finite active-coupling frost symbol hard-fails with typed non-finite
+   posture.
+4. Out-of-domain active-coupling frost symbol/state hard-fails with typed
+   domain posture and no fallback defaulting.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -284,3 +319,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-20` | `3` | `Codex` | Reclassified `GAP-CLIMATE-002` from non-promotable to promotable-with-risk, with explicit retirement criterion for future authority/validation updates. |
 | `2026-05-23` | `4` | `Codex` | WB14 amendment: added explicit runoff hyetograph-coupling forcing requirements, typed-guard alignment for malformed subdaily series, and WB14 vector obligations. |
 | `2026-05-23` | `5` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling requirements, signed `S` term publication constraints, and typed active-coupling guard posture for snow boundary failures. |
+| `2026-05-23` | `6` | `Codex` | CLIM06 amendment: added parsed frost-control runtime coupling requirements, explicit climate freeze/thaw branch-selection authority, and typed active-coupling guard posture for frozen-soil boundary failures. |

@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -352,6 +352,50 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 3. Non-finite or domain-invalid `S` hard-fails with typed non-finite/domain
    posture and no writeback mutation.
 
+## CLIM06 Frozen-Soil Infiltration Coupling Addendum
+
+### CLIM06 Required Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed frost controls | `frost.options.wintRed`, `frost.options.fineTop`, `frost.options.fineBot`, `frost.options.kfactor1`, `frost.options.kfactor2`, `frost.options.kfactor3`, `frost.options.frost_file_present` |
+| Frozen-state runtime outputs | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+| Runoff/storage reconciliation symbols | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled`, `wb12_storage_reconciled` |
+
+### CLIM06 Deterministic Coupling Rules
+
+1. Active CLIM06 coupling is explicit when
+   `frost.options.frost_file_present = 1` and `frost.options.wintRed = 1`.
+2. WB14 runoff reconciliation must consume `frost.runtime_infcap_frz` as the
+   frozen-soil effective infiltration-capacity term when active CLIM06 coupling
+   is enabled.
+3. CLIM06 frozen-state domains are bounded and non-negative:
+   - `0 <= frost.runtime_dfrost <= 0.20`
+   - `0 <= frost.runtime_dthaw <= 0.20`
+   - `frost.runtime_nft >= 0`
+   - `frost.runtime_ws_frz >= 0`
+   - `0 <= frost.runtime_infcap_frz <= ssc`
+4. Missing/non-finite/out-of-domain active-coupling frost symbols are
+   hard-fail states in WB14 reconciliation; no fallback/default branch is
+   allowed.
+
+### CLIM06 Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Runoff reconciliation | `HKERNEL-WB14-RUNOFF-E-001` | `HKERNEL-WB14-RUNOFF-E-002` | `HKERNEL-WB14-RUNOFF-E-003` |
+
+### CLIM06 Contract-Test Vectors
+
+1. Active CLIM06 vector reduces infiltration-capacity and updates frozen-state
+   outputs while preserving typed runoff/storage reconciliation closure.
+2. Missing required active-coupling frost symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-001`.
+3. Non-finite active-coupling frost symbol hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-002`.
+4. Out-of-domain active-coupling frost symbol/state hard-fails with
+   `HKERNEL-WB14-RUNOFF-E-003`.
+
 ## WB14 Infiltration and Hyetograph Coupling Addendum
 
 ### WB14 Required Coupling Surfaces
@@ -488,3 +532,4 @@ canonical order:
 | `2026-05-23` | `8` | `Codex` | PL14 amendment: added replay-candidate emission invariant (`INV-WATBAL-012`) with strict WB13 schema/order + artifact completeness guard authority for Tier-A closeout staging. |
 | `2026-05-23` | `9` | `Codex` | WB14 amendment: added computed infiltration + hyetograph coupling authority for runoff reconciliation, replacing required externally seeded infiltration input in acceptance paths and adding typed WB14 runoff guards. |
 | `2026-05-23` | `10` | `Codex` | CLIM05 amendment: added signed `S` snow-coupling authority for WB12 storage reconciliation, including required storage-surface inputs, deterministic storage equation update, and typed active-coupling guard vectors. |
+| `2026-05-23` | `11` | `Codex` | CLIM06 amendment: added frozen-soil infiltration-capacity coupling authority (`frost.runtime_infcap_frz`) for WB14 runoff reconciliation, bounded frozen-state surface requirements, and typed active-coupling guard vectors. |

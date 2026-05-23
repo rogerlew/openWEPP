@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -253,6 +253,45 @@ parity). Contract-specific interpretation tolerances:
 3. Non-finite or out-of-domain active-coupling control/state hard-fails with
    typed non-finite/domain posture and no fallback.
 
+## CLIM06 Frozen-Soil Runtime Coupling Addendum
+
+### CLIM06 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed frost sidecar controls | `frost.options.wintRed`, `frost.options.fineTop`, `frost.options.fineBot`, `frost.options.ksnowf`, `frost.options.kresf`, `frost.options.ksoilf`, `frost.options.kfactor1`, `frost.options.kfactor2`, `frost.options.kfactor3`, `frost.options.frost_file_present` |
+| Climate freeze/thaw drivers | `Tmax`, `Tmin`, hyetograph precipitation depth |
+| Coupled runtime state/output | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+
+### CLIM06 Deterministic Rules
+
+1. Active CLIM06 coupling is explicit when
+   `frost.options.frost_file_present = 1` and `frost.options.wintRed = 1`.
+2. Freeze/thaw branch selection is climate-driven and explicit:
+   - `Tmin <= 0 degC`: freeze-active branch updates `Dfrost` and
+     infiltration-capacity reduction state;
+   - `Tmin > 0 degC`: thaw/inactive branch reduces frozen-depth influence.
+3. CLIM06 infiltration-capacity coupling uses a bounded frozen-soil reduction
+   envelope:
+   - `kfactor_floor = min(kfactor1, kfactor2, kfactor3)`
+   - `freeze_fraction = clamp(Dfrost / 0.20, 0, 1)`
+   - `InfCap_frz = Ke * (1 - freeze_fraction + freeze_fraction * kfactor_floor)`
+4. Active-coupling missing/non-finite/out-of-domain controls or derived frost
+   runtime surfaces are hard-fail states; no silent fallback/default branch is
+   allowed.
+
+### CLIM06 Contract-Test Vectors
+
+1. Active CLIM06 vector emits deterministic
+   `Dfrost`/`Dthaw`/`Nft`/`Ws_frz`/`InfCap_frz` and reduced infiltration
+   coupling with valid runoff closure.
+2. Missing active-coupling frost control symbol hard-fails with typed
+   missing-input posture.
+3. Non-finite active-coupling frost control symbol hard-fails with typed
+   non-finite posture.
+4. Out-of-domain active-coupling frost control/state hard-fails with typed
+   domain posture and no fallback.
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -271,3 +310,4 @@ parity). Contract-specific interpretation tolerances:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: resolved drift runtime/governance conflict, added missing frost/thaw symbols, fixed `InfCap_frz` unit declaration, clarified melt bound timing semantics, and tightened zero-depth/zero-density tolerance rule. |
 | `2026-05-23` | `3` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling authority (`snow.options.*`), signed `S` and `snow.runtime_swe` closure requirements, and active-coupling typed guard posture. |
+| `2026-05-23` | `4` | `Codex` | CLIM06 amendment: added parsed frost-control runtime coupling authority (`frost.options.*`), explicit frozen-soil infiltration-capacity reduction envelope, and active-coupling typed guard posture for derived frost runtime surfaces. |

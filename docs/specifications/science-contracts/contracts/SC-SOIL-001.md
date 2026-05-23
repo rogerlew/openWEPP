@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -14,7 +14,7 @@ consumer_scope:
   - Percolation and water-balance consumers requiring conductivity and storage-domain consistency
   - Erosion/hydraulics consumers requiring valid interrill/rill erodibility and shear-threshold surfaces
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -193,6 +193,43 @@ bit-for-bit parity). `[DIRECT][Static]`
 | TOL-SOIL-004 | Critical shear positivity tolerance | `τcadj >= 1e-12 Pa` | Prevents undefined detachment-threshold branch behavior near zero. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-SOIL-005 | Suggested limit enforcement tolerance for cropland/rangeland `Ki`, `Kr`, `τc` | `<= 1e-9` relative tolerance at policy boundaries | Used for governance/range-label checks, not for replacing model equations. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## CLIM06 Frost-State Conductivity Coupling Addendum
+
+### CLIM06 Required Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Parsed frost controls | `frost.options.wintRed`, `frost.options.fineTop`, `frost.options.fineBot`, `frost.options.ksnowf`, `frost.options.kresf`, `frost.options.ksoilf`, `frost.options.kfactor1`, `frost.options.kfactor2`, `frost.options.kfactor3`, `frost.options.frost_file_present` |
+| Soil conductivity surfaces | `Ke`, `Ksi`, `Ksai` |
+| Frozen-state outputs | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+
+### CLIM06 Deterministic Coupling Rules
+
+1. Parsed frost controls are immutable runtime inputs; soil/runtime kernels must
+   not rewrite `frost.options.*` values in place.
+2. Active CLIM06 frozen-soil coupling (`frost_file_present = 1` and
+   `wintRed = 1`) constrains effective infiltration conductivity by bounded
+   frozen-state surfaces.
+3. CLIM06 frozen-state outputs are bounded and non-negative:
+   - `0 <= Dfrost <= 0.20 m`
+   - `0 <= Dthaw <= 0.20 m`
+   - `Nft >= 0`
+   - `Ws_frz >= 0`
+   - `0 <= InfCap_frz <= Ke`
+4. Missing/non-finite/out-of-domain active-coupling frost symbols are typed
+   hard-fail states; no silent defaults/clamping are allowed at this boundary.
+
+### CLIM06 Contract-Test Vectors
+
+1. Active CLIM06 vector publishes bounded frozen-state outputs and
+   non-amplifying `InfCap_frz` coupling.
+2. Missing active-coupling frost symbol hard-fails with typed missing-input
+   posture.
+3. Non-finite active-coupling frost symbol hard-fails with typed non-finite
+   posture.
+4. Out-of-domain active-coupling frost symbol/state hard-fails with typed
+   domain posture.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -209,3 +246,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-10 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-7 soil authority anchors, coupling invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-10 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, strengthened freeze-thaw anchor specificity/path consistency, added `τcadj` alias coverage, and evidence-tagged all degenerate-state claims. |
+| `2026-05-23` | `3` | `Codex` | CLIM06 amendment: added frozen-soil conductivity coupling authority from parsed frost controls, bounded `Dfrost/Dthaw/Nft/Ws_frz/InfCap_frz` runtime-state requirements, and typed active-coupling guard posture. |
