@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -80,7 +80,7 @@ Out of scope:
 | `Pe` | `m d^-1` | Percolated water into subsurface drainable layer. | percolation routine | subsurface continuity Eq. [6.2.1], [6.2.5] |
 | `θ`, `θFC`, `θa` | `m^3 m^-3` | Total moisture, field-capacity moisture, and entrapped air defining drainable-water term in subsurface coupling. | subsurface state routine | drainable-layer storage accounting |
 
-## Algorithm State Surfaces (WB10 Hydrology Phase-Entry Scaffolding)
+## Algorithm State Surfaces (WB11 Percolation Production Kernel)
 
 ### Required Inputs
 
@@ -88,37 +88,43 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Percolation consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
+| WB11 percolation state inputs | `wb11_soil_water`, `wb11_field_capacity`, `wb11_perc_fraction` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
-| Hydrology phase entry route | Deterministic route label for `percolation_deep_seepage` phase class |
-| Scheduler failure surface | Typed hard-fail status for unsupported/mismatched percolation phase-class routing |
+| Percolation flux outputs | `D`, `Pe` |
+| Percolation state updates | `wb11_soil_water` |
+| Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range percolation domains |
 
 ### Mutated State Surfaces
 
-WB10 routing scaffolding mutates only typed entry-route metadata and typed
-failure reporting; percolation state/flux updates remain delegated to downstream
-kernels.
+WB11 mutates percolation boundary surfaces deterministically:
+- state update: `wb11_soil_water = wb11_soil_water - D`
+- flux update: `D = max(wb11_soil_water - wb11_field_capacity, 0) * wb11_perc_fraction`
+- flux update: `Pe = D` for subsurface recharge coupling
 
-## Algorithm Specification (WB10 Percolation Routing Skeleton)
+## Algorithm Specification (WB11 Percolation Production Execution)
 
-1. Scheduler maps `percolation_deep_seepage` to WB10 typed percolation phase
-   class.
-2. Hydrology routing validates phase/class compatibility before kernel
-   invocation.
-3. Unsupported or mismatched percolation class combinations are invalid runtime
-   states and hard-fail with typed status.
-4. Valid percolation routing preserves orchestrator-owned writeback surfaces
-   and forwards immutable phase metadata to kernel execution.
+1. Require finite percolation inputs (`wb11_soil_water`, `wb11_field_capacity`,
+   `wb11_perc_fraction`) and enforce declared domains.
+2. Execute explicit field-capacity branch (`D = 0` when
+   `wb11_soil_water <= wb11_field_capacity`; otherwise positive proportional
+   loss).
+3. Emit deterministic loss/recharge outputs (`D`, `Pe`) and update
+   `wb11_soil_water` through orchestrator-owned writeback.
+4. Reject missing, non-finite, or out-of-range percolation domains with typed
+   hard-fail status; no silent fallback/clamping paths are permitted.
 
-## Branch and Guard Table (WB10 Percolation Phase Class)
+## Branch and Guard Table (WB11 Percolation Kernel)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-PERC-WB10-PERC` | phase `percolation_deep_seepage` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
-| `BR-PERC-WB10-UNSUPPORTED` | any unsupported percolation routing class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
+| `BR-PERC-WB11-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `wb11_soil_water`, `wb11_field_capacity`, `wb11_perc_fraction` | runtime | deterministic percolation/writeback execution |
+| `BR-PERC-WB11-MISSING` | required percolation symbol absent | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-001`) |
+| `BR-PERC-WB11-NONFINITE` | percolation symbol is NaN/Inf | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-002`) |
+| `BR-PERC-WB11-DOMAIN` | percolation symbol/derived flux outside domain bounds | percolation required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-003`) |
 
 ## Invariants
 
@@ -133,8 +139,8 @@ kernels.
 | INV-PERC-007 | Subsurface coupling invariant: daily percolation recharge term `Pe` used by subsurface continuity equations is emitted with unit/sign consistency and complete boundary payload semantics. | hard-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-008 | Coupled root-zone update invariant: percolation processing remains explicitly coupled with infiltration/ET daily accounting paths described in §5.5 and does not permit silent omission of percolation updates from layer-water bookkeeping. | hard-fail | REF-PERC-CH5-LINK, REF-PERC-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-009 | Governance scope invariant: claims about subsurface lateral-flow/drainage mechanics beyond declared percolation boundary are non-promotable unless backed by `SC-SUBHYD-001` authority. | governance-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-010 | WB10 percolation routing invariant: scheduler `percolation_deep_seepage` phase must route through explicit WB10 percolation phase class with no silent generic fallback. | hard-fail | REF-PERC-CH5-BAL, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-011 | Unsupported routing invariant: unsupported or mismatched percolation phase-class routing states must surface typed hard failures and cannot be silently reassigned. | hard-fail | REF-PERC-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-PERC-010 | WB11 percolation execution invariant: percolation phase computes deterministic `D`/`Pe` and updates `wb11_soil_water` from required WB11 percolation symbols with explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-011 | WB11 percolation guard invariant: missing/non-finite/out-of-range percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-PERC-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -149,8 +155,8 @@ kernels.
 | `INV-PERC-007` | runtime | Percolation-to-subsurface boundary payload validator (`Pe`) | Typed hard error on missing malformed units/sign payload | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-008` | runtime | Layer-water bookkeeping integration checks with infiltration/ET update path | Typed hard error on omitted percolation update in daily coupled accounting | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-009` | governance | Contract review/disposition/promotion checklist | Promotion `HOLD` when subsurface mechanics claims exceed declared contract boundary | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PERC-010` | runtime | WB10 percolation phase-class routing table | Typed hard error on unsupported/mismatched percolation routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PERC-011` | runtime | Unsupported percolation routing guard | Typed hard error (`HS-HYDRO-E-001`) on unsupported percolation routing class combinations | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-PERC-010` | runtime | WB11 percolation production kernel execution path | Typed hard error on malformed/non-deterministic percolation writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PERC-011` | runtime | WB11 percolation guard table (`HKERNEL-WB11-PERC-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid percolation inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -209,14 +215,16 @@ required until implementation surfaces diverge.
 | Below-root loss closure and daily coupling consistency (`INV-PERC-006/008`) | daily closure assembly | Hard error on inconsistent accounting/bookkeeping | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Subsurface boundary payload completeness (`INV-PERC-007`) | percolation-to-subsurface handoff | Hard error on missing malformed boundary field | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Scope/governance boundary (`INV-PERC-009`) | review/verification/promotion | Governance `HOLD` until subsurface-boundary claims are contract-aligned | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB10 percolation phase-class routing (`INV-PERC-010/011`) | scheduler percolation entry dispatch | Hard error on unsupported/mismatched percolation routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB11 percolation production execution and guards (`INV-PERC-010/011`) | percolation kernel execution and guard validation | Hard error on malformed percolation domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
 | Constant/parameter | Units | Domain | Contract use | Authority |
 |---|---|---|---|---|
-| `WB10_PHASE_CLASS_PERC` | class label | exact match | Required class label for `percolation_deep_seepage` routing | REF-PERC-CH5-BAL |
-| `WB10_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported WB10 percolation routing states | REF-PERC-PHYS-BOUNDS |
+| `WB11_PERC_STATUS_OK` | status message id | `HKERNEL-WB11-PERC-OK-001` | Typed nominal status for successful percolation phase execution | REF-PERC-CH5-BAL |
+| `WB11_PERC_GUARD_MISSING` | status message id | `HKERNEL-WB11-PERC-E-001` | Typed missing-input guard code | REF-PERC-PHYS-BOUNDS |
+| `WB11_PERC_GUARD_NONFINITE` | status message id | `HKERNEL-WB11-PERC-E-002` | Typed non-finite guard code | REF-PERC-PHYS-BOUNDS |
+| `WB11_PERC_GUARD_DOMAIN` | status message id | `HKERNEL-WB11-PERC-E-003` | Typed domain guard code | REF-PERC-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -232,14 +240,14 @@ bit-for-bit parity). Contract-specific tolerances:
 
 ## Test-Vector Obligations
 
-Minimum WB10 scheduler percolation phase-entry conformance vectors:
+Minimum WB11 percolation production-kernel conformance vectors:
 
-1. `percolation_deep_seepage` routes with explicit WB10 percolation phase class
-   and succeeds through kernel invocation when required symbols are present.
-2. Mismatched/unsupported percolation phase-class combinations hard-fail with
-   typed scheduler status (`HS-HYDRO-E-001`).
-3. No silent fallback from typed percolation phase class to generic hydrology
-   class is permitted.
+1. Percolation phase emits deterministic `D`/`Pe` and updates
+   `wb11_soil_water` from valid WB11 percolation inputs.
+2. Non-finite percolation inputs hard-fail with typed status
+   `HKERNEL-WB11-PERC-E-002`.
+3. Domain-invalid percolation inputs hard-fail with typed status
+   `HKERNEL-WB11-PERC-E-003` and do not mutate orchestrator writeback surfaces.
 
 ## Gap Register
 
@@ -265,3 +273,4 @@ guard `INV-PERC-009` requires explicit `HOLD` until alias finalization and
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-08 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added direct Chapter-7 anchors for conductivity modifiers, normalized evidence-mode tokens, clarified lower-layer restriction tolerance vs runtime hard-fail semantics, added evidence tags to degenerate-state/tolerance rows, and made non-promotable `HOLD` state explicit. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit percolation phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 percolation test-vector obligations. |
+| `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted percolation section from routing-only scaffolding to production-kernel authority with deterministic `D`/`Pe` updates, typed percolation guard codes (`HKERNEL-WB11-PERC-E-001..003`), and WB11 contract-derived vectors. |

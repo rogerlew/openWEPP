@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -92,7 +92,7 @@ Out of scope:
 | `Ksi`, `Ksai`, `Bi` | `m s^-1`, `m s^-1`, `fraction` | Saturated and adjusted hydraulic conductivity with conductivity-shape parameter. | soil/percolation routine | percolation routing |
 | `Ws` | `fraction` | Plant growth water-stress factor (`0..1`) from supply/demand ratio. | water-balance/ET coupling | plant growth regulation |
 
-## Algorithm State Surfaces (WB10 Hydrology Phase-Entry Scaffolding)
+## Algorithm State Surfaces (WB11 Hydrology Production Kernels)
 
 ### Required Inputs
 
@@ -101,40 +101,44 @@ Out of scope:
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
+| WB11 ET/perc/lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `wb11_field_capacity`, `wb11_perc_fraction`, `wb11_drainable_storage`, `wb11_lateral_fraction`, `wb11_drainage_fraction`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
-| Hydrology phase entry route | Deterministic route label for `runoff_reconciliation` and `storage_reconciliation` classes |
-| Scheduler failure surface | Typed hard-fail status when phase-class routing is unsupported for WB10 hydrology classes |
+| WB11 ET/perc flux outputs | `ET`, `Ws`, `D`, `Pe` |
+| WB11 lateral/drainage outputs | `q`, `Qdd`, `Qd` |
+| WB11 state updates | `wb11_soil_water`, `wb11_drainable_storage` |
+| Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range WB11 hydrology domains |
 
 ### Mutated State Surfaces
 
-WB10 phase-entry scaffolding mutates only typed routing metadata and typed
-failure reporting. Root-zone water-balance state/flux mutation remains delegated
-to downstream kernels.
+WB11 mutates water-balance hydrology surfaces deterministically through
+phase-specific ET/percolation/lateral/drainage kernels while preserving
+orchestrator-owned writeback commit authority.
 
-## Algorithm Specification (WB10 Scheduler Hydrology Routing Skeleton)
+## Algorithm Specification (WB11 Scheduler Hydrology Production Execution)
 
 1. Map canonical scheduler phase to typed hillslope kernel phase class.
-2. For WB10 hydrology classes (`runoff_reconciliation`,
-   `storage_reconciliation`), route through explicit phase-class routing table
-   with no generic fallback.
-3. Validate route compatibility between scheduler phase and phase class before
-   kernel invocation.
-4. If scheduler phase/class pair is unsupported for WB10 hydrology classes,
-   emit typed hard-fail status and halt scheduler progression.
-5. When route is valid, emit phase entry metadata and continue kernel
-   invocation with orchestrator-owned writeback authority unchanged.
+2. Execute WB11 ET/percolation/lateral/drainage phase kernels with deterministic
+   state/flux updates and typed invariant guards.
+3. Enforce finite and domain bounds for all required WB11 inputs and emitted
+   outputs prior to writeback acceptance.
+4. Preserve explicit routing hard-fail posture for unsupported/mismatched
+   hydrology phase-class combinations.
+5. Apply only accepted writeback payloads via orchestrator-owned state/flux
+   maps; reject malformed payloads with typed status signals.
 
-## Branch and Guard Table (WB10 Hydrology Phase Classes)
+## Branch and Guard Table (WB11 Hydrology Kernel Set)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-WATBAL-WB10-RUNOFF` | phase `runoff_reconciliation` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
-| `BR-WATBAL-WB10-STORAGE` | phase `storage_reconciliation` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
-| `BR-WATBAL-WB10-UNSUPPORTED` | any unsupported WB10 hydrology phase-class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
+| `BR-WATBAL-WB11-ET` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand` | runtime | deterministic ET/writeback execution with typed guards (`HKERNEL-WB11-ET-E-001..003`) |
+| `BR-WATBAL-WB11-PERC` | phase class `hydrology_percolation_deep_seepage` | `wb11_soil_water`, `wb11_field_capacity`, `wb11_perc_fraction` | runtime | deterministic percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
+| `BR-WATBAL-WB11-LAT` | phase class `hydrology_lateral_transfer` | `wb11_drainable_storage`, `wb11_lateral_fraction`, `Pe` | runtime | deterministic lateral/writeback execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
+| `BR-WATBAL-WB11-DRAIN` | phase class `hydrology_drainage` | `wb11_drainable_storage`, `wb11_drainage_fraction`, `wb11_drainage_coefficient`, `q` | runtime | deterministic drainage/writeback execution with typed guards (`HKERNEL-WB11-DRAIN-E-001..003`) |
+| `BR-WATBAL-WB11-UNSUPPORTED` | unsupported hydrology phase-class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
 
 ## Invariants
 
@@ -148,8 +152,8 @@ to downstream kernels.
 | INV-WATBAL-006 | Percolation eligibility invariant: per-layer percolation obeys Eq. [5.4.1] (`pei = 0` when `Θi <= FCi`; otherwise `pei >= 0`), and adjusted conductivity/percolation semantics follow Eq. [5.4.2]-[5.4.5]. | hard-fail | REF-WATBAL-CH5-PERC | `[DIRECT][Static]` |
 | INV-WATBAL-007 | Coupling invariant: daily runoff/infiltration (`Q`, antecedent near-surface moisture), snow contribution (`S`), subsurface/drain loss (`Qd`), and plant forcing inputs (`LAI`, root depth, biomass/residue context for ET partition) must be present with declared units before closure is accepted. | hard-fail | REF-WATBAL-CH3-COUPLING, REF-WATBAL-CH4-COUPLING, REF-WATBAL-CH5-LINK, REF-WATBAL-CH6-COUPLING, REF-WATBAL-CH8-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-008 | Governance invariant: water moving below root zone (`D`) is treated as loss from this component and cannot be silently reintroduced into root-zone closure without explicit cross-contract authority. | governance-fail | REF-WATBAL-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-009 | WB10 routing invariant: `runoff_reconciliation` and `storage_reconciliation` scheduler phases must route through explicit typed WB10 hydrology phase classes (no implicit generic hydrology fallback). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-010 | Unsupported routing invariant: unsupported or mismatched WB10 hydrology phase-class combinations are invalid runtime states and must surface typed hard failures instead of silent reassignment/defaulting. | hard-fail | REF-WATBAL-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-WATBAL-009 | WB11 production execution invariant: ET/percolation/lateral/drainage kernels must emit deterministic state/flux updates (`ET`, `Ws`, `D`, `Pe`, `q`, `Qdd`, `Qd`) and update owned WB11 state surfaces. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-010 | WB11 guard + routing invariant: unsupported hydrology phase classes and missing/non-finite/out-of-range WB11 domains must surface typed hard failures (`HS-HYDRO-E-001`, `HKERNEL-WB11-*-E-*`) without silent reassignment/clamping/defaulting. | hard-fail | REF-WATBAL-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -163,8 +167,8 @@ to downstream kernels.
 | `INV-WATBAL-006` | runtime | Percolation routing by layer | Typed hard error on invalid percolation eligibility/conductivity domains | Tier-A gate | `[DIRECT][Static]` |
 | `INV-WATBAL-007` | runtime | Component-boundary payload validator | Typed hard error on missing/invalid required coupling surfaces | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-008` | governance | Contract review/disposition/verification and promotion checklist | Promotion `HOLD` until cross-contract authority for reuse of `D` is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-WATBAL-009` | runtime | WB10 hydrology phase-class routing table | Typed hard error on unsupported/mismatched runoff/storage routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-WATBAL-010` | runtime | Unsupported WB10 hydrology routing guard | Typed hard error (`HS-HYDRO-E-001`) on unsupported class combinations | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-WATBAL-009` | runtime | WB11 ET/perc/lateral/drain production kernel execution paths | Typed hard error on non-deterministic/malformed WB11 hydrology writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-010` | runtime | WB11 routing + guard tables | Typed hard error on unsupported phase classes or WB11 domain-invalid inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -232,15 +236,17 @@ implementation contracts introduce explicit aliases.
 | Percolation routing (`INV-WATBAL-006`) | layer routing stage | Hard error on eligibility/domain failure; block downstream percolation publish | Tier-A gate | `[DIRECT][Static]` |
 | Coupling completeness (`INV-WATBAL-007`) | daily boundary handoff | Hard error on missing malformed field/units mismatch | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Governance boundary (`INV-WATBAL-008`) | review/verification/promotion | Governance `HOLD` until cross-contract ownership of `D` reuse is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB10 hydrology phase-class routing (`INV-WATBAL-009/010`) | scheduler hydrology entry dispatch | Hard error on unsupported/mismatched WB10 routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB11 hydrology production execution + guards (`INV-WATBAL-009/010`) | ET/perc/lateral/drain kernel execution and routing/guard validation | Hard error on malformed WB11 domains or unsupported hydrology phase classes | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
 | Constant/parameter | Units | Domain | Contract use | Authority |
 |---|---|---|---|---|
-| `WB10_PHASE_CLASS_RUNOFF` | class label | exact match | Required class label for `runoff_reconciliation` routing | REF-WATBAL-CH5-BAL |
-| `WB10_PHASE_CLASS_STORAGE` | class label | exact match | Required class label for `storage_reconciliation` routing | REF-WATBAL-CH5-BAL |
-| `WB10_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported WB10 class routing states | REF-WATBAL-PHYS-BOUNDS |
+| `WB11_HYDRO_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported hydrology phase-class routing states | REF-WATBAL-PHYS-BOUNDS |
+| `WB11_ET_GUARD_CODES` | status message id range | `HKERNEL-WB11-ET-E-001..003` | Typed ET guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
+| `WB11_PERC_GUARD_CODES` | status message id range | `HKERNEL-WB11-PERC-E-001..003` | Typed percolation guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
+| `WB11_LATERAL_GUARD_CODES` | status message id range | `HKERNEL-WB11-LAT-E-001..003` | Typed lateral guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
+| `WB11_DRAINAGE_GUARD_CODES` | status message id range | `HKERNEL-WB11-DRAIN-E-001..003` | Typed drainage guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -257,14 +263,14 @@ parity). Contract-specific tolerances used for comparator interpretation:
 
 ## Test-Vector Obligations
 
-Minimum WB10 scheduler phase-entry conformance vectors:
+Minimum WB11 hydrology production-kernel conformance vectors:
 
-1. `runoff_reconciliation` routes with WB10 typed runoff phase class and
-   succeeds through kernel invocation when required symbols are present.
-2. `storage_reconciliation` routes with WB10 typed storage phase class and
-   succeeds through kernel invocation when required symbols are present.
-3. Unsupported WB10 hydrology routing class combinations hard-fail with typed
-   scheduler status (`HS-HYDRO-E-001`) and no fallback/default class rewrite.
+1. ET/percolation/lateral/drain phases emit deterministic WB11 outputs and
+   mutate only declared WB11 state surfaces via writeback.
+2. Non-finite and domain-invalid WB11 hydrology inputs hard-fail with typed
+   WB11 guard codes and halt at the affected phase.
+3. Unsupported hydrology phase-class combinations hard-fail with typed routing
+   status (`HS-HYDRO-E-001`) and no fallback/default class rewrite.
 
 ## Gap Register
 
@@ -283,3 +289,4 @@ Minimum WB10 scheduler phase-entry conformance vectors:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-04 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: clarified daily-step closure enforcement, added explicit zero-demand `Ws` branch, expanded alias map coverage, and added Chapter-5 validation caveat gap entry. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added scheduler hydrology phase-entry routing authority for runoff/storage classes with explicit unsupported-class hard-fail posture and WB10 test-vector obligations. |
+| `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted hydrology section from routing-only scaffolding to ET/percolation/lateral/drain production-kernel authority with deterministic WB11 updates, typed WB11 guard codes, and WB11 contract-derived vectors. |

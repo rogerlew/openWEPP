@@ -452,6 +452,10 @@ Authorized packages:
   - Purpose: add production hydrology phase-kernel skeleton entry routing
     (ET/perc/lateral/drainage/runoff/storage classes) with contract-first
     authority and pre-implementation contract-test gating.
+- `20260523-wb11-et-perc-lateral-drain-kernels-001/`
+  - Purpose: implement ET/percolation/lateral/drainage production kernels with
+    typed invariant checks, plus required kernel-contract and contract-test
+    implementation evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -110,7 +110,7 @@ This identity is an accounting constraint for contract enforcement and does not
 replace the governing Chapter-6 process equations.
 `[DIRECT][Static] + [INFERENCE][Static]`
 
-## Algorithm State Surfaces (WB10 Hydrology Phase-Entry Scaffolding)
+## Algorithm State Surfaces (WB11 Lateral/Drainage Production Kernels)
 
 ### Required Inputs
 
@@ -119,38 +119,44 @@ replace the governing Chapter-6 process equations.
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Lateral-transfer consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Drainage consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
+| WB11 lateral/drainage state inputs | `wb11_drainable_storage`, `wb11_lateral_fraction`, `wb11_drainage_fraction`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
-| Hydrology phase entry route | Deterministic route labels for `lateral_transfer` and `drainage` phase classes |
-| Scheduler failure surface | Typed hard-fail status for unsupported/mismatched lateral/drainage phase-class routing |
+| Lateral flux output | `q` |
+| Drainage outputs | `Qdd`, `Qd` |
+| Lateral/drainage state updates | `wb11_drainable_storage` |
+| Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range lateral/drainage domains |
 
 ### Mutated State Surfaces
 
-WB10 routing scaffolding mutates only typed entry-route metadata and typed
-failure reporting; lateral/drainage state/flux updates remain delegated to
-downstream kernels.
+WB11 mutates lateral/drainage boundary surfaces deterministically:
+- lateral phase updates `wb11_drainable_storage` and emits `q`
+- drainage phase applies explicit drainage-cap limit, updates
+  `wb11_drainable_storage`, emits `Qdd`, and emits `Qd = q + Qdd`
 
-## Algorithm Specification (WB10 Lateral/Drainage Routing Skeleton)
+## Algorithm Specification (WB11 Lateral/Drainage Production Execution)
 
-1. Scheduler maps `lateral_transfer` and `drainage` to explicit WB10 typed
-   hydrology phase classes.
-2. Hydrology routing validates scheduler phase/class compatibility before
-   kernel invocation.
-3. Unsupported or mismatched lateral/drainage class combinations are invalid
-   runtime states and hard-fail with typed status.
-4. Valid routing preserves orchestrator-owned writeback surfaces and forwards
-   immutable phase metadata to kernel execution.
+1. Lateral phase requires finite `wb11_drainable_storage`,
+   `wb11_lateral_fraction`, and percolation recharge `Pe`; computes
+   deterministic `q`.
+2. Drainage phase requires finite `wb11_drainable_storage`,
+   `wb11_drainage_fraction`, `wb11_drainage_coefficient`, and prior lateral
+   `q`; computes explicit cap-limited `Qdd`.
+3. Drainage phase emits deterministic total subsurface loss `Qd = q + Qdd`.
+4. Reject missing, non-finite, or out-of-range lateral/drainage domains with
+   typed hard-fail status; no silent fallback/clamping paths are permitted.
 
-## Branch and Guard Table (WB10 Lateral/Drainage Phase Classes)
+## Branch and Guard Table (WB11 Lateral/Drainage Kernels)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-SUBHYD-WB10-LATERAL` | phase `lateral_transfer` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
-| `BR-SUBHYD-WB10-DRAINAGE` | phase `drainage` | scheduler phase + WB10 phase class metadata | runtime | typed hard-fail on unsupported/mismatched routing class |
-| `BR-SUBHYD-WB10-UNSUPPORTED` | any unsupported lateral/drainage routing class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
+| `BR-SUBHYD-WB11-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `wb11_drainable_storage`, `wb11_lateral_fraction`, `Pe` | runtime | deterministic lateral/writeback execution |
+| `BR-SUBHYD-WB11-DRAIN-EXECUTE` | phase class `hydrology_drainage` | `wb11_drainable_storage`, `wb11_drainage_fraction`, `wb11_drainage_coefficient`, `q` | runtime | deterministic drainage/writeback execution |
+| `BR-SUBHYD-WB11-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
+| `BR-SUBHYD-WB11-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
 
 ## Invariants
 
@@ -167,9 +173,9 @@ downstream kernels.
 | INV-SUBHYD-011 | Drainage-capacity invariant: emitted tile/ditch drainage flux cannot exceed declared drainage coefficient (`Qdd <= D.C.`); when Eq. [6.2.10] exceeds capacity, output is explicitly capped. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-009 | Cross-domain coupling invariant: daily subsurface/drain loss term exported as `Qd` is unit/sign-consistent with Chapter-5 daily closure and preserves subsurface-contribution semantics for watershed/channel runon accounting. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-010 | Governance scope invariant: contract claims remain within Chapter-6 subsurface/drainage scope; unsupported extrapolation to alternate groundwater/baseflow physics without companion authority is non-promotable. | governance-fail | REF-SUBHYD-CH6-INTRO, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-012 | WB10 lateral routing invariant: scheduler `lateral_transfer` phase must route through explicit WB10 lateral phase class with no silent generic fallback. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-013 | WB10 drainage routing invariant: scheduler `drainage` phase must route through explicit WB10 drainage phase class with no silent generic fallback. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-014 | Unsupported routing invariant: unsupported or mismatched lateral/drainage phase-class routing states must surface typed hard failures and cannot be silently reassigned. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-SUBHYD-012 | WB11 lateral execution invariant: lateral phase computes deterministic `q` and updates `wb11_drainable_storage` from required WB11 lateral symbols with explicit recharge coupling from `Pe`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-013 | WB11 drainage execution invariant: drainage phase computes cap-limited `Qdd`, emits `Qd = q + Qdd`, and updates `wb11_drainable_storage` without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-014 | WB11 lateral/drainage guard invariant: missing/non-finite/out-of-range lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -186,9 +192,9 @@ downstream kernels.
 | `INV-SUBHYD-011` | runtime | Post-computation drainage-capacity validator | Typed hard error on uncapped `Qdd` output exceeding declared `D.C.` | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-009` | runtime | Subsurface boundary payload validator for `Qd` handoff | Typed hard error on missing malformed field or units/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-010` | governance | Contract review/disposition/verification + promotion checklist | Promotion `HOLD` when scope claims exceed declared authority boundary | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SUBHYD-012` | runtime | WB10 lateral phase-class routing table | Typed hard error on unsupported/mismatched lateral routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SUBHYD-013` | runtime | WB10 drainage phase-class routing table | Typed hard error on unsupported/mismatched drainage routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SUBHYD-014` | runtime | Unsupported lateral/drainage routing guard | Typed hard error (`HS-HYDRO-E-001`) on unsupported lateral/drainage routing class combinations | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-SUBHYD-012` | runtime | WB11 lateral production kernel execution path | Typed hard error on malformed/non-deterministic lateral writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-013` | runtime | WB11 drainage production kernel execution path | Typed hard error on malformed/non-deterministic drainage writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-014` | runtime | WB11 lateral/drainage guard tables | Typed hard error on missing/non-finite/domain-invalid lateral/drainage inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -251,15 +257,16 @@ required until implementation surfaces diverge.
 | Water-table drawdown transition (`INV-SUBHYD-008`) | saturated-zone update stage | Hard error on invalid drawdown-domain or branch misuse | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Cross-domain coupling payload (`INV-SUBHYD-009`) | subsurface boundary handoff | Hard error on missing malformed field or unit/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Governance scope boundary (`INV-SUBHYD-010`) | review/verification/promotion | Governance `HOLD` until scope claims match declared authority | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB10 lateral/drainage phase-class routing (`INV-SUBHYD-012/013/014`) | scheduler lateral/drainage entry dispatch | Hard error on unsupported/mismatched lateral/drainage routing class | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB11 lateral/drainage production execution and guards (`INV-SUBHYD-012/013/014`) | lateral/drainage kernel execution and guard validation | Hard error on malformed lateral/drainage domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
 | Constant/parameter | Units | Domain | Contract use | Authority |
 |---|---|---|---|---|
-| `WB10_PHASE_CLASS_LATERAL` | class label | exact match | Required class label for `lateral_transfer` routing | REF-SUBHYD-CH6-LATFLUX |
-| `WB10_PHASE_CLASS_DRAINAGE` | class label | exact match | Required class label for `drainage` routing | REF-SUBHYD-CH6-DRAINFLOW |
-| `WB10_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported WB10 lateral/drainage routing states | REF-SUBHYD-PHYS-BOUNDS |
+| `WB11_LATERAL_STATUS_OK` | status message id | `HKERNEL-WB11-LAT-OK-001` | Typed nominal status for successful lateral phase execution | REF-SUBHYD-CH6-LATFLUX |
+| `WB11_DRAINAGE_STATUS_OK` | status message id | `HKERNEL-WB11-DRAIN-OK-001` | Typed nominal status for successful drainage phase execution | REF-SUBHYD-CH6-DRAINFLOW |
+| `WB11_LATERAL_GUARD_CODES` | status message id range | `HKERNEL-WB11-LAT-E-001..003` | Typed lateral guard codes for missing/non-finite/domain failures | REF-SUBHYD-PHYS-BOUNDS |
+| `WB11_DRAINAGE_GUARD_CODES` | status message id range | `HKERNEL-WB11-DRAIN-E-001..003` | Typed drainage guard codes for missing/non-finite/domain failures | REF-SUBHYD-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -277,15 +284,14 @@ bit-for-bit parity). Contract-specific tolerances:
 
 ## Test-Vector Obligations
 
-Minimum WB10 scheduler lateral/drainage phase-entry conformance vectors:
+Minimum WB11 lateral/drainage production-kernel conformance vectors:
 
-1. `lateral_transfer` routes with explicit WB10 lateral phase class and
-   succeeds through kernel invocation when required symbols are present.
-2. `drainage` routes with explicit WB10 drainage phase class and succeeds
-   through kernel invocation when required symbols are present.
-3. Unsupported/mismatched lateral or drainage phase-class combinations
-   hard-fail with typed scheduler status (`HS-HYDRO-E-001`) and do not fall
-   back to generic hydrology class routing.
+1. Lateral phase emits deterministic `q` and updates
+   `wb11_drainable_storage` from valid WB11 lateral inputs.
+2. Drainage phase emits cap-limited `Qdd`, emits `Qd`, and updates
+   `wb11_drainable_storage` from valid WB11 drainage inputs.
+3. Non-finite/domain-invalid lateral/drainage inputs hard-fail with typed WB11
+   guard codes and do not mutate orchestrator writeback surfaces.
 
 ## Gap Register
 
@@ -304,3 +310,4 @@ Minimum WB10 scheduler lateral/drainage phase-entry conformance vectors:
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-09 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit Eq. [6.2.1] closure identity, added drainage-coefficient (`D.C.`) variable and capacity-cap invariant/guard/tolerance, and expanded producer obligations for hydraulic-capacity enforcement. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit lateral/drainage phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 lateral/drainage test-vector obligations. |
+| `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted lateral/drainage sections from routing-only scaffolding to production-kernel authority with deterministic `q`/`Qdd`/`Qd` updates, typed WB11 guard codes, and WB11 contract-derived vectors. |

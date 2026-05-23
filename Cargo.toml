@@ -173,6 +173,10 @@ path = "tests/integration/workspace_integration_ownership_acceptance.rs"
 name = "comparator_tier_routing_metadata"
 path = "tests/integration/comparator_tier_routing_metadata.rs"
 
+[[test]]
+name = "wb11_hydrology_kernel_contract"
+path = "tests/integration/wb11_hydrology_kernel_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

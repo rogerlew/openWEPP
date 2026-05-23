@@ -16,8 +16,9 @@ use openwepp_kernel_contract::{
     HillslopeGrowthTransitionPayload, HillslopeKernel, HillslopeKernelPhaseClass,
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
-    HillslopePerennialGrowthControl, KernelWritebackApplyResult, WritebackDecisionOutcome,
-    WritebackError, apply_kernel_writeback, evaluate_kernel_writeback,
+    HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackApplyResult,
+    KernelWritebackPayload, WritebackDecisionOutcome, WritebackError, WritebackField,
+    apply_kernel_writeback, evaluate_kernel_writeback,
 };
 use openwepp_sim_contract::closure::ClosureViolation;
 use openwepp_sim_contract::status::{
@@ -62,6 +63,22 @@ const PL_GROWTH_STATE_RTD_SYMBOL: &str = "rtd";
 const PL_GROWTH_STATE_HIA_SYMBOL: &str = "hia";
 const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
 const MANAGEMENT_CLASS_EPSILON: f64 = 1.0e-9;
+const WB11_ZERO_THRESHOLD: f64 = 1.0e-12;
+const WB11_SYMBOL_SOIL_WATER: &str = "wb11_soil_water";
+const WB11_SYMBOL_ET_DEMAND: &str = "wb11_et_demand";
+const WB11_SYMBOL_FIELD_CAPACITY: &str = "wb11_field_capacity";
+const WB11_SYMBOL_PERC_FRACTION: &str = "wb11_perc_fraction";
+const WB11_SYMBOL_LATERAL_FRACTION: &str = "wb11_lateral_fraction";
+const WB11_SYMBOL_DRAINAGE_FRACTION: &str = "wb11_drainage_fraction";
+const WB11_SYMBOL_DRAINAGE_COEFFICIENT: &str = "wb11_drainage_coefficient";
+const WB11_SYMBOL_DRAINABLE_STORAGE: &str = "wb11_drainable_storage";
+const WB11_SYMBOL_ET: &str = "ET";
+const WB11_SYMBOL_WS: &str = "Ws";
+const WB11_SYMBOL_PERC_LOSS_D: &str = "D";
+const WB11_SYMBOL_PERC_RECHARGE_PE: &str = "Pe";
+const WB11_SYMBOL_LATERAL_Q: &str = "q";
+const WB11_SYMBOL_DRAINAGE_QDD: &str = "Qdd";
+const WB11_SYMBOL_SUBHYD_QD: &str = "Qd";
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -1345,6 +1362,659 @@ fn hydrology_phase_dispatch_for_phase(
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation,
         ) => Ok(HydrologyPhaseDispatch::StorageReconciliation),
         _ => Err(HillslopeHydrologyRoutingError::UnsupportedPhaseClass { phase, phase_class }),
+    }
+}
+
+/// Typed guard failures for WB11 hydrology production kernels.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Wb11HydrologyKernelGuardError {
+    MissingRequiredStateSymbol {
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+    },
+    MissingRequiredFluxSymbol {
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+    },
+    NonFiniteStateSymbol {
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    NonFiniteFluxSymbol {
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    StateSymbolOutOfRange {
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    },
+    FluxSymbolOutOfRange {
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    },
+}
+
+impl Wb11HydrologyKernelGuardError {
+    #[must_use]
+    pub const fn boundary_class(&self) -> BoundaryClass {
+        match self {
+            Self::MissingRequiredStateSymbol { .. } | Self::MissingRequiredFluxSymbol { .. } => {
+                BoundaryClass::MissingRequiredInput
+            }
+            Self::NonFiniteStateSymbol { .. } | Self::NonFiniteFluxSymbol { .. } => {
+                BoundaryClass::NonFinite
+            }
+            Self::StateSymbolOutOfRange { .. } | Self::FluxSymbolOutOfRange { .. } => {
+                BoundaryClass::DomainViolation
+            }
+        }
+    }
+
+    #[must_use]
+    pub fn code(&self) -> String {
+        let (phase_class, suffix) = match self {
+            Self::MissingRequiredStateSymbol { phase_class, .. }
+            | Self::MissingRequiredFluxSymbol { phase_class, .. } => (phase_class, "001"),
+            Self::NonFiniteStateSymbol { phase_class, .. }
+            | Self::NonFiniteFluxSymbol { phase_class, .. } => (phase_class, "002"),
+            Self::StateSymbolOutOfRange { phase_class, .. }
+            | Self::FluxSymbolOutOfRange { phase_class, .. } => (phase_class, "003"),
+        };
+
+        let phase_prefix = match phase_class {
+            HillslopeKernelPhaseClass::HydrologyEvapotranspiration => "ET",
+            HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage => "PERC",
+            HillslopeKernelPhaseClass::HydrologyLateralTransfer => "LAT",
+            HillslopeKernelPhaseClass::HydrologyDrainage => "DRAIN",
+            _ => "GEN",
+        };
+
+        format!("HKERNEL-WB11-{phase_prefix}-E-{suffix}")
+    }
+}
+
+impl fmt::Display for Wb11HydrologyKernelGuardError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingRequiredStateSymbol {
+                phase_class,
+                symbol,
+            } => write!(
+                f,
+                "{}: phase class {} missing required state symbol {}",
+                self.code(),
+                phase_class.as_str(),
+                symbol
+            ),
+            Self::MissingRequiredFluxSymbol {
+                phase_class,
+                symbol,
+            } => write!(
+                f,
+                "{}: phase class {} missing required flux symbol {}",
+                self.code(),
+                phase_class.as_str(),
+                symbol
+            ),
+            Self::NonFiniteStateSymbol {
+                phase_class,
+                symbol,
+                value,
+            } => write!(
+                f,
+                "{}: phase class {} state symbol {} is non-finite ({})",
+                self.code(),
+                phase_class.as_str(),
+                symbol,
+                value
+            ),
+            Self::NonFiniteFluxSymbol {
+                phase_class,
+                symbol,
+                value,
+            } => write!(
+                f,
+                "{}: phase class {} flux symbol {} is non-finite ({})",
+                self.code(),
+                phase_class.as_str(),
+                symbol,
+                value
+            ),
+            Self::StateSymbolOutOfRange {
+                phase_class,
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => write!(
+                f,
+                "{}: phase class {} state symbol {}={} outside [{:?}, {:?}]",
+                self.code(),
+                phase_class.as_str(),
+                symbol,
+                value,
+                minimum,
+                maximum
+            ),
+            Self::FluxSymbolOutOfRange {
+                phase_class,
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => write!(
+                f,
+                "{}: phase class {} flux symbol {}={} outside [{:?}, {:?}]",
+                self.code(),
+                phase_class.as_str(),
+                symbol,
+                value,
+                minimum,
+                maximum
+            ),
+        }
+    }
+}
+
+impl Error for Wb11HydrologyKernelGuardError {}
+
+/// WB11 hydrology production kernel for ET/perc/lateral/drain lanes.
+#[derive(Debug, Clone, Default)]
+pub struct Wb11HydrologyKernel;
+
+impl Wb11HydrologyKernel {
+    fn require_state_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let key = BoundarySymbol::from(symbol);
+        let Some(value) = request.state_surface.get(&key) else {
+            return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                phase_class,
+                symbol: key,
+            });
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(symbol),
+                value: scalar,
+            });
+        }
+        Ok(scalar)
+    }
+
+    fn require_flux_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let key = BoundarySymbol::from(symbol);
+        let Some(value) = request.flux_surface.get(&key) else {
+            return Err(Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
+                phase_class,
+                symbol: key,
+            });
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(symbol),
+                value: scalar,
+            });
+        }
+        Ok(scalar)
+    }
+
+    fn require_state_range(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(minimum_value) = minimum {
+            if value < minimum_value - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        if let Some(maximum_value) = maximum {
+            if value > maximum_value + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn require_flux_range(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &'static str,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(minimum_value) = minimum {
+            if value < minimum_value - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        if let Some(maximum_value) = maximum {
+            if value > maximum_value + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn status_from_guard_error(error: &Wb11HydrologyKernelGuardError) -> SimulationStatus {
+        let code = error.code();
+        let status_result = match error.boundary_class() {
+            BoundaryClass::NonFinite => {
+                SimulationStatus::non_finite_failure(SimulationPhase::HillslopeKernel, code)
+            }
+            BoundaryClass::MissingRequiredInput | BoundaryClass::DomainViolation => {
+                SimulationStatus::failure(
+                    SimulationPhase::HillslopeKernel,
+                    true,
+                    false,
+                    error.boundary_class(),
+                    code,
+                )
+            }
+            _ => SimulationStatus::failure(
+                SimulationPhase::HillslopeKernel,
+                true,
+                false,
+                BoundaryClass::DomainViolation,
+                "HKERNEL-WB11-GEN-E-003",
+            ),
+        };
+
+        match status_result {
+            Ok(status) => status,
+            Err(_) => unreachable!("status message ids are non-empty WB11 constants"),
+        }
+    }
+
+    fn run_evapotranspiration(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyEvapotranspiration;
+        let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water,
+            Some(0.0),
+            None,
+        )?;
+
+        let et_demand = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_ET_DEMAND)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_ET_DEMAND,
+            et_demand,
+            Some(0.0),
+            None,
+        )?;
+
+        let actual_et = soil_water.min(et_demand);
+        let soil_water_after = soil_water - actual_et;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
+
+        let ws = if et_demand <= WB11_ZERO_THRESHOLD {
+            1.0
+        } else {
+            actual_et / et_demand
+        };
+        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, actual_et, Some(0.0), None)?;
+        Self::require_flux_range(phase_class, WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0))?;
+
+        let Ok(status) =
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-ET-OK-001")
+        else {
+            unreachable!("status message ids are non-empty WB11 constants")
+        };
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded(
+                WB11_SYMBOL_SOIL_WATER,
+                soil_water_after,
+                Some(0.0),
+                None,
+            )],
+            vec![
+                WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
+                WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
+            ],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    fn run_percolation(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage;
+        let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water,
+            Some(0.0),
+            None,
+        )?;
+
+        let field_capacity =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_FIELD_CAPACITY)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_FIELD_CAPACITY,
+            field_capacity,
+            Some(0.0),
+            None,
+        )?;
+
+        let perc_fraction =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_PERC_FRACTION)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_PERC_FRACTION,
+            perc_fraction,
+            Some(0.0),
+            Some(1.0),
+        )?;
+
+        let excess = if soil_water > field_capacity {
+            soil_water - field_capacity
+        } else {
+            0.0
+        };
+        let percolation_loss = excess * perc_fraction;
+        let soil_water_after = soil_water - percolation_loss;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_PERC_LOSS_D,
+            percolation_loss,
+            Some(0.0),
+            Some(excess),
+        )?;
+
+        let Ok(status) =
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-PERC-OK-001")
+        else {
+            unreachable!("status message ids are non-empty WB11 constants")
+        };
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded(
+                WB11_SYMBOL_SOIL_WATER,
+                soil_water_after,
+                Some(0.0),
+                None,
+            )],
+            vec![
+                WritebackField::bounded(WB11_SYMBOL_PERC_LOSS_D, percolation_loss, Some(0.0), None),
+                WritebackField::bounded(
+                    WB11_SYMBOL_PERC_RECHARGE_PE,
+                    percolation_loss,
+                    Some(0.0),
+                    None,
+                ),
+            ],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    fn run_lateral_transfer(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyLateralTransfer;
+        let drainable_storage =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINABLE_STORAGE)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_DRAINABLE_STORAGE,
+            drainable_storage,
+            Some(0.0),
+            None,
+        )?;
+
+        let recharge_pe =
+            Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_PERC_RECHARGE_PE)?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_PERC_RECHARGE_PE,
+            recharge_pe,
+            Some(0.0),
+            None,
+        )?;
+
+        let lateral_fraction =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_LATERAL_FRACTION)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_LATERAL_FRACTION,
+            lateral_fraction,
+            Some(0.0),
+            Some(1.0),
+        )?;
+
+        let available = drainable_storage + recharge_pe;
+        let q_lateral = available * lateral_fraction;
+        let drainable_after = available - q_lateral;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_DRAINABLE_STORAGE,
+            drainable_after,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_LATERAL_Q,
+            q_lateral,
+            Some(0.0),
+            Some(available),
+        )?;
+
+        let Ok(status) =
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-LAT-OK-001")
+        else {
+            unreachable!("status message ids are non-empty WB11 constants")
+        };
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded(
+                WB11_SYMBOL_DRAINABLE_STORAGE,
+                drainable_after,
+                Some(0.0),
+                None,
+            )],
+            vec![WritebackField::bounded(
+                WB11_SYMBOL_LATERAL_Q,
+                q_lateral,
+                Some(0.0),
+                None,
+            )],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    fn run_drainage(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyDrainage;
+        let drainable_storage =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINABLE_STORAGE)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_DRAINABLE_STORAGE,
+            drainable_storage,
+            Some(0.0),
+            None,
+        )?;
+
+        let drainage_fraction =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINAGE_FRACTION)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_DRAINAGE_FRACTION,
+            drainage_fraction,
+            Some(0.0),
+            Some(1.0),
+        )?;
+
+        let drainage_capacity =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINAGE_COEFFICIENT)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_DRAINAGE_COEFFICIENT,
+            drainage_capacity,
+            Some(0.0),
+            None,
+        )?;
+
+        let q_lateral = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_LATERAL_Q)?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_LATERAL_Q,
+            q_lateral,
+            Some(0.0),
+            None,
+        )?;
+
+        let uncapped_drainage = drainable_storage * drainage_fraction;
+        let q_drainage = uncapped_drainage.min(drainage_capacity);
+        let drainable_after = drainable_storage - q_drainage;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_DRAINABLE_STORAGE,
+            drainable_after,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_DRAINAGE_QDD,
+            q_drainage,
+            Some(0.0),
+            Some(drainage_capacity),
+        )?;
+
+        let q_subhyd = q_lateral + q_drainage;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_SUBHYD_QD,
+            q_subhyd,
+            Some(0.0),
+            None,
+        )?;
+
+        let Ok(status) = SimulationStatus::ok(
+            SimulationPhase::HillslopeKernel,
+            "HKERNEL-WB11-DRAIN-OK-001",
+        ) else {
+            unreachable!("status message ids are non-empty WB11 constants")
+        };
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded(
+                WB11_SYMBOL_DRAINABLE_STORAGE,
+                drainable_after,
+                Some(0.0),
+                None,
+            )],
+            vec![
+                WritebackField::bounded(
+                    WB11_SYMBOL_DRAINAGE_QDD,
+                    q_drainage,
+                    Some(0.0),
+                    Some(drainage_capacity),
+                ),
+                WritebackField::bounded(WB11_SYMBOL_SUBHYD_QD, q_subhyd, Some(0.0), None),
+            ],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
+}
+
+impl HillslopeKernel for Wb11HydrologyKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        let response_result = match request.phase_class {
+            HillslopeKernelPhaseClass::HydrologyEvapotranspiration => {
+                Self::run_evapotranspiration(request)
+            }
+            HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage => {
+                Self::run_percolation(request)
+            }
+            HillslopeKernelPhaseClass::HydrologyLateralTransfer => {
+                Self::run_lateral_transfer(request)
+            }
+            HillslopeKernelPhaseClass::HydrologyDrainage => Self::run_drainage(request),
+            _ => {
+                let Ok(status) =
+                    SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-NOP-001")
+                else {
+                    unreachable!("status message ids are non-empty WB11 constants")
+                };
+                Ok(KernelRunResponse::new(
+                    status,
+                    KernelWritebackPayload::empty(),
+                ))
+            }
+        };
+
+        match response_result {
+            Ok(response) => response,
+            Err(error) => KernelRunResponse::new(
+                Self::status_from_guard_error(&error),
+                KernelWritebackPayload::empty(),
+            ),
+        }
     }
 }
 
