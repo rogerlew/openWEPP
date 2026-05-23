@@ -299,6 +299,33 @@ fn seeded_int10_surface() -> HillslopeWritebackSurface {
     insert_scalar(state, "pl_growth_slot_0001_crop_0001_jdharv", 240.0);
     insert_scalar(state, "pl_growth_slot_0001_crop_0001_jdplt", 120.0);
     insert_scalar(state, "pl_growth_slot_0001_crop_0001_rw", 1.3);
+    for (root, value) in [
+        ("btemp", 10.0),
+        ("otemp", 25.0),
+        ("gddmax", 1700.0),
+        ("dlai", 0.85),
+        ("dropfc", 0.98),
+        ("decfct", 0.65),
+        ("spriod", 30.0),
+        ("bb", 3.6),
+        ("beinp", 35.00196),
+        ("extnct", 0.65),
+        ("hi", 0.5),
+        ("xmxlai", 3.5),
+        ("rsr", 0.25),
+        ("rtmmax", 3.0),
+        ("rdmax", 1.51995),
+    ] {
+        insert_scalar(
+            state,
+            &format!("pl_growth_slot_0001_crop_0001_{root}"),
+            value,
+        );
+    }
+    insert_scalar(state, "tmax", 25.0);
+    insert_scalar(state, "tmin", 13.0);
+    insert_scalar(state, "rad", 210.0);
+    insert_scalar(state, "Ws", 0.8);
 
     insert_scalar(state, "sumgdd", 640.0);
     insert_scalar(state, "vdmt", 2.4);

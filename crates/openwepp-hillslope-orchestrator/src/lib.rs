@@ -61,6 +61,36 @@ const PL_GROWTH_STATE_LAI_SYMBOL: &str = "lai";
 const PL_GROWTH_STATE_RTMASS_SYMBOL: &str = "rtmass";
 const PL_GROWTH_STATE_RTD_SYMBOL: &str = "rtd";
 const PL_GROWTH_STATE_HIA_SYMBOL: &str = "hia";
+const PL_GROWTH_CLIMATE_TMAX_SYMBOL: &str = "tmax";
+const PL_GROWTH_CLIMATE_TMIN_SYMBOL: &str = "tmin";
+const PL_GROWTH_CLIMATE_RAD_SYMBOL: &str = "rad";
+const PL_GROWTH_SOIL_DEPTH_SYMBOL: &str = "solthk";
+const PL_GROWTH_WATER_STRESS_SYMBOL: &str = "Ws";
+const PL_GROWTH_PARAM_BTEMP_ROOT: &str = "btemp";
+const PL_GROWTH_PARAM_OTEMP_ROOT: &str = "otemp";
+const PL_GROWTH_PARAM_GDDMAX_ROOT: &str = "gddmax";
+const PL_GROWTH_PARAM_DLAI_ROOT: &str = "dlai";
+const PL_GROWTH_PARAM_DROPFC_ROOT: &str = "dropfc";
+const PL_GROWTH_PARAM_DECFCT_ROOT: &str = "decfct";
+const PL_GROWTH_PARAM_SPRIOD_ROOT: &str = "spriod";
+const PL_GROWTH_PARAM_BB_ROOT: &str = "bb";
+const PL_GROWTH_PARAM_BEINP_ROOT: &str = "beinp";
+const PL_GROWTH_PARAM_EXTNCT_ROOT: &str = "extnct";
+const PL_GROWTH_PARAM_HI_ROOT: &str = "hi";
+const PL_GROWTH_PARAM_XMXLAI_ROOT: &str = "xmxlai";
+const PL_GROWTH_PARAM_RSR_ROOT: &str = "rsr";
+const PL_GROWTH_PARAM_RTMMAX_ROOT: &str = "rtmmax";
+const PL_GROWTH_PARAM_RDMAX_ROOT: &str = "rdmax";
+const PL_GROWTH_PAR_RAD_SCALE: f64 = 0.02092;
+const PL_GROWTH_PAR_LAI_OFFSET: f64 = 0.05;
+const PL_GROWTH_DDM_SCALE: f64 = 0.0001;
+const PL_GROWTH_ANNUAL_LAI_A: f64 = 0.5512;
+const PL_GROWTH_ANNUAL_LAI_B: f64 = 6.8;
+const PL_GROWTH_PERENNIAL_LAI_A: f64 = 0.2756;
+const PL_GROWTH_PERENNIAL_LAI_B: f64 = 13.6;
+const PL_GROWTH_ROOT_DEPTH_CURVE_A: f64 = 3.03;
+const PL_GROWTH_ROOT_DEPTH_CURVE_B: f64 = 1.47;
+const PL_GROWTH_CANCOV_MAX: f64 = 0.999;
 const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
 const MANAGEMENT_CLASS_EPSILON: f64 = 1.0e-9;
 const WB11_ZERO_THRESHOLD: f64 = 1.0e-12;
@@ -3026,14 +3056,19 @@ fn growth_phase_dispatch_for_state(
                 HillslopeAnnualGrowthAction::PlantingReset
             } else if runtime_day == jdharv {
                 HillslopeAnnualGrowthAction::HarvestReset
-            } else if day_within_closed_window(runtime_day, jdplt, jdharv) {
-                HillslopeAnnualGrowthAction::None
             } else {
-                HillslopeAnnualGrowthAction::SenescenceReset
+                HillslopeAnnualGrowthAction::None
             };
 
             let state_after = match active_action {
-                HillslopeAnnualGrowthAction::None => state_before,
+                HillslopeAnnualGrowthAction::None => compute_equation_growth_state_surface(
+                    phase,
+                    state_surface,
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                    management_class,
+                    state_before,
+                )?,
                 HillslopeAnnualGrowthAction::PlantingReset
                 | HillslopeAnnualGrowthAction::HarvestReset
                 | HillslopeAnnualGrowthAction::SenescenceReset => {
@@ -3147,7 +3182,14 @@ fn growth_phase_dispatch_for_state(
             };
 
             let state_after = match active_action {
-                HillslopePerennialGrowthAction::None => state_before,
+                HillslopePerennialGrowthAction::None => compute_equation_growth_state_surface(
+                    phase,
+                    state_surface,
+                    active_slot_selection.slot_index,
+                    active_slot_selection.crop_slot_index,
+                    management_class,
+                    state_before,
+                )?,
                 HillslopePerennialGrowthAction::PlantingReset
                 | HillslopePerennialGrowthAction::StopReset => {
                     reset_growth_state_surface(state_before)
@@ -3305,6 +3347,654 @@ fn require_growth_state_surface(
     })
 }
 
+#[derive(Debug, Clone, Copy)]
+struct GrowthEquationInputs {
+    ws: f64,
+    tmax: f64,
+    tmin: f64,
+    rad: f64,
+    solthk: f64,
+    btemp: f64,
+    otemp: f64,
+    gddmax: f64,
+    dlai: f64,
+    dropfc: f64,
+    decfct: f64,
+    spriod: f64,
+    bb: f64,
+    beinp: f64,
+    extnct: f64,
+    hi: f64,
+    xmxlai: f64,
+    rsr: f64,
+    rtmmax: f64,
+    rdmax: f64,
+}
+
+#[allow(clippy::too_many_lines)]
+fn compute_equation_growth_state_surface(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    management_class: u8,
+    state_before: HillslopeGrowthStateSurface,
+) -> Result<HillslopeGrowthStateSurface, HillslopeGrowthBoundaryError> {
+    let inputs = require_growth_equation_inputs(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        management_class,
+    )?;
+
+    let tave = f64::midpoint(inputs.tmax, inputs.tmin);
+    let gdd = (tave - inputs.btemp).max(0.0);
+    let sumgdd_next = (state_before.sumgdd + gdd).min(inputs.gddmax);
+    let fphu = (sumgdd_next / inputs.gddmax).clamp(0.0, 1.0);
+
+    let temp_ratio = (gdd / (inputs.otemp - inputs.btemp)).min(1.0);
+    let temstr = (std::f64::consts::FRAC_PI_2 * temp_ratio)
+        .sin()
+        .clamp(0.0, 1.0);
+    let reg = inputs.ws.min(temstr);
+
+    let par = PL_GROWTH_PAR_RAD_SCALE
+        * inputs.rad
+        * (1.0 - (-inputs.extnct * (state_before.lai + PL_GROWTH_PAR_LAI_OFFSET)).exp());
+    if !par.is_finite() || par < 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_CLIMATE_RAD_SYMBOL),
+                value: par,
+                reason: "PAR expression must be finite and non-negative",
+            },
+        );
+    }
+
+    let ddm = PL_GROWTH_DDM_SCALE * inputs.beinp * par;
+    let vdmt_growth = state_before.vdmt + ddm * reg;
+    let mut vdmt_next = vdmt_growth;
+    if fphu >= inputs.dlai && inputs.spriod > 0.0 {
+        let biomass_decline = (1.0 - inputs.dropfc) / inputs.spriod;
+        let canopy_decline = (1.0 - inputs.decfct) / inputs.spriod;
+        if !(0.0..=1.0).contains(&biomass_decline) {
+            return Err(
+                HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(PL_GROWTH_PARAM_DROPFC_ROOT),
+                    value: biomass_decline,
+                    reason: "daily biomass senescence decline must be within [0, 1]",
+                },
+            );
+        }
+        if !(0.0..=1.0).contains(&canopy_decline) {
+            return Err(
+                HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(PL_GROWTH_PARAM_DECFCT_ROOT),
+                    value: canopy_decline,
+                    reason: "daily canopy senescence decline must be within [0, 1]",
+                },
+            );
+        }
+        vdmt_next = vdmt_growth * (1.0 - biomass_decline);
+    }
+    vdmt_next = vdmt_next.max(0.0);
+
+    let hufh_denom = fphu + (6.5 - 10.0 * fphu).exp();
+    if hufh_denom <= 0.0 || !hufh_denom.is_finite() {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_PARAM_HI_ROOT),
+                value: hufh_denom,
+                reason: "harvest-index denominator must be positive and finite",
+            },
+        );
+    }
+    let mut hia_next = inputs.hi * (fphu / hufh_denom);
+    let water_stress_adjustment = if (0.3..0.9).contains(&fphu) {
+        (std::f64::consts::FRAC_PI_2 * (fphu - 0.3) / 0.3).sin()
+    } else {
+        0.0
+    };
+    hia_next -=
+        inputs.hi * (1.0 - 1.0 / (1.0 + 0.01 * water_stress_adjustment * (0.9 - inputs.ws)));
+    hia_next = hia_next.clamp(0.0, inputs.hi);
+
+    let canopy_biomass = if management_class == 2 {
+        vdmt_next
+    } else {
+        vdmt_next * (1.0 - hia_next)
+    };
+    let cancov_raw = 1.0 - (-inputs.bb * canopy_biomass).exp();
+    if !cancov_raw.is_finite() {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_STATE_CANCOV_SYMBOL),
+                value: cancov_raw,
+                reason: "canopy-cover equation output must be finite",
+            },
+        );
+    }
+    let mut cancov_next = cancov_raw.clamp(0.0, PL_GROWTH_CANCOV_MAX);
+    if fphu >= inputs.dlai && inputs.spriod > 0.0 {
+        let canopy_decline = (1.0 - inputs.decfct) / inputs.spriod;
+        cancov_next = (cancov_next * (1.0 - canopy_decline)).clamp(0.0, PL_GROWTH_CANCOV_MAX);
+    }
+
+    let lai_next = if management_class == 2 {
+        let denom =
+            vdmt_next + PL_GROWTH_PERENNIAL_LAI_A * (-PL_GROWTH_PERENNIAL_LAI_B * vdmt_next).exp();
+        if denom <= 0.0 || !denom.is_finite() {
+            return Err(
+                HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(PL_GROWTH_STATE_LAI_SYMBOL),
+                    value: denom,
+                    reason: "perennial LAI denominator must be positive and finite",
+                },
+            );
+        }
+        inputs.xmxlai * vdmt_next / denom
+    } else {
+        let veg = vdmt_next * (1.0 - hia_next);
+        let denom = veg + PL_GROWTH_ANNUAL_LAI_A * (-PL_GROWTH_ANNUAL_LAI_B * veg).exp();
+        if denom <= 0.0 || !denom.is_finite() {
+            return Err(
+                HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(PL_GROWTH_STATE_LAI_SYMBOL),
+                    value: denom,
+                    reason: "annual LAI denominator must be positive and finite",
+                },
+            );
+        }
+        inputs.xmxlai * veg / denom
+    };
+    if !lai_next.is_finite() || lai_next < 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_STATE_LAI_SYMBOL),
+                value: lai_next,
+                reason: "LAI must remain finite and non-negative",
+            },
+        );
+    }
+
+    let rtmass_unclamped = state_before.rtmass + (vdmt_next - state_before.vdmt) * inputs.rsr;
+    let rtmass_next = if management_class == 2 {
+        rtmass_unclamped.clamp(0.0, inputs.rtmmax)
+    } else {
+        rtmass_unclamped.max(0.0)
+    };
+
+    let rtd_floor = inputs.rdmax
+        * 0.5
+        * (1.0
+            + (PL_GROWTH_ROOT_DEPTH_CURVE_A * fphu / inputs.dlai - PL_GROWTH_ROOT_DEPTH_CURVE_B)
+                .sin());
+    let rtd_upper = inputs.rdmax.min(inputs.solthk);
+    if rtd_upper <= 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_PARAM_RDMAX_ROOT),
+                value: rtd_upper,
+                reason: "root-depth upper bound must be positive",
+            },
+        );
+    }
+
+    let rtd_candidate = if management_class == 2 {
+        let growth_increment = ((rtmass_next - state_before.rtmass) / inputs.rtmmax) * inputs.rdmax;
+        (state_before.rtd + growth_increment).max(rtd_floor)
+    } else {
+        rtd_floor
+    };
+    if !rtd_candidate.is_finite() || rtd_candidate < 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_STATE_RTD_SYMBOL),
+                value: rtd_candidate,
+                reason: "root depth must remain finite and non-negative",
+            },
+        );
+    }
+    let rtd_next = rtd_candidate.min(rtd_upper);
+
+    let state_after = HillslopeGrowthStateSurface {
+        sumgdd: sumgdd_next,
+        vdmt: vdmt_next,
+        cancov: cancov_next,
+        lai: lai_next,
+        rtmass: rtmass_next,
+        rtd: rtd_next,
+        hia: hia_next,
+    };
+
+    validate_growth_state_surface(phase, state_after)
+}
+
+#[allow(clippy::too_many_lines)]
+fn require_growth_equation_inputs(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    management_class: u8,
+) -> Result<GrowthEquationInputs, HillslopeGrowthBoundaryError> {
+    let ws = require_finite_state_value(phase, state_surface, PL_GROWTH_WATER_STRESS_SYMBOL)?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_WATER_STRESS_SYMBOL,
+        ws,
+        Some(0.0),
+        Some(1.0),
+        "water-stress carryover must be within [0, 1]",
+    )?;
+
+    let tmax = require_finite_state_value(phase, state_surface, PL_GROWTH_CLIMATE_TMAX_SYMBOL)?;
+    let tmin = require_finite_state_value(phase, state_surface, PL_GROWTH_CLIMATE_TMIN_SYMBOL)?;
+    let rad = require_finite_state_value(phase, state_surface, PL_GROWTH_CLIMATE_RAD_SYMBOL)?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_CLIMATE_RAD_SYMBOL,
+        rad,
+        Some(0.0),
+        None,
+        "radiation forcing must be non-negative",
+    )?;
+    let solthk = require_finite_state_value(phase, state_surface, PL_GROWTH_SOIL_DEPTH_SYMBOL)?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_SOIL_DEPTH_SYMBOL,
+        solthk,
+        Some(f64::EPSILON),
+        None,
+        "soil-depth envelope must be positive",
+    )?;
+
+    let btemp = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_BTEMP_ROOT,
+    )?;
+    let otemp = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_OTEMP_ROOT,
+    )?;
+    if otemp <= btemp {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_PARAM_OTEMP_ROOT),
+                value: otemp,
+                reason: "otemp must be greater than btemp",
+            },
+        );
+    }
+
+    let gddmax = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_GDDMAX_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_GDDMAX_ROOT,
+        gddmax,
+        Some(f64::EPSILON),
+        None,
+        "gddmax must be positive",
+    )?;
+
+    let dlai = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_DLAI_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_DLAI_ROOT,
+        dlai,
+        Some(f64::EPSILON),
+        Some(1.0),
+        "dlai must be within (0, 1]",
+    )?;
+
+    let dropfc = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_DROPFC_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_DROPFC_ROOT,
+        dropfc,
+        Some(0.0),
+        Some(1.0),
+        "dropfc must be within [0, 1]",
+    )?;
+    let decfct = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_DECFCT_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_DECFCT_ROOT,
+        decfct,
+        Some(0.0),
+        Some(1.0),
+        "decfct must be within [0, 1]",
+    )?;
+
+    let spriod = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_SPRIOD_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_SPRIOD_ROOT,
+        spriod,
+        Some(0.0),
+        None,
+        "spriod must be non-negative",
+    )?;
+
+    let bb = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_BB_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_BB_ROOT,
+        bb,
+        Some(0.0),
+        None,
+        "bb must be non-negative",
+    )?;
+
+    let beinp = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_BEINP_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_BEINP_ROOT,
+        beinp,
+        Some(0.0),
+        None,
+        "beinp must be non-negative",
+    )?;
+
+    let extnct = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_EXTNCT_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_EXTNCT_ROOT,
+        extnct,
+        Some(0.0),
+        None,
+        "extnct must be non-negative",
+    )?;
+
+    let hi = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_HI_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_HI_ROOT,
+        hi,
+        Some(0.0),
+        Some(1.0),
+        "hi must be within [0, 1]",
+    )?;
+
+    let xmxlai = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_XMXLAI_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_XMXLAI_ROOT,
+        xmxlai,
+        Some(0.0),
+        None,
+        "xmxlai must be non-negative",
+    )?;
+
+    let rsr = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_RSR_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_RSR_ROOT,
+        rsr,
+        Some(0.0),
+        None,
+        "rsr must be non-negative",
+    )?;
+
+    let rtmmax = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_RTMMAX_ROOT,
+    )?;
+    if management_class == 2 {
+        validate_growth_state_range(
+            phase,
+            PL_GROWTH_PARAM_RTMMAX_ROOT,
+            rtmmax,
+            Some(f64::EPSILON),
+            None,
+            "rtmmax must be positive for perennial growth",
+        )?;
+    }
+
+    let rdmax = require_slot_growth_value(
+        phase,
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        PL_GROWTH_PARAM_RDMAX_ROOT,
+    )?;
+    validate_growth_state_range(
+        phase,
+        PL_GROWTH_PARAM_RDMAX_ROOT,
+        rdmax,
+        Some(f64::EPSILON),
+        None,
+        "rdmax must be positive",
+    )?;
+
+    Ok(GrowthEquationInputs {
+        ws,
+        tmax,
+        tmin,
+        rad,
+        solthk,
+        btemp,
+        otemp,
+        gddmax,
+        dlai,
+        dropfc,
+        decfct,
+        spriod,
+        bb,
+        beinp,
+        extnct,
+        hi,
+        xmxlai,
+        rsr,
+        rtmmax,
+        rdmax,
+    })
+}
+
+fn require_slot_growth_value(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> Result<f64, HillslopeGrowthBoundaryError> {
+    let symbol = pl_growth_slot_crop_symbol(root, slot_index, crop_slot_index);
+    require_finite_state_value(phase, state_surface, symbol.as_str())
+}
+
+fn validate_growth_state_surface(
+    phase: HillslopePhase,
+    state: HillslopeGrowthStateSurface,
+) -> Result<HillslopeGrowthStateSurface, HillslopeGrowthBoundaryError> {
+    for (symbol, value, minimum, maximum, reason) in [
+        (
+            PL_GROWTH_STATE_SUMGDD_SYMBOL,
+            state.sumgdd,
+            Some(0.0),
+            None,
+            "sumgdd must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_VDMT_SYMBOL,
+            state.vdmt,
+            Some(0.0),
+            None,
+            "vdmt must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_CANCOV_SYMBOL,
+            state.cancov,
+            Some(0.0),
+            Some(PL_GROWTH_CANCOV_MAX),
+            "cancov must be within [0, 0.999]",
+        ),
+        (
+            PL_GROWTH_STATE_LAI_SYMBOL,
+            state.lai,
+            Some(0.0),
+            None,
+            "lai must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_RTMASS_SYMBOL,
+            state.rtmass,
+            Some(0.0),
+            None,
+            "rtmass must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_RTD_SYMBOL,
+            state.rtd,
+            Some(0.0),
+            None,
+            "rtd must be non-negative",
+        ),
+        (
+            PL_GROWTH_STATE_HIA_SYMBOL,
+            state.hia,
+            Some(0.0),
+            Some(1.0),
+            "hia must be within [0, 1]",
+        ),
+    ] {
+        validate_growth_state_range(phase, symbol, value, minimum, maximum, reason)?;
+    }
+
+    Ok(state)
+}
+
+fn validate_growth_state_range(
+    phase: HillslopePhase,
+    symbol: &str,
+    value: f64,
+    minimum: Option<f64>,
+    maximum: Option<f64>,
+    reason: &'static str,
+) -> Result<(), HillslopeGrowthBoundaryError> {
+    if !value.is_finite() {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(symbol),
+                value,
+                reason: "state value must be finite",
+            },
+        );
+    }
+    if let Some(minimum) = minimum {
+        if value < minimum {
+            return Err(
+                HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    reason,
+                },
+            );
+        }
+    }
+    if let Some(maximum) = maximum {
+        if value > maximum {
+            return Err(
+                HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                    phase,
+                    symbol: BoundarySymbol::from(symbol),
+                    value,
+                    reason,
+                },
+            );
+        }
+    }
+    Ok(())
+}
+
 fn reset_growth_state_surface(_state: HillslopeGrowthStateSurface) -> HillslopeGrowthStateSurface {
     HillslopeGrowthStateSurface {
         sumgdd: 0.0,
@@ -3314,14 +4004,6 @@ fn reset_growth_state_surface(_state: HillslopeGrowthStateSurface) -> HillslopeG
         rtmass: 0.0,
         rtd: 0.0,
         hia: 0.0,
-    }
-}
-
-fn day_within_closed_window(day: usize, start: usize, end: usize) -> bool {
-    if start <= end {
-        day >= start && day <= end
-    } else {
-        day >= start || day <= end
     }
 }
 
@@ -5561,6 +6243,38 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"),
             BoundaryValue::scalar(1.3),
         );
+        for (root, value) in [
+            ("btemp", 10.0),
+            ("otemp", 25.0),
+            ("gddmax", 1700.0),
+            ("dlai", 0.85),
+            ("dropfc", 0.98),
+            ("decfct", 0.65),
+            ("spriod", 30.0),
+            ("bb", 3.6),
+            ("beinp", 35.00196),
+            ("extnct", 0.65),
+            ("hi", 0.5),
+            ("xmxlai", 3.5),
+            ("rsr", 0.25),
+            ("rtmmax", 3.0),
+            ("rdmax", 1.51995),
+        ] {
+            state_surface.insert(
+                BoundarySymbol::from(format!("pl_growth_slot_0001_crop_0001_{root}")),
+                BoundaryValue::scalar(value),
+            );
+        }
+        state_surface.insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(25.0));
+        state_surface.insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(13.0));
+        state_surface.insert(BoundarySymbol::from("rad"), BoundaryValue::scalar(210.0));
+        state_surface.insert(BoundarySymbol::from("Ws"), BoundaryValue::scalar(0.8));
+        state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+        state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(2.0));
+        state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(1.0));
+        state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.15));
+        state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.35));
+        state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(0.2));
         state_surface.insert(BoundarySymbol::from("sumgdd"), BoundaryValue::scalar(640.0));
         state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(2.4));
         state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.65));
@@ -5700,6 +6414,32 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
             BoundarySymbol::from("pl_schedule_rotation_repeats"),
             BoundaryValue::scalar(2.0),
         );
+        for slot_index in 1..=6 {
+            for (root, value) in [
+                ("btemp", 10.0),
+                ("otemp", 25.0),
+                ("gddmax", 1700.0),
+                ("dlai", 0.85),
+                ("dropfc", 0.98),
+                ("decfct", 0.65),
+                ("spriod", 30.0),
+                ("bb", 3.6),
+                ("beinp", 35.00196),
+                ("extnct", 0.65),
+                ("hi", 0.5),
+                ("xmxlai", 3.5),
+                ("rsr", 0.25),
+                ("rtmmax", 3.0),
+                ("rdmax", 1.51995),
+            ] {
+                state.insert(
+                    BoundarySymbol::from(format!(
+                        "pl_growth_slot_{slot_index:04}_crop_0001_{root}"
+                    )),
+                    BoundaryValue::scalar(value),
+                );
+            }
+        }
 
         // Slot 1 / year 1 / annual.
         state.insert(

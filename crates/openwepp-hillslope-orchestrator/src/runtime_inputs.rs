@@ -11,8 +11,8 @@ use openwepp_climate_runtime_adapter::{
 use openwepp_input_contract::parsers::{
     climate::ClimateFile,
     management::{
-        InitialScenarioData, ManagementParseOutput, YearlyAnnualExtension, YearlyCroplandBranch,
-        YearlyScenarioData,
+        InitialScenarioData, ManagementParseOutput, PlantScenarioData, YearlyAnnualExtension,
+        YearlyCroplandBranch, YearlyScenarioData,
     },
     slope::{SlopePoint, SlopeProfile},
     soil::SoilProfile,
@@ -1147,6 +1147,27 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                 BoundaryValue::scalar(usize_to_f64("imngmt", cropland.imngmt)?),
             );
 
+            if cropland.itype == 0 || cropland.itype > management.registries.plants.len() {
+                return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                    field: "itype",
+                    slot_index,
+                    crop_slot_index,
+                    value: usize_to_f64("itype", cropland.itype)?,
+                    allowed: "1..=plant_scenario_count",
+                });
+            }
+            let plant = &management.registries.plants[cropland.itype - 1];
+            let PlantScenarioData::Cropland(plant_cropland) = &plant.data;
+            project_growth_equation_symbols(
+                &mut pl_growth_surface,
+                slot_index,
+                crop_slot_index,
+                plant_cropland,
+            )?;
+            if slot_index == 1 && crop_slot_index == 1 {
+                project_primary_growth_equation_aliases(&mut pl_growth_surface, plant_cropland)?;
+            }
+
             match &cropland.branch {
                 YearlyCroplandBranch::AnnualOrFallow(annual) => {
                     if !annual.rw.is_finite() {
@@ -2156,6 +2177,165 @@ fn usize_to_f64(field: &'static str, value: usize) -> Result<f64, HillslopeRunti
     let value_u32 = u32::try_from(value)
         .map_err(|_| HillslopeRuntimeInputError::PlProjectionCountOutOfRange { field, value })?;
     Ok(f64::from(value_u32))
+}
+
+fn project_growth_equation_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in growth_equation_parameter_values(slot_index, crop_slot_index, plant)? {
+        surface.insert(
+            pl_growth_slot_crop_symbol(root, slot_index, crop_slot_index),
+            BoundaryValue::scalar(value),
+        );
+    }
+    Ok(())
+}
+
+fn project_primary_growth_equation_aliases(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
+) -> Result<(), HillslopeRuntimeInputError> {
+    for (root, value) in growth_equation_parameter_values(1, 1, plant)? {
+        surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+    }
+    Ok(())
+}
+
+fn growth_equation_parameter_values(
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
+) -> Result<[(&'static str, f64); 15], HillslopeRuntimeInputError> {
+    let bb =
+        validate_projection_non_negative("bb", slot_index, crop_slot_index, plant.canopy_line[0])?;
+    let beinp = validate_projection_non_negative(
+        "beinp",
+        slot_index,
+        crop_slot_index,
+        plant.canopy_line[2],
+    )?;
+    let btemp =
+        validate_projection_finite("btemp", slot_index, crop_slot_index, plant.canopy_line[3])?;
+    let decfct =
+        validate_projection_fraction("decfct", slot_index, crop_slot_index, plant.canopy_line[8])?;
+
+    let dlai =
+        validate_projection_fraction("dlai", slot_index, crop_slot_index, plant.growth_line[0])?;
+    if dlai <= 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "dlai",
+            slot_index,
+            crop_slot_index,
+            value: dlai,
+            allowed: ">0.0 and <=1.0",
+        });
+    }
+    let dropfc =
+        validate_projection_fraction("dropfc", slot_index, crop_slot_index, plant.growth_line[1])?;
+    let extnct = validate_projection_non_negative(
+        "extnct",
+        slot_index,
+        crop_slot_index,
+        plant.growth_line[2],
+    )?;
+    let gddmax =
+        validate_projection_positive("gddmax", slot_index, crop_slot_index, plant.growth_line[5])?;
+    let hi = validate_projection_fraction("hi", slot_index, crop_slot_index, plant.growth_line[6])?;
+
+    let otemp =
+        validate_projection_finite("otemp", slot_index, crop_slot_index, plant.residue_line[2])?;
+    if otemp <= btemp {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "otemp",
+            slot_index,
+            crop_slot_index,
+            value: otemp,
+            allowed: "> btemp",
+        });
+    }
+    let rdmax =
+        validate_projection_positive("rdmax", slot_index, crop_slot_index, plant.residue_line[5])?;
+    let rsr = validate_projection_non_negative(
+        "rsr",
+        slot_index,
+        crop_slot_index,
+        plant.residue_line[6],
+    )?;
+    let rtmmax = validate_projection_non_negative(
+        "rtmmax",
+        slot_index,
+        crop_slot_index,
+        plant.residue_line[7],
+    )?;
+    let spriod = validate_projection_non_negative(
+        "spriod",
+        slot_index,
+        crop_slot_index,
+        plant.residue_line[8],
+    )?;
+    let xmxlai = validate_projection_non_negative(
+        "xmxlai",
+        slot_index,
+        crop_slot_index,
+        plant.terminal_line[1],
+    )?;
+
+    Ok([
+        ("btemp", btemp),
+        ("otemp", otemp),
+        ("gddmax", gddmax),
+        ("dlai", dlai),
+        ("dropfc", dropfc),
+        ("decfct", decfct),
+        ("spriod", spriod),
+        ("bb", bb),
+        ("beinp", beinp),
+        ("extnct", extnct),
+        ("hi", hi),
+        ("xmxlai", xmxlai),
+        ("rsr", rsr),
+        ("rtmmax", rtmmax),
+        ("rdmax", rdmax),
+    ])
+}
+
+fn validate_projection_finite(
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+        });
+    }
+    Ok(value)
+}
+
+fn validate_projection_non_negative(
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+    value: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let value = validate_projection_finite(field, slot_index, crop_slot_index, value)?;
+    if value < 0.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: ">=0.0",
+        });
+    }
+    Ok(value)
 }
 
 #[derive(Debug, Clone, PartialEq)]

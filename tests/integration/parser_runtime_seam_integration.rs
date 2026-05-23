@@ -1100,6 +1100,265 @@ fn pl13_contract_conformance_scheduler_emits_perennial_growth_transition_payload
     assert!(kernel.saw_perennial_payload);
 }
 
+#[test]
+fn pl16_contract_conformance_scheduler_emits_equation_updated_annual_growth_state_on_active_day() {
+    struct AnnualGrowthEquationProbeKernel {
+        saw_equation_update: bool,
+    }
+
+    impl HillslopeKernel for AnnualGrowthEquationProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::GrowthAnnualTransition
+            {
+                let context = request
+                    .growth_context
+                    .expect("annual growth phase should carry growth context");
+                let payload = context
+                    .transition_payload
+                    .expect("annual growth context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeGrowthTransitionControl::Annual(control)
+                        if control.active_action == HillslopeAnnualGrowthAction::None
+                ));
+                assert!(
+                    payload.state_after.sumgdd > payload.state_before.sumgdd,
+                    "active annual growth day must increase cumulative GDD"
+                );
+                assert!(
+                    payload.state_after.vdmt > payload.state_before.vdmt,
+                    "active annual growth day must increase biomass on equation path"
+                );
+                assert!(
+                    payload.state_after.cancov > payload.state_before.cancov,
+                    "active annual growth day must update canopy cover on equation path"
+                );
+                self.saw_equation_update = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL16-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl16_equation_symbols(&mut surface, Pl16EquationSeed { ws: 0.85 });
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 200.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = AnnualGrowthEquationProbeKernel {
+        saw_equation_update: false,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute annual growth equation path");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_equation_update);
+}
+
+#[test]
+fn pl16_contract_conformance_scheduler_emits_equation_updated_perennial_growth_state_on_active_day()
+{
+    struct PerennialGrowthEquationProbeKernel {
+        saw_equation_update: bool,
+    }
+
+    impl HillslopeKernel for PerennialGrowthEquationProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::GrowthPerennialTransition
+            {
+                let context = request
+                    .growth_context
+                    .expect("perennial growth phase should carry growth context");
+                let payload = context
+                    .transition_payload
+                    .expect("perennial growth context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeGrowthTransitionControl::Perennial(control)
+                        if control.active_action == HillslopePerennialGrowthAction::None
+                ));
+                assert!(
+                    payload.state_after.sumgdd > payload.state_before.sumgdd,
+                    "active perennial growth day must increase cumulative GDD"
+                );
+                assert!(
+                    payload.state_after.vdmt > payload.state_before.vdmt,
+                    "active perennial growth day must increase biomass on equation path"
+                );
+                assert!(
+                    payload.state_after.rtd >= payload.state_before.rtd,
+                    "active perennial growth day root depth should be non-decreasing"
+                );
+                self.saw_equation_update = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL16-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let mut management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let yearly = &mut management.registries.yearlies[0];
+    let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+    cropland.imngmt = 2;
+    cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+        jdharv: 288,
+        jdplt: 130,
+        jdstop: 330,
+        rw: 0.762,
+        mgtopt: 2,
+        cut_days: Vec::new(),
+        grazing_cycles: vec![YearlyPerennialGrazingCycle {
+            animal: 20.0,
+            area: 1200.0,
+            bodywt: 450.0,
+            digest: 0.62,
+            gday: 150,
+            gend: 200,
+        }],
+    });
+
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build for perennial branch");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl16_equation_symbols(&mut surface, Pl16EquationSeed { ws: 0.8 });
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 220.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = PerennialGrowthEquationProbeKernel {
+        saw_equation_update: false,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute perennial growth equation path");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_equation_update);
+}
+
+#[test]
+fn pl16_contract_conformance_rejects_missing_growth_equation_symbol() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL16-NOOP-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl16_equation_symbols(&mut surface, Pl16EquationSeed { ws: 0.7 });
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("pl_growth_slot_0001_crop_0001_btemp"));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 200.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("missing growth equation symbol should return typed failure");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(openwepp_hillslope_orchestrator::HillslopePhase::AnnualGrowthTransition)
+    );
+    assert_eq!(
+        report.phase_reports[4].decision_status.message_id(),
+        "HS-GROWTH-E-001"
+    );
+}
+
 fn assert_state_value(
     surface: &std::collections::BTreeMap<BoundarySymbol, openwepp_kernel_contract::BoundaryValue>,
     symbol: &str,
@@ -1128,6 +1387,50 @@ fn assert_state_at_least(
         value >= minimum,
         "{symbol} expected >= {minimum}, got {value}"
     );
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Pl16EquationSeed {
+    ws: f64,
+}
+
+fn seed_pl16_equation_symbols(surface: &mut HillslopeWritebackSurface, seed: Pl16EquationSeed) {
+    for (symbol, value) in [
+        ("Ws", seed.ws),
+        ("tmax", 25.0),
+        ("tmin", 13.0),
+        ("rad", 210.0),
+    ] {
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from(symbol), value.into());
+    }
+
+    for (root, value) in [
+        ("btemp", 10.0),
+        ("otemp", 25.0),
+        ("gddmax", 1700.0),
+        ("dlai", 0.85),
+        ("dropfc", 0.98),
+        ("decfct", 0.65),
+        ("spriod", 30.0),
+        ("bb", 3.6),
+        ("beinp", 35.00196),
+        ("extnct", 0.65),
+        ("hi", 0.5),
+        ("xmxlai", 3.5),
+        ("rsr", 0.25),
+        ("rtmmax", 3.0),
+        ("rdmax", 1.51995),
+    ] {
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from(root), value.into());
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("pl_growth_slot_0001_crop_0001_{root}")),
+            value.into(),
+        );
+    }
 }
 
 fn merge_hillslope_runtime_surfaces(
@@ -1299,7 +1602,10 @@ fn assert_slot_crop_growth_common_symbols(
     crop_slot_index: usize,
     pl_surfaces: &HillslopePlRuntimeSurfaces,
 ) {
-    for growth_root in ["itype", "imngmt"] {
+    for growth_root in [
+        "itype", "imngmt", "btemp", "otemp", "gddmax", "dlai", "dropfc", "decfct", "spriod", "bb",
+        "beinp", "extnct", "hi", "xmxlai", "rsr", "rtmmax", "rdmax",
+    ] {
         assert_surface_has_symbol(
             &pl_surfaces.pl_growth_surface,
             &format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{growth_root}"),
@@ -1417,6 +1723,21 @@ fn assert_merged_pl_seed_aliases(
         "rtmass",
         "rtd",
         "hia",
+        "btemp",
+        "otemp",
+        "gddmax",
+        "dlai",
+        "dropfc",
+        "decfct",
+        "spriod",
+        "bb",
+        "beinp",
+        "extnct",
+        "hi",
+        "xmxlai",
+        "rsr",
+        "rtmmax",
+        "rdmax",
         "iresd_seed",
         "sumrtm_seed",
         "sumsrm_seed",

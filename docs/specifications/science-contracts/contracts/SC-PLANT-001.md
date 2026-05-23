@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -69,6 +69,7 @@ Out of scope:
 | REF-PLANT-LEGACY-CUTGRZ | `/workdir/wepp-forest_260430_baseline/src/cutgrz.for:18-41` | Perennial harvest-date progression semantics through cut and grazing cycles. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRP | `/workdir/wepp-forest_260430_baseline/src/ptgrp.for:351-375` | Grazing day-window and `ncycle`-bounded cycle progression semantics. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRA | `/workdir/wepp-forest_260430_baseline/src/ptgra.for:188-291` | Annual event-day trigger precedence and event-day reset behavior for growth state. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-GROW | `/workdir/wepp-forest_260430_baseline/src/grow.for:280-930` | Canonical equation authority for daily GDD accumulation, stress-regulated biomass, canopy/LAI development, root growth/depth, and senescence decline dynamics. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-DECOMP | `/workdir/wepp-forest_260430_baseline/src/decomp.for:666-714` | Residue/decomposition event handling for annual extension controls (`jdburn`, `jdcut`, `jdmove`). | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INIDAT | `/workdir/wepp-forest_260430_baseline/src/inidat.for:613-647` | Zero-sentinel initialization and default domains for management schedule arrays. | `[DIRECT][Static]` |
 | REF-PLANT-INFILE-CONTRACT | `docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md` §3, §8 | Canonical field domains for `jd*`, `ncut`, `cutday`, `ncycle`, `gday`, `gend`, payload arrays. | `[DIRECT][Static]` |
@@ -99,6 +100,21 @@ Out of scope:
 | `CRITVM` | `kg m^-2` | Critical lower biomass floor under heavy grazing (where defined). | plant parameterization | grazing management invariant |
 | `gi` | `fraction` | Rangeland growth-curve increment (`0..1` progression). | rangeland growth submodel | rangeland growth/dormancy gating |
 | `RGCMIN` | `fraction` | Minimum live-biomass growth-curve floor for evergreen behavior. | rangeland growth submodel | allowed evergreen degenerate behavior |
+| `btemp` | `degC` | Crop base temperature for GDD accumulation. | plant parameterization projection | growth/phenology update |
+| `otemp` | `degC` | Crop optimum growth temperature for stress-response curve. | plant parameterization projection | growth/temperature stress update |
+| `gddmax` | `degC day` | Crop heat-unit requirement at maturity. | plant parameterization projection | phenology and maturity gating |
+| `dlai` | `fraction` | Heat-unit index threshold where senescence dynamics begin. | plant parameterization projection | senescence branch selector |
+| `dropfc` | `fraction` | Fraction of biomass retained through senescence period. | plant parameterization projection | senescence biomass decline update |
+| `decfct` | `fraction` | Fraction of canopy retained through senescence period. | plant parameterization projection | senescence canopy decline update |
+| `spriod` | `day` | Senescence-period duration. | plant parameterization projection | senescence rate denominator |
+| `bb` | `m^2 kg^-1` | Empirical canopy-cover coefficient. | plant parameterization projection | canopy-cover update |
+| `beinp` | `dimensionless` | Biomass energy-ratio parameter. | plant parameterization projection | daily biomass increment |
+| `extnct` | `dimensionless` | Radiation extinction coefficient for PAR calculation. | plant parameterization projection | daily biomass increment |
+| `hi` | `fraction` | Harvest-index cap parameter. | plant parameterization projection | harvest-index update |
+| `xmxlai` | `dimensionless` | Maximum leaf-area index parameter. | plant parameterization projection | LAI update |
+| `rsr` | `dimensionless` | Root-to-shoot ratio parameter. | plant parameterization projection | root-mass update |
+| `rtmmax` | `kg m^-2` | Maximum perennial root mass parameter. | plant parameterization projection | perennial root-mass cap |
+| `rdmax` | `m` | Maximum crop root depth parameter. | plant parameterization projection | root-depth cap |
 | `jdherb`, `jdburn`, `jdslge`, `jdcut`, `jdmove`, `jdstop` | day-of-year (`integer`) | Annual/perennial transition-control day triggers. `0` is sentinel only where explicitly allowed. | management schedule projection | growth/decomp event selectors |
 | `fbrnag`, `fbrnog`, `frcut`, `frmove` | `fraction` | Annual extension residue-management fractions coupled to event-day triggers. | management schedule projection | decomposition residue-update branches |
 | `ncut`, `ncycle` | `count` | Perennial branch cardinality controls for cut and grazing cycles. | management schedule projection | growth/decomp branch selectors |
@@ -106,7 +122,7 @@ Out of scope:
 | `gday[k]`, `gend[k]` | day-of-year (`integer`) | Grazing cycle start/end day arrays, `k=1..ncycle`. | management schedule projection | perennial grazing active-window control |
 | `animal[k]`, `bodywt[k]`, `area[k]`, `digest[k]` | count, kg, m^2, fraction | Grazing-cycle payload arrays aligned with each `gday/gend` cycle entry. | management schedule projection | grazing intake/removal controls |
 
-## Algorithm State Surfaces (PL Transition-Control Runtime Projection)
+## Algorithm State Surfaces (PL10b Transition-Control Runtime Projection)
 
 ### Required Inputs
 
@@ -177,6 +193,83 @@ This projection algorithm is pure with respect to plant-process state:
      `mgtopt`, `cutday[*]`, and `gday/gend/payload[*]`;
    - invalid domains/cardinality/window states remain typed hard failures.
 
+## Algorithm State Surfaces (PL16 Growth Physics Runtime Update)
+
+### Required Inputs
+
+| Surface | Symbols |
+|---|---|
+| Runtime day/climate forcing | `day`, `tmax`, `tmin`, `rad` |
+| Runtime growth state | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
+| Coupled stress carryover | `Ws` (previous-day water-stress factor) |
+| Active crop transition controls | `imngmt`, `jdplt`, `jdharv`, `jdstop`, `mgtopt` |
+| Projected crop parameters | `btemp`, `otemp`, `gddmax`, `dlai`, `dropfc`, `decfct`, `spriod`, `bb`, `beinp`, `extnct`, `hi`, `xmxlai`, `rsr`, `rtmmax`, `rdmax` |
+| Soil-depth envelope | `solthk` |
+
+### Required Outputs
+
+| Surface | Symbols |
+|---|---|
+| Updated growth state | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
+| Transition payload snapshot | `state_before`, `state_after`, active growth control/action |
+
+### Mutated State Surfaces
+
+PL16 growth kernel mutates only growth-state symbols:
+- `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
+
+No mutation of schedule/control projection symbols is allowed in this update
+algorithm.
+
+## Algorithm Specification (PL16 Growth Physics Runtime Update)
+
+1. Resolve active `(slot, crop)` branch from projected management controls and
+   validate required day-control symbols for that branch.
+2. Evaluate explicit transition actions first:
+   - annual: `planting_reset` (`day == jdplt`), `harvest_reset` (`day == jdharv`);
+   - perennial: `planting_reset` (`day == jdplt`), `stop_reset`
+     (`jdstop > 0 && day == jdstop`).
+3. On explicit reset actions, emit zero-state payload for
+   `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
+4. On non-reset active-growth updates, compute daily heat units:
+   `gdd = max(0, ((tmax + tmin) / 2) - btemp)`.
+5. Update cumulative heat units and phenology:
+   `sumgdd_next = min(gddmax, sumgdd_prev + gdd)`,
+   `fphu = clamp(sumgdd_next / gddmax, 0, 1)`.
+6. Compute temperature and water regulation:
+   `temstr = clamp(sin((pi/2) * min(1, gdd / (otemp - btemp))), 0, 1)`,
+   `reg = min(Ws, temstr)`.
+7. Compute potential radiation-driven biomass increment using projected crop
+   parameters:
+   `par = 0.02092 * rad * (1 - exp(-extnct * (lai_prev + 0.05)))`,
+   `ddm = 0.0001 * beinp * par`,
+   `vdmt_growth = vdmt_prev + ddm * reg`.
+8. Compute senescence branch using projected thresholds:
+   - when `fphu < dlai`, use growth branch (`vdmt_next = vdmt_growth`);
+   - when `fphu >= dlai`, apply explicit decline rates from `dropfc`, `decfct`,
+     `spriod` to reduce biomass/canopy continuously (not immediate zeroing).
+9. Update harvest index with bounded heat/stress adjustment and explicit cap:
+   `0 <= hia_next <= hi`.
+10. Update canopy and LAI from equation-driven biomass state:
+    - canopy: `cancov = 1 - exp(-bb * vdmt_effective)` (bounded to `[0,0.999]`);
+    - annual LAI uses vegetative biomass (`vdmt*(1-hia)`) with chapter-form
+      denominator constants;
+    - perennial LAI uses total biomass formulation.
+11. Update roots:
+    `rtmass_next = clamp(rtmass_prev + (vdmt_next - vdmt_prev) * rsr, 0, rtmmax)`,
+    with non-decreasing active-growth behavior unless explicit reset occurs.
+12. Update root depth:
+    - annual uses Eq. 8.2.12 heat-unit shape with `rdmax`;
+    - perennial uses incremental root-mass-driven depth growth with minimum
+      depth floor derived from the annual heat-unit curve;
+    - cap `rtd_next <= min(rdmax, solthk)`.
+13. Any missing/non-finite/out-of-domain required symbol (climate, stress,
+    crop parameter, or state symbol) is a typed hard failure. No silent
+    defaulting/clamping to proceed is allowed.
+14. Covered active growth branches (`imngmt in {1,2,3}` while dispatch is
+    active for the branch) must emit equation-driven updates and may not use
+    skip/no-op or unconditional zero-reset fallback behavior.
+
 ## Branch and Guard Table (Transition Controls)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
@@ -213,6 +306,10 @@ This projection algorithm is pure with respect to plant-process state:
 | INV-PLANT-015 | Projection failure posture: invalid transition-control runtime projection domains must hard-fail as typed errors; silent defaults or clamps are prohibited. | hard-fail | REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[INFERENCE][Static]` |
 | INV-PLANT-016 | Decomposition-transition dispatch determinism: scheduler assembly of typed decomposition context consumes projected annual/perennial control families and produces deterministic per-day transition selector semantics; invalid payload/index/window states are hard-fail typed errors. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-017 | INT10 coupled lane-ordering invariant: daily coupled execution must preserve `decomp -> growth -> watbal` ordering through explicit ordering flags (`pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth`) and typed transition-context carriage. Missing/non-finite/out-of-domain ordering symbols are hard-fail and must block hydrology lane entry. | hard-fail | REF-PLANT-CH8-INTRO, REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-DECOMP | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-018 | PL16 active-growth update invariant: on active non-reset growth days, `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, and `hia` are updated by equations (GDD, stress regulation, biomass, canopy/LAI, root growth) rather than pass-through/no-op or unconditional zero-reset behavior. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-CH8-GROWTH, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-019 | GDD and phenology boundedness: `gdd = max(0, ((tmax+tmin)/2)-btemp)`, cumulative `sumgdd` is monotone non-decreasing between explicit reset events, and `fphu=sumgdd/gddmax` is bounded to `[0,1]`. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-LEGACY-GROW | `[DIRECT][Static]` |
+| INV-PLANT-020 | Senescence/harvest dynamics: post-threshold senescence uses explicit decline equations/parameters (`dropfc`, `decfct`, `spriod`) and preserves non-negative biomass/canopy state while enforcing explicit reset only for canonical reset-class actions (`planting`, `harvest`, `stop`). | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-PTGRA | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-021 | Growth-physics required-symbol guard: climate/stress/parameter inputs required by PL16 equations (`tmax`, `tmin`, `rad`, `Ws`, `btemp`, `otemp`, `gddmax`, `bb`, `beinp`, `extnct`, `rdmax`, `rsr`, `xmxlai`, etc.) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error. | hard-fail | REF-PLANT-CH8-GROWTH, REF-PLANT-CH8-STRESS, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -288,6 +385,10 @@ This projection algorithm is pure with respect to plant-process state:
 | `INV-PLANT-015` | runtime | Projection error policy guard | Typed hard error only; silent default/clamp is forbidden | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-PLANT-016` | runtime | Scheduler decomposition-transition typed-context assembler | Typed hard error on invalid payload/index/window/action state | Tier-A gate for PL12 decomposition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-017` | runtime | Coupled lane ordering guard at decomposition/growth dispatch and scheduler phase closure | Typed hard error on missing/non-finite/invalid ordering symbols; hydrology lane is not executed after growth failure | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-018` | runtime | Growth transition payload assembler (`state_after`) on active non-reset days | Typed hard error when active branch returns pass-through/no-op or unconditional zero-reset in place of equation update | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-019` | runtime | Daily GDD / phenology update path | Typed hard error on out-of-domain GDD/fphu or non-monotone cumulative heat units outside reset actions | Tier-A gate | `[DIRECT][Static]` |
+| `INV-PLANT-020` | runtime | Senescence/harvest branch update path | Typed hard error on invalid senescence-rate parameters, negative post-update state, or unauthorized implicit reset | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -348,6 +449,16 @@ states required deterministic alias mapping for transition-control projections.
 | `ZERO_SENTINEL` | day/count | `0` | inactive/unspecified optional controls only where explicitly allowed | REF-PLANT-LEGACY-INIDAT, REF-PLANT-INFILE-CONTRACT |
 | `CUT_INDEX_ORIGIN` | index | `1` | first valid cut event index | REF-PLANT-LEGACY-TILAGE |
 | `CYCLE_INDEX_ORIGIN` | index | `1` | first valid grazing cycle index | REF-PLANT-LEGACY-TILAGE |
+| `PAR_RAD_TO_MJ` | multiplier | `0.02092` | Converts legacy daily radiation units for PAR expression in biomass update | REF-PLANT-LEGACY-GROW |
+| `PAR_LAI_OFFSET` | LAI | `0.05` | Legacy LAI starter offset in PAR attenuation expression | REF-PLANT-LEGACY-GROW |
+| `DDM_SCALE` | multiplier | `0.0001` | Legacy biomass-production scaling in daily dry-matter increment equation | REF-PLANT-LEGACY-GROW |
+| `ANNUAL_LAI_A` | scalar | `0.5512` | Annual LAI denominator coefficient | REF-PLANT-LEGACY-GROW |
+| `ANNUAL_LAI_B` | scalar | `6.8` | Annual LAI exponential decay coefficient | REF-PLANT-LEGACY-GROW |
+| `PERENNIAL_LAI_A` | scalar | `0.2756` | Perennial LAI denominator coefficient | REF-PLANT-LEGACY-GROW |
+| `PERENNIAL_LAI_B` | scalar | `13.6` | Perennial LAI exponential decay coefficient | REF-PLANT-LEGACY-GROW |
+| `ROOT_DEPTH_CURVE_A` | scalar | `3.03` | Annual root-depth sinusoid coefficient | REF-PLANT-LEGACY-GROW |
+| `ROOT_DEPTH_CURVE_B` | scalar | `1.47` | Annual root-depth sinusoid phase offset | REF-PLANT-LEGACY-GROW |
+| `CANCOV_MAX` | fraction | `0.999` | Upper bound applied to canopy-cover equation output | REF-PLANT-LEGACY-GROW |
 
 ## Tolerance and Numeric Notes
 
@@ -390,6 +501,20 @@ Minimum required scenario families for contract conformance:
    - missing ordering symbol (`pl_order_watbal_after_growth`) and non-finite
      ordering value (`pl_order_growth_after_decomp = NaN`) hard-fail with typed
      status and halt before watbal-lane completion.
+9. PL16 annual growth equation vectors:
+   - active in-window day (`jdplt < day < jdharv`) increases/maintains
+     `sumgdd` and computes non-pass-through `state_after` values for
+     `vdmt/cancov/lai/rtmass/rtd/hia` from equation path;
+   - harvest day emits explicit reset action and zero-state payload.
+10. PL16 perennial growth equation vectors:
+   - active day before `jdstop` updates growth state via equation path with
+     perennial LAI/root-depth logic and bounded canopy;
+   - `jdstop` day emits explicit stop reset and zero-state payload.
+11. PL16 required-symbol guard vectors:
+   - missing `tmax` or `rad` fails with typed missing-input status;
+   - non-finite `Ws` or out-of-domain crop parameters fail with typed
+     domain/non-finite status;
+   - active branch does not silently default missing physics symbols.
 
 ## Gap Register
 
@@ -402,6 +527,7 @@ Minimum required scenario families for contract conformance:
 | GAP-PLANT-005 | Transition-control projection families are implemented and contract-conformance tests pass for PL11 scope (`annual extension symbols`, `cutday indexed projection`, `grazing cycle payload projection`, and typed rejects for grazing window/cardinality). | Closed by PL11 runtime implementation and explicit conformance execution evidence. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but full cross-domain consumer harmonization of error labels is still open. | Residual traceability work remains for downstream consumers; runtime projection labels are implemented. | promotable-with-risk | `[INFERENCE][Static] + [Ran]` |
 | GAP-PLANT-007 | Alias continuity for projected PL slot/crop runtime naming required explicit closure (`conset/drset` schedule drift and PL11 projected family template continuity). | Closed by PL13A canonical registry + contract alias-map reconciliation; remaining non-canonical structural scheduler symbols are explicitly exceptioned. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-PLANT-008 | PL13 growth transition path used reset/plumbing semantics without full equation-driven daily growth updates. | Closed by PL16 equation-path authority and implementation for active annual/perennial growth branches. | closed | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
@@ -416,3 +542,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `6` | `Codex` | PL12 amendment: added typed decomposition-transition context-consumption invariant (`INV-PLANT-016`) and explicit scheduler action-selector authority in algorithm/guard sections. |
 | `2026-05-23` | `7` | `Codex` | PL13A alias-continuity amendment: reconciled projected PL slot/crop alias mappings (including `conset/drset` continuity), added explicit PL13A closure gap row (`GAP-PLANT-007`), and aligned canonical-to-boundary template authority with registry behavior. |
 | `2026-05-23` | `8` | `Codex` | INT10 amendment: added coupled lane-ordering invariant (`INV-PLANT-017`), explicit guard-map authority for `decomp -> growth -> watbal` sequencing, and INT10 coupled replay test-vector obligations for ordering and state-transfer semantics. |
+| `2026-05-23` | `9` | `Codex` | PL16 amendment: added equation-authoritative growth-runtime state surfaces and algorithm steps (GDD/biomass/canopy/LAI/root/phenology/senescence), introduced `INV-PLANT-018..021` plus guard-map rows, expanded constants table to legacy growth-equation coefficients, and added PL16 test-vector obligations for equation updates and required-symbol failure posture. |

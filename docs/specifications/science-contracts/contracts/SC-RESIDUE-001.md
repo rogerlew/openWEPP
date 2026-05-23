@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -89,7 +89,7 @@ Out of scope:
 | `FERIND`, `PSZIND` | `fraction` | Fertility and residue particle-size decomposition modifiers. | residue updater | cropland decomposition branch logic |
 | `Bc` | `kg m^-2` | Daily disappearance of rangeland litter from insects/rodents. | rangeland updater | rangeland decomposition branch logic |
 
-## Algorithm State Surfaces (PL12/PL13 Transition Execution)
+## Algorithm State Surfaces (PL12/PL16 Transition Execution)
 
 ### Required Inputs
 
@@ -118,7 +118,7 @@ typed transition-context assembly and typed failure reporting; direct residue
 or growth state mutation is delegated to kernel handlers consuming the typed
 contexts.
 
-## Algorithm Specification (PL12/PL13 Scheduler Transition Authority)
+## Algorithm Specification (PL12/PL16 Scheduler Transition Authority)
 
 1. Resolve active PL slot/crop from schedule topology and runtime `day/year`
    controls.
@@ -150,11 +150,9 @@ contexts.
 8. Growth-transition dispatch consumes active slot/crop controls and runtime
    day, and validates key growth state surfaces:
    `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
-9. Annual/fallow growth branch emits deterministic action signaling using
-   day-window logic:
+9. Annual/fallow growth branch emits deterministic action signaling:
    - `planting_reset` on `day == jdplt`,
    - `harvest_reset` on `day == jdharv`,
-   - `senescence_reset` outside the active annual growth window,
    - `none` otherwise.
 10. Perennial growth branch emits deterministic action signaling:
    - `planting_reset` on `day == jdplt`,
@@ -163,15 +161,18 @@ contexts.
 11. For reset actions, scheduler emits typed growth transition payload with
     explicit post-transition zero state for:
     `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
-12. Growth transition payload domains are hard-fail validated (`cancov in
+12. On non-reset active-growth days, growth payload `state_after` must be
+    equation-derived (GDD/stress/biomass/canopy/LAI/root updates) rather than
+    pass-through/no-op or unconditional zero reset.
+13. Growth transition payload domains are hard-fail validated (`cancov in
     [0,0.999]`, `hia in [0,1]`, remaining surfaces non-negative); silent
     clamping/default behavior is prohibited.
-13. INT10 coupled replay closure requires that growth transition dispatch
+14. INT10 coupled replay closure requires that growth transition dispatch
     carries `order_watbal_after_growth = 1` and that scheduler progression into
     watbal/hydrology phases occurs only after successful decomposition and
     growth transition dispatch completion.
 
-## Branch and Guard Table (PL12/PL13 Transition Controls)
+## Branch and Guard Table (PL12/PL16 Transition Controls)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
@@ -183,9 +184,10 @@ contexts.
 | `BR-RES-PL12-PERENNIAL-CUT` | `mgtopt=1` | `cutday[1..ncut]` | runtime | typed hard-fail on cardinality/index closure or day domain violation |
 | `BR-RES-PL12-PERENNIAL-GRAZE` | `mgtopt=2` | `gday/gend/payload[1..ncycle]` | runtime | typed hard-fail on cardinality/index closure, day-window ordering, or payload domain violations |
 | `BR-RES-PL12-PERENNIAL-DORMANT` | `mgtopt=3` | no indexed families | runtime | typed hard-fail if cut/graze payload symbols are present unexpectedly |
-| `BR-RES-PL13-GROWTH-ANNUAL` | annual/fallow branch active | `jdplt`, `jdharv`, growth state surface | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
-| `BR-RES-PL13-GROWTH-PERENNIAL` | perennial branch active | `jdplt`, `jdharv`, `jdstop`, `mgtopt`, growth state surface | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
-| `BR-RES-PL13-GROWTH-RESET` | planting/harvest/stop/senescence action day | growth state surface | runtime | typed hard-fail if reset payload cannot be emitted from valid pre-state domain |
+| `BR-RES-PL16-GROWTH-ANNUAL` | annual/fallow branch active | `jdplt`, `jdharv`, growth state surface, PL16 growth-physics symbol set | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
+| `BR-RES-PL16-GROWTH-PERENNIAL` | perennial branch active | `jdplt`, `jdharv`, `jdstop`, `mgtopt`, growth state surface, PL16 growth-physics symbol set | runtime | typed hard-fail on missing/non-finite/non-integral/out-of-domain growth controls/state |
+| `BR-RES-PL16-GROWTH-RESET` | planting/harvest/stop action day | growth state surface | runtime | typed hard-fail if reset payload cannot be emitted from valid pre-state domain |
+| `BR-RES-PL16-GROWTH-EQUATION` | active non-reset growth day | climate (`tmax/tmin/rad`), stress (`Ws`), projected crop-parameter symbols, growth state surface | runtime | typed hard-fail on missing/non-finite/out-of-domain equation symbols or non-equation fallback behavior |
 | `BR-RES-INT10-ORDER` | coupled replay lane closure (`decomp -> growth -> watbal`) | `pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` | runtime | typed hard-fail on missing/non-finite/out-of-domain ordering symbols; hydrology phase entry blocked |
 
 ## Invariants
@@ -206,7 +208,7 @@ contexts.
 | INV-RESIDUE-012 | Update-order invariant: daily residue updates must preserve explicit sequence from §9.4 (decomposition, standing-to-flat conversion, cover update, management-day branch, and harvest repartition) without silent reordering. | hard-fail | REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-013 | Governance-range invariant: when crop/operation parameters are applied outside chapter-declared tables or documented limits/assumptions, outputs are non-promotable unless labeled and dispositioned with explicit risk rationale. | governance-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-014 | Growth transition state-domain invariant: scheduler growth transition payload assembly requires finite/non-negative growth state surfaces with bounded canopy and harvest-index domains (`cancov in [0,0.999]`, `hia in [0,1]`). | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-RESIDUE-015 | Growth transition reset invariant: reset-class actions (`planting`, `harvest`, `stop`, `senescence`) emit explicit zero-state payloads for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` and do not rely on implicit defaults. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-015 | Growth transition reset invariant: reset-class actions (`planting`, `harvest`, `stop`) emit explicit zero-state payloads for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` and do not rely on implicit defaults. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-016 | INT10 coupled replay invariant: daily coupled transition/hydrology execution preserves `decomp -> growth -> watbal` ordering, with typed context and writeback state transfer observable by downstream hydrology phases; ordering-symbol violations are hard-fail with no silent fallback. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH5-ET, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
@@ -347,11 +349,21 @@ Minimum required scenario families for contract conformance:
      negative state surfaces);
    - non-integral runtime day and growth control day symbols.
 9. Growth transition reset payload obligations:
-   - annual `harvest_reset` and `senescence_reset` emit explicit zero-state
+   - annual `planting_reset` and `harvest_reset` emit explicit zero-state
      post-transition payloads;
    - perennial `stop_reset` emits explicit zero-state post-transition payload;
    - no implicit defaults are accepted for reset-class state zeroing.
-10. INT10 coupled replay obligations:
+10. PL16 growth-equation obligations:
+   - active non-reset annual day (`jdplt < day < jdharv`) emits equation-derived
+     `state_after` updates for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`,
+     `rtd`, `hia`;
+   - active non-reset perennial day (not `jdplt` and not `jdstop`) emits
+     equation-derived `state_after` updates with perennial LAI/root-depth
+     branch behavior;
+   - missing/non-finite/out-of-domain required equation symbols
+     (`tmax`, `tmin`, `rad`, `Ws`, projected crop parameters) are typed hard
+     failures; no fallback reset/pass-through is accepted.
+11. INT10 coupled replay obligations:
    - canonical annual replay preserves scheduler order
      `decomp -> growth -> watbal`;
    - decomposition/growth writeback state emitted in transition phases is
@@ -379,3 +391,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `4` | `Codex` | PL12 amendment: added scheduler decomposition-transition algorithm authority, branch/guard table for PL11 payload consumption, constants table, and PL12 test-vector obligations. |
 | `2026-05-23` | `5` | `Codex` | PL13 amendment: added growth-transition branch/reset authority, growth state-domain invariants (`INV-RESIDUE-014/015`), and PL13 growth transition test-vector obligations. |
 | `2026-05-23` | `6` | `Codex` | INT10 amendment: added coupled replay lane-order authority (`decomp -> growth -> watbal`), explicit branch/guard and invariant coverage (`INV-RESIDUE-016`), and INT10 ordering/state-transfer test-vector obligations. |
+| `2026-05-23` | `7` | `Codex` | PL16 amendment: aligned growth transition authority to reset-only (`planting/harvest/stop`) plus equation-driven non-reset payload behavior, added explicit PL16 growth-equation guard branch, and updated PL16-oriented test-vector obligations/failure posture. |
