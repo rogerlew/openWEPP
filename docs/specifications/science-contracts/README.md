@@ -15,6 +15,15 @@ Canonical registry and lifecycle index must be stored at:
 
 This directory is the single source of truth for `SC-*` authority files.
 
+## Agent Discovery (Normative)
+
+For kernel-process contract work, start with:
+
+1. `AGENTS.md`
+2. `docs/specifications/science-contract-authoring-procedure.md`
+3. `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+4. `docs/specifications/science-contracts/index.md`
+
 ## Non-Canonical Artifacts
 
 Work-package artifacts may include contract drafts, review packets, disposition
@@ -32,6 +41,8 @@ Required practice:
 
 - `index.md`: science-contract registry with lifecycle metadata.
 - `contracts/`: canonical `SC-*` markdown files.
+- `kernel-process-contract-profile.md`: mandatory format/profile requirements
+  for kernel-affecting contract revisions.
 
 ## Naming
 

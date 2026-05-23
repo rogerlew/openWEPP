@@ -14,7 +14,9 @@ Objectives:
    symbol/guard authority must be explicit in `SC-PLANT-001` before disposition.
 5. Enforce kernel profile consistency using
    `docs/specifications/science-contracts/kernel-process-contract-profile.md`.
-6. Close all PL10b contract-conformance failures currently captured in
+6. Author/update contract-derived conformance tests and run a documented
+   pre-implementation contract gate before runtime projection code edits.
+7. Close all PL10b contract-conformance failures currently captured in
    `tests/integration/parser_runtime_seam_integration.rs` ignored gates:
    - `pl10b_contract_conformance_requires_annual_extension_projection_symbols`
    - `pl10b_contract_conformance_requires_perennial_cutday_indexed_projection`
@@ -25,6 +27,9 @@ Objectives:
 Constraints:
 - Do not implement production decomposition kinetics (`PL12`) or growth
   transition kinetics (`PL13`).
+- Do not modify production runtime projection code until:
+  1. contract authority updates are drafted, and
+  2. pre-implementation contract-gate evidence is recorded.
 - Do not introduce silent defaults/clamping for invalid payloads.
 - Maintain canonical symbol continuity and explicit alias mapping where needed.
 - PL11 disposition is not complete until the PL10b ignored contract-gate tests

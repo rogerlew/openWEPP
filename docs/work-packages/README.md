@@ -22,6 +22,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Evidence mode per assessment: **Static** (read and reasoned) vs **Ran** (commands actually invoked).
 - Single-mechanism rule: one landed change per replay checkpoint.
 - Correctness over completion: unresolved contract/invariant correctness gaps keep package disposition in `HOLD` until explicitly resolved or risk-accepted.
+- Kernel-affecting packages (including runtime projection controlling kernel branches) must list:
+  - `docs/specifications/science-contract-authoring-procedure.md`
+  - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+  as dependencies, and must include a kernel-profile compliance checklist artifact.
+- Missing kernel-profile/procedure compliance keeps disposition in `HOLD`.
 
 ## Queued packages
 
@@ -423,6 +428,26 @@ Authorized packages:
   - Purpose: replace hard-coded `slot_0001/crop_0001` dispatch coupling with
     deterministic day-aware active slot/crop authority and typed failure
     behavior for PL growth/decomposition routing.
+- `20260523-pl10b-contract-blind-authority-and-conformance-001/`
+  - Purpose: run a contract-first blind-authoring gate (implementation-blind
+    contract authority, contract-derived tests, conformance run, and gap
+    reconciliation) before PL11 implementation work.
+- `20260523-pl11-pl-event-runtime-projection-001/`
+  - Purpose: project annual/perennial transition-control payload families into
+    deterministic PL runtime symbol surfaces with typed guards and mandatory
+    kernel-process contract-profile compliance.
+- `20260523-pl12-decomp-resup-transition-kernel-001/`
+  - Purpose: implement production decomposition/residue transition kernel
+    execution with contract-first authority, pre-implementation contract-test
+    gating, and typed invariant/guard enforcement.
+- `20260523-pl13-growth-transition-kernel-001/`
+  - Purpose: implement production annual/perennial growth transition kernel
+    execution with contract-first authority, pre-implementation contract-test
+    gating, and typed transition/invariant enforcement.
+- `20260523-pl13a-alias-continuity-closure-001/`
+  - Purpose: close or explicitly disposition canonical PL symbol alias
+    continuity (`PL09-GAP-007`) with registry/contract authority updates in a
+    parallel governance lane.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

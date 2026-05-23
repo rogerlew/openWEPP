@@ -24,6 +24,7 @@ This procedure is normative for contract promotion readiness and complements:
 - `docs/decisions/0003-parity-semantic-not-bit.md`
 - `docs/work-packages/README.md`
 - `docs/specifications/science-contracts/README.md`
+- `docs/specifications/science-contracts/kernel-process-contract-profile.md`
 
 ## Canonical Contract Location (Normative)
 
@@ -108,6 +109,16 @@ A contract draft is review-ready only when it contains, at minimum:
 
 The draft must exist in the canonical `SC-*` file path before dual-agent review
 begins.
+
+## Kernel Profile Requirement (Normative)
+
+If a package changes production kernel behavior or runtime projection semantics
+that control kernel branch execution, the contract revision must also satisfy:
+
+- `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+
+The kernel profile is an additional mandatory gate. Missing profile compliance
+keeps disposition in `HOLD`.
 
 ## Required Dual-Agent Review Gate
 

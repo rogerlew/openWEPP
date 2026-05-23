@@ -36,6 +36,8 @@ Static:
 5. `PL13 + WB13 -> INT10`
 6. `INT10 -> PL14 -> PL15`
 7. `PL09A -> PL10` and `PL09A -> WB10` (pre-execution clearance gate)
+8. `PL13A` may execute in parallel with `PL13` once both prerequisites are met
+   (`PL11` complete for `PL13A`, `PL12` complete for `PL13`).
 
 ## Ordering Rationale
 
@@ -55,6 +57,9 @@ Static:
 7. `PL14` and `PL15` remain the authoritative hold-lift closure stages.
 8. PL10/WB10/PL10b execution must preserve ARCH15/ARCH21 CRF-001/CRF-002 typed-seam
    closure posture as a non-regression constraint.
+9. `PL13` and `PL13A` are intentionally parallelizable with disjoint ownership:
+   runtime kernel implementation (`PL13`) vs alias continuity governance lane
+   (`PL13A`).
 
 ## Release Rule
 
