@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -293,6 +293,27 @@ Minimum WB11 lateral/drainage production-kernel conformance vectors:
 3. Non-finite/domain-invalid lateral/drainage inputs hard-fail with typed WB11
    guard codes and do not mutate orchestrator writeback surfaces.
 
+## WB12 Reconciliation Coupling Addendum
+
+### WB12 Coupling Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Subhyd export into storage reconciliation | `Qd` |
+| Drainage/lateral diagnostics available to reconciliation checks | `q`, `Qdd`, `Qd` |
+| WB12 storage reconciliation outputs | `wb12_storage_reconciled`, `wb12_storage_closure_delta` |
+
+### WB12 Coupling Requirements
+
+1. `Qd` exported from WB11 lateral/drainage phases remains the required subsurface-loss term consumed by WB12 storage reconciliation.
+2. WB12 storage reconciliation must treat `Qd` as a non-negative loss magnitude in closure diagnostics.
+3. Missing/non-finite `Qd` at storage reconciliation boundaries is an invalid runtime state and must hard-fail with typed WB12 storage guard codes.
+
+### WB12 Coupling Test Vectors
+
+1. Nominal WB12 reconciliation vector consumes finite `Qd` and preserves deterministic storage closure diagnostics.
+2. Missing or non-finite `Qd` during WB12 storage reconciliation hard-fails before writeback mutation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -311,3 +332,4 @@ Minimum WB11 lateral/drainage production-kernel conformance vectors:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit Eq. [6.2.1] closure identity, added drainage-coefficient (`D.C.`) variable and capacity-cap invariant/guard/tolerance, and expanded producer obligations for hydraulic-capacity enforcement. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit lateral/drainage phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 lateral/drainage test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted lateral/drainage sections from routing-only scaffolding to production-kernel authority with deterministic `q`/`Qdd`/`Qd` updates, typed WB11 guard codes, and WB11 contract-derived vectors. |
+| `2026-05-23` | `5` | `Codex` | WB12 amendment: added explicit storage-reconciliation coupling authority for `Qd` consumption and typed WB12 closure-diagnostic failure posture. |

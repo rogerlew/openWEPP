@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-23
 supersedes: []
 superseded_by: []
 ---
@@ -226,6 +226,37 @@ bit-for-bit parity). Contract-level tolerance declarations:
 | TOL-RUNOFFPART-004 | Non-negative-domain tolerance for peak runoff rate (`qp`) | lower bound `>= -1e-12 m^2 s^-1` | No silent clamping in runtime path. |
 | TOL-RUNOFFPART-005 | Multi-OFE branch threshold tolerance around `Fh - Fp` case boundary | `abs(Fh - Fp) <= 1e-12 m^3 m^-1` treated as case-four boundary | Prevents numerical jitter from toggling case-three/case-four branch outcomes. |
 
+## WB12 Runoff Reconciliation Addendum
+
+### WB12 Reconciliation Inputs/Outputs
+
+| Surface | Symbols |
+|---|---|
+| WB12 runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| WB12 runoff reconciliation outputs | `Q`, `wb12_runoff_reconciled`, `wb12_runoff_closure_delta` |
+
+### WB12 Reconciliation Rule
+
+Runoff reconciliation publishes:
+- `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+- `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+
+Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state.
+
+### WB12 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol | `HKERNEL-WB12-RUNOFF-E-001` |
+| Non-finite required symbol | `HKERNEL-WB12-RUNOFF-E-002` |
+| Domain/closure violation | `HKERNEL-WB12-RUNOFF-E-003` |
+
+### WB12 Contract-Test Vectors
+
+1. Valid WB12 runoff inputs emit deterministic `Q` and reconciliation diagnostics.
+2. Non-finite WB12 runoff input hard-fails with `HKERNEL-WB12-RUNOFF-E-002`.
+3. Closure-delta overflow beyond tolerance hard-fails with `HKERNEL-WB12-RUNOFF-E-003` and no writeback mutation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -242,3 +273,4 @@ bit-for-bit parity). Contract-level tolerance declarations:
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-06 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-4 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit event-closure term identity, added normative multi-OFE case outcome table, added alias row for `De`, and split rate tolerances for clearer unit-specific governance. |
+| `2026-05-23` | `3` | `Codex` | WB12 amendment: added runoff reconciliation kernel authority with deterministic closure diagnostics, typed WB12 runoff guard codes, and WB12 contract-derived vectors. |

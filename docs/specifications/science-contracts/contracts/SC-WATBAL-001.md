@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -272,6 +272,41 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 3. Unsupported hydrology phase-class combinations hard-fail with typed routing
    status (`HS-HYDRO-E-001`) and no fallback/default class rewrite.
 
+## WB12 Reconciliation Authority Addendum
+
+### WB12 Required Surfaces
+
+| Surface | Symbols |
+|---|---|
+| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| Storage reconciliation inputs | `wb12_storage_initial`, `wb12_storage_observed`, `wb12_storage_closure_tolerance`, `wb12_precip_input`, `Q`, `ET`, `D`, `Qd` |
+| Runoff reconciliation outputs | `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+| Storage reconciliation outputs | `wb12_storage_closure_delta`, `wb12_storage_reconciled` |
+
+### WB12 Deterministic Reconciliation Rules
+
+1. Runoff reconciliation emits:
+   - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+2. Storage reconciliation emits:
+   - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input - Q - ET - D - Qd`
+   - `wb12_storage_closure_delta = wb12_storage_reconciled - wb12_storage_observed`
+3. Absolute closure deltas above declared per-phase tolerances are invalid closure states.
+4. Missing/non-finite/out-of-range inputs and invalid closure states hard-fail with typed status and do not apply writeback.
+
+### WB12 Guard Codes
+
+| Phase | Missing | Non-finite | Domain/closure |
+|---|---|---|---|
+| Runoff reconciliation | `HKERNEL-WB12-RUNOFF-E-001` | `HKERNEL-WB12-RUNOFF-E-002` | `HKERNEL-WB12-RUNOFF-E-003` |
+| Storage reconciliation | `HKERNEL-WB12-STORAGE-E-001` | `HKERNEL-WB12-STORAGE-E-002` | `HKERNEL-WB12-STORAGE-E-003` |
+
+### WB12 Contract-Test Vectors
+
+1. Valid WB12 runoff/storage inputs produce deterministic reconciliation outputs and state updates.
+2. Non-finite WB12 runoff/state input hard-fails at the corresponding reconciliation phase with typed non-finite guard code.
+3. Closure-delta overflow beyond tolerance hard-fails with typed domain/closure guard code and no writeback mutation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -290,3 +325,4 @@ Minimum WB11 hydrology production-kernel conformance vectors:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: clarified daily-step closure enforcement, added explicit zero-demand `Ws` branch, expanded alias map coverage, and added Chapter-5 validation caveat gap entry. |
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added scheduler hydrology phase-entry routing authority for runoff/storage classes with explicit unsupported-class hard-fail posture and WB10 test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted hydrology section from routing-only scaffolding to ET/percolation/lateral/drain production-kernel authority with deterministic WB11 updates, typed WB11 guard codes, and WB11 contract-derived vectors. |
+| `2026-05-23` | `5` | `Codex` | WB12 amendment: added runoff/storage reconciliation kernel authority with deterministic closure diagnostics, typed WB12 guard codes, and WB12 contract-derived vectors. |

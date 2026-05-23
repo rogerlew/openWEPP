@@ -177,6 +177,10 @@ path = "tests/integration/comparator_tier_routing_metadata.rs"
 name = "wb11_hydrology_kernel_contract"
 path = "tests/integration/wb11_hydrology_kernel_contract.rs"
 
+[[test]]
+name = "wb12_reconciliation_kernel_contract"
+path = "tests/integration/wb12_reconciliation_kernel_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -456,6 +456,10 @@ Authorized packages:
   - Purpose: implement ET/percolation/lateral/drainage production kernels with
     typed invariant checks, plus required kernel-contract and contract-test
     implementation evidence.
+- `20260523-wb12-runoff-storage-reconciliation-kernels-001/`
+  - Purpose: implement runoff/storage reconciliation production kernels with
+    explicit closure diagnostics, plus required kernel-contract and
+    contract-test implementation evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

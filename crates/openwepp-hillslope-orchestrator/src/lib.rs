@@ -79,6 +79,21 @@ const WB11_SYMBOL_PERC_RECHARGE_PE: &str = "Pe";
 const WB11_SYMBOL_LATERAL_Q: &str = "q";
 const WB11_SYMBOL_DRAINAGE_QDD: &str = "Qdd";
 const WB11_SYMBOL_SUBHYD_QD: &str = "Qd";
+const WB12_SYMBOL_RAINFALL_INPUT: &str = "wb12_rainfall_input";
+const WB12_SYMBOL_RUNON_INPUT: &str = "wb12_runon_input";
+const WB12_SYMBOL_INFILTRATION: &str = "wb12_infiltration";
+const WB12_SYMBOL_DEPRESSION_STORAGE_DELTA: &str = "wb12_depression_storage_delta";
+const WB12_SYMBOL_RUNOFF_OBSERVED: &str = "wb12_runoff_observed";
+const WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE: &str = "wb12_runoff_closure_tolerance";
+const WB12_SYMBOL_RUNOFF_CLOSURE_DELTA: &str = "wb12_runoff_closure_delta";
+const WB12_SYMBOL_RUNOFF_RECONCILED: &str = "wb12_runoff_reconciled";
+const WB12_SYMBOL_STORAGE_INITIAL: &str = "wb12_storage_initial";
+const WB12_SYMBOL_STORAGE_OBSERVED: &str = "wb12_storage_observed";
+const WB12_SYMBOL_STORAGE_CLOSURE_TOLERANCE: &str = "wb12_storage_closure_tolerance";
+const WB12_SYMBOL_PRECIP_INPUT: &str = "wb12_precip_input";
+const WB12_SYMBOL_STORAGE_CLOSURE_DELTA: &str = "wb12_storage_closure_delta";
+const WB12_SYMBOL_STORAGE_RECONCILED: &str = "wb12_storage_reconciled";
+const WB12_SYMBOL_RUNOFF_Q: &str = "Q";
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -1429,15 +1444,17 @@ impl Wb11HydrologyKernelGuardError {
             | Self::FluxSymbolOutOfRange { phase_class, .. } => (phase_class, "003"),
         };
 
-        let phase_prefix = match phase_class {
-            HillslopeKernelPhaseClass::HydrologyEvapotranspiration => "ET",
-            HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage => "PERC",
-            HillslopeKernelPhaseClass::HydrologyLateralTransfer => "LAT",
-            HillslopeKernelPhaseClass::HydrologyDrainage => "DRAIN",
-            _ => "GEN",
+        let (kernel_family, phase_prefix) = match phase_class {
+            HillslopeKernelPhaseClass::HydrologyEvapotranspiration => ("WB11", "ET"),
+            HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage => ("WB11", "PERC"),
+            HillslopeKernelPhaseClass::HydrologyLateralTransfer => ("WB11", "LAT"),
+            HillslopeKernelPhaseClass::HydrologyDrainage => ("WB11", "DRAIN"),
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => ("WB12", "RUNOFF"),
+            HillslopeKernelPhaseClass::HydrologyStorageReconciliation => ("WB12", "STORAGE"),
+            _ => ("WB11", "GEN"),
         };
 
-        format!("HKERNEL-WB11-{phase_prefix}-E-{suffix}")
+        format!("HKERNEL-{kernel_family}-{phase_prefix}-E-{suffix}")
     }
 }
 
@@ -1980,6 +1997,220 @@ impl Wb11HydrologyKernel {
         );
         Ok(KernelRunResponse::new(status, writeback))
     }
+
+    fn run_runoff_reconciliation(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyRunoffReconciliation;
+        let rainfall_input =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RAINFALL_INPUT)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            rainfall_input,
+            Some(0.0),
+            None,
+        )?;
+
+        let runon_input =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNON_INPUT)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RUNON_INPUT,
+            runon_input,
+            Some(0.0),
+            None,
+        )?;
+
+        let infiltration =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_INFILTRATION)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_INFILTRATION,
+            infiltration,
+            Some(0.0),
+            None,
+        )?;
+
+        let depression_storage_delta =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_DEPRESSION_STORAGE_DELTA)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_DEPRESSION_STORAGE_DELTA,
+            depression_storage_delta,
+            Some(0.0),
+            None,
+        )?;
+
+        let runoff_observed =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_OBSERVED)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RUNOFF_OBSERVED,
+            runoff_observed,
+            Some(0.0),
+            None,
+        )?;
+
+        let closure_tolerance =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RUNOFF_CLOSURE_TOLERANCE,
+            closure_tolerance,
+            Some(0.0),
+            None,
+        )?;
+
+        let q_runoff = rainfall_input + runon_input - infiltration - depression_storage_delta;
+        Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
+
+        let closure_delta = q_runoff - runoff_observed;
+        if closure_delta.abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA),
+                value: closure_delta,
+                minimum: Some(-closure_tolerance),
+                maximum: Some(closure_tolerance),
+            });
+        }
+
+        let Ok(status) = SimulationStatus::ok(
+            SimulationPhase::HillslopeKernel,
+            "HKERNEL-WB12-RUNOFF-OK-001",
+        ) else {
+            unreachable!("status message ids are non-empty WB12 constants")
+        };
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded(
+                WB12_SYMBOL_RUNOFF_RECONCILED,
+                q_runoff,
+                Some(0.0),
+                None,
+            )],
+            vec![
+                WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
+                WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
+            ],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    fn run_storage_reconciliation(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyStorageReconciliation;
+        let storage_initial =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_STORAGE_INITIAL)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_INITIAL,
+            storage_initial,
+            Some(0.0),
+            None,
+        )?;
+
+        let storage_observed =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_STORAGE_OBSERVED)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_OBSERVED,
+            storage_observed,
+            Some(0.0),
+            None,
+        )?;
+
+        let closure_tolerance = Self::require_state_scalar(
+            request,
+            phase_class,
+            WB12_SYMBOL_STORAGE_CLOSURE_TOLERANCE,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_CLOSURE_TOLERANCE,
+            closure_tolerance,
+            Some(0.0),
+            None,
+        )?;
+
+        let precip_input =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_PRECIP_INPUT)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_PRECIP_INPUT,
+            precip_input,
+            Some(0.0),
+            None,
+        )?;
+
+        let q_runoff = Self::require_flux_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_Q)?;
+        Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
+
+        let et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
+        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, et, Some(0.0), None)?;
+
+        let percolation_loss =
+            Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_PERC_LOSS_D)?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_PERC_LOSS_D,
+            percolation_loss,
+            Some(0.0),
+            None,
+        )?;
+
+        let subsurface_loss =
+            Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_SUBHYD_QD)?;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_SUBHYD_QD,
+            subsurface_loss,
+            Some(0.0),
+            None,
+        )?;
+
+        let storage_reconciled =
+            storage_initial + precip_input - q_runoff - et - percolation_loss - subsurface_loss;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_RECONCILED,
+            storage_reconciled,
+            Some(0.0),
+            None,
+        )?;
+
+        let closure_delta = storage_reconciled - storage_observed;
+        if closure_delta.abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_STORAGE_CLOSURE_DELTA),
+                value: closure_delta,
+                minimum: Some(-closure_tolerance),
+                maximum: Some(closure_tolerance),
+            });
+        }
+
+        let Ok(status) = SimulationStatus::ok(
+            SimulationPhase::HillslopeKernel,
+            "HKERNEL-WB12-STORAGE-OK-001",
+        ) else {
+            unreachable!("status message ids are non-empty WB12 constants")
+        };
+        let writeback = KernelWritebackPayload::with_updates(
+            vec![WritebackField::bounded(
+                WB12_SYMBOL_STORAGE_RECONCILED,
+                storage_reconciled,
+                Some(0.0),
+                None,
+            )],
+            vec![WritebackField::unbounded(
+                WB12_SYMBOL_STORAGE_CLOSURE_DELTA,
+                closure_delta,
+            )],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
 }
 
 impl HillslopeKernel for Wb11HydrologyKernel {
@@ -1995,6 +2226,12 @@ impl HillslopeKernel for Wb11HydrologyKernel {
                 Self::run_lateral_transfer(request)
             }
             HillslopeKernelPhaseClass::HydrologyDrainage => Self::run_drainage(request),
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => {
+                Self::run_runoff_reconciliation(request)
+            }
+            HillslopeKernelPhaseClass::HydrologyStorageReconciliation => {
+                Self::run_storage_reconciliation(request)
+            }
             _ => {
                 let Ok(status) =
                     SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-NOP-001")
