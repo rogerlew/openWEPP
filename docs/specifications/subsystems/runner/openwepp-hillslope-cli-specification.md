@@ -1,7 +1,7 @@
 # openWEPP Hillslope CLI Specification (`RUNNER-HILL-CLI-001`)
 
 Status: `draft-normative`  
-Queue anchor: `CLI03-hillslope-runner-interchange-implementation`  
+Queue anchor: `CLI04-openwepp-output-hillslope-wat-parquet-architecture-001`  
 Evidence mode: `Static`  
 Ran evidence: none
 
@@ -16,8 +16,9 @@ for wepppy/wepppyo3 consumer workflows.
 - CLI boundary and invocation rules for hillslope runs.
 - Required schema-versioned `.run` ingestion and validation policy.
 - Required/optional output families for hillslope runs.
-- Dedicated output crate organization boundary for output contracts,
+- Dedicated shared output crate organization boundary for output contracts,
   serializers, and output-surface tests.
+- WAT parquet metadata parity requirements for WEPPpy/WEPPpyo3 consumers.
 - Run-level provenance metadata artifact requirements.
 - Build/release binary metadata sidecar requirements aligned with existing
   WEPP sidecar practice.
@@ -93,6 +94,10 @@ conforms to `openwepp-hillslope-runfile-v1`:
    unresolved required inputs,
    and unwritable output destinations are typed hard failures.
 10. Legacy line-oriented WEPP `.run` stdin recipes are out of contract.
+11. When `outputs.wat` is configured, emitted parquet must preserve:
+   - field metadata keys `units` and `description`,
+   - dataset metadata keys `dataset_version`, `dataset_version_major`,
+     `dataset_version_minor`, `schema_version`.
 
 Sidecar semantics:
 
@@ -126,7 +131,7 @@ Minimum execution inputs:
 
 ## Output Contract
 
-For simulation-driven CLI03 runs, `openwepp-cli-hill` must emit:
+For simulation-driven CLI03/CLI04 runs, `openwepp-cli-hill` must emit:
 
 Required outputs:
 
@@ -141,6 +146,17 @@ Optional parquet outputs when configured in `.run`:
 4. `outputs.ebe` (`.parquet`)
 5. `outputs.element` (`.parquet`)
 
+`outputs.wat` metadata parity requirements:
+
+1. `outputs.wat` must preserve WEPPpy/WEPPpyo3 field metadata keys
+   `units` and `description`.
+2. `outputs.wat` schema metadata must include
+   `dataset_version`, `dataset_version_major`,
+   `dataset_version_minor`, and `schema_version`.
+3. WAT schema authority is WB13 canonical 25-column projection with explicit
+   post-`wepp_260430` lineage exception for optional
+   producer-authoritative `InterceptionStorage`.
+
 `crop` output is intentionally out of scope for this revision until its
 columnar/output contract authority is defined.
 
@@ -151,16 +167,22 @@ Output requirements:
   semantics.
 - Omission of required outputs is a typed hard failure.
 
-## Output Organization Boundary (CLI03 Required)
+## Output Organization Boundary (CLI04 Required)
 
-For CLI03 implementation scope, output behavior must be organized under a
+For CLI04 implementation scope, output behavior must be organized under a
 dedicated crate boundary:
 
-- crate path: `crates/openwepp-hillslope-output/`
-- ownership: hillslope output contracts, output-path validation, serializers,
-  and output-surface checksum helpers
+- target shared crate path: `crates/openwepp-output/`
+- CLI03 predecessor path (transition-only): `crates/openwepp-hillslope-output/`
+- ownership: hillslope and watershed output contracts, output-path validation,
+  serializers, and output-surface checksum helpers
 - non-ownership: process launch orchestration and child-process lifecycle
   management (remain in runner boundary)
+- parquet dependency policy for new CLI04 implementation work:
+  - required `arrow-rs` ecosystem crates:
+    `parquet` + `arrow-array` + `arrow-schema`
+  - `arrow-schema` is a companion crate within `arrow-rs`, not an alternative
+  - `arrow2` adoption is prohibited for new implementation work in this package
 
 Minimum crate modules:
 - `contracts` (typed output config and invariants)
@@ -171,6 +193,11 @@ Test minimums for this crate:
 - unit tests for extension/path and required/optional output invariants
 - serializer tests for pass/loss and optional parquet path handling
 - manifest checksum tests proving required coverage and deterministic ordering
+- WAT parquet schema tests proving metadata parity for
+  `units`/`description` (field metadata) and dataset version keys
+  (schema metadata)
+- dependency policy tests/static gates proving no new `arrow2` adoption for
+  CLI04 implementation surfaces
 - integration wiring tests from runner -> outputs crate surface
 
 ## Run Provenance Manifest (Required)
@@ -200,7 +227,7 @@ At minimum, `output_checksums` must include required pass/loss outputs
 (`.hbp`, `.json`) and any optional parquet outputs that were configured for the
 run.
 
-CLI03 manifest schema id for this revision:
+Manifest schema id for this revision:
 - `openwepp-hillslope-run-manifest-v1`
 
 Determinism requirements:
@@ -236,17 +263,20 @@ Sidecar constraints:
 | `RUNNER-HILL-INV-006` | Relative paths in `.run` are resolved against the `.run` parent directory; unresolved required paths or unwritable output destinations block runtime start. | hard-fail |
 | `RUNNER-HILL-INV-007` | `snow`/`frost` surfaces are parameter overrides and do not toggle snow/frost routine execution. | hard-fail |
 | `RUNNER-HILL-INV-008` | openWEPP hillslope `.run` unit system is metric-only (`unit_system = "metric"`); non-metric unit selections are rejected. | hard-fail |
-| `RUNNER-HILL-INV-009` | Output-family serialization/validation logic is implemented via dedicated outputs crate boundary (`crates/openwepp-hillslope-output/`) with crate-owned tests. | hard-fail + package hold |
+| `RUNNER-HILL-INV-009` | Output-family serialization/validation logic is implemented via dedicated shared outputs crate boundary (`crates/openwepp-output/` target; `crates/openwepp-hillslope-output/` transition-only predecessor) with crate-owned tests. | hard-fail + package hold |
+| `RUNNER-HILL-INV-010` | When configured, `outputs.wat` emission preserves WEPPpy/WEPPpyo3 metadata parity (`units`/`description` field metadata + required dataset metadata version keys). | hard-fail |
+| `RUNNER-HILL-INV-011` | `outputs.wat` schema authority preserves WB13 canonical daily projection and permits optional producer-authoritative `InterceptionStorage` term per post-`wepp_260430` consumer-lineage authority. | hard-fail + review hold |
+| `RUNNER-HILL-INV-012` | New CLI04 parquet implementation work uses `arrow-rs` crate stack (`parquet`, `arrow-array`, `arrow-schema`) and does not adopt `arrow2`. | hard-fail + package hold |
 
 ## Implementation Sequencing Requirement
 
-For CLI03 code-authoring work where contract authority applies:
+For CLI03/CLI04 code-authoring work where contract authority applies:
 1. amend/ratify canonical contracts and this subsystem spec,
 2. implement contract-derived tests,
 3. record pre-implementation contract gate evidence, then
 4. modify production code.
 
-## Contract-Test Minimums (CLI03)
+## Contract-Test Minimums (CLI03/CLI04)
 
 1. Cargo metadata shows a binary target for hillslope CLI role.
 2. `.run` parse/validation tests enforce:
@@ -261,3 +291,12 @@ For CLI03 code-authoring work where contract authority applies:
    conformance.
 5. Output crate tests validate required/optional output contract behavior and
    deterministic manifest checksum assembly.
+6. WAT parquet schema tests validate presence/values of metadata keys:
+   - field metadata keys: `units`, `description`,
+   - schema metadata keys: `dataset_version`, `dataset_version_major`,
+     `dataset_version_minor`, `schema_version`.
+7. WAT schema parity tests validate canonical WB13 projection compatibility and
+   optional `InterceptionStorage` handling.
+8. CLI04 dependency posture tests/static gates enforce shared-boundary parquet
+   stack policy (`parquet`, `arrow-array`, `arrow-schema`) and reject new
+   `arrow2` adoption.

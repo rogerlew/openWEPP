@@ -9,3 +9,8 @@ publish = false
 
 [lints]
 workspace = true
+
+[dependencies]
+arrow-array = "54.3.1"
+arrow-schema = "54.3.1"
+parquet = { version = "54.3.1", default-features = false, features = ["arrow", "snap"] }

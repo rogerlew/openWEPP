@@ -158,6 +158,17 @@ Optional outputs:
 - `outputs.ebe` when provided
 - `outputs.element` when provided
 
+`outputs.wat` metadata parity requirements (when provided):
+
+- canonical consumer-facing artifact naming is `H.wat.parquet`;
+- emitted schema must preserve field-level metadata keys `units` and
+  `description` for canonical water-balance projection columns;
+- emitted schema metadata must include version keys `dataset_version`,
+  `dataset_version_major`, `dataset_version_minor`, and `schema_version`;
+- authoritative WAT projection is WB13 canonical daily schema with explicit
+  post-`wepp_260430` consumer-lineage extension allowance for optional
+  producer-authoritative `InterceptionStorage`.
+
 `crop` output is intentionally excluded from this contract revision because its
 columnar/output authority is not yet ratified.
 

@@ -41,7 +41,8 @@ fn cli03_contract_surface_declares_metric_runfile_and_required_outputs() {
         "runner contract must require dedicated output crate"
     );
     assert!(
-        HILLSLOPE_CLI_SPEC.contains("Contract-Test Minimums (CLI03)"),
+        HILLSLOPE_CLI_SPEC.contains("Contract-Test Minimums (CLI03)")
+            || HILLSLOPE_CLI_SPEC.contains("Contract-Test Minimums (CLI03/CLI04)"),
         "CLI spec must declare CLI03 contract-test minimums"
     );
 }

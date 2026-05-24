@@ -6,7 +6,7 @@ Pinned cross-component contracts. Changes require coordinated updates across pro
 |---|---|---|
 | `.run` input contract | [openwepp-hillslope-runfile-contract.md](openwepp-hillslope-runfile-contract.md) | Declarative schema-versioned hillslope `.run` contract (`openwepp-hillslope-runfile-v1`) with explicit metric-only units (`unit_system = "metric"`), required core inputs, optional sidecar overrides, required `pass`/`loss` outputs, and configurable optional parquet outputs. |
 | HBP (hillslope binary pass) | wepp-palimpsest `docs/contracts/hillslope-binary-pass-format.md` | openWEPP consumes and produces HBP shards per the upstream specification. Magic, header, day directory, and footer must match. |
-| Parquet hillslope-trajectory schema | wepppy / wepppyo3 interchange | openWEPP emits configured optional simulation-driven parquet artifacts via existing consumer-side schemas (for example `H.wat.parquet`, `H.soil.parquet`, `H.plot.parquet`, `H.ebe.parquet`, `H.element.parquet`); output serialization/validation implementation is organized in dedicated crate `crates/openwepp-hillslope-output/` for CLI03. |
+| Parquet hillslope-trajectory schema | wepppy / wepppyo3 interchange | openWEPP emits configured optional simulation-driven parquet artifacts via existing consumer-side schemas (for example `H.wat.parquet`, `H.soil.parquet`, `H.plot.parquet`, `H.ebe.parquet`, `H.element.parquet`); CLI04 shared-boundary authority target is dedicated crate `crates/openwepp-output/` (CLI03 predecessor: `crates/openwepp-hillslope-output/`). |
 | openWEPP runner boundary | [openwepp-runner-contract.md](openwepp-runner-contract.md) | openWEPP owns in-repo `open_wepp_runner` for openWEPP binaries only; legacy WEPP orchestration belongs to `wepppy/wepp_runner`; no silent fallback across engine families/contracts; CLI03 acceptance is interchange-first with crate-organized output implementation, not bootstrap legacy include-surface synthesis. |
 | openWEPP binary release + sidecar | [openwepp-binary-release-contract.md](openwepp-binary-release-contract.md) | `openwepp_YYMMDD*` naming, mandatory sidecars, schema validation, and blocking release lint gate. |
 | Routine interface v1 | [routine-interface-v1.md](routine-interface-v1.md) | Routine identity, lifecycle (`experimental/active/deprecated/retired`), replacement metadata, and resolver contract for routine selection. |
@@ -28,13 +28,33 @@ The canonical hillslope `.run` contract is:
 - explicit for required outputs (`pass` `.hbp`, `loss` `.json`),
 - explicit for optional parquet output file paths
   (`wat`, `soil`, `plot`, `ebe`, `element`),
+- explicit for `outputs.wat` metadata parity keys:
+  - field metadata keys `units` and `description`,
+  - dataset metadata keys
+    `dataset_version`, `dataset_version_major`, `dataset_version_minor`,
+    `schema_version`,
 - hard-fail on missing/invalid required paths.
 
 ## Parquet schema source-of-truth
 
 Schemas are owned by wepppy / wepppyo3. openWEPP organizes output contract
-and serializer implementation in `crates/openwepp-hillslope-output/`, while
-schema evolution remains coordinated through the wepppy repo.
+and serializer implementation at shared-boundary target
+`crates/openwepp-output/` (CLI03 predecessor:
+`crates/openwepp-hillslope-output/`), while schema evolution remains
+coordinated through the wepppy repo.
+
+CLI04 parquet dependency posture for new implementation work:
+- required stack: `parquet` + `arrow-array` + `arrow-schema`;
+- `arrow-schema` is a companion crate within `arrow-rs`, not an alternative;
+- `arrow2` is prohibited for new implementation work in this package.
+
+WAT authority exception for CLI04:
+- default comparator baseline remains
+  `/workdir/wepp-forest_260430_baseline` at
+  `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`,
+- WAT output semantics required for consumer closure (including optional
+  `InterceptionStorage`) follow post-`wepp_260430` `wepp-forest`/WEPPpy
+  lineage per stakeholder authority.
 
 CLI03 output posture:
 - required: `.run` `outputs.pass` (`.hbp`), `.run` `outputs.loss` (`.json`)

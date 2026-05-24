@@ -33,6 +33,9 @@ wildcards = "deny"
 [advisories]
 version = 2
 yanked = "deny"
+# Temporary risk acceptance for parquet/arrow-rs transitive dependency.
+# parquet currently depends on `paste` and no safe upgrade path exists in RustSec.
+ignore = ["RUSTSEC-2024-0436"]
 
 [sources]
 unknown-registry = "deny"

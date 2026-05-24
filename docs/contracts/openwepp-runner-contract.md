@@ -30,7 +30,7 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
   crate; `open_wepp_runner` owns launch orchestration and policy enforcement,
   not inline output-family implementation.
 
-## CLI03 Runner Command Surface
+## CLI03/CLI04 Runner Command Surface
 
 `open_wepp_runner` must expose at least:
 
@@ -58,9 +58,24 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
    production acceptance semantics.
 7. `run-hillslope` does not accept or negotiate legacy-engine selectors.
 8. Required/optional hillslope output serialization and manifest checksum
-   assembly are delegated to a dedicated outputs crate boundary (for CLI03,
-   `crates/openwepp-hillslope-output/`) with crate-owned typed contracts and
-   tests.
+   assembly are delegated to a dedicated outputs crate boundary with crate-owned
+   typed contracts and tests.
+9. CLI03 predecessor output crate path is `crates/openwepp-hillslope-output/`;
+   CLI04 shared-boundary target path is `crates/openwepp-output/` for
+   hillslope+watershed output families. Production implementation may use the
+   predecessor path only during explicit rename-transition phases.
+10. When `.run` `outputs.wat` is configured, emitted `H.wat.parquet` must
+    preserve WEPPpy/WEPPpyo3 metadata parity:
+    - field metadata keys `units` and `description`,
+    - dataset metadata keys `dataset_version`, `dataset_version_major`,
+      `dataset_version_minor`, and `schema_version`.
+11. WAT schema/metadata authority uses default baseline with explicit exception:
+    - default legacy comparator baseline remains
+      `/workdir/wepp-forest_260430_baseline` at
+      `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`,
+    - WAT output semantics for consumer parity (including optional
+      `InterceptionStorage`) follow post-`wepp_260430` `wepp-forest`/WEPPpy
+      lineage per CLI04 stakeholder authority.
 
 `release lint` requirements:
 
@@ -81,12 +96,14 @@ Runner boundary failures use stable IDs:
 - `RUNNER-E-005`: release sidecar missing/invalid
 - `RUNNER-E-006`: release binary naming contract violation
 
-## CLI03 Output Guard IDs
+## CLI03/CLI04 Output Guard IDs
 
-Required CLI03 output-surface failures use stable existing guard IDs:
+Required output-surface failures use stable existing guard IDs:
 
 - `CLIHILL-E-013`: required hillslope CLI output surface missing.
 - `OPEN_RUNNER-E-018`: missing required hillslope output surface(s).
+- `CLIHILL-E-010`: output-contract mismatch (including `.run` output-shape
+  violations and output-surface contract validation failures).
 
 ## Error posture
 
@@ -97,4 +114,8 @@ Contract mismatches are hard errors, including:
 - invalid `.run` schema/version or unresolved required `.run` paths;
 - non-metric `.run` unit-system selection;
 - binary naming contract violations;
-- incompatible watershed/hillslope release pairings.
+- incompatible watershed/hillslope release pairings;
+- missing `H.wat.parquet` metadata parity keys when `outputs.wat` is configured;
+- unauthorized parquet dependency posture for new CLI04 implementation work
+  (`arrow2` adoption where `parquet` + `arrow-array` + `arrow-schema` are
+  required).

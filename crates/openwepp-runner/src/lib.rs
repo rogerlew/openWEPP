@@ -9,6 +9,7 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus};
+use std::sync::{LazyLock, Mutex, MutexGuard};
 
 use openwepp_hillslope_orchestrator::HillslopeWritebackSurface;
 use openwepp_hillslope_orchestrator::runtime_inputs::{
@@ -17,6 +18,9 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
+use openwepp_hillslope_output::hillslope_wat::{
+    HillslopeWatRow, InterchangeVersion, write_hillslope_wat_parquet,
+};
 use openwepp_hillslope_output::manifest::{OutputChecksumEntry, assemble_output_checksums};
 use openwepp_hillslope_output::writers::{optional_output_paths, required_output_paths};
 use openwepp_input_contract::parsers::climate::{
@@ -61,6 +65,8 @@ pub const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manif
 pub const HILLSLOPE_RUNFILE_SCHEMA_ID: &str = "openwepp-hillslope-runfile-v1";
 pub const REQUIRED_RUN_OUTPUT_PASS: &str = "outputs.pass (.hbp)";
 pub const REQUIRED_RUN_OUTPUT_LOSS: &str = "outputs.loss (.json)";
+
+static RELEASE_SIDECAR_IO_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SidecarPolicy {
@@ -1022,6 +1028,7 @@ pub fn write_release_sidecar_for_binary(
     binary_path: &Path,
     role: BinaryRole,
 ) -> Result<PathBuf, ReleaseMetadataError> {
+    let _io_guard = lock_release_sidecar_io();
     let metadata = build_release_metadata_document(binary_path, role)?;
     let sidecar_path = sidecar_path_for_binary(binary_path);
     let json = serde_json::to_string_pretty(&metadata)
@@ -1031,11 +1038,16 @@ pub fn write_release_sidecar_for_binary(
         source,
     })?;
 
-    validate_release_sidecar(&sidecar_path)?;
+    validate_release_sidecar_unlocked(&sidecar_path)?;
     Ok(sidecar_path)
 }
 
 pub fn validate_release_sidecar(sidecar_path: &Path) -> Result<Value, ReleaseMetadataError> {
+    let _io_guard = lock_release_sidecar_io();
+    validate_release_sidecar_unlocked(sidecar_path)
+}
+
+fn validate_release_sidecar_unlocked(sidecar_path: &Path) -> Result<Value, ReleaseMetadataError> {
     let content = fs::read_to_string(sidecar_path).map_err(|source| ReleaseMetadataError::Io {
         path: sidecar_path.to_path_buf(),
         source,
@@ -1087,6 +1099,13 @@ pub fn validate_release_sidecar(sidecar_path: &Path) -> Result<Value, ReleaseMet
     let _ = required_map_str(validation, "validated_utc")?;
 
     Ok(json)
+}
+
+fn lock_release_sidecar_io() -> MutexGuard<'static, ()> {
+    match RELEASE_SIDECAR_IO_LOCK.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
 }
 
 #[allow(clippy::too_many_lines)]
@@ -1463,7 +1482,20 @@ pub fn execute_hillslope_run(
         source,
     })?;
 
-    for optional_output in &optional_outputs {
+    if let Some(wat_output) = runfile.output_config.wat.as_ref() {
+        let wat_rows = build_hillslope_wat_rows(&climate, &soil, &snow, &frost)?;
+        write_hillslope_wat_parquet(wat_output, &wat_rows, InterchangeVersion::default()).map_err(
+            |error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.wat",
+                detail: error.to_string(),
+            },
+        )?;
+    }
+
+    for optional_output in optional_outputs
+        .iter()
+        .filter(|path| Some(path.as_path()) != runfile.output_config.wat.as_deref())
+    {
         let payload = build_optional_output_payload(&runfile.run_name, optional_output, &climate)?;
         fs::write(optional_output, payload).map_err(|source| HillslopeCliError::OutputWrite {
             path: optional_output.clone(),
@@ -2116,7 +2148,217 @@ fn build_h5_wat_output(
     snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
     frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
 ) -> Result<String, HillslopeCliError> {
-    let (year, julian_day, precipitation_mm, tmax, tmin) = first_day_projection(climate)?;
+    let projection = build_first_day_wat_projection(climate, soil, snow, frost)?;
+
+    let row_surface = SummaryScalarSurface::from_pairs([
+        ("P", projection.precipitation_mm),
+        ("RM", projection.rm),
+        ("Q", projection.q),
+        ("Ep", projection.ep),
+        ("Es", projection.es),
+        ("Er", projection.er),
+        ("Dp", projection.dp),
+        ("UpStrmQ", projection.up_strm_q),
+        ("SubRIn", projection.sub_r_in),
+        ("latqcc", projection.latqcc),
+        ("Total-Soil", projection.total_soil),
+        ("frozwt", projection.frozwt),
+        ("Snow-Water", projection.snow_water),
+        ("QOFE", projection.qofe),
+        ("Tile", projection.tile),
+        ("Irr", projection.irr),
+        ("Area", projection.area),
+        ("SoilWaterTotal", projection.soil_water_total),
+        ("ProfileDepth", projection.profile_depth),
+        ("ProfilePorosityCap", projection.profile_porosity_cap),
+        ("ProfileFCStore", projection.profile_fc_store),
+        ("ProfileWPStore", projection.profile_wp_store),
+    ])
+    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "wb13_row_surface",
+        detail: error.to_string(),
+    })?;
+
+    let row = Wb13DailyWaterBalanceRow::from_surface(
+        1,
+        projection.julian_day,
+        projection.year,
+        &row_surface,
+    )
+    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "wb13_row",
+        detail: error.to_string(),
+    })?;
+
+    let mut daily_surface = Wb13DailyWaterBalanceSurface::new();
+    daily_surface
+        .append_row(row)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb13_surface",
+            detail: error.to_string(),
+        })?;
+
+    Ok(daily_surface.render_h5_wat_dat())
+}
+
+fn build_hillslope_wat_rows(
+    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
+    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
+) -> Result<Vec<HillslopeWatRow>, HillslopeCliError> {
+    let projection = build_first_day_wat_projection(climate, soil, snow, frost)?;
+
+    let year =
+        i16::try_from(projection.year).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat",
+            detail: format!("year out of i16 range: {}", projection.year),
+        })?;
+    let month =
+        i8::try_from(projection.month).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat",
+            detail: format!("month out of i8 range: {}", projection.month),
+        })?;
+    let day_of_month = i8::try_from(projection.day_of_month).map_err(|_| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat",
+            detail: format!("day_of_month out of i8 range: {}", projection.day_of_month),
+        }
+    })?;
+    let julian = i16::try_from(projection.julian_day).map_err(|_| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat",
+            detail: format!("julian out of i16 range: {}", projection.julian_day),
+        }
+    })?;
+    let water_year = i16::try_from(projection.water_year).map_err(|_| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.wat",
+            detail: format!("water_year out of i16 range: {}", projection.water_year),
+        }
+    })?;
+
+    Ok(vec![HillslopeWatRow {
+        wepp_id: 1,
+        ofe_id: 1,
+        year,
+        sim_day_index: 1,
+        julian,
+        month,
+        day_of_month,
+        water_year,
+        ofe: 1,
+        p: projection.precipitation_mm,
+        rm: projection.rm,
+        q: projection.q,
+        ep: projection.ep,
+        es: projection.es,
+        er: projection.er,
+        dp: projection.dp,
+        up_strm_q: projection.up_strm_q,
+        sub_r_in: projection.sub_r_in,
+        latqcc: projection.latqcc,
+        total_soil_water: projection.total_soil,
+        frozwt: projection.frozwt,
+        snow_water: projection.snow_water,
+        qofe: projection.qofe,
+        tile: projection.tile,
+        irr: projection.irr,
+        area: projection.area,
+        soil_water_total: Some(projection.soil_water_total),
+        profile_depth: Some(projection.profile_depth),
+        profile_porosity_cap: Some(projection.profile_porosity_cap),
+        profile_fc_store: Some(projection.profile_fc_store),
+        profile_wp_store: Some(projection.profile_wp_store),
+        interception_storage: None,
+    }])
+}
+
+fn build_loss_output_json(
+    run_name: &str,
+    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
+    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
+) -> Result<String, HillslopeCliError> {
+    let first_day = first_day_projection(climate)?;
+
+    let payload = serde_json::json!({
+        "schema": "openwepp-hillslope-loss-v1",
+        "run_name": run_name,
+        "first_day_julian": first_day.julian_day,
+        "precipitation_mm": first_day.precipitation_mm,
+        "ofe_count": soil.ofes.len(),
+        "snow_override_applied": snow.sidecar_present,
+        "frost_wint_red": frost.wint_red,
+    });
+
+    serde_json::to_string_pretty(&payload)
+        .map_err(|source| HillslopeCliError::ManifestSerialize { source })
+}
+
+fn build_optional_output_payload(
+    run_name: &str,
+    output_path: &Path,
+    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
+) -> Result<String, HillslopeCliError> {
+    let first_day = first_day_projection(climate)?;
+    let file_name = file_name_string(output_path);
+    Ok(format!(
+        "openwepp_optional_output_v1\nrun_name={run_name}\nfile={file_name}\nyear={}\nday={}\nprecipitation_mm={:.3}\n",
+        first_day.year, first_day.julian_day, first_day.precipitation_mm
+    ))
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FirstDayClimateProjection {
+    year: i32,
+    month: i32,
+    day_of_month: i32,
+    julian_day: u16,
+    precipitation_mm: f64,
+    tmax: f64,
+    tmin: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FirstDayWatProjection {
+    year: i32,
+    month: i32,
+    day_of_month: i32,
+    julian_day: u16,
+    water_year: i32,
+    precipitation_mm: f64,
+    rm: f64,
+    q: f64,
+    ep: f64,
+    es: f64,
+    er: f64,
+    dp: f64,
+    up_strm_q: f64,
+    sub_r_in: f64,
+    latqcc: f64,
+    total_soil: f64,
+    frozwt: f64,
+    snow_water: f64,
+    qofe: f64,
+    tile: f64,
+    irr: f64,
+    area: f64,
+    soil_water_total: f64,
+    profile_depth: f64,
+    profile_porosity_cap: f64,
+    profile_fc_store: f64,
+    profile_wp_store: f64,
+}
+
+fn build_first_day_wat_projection(
+    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
+    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
+) -> Result<FirstDayWatProjection, HillslopeCliError> {
+    let first_day = first_day_projection(climate)?;
 
     let Some(primary_ofe) = soil.ofes.first() else {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -2149,100 +2391,54 @@ fn build_h5_wat_output(
     let soil_water_total = total_soil + frozwt;
     let profile_porosity_cap = profile_fc_store.max(profile_wp_store) + 20.0;
     let q = 0.0;
-    let ep = ((tmax - tmin).max(0.0) * 0.05).min(10.0);
-    let es = (precipitation_mm * 0.08).min(10.0);
+    let ep = ((first_day.tmax - first_day.tmin).max(0.0) * 0.05).min(10.0);
+    let es = (first_day.precipitation_mm * 0.08).min(10.0);
     let er = if snow_water > 0.0 {
         0.0
     } else {
         (ep * 0.25).min(5.0)
     };
-    let dp = (precipitation_mm * 0.01).max(0.0);
+    let dp = (first_day.precipitation_mm * 0.01).max(0.0);
+    let water_year = if first_day.month >= 10 {
+        first_day.year + 1
+    } else {
+        first_day.year
+    };
 
-    let row_surface = SummaryScalarSurface::from_pairs([
-        ("P", precipitation_mm),
-        ("RM", 0.0),
-        ("Q", q),
-        ("Ep", ep),
-        ("Es", es),
-        ("Er", er),
-        ("Dp", dp),
-        ("UpStrmQ", 0.0),
-        ("SubRIn", 0.0),
-        ("latqcc", 0.0),
-        ("Total-Soil", total_soil),
-        ("frozwt", frozwt),
-        ("Snow-Water", snow_water),
-        ("QOFE", q),
-        ("Tile", 0.0),
-        ("Irr", 0.0),
-        ("Area", 1.0),
-        ("SoilWaterTotal", soil_water_total),
-        ("ProfileDepth", profile_depth),
-        ("ProfilePorosityCap", profile_porosity_cap),
-        ("ProfileFCStore", profile_fc_store),
-        ("ProfileWPStore", profile_wp_store.min(profile_fc_store)),
-    ])
-    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "wb13_row_surface",
-        detail: error.to_string(),
-    })?;
-
-    let row = Wb13DailyWaterBalanceRow::from_surface(1, julian_day, year, &row_surface).map_err(
-        |error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb13_row",
-            detail: error.to_string(),
-        },
-    )?;
-
-    let mut daily_surface = Wb13DailyWaterBalanceSurface::new();
-    daily_surface
-        .append_row(row)
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb13_surface",
-            detail: error.to_string(),
-        })?;
-
-    Ok(daily_surface.render_h5_wat_dat())
-}
-
-fn build_loss_output_json(
-    run_name: &str,
-    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
-    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
-    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
-    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
-) -> Result<String, HillslopeCliError> {
-    let (_, julian_day, precipitation_mm, _, _) = first_day_projection(climate)?;
-
-    let payload = serde_json::json!({
-        "schema": "openwepp-hillslope-loss-v1",
-        "run_name": run_name,
-        "first_day_julian": julian_day,
-        "precipitation_mm": precipitation_mm,
-        "ofe_count": soil.ofes.len(),
-        "snow_override_applied": snow.sidecar_present,
-        "frost_wint_red": frost.wint_red,
-    });
-
-    serde_json::to_string_pretty(&payload)
-        .map_err(|source| HillslopeCliError::ManifestSerialize { source })
-}
-
-fn build_optional_output_payload(
-    run_name: &str,
-    output_path: &Path,
-    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
-) -> Result<String, HillslopeCliError> {
-    let (year, julian_day, precipitation_mm, _, _) = first_day_projection(climate)?;
-    let file_name = file_name_string(output_path);
-    Ok(format!(
-        "openwepp_optional_output_v1\nrun_name={run_name}\nfile={file_name}\nyear={year}\nday={julian_day}\nprecipitation_mm={precipitation_mm:.3}\n"
-    ))
+    Ok(FirstDayWatProjection {
+        year: first_day.year,
+        month: first_day.month,
+        day_of_month: first_day.day_of_month,
+        julian_day: first_day.julian_day,
+        water_year,
+        precipitation_mm: first_day.precipitation_mm,
+        rm: 0.0,
+        q,
+        ep,
+        es,
+        er,
+        dp,
+        up_strm_q: 0.0,
+        sub_r_in: 0.0,
+        latqcc: 0.0,
+        total_soil,
+        frozwt,
+        snow_water,
+        qofe: q,
+        tile: 0.0,
+        irr: 0.0,
+        area: 1.0,
+        soil_water_total,
+        profile_depth,
+        profile_porosity_cap,
+        profile_fc_store,
+        profile_wp_store: profile_wp_store.min(profile_fc_store),
+    })
 }
 
 fn first_day_projection(
     climate: &openwepp_input_contract::parsers::climate::ClimateFile,
-) -> Result<(i32, u16, f64, f64, f64), HillslopeCliError> {
+) -> Result<FirstDayClimateProjection, HillslopeCliError> {
     let Some(first_day) = climate.daily_records.first() else {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "climate",
@@ -2253,13 +2449,15 @@ fn first_day_projection(
     match first_day {
         ClimateDailyRecord::NoBreakpoint(day) => {
             let julian_day = day_of_year(day.year, day.mon, day.day)?;
-            Ok((
-                day.year,
+            Ok(FirstDayClimateProjection {
+                year: day.year,
+                month: day.mon,
+                day_of_month: day.day,
                 julian_day,
-                (day.prcp * 1_000.0).max(0.0),
-                day.tmax,
-                day.tmin,
-            ))
+                precipitation_mm: (day.prcp * 1_000.0).max(0.0),
+                tmax: day.tmax,
+                tmin: day.tmin,
+            })
         }
         ClimateDailyRecord::Breakpoint(day) => {
             let julian_day = day_of_year(day.year, day.mon, day.day)?;
@@ -2267,7 +2465,15 @@ fn first_day_projection(
                 .breakpoints
                 .last()
                 .map_or(0.0, |point| (point.pptcum * 1_000.0).max(0.0));
-            Ok((day.year, julian_day, prcp_mm, day.tmax, day.tmin))
+            Ok(FirstDayClimateProjection {
+                year: day.year,
+                month: day.mon,
+                day_of_month: day.day,
+                julian_day,
+                precipitation_mm: prcp_mm,
+                tmax: day.tmax,
+                tmin: day.tmin,
+            })
         }
     }
 }

@@ -59,6 +59,8 @@ openwepp-runner = { path = "crates/openwepp-runner", version = "0.1.0" }
 
 [dev-dependencies]
 flate2 = "1.1.0"
+arrow-schema = "54.2.1"
+parquet = "54.2.1"
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -221,6 +223,14 @@ name = "ws10_watershed_kernel_contract"
 path = "tests/integration/ws10_watershed_kernel_contract.rs"
 
 [[test]]
+name = "ws11_channel_routing_physics_equivalence_contract"
+path = "tests/integration/ws11_channel_routing_physics_equivalence_contract.rs"
+
+[[test]]
+name = "ws12_impoundment_physics_equivalence_contract"
+path = "tests/integration/ws12_impoundment_physics_equivalence_contract.rs"
+
+[[test]]
 name = "arch22_typed_state_surface_contract"
 path = "tests/integration/arch22_typed_state_surface_contract.rs"
 
@@ -279,6 +289,10 @@ path = "tests/integration/cli01_runner_hillslope_integration.rs"
 [[test]]
 name = "cli03_runner_contract_derived_tests"
 path = "tests/integration/cli03_runner_contract_derived_tests.rs"
+
+[[test]]
+name = "cli04_runner_wat_parquet_contract_derived_tests"
+path = "tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs"
 
 [profile.release]
 lto = "thin"
