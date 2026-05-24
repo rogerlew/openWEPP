@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 24
+contract_version: 25
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -231,6 +231,13 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 |---|---|---|---|---|---|
 | `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-WATBAL-001` via WB12/WB16 kernel outputs | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-005` | `D`, `Qd`, `ET`, `I` (daily closure companions) | `HillslopeProductionFluxSymbol::{Wb11PercLossD,Wb11SubhydQd,Wb11Et,Wb15InterceptionI}` | `SC-WATBAL-001` | downstream hydrology consumers and closure diagnostics | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## EROD12 Cross-Domain Ownership and Guard Closure Addendum
+
+| Cross-domain lane | Producer ownership | Consumer guard ownership | Closure posture | Evidence |
+|---|---|---|---|---|
+| WB12/WB16 runoff + peak-duration export (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-WATBAL-001` (`INV-WATBAL-007`, `INV-WATBAL-016`) | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001`, `SC-HYDRAULICS-001` | Required Wave-0 erosion-lane hydrology boundary ownership and guard semantics are explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Daily closure companion export (`D`, `Qd`, `ET`, `I`) | `SC-WATBAL-001` | downstream hydrology/system consumers (`SC-SUBHYD-001`, `SC-SYSTEM-001`) | Cross-domain closure companion ownership and guard mapping remain explicit for consumed surfaces. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -782,3 +789,4 @@ canonical order:
 | `2026-05-23` | `22` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-WATBAL-001` and `GAP-WATBAL-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `23` | `Codex` | WB19 amendment: updated hydrology authority from WB18+WB11 surrogate lateral/drain execution to WB18+WB19 layer-aware lateral/drainage execution, including explicit WB19 geometry/anisotropy symbol requirements and guard posture continuity on legacy status IDs. |
 | `2026-05-23` | `24` | `Codex` | WB20 amendment: added forward-solver lane selector authority (`wb20_forward_solver_lane_enabled`) and lane-scoped closure semantics so parity-lane acceptance is solver-residual-derived and excludes observed closure targets from acceptance-driving inputs. |
+| `2026-05-23` | `25` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum for required erosion-lane hydrology boundary exports while preserving existing non-Wave-0 companion-gap posture (`GAP-WATBAL-002`). |

@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -172,6 +172,13 @@ runoff partition internals.
 |---|---|---|---|---|---|
 | `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-RUNOFFPART-001` via WB12/WB16 outputs | `SC-SED-001`, `SC-HYDRAULICS-001`, `SC-ROUTE-001`, `SC-WATBAL-001` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-006` | `Qj-1`, `Vj`, `Qj`, `Ka`, `(Ψθd)a`, `Sa`, `Fp`, `Fh` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-RUNOFFPART-001` | downstream OFE cascade and erosion-coupled routing lanes | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## EROD12 Cross-Domain Ownership and Guard Closure Addendum
+
+| Cross-domain lane | Producer ownership | Consumer guard ownership | Closure posture | Evidence |
+|---|---|---|---|---|
+| Runoff and peak-duration export (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-RUNOFFPART-001` (`INV-RUNOFFPART-009`, `INV-RUNOFFPART-011`) + `SC-WATBAL-001` (`INV-WATBAL-007`, `INV-WATBAL-016`) | `SC-SED-001` (`INV-SED-004`), `SC-HYDRAULICS-001` (`INV-HYDRAULICS-008`, `INV-HYDRAULICS-011`), `SC-ROUTE-001` (`INV-ROUTE-011`) | Required Wave-0 producer/consumer guard ownership is explicit and canonicalized. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Multi-OFE downstream handoff (`Qj-1`, `Vj`, `Qj`, `Ka`, `(Ψθd)a`, `Sa`, `Fp`, `Fh`) | `SC-RUNOFFPART-001` (`INV-RUNOFFPART-007`..`009`) | downstream erosion/routing consumers (`SC-SED-001`, `SC-ROUTE-001`) | Cross-domain ownership semantics are explicit for required erosion-lane OFE boundary surfaces. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -623,7 +630,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | GAP-RUNOFFPART-001 | Full per-invariant comparator vectors for multi-OFE invariant families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
 | GAP-RUNOFFPART-002 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-RUNOFFPART-003 | Chapter-4 limitations explicitly note Hortonian-flow framing and reduced recession interaction outside partial-equilibrium correction; companion contracts for variable-source-area/return-flow behavior are not authored. | Scope caveat must remain explicit to avoid over-claiming runoff applicability. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-RUNOFFPART-004 | Coupled contracts `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`, and `SC-SED-001` are not fully authored, so cross-domain ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
+| GAP-RUNOFFPART-004 | EROD12 ratifies cross-domain ownership and guard semantics for required erosion-lane runoff boundary surfaces using canonical companion-contract addenda and row-scoped invariant ownership. | Required Wave-0 cross-domain ownership ambiguity is closed for erosion-lane runoff boundaries; broader hydrology-scope limits remain governed by `GAP-RUNOFFPART-003`. | closed | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
@@ -645,3 +652,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `13` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-RUNOFFPART-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `14` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-RUNOFFPART-001` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `15` | `Codex` | WB20 amendment: added forward-solver lane selector authority (`wb20_forward_solver_lane_enabled`) and lane-scoped WB12 runoff closure semantics so parity-lane acceptance is solver-residual-derived and excludes observed target substitution. |
+| `2026-05-23` | `16` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-RUNOFFPART-004` to `closed` for required erosion-lane runoff boundaries while retaining Hortonian-scope governance hold row `GAP-RUNOFFPART-003`. |

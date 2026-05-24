@@ -133,7 +133,8 @@ fn erod11_contract_addenda_and_gap_posture_are_present() {
     .expect("SC-SED-001 must be readable");
     assert_gap_status(&sed, "GAP-SED-001", "closed");
     assert_gap_status(&sed, "GAP-SED-002", "closed");
-    assert_gap_status(&sed, "GAP-SED-003", "non-promotable");
+    // EROD12 closed the Wave-0 cross-domain ownership blocker row.
+    assert_gap_status(&sed, "GAP-SED-003", "closed");
     assert_gap_status(&sed, "GAP-SED-004", "closed");
 
     let hyd = fs::read_to_string(format!(
@@ -142,7 +143,8 @@ fn erod11_contract_addenda_and_gap_posture_are_present() {
     .expect("SC-HYDRAULICS-001 must be readable");
     assert_gap_status(&hyd, "GAP-HYD-001", "closed");
     assert_gap_status(&hyd, "GAP-HYD-002", "closed");
-    assert_gap_status(&hyd, "GAP-HYD-003", "non-promotable");
+    // EROD12 closed the Wave-0 cross-domain ownership blocker row.
+    assert_gap_status(&hyd, "GAP-HYD-003", "closed");
     assert_gap_status(&hyd, "GAP-HYD-004", "closed");
 
     let route = fs::read_to_string(format!(
@@ -151,7 +153,8 @@ fn erod11_contract_addenda_and_gap_posture_are_present() {
     .expect("SC-ROUTE-001 must be readable");
     assert_gap_status(&route, "GAP-ROUTE-001", "closed");
     assert_gap_status(&route, "GAP-ROUTE-002", "closed");
-    assert_gap_status(&route, "GAP-ROUTE-003", "non-promotable");
+    // EROD12 closed the Wave-0 cross-domain ownership blocker row.
+    assert_gap_status(&route, "GAP-ROUTE-003", "closed");
     assert_gap_status(&route, "GAP-ROUTE-004", "closed");
     assert_gap_status(&route, "GAP-ROUTE-005", "non-promotable");
 
@@ -171,5 +174,6 @@ fn erod11_contract_addenda_and_gap_posture_are_present() {
     assert_gap_status(&runoffpart, "GAP-RUNOFFPART-001", "closed");
     assert_gap_status(&runoffpart, "GAP-RUNOFFPART-002", "closed");
     assert_gap_status(&runoffpart, "GAP-RUNOFFPART-003", "non-promotable");
-    assert_gap_status(&runoffpart, "GAP-RUNOFFPART-004", "non-promotable");
+    // EROD12 closed the Wave-0 cross-domain ownership blocker row.
+    assert_gap_status(&runoffpart, "GAP-RUNOFFPART-004", "closed");
 }

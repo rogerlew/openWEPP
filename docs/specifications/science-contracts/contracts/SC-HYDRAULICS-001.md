@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -153,6 +153,14 @@ for not-yet-implemented hydraulics internals.
 | `EROD-BND-002` | `fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-HYDRAULICS-001` | `SC-SED-001` (`INV-SED-005..007`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-004` | `hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration,ChannelNode}` | `SC-HYDRAULICS-001` + `SC-ROUTE-001` coupling surfaces | `SC-ROUTE-001` + `SC-IMPOUND-001` runtime consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## EROD12 Cross-Domain Ownership and Guard Closure Addendum
+
+| Cross-domain lane | Producer ownership | Consumer guard ownership | Closure posture | Evidence |
+|---|---|---|---|---|
+| Hydrology forcing ingress (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-RUNOFFPART-001` + `SC-WATBAL-001` | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-008`, `INV-HYDRAULICS-011`) | Required Wave-0 ingress ownership and guard semantics are canonicalized. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Hydraulics-to-sediment shear/friction payload (`fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe`) | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-009`..`011`) | `SC-SED-001` (`INV-SED-005`..`007`) | Producer and consumer guard ownership is explicit with typed failure continuity. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Watershed contributor boundary (`hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_*`) | `SC-HYDRAULICS-001` + `SC-ROUTE-001` | `SC-ROUTE-001` + `SC-SYSTEM-001` (`INV-SYSTEM-001`..`006`) | Cross-domain ownership for contributor + WS10 coupling boundaries is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+
 ## Allowed Degenerate States
 
 | Degenerate state | Allowed condition | Rationale | Evidence |
@@ -295,7 +303,7 @@ Minimum WS10 coupling vectors:
 |---|---|---|---|---|
 | GAP-HYD-001 | Per-invariant comparator vectors for hydraulics invariant families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
 | GAP-HYD-002 | Wave-0 erosion-lane alias-ownership ambiguity for required hydraulics-coupled boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-HYD-003 | Coupled sediment contract `SC-SED-001` remains incomplete, so hydrology-to-erosion ownership boundaries are still provisional. | Promotion-readiness depends on companion contract completion/consistency. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-HYD-003 | EROD12 ratifies hydrology-to-erosion cross-domain ownership and guard semantics across `SC-HYDRAULICS-001` and `SC-SED-001` via canonical addenda and invariant-mapped guard ownership. | Required Wave-0 cross-domain ownership boundaries are closed; production erosion implementation remains gated outside EROD12 scope. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-HYD-004 | Chapter-10 omission caveats (litter transport/debris dams/erosion pavement dynamics) remain and are explicitly retained as documented limitations with governance risk acceptance. | Applicability caveats remain active and require explicit interpretation in scope-sensitive analyses; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
@@ -311,3 +319,4 @@ Minimum WS10 coupling vectors:
 | `2026-05-23` | `6` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership for hydraulics-coupled erosion and WS10 boundary surfaces, added explicit cross-contract ownership register, and downgraded `GAP-HYD-002` from non-promotable to promotable-with-risk pending `EROD13+` internal alias expansion. |
 | `2026-05-23` | `7` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-HYD-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `8` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-HYD-001` and `GAP-HYD-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
+| `2026-05-23` | `9` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-HYD-003` to `closed` for required erosion-lane companion boundaries. |

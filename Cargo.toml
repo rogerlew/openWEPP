@@ -261,6 +261,10 @@ path = "tests/integration/pl15r_tier_a_delta_recloseout_contract.rs"
 name = "erod11_alias_boundary_ownership_contract"
 path = "tests/integration/erod11_alias_boundary_ownership_contract.rs"
 
+[[test]]
+name = "erod12_cross_domain_contract_closure_contract"
+path = "tests/integration/erod12_cross_domain_contract_closure_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
