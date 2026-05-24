@@ -17,6 +17,11 @@
 - `??` in a prompt means provide critical analysis only; do not implement code.
 - Ask for clarification when requirements or debug context are ambiguous.
 - Keep docs terse: Codex loads context in bulk and does not compress verbose guidance.
+- Work packages are autonomous execution specs: front-load planning and context
+  so an agent can execute from kickoff through disposition without user
+  intervention.
+- Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
+  self-containment, and observable validation expectations.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Do not create or switch git branches unless the user explicitly asks.
@@ -64,6 +69,8 @@ requirement, not optional package style guidance.
 - Status (`queued`), objective, rationale, included/excluded scope, explicit
   deliverables, dependencies, intended write set, phase plan, exit criteria,
   and security-impact gate.
+- Explicitly encode autonomous execution intent: the package must contain enough
+  context, sequencing, and validation detail for no-intervention execution.
 - Explicitly state contract-first sequence:
   1. contracts,
   2. contract-derived tests,
@@ -84,6 +91,7 @@ requirement, not optional package style guidance.
 
 5. Require baseline reference set in Dependencies
 - `/workdir/openWEPP/AGENTS.md`
+- `/workdir/openWEPP/docs/codex_exec_plans.md`
 - `docs/work-packages/README.md`
 - `docs/specifications/science-contract-authoring-procedure.md`
 - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
@@ -102,6 +110,8 @@ requirement, not optional package style guidance.
   updates for migration packages.
 - Kickoff prompt must prohibit silent defaults/clamping for domain violations
   and require typed errors/guards.
+- Kickoff prompt must instruct autonomous progression through the assigned phase
+  and artifact updates without asking the user for "next steps" unless blocked.
 
 ## Prompt Wording Guidance (Required)
 Use this wording standard when authoring execution prompts for kernel/science
@@ -131,6 +141,8 @@ scope.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.
 - Dual review and dual verification requirements where applicable.
+- Autonomous execution expectation for the phase (no user intervention unless
+  hard-blocked).
 
 5. Required fallback when a false-positive block occurs
 - Retry with a shorter prompt that includes only:
@@ -148,6 +160,8 @@ scope.
 - `Task: <single concrete change objective>.`
 - `Constraints: contract-first sequencing; canonical SC authority;`
   `baseline provenance (<if applicable>); typed guards; no silent defaults.`
+- `Autonomy: execute this phase end-to-end and update phase artifacts without`
+  `requesting additional user direction unless hard-blocked.`
 - `Outputs: update listed WB/EROD/CLIM artifacts for this phase only.`
 
 ## Project Role

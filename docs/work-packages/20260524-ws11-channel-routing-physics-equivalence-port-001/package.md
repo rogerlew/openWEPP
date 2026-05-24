@@ -23,6 +23,9 @@ This package is kernel-affecting and contract-first:
 3. record pre-implementation contract gate evidence, then
 4. modify production code.
 
+This package is executed in parallel with WS12 using separate git worktrees and
+integrated back into `main` using ordered merges.
+
 ## Scope
 ### Included
 - Implement canonical channel-routing physics authority updates in relevant
@@ -82,6 +85,7 @@ non-compliant.
 
 ## Dependencies
 - `/workdir/openWEPP/AGENTS.md`
+- `/workdir/openWEPP/docs/codex_exec_plans.md`
 - `/workdir/openWEPP/docs/work-packages/README.md`
 - `/workdir/openWEPP/docs/specifications/science-contract-authoring-procedure.md`
 - `/workdir/openWEPP/docs/specifications/science-contracts/kernel-process-contract-profile.md`
@@ -103,6 +107,22 @@ non-compliant.
 - `/workdir/openWEPP/tests/integration/`
 - `/workdir/wepp-forest_260430_baseline` @ `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
 
+## Required Worktree Parallelization and Integration
+- Parallel execution model: WS11 and WS12 run concurrently from separate git
+  worktrees rooted from the same `main` base commit.
+- WS11 worktree branch: `ws11-channel-routing-physics-equivalence-port-001`.
+- WS12 companion worktree branch:
+  `ws12-impoundment-physics-equivalence-port-001`.
+- Record worktree path, branch, and starting `main` commit SHA in
+  `artifacts/worker-handoff.md`.
+- Integration order back to `main` is mandatory:
+  1. merge WS11 to `main`,
+  2. rebase WS12 onto updated `main`,
+  3. rerun required gates in WS12 worktree after rebase,
+  4. merge WS12 to `main`.
+- If rebases introduce contract or test drift, reopen `HOLD` until corrected
+  evidence is recorded.
+
 ## Intended Write Set
 - `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md`
 - `docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md`
@@ -115,6 +135,12 @@ non-compliant.
 - `docs/work-packages/README.md`
 
 ## Phase Plan
+### Phase -1 - Worktree Bootstrap
+- Create dedicated WS11/WS12 worktrees and branches from the same `main` base
+  commit.
+- Record base commit SHA and branch/worktree mapping in both package handoff
+  artifacts.
+
 ### Phase 0 - Intake
 - Confirm queue authority, WS10 surrogate baseline, and dependency posture.
 
@@ -139,11 +165,14 @@ non-compliant.
 - WS11 queue objective is evidence-backed.
 - Channel routing production claims are no longer based on the
   `(1+slope)/(1+roughness)` surrogate.
+- WS11 execution occurred in its dedicated worktree branch and handoff evidence
+  records branch/path/base commit.
 - Canonical contract authority updates are implemented in `SC-*` files.
 - Contract-derived tests are implemented and executed.
 - Pre-implementation contract gate demonstrates contract/test completion before
   production code edits.
 - Routing vectors and parity traces are produced.
+- WS11 is merged into `main` before WS12 merge-back attempts.
 - Required gates executed if code is changed:
   1. `cargo fmt --check`
   2. `cargo clippy --workspace --all-targets -- -D warnings`

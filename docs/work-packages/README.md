@@ -10,6 +10,15 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - `prompts/` — agent prompts (active and archived)
 - `artifacts/` — produced docs, contracts, evidence
 
+## Autonomous execution intent (required)
+- A work package is an execution-ready plan, not a lightweight task note.
+- Planning must be front-loaded into the package so execution can proceed
+  autonomously from kickoff through disposition without user intervention.
+- `package.md` and kickoff prompts must define concrete sequencing, explicit
+  file targets, gate commands, and expected evidence updates.
+- Work-package authoring must reference and follow:
+  `docs/codex_exec_plans.md`.
+
 ## Phase shape (inherited from wepp-palimpsest)
 - **Phase 0**: docs-only audit / inventory
 - **Phase 1**: architecture decision with operator-signed acceptance
@@ -31,6 +40,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   2. implement contract-derived tests,
   3. record a pre-implementation contract gate, then
   4. modify production code.
+- `package.md` dependencies for authored packages should include:
+  - `/workdir/openWEPP/docs/codex_exec_plans.md`
 - Missing kernel-profile/procedure compliance keeps disposition in `HOLD`.
 
 ## Queued packages

@@ -17,6 +17,13 @@ provenance (`/workdir/wepp-forest_260430_baseline` at
 `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`); typed guards; no silent defaults.
 Outputs: update listed WS12 artifacts for this phase only.
 
+Execution topology:
+- Run WS12 in dedicated worktree branch
+  `ws12-impoundment-physics-equivalence-port-001`.
+- WS11 may run concurrently in its own worktree branch.
+- WS12 must rebase onto post-WS11 `main` and rerun required gates before
+  merge-back.
+
 Mandatory sequencing constraints:
 - Do not modify production kernel code until:
   1. canonical contract amendments are implemented,

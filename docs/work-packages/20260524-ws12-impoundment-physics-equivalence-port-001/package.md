@@ -17,6 +17,10 @@ watershed-physics surrogate posture for impoundment routing. WS10 established a
 production path, but the impoundment behavior is still surrogate-based and not
 physics-parity authority.
 
+Execution may proceed in parallel with WS11 from a dedicated git worktree, but
+merge-back into `main` remains gated on WS11 landing first and WS12 rebasing to
+that updated `main`.
+
 This package is kernel-affecting and contract-first:
 1. implement canonical `SC-*` authority updates,
 2. implement contract-derived tests,
@@ -83,6 +87,7 @@ non-compliant.
 
 ## Dependencies
 - `/workdir/openWEPP/AGENTS.md`
+- `/workdir/openWEPP/docs/codex_exec_plans.md`
 - `/workdir/openWEPP/docs/work-packages/README.md`
 - `/workdir/openWEPP/docs/specifications/science-contract-authoring-procedure.md`
 - `/workdir/openWEPP/docs/specifications/science-contracts/kernel-process-contract-profile.md`
@@ -106,6 +111,23 @@ non-compliant.
 - `/workdir/openWEPP/tests/integration/`
 - `/workdir/wepp-forest_260430_baseline` @ `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
 
+## Required Worktree Parallelization and Integration
+- Parallel execution model: WS11 and WS12 run concurrently from separate git
+  worktrees rooted from the same `main` base commit.
+- WS12 worktree branch: `ws12-impoundment-physics-equivalence-port-001`.
+- WS11 companion worktree branch:
+  `ws11-channel-routing-physics-equivalence-port-001`.
+- Record worktree path, branch, and starting `main` commit SHA in
+  `artifacts/worker-handoff.md`.
+- Integration order back to `main` is mandatory:
+  1. merge WS11 to `main`,
+  2. rebase WS12 onto updated `main`,
+  3. rerun required gates in WS12 worktree after rebase,
+  4. merge WS12 to `main`.
+- Any merge/rebase conflict touching canonical `SC-*`, tests, or watershed
+  runtime surfaces must be resolved with updated evidence artifacts before
+  merge approval.
+
 ## Intended Write Set
 - `docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md`
 - `docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md`
@@ -118,6 +140,12 @@ non-compliant.
 - `docs/work-packages/README.md`
 
 ## Phase Plan
+### Phase -1 - Worktree Bootstrap
+- Create dedicated WS11/WS12 worktrees and branches from the same `main` base
+  commit.
+- Record base commit SHA and branch/worktree mapping in both package handoff
+  artifacts.
+
 ### Phase 0 - Intake
 - Confirm queue authority, WS10 surrogate baseline, and WS11 dependency
   posture.
@@ -143,11 +171,15 @@ non-compliant.
 - WS12 queue objective is evidence-backed.
 - Impoundment routing production claims are no longer based on simple headroom
   ratio surrogate authority.
+- WS12 execution occurred in its dedicated worktree branch and handoff evidence
+  records branch/path/base commit.
 - Canonical contract authority updates are implemented in `SC-*` files.
 - Contract-derived tests are implemented and executed.
 - Pre-implementation contract gate demonstrates contract/test completion before
   production code edits.
 - Impoundment vectors and parity traces are produced.
+- WS12 branch is rebased onto post-WS11 `main`, required gates are rerun on the
+  rebased branch, and evidence is recorded before merge.
 - Required gates executed if code is changed:
   1. `cargo fmt --check`
   2. `cargo clippy --workspace --all-targets -- -D warnings`

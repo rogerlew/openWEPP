@@ -17,6 +17,12 @@ provenance (`/workdir/wepp-forest_260430_baseline` at
 `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`); typed guards; no silent defaults.
 Outputs: update listed WS11 artifacts for this phase only.
 
+Execution topology:
+- Run WS11 in dedicated worktree branch
+  `ws11-channel-routing-physics-equivalence-port-001`.
+- WS12 may run concurrently in its own worktree branch.
+- WS11 merges to `main` before WS12 merge-back.
+
 Mandatory sequencing constraints:
 - Do not modify production kernel code until:
   1. canonical contract amendments are implemented,
