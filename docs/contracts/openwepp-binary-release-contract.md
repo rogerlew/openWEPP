@@ -84,7 +84,7 @@ Every release candidate must pass a lint gate that validates:
 Implementations may expose this as a command such as:
 
 ```text
-openwepp_runner release lint --release-dir <path>
+open_wepp_runner release lint --release-dir <path>
 ```
 
 The gate is blocking: lint failure means release is not publishable.

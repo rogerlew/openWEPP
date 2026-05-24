@@ -481,6 +481,16 @@ Authorized packages:
   - Purpose: disposition residual Tier-A deltas and issue the PL08 hold-lift
     verdict with explicit risk-acceptance references when blockers remain,
     plus required contract/contract-test implementation evidence.
+- `20260523-pl14r-tier-a-candidate-emission-and-replay-rerun-001/`
+  - Purpose: re-run strict Tier-A direct openWEPP-vs-legacy comparator replay
+    after post-PL15 closure-wave completion with reproducible provenance and
+    contract-first sequencing (contract updates, contract tests,
+    pre-implementation gate, then replay/harness code).
+- `20260523-pl15r-tier-a-delta-recloseout-and-hold-lift-rerun-001/`
+  - Purpose: re-disposition Tier-A deltas from PL14R rerun evidence and issue
+    refreshed PL08 hold-lift verdict with contract-first sequencing (contract
+    updates, contract tests, pre-implementation gate, then closeout
+    decision-surface code).
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
@@ -516,6 +526,73 @@ Authorized packages:
   - Purpose: implement peak runoff kernel outputs for downstream
     sediment/routing coupling with contract-first sequencing (contract
     amendments, contract tests, pre-implementation gate, then kernel code).
+- `20260523-wb17-et-physics-equivalence-port-001/`
+  - Purpose: replace WB11 ET surrogate behavior with equation-driven ET
+    physics parity authority, explicitly authored in canonical science
+    contracts (`SC-EVAP-001` + companion `SC-*`) before kernel code updates,
+    under contract-first sequencing (contract amendments, contract tests,
+    pre-implementation gate, then kernel code).
+- `20260523-wb18-percolation-physics-equivalence-port-001/`
+  - Purpose: replace WB11 percolation surrogate behavior with layer-aware
+    equation-driven percolation physics parity authority, explicitly authored
+    in canonical science contracts (`SC-PERC-001` + companion `SC-*`) before
+    kernel code updates, under contract-first sequencing (contract amendments,
+    contract tests, pre-implementation gate, then kernel code).
+- `20260523-wb19-lateral-drainage-physics-equivalence-port-001/`
+  - Purpose: replace WB11 lateral/drainage surrogate behavior with
+    equation-driven lateral/subsurface drainage physics parity authority,
+    explicitly authored in canonical science contracts (`SC-SUBHYD-001` +
+    companion `SC-*`) before kernel code updates, under contract-first
+    sequencing (contract amendments, contract tests, pre-implementation gate,
+    then kernel code).
+- `20260523-wb20-forward-water-balance-solver-lane-001/`
+  - Purpose: establish a forward-solved water-balance parity lane that
+    excludes observed closure targets (`wb12_runoff_observed`,
+    `wb12_storage_observed`) from acceptance-driving inputs, with
+    contract-first sequencing (contract amendments, contract tests,
+    pre-implementation gate, then lane/runtime code).
+- `20260523-cli01-open-wepp-runner-and-hillslope-driver-bootstrap-001/`
+  - Purpose: implement in-repo `open_wepp_runner` and
+    `openwepp-cli-hill` execution path for comparator-ready openWEPP candidate
+    outputs, including blind run-directory sidecar discovery, run provenance
+    manifests, and release metadata sidecar validation under contract-first
+    sequencing (contract amendments/spec updates, contract tests,
+    pre-implementation gate, then runner/CLI code).
+- `20260523-erod10-sediment-kernelization-intake-001/`
+  - Purpose: convert erosion-kernel deferral into an executable intake/phase
+    plan with explicit package-wave ownership, dependency graph, and
+    contract-authority mapping for follow-on sediment kernelization.
+- `20260523-erod11-alias-and-boundary-ownership-closure-001/`
+  - Purpose: close Wave-0 erosion-lane alias and boundary ownership ambiguity
+    by ratifying canonical-to-runtime symbol mappings and cross-contract
+    producer/consumer ownership before EROD12/EROD13 code-authoring packages,
+    and keep scaffolded/placeholder physics postures in `HOLD`.
+- `20260523-erod12-cross-domain-contract-closure-001/`
+  - Purpose: close Wave-0 cross-domain erosion companion-contract ownership
+    and guard semantics (or explicitly retain blocker `HOLD`s with authority)
+    before EROD13 production kernel authoring, under contract-first
+    sequencing (contract amendments, contract tests, pre-implementation gate,
+    then any code edits if explicitly authorized).
+- `20260523-ws10-channel-impoundment-production-kernels-001/`
+  - Purpose: replace watershed test/probe posture with production
+    channel/impoundment kernels under typed boundary integration using
+    contract-first sequencing (contract amendments, contract tests,
+    pre-implementation gate, then kernel code).
+- `20260523-arch22-typed-state-surface-closure-001/`
+  - Purpose: close CRF-001 carry-forward by migrating stringly
+    `BoundarySymbol(String)` production kernel surfaces to typed state
+    interfaces, with contract-first sequencing (contract updates, contract
+    tests, pre-implementation gate, then migration code).
+- `20260523-clim07-climate-comparator-and-closure-evidence-001/`
+  - Purpose: add targeted continuous-daily and breakpoint climate comparator
+    vectors, parser-to-kernel seam checks, and confidence-tier closure
+    evidence with contract-first sequencing (contract updates, contract tests,
+    pre-implementation gate, then comparator/integration code).
+- `20260523-clim08-climate-governance-disposition-closeout-001/`
+  - Purpose: close remaining climate governance HOLD items (`parser/runtime`
+    seam and seam integration-test closure) and update canonical climate
+    contracts/specifications to promotable status using CLIM02..CLIM07
+    closure evidence.
 - `20260520-inspec01-author-wepp-input-spec-slope-001/`
   - Purpose: author and disposition canonical slope input specification
     (`slope-file.spec.md`, `.slp`).

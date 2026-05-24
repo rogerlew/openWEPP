@@ -20,7 +20,7 @@ The project needs:
 
 ## Decision
 
-1. openWEPP owns its own launcher contract via `openwepp_runner`.
+1. openWEPP owns its own launcher contract via in-repo `open_wepp_runner`.
 2. openWEPP release binaries follow `openwepp_YYMMDD*` naming with role
    suffixes for hillslope (`_hill`) and replay (`_replay`).
 3. JSON sidecars are mandatory for every openWEPP binary artifact.

@@ -1,8 +1,11 @@
-# openwepp_runner Contract
+# open_wepp_runner Contract
 
 Status: `normative`
 
 This contract defines integration rules for launching openWEPP binaries.
+
+Canonical runner identifier for this contract surface: `open_wepp_runner`
+(in-repo openWEPP runner). Legacy spelling `openwepp_runner` is non-canonical.
 
 ## Scope
 
@@ -12,7 +15,7 @@ This contract defines integration rules for launching openWEPP binaries.
 
 ## Hard rules
 
-1. `openwepp_runner` is the only launcher for openWEPP binaries.
+1. `open_wepp_runner` is the only launcher for openWEPP binaries.
 2. `wepppy` treats openWEPP as an external engine boundary; it does not depend
    on `wepp_runner` internals for openWEPP invocation semantics.
 3. Engine selection is explicit at request/config boundaries.

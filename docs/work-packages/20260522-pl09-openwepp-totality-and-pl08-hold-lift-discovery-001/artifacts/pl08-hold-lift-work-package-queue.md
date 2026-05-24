@@ -104,12 +104,12 @@ Purpose:
 
 | wp_id | lane | objective | depends_on | acceptance criteria | required evidence |
 |---|---|---|---|---|---|
-| `CLI10-openwepp-hillslope-driver-binary` | `runtime-foundation` | Implement executable hillslope run driver (`openwepp-cli-hill`) that produces comparator-ready outputs from openWEPP runtime execution (not legacy lane substitution). | `PL15R` | `[[bin]]` target exists; deterministic fixture run produces candidate `H5.wat.dat` and `H5.plot.dat`; provenance manifest includes binary SHA, command line, and output checksums. | cargo metadata showing binary target, replay manifest, fixture run trace, candidate output checksums |
-| `WB17-et-physics-equivalence-port` | `water-balance-physics` | Replace WB11 ET demand-consumption surrogate with legacy-equivalent ET physics authority (including plant/soil/residue partition semantics). | `CLI10` | ET path no longer reduces to `min(soil_water, et_demand)` surrogate; ET partition variables are equation-driven and contract-vectored. | contract amendments (`SC-EVAP-001`, `SC-WATBAL-001`), equation vectors, fixture trajectory parity traces |
+| `CLI01-open-wepp-runner-and-hillslope-driver-bootstrap` | `runtime-foundation` | Implement in-repo `open_wepp_runner` and executable hillslope run driver (`openwepp-cli-hill`) that produce comparator-ready outputs from openWEPP runtime execution (not legacy lane substitution), with blind run-directory sidecar discovery and typed strict/compat adapter behavior. | `PL15R` | in-repo runner binary exists; `[[bin]]` hillslope target exists; deterministic fixture run produces candidate `H5.wat.dat` and `H5.plot.dat`; run provenance manifest includes binary SHA, command line, sidecar resolution posture, and output checksums; release metadata sidecars are schema-valid. | cargo metadata showing runner + hillslope binary targets, fixture run trace, sidecar-resolution evidence, run-manifest sample, candidate output checksums, release-sidecar validation evidence |
+| `WB17-et-physics-equivalence-port` | `water-balance-physics` | Replace WB11 ET demand-consumption surrogate with legacy-equivalent ET physics authority (including plant/soil/residue partition semantics). | `CLI01` | ET path no longer reduces to `min(soil_water, et_demand)` surrogate; ET partition variables are equation-driven and contract-vectored. | contract amendments (`SC-EVAP-001`, `SC-WATBAL-001`), equation vectors, fixture trajectory parity traces |
 | `WB18-percolation-physics-equivalence-port` | `water-balance-physics` | Replace WB11 scalar excess*fraction percolation surrogate with layer-aware percolation authority and conductivity-domain behavior. | `WB17` | percolation path no longer uses `excess * perc_fraction` surrogate as production authority; per-layer transport state/flux surfaces execute with typed guards. | contract amendments (`SC-PERC-001`, `SC-WATBAL-001`), per-layer vectors, parity traces |
 | `WB19-lateral-drainage-physics-equivalence-port` | `water-balance-physics` | Replace WB11 fraction-only lateral/drainage surrogates with legacy-equivalent subsurface/drain physics authority. | `WB18` | lateral/drainage path no longer relies on scalar fraction split as production authority; drain/lateral terms are equation-driven with typed guards. | contract amendments (`SC-SUBHYD-001`, `SC-WATBAL-001`), hydraulic vectors, parity traces |
 | `WB20-forward-water-balance-solver-lane` | `water-balance-parity` | Establish parity comparator lane that is forward-solved by openWEPP kernels and does not consume observed closure targets as acceptance inputs. | `WB14`, `WB15`, `CLIM05`, `CLIM06`, `IRRIG10`, `WB17`, `WB18`, `WB19` | Tier-A parity lane runtime inputs exclude `wb12_runoff_observed` and `wb12_storage_observed` as acceptance-driving closure targets; closure is solver-output-derived. | lane input manifest, contract/test evidence proving no observed-target substitution, forward-solver replay traces |
-| `PL14S-tier-a-openwepp-candidate-emission-and-replay` | `closeout-parity` | Run strict Tier-A comparator using openWEPP-emitted candidate outputs from CLI10/WB20 lane only. | `WB20`, `PL16`, `PL17`, `CLIM07` | strict replay executes with required include surfaces present from openWEPP lane; no legacy candidate substitution or schema-fallback upcast in candidate lane. | comparator JSON artifacts, command trace, binary/tool/output hashes, candidate provenance attestation |
+| `PL14S-tier-a-openwepp-candidate-emission-and-replay` | `closeout-parity` | Run strict Tier-A comparator using openWEPP-emitted candidate outputs from CLI01/WB20 lane only. | `WB20`, `PL16`, `PL17`, `CLIM07` | strict replay executes with required include surfaces present from openWEPP lane; no legacy candidate substitution or schema-fallback upcast in candidate lane. | comparator JSON artifacts, command trace, binary/tool/output hashes, candidate provenance attestation |
 | `PL15S-tier-a-final-hold-lift-closeout` | `closeout-parity` | Re-disposition PL08 Tier-A deltas from PL14S and issue final hold-lift verdict. | `PL14S` | hold-lift permitted only when active Tier-A blockers are closed on openWEPP-vs-legacy evidence, or formally risk-accepted under explicit approval authority. | updated confidence-tier disposition, semantic parity assessment, final PL08 decision record, risk-acceptance artifact (if used) |
 | `WS11-channel-routing-physics-equivalence-port` | `watershed-physics` | Replace WS10 channel gain-factor surrogate with legacy-equivalent routing physics authority for production claims. | `WB16` | channel routing is no longer governed by `(1+slope)/(1+roughness)` surrogate as production parity claim basis. | contract amendments (`SC-ROUTE-001`, `SC-HYDRAULICS-001`), routing vectors, parity traces |
 | `WS12-impoundment-physics-equivalence-port` | `watershed-physics` | Replace WS10 impoundment algebraic retention surrogate with legacy-equivalent impoundment hydraulics authority for production claims. | `WS11` | impoundment routing is no longer governed by simple headroom ratio surrogate as production parity claim basis. | contract amendments (`SC-IMPOUND-001`, `SC-HYDRAULICS-001`), impoundment vectors, parity traces |
@@ -126,3 +126,50 @@ Purpose:
   3. no schema-only fallback/upcast used to satisfy required include surfaces.
 - Physics-valid Tier-A evidence requires closure of WB physics parity packages:
   `WB17`, `WB18`, `WB19`, and `WB20` before PL14S execution.
+
+## EROD Queue Reassessment Addendum (2026-05-23 UTC)
+
+Disposition source:
+- `docs/work-packages/20260523-erod10-sediment-kernelization-intake-001/artifacts/erod10-wave-execution-plan.md`
+- `docs/work-packages/20260523-erod11-alias-and-boundary-ownership-closure-001/artifacts/erod11-wave0-gate-verdict.md`
+- `docs/work-packages/20260523-erod12-cross-domain-contract-closure-001/artifacts/erod12-wave0-release-verdict.md`
+- `docs/work-packages/20260523-erod12-cross-domain-contract-closure-001/artifacts/erod12_disposition.md`
+- package status headers under `docs/work-packages/20260523-*/package.md`
+
+Purpose:
+- Reassess erosion-lane sequencing after confirmed execution through `WB20`
+  and completion of `EROD12`.
+
+### Prerequisite Snapshot for Erosion Wave Entry
+
+| dependency package | state | relevance to EROD wave entry |
+|---|---|---|
+| `WB14` | `completed` | EROD13 intake dependency from EROD10 scope plan |
+| `WB15` | `completed` | EROD13 intake dependency from EROD10 scope plan |
+| `WB16` | `completed` | Required upstream hydrologic forcing for erosion lane |
+| `WB17` | `completed` | PL15R parity lane prerequisite now closed |
+| `WB18` | `completed` | PL15R parity lane prerequisite now closed |
+| `WB19` | `completed` | PL15R parity lane prerequisite now closed |
+| `WB20` | `completed` | Forward-solver parity lane prerequisite now closed |
+| `WS10` | `completed` | Removes previously queued upstream gate for `EROD15` |
+| `EROD10` | `completed` | Wave plan authority is ratified |
+| `EROD11` | `completed` | Wave-0 alias ambiguity closure is complete (`GO`) |
+| `EROD12` | `completed` | Wave-0 cross-domain closure is complete (`GO` for EROD13 entry) |
+
+### Reassessed EROD Execution Queue
+
+| wp_id | wave | current state | dependency posture | queue decision |
+|---|---|---|---|---|
+| `EROD13-hillslope-core-erosion-kernel-001` | Wave 1 | `not-started` (package not yet scaffolded) | Entry dependencies satisfied (`EROD12`, `WB14`, `WB15`, `WB16`) | `NEXT` |
+| `EROD14-multiofe-and-enrichment-kernel-001` | Wave 2 | `not-started` | Blocked on `EROD13` completion | `QUEUE` |
+| `EROD15-routing-boundary-coupling-001` | Wave 3 | `not-started` | Blocked on `EROD14`; `WS10` upstream dependency is now satisfied | `QUEUE` |
+| `EROD16-sediment-closeout-and-comparator-001` | Wave 4 | `not-started` | Blocked on `EROD15` completion | `QUEUE` |
+
+### Hold/Promotability Posture
+
+- `EROD12` authorizes **EROD13 package entry** only; erosion-kernel physics
+  edits still require EROD13 contract-first sequencing and gates.
+- Non-Wave-0 non-promotable holds remain active and unchanged:
+  `GAP-ROUTE-005`, `GAP-RUNOFFPART-003`, `GAP-WATBAL-002`, `GAP-SYSTEM-001`.
+- Queue reassessment does not supersede PL08 release-rule constraints for
+  `PL14S -> PL15S`.
