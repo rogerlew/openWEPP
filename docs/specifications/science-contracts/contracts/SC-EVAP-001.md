@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -85,7 +85,7 @@ Out of scope:
 | `RA`, `Tmax`, `Tmin`, `Tdp`, `u_z` | `Ly`, `degC`, `degC`, `degC`, `m s^-1` | Climate forcing surfaces required by potential ET formulations. | climate forcing pathway | ET potential pathway |
 | `S` | `m` | Snow-water state that can satisfy evaporation demand before soil-water extraction. | winter hydrology pathway | ET withdrawal precedence logic |
 
-## Algorithm State Surfaces (WB11 ET Production Kernel)
+## Algorithm State Surfaces (WB17 ET Production Kernel)
 
 ### Required Inputs
 
@@ -93,38 +93,50 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | ET consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB11 ET state inputs | `wb11_soil_water`, `wb11_et_demand` |
+| WB17 ET state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
-| ET flux outputs | `ET`, `Ws` |
+| ET flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er` |
 | ET state updates | `wb11_soil_water` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range ET state domains |
 
 ### Mutated State Surfaces
 
-WB11 mutates ET boundary surfaces deterministically:
-- state update: `wb11_soil_water = wb11_soil_water - min(wb11_soil_water, wb11_et_demand)`
-- flux update: `ET = min(wb11_soil_water, wb11_et_demand)`
-- flux update: `Ws = 1` for zero-demand branch, otherwise `ET / wb11_et_demand`
+WB17 mutates ET boundary surfaces deterministically:
+- potential partition: `Esp = wb11_et_demand * exp(-0.4 * lai)` and
+  `Etp = wb11_et_demand - Esp`.
+- residue partition: `Er = min(Esp, wb17_residue_interception)` and
+  `Es = Esp - Er`.
+- soil extraction + plant extraction:
+  - `Es_actual = min(Es, wb11_soil_water)`
+  - `Ep = min(Etp, wb11_soil_water - Es_actual)`
+  - `ET = Er + Es_actual + Ep`
+- stress update: `Ws = 1` for `Etp <= 1e-12`, otherwise `Ep / Etp`.
+- state update:
+  `wb11_soil_water = wb11_soil_water - Es_actual - Ep`.
 
-## Algorithm Specification (WB11 ET Production Execution)
+## Algorithm Specification (WB17 ET Production Execution)
 
-1. Require finite ET inputs (`wb11_soil_water`, `wb11_et_demand`) and enforce
-   non-negative domains.
-2. Compute deterministic ET withdrawal as `min(wb11_soil_water, wb11_et_demand)`.
-3. Update `wb11_soil_water` and emit fluxes `ET` and `Ws` using explicit
-   zero-demand handling (`wb11_et_demand <= 1e-12` => `Ws = 1`).
-4. Reject missing, non-finite, or out-of-range ET inputs/outputs with typed
-   hard-fail status; no silent fallback/clamping paths are permitted.
+1. Require finite ET inputs (`wb11_soil_water`, `wb11_et_demand`, `lai`,
+   `wb17_residue_interception`) and enforce non-negative domains.
+2. Compute deterministic potential partition (`Esp`, `Etp`) from Eq. [5.2.8]
+   and Eq. [5.2.9] using runtime alias
+   (`Eu` -> `wb11_et_demand`, `L` -> `lai`).
+3. Compute explicit residue evaporation partition (`Er`) and remaining
+   soil-evaporation demand (`Es`) before soil-water extraction.
+4. Compute explicit soil evaporation, plant transpiration, total ET, and stress
+   ratio (`Ws`) with zero-demand handling (`Etp <= 1e-12` => `Ws = 1`).
+5. Reject missing, non-finite, or out-of-range ET inputs/outputs with typed
+   hard-fail status; no silent fallback/clamping/defaulting paths are permitted.
 
-## Branch and Guard Table (WB11 ET Kernel)
+## Branch and Guard Table (WB17 ET Kernel)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-EVAP-WB11-EXECUTE` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand` | runtime | deterministic ET/writeback execution |
+| `BR-EVAP-WB17-EXECUTE` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` | runtime | deterministic ET partition + writeback execution |
 | `BR-EVAP-WB11-MISSING` | required ET symbol absent | ET required symbols | runtime | typed hard-fail (`HKERNEL-WB11-ET-E-001`) |
 | `BR-EVAP-WB11-NONFINITE` | ET symbol is NaN/Inf | ET required symbols | runtime | typed hard-fail (`HKERNEL-WB11-ET-E-002`) |
 | `BR-EVAP-WB11-DOMAIN` | ET symbol/derived flux outside domain bounds | ET required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-ET-E-003`) |
@@ -143,8 +155,8 @@ WB11 mutates ET boundary surfaces deterministically:
 | INV-EVAP-008 | Stress-factor invariant: stress factor `Ws` must follow Eq. [5.5.1]/[8.2.15], remain within `[0,1]`, and be emitted with declared units/semantics for plant-growth consumers. | hard-fail | REF-EVAP-CH5-LINK, REF-EVAP-CH8-LINK, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-009 | Coupling completeness invariant: ET boundary payload must include required surfaces for water-balance closure (`ET` term context) and plant-growth stress coupling (`Ws`, demand/supply terms) with unit-consistent semantics. | hard-fail | REF-EVAP-CH5-BAL, REF-EVAP-CH5-LINK, REF-EVAP-CH8-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-010 | Governance limitation invariant: ET contract interpretation must remain explicit about daily-step process scope and cited method assumptions (modified Ritchie framework and pathway preconditions); missing scope labeling blocks promotion. | governance-fail | REF-EVAP-CH5-POT, REF-EVAP-CH5-STAGE | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-EVAP-011 | WB11 ET execution invariant: ET phase computes deterministic `ET` and `Ws` from required WB11 ET symbols and updates `wb11_soil_water` without implicit fallback branches. | hard-fail | REF-EVAP-CH5-LINK, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-EVAP-012 | WB11 ET guard invariant: missing/non-finite/out-of-range ET state domains must surface typed hard failures (`HKERNEL-WB11-ET-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-EVAP-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-EVAP-011 | WB17 ET execution invariant: ET phase computes deterministic partitioned ET components (`Er`, `Es`, `Ep`) and derived closure outputs (`ET`, `Ws`) from required WB17 ET symbols and updates `wb11_soil_water` without implicit fallback branches. | hard-fail | REF-EVAP-CH5-PART, REF-EVAP-CH5-LINK, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-012 | WB17 ET guard invariant: missing/non-finite/out-of-range WB17 ET domains must surface typed hard failures (`HKERNEL-WB11-ET-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-EVAP-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -160,19 +172,21 @@ WB11 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-008` | runtime | Stress-factor calculator and boundary validator | Typed hard error on out-of-range/undefined `Ws` | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-009` | runtime | Cross-domain ET boundary payload validator | Typed hard error on missing required ET/stress surfaces or units mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-010` | governance | Contract review + promotion checklist | Promotion `HOLD` if method/scope caveats are not explicit in contract/disposition artifacts | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-EVAP-011` | runtime | WB11 ET production kernel execution path | Typed hard error on non-deterministic/malformed ET writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-EVAP-012` | runtime | WB11 ET guard table (`HKERNEL-WB11-ET-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid ET inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-EVAP-011` | runtime | WB17 ET production kernel execution path | Typed hard error on non-deterministic/malformed partition/writeback ET outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-012` | runtime | WB17 ET guard table (`HKERNEL-WB11-ET-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid ET inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
 Canonical symbols in this contract follow Chapter-5/Chapter-8 WEPP notation.
-Concrete openWEPP runtime-field names are not fixed yet, so identity aliases are
-required until implementation surfaces diverge.
+WB17 implementation now uses explicit runtime aliases for executed ET
+equation vectors.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
-| `Eu`, `Esp`, `Etp`, `Esu`, `Esb`, `Es` | identity names | ET partition/stage surfaces | `m d^-1` preserved | `[DIRECT][Static]` |
-| `Tr`, `d2`, `Cr`, `L` | identity names | stage-transition and attenuation surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
+| `Eu` | `wb11_et_demand` | ET demand surface consumed by WB17 partition runtime | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
+| `L` | `lai` | LAI-driven partition surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
+| `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | residue evaporation partition surface | `m d^-1` -> `m` daily flux output | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Esp`, `Etp`, `Es`, `Ep` | `Esp`, `Etp` (derived runtime), `Es`, `Ep` (flux outputs) | ET partition and component output surfaces | `m d^-1` potential -> `m` daily component flux outputs | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dx`, `ds`, `UPi`, `Ui` | identity names | root-zone distribution and uptake surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Θ`, `Θi`, `Θr`, `Θc`, `ULi` | identity names | soil-water state surfaces used by ET | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Ws` | identity name | ET-to-plant stress boundary surface | `fraction` preserved | `[DIRECT][Static]` |
@@ -223,7 +237,7 @@ required until implementation surfaces diverge.
 | Root-zone extraction and uptake (`INV-EVAP-005/006/007`) | root-zone ET distribution stage | Hard error on bounds or branch mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Stress and boundary coupling (`INV-EVAP-008/009`) | ET-to-plant and ET-to-water-balance handoff | Hard error on malformed stress or missing boundary payload | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Scope/governance labeling (`INV-EVAP-010`) | review/verification/promotion | Governance `HOLD` until scope/method caveats are explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB11 ET production execution and guards (`INV-EVAP-011/012`) | ET kernel execution and guard validation | Hard error on malformed ET domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB17 ET production execution and guards (`INV-EVAP-011/012`) | ET kernel execution and guard validation | Hard error on malformed ET domains or invalid deterministic partition updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -233,6 +247,8 @@ required until implementation surfaces diverge.
 | `WB11_ET_GUARD_MISSING` | status message id | `HKERNEL-WB11-ET-E-001` | Typed missing-input guard code | REF-EVAP-PHYS-BOUNDS |
 | `WB11_ET_GUARD_NONFINITE` | status message id | `HKERNEL-WB11-ET-E-002` | Typed non-finite guard code | REF-EVAP-PHYS-BOUNDS |
 | `WB11_ET_GUARD_DOMAIN` | status message id | `HKERNEL-WB11-ET-E-003` | Typed domain guard code | REF-EVAP-PHYS-BOUNDS |
+| `WB17_PARTITION_EXP_COEFF` | coefficient | `0.4` | WB17 LAI partition coefficient in `Esp = Eu * exp(-0.4 * L)` | REF-EVAP-CH5-PART |
+| `WB17_ETP_ZERO_THRESHOLD` | `m d^-1` | `1e-12` | Explicit zero-demand denominator guard for `Ws` | REF-EVAP-CH5-LINK |
 
 ## Tolerance and Numeric Notes
 
@@ -248,14 +264,18 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-specific tolerances:
 
 ## Test-Vector Obligations
 
-Minimum WB11 ET production-kernel conformance vectors:
+Minimum WB17 ET production-kernel conformance vectors:
 
-1. ET phase emits deterministic `ET`/`Ws` fluxes and updates `wb11_soil_water`
-   from valid WB11 inputs.
-2. Non-finite `wb11_et_demand` hard-fails with typed status
-   `HKERNEL-WB11-ET-E-002`.
-3. Domain-invalid ET inputs/outputs hard-fail with typed status
-   `HKERNEL-WB11-ET-E-003` and do not mutate orchestrator writeback surfaces.
+1. WB17 nominal partition vector emits deterministic ET components (`Ep`, `Es`,
+   `Er`) plus aggregate `ET`/`Ws` and updates `wb11_soil_water` from valid WB17
+   inputs.
+2. Soil-limited vector preserves residue evaporation (`Er`) while reducing
+   transpiration (`Ep`) and `Ws` via explicit supply-demand stress relation.
+3. Missing required WB17 ET symbol (`wb17_residue_interception`) hard-fails
+   with typed status `HKERNEL-WB11-ET-E-001`.
+4. Non-finite/domain-invalid WB17 ET inputs hard-fail with typed status
+   family `HKERNEL-WB11-ET-E-002/003` and do not mutate orchestrator
+   writeback surfaces.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -311,9 +331,10 @@ Minimum WB11 ET production-kernel conformance vectors:
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-EVAP-001 | Per-invariant comparator vectors for all ET invariant families are not yet curated in this package. | Limits immediate automation depth for invariant-specific acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-EVAP-002 | Concrete openWEPP runtime-field aliases for ET/stress surfaces are not yet fixed. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-EVAP-002 | WB17 now fixes executed runtime aliases for `Eu`, `L`, and residue-partition ET symbols, but cross-domain alias harmonization for full Chapter-5 ET variable family remains incomplete. | Partial alias closure still leaves downstream harmonization risk. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-EVAP-003 | Companion contracts (`SC-PERC-001`, `SC-SUBHYD-001`, `SC-RESIDUE-001`) are not fully authored, so coupled ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-EVAP-004 | Chapter-5 validation emphasizes total ET and water-balance behavior; component-level partition validation (`Esp` vs `Etp` vs stage transitions) is not fully separated in available cited evidence. | Partition-subcomponent confidence is lower than aggregate ET confidence until dedicated evidence is added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-EVAP-005 | Full legacy stage-memory/state transition physics (`s1`, `s2`, `tu`, root-layer extraction surfaces) is not yet projected as first-class WB17 runtime symbols in openWEPP. | Limits strict one-to-one legacy state trajectory comparison despite equation-driven partition replacement of WB11 surrogate behavior. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -326,3 +347,4 @@ Minimum WB11 ET production-kernel conformance vectors:
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted ET section from routing-only scaffolding to production-kernel authority with deterministic `ET`/`Ws` updates, typed ET guard codes (`HKERNEL-WB11-ET-E-001..003`), and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB13 amendment: added ET component coupling authority for canonical daily output columns (`Ep`, `Es`, `Er`) with explicit WB13 malformed-output hard-fail posture. |
 | `2026-05-23` | `6` | `Codex` | WB15 amendment: added explicit canopy-interception coupling requirements so `I` remains a distinct closure term relative to ET outputs (`ET`, `Ws`) under typed consumer guard posture. |
+| `2026-05-23` | `7` | `Codex` | WB17 amendment: replaced WB11 ET surrogate algorithm authority with equation-driven WB17 partition semantics (`Esp`, `Etp`, `Er`, `Es`, `Ep`) using explicit runtime alias mapping and WB17 contract-derived vector obligations. |

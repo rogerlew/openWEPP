@@ -14,41 +14,41 @@ NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
 NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
 
-const EXPECTED_WB14_INFILTRATION: f64 = 2.909_931_093_255_933;
-const EXPECTED_S: f64 = 0.333_333_333_333_333;
-const EXPECTED_WB14_Q_WITH_S: f64 = 0.623_402_240_077_4;
-const EXPECTED_WB12_STORAGE_WITH_S: f64 = 9.959_931_093_255_934;
-const CLIM05_TEST_TOLERANCE: f64 = 1.0e-6;
+const TOL: f64 = 1.0e-12;
 
 #[allow(clippy::too_many_lines)]
-fn seeded_clim05_surface() -> HillslopeWritebackSurface {
+fn seeded_wb17_surface() -> HillslopeWritebackSurface {
     let mut state_surface = std::collections::BTreeMap::new();
 
+    // Seed required consumer-boundary symbols.
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.3));
-    state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(2.0));
-    state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.0));
-    state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(1.0));
-    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(0.5));
+    state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
-    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.3));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
 
+    // WB17 ET runtime inputs.
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),
-        BoundaryValue::scalar(12.0),
+        BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
         BoundarySymbol::from("wb11_et_demand"),
-        BoundaryValue::scalar(2.0),
+        BoundaryValue::scalar(0.5),
     );
     state_surface.insert(
         BoundarySymbol::from("wb17_residue_interception"),
-        BoundaryValue::scalar(0.0),
+        BoundaryValue::scalar(0.05),
     );
+
+    // Keep downstream WB11 hydrology phases nominal while preserving ET results.
     state_surface.insert(
         BoundarySymbol::from("wb11_field_capacity"),
-        BoundaryValue::scalar(8.0),
+        BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb11_perc_fraction"),
@@ -71,13 +71,14 @@ fn seeded_clim05_surface() -> HillslopeWritebackSurface {
         BoundaryValue::scalar(2.0),
     );
 
+    // WB12/WB14/WB16 prerequisites for canonical scheduler completion.
     state_surface.insert(
         BoundarySymbol::from("wb12_rainfall_input"),
-        BoundaryValue::scalar(3.0),
+        BoundaryValue::scalar(4.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runon_input"),
-        BoundaryValue::scalar(0.4),
+        BoundaryValue::scalar(1.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_infiltration"),
@@ -85,35 +86,17 @@ fn seeded_clim05_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_depression_storage_delta"),
-        BoundaryValue::scalar(0.2),
+        BoundaryValue::scalar(0.5),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runoff_observed"),
-        BoundaryValue::scalar(EXPECTED_WB14_Q_WITH_S),
+        BoundaryValue::scalar(0.5),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_runoff_closure_tolerance"),
-        BoundaryValue::scalar(CLIM05_TEST_TOLERANCE),
+        BoundaryValue::scalar(1.0e-6),
     );
-
-    state_surface.insert(
-        BoundarySymbol::from("wb12_storage_initial"),
-        BoundaryValue::scalar(12.0),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(EXPECTED_WB12_STORAGE_WITH_S),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("wb12_storage_closure_tolerance"),
-        BoundaryValue::scalar(CLIM05_TEST_TOLERANCE),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("wb12_precip_input"),
-        BoundaryValue::scalar(3.0),
-    );
-
-    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(4.0));
+    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(3.0));
     state_surface.insert(
         BoundarySymbol::from("timem_0001"),
         BoundaryValue::scalar(0.0),
@@ -127,52 +110,37 @@ fn seeded_clim05_surface() -> HillslopeWritebackSurface {
         BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
-        BoundarySymbol::from("timem_0004"),
-        BoundaryValue::scalar(3.0),
-    );
-    state_surface.insert(
         BoundarySymbol::from("intsty_0001"),
-        BoundaryValue::scalar(1.0),
+        BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
         BoundarySymbol::from("intsty_0002"),
-        BoundaryValue::scalar(1.0),
+        BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
         BoundarySymbol::from("intsty_0003"),
-        BoundaryValue::scalar(1.0),
-    );
-    state_surface.insert(
-        BoundarySymbol::from("intsty_0004"),
         BoundaryValue::scalar(0.0),
     );
     state_surface.insert(BoundarySymbol::from("timep"), BoundaryValue::scalar(0.25));
     state_surface.insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
     state_surface.insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
-
     state_surface.insert(
-        BoundarySymbol::from("snow.options.snow_file_present"),
-        BoundaryValue::scalar(1.0),
+        BoundarySymbol::from("wb12_storage_initial"),
+        BoundaryValue::scalar(12.0),
     );
     state_surface.insert(
-        BoundarySymbol::from("snow.options.rst"),
-        BoundaryValue::scalar(0.0),
+        BoundarySymbol::from("wb12_storage_observed"),
+        BoundaryValue::scalar(10.1),
     );
     state_surface.insert(
-        BoundarySymbol::from("snow.options.newsnw"),
-        BoundaryValue::scalar(100.0),
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(1.0e-6),
     );
     state_surface.insert(
-        BoundarySymbol::from("snow.options.ssd"),
-        BoundaryValue::scalar(200.0),
+        BoundarySymbol::from("wb12_precip_input"),
+        BoundaryValue::scalar(4.0),
     );
-    state_surface.insert(
-        BoundarySymbol::from("snow.runtime_swe"),
-        BoundaryValue::scalar(1.0),
-    );
-    state_surface.insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(2.0));
-    state_surface.insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(1.0));
 
     HillslopeWritebackSurface {
         state_surface,
@@ -181,7 +149,7 @@ fn seeded_clim05_surface() -> HillslopeWritebackSurface {
 }
 
 #[test]
-fn clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliation() {
+fn wb17_contract_conformance_emits_partitioned_et_components() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
@@ -189,161 +157,160 @@ fn clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliati
     let mut kernel = Wb11HydrologyKernel;
 
     let report = scheduler
-        .execute_with_kernel(&topology_report, &mut kernel, seeded_clim05_surface())
-        .expect("clim05 execution should return typed report");
+        .execute_with_kernel(&topology_report, &mut kernel, seeded_wb17_surface())
+        .expect("wb17 execution should return typed report");
 
-    assert!(report.scheduler_report.is_success());
-
-    let infiltration = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("wb12_infiltration"))
-        .expect("wb12_infiltration should be present")
-        .as_f64();
-    assert!((infiltration - EXPECTED_WB14_INFILTRATION).abs() <= CLIM05_TEST_TOLERANCE);
-
-    let snow_flux = report
+    let et = report
         .writeback_surface
         .flux_surface
-        .get(&BoundarySymbol::from("S"))
-        .expect("S should be present")
+        .get(&BoundarySymbol::from("ET"))
+        .expect("ET should be present")
         .as_f64();
-    assert!((snow_flux - EXPECTED_S).abs() <= CLIM05_TEST_TOLERANCE);
-
-    let snow_runtime_swe = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("snow.runtime_swe"))
-        .expect("snow.runtime_swe should be present")
-        .as_f64();
-    assert!((snow_runtime_swe - (1.0 - EXPECTED_S)).abs() <= CLIM05_TEST_TOLERANCE);
-
-    let q_runoff = report
+    let ws = report
         .writeback_surface
         .flux_surface
-        .get(&BoundarySymbol::from("Q"))
-        .expect("Q should be present")
+        .get(&BoundarySymbol::from("Ws"))
+        .expect("Ws should be present")
         .as_f64();
-    assert!((q_runoff - EXPECTED_WB14_Q_WITH_S).abs() <= CLIM05_TEST_TOLERANCE);
+    let ep = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Ep"))
+        .expect("Ep should be present")
+        .as_f64();
+    let es = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Es"))
+        .expect("Es should be present")
+        .as_f64();
+    let er = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Er"))
+        .expect("Er should be present")
+        .as_f64();
 
-    let storage_reconciled = report
+    assert!((et - 0.25).abs() <= TOL);
+    assert!(ws.abs() <= TOL);
+    assert!(ep.abs() <= TOL);
+    assert!((es - 0.2).abs() <= TOL);
+    assert!((er - 0.05).abs() <= TOL);
+
+    let soil_water_after = report
         .writeback_surface
         .state_surface
-        .get(&BoundarySymbol::from("wb12_storage_reconciled"))
-        .expect("wb12_storage_reconciled should be present")
+        .get(&BoundarySymbol::from("wb11_soil_water"))
+        .expect("wb11_soil_water should be present")
         .as_f64();
-    assert!((storage_reconciled - EXPECTED_WB12_STORAGE_WITH_S).abs() <= CLIM05_TEST_TOLERANCE);
+    assert!(soil_water_after.abs() <= TOL);
 }
 
 #[test]
-fn clim05_contract_conformance_rejects_missing_active_snow_control_symbol() {
+fn wb17_contract_conformance_rejects_missing_residue_interception_symbol() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
 
-    let mut surface = seeded_clim05_surface();
+    let mut surface = seeded_wb17_surface();
     surface
         .state_surface
-        .remove(&BoundarySymbol::from("snow.options.ssd"));
+        .remove(&BoundarySymbol::from("wb17_residue_interception"));
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("clim05 missing-symbol failure should return typed report");
+        .expect("missing-symbol failure should return typed report");
 
     assert_eq!(
         report.scheduler_report.halted_phase,
-        Some(HillslopePhase::RunoffReconciliation)
+        Some(HillslopePhase::Evapotranspiration)
     );
-
-    let runoff_phase = report
+    let et_phase = report
         .phase_reports
         .iter()
-        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
-        .expect("runoff phase report should exist");
+        .find(|phase| phase.phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase report should exist");
     assert_eq!(
-        runoff_phase.decision_status.message_id(),
-        "HKERNEL-WB14-RUNOFF-E-001"
+        et_phase.decision_status.message_id(),
+        "HKERNEL-WB11-ET-E-001"
     );
     assert_eq!(
-        runoff_phase.decision_status.boundary_class(),
+        et_phase.decision_status.boundary_class(),
         BoundaryClass::MissingRequiredInput
     );
 }
 
 #[test]
-fn clim05_contract_conformance_rejects_non_finite_active_snow_control_symbol() {
+fn wb17_contract_conformance_rejects_non_finite_lai() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
 
-    let mut surface = seeded_clim05_surface();
-    surface.state_surface.insert(
-        BoundarySymbol::from("snow.options.newsnw"),
-        BoundaryValue::scalar(f64::NAN),
-    );
+    let mut surface = seeded_wb17_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(f64::NAN));
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("clim05 non-finite failure should return typed report");
+        .expect("non-finite failure should return typed report");
 
     assert_eq!(
         report.scheduler_report.halted_phase,
-        Some(HillslopePhase::RunoffReconciliation)
+        Some(HillslopePhase::Evapotranspiration)
     );
-
-    let runoff_phase = report
+    let et_phase = report
         .phase_reports
         .iter()
-        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
-        .expect("runoff phase report should exist");
+        .find(|phase| phase.phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase report should exist");
     assert_eq!(
-        runoff_phase.decision_status.message_id(),
-        "HKERNEL-WB14-RUNOFF-E-002"
+        et_phase.decision_status.message_id(),
+        "HKERNEL-WB11-ET-E-002"
     );
     assert_eq!(
-        runoff_phase.decision_status.boundary_class(),
+        et_phase.decision_status.boundary_class(),
         BoundaryClass::NonFinite
     );
 }
 
 #[test]
-fn clim05_contract_conformance_rejects_invalid_active_snow_control_domain() {
+fn wb17_contract_conformance_rejects_domain_invalid_residue_interception() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
 
-    let mut surface = seeded_clim05_surface();
+    let mut surface = seeded_wb17_surface();
     surface.state_surface.insert(
-        BoundarySymbol::from("snow.options.newsnw"),
-        BoundaryValue::scalar(250.0),
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(-0.01),
     );
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("clim05 domain failure should return typed report");
+        .expect("domain failure should return typed report");
 
     assert_eq!(
         report.scheduler_report.halted_phase,
-        Some(HillslopePhase::RunoffReconciliation)
+        Some(HillslopePhase::Evapotranspiration)
     );
-
-    let runoff_phase = report
+    let et_phase = report
         .phase_reports
         .iter()
-        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
-        .expect("runoff phase report should exist");
+        .find(|phase| phase.phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase report should exist");
     assert_eq!(
-        runoff_phase.decision_status.message_id(),
-        "HKERNEL-WB14-RUNOFF-E-003"
+        et_phase.decision_status.message_id(),
+        "HKERNEL-WB11-ET-E-003"
     );
     assert_eq!(
-        runoff_phase.decision_status.boundary_class(),
+        et_phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
     );
 }

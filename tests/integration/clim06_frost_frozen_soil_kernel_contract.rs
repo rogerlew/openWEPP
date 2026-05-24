@@ -44,6 +44,10 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
         BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb11_field_capacity"),
         BoundaryValue::scalar(8.0),
     );

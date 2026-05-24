@@ -109,6 +109,8 @@ const WB11_SYMBOL_SOIL_WATER: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11SoilWater;
 const WB11_SYMBOL_ET_DEMAND: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11EtDemand;
+const WB17_SYMBOL_RESIDUE_INTERCEPTION: HillslopeProductionStateSymbol =
+    HillslopeProductionStateSymbol::Wb17ResidueInterception;
 const WB11_SYMBOL_FIELD_CAPACITY: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11FieldCapacity;
 const WB11_SYMBOL_PERC_FRACTION: HillslopeProductionStateSymbol =
@@ -123,6 +125,12 @@ const WB11_SYMBOL_DRAINABLE_STORAGE: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11DrainableStorage;
 const WB11_SYMBOL_ET: HillslopeProductionFluxSymbol = HillslopeProductionFluxSymbol::Wb11Et;
 const WB11_SYMBOL_WS: HillslopeProductionFluxSymbol = HillslopeProductionFluxSymbol::Wb11Ws;
+const WB17_SYMBOL_EP: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb17PlantTranspirationEp;
+const WB17_SYMBOL_ES: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb17SoilEvaporationEs;
+const WB17_SYMBOL_ER: HillslopeProductionFluxSymbol =
+    HillslopeProductionFluxSymbol::Wb17ResidueEvaporationEr;
 const WB11_SYMBOL_PERC_LOSS_D: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb11PercLossD;
 const WB11_SYMBOL_PERC_RECHARGE_PE: HillslopeProductionFluxSymbol =
@@ -283,6 +291,7 @@ const WB16_SYMBOL_QPSTAR: HillslopeProductionStateSymbol =
 const WB16_SYMBOL_VSTAR: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb16Vstar;
 const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
 const WB16_MAX_DURATION_S: f64 = 86_400.0;
+const WB17_LAI_PARTITION_COEFFICIENT: f64 = 0.4;
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -3659,6 +3668,7 @@ impl Wb11HydrologyKernel {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn run_evapotranspiration(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
@@ -3681,8 +3691,76 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let actual_et = soil_water.min(et_demand);
-        let soil_water_after = soil_water - actual_et;
+        let lai = Self::require_state_scalar(request, phase_class, WB15_SYMBOL_PLANT_LAI)?;
+        Self::require_state_range(phase_class, WB15_SYMBOL_PLANT_LAI, lai, Some(0.0), None)?;
+
+        let residue_interception =
+            Self::require_state_scalar(request, phase_class, WB17_SYMBOL_RESIDUE_INTERCEPTION)?;
+        Self::require_state_range(
+            phase_class,
+            WB17_SYMBOL_RESIDUE_INTERCEPTION,
+            residue_interception,
+            Some(0.0),
+            None,
+        )?;
+
+        let soil_evaporation_partition_potential =
+            et_demand * (-WB17_LAI_PARTITION_COEFFICIENT * lai).exp();
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_ES,
+            soil_evaporation_partition_potential,
+            Some(0.0),
+            Some(et_demand),
+        )?;
+
+        let transpiration_partition_potential = et_demand - soil_evaporation_partition_potential;
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_EP,
+            transpiration_partition_potential,
+            Some(0.0),
+            Some(et_demand),
+        )?;
+
+        let residue_evaporation = residue_interception.min(soil_evaporation_partition_potential);
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_ER,
+            residue_evaporation,
+            Some(0.0),
+            Some(soil_evaporation_partition_potential),
+        )?;
+
+        let soil_evaporation_potential = soil_evaporation_partition_potential - residue_evaporation;
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_ES,
+            soil_evaporation_potential,
+            Some(0.0),
+            Some(soil_evaporation_partition_potential),
+        )?;
+
+        let soil_evaporation_actual = soil_water.min(soil_evaporation_potential);
+        let soil_after_evaporation = soil_water - soil_evaporation_actual;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_after_evaporation,
+            Some(0.0),
+            None,
+        )?;
+
+        let transpiration_actual = soil_after_evaporation.min(transpiration_partition_potential);
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_EP,
+            transpiration_actual,
+            Some(0.0),
+            Some(transpiration_partition_potential),
+        )?;
+
+        let soil_water_after = soil_after_evaporation - transpiration_actual;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,
@@ -3691,13 +3769,35 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let ws = if et_demand <= WB11_ZERO_THRESHOLD {
+        let actual_et = residue_evaporation + soil_evaporation_actual + transpiration_actual;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_ET,
+            actual_et,
+            Some(0.0),
+            Some(et_demand),
+        )?;
+
+        let ws = if transpiration_partition_potential <= WB11_ZERO_THRESHOLD {
             1.0
         } else {
-            actual_et / et_demand
+            transpiration_actual / transpiration_partition_potential
         };
-        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, actual_et, Some(0.0), None)?;
         Self::require_flux_range(phase_class, WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0))?;
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_ES,
+            soil_evaporation_actual,
+            Some(0.0),
+            Some(soil_evaporation_potential),
+        )?;
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_ER,
+            residue_evaporation,
+            Some(0.0),
+            Some(residue_interception),
+        )?;
 
         let Ok(status) =
             SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB11-ET-OK-001")
@@ -3714,6 +3814,9 @@ impl Wb11HydrologyKernel {
             vec![
                 WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
                 WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
+                WritebackField::bounded(WB17_SYMBOL_EP, transpiration_actual, Some(0.0), None),
+                WritebackField::bounded(WB17_SYMBOL_ES, soil_evaporation_actual, Some(0.0), None),
+                WritebackField::bounded(WB17_SYMBOL_ER, residue_evaporation, Some(0.0), None),
             ],
         );
         Ok(KernelRunResponse::new(status, writeback))

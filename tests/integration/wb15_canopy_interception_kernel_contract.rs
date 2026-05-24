@@ -44,6 +44,10 @@ fn seeded_wb15_surface() -> HillslopeWritebackSurface {
         BoundaryValue::scalar(2.0),
     );
     state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb11_field_capacity"),
         BoundaryValue::scalar(8.0),
     );
@@ -210,7 +214,9 @@ fn wb15_contract_conformance_rejects_missing_canopy_state_symbol() {
     let mut kernel = Wb11HydrologyKernel;
 
     let mut surface = seeded_wb15_surface();
-    surface.state_surface.remove(&BoundarySymbol::from("lai"));
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("cancov"));
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)

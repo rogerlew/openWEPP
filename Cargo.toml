@@ -198,6 +198,10 @@ name = "wb16_peak_runoff_kernel_contract"
 path = "tests/integration/wb16_peak_runoff_kernel_contract.rs"
 
 [[test]]
+name = "wb17_et_physics_kernel_contract"
+path = "tests/integration/wb17_et_physics_kernel_contract.rs"
+
+[[test]]
 name = "ws10_watershed_kernel_contract"
 path = "tests/integration/ws10_watershed_kernel_contract.rs"
 

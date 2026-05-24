@@ -237,6 +237,7 @@ impl HillslopeIrrigationFixedDateEventField {
 pub enum HillslopeProductionStateSymbol {
     Wb11SoilWater,
     Wb11EtDemand,
+    Wb17ResidueInterception,
     Wb11FieldCapacity,
     Wb11PercFraction,
     Wb11LateralFraction,
@@ -326,6 +327,9 @@ impl From<HillslopeProductionStateSymbol> for BoundarySymbol {
         match value {
             HillslopeProductionStateSymbol::Wb11SoilWater => Self::from("wb11_soil_water"),
             HillslopeProductionStateSymbol::Wb11EtDemand => Self::from("wb11_et_demand"),
+            HillslopeProductionStateSymbol::Wb17ResidueInterception => {
+                Self::from("wb17_residue_interception")
+            }
             HillslopeProductionStateSymbol::Wb11FieldCapacity => Self::from("wb11_field_capacity"),
             HillslopeProductionStateSymbol::Wb11PercFraction => Self::from("wb11_perc_fraction"),
             HillslopeProductionStateSymbol::Wb11LateralFraction => {
@@ -494,6 +498,9 @@ impl From<HillslopeProductionStateSymbol> for BoundarySymbol {
 pub enum HillslopeProductionFluxSymbol {
     Wb11Et,
     Wb11Ws,
+    Wb17PlantTranspirationEp,
+    Wb17SoilEvaporationEs,
+    Wb17ResidueEvaporationEr,
     Wb11PercLossD,
     Wb11PercRechargePe,
     Wb11LateralQ,
@@ -512,6 +519,9 @@ impl From<HillslopeProductionFluxSymbol> for BoundarySymbol {
         match value {
             HillslopeProductionFluxSymbol::Wb11Et => Self::from("ET"),
             HillslopeProductionFluxSymbol::Wb11Ws => Self::from("Ws"),
+            HillslopeProductionFluxSymbol::Wb17PlantTranspirationEp => Self::from("Ep"),
+            HillslopeProductionFluxSymbol::Wb17SoilEvaporationEs => Self::from("Es"),
+            HillslopeProductionFluxSymbol::Wb17ResidueEvaporationEr => Self::from("Er"),
             HillslopeProductionFluxSymbol::Wb11PercLossD => Self::from("D"),
             HillslopeProductionFluxSymbol::Wb11PercRechargePe => Self::from("Pe"),
             HillslopeProductionFluxSymbol::Wb11LateralQ => Self::from("q"),
