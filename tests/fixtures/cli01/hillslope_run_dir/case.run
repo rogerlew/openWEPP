@@ -1,1 +1,17 @@
-runtime bootstrap test run file
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli01-fixture-success"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "output/H5.hbp"
+loss = "output/H5.loss.json"
+wat = "output/H5.wat.parquet"
+plot = "output/H5.plot.parquet"

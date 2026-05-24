@@ -11,6 +11,7 @@ publish = false
 resolver = "2"
 members = [
     "crates/openwepp-climate-runtime-adapter",
+    "crates/openwepp-hillslope-output",
     "crates/openwepp-input-contract",
     "crates/openwepp-sim-contract",
     "crates/openwepp-kernel-contract",
@@ -274,6 +275,10 @@ path = "tests/integration/cli01_runner_contract_derived_tests.rs"
 [[test]]
 name = "cli01_runner_hillslope_integration"
 path = "tests/integration/cli01_runner_hillslope_integration.rs"
+
+[[test]]
+name = "cli03_runner_contract_derived_tests"
+path = "tests/integration/cli03_runner_contract_derived_tests.rs"
 
 [profile.release]
 lto = "thin"

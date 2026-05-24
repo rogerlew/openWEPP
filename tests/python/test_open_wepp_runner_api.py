@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import tempfile
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -58,10 +59,13 @@ def test_make_hillslope_run_writes_compatible_runfile() -> None:
         owr.make_hillslope_run(1, 1, str(runs))
         run_file = runs / "p1.run"
         assert run_file.is_file()
-        contents = run_file.read_text(encoding="utf-8")
-        assert "../output/H1.pass.dat" in contents
-        assert "p1.man" in contents
-        assert "p1.cli" in contents
+        payload = tomllib.loads(run_file.read_text(encoding="utf-8"))
+        assert payload["schema"] == "openwepp-hillslope-runfile-v1"
+        assert payload["unit_system"] == "metric"
+        assert payload["inputs"]["management"] == "p1.man"
+        assert payload["inputs"]["climate"] == "p1.cli"
+        assert payload["outputs"]["pass"] == "../output/H1.hbp"
+        assert payload["outputs"]["loss"] == "../output/H1.loss.json"
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -75,9 +79,25 @@ def test_run_hillslope_executes_openwepp_runner_boundary(runner_env: None) -> No
         assert wepp_id == 1
         assert elapsed >= 0
         output_dir = tmp / "output"
-        assert (output_dir / "H5.wat.dat").is_file()
-        assert (output_dir / "H5.plot.dat").is_file()
+        assert (output_dir / "H1.hbp").is_file()
+        assert (output_dir / "H1.loss.json").is_file()
+        assert (output_dir / "H1.wat.parquet").is_file()
+        assert (output_dir / "H1.plot.parquet").is_file()
         assert (output_dir / "openwepp_hillslope_run_manifest.json").is_file()
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_make_hillslope_run_rejects_legacy_ascii_pass_family() -> None:
+    tmp, runs = _prepare_runs_dir()
+    try:
+        with pytest.raises(ValueError, match="OPEN_RUNNER-E-026"):
+            owr.make_hillslope_run(
+                1,
+                1,
+                str(runs),
+                pass_family=owr.PASS_FAMILY_LEGACY_ASCII,
+            )
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -89,6 +109,8 @@ def test_watershed_surfaces_fail_explicitly() -> None:
 
 def test_ss_surfaces_are_not_exposed() -> None:
     forbidden_names = [
+        "make_flowpath_run",
+        "run_flowpath",
         "make_ss_flowpath_run",
         "make_ss_hillslope_run",
         "make_ss_batch_hillslope_run",

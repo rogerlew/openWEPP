@@ -16,7 +16,7 @@ The project needs:
 - a dedicated openWEPP launcher boundary,
 - mandatory sidecar metadata,
 - deterministic binary naming and lint gates,
-- explicit engine selection at caller boundaries.
+- explicit engine-family boundaries between openWEPP and legacy WEPP runners.
 
 ## Decision
 
@@ -25,8 +25,8 @@ The project needs:
    suffixes for hillslope (`_hill`) and replay (`_replay`).
 3. JSON sidecars are mandatory for every openWEPP binary artifact.
 4. Sidecar validation is blocking in release gates.
-5. Engine selection is explicit (`legacy_wepp`, `openwepp`) where both engines
-   are available.
+5. `open_wepp_runner` is openWEPP-only; legacy WEPP orchestration remains in
+   `wepppy/wepp_runner`.
 6. No silent fallback between engine families or pass-family contracts.
 
 ## Consequences
@@ -34,6 +34,6 @@ The project needs:
 - openWEPP and legacy WEPP can coexist during transition without hidden
   contract drift.
 - Missing/invalid sidecars are surfaced early instead of defaulting to legacy.
-- Downstream integration work in wepppy is simplified to an explicit
-  engine-selection boundary.
+- Downstream integration work in wepppy is simplified to clear runner
+  ownership boundaries by engine family.
 - Release governance gains deterministic, machine-checkable packaging criteria.

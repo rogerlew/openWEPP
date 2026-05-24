@@ -11,6 +11,7 @@ publish = false
 workspace = true
 
 [dependencies]
+openwepp-hillslope-output = { path = "../openwepp-hillslope-output", version = "0.1.0" }
 openwepp-hillslope-orchestrator = { path = "../openwepp-hillslope-orchestrator", version = "0.1.0" }
 openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
 openwepp-legacy-bridge = { path = "../openwepp-legacy-bridge", version = "0.1.0" }
@@ -19,6 +20,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
 time = { version = "0.3", features = ["formatting"] }
+toml = "0.8"
 
 [[bin]]
 name = "open_wepp_runner"

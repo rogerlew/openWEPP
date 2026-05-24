@@ -14,6 +14,7 @@ fn run() -> Result<(), String> {
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
     let mut policy = SidecarPolicy::Strict;
+    let mut legacy_sidecar_discovery = false;
     let mut manifest_path: Option<PathBuf> = None;
 
     let args: Vec<String> = std::env::args().collect();
@@ -57,6 +58,9 @@ fn run() -> Result<(), String> {
                 };
                 manifest_path = Some(PathBuf::from(value));
             }
+            "--legacy-sidecar-discovery" => {
+                legacy_sidecar_discovery = true;
+            }
             "--help" | "-h" => {
                 print_help();
                 return Ok(());
@@ -85,6 +89,7 @@ fn run() -> Result<(), String> {
             run_file,
             output_dir,
             sidecar_policy: policy,
+            legacy_sidecar_discovery,
             manifest_path,
         },
         &args,
@@ -100,6 +105,6 @@ fn run() -> Result<(), String> {
 
 fn print_help() {
     println!(
-        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy strict|compat] [--manifest-path <path>]"
+        "openwepp-cli-hill --run-dir <path> --run-file <path> --output-dir <path> [--policy strict|compat] [--legacy-sidecar-discovery] [--manifest-path <path>]"
     );
 }

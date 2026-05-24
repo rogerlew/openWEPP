@@ -26,6 +26,7 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
             run_file: PathBuf::from("case.run"),
             output_dir: output_dir.clone(),
             sidecar_policy: SidecarPolicy::Strict,
+            legacy_sidecar_discovery: false,
             manifest_path: None,
         },
         &[
@@ -42,14 +43,14 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
     )
     .expect("strict CLI01 run fixture should complete");
 
-    assert!(report.output_h5_wat.is_file());
-    assert!(report.output_h5_plot.is_file());
+    assert!(report.output_pass.is_file());
+    assert!(report.output_loss.is_file());
     assert!(report.manifest_path.is_file());
 
     let manifest = fs::read_to_string(&report.manifest_path).expect("manifest should read");
     assert!(manifest.contains("openwepp-hillslope-run-manifest-v1"));
-    assert!(manifest.contains("H5.wat.dat"));
-    assert!(manifest.contains("H5.plot.dat"));
+    assert!(manifest.contains("H5.wat.parquet"));
+    assert!(manifest.contains("H5.plot.parquet"));
 }
 
 #[test]
@@ -64,6 +65,7 @@ fn cli01_contract_conformance_strict_sidecar_policy_rejects_unknown_discovery() 
             run_file: PathBuf::from("case.run"),
             output_dir,
             sidecar_policy: SidecarPolicy::Strict,
+            legacy_sidecar_discovery: true,
             manifest_path: None,
         },
         &["openwepp-cli-hill".to_string()],
@@ -90,6 +92,7 @@ fn cli01_contract_conformance_compat_sidecar_policy_warns_on_unknown_discovery()
             run_file: PathBuf::from("case.run"),
             output_dir,
             sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: true,
             manifest_path: None,
         },
         &["openwepp-cli-hill".to_string()],

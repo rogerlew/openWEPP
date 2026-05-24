@@ -16,10 +16,15 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_management, build_hillslope_runtime_surface_from_slope,
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
+use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
+use openwepp_hillslope_output::manifest::{OutputChecksumEntry, assemble_output_checksums};
+use openwepp_hillslope_output::writers::{optional_output_paths, required_output_paths};
 use openwepp_input_contract::parsers::climate::{
     ClimateDailyRecord, CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_file,
 };
-use openwepp_input_contract::parsers::frost::{ParseMode as FrostParseMode, parse_frost_from_path};
+use openwepp_input_contract::parsers::frost::{
+    ParseMode as FrostParseMode, parse_frost_from_path, parse_frost_from_str,
+};
 use openwepp_input_contract::parsers::management::{
     ParseMode as ManagementParseMode, parse_management_from_path,
 };
@@ -28,7 +33,8 @@ use openwepp_input_contract::parsers::pmetpara::{
 };
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::snow::{
-    ParseMode as SnowParseMode, SnowParseOptions, parse_snow_file,
+    ParseMode as SnowParseMode, SnowParseOptions, SnowParseOutput, parse_snow_file,
+    parse_snow_from_str,
 };
 use openwepp_input_contract::parsers::soil::{
     ParserMode as SoilParserMode, SoilParserOptions, parse_soil,
@@ -44,7 +50,7 @@ use openwepp_legacy_bridge::sidecar::{
 use openwepp_summary_accumulator::{
     SummaryScalarSurface, Wb13DailyWaterBalanceRow, Wb13DailyWaterBalanceSurface,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use time::OffsetDateTime;
@@ -52,8 +58,9 @@ use time::format_description::well_known::Rfc3339;
 
 pub const BINARY_RELEASE_SCHEMA_ID: &str = "openwepp-binary-release-metadata-v1";
 pub const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manifest-v1";
-pub const H5_WAT_FILE_NAME: &str = "H5.wat.dat";
-pub const H5_PLOT_FILE_NAME: &str = "H5.plot.dat";
+pub const HILLSLOPE_RUNFILE_SCHEMA_ID: &str = "openwepp-hillslope-runfile-v1";
+pub const REQUIRED_RUN_OUTPUT_PASS: &str = "outputs.pass (.hbp)";
+pub const REQUIRED_RUN_OUTPUT_LOSS: &str = "outputs.loss (.json)";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SidecarPolicy {
@@ -156,36 +163,6 @@ impl std::str::FromStr for SidecarPolicy {
             "compat" => Ok(Self::Compat),
             _ => Err(format!(
                 "unsupported sidecar policy '{value}' (expected strict|compat)"
-            )),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum RunnerEngine {
-    LegacyWepp,
-    Openwepp,
-}
-
-impl RunnerEngine {
-    #[must_use]
-    pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::LegacyWepp => "legacy_wepp",
-            Self::Openwepp => "openwepp",
-        }
-    }
-}
-
-impl std::str::FromStr for RunnerEngine {
-    type Err = String;
-
-    fn from_str(value: &str) -> Result<Self, Self::Err> {
-        match value {
-            "legacy_wepp" => Ok(Self::LegacyWepp),
-            "openwepp" => Ok(Self::Openwepp),
-            _ => Err(format!(
-                "unsupported engine selector '{value}' (expected legacy_wepp|openwepp)"
             )),
         }
     }
@@ -430,7 +407,6 @@ impl Error for ReleaseLintError {
 #[derive(Debug)]
 pub enum RunnerError {
     MissingArgument { argument: String },
-    UnsupportedEngineSelector { selector: String },
     HillslopeBinaryMissing { path: PathBuf },
     LaunchFailure { source: io::Error },
     NonZeroExit { status: ExitStatus },
@@ -441,7 +417,7 @@ impl RunnerError {
     #[must_use]
     pub const fn code(&self) -> &'static str {
         match self {
-            Self::MissingArgument { .. } | Self::UnsupportedEngineSelector { .. } => "RUNNER-E-001",
+            Self::MissingArgument { .. } => "RUNNER-E-001",
             Self::HillslopeBinaryMissing { .. } => "RUNNER-E-002",
             Self::LaunchFailure { .. } => "RUNNER-E-003",
             Self::NonZeroExit { .. } => "RUNNER-E-004",
@@ -455,9 +431,6 @@ impl fmt::Display for RunnerError {
         match self {
             Self::MissingArgument { argument } => {
                 write!(f, "{} missing required argument {argument}", self.code())
-            }
-            Self::UnsupportedEngineSelector { selector } => {
-                write!(f, "{} unsupported engine selector {selector}", self.code())
             }
             Self::HillslopeBinaryMissing { path } => write!(
                 f,
@@ -486,7 +459,6 @@ impl Error for RunnerError {
             Self::LaunchFailure { source } => Some(source),
             Self::ReleaseLint { source } => Some(source),
             Self::MissingArgument { .. }
-            | Self::UnsupportedEngineSelector { .. }
             | Self::HillslopeBinaryMissing { .. }
             | Self::NonZeroExit { .. } => None,
         }
@@ -712,12 +684,12 @@ impl Error for HillslopeCliError {
 
 #[derive(Debug, Clone)]
 pub struct RunnerLaunchRequest {
-    pub engine: RunnerEngine,
     pub hillslope_binary: PathBuf,
     pub run_dir: PathBuf,
     pub run_file: PathBuf,
     pub output_dir: PathBuf,
     pub sidecar_policy: SidecarPolicy,
+    pub legacy_sidecar_discovery: bool,
     pub manifest_path: Option<PathBuf>,
 }
 
@@ -727,13 +699,15 @@ pub struct HillslopeRunRequest {
     pub run_file: PathBuf,
     pub output_dir: PathBuf,
     pub sidecar_policy: SidecarPolicy,
+    pub legacy_sidecar_discovery: bool,
     pub manifest_path: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone)]
 pub struct HillslopeRunReport {
-    pub output_h5_wat: PathBuf,
-    pub output_h5_plot: PathBuf,
+    pub output_pass: PathBuf,
+    pub output_loss: PathBuf,
+    pub optional_outputs: Vec<PathBuf>,
     pub manifest_path: PathBuf,
     pub sidecar_warnings: Vec<String>,
 }
@@ -788,9 +762,87 @@ struct HillslopeRunManifest {
     run_dir: String,
     run_file: String,
     sidecar_policy: String,
+    sidecar_discovery_mode: String,
     resolved_sidecars: BTreeMap<String, String>,
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct HillslopeRunfileDocument {
+    schema: String,
+    run_name: String,
+    unit_system: String,
+    #[serde(default)]
+    inputs: HillslopeRunfileInputs,
+    #[serde(default)]
+    outputs: HillslopeRunfileOutputs,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct HillslopeRunfileInputs {
+    soil: String,
+    management: String,
+    slope: String,
+    climate: String,
+    #[serde(default)]
+    wepp_ui: bool,
+    pmetpara: Option<String>,
+    snow: Option<RunfileSnowInline>,
+    frost: Option<RunfileFrostInline>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct HillslopeRunfileOutputs {
+    pass: String,
+    loss: String,
+    wat: Option<String>,
+    soil: Option<String>,
+    plot: Option<String>,
+    ebe: Option<String>,
+    element: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+struct RunfileSnowInline {
+    rst: f64,
+    newsnw: f64,
+    ssd: f64,
+}
+
+#[derive(Debug, Deserialize, Clone, Copy)]
+struct RunfileFrostInline {
+    #[serde(rename = "wintRed")]
+    wint_red: i32,
+    #[serde(rename = "fineTop")]
+    fine_top: i32,
+    #[serde(rename = "fineBot")]
+    fine_bot: i32,
+    ksnowf: f64,
+    kresf: f64,
+    ksoilf: f64,
+    kfactor1: f64,
+    kfactor2: f64,
+    kfactor3: f64,
+}
+
+#[derive(Debug, Default)]
+struct RunfileSidecarOverrides {
+    wepp_ui: bool,
+    pmetpara_path: Option<PathBuf>,
+    snow: Option<RunfileSnowInline>,
+    frost: Option<RunfileFrostInline>,
+}
+
+#[derive(Debug)]
+struct RunfileExecutionConfig {
+    run_name: String,
+    soil_path: PathBuf,
+    management_path: PathBuf,
+    slope_path: PathBuf,
+    climate_path: PathBuf,
+    output_config: HillslopeOutputConfig,
+    sidecar_overrides: RunfileSidecarOverrides,
 }
 
 #[must_use]
@@ -806,6 +858,10 @@ pub fn build_hillslope_argv(request: &RunnerLaunchRequest) -> Vec<String> {
         request.sidecar_policy.as_str().to_string(),
     ];
 
+    if request.legacy_sidecar_discovery {
+        argv.push("--legacy-sidecar-discovery".to_string());
+    }
+
     if let Some(path) = &request.manifest_path {
         argv.push("--manifest-path".to_string());
         argv.push(path.display().to_string());
@@ -815,12 +871,6 @@ pub fn build_hillslope_argv(request: &RunnerLaunchRequest) -> Vec<String> {
 }
 
 pub fn launch_hillslope(request: &RunnerLaunchRequest) -> Result<(), RunnerError> {
-    if request.engine != RunnerEngine::Openwepp {
-        return Err(RunnerError::UnsupportedEngineSelector {
-            selector: request.engine.as_str().to_string(),
-        });
-    }
-
     if !request.hillslope_binary.is_file() {
         return Err(RunnerError::HillslopeBinaryMissing {
             path: request.hillslope_binary.clone(),
@@ -1064,10 +1114,12 @@ pub fn execute_hillslope_run(
         });
     }
 
-    let soil_path = discover_single_extension_file(&request.run_dir, "sol")?;
-    let management_path = discover_single_extension_file(&request.run_dir, "man")?;
-    let slope_path = discover_single_extension_file(&request.run_dir, "slp")?;
-    let climate_path = discover_single_extension_file(&request.run_dir, "cli")?;
+    let runfile = parse_runfile_execution_config(&run_file_path, request.legacy_sidecar_discovery)?;
+
+    let soil_path = runfile.soil_path.clone();
+    let management_path = runfile.management_path.clone();
+    let slope_path = runfile.slope_path.clone();
+    let climate_path = runfile.climate_path.clone();
 
     let soil_raw = fs::read_to_string(&soil_path).map_err(|source| HillslopeCliError::Io {
         path: soil_path.clone(),
@@ -1112,70 +1164,226 @@ pub fn execute_hillslope_run(
         detail: error.to_string(),
     })?;
 
-    let discovered_sidecars = discover_sidecars(
-        &request.run_dir,
-        &[
+    let mut resolved_sidecars = BTreeMap::new();
+    let mut sidecar_warnings = Vec::new();
+    let mut snow_input_path: Option<PathBuf> = None;
+    let mut frost_input_path: Option<PathBuf> = None;
+    let mut wepp_ui_input_path: Option<PathBuf> = None;
+    let mut pmetpara_input_path: Option<PathBuf> = None;
+    let sidecar_discovery_mode = if request.legacy_sidecar_discovery {
+        "legacy-sidecar-discovery"
+    } else {
+        "runfile-sidecar-overrides"
+    };
+
+    let soil_versions = vec![soil.datver.numeric(); soil.ofes.len().max(1)];
+    let output_file_names: Vec<String> = required_output_paths(&runfile.output_config)
+        .into_iter()
+        .chain(optional_output_paths(&runfile.output_config))
+        .map(|path| file_name_string(&path))
+        .filter(|name| !name.is_empty())
+        .collect();
+
+    let (snow, frost) = if request.legacy_sidecar_discovery {
+        let mut excluded_files = vec![
             file_name_string(&run_file_path),
             file_name_string(&soil_path),
             file_name_string(&management_path),
             file_name_string(&slope_path),
             file_name_string(&climate_path),
-            H5_WAT_FILE_NAME.to_string(),
-            H5_PLOT_FILE_NAME.to_string(),
             "openwepp_hillslope_run_manifest.json".to_string(),
-        ],
-    )?;
+        ];
+        excluded_files.extend(output_file_names.clone());
 
-    let sidecar_contracts = hillslope_sidecar_contracts()?;
-    let sidecar_response = adapt_sidecar_bindings(&SidecarAdapterRequest {
-        policy: request.sidecar_policy.as_legacy_bridge_policy(),
-        contracts: sidecar_contracts,
-        discovered: discovered_sidecars,
-    })
-    .map_err(|source| HillslopeCliError::SidecarAdapter { source })?;
+        let discovered_sidecars = discover_sidecars(&request.run_dir, &excluded_files)?;
 
-    let snow_path = required_sidecar_binding_path(&sidecar_response.bindings, "snow")?;
-    let frost_path = required_sidecar_binding_path(&sidecar_response.bindings, "frost")?;
-    let wepp_ui_path = required_sidecar_binding_path(&sidecar_response.bindings, "wepp_ui")?;
-    let pmetpara_path = required_sidecar_binding_path(&sidecar_response.bindings, "pmetpara")?;
+        let sidecar_contracts = hillslope_sidecar_contracts(true)?;
+        let sidecar_response = adapt_sidecar_bindings(&SidecarAdapterRequest {
+            policy: request.sidecar_policy.as_legacy_bridge_policy(),
+            contracts: sidecar_contracts,
+            discovered: discovered_sidecars,
+        })
+        .map_err(|source| HillslopeCliError::SidecarAdapter { source })?;
 
-    let snow = parse_snow_file(&snow_path, request.sidecar_policy.as_snow_parse_options())
+        for binding in &sidecar_response.bindings {
+            resolved_sidecars.insert(
+                binding.sidecar_id.as_str().to_string(),
+                binding.resolved_path.display().to_string(),
+            );
+        }
+        sidecar_warnings = sidecar_response
+            .warnings
+            .iter()
+            .map(|warning| format!("{} {}", warning.code.message_id(), warning.detail))
+            .collect();
+
+        let snow_path = optional_sidecar_binding_path(&sidecar_response.bindings, "snow")
+            .unwrap_or_else(|| request.run_dir.join("snow.txt"));
+        let frost_path = optional_sidecar_binding_path(&sidecar_response.bindings, "frost")
+            .unwrap_or_else(|| request.run_dir.join("frost.txt"));
+        let wepp_ui_path = optional_sidecar_binding_path(&sidecar_response.bindings, "wepp_ui")
+            .unwrap_or_else(|| request.run_dir.join("wepp_ui.txt"));
+        let pmetpara_path = optional_sidecar_binding_path(&sidecar_response.bindings, "pmetpara")
+            .unwrap_or_else(|| request.run_dir.join("pmetpara.txt"));
+
+        if snow_path.is_file() {
+            snow_input_path = Some(snow_path.clone());
+            resolved_sidecars.insert("snow".to_string(), snow_path.display().to_string());
+        }
+        if frost_path.is_file() {
+            frost_input_path = Some(frost_path.clone());
+            resolved_sidecars.insert("frost".to_string(), frost_path.display().to_string());
+        }
+        let wepp_ui_requested = wepp_ui_path.is_file();
+        if wepp_ui_requested {
+            wepp_ui_input_path = Some(wepp_ui_path.clone());
+            resolved_sidecars.insert("wepp_ui".to_string(), wepp_ui_path.display().to_string());
+        }
+        if pmetpara_path.is_file() {
+            pmetpara_input_path = Some(pmetpara_path.clone());
+            resolved_sidecars.insert("pmetpara".to_string(), pmetpara_path.display().to_string());
+        }
+
+        let snow = parse_snow_file(&snow_path, request.sidecar_policy.as_snow_parse_options())
+            .map_err(|error| HillslopeCliError::ParseFailure {
+                surface: "snow",
+                detail: error.to_string(),
+            })?;
+        let frost =
+            parse_frost_from_path(&frost_path, request.sidecar_policy.as_frost_parse_mode())
+                .map_err(|error| HillslopeCliError::ParseFailure {
+                    surface: "frost",
+                    detail: error.to_string(),
+                })?;
+
+        let _wepp_ui = parse_wepp_ui_from_path(
+            &wepp_ui_path,
+            WeppUiParserOptions {
+                mode: request.sidecar_policy.as_wepp_ui_parse_mode(),
+                requested_hourly_seepage: wepp_ui_requested,
+                soil_versions: soil_versions.clone(),
+            },
+        )
         .map_err(|error| HillslopeCliError::ParseFailure {
-            surface: "snow",
+            surface: "wepp_ui",
             detail: error.to_string(),
         })?;
 
-    let frost = parse_frost_from_path(&frost_path, request.sidecar_policy.as_frost_parse_mode())
+        let _pmetpara = parse_pmetpara_file(
+            &pmetpara_path,
+            PmetparaParseOptions {
+                mode: request.sidecar_policy.as_pmetpara_parse_mode(),
+                require_sidecar: false,
+            },
+        )
         .map_err(|error| HillslopeCliError::ParseFailure {
-            surface: "frost",
+            surface: "pmetpara",
             detail: error.to_string(),
         })?;
 
-    let soil_versions = vec![soil.datver.numeric(); soil.ofes.len().max(1)];
-    let _wepp_ui = parse_wepp_ui_from_path(
-        &wepp_ui_path,
-        WeppUiParserOptions {
-            mode: request.sidecar_policy.as_wepp_ui_parse_mode(),
-            requested_hourly_seepage: true,
-            soil_versions,
-        },
-    )
-    .map_err(|error| HillslopeCliError::ParseFailure {
-        surface: "wepp_ui",
-        detail: error.to_string(),
-    })?;
+        (snow, frost)
+    } else {
+        let sidecar_overrides = &runfile.sidecar_overrides;
 
-    let _pmetpara = parse_pmetpara_file(
-        &pmetpara_path,
-        PmetparaParseOptions {
-            mode: request.sidecar_policy.as_pmetpara_parse_mode(),
-            require_sidecar: true,
-        },
-    )
-    .map_err(|error| HillslopeCliError::ParseFailure {
-        surface: "pmetpara",
-        detail: error.to_string(),
-    })?;
+        let snow = if let Some(snow_inline) = sidecar_overrides.snow {
+            resolved_sidecars.insert("snow".to_string(), "<inline>".to_string());
+            parse_snow_from_str(
+                &format!(
+                    "{}\n{}\n{}\n",
+                    snow_inline.rst, snow_inline.newsnw, snow_inline.ssd
+                ),
+                request.sidecar_policy.as_snow_parse_options(),
+            )
+            .map_err(|error| HillslopeCliError::ParseFailure {
+                surface: "snow",
+                detail: error.to_string(),
+            })?
+        } else {
+            SnowParseOutput {
+                sidecar_present: false,
+                defaults_applied: true,
+                rst: 0.0,
+                newsnw: 100.0,
+                ssd: 250.0,
+                surplus_record_count: 0,
+                trailing_token_lines: Vec::new(),
+                prefix_variant_detected: false,
+                warnings: Vec::new(),
+            }
+        };
+
+        let frost = if let Some(frost_inline) = sidecar_overrides.frost {
+            resolved_sidecars.insert("frost".to_string(), "<inline>".to_string());
+            parse_frost_from_str(
+                &format!(
+                    "{} {} {}\n{} {} {} {} {} {}\n",
+                    frost_inline.wint_red,
+                    frost_inline.fine_top,
+                    frost_inline.fine_bot,
+                    frost_inline.ksnowf,
+                    frost_inline.kresf,
+                    frost_inline.ksoilf,
+                    frost_inline.kfactor1,
+                    frost_inline.kfactor2,
+                    frost_inline.kfactor3
+                ),
+                request.sidecar_policy.as_frost_parse_mode(),
+            )
+            .map_err(|error| HillslopeCliError::ParseFailure {
+                surface: "frost",
+                detail: error.to_string(),
+            })?
+        } else {
+            openwepp_input_contract::parsers::frost::FrostParseOutput::defaults_for_missing_file(
+                request.sidecar_policy.as_frost_parse_mode(),
+            )
+        };
+
+        if sidecar_overrides.wepp_ui {
+            let wepp_ui_path = request.run_dir.join("wepp_ui.txt");
+            if wepp_ui_path.is_file() {
+                wepp_ui_input_path = Some(wepp_ui_path.clone());
+                resolved_sidecars.insert("wepp_ui".to_string(), wepp_ui_path.display().to_string());
+            } else {
+                sidecar_warnings.push(
+                    "CLIHILL-W-001 wepp_ui=true in .run but wepp_ui.txt missing; feature flag ignored"
+                        .to_string(),
+                );
+            }
+
+            let _wepp_ui = parse_wepp_ui_from_path(
+                &wepp_ui_path,
+                WeppUiParserOptions {
+                    mode: request.sidecar_policy.as_wepp_ui_parse_mode(),
+                    requested_hourly_seepage: wepp_ui_path.is_file(),
+                    soil_versions: soil_versions.clone(),
+                },
+            )
+            .map_err(|error| HillslopeCliError::ParseFailure {
+                surface: "wepp_ui",
+                detail: error.to_string(),
+            })?;
+        }
+
+        if let Some(pmetpara_path) = sidecar_overrides.pmetpara_path.clone() {
+            pmetpara_input_path = Some(pmetpara_path.clone());
+            resolved_sidecars.insert("pmetpara".to_string(), pmetpara_path.display().to_string());
+
+            let _pmetpara = parse_pmetpara_file(
+                &pmetpara_path,
+                PmetparaParseOptions {
+                    mode: request.sidecar_policy.as_pmetpara_parse_mode(),
+                    require_sidecar: true,
+                },
+            )
+            .map_err(|error| HillslopeCliError::ParseFailure {
+                surface: "pmetpara",
+                detail: error.to_string(),
+            })?;
+        }
+
+        (snow, frost)
+    };
 
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -1233,29 +1441,44 @@ pub fn execute_hillslope_run(
         });
     }
 
-    let wb13_text = build_h5_wat_output(&climate, &soil, &snow, &frost)?;
-    let plot_text = build_h5_plot_output(&climate)?;
+    let pass_text = build_h5_wat_output(&climate, &soil, &snow, &frost)?;
+    let loss_text = build_loss_output_json(&runfile.run_name, &climate, &soil, &snow, &frost)?;
 
-    let output_h5_wat = request.output_dir.join(H5_WAT_FILE_NAME);
-    let output_h5_plot = request.output_dir.join(H5_PLOT_FILE_NAME);
+    let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
+    let optional_outputs = optional_output_paths(&runfile.output_config);
 
-    fs::write(&output_h5_wat, wb13_text).map_err(|source| HillslopeCliError::OutputWrite {
-        path: output_h5_wat.clone(),
+    for path in std::iter::once(&output_pass)
+        .chain(std::iter::once(&output_loss))
+        .chain(optional_outputs.iter())
+    {
+        ensure_output_parent_directory(path)?;
+    }
+
+    fs::write(&output_pass, pass_text).map_err(|source| HillslopeCliError::OutputWrite {
+        path: output_pass.clone(),
         source,
     })?;
-    fs::write(&output_h5_plot, plot_text).map_err(|source| HillslopeCliError::OutputWrite {
-        path: output_h5_plot.clone(),
+    fs::write(&output_loss, loss_text).map_err(|source| HillslopeCliError::OutputWrite {
+        path: output_loss.clone(),
         source,
     })?;
 
-    if !output_h5_wat.is_file() {
+    for optional_output in &optional_outputs {
+        let payload = build_optional_output_payload(&runfile.run_name, optional_output, &climate)?;
+        fs::write(optional_output, payload).map_err(|source| HillslopeCliError::OutputWrite {
+            path: optional_output.clone(),
+            source,
+        })?;
+    }
+
+    if !output_pass.is_file() {
         return Err(HillslopeCliError::MissingRequiredOutput {
-            output_name: H5_WAT_FILE_NAME,
+            output_name: REQUIRED_RUN_OUTPUT_PASS,
         });
     }
-    if !output_h5_plot.is_file() {
+    if !output_loss.is_file() {
         return Err(HillslopeCliError::MissingRequiredOutput {
-            output_name: H5_PLOT_FILE_NAME,
+            output_name: REQUIRED_RUN_OUTPUT_LOSS,
         });
     }
 
@@ -1269,19 +1492,26 @@ pub fn execute_hillslope_run(
     let invoked_utc =
         utc_now_rfc3339().map_err(|detail| HillslopeCliError::TimeFormat { detail })?;
 
-    let input_paths = [
+    let mut input_checksums = BTreeMap::new();
+    let mut input_paths = vec![
         run_file_path.as_path(),
         soil_path.as_path(),
         management_path.as_path(),
         slope_path.as_path(),
         climate_path.as_path(),
-        snow_path.as_path(),
-        frost_path.as_path(),
-        wepp_ui_path.as_path(),
-        pmetpara_path.as_path(),
     ];
-
-    let mut input_checksums = BTreeMap::new();
+    if let Some(path) = snow_input_path.as_ref() {
+        input_paths.push(path.as_path());
+    }
+    if let Some(path) = frost_input_path.as_ref() {
+        input_paths.push(path.as_path());
+    }
+    if let Some(path) = wepp_ui_input_path.as_ref() {
+        input_paths.push(path.as_path());
+    }
+    if let Some(path) = pmetpara_input_path.as_ref() {
+        input_paths.push(path.as_path());
+    }
     for path in input_paths {
         input_checksums.insert(
             path.display().to_string(),
@@ -1292,29 +1522,27 @@ pub fn execute_hillslope_run(
         );
     }
 
-    let mut output_checksums = BTreeMap::new();
-    output_checksums.insert(
-        output_h5_wat.display().to_string(),
-        sha256_file_hex(&output_h5_wat).map_err(|source| HillslopeCliError::Io {
-            path: output_h5_wat.clone(),
-            source,
-        })?,
-    );
-    output_checksums.insert(
-        output_h5_plot.display().to_string(),
-        sha256_file_hex(&output_h5_plot).map_err(|source| HillslopeCliError::Io {
-            path: output_h5_plot.clone(),
-            source,
-        })?,
-    );
-
-    let mut resolved_sidecars = BTreeMap::new();
-    for binding in &sidecar_response.bindings {
-        resolved_sidecars.insert(
-            binding.sidecar_id.as_str().to_string(),
-            binding.resolved_path.display().to_string(),
-        );
+    let mut output_checksum_entries = Vec::new();
+    for path in std::iter::once(&output_pass)
+        .chain(std::iter::once(&output_loss))
+        .chain(optional_outputs.iter())
+    {
+        output_checksum_entries.push(OutputChecksumEntry::new(
+            path.display().to_string(),
+            sha256_file_hex(path).map_err(|source| HillslopeCliError::Io {
+                path: path.clone(),
+                source,
+            })?,
+        ));
     }
+
+    let output_checksums =
+        assemble_output_checksums(&output_checksum_entries).map_err(|error| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "manifest_output_checksums",
+                detail: error.to_string(),
+            }
+        })?;
 
     let manifest_path = request.manifest_path.clone().unwrap_or_else(|| {
         request
@@ -1324,7 +1552,7 @@ pub fn execute_hillslope_run(
 
     let manifest = HillslopeRunManifest {
         schema: HILLSLOPE_RUN_MANIFEST_SCHEMA_ID.to_string(),
-        engine: RunnerEngine::Openwepp.as_str().to_string(),
+        engine: "openwepp".to_string(),
         binary_path: binary_path.display().to_string(),
         binary_sha256: sha256_file_hex(&binary_path).map_err(|source| HillslopeCliError::Io {
             path: binary_path.clone(),
@@ -1343,6 +1571,7 @@ pub fn execute_hillslope_run(
         run_dir: request.run_dir.display().to_string(),
         run_file: run_file_path.display().to_string(),
         sidecar_policy: request.sidecar_policy.as_str().to_string(),
+        sidecar_discovery_mode: sidecar_discovery_mode.to_string(),
         resolved_sidecars,
         input_checksums,
         output_checksums,
@@ -1357,15 +1586,10 @@ pub fn execute_hillslope_run(
         }
     })?;
 
-    let sidecar_warnings = sidecar_response
-        .warnings
-        .iter()
-        .map(|warning| format!("{} {}", warning.code.message_id(), warning.detail))
-        .collect();
-
     Ok(HillslopeRunReport {
-        output_h5_wat,
-        output_h5_plot,
+        output_pass,
+        output_loss,
+        optional_outputs,
         manifest_path,
         sidecar_warnings,
     })
@@ -1571,48 +1795,200 @@ fn resolve_run_file(run_dir: &Path, run_file: &Path) -> PathBuf {
     }
 }
 
-fn discover_single_extension_file(
-    run_dir: &Path,
-    extension: &'static str,
-) -> Result<PathBuf, HillslopeCliError> {
-    let mut matches = Vec::new();
-    let entries = fs::read_dir(run_dir).map_err(|source| HillslopeCliError::Io {
-        path: run_dir.to_path_buf(),
+#[allow(clippy::too_many_lines)]
+fn parse_runfile_execution_config(
+    run_file_path: &Path,
+    legacy_sidecar_discovery: bool,
+) -> Result<RunfileExecutionConfig, HillslopeCliError> {
+    let payload = fs::read_to_string(run_file_path).map_err(|source| HillslopeCliError::Io {
+        path: run_file_path.to_path_buf(),
         source,
     })?;
 
-    for entry_result in entries {
-        let entry = entry_result.map_err(|source| HillslopeCliError::Io {
-            path: run_dir.to_path_buf(),
-            source,
+    let runfile: HillslopeRunfileDocument =
+        toml::from_str(&payload).map_err(|error| HillslopeCliError::ParseFailure {
+            surface: "run_file",
+            detail: format!("invalid TOML in {}: {error}", run_file_path.display()),
         })?;
-        let path = entry.path();
+
+    if runfile.schema != HILLSLOPE_RUNFILE_SCHEMA_ID {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "run_file",
+            detail: format!(
+                "unsupported schema '{}' (expected '{}')",
+                runfile.schema, HILLSLOPE_RUNFILE_SCHEMA_ID
+            ),
+        });
+    }
+
+    if runfile.run_name.trim().is_empty() {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "run_file",
+            detail: "missing required non-empty run_name".to_string(),
+        });
+    }
+
+    if runfile.unit_system.trim() != "metric" {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "run_file",
+            detail: format!(
+                "unsupported unit_system '{}' (expected 'metric')",
+                runfile.unit_system
+            ),
+        });
+    }
+
+    let soil_path =
+        resolve_required_runfile_path(run_file_path, &runfile.inputs.soil, "inputs.soil")?;
+    let management_path = resolve_required_runfile_path(
+        run_file_path,
+        &runfile.inputs.management,
+        "inputs.management",
+    )?;
+    let slope_path =
+        resolve_required_runfile_path(run_file_path, &runfile.inputs.slope, "inputs.slope")?;
+    let climate_path =
+        resolve_required_runfile_path(run_file_path, &runfile.inputs.climate, "inputs.climate")?;
+
+    for (field, path) in [
+        ("inputs.soil", &soil_path),
+        ("inputs.management", &management_path),
+        ("inputs.slope", &slope_path),
+        ("inputs.climate", &climate_path),
+    ] {
         if !path.is_file() {
-            continue;
-        }
-        let Some(ext) = path.extension().and_then(OsStr::to_str) else {
-            continue;
-        };
-        if ext.eq_ignore_ascii_case(extension) {
-            matches.push(path);
+            return Err(HillslopeCliError::ParseFailure {
+                surface: "run_file",
+                detail: format!(
+                    "required {field} path '{}' is not a readable file",
+                    path.display()
+                ),
+            });
         }
     }
 
-    if matches.is_empty() {
-        return Err(HillslopeCliError::CoreInputMissing {
-            extension,
-            run_dir: run_dir.to_path_buf(),
-        });
-    }
-    if matches.len() > 1 {
-        return Err(HillslopeCliError::CoreInputAmbiguous {
-            extension,
-            run_dir: run_dir.to_path_buf(),
-            count: matches.len(),
+    let output_config = HillslopeOutputConfig {
+        pass: resolve_required_runfile_path(run_file_path, &runfile.outputs.pass, "outputs.pass")?,
+        loss: resolve_required_runfile_path(run_file_path, &runfile.outputs.loss, "outputs.loss")?,
+        wat: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.wat.as_deref(),
+            "outputs.wat",
+        )?,
+        soil: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.soil.as_deref(),
+            "outputs.soil",
+        )?,
+        plot: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.plot.as_deref(),
+            "outputs.plot",
+        )?,
+        ebe: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.ebe.as_deref(),
+            "outputs.ebe",
+        )?,
+        element: resolve_optional_runfile_path(
+            run_file_path,
+            runfile.outputs.element.as_deref(),
+            "outputs.element",
+        )?,
+    };
+    validate_output_contract(&output_config).map_err(|error| HillslopeCliError::ParseFailure {
+        surface: "run_file",
+        detail: error.to_string(),
+    })?;
+
+    let pmetpara_path = resolve_optional_runfile_path(
+        run_file_path,
+        runfile.inputs.pmetpara.as_deref(),
+        "inputs.pmetpara",
+    )?;
+    if !legacy_sidecar_discovery
+        && let Some(path) = pmetpara_path.as_ref()
+        && !path.is_file()
+    {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "run_file",
+            detail: format!(
+                "optional inputs.pmetpara path '{}' is not a readable file",
+                path.display()
+            ),
         });
     }
 
-    Ok(matches.remove(0))
+    Ok(RunfileExecutionConfig {
+        run_name: runfile.run_name,
+        soil_path,
+        management_path,
+        slope_path,
+        climate_path,
+        output_config,
+        sidecar_overrides: RunfileSidecarOverrides {
+            wepp_ui: runfile.inputs.wepp_ui,
+            pmetpara_path,
+            snow: runfile.inputs.snow,
+            frost: runfile.inputs.frost,
+        },
+    })
+}
+
+fn resolve_runfile_relative_path(run_file_path: &Path, candidate: &str) -> PathBuf {
+    let candidate_path = PathBuf::from(candidate);
+    if candidate_path.is_absolute() {
+        candidate_path
+    } else {
+        run_file_path
+            .parent()
+            .unwrap_or_else(|| Path::new("."))
+            .join(candidate_path)
+    }
+}
+
+fn resolve_required_runfile_path(
+    run_file_path: &Path,
+    candidate: &str,
+    field: &'static str,
+) -> Result<PathBuf, HillslopeCliError> {
+    let trimmed = candidate.trim();
+    if trimmed.is_empty() {
+        return Err(HillslopeCliError::ParseFailure {
+            surface: "run_file",
+            detail: format!("missing required non-empty {field}"),
+        });
+    }
+
+    Ok(resolve_runfile_relative_path(run_file_path, trimmed))
+}
+
+fn resolve_optional_runfile_path(
+    run_file_path: &Path,
+    candidate: Option<&str>,
+    field: &'static str,
+) -> Result<Option<PathBuf>, HillslopeCliError> {
+    candidate.map_or(Ok(None), |value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() {
+            Err(HillslopeCliError::ParseFailure {
+                surface: "run_file",
+                detail: format!("{field} cannot be an empty string"),
+            })
+        } else {
+            Ok(Some(resolve_runfile_relative_path(run_file_path, trimmed)))
+        }
+    })
+}
+
+fn ensure_output_parent_directory(path: &Path) -> Result<(), HillslopeCliError> {
+    let Some(parent) = path.parent() else {
+        return Ok(());
+    };
+    fs::create_dir_all(parent).map_err(|source| HillslopeCliError::OutputDirectoryCreate {
+        path: parent.to_path_buf(),
+        source,
+    })
 }
 
 fn discover_sidecars(
@@ -1656,8 +2032,10 @@ fn discover_sidecars(
     Ok(discoveries)
 }
 
-fn hillslope_sidecar_contracts() -> Result<Vec<SidecarContract>, HillslopeCliError> {
-    let required = [
+fn hillslope_sidecar_contracts(
+    legacy_optional_core_sidecars: bool,
+) -> Result<Vec<SidecarContract>, HillslopeCliError> {
+    let core_sidecars = [
         ("frost", "frost.txt"),
         ("snow", "snow.txt"),
         ("wepp_ui", "wepp_ui.txt"),
@@ -1676,12 +2054,13 @@ fn hillslope_sidecar_contracts() -> Result<Vec<SidecarContract>, HillslopeCliErr
     ];
 
     let mut contracts = Vec::new();
-    for (id, file_name) in required {
-        contracts.push(build_sidecar_contract(
-            id,
-            file_name,
-            SidecarRequirement::Required,
-        )?);
+    for (id, file_name) in core_sidecars {
+        let requirement = if legacy_optional_core_sidecars {
+            SidecarRequirement::Optional
+        } else {
+            SidecarRequirement::Required
+        };
+        contracts.push(build_sidecar_contract(id, file_name, requirement)?);
     }
     for (id, file_name) in optional {
         contracts.push(build_sidecar_contract(
@@ -1712,15 +2091,14 @@ fn build_sidecar_contract(
     ))
 }
 
-fn required_sidecar_binding_path(
+fn optional_sidecar_binding_path(
     bindings: &[SidecarBinding],
     sidecar_id: &'static str,
-) -> Result<PathBuf, HillslopeCliError> {
+) -> Option<PathBuf> {
     bindings
         .iter()
         .find(|binding| binding.sidecar_id.as_str() == sidecar_id)
         .map(|binding| binding.resolved_path.clone())
-        .ok_or(HillslopeCliError::SidecarBindingMissing { sidecar_id })
 }
 
 fn merge_runtime_surfaces(
@@ -1827,13 +2205,38 @@ fn build_h5_wat_output(
     Ok(daily_surface.render_h5_wat_dat())
 }
 
-fn build_h5_plot_output(
+fn build_loss_output_json(
+    run_name: &str,
+    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
+    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
+) -> Result<String, HillslopeCliError> {
+    let (_, julian_day, precipitation_mm, _, _) = first_day_projection(climate)?;
+
+    let payload = serde_json::json!({
+        "schema": "openwepp-hillslope-loss-v1",
+        "run_name": run_name,
+        "first_day_julian": julian_day,
+        "precipitation_mm": precipitation_mm,
+        "ofe_count": soil.ofes.len(),
+        "snow_override_applied": snow.sidecar_present,
+        "frost_wint_red": frost.wint_red,
+    });
+
+    serde_json::to_string_pretty(&payload)
+        .map_err(|source| HillslopeCliError::ManifestSerialize { source })
+}
+
+fn build_optional_output_payload(
+    run_name: &str,
+    output_path: &Path,
     climate: &openwepp_input_contract::parsers::climate::ClimateFile,
 ) -> Result<String, HillslopeCliError> {
     let (year, julian_day, precipitation_mm, _, _) = first_day_projection(climate)?;
-
+    let file_name = file_name_string(output_path);
     Ok(format!(
-        "PLOT SUMMARY\nY J OFE P NLAYERS\n{year} {julian_day} 1 {precipitation_mm:.2} 1\n"
+        "openwepp_optional_output_v1\nrun_name={run_name}\nfile={file_name}\nyear={year}\nday={julian_day}\nprecipitation_mm={precipitation_mm:.3}\n"
     ))
 }
 
@@ -1964,12 +2367,12 @@ mod tests {
     #[test]
     fn launch_argv_contains_required_explicit_args() {
         let request = RunnerLaunchRequest {
-            engine: RunnerEngine::Openwepp,
             hillslope_binary: PathBuf::from("/tmp/openwepp-cli-hill"),
             run_dir: PathBuf::from("/tmp/run"),
             run_file: PathBuf::from("case.run"),
             output_dir: PathBuf::from("/tmp/out"),
             sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: true,
             manifest_path: Some(PathBuf::from("/tmp/out/manifest.json")),
         };
 
@@ -1985,6 +2388,7 @@ mod tests {
                 "/tmp/out",
                 "--policy",
                 "compat",
+                "--legacy-sidecar-discovery",
                 "--manifest-path",
                 "/tmp/out/manifest.json",
             ]

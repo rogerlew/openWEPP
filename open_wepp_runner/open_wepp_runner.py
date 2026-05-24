@@ -4,10 +4,11 @@ open_wepp_runner: compatibility-facing Python launcher API for openWEPP.
 This module mirrors the call surface of ``wepppy.wepp_runner`` where practical,
 but executes through the canonical openWEPP launcher boundary:
 
-    open_wepp_runner run-hillslope --engine openwepp ...
+    open_wepp_runner run-hillslope ...
 
-Only hillslope surfaces are implemented at CLI01 scope. Flowpath and watershed
-surfaces are present for API compatibility and fail explicitly.
+Only hillslope surfaces are implemented in the current CLI scope. Flowpath and
+watershed surfaces are not implemented; flowpath surfaces are intentionally
+omitted because flowpath execution is deprecated in wepppy.
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ import os
 import random
 import shutil
 import subprocess
+import tomllib
 from os.path import abspath as _abspath
 from os.path import dirname as _dirname
 from os.path import exists as _exists
@@ -35,10 +37,8 @@ __all__ = [
     "PASS_FAMILY_LEGACY_ASCII",
     "PASS_FAMILY_HBP",
     "PASS_FAMILY_CHOICES",
-    "make_flowpath_run",
     "make_hillslope_run",
     "run_hillslope",
-    "run_flowpath",
     "make_watershed_omni_contrasts_run",
     "make_watershed_run",
     "run_watershed",
@@ -302,8 +302,6 @@ def _run_hillslope_process(
     command = [
         runner_binary,
         "run-hillslope",
-        "--engine",
-        "openwepp",
         "--hillslope-binary",
         hillslope_binary,
         "--run-dir",
@@ -414,19 +412,49 @@ def _write_run_log(path: str, lines: list[str]) -> None:
             log.write(line + "\n")
 
 
-def _verify_required_outputs(output_dir: str) -> None:
-    required = ["H5.wat.dat", "H5.plot.dat"]
-    missing = [name for name in required if not _isfile(_join(output_dir, name))]
+def _resolve_runfile_required_outputs(runs_dir: str, run_file_name: str) -> list[str]:
+    run_file_path = Path(runs_dir) / run_file_name
+    payload = run_file_path.read_text(encoding="utf-8")
+    try:
+        runfile = tomllib.loads(payload)
+    except tomllib.TOMLDecodeError as exc:
+        raise RuntimeError(
+            f"OPEN_RUNNER-E-023 invalid TOML in run file {run_file_path}: {exc}"
+        ) from exc
+
+    outputs = runfile.get("outputs")
+    if not isinstance(outputs, dict):
+        raise RuntimeError(
+            f"OPEN_RUNNER-E-024 missing required [outputs] table in run file {run_file_path}"
+        )
+
+    required_fields = ("pass", "loss")
+    resolved_paths: list[str] = []
+    for field in required_fields:
+        value = outputs.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise RuntimeError(
+                f"OPEN_RUNNER-E-025 missing required outputs.{field} in run file {run_file_path}"
+            )
+        output_path = Path(value.strip())
+        if not output_path.is_absolute():
+            output_path = run_file_path.parent / output_path
+        resolved_paths.append(str(output_path))
+
+    return resolved_paths
+
+
+def _verify_required_outputs(
+    *,
+    runs_dir: str,
+    run_file_name: str,
+) -> None:
+    required = _resolve_runfile_required_outputs(runs_dir, run_file_name)
+    missing = [path for path in required if not _isfile(path)]
     if missing:
         raise RuntimeError(
             "OPEN_RUNNER-E-018 missing required output(s): " + ", ".join(missing)
         )
-
-
-def make_flowpath_run(fp, wepp_id, sim_years, fp_runs_dir):  # noqa: ANN001
-    raise NotImplementedError(
-        "OPEN_RUNNER-E-100 flowpath support is not implemented for openWEPP CLI01."
-    )
 
 
 def make_hillslope_run(
@@ -438,49 +466,39 @@ def make_hillslope_run(
     cli_relpath="",
     slp_relpath="",
     sol_relpath="",
-    pass_family=PASS_FAMILY_LEGACY_ASCII,
+    pass_family=PASS_FAMILY_HBP,
     wepp_bin=None,
 ):  # noqa: ANN001, ARG001
     _require_relpath_suffix("man_relpath", man_relpath)
     _require_relpath_suffix("cli_relpath", cli_relpath)
     _require_relpath_suffix("slp_relpath", slp_relpath)
     _require_relpath_suffix("sol_relpath", sol_relpath)
-    _normalize_pass_family(pass_family)
+    normalized_pass_family = _normalize_pass_family(pass_family)
+    if normalized_pass_family != PASS_FAMILY_HBP:
+        raise ValueError(
+            "OPEN_RUNNER-E-026 pass_family 'legacy_ascii' is not supported for "
+            "openwepp-hillslope-runfile-v1; use pass_family='hbp'."
+        )
 
     _ = reveg  # retained for API compatibility
     _ = wepp_bin  # retained for API compatibility
-    pass_file = f"../output/H{wepp_id}{_pass_suffix(pass_family)}"
-    run_text = f"""m
-Yes
-1
-1
-Yes
-{pass_file}
-1
-No
-../output/H{wepp_id}.loss.dat
-Yes
-../output/H{wepp_id}.wat.dat
-No
-Yes
-../output/H{wepp_id}.soil.dat
-Yes
-../output/H{wepp_id}.plot.dat
-No
-Yes
-../output/H{wepp_id}.ebe.dat
-Yes
-../output/H{wepp_id}.element.dat
-No
-No
-No
-{man_relpath}p{wepp_id}.man
-{slp_relpath}p{wepp_id}.slp
-{cli_relpath}p{wepp_id}.cli
-{sol_relpath}p{wepp_id}.sol
-0
-{sim_years}
-0
+    run_text = f"""schema = "openwepp-hillslope-runfile-v1"
+run_name = "p{wepp_id}_y{sim_years}"
+unit_system = "metric"
+
+[inputs]
+soil = "{sol_relpath}p{wepp_id}.sol"
+management = "{man_relpath}p{wepp_id}.man"
+slope = "{slp_relpath}p{wepp_id}.slp"
+climate = "{cli_relpath}p{wepp_id}.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "../output/H{wepp_id}.hbp"
+loss = "../output/H{wepp_id}.loss.json"
+wat = "../output/H{wepp_id}.wat.parquet"
+plot = "../output/H{wepp_id}.plot.parquet"
 """
     os.makedirs(runs_dir, exist_ok=True)
     with open(_join(runs_dir, f"p{wepp_id}.run"), "w", encoding="utf-8") as fp:
@@ -521,7 +539,7 @@ def run_hillslope(
         no_file_checks=bool(no_file_checks),
     )
 
-    output_dir, _manifest_path = _run_hillslope_process(
+    _output_dir, _manifest_path = _run_hillslope_process(
         wepp_id=wepp_id,
         runs_dir=runs_dir,
         run_file_name=run_file_name,
@@ -530,14 +548,11 @@ def run_hillslope(
         timeout=float(timeout),
         timeout_retries=int(timeout_retries),
     )
-    _verify_required_outputs(output_dir)
-    return True, wepp_id, time() - t0
-
-
-def run_flowpath(fp_id, wepp_id, runs_dir, fp_runs_dir, wepp_bin=None, status_channel=None):  # noqa: ANN001, ARG001
-    raise NotImplementedError(
-        "OPEN_RUNNER-E-100 flowpath execution is not implemented for openWEPP CLI01."
+    _verify_required_outputs(
+        runs_dir=runs_dir,
+        run_file_name=run_file_name,
     )
+    return True, wepp_id, time() - t0
 
 
 def make_watershed_omni_contrasts_run(
@@ -550,7 +565,7 @@ def make_watershed_omni_contrasts_run(
     wepp_bin=None,
 ):  # noqa: ANN001, ARG001
     raise NotImplementedError(
-        "OPEN_RUNNER-E-101 watershed runfile generation is not implemented for openWEPP CLI01."
+        "OPEN_RUNNER-E-101 watershed runfile generation is not implemented."
     )
 
 
@@ -563,11 +578,11 @@ def make_watershed_run(
     wepp_bin=None,
 ):  # noqa: ANN001, ARG001
     raise NotImplementedError(
-        "OPEN_RUNNER-E-101 watershed runfile generation is not implemented for openWEPP CLI01."
+        "OPEN_RUNNER-E-101 watershed runfile generation is not implemented."
     )
 
 
 def run_watershed(runs_dir, wepp_bin=None, status_channel=None):  # noqa: ANN001, ARG001
     raise NotImplementedError(
-        "OPEN_RUNNER-E-102 watershed execution is not implemented for openWEPP CLI01."
+        "OPEN_RUNNER-E-102 watershed execution is not implemented."
     )

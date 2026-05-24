@@ -1,8 +1,7 @@
 use std::path::PathBuf;
 
 use openwepp_runner::{
-    RunnerEngine, RunnerError, RunnerLaunchRequest, SidecarPolicy, launch_hillslope,
-    lint_release_directory,
+    RunnerError, RunnerLaunchRequest, SidecarPolicy, launch_hillslope, lint_release_directory,
 };
 
 fn main() {
@@ -39,33 +38,17 @@ fn run() -> Result<(), RunnerError> {
 
 #[allow(clippy::too_many_lines)]
 fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
-    let mut engine: Option<RunnerEngine> = None;
     let mut hillslope_binary: Option<PathBuf> = None;
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
     let mut sidecar_policy = SidecarPolicy::Strict;
+    let mut legacy_sidecar_discovery = false;
     let mut manifest_path: Option<PathBuf> = None;
 
     let mut cursor = 0usize;
     while cursor < args.len() {
         match args[cursor].as_str() {
-            "--engine" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--engine <value>".to_string(),
-                    });
-                };
-                engine =
-                    Some(
-                        value
-                            .parse()
-                            .map_err(|_| RunnerError::UnsupportedEngineSelector {
-                                selector: value.clone(),
-                            })?,
-                    );
-            }
             "--hillslope-binary" => {
                 cursor += 1;
                 let Some(value) = args.get(cursor) else {
@@ -122,6 +105,9 @@ fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
                 };
                 manifest_path = Some(PathBuf::from(value));
             }
+            "--legacy-sidecar-discovery" => {
+                legacy_sidecar_discovery = true;
+            }
             flag => {
                 return Err(RunnerError::MissingArgument {
                     argument: format!("unrecognized argument {flag}"),
@@ -132,11 +118,6 @@ fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
         cursor += 1;
     }
 
-    let Some(engine) = engine else {
-        return Err(RunnerError::MissingArgument {
-            argument: "--engine".to_string(),
-        });
-    };
     let Some(hillslope_binary) = hillslope_binary else {
         return Err(RunnerError::MissingArgument {
             argument: "--hillslope-binary".to_string(),
@@ -159,12 +140,12 @@ fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
     };
 
     launch_hillslope(&RunnerLaunchRequest {
-        engine,
         hillslope_binary,
         run_dir,
         run_file,
         output_dir,
         sidecar_policy,
+        legacy_sidecar_discovery,
         manifest_path,
     })
 }
@@ -218,7 +199,7 @@ fn run_release_command(args: &[String]) -> Result<(), RunnerError> {
 
 fn print_help() {
     println!(
-        "open_wepp_runner run-hillslope --engine <legacy_wepp|openwepp> --hillslope-binary <path> --run-dir <path> --run-file <path> --output-dir <path> [--policy strict|compat] [--manifest-path <path>]"
+        "open_wepp_runner run-hillslope --hillslope-binary <path> --run-dir <path> --run-file <path> --output-dir <path> [--policy strict|compat] [--legacy-sidecar-discovery] [--manifest-path <path>]"
     );
     println!("open_wepp_runner release lint --release-dir <path>");
 }
