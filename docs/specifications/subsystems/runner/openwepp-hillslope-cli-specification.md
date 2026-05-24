@@ -1,21 +1,21 @@
 # openWEPP Hillslope CLI Specification (`RUNNER-HILL-CLI-001`)
 
 Status: `draft-normative`  
-Queue anchor: `CLI01-open-wepp-runner-and-hillslope-driver-bootstrap`  
+Queue anchor: `CLI02-hillslope-simulation-and-interchange-emission`  
 Evidence mode: `Static`  
 Ran evidence: none
 
 ## Purpose
 
 Define the canonical executable contract for `openwepp-cli-hill` so openWEPP
-can produce provenance-valid hillslope outputs for comparator and wepppy
-consumer workflows.
+can produce simulation-driven, provenance-valid partitioned interchange outputs
+for wepppy/wepppyo3 consumer workflows.
 
 ## Normative Scope
 
 - CLI boundary and invocation rules for hillslope runs.
-- Required input discovery policy for current legacy-compatible mode.
-- Required output files for comparator-ready hillslope runs.
+- Required schema-versioned `.run` ingestion and validation policy.
+- Required/optional output families for hillslope runs.
 - Run-level provenance metadata artifact requirements.
 - Build/release binary metadata sidecar requirements aligned with existing
   WEPP sidecar practice.
@@ -24,8 +24,6 @@ consumer workflows.
 
 - Watershed CLI (`openwepp-cli-watershed`) detailed surface.
 - Replay CLI (`openwepp-replay`) detailed surface.
-- Declarative `.run` schema migration where sidecars are declared in `.run`
-  (target-state work, not this version).
 
 ## Authority Anchors
 
@@ -33,9 +31,9 @@ consumer workflows.
 - `docs/decisions/0006-three-binaries-incl-replay.md`
 - `docs/decisions/0007-openwepp-runner-and-release-governance.md`
 - `docs/contracts/openwepp-runner-contract.md`
+- `docs/contracts/openwepp-hillslope-runfile-contract.md`
 - `docs/contracts/openwepp-binary-release-contract.md`
-- `docs/architecture/legacy-sidecar-bridge-boundary.md`
-- `docs/specifications/science-contracts/legacy-sidecar-bridge-contract.md`
+- `docs/decisions/0005-parquet-via-wepppyo3-interchange.md`
 - `docs/specifications/wepp-input-files/input-surface-registry.md`
 
 ## Binary Identity Model
@@ -49,31 +47,61 @@ Notes:
 - Release artifact naming and sidecar schema validation are governed by
   `openwepp-binary-release-contract.md`.
 
-## Current Sidecar Discovery Mode (Required)
+## Schema-Versioned `.run` Mode (Required)
 
-This version uses legacy-compatible sidecar discovery from the run directory.
-Sidecar paths are not declared inside `.run` for this contract revision.
+`openwepp-cli-hill` must consume a single schema-versioned `.run` file that
+conforms to `openwepp-hillslope-runfile-v1`:
 
-Required behavior:
-1. Discover sidecar files from the run directory filesystem surface.
-2. Resolve sidecars through `openwepp-legacy-bridge` strict/compat policy,
-   not kernel-local policy branches.
-3. Treat required-sidecar absence as typed hard failure in both strict and
-   compat modes.
-4. Reject unknown discovered sidecars in strict mode and emit typed warnings
-   in compat mode per stable message IDs from
-   `legacy-sidecar-bridge-contract.md`.
+1. File format must be TOML 1.0 (`UTF-8`).
+2. Top-level required keys:
+   - `schema` (exactly `openwepp-hillslope-runfile-v1`)
+   - `run_name`
+   - `unit_system` (exactly `metric`)
+3. `[inputs]` required keys:
+   - `soil`
+   - `management`
+   - `slope`
+   - `climate`
+4. `[inputs]` optional keys:
+   - `wepp_ui` (`bool`)
+   - `pmetpara` (`string` path)
+5. `[inputs.snow]` optional override keys:
+   - `rst`
+   - `newsnw`
+   - `ssd`
+6. `[inputs.frost]` optional override keys:
+   - `wintRed`
+   - `fineTop`
+   - `fineBot`
+   - `ksnowf`
+   - `kresf`
+   - `ksoilf`
+   - `kfactor1`
+   - `kfactor2`
+   - `kfactor3`
+7. `[outputs]` keys:
+   - required: `pass` (`.hbp` path), `loss` (`.json` path)
+   - optional string parquet paths: `wat`, `soil`, `plot`, `ebe`, `element`
+8. Path semantics:
+   - absolute paths are accepted;
+   - relative paths are resolved against the directory containing the `.run`
+     file;
+   - shell interpolation and glob expansion are prohibited.
+9. Invalid schema/version, missing required keys, non-metric unit selection,
+   unresolved required inputs,
+   and unwritable output destinations are typed hard failures.
+10. Legacy line-oriented WEPP `.run` stdin recipes are out of contract.
 
-CLI01 required sidecar contract ids for hillslope runtime bootstrap:
-- `frost` -> `frost.txt` (required)
-- `snow` -> `snow.txt` (required)
-- `wepp_ui` -> `wepp_ui.txt` (required)
-- `pmetpara` -> `pmetpara.txt` (required)
+Sidecar semantics:
 
-CLI01 run file posture:
-- `.run` path is required input identity for provenance and launcher parity.
-- This contract revision does not require declarative sidecar entries inside
-  `.run`; sidecar resolution remains run-directory discovery.
+- `snow` and `frost` are override surfaces and do not gate whether snow/frost
+  routines execute.
+- Legacy compatibility mode `--legacy-sidecar-discovery` discovers
+  `snow.txt`, `frost.txt`, `wepp_ui.txt`, and `pmetpara.txt` as optional
+  run-directory files.
+- In `--legacy-sidecar-discovery` mode, discovered sidecars are authoritative;
+  `.run` sidecar override keys (`inputs.wepp_ui`, `inputs.pmetpara`,
+  `inputs.snow`, `inputs.frost`) are ignored.
 
 ## Invocation Contract
 
@@ -82,37 +110,52 @@ CLI01 run file posture:
 1. The production launcher boundary is in-repo `open_wepp_runner`; wepppy integrates
    through this boundary and must not depend on shell interpolation.
 2. Invocation uses explicit argument arrays only (`std::process::Command`).
-3. Engine selection remains explicit at caller boundaries
-   (`legacy_wepp`, `openwepp`).
-4. No silent fallback to legacy binaries on openWEPP invocation errors.
+3. `open_wepp_runner` is openWEPP-only and does not accept legacy-engine
+   selectors.
+4. Legacy WEPP orchestration belongs to `wepppy/wepp_runner`.
 
 Minimum execution inputs:
-- `.run` control file
-- hillslope core input files (`.sol`, `.man`, `.slp`, `.cli`)
-- sidecar discoveries required by active parser contracts in the run directory
-- policy mode (`strict` or `compat`) for legacy sidecar adapter behavior
+- `.run` control file satisfying `openwepp-hillslope-runfile-v1`
+- hillslope core input files declared in `.run` (`.sol`, `.man`, `.slp`, `.cli`)
+- optional override inputs declared in `.run` (`wepp_ui`, `pmetpara`,
+  `[inputs.snow]`, `[inputs.frost]`) or discovered via
+  `--legacy-sidecar-discovery`
+- metric unit declaration (`unit_system = "metric"`)
 
 ## Output Contract
 
-For comparator-ready CLI01 runs, `openwepp-cli-hill` must emit:
+For simulation-driven CLI02 runs, `openwepp-cli-hill` must emit:
 
-1. `H5.wat.dat`
-2. `H5.plot.dat`
+Required outputs:
 
-And pass-family outputs consistent with runtime configuration:
-- legacy pass family: `H<hillslope_id>.pass.dat`
-- HBP pass family: `H<hillslope_id>.hbp`
+1. pass output (`.hbp`) at `.run` `outputs.pass`
+2. loss output (`.json`) at `.run` `outputs.loss`
+
+Optional parquet outputs when configured in `.run`:
+
+1. `outputs.wat` (`.parquet`)
+2. `outputs.soil` (`.parquet`)
+3. `outputs.plot` (`.parquet`)
+4. `outputs.ebe` (`.parquet`)
+5. `outputs.element` (`.parquet`)
+
+`crop` output is intentionally out of scope for this revision until its
+columnar/output contract authority is defined.
 
 Output requirements:
-- Output files must be generated by openWEPP runtime execution, not copied or
-  substituted from legacy WEPP lanes.
-- Output omissions are typed hard failures.
+- Output files must be generated by openWEPP runtime execution from accepted
+  runtime surfaces, not copied/substituted from legacy WEPP lanes.
+- Bootstrap-synthesized placeholder outputs are prohibited as acceptance
+  semantics.
+- Omission of required outputs is a typed hard failure.
 
 ## Run Provenance Manifest (Required)
 
 Each successful hillslope run must emit a provenance manifest (JSON), default:
 
-`<output_dir>/openwepp_hillslope_run_manifest.json`
+`<launcher-managed output location>/openwepp_hillslope_run_manifest.json`
+
+Manifest path selection is launcher-managed and is not a `.run` output key.
 
 Required fields:
 - `schema` (manifest schema id)
@@ -129,9 +172,11 @@ Required fields:
 - `input_checksums` (file -> sha256)
 - `output_checksums` (file -> sha256)
 
-At minimum, `output_checksums` must include `H5.wat.dat` and `H5.plot.dat`.
+At minimum, `output_checksums` must include required pass/loss outputs
+(`.hbp`, `.json`) and any optional parquet outputs that were configured for the
+run.
 
-CLI01 manifest schema id for this revision:
+CLI02 manifest schema id for this revision:
 - `openwepp-hillslope-run-manifest-v1`
 
 Determinism requirements:
@@ -159,27 +204,33 @@ Sidecar constraints:
 
 | Invariant ID | Requirement | Failure posture |
 |---|---|---|
-| `RUNNER-HILL-INV-001` | Candidate-lane hillslope outputs are openWEPP-emitted artifacts, never legacy substitutions. | hard-fail + release/comparator hold |
-| `RUNNER-HILL-INV-002` | Sidecar discovery is adapter-governed with strict/compat behavior from `openwepp-legacy-bridge`. | hard-fail |
-| `RUNNER-HILL-INV-003` | Missing required include surfaces (`H5.wat.dat`, `H5.plot.dat`) blocks CLI01 acceptance. | hard-fail |
+| `RUNNER-HILL-INV-001` | Required hillslope outputs are simulation-driven, openWEPP-emitted interchange artifacts, never legacy substitutions or bootstrap synth placeholders. | hard-fail + release/comparator hold |
+| `RUNNER-HILL-INV-002` | `.run` input must declare explicit required input bindings and a schema value of `openwepp-hillslope-runfile-v1`. | hard-fail |
+| `RUNNER-HILL-INV-003` | Missing required run outputs (`outputs.pass` `.hbp`, `outputs.loss` `.json`) blocks acceptance. | hard-fail |
 | `RUNNER-HILL-INV-004` | Binary metadata sidecar `<binary>.json` is present and schema-valid for every release build. | hard-fail |
-| `RUNNER-HILL-INV-005` | Invocation boundary uses explicit args and explicit engine selector; no shell fallback. | hard-fail |
-| `RUNNER-HILL-INV-006` | CLI01 required sidecars (`frost.txt`, `snow.txt`, `wepp_ui.txt`, `pmetpara.txt`) are discovered and resolved via adapter policy before runtime proceeds. | hard-fail |
+| `RUNNER-HILL-INV-005` | Invocation boundary uses explicit args, is openWEPP-only, and rejects legacy-engine selector flags. | hard-fail |
+| `RUNNER-HILL-INV-006` | Relative paths in `.run` are resolved against the `.run` parent directory; unresolved required paths or unwritable output destinations block runtime start. | hard-fail |
+| `RUNNER-HILL-INV-007` | `snow`/`frost` surfaces are parameter overrides and do not toggle snow/frost routine execution. | hard-fail |
+| `RUNNER-HILL-INV-008` | openWEPP hillslope `.run` unit system is metric-only (`unit_system = "metric"`); non-metric unit selections are rejected. | hard-fail |
 
 ## Implementation Sequencing Requirement
 
-For CLI01 code-authoring work where contract authority applies:
+For CLI02 code-authoring work where contract authority applies:
 1. amend/ratify canonical contracts and this subsystem spec,
 2. implement contract-derived tests,
 3. record pre-implementation contract gate evidence, then
 4. modify production code.
 
-## Contract-Test Minimums (CLI01)
+## Contract-Test Minimums (CLI02)
 
 1. Cargo metadata shows a binary target for hillslope CLI role.
-2. Sidecar discovery tests validate strict/compat adapter behavior for required
-   and unknown sidecars.
-3. Fixture integration test emits `H5.wat.dat` and `H5.plot.dat` from an
-   openWEPP run path and writes a manifest with checksums.
+2. `.run` parse/validation tests enforce:
+   - schema/version match,
+   - required key presence,
+   - relative/absolute path resolution rules,
+   - hard-fail on unresolved required paths.
+3. Fixture integration test emits required run outputs
+   (`outputs.pass`, `outputs.loss`) and configured optional parquet outputs
+   at their configured `.run` paths, then writes a manifest with checksums.
 4. Release artifact test validates `<binary>.json` sidecar presence and schema
    conformance.

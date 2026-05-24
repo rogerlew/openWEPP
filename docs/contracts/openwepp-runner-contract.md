@@ -10,7 +10,6 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
 ## Scope
 
 - openWEPP binary selection and invocation.
-- Engine selection at caller boundaries.
 - Failure behavior for contract mismatch.
 
 ## Hard rules
@@ -18,19 +17,9 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
 1. `open_wepp_runner` is the only launcher for openWEPP binaries.
 2. `wepppy` treats openWEPP as an external engine boundary; it does not depend
    on `wepp_runner` internals for openWEPP invocation semantics.
-3. Engine selection is explicit at request/config boundaries.
-4. No silent fallback between engines or pass-family contracts.
-
-## Engine selector
-
-Required selector values:
-
-- `legacy_wepp`
-- `openwepp`
-
-If selector is missing at a boundary that supports both engines, callers must
-fail with a typed configuration error. Defaulting by implicit binary discovery
-is not permitted for dual-engine paths.
+3. Legacy WEPP binary orchestration is owned by `wepppy/wepp_runner`, not
+   `open_wepp_runner`.
+4. No silent fallback across engine families or pass-family contracts.
 
 ## Invocation safety
 
@@ -38,7 +27,7 @@ is not permitted for dual-engine paths.
 - Emit binary identity and sidecar identity in launch telemetry.
 - Reject mixed-family binary tuples (watershed/hillslope mismatch).
 
-## CLI01 Runner Command Surface
+## CLI02 Runner Command Surface
 
 `open_wepp_runner` must expose at least:
 
@@ -47,10 +36,24 @@ is not permitted for dual-engine paths.
 
 `run-hillslope` requirements:
 
-1. Engine selector is required and explicit.
-2. CLI01 launch path supports `openwepp` selector without fallback.
-3. Invocation must execute `openwepp-cli-hill` with explicit argv capture.
-4. Runner must propagate non-zero child exit as typed hard failure.
+1. Invocation must execute `openwepp-cli-hill` with explicit argv capture.
+2. Runner must propagate non-zero child exit as typed hard failure.
+3. `.run` input must satisfy
+   `openwepp-hillslope-runfile-contract.md` (`schema =
+   openwepp-hillslope-runfile-v1`) with `unit_system = "metric"`, required
+   core input bindings,
+   optional sidecar override controls, and explicit output configuration:
+   required `outputs.pass` (`.hbp`), required `outputs.loss` (`.json`), and
+   optional parquet output paths (`outputs.wat`, `outputs.soil`,
+   `outputs.plot`, `outputs.ebe`, `outputs.element`).
+4. Legacy line-oriented stdin `.run` recipes are out of contract for this
+   surface.
+5. Required hillslope outputs are `outputs.pass` (`.hbp`) and `outputs.loss`
+   (`.json`); optional parquet outputs are configured as optional `.run`
+   `outputs` paths (`wat`, `soil`, `plot`, `ebe`, `element`).
+6. Bootstrap-synthesized placeholder include surfaces are prohibited as
+   production acceptance semantics.
+7. `run-hillslope` does not accept or negotiate legacy-engine selectors.
 
 `release lint` requirements:
 
@@ -60,22 +63,31 @@ is not permitted for dual-engine paths.
    `openwepp-binary-release-contract.md`.
 4. Reject mixed/invalid watershed-hillslope pairing claims.
 
-## CLI01 Typed Runner Failure IDs
+## Typed Runner Failure IDs
 
 Runner boundary failures use stable IDs:
 
-- `RUNNER-E-001`: missing/unsupported engine selector
+- `RUNNER-E-001`: missing required runner argument or unsupported runner flag
 - `RUNNER-E-002`: hillslope binary path missing/unreadable
 - `RUNNER-E-003`: launch failed before subprocess execution
 - `RUNNER-E-004`: launched process exited non-zero
 - `RUNNER-E-005`: release sidecar missing/invalid
 - `RUNNER-E-006`: release binary naming contract violation
 
+## CLI02 Output Guard IDs
+
+Required CLI02 output-surface failures use stable existing guard IDs:
+
+- `CLIHILL-E-013`: required hillslope CLI output surface missing.
+- `OPEN_RUNNER-E-018`: missing required hillslope output surface(s).
+
 ## Error posture
 
 Contract mismatches are hard errors, including:
 
-- selector missing or unsupported;
-- required sidecar missing or invalid;
+- unsupported runner flags (including engine-selector flags);
+- required binary release sidecar missing or invalid;
+- invalid `.run` schema/version or unresolved required `.run` paths;
+- non-metric `.run` unit-system selection;
 - binary naming contract violations;
 - incompatible watershed/hillslope release pairings.
