@@ -23,6 +23,30 @@ with a default focus on hillslope water-balance semantic parity (PL14S scope).
   - baseline replay + strict comparator (when candidate is `.dat`) + semantic
     comparator orchestration with provenance output.
 
+## Repo-local uv environment (replicable)
+
+Create a repo-local virtualenv in a fresh clone:
+
+```bash
+cd /path/to/openWEPP
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip sync tools/legacy_comparison_suite/requirements.lock.txt
+```
+
+Notes:
+- `.venv/` is gitignored at repo root.
+- The locked dependency source is:
+  - `tools/legacy_comparison_suite/requirements.in`
+  - `tools/legacy_comparison_suite/requirements.lock.txt`
+- Refresh lock after dependency edits:
+
+```bash
+uv pip compile tools/legacy_comparison_suite/requirements.in \
+  --output-file tools/legacy_comparison_suite/requirements.lock.txt \
+  --python-version 3.12
+```
+
 ## Quick start
 
 Semantic compare only:
@@ -47,8 +71,8 @@ python3 tools/legacy_comparison_suite/run_pl14s_legacy_suite.py \
 ```
 
 ## Optional dependencies
-- Reading candidate parquet requires `pyarrow`.
-  - If unavailable, the semantic tool exits with a clear import error message.
+- Parquet candidate reads require `pyarrow` (included in
+  `requirements.lock.txt`).
 
 ## Current limitations
 - Erosion/sediment surfaces are intentionally excluded in PL14S lane scope.

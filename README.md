@@ -106,6 +106,23 @@ all roles (watershed, hillslope, replay). See:
 
 Crate layout under `crates/` is intentionally undecided pre-bootstrap; the first work package that lands a crate establishes the convention.
 
+## Python Tooling Environment (uv)
+
+Some investigation tooling (for example legacy comparison utilities under
+`tools/legacy_comparison_suite/`) uses Python.
+
+Set up a repo-local virtualenv in a fresh clone:
+
+```bash
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip sync tools/legacy_comparison_suite/requirements.lock.txt
+```
+
+Dependency sources:
+- `tools/legacy_comparison_suite/requirements.in`
+- `tools/legacy_comparison_suite/requirements.lock.txt`
+
 ## License
 
 CC0-1.0. See [LICENSE](LICENSE) and [docs/decisions/0001-license-cc0.md](docs/decisions/0001-license-cc0.md).

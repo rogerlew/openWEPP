@@ -1,0 +1,2 @@
+# Optional parquet candidate support for semantic comparisons.
+pyarrow>=18,<23
