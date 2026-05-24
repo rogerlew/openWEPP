@@ -578,6 +578,16 @@ Authorized packages:
     channel/impoundment kernels under typed boundary integration using
     contract-first sequencing (contract amendments, contract tests,
     pre-implementation gate, then kernel code).
+- `20260524-ws11-channel-routing-physics-equivalence-port-001/`
+  - Purpose: replace WS10 channel-routing surrogate authority with
+    legacy-equivalent routing physics under contract-first sequencing
+    (contract amendments, contract tests, pre-implementation gate, then kernel
+    code).
+- `20260524-ws12-impoundment-physics-equivalence-port-001/`
+  - Purpose: replace WS10 impoundment surrogate authority with
+    legacy-equivalent impoundment hydraulics under contract-first sequencing
+    (contract amendments, contract tests, pre-implementation gate, then kernel
+    code).
 - `20260523-arch22-typed-state-surface-closure-001/`
   - Purpose: close CRF-001 carry-forward by migrating stringly
     `BoundarySymbol(String)` production kernel surfaces to typed state
