@@ -1,7 +1,7 @@
 # 20260524-ws11-channel-routing-physics-equivalence-port-001
 
 ## Status
-- state: queued
+- state: hold
 - date: 2026-05-24
 - timezone: UTC
 
@@ -184,3 +184,14 @@ non-compliant.
 - dedicated_security_review_required: yes
 - Rationale: production watershed routing kernel behavior and typed guard
   surface changes.
+
+## Execution Result
+- disposition: `HOLD`
+- closeout_date: `2026-05-24`
+- closeout_basis:
+  1. WS11 implementation and required repository gates are complete and passing.
+  2. Dedicated WS11 worktree-governance requirement remains unmet in this run
+     context (`main` branch used).
+  3. Legacy baseline parity-trace lane is blocked for routed branch vectors:
+     persisted baseline run logs show `ipeak=3` fails with `SIGFPE` in
+     `wshchr.for:342`, preventing full branch-vector parity closure evidence.

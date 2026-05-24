@@ -3,6 +3,20 @@
 Scope: local repository science-contract/kernel migration task; flat-file reads/
 edits only; no external connectivity.
 Phase: A only.
+Required reading (read before edits):
+- `/workdir/openWEPP/AGENTS.md`
+- `/workdir/openWEPP/docs/codex_exec_plans.md`
+- `/workdir/openWEPP/docs/work-packages/README.md`
+- `/workdir/openWEPP/docs/work-packages/20260524-ws11-channel-routing-physics-equivalence-port-001/package.md`
+- `/workdir/openWEPP/docs/specifications/science-contract-authoring-procedure.md`
+- `/workdir/openWEPP/docs/specifications/science-contracts/kernel-process-contract-profile.md`
+- `/workdir/openWEPP/docs/specifications/science-contracts/index.md`
+- `/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-ROUTE-001.md`
+- `/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md`
+- `/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md`
+- `/workdir/openWEPP/docs/decisions/0011-architecture-first-top-down-science-contracts.md`
+- `/workdir/openWEPP/docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`
+- `/workdir/openWEPP/docs/work-packages/20260522-pl09-openwepp-totality-and-pl08-hold-lift-discovery-001/artifacts/pl08-hold-lift-work-package-queue.md`
 Files:
 - `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md`
 - `docs/specifications/science-contracts/contracts/SC-HYDRAULICS-001.md`
@@ -15,6 +29,8 @@ record contract-implementation/authority-map evidence for Phase A only.
 Constraints: contract-first sequencing; canonical SC authority; baseline
 provenance (`/workdir/wepp-forest_260430_baseline` at
 `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`); typed guards; no silent defaults.
+Autonomy: execute this phase end-to-end and update listed WS11 phase artifacts
+without requesting additional user direction unless hard-blocked.
 Outputs: update listed WS11 artifacts for this phase only.
 
 Execution topology:
