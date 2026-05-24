@@ -64,6 +64,17 @@ Required behavior:
    in compat mode per stable message IDs from
    `legacy-sidecar-bridge-contract.md`.
 
+CLI01 required sidecar contract ids for hillslope runtime bootstrap:
+- `frost` -> `frost.txt` (required)
+- `snow` -> `snow.txt` (required)
+- `wepp_ui` -> `wepp_ui.txt` (required)
+- `pmetpara` -> `pmetpara.txt` (required)
+
+CLI01 run file posture:
+- `.run` path is required input identity for provenance and launcher parity.
+- This contract revision does not require declarative sidecar entries inside
+  `.run`; sidecar resolution remains run-directory discovery.
+
 ## Invocation Contract
 
 `openwepp-cli-hill` execution must be launcher-safe and deterministic:
@@ -120,6 +131,14 @@ Required fields:
 
 At minimum, `output_checksums` must include `H5.wat.dat` and `H5.plot.dat`.
 
+CLI01 manifest schema id for this revision:
+- `openwepp-hillslope-run-manifest-v1`
+
+Determinism requirements:
+1. `argv` order must match actual process invocation order.
+2. `input_checksums` and `output_checksums` must be key-sorted by path string.
+3. `invoked_utc` must be RFC 3339 UTC with `Z` suffix.
+
 ## Build Metadata Sidecar Contract (Required)
 
 Build/release artifacts for the hillslope binary must include:
@@ -145,6 +164,7 @@ Sidecar constraints:
 | `RUNNER-HILL-INV-003` | Missing required include surfaces (`H5.wat.dat`, `H5.plot.dat`) blocks CLI01 acceptance. | hard-fail |
 | `RUNNER-HILL-INV-004` | Binary metadata sidecar `<binary>.json` is present and schema-valid for every release build. | hard-fail |
 | `RUNNER-HILL-INV-005` | Invocation boundary uses explicit args and explicit engine selector; no shell fallback. | hard-fail |
+| `RUNNER-HILL-INV-006` | CLI01 required sidecars (`frost.txt`, `snow.txt`, `wepp_ui.txt`, `pmetpara.txt`) are discovered and resolved via adapter policy before runtime proceeds. | hard-fail |
 
 ## Implementation Sequencing Requirement
 

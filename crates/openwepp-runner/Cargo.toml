@@ -1,0 +1,29 @@
+[package]
+name = "openwepp-runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-hillslope-orchestrator = { path = "../openwepp-hillslope-orchestrator", version = "0.1.0" }
+openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
+openwepp-legacy-bridge = { path = "../openwepp-legacy-bridge", version = "0.1.0" }
+openwepp-summary-accumulator = { path = "../openwepp-summary-accumulator", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+time = { version = "0.3", features = ["formatting"] }
+
+[[bin]]
+name = "open_wepp_runner"
+path = "src/bin/open_wepp_runner.rs"
+
+[[bin]]
+name = "openwepp-cli-hill"
+path = "src/bin/openwepp-cli-hill.rs"

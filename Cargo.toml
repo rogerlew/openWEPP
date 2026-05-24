@@ -21,6 +21,7 @@ members = [
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",
+    "crates/openwepp-runner",
 ]
 
 [workspace.package]
@@ -53,6 +54,7 @@ openwepp-legacy-bridge = { path = "crates/openwepp-legacy-bridge", version = "0.
 openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
 openwepp-summary-accumulator = { path = "crates/openwepp-summary-accumulator", version = "0.1.0" }
 openwepp-comparator-metadata = { path = "crates/openwepp-comparator-metadata", version = "0.1.0" }
+openwepp-runner = { path = "crates/openwepp-runner", version = "0.1.0" }
 
 [dev-dependencies]
 flate2 = "1.1.0"
@@ -264,6 +266,14 @@ path = "tests/integration/erod11_alias_boundary_ownership_contract.rs"
 [[test]]
 name = "erod12_cross_domain_contract_closure_contract"
 path = "tests/integration/erod12_cross_domain_contract_closure_contract.rs"
+
+[[test]]
+name = "cli01_runner_contract_derived_tests"
+path = "tests/integration/cli01_runner_contract_derived_tests.rs"
+
+[[test]]
+name = "cli01_runner_hillslope_integration"
+path = "tests/integration/cli01_runner_hillslope_integration.rs"
 
 [profile.release]
 lto = "thin"

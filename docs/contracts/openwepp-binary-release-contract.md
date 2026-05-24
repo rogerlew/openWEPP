@@ -72,6 +72,12 @@ Required feature fields:
 - `legacy_ascii_pass_family` (string, expected `H*.pass.dat`)
 - `mode2_master_pass_prompt_required` (boolean)
 
+Required validation fields:
+
+- `schema_valid` (boolean)
+- `release_lint_level` (string)
+- `validated_utc` (RFC 3339 UTC string)
+
 ## Release lint gate
 
 Every release candidate must pass a lint gate that validates:
