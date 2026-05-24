@@ -1,4 +1,543 @@
 {
-  "status": "queued",
-  "evidence_mode": "not-run"
+  "report_schema_version": "pl14s-semantic-wat-v1",
+  "inputs": {
+    "baseline_wat": "/tmp/pl14s_suite_20260524T121832/baseline/lane/output/H5.wat.dat",
+    "candidate_wat": "/tmp/pl14s_candidate_20260524T121758/output/H5.wat.parquet",
+    "baseline_format": "dat",
+    "candidate_format": "parquet",
+    "row_key_fields": [
+      "OFE",
+      "J",
+      "Y"
+    ],
+    "baseline_numeric_widths": [
+      25
+    ],
+    "candidate_numeric_widths": [
+      0
+    ],
+    "baseline_sha256": "c383b31d42b311f9af9124db2fee1b1905a831b2e533ff63d9d667eafaf7ff83",
+    "candidate_sha256": "5b71252fe6efd44cefa63f46ba7ee2585f719acae4e09f8e9c32690f20444e49"
+  },
+  "tolerances": {
+    "default": {
+      "abs": 0.1,
+      "rel": 0.02
+    },
+    "column_overrides": {
+      "Dp": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "Ep": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "Er": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "Es": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "P": {
+        "abs": 0.1,
+        "rel": 0.01
+      },
+      "Q": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "RM": {
+        "abs": 0.1,
+        "rel": 0.02
+      },
+      "Snow-Water": {
+        "abs": 0.2,
+        "rel": 0.02
+      },
+      "SoilWaterTotal": {
+        "abs": 0.5,
+        "rel": 0.01
+      },
+      "Total-Soil": {
+        "abs": 0.5,
+        "rel": 0.01
+      },
+      "frozwt": {
+        "abs": 0.2,
+        "rel": 0.02
+      }
+    }
+  },
+  "comparison": {
+    "semantic_pass": false,
+    "shared_column_count": 22,
+    "shared_columns": [
+      "Area",
+      "Dp",
+      "Ep",
+      "Er",
+      "Es",
+      "Irr",
+      "P",
+      "ProfileDepth",
+      "ProfileFCStore",
+      "ProfilePorosityCap",
+      "ProfileWPStore",
+      "Q",
+      "QOFE",
+      "RM",
+      "Snow-Water",
+      "SoilWaterTotal",
+      "SubRIn",
+      "Tile",
+      "Total-Soil",
+      "UpStrmQ",
+      "frozwt",
+      "latqcc"
+    ],
+    "baseline_only_columns": [],
+    "candidate_only_columns": [],
+    "common_row_count": 0,
+    "only_baseline_count": 1095,
+    "only_candidate_count": 1,
+    "only_baseline_examples": [
+      [
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        2
+      ],
+      [
+        1,
+        1,
+        3
+      ],
+      [
+        1,
+        2,
+        1
+      ],
+      [
+        1,
+        2,
+        2
+      ],
+      [
+        1,
+        2,
+        3
+      ],
+      [
+        1,
+        3,
+        1
+      ],
+      [
+        1,
+        3,
+        2
+      ],
+      [
+        1,
+        3,
+        3
+      ],
+      [
+        1,
+        4,
+        1
+      ],
+      [
+        1,
+        4,
+        2
+      ],
+      [
+        1,
+        4,
+        3
+      ],
+      [
+        1,
+        5,
+        1
+      ],
+      [
+        1,
+        5,
+        2
+      ],
+      [
+        1,
+        5,
+        3
+      ],
+      [
+        1,
+        6,
+        1
+      ],
+      [
+        1,
+        6,
+        2
+      ],
+      [
+        1,
+        6,
+        3
+      ],
+      [
+        1,
+        7,
+        1
+      ],
+      [
+        1,
+        7,
+        2
+      ],
+      [
+        1,
+        7,
+        3
+      ],
+      [
+        1,
+        8,
+        1
+      ],
+      [
+        1,
+        8,
+        2
+      ],
+      [
+        1,
+        8,
+        3
+      ],
+      [
+        1,
+        9,
+        1
+      ]
+    ],
+    "only_candidate_examples": [
+      [
+        1,
+        1,
+        2000
+      ]
+    ],
+    "investigation_columns_used": [
+      "P",
+      "Q",
+      "Ep",
+      "Es",
+      "Er",
+      "Dp",
+      "Total-Soil",
+      "frozwt",
+      "Snow-Water",
+      "SoilWaterTotal"
+    ],
+    "investigation_columns_missing": [],
+    "column_stats": [
+      {
+        "column": "Area",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Dp",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Ep",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Er",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Es",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Irr",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "P",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.01,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileDepth",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileFCStore",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfilePorosityCap",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileWPStore",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Q",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "QOFE",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "RM",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Snow-Water",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.2,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "SoilWaterTotal",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.5,
+        "rel_tolerance": 0.01,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "SubRIn",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Tile",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Total-Soil",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.5,
+        "rel_tolerance": 0.01,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "UpStrmQ",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "frozwt",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.2,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "latqcc",
+        "compared_points": 0,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      }
+    ],
+    "top_divergent_rows": []
+  }
 }

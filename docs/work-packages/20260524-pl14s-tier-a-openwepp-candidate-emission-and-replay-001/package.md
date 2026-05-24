@@ -1,7 +1,7 @@
 # 20260524-pl14s-tier-a-openwepp-candidate-emission-and-replay-001
 
 ## Status
-- state: queued
+- state: completed-with-hold
 - date: 2026-05-24
 - timezone: UTC
 

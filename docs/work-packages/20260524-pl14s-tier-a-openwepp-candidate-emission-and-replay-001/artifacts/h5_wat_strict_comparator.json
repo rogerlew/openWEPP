@@ -1,4 +1,8 @@
 {
-  "status": "queued",
-  "evidence_mode": "not-run"
+  "schema": "pl14s-strict-compare-sentinel-v1",
+  "status": "skipped",
+  "required": false,
+  "reason": "candidate is not .dat; strict raw comparator requires text surfaces",
+  "execution": null,
+  "source_provenance_manifest": "/home/workdir/openWEPP/docs/work-packages/20260524-pl14s-tier-a-openwepp-candidate-emission-and-replay-001/artifacts/pl14s_provenance_manifest.json"
 }
