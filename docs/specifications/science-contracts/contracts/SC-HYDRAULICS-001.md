@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 11
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -14,7 +14,7 @@ consumer_scope:
   - Soil and management consumers that provide roughness/cover/canopy controls
   - Hillslope erosion consumers requiring soil-active shear and transport-capacity inputs
 evidence_level: Static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-24
 supersedes: []
 superseded_by: []
 ---
@@ -68,6 +68,7 @@ Out of scope:
 | REF-HYD-CH11-TC | `references/50201000/chap11.pdf` §11.2.4 Eq. [11.2.8] | Transport-capacity dependence on hydraulic shear (`τf`). | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-HYD-CH7-ROUGH | `references/50201000/chap7.pdf` §7.2, §7.5 | Soil roughness state supplied by soil/tillage pathways affects hydraulics coefficients. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-HYD-CH4-RUNOFF | `references/50201000/chap4.pdf` §4.4 + `references/50201000/chap10.pdf` §10.7 | Rainfall excess and rill density/discharge context supplies `Qe` used for rill width and shear. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-HYD-WS11-ROUTE | `/workdir/wepp-forest_260430_baseline/src/wshdrv.for`, `wshpek.for`, `wshchr.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Downstream consumer-coupling authority requiring explicit `ipeak` branch routing semantics (Rational/CREAMS/KW/MC) for channel payload consumers under WS11. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-HYD-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative fractions/rates, finite coefficients, bounded shear-partition ratios. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -142,7 +143,7 @@ for not-yet-implemented hydraulics internals.
 | `R`, `S`, `V` | identity names | hydraulic geometry/velocity surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `fs`, `ft`, `τf`, `τfe` | identity names | shear-partition and erosion-coupling surfaces | `dimensionless`, `Pa` preserved | `[DIRECT][Static]` |
 | `peakro`, `watdur` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | upstream peak-duration forcing consumed by hydraulics-coupled erosion lanes | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | watershed contributor alias family for WS10 routing intake | contributor-scoped peak/duration semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | watershed contributor alias family for WS11 routing intake | contributor-scoped peak/duration semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `qpo`, `durrof` | `WatershedProductionStateSymbol::ChannelNode{field=Qpo|Durrof}` | downstream channel state aliases for routing/impoundment consumption | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD11 Alias Ownership Register
@@ -159,7 +160,7 @@ for not-yet-implemented hydraulics internals.
 |---|---|---|---|---|
 | Hydrology forcing ingress (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-RUNOFFPART-001` + `SC-WATBAL-001` | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-008`, `INV-HYDRAULICS-011`) | Required Wave-0 ingress ownership and guard semantics are canonicalized. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Hydraulics-to-sediment shear/friction payload (`fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe`) | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-009`..`011`) | `SC-SED-001` (`INV-SED-005`..`007`) | Producer and consumer guard ownership is explicit with typed failure continuity. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| Watershed contributor boundary (`hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_*`) | `SC-HYDRAULICS-001` + `SC-ROUTE-001` | `SC-ROUTE-001` + `SC-SYSTEM-001` (`INV-SYSTEM-001`..`006`) | Cross-domain ownership for contributor + WS10 coupling boundaries is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Watershed contributor boundary (`hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_*`) | `SC-HYDRAULICS-001` + `SC-ROUTE-001` | `SC-ROUTE-001` + `SC-SYSTEM-001` (`INV-SYSTEM-001`..`006`) | Cross-domain ownership for contributor + WS11 coupling boundaries is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -246,34 +247,73 @@ bit-for-bit parity). `[DIRECT][Static]` Contract-level tolerance declarations:
 | Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
 | Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
 
-## WS10 Routing/Impoundment Consumer Coupling Addendum
+## WS11 Channel-Routing Consumer Coupling Addendum
 
-### WS10 Consumer Coupling Rules
+### WS11 Consumer Coupling Rules
 
 1. Watershed routing/impoundment consumers must treat WB16-derived peak-flow
-   payloads (`peakro`, `watdur`) as authoritative inputs for downstream WS10
+   payloads (`peakro`, `watdur`) as authoritative inputs for downstream WS11
    assembly and must not silently reconstruct substitute peaks when payloads are
    present.
-2. WS10 consumers must preserve branch provenance emitted by WS10 channel and
-   impoundment kernels (`ws10_channel_*`, `ws10_impoundment_*`) as typed
-   boundary payloads for downstream continuity diagnostics.
-3. Missing/non-finite/out-of-domain coupling symbols at WS10 consumers are
-   typed hard failures with explicit WS10 guard families:
+2. WS11 channel consumers must preserve explicit route-method provenance from
+   `ipeak` branch selection (`1` Rational, `2` CREAMS, `3` kinematic wave,
+   `>=4` Muskingum-Cunge) on published `ws10_channel_*` payload families.
+3. Consumer routing authority must not collapse WS11 routing into the pre-WS11
+   gain-factor surrogate `(1 + ctlslp) / (1 + chnn)` or equivalent
+   single-gain substitutions.
+4. Missing/non-finite/out-of-domain coupling symbols at WS11 consumers are
+   typed hard failures with explicit guard families:
    - `WKERNEL-WS10-CHANNEL-E-001..003`
    - `WKERNEL-WS10-IMPOUNDMENT-E-001..003`
-4. Consumer-side fallback defaulting/clamping that masks invalid WS10 coupling
+5. Consumer-side fallback defaulting/clamping that masks invalid WS11 coupling
    payloads is prohibited.
 
-### WS10 Contract-Derived Coupling Vectors
+### WS11 Contract-Derived Coupling Vectors
 
-Minimum WS10 coupling vectors:
-1. Nominal WS10 channel/impoundment payload consumption preserves finite
-   non-negative routed peak/discharge terms.
-2. Missing required WS10 coupling payload fails with corresponding `-E-001`
+Minimum WS11 coupling vectors:
+1. Nominal WS11 channel/impoundment payload consumption preserves finite
+   non-negative routed peak/discharge terms across all enabled `ipeak` route
+   branches.
+2. `ipeak = 3` and `ipeak >= 4` vectors preserve routed closure semantics
+   (`roff = qpo * durrof` within declared tolerance) after consumer ingestion.
+3. Missing required WS11 coupling payload fails with corresponding `-E-001`
    guard family code.
-3. Non-finite WS10 coupling payload fails with corresponding `-E-002` code.
-4. Domain/dependency WS10 coupling violation fails with corresponding `-E-003`
+4. Non-finite WS11 coupling payload fails with corresponding `-E-002` code.
+5. Domain/dependency WS11 coupling violation fails with corresponding `-E-003`
    code.
+
+## WS12 Impoundment Physics-Equivalence Consumer Coupling Addendum
+
+### WS12 Consumer Coupling Rules
+
+1. Watershed consumers must treat impoundment payloads
+   (`ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`,
+   `ws10_impoundment_{id}_hnext`, `ws10_impoundment_{id}_outflow_volume`) as
+   outputs from WS12 continuity + stage-discharge authority
+   (`SC-IMPOUND-001` WS12 addendum), not from reconstructed headroom-ratio
+   surrogate logic.
+2. Consumer diagnostics and replay evidence must preserve branch provenance for
+   continuity/regime behavior emitted by WS12 impoundment routing lanes.
+3. Missing/non-finite/out-of-domain WS12 impoundment coupling payloads are
+   typed hard failures with guard-family continuity on
+   `WKERNEL-WS10-IMPOUNDMENT-E-001..003`.
+4. Consumer-side fallback defaulting/clamping that masks invalid WS12
+   impoundment coupling payloads is prohibited.
+
+### WS12 Contract-Derived Coupling Vectors
+
+Minimum WS12 coupling vectors:
+1. Nominal WS12 impoundment payload consumption preserves finite non-negative
+   routed discharge/duration/volume terms and does not alter emitted branch
+   provenance.
+2. Surrogate-deauthorization vector: consumer code path does not reconstruct
+   `(incoming_peak/(1+headroom))-qinf` when WS12 impoundment payload is present.
+3. Missing required WS12 impoundment coupling payload fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-001`.
+4. Non-finite WS12 impoundment coupling payload fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-002`.
+5. Domain/dependency WS12 impoundment coupling violation fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-003`.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -285,7 +325,7 @@ Minimum WS10 coupling vectors:
    `WatershedProductionFluxSymbol`) for boundary-state/flux resolution.
 2. Covered production guard/accessor helper signatures must not accept raw
    `&str` symbol identifiers where typed ARCH22 symbols exist.
-3. Typed migration must preserve WB14/WB16 and WS10 hydraulics-coupled
+3. Typed migration must preserve WB14/WB16 and WS10/WS12 hydraulics-coupled
    hard-fail posture for missing/non-finite/domain-invalid inputs.
 
 ### Contract-Derived Migration Vectors
@@ -320,3 +360,5 @@ Minimum WS10 coupling vectors:
 | `2026-05-23` | `7` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-HYD-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `8` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-HYD-001` and `GAP-HYD-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `9` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-HYD-003` to `closed` for required erosion-lane companion boundaries. |
+| `2026-05-24` | `10` | `Codex` | WS12 amendment: added impoundment physics-equivalence consumer coupling authority so downstream hydraulics consumers treat impoundment payloads as continuity/regime outputs (not headroom-surrogate reconstructions) while preserving WS10 guard-family continuity. |
+| `2026-05-24` | `11` | `Codex` | WS11 amendment: added channel-routing consumer-coupling authority requiring explicit `ipeak` branch semantics (Rational/CREAMS/KW/MC), prohibited pre-WS11 gain-factor surrogate substitution, and updated boundary-language continuity while preserving existing WS10 guard-family IDs. |

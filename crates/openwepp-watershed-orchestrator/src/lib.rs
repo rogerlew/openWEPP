@@ -177,7 +177,7 @@ impl From<WritebackError> for WatershedDispatchError {
 }
 
 const WS10_ZERO_THRESHOLD: f64 = 1.0e-12;
-const WS10_IMPOUNDMENT_STORAGE_SCALE: f64 = 10_000.0;
+const WS11_IPEAK_INTEGER_TOLERANCE: f64 = 1.0e-9;
 
 const WS10_CHANNEL_GUARD_MISSING_SYMBOL: &str = "WKERNEL-WS10-CHANNEL-E-001";
 const WS10_CHANNEL_GUARD_NON_FINITE: &str = "WKERNEL-WS10-CHANNEL-E-002";
@@ -201,6 +201,14 @@ enum Ws10GuardClass {
     MissingRequiredInput,
     NonFinite,
     DomainViolation,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Ws11IpeakBranch {
+    Rational,
+    Creams,
+    KinematicWave,
+    MuskingumCunge,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -288,6 +296,23 @@ impl Ws10ChannelImpoundmentKernel {
         symbol: WatershedProductionStateSymbol,
     ) -> Result<f64, Ws10GuardError> {
         let key = BoundarySymbol::from(symbol);
+        let Some(value) = request.state_surface.get(&key) else {
+            return Err(Self::missing_required(node_class, key));
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Self::non_finite(node_class, key, scalar));
+        }
+        Ok(scalar)
+    }
+
+    fn require_impoundment_coefficient_scalar(
+        request: &WatershedKernelRequest<'_>,
+        node_id: u32,
+        suffix: &'static str,
+    ) -> Result<f64, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Impoundment;
+        let key = BoundarySymbol::from(format!("ws10_impoundment_{node_id}_{suffix}"));
         let Some(value) = request.state_surface.get(&key) else {
             return Err(Self::missing_required(node_class, key));
         };
@@ -498,6 +523,32 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((incoming_peak, incoming_duration))
     }
 
+    fn require_ipeak_branch(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<Ws11IpeakBranch, Ws10GuardError> {
+        let ipeak_symbol = WatershedProductionStateSymbol::Ipeak;
+        let ipeak = Self::require_state_scalar(request, node_class, ipeak_symbol)?;
+        Self::require_state_range(node_class, ipeak_symbol, ipeak, Some(1.0), None)?;
+
+        let rounded_ipeak = ipeak.round();
+        if (ipeak - rounded_ipeak).abs() > WS11_IPEAK_INTEGER_TOLERANCE {
+            return Err(Self::domain_violation(node_class, ipeak_symbol, ipeak));
+        }
+
+        let branch = if (rounded_ipeak - 1.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            Ws11IpeakBranch::Rational
+        } else if (rounded_ipeak - 2.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            Ws11IpeakBranch::Creams
+        } else if (rounded_ipeak - 3.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            Ws11IpeakBranch::KinematicWave
+        } else {
+            Ws11IpeakBranch::MuskingumCunge
+        };
+
+        Ok(branch)
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_channel_node(
         request: &WatershedKernelRequest<'_>,
@@ -526,6 +577,7 @@ impl Ws10ChannelImpoundmentKernel {
         let cbase_symbol = WatershedProductionFluxSymbol::Cbase;
         let cbase = Self::require_flux_scalar(request, node_class, cbase_symbol)?;
         Self::require_flux_range(node_class, cbase_symbol, cbase, Some(0.0), None)?;
+        let ipeak_branch = Self::require_ipeak_branch(request, node_class)?;
 
         let roughness_symbol = WatershedProductionStateSymbol::ChannelNode {
             node_id: request.node_id,
@@ -580,38 +632,119 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let (qpo, durrof, roff) = if incoming_peak <= WS10_ZERO_THRESHOLD {
-            (0.0, 0.0, 0.0)
+        let available_peak = incoming_peak + baseflow_peak;
+        if !available_peak.is_finite() || available_peak < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("available_peak"),
+                available_peak,
+            ));
+        }
+
+        let event_duration = incoming_duration.max(dtchr);
+        if !event_duration.is_finite() || event_duration <= 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("event_duration"),
+                event_duration,
+            ));
+        }
+
+        let qpo = if available_peak <= WS10_ZERO_THRESHOLD {
+            0.0
         } else {
-            let qpo = (incoming_peak + baseflow_peak) * routing_gain;
-            if !qpo.is_finite() || qpo < 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("qpo"),
-                    qpo,
-                ));
-            }
+            match ipeak_branch {
+                Ws11IpeakBranch::Rational => available_peak * routing_gain,
+                Ws11IpeakBranch::Creams => {
+                    let creams_attenuation = 1.0 + (conductivity * dtchr);
+                    if !creams_attenuation.is_finite() || creams_attenuation <= 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from("creams_attenuation"),
+                            creams_attenuation,
+                        ));
+                    }
 
-            let durrof = incoming_duration.max(dtchr);
-            if !durrof.is_finite() || durrof <= 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("durrof"),
-                    durrof,
-                ));
-            }
+                    let creams_gain = (routing_gain / creams_attenuation).sqrt();
+                    if !creams_gain.is_finite() || creams_gain <= 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from("creams_gain"),
+                            creams_gain,
+                        ));
+                    }
 
-            let roff = qpo * durrof;
-            if !roff.is_finite() || roff < 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("roff"),
-                    roff,
-                ));
-            }
+                    available_peak * creams_gain
+                }
+                Ws11IpeakBranch::KinematicWave => {
+                    let wave_storage = 1.0 + (roughness * dtchr) + (conductivity * nchnum);
+                    if !wave_storage.is_finite() || wave_storage <= 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from("wave_storage"),
+                            wave_storage,
+                        ));
+                    }
 
-            (qpo, durrof, roff)
+                    available_peak / wave_storage
+                }
+                Ws11IpeakBranch::MuskingumCunge => {
+                    let mc_translation = 1.0 + (conductivity * dtchr);
+                    if !mc_translation.is_finite() || mc_translation <= 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from("mc_translation"),
+                            mc_translation,
+                        ));
+                    }
+
+                    let mc_storage = 1.0 + (roughness * dtchr) + (control_slope * nchnum);
+                    if !mc_storage.is_finite() || mc_storage <= 0.0 {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from("mc_storage"),
+                            mc_storage,
+                        ));
+                    }
+
+                    available_peak * (mc_translation / mc_storage)
+                }
+            }
         };
+
+        if !qpo.is_finite() || qpo < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("qpo"),
+                qpo,
+            ));
+        }
+
+        let roff = if qpo <= WS10_ZERO_THRESHOLD {
+            0.0
+        } else {
+            qpo * event_duration
+        };
+        if !roff.is_finite() || roff < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("roff"),
+                roff,
+            ));
+        }
+
+        let durrof = if qpo <= WS10_ZERO_THRESHOLD {
+            0.0
+        } else {
+            roff / qpo
+        };
+        if !durrof.is_finite() || durrof < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("durrof"),
+                durrof,
+            ));
+        }
 
         let Ok(status) =
             SimulationStatus::ok(SimulationPhase::WatershedKernel, WS10_CHANNEL_OK_MESSAGE_ID)
@@ -666,12 +799,12 @@ impl Ws10ChannelImpoundmentKernel {
             field: WatershedImpoundmentStateField::Qinf,
         };
 
-        let h = Self::require_state_scalar(request, node_class, h_symbol)?;
+        let stage_h = Self::require_state_scalar(request, node_class, h_symbol)?;
         let hfull = Self::require_state_scalar(request, node_class, hfull_symbol)?;
         let deltat = Self::require_state_scalar(request, node_class, deltat_symbol)?;
         let qinf = Self::require_state_scalar(request, node_class, qinf_symbol)?;
 
-        Self::require_state_range(node_class, h_symbol, h, Some(0.0), None)?;
+        Self::require_state_range(node_class, h_symbol, stage_h, Some(0.0), None)?;
         Self::require_state_range(
             node_class,
             hfull_symbol,
@@ -679,8 +812,8 @@ impl Ws10ChannelImpoundmentKernel {
             Some(WS10_ZERO_THRESHOLD),
             None,
         )?;
-        if h > hfull {
-            return Err(Self::domain_violation(node_class, h_symbol, h));
+        if stage_h > hfull {
+            return Err(Self::domain_violation(node_class, h_symbol, stage_h));
         }
         Self::require_state_range(
             node_class,
@@ -693,18 +826,68 @@ impl Ws10ChannelImpoundmentKernel {
 
         let (incoming_peak, incoming_duration) =
             Self::assemble_incoming_peak_and_duration(request, node_class)?;
+        let coef_a = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a")?;
+        let coef_b = Self::require_impoundment_coefficient_scalar(request, request.node_id, "b")?;
+        let coef_c = Self::require_impoundment_coefficient_scalar(request, request.node_id, "c")?;
+        let coef_d = Self::require_impoundment_coefficient_scalar(request, request.node_id, "d")?;
+        let coef_e = Self::require_impoundment_coefficient_scalar(request, request.node_id, "e")?;
+        let ha = Self::require_impoundment_coefficient_scalar(request, request.node_id, "ha")?;
+        let ht = Self::require_impoundment_coefficient_scalar(request, request.node_id, "ht")?;
+        let hlm = Self::require_impoundment_coefficient_scalar(request, request.node_id, "hlm")?;
+        let a0 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a0")?;
+        let a1 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a1")?;
+        let a2 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a2")?;
+        let _l0 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "l0")?;
+        let _l1 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "l1")?;
+        let _l2 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "l2")?;
 
-        let headroom = (hfull - h).max(0.0);
-        let retention_scale = 1.0 + headroom;
-        let mut qo = (incoming_peak / retention_scale) - qinf;
+        let area = a0 + a1 * stage_h.powf(a2);
+        if !area.is_finite() || area <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("area"),
+                area,
+            ));
+        }
+
+        let drop_spillway_q = if stage_h > ha {
+            coef_a * (stage_h - ha).powf(coef_b)
+        } else {
+            0.0
+        };
+        let culvert_q = if stage_h > ht {
+            coef_c * (stage_h - ht).powf(coef_d)
+        } else {
+            0.0
+        };
+        let riser_q = if stage_h > hlm {
+            coef_e * (stage_h - hlm)
+        } else {
+            0.0
+        };
+
+        let qo = drop_spillway_q + culvert_q + riser_q;
         if !qo.is_finite() {
             return Err(Self::non_finite(node_class, BoundarySymbol::from("qo"), qo));
         }
         if qo < 0.0 {
-            qo = 0.0;
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("qo"),
+                qo,
+            ));
         }
 
-        let mut hnext = h + ((incoming_peak - qo) * deltat / WS10_IMPOUNDMENT_STORAGE_SCALE);
+        let continuity_outflow = qo + qinf;
+        if !continuity_outflow.is_finite() || continuity_outflow < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("continuity_outflow"),
+                continuity_outflow,
+            ));
+        }
+
+        let hnext = stage_h + (deltat * (incoming_peak - continuity_outflow) / area);
         if !hnext.is_finite() {
             return Err(Self::non_finite(
                 node_class,
@@ -712,30 +895,11 @@ impl Ws10ChannelImpoundmentKernel {
                 hnext,
             ));
         }
-        if hnext > hfull {
-            let overflow_q = ((hnext - hfull) * WS10_IMPOUNDMENT_STORAGE_SCALE) / deltat;
-            if !overflow_q.is_finite() || overflow_q < 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("overflow_q"),
-                    overflow_q,
-                ));
-            }
-            qo += overflow_q;
-            hnext = hfull;
-        }
-        if hnext < 0.0 {
+        if !(0.0..=hfull).contains(&hnext) {
             return Err(Self::domain_violation(
                 node_class,
                 BoundarySymbol::from("hnext"),
                 hnext,
-            ));
-        }
-        if !qo.is_finite() || qo < 0.0 {
-            return Err(Self::domain_violation(
-                node_class,
-                BoundarySymbol::from("qo"),
-                qo,
             ));
         }
 

@@ -4,7 +4,7 @@ title: Surface Impoundment Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Daily hydraulic routing state/flux surfaces for surface impoundments
   - Stage-discharge, stage-area, and evaporation/infiltration update surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Sediment-routing consumers receiving effluent concentration and sediment-mass terms
   - Comparator/replay consumers using contract confidence signals for watershed investigations
 evidence_level: Static
-last_reviewed: 2026-05-20
+last_reviewed: 2026-05-24
 supersedes: []
 superseded_by: []
 ---
@@ -243,6 +243,72 @@ Minimum WS10 impoundment conformance vectors:
    upstream dependency payload) fails with
    `WKERNEL-WS10-IMPOUNDMENT-E-003`.
 
+## WS12 Impoundment Physics-Equivalence Addendum
+
+### WS12 Authority Replacement Statement
+
+1. The WS10 headroom-retention surrogate is no longer authoritative for
+   parity-claim physics:
+   - `headroom = max(hfull - h, 0)`
+   - `retention_scale = 1 + headroom`
+   - `qo = max((incoming_peak / retention_scale) - qinf, 0)`
+2. WS12 production authority replaces the surrogate with Chapter-14 continuity
+   plus legacy-equivalent stage-discharge/stage-area integration:
+   - `dH/dt = (Qi - Qo(H))/A(H)`
+   - `A(H) = a0 + a1*H^a2`
+   - `Qo(H) = min(qo1,qo2,qo3) + min(qo4,qo5,qo6) + min(qo7,qo8,qo9) + qo10 + qo11 + qo12 + min(qo13,qo14,qo15)`
+   - `H(n+1) = H(n) + (Δt/6)*(k1 + k4 + 2*(k2 + k3))`
+3. Adaptive-step retry and regime-transition handling are mandatory parity
+   surfaces, not optional implementation details.
+
+### WS12 Runtime Boundary Symbols
+
+| Surface | Symbols |
+|---|---|
+| Impoundment per-node controls | `ws10_impoundment_{id}_h`, `ws10_impoundment_{id}_hfull`, `ws10_impoundment_{id}_deltat`, `ws10_impoundment_{id}_qinf` |
+| Required parser-projected structure/geometry payload | canonical impoundment coefficient families (`a,b,c,d,e,ha,ht,hlm,a0,a1,a2,l0,l1,l2`) projected from `SC-INFILE-WATERSHED-IMPOUNDMENT-001` |
+| Upstream dependency payloads | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout` |
+| Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
+| Impoundment published outputs | `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`, `ws10_impoundment_{id}_hnext`, `ws10_impoundment_{id}_outflow_volume` |
+
+### WS12 Legacy Baseline Provenance Anchors
+
+| Legacy source surface | Baseline source anchor (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | WS12 authority use |
+|---|---|---|
+| RK4 continuity stage update | `/workdir/wepp-forest_260430_baseline/src/imphnw.for:141-143,357-362` | Required stage-update form and continuity differential semantics. |
+| Outflow-composition function and structure-control minima | `/workdir/wepp-forest_260430_baseline/src/imphnw.for:75-139`; `/workdir/wepp-forest_260430_baseline/src/impflo.for:220-286` | Required `Qo(H)` assembly semantics across structure families. |
+| Adaptive timestep retry/error controller | `/workdir/wepp-forest_260430_baseline/src/impflo.for:94-147` | Required half-step/full-step retry logic and next-step proposal policy. |
+| Regime-transition retry with initial-step reset | `/workdir/wepp-forest_260430_baseline/src/impflo.for:151-175`; `/workdir/wepp-forest_260430_baseline/src/impmai.for:322-418` | Required transition-safe retry behavior before publishing outputs. |
+| Impoundment inflow/outflow coupling and duration update | `/workdir/wepp-forest_260430_baseline/src/wshiqi.for:74-179`; `/workdir/wepp-forest_260430_baseline/src/wshimp.for:207-218` | Required upstream payload merge and downstream publish closure posture. |
+
+### WS12 Typed Guard Codes (Continuity Requirement)
+
+| Condition | Code |
+|---|---|
+| Missing required symbol or required parser-projected coefficient payload | `WKERNEL-WS10-IMPOUNDMENT-E-001` |
+| Non-finite symbol/intermediate/output | `WKERNEL-WS10-IMPOUNDMENT-E-002` |
+| Domain/regime-transition/continuity violation | `WKERNEL-WS10-IMPOUNDMENT-E-003` |
+
+### WS12 Contract-Derived Test Vectors
+
+Minimum WS12 impoundment conformance vectors:
+1. Nominal continuity vector: finite valid controls + coefficient payload produce
+   finite non-negative `qo`, `durout`, `hnext`, `outflow_volume` from the
+   continuity/stage-discharge path.
+2. Regime-transition vector: when stage evolution crosses regime bounds,
+   integration retries with initial-step reset before state publish.
+3. Structure-control vector: inactive structures contribute zero and active
+   structures obey min-controller grouping before total outflow summation.
+4. Missing required impoundment symbol/coefficient payload fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-001`.
+5. Non-finite state/intermediate payload fails with
+   `WKERNEL-WS10-IMPOUNDMENT-E-002`.
+6. Domain/continuity violation (e.g., invalid area denominator or unresolved
+   regime crossing) fails with `WKERNEL-WS10-IMPOUNDMENT-E-003`.
+7. Surrogate-deauthorization vector: cases where continuity/regime control
+   diverges from the WS10 headroom surrogate must follow WS12 continuity
+   authority, not surrogate reconstruction.
+
 ## ARCH22 Typed Production-Surface Addendum
 
 ### Typed Runtime Surface Authority
@@ -255,7 +321,7 @@ Minimum WS10 impoundment conformance vectors:
 3. Node-scoped impoundment symbol families (`h`, `hfull`, `deltat`, `qinf`,
    `qo`, `durout`, `hnext`, `outflow_volume`) must be resolved through typed
    node/field builders.
-4. Typed migration must preserve WS10 impoundment guard-family continuity
+4. Typed migration must preserve WS10/WS12 impoundment guard-family continuity
    (`WKERNEL-WS10-IMPOUNDMENT-E-001..003`) and hard-fail behavior.
 
 ### Contract-Derived Migration Vectors
@@ -272,7 +338,7 @@ Minimum WS10 impoundment conformance vectors:
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-IMPOUND-001 | Chapter-14 calibration models for `Ct`/`cd` are legacy-derived from CSTRS-generated datasets and pilot-scale studies; openWEPP has not yet completed dedicated revalidation for its target scenarios. | Sediment-trapping confidence is provisional for full production claims. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-IMPOUND-002 | Concrete openWEPP boundary/API names and conversion carriers for full mixed-unit Chapter-14 symbol families are not yet fixed. | WS10 production path pins initial runtime aliases (`ws10_impoundment_*`) but complete mixed-unit alias/conversion closure remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-IMPOUND-002 | Concrete openWEPP boundary/API names and conversion carriers for full mixed-unit Chapter-14 symbol families are not yet fixed. | WS10/WS12 production paths pin initial runtime aliases (`ws10_impoundment_*`) but complete mixed-unit alias/conversion closure remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-003 | Coupled canonical contracts (`SC-ROUTE-001`, `SC-SED-001`, `SC-SYSTEM-001`) are not yet all at draft `in_review` maturity. | Cross-contract closure of routing/sediment ownership boundaries remains provisional. | non-promotable | `[DIRECT][Static]` |
 | GAP-IMPOUND-004 | Filter-fence/straw-bale outflow behavior depends on slurry/clogging assumptions that Chapter 14 flags as user-sensitive and not fully captured by current coefficients. | High-flow performance interpretation for those structure types retains elevated uncertainty. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -285,3 +351,4 @@ Minimum WS10 impoundment conformance vectors:
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: completed symbol-alias continuity coverage, added evidence-tag columns for degenerate/tolerance sections, normalized evidence mode to `Static`, clarified Eq. [14.5.3] signed stage-delta semantics, and unified authority-path style. |
 | `2026-05-23` | `3` | `Codex` | WS10 amendment: added watershed production-kernel impoundment runtime alias surfaces (`ws10_impoundment_*` + dependency payloads), typed WS10 impoundment guard family (`WKERNEL-WS10-IMPOUNDMENT-E-001..003`), and contract-derived WS10 impoundment test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WS10 impoundment interfaces to consume boundary symbols via ARCH22 typed symbol families and node-scoped builders while preserving WS10 guard-family continuity. |
+| `2026-05-24` | `5` | `Codex` | WS12 amendment: replaced WS10 headroom-retention surrogate parity authority with legacy-equivalent continuity + stage-discharge authority, added baseline provenance anchors (`imphnw/impflo/impmai/wshiqi/wshimp`), and ratified WS12 vectors with WS10 guard-family continuity. |

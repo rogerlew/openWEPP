@@ -1,0 +1,161 @@
+use std::env;
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+use openwepp_comparator_metadata::{
+    COMPMETA_HIGH_CONFIDENCE_SINGLE_OFE_DAILY_MESSAGE_ID, ComparatorConfidenceTier,
+    ComparatorSurfaceClass, ComparatorTierRoutingRequest, route_comparator_tier_metadata,
+};
+
+const PL14S_SEMANTIC_COMPARATOR_SCRIPT: &str =
+    include_str!("../../tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py");
+const PL14S_REPLAY_SUITE_SCRIPT: &str =
+    include_str!("../../tools/legacy_comparison_suite/run_pl14s_legacy_suite.py");
+const PL14S_SUITE_README: &str = include_str!("../../tools/legacy_comparison_suite/README.md");
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum StrictLaneMode {
+    Required,
+    Skipped,
+}
+
+fn strict_lane_mode(candidate_extension: &str) -> StrictLaneMode {
+    if candidate_extension.eq_ignore_ascii_case(".dat") {
+        StrictLaneMode::Required
+    } else {
+        StrictLaneMode::Skipped
+    }
+}
+
+fn contains_all(haystack: &str, needles: &[&str]) -> bool {
+    needles.iter().all(|needle| haystack.contains(needle))
+}
+
+fn repo_root() -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR")).to_path_buf()
+}
+
+fn fixture_temp_dir(prefix: &str) -> PathBuf {
+    let stamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after unix epoch")
+        .as_nanos();
+    env::temp_dir().join(format!("{prefix}_{stamp}"))
+}
+
+fn dat_row(ofe: i32, julian: i32, year: i32, seed: i32) -> String {
+    let tail = (0_i32..17_i32)
+        .map(|offset| (seed + offset).to_string())
+        .collect::<Vec<_>>()
+        .join(" ");
+    format!("{ofe} {julian} {year} {tail}")
+}
+
+#[test]
+fn pl14s_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence() {
+    let metadata = route_comparator_tier_metadata(ComparatorTierRoutingRequest::new(
+        ComparatorSurfaceClass::SingleOfeDailyWaterBalance,
+        Some(1),
+    ))
+    .expect("single OFE replay lane should route");
+
+    assert_eq!(
+        metadata.surface_class,
+        ComparatorSurfaceClass::SingleOfeDailyWaterBalance
+    );
+    assert_eq!(
+        metadata.confidence_tier,
+        ComparatorConfidenceTier::HigherConfidence
+    );
+    assert_eq!(
+        metadata.message_id,
+        COMPMETA_HIGH_CONFIDENCE_SINGLE_OFE_DAILY_MESSAGE_ID
+    );
+}
+
+#[test]
+fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_markers() {
+    assert!(contains_all(
+        PL14S_SEMANTIC_COMPARATOR_SCRIPT,
+        &[
+            "REPORT_SCHEMA_VERSION = \"pl14s-semantic-wat-v1\"",
+            "duplicate row key",
+            "baseline_only_columns",
+            "candidate_only_columns",
+            "investigation_columns_used",
+            "row_key_fields",
+        ]
+    ));
+    assert!(contains_all(
+        PL14S_REPLAY_SUITE_SCRIPT,
+        &[
+            "\"suite_schema_version\": \"pl14s-legacy-suite-v1\"",
+            "\"required\": candidate_format == \".dat\"",
+            "\"skipped\": True",
+            "semantic_summary = load_semantic_summary",
+        ]
+    ));
+    assert!(contains_all(
+        PL14S_SUITE_README,
+        &[
+            "Strict comparator is required when candidate input is `.dat`",
+            "strict compare is explicitly marked as skipped in provenance",
+            "row-presence deltas",
+            "top divergent rows",
+        ]
+    ));
+}
+
+#[test]
+fn pl14s_contract_conformance_enforces_strict_lane_required_vs_skipped_modes() {
+    assert_eq!(strict_lane_mode(".dat"), StrictLaneMode::Required);
+    assert_eq!(strict_lane_mode(".DAT"), StrictLaneMode::Required);
+    assert_eq!(strict_lane_mode(".parquet"), StrictLaneMode::Skipped);
+}
+
+#[test]
+fn pl14s_contract_conformance_rejects_duplicate_row_keys_in_semantic_lane_inputs() {
+    let temp_dir = fixture_temp_dir("pl14s_duplicate_keys");
+    fs::create_dir_all(&temp_dir).expect("temporary directory should be creatable");
+
+    let baseline_wat = temp_dir.join("baseline.wat.dat");
+    let candidate_wat = temp_dir.join("candidate.wat.dat");
+    let report_path = temp_dir.join("semantic_report.json");
+
+    let baseline_payload = format!("{}\n{}\n", dat_row(1, 1, 2008, 10), dat_row(1, 1, 2008, 20));
+    let candidate_payload = format!("{}\n", dat_row(1, 1, 2008, 30));
+
+    fs::write(&baseline_wat, baseline_payload).expect("baseline fixture should be writable");
+    fs::write(&candidate_wat, candidate_payload).expect("candidate fixture should be writable");
+
+    let script_path = repo_root()
+        .join("tools")
+        .join("legacy_comparison_suite")
+        .join("semantic_hillslope_wat_compare.py");
+
+    let output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(script_path)
+        .arg("--baseline-wat")
+        .arg(&baseline_wat)
+        .arg("--candidate-wat")
+        .arg(&candidate_wat)
+        .arg("--report-json")
+        .arg(&report_path)
+        .output()
+        .expect("python3 should run semantic comparator");
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !output.status.success(),
+        "duplicate row keys must hard-fail semantic comparator"
+    );
+    assert!(
+        stderr.contains("duplicate row key"),
+        "error stream should mention duplicate row key; stderr={stderr}"
+    );
+
+    let _ = fs::remove_dir_all(&temp_dir);
+}

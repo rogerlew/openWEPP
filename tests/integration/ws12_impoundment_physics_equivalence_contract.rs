@@ -59,7 +59,7 @@ fn seed_ws12_coefficient_surface(surface: &mut WatershedWritebackSurface) {
     }
 }
 
-fn seeded_ws10_surface() -> WatershedWritebackSurface {
+fn seeded_ws12_surface() -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
         STRICT_VALID_CHANINP,
@@ -78,8 +78,8 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
     seed_watershed_runtime_surface_from_watershed_channel(&mut runtime_surface, &watershed_channel)
         .expect("watershed channel runtime seed should project ws10 symbols");
 
-    // The canonical strict fixture defines one channel record; duplicate it for
-    // channel:2 so the three-node WS10 topology has per-channel controls.
+    // Duplicate channel-1 control symbols for channel:2 so the topology fixture
+    // has per-channel controls on both channel nodes.
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("ws10_channel_2_chnn"),
         BoundaryValue::scalar(0.05),
@@ -100,6 +100,7 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
     .expect("strict watershed impoundment fixture should parse");
     seed_watershed_runtime_surface_from_watershed_impoundment(&mut runtime_surface, &impoundment)
         .expect("watershed impoundment runtime seed should project ws10 symbols");
+
     seed_ws12_coefficient_surface(&mut runtime_surface);
 
     runtime_surface.state_surface.insert(
@@ -129,7 +130,7 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
     runtime_surface
 }
 
-fn run_ws10_surface(
+fn run_ws12_surface(
     surface: WatershedWritebackSurface,
 ) -> openwepp_watershed_orchestrator::WatershedKernelExecutionReport {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
@@ -142,82 +143,74 @@ fn run_ws10_surface(
 }
 
 #[test]
-fn ws10_contract_conformance_executes_channel_impoundment_production_path() {
-    let report = run_ws10_surface(seeded_ws10_surface());
+fn ws12_contract_conformance_deauthorizes_surrogate_when_structures_are_inactive() {
+    let report = run_ws12_surface(seeded_ws12_surface());
     assert!(report.dispatch_report.is_success());
 
-    let ch1_qpo = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("ws10_channel_1_qpo"))
-        .expect("ws10 channel 1 must publish qpo")
-        .as_f64();
-    let imp1_qo = report
+    let qo = report
         .writeback_surface
         .state_surface
         .get(&BoundarySymbol::from("ws10_impoundment_1_qo"))
-        .expect("ws10 impoundment 1 must publish qo")
-        .as_f64();
-    let ch2_qpo = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("ws10_channel_2_qpo"))
-        .expect("ws10 channel 2 must publish qpo")
+        .expect("ws12 impoundment must publish qo")
         .as_f64();
 
-    assert!(ch1_qpo.is_finite() && ch1_qpo > 0.0);
-    assert!(imp1_qo.is_finite() && imp1_qo >= 0.0);
-    assert!(ch2_qpo.is_finite() && ch2_qpo > 0.0);
+    // Contract vector: inactive structures contribute zero to outflow
+    // composition under continuity/stage-discharge authority.
+    assert!(qo.abs() <= 1.0e-12);
 }
 
 #[test]
-fn ws10_contract_conformance_rejects_missing_required_symbol() {
-    let mut surface = seeded_ws10_surface();
+fn ws12_contract_conformance_rejects_missing_required_coefficient_payload() {
+    let mut surface = seeded_ws12_surface();
     surface
         .state_surface
-        .remove(&BoundarySymbol::from("ws10_channel_1_chnn"));
+        .remove(&BoundarySymbol::from("ws10_impoundment_1_a0"));
 
-    let report = run_ws10_surface(surface);
-    assert_eq!(report.step_reports.len(), 1);
+    let report = run_ws12_surface(surface);
+    assert_eq!(report.step_reports.len(), 2);
     assert_eq!(
-        report.step_reports[0].decision_status.message_id(),
-        "WKERNEL-WS10-CHANNEL-E-001"
+        report.step_reports[1].decision_status.message_id(),
+        "WKERNEL-WS10-IMPOUNDMENT-E-001"
     );
     assert_eq!(
-        report.step_reports[0].decision_status.boundary_class(),
+        report.step_reports[1].decision_status.boundary_class(),
         BoundaryClass::MissingRequiredInput
     );
 }
 
 #[test]
-fn ws10_contract_conformance_rejects_non_finite_required_symbol() {
-    let mut surface = seeded_ws10_surface();
+fn ws12_contract_conformance_rejects_non_finite_coefficient_payload() {
+    let mut surface = seeded_ws12_surface();
     surface.state_surface.insert(
-        BoundarySymbol::from("hs1_peakro"),
+        BoundarySymbol::from("ws10_impoundment_1_a1"),
         BoundaryValue::scalar(f64::NAN),
     );
 
-    let report = run_ws10_surface(surface);
-    assert_eq!(report.step_reports.len(), 1);
+    let report = run_ws12_surface(surface);
+    assert_eq!(report.step_reports.len(), 2);
     assert_eq!(
-        report.step_reports[0].decision_status.message_id(),
-        "WKERNEL-WS10-CHANNEL-E-002"
+        report.step_reports[1].decision_status.message_id(),
+        "WKERNEL-WS10-IMPOUNDMENT-E-002"
     );
     assert_eq!(
-        report.step_reports[0].decision_status.boundary_class(),
+        report.step_reports[1].decision_status.boundary_class(),
         BoundaryClass::NonFinite
     );
 }
 
 #[test]
-fn ws10_contract_conformance_rejects_out_of_domain_impoundment_state() {
-    let mut surface = seeded_ws10_surface();
+fn ws12_contract_conformance_rejects_invalid_area_denominator() {
+    let mut surface = seeded_ws12_surface();
     surface.state_surface.insert(
-        BoundarySymbol::from("ws10_impoundment_1_h"),
-        BoundaryValue::scalar(0.90),
+        BoundarySymbol::from("ws10_impoundment_1_a0"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_impoundment_1_a1"),
+        BoundaryValue::scalar(0.0),
     );
 
-    let report = run_ws10_surface(surface);
+    let report = run_ws12_surface(surface);
     assert_eq!(report.step_reports.len(), 2);
     assert_eq!(
         report.step_reports[1].decision_status.message_id(),

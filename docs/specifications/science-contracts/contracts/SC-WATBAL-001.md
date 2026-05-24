@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 26
+contract_version: 27
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -166,6 +166,7 @@ lateral/drainage).
 | INV-WATBAL-014 | PL14R replay rerun candidate-surface invariant: strict Tier-A rerun candidate staging must explicitly publish required interchange surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) from direct openWEPP candidate outputs; missing required surface coverage or synthetic/bootstrap fallback substitution must hard-fail rerun staging and keep disposition in `HOLD`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-015 | PL15R schema-aligned replay supersession invariant: Tier-A `H.wat.parquet` residual classification must use canonical 25-column schema-aligned strict replay evidence and day-by-day keyed parity (`OFE,J,Y`) before declaring residual blockers. Schema-only pre-alignment failures are historical context once superseding strict-pass evidence is present. | governance-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-016 | WB20 forward-solver lane invariant: when `wb20_forward_solver_lane_enabled = 1`, runoff/storage closure acceptance must be solver-output-derived (`wb12_*_closure_delta` from solver residual identities) and must not consume `wb12_runoff_observed` or `wb12_storage_observed` as acceptance-driving terms. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH4-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-017 | PL14S semantic replay diagnostics invariant: Tier-A hillslope replay evidence for WB13 surfaces must include semantic comparator diagnostics keyed by `(OFE,J,Y)` with row-presence deltas, per-column tolerance verdicts, baseline-only column disclosure, and top divergent rows over required investigation columns (`P`, `Q`, `Ep`, `Es`, `Er`, `Dp`, `Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`); missing/malformed semantic report content is a hard-fail evidence defect. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -187,6 +188,7 @@ lateral/drainage).
 | `INV-WATBAL-014` | runtime + governance | PL14R strict replay interchange-surface staging gate | Typed hard error / explicit `HOLD` when candidate lane lacks required interchange surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) or uses fallback substitution | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-015` | governance | PL15R schema-aligned WB13 replay reclassification gate | Governance `HOLD` when active Tier-A WB13 blocker classification ignores superseding schema-aligned strict-pass/day-parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-016` | runtime | WB12 runoff/storage reconciliation lane selector and closure-delta assembler | Typed hard error when forward lane consumes excluded observed targets or emits non-residual closure deltas | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-017` | runtime + governance | PL14S semantic comparator report schema/content gate | Typed hard error / explicit `HOLD` when semantic report omits row-presence deltas, per-column tolerance verdicts, required investigation diagnostics, or baseline-only column disclosure | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -266,6 +268,10 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 - OBL-WATBAL-P-002: Compute and retain daily closure residual for Eq. [5.1.1] and fail explicitly on violation. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-WATBAL-P-003: Enforce all runtime guard checks before publishing downstream daily boundary outputs. `[INFERENCE][Static]`
 - OBL-WATBAL-P-004: Propagate invariant violations as typed errors; no silent clamping/defaulting of hydrologic terms. `[INFERENCE][Static]`
+- OBL-WATBAL-P-005: Replay-evidence producers for WB13 comparison lanes must
+  emit semantic comparator artifacts with row-key deltas, per-column tolerance
+  verdicts, and top divergent rows; silent omission of semantic diagnostics is
+  invalid. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -289,6 +295,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | PL14R strict interchange-surface completeness (`INV-WATBAL-014`) | strict replay candidate staging boundary | Hard error / `HOLD` when candidate rerun artifact set omits `interchange/H.wat.parquet` or `interchange/H.pass.parquet`, or when fallback artifacts are substituted | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL15R schema-aligned WB13 supersession (`INV-WATBAL-015`) | strict replay delta reclassification boundary | Governance `HOLD` when residual WB13 blockers are asserted without evaluating superseding 25-column schema-aligned strict replay and keyed day-by-day parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB20 forward-solver lane closure semantics (`INV-WATBAL-016`) | WB12 runoff/storage closure-delta assembly boundary | Hard error when forward-solver lane consumes observed targets in acceptance logic or emits non-residual closure deltas | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| PL14S semantic replay diagnostics completeness (`INV-WATBAL-017`) | semantic comparator report publication boundary | Hard error / `HOLD` when semantic replay evidence omits row-presence deltas, per-column verdicts, required investigation diagnostics, or baseline-only column disclosure | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -728,6 +735,11 @@ canonical order:
 7. PL15R recloseout vectors must classify `H.wat.parquet` residual status from
    the schema-aligned strict replay set (parquet comparator JSON plus day-by-day
    parity artifact), not solely from pre-alignment structure-diff signatures.
+8. PL14S semantic vectors require persisted report evidence for:
+   - row-presence deltas keyed by `(OFE,J,Y)`,
+   - per-column tolerance verdicts,
+   - required investigation columns,
+   - explicit baseline-only column disclosure and top divergent rows.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -790,3 +802,4 @@ canonical order:
 | `2026-05-23` | `24` | `Codex` | WB20 amendment: added forward-solver lane selector authority (`wb20_forward_solver_lane_enabled`) and lane-scoped closure semantics so parity-lane acceptance is solver-residual-derived and excludes observed closure targets from acceptance-driving inputs. |
 | `2026-05-23` | `25` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum for required erosion-lane hydrology boundary exports while preserving existing non-Wave-0 companion-gap posture (`GAP-WATBAL-002`). |
 | `2026-05-24` | `26` | `Codex` | CLI02 amendment: replaced required replay include-surface authority from legacy/bootstrap candidate files (`H5.wat.dat`, `H5.plot.dat`) to simulation-driven partitioned interchange candidate surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) and updated WB13 replay vector wording accordingly. |
+| `2026-05-24` | `27` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-WATBAL-017`), semantic comparator guard/disposition authority, WB13 semantic evidence vectors, and explicit producer obligations for investigation-grade WB13 parity reporting. |

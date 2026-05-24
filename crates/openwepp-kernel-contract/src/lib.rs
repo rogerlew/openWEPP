@@ -631,6 +631,7 @@ impl WatershedImpoundmentFluxField {
 pub enum WatershedProductionStateSymbol {
     Dtchr,
     Nchnum,
+    Ipeak,
     ChannelNode {
         node_id: u32,
         field: WatershedChannelStateField,
@@ -652,6 +653,7 @@ impl From<WatershedProductionStateSymbol> for BoundarySymbol {
         match value {
             WatershedProductionStateSymbol::Dtchr => Self::from("dtchr"),
             WatershedProductionStateSymbol::Nchnum => Self::from("nchnum"),
+            WatershedProductionStateSymbol::Ipeak => Self::from("ipeak"),
             WatershedProductionStateSymbol::ChannelNode { node_id, field } => {
                 Self::from(format!("ws10_channel_{node_id}_{}", field.as_str()))
             }

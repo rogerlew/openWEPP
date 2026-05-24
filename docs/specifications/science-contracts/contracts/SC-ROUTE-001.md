@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-24
 supersedes: []
 superseded_by: []
 ---
@@ -60,6 +60,10 @@ Out of scope:
 | REF-ROUTE-CH13-PEAKIN | `chap13.pdf` §13.4.1 Eq. [13.4.1]-[13.4.2] | Triangular synthetic hydrograph inlet-peak superposition method for multi-source inflow. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-RAT | `chap13.pdf` §13.4.2.1 Eq. [13.4.3]-[13.4.24] | Modified Rational outlet-peak method, travel-time decomposition, and alpha selection rules. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-CREAMS | `chap13.pdf` §13.4.2.2 Eq. [13.4.25] | CREAMS statistical outlet-peak method. | `[DIRECT][Static]` |
+| REF-ROUTE-WSHCQI-RUNON | `/workdir/wepp-forest_260430_baseline/src/wshcqi.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel runon assembly (`rvolat`, `rvotop`, `rvolon`) and channel-duration max rule (`watdur = max(...)`) authority used for WS11 migration closure. | `[DIRECT][Static]` |
+| REF-ROUTE-WSHDRV-ORDER | `/workdir/wepp-forest_260430_baseline/src/wshdrv.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Channel execution-order authority for WS11: `wshcqi -> wshirs -> wshrun/wshpek`, plus direct `wshchr` routing path when `ipeak > 2` and local channel runoff is absent. | `[DIRECT][Static]` |
+| REF-ROUTE-WSHPEK-IPEAK | `/workdir/wepp-forest_260430_baseline/src/wshpek.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | `ipeak` method-selection authority (`1` modified Rational, `2` CREAMS, `>=3` wave-routing via `wshchr`) and peak/duration post-processing semantics. | `[DIRECT][Static]` |
+| REF-ROUTE-WSHCHR-WAVE | `/workdir/wepp-forest_260430_baseline/src/wshchr.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing authority (linear kinematic wave and Muskingum-Cunge branch equations, storage closure, routed `peakot`/`runvol`/`rundur` outputs). | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-DUR | `chap13.pdf` §13.4.3 Eq. [13.4.26] | Effective runoff-duration computation from volume and outlet peak. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-SVF | `chap13.pdf` §13.5.2 Eq. [13.5.1]-[13.5.5] | Spatially-varied flow and friction-slope relationships used by channel erosion routines. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-EFFLEN | `chap13.pdf` §13.5.3 Eq. [13.5.6]-[13.5.12] | Effective channel-length and discharge-distribution semantics for segment routing. | `[DIRECT][Static]` |
@@ -103,8 +107,8 @@ Out of scope:
 | INV-ROUTE-003 | Runoff-case invariant: Case I-IV branching from §13.2 must be explicit for (`qci`, `rod`) combinations, including Case IV zero-flow branch (`qcf = 0`, `roff = 0`) and Case III branch using Eq. [13.2.5]-[13.2.6]. | hard-fail | REF-ROUTE-CH13-TLOSS, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-004 | Transmission-loss closure invariant: for Case I/II, transmission losses must satisfy Eq. [13.2.4]; for Case III, losses must satisfy Eq. [13.2.6], and computed losses cannot imply runoff volume greater than entering water volume. | hard-fail | REF-ROUTE-CH13-TLOSS, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-005 | Inlet-peak superposition invariant: when multiple watershed elements contribute to channel inlet flow, triangular hydrograph procedure with Eq. [13.4.1]-[13.4.2] must be used and combined hydrograph peak must be the maximum discharge on the superimposed hydrograph. | hard-fail | REF-ROUTE-CH13-PEAKIN | `[DIRECT][Static]` |
-| INV-ROUTE-006 | Outlet-peak method invariant: channel outlet peak discharge `qpo` must be computed by one explicitly selected outlet method (modified Rational Eq. [13.4.3]-[13.4.24] or CREAMS Eq. [13.4.25]); method mixing or silent fallback between methods is invalid, and all selected-method inputs must be finite and unit-consistent. | hard-fail | REF-ROUTE-CH13-RAT, REF-ROUTE-CH13-CREAMS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-ROUTE-007 | Peak-threshold/duration invariant: if `roff <= 0.001 m^3`, then peak runoff and runoff duration are both zero per §13.4.1; otherwise `qpo` must be strictly positive and effective runoff duration must satisfy Eq. [13.4.26] with positive-domain consistency between `roff`, `qpo`, and `durrof`. | hard-fail | REF-ROUTE-CH13-DUR, REF-ROUTE-CH13-RAT, REF-ROUTE-CH13-CREAMS, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-006 | Outlet-method branch invariant: channel outlet routing must execute exactly one branch selected by `ipeak` (`1` = modified Rational Eq. [13.4.3]-[13.4.24], `2` = CREAMS Eq. [13.4.25], `3` = linear kinematic-wave channel routing, `>=4` = Muskingum-Cunge channel routing); implicit fallback/mixing is invalid and selected-branch inputs/outputs must be finite and unit-consistent. | hard-fail | REF-ROUTE-CH13-RAT, REF-ROUTE-CH13-CREAMS, REF-ROUTE-WSHPEK-IPEAK, REF-ROUTE-WSHCHR-WAVE, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-007 | Peak-duration closure invariant: for `ipeak <= 2`, if `roff <= 0.001 m^3`, peak runoff and runoff duration are both zero per §13.4.1; for `ipeak >= 3`, routed channel flow may still be evaluated from incoming hydrograph when local channel runoff is zero, but emitted outputs must obey non-negative finite closure (`roff = qpo * durrof` for `qpo > 0`, and `durrof = 0` when `qpo <= 1e-12`). | hard-fail | REF-ROUTE-CH13-DUR, REF-ROUTE-CH13-RAT, REF-ROUTE-CH13-CREAMS, REF-ROUTE-WSHDRV-ORDER, REF-ROUTE-WSHCHR-WAVE, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-008 | Spatially-varied flow/shear invariant: channel erosion solver must use consistent spatially-varied flow outputs (`Sf`, `Sstar`, `leff`, `q`) to compute shear terms, and soil shear relation Eq. [13.5.13]-[13.5.16] must preserve finite physically valid domains. | hard-fail | REF-ROUTE-CH13-SVF, REF-ROUTE-CH13-SHEAR | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-009 | Sediment continuity invariant: quasi-steady sediment continuity Eq. [13.5.17]-[13.5.18] must be conserved across segments and particle classes with explicit inlet (`qsed_top`) and lateral (`qsed_lat`) source accounting. | hard-fail | REF-ROUTE-CH13-CONT | `[DIRECT][Static]` |
 | INV-ROUTE-010 | Detachment/deposition branch invariant: detachment capacity Eq. [13.5.19]/[13.5.20], deposition Eq. [13.5.21]-[13.5.22], and transport-capacity branch iteration semantics from §13.5.6 must be explicit; silent branch collapse is invalid. | hard-fail | REF-ROUTE-CH13-DETDEP | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -121,8 +125,8 @@ Out of scope:
 | `INV-ROUTE-003` | runtime | Runoff-case branch controller | Typed hard error on missing/invalid Case I-IV branch behavior | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-004` | runtime | Transmission-loss calculator | Typed hard error on closure violation or non-physical loss outcome | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-005` | runtime | Inlet hydrograph superposition routine | Typed hard error on invalid hydrograph-base/time-to-peak calculation path | Tier-B investigation gate | `[DIRECT][Static]` |
-| `INV-ROUTE-006` | runtime | Outlet-peak method selector/calculator | Typed hard error on mixed/implicit method selection, missing selected-method inputs, or non-finite peak output | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-ROUTE-007` | runtime | Peak-threshold + duration post-processor | Typed hard error on threshold-branch violation or invalid `roff`/`qpo`/`durrof` relation | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-006` | runtime | `ipeak` method selector + branch executor (Rational/CREAMS/KW/MC) | Typed hard error on mixed/implicit branch use, missing selected-branch inputs, or non-finite branch outputs | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-007` | runtime | Threshold/duration closure post-processor | Typed hard error on threshold-branch violation (`ipeak <= 2`) or invalid routed closure (`ipeak >= 3`) between `roff`/`qpo`/`durrof` | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-008` | runtime | Spatially-varied flow + shear partition pipeline | Typed hard error on invalid friction/shear domains | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-009` | runtime | Segment sediment continuity solver | Typed hard error on continuity violation across segment boundaries | Tier-B investigation gate | `[DIRECT][Static]` |
 | `INV-ROUTE-010` | runtime | Detachment/deposition branch evaluator | Typed hard error on branch rule violation or unresolved Tc iteration failure | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -175,7 +179,7 @@ channel erosion internals.
 | No channel flow event | Case IV (`qci = 0`, `rod = 0`) with `qcf = 0` and `roff = 0`. | Explicit §13.2 case definition. | `[DIRECT][Static]` |
 | Runon-only event with infiltration dominance | Case III where `qci = 0`, `rod > 0`, and `fc <= fp` yields `qcf = 0`. | Explicit Eq. [13.2.5] branch condition. | `[DIRECT][Static]` |
 | No lateral inflow routing | `qlat = 0` leading to `qu = qpo` and `qlat_eff = 0`. | Explicit Eq. [13.5.10]-[13.5.11] branch semantics. | `[DIRECT][Static]` |
-| Channel event below peak-routing threshold | `roff <= 0.001 m^3` yields zero peak runoff and zero runoff duration. | Explicit §13.4.1 threshold branch. | `[DIRECT][Static]` |
+| Channel event below peak-routing threshold (`ipeak <= 2`) | `roff <= 0.001 m^3` yields zero peak runoff and zero runoff duration. | Explicit §13.4.1 threshold branch. | `[DIRECT][Static]` |
 | Net deposition segment | Segment state where `qsed > Tc` and Eq. [13.5.21] governs deposition. | Explicit §13.5.6 branch semantics. | `[DIRECT][Static]` |
 
 ## Invalid States
@@ -185,7 +189,7 @@ channel erosion internals.
 - Missing or contradictory Case I-IV branch resolution for (`qci`, `rod`) combinations. `[DIRECT][Static] + [INFERENCE][Static]`
 - Transmission-loss algebra implies `roff > (rov + rofc)` or negative physically invalid final runoff/loss outcomes. `[DIRECT][Static] + [INFERENCE][Static]`
 - Outlet peak/discharge products emitted with undefined selected-method inputs, mixed-method fallback behavior, or non-finite `qpo`, `tc`, or `durrof` values. `[DIRECT][Static] + [INFERENCE][Static]`
-- Threshold branch violation where `roff <= 0.001 m^3` still emits positive `qpo`/`durrof`, or `roff > 0.001 m^3` emits zero peak without explicit authority. `[DIRECT][Static] + [INFERENCE][Static]`
+- Threshold/closure violation where `ipeak <= 2` and `roff <= 0.001 m^3` still emits positive `qpo`/`durrof`, or where `ipeak >= 3` emits `roff`/`qpo`/`durrof` values violating declared routed-closure semantics. `[DIRECT][Static] + [INFERENCE][Static]`
 - Shear/transport calculations with invalid domains (`Sf`, `tau`, `taucr`, `Tc`, or segment discharge terms non-finite or non-physical). `[DIRECT][Static] + [INFERENCE][Static]`
 - Sediment continuity violation where segment-to-segment `qsed` updates break Eq. [13.5.17] semantics. `[DIRECT][Static]`
 - Missing mandatory handoff payload fields (runon, duration, peak, sediment class flux) before routing/erosion calculations. `[DIRECT][Static] + [INFERENCE][Static]`
@@ -259,32 +263,57 @@ bit-for-bit parity). Contract-specific tolerances:
 | Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
 | Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
 
-## WS10 Watershed Production-Kernel Addendum
+## WS11 Channel-Routing Physics Equivalence Addendum
 
-### WS10 Runtime Boundary Symbols
+### WS11 Runtime Boundary Symbols
 
 | Surface | Symbols |
 |---|---|
-| Channel global routing controls | `dtchr`, `nchnum`, `cbase` |
+| Channel global routing controls | `dtchr`, `nchnum`, `cbase`, `ipeak` |
 | Channel per-node controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk` |
 | Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
 | Upstream node payloads | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout` |
 | Channel published outputs | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` |
+| Canonical wave-routing internals | `q1(it)`, `qin(it)`, `qlat(it)`, `qref`, `ckref`, `c0`, `c1`, `c2`, `c3`, `c4`, `chvol` |
 
-### WS10 Coupling Rules
+### WS11 Legacy-Equivalent Routing Steps
 
-1. WS10 channel production execution consumes parser-projected per-channel
-   controls plus contributor peak payloads and upstream node payloads; missing
-   required symbols are typed hard failures.
-2. Channel routing execution must keep explicit branch behavior for no-runoff
-   domain (`incoming_peak <= 0`) and positive-runoff domain
-   (`incoming_peak > 0`) without silent default substitution.
-3. Published channel outputs (`qpo`, `durrof`, `roff`) are deterministic and
-   finite, and must remain non-negative.
-4. Downstream consumers must use upstream node payload symbols explicitly and
+1. Assemble channel runon volume and duration using legacy-equivalent runon
+   assembly (`rvolat`, `rvotop`, `rvolon`) and max-duration selection semantics
+   (`watdur = max(...)`) before outlet method selection.
+2. Apply legacy-equivalent channel runoff/transmission-loss case logic (Cases
+   I-IV) before routing branch execution, retaining explicit branch identity.
+3. Select exactly one outlet branch via `ipeak`:
+   - `ipeak = 1`: modified Rational branch.
+   - `ipeak = 2`: modified CREAMS branch.
+   - `ipeak = 3`: linear kinematic-wave channel routing with segment update
+     relation `qs(is,it) = (dtdx*qs(is-1,it) + cqa*qs(is,it-1) + dtchr*qlavg) / (dtdx + cqa)`.
+   - `ipeak >= 4`: Muskingum-Cunge routing with segment update relation
+     `qs(is,it) = c1*qs(is-1,it) + c2*qs(is-1,it-1) + c3*qs(is,it-1) + c4`.
+4. Preserve legacy-equivalent non-local-runoff routing behavior: when local
+   channel runoff is absent but `ipeak > 2`, route incoming hydrograph through
+   the wave-routing branch rather than forcing zero outputs.
+5. Publish routed outputs with explicit closure:
+   - `qpo = peakot`,
+   - `roff = runvol`,
+   - `durrof = roff / qpo` when `qpo > 1e-12`, else `durrof = 0`.
+
+### WS11 Coupling Rules
+
+1. WS11 channel production execution consumes parser-projected controls,
+   contributor payloads, and upstream node payloads; missing required symbols
+   are typed hard failures.
+2. WS11 routing authority must not reduce outlet routing to the pre-WS11
+   gain-factor surrogate `(1 + ctlslp) / (1 + chnn)` or any equivalent
+   single-gain reduction.
+3. `ipeak` branch selection is mandatory and explicit; method mixing or implicit
+   fallback between Rational/CREAMS/wave-routing branches is invalid.
+4. Published channel outputs (`qpo`, `durrof`, `roff`) are deterministic,
+   finite, and non-negative with declared closure semantics.
+5. Downstream consumers must use upstream node payload symbols explicitly and
    fail hard if dependency payloads are missing, non-finite, or out-of-domain.
 
-### WS10 Typed Guard Codes
+### WS11 Typed Guard Codes
 
 | Condition | Code |
 |---|---|
@@ -292,18 +321,21 @@ bit-for-bit parity). Contract-specific tolerances:
 | Non-finite symbol | `WKERNEL-WS10-CHANNEL-E-002` |
 | Domain/dependency violation | `WKERNEL-WS10-CHANNEL-E-003` |
 
-### WS10 Contract-Derived Test Vectors
+### WS11 Contract-Derived Test Vectors
 
-Minimum WS10 routing conformance vectors:
-1. Nominal channel execution with hillslope contributor payloads and finite
-   parser-projected controls emits finite non-negative
-   `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff`.
-2. Missing required channel control symbol fails with
-   `WKERNEL-WS10-CHANNEL-E-001`.
-3. Non-finite required contributor/control symbol fails with
-   `WKERNEL-WS10-CHANNEL-E-002`.
-4. Domain/dependency violation (e.g., invalid positive-domain parameter or
-   unresolved upstream payload) fails with `WKERNEL-WS10-CHANNEL-E-003`.
+Minimum WS11 routing conformance vectors:
+1. `ipeak = 1` route path executes modified Rational branch and emits finite
+   non-negative `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`,
+   `ws10_channel_{id}_roff`.
+2. `ipeak = 2` route path executes CREAMS branch with finite/non-negative
+   outputs and method-identity traceability.
+3. `ipeak = 3` route path executes linear kinematic-wave routing and preserves
+   routed closure (`roff = qpo * durrof` within tolerance).
+4. `ipeak >= 4` route path executes Muskingum-Cunge routing (including the
+   `ipeak = 5` variable-parameter branch when configured) and preserves routed
+   closure with finite/non-negative outputs.
+5. Missing/non-finite/domain-dependency violations fail with preserved guard
+   family codes `WKERNEL-WS10-CHANNEL-E-001..003`.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -337,6 +369,7 @@ Minimum WS10 routing conformance vectors:
 | GAP-ROUTE-003 | EROD12 ratifies cross-domain ownership and guard semantics for required erosion-lane routing boundaries across `SC-HYDRAULICS-001`, `SC-SED-001`, `SC-ROUTE-001`, and `SC-SYSTEM-001`; downstream WS10/impoundment ownership paths remain explicitly guarded by their companion contracts. | Required Wave-0 ownership ambiguity is closed for routing-coupled erosion boundaries; non-Wave-0 scope/applicability holds remain governed by other gap rows. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-004 | Chapter-13 mixed-unit and regression-derived formulation caveats remain and are explicitly retained as documented limitations with governance risk acceptance. | Unit-conversion and regression-lineage interpretation risk remains and requires explicit review in sensitive analyses; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-005 | Runtime workload guards for Chapter-13 applicability limits (small watershed intent and excluded process classes) are not yet bound to a concrete input-contract validator surface. | Applicability enforcement is governance-only until companion system/input contracts add explicit runtime selectors/guards. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-006 | WS11 wave-routing branch authority is anchored to pinned legacy static-code provenance (`wshcqi`, `wshdrv`, `wshpek`, `wshchr`) pending companion documentation that cross-indexes non-chapter method-lineage references in one canonical note. | Migration authority is executable and explicit, but review burden for non-chapter lineage remains elevated until companion documentation lands. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -352,3 +385,4 @@ Minimum WS10 routing conformance vectors:
 | `2026-05-23` | `7` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-ROUTE-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `8` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-ROUTE-001` and `GAP-ROUTE-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `9` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-ROUTE-003` to `closed` for required erosion-lane routing boundaries while retaining non-Wave-0 applicability holds. |
+| `2026-05-24` | `10` | `Codex` | WS11 amendment: replaced WS10 gain-factor surrogate routing authority with legacy-equivalent channel-routing branch authority (`ipeak`-selected Rational/CREAMS/KW/MC), added pinned baseline provenance anchors, expanded routing closure invariants, and published WS11 contract-derived vector obligations while preserving existing channel guard-family IDs. |

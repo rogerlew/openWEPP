@@ -15,6 +15,7 @@ use openwepp_input_contract::parsers::{
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
+    WatershedProductionStateSymbol,
 };
 
 use crate::WatershedWritebackSurface;
@@ -484,7 +485,7 @@ pub fn build_watershed_runtime_surface_from_chaninp(
 
     let mut state_surface = BTreeMap::new();
     state_surface.insert(
-        BoundarySymbol::from("ipeak"),
+        BoundarySymbol::from(WatershedProductionStateSymbol::Ipeak),
         BoundaryValue::scalar(f64::from(chaninp.ipeak)),
     );
     state_surface.insert(

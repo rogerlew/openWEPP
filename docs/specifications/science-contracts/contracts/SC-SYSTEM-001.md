@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 15
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -60,6 +60,9 @@ Out of scope:
 | REF-SYSTEM-CH13-TRANSLOSS | `chap13.pdf` §13.2, Eq. [13.2.4]-[13.2.6] | Case-partitioned transmission-loss and final-runoff assembly semantics. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-PEAKIN | `chap13.pdf` §13.4.1, Eq. [13.4.1]-[13.4.2] | Triangular-hydrograph merge semantics when multiple watershed elements contribute runon. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-PEAKOUT | `chap13.pdf` §13.4.2, Eq. [13.4.3]-[13.4.7], [13.4.25]-[13.4.26] | Channel/watershed outlet peak-runoff and duration semantics, including method options. | `[DIRECT][Static]` |
+| REF-SYSTEM-WSHDRV-ORDER | `/workdir/wepp-forest_260430_baseline/src/wshdrv.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Watershed execution-order authority for channel lane (`wshcqi -> wshirs -> wshrun/wshpek`) including direct `wshchr` routing path when `ipeak > 2` and local channel runoff is absent. | `[DIRECT][Static]` |
+| REF-SYSTEM-WSHPEK-IPEAK | `/workdir/wepp-forest_260430_baseline/src/wshpek.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | `ipeak`-selected outlet branch authority (`1` Rational, `2` CREAMS, `>=3` wave routing) and routed peak/duration publication semantics. | `[DIRECT][Static]` |
+| REF-SYSTEM-WSHCHR-WAVE | `/workdir/wepp-forest_260430_baseline/src/wshchr.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing authority (linear kinematic-wave and Muskingum-Cunge branches, storage closure, routed `peakot`/`runvol`/`rundur` outputs). | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-SEDCONT | `chap13.pdf` §13.5.5, Eq. [13.5.17] | Channel sediment continuity with upstream/lateral inflow and flow detachment/deposition terms. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH14-HYDCONT | `references/50201000/chap14.pdf` §14.2, Eq. [14.2.1]-[14.2.5] | Impoundment hydraulic continuity and stage-discharge/stage-area coupling. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH14-ADAPT | `chap14.pdf` §14.2.3, Eq. [14.2.7]-[14.2.9] | Adaptive timestep semantics and mandatory minimum-step reset at regime transitions. | `[DIRECT][Static]` |
@@ -105,8 +108,8 @@ Out of scope:
 | INV-SYSTEM-002 | Channel runon decomposition invariant: runon identity and depth conversion hold (`rov = rol + roi`, `rod = rov/Ach`) with non-negative volumes/area and explicit contributor accounting. | hard-fail | REF-SYSTEM-CH13-RUNON, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-003 | Channel duration harmonization invariant: event duration uses the explicit max rule `durc = max(durrunon, durchan, durirrig)` and all duration terms share consistent event basis/units. | hard-fail | REF-SYSTEM-CH13-RUNON | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-004 | Channel runoff-case invariant: channel runoff must follow the four-case partition of §13.2, including transmission-loss equations (`tl`) for applicable cases and explicit zero branch for Case IV (`qci = 0`, `rod = 0` implies `qcf = 0`, `rof_f = 0`). | hard-fail | REF-SYSTEM-CH13-TRANSLOSS | `[DIRECT][Static]` |
-| INV-SYSTEM-005 | Hydrograph-merge invariant: with one upstream contributor, inlet peak is direct pass-through; with multiple contributors, SCS triangular synthetic hydrographs are computed and superimposed before selecting inlet peak. Peak/duration calculations are skipped when `rof_f <= 0.001 m^3`. | hard-fail | REF-SYSTEM-CH13-PEAKIN, REF-SYSTEM-CH13-PEAKOUT | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SYSTEM-006 | Outlet method-branch invariant: channel/watershed outlet peak flow uses exactly one declared method branch (modified Rational or CREAMS) with explicit branch identity retained in outputs and no implicit fallback switching. | hard-fail | REF-SYSTEM-CH13-PEAKOUT, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-005 | Hydrograph-merge invariant: with one upstream contributor, inlet peak is direct pass-through; with multiple contributors, SCS triangular synthetic hydrographs are computed and superimposed before selecting inlet peak. For `ipeak <= 2`, peak/duration calculations are skipped when `rof_f <= 0.001 m^3`; for `ipeak >= 3`, routed channel flow may still be evaluated from incoming hydrograph when local runoff is absent. | hard-fail | REF-SYSTEM-CH13-PEAKIN, REF-SYSTEM-CH13-PEAKOUT, REF-SYSTEM-WSHDRV-ORDER, REF-SYSTEM-WSHPEK-IPEAK | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-006 | Outlet method-branch invariant: channel/watershed outlet routing uses exactly one declared `ipeak` branch (`1` modified Rational, `2` CREAMS, `3` linear kinematic-wave, `>=4` Muskingum-Cunge) with explicit branch identity retained in outputs and no implicit fallback switching. | hard-fail | REF-SYSTEM-CH13-PEAKOUT, REF-SYSTEM-WSHPEK-IPEAK, REF-SYSTEM-WSHCHR-WAVE, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-007 | Impoundment hydraulic continuity invariant: stage update obeys continuity (`dV/dt = Qi - Qo`, `dH/dt = (Qi - fQo(H))/fA(H)`), and adaptive timestep reset to minimum is enforced whenever outflow regime changes or inflow starts/ends. | hard-fail | REF-SYSTEM-CH14-HYDCONT, REF-SYSTEM-CH14-ADAPT | `[DIRECT][Static]` |
 | INV-SYSTEM-008 | Impoundment outflow aggregation invariant: total outflow equals sum of active outlet-structure contributions (`Qtotal`) and each inactive structure contributes exactly zero when stage is below its inlet threshold. | hard-fail | REF-SYSTEM-CH14-OUTFLOW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-009 | Sediment continuity invariant: channel sediment continuity and impoundment sediment continuity equations are enforced with explicit upstream/lateral loads and deposition terms; no untracked mass creation/loss across handoff boundaries is allowed. | hard-fail | REF-SYSTEM-CH13-SEDCONT, REF-SYSTEM-CH14-SEDCONT, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -117,6 +120,7 @@ Out of scope:
 | INV-SYSTEM-014 | PL14R strict replay rerun reproducibility invariant: post-closure-wave Tier-A rerun must stage required interchange surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`), persist strict comparator JSON artifacts, and record command/binary/tool/output hashes; missing required surfaces, comparator artifacts, or provenance hashes must hard-fail replay disposition and keep the lane in `HOLD`. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-015 | PL15R Tier-A recloseout supersession invariant: refreshed hold-lift governance must classify residual Tier-A deltas from the latest PL14R schema-aligned strict replay evidence set (parquet comparator JSON artifacts plus day-by-day parity evidence) and must treat stale pre-supersession strict-failure signatures as historical context, not active blockers. If unresolved Tier-A blockers remain after supersession, explicit risk-acceptance reference is still mandatory. | governance-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-016 | WB20 forward-solver parity publication invariant: Tier-A forward-solver lane publication must include explicit lane-manifest evidence showing `wb20_forward_solver_lane_enabled = 1` and confirming observed closure targets are excluded from acceptance-driving inputs; missing manifest/no-substitution evidence is an unresolved governance blocker. | governance-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-017 | PL14S semantic replay-evidence invariant: Tier-A hillslope replay publication must persist semantic comparator evidence (`h5_wat_semantic_comparator.json`) with row-key presence deltas, per-column tolerance verdicts, and top divergent-key diagnostics for investigation; missing or malformed semantic report evidence, or suppressed strict-comparator skip/execution status in provenance output, is a hard-fail/HOLD condition. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -126,8 +130,8 @@ Out of scope:
 | `INV-SYSTEM-002` | runtime | Channel inlet runon assembler | Typed hard error on decomposition/area/volume domain failure | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-003` | runtime | Channel event-duration assembly | Typed hard error on inconsistent duration basis or max-rule violation | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-004` | runtime | Channel runoff case-switch and transmission-loss calculator | Typed hard error when case outputs violate required equations or zero branch | Tier-A/B gate | `[DIRECT][Static]` |
-| `INV-SYSTEM-005` | runtime | Hydrograph merge and peak-runoff gating logic | Typed hard error on invalid contributor-merge branch or threshold handling | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SYSTEM-006` | runtime | Outlet peak-flow method selector | Typed hard error on ambiguous or mixed method branch in single evaluation path | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-005` | runtime | Hydrograph merge and threshold/routed-gating logic | Typed hard error on invalid contributor-merge branch or threshold/routed-gating handling | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-006` | runtime | `ipeak` outlet branch selector/executor | Typed hard error on ambiguous, mixed, or undefined outlet branch in single evaluation path | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-007` | runtime | Impoundment continuity integrator and timestep controller | Typed hard error on continuity mismatch or missing minimum-step reset at regime transitions | Tier-B gate | `[DIRECT][Static]` |
 | `INV-SYSTEM-008` | runtime | Impoundment outflow aggregator | Typed hard error on structure-sum mismatch or inactive-structure non-zero contribution | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-009` | runtime | Channel and impoundment sediment continuity routines | Typed hard error on continuity residual beyond tolerance or missing load term | Tier-B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -138,6 +142,7 @@ Out of scope:
 | `INV-SYSTEM-014` | runtime + governance | PL14R rerun staging + provenance manifest gate | Typed hard error / explicit `HOLD` when required replay interchange surfaces, strict comparator JSON artifacts, or reproducibility hashes are missing | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-015` | governance | PL15R recloseout criteria matrix + refreshed hold-lift decision record + supersession references | Governance `HOLD` when active Tier-A blocker classification is derived from stale pre-supersession deltas, or when post-supersession unresolved blockers lack explicit approval reference | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-016` | governance | WB20 forward-solver lane publication checklist + disposition evidence gate | Governance `HOLD` when forward-lane manifest/no-substitution evidence is missing or does not prove observed-target exclusion from acceptance logic | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-017` | runtime + governance | PL14S semantic comparator publication gate + provenance integrity checklist | Typed hard error / explicit `HOLD` when semantic comparator JSON or required investigation diagnostics are missing, or when provenance omits strict-comparator skipped/executed posture | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -202,6 +207,11 @@ explicit divergent names.
   strict comparator JSON artifacts, and reproducible tool/binary/output hashes
   for each required interchange replay surface.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-006: PL14S comparison-suite producers must emit semantic
+  comparator artifacts with row-key presence deltas, per-column tolerance
+  verdicts, top divergent keys, and explicit strict-comparator skip/execution
+  provenance status; silent omission of these diagnostics is forbidden.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -233,6 +243,7 @@ explicit divergent names.
 | PL14R rerun reproducibility completeness (`INV-SYSTEM-014`) | comparator rerun staging + provenance publication boundary | Hard error / `HOLD` when required interchange surfaces, strict comparator JSON outputs, or binary/tool/output hashes are missing from rerun evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL15R recloseout supersession governance (`INV-SYSTEM-015`) | comparator re-disposition and refreshed PL08 hold-lift decision boundary | Governance `HOLD` when active blocker classification ignores superseding schema-aligned strict replay evidence, or when post-supersession unresolved blockers lack explicit risk-acceptance reference | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB20 forward-solver parity lane governance (`INV-SYSTEM-016`) | parity-lane evidence publication and disposition boundary | Governance `HOLD` when WB20 lane-manifest/no-substitution evidence is absent or does not prove observed-target exclusion from acceptance-driving closure logic | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| PL14S semantic replay diagnostics completeness (`INV-SYSTEM-017`) | semantic comparator artifact publication and provenance boundary | Hard error / `HOLD` when semantic comparator report content or strict-skip provenance status is absent, malformed, or silently suppressed | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -248,46 +259,55 @@ surfaces are:
 | TOL-SYSTEM-004 | Outflow-summation residual for Eq. [14.3.18] | `<= 1e-10 ft^3 s^-1` | Inactive-structure contribution remains exact zero by branch rule. | `[INFERENCE][Static]` |
 | TOL-SYSTEM-005 | Sediment continuity residual for Eq. [13.5.17] and Eq. [14.6.1] | `<= 1e-8` in native mass units | Unit-aware residual check by component (`lb` vs `kg` surfaces). | `[INFERENCE][Static]` |
 | TOL-SYSTEM-006 | Tier-A strict replay numeric tolerance for PL14 closeout lane | `abs_tol = 0`, `rel_tol = 0` | Comparator-lane authority is strict diff detection; residual disposition belongs to PL15. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| TOL-SYSTEM-007 | Tier-A semantic replay tolerance profile for PL14S investigation lane | `default abs=0.1`, `default rel=0.02`, with per-column overrides from `tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json` | Investigation-grade semantic comparator tolerances are explicit evidence artifacts and do not replace strict-diff structural checks. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
-## WS10 Watershed Production-Kernel Integration Addendum
+## WS11 Channel-Routing Physics-Equivalence Integration Addendum
 
-### WS10 Integration Runtime Aliases
+### WS11 Integration Runtime Aliases
 
 | Surface | Symbols |
 |---|---|
-| Channel runtime controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk` |
+| Channel runtime controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk`, `ipeak` |
 | Channel runtime outputs | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` |
 | Impoundment runtime controls | `ws10_impoundment_{id}_h`, `ws10_impoundment_{id}_hfull`, `ws10_impoundment_{id}_deltat`, `ws10_impoundment_{id}_qinf` |
 | Impoundment runtime outputs | `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`, `ws10_impoundment_{id}_hnext`, `ws10_impoundment_{id}_outflow_volume` |
 | Hillslope contributor payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
 
-### WS10 Integration Rules
+### WS11 Integration Rules
 
 1. Watershed-node execution order must honor topology dependencies and consume
-   upstream WS10 payloads through explicit symbol references, not implicit
+   upstream WS11 payloads through explicit symbol references, not implicit
    fallback defaults.
-2. Missing/non-finite/out-of-domain WS10 boundary payloads are hard-fail system
+2. WS11 channel integration authority must preserve explicit `ipeak` branch
+   semantics (`1` Rational, `2` CREAMS, `3` kinematic wave, `>=4`
+   Muskingum-Cunge) with deterministic branch identity.
+3. WS11 routing authority must not collapse channel execution into the
+   pre-WS11 gain-factor surrogate `(1 + ctlslp) / (1 + chnn)` or equivalent
+   single-gain substitutions.
+4. Missing/non-finite/out-of-domain WS11 boundary payloads are hard-fail system
    integration states and must propagate typed guard IDs unchanged.
-3. System integration must preserve deterministic publish ordering and make
-   WS10 dependency payload availability observable at the node boundary.
-4. WS10 integration pathways must not silently clamp or synthesize replacement
+5. System integration must preserve deterministic publish ordering and make
+   WS11 dependency payload availability observable at the node boundary.
+6. WS11 integration pathways must not silently clamp or synthesize replacement
    state/flux values to repair invalid boundary inputs.
 
-### WS10 Guard Families
+### WS11 Guard Families
 
 | Kernel lane | Guard IDs |
 |---|---|
 | Channel lane | `WKERNEL-WS10-CHANNEL-E-001..003` |
 | Impoundment lane | `WKERNEL-WS10-IMPOUNDMENT-E-001..003` |
 
-### WS10 Contract-Derived System Vectors
+### WS11 Contract-Derived System Vectors
 
-Minimum WS10 integration vectors:
+Minimum WS11 integration vectors:
 1. Deterministic `channel -> impoundment -> downstream channel` topology run
-   emits finite non-negative WS10 outputs at each node boundary.
-2. Missing required WS10 symbol halts node execution with `-E-001`.
-3. Non-finite WS10 symbol halts node execution with `-E-002`.
-4. Domain/dependency WS10 violation halts node execution with `-E-003`.
+   emits finite non-negative WS11 channel outputs at each node boundary.
+2. `ipeak = 3` and `ipeak >= 4` vectors preserve routed closure semantics
+   (`roff = qpo * durrof` within tolerance) on published channel payloads.
+3. Missing required WS11 symbol halts node execution with `-E-001`.
+4. Non-finite WS11 symbol halts node execution with `-E-002`.
+5. Domain/dependency WS11 violation halts node execution with `-E-003`.
 
 ## WS12 Impoundment Physics-Equivalence Integration Addendum
 
@@ -386,3 +406,5 @@ Minimum WS12 integration vectors:
 | `2026-05-23` | `11` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum covering required erosion-lane Wave-0 boundaries and refined `GAP-SYSTEM-001` to distinguish remaining non-Wave-0 system promotability holds from resolved Wave-0 ownership semantics. |
 | `2026-05-24` | `12` | `Codex` | CLI02 amendment: replaced required strict-replay include-surface authority from legacy candidate files to simulation-driven partitioned interchange surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) and aligned supersession evidence wording to parquet comparator artifacts. |
 | `2026-05-24` | `13` | `Codex` | WS12 amendment: added impoundment physics-equivalence integration authority requiring continuity/regime-driven impoundment routing with parser-projected coefficient families and preserved WS10 guard-family continuity for boundary failures. |
+| `2026-05-24` | `14` | `Codex` | WS11 amendment: added channel-routing physics-equivalence integration authority requiring explicit `ipeak` branch execution (Rational/CREAMS/KW/MC), prohibited pre-WS11 gain-factor surrogate substitution, and anchored integration semantics to pinned legacy routing provenance while preserving existing WS10 guard-family continuity. |
+| `2026-05-24` | `15` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-SYSTEM-017`), semantic/provenance publication guard authority, semantic replay producer obligations, and explicit semantic-tolerance profile authority for investigation-grade Tier-A replay evidence. |

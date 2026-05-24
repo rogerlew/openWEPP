@@ -120,6 +120,19 @@ requirement, not optional package style guidance.
   and require typed errors/guards.
 - Kickoff prompt must instruct autonomous progression through the assigned phase
   and artifact updates without asking the user for "next steps" unless blocked.
+- Kickoff prompt must include an explicit end-to-end execution statement (use
+  `Autonomy:` line) for the declared scope.
+- Kickoff prompt must include a `Required reading` section with explicit path
+  references so onboarding/orientation does not require independent discovery.
+  At minimum include:
+  - `/workdir/openWEPP/AGENTS.md`
+  - `/workdir/openWEPP/docs/codex_exec_plans.md`
+  - `/workdir/openWEPP/docs/work-packages/README.md`
+  - the package-local `package.md`
+  - `docs/specifications/science-contract-authoring-procedure.md`
+  - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+  - `docs/specifications/science-contracts/index.md`
+  - all phase-relevant canonical `SC-*` contracts and decision/queue artifacts.
 
 ## Prompt Wording Guidance (Required)
 Use this wording standard when authoring execution prompts for kernel/science
@@ -143,6 +156,8 @@ scope.
 - Name exact file paths and sections/functions to edit.
 - Prefer short imperative language (`read`, `amend`, `add tests`, `record`).
 - Avoid broad/open-ended wording that does not constrain scope.
+- Add an explicit `Required reading` list before task instructions so agents can
+  load orientation context deterministically.
 
 4. Preserve mandatory technical gates in every phase prompt
 - Contract-first sequencing.
@@ -164,6 +179,7 @@ scope.
 - `Scope: local repository science-contract/kernel migration task; flat-file`
   `reads/edits only; no external connectivity.`
 - `Phase: <A|B|C|D> only.`
+- `Required reading (read before edits): <explicit path list>.`
 - `Files: <explicit path list>.`
 - `Task: <single concrete change objective>.`
 - `Constraints: contract-first sequencing; canonical SC authority;`

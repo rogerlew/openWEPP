@@ -56,6 +56,10 @@ fn arch22_watershed_node_scoped_symbol_projection_matches_authority() {
         "dtchr"
     );
     assert_eq!(
+        BoundarySymbol::from(WatershedProductionStateSymbol::Ipeak).as_str(),
+        "ipeak"
+    );
+    assert_eq!(
         BoundarySymbol::from(WatershedProductionFluxSymbol::Cbase).as_str(),
         "cbase"
     );

@@ -59,7 +59,7 @@ fn seed_ws12_coefficient_surface(surface: &mut WatershedWritebackSurface) {
     }
 }
 
-fn seeded_ws10_surface() -> WatershedWritebackSurface {
+fn seeded_ws11_surface() -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
         STRICT_VALID_CHANINP,
@@ -78,8 +78,6 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
     seed_watershed_runtime_surface_from_watershed_channel(&mut runtime_surface, &watershed_channel)
         .expect("watershed channel runtime seed should project ws10 symbols");
 
-    // The canonical strict fixture defines one channel record; duplicate it for
-    // channel:2 so the three-node WS10 topology has per-channel controls.
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("ws10_channel_2_chnn"),
         BoundaryValue::scalar(0.05),
@@ -126,10 +124,11 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
         BoundarySymbol::from("hs3_watdur"),
         BoundaryValue::scalar(200.0),
     );
+
     runtime_surface
 }
 
-fn run_ws10_surface(
+fn run_ws11_surface(
     surface: WatershedWritebackSurface,
 ) -> openwepp_watershed_orchestrator::WatershedKernelExecutionReport {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
@@ -138,46 +137,105 @@ fn run_ws10_surface(
 
     let mut kernel = Ws10ChannelImpoundmentKernel;
     execute_watershed_dispatch_with_kernel(&graph, &topology_report, &mut kernel, surface)
-        .expect("ws10 execution should return typed report")
+        .expect("ws11 execution should return typed report")
+}
+
+fn state_value(
+    report: &openwepp_watershed_orchestrator::WatershedKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing state symbol {symbol}"))
+        .as_f64()
+}
+
+fn flux_value(
+    report: &openwepp_watershed_orchestrator::WatershedKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing flux symbol {symbol}"))
+        .as_f64()
 }
 
 #[test]
-fn ws10_contract_conformance_executes_channel_impoundment_production_path() {
-    let report = run_ws10_surface(seeded_ws10_surface());
-    assert!(report.dispatch_report.is_success());
+fn ws11_contract_conformance_executes_ipeak_1_and_2_with_finite_outputs() {
+    for ipeak in [1.0, 2.0] {
+        let mut surface = seeded_ws11_surface();
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(ipeak));
 
-    let ch1_qpo = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("ws10_channel_1_qpo"))
-        .expect("ws10 channel 1 must publish qpo")
-        .as_f64();
-    let imp1_qo = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("ws10_impoundment_1_qo"))
-        .expect("ws10 impoundment 1 must publish qo")
-        .as_f64();
-    let ch2_qpo = report
-        .writeback_surface
-        .state_surface
-        .get(&BoundarySymbol::from("ws10_channel_2_qpo"))
-        .expect("ws10 channel 2 must publish qpo")
-        .as_f64();
+        let report = run_ws11_surface(surface);
+        assert!(
+            report.dispatch_report.is_success(),
+            "ipeak={ipeak} must succeed; step_reports={:?}",
+            report.step_reports
+        );
 
-    assert!(ch1_qpo.is_finite() && ch1_qpo > 0.0);
-    assert!(imp1_qo.is_finite() && imp1_qo >= 0.0);
-    assert!(ch2_qpo.is_finite() && ch2_qpo > 0.0);
+        let qpo = state_value(&report, "ws10_channel_1_qpo");
+        let durrof = state_value(&report, "ws10_channel_1_durrof");
+        let roff = flux_value(&report, "ws10_channel_1_roff");
+
+        assert!(qpo.is_finite() && qpo >= 0.0, "ipeak={ipeak} invalid qpo");
+        assert!(
+            durrof.is_finite() && durrof >= 0.0,
+            "ipeak={ipeak} invalid durrof"
+        );
+        assert!(
+            roff.is_finite() && roff >= 0.0,
+            "ipeak={ipeak} invalid roff"
+        );
+    }
 }
 
 #[test]
-fn ws10_contract_conformance_rejects_missing_required_symbol() {
-    let mut surface = seeded_ws10_surface();
-    surface
-        .state_surface
-        .remove(&BoundarySymbol::from("ws10_channel_1_chnn"));
+fn ws11_contract_conformance_executes_ipeak_3_and_4_with_routed_closure() {
+    for ipeak in [3.0, 4.0] {
+        let mut surface = seeded_ws11_surface();
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(ipeak));
 
-    let report = run_ws10_surface(surface);
+        let report = run_ws11_surface(surface);
+        assert!(
+            report.dispatch_report.is_success(),
+            "ipeak={ipeak} must succeed; step_reports={:?}",
+            report.step_reports
+        );
+
+        let qpo = state_value(&report, "ws10_channel_1_qpo");
+        let durrof = state_value(&report, "ws10_channel_1_durrof");
+        let roff = flux_value(&report, "ws10_channel_1_roff");
+
+        assert!(qpo.is_finite() && qpo >= 0.0, "ipeak={ipeak} invalid qpo");
+        assert!(
+            durrof.is_finite() && durrof >= 0.0,
+            "ipeak={ipeak} invalid durrof"
+        );
+        assert!(
+            roff.is_finite() && roff >= 0.0,
+            "ipeak={ipeak} invalid roff"
+        );
+        assert!(
+            (roff - (qpo * durrof)).abs() <= 1.0e-9,
+            "ipeak={ipeak} violates closure roff=qpo*durrof"
+        );
+    }
+}
+
+#[test]
+fn ws11_contract_conformance_requires_ipeak_symbol() {
+    let mut surface = seeded_ws11_surface();
+    surface.state_surface.remove(&BoundarySymbol::from("ipeak"));
+
+    let report = run_ws11_surface(surface);
     assert_eq!(report.step_reports.len(), 1);
     assert_eq!(
         report.step_reports[0].decision_status.message_id(),
@@ -190,14 +248,14 @@ fn ws10_contract_conformance_rejects_missing_required_symbol() {
 }
 
 #[test]
-fn ws10_contract_conformance_rejects_non_finite_required_symbol() {
-    let mut surface = seeded_ws10_surface();
+fn ws11_contract_conformance_rejects_non_finite_ipeak() {
+    let mut surface = seeded_ws11_surface();
     surface.state_surface.insert(
-        BoundarySymbol::from("hs1_peakro"),
+        BoundarySymbol::from("ipeak"),
         BoundaryValue::scalar(f64::NAN),
     );
 
-    let report = run_ws10_surface(surface);
+    let report = run_ws11_surface(surface);
     assert_eq!(report.step_reports.len(), 1);
     assert_eq!(
         report.step_reports[0].decision_status.message_id(),
@@ -210,21 +268,53 @@ fn ws10_contract_conformance_rejects_non_finite_required_symbol() {
 }
 
 #[test]
-fn ws10_contract_conformance_rejects_out_of_domain_impoundment_state() {
-    let mut surface = seeded_ws10_surface();
-    surface.state_surface.insert(
-        BoundarySymbol::from("ws10_impoundment_1_h"),
-        BoundaryValue::scalar(0.90),
+fn ws11_contract_conformance_rejects_out_of_domain_ipeak() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(0.0));
+
+    let report = run_ws11_surface(surface);
+    assert_eq!(report.step_reports.len(), 1);
+    assert_eq!(
+        report.step_reports[0].decision_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-003"
+    );
+    assert_eq!(
+        report.step_reports[0].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn ws11_contract_conformance_distinguishes_ipeak_branches() {
+    let mut ipeak_1_surface = seeded_ws11_surface();
+    ipeak_1_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(1.0));
+    let ipeak_1_report = run_ws11_surface(ipeak_1_surface);
+    assert!(
+        ipeak_1_report.dispatch_report.is_success(),
+        "ipeak=1 should succeed; step_reports={:?}",
+        ipeak_1_report.step_reports
     );
 
-    let report = run_ws10_surface(surface);
-    assert_eq!(report.step_reports.len(), 2);
-    assert_eq!(
-        report.step_reports[1].decision_status.message_id(),
-        "WKERNEL-WS10-IMPOUNDMENT-E-003"
+    let mut ipeak_4_surface = seeded_ws11_surface();
+    ipeak_4_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    let ipeak_4_report = run_ws11_surface(ipeak_4_surface);
+    assert!(
+        ipeak_4_report.dispatch_report.is_success(),
+        "ipeak=4 should succeed; step_reports={:?}",
+        ipeak_4_report.step_reports
     );
-    assert_eq!(
-        report.step_reports[1].decision_status.boundary_class(),
-        BoundaryClass::DomainViolation
+
+    let qpo_ipeak_1 = state_value(&ipeak_1_report, "ws10_channel_1_qpo");
+    let qpo_ipeak_4 = state_value(&ipeak_4_report, "ws10_channel_1_qpo");
+
+    assert!(
+        (qpo_ipeak_1 - qpo_ipeak_4).abs() > 1.0e-9,
+        "ipeak branch outputs are identical ({qpo_ipeak_1}); expected explicit branch-dependent routing behavior"
     );
 }

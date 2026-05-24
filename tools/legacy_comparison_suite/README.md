@@ -6,8 +6,9 @@ with a default focus on hillslope water-balance semantic parity (PL14S scope).
 ## Scope
 - Compares legacy `H*.wat.dat` outputs against openWEPP candidate outputs.
 - Supports candidate input as legacy-style `.dat` or openWEPP `.parquet`.
-- Produces investigation-oriented reports (per-column statistics, missing rows,
-  top divergent rows), not only strict byte-level diff status.
+- Produces investigation-oriented reports (row-presence deltas, per-column
+  tolerance verdicts, top divergent rows), not only strict byte-level diff
+  status.
 
 ## Why this exists
 - Parity policy is semantic, not bit-for-bit (`ADR-0003`).
@@ -19,9 +20,13 @@ with a default focus on hillslope water-balance semantic parity (PL14S scope).
 ## Tools
 - `semantic_hillslope_wat_compare.py`
   - semantic comparator for hillslope `wat` surfaces.
+  - emits report schema `pl14s-semantic-wat-v1`.
+  - hard-fails on duplicate `(OFE,J,Y)` row keys.
 - `run_pl14s_legacy_suite.py`
   - baseline replay + strict comparator (when candidate is `.dat`) + semantic
     comparator orchestration with provenance output.
+  - emits provenance schema `pl14s-legacy-suite-v1`.
+  - validates required semantic-report fields before writing provenance.
 
 ## Repo-local uv environment (replicable)
 
@@ -69,6 +74,29 @@ python3 tools/legacy_comparison_suite/run_pl14s_legacy_suite.py \
   --candidate-wat /tmp/openwepp_candidate/H5.wat.dat \
   --output-root /tmp/pl14s_suite_run
 ```
+
+Parquet candidate example:
+
+```bash
+python3 tools/legacy_comparison_suite/run_pl14s_legacy_suite.py \
+  --baseline-run-dir /workdir/wepp-forest_260430_baseline/tests/fixtures/delicate_game_pw0 \
+  --baseline-binary /workdir/wepp-forest_260430_baseline/release/wepp_260430_hill \
+  --baseline-run-file p5.run \
+  --candidate-wat /tmp/openwepp_candidate/interchange/H.wat.parquet \
+  --output-root /tmp/pl14s_suite_run
+```
+
+## Guard posture
+- Strict comparator is required when candidate input is `.dat`; for parquet
+  candidates strict compare is explicitly marked as skipped in provenance.
+- Semantic comparator evidence is required for all runs and must include:
+  - row-presence deltas,
+  - per-column tolerance verdicts,
+  - investigation columns used/missing,
+  - baseline-only column disclosure,
+  - top divergent row diagnostics.
+- Missing or malformed semantic report content is treated as an execution
+  failure by `run_pl14s_legacy_suite.py`.
 
 ## Optional dependencies
 - Parquet candidate reads require `pyarrow` (included in

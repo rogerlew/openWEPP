@@ -31,6 +31,11 @@ def find_single(path: Path, pattern: str) -> Path:
     matches = sorted(path.rglob(pattern))
     if not matches:
         raise FileNotFoundError(f"no files matched {pattern} under {path}")
+    if len(matches) > 1:
+        preview = ", ".join(str(item) for item in matches[:5])
+        raise RuntimeError(
+            f"expected exactly one match for {pattern} under {path}; found {len(matches)} ({preview})"
+        )
     return matches[0]
 
 
@@ -59,6 +64,38 @@ def run_cmd(cmd: list[str], cwd: Path | None = None, stdin_path: Path | None = N
         "cmd": cmd,
         "cwd": str(cwd) if cwd else None,
         "returncode": completed.returncode,
+    }
+
+
+def load_semantic_summary(path: Path) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    comparison = payload.get("comparison")
+    if not isinstance(comparison, dict):
+        raise RuntimeError("semantic report missing comparison payload")
+
+    required_keys = [
+        "semantic_pass",
+        "only_baseline_count",
+        "only_candidate_count",
+        "column_stats",
+        "top_divergent_rows",
+    ]
+    missing = [name for name in required_keys if name not in comparison]
+    if missing:
+        raise RuntimeError(
+            "semantic report missing required keys: " + ", ".join(sorted(missing))
+        )
+
+    return {
+        "report_schema_version": payload.get("report_schema_version"),
+        "semantic_pass": comparison["semantic_pass"],
+        "only_baseline_count": comparison["only_baseline_count"],
+        "only_candidate_count": comparison["only_candidate_count"],
+        "column_stat_count": len(comparison.get("column_stats", [])),
+        "top_divergent_row_count": len(comparison.get("top_divergent_rows", [])),
+        "investigation_columns_used": comparison.get("investigation_columns_used", []),
+        "investigation_columns_missing": comparison.get("investigation_columns_missing", []),
+        "baseline_only_columns": comparison.get("baseline_only_columns", []),
     }
 
 
@@ -120,14 +157,16 @@ def main() -> None:
 
     baseline_wat = find_single(baseline_lane_root, "H*.wat.dat")
 
+    candidate_format = args.candidate_wat.suffix.lower()
     strict_result = {
         "skipped": True,
         "reason": "candidate is not .dat; strict raw comparator requires text surfaces",
+        "required": candidate_format == ".dat",
     }
     strict_json_path = investigation_root / args.strict_json
 
     candidate_wat_for_compare = args.candidate_wat
-    if args.candidate_wat.suffix.lower() == ".dat":
+    if candidate_format == ".dat":
         candidate_output_dir = candidate_root / "output"
         candidate_output_dir.mkdir(parents=True, exist_ok=True)
         staged_candidate_wat = candidate_output_dir / baseline_wat.name
@@ -159,6 +198,7 @@ def main() -> None:
             )
         strict_result = {
             "skipped": False,
+            "required": True,
             "execution": strict_exec,
             "json_path": str(strict_json_path),
         }
@@ -180,8 +220,10 @@ def main() -> None:
     semantic_exec = run_cmd(semantic_cmd)
     if semantic_exec["returncode"] != 0:
         raise SystemExit(f"semantic comparator failed with return code {semantic_exec['returncode']}")
+    semantic_summary = load_semantic_summary(semantic_json_path)
 
     provenance = {
+        "suite_schema_version": "pl14s-legacy-suite-v1",
         "baseline": {
             "binary": str(args.baseline_binary),
             "binary_sha256": sha256_file(args.baseline_binary),
@@ -194,6 +236,7 @@ def main() -> None:
         },
         "candidate": {
             "input_wat": str(args.candidate_wat),
+            "input_wat_format": candidate_format,
             "input_wat_sha256": sha256_file(args.candidate_wat),
             "candidate_wat_for_compare": str(candidate_wat_for_compare),
             "candidate_wat_for_compare_sha256": sha256_file(candidate_wat_for_compare),
@@ -215,6 +258,7 @@ def main() -> None:
         "outputs": {
             "semantic_json": str(semantic_json_path),
             "semantic_json_sha256": sha256_file(semantic_json_path),
+            "semantic_summary": semantic_summary,
             "strict_json": str(strict_json_path) if strict_json_path.exists() else None,
             "strict_json_sha256": sha256_file(strict_json_path) if strict_json_path.exists() else None,
             "baseline_stdout": str(baseline_stdout),

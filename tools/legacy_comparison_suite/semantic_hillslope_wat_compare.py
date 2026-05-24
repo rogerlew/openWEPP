@@ -94,6 +94,7 @@ DEFAULT_INVESTIGATION_COLUMNS = [
 ]
 
 KEY_FIELDS = ("OFE", "J", "Y")
+REPORT_SCHEMA_VERSION = "pl14s-semantic-wat-v1"
 
 
 @dataclass
@@ -136,6 +137,8 @@ def parse_dat_rows(path: Path) -> tuple[Dict[Tuple[int, int, int], Dict[str, flo
         columns = LEGACY_20_COLUMNS if len(values) == 20 else CANONICAL_25_COLUMNS
         row = {name: values[idx] for idx, name in enumerate(columns)}
         key = (int(row["OFE"]), int(row["J"]), int(row["Y"]))
+        if key in row_map:
+            raise RuntimeError(f"duplicate row key {key} in dat input {path}")
         row_map[key] = row
         if len(values) not in widths_seen:
             widths_seen.append(len(values))
@@ -182,6 +185,8 @@ def parse_parquet_rows(path: Path) -> Dict[Tuple[int, int, int], Dict[str, float
             continue
 
         key = (int(row["OFE"]), int(row["J"]), int(row["Y"]))
+        if key in row_map:
+            raise RuntimeError(f"duplicate row key {key} in parquet input {path}")
         row_map[key] = row
 
     return row_map
@@ -239,6 +244,8 @@ def compare_rows(
     baseline_cols = set().union(*(row.keys() for row in baseline_rows.values())) if baseline_rows else set()
     candidate_cols = set().union(*(row.keys() for row in candidate_rows.values())) if candidate_rows else set()
     shared_cols = sorted((baseline_cols & candidate_cols) - set(KEY_FIELDS))
+    baseline_only_cols = sorted((baseline_cols - candidate_cols) - set(KEY_FIELDS))
+    candidate_only_cols = sorted((candidate_cols - baseline_cols) - set(KEY_FIELDS))
 
     column_stats: List[Dict[str, object]] = []
     semantic_pass = True
@@ -291,10 +298,13 @@ def compare_rows(
             }
         )
 
-    if only_baseline or only_candidate:
+    if only_baseline or only_candidate or baseline_only_cols:
         semantic_pass = False
 
     investigation_columns = [name for name in DEFAULT_INVESTIGATION_COLUMNS if name in shared_cols]
+    investigation_columns_missing = sorted(
+        name for name in DEFAULT_INVESTIGATION_COLUMNS if name not in shared_cols
+    )
     row_scores: List[Tuple[Tuple[int, int, int], float]] = []
     for key in common_keys:
         score = 0.0
@@ -329,11 +339,15 @@ def compare_rows(
         "semantic_pass": semantic_pass,
         "shared_column_count": len(shared_cols),
         "shared_columns": shared_cols,
+        "baseline_only_columns": baseline_only_cols,
+        "candidate_only_columns": candidate_only_cols,
         "common_row_count": len(common_keys),
         "only_baseline_count": len(only_baseline),
         "only_candidate_count": len(only_candidate),
         "only_baseline_examples": [list(key) for key in only_baseline[:25]],
         "only_candidate_examples": [list(key) for key in only_candidate[:25]],
+        "investigation_columns_used": investigation_columns,
+        "investigation_columns_missing": investigation_columns_missing,
         "column_stats": column_stats,
         "top_divergent_rows": top_rows,
     }
@@ -375,11 +389,13 @@ def main() -> None:
     )
 
     report = {
+        "report_schema_version": REPORT_SCHEMA_VERSION,
         "inputs": {
             "baseline_wat": str(args.baseline_wat),
             "candidate_wat": str(args.candidate_wat),
             "baseline_format": baseline_format,
             "candidate_format": candidate_format,
+            "row_key_fields": list(KEY_FIELDS),
             "baseline_numeric_widths": baseline_widths,
             "candidate_numeric_widths": candidate_widths,
             "baseline_sha256": sha256_file(args.baseline_wat),
