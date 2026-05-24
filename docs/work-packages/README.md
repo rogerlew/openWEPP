@@ -536,6 +536,12 @@ Authorized packages:
     production execution ownership, runtime mode-propagation invariants,
     simulation-owned WB13/H.wat provenance, and consolidated-kernel intake
     guardrails before SIMIMPL04+ code packages.
+- `20260524-simimpl04-contract-derived-tests-and-preimplementation-gate-for-runner-kernel-path-001/`
+  - Purpose: execute SIMIMPL04 by implementing contract-derived integration
+    tests and pre-implementation gate evidence for runner-to-scheduler
+    execution closure, `wepp_ui` mode-closure behavior, and
+    simulation-owned WB13/H.wat publication requirements before SIMIMPL05
+    production edits.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
