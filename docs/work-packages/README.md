@@ -542,6 +542,11 @@ Authorized packages:
     execution closure, `wepp_ui` mode-closure behavior, and
     simulation-owned WB13/H.wat publication requirements before SIMIMPL05
     production edits.
+- `20260524-simimpl05-runner-orchestrator-daily-execution-integration-001/`
+  - Purpose: execute SIMIMPL05 by integrating production runner daily flow
+    with hillslope scheduler/kernel execution, preserving typed error
+    propagation and writeback governance to close `GAP-SIMPIPE-001` before
+    SIMIMPL06 output-provenance closure work.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

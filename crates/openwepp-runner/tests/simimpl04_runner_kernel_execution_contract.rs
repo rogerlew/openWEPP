@@ -7,7 +7,6 @@ use openwepp_runner::{
 };
 
 #[test]
-#[ignore = "expected fail until SIMIMPL05 wires runner->scheduler execution ownership"]
 fn simimpl04_contract_requires_runner_kernel_execution_provenance_manifest() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"

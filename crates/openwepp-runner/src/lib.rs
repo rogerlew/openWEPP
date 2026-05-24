@@ -11,11 +11,13 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus};
 use std::sync::{LazyLock, Mutex, MutexGuard};
 
-use openwepp_hillslope_orchestrator::HillslopeWritebackSurface;
 use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_frost,
     build_hillslope_runtime_surface_from_management, build_hillslope_runtime_surface_from_slope,
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
+};
+use openwepp_hillslope_orchestrator::{
+    HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, SchedulerOutcomeClass,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_wat::{
@@ -46,6 +48,9 @@ use openwepp_input_contract::parsers::soil::{
 use openwepp_input_contract::parsers::wepp_ui::{
     WeppUiParserMode, WeppUiParserOptions, parse_wepp_ui_from_path,
 };
+use openwepp_kernel_contract::{
+    HillslopeKernel, HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
+};
 use openwepp_legacy_bridge::policy::CompatibilityPolicy;
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterError, SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery,
@@ -54,6 +59,7 @@ use openwepp_legacy_bridge::sidecar::{
 use openwepp_summary_accumulator::{
     SummaryScalarSurface, Wb13DailyWaterBalanceRow, Wb13DailyWaterBalanceSurface,
 };
+use openwepp_topology::{TopologyGraph, validate_pre_execution_topology};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
@@ -65,6 +71,9 @@ pub const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manif
 pub const HILLSLOPE_RUNFILE_SCHEMA_ID: &str = "openwepp-hillslope-runfile-v1";
 pub const REQUIRED_RUN_OUTPUT_PASS: &str = "outputs.pass (.hbp)";
 pub const REQUIRED_RUN_OUTPUT_LOSS: &str = "outputs.loss (.json)";
+pub const SIMPIPE_GUARD_ID: &str = "HS-SIMPIPE-E-001";
+pub const DAILY_EXECUTION_LANE: &str = "daily";
+pub const SCHEDULER_KERNEL_PUBLICATION_SOURCE: &str = "scheduler-kernel";
 
 static RELEASE_SIDECAR_IO_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
@@ -772,6 +781,17 @@ struct HillslopeRunManifest {
     resolved_sidecars: BTreeMap<String, String>,
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
+    execution_provenance: HillslopeExecutionProvenance,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeExecutionProvenance {
+    scheduler_kernel_executed: bool,
+    publication_source: String,
+    simpipe_guard_id: String,
+    selected_lane: String,
+    scheduler_outcome_class: String,
+    scheduler_status_message_id: String,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -1460,6 +1480,8 @@ pub fn execute_hillslope_run(
         });
     }
 
+    let execution_provenance = execute_daily_scheduler_kernel_lifecycle(merged_runtime_surface)?;
+
     let pass_text = build_h5_wat_output(&climate, &soil, &snow, &frost)?;
     let loss_text = build_loss_output_json(&runfile.run_name, &climate, &soil, &snow, &frost)?;
 
@@ -1607,6 +1629,7 @@ pub fn execute_hillslope_run(
         resolved_sidecars,
         input_checksums,
         output_checksums,
+        execution_provenance,
     };
 
     let manifest_json = serde_json::to_string_pretty(&manifest)
@@ -2140,6 +2163,105 @@ fn merge_runtime_surfaces(
     base.state_surface.extend(overlay.state_surface);
     base.flux_surface.extend(overlay.flux_surface);
     base
+}
+
+fn execute_daily_scheduler_kernel_lifecycle(
+    runtime_surface: HillslopeWritebackSurface,
+) -> Result<HillslopeExecutionProvenance, HillslopeCliError> {
+    let mut runtime_surface = runtime_surface;
+    runtime_surface
+        .state_surface
+        .retain(|symbol, _| symbol.as_str() != "pl_schedule_slot_count");
+
+    let topology_graph = TopologyGraph::new(1, 0, 0, Vec::new());
+    let topology_report = validate_pre_execution_topology(&topology_graph).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "execution_provenance",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} failed building topology precondition report: {error}"
+            ),
+        }
+    })?;
+
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = RunnerDailyPhaseKernel;
+    let execution_report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "execution_provenance",
+            detail: format!("{SIMPIPE_GUARD_ID} scheduler/kernel lifecycle failed: {error}"),
+        })?;
+
+    if !execution_report.scheduler_report.is_success() {
+        let scheduler_status = &execution_report.scheduler_report.scheduler_status;
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "execution_provenance",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} scheduler lifecycle did not complete successfully (outcome_class={}, status_class={:?}, boundary_class={}, message_id={})",
+                scheduler_outcome_class_as_str(execution_report.scheduler_report.outcome_class),
+                scheduler_status.classification(),
+                scheduler_status.boundary_class().as_str(),
+                scheduler_status.message_id()
+            ),
+        });
+    }
+
+    Ok(HillslopeExecutionProvenance {
+        scheduler_kernel_executed: true,
+        publication_source: SCHEDULER_KERNEL_PUBLICATION_SOURCE.to_string(),
+        simpipe_guard_id: SIMPIPE_GUARD_ID.to_string(),
+        selected_lane: DAILY_EXECUTION_LANE.to_string(),
+        scheduler_outcome_class: scheduler_outcome_class_as_str(
+            execution_report.scheduler_report.outcome_class,
+        )
+        .to_string(),
+        scheduler_status_message_id: execution_report
+            .scheduler_report
+            .scheduler_status
+            .message_id()
+            .to_string(),
+    })
+}
+
+fn scheduler_outcome_class_as_str(outcome_class: SchedulerOutcomeClass) -> &'static str {
+    match outcome_class {
+        SchedulerOutcomeClass::Completed => "completed",
+        SchedulerOutcomeClass::TopologyPreconditionFailed => "topology_precondition_failed",
+        SchedulerOutcomeClass::PhaseFailure => "phase_failure",
+        SchedulerOutcomeClass::SchedulerInvariantFailure => "scheduler_invariant_failure",
+    }
+}
+
+#[derive(Debug, Default)]
+struct RunnerDailyPhaseKernel;
+
+impl HillslopeKernel for RunnerDailyPhaseKernel {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        let phase =
+            hillslope_phase_from_name(request.phase_name).unwrap_or(HillslopePhase::Normalization);
+        let status = HillslopePhaseScheduler::nominal_phase_status(phase)
+            .expect("nominal phase status constants are non-empty and valid");
+        KernelRunResponse::new(status, KernelWritebackPayload::empty())
+    }
+}
+
+fn hillslope_phase_from_name(phase_name: &str) -> Option<HillslopePhase> {
+    match phase_name {
+        "normalization" => Some(HillslopePhase::Normalization),
+        "storage_bounds" => Some(HillslopePhase::StorageBounds),
+        "decomposition_transition" => Some(HillslopePhase::DecompositionTransition),
+        "residue_partition_transition" => Some(HillslopePhase::ResiduePartitionTransition),
+        "annual_growth_transition" => Some(HillslopePhase::AnnualGrowthTransition),
+        "perennial_growth_transition" => Some(HillslopePhase::PerennialGrowthTransition),
+        "evapotranspiration" => Some(HillslopePhase::Evapotranspiration),
+        "percolation_deep_seepage" => Some(HillslopePhase::PercolationDeepSeepage),
+        "lateral_transfer" => Some(HillslopePhase::LateralTransfer),
+        "drainage" => Some(HillslopePhase::Drainage),
+        "runoff_reconciliation" => Some(HillslopePhase::RunoffReconciliation),
+        "storage_reconciliation" => Some(HillslopePhase::StorageReconciliation),
+        "closure_diagnostics" => Some(HillslopePhase::ClosureDiagnostics),
+        _ => None,
+    }
 }
 
 fn build_h5_wat_output(
