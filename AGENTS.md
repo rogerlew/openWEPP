@@ -22,6 +22,14 @@
   intervention.
 - Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
   self-containment, and observable validation expectations.
+- Substantive implementation work must occur within an authorized
+  `docs/work-packages/<id>/` scope, either during explicit package execution
+  or as user-directed follow-on work from that package.
+- When user-directed follow-on work is substantive and extends beyond the
+  current package objective/write set, first evaluate closing out the current
+  package and planning a new work-package before proceeding.
+- If package scope boundaries are unclear, ask the user whether to continue
+  under the current package or open a new one.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Do not create or switch git branches unless the user explicitly asks.
