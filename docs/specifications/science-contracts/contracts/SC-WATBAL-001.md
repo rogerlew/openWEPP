@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -159,6 +159,7 @@ orchestrator-owned writeback commit authority.
 | INV-WATBAL-012 | PL14 replay-candidate emission invariant: WB13 candidate rows staged for strict Tier-A replay must preserve canonical 25-column schema and deterministic `(Y, J, OFE)` ordering; missing required symbols/artifacts or schema/arity violations must hard-fail replay staging without truncation, padding, or legacy-surface substitution. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-013 | CLIM05 snow-coupled closure invariant: when active snow coupling publishes signed `S`, WB12 storage reconciliation must use `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd` and hard-fail on missing/non-finite/domain-invalid `S`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-014 | PL14R replay rerun candidate-surface invariant: strict Tier-A rerun candidate staging must explicitly publish both required include surfaces (`H5.wat.dat`, `H5.plot.dat`) from direct openWEPP candidate outputs; missing required surface coverage or synthetic fallback substitution must hard-fail rerun staging and keep disposition in `HOLD`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-015 | PL15R schema-aligned replay supersession invariant: Tier-A `H5.wat.dat` recloseout classification must use canonical 25-column schema-aligned strict replay evidence and day-by-day keyed parity (`OFE,J,Y`) before declaring residual blockers. Schema-only pre-alignment failures are historical context once superseding strict-pass evidence is present. | governance-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -178,6 +179,7 @@ orchestrator-owned writeback commit authority.
 | `INV-WATBAL-012` | runtime | WB13 replay-candidate staging gate before strict comparator execution | Typed hard error on missing/invalid WB13 replay rows or missing replay artifacts; no schema rewrite/fallback padding | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-013` | runtime | WB12 storage reconciliation with active CLIM05 snow-coupled `S` term | Typed hard error on missing/non-finite/domain-invalid `S` or violated CLIM05 storage closure equation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-014` | runtime + governance | PL14R strict replay include-surface staging gate | Typed hard error / explicit `HOLD` when candidate lane lacks required include surfaces (`H5.wat.dat`, `H5.plot.dat`) or uses fallback substitution | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-015` | governance | PL15R schema-aligned WB13 replay reclassification gate | Governance `HOLD` when active Tier-A WB13 blocker classification ignores superseding schema-aligned strict-pass/day-parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -249,6 +251,7 @@ implementation contracts introduce explicit aliases.
 | WB13 replay-candidate schema/order and artifact completeness (`INV-WATBAL-012`) | WB13 output staging and replay boundary | Hard error when strict replay staging sees missing required WB13 symbols/artifacts or schema/ordering violations | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | CLIM05 snow-coupled WB12 storage closure (`INV-WATBAL-013`) | WB12 storage reconciliation stage | Hard error on missing/non-finite/domain-invalid signed `S` term or CLIM05 storage equation violation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL14R strict include-surface completeness (`INV-WATBAL-014`) | strict replay candidate staging boundary | Hard error / `HOLD` when candidate rerun artifact set omits `H5.wat.dat` or `H5.plot.dat`, or when fallback artifacts are substituted | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| PL15R schema-aligned WB13 supersession (`INV-WATBAL-015`) | strict replay delta reclassification boundary | Governance `HOLD` when residual WB13 blockers are asserted without evaluating superseding 25-column schema-aligned strict replay and keyed day-by-day parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -665,6 +668,10 @@ canonical order:
 6. PL14R strict rerun staging requires explicit candidate-lane coverage for
    both `H5.wat.dat` and `H5.plot.dat`; omission of either required include
    surface is a hard-fail + `HOLD`.
+7. PL15R recloseout vectors must classify `H5.wat.dat` residual status from the
+   schema-aligned strict replay set (`h5_wat_comparator_schema_aligned.json`,
+   day-by-day parity artifact), not solely from pre-alignment structure-diff
+   signatures.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -717,3 +724,4 @@ canonical order:
 | `2026-05-23` | `14` | `Codex` | WB16 amendment: added closure-diagnostics peak-runoff authority (`peakro`, `watdur`) with three method branches (`tstar`/`tc`), explicit minimum-flow and max-duration rules, and typed WB16 guard/test-vector posture. |
 | `2026-05-23` | `15` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WB11/WB12/WB14/WB15/WB16 interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving existing failure-class/message continuity. |
 | `2026-05-23` | `16` | `Codex` | PL14R amendment: added strict replay rerun candidate-surface invariant (`INV-WATBAL-014`) requiring explicit candidate-lane coverage of `H5.wat.dat` and `H5.plot.dat` with no fallback substitution. |
+| `2026-05-23` | `17` | `Codex` | PL15R amendment: added schema-aligned replay supersession invariant (`INV-WATBAL-015`) requiring Tier-A WB13 residual classification from canonical 25-column strict replay and keyed day-by-day parity evidence before retaining blockers. |

@@ -237,6 +237,10 @@ path = "tests/integration/pl14r_tier_a_replay_rerun_contract.rs"
 name = "pl15_tier_a_delta_closeout_contract"
 path = "tests/integration/pl15_tier_a_delta_closeout_contract.rs"
 
+[[test]]
+name = "pl15r_tier_a_delta_recloseout_contract"
+path = "tests/integration/pl15r_tier_a_delta_recloseout_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
