@@ -206,6 +206,10 @@ name = "wb18_percolation_physics_kernel_contract"
 path = "tests/integration/wb18_percolation_physics_kernel_contract.rs"
 
 [[test]]
+name = "wb19_lateral_drainage_physics_kernel_contract"
+path = "tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs"
+
+[[test]]
 name = "ws10_watershed_kernel_contract"
 path = "tests/integration/ws10_watershed_kernel_contract.rs"
 

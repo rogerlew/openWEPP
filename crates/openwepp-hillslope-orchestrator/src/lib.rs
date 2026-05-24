@@ -115,10 +115,6 @@ const WB11_SYMBOL_FIELD_CAPACITY: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11FieldCapacity;
 const WB11_SYMBOL_PERC_FRACTION: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11PercFraction;
-const WB11_SYMBOL_LATERAL_FRACTION: HillslopeProductionStateSymbol =
-    HillslopeProductionStateSymbol::Wb11LateralFraction;
-const WB11_SYMBOL_DRAINAGE_FRACTION: HillslopeProductionStateSymbol =
-    HillslopeProductionStateSymbol::Wb11DrainageFraction;
 const WB11_SYMBOL_DRAINAGE_COEFFICIENT: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb11DrainageCoefficient;
 const WB11_SYMBOL_DRAINABLE_STORAGE: HillslopeProductionStateSymbol =
@@ -141,6 +137,15 @@ const WB11_SYMBOL_DRAINAGE_QDD: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb11DrainageQdd;
 const WB11_SYMBOL_SUBHYD_QD: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb11SubhydQd;
+const WB19_SYMBOL_AVG_SLOPE: &str = "avgslp";
+const WB19_SYMBOL_SLOPE_LENGTH: &str = "slplen";
+const WB19_SYMBOL_LATERAL_ANISOTROPY_RATIO: &str = "wb19_lateral_anisotropy_ratio";
+const WB19_SYMBOL_DRAIN_ENABLED: &str = "wb19_drain_enabled";
+const WB19_SYMBOL_DRAIN_DEPTH: &str = "wb19_drain_depth";
+const WB19_SYMBOL_DRAIN_SPACING: &str = "wb19_drain_spacing";
+const WB19_SYMBOL_DRAIN_DIAMETER: &str = "wb19_drain_diameter";
+const WB19_DRAIN_ALPHA: f64 = 3.4;
+const WB19_DRAIN_HOURS_PER_DAY: f64 = 24.0;
 const WB12_SYMBOL_RAINFALL_INPUT: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb12RainfallInput;
 const WB12_SYMBOL_RUNON_INPUT: HillslopeProductionStateSymbol =
@@ -2076,6 +2081,143 @@ impl Wb11HydrologyKernel {
 
     fn wb18_perc_flux_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("wb18_perc_pei_{layer_index:04}"))
+    }
+
+    fn wb19_dg_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("dg_{layer_index:04}"))
+    }
+
+    #[allow(clippy::type_complexity)]
+    fn wb19_load_layer_state(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>), Wb11HydrologyKernelGuardError> {
+        let nsl_symbol = BoundarySymbol::from("nsl");
+        let layer_count = Self::require_state_non_negative_integral_for_symbol(
+            request,
+            phase_class,
+            &nsl_symbol,
+        )?;
+        if layer_count == 0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: nsl_symbol,
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
+        let mut theta = Vec::with_capacity(layer_count);
+        let mut field_capacity = Vec::with_capacity(layer_count);
+        let mut conductivity = Vec::with_capacity(layer_count);
+        let mut thickness = Vec::with_capacity(layer_count);
+
+        for layer_index in 1..=layer_count {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
+            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
+            let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+
+            let layer_theta =
+                Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &theta_symbol,
+                layer_theta,
+                Some(0.0),
+                None,
+            )?;
+
+            let layer_fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &fc_symbol,
+                layer_fc,
+                Some(0.0),
+                None,
+            )?;
+
+            let layer_ssc =
+                Self::require_state_scalar_for_symbol(request, phase_class, &ssc_symbol)?;
+            if layer_ssc <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ssc_symbol,
+                    value: layer_ssc,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let layer_dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            if layer_dg <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: dg_symbol,
+                    value: layer_dg,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            theta.push(layer_theta);
+            field_capacity.push(layer_fc);
+            conductivity.push(layer_ssc);
+            thickness.push(layer_dg);
+        }
+
+        Ok((theta, field_capacity, conductivity, thickness))
+    }
+
+    fn wb19_drainable_storage(theta: &[f64], field_capacity: &[f64]) -> f64 {
+        theta
+            .iter()
+            .zip(field_capacity.iter())
+            .map(|(theta_i, fc_i)| (theta_i - fc_i).max(0.0))
+            .sum()
+    }
+
+    fn wb19_withdraw_top_down(theta: &mut [f64], field_capacity: &[f64], amount: f64) -> f64 {
+        let mut remaining = amount.max(0.0);
+        for (theta_i, fc_i) in theta.iter_mut().zip(field_capacity.iter()) {
+            if remaining <= WB11_ZERO_THRESHOLD {
+                break;
+            }
+            let available = (*theta_i - *fc_i).max(0.0);
+            if available <= WB11_ZERO_THRESHOLD {
+                continue;
+            }
+            let withdrawn = available.min(remaining);
+            *theta_i -= withdrawn;
+            remaining -= withdrawn;
+        }
+        amount.max(0.0) - remaining.max(0.0)
+    }
+
+    fn wb19_withdraw_tile_to_surface(
+        theta: &mut [f64],
+        field_capacity: &[f64],
+        tile_layer_index: usize,
+        amount: f64,
+    ) -> f64 {
+        let mut remaining = amount.max(0.0);
+        if theta.is_empty() {
+            return 0.0;
+        }
+        let upper_layer = tile_layer_index.min(theta.len() - 1);
+        for layer in (0..=upper_layer).rev() {
+            if remaining <= WB11_ZERO_THRESHOLD {
+                break;
+            }
+            let available = (theta[layer] - field_capacity[layer]).max(0.0);
+            if available > WB11_ZERO_THRESHOLD {
+                let withdrawn = available.min(remaining);
+                theta[layer] -= withdrawn;
+                remaining -= withdrawn;
+            }
+        }
+        amount.max(0.0) - remaining.max(0.0)
     }
 
     fn diagnostic_count_to_f64(value: usize) -> f64 {
@@ -4217,16 +4359,17 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    #[allow(clippy::too_many_lines)]
     fn run_lateral_transfer(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyLateralTransfer;
-        let drainable_storage =
+        let drainable_storage_legacy =
             Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINABLE_STORAGE)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
-            drainable_storage,
+            drainable_storage_legacy,
             Some(0.0),
             None,
         )?;
@@ -4241,19 +4384,100 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let lateral_fraction =
-            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_LATERAL_FRACTION)?;
-        Self::require_state_range(
+        let avgslp_symbol = BoundarySymbol::from(WB19_SYMBOL_AVG_SLOPE);
+        let avgslp = Self::require_state_scalar_for_symbol(request, phase_class, &avgslp_symbol)?;
+        Self::require_state_range_for_symbol(phase_class, &avgslp_symbol, avgslp, Some(0.0), None)?;
+
+        let slplen_symbol = BoundarySymbol::from(WB19_SYMBOL_SLOPE_LENGTH);
+        let slplen = Self::require_state_scalar_for_symbol(request, phase_class, &slplen_symbol)?;
+        if slplen <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: slplen_symbol,
+                value: slplen,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let anisotropy_symbol = BoundarySymbol::from(WB19_SYMBOL_LATERAL_ANISOTROPY_RATIO);
+        let anisotropy =
+            Self::require_state_scalar_for_symbol(request, phase_class, &anisotropy_symbol)?;
+        if anisotropy <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: anisotropy_symbol,
+                value: anisotropy,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let (mut theta, field_capacity, conductivity, thickness) =
+            Self::wb19_load_layer_state(request, phase_class)?;
+
+        let mut saturated_thickness = 0.0_f64;
+        let mut conductivity_depth_sum = 0.0_f64;
+        let mut saturated_depth_sum = 0.0_f64;
+        for (((theta_i, fc_i), ssc_i), dg_i) in theta
+            .iter()
+            .zip(field_capacity.iter())
+            .zip(conductivity.iter())
+            .zip(thickness.iter())
+        {
+            if *theta_i + WB11_ZERO_THRESHOLD >= *fc_i {
+                saturated_thickness += *dg_i;
+                saturated_depth_sum += *dg_i;
+                conductivity_depth_sum += *ssc_i * *dg_i;
+            }
+        }
+
+        let q_lateral_potential = if saturated_thickness <= WB11_ZERO_THRESHOLD
+            || saturated_depth_sum <= WB11_ZERO_THRESHOLD
+        {
+            0.0
+        } else {
+            let ke = 86_400.0 * (conductivity_depth_sum / saturated_depth_sum);
+            if !ke.is_finite() || ke < 0.0 {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: avgslp_symbol.clone(),
+                    value: ke,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+
+            let slope_angle = avgslp.atan();
+            let slope_factor = slope_angle.sin();
+            if !slope_factor.is_finite() || slope_factor < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: avgslp_symbol.clone(),
+                    value: slope_factor,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+
+            (saturated_thickness * anisotropy * ke * slope_factor.max(0.0)) / slplen
+        };
+
+        Self::require_flux_range(
             phase_class,
-            WB11_SYMBOL_LATERAL_FRACTION,
-            lateral_fraction,
+            WB11_SYMBOL_LATERAL_Q,
+            q_lateral_potential,
             Some(0.0),
-            Some(1.0),
+            None,
         )?;
 
-        let available = drainable_storage + recharge_pe;
-        let q_lateral = available * lateral_fraction;
-        let drainable_after = available - q_lateral;
+        let layer_pool = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let available_pool = layer_pool.max(drainable_storage_legacy + recharge_pe);
+        let q_lateral = q_lateral_potential.min(available_pool);
+
+        let _withdrawn = Self::wb19_withdraw_top_down(&mut theta, &field_capacity, q_lateral);
+
+        let drainable_after = (available_pool - q_lateral).max(0.0);
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
@@ -4266,7 +4490,7 @@ impl Wb11HydrologyKernel {
             WB11_SYMBOL_LATERAL_Q,
             q_lateral,
             Some(0.0),
-            Some(available),
+            Some(available_pool),
         )?;
 
         let Ok(status) =
@@ -4274,13 +4498,23 @@ impl Wb11HydrologyKernel {
         else {
             unreachable!("status message ids are non-empty WB11 constants")
         };
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                WB11_SYMBOL_DRAINABLE_STORAGE,
-                drainable_after,
+        let mut state_updates = Vec::with_capacity(theta.len() + 1);
+        state_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_DRAINABLE_STORAGE,
+            drainable_after,
+            Some(0.0),
+            None,
+        ));
+        for (index, value) in theta.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                Self::wb18_perc_state_symbol("theta", index + 1),
+                *value,
                 Some(0.0),
                 None,
-            )],
+            ));
+        }
+        let writeback = KernelWritebackPayload::with_updates(
+            state_updates,
             vec![WritebackField::bounded(
                 WB11_SYMBOL_LATERAL_Q,
                 q_lateral,
@@ -4291,28 +4525,19 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    #[allow(clippy::too_many_lines)]
     fn run_drainage(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyDrainage;
-        let drainable_storage =
+        let drainable_storage_legacy =
             Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINABLE_STORAGE)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
-            drainable_storage,
+            drainable_storage_legacy,
             Some(0.0),
             None,
-        )?;
-
-        let drainage_fraction =
-            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_DRAINAGE_FRACTION)?;
-        Self::require_state_range(
-            phase_class,
-            WB11_SYMBOL_DRAINAGE_FRACTION,
-            drainage_fraction,
-            Some(0.0),
-            Some(1.0),
         )?;
 
         let drainage_capacity =
@@ -4334,9 +4559,234 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let uncapped_drainage = drainable_storage * drainage_fraction;
-        let q_drainage = uncapped_drainage.min(drainage_capacity);
-        let drainable_after = drainable_storage - q_drainage;
+        let drain_enabled_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_ENABLED);
+        let drain_enabled_value =
+            Self::require_state_scalar_for_symbol(request, phase_class, &drain_enabled_symbol)?;
+        let drain_enabled = if (drain_enabled_value - 0.0).abs() <= WB11_ZERO_THRESHOLD {
+            false
+        } else if (drain_enabled_value - 1.0).abs() <= WB11_ZERO_THRESHOLD {
+            true
+        } else {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: drain_enabled_symbol,
+                value: drain_enabled_value,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            });
+        };
+
+        let drain_depth_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_DEPTH);
+        let drain_depth =
+            Self::require_state_scalar_for_symbol(request, phase_class, &drain_depth_symbol)?;
+        if drain_depth <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: drain_depth_symbol,
+                value: drain_depth,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let drain_spacing_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_SPACING);
+        let drain_spacing =
+            Self::require_state_scalar_for_symbol(request, phase_class, &drain_spacing_symbol)?;
+        if drain_spacing <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: drain_spacing_symbol,
+                value: drain_spacing,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let drain_diameter_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_DIAMETER);
+        let drain_diameter =
+            Self::require_state_scalar_for_symbol(request, phase_class, &drain_diameter_symbol)?;
+        if drain_diameter <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: drain_diameter_symbol,
+                value: drain_diameter,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let soldep_symbol = BoundarySymbol::from("solthk");
+        let soldep = Self::require_state_scalar_for_symbol(request, phase_class, &soldep_symbol)?;
+        if soldep <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: soldep_symbol,
+                value: soldep,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let (mut theta, field_capacity, conductivity, thickness) =
+            Self::wb19_load_layer_state(request, phase_class)?;
+        let layer_pool = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let available_pool = layer_pool.max(drainable_storage_legacy);
+
+        let mut q_drainage_potential = 0.0_f64;
+        let mut tile_layer_index = theta.len().saturating_sub(1);
+
+        if drain_enabled {
+            let mut watbl = 0.0_f64;
+            let mut hit_unsat_zone = false;
+            for idx in (0..theta.len()).rev() {
+                if theta[idx] + WB11_ZERO_THRESHOLD >= field_capacity[idx] {
+                    if !hit_unsat_zone {
+                        watbl += thickness[idx];
+                    }
+                } else {
+                    hit_unsat_zone = true;
+                }
+            }
+
+            let dep2watbl = soldep - watbl;
+            if !dep2watbl.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: soldep_symbol,
+                    value: dep2watbl,
+                    minimum: Some(0.0),
+                    maximum: Some(soldep),
+                });
+            }
+
+            if dep2watbl <= drain_depth + WB11_ZERO_THRESHOLD {
+                let mut cumulative_depth = 0.0_f64;
+                let mut tile_layer = 0usize;
+                for (idx, dg) in thickness.iter().enumerate() {
+                    cumulative_depth += *dg;
+                    if cumulative_depth <= drain_depth + WB11_ZERO_THRESHOLD {
+                        tile_layer = idx;
+                    }
+                }
+                tile_layer_index = (tile_layer + 1).min(theta.len().saturating_sub(1));
+
+                let mut cumulative_layer_depth = 0.0_f64;
+                let mut conductivity_depth_sum = 0.0_f64;
+                let mut saturated_depth_sum = 0.0_f64;
+                for idx in 0..theta.len() {
+                    cumulative_layer_depth += thickness[idx];
+                    if cumulative_layer_depth + WB11_ZERO_THRESHOLD >= dep2watbl {
+                        conductivity_depth_sum += conductivity[idx] * thickness[idx];
+                        saturated_depth_sum += thickness[idx];
+                    }
+                }
+
+                let dranks = if saturated_depth_sum > WB11_ZERO_THRESHOLD {
+                    (conductivity_depth_sum / saturated_depth_sum) * 3600.0 * 100.0
+                } else {
+                    0.0
+                };
+                if !dranks.is_finite() || dranks < 0.0 {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: drain_spacing_symbol.clone(),
+                        value: dranks,
+                        minimum: Some(0.0),
+                        maximum: None,
+                    });
+                }
+
+                let mut drain_depth_cm = (soldep - drain_depth) * 100.0;
+                if drain_depth_cm < 0.0 {
+                    drain_depth_cm = 1.0;
+                }
+                let spacing_cm = drain_spacing * 100.0;
+                let radius_cm = (drain_diameter / 2.0) * 100.0;
+
+                let spacing_ratio = drain_depth_cm / spacing_cm;
+                let equivalent_depth_cm = if spacing_ratio <= 0.3 && spacing_ratio > 0.0 {
+                    let radius_ratio = drain_depth_cm / radius_cm;
+                    if radius_ratio <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: drain_diameter_symbol.clone(),
+                            value: radius_ratio,
+                            minimum: Some(WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    let denominator = 1.0
+                        + spacing_ratio
+                            * ((8.0 / std::f64::consts::PI) * radius_ratio.ln() - WB19_DRAIN_ALPHA);
+                    if denominator <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: drain_spacing_symbol.clone(),
+                            value: denominator,
+                            minimum: Some(WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    drain_depth_cm / denominator
+                } else {
+                    let log_term = (spacing_cm / radius_cm).ln() - 1.15;
+                    if log_term <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: drain_spacing_symbol.clone(),
+                            value: log_term,
+                            minimum: Some(WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    (spacing_cm * std::f64::consts::PI) / (8.0 * log_term)
+                };
+                if !equivalent_depth_cm.is_finite() || equivalent_depth_cm < 0.0 {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: drain_spacing_symbol.clone(),
+                        value: equivalent_depth_cm,
+                        minimum: Some(0.0),
+                        maximum: None,
+                    });
+                }
+
+                let water_table_cm = (drain_depth - dep2watbl).max(0.0) * 100.0;
+                let drainage_cm_h = (8.0 * dranks * equivalent_depth_cm * water_table_cm
+                    + 4.0 * dranks * water_table_cm.powi(2))
+                    / spacing_cm.powi(2);
+                if !drainage_cm_h.is_finite() || drainage_cm_h < -WB11_ZERO_THRESHOLD {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: drain_depth_symbol.clone(),
+                        value: drainage_cm_h,
+                        minimum: Some(0.0),
+                        maximum: None,
+                    });
+                }
+
+                q_drainage_potential = (drainage_cm_h / 100.0) * WB19_DRAIN_HOURS_PER_DAY;
+                Self::require_flux_range(
+                    phase_class,
+                    WB11_SYMBOL_DRAINAGE_QDD,
+                    q_drainage_potential,
+                    Some(0.0),
+                    None,
+                )?;
+            }
+        }
+
+        let q_drainage = q_drainage_potential
+            .min(drainage_capacity)
+            .min(available_pool);
+        let _withdrawn = Self::wb19_withdraw_tile_to_surface(
+            &mut theta,
+            &field_capacity,
+            tile_layer_index,
+            q_drainage,
+        );
+
+        let drainable_after = (available_pool - q_drainage).max(0.0);
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
@@ -4367,13 +4817,23 @@ impl Wb11HydrologyKernel {
         ) else {
             unreachable!("status message ids are non-empty WB11 constants")
         };
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                WB11_SYMBOL_DRAINABLE_STORAGE,
-                drainable_after,
+        let mut state_updates = Vec::with_capacity(theta.len() + 1);
+        state_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_DRAINABLE_STORAGE,
+            drainable_after,
+            Some(0.0),
+            None,
+        ));
+        for (index, value) in theta.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                Self::wb18_perc_state_symbol("theta", index + 1),
+                *value,
                 Some(0.0),
                 None,
-            )],
+            ));
+        }
+        let writeback = KernelWritebackPayload::with_updates(
+            state_updates,
             vec![
                 WritebackField::bounded(
                     WB11_SYMBOL_DRAINAGE_QDD,

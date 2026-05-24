@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 7
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -110,16 +110,17 @@ This identity is an accounting constraint for contract enforcement and does not
 replace the governing Chapter-6 process equations.
 `[DIRECT][Static] + [INFERENCE][Static]`
 
-## Algorithm State Surfaces (WB11 Lateral/Drainage Production Kernels)
+## Algorithm State Surfaces (WB19 Lateral/Drainage Production Kernels)
 
 ### Required Inputs
 
 | Surface | Symbols |
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
-| Lateral-transfer consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| Drainage consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
-| WB11 lateral/drainage state inputs | `wb11_drainable_storage`, `wb11_lateral_fraction`, `wb11_drainage_fraction`, `wb11_drainage_coefficient` |
+| Layer hydrology state family | `nsl`, `solthk`, `dg_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####` |
+| Lateral geometry + conductivity family | `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio` |
+| Drainage geometry + capacity family | `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
+| Coupling carry-forward surface | `Pe` |
 
 ### Required Outputs
 
@@ -127,36 +128,49 @@ replace the governing Chapter-6 process equations.
 |---|---|
 | Lateral flux output | `q` |
 | Drainage outputs | `Qdd`, `Qd` |
-| Lateral/drainage state updates | `wb11_drainable_storage` |
+| Lateral/drainage state updates | `wb11_drainable_storage`, `wb18_perc_theta_####` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range lateral/drainage domains |
 
 ### Mutated State Surfaces
 
-WB11 mutates lateral/drainage boundary surfaces deterministically:
-- lateral phase updates `wb11_drainable_storage` and emits `q`
-- drainage phase applies explicit drainage-cap limit, updates
-  `wb11_drainable_storage`, emits `Qdd`, and emits `Qd = q + Qdd`
+WB19 mutates lateral/drainage boundary surfaces deterministically:
+- lateral phase computes Eq. [6.2.4]-derived `q`, withdraws layer water above
+  field capacity from top to bottom, updates `wb18_perc_theta_####`, and
+  updates `wb11_drainable_storage`.
+- drainage phase computes Eq. [6.2.10]-[6.2.11]-derived `Qdd` with explicit
+  equivalent-depth branch + capacity cap, performs tile-layer-to-surface
+  withdrawal, updates `wb18_perc_theta_####`, updates
+  `wb11_drainable_storage`, and emits `Qd = q + Qdd`.
 
-## Algorithm Specification (WB11 Lateral/Drainage Production Execution)
+## Algorithm Specification (WB19 Lateral/Drainage Production Execution)
 
-1. Lateral phase requires finite `wb11_drainable_storage`,
-   `wb11_lateral_fraction`, and percolation recharge `Pe`; computes
-   deterministic `q`.
-2. Drainage phase requires finite `wb11_drainable_storage`,
-   `wb11_drainage_fraction`, `wb11_drainage_coefficient`, and prior lateral
-   `q`; computes explicit cap-limited `Qdd`.
-3. Drainage phase emits deterministic total subsurface loss `Qd = q + Qdd`.
-4. Reject missing, non-finite, or out-of-range lateral/drainage domains with
+1. Lateral phase loads WB18 per-layer states (`theta`, `fc`, `ssc`, `dg`) and
+   computes saturated-zone metrics and effective conductivity over saturated
+   thickness:
+   - `Ke = 86400 * (Σ(ssc_i * dg_i) / Σ(dg_i))`
+   - `alpha = atan(avgslp)`
+   - `q_potential = (Ho * wb19_lateral_anisotropy_ratio * Ke * sin(alpha)) / slplen`
+2. Lateral phase withdraws `q` from layer excess water (`theta_i - fc_i`) in
+   top-to-bottom sequence and emits actual `q` after residual withdrawal
+   reduction.
+3. Drainage phase (when `wb19_drain_enabled = 1`) computes Eq. [6.2.10]-[6.2.11]
+   branch values using `wb19_drain_depth`, `wb19_drain_spacing`,
+   `wb19_drain_diameter`, water-table depth from saturated-layer state, and
+   effective saturated conductivity. Emitted `Qdd` is capped by
+   `wb11_drainage_coefficient`.
+4. Drainage phase withdraws `Qdd` from tile-layer-to-surface excess-water
+   sequence and emits total subsurface loss `Qd = q + Qdd`.
+5. Reject missing, non-finite, or out-of-range lateral/drainage domains with
    typed hard-fail status; no silent fallback/clamping paths are permitted.
 
-## Branch and Guard Table (WB11 Lateral/Drainage Kernels)
+## Branch and Guard Table (WB19 Lateral/Drainage Kernels)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-SUBHYD-WB11-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `wb11_drainable_storage`, `wb11_lateral_fraction`, `Pe` | runtime | deterministic lateral/writeback execution |
-| `BR-SUBHYD-WB11-DRAIN-EXECUTE` | phase class `hydrology_drainage` | `wb11_drainable_storage`, `wb11_drainage_fraction`, `wb11_drainage_coefficient`, `q` | runtime | deterministic drainage/writeback execution |
-| `BR-SUBHYD-WB11-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
-| `BR-SUBHYD-WB11-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
+| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
+| `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic layer-aware drainage execution/writeback |
+| `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
+| `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
 
 ## Invariants
 
@@ -173,9 +187,9 @@ WB11 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-011 | Drainage-capacity invariant: emitted tile/ditch drainage flux cannot exceed declared drainage coefficient (`Qdd <= D.C.`); when Eq. [6.2.10] exceeds capacity, output is explicitly capped. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-009 | Cross-domain coupling invariant: daily subsurface/drain loss term exported as `Qd` is unit/sign-consistent with Chapter-5 daily closure and preserves subsurface-contribution semantics for watershed/channel runon accounting. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-010 | Governance scope invariant: contract claims remain within Chapter-6 subsurface/drainage scope; unsupported extrapolation to alternate groundwater/baseflow physics without companion authority is non-promotable. | governance-fail | REF-SUBHYD-CH6-INTRO, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-012 | WB11 lateral execution invariant: lateral phase computes deterministic `q` and updates `wb11_drainable_storage` from required WB11 lateral symbols with explicit recharge coupling from `Pe`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-013 | WB11 drainage execution invariant: drainage phase computes cap-limited `Qdd`, emits `Qd = q + Qdd`, and updates `wb11_drainable_storage` without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-014 | WB11 lateral/drainage guard invariant: missing/non-finite/out-of-range lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-SUBHYD-012 | WB19 lateral execution invariant: lateral phase computes Eq. [6.2.4]-style deterministic `q` from layer-aware conductivity/geometry symbols and updates `wb18_perc_theta_####` + `wb11_drainable_storage` through top-to-bottom excess-water withdrawal. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-013 | WB19 drainage execution invariant: drainage phase computes Eq. [6.2.10]-[6.2.11] deterministic `Qdd`, applies explicit capacity cap (`wb11_drainage_coefficient`), emits `Qd = q + Qdd`, and updates `wb18_perc_theta_####` + `wb11_drainable_storage` without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-014 | WB19 lateral/drainage guard invariant: missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -192,22 +206,29 @@ WB11 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-011` | runtime | Post-computation drainage-capacity validator | Typed hard error on uncapped `Qdd` output exceeding declared `D.C.` | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-009` | runtime | Subsurface boundary payload validator for `Qd` handoff | Typed hard error on missing malformed field or units/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-010` | governance | Contract review/disposition/verification + promotion checklist | Promotion `HOLD` when scope claims exceed declared authority boundary | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SUBHYD-012` | runtime | WB11 lateral production kernel execution path | Typed hard error on malformed/non-deterministic lateral writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SUBHYD-013` | runtime | WB11 drainage production kernel execution path | Typed hard error on malformed/non-deterministic drainage writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SUBHYD-014` | runtime | WB11 lateral/drainage guard tables | Typed hard error on missing/non-finite/domain-invalid lateral/drainage inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-SUBHYD-012` | runtime | WB19 lateral production kernel execution path | Typed hard error on malformed/non-deterministic layer-aware lateral writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-013` | runtime | WB19 drainage production kernel execution path | Typed hard error on malformed/non-deterministic layer-aware drainage writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-014` | runtime | WB19 lateral/drainage guard tables | Typed hard error on missing/non-finite/domain-invalid WB19 lateral/drainage inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
-Canonical symbols follow Chapter-6 WEPP notation. Concrete openWEPP
-runtime-field names are not yet fixed for this domain, so identity aliases are
-required until implementation surfaces diverge.
+Canonical symbols follow Chapter-6 WEPP notation with explicit WB18/WB19 runtime
+alias continuity for production kernels.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
-| `S`, `Ho`, `θd`, `θ`, `θFC`, `θa` | identity names | drainable storage and state-definition surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
-| `Pe`, `D`, `ET`, `L`, `q`, `Ke`, `α` | identity names | continuity and lateral-flow flux surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
+| `θ_i` | `wb18_perc_theta_####` | WB19 per-layer moisture state surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `θFC_i` | `wb18_perc_fc_####` | WB19 per-layer field-capacity surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `K_i` | `wb18_perc_ssc_####` | WB19 per-layer saturated conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `dg_i` | `dg_####` | WB19 per-layer thickness surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `L` | `slplen` | hillslope length for lateral flux denominator | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `α` | `atan(avgslp)` | slope angle reconstructed from runtime slope ratio | `rad` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `anisrt` | `wb19_lateral_anisotropy_ratio` | lateral anisotropy multiplier | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Pe` | `Pe` | percolation carry-forward coupling surface | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `DS`, `PR`, `Vi`, `Qi`, `FL` | identity names | surface storage/fill/release branch surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
-| `Qdd`, `D.C.`, `Kz`, `Ky`, `Kzy`, `Md`, `Ld`, `h`, `he`, `r`, `md`, `φ`, `φdi` | identity names | tile/ditch drainage and water-table drawdown surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
+| `D.C.` | `wb11_drainage_coefficient` | WB19 drainage-capacity cap | `m d^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ddrain`, `sdrain`, `drdiam` | `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter` | WB19 drainage-geometry surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Qdd`, `Qd` | `Qdd`, `Qd` | drainage and aggregate subsurface-loss outputs | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qd` | identity name | daily subsurface loss handoff surface | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
@@ -257,16 +278,16 @@ required until implementation surfaces diverge.
 | Water-table drawdown transition (`INV-SUBHYD-008`) | saturated-zone update stage | Hard error on invalid drawdown-domain or branch misuse | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Cross-domain coupling payload (`INV-SUBHYD-009`) | subsurface boundary handoff | Hard error on missing malformed field or unit/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Governance scope boundary (`INV-SUBHYD-010`) | review/verification/promotion | Governance `HOLD` until scope claims match declared authority | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB11 lateral/drainage production execution and guards (`INV-SUBHYD-012/013/014`) | lateral/drainage kernel execution and guard validation | Hard error on malformed lateral/drainage domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB19 lateral/drainage production execution and guards (`INV-SUBHYD-012/013/014`) | lateral/drainage kernel execution and guard validation | Hard error on malformed WB19 lateral/drainage domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
 | Constant/parameter | Units | Domain | Contract use | Authority |
 |---|---|---|---|---|
-| `WB11_LATERAL_STATUS_OK` | status message id | `HKERNEL-WB11-LAT-OK-001` | Typed nominal status for successful lateral phase execution | REF-SUBHYD-CH6-LATFLUX |
-| `WB11_DRAINAGE_STATUS_OK` | status message id | `HKERNEL-WB11-DRAIN-OK-001` | Typed nominal status for successful drainage phase execution | REF-SUBHYD-CH6-DRAINFLOW |
-| `WB11_LATERAL_GUARD_CODES` | status message id range | `HKERNEL-WB11-LAT-E-001..003` | Typed lateral guard codes for missing/non-finite/domain failures | REF-SUBHYD-PHYS-BOUNDS |
-| `WB11_DRAINAGE_GUARD_CODES` | status message id range | `HKERNEL-WB11-DRAIN-E-001..003` | Typed drainage guard codes for missing/non-finite/domain failures | REF-SUBHYD-PHYS-BOUNDS |
+| `WB19_LATERAL_STATUS_OK` | status message id (legacy ID retained) | `HKERNEL-WB11-LAT-OK-001` | Typed nominal status for successful WB19 lateral phase execution | REF-SUBHYD-CH6-LATFLUX |
+| `WB19_DRAINAGE_STATUS_OK` | status message id (legacy ID retained) | `HKERNEL-WB11-DRAIN-OK-001` | Typed nominal status for successful WB19 drainage phase execution | REF-SUBHYD-CH6-DRAINFLOW |
+| `WB19_LATERAL_GUARD_CODES` | status message id range (legacy IDs retained) | `HKERNEL-WB11-LAT-E-001..003` | Typed WB19 lateral guard codes for missing/non-finite/domain failures | REF-SUBHYD-PHYS-BOUNDS |
+| `WB19_DRAINAGE_GUARD_CODES` | status message id range (legacy IDs retained) | `HKERNEL-WB11-DRAIN-E-001..003` | Typed WB19 drainage guard codes for missing/non-finite/domain failures | REF-SUBHYD-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -284,13 +305,15 @@ bit-for-bit parity). Contract-specific tolerances:
 
 ## Test-Vector Obligations
 
-Minimum WB11 lateral/drainage production-kernel conformance vectors:
+Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
-1. Lateral phase emits deterministic `q` and updates
-   `wb11_drainable_storage` from valid WB11 lateral inputs.
-2. Drainage phase emits cap-limited `Qdd`, emits `Qd`, and updates
-   `wb11_drainable_storage` from valid WB11 drainage inputs.
-3. Non-finite/domain-invalid lateral/drainage inputs hard-fail with typed WB11
+1. Lateral phase emits deterministic Eq. [6.2.4]-derived `q`, updates
+   `wb18_perc_theta_####`, and updates `wb11_drainable_storage` from valid WB19
+   lateral inputs.
+2. Drainage phase emits Eq. [6.2.10]-[6.2.11]-derived cap-limited `Qdd`,
+   emits `Qd`, and updates `wb18_perc_theta_####` + `wb11_drainable_storage`
+   from valid WB19 drainage inputs.
+3. Non-finite/domain-invalid WB19 lateral/drainage inputs hard-fail with typed
    guard codes and do not mutate orchestrator writeback surfaces.
 
 ## WB12 Reconciliation Coupling Addendum
@@ -305,7 +328,7 @@ Minimum WB11 lateral/drainage production-kernel conformance vectors:
 
 ### WB12 Coupling Requirements
 
-1. `Qd` exported from WB11 lateral/drainage phases remains the required subsurface-loss term consumed by WB12 storage reconciliation.
+1. `Qd` exported from WB19 lateral/drainage phases remains the required subsurface-loss term consumed by WB12 storage reconciliation.
 2. WB12 storage reconciliation must treat `Qd` as a non-negative loss magnitude in closure diagnostics.
 3. Missing/non-finite `Qd` at storage reconciliation boundaries is an invalid runtime state and must hard-fail with typed WB12 storage guard codes.
 
@@ -354,3 +377,4 @@ Minimum WB11 lateral/drainage production-kernel conformance vectors:
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted lateral/drainage sections from routing-only scaffolding to production-kernel authority with deterministic `q`/`Qdd`/`Qd` updates, typed WB11 guard codes, and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB12 amendment: added explicit storage-reconciliation coupling authority for `Qd` consumption and typed WB12 closure-diagnostic failure posture. |
 | `2026-05-23` | `6` | `Codex` | WB13 amendment: added canonical daily output coupling authority for subsurface/drainage symbols (`latqcc`, `Tile`, `SubRIn`) and deterministic `Qd` relation posture with malformed-output hard-fail requirements. |
+| `2026-05-23` | `7` | `Codex` | WB19 amendment: replaced WB11 fraction-split lateral/drain surrogate authority with layer-aware Eq. [6.2.4]/[6.2.10]-[6.2.11] production-kernel authority, explicit WB18/WB19 symbol aliases, and legacy-ID typed guard continuity requirements. |

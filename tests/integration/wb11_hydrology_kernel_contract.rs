@@ -83,6 +83,39 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("wb18_perc_ssc_0002"),
         BoundaryValue::scalar(2.0e-5),
     );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("nslpts"), BoundaryValue::scalar(2.0));
+    state_surface.insert(
+        BoundarySymbol::from("xinput_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("slpinp_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+        BoundaryValue::scalar(39.653_865_297_983_295),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_depth"),
+        BoundaryValue::scalar(0.15),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_spacing"),
+        BoundaryValue::scalar(0.285),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_diameter"),
+        BoundaryValue::scalar(0.1),
+    );
     state_surface.insert(
         BoundarySymbol::from("wb11_lateral_fraction"),
         BoundaryValue::scalar(0.25),
@@ -190,7 +223,11 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
         .execute_with_kernel(&topology_report, &mut kernel, seeded_wb11_surface())
         .expect("wb11 execution should return typed report");
 
-    assert!(report.scheduler_report.is_success());
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase,
+    );
 
     assert_eq!(
         report
@@ -241,14 +278,13 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
             .copied(),
         Some(BoundaryValue::scalar(1.0))
     );
-    assert_eq!(
-        report
-            .writeback_surface
-            .flux_surface
-            .get(&BoundarySymbol::from("q"))
-            .copied(),
-        Some(BoundaryValue::scalar(0.75))
-    );
+    let q_lateral = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("q"))
+        .expect("q should be present")
+        .as_f64();
+    assert!((q_lateral - 0.75).abs() <= 1.0e-12);
     assert_eq!(
         report
             .writeback_surface
