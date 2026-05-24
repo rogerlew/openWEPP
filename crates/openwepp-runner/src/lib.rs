@@ -75,12 +75,19 @@ pub const REQUIRED_RUN_OUTPUT_LOSS: &str = "outputs.loss (.json)";
 pub const SIMPIPE_GUARD_ID: &str = "HS-SIMPIPE-E-001";
 pub const SIMOUT_GUARD_ID: &str = "HS-SIMOUT-E-001";
 pub const WUI_MODE_GUARD_ID: &str = "WUI-E-005";
+pub const SIMMODE_TIMESTEP_GUARD_ID: &str = "HS-SIMMODE-E-001";
+pub const SIMCONS_INTAKE_GUARD_ID: &str = "HS-SIMCONS-E-001";
 pub const DAILY_EXECUTION_LANE: &str = "daily";
 pub const HOURLY_EXECUTION_LANE: &str = "hourly";
+pub const SUBHOURLY_EXECUTION_LANE: &str = "subhourly";
 pub const SCHEDULER_KERNEL_PUBLICATION_SOURCE: &str = "scheduler-kernel";
 pub const WB13_PUBLICATION_SOURCE_SIMULATION_OWNED: &str = "simulation-owned";
 pub const WB13_REPLAY_CANDIDATE_SURFACE_WAT: &str = "interchange/H.wat.parquet";
 pub const WB13_REPLAY_CANDIDATE_SURFACE_PASS: &str = "interchange/H.pass.parquet";
+pub const SIMIMPL09_ADOPT_PROFILE: &str = "SIMIMPL08-adopt-only";
+
+const DAILY_TIMESTEP_SECONDS: u32 = 86_400;
+const HOURLY_TIMESTEP_SECONDS: u32 = 3_600;
 
 static RELEASE_SIDECAR_IO_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
@@ -789,6 +796,8 @@ struct HillslopeRunManifest {
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
     mode_selection: HillslopeModeSelectionProvenance,
+    timestep_policy: HillslopeTimestepPolicyProvenance,
+    adapter_boundary: HillslopeAdapterBoundaryProvenance,
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
 }
@@ -804,6 +813,31 @@ struct WeppUiModeSelectionProvenance {
     effective: i32,
     selected_lane: String,
     mode_divergence: bool,
+    guard_id: String,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeTimestepPolicyProvenance {
+    scheduler_mode: String,
+    requested_mode: String,
+    effective_mode: String,
+    selected_lane: String,
+    policy: String,
+    timestep_seconds: u32,
+    physics_enabled: bool,
+    subhourly_scaffold_available: bool,
+    guard_id: String,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeAdapterBoundaryProvenance {
+    selected_lane: String,
+    scheduler_mode: String,
+    requested_mode: String,
+    effective_mode: String,
+    adopt_profile: String,
+    reject_surfaces_excluded: bool,
+    defer_surfaces_excluded: bool,
     guard_id: String,
 }
 
@@ -835,9 +869,99 @@ struct SimulationOwnedWb13Row {
 
 #[derive(Debug)]
 struct DailyExecutionResult {
+    timestep_policy: HillslopeTimestepPolicyProvenance,
+    adapter_boundary: HillslopeAdapterBoundaryProvenance,
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
     wb13_row: SimulationOwnedWb13Row,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ExecutionLane {
+    Daily,
+    Hourly,
+}
+
+impl ExecutionLane {
+    #[must_use]
+    const fn as_str(self) -> &'static str {
+        match self {
+            Self::Daily => DAILY_EXECUTION_LANE,
+            Self::Hourly => HOURLY_EXECUTION_LANE,
+        }
+    }
+
+    fn parse(value: &str) -> Result<Self, HillslopeCliError> {
+        match value {
+            DAILY_EXECUTION_LANE => Ok(Self::Daily),
+            HOURLY_EXECUTION_LANE => Ok(Self::Hourly),
+            _ => Err(timestep_policy_failure(format!(
+                "unsupported execution lane '{value}' (supported lanes: {DAILY_EXECUTION_LANE}|{HOURLY_EXECUTION_LANE}; {SUBHOURLY_EXECUTION_LANE} scaffold is non-executable)"
+            ))),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TimestepPolicy {
+    Daily,
+    Hourly,
+    SubHourly { timestep_seconds: u32 },
+}
+
+impl TimestepPolicy {
+    #[must_use]
+    const fn from_lane(lane: ExecutionLane) -> Self {
+        match lane {
+            ExecutionLane::Daily => Self::Daily,
+            ExecutionLane::Hourly => Self::Hourly,
+        }
+    }
+
+    #[must_use]
+    const fn scaffold_subhourly(timestep_seconds: u32) -> Self {
+        Self::SubHourly { timestep_seconds }
+    }
+
+    #[must_use]
+    const fn policy_name(self) -> &'static str {
+        match self {
+            Self::Daily => DAILY_EXECUTION_LANE,
+            Self::Hourly => HOURLY_EXECUTION_LANE,
+            Self::SubHourly { .. } => SUBHOURLY_EXECUTION_LANE,
+        }
+    }
+
+    #[must_use]
+    const fn scheduler_mode(self) -> &'static str {
+        match self {
+            Self::Daily => DAILY_EXECUTION_LANE,
+            Self::Hourly => HOURLY_EXECUTION_LANE,
+            Self::SubHourly { .. } => SUBHOURLY_EXECUTION_LANE,
+        }
+    }
+
+    #[must_use]
+    const fn timestep_seconds(self) -> u32 {
+        match self {
+            Self::Daily => DAILY_TIMESTEP_SECONDS,
+            Self::Hourly => HOURLY_TIMESTEP_SECONDS,
+            Self::SubHourly { timestep_seconds } => timestep_seconds,
+        }
+    }
+
+    #[must_use]
+    const fn physics_enabled(self) -> bool {
+        !matches!(self, Self::SubHourly { .. })
+    }
+}
+
+#[derive(Debug, Clone)]
+struct ExecutionLaneContext {
+    lane: ExecutionLane,
+    requested_mode: &'static str,
+    effective_mode: &'static str,
+    timestep_policy: TimestepPolicy,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -1530,10 +1654,9 @@ pub fn execute_hillslope_run(
         });
     }
 
-    let execution_result = execute_daily_scheduler_kernel_lifecycle(
-        merged_runtime_surface,
-        wepp_ui_mode_selection.wepp_ui.selected_lane.as_str(),
-    )?;
+    let lane_context = build_execution_lane_context(&wepp_ui_mode_selection)?;
+    let execution_result =
+        execute_scheduler_kernel_lifecycle(merged_runtime_surface, &lane_context)?;
 
     let pass_text = build_h5_wat_output(&execution_result.wb13_row)?;
     let loss_text = build_loss_output_json(&runfile.run_name, &climate, &soil, &snow, &frost)?;
@@ -1683,6 +1806,8 @@ pub fn execute_hillslope_run(
         input_checksums,
         output_checksums,
         mode_selection: wepp_ui_mode_selection,
+        timestep_policy: execution_result.timestep_policy,
+        adapter_boundary: execution_result.adapter_boundary,
         execution_provenance: execution_result.execution_provenance,
         wb13_publication: execution_result.wb13_publication,
     };
@@ -2269,9 +2394,80 @@ fn lane_name_from_effective_ui_run(
     }
 }
 
-fn execute_daily_scheduler_kernel_lifecycle(
+fn mode_name_from_ui_run(ui_run: i32) -> Result<&'static str, HillslopeCliError> {
+    match ui_run {
+        0 => Ok(DAILY_EXECUTION_LANE),
+        1 => Ok(HOURLY_EXECUTION_LANE),
+        _ => Err(timestep_policy_failure(format!(
+            "ui_run must map to daily/hourly mode, observed {ui_run}"
+        ))),
+    }
+}
+
+fn build_execution_lane_context(
+    mode_selection: &HillslopeModeSelectionProvenance,
+) -> Result<ExecutionLaneContext, HillslopeCliError> {
+    let requested_mode = mode_name_from_ui_run(mode_selection.wepp_ui.requested)?;
+    let effective_mode = mode_name_from_ui_run(mode_selection.wepp_ui.effective)?;
+    let lane = ExecutionLane::parse(mode_selection.wepp_ui.selected_lane.as_str())?;
+    if lane.as_str() != effective_mode {
+        return Err(timestep_policy_failure(format!(
+            "selected lane '{}' must match effective mode '{effective_mode}'",
+            lane.as_str()
+        )));
+    }
+
+    Ok(ExecutionLaneContext {
+        lane,
+        requested_mode,
+        effective_mode,
+        timestep_policy: TimestepPolicy::from_lane(lane),
+    })
+}
+
+fn build_timestep_policy_provenance(
+    lane_context: &ExecutionLaneContext,
+) -> HillslopeTimestepPolicyProvenance {
+    let subhourly_scaffold = TimestepPolicy::scaffold_subhourly(900);
+    HillslopeTimestepPolicyProvenance {
+        scheduler_mode: lane_context.timestep_policy.scheduler_mode().to_string(),
+        requested_mode: lane_context.requested_mode.to_string(),
+        effective_mode: lane_context.effective_mode.to_string(),
+        selected_lane: lane_context.lane.as_str().to_string(),
+        policy: lane_context.timestep_policy.policy_name().to_string(),
+        timestep_seconds: lane_context.timestep_policy.timestep_seconds(),
+        physics_enabled: lane_context.timestep_policy.physics_enabled(),
+        subhourly_scaffold_available: !subhourly_scaffold.physics_enabled(),
+        guard_id: SIMMODE_TIMESTEP_GUARD_ID.to_string(),
+    }
+}
+
+fn build_adapter_boundary_provenance(
+    lane_context: &ExecutionLaneContext,
+) -> Result<HillslopeAdapterBoundaryProvenance, HillslopeCliError> {
+    let reject_surfaces_excluded = true;
+    let defer_surfaces_excluded = true;
+    if !reject_surfaces_excluded || !defer_surfaces_excluded {
+        return Err(simcons_intake_failure(
+            "SIMIMPL09 requires reject/defer intake surfaces to remain excluded",
+        ));
+    }
+
+    Ok(HillslopeAdapterBoundaryProvenance {
+        selected_lane: lane_context.lane.as_str().to_string(),
+        scheduler_mode: lane_context.timestep_policy.scheduler_mode().to_string(),
+        requested_mode: lane_context.requested_mode.to_string(),
+        effective_mode: lane_context.effective_mode.to_string(),
+        adopt_profile: SIMIMPL09_ADOPT_PROFILE.to_string(),
+        reject_surfaces_excluded,
+        defer_surfaces_excluded,
+        guard_id: SIMCONS_INTAKE_GUARD_ID.to_string(),
+    })
+}
+
+fn execute_scheduler_kernel_lifecycle(
     runtime_surface: HillslopeWritebackSurface,
-    selected_lane: &str,
+    lane_context: &ExecutionLaneContext,
 ) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
     runtime_surface
@@ -2315,7 +2511,7 @@ fn execute_daily_scheduler_kernel_lifecycle(
         scheduler_kernel_executed: true,
         publication_source: SCHEDULER_KERNEL_PUBLICATION_SOURCE.to_string(),
         simpipe_guard_id: SIMPIPE_GUARD_ID.to_string(),
-        selected_lane: selected_lane.to_string(),
+        selected_lane: lane_context.lane.as_str().to_string(),
         scheduler_outcome_class: scheduler_outcome_class_as_str(
             execution_report.scheduler_report.outcome_class,
         )
@@ -2328,8 +2524,12 @@ fn execute_daily_scheduler_kernel_lifecycle(
     };
 
     let wb13_row = build_simulation_owned_wb13_row(&execution_report.writeback_surface)?;
+    let timestep_policy = build_timestep_policy_provenance(lane_context);
+    let adapter_boundary = build_adapter_boundary_provenance(lane_context)?;
 
     Ok(DailyExecutionResult {
+        timestep_policy,
+        adapter_boundary,
         execution_provenance,
         wb13_publication: build_wb13_publication_provenance(),
         wb13_row,
@@ -2702,6 +2902,20 @@ fn mode_selection_failure(detail: impl Into<String>) -> HillslopeCliError {
     }
 }
 
+fn timestep_policy_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "timestep_policy",
+        detail: format!("{SIMMODE_TIMESTEP_GUARD_ID} {}", detail.into()),
+    }
+}
+
+fn simcons_intake_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "adapter_boundary",
+        detail: format!("{SIMCONS_INTAKE_GUARD_ID} {}", detail.into()),
+    }
+}
+
 fn wb13_simout_failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "wb13_publication",
@@ -2907,5 +3121,36 @@ mod tests {
                 "/tmp/out/manifest.json",
             ]
         );
+    }
+
+    #[test]
+    fn simimpl09_timestep_policy_scaffolds_subhourly_without_physics_enablement() {
+        let policy = TimestepPolicy::scaffold_subhourly(900);
+        assert_eq!(policy.policy_name(), SUBHOURLY_EXECUTION_LANE);
+        assert_eq!(policy.timestep_seconds(), 900);
+        assert!(!policy.physics_enabled());
+    }
+
+    #[test]
+    fn simimpl09_lane_context_matches_mode_selection_tuple() {
+        let mode_selection = HillslopeModeSelectionProvenance {
+            wepp_ui: WeppUiModeSelectionProvenance {
+                requested: 1,
+                effective: 1,
+                selected_lane: HOURLY_EXECUTION_LANE.to_string(),
+                mode_divergence: false,
+                guard_id: WUI_MODE_GUARD_ID.to_string(),
+            },
+        };
+        let lane_context = build_execution_lane_context(&mode_selection)
+            .expect("hourly mode-selection tuple should map to hourly lane context");
+        assert_eq!(lane_context.lane, ExecutionLane::Hourly);
+        assert_eq!(lane_context.requested_mode, HOURLY_EXECUTION_LANE);
+        assert_eq!(lane_context.effective_mode, HOURLY_EXECUTION_LANE);
+        assert_eq!(
+            lane_context.timestep_policy.timestep_seconds(),
+            HOURLY_TIMESTEP_SECONDS
+        );
+        assert!(lane_context.timestep_policy.physics_enabled());
     }
 }

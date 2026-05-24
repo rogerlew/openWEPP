@@ -48,6 +48,48 @@ wat = "output/H5.wat.parquet"
         "/mode_selection/wepp_ui/guard_id",
         "WUI-E-005",
     );
+
+    assert_json_string(&manifest_json, "/timestep_policy/policy", "hourly");
+    assert_json_string(&manifest_json, "/timestep_policy/scheduler_mode", "hourly");
+    assert_json_string(&manifest_json, "/timestep_policy/requested_mode", "hourly");
+    assert_json_string(&manifest_json, "/timestep_policy/effective_mode", "hourly");
+    assert_json_i64(&manifest_json, "/timestep_policy/timestep_seconds", 3600);
+    assert_json_bool(&manifest_json, "/timestep_policy/physics_enabled", true);
+    assert_json_bool(
+        &manifest_json,
+        "/timestep_policy/subhourly_scaffold_available",
+        true,
+    );
+    assert_json_string(
+        &manifest_json,
+        "/timestep_policy/guard_id",
+        "HS-SIMMODE-E-001",
+    );
+
+    assert_json_string(&manifest_json, "/adapter_boundary/selected_lane", "hourly");
+    assert_json_string(&manifest_json, "/adapter_boundary/scheduler_mode", "hourly");
+    assert_json_string(&manifest_json, "/adapter_boundary/requested_mode", "hourly");
+    assert_json_string(&manifest_json, "/adapter_boundary/effective_mode", "hourly");
+    assert_json_string(
+        &manifest_json,
+        "/adapter_boundary/adopt_profile",
+        "SIMIMPL08-adopt-only",
+    );
+    assert_json_bool(
+        &manifest_json,
+        "/adapter_boundary/reject_surfaces_excluded",
+        true,
+    );
+    assert_json_bool(
+        &manifest_json,
+        "/adapter_boundary/defer_surfaces_excluded",
+        true,
+    );
+    assert_json_string(
+        &manifest_json,
+        "/adapter_boundary/guard_id",
+        "HS-SIMCONS-E-001",
+    );
 }
 
 fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {

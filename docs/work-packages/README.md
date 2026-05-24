@@ -562,6 +562,11 @@ Authorized packages:
     kernels/adapters/policies (`wbk*` family) against baseline and canonical
     contract authority, producing a bounded `adopt/defer/reject` intake map for
     SIMIMPL09+ implementation planning.
+- `20260525-simimpl09-hourly-lane-foundation-and-timestep-policy-surface-001/`
+  - Purpose: execute SIMIMPL09 by implementing hourly lane foundation with a
+    typed timestep policy surface (`daily`, `hourly`, future sub-hourly
+    representable) and adapter-boundary closure using the SIMIMPL08 bounded
+    intake allow-list.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
