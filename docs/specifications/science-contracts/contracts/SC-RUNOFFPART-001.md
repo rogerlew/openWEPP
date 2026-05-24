@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 14
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -141,9 +141,10 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 
 ## Symbol Alias Map
 
-Canonical symbols in this contract use Chapter-4 WEPP notation. Concrete
-openWEPP runtime-field names are not fixed yet, so identity aliases are
-required until implementation surfaces diverge.
+Canonical symbols in this contract use Chapter-4 WEPP notation. EROD11
+ratifies Wave-0 erosion-lane alias ownership for required runoff/peak-duration
+surfaces while preserving canonical identity aliases for not-yet-implemented
+runoff partition internals.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
@@ -153,11 +154,21 @@ required until implementation surfaces diverge.
 | `Ke`, `Ψ`, `θd`, `Sp` | identity names | infiltration branch parameter/state surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Sd`, `rr`, `So` | identity names | depression-storage surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Qv`, `qp` | identity names | routed-runoff and peak-runoff outputs | `m` and `m^2 s^-1` preserved | `[DIRECT][Static]` |
+| `Q` | `HillslopeProductionFluxSymbol::Wb12RunoffQ -> Q` | runoff-depth handoff to daily water-balance and erosion consumers | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `peakro`, `watdur` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | WB16 peak-runoff/duration state aliases exported for erosion and routing intake | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionStateSymbol::{Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | WB16 branch-traceability surfaces required by downstream contract diagnostics | branch metadata + scalar continuity diagnostics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `De` | identity name | effective-runoff-duration coupling surface | `s` preserved | `[DIRECT][Static]` |
 | `Qj-1`, `Vj`, `Qj` | identity names | multi-OFE case-classification surfaces | `m` preserved | `[DIRECT][Static]` |
 | `Ka`, `(Ψθd)a`, `Sa`, `Fp`, `Fh` | identity names | multi-OFE averaging and runon/runoff branch surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `α`, `αe`, `m` | identity names | routing/equivalent-plane coefficient surfaces | coefficient/exponent semantics preserved | `[DIRECT][Static]` |
-| `Q` | identity name | runoff-depth handoff to daily water-balance domain | `m` preserved | `[DIRECT][Static]` |
+| `Q` (legacy canonical alias continuity) | identity name | canonical WEPP symbol continuity row retained for contract lineage | `m` preserved | `[DIRECT][Static]` |
+
+## EROD11 Alias Ownership Register
+
+| Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
+|---|---|---|---|---|---|
+| `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-RUNOFFPART-001` via WB12/WB16 outputs | `SC-SED-001`, `SC-HYDRAULICS-001`, `SC-ROUTE-001`, `SC-WATBAL-001` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-006` | `Qj-1`, `Vj`, `Qj`, `Ka`, `(Ψθd)a`, `Sa`, `Fp`, `Fh` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-RUNOFFPART-001` | downstream OFE cascade and erosion-coupled routing lanes | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -594,8 +605,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-RUNOFFPART-001 | Full per-invariant comparator vectors for multi-OFE cases are not yet curated in this package. | Limits immediate automation depth for `INV-RUNOFFPART-007/008` acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-RUNOFFPART-002 | Concrete openWEPP runtime-field aliases are not yet fixed for runoff partition outputs and internal branch states. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-RUNOFFPART-001 | Full per-invariant comparator vectors for multi-OFE invariant families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
+| GAP-RUNOFFPART-002 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-RUNOFFPART-003 | Chapter-4 limitations explicitly note Hortonian-flow framing and reduced recession interaction outside partial-equilibrium correction; companion contracts for variable-source-area/return-flow behavior are not authored. | Scope caveat must remain explicit to avoid over-claiming runoff applicability. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-RUNOFFPART-004 | Coupled contracts `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`, and `SC-SED-001` are not fully authored, so cross-domain ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 
@@ -615,3 +626,6 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `9` | `Codex` | IRRIG10 amendment: added runtime irrigation schedule-source coupling authority (`irrigation.depletion.*`, `irrigation.fixeddate.*`, `irrigation.runtime_*`) and explicit `Irr` runoff-forcing closure posture with typed WB14 guard requirements. |
 | `2026-05-23` | `10` | `Codex` | WB16 amendment: added closure-diagnostics peak-runoff authority (`peakro`, `watdur`) with deterministic `tstar` branch rules, explicit minimum-flow/duration-limit posture, and typed WB16 guard/test-vector requirements. |
 | `2026-05-23` | `11` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered runoff-partition interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving WB14/WB15/WB16 failure-class/message continuity. |
+| `2026-05-23` | `12` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership for runoff/peak-duration coupling surfaces, added explicit cross-contract ownership register, and downgraded `GAP-RUNOFFPART-002` from non-promotable to promotable-with-risk pending `EROD14` internal alias expansion. |
+| `2026-05-23` | `13` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-RUNOFFPART-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
+| `2026-05-23` | `14` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-RUNOFFPART-001` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |

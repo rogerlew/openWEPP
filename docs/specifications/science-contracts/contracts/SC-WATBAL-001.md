@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 20
+contract_version: 22
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -725,10 +725,10 @@ canonical order:
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-WATBAL-001 | Per-invariant comparator vectors for all `INV-WATBAL-*` families are not yet curated in this package. | Limits immediate automation depth for invariant-specific acceptance gating. | promotable-with-risk | `[DIRECT][Static]` |
+| GAP-WATBAL-001 | Per-invariant comparator vectors for `INV-WATBAL-*` families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
 | GAP-WATBAL-002 | Downstream companion contracts (`SC-RUNOFFPART-001`, `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`) are not yet fully authored. | Cross-contract ownership boundaries remain provisional. | non-promotable | `[DIRECT][Static]` |
-| GAP-WATBAL-003 | Full runtime alias coverage for all Chapter-5 internal symbols remains incomplete, but Wave-0 erosion-lane runoff/peak-duration alias ownership is now explicitly ratified in canonical contracts. | EROD10 alias-ambiguity gate is closed for required cross-contract boundaries; remaining internal alias expansion is deferred to future hydrology implementation packages. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-WATBAL-004 | Chapter-5 validation reports stronger near-surface (`0.05 m`) water-content agreement than full-profile (`0-2 m`) agreement in the cited watershed test. | Deep-profile closure interpretation confidence remains lower than near-surface Tier-A signals. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-WATBAL-003 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-WATBAL-004 | Chapter-5 validation caveat (stronger near-surface than full-profile agreement) remains and is explicitly retained as a documented limitation with governance risk acceptance. | Deep-profile closure confidence remains lower than near-surface Tier-A signals and requires explicit interpretation in governance decisions; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -755,3 +755,5 @@ canonical order:
 | `2026-05-23` | `18` | `Codex` | WB17 amendment: updated hydrology contract authority to reflect WB17 equation-driven ET partition execution (`Ep`, `Es`, `Er`, `ET`, `Ws`) with explicit runtime aliases (`Eu -> wb11_et_demand`, `L -> lai`, `Er -> wb17_residue_interception`). |
 | `2026-05-23` | `19` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership for runoff/peak-duration coupling surfaces, added explicit cross-contract ownership register, and downgraded `GAP-WATBAL-003` from non-promotable to promotable-with-risk pending broader internal alias expansion. |
 | `2026-05-23` | `20` | `Codex` | WB18 amendment: updated hydrology contract authority to require WB18 per-layer percolation symbols (`wb18_perc_theta/fc/ul/ssc/pei_####`) and WB18 per-layer deterministic routing semantics while preserving WB17 ET and WB11 lateral/drain guard posture. |
+| `2026-05-23` | `21` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-WATBAL-003` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
+| `2026-05-23` | `22` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-WATBAL-001` and `GAP-WATBAL-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |

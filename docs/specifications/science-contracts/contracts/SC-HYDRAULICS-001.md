@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 8
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -127,8 +127,9 @@ Out of scope:
 ## Symbol Alias Map
 
 Canonical symbols in this contract follow Chapter-10 and Chapter-11 WEPP
-notation. Concrete openWEPP runtime-field names are not fixed yet, so identity
-aliases are required until implementation surfaces diverge.
+notation. EROD11 ratifies Wave-0 erosion-lane alias ownership for required
+cross-contract boundary surfaces while preserving canonical identity aliases
+for not-yet-implemented hydraulics internals.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
@@ -140,6 +141,17 @@ aliases are required until implementation surfaces diverge.
 | `Qe`, `w` | identity names | rill discharge/width surfaces | `m^3 s^-1`, `m` preserved | `[DIRECT][Static]` |
 | `R`, `S`, `V` | identity names | hydraulic geometry/velocity surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `fs`, `ft`, `τf`, `τfe` | identity names | shear-partition and erosion-coupling surfaces | `dimensionless`, `Pa` preserved | `[DIRECT][Static]` |
+| `peakro`, `watdur` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | upstream peak-duration forcing consumed by hydraulics-coupled erosion lanes | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | watershed contributor alias family for WS10 routing intake | contributor-scoped peak/duration semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `qpo`, `durrof` | `WatershedProductionStateSymbol::ChannelNode{field=Qpo|Durrof}` | downstream channel state aliases for routing/impoundment consumption | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## EROD11 Alias Ownership Register
+
+| Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
+|---|---|---|---|---|---|
+| `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-RUNOFFPART-001` + `SC-WATBAL-001` | `SC-HYDRAULICS-001` and erosion-lane consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-002` | `fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-HYDRAULICS-001` | `SC-SED-001` (`INV-SED-005..007`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-004` | `hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration,ChannelNode}` | `SC-HYDRAULICS-001` + `SC-ROUTE-001` coupling surfaces | `SC-ROUTE-001` + `SC-IMPOUND-001` runtime consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -281,10 +293,10 @@ Minimum WS10 coupling vectors:
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-HYD-001 | Per-invariant comparator vectors for all hydraulics families are not yet curated in this package. | Limits immediate automation depth for invariant-specific acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-HYD-002 | Concrete openWEPP runtime-field aliases for hydraulics/shear payloads are not yet fixed. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-HYD-001 | Per-invariant comparator vectors for hydraulics invariant families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
+| GAP-HYD-002 | Wave-0 erosion-lane alias-ownership ambiguity for required hydraulics-coupled boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-HYD-003 | Coupled sediment contract `SC-SED-001` remains incomplete, so hydrology-to-erosion ownership boundaries are still provisional. | Promotion-readiness depends on companion contract completion/consistency. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-HYD-004 | Chapter-10 assumptions explicitly omit litter transport/debris dams and erosion pavement dynamics; explicit limitation labeling is present but implementation-level policy checks are not yet automated. | Governance enforcement is documented but not yet tooling-backed. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-HYD-004 | Chapter-10 omission caveats (litter transport/debris dams/erosion pavement dynamics) remain and are explicitly retained as documented limitations with governance risk acceptance. | Applicability caveats remain active and require explicit interpretation in scope-sensitive analyses; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -296,3 +308,6 @@ Minimum WS10 coupling vectors:
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added peak-flow coupling readiness authority requiring `peakro`/`watdur` boundary acceptance with WB16 diagnostic metadata and typed guard posture. |
 | `2026-05-23` | `4` | `Codex` | WS10 amendment: added routing/impoundment consumer coupling authority for production WS10 payload families, including typed WS10 guard family requirements and WS10 coupling test-vector obligations. |
 | `2026-05-23` | `5` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered hydraulics-coupled interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving WB14/WB16/WS10 failure-class/message continuity. |
+| `2026-05-23` | `6` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership for hydraulics-coupled erosion and WS10 boundary surfaces, added explicit cross-contract ownership register, and downgraded `GAP-HYD-002` from non-promotable to promotable-with-risk pending `EROD13+` internal alias expansion. |
+| `2026-05-23` | `7` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-HYD-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
+| `2026-05-23` | `8` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-HYD-001` and `GAP-HYD-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |

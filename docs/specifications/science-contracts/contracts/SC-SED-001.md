@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 6
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -121,21 +121,33 @@ Out of scope:
 
 ## Symbol Alias Map
 
-Canonical symbols in this contract follow Chapter-11 WEPP notation. Concrete
-openWEPP runtime-field names are not fixed yet, so identity aliases are
-required until implementation surfaces diverge.
+Canonical symbols in this contract follow Chapter-11 WEPP notation. EROD11
+ratifies Wave-0 erosion-lane boundary alias ownership for the required
+cross-contract coupling surfaces while preserving canonical identity aliases
+for not-yet-implemented erosion internals.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
 | `G`, `Di`, `Df`, `Dc`, `Tc` | identity names | continuity and branch surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Kr`, `τc`, `τf`, `β`, `Vf`, `q` | identity names | detachment/deposition threshold and rate surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Pr`, `tr`, `Vt`, `Ie`, `te` | identity names | hydrologic erosion-input surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
+| `Q` (WB12 runoff coupling) | `HillslopeProductionFluxSymbol::Wb12RunoffQ -> Q` | runoff-depth coupling surface consumed by erosion forcing | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `peakro`, `watdur` | `HillslopeProductionStateSymbol::Wb16Peakro -> peakro`; `HillslopeProductionStateSymbol::Wb16Watdur -> watdur` | peak-runoff and runoff-duration forcing surfaces for erosion branches | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionStateSymbol::{Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | WB16 branch-traceability surfaces required by erosion observability guards | branch metadata + scalar continuity diagnostics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Kiadj`, `Kradj`, `τcadj` | identity names | soil-to-erosion coupling surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `σir`, `SDRRR`, `Fnozzle`, `Rs`, `w` | identity names | interrill and geometry adjustment surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `η`, `τcn`, `θ`, `φ` | identity names | normalized erosion parameter surfaces | dimensionless semantics preserved | `[DIRECT][Static]` |
 | `sed_det_total`, `sed_dep_total` | identity names | hillslope sediment totals to routing pass-file boundary | `kg` preserved | `[DIRECT][Static]` |
 | `sed_conc_i`, `sed_frac_i` | identity names | sediment class concentration/fraction boundary surfaces | `kg m^-3` and fraction semantics preserved | `[DIRECT][Static]` |
 | `ER` | identity name | enrichment-ratio boundary surface | fraction semantics preserved | `[DIRECT][Static]` |
+
+## EROD11 Alias Ownership Register
+
+| Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
+|---|---|---|---|---|---|
+| `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-RUNOFFPART-001` + `SC-WATBAL-001` via WB12/WB16 kernels | `SC-SED-001` (`INV-SED-004`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-002` | `fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-HYDRAULICS-001` | `SC-SED-001` (`INV-SED-005`, `INV-SED-006`, `INV-SED-007`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-003` | `sed_det_total`, `sed_dep_total`, `sed_conc_i`, `sed_frac_i` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-SED-001` | `SC-ROUTE-001` (`INV-ROUTE-011`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -224,10 +236,10 @@ bit-for-bit parity).
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-SED-001 | Per-invariant comparator vectors for sediment-branch transitions and class-wise enrichment closures are not yet curated in this package. | Limits immediate automation depth for `INV-SED-008` and `INV-SED-009` acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SED-002 | Concrete openWEPP runtime/API field aliases for hillslope erosion payloads are not yet fixed. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SED-001 | Per-invariant comparator vectors for sediment-branch transitions and class-wise enrichment closures remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where those vectors are absent. | closed | `[DIRECT][Static]` |
+| GAP-SED-002 | Wave-0 erosion-lane alias-ownership ambiguity for required cross-contract boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SED-003 | Companion contracts `SC-HYDRAULICS-001` and `SC-ROUTE-001` are in draft/in-review state but have not completed dual-review/disposition/verification closure, so cross-domain closure semantics remain provisional. | Downstream boundary ownership and comparator gate interpretation remain partially provisional pending companion-cycle closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-SED-004 | Chapter-11 enrichment procedure documents caveats for mixed-soil, multi-OFE composition effects; mitigation policy for those conditions is not yet operationalized in comparator governance artifacts. | Enrichment interpretation may require manual investigation in heterogeneous-soil routing scenarios. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SED-004 | Chapter-11 enrichment caveats for mixed-soil, multi-OFE composition effects remain and are explicitly retained as a documented limitation with governance risk acceptance. | Mixed-soil enrichment interpretation may still require manual investigation; this is accepted as an explicit model-governance caveat. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -237,3 +249,6 @@ bit-for-bit parity).
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-11 authority anchors, erosion invariants, guard map, symbol alias map, obligations, tolerances, and gap register for SCI-13 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode casing, corrected `Di` non-negative continuity language, added `ER` alias coverage, added per-row evidence tags in degenerate states, and narrowed companion-gap wording. |
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added hydrologic WB16 peak/duration intake authority (`peakro`, `watdur`) with continuity, traceability, and typed guard requirements for erosion coupling readiness. |
+| `2026-05-23` | `4` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership across runoff/peak-duration and sediment handoff boundaries, added explicit cross-contract boundary ownership register, and downgraded `GAP-SED-002` from non-promotable to promotable-with-risk pending `EROD13+` internal alias expansion. |
+| `2026-05-23` | `5` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-SED-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
+| `2026-05-23` | `6` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-SED-001` and `GAP-SED-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |

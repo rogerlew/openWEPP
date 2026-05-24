@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 8
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -132,9 +132,10 @@ Out of scope:
 
 ## Symbol Alias Map
 
-Canonical symbols in this contract follow Chapter-13 WEPP notation. Concrete
-openWEPP runtime-field aliases are not yet fixed, so identity aliases are
-required until implementation surfaces diverge.
+Canonical symbols in this contract follow Chapter-13 WEPP notation. EROD11
+ratifies Wave-0 erosion-lane alias ownership for required routing-coupled
+boundaries while preserving canonical identity aliases for not-yet-implemented
+channel erosion internals.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
@@ -142,12 +143,22 @@ required until implementation surfaces diverge.
 | `qci`, `qcf`, `rofc`, `roff`, `tl` | identity names | channel runoff and loss boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `durc`, `durrunon`, `durchan`, `durirrig`, `durrof` | identity names | event-duration boundaries | `s` preserved | `[DIRECT][Static]` |
 | `tb`, `tp`, `qpi`, `qpo` | identity names | hydrograph peak-routing boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
+| `qpo`, `durrof`, `roff` (WS10 typed state/flux projection) | `WatershedProductionStateSymbol::ChannelNode{field=Qpo|Durrof}`; `WatershedProductionFluxSymbol::ChannelNode{field=Roff}` | node-scoped production routing outputs | `m^3 s^-1`, `s`, `m^3` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `tc`, `tcc`, `tcs`, `tci` | identity names | time-of-concentration boundaries | `h` preserved | `[DIRECT][Static]` |
 | `alpha`, `alphah`, `alphac`, `alphai` | identity names | outlet-peak method-selection boundaries | `fraction` preserved | `[DIRECT][Static]` |
 | `lc`, `leff`, `ltop`, `qt`, `qlat`, `qlat_eff`, `qu`, `ql` | identity names | segment discharge-routing boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Sf`, `Sstar`, `tau`, `taucov`, `taucr` | identity names | friction/shear boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `D`, `DF`, `DL`, `qsed`, `qsed_top`, `qsed_lat`, `Tc` | identity names | sediment continuity/detachment boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Kch`, `wc`, `Ech` | identity names | active-channel detachment boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
+| `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | hillslope contributor forcing aliases consumed at WS10 channel ingress | contributor-scoped peak/duration semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## EROD11 Alias Ownership Register
+
+| Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
+|---|---|---|---|---|---|
+| `EROD-BND-001` | `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | `SC-RUNOFFPART-001` + `SC-WATBAL-001` via WB16 coupling | `SC-ROUTE-001` WS10 intake guards (`INV-ROUTE-011`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-003` | `sed_det_total`, `sed_dep_total`, `sed_conc_i`, `sed_frac_i` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-SED-001` | `SC-ROUTE-001` segment/channel consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-004` | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` | `WatershedProductionStateSymbol::ChannelNode`; `WatershedProductionFluxSymbol::ChannelNode` | `SC-ROUTE-001` | downstream channel/impoundment/watershed consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -313,10 +324,10 @@ Minimum WS10 routing conformance vectors:
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-ROUTE-001 | Per-invariant comparator vectors for watershed/channel Tier-B surfaces are not yet curated for all `INV-ROUTE-*` families. | Limits immediate automation depth for watershed routing acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-ROUTE-002 | Concrete openWEPP runtime field aliases for full Chapter-13 routing and sediment payload families are not yet fixed. | WS10 production path pins initial runtime aliases (`ws10_channel_*`, `ws10_impoundment_*`) but complete alias closure remains pending. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-001 | Per-invariant comparator vectors for watershed/channel Tier-B invariant families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
+| GAP-ROUTE-002 | Wave-0 erosion-lane alias-ownership ambiguity for required routing boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-003 | Companion contracts (`SC-HYDRAULICS-001`, `SC-SED-001`, `SC-IMPOUND-001`, `SC-SYSTEM-001`) are not fully authored, so cross-domain ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion and consistency. | non-promotable | `[DIRECT][Static]` |
-| GAP-ROUTE-004 | Chapter-13 routing and erosion formulations include mixed SI/English-unit equations and regression-derived terms that require additional unit-test evidence for implementation confidence. | Raises implementation risk until explicit unit-conversion conformance vectors are added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-004 | Chapter-13 mixed-unit and regression-derived formulation caveats remain and are explicitly retained as documented limitations with governance risk acceptance. | Unit-conversion and regression-lineage interpretation risk remains and requires explicit review in sensitive analyses; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-005 | Runtime workload guards for Chapter-13 applicability limits (small watershed intent and excluded process classes) are not yet bound to a concrete input-contract validator surface. | Applicability enforcement is governance-only until companion system/input contracts add explicit runtime selectors/guards. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
@@ -329,3 +340,6 @@ Minimum WS10 routing conformance vectors:
 | `2026-05-23` | `3` | `Codex` | WB16 amendment: added hillslope WB16 peak-flow intake authority (`peakro`, `watdur`) plus typed guard and traceability requirements for watershed routing coupling readiness. |
 | `2026-05-23` | `4` | `Codex` | WS10 amendment: added watershed production-kernel runtime alias surfaces (`ws10_channel_*`, dependency payloads), typed WS10 routing guard family (`WKERNEL-WS10-CHANNEL-E-001..003`), and contract-derived WS10 routing test-vector obligations. |
 | `2026-05-23` | `5` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WS10 routing interfaces to consume boundary symbols via ARCH22 typed symbol families (including node-scoped builders) while preserving WS10 guard-family continuity. |
+| `2026-05-23` | `6` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership across WB16 contributor intake and WS10 routing outputs, added explicit cross-contract ownership register, and downgraded `GAP-ROUTE-002` from non-promotable to promotable-with-risk pending `EROD15` internal alias expansion. |
+| `2026-05-23` | `7` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-ROUTE-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
+| `2026-05-23` | `8` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-ROUTE-001` and `GAP-ROUTE-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
