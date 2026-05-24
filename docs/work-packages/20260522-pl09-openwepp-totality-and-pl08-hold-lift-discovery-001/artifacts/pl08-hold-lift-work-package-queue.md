@@ -38,6 +38,7 @@ Static:
 7. `PL09A -> PL10` and `PL09A -> WB10` (pre-execution clearance gate)
 8. `PL13A` may execute in parallel with `PL13` once both prerequisites are met
    (`PL11` complete for `PL13A`, `PL12` complete for `PL13`).
+9. `WB14 + PL16 + PL17 + CLIM05 + CLIM06 + WB15 + IRRIG10 + WB16 + WS10 + ARCH22 + CLIM07 -> PL14R -> PL15R` (formal post-closeout recheck loop).
 
 ## Ordering Rationale
 
@@ -60,6 +61,9 @@ Static:
 9. `PL13` and `PL13A` are intentionally parallelizable with disjoint ownership:
    runtime kernel implementation (`PL13`) vs alias continuity governance lane
    (`PL13A`).
+10. `PL14R` and `PL15R` are reserved for evidence-driven recheck after the
+    post-PL15 closure wave so hold-lift supersession, if any, is tied to fresh
+    strict Tier-A replay artifacts.
 
 ## PL15 Post-Closeout Physics Gap Addendum (2026-05-23 UTC)
 
@@ -84,12 +88,41 @@ Purpose:
 | `EROD10-sediment-kernelization-intake` | `erosion` | `KERNEL-GAP-010` | Convert acknowledged erosion-kernel deferral into an executable intake/phase plan with gated package wave ownership. | `WB16` | sediment kernelization roadmap is ratified with explicit package IDs, ownership, and acceptance gates. | intake decision artifact, dependency graph, contract-authority mapping |
 | `WS10-channel-impoundment-production-kernels` | `watershed` | `KERNEL-GAP-011` | Replace watershed test/probe kernel posture with production channel/impoundment kernels and typed boundary integration. | `WB16` | at least one production `impl WatershedKernel` path exists for channel/impoundment execution under typed guards. | watershed kernel tests, routing/impoundment contract evidence |
 | `ARCH22-typed-state-surface-closure` | `architecture` | `KERNEL-GAP-012` | Close CRF-001 carry-forward by migrating stringly `BoundarySymbol(String)` kernel surfaces to typed state surfaces. | `PL16`, `PL17`, `WB14` | runtime kernel interfaces no longer rely on stringly symbol keys for production state surfaces. | typed-surface contract updates, migration proof tests, ARCH closure artifact |
+| `PL14R-tier-a-candidate-emission-and-replay-rerun` | `closeout-recheck` | `Tier-A replay blockers` | Re-run strict Tier-A comparator using direct openWEPP candidate output after post-PL15 kernel-closure wave completion. | `WB14`, `PL16`, `PL17`, `CLIM05`, `CLIM06`, `WB15`, `IRRIG10`, `WB16`, `WS10`, `ARCH22`, `CLIM07` | strict Tier-A replay executes with reproducible provenance and both required include surfaces (`H5.wat.dat`, `H5.plot.dat`) present in candidate-vs-baseline comparison artifacts. | refreshed comparator JSON artifacts, replay command trace, provenance hashes, updated Tier-A delta report |
+| `PL15R-tier-a-delta-recloseout-and-hold-lift-rerun` | `closeout-recheck` | `Tier-A replay blockers` | Re-disposition residual Tier-A deltas from PL14R and issue refreshed PL08 hold-lift verdict with explicit risk-acceptance references when required. | `PL14R` | blocker set is empty or explicitly risk-accepted under policy, and PL08 hold-lift decision record is superseded with explicit criteria outcomes and approval references. | updated comparator confidence-tier disposition, updated semantic parity direction assessment, refreshed PL08 hold-lift decision artifact, risk-acceptance approval reference artifact (if used) |
+
+## PL15R Reversal and Physics-Parity Recovery Addendum (2026-05-23 UTC)
+
+Disposition source:
+- `docs/work-packages/20260523-pl15r-tier-a-delta-recloseout-and-hold-lift-rerun-001/artifacts/pl15r-pl08-hold-lift-decision-record.md` (reversal update)
+- `docs/work-packages/20260523-pl15r-tier-a-delta-recloseout-and-hold-lift-rerun-001/artifacts/pl15r_disposition.md` (reversal update)
+
+Purpose:
+- Revert PL15R hold-lift supersession posture.
+- Define the required executable path to real openWEPP-vs-legacy Tier-A parity
+  evidence for any future PL08 hold-lift claim.
+
+| wp_id | lane | objective | depends_on | acceptance criteria | required evidence |
+|---|---|---|---|---|---|
+| `CLI10-openwepp-hillslope-driver-binary` | `runtime-foundation` | Implement executable hillslope run driver (`openwepp-cli-hill`) that produces comparator-ready outputs from openWEPP runtime execution (not legacy lane substitution). | `PL15R` | `[[bin]]` target exists; deterministic fixture run produces candidate `H5.wat.dat` and `H5.plot.dat`; provenance manifest includes binary SHA, command line, and output checksums. | cargo metadata showing binary target, replay manifest, fixture run trace, candidate output checksums |
+| `WB17-et-physics-equivalence-port` | `water-balance-physics` | Replace WB11 ET demand-consumption surrogate with legacy-equivalent ET physics authority (including plant/soil/residue partition semantics). | `CLI10` | ET path no longer reduces to `min(soil_water, et_demand)` surrogate; ET partition variables are equation-driven and contract-vectored. | contract amendments (`SC-EVAP-001`, `SC-WATBAL-001`), equation vectors, fixture trajectory parity traces |
+| `WB18-percolation-physics-equivalence-port` | `water-balance-physics` | Replace WB11 scalar excess*fraction percolation surrogate with layer-aware percolation authority and conductivity-domain behavior. | `WB17` | percolation path no longer uses `excess * perc_fraction` surrogate as production authority; per-layer transport state/flux surfaces execute with typed guards. | contract amendments (`SC-PERC-001`, `SC-WATBAL-001`), per-layer vectors, parity traces |
+| `WB19-lateral-drainage-physics-equivalence-port` | `water-balance-physics` | Replace WB11 fraction-only lateral/drainage surrogates with legacy-equivalent subsurface/drain physics authority. | `WB18` | lateral/drainage path no longer relies on scalar fraction split as production authority; drain/lateral terms are equation-driven with typed guards. | contract amendments (`SC-SUBHYD-001`, `SC-WATBAL-001`), hydraulic vectors, parity traces |
+| `WB20-forward-water-balance-solver-lane` | `water-balance-parity` | Establish parity comparator lane that is forward-solved by openWEPP kernels and does not consume observed closure targets as acceptance inputs. | `WB14`, `WB15`, `CLIM05`, `CLIM06`, `IRRIG10`, `WB17`, `WB18`, `WB19` | Tier-A parity lane runtime inputs exclude `wb12_runoff_observed` and `wb12_storage_observed` as acceptance-driving closure targets; closure is solver-output-derived. | lane input manifest, contract/test evidence proving no observed-target substitution, forward-solver replay traces |
+| `PL14S-tier-a-openwepp-candidate-emission-and-replay` | `closeout-parity` | Run strict Tier-A comparator using openWEPP-emitted candidate outputs from CLI10/WB20 lane only. | `WB20`, `PL16`, `PL17`, `CLIM07` | strict replay executes with required include surfaces present from openWEPP lane; no legacy candidate substitution or schema-fallback upcast in candidate lane. | comparator JSON artifacts, command trace, binary/tool/output hashes, candidate provenance attestation |
+| `PL15S-tier-a-final-hold-lift-closeout` | `closeout-parity` | Re-disposition PL08 Tier-A deltas from PL14S and issue final hold-lift verdict. | `PL14S` | hold-lift permitted only when active Tier-A blockers are closed on openWEPP-vs-legacy evidence, or formally risk-accepted under explicit approval authority. | updated confidence-tier disposition, semantic parity assessment, final PL08 decision record, risk-acceptance artifact (if used) |
+| `WS11-channel-routing-physics-equivalence-port` | `watershed-physics` | Replace WS10 channel gain-factor surrogate with legacy-equivalent routing physics authority for production claims. | `WB16` | channel routing is no longer governed by `(1+slope)/(1+roughness)` surrogate as production parity claim basis. | contract amendments (`SC-ROUTE-001`, `SC-HYDRAULICS-001`), routing vectors, parity traces |
+| `WS12-impoundment-physics-equivalence-port` | `watershed-physics` | Replace WS10 impoundment algebraic retention surrogate with legacy-equivalent impoundment hydraulics authority for production claims. | `WS11` | impoundment routing is no longer governed by simple headroom ratio surrogate as production parity claim basis. | contract amendments (`SC-IMPOUND-001`, `SC-HYDRAULICS-001`), impoundment vectors, parity traces |
 
 ## Release Rule
 
-- PL08 hold is not eligible for lift before `PL15` closure and Tier-A blocker
-  clearance under policy.
-- After PL15 retained hold, lift remains ineligible until:
-  1. Tier-A strict replay blockers are closed or explicitly risk-accepted, and
-  2. critical kernel gaps (`KERNEL-GAP-001..004`) are closed or explicitly
-     risk-accepted under recorded approval authority.
+- PL08 hold remains `RETAIN HOLD` after PL15R reversal.
+- PL08 hold-lift is ineligible until `PL14S -> PL15S` completes on provenance-
+  valid openWEPP-vs-legacy Tier-A evidence.
+- Provenance-valid Tier-A evidence requires:
+  1. candidate lane outputs emitted by openWEPP executable(s) with recorded
+     binary SHA and command trace;
+  2. no legacy candidate-lane substitution; and
+  3. no schema-only fallback/upcast used to satisfy required include surfaces.
+- Physics-valid Tier-A evidence requires closure of WB physics parity packages:
+  `WB17`, `WB18`, `WB19`, and `WB20` before PL14S execution.
