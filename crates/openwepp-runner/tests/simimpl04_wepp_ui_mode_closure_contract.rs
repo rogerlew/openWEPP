@@ -7,6 +7,7 @@ use openwepp_runner::{
 };
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn simimpl04_contract_requires_wepp_ui_requested_effective_lane_closure_manifest() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
@@ -20,6 +21,22 @@ slope = "case.slp"
 climate = "case.cli"
 wepp_ui = true
 pmetpara = "pmetpara.txt"
+
+[inputs.snow]
+rst = 0.0
+newsnw = 100.0
+ssd = 250.0
+
+[inputs.frost]
+wintRed = 1
+fineTop = 10
+fineBot = 8
+ksnowf = 0.10
+kresf = 0.20
+ksoilf = 0.30
+kfactor1 = 0.00001
+kfactor2 = 0.00002
+kfactor3 = 0.50
 
 [outputs]
 pass = "output/H5.hbp"
@@ -89,6 +106,44 @@ wat = "output/H5.wat.parquet"
         &manifest_json,
         "/adapter_boundary/guard_id",
         "HS-SIMCONS-E-001",
+    );
+
+    assert_json_string(
+        &manifest_json,
+        "/coupling_vectors/guard_id",
+        "HS-SIMCOUP-E-001",
+    );
+    assert_json_bool(&manifest_json, "/coupling_vectors/winter/active", true);
+    assert_json_bool(
+        &manifest_json,
+        "/coupling_vectors/winter/snow_file_present",
+        true,
+    );
+    assert_json_bool(&manifest_json, "/coupling_vectors/frsoil/active", true);
+    assert_json_bool(
+        &manifest_json,
+        "/coupling_vectors/frsoil/frost_file_present",
+        true,
+    );
+    assert_json_bool(
+        &manifest_json,
+        "/coupling_vectors/frsoil/wint_red_enabled",
+        true,
+    );
+    assert_json_bool(
+        &manifest_json,
+        "/coupling_vectors/soil/infcap_within_ssc",
+        true,
+    );
+    assert_json_string(
+        &manifest_json,
+        "/coupling_vectors/hydout_equivalent/source",
+        "simulation-owned",
+    );
+    assert_json_bool(
+        &manifest_json,
+        "/coupling_vectors/hydout_equivalent/closure_within_tolerance",
+        true,
     );
 }
 

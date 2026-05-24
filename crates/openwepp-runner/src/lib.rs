@@ -77,6 +77,7 @@ pub const SIMOUT_GUARD_ID: &str = "HS-SIMOUT-E-001";
 pub const WUI_MODE_GUARD_ID: &str = "WUI-E-005";
 pub const SIMMODE_TIMESTEP_GUARD_ID: &str = "HS-SIMMODE-E-001";
 pub const SIMCONS_INTAKE_GUARD_ID: &str = "HS-SIMCONS-E-001";
+pub const SIMCOUP_GUARD_ID: &str = "HS-SIMCOUP-E-001";
 pub const DAILY_EXECUTION_LANE: &str = "daily";
 pub const HOURLY_EXECUTION_LANE: &str = "hourly";
 pub const SUBHOURLY_EXECUTION_LANE: &str = "subhourly";
@@ -88,6 +89,9 @@ pub const SIMIMPL09_ADOPT_PROFILE: &str = "SIMIMPL08-adopt-only";
 
 const DAILY_TIMESTEP_SECONDS: u32 = 86_400;
 const HOURLY_TIMESTEP_SECONDS: u32 = 3_600;
+const SIMIMPL10_FROST_MAX_DEPTH_M: f64 = 0.20;
+const SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM: f64 = 1.0e-6;
+const SIMIMPL10_FLAG_TOLERANCE: f64 = 1.0e-9;
 
 static RELEASE_SIDECAR_IO_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
@@ -800,6 +804,7 @@ struct HillslopeRunManifest {
     adapter_boundary: HillslopeAdapterBoundaryProvenance,
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
+    coupling_vectors: HillslopeCouplingVectorProvenance,
 }
 
 #[derive(Debug, Serialize)]
@@ -859,6 +864,56 @@ struct HillslopeWb13PublicationProvenance {
     replay_candidate_surfaces: Vec<String>,
 }
 
+#[derive(Debug, Serialize)]
+struct HillslopeCouplingVectorProvenance {
+    guard_id: String,
+    winter: HillslopeWinterCouplingProvenance,
+    soil: HillslopeSoilCouplingProvenance,
+    frsoil: HillslopeFrozenSoilCouplingProvenance,
+    hydout_equivalent: HillslopeHydoutEquivalentCouplingProvenance,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeWinterCouplingProvenance {
+    active: bool,
+    snow_file_present: bool,
+    rst: f64,
+    newsnw: f64,
+    ssd: f64,
+    runtime_swe: f64,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeSoilCouplingProvenance {
+    ssc: f64,
+    infiltration_capacity_frozen: f64,
+    infcap_within_ssc: bool,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeFrozenSoilCouplingProvenance {
+    active: bool,
+    frost_file_present: bool,
+    wint_red_enabled: bool,
+    dfrost: f64,
+    dthaw: f64,
+    nft: f64,
+    ws_frz: f64,
+    infcap_frz: f64,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeHydoutEquivalentCouplingProvenance {
+    source: String,
+    total_soil: f64,
+    frozwt: f64,
+    snow_water: f64,
+    soil_water_total: f64,
+    closure_delta: f64,
+    closure_tolerance: f64,
+    closure_within_tolerance: bool,
+}
+
 #[derive(Debug, Clone)]
 struct SimulationOwnedWb13Row {
     wb13_row: Wb13DailyWaterBalanceRow,
@@ -873,6 +928,7 @@ struct DailyExecutionResult {
     adapter_boundary: HillslopeAdapterBoundaryProvenance,
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
+    coupling_vectors: HillslopeCouplingVectorProvenance,
     wb13_row: SimulationOwnedWb13Row,
 }
 
@@ -1810,6 +1866,7 @@ pub fn execute_hillslope_run(
         adapter_boundary: execution_result.adapter_boundary,
         execution_provenance: execution_result.execution_provenance,
         wb13_publication: execution_result.wb13_publication,
+        coupling_vectors: execution_result.coupling_vectors,
     };
 
     let manifest_json = serde_json::to_string_pretty(&manifest)
@@ -2526,13 +2583,156 @@ fn execute_scheduler_kernel_lifecycle(
     let wb13_row = build_simulation_owned_wb13_row(&execution_report.writeback_surface)?;
     let timestep_policy = build_timestep_policy_provenance(lane_context);
     let adapter_boundary = build_adapter_boundary_provenance(lane_context)?;
+    let coupling_vectors =
+        build_simimpl10_coupling_vector_provenance(&execution_report.writeback_surface, &wb13_row)?;
 
     Ok(DailyExecutionResult {
         timestep_policy,
         adapter_boundary,
         execution_provenance,
         wb13_publication: build_wb13_publication_provenance(),
+        coupling_vectors,
         wb13_row,
+    })
+}
+
+#[allow(clippy::too_many_lines)]
+fn build_simimpl10_coupling_vector_provenance(
+    runtime_surface: &HillslopeWritebackSurface,
+    wb13_row: &SimulationOwnedWb13Row,
+) -> Result<HillslopeCouplingVectorProvenance, HillslopeCliError> {
+    let snow_file_present = parse_simimpl10_binary_flag(
+        "snow.options.snow_file_present",
+        require_simimpl10_coupling_scalar(runtime_surface, "snow.options.snow_file_present")?,
+    )?;
+    let rst = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.rst")?;
+    let newsnw = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.newsnw")?;
+    let ssd = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.ssd")?;
+    let runtime_swe = require_simimpl10_coupling_scalar(runtime_surface, "snow.runtime_swe")?;
+
+    if newsnw <= 0.0 {
+        return Err(simcoup_failure(format!(
+            "snow.options.newsnw must be > 0.0, observed {newsnw}"
+        )));
+    }
+    if ssd <= 0.0 {
+        return Err(simcoup_failure(format!(
+            "snow.options.ssd must be > 0.0, observed {ssd}"
+        )));
+    }
+    if newsnw > ssd {
+        return Err(simcoup_failure(format!(
+            "snow.options.newsnw must be <= snow.options.ssd, observed {newsnw} > {ssd}"
+        )));
+    }
+    if runtime_swe < 0.0 {
+        return Err(simcoup_failure(format!(
+            "snow.runtime_swe must be >= 0.0, observed {runtime_swe}"
+        )));
+    }
+
+    let winter = HillslopeWinterCouplingProvenance {
+        active: snow_file_present,
+        snow_file_present,
+        rst,
+        newsnw,
+        ssd,
+        runtime_swe,
+    };
+
+    let frost_file_present = parse_simimpl10_binary_flag(
+        "frost.options.frost_file_present",
+        require_simimpl10_coupling_scalar(runtime_surface, "frost.options.frost_file_present")?,
+    )?;
+    let wint_red_enabled = parse_simimpl10_binary_flag(
+        "frost.options.wintRed",
+        require_simimpl10_coupling_scalar(runtime_surface, "frost.options.wintRed")?,
+    )?;
+    let dfrost = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dfrost")?;
+    let dthaw = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_dthaw")?;
+    let nft = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_nft")?;
+    let ws_frz = require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_ws_frz")?;
+    let infcap_frz =
+        require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz")?;
+    let ssc = require_simimpl10_coupling_scalar(runtime_surface, "ssc")?;
+
+    if !(0.0..=SIMIMPL10_FROST_MAX_DEPTH_M).contains(&dfrost) {
+        return Err(simcoup_failure(format!(
+            "frost.runtime_dfrost must be within [0.0,{SIMIMPL10_FROST_MAX_DEPTH_M}], observed {dfrost}"
+        )));
+    }
+    if !(0.0..=SIMIMPL10_FROST_MAX_DEPTH_M).contains(&dthaw) {
+        return Err(simcoup_failure(format!(
+            "frost.runtime_dthaw must be within [0.0,{SIMIMPL10_FROST_MAX_DEPTH_M}], observed {dthaw}"
+        )));
+    }
+    if nft < 0.0 {
+        return Err(simcoup_failure(format!(
+            "frost.runtime_nft must be >= 0.0, observed {nft}"
+        )));
+    }
+    if ws_frz < 0.0 {
+        return Err(simcoup_failure(format!(
+            "frost.runtime_ws_frz must be >= 0.0, observed {ws_frz}"
+        )));
+    }
+    if ssc < 0.0 {
+        return Err(simcoup_failure(format!(
+            "ssc must be >= 0.0 for frozen-soil coupling, observed {ssc}"
+        )));
+    }
+    if infcap_frz < 0.0 || infcap_frz > ssc {
+        return Err(simcoup_failure(format!(
+            "frost.runtime_infcap_frz must be within [0.0,ssc], observed {infcap_frz} with ssc={ssc}"
+        )));
+    }
+
+    let frsoil_active = frost_file_present && wint_red_enabled;
+    let frsoil = HillslopeFrozenSoilCouplingProvenance {
+        active: frsoil_active,
+        frost_file_present,
+        wint_red_enabled,
+        dfrost,
+        dthaw,
+        nft,
+        ws_frz,
+        infcap_frz,
+    };
+    let soil = HillslopeSoilCouplingProvenance {
+        ssc,
+        infiltration_capacity_frozen: infcap_frz,
+        infcap_within_ssc: infcap_frz <= ssc,
+    };
+
+    let total_soil = wb13_row.wb13_row.total_soil;
+    let frozwt = wb13_row.wb13_row.frozwt;
+    let snow_water = wb13_row.wb13_row.snow_water;
+    let soil_water_total = wb13_row.wb13_row.soil_water_total;
+    let closure_delta = soil_water_total - (total_soil + frozwt);
+    let closure_within_tolerance = closure_delta.abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM;
+    if !closure_within_tolerance {
+        return Err(simcoup_failure(format!(
+            "hydout-equivalent closure violated: SoilWaterTotal - (Total-Soil + frozwt) = {closure_delta} exceeds tolerance {SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM}",
+        )));
+    }
+
+    let hydout_equivalent = HillslopeHydoutEquivalentCouplingProvenance {
+        source: WB13_PUBLICATION_SOURCE_SIMULATION_OWNED.to_string(),
+        total_soil,
+        frozwt,
+        snow_water,
+        soil_water_total,
+        closure_delta,
+        closure_tolerance: SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
+        closure_within_tolerance,
+    };
+
+    Ok(HillslopeCouplingVectorProvenance {
+        guard_id: SIMCOUP_GUARD_ID.to_string(),
+        winter,
+        soil,
+        frsoil,
+        hydout_equivalent,
     })
 }
 
@@ -2860,6 +3060,32 @@ fn require_runtime_surface_scalar(
     Ok(value)
 }
 
+fn require_simimpl10_coupling_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    let value = runtime_surface_symbol_value(runtime_surface, symbol)
+        .ok_or_else(|| simcoup_failure(format!("missing required coupling symbol {symbol}")))?;
+    if !value.is_finite() {
+        return Err(simcoup_failure(format!(
+            "coupling symbol {symbol} is non-finite ({value})"
+        )));
+    }
+    Ok(value)
+}
+
+fn parse_simimpl10_binary_flag(field: &str, value: f64) -> Result<bool, HillslopeCliError> {
+    if value.abs() <= SIMIMPL10_FLAG_TOLERANCE {
+        return Ok(false);
+    }
+    if (value - 1.0).abs() <= SIMIMPL10_FLAG_TOLERANCE {
+        return Ok(true);
+    }
+    Err(simcoup_failure(format!(
+        "{field} must be binary 0|1, observed {value}"
+    )))
+}
+
 fn scalar_to_i32(symbol: &str, value: f64) -> Result<i32, HillslopeCliError> {
     if !value.is_finite() {
         return Err(wb13_simout_failure(format!(
@@ -2913,6 +3139,13 @@ fn simcons_intake_failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "adapter_boundary",
         detail: format!("{SIMCONS_INTAKE_GUARD_ID} {}", detail.into()),
+    }
+}
+
+fn simcoup_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "coupling_vectors",
+        detail: format!("{SIMCOUP_GUARD_ID} {}", detail.into()),
     }
 }
 

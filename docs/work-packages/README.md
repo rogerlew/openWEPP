@@ -567,6 +567,10 @@ Authorized packages:
     typed timestep policy surface (`daily`, `hourly`, future sub-hourly
     representable) and adapter-boundary closure using the SIMIMPL08 bounded
     intake allow-list.
+- `20260525-simimpl10-winter-soil-frsoil-hydout-coupling-closure-wave-001/`
+  - Purpose: execute SIMIMPL10 by closing winter/soil/frsoil/hydout coupling
+    gaps in production execution flow with typed invariants, explicit coupling
+    boundary provenance, and no silent fallback behavior.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
