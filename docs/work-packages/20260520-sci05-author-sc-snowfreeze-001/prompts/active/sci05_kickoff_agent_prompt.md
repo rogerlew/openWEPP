@@ -1,5 +1,15 @@
 # SCI-05 Kickoff Prompt
 
+Execution mode: package-end-to-end (default).
+Phase plan: execute all phases in package.md sequentially through disposition.
+Autonomy: execute package phases end-to-end and update required artifacts without requesting additional user direction unless hard-blocked.
+Required reading (read before edits):
+- /workdir/openWEPP/AGENTS.md
+- /workdir/openWEPP/docs/codex_exec_plans.md
+- /workdir/openWEPP/docs/work-packages/README.md
+- /workdir/openWEPP/docs/work-packages/20260520-sci05-author-sc-snowfreeze-001/package.md
+
+
 Author `SC-SNOWFREEZE-001` in the canonical location:
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
 

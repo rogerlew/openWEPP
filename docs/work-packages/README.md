@@ -19,6 +19,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Kickoff prompts must include an explicit `Autonomy:` line requiring
   end-to-end execution for the declared scope without additional user
   intervention unless hard-blocked.
+- Kickoff prompts default to `Execution mode: package-end-to-end` and should
+  direct execution across all package phases through disposition.
+- Single-phase kickoff prompts are exception-only and must declare
+  `Execution mode: phase-only (exception)` plus explicit rationale and
+  follow-on trigger.
 - Kickoff prompts must include a `Required reading` list with explicit path
   references to orientation and authority documents so agents do not need to
   independently search onboarding context.
@@ -513,6 +518,13 @@ Authorized packages:
     water-balance replay (erosion excluded) and stand up reusable
     investigation-grade legacy comparison suite tooling for recurring parity
     diagnostics.
+- `20260524-simimpl01-hillslope-totality-assessment-and-watbal-consolidation-001/`
+  - Purpose: produce a comprehensive legacy-vs-openWEPP hillslope routine gap
+    assessment, evaluate watbal implementation source authority
+    (`wepp-forest_260430_baseline` vs consolidated `/workdir/wepp-forest`),
+    and emit implementation-driving queue deliverable
+    `simulation-implementation-wp-queue.md` for the
+    `cli -> runner -> simulation -> orchestration` pipeline.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

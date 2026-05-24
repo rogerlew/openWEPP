@@ -1,5 +1,15 @@
 # SR01 Kickoff Agent Prompt
 
+Execution mode: package-end-to-end (default).
+Phase plan: execute all phases in package.md sequentially through disposition.
+Autonomy: execute package phases end-to-end and update required artifacts without requesting additional user direction unless hard-blocked.
+Required reading (read before edits):
+- /workdir/openWEPP/AGENTS.md
+- /workdir/openWEPP/docs/codex_exec_plans.md
+- /workdir/openWEPP/docs/work-packages/README.md
+- /workdir/openWEPP/docs/work-packages/20260522-sr01-slope-soils-model-representation-discovery-001/package.md
+
+
 You are executing `20260522-sr01-slope-soils-model-representation-discovery-001`.
 
 Objectives:

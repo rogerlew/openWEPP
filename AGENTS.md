@@ -118,8 +118,9 @@ requirement, not optional package style guidance.
   updates for migration packages.
 - Kickoff prompt must prohibit silent defaults/clamping for domain violations
   and require typed errors/guards.
-- Kickoff prompt must instruct autonomous progression through the assigned phase
-  and artifact updates without asking the user for "next steps" unless blocked.
+- Kickoff prompt must instruct autonomous progression through the package phase
+  plan and artifact updates through disposition without asking the user for
+  "next steps" unless blocked.
 - Kickoff prompt must include an explicit end-to-end execution statement (use
   `Autonomy:` line) for the declared scope.
 - Kickoff prompt must include a `Required reading` section with explicit path
@@ -144,13 +145,15 @@ scope.
 - State that work is limited to flat-file reads/edits in the worktree.
 - State that no external systems/network actions are required.
 
-2. Keep each prompt single-phase
-- Use one phase per prompt:
-  - phase A: contracts only,
-  - phase B: contract-derived tests + pre-implementation gate evidence,
-  - phase C: production code edits,
-  - phase D: verification/disposition artifacts.
-- Do not combine all phases into one long prompt.
+2. Set execution mode explicitly (default: package end-to-end)
+- Default kickoff mode is `Execution mode: package-end-to-end`.
+- In default mode, the prompt must instruct the agent to execute all package
+  phases in `package.md` sequentially through disposition.
+- Single-phase kickoff prompts are exception-only and must be explicitly marked
+  `Execution mode: phase-only (exception)` with:
+  - `Exception rationale: <why phase-only is required>`
+  - `Next prompt trigger: <when/how follow-on prompt starts>`
+- Do not use phase-only wording in standard kickoff prompts.
 
 3. Use concrete path-scoped wording
 - Name exact file paths and sections/functions to edit.
@@ -159,13 +162,13 @@ scope.
 - Add an explicit `Required reading` list before task instructions so agents can
   load orientation context deterministically.
 
-4. Preserve mandatory technical gates in every phase prompt
+4. Preserve mandatory technical gates in every prompt
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.
 - Dual review and dual verification requirements where applicable.
-- Autonomous execution expectation for the phase (no user intervention unless
-  hard-blocked).
+- Autonomous execution expectation for the full assigned scope (no user
+  intervention unless hard-blocked).
 
 5. Required fallback when a false-positive block occurs
 - Retry with a shorter prompt that includes only:
@@ -178,15 +181,23 @@ scope.
 6. Prompt template (copy/paste)
 - `Scope: local repository science-contract/kernel migration task; flat-file`
   `reads/edits only; no external connectivity.`
-- `Phase: <A|B|C|D> only.`
+- `Execution mode: package-end-to-end (default).`
+- `Phase plan: execute all phases in package.md sequentially through`
+  `disposition.`
 - `Required reading (read before edits): <explicit path list>.`
 - `Files: <explicit path list>.`
-- `Task: <single concrete change objective>.`
+- `Task: execute package objective end-to-end for declared scope.`
 - `Constraints: contract-first sequencing; canonical SC authority;`
   `baseline provenance (<if applicable>); typed guards; no silent defaults.`
-- `Autonomy: execute this phase end-to-end and update phase artifacts without`
-  `requesting additional user direction unless hard-blocked.`
-- `Outputs: update listed WB/EROD/CLIM artifacts for this phase only.`
+- `Autonomy: execute package phases end-to-end and update required artifacts`
+  `without requesting additional user direction unless hard-blocked.`
+- `Outputs: update package artifacts/disposition for all completed phases.`
+
+Phase-only exception template:
+- `Execution mode: phase-only (exception).`
+- `Phase: <A|B|C|D> only.`
+- `Exception rationale: <why phase-only is required now>.`
+- `Next prompt trigger: <condition that starts follow-on prompt>.`
 
 ## Project Role
 openWEPP is the Rust simulation engine. openWEPP owns its architecture and

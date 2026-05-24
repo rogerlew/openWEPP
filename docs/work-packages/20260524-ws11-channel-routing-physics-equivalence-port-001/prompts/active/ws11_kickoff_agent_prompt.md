@@ -2,7 +2,8 @@
 
 Scope: local repository science-contract/kernel migration task; flat-file reads/
 edits only; no external connectivity.
-Phase: A only.
+Execution mode: package-end-to-end (default).
+Phase plan: execute all phases in package.md sequentially through disposition.
 Required reading (read before edits):
 - `/workdir/openWEPP/AGENTS.md`
 - `/workdir/openWEPP/docs/codex_exec_plans.md`
@@ -24,14 +25,16 @@ Files:
 - `docs/specifications/science-contracts/index.md`
 - `docs/work-packages/20260524-ws11-channel-routing-physics-equivalence-port-001/artifacts/ws11-contract-implementation-evidence.md`
 - `docs/work-packages/20260524-ws11-channel-routing-physics-equivalence-port-001/artifacts/ws11-channel-routing-physics-authority-and-guard-map.md`
-Task: implement canonical WS11 channel-routing physics authority amendments and
-record contract-implementation/authority-map evidence for Phase A only.
+Task: execute WS11 end-to-end with contract-first sequencing, including
+canonical authority updates, contract-derived tests, pre-implementation gate
+evidence, production routing implementation, verification, and disposition
+artifacts.
 Constraints: contract-first sequencing; canonical SC authority; baseline
 provenance (`/workdir/wepp-forest_260430_baseline` at
 `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`); typed guards; no silent defaults.
-Autonomy: execute this phase end-to-end and update listed WS11 phase artifacts
+Autonomy: execute package phases end-to-end and update required WS11 artifacts
 without requesting additional user direction unless hard-blocked.
-Outputs: update listed WS11 artifacts for this phase only.
+Outputs: update required WS11 artifacts/disposition for all completed phases.
 
 Execution topology:
 - Run WS11 in dedicated worktree branch

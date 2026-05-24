@@ -1,5 +1,15 @@
 # INIMPL05 Kickoff Agent Prompt
 
+Execution mode: package-end-to-end (default).
+Phase plan: execute all phases in package.md sequentially through disposition.
+Autonomy: execute package phases end-to-end and update required artifacts without requesting additional user direction unless hard-blocked.
+Required reading (read before edits):
+- /workdir/openWEPP/AGENTS.md
+- /workdir/openWEPP/docs/codex_exec_plans.md
+- /workdir/openWEPP/docs/work-packages/README.md
+- /workdir/openWEPP/docs/work-packages/20260521-inimpl05-implement-sc-infile-climate-parser-001/package.md
+
+
 You are executing 20260521-inimpl05-implement-sc-infile-climate-parser-001.
 
 Objectives:
@@ -10,7 +20,7 @@ Objectives:
 5. Run dual review/disposition/verification gates.
 
 Constraints:
-- Work in assigned worktree: `/home/workdir/openWEPP/.worktrees/inimpl05-climate`
+- Work in assigned worktree: `/workdir/openWEPP/.worktrees/inimpl05-climate`
 - Branch: `inimpl05/climate-parser`
 - Do not edit another worker's owned paths.
 - Evidence mode: `Ran` for executed checks, `Static` otherwise.
