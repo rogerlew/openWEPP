@@ -7,7 +7,6 @@ use openwepp_runner::{
 };
 
 #[test]
-#[ignore = "expected fail until SIMIMPL05 closes simulation-owned WB13 publication provenance"]
 fn simimpl04_contract_requires_simulation_owned_wb13_publication_provenance() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"

@@ -7,7 +7,6 @@ use openwepp_runner::{
 };
 
 #[test]
-#[ignore = "expected fail until SIMIMPL05 closes requested/effective mode propagation"]
 fn simimpl04_contract_requires_wepp_ui_requested_effective_lane_closure_manifest() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"

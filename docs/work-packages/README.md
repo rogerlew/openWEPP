@@ -547,6 +547,21 @@ Authorized packages:
     with hillslope scheduler/kernel execution, preserving typed error
     propagation and writeback governance to close `GAP-SIMPIPE-001` before
     SIMIMPL06 output-provenance closure work.
+- `20260524-simimpl06-simulation-owned-wb13-output-publication-001/`
+  - Purpose: execute SIMIMPL06 by replacing projection-first WB13/H.wat
+    publication with simulation-owned output assembly and provenance-complete
+    reporting surfaces, closing `GAP-SIMOUT-001` and preparing replay
+    recloseout in SIMIMPL11.
+- `20260524-simimpl07-wepp-ui-hourly-branch-propagation-and-closure-001/`
+  - Purpose: execute SIMIMPL07 by propagating parsed `wepp_ui`
+    requested/effective mode into runtime lane selection with strict typed
+    branch-mismatch closure, closing `GAP-SIMMODE-001` before SIMIMPL09 hourly
+    foundation work.
+- `20260525-simimpl08-consolidated-kernel-intake-triage-and-provenance-map-001/`
+  - Purpose: execute SIMIMPL08 by triaging consolidated watbal candidate
+    kernels/adapters/policies (`wbk*` family) against baseline and canonical
+    contract authority, producing a bounded `adopt/defer/reject` intake map for
+    SIMIMPL09+ implementation planning.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

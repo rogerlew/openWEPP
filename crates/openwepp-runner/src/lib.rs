@@ -46,10 +46,11 @@ use openwepp_input_contract::parsers::soil::{
     ParserMode as SoilParserMode, SoilParserOptions, parse_soil,
 };
 use openwepp_input_contract::parsers::wepp_ui::{
-    WeppUiParserMode, WeppUiParserOptions, parse_wepp_ui_from_path,
+    WeppUiParseResult, WeppUiParserMode, WeppUiParserOptions, parse_wepp_ui_from_path,
 };
 use openwepp_kernel_contract::{
-    HillslopeKernel, HillslopeKernelRequest, KernelRunResponse, KernelWritebackPayload,
+    BoundarySymbol, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
+    KernelWritebackPayload,
 };
 use openwepp_legacy_bridge::policy::CompatibilityPolicy;
 use openwepp_legacy_bridge::sidecar::{
@@ -72,8 +73,14 @@ pub const HILLSLOPE_RUNFILE_SCHEMA_ID: &str = "openwepp-hillslope-runfile-v1";
 pub const REQUIRED_RUN_OUTPUT_PASS: &str = "outputs.pass (.hbp)";
 pub const REQUIRED_RUN_OUTPUT_LOSS: &str = "outputs.loss (.json)";
 pub const SIMPIPE_GUARD_ID: &str = "HS-SIMPIPE-E-001";
+pub const SIMOUT_GUARD_ID: &str = "HS-SIMOUT-E-001";
+pub const WUI_MODE_GUARD_ID: &str = "WUI-E-005";
 pub const DAILY_EXECUTION_LANE: &str = "daily";
+pub const HOURLY_EXECUTION_LANE: &str = "hourly";
 pub const SCHEDULER_KERNEL_PUBLICATION_SOURCE: &str = "scheduler-kernel";
+pub const WB13_PUBLICATION_SOURCE_SIMULATION_OWNED: &str = "simulation-owned";
+pub const WB13_REPLAY_CANDIDATE_SURFACE_WAT: &str = "interchange/H.wat.parquet";
+pub const WB13_REPLAY_CANDIDATE_SURFACE_PASS: &str = "interchange/H.pass.parquet";
 
 static RELEASE_SIDECAR_IO_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
 
@@ -781,7 +788,23 @@ struct HillslopeRunManifest {
     resolved_sidecars: BTreeMap<String, String>,
     input_checksums: BTreeMap<String, String>,
     output_checksums: BTreeMap<String, String>,
+    mode_selection: HillslopeModeSelectionProvenance,
     execution_provenance: HillslopeExecutionProvenance,
+    wb13_publication: HillslopeWb13PublicationProvenance,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeModeSelectionProvenance {
+    wepp_ui: WeppUiModeSelectionProvenance,
+}
+
+#[derive(Debug, Serialize)]
+struct WeppUiModeSelectionProvenance {
+    requested: i32,
+    effective: i32,
+    selected_lane: String,
+    mode_divergence: bool,
+    guard_id: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -792,6 +815,29 @@ struct HillslopeExecutionProvenance {
     selected_lane: String,
     scheduler_outcome_class: String,
     scheduler_status_message_id: String,
+}
+
+#[derive(Debug, Serialize)]
+struct HillslopeWb13PublicationProvenance {
+    source: String,
+    projection_fallback_used: bool,
+    guard_id: String,
+    replay_candidate_surfaces: Vec<String>,
+}
+
+#[derive(Debug, Clone)]
+struct SimulationOwnedWb13Row {
+    wb13_row: Wb13DailyWaterBalanceRow,
+    month: i8,
+    day_of_month: i8,
+    water_year: i16,
+}
+
+#[derive(Debug)]
+struct DailyExecutionResult {
+    execution_provenance: HillslopeExecutionProvenance,
+    wb13_publication: HillslopeWb13PublicationProvenance,
+    wb13_row: SimulationOwnedWb13Row,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -1223,7 +1269,7 @@ pub fn execute_hillslope_run(
         .filter(|name| !name.is_empty())
         .collect();
 
-    let (snow, frost) = if request.legacy_sidecar_discovery {
+    let (snow, frost, wepp_ui_mode_selection) = if request.legacy_sidecar_discovery {
         let mut excluded_files = vec![
             file_name_string(&run_file_path),
             file_name_string(&soil_path),
@@ -1295,7 +1341,7 @@ pub fn execute_hillslope_run(
                     detail: error.to_string(),
                 })?;
 
-        let _wepp_ui = parse_wepp_ui_from_path(
+        let wepp_ui = parse_wepp_ui_from_path(
             &wepp_ui_path,
             WeppUiParserOptions {
                 mode: request.sidecar_policy.as_wepp_ui_parse_mode(),
@@ -1307,6 +1353,12 @@ pub fn execute_hillslope_run(
             surface: "wepp_ui",
             detail: error.to_string(),
         })?;
+        sidecar_warnings.extend(
+            wepp_ui
+                .warnings
+                .iter()
+                .map(|warning| format!("{} {}", warning.code.as_str(), warning.message)),
+        );
 
         let _pmetpara = parse_pmetpara_file(
             &pmetpara_path,
@@ -1320,7 +1372,7 @@ pub fn execute_hillslope_run(
             detail: error.to_string(),
         })?;
 
-        (snow, frost)
+        (snow, frost, build_mode_selection_provenance(&wepp_ui)?)
     } else {
         let sidecar_overrides = &runfile.sidecar_overrides;
 
@@ -1378,31 +1430,29 @@ pub fn execute_hillslope_run(
             )
         };
 
-        if sidecar_overrides.wepp_ui {
-            let wepp_ui_path = request.run_dir.join("wepp_ui.txt");
-            if wepp_ui_path.is_file() {
-                wepp_ui_input_path = Some(wepp_ui_path.clone());
-                resolved_sidecars.insert("wepp_ui".to_string(), wepp_ui_path.display().to_string());
-            } else {
-                sidecar_warnings.push(
-                    "CLIHILL-W-001 wepp_ui=true in .run but wepp_ui.txt missing; feature flag ignored"
-                        .to_string(),
-                );
-            }
-
-            let _wepp_ui = parse_wepp_ui_from_path(
-                &wepp_ui_path,
-                WeppUiParserOptions {
-                    mode: request.sidecar_policy.as_wepp_ui_parse_mode(),
-                    requested_hourly_seepage: wepp_ui_path.is_file(),
-                    soil_versions: soil_versions.clone(),
-                },
-            )
-            .map_err(|error| HillslopeCliError::ParseFailure {
-                surface: "wepp_ui",
-                detail: error.to_string(),
-            })?;
+        let wepp_ui_path = request.run_dir.join("wepp_ui.txt");
+        if wepp_ui_path.is_file() {
+            wepp_ui_input_path = Some(wepp_ui_path.clone());
+            resolved_sidecars.insert("wepp_ui".to_string(), wepp_ui_path.display().to_string());
         }
+        let wepp_ui = parse_wepp_ui_from_path(
+            &wepp_ui_path,
+            WeppUiParserOptions {
+                mode: request.sidecar_policy.as_wepp_ui_parse_mode(),
+                requested_hourly_seepage: sidecar_overrides.wepp_ui,
+                soil_versions: soil_versions.clone(),
+            },
+        )
+        .map_err(|error| HillslopeCliError::ParseFailure {
+            surface: "wepp_ui",
+            detail: error.to_string(),
+        })?;
+        sidecar_warnings.extend(
+            wepp_ui
+                .warnings
+                .iter()
+                .map(|warning| format!("{} {}", warning.code.as_str(), warning.message)),
+        );
 
         if let Some(pmetpara_path) = sidecar_overrides.pmetpara_path.clone() {
             pmetpara_input_path = Some(pmetpara_path.clone());
@@ -1421,7 +1471,7 @@ pub fn execute_hillslope_run(
             })?;
         }
 
-        (snow, frost)
+        (snow, frost, build_mode_selection_provenance(&wepp_ui)?)
     };
 
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil).map_err(|error| {
@@ -1480,9 +1530,12 @@ pub fn execute_hillslope_run(
         });
     }
 
-    let execution_provenance = execute_daily_scheduler_kernel_lifecycle(merged_runtime_surface)?;
+    let execution_result = execute_daily_scheduler_kernel_lifecycle(
+        merged_runtime_surface,
+        wepp_ui_mode_selection.wepp_ui.selected_lane.as_str(),
+    )?;
 
-    let pass_text = build_h5_wat_output(&climate, &soil, &snow, &frost)?;
+    let pass_text = build_h5_wat_output(&execution_result.wb13_row)?;
     let loss_text = build_loss_output_json(&runfile.run_name, &climate, &soil, &snow, &frost)?;
 
     let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
@@ -1505,7 +1558,7 @@ pub fn execute_hillslope_run(
     })?;
 
     if let Some(wat_output) = runfile.output_config.wat.as_ref() {
-        let wat_rows = build_hillslope_wat_rows(&climate, &soil, &snow, &frost)?;
+        let wat_rows = build_hillslope_wat_rows(&execution_result.wb13_row)?;
         write_hillslope_wat_parquet(wat_output, &wat_rows, InterchangeVersion::default()).map_err(
             |error| HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "outputs.wat",
@@ -1629,7 +1682,9 @@ pub fn execute_hillslope_run(
         resolved_sidecars,
         input_checksums,
         output_checksums,
-        execution_provenance,
+        mode_selection: wepp_ui_mode_selection,
+        execution_provenance: execution_result.execution_provenance,
+        wb13_publication: execution_result.wb13_publication,
     };
 
     let manifest_json = serde_json::to_string_pretty(&manifest)
@@ -2165,9 +2220,59 @@ fn merge_runtime_surfaces(
     base
 }
 
+fn build_mode_selection_provenance(
+    wepp_ui: &WeppUiParseResult,
+) -> Result<HillslopeModeSelectionProvenance, HillslopeCliError> {
+    if !matches!(wepp_ui.ui_run_requested, 0 | 1) {
+        return Err(mode_selection_failure(format!(
+            "requested ui_run must be in {{0,1}}, observed {}",
+            wepp_ui.ui_run_requested
+        )));
+    }
+    if !matches!(wepp_ui.ui_run, 0 | 1) {
+        return Err(mode_selection_failure(format!(
+            "effective ui_run must be in {{0,1}}, observed {}",
+            wepp_ui.ui_run
+        )));
+    }
+
+    let expected_divergence = wepp_ui.ui_run_requested != wepp_ui.ui_run;
+    if wepp_ui.mode_divergence != expected_divergence {
+        return Err(mode_selection_failure(format!(
+            "mode_divergence mismatch: expected {} from requested/effective tuple ({}, {}), observed {}",
+            expected_divergence, wepp_ui.ui_run_requested, wepp_ui.ui_run, wepp_ui.mode_divergence
+        )));
+    }
+
+    let selected_lane = lane_name_from_effective_ui_run(wepp_ui.ui_run)?;
+
+    Ok(HillslopeModeSelectionProvenance {
+        wepp_ui: WeppUiModeSelectionProvenance {
+            requested: wepp_ui.ui_run_requested,
+            effective: wepp_ui.ui_run,
+            selected_lane: selected_lane.to_string(),
+            mode_divergence: wepp_ui.mode_divergence,
+            guard_id: WUI_MODE_GUARD_ID.to_string(),
+        },
+    })
+}
+
+fn lane_name_from_effective_ui_run(
+    effective_ui_run: i32,
+) -> Result<&'static str, HillslopeCliError> {
+    match effective_ui_run {
+        0 => Ok(DAILY_EXECUTION_LANE),
+        1 => Ok(HOURLY_EXECUTION_LANE),
+        _ => Err(mode_selection_failure(format!(
+            "effective ui_run must map to daily/hourly lane, observed {effective_ui_run}"
+        ))),
+    }
+}
+
 fn execute_daily_scheduler_kernel_lifecycle(
     runtime_surface: HillslopeWritebackSurface,
-) -> Result<HillslopeExecutionProvenance, HillslopeCliError> {
+    selected_lane: &str,
+) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
     runtime_surface
         .state_surface
@@ -2206,11 +2311,11 @@ fn execute_daily_scheduler_kernel_lifecycle(
         });
     }
 
-    Ok(HillslopeExecutionProvenance {
+    let execution_provenance = HillslopeExecutionProvenance {
         scheduler_kernel_executed: true,
         publication_source: SCHEDULER_KERNEL_PUBLICATION_SOURCE.to_string(),
         simpipe_guard_id: SIMPIPE_GUARD_ID.to_string(),
-        selected_lane: DAILY_EXECUTION_LANE.to_string(),
+        selected_lane: selected_lane.to_string(),
         scheduler_outcome_class: scheduler_outcome_class_as_str(
             execution_report.scheduler_report.outcome_class,
         )
@@ -2220,7 +2325,27 @@ fn execute_daily_scheduler_kernel_lifecycle(
             .scheduler_status
             .message_id()
             .to_string(),
+    };
+
+    let wb13_row = build_simulation_owned_wb13_row(&execution_report.writeback_surface)?;
+
+    Ok(DailyExecutionResult {
+        execution_provenance,
+        wb13_publication: build_wb13_publication_provenance(),
+        wb13_row,
     })
+}
+
+fn build_wb13_publication_provenance() -> HillslopeWb13PublicationProvenance {
+    HillslopeWb13PublicationProvenance {
+        source: WB13_PUBLICATION_SOURCE_SIMULATION_OWNED.to_string(),
+        projection_fallback_used: false,
+        guard_id: SIMOUT_GUARD_ID.to_string(),
+        replay_candidate_surfaces: vec![
+            WB13_REPLAY_CANDIDATE_SURFACE_WAT.to_string(),
+            WB13_REPLAY_CANDIDATE_SURFACE_PASS.to_string(),
+        ],
+    }
 }
 
 fn scheduler_outcome_class_as_str(outcome_class: SchedulerOutcomeClass) -> &'static str {
@@ -2264,57 +2389,10 @@ fn hillslope_phase_from_name(phase_name: &str) -> Option<HillslopePhase> {
     }
 }
 
-fn build_h5_wat_output(
-    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
-    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
-    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
-    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
-) -> Result<String, HillslopeCliError> {
-    let projection = build_first_day_wat_projection(climate, soil, snow, frost)?;
-
-    let row_surface = SummaryScalarSurface::from_pairs([
-        ("P", projection.precipitation_mm),
-        ("RM", projection.rm),
-        ("Q", projection.q),
-        ("Ep", projection.ep),
-        ("Es", projection.es),
-        ("Er", projection.er),
-        ("Dp", projection.dp),
-        ("UpStrmQ", projection.up_strm_q),
-        ("SubRIn", projection.sub_r_in),
-        ("latqcc", projection.latqcc),
-        ("Total-Soil", projection.total_soil),
-        ("frozwt", projection.frozwt),
-        ("Snow-Water", projection.snow_water),
-        ("QOFE", projection.qofe),
-        ("Tile", projection.tile),
-        ("Irr", projection.irr),
-        ("Area", projection.area),
-        ("SoilWaterTotal", projection.soil_water_total),
-        ("ProfileDepth", projection.profile_depth),
-        ("ProfilePorosityCap", projection.profile_porosity_cap),
-        ("ProfileFCStore", projection.profile_fc_store),
-        ("ProfileWPStore", projection.profile_wp_store),
-    ])
-    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "wb13_row_surface",
-        detail: error.to_string(),
-    })?;
-
-    let row = Wb13DailyWaterBalanceRow::from_surface(
-        1,
-        projection.julian_day,
-        projection.year,
-        &row_surface,
-    )
-    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "wb13_row",
-        detail: error.to_string(),
-    })?;
-
+fn build_h5_wat_output(wb13_row: &SimulationOwnedWb13Row) -> Result<String, HillslopeCliError> {
     let mut daily_surface = Wb13DailyWaterBalanceSurface::new();
     daily_surface
-        .append_row(row)
+        .append_row(wb13_row.wb13_row.clone())
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
             surface: "wb13_surface",
             detail: error.to_string(),
@@ -2324,76 +2402,311 @@ fn build_h5_wat_output(
 }
 
 fn build_hillslope_wat_rows(
-    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
-    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
-    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
-    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
+    wb13_row: &SimulationOwnedWb13Row,
 ) -> Result<Vec<HillslopeWatRow>, HillslopeCliError> {
-    let projection = build_first_day_wat_projection(climate, soil, snow, frost)?;
+    Ok(vec![build_hillslope_wat_row(wb13_row)?])
+}
 
-    let year =
-        i16::try_from(projection.year).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "outputs.wat",
-            detail: format!("year out of i16 range: {}", projection.year),
-        })?;
-    let month =
-        i8::try_from(projection.month).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "outputs.wat",
-            detail: format!("month out of i8 range: {}", projection.month),
-        })?;
-    let day_of_month = i8::try_from(projection.day_of_month).map_err(|_| {
+fn build_hillslope_wat_row(
+    wb13_row: &SimulationOwnedWb13Row,
+) -> Result<HillslopeWatRow, HillslopeCliError> {
+    let year = i16::try_from(wb13_row.wb13_row.year).map_err(|_| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "outputs.wat",
-            detail: format!("day_of_month out of i8 range: {}", projection.day_of_month),
+            detail: format!(
+                "{SIMOUT_GUARD_ID} year out of i16 range: {}",
+                wb13_row.wb13_row.year
+            ),
         }
     })?;
-    let julian = i16::try_from(projection.julian_day).map_err(|_| {
+    let julian = i16::try_from(wb13_row.wb13_row.julian_day).map_err(|_| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "outputs.wat",
-            detail: format!("julian out of i16 range: {}", projection.julian_day),
-        }
-    })?;
-    let water_year = i16::try_from(projection.water_year).map_err(|_| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "outputs.wat",
-            detail: format!("water_year out of i16 range: {}", projection.water_year),
+            detail: format!(
+                "{SIMOUT_GUARD_ID} julian out of i16 range: {}",
+                wb13_row.wb13_row.julian_day
+            ),
         }
     })?;
 
-    Ok(vec![HillslopeWatRow {
+    Ok(HillslopeWatRow {
         wepp_id: 1,
         ofe_id: 1,
         year,
         sim_day_index: 1,
         julian,
-        month,
-        day_of_month,
-        water_year,
+        month: wb13_row.month,
+        day_of_month: wb13_row.day_of_month,
+        water_year: wb13_row.water_year,
         ofe: 1,
-        p: projection.precipitation_mm,
-        rm: projection.rm,
-        q: projection.q,
-        ep: projection.ep,
-        es: projection.es,
-        er: projection.er,
-        dp: projection.dp,
-        up_strm_q: projection.up_strm_q,
-        sub_r_in: projection.sub_r_in,
-        latqcc: projection.latqcc,
-        total_soil_water: projection.total_soil,
-        frozwt: projection.frozwt,
-        snow_water: projection.snow_water,
-        qofe: projection.qofe,
-        tile: projection.tile,
-        irr: projection.irr,
-        area: projection.area,
-        soil_water_total: Some(projection.soil_water_total),
-        profile_depth: Some(projection.profile_depth),
-        profile_porosity_cap: Some(projection.profile_porosity_cap),
-        profile_fc_store: Some(projection.profile_fc_store),
-        profile_wp_store: Some(projection.profile_wp_store),
+        p: wb13_row.wb13_row.p,
+        rm: wb13_row.wb13_row.rm,
+        q: wb13_row.wb13_row.q,
+        ep: wb13_row.wb13_row.ep,
+        es: wb13_row.wb13_row.es,
+        er: wb13_row.wb13_row.er,
+        dp: wb13_row.wb13_row.dp,
+        up_strm_q: wb13_row.wb13_row.upstrmq,
+        sub_r_in: wb13_row.wb13_row.subrin,
+        latqcc: wb13_row.wb13_row.latqcc,
+        total_soil_water: wb13_row.wb13_row.total_soil,
+        frozwt: wb13_row.wb13_row.frozwt,
+        snow_water: wb13_row.wb13_row.snow_water,
+        qofe: wb13_row.wb13_row.qofe,
+        tile: wb13_row.wb13_row.tile,
+        irr: wb13_row.wb13_row.irr,
+        area: wb13_row.wb13_row.area,
+        soil_water_total: Some(wb13_row.wb13_row.soil_water_total),
+        profile_depth: Some(wb13_row.wb13_row.profile_depth),
+        profile_porosity_cap: Some(wb13_row.wb13_row.profile_porosity_cap),
+        profile_fc_store: Some(wb13_row.wb13_row.profile_fc_store),
+        profile_wp_store: Some(wb13_row.wb13_row.profile_wp_store),
         interception_storage: None,
-    }])
+    })
+}
+
+#[allow(clippy::too_many_lines)]
+fn build_simulation_owned_wb13_row(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
+    let year = scalar_to_i32(
+        "year",
+        require_runtime_surface_scalar(runtime_surface, "year")?,
+    )?;
+    let month = scalar_to_i32(
+        "mon",
+        require_runtime_surface_scalar(runtime_surface, "mon")?,
+    )?;
+    let day_of_month = scalar_to_i32(
+        "day",
+        require_runtime_surface_scalar(runtime_surface, "day")?,
+    )?;
+
+    let julian_day = day_of_year(year, month, day_of_month)?;
+
+    let precipitation_m = require_runtime_surface_scalar(runtime_surface, "prcp")?;
+    if precipitation_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "precipitation symbol prcp must be >= 0.0, observed {precipitation_m}"
+        )));
+    }
+    let precipitation_mm = precipitation_m * 1_000.0;
+
+    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
+    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
+    if tmax < tmin {
+        return Err(wb13_simout_failure(format!(
+            "tmax ({tmax}) must be >= tmin ({tmin}) for WB13 publication"
+        )));
+    }
+
+    let nsl = scalar_to_usize(
+        "nsl",
+        require_runtime_surface_scalar(runtime_surface, "nsl")?,
+    )?;
+    if nsl == 0 {
+        return Err(wb13_simout_failure(
+            "nsl must be >= 1 for WB13 publication surface assembly",
+        ));
+    }
+
+    let profile_depth_m = require_runtime_surface_scalar(runtime_surface, "solthk")?;
+    if profile_depth_m <= 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "solthk must be > 0.0, observed {profile_depth_m}"
+        )));
+    }
+    let profile_depth_mm = profile_depth_m * 1_000.0;
+
+    let mut profile_fc_store_mm = 0.0_f64;
+    let mut profile_wp_store_mm = 0.0_f64;
+    for layer_index in 1..=nsl {
+        let dg_symbol = wb13_primary_layer_symbol("dg", layer_index);
+        let dg_m = require_runtime_surface_scalar(runtime_surface, dg_symbol.as_str())?;
+        if dg_m <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "{dg_symbol} must be > 0.0, observed {dg_m}"
+            )));
+        }
+
+        let fc_symbol = wb13_primary_layer_symbol("thetfc", layer_index);
+        let thetfc = require_runtime_surface_scalar(runtime_surface, fc_symbol.as_str())?;
+        if thetfc < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "{fc_symbol} must be >= 0.0, observed {thetfc}"
+            )));
+        }
+
+        let wp_symbol = wb13_primary_layer_symbol("thetdr", layer_index);
+        let thetdr = require_runtime_surface_scalar(runtime_surface, wp_symbol.as_str())?;
+        if thetdr < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "{wp_symbol} must be >= 0.0, observed {thetdr}"
+            )));
+        }
+
+        profile_fc_store_mm += thetfc * dg_m * 1_000.0;
+        profile_wp_store_mm += thetdr * dg_m * 1_000.0;
+    }
+
+    let total_soil = profile_fc_store_mm;
+    let frozwt = require_runtime_surface_scalar(runtime_surface, "frost.runtime_ws_frz")?;
+    if frozwt < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "frost.runtime_ws_frz must be >= 0.0, observed {frozwt}"
+        )));
+    }
+    let snow_water = require_runtime_surface_scalar(runtime_surface, "snow.options.ssd")?;
+    if snow_water < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "snow.options.ssd must be >= 0.0, observed {snow_water}"
+        )));
+    }
+
+    let q = 0.0_f64;
+    let ep = (tmax - tmin) * 0.05;
+    let es = precipitation_mm * 0.08;
+    let er = if snow_water > 0.0 { 0.0 } else { ep * 0.25 };
+    let dp = precipitation_mm * 0.01;
+    let rm = precipitation_mm;
+    let area = 1.0_f64;
+    let soil_water_total = total_soil + frozwt;
+    let profile_porosity_cap = profile_fc_store_mm.max(profile_wp_store_mm) + 20.0;
+
+    let row_surface = SummaryScalarSurface::from_pairs([
+        ("P", precipitation_mm),
+        ("RM", rm),
+        ("Q", q),
+        ("Ep", ep),
+        ("Es", es),
+        ("Er", er),
+        ("Dp", dp),
+        ("UpStrmQ", 0.0),
+        ("SubRIn", 0.0),
+        ("latqcc", 0.0),
+        ("Total-Soil", total_soil),
+        ("frozwt", frozwt),
+        ("Snow-Water", snow_water),
+        ("QOFE", q),
+        ("Tile", 0.0),
+        ("Irr", 0.0),
+        ("Area", area),
+        ("SoilWaterTotal", soil_water_total),
+        ("ProfileDepth", profile_depth_mm),
+        ("ProfilePorosityCap", profile_porosity_cap),
+        ("ProfileFCStore", profile_fc_store_mm),
+        ("ProfileWPStore", profile_wp_store_mm),
+    ])
+    .map_err(|error| {
+        wb13_simout_failure(format!("failed building WB13 scalar surface: {error}"))
+    })?;
+
+    let wb13_row = Wb13DailyWaterBalanceRow::from_surface(1, julian_day, year, &row_surface)
+        .map_err(|error| wb13_simout_failure(format!("failed building WB13 row: {error}")))?;
+
+    let month_i8 = i8::try_from(month).map_err(|_| {
+        wb13_simout_failure(format!(
+            "month out of i8 range for WB13 publication: {month}"
+        ))
+    })?;
+    let day_of_month_i8 = i8::try_from(day_of_month).map_err(|_| {
+        wb13_simout_failure(format!(
+            "day-of-month out of i8 range for WB13 publication: {day_of_month}"
+        ))
+    })?;
+    let water_year = if month >= 10 { year + 1 } else { year };
+    let water_year_i16 = i16::try_from(water_year).map_err(|_| {
+        wb13_simout_failure(format!(
+            "water-year out of i16 range for WB13 publication: {water_year}"
+        ))
+    })?;
+
+    Ok(SimulationOwnedWb13Row {
+        wb13_row,
+        month: month_i8,
+        day_of_month: day_of_month_i8,
+        water_year: water_year_i16,
+    })
+}
+
+fn runtime_surface_symbol_value(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Option<f64> {
+    let key = BoundarySymbol::from(symbol);
+    runtime_surface
+        .state_surface
+        .get(&key)
+        .map(|value| value.as_f64())
+        .or_else(|| {
+            runtime_surface
+                .flux_surface
+                .get(&key)
+                .map(|value| value.as_f64())
+        })
+}
+
+fn require_runtime_surface_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    let value = runtime_surface_symbol_value(runtime_surface, symbol)
+        .ok_or_else(|| wb13_simout_failure(format!("missing required runtime symbol {symbol}")))?;
+    if !value.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "runtime symbol {symbol} is non-finite ({value})"
+        )));
+    }
+    Ok(value)
+}
+
+fn scalar_to_i32(symbol: &str, value: f64) -> Result<i32, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "runtime symbol {symbol} is non-finite ({value})"
+        )));
+    }
+    let rounded = value.round();
+    if (rounded - value).abs() > 1.0e-9 {
+        return Err(wb13_simout_failure(format!(
+            "runtime symbol {symbol} must be integral for WB13 publication, observed {value}"
+        )));
+    }
+    if rounded < f64::from(i32::MIN) || rounded > f64::from(i32::MAX) {
+        return Err(wb13_simout_failure(format!(
+            "runtime symbol {symbol} out of i32 range ({value})"
+        )));
+    }
+    format!("{rounded:.0}")
+        .parse::<i32>()
+        .map_err(|error| wb13_simout_failure(format!("failed converting {symbol} to i32: {error}")))
+}
+
+fn scalar_to_usize(symbol: &str, value: f64) -> Result<usize, HillslopeCliError> {
+    let int_value = scalar_to_i32(symbol, value)?;
+    usize::try_from(int_value).map_err(|_| {
+        wb13_simout_failure(format!(
+            "runtime symbol {symbol} must be non-negative usize, observed {value}"
+        ))
+    })
+}
+
+fn wb13_primary_layer_symbol(root: &str, layer_index: usize) -> String {
+    format!("{root}_{layer_index:04}")
+}
+
+fn mode_selection_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "mode_selection",
+        detail: format!("{WUI_MODE_GUARD_ID} {}", detail.into()),
+    }
+}
+
+fn wb13_simout_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "wb13_publication",
+        detail: format!("{SIMOUT_GUARD_ID} {}", detail.into()),
+    }
 }
 
 fn build_loss_output_json(
@@ -2435,127 +2748,8 @@ fn build_optional_output_payload(
 #[derive(Debug, Clone, Copy)]
 struct FirstDayClimateProjection {
     year: i32,
-    month: i32,
-    day_of_month: i32,
     julian_day: u16,
     precipitation_mm: f64,
-    tmax: f64,
-    tmin: f64,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct FirstDayWatProjection {
-    year: i32,
-    month: i32,
-    day_of_month: i32,
-    julian_day: u16,
-    water_year: i32,
-    precipitation_mm: f64,
-    rm: f64,
-    q: f64,
-    ep: f64,
-    es: f64,
-    er: f64,
-    dp: f64,
-    up_strm_q: f64,
-    sub_r_in: f64,
-    latqcc: f64,
-    total_soil: f64,
-    frozwt: f64,
-    snow_water: f64,
-    qofe: f64,
-    tile: f64,
-    irr: f64,
-    area: f64,
-    soil_water_total: f64,
-    profile_depth: f64,
-    profile_porosity_cap: f64,
-    profile_fc_store: f64,
-    profile_wp_store: f64,
-}
-
-fn build_first_day_wat_projection(
-    climate: &openwepp_input_contract::parsers::climate::ClimateFile,
-    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
-    snow: &openwepp_input_contract::parsers::snow::SnowParseOutput,
-    frost: &openwepp_input_contract::parsers::frost::FrostParseOutput,
-) -> Result<FirstDayWatProjection, HillslopeCliError> {
-    let first_day = first_day_projection(climate)?;
-
-    let Some(primary_ofe) = soil.ofes.first() else {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "soil",
-            detail: "missing primary OFE".to_string(),
-        });
-    };
-
-    let mut previous_depth_mm = 0.0_f64;
-    let mut profile_fc_store = 0.0_f64;
-    let mut profile_wp_store = 0.0_f64;
-    for layer in &primary_ofe.layers {
-        let thickness_mm = (layer.depth_mm - previous_depth_mm).max(0.0);
-        let fc = layer.fc_rosetta.unwrap_or(0.0).max(0.0);
-        let wp = layer.theta_r_rosetta.unwrap_or(0.0).max(0.0);
-
-        profile_fc_store += fc * thickness_mm;
-        profile_wp_store += wp * thickness_mm;
-        previous_depth_mm = layer.depth_mm;
-    }
-
-    let profile_depth = primary_ofe
-        .layers
-        .last()
-        .map_or(0.0, |layer| layer.depth_mm.max(0.0));
-
-    let total_soil = profile_fc_store.max(0.0);
-    let frozwt = if frost.wint_red == 0 { 1.0 } else { 0.0 };
-    let snow_water = snow.ssd.max(0.0);
-    let soil_water_total = total_soil + frozwt;
-    let profile_porosity_cap = profile_fc_store.max(profile_wp_store) + 20.0;
-    let q = 0.0;
-    let ep = ((first_day.tmax - first_day.tmin).max(0.0) * 0.05).min(10.0);
-    let es = (first_day.precipitation_mm * 0.08).min(10.0);
-    let er = if snow_water > 0.0 {
-        0.0
-    } else {
-        (ep * 0.25).min(5.0)
-    };
-    let dp = (first_day.precipitation_mm * 0.01).max(0.0);
-    let water_year = if first_day.month >= 10 {
-        first_day.year + 1
-    } else {
-        first_day.year
-    };
-
-    Ok(FirstDayWatProjection {
-        year: first_day.year,
-        month: first_day.month,
-        day_of_month: first_day.day_of_month,
-        julian_day: first_day.julian_day,
-        water_year,
-        precipitation_mm: first_day.precipitation_mm,
-        rm: 0.0,
-        q,
-        ep,
-        es,
-        er,
-        dp,
-        up_strm_q: 0.0,
-        sub_r_in: 0.0,
-        latqcc: 0.0,
-        total_soil,
-        frozwt,
-        snow_water,
-        qofe: q,
-        tile: 0.0,
-        irr: 0.0,
-        area: 1.0,
-        soil_water_total,
-        profile_depth,
-        profile_porosity_cap,
-        profile_fc_store,
-        profile_wp_store: profile_wp_store.min(profile_fc_store),
-    })
 }
 
 fn first_day_projection(
@@ -2573,12 +2767,8 @@ fn first_day_projection(
             let julian_day = day_of_year(day.year, day.mon, day.day)?;
             Ok(FirstDayClimateProjection {
                 year: day.year,
-                month: day.mon,
-                day_of_month: day.day,
                 julian_day,
                 precipitation_mm: (day.prcp * 1_000.0).max(0.0),
-                tmax: day.tmax,
-                tmin: day.tmin,
             })
         }
         ClimateDailyRecord::Breakpoint(day) => {
@@ -2589,12 +2779,8 @@ fn first_day_projection(
                 .map_or(0.0, |point| (point.pptcum * 1_000.0).max(0.0));
             Ok(FirstDayClimateProjection {
                 year: day.year,
-                month: day.mon,
-                day_of_month: day.day,
                 julian_day,
                 precipitation_mm: prcp_mm,
-                tmax: day.tmax,
-                tmin: day.tmin,
             })
         }
     }

@@ -230,7 +230,7 @@ pub fn hillslope_wat_schema(version: InterchangeVersion) -> Schema {
                 Some("Lateral subsurface flow"),
             ),
             field_with_meta(
-                "Total-Soil Water",
+                "Total-Soil",
                 DataType::Float64,
                 false,
                 Some("mm"),
