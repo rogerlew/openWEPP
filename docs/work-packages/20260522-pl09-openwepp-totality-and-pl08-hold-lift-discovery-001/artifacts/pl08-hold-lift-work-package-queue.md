@@ -114,6 +114,23 @@ Purpose:
 | `WS11-channel-routing-physics-equivalence-port` | `watershed-physics` | Replace WS10 channel gain-factor surrogate with legacy-equivalent routing physics authority for production claims. | `WB16` | channel routing is no longer governed by `(1+slope)/(1+roughness)` surrogate as production parity claim basis. | contract amendments (`SC-ROUTE-001`, `SC-HYDRAULICS-001`), routing vectors, parity traces |
 | `WS12-impoundment-physics-equivalence-port` | `watershed-physics` | Replace WS10 impoundment algebraic retention surrogate with legacy-equivalent impoundment hydraulics authority for production claims. | `WS11` | impoundment routing is no longer governed by simple headroom ratio surrogate as production parity claim basis. | contract amendments (`SC-IMPOUND-001`, `SC-HYDRAULICS-001`), impoundment vectors, parity traces |
 
+## CLI02/CLI03 Runner Realignment Addendum (2026-05-24 UTC)
+
+Disposition source:
+- user-directed runner scope realignment after CLI01 bootstrap review
+
+Purpose:
+- authorize removal of CLI01 bootstrap-synthesizer output posture from
+  production acceptance criteria;
+- split execution into:
+  - CLI02 planning/governance authority closeout, and
+  - CLI03 implementation execution under contract-first sequencing.
+
+| wp_id | lane | objective | depends_on | acceptance criteria | required evidence |
+|---|---|---|---|---|---|
+| `CLI02-hillslope-simulation-and-interchange-emission` | `runtime-foundation` | Planning/governance package that ratifies schema-versioned hillslope `.run` contract simplification (required `pass`/`loss`, optional parquet outputs), metric-only discoverability, and legacy-sidecar precedence semantics, then hands off implementation scope. | `CLI01`, `WB20` | canonical runner/CLI authority is updated and traceable; implementation tasks are explicitly deferred with prepared CLI03 execution package. | contract/spec amendment evidence, authority/guard mapping, handoff/disposition artifacts, queue/index updates |
+| `CLI03-hillslope-runner-interchange-implementation` | `runtime-foundation` | Implement runner/CLI behavior from ratified CLI02 authority: `.run` validation, metric-only enforcement, legacy sidecar discovery precedence, required pass/loss outputs, optional parquet outputs, and manifest checksum behavior; move output contracts/serializers/tests into dedicated crate `crates/openwepp-hillslope-output/`. | `CLI02`, `WB20` | production run path enforces CLI03 contract surfaces with deterministic fixture evidence and required validation gates; output logic is crate-organized (not embedded in runner orchestration); no bootstrap-synthesized acceptance semantics. | contract-derived tests, pre-implementation gate evidence, output-crate organization evidence, implementation/test evidence, fixture output/manifest evidence |
+
 ## Release Rule
 
 - PL08 hold remains `RETAIN HOLD` after PL15R reversal.
@@ -126,6 +143,10 @@ Purpose:
   3. no schema-only fallback/upcast used to satisfy required include surfaces.
 - Physics-valid Tier-A evidence requires closure of WB physics parity packages:
   `WB17`, `WB18`, `WB19`, and `WB20` before PL14S execution.
+- `CLI02` is planning authority only and does not, by itself, alter PL14S
+  include-surface requirements for final hold-lift closeout evidence.
+- `CLI03` is the implementation lane for runner/CLI execution semantics and
+  likewise does not supersede PL14S/PL15S release-rule requirements.
 
 ## EROD Queue Reassessment Addendum (2026-05-23 UTC)
 

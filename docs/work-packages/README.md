@@ -558,6 +558,18 @@ Authorized packages:
     manifests, and release metadata sidecar validation under contract-first
     sequencing (contract amendments/spec updates, contract tests,
     pre-implementation gate, then runner/CLI code).
+- `20260524-cli02-hillslope-simulation-and-interchange-emission-001/`
+  - Purpose: planning/governance closeout for hillslope `.run` contract
+    simplification and runner-boundary realignment, including explicit
+    handoff to CLI03 implementation scope.
+- `20260524-cli03-hillslope-runner-interchange-implementation-001/`
+  - Purpose: implement runner/CLI behavior for schema-versioned hillslope
+    `.run` execution, metric-only enforcement, legacy sidecar discovery
+    precedence, required pass/loss outputs, optional parquet outputs, and
+    manifest/checksum evidence; organize output contracts/serializers/tests in
+    dedicated crate `crates/openwepp-hillslope-output/` under contract-first
+    sequencing (contract sufficiency check, contract tests,
+    pre-implementation gate, then runner/CLI code).
 - `20260523-erod10-sediment-kernelization-intake-001/`
   - Purpose: convert erosion-kernel deferral into an executable intake/phase
     plan with explicit package-wave ownership, dependency graph, and

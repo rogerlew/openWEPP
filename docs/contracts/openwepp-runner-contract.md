@@ -26,8 +26,11 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
 - Use explicit argument arrays only; no shell interpolation.
 - Emit binary identity and sidecar identity in launch telemetry.
 - Reject mixed-family binary tuples (watershed/hillslope mismatch).
+- Keep output-surface serialization/validation logic in a dedicated outputs
+  crate; `open_wepp_runner` owns launch orchestration and policy enforcement,
+  not inline output-family implementation.
 
-## CLI02 Runner Command Surface
+## CLI03 Runner Command Surface
 
 `open_wepp_runner` must expose at least:
 
@@ -54,6 +57,10 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
 6. Bootstrap-synthesized placeholder include surfaces are prohibited as
    production acceptance semantics.
 7. `run-hillslope` does not accept or negotiate legacy-engine selectors.
+8. Required/optional hillslope output serialization and manifest checksum
+   assembly are delegated to a dedicated outputs crate boundary (for CLI03,
+   `crates/openwepp-hillslope-output/`) with crate-owned typed contracts and
+   tests.
 
 `release lint` requirements:
 
@@ -74,9 +81,9 @@ Runner boundary failures use stable IDs:
 - `RUNNER-E-005`: release sidecar missing/invalid
 - `RUNNER-E-006`: release binary naming contract violation
 
-## CLI02 Output Guard IDs
+## CLI03 Output Guard IDs
 
-Required CLI02 output-surface failures use stable existing guard IDs:
+Required CLI03 output-surface failures use stable existing guard IDs:
 
 - `CLIHILL-E-013`: required hillslope CLI output surface missing.
 - `OPEN_RUNNER-E-018`: missing required hillslope output surface(s).

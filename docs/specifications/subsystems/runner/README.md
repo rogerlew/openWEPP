@@ -10,6 +10,8 @@ This subsystem defines:
 - Declarative `.run` contract posture for hillslope execution with required
   core inputs, explicit metric-only units, optional sidecar overrides,
   required pass/loss outputs, and configurable optional parquet output paths.
+- Dedicated output crate boundary (`crates/openwepp-hillslope-output/`) for
+  output contracts, serializers, and manifest checksum helpers.
 - Required execution outputs and run-provenance artifacts.
 - Binary release metadata sidecar requirements for build artifacts.
 
