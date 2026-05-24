@@ -4,9 +4,9 @@ title: WEPP UI Sentinel Sidecar Input Parser Contract (wepp_ui.txt)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.0
+contract_version: 0.2.0
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-05-24T00:00:00Z
 ---
 
 # SC-INFILE-WEPPUI-001 WEPP UI Sentinel Sidecar Input Parser Contract
@@ -21,6 +21,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-SURVEY-WUI-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (surface provenance and ownership context).
 - `[DIRECT][E-WF-WUI-01]` `/workdir/wepp-forest/src/main.for`, `/workdir/wepp-forest/src/watbal.for`, `/workdir/wepp-forest/src/outfil.for`, `/workdir/wepp-forest/src/input.for` (legacy `ui_run` branching and soil coupling).
 - `[DIRECT][E-WP-WUI-01]` `/workdir/wepppy/wepppy/nodb/core/wepp.py`, `/workdir/wepppy/wepppy/nodb/core/wepp_prep_service.py`, `/workdir/wepppy/wepppy/microservices/rq_engine/wepp_run_payload.py` (modern toggle and sentinel lifecycle).
+- `[DIRECT][E-SIMPIPE-WUI-01]` `/home/workdir/openWEPP/docs/work-packages/20260524-simimpl01-hillslope-totality-assessment-and-watbal-consolidation-001/artifacts/simimpl01-pipeline-gap-audit.md` (runner execution and mode-propagation gap evidence).
 - `[INFERENCE][E-PHYS-WUI-01]` Process/common-sense invariants: sentinel toggles must be deterministic and observable; requested hourly mode should not silently degrade under IO faults.
 
 ## 1. Scope and Version Applicability
@@ -83,7 +84,7 @@ byte_stream          = { byte } ;
 | Source symbol | Parser model field | Runtime state field | Owning module | Phase | Mutability | Downstream consumers | Guard IDs |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | derived `ui_run_requested` | `external.requested_hourly_seepage` | `wepp_ui.mode.ui_run_requested` | `input::orchestrator::run_options` | init | immutable | mode-intent diagnostics and closure checks | `G-WUI-001`, `G-WUI-007` |
-| `ui_run` | `derived.ui_run` | `wepp_ui.mode.ui_run` | `input::sidecar::wepp_ui` | init,daily,event | immutable | `watbal` branch selector | `G-WUI-001`, `G-WUI-004` |
+| `ui_run` | `derived.ui_run` | `wepp_ui.mode.ui_run` | `input::sidecar::wepp_ui` | init,daily,event | immutable | runner/orchestrator watbal lane selector and publication provenance manifest | `G-WUI-001`, `G-WUI-004`, `G-WUI-008` |
 | derived `wepp_ui_file_present` | `derived.file_present` | `wepp_ui.mode.wepp_ui_file_present` | `input::sidecar::wepp_ui` | init | immutable | mode/provenance diagnostics | `G-WUI-001` |
 | derived `payload_bytes` | `derived.payload_bytes` | `wepp_ui.mode.payload_bytes` | `input::sidecar::wepp_ui` | init | immutable | strict/compat policy gate | `G-WUI-002` |
 | derived `payload_nonempty` | `derived.payload_nonempty` | `wepp_ui.mode.payload_nonempty` | `input::sidecar::wepp_ui` | init | immutable | strict/compat policy gate | `G-WUI-002` |
@@ -98,6 +99,9 @@ byte_stream          = { byte } ;
 - `input::sidecar::wepp_ui` owns sentinel-derived mode/provenance surfaces.
 - Parsed sentinel state is immutable after parser finalization.
 - Runtime hydrology modules own mutable water-balance accumulators but may not mutate parser-owned mode flags.
+- Runner/orchestrator execution pathways consume parser-owned mode surfaces as
+  immutable lane-selection inputs and may not drop/synthesize these fields
+  before publication provenance is emitted.
 - Forbidden mutation path: runtime modules rewriting `ui_run` after parser finalization without explicit orchestrator policy transition.
 
 ## 6. Derived Rules and Closure Hooks
@@ -108,12 +112,14 @@ byte_stream          = { byte } ;
 | `D-WUI-002` | Derive payload-byte/nonempty metadata. | parse preamble/finalize | `C-WUI-002` |
 | `D-WUI-003` | Derive deterministic multi-soil `solwpv_reduced_min` and `soil_compatibility_state` from `solwpv[1..n]`. | cross-file validation | `C-WUI-003` |
 | `D-WUI-004` | Derive `mode_divergence` (`ui_run_requested != ui_run`) for normalized branches. | parse/cross-file finalize | `C-WUI-004` |
+| `D-WUI-005` | Bind effective `ui_run` to runtime lane identity (`daily`/`hourly`) and emit publication provenance tuple (`requested`, `effective`, `selected_lane`). | runner/orchestrator handoff | `C-WUI-005` |
 
 Closure hooks:
 - `C-WUI-001`: mode-flag derivation must be deterministic and explicit.
 - `C-WUI-002`: strict/compat payload policy must be observable.
 - `C-WUI-003`: soil-version compatibility policy branch must be explicit and guard-linked.
 - `C-WUI-004`: requested-vs-effective mode divergence must be exported and guard-linked.
+- `C-WUI-005`: runner/orchestrator lane-selection provenance must preserve deterministic mode closure with no silent fallback lane rewrite.
 
 ## 7. Validation and Error Taxonomy
 
@@ -124,6 +130,7 @@ Closure hooks:
 | `WUI-E-002` | cross-file | strict soil-version incompatibility for hourly mode (`ui_run=1` with incompatible `solwpv`) |
 | `WUI-E-003` | runtime-guard | post-parse mode closure mismatch (`requested` vs `effective` branch) |
 | `WUI-E-004` | runtime-guard | missing/invalid cross-file soil-version surface when required for policy gate |
+| `WUI-E-005` | runtime-guard | missing mode-propagation provenance or lane/mode mismatch at runner/orchestrator publication boundary |
 | `WUI-W-001` | compat-warning | sentinel absent => daily default branch |
 | `WUI-W-002` | compat-warning | non-empty sentinel payload ignored |
 | `WUI-W-003` | compat-warning | non-recommended soil-version accepted with hourly mode |
@@ -137,12 +144,17 @@ No silent parser-side masking is permitted in strict mode.
 2. Soil-version compatibility (`solwpv`) must be evaluated explicitly when hourly mode is requested, using deterministic reduction `solwpv_reduced_min=min(solwpv[1..n])` across active soil profiles. `[DIRECT][E-SPEC-WUI-01]`, `[INFERENCE][E-WF-WUI-01]`
 3. Orchestrator run-option toggle surfaces must map losslessly to sentinel presence behavior. `[DIRECT][E-WP-WUI-01]`
 4. Replay/observability surfaces must expose requested/effective mode and divergence if any. `[DIRECT][E-WF-WUI-01]`, `[DIRECT][E-WP-WUI-01]`
+5. Runner/orchestrator publication provenance must include selected runtime
+   lane identity and preserve mode closure (`ui_run=0 -> daily`, `ui_run=1 ->
+   hourly`) without silent fallback. `[DIRECT][E-SIMPIPE-WUI-01]`,
+   `[INFERENCE][E-PHYS-WUI-01]`
 
 ## 9. Boundary Export Mapping
 
 | Canonical symbol(s) | Internal runtime field | Boundary surface | Boundary field mapping | Notes |
 | --- | --- | --- | --- | --- |
 | `ui_run_requested,ui_run,mode_divergence` | `wepp_ui.mode.{ui_run_requested,ui_run,mode_divergence}` | `openwepp.boundary.mode_selection.wepp_ui.v1` | explicit requested/effective/divergence fields + aliases | primary mode-selection observability surface |
+| `ui_run_requested,ui_run,selected_lane` | runner/orchestrator publication provenance tuple | `openwepp.boundary.mode_selection.wepp_ui.v1` | required lane identity where `selected_lane in {daily,hourly}` and matches `ui_run` | SIMIMPL03 execution-ownership closure surface |
 | `wepp_ui_file_present,payload_bytes,payload_nonempty,open_result` | `wepp_ui.mode.*` | `openwepp.boundary.observability.parser_warnings.v1` | explicit sentinel provenance/open-branch fields | strict/compat diagnostics |
 | `solwpv,solwpv_reduced_min,soil_compatibility_state` | `wepp_ui.crossfile.*` | `openwepp.boundary.crossfile.compatibility.v1` | canonical + aliases `soil.version*` | compatibility policy observability |
 
@@ -153,13 +165,17 @@ No silent parser-side masking is permitted in strict mode.
   - requires empty sentinel payload (`0` bytes);
   - distinguishes non-ENOENT open errors as typed failures;
   - enforces strict soil-compatibility policy branch when hourly mode is requested;
-  - exports requested/effective mode plus divergence for every normalized branch.
+  - exports requested/effective mode plus divergence for every normalized branch;
+  - requires lane-provenance closure (`selected_lane`) consistent with effective
+    mode before publication.
 - Compatibility mode:
   - allows sentinel absence with explicit daily-default warning/provenance (`WUI-W-001`);
   - allows non-empty payload while ignoring content (`WUI-W-002`);
   - allows non-recommended soil-version with warning (`WUI-W-003`);
   - may collapse open errors with missing branch while emitting explicit warning (`WUI-W-004`);
-  - must export requested/effective mode plus divergence when a collapse branch is used.
+  - must export requested/effective mode plus divergence when a collapse branch is used;
+  - must still publish deterministic lane provenance consistent with effective
+    mode on normalized paths.
 
 ## 11. Guard Map and Invariant Linkage
 
@@ -172,6 +188,8 @@ No silent parser-side masking is permitted in strict mode.
 | `G-WUI-005` | cross-file soil-version availability closure | cross-file validator | `WUI-E-004` |
 | `G-WUI-006` | strict open-error handling (non-ENOENT) | preamble open handler | strict: `WUI-E-000`; compat: `WUI-W-004` |
 | `G-WUI-007` | requested-vs-effective mode observability export closure | parse/runtime boundary validator | `WUI-E-003` |
+| `G-WUI-008` | effective-mode to lane-selection closure (`ui_run=0 -> daily`, `ui_run=1 -> hourly`) | runner/orchestrator publication boundary | `WUI-E-005` |
+| `G-WUI-009` | simulation-owned publication provenance closure for required replay surfaces | runner publication provenance validator | `WUI-E-005` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -186,9 +204,11 @@ openWEPP boundary names are aliases only (Section 3).
 | --- | --- | --- | --- |
 | `WEPPUI-GAP-001` | Usersum 7778-soil recommendation vs permissive legacy behavior requires governance ratification of enforcement severity. | `[DIRECT][E-SPEC-WUI-01]` | `HOLD` |
 | `WEPPUI-GAP-002` | Legacy merges missing and open-failure branches; strict typed IO-fault policy requires fixture-backed migration evidence. | `[DIRECT][E-SPEC-WUI-01]`, `[DIRECT][E-WF-WUI-01]` | `HOLD` |
+| `WEPPUI-GAP-003` | Production runner path has not yet completed lane-selection propagation and simulation-owned publication closure despite parser-mode availability. | `[DIRECT][E-SIMPIPE-WUI-01]` | `HOLD` |
 
 ## 14. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE15. |
+| `2026-05-24` | `0.2.0` | SIMIMPL03 amendment: added runner/orchestrator mode-propagation closure requirements, lane-provenance export surface, new guard rules (`G-WUI-008/009`), and HOLD gap for unresolved production lane/publication integration. |

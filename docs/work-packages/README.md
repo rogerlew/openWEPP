@@ -530,6 +530,12 @@ Authorized packages:
     hillslope routine inventory from baseline legacy sources and an
     evidence-linked owner-surface gap-closure map that drives SIMIMPL03+
     contract-first implementation sequencing.
+- `20260524-simimpl03-contract-authority-amendments-for-production-watbal-execution-001/`
+  - Purpose: execute SIMIMPL03 contract-first authority closure by amending
+    canonical `SC-WATBAL-001`/`SC-SYSTEM-001`/`SC-INFILE-WEPPUI-001` for
+    production execution ownership, runtime mode-propagation invariants,
+    simulation-owned WB13/H.wat provenance, and consolidated-kernel intake
+    guardrails before SIMIMPL04+ code packages.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

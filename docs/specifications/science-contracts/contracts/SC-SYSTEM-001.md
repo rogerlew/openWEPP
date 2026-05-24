@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -69,6 +69,7 @@ Out of scope:
 | REF-SYSTEM-CH14-OUTFLOW | `chap14.pdf` §14.3.8, Eq. [14.3.18] | Total outflow as explicit sum of active outlet-structure contributions. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH14-SEDCONT | `chap14.pdf` §14.6.1, Eq. [14.6.1] | Impoundment sediment mass continuity for effluent concentration computation. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH2-BRKPT | `references/50201000/chap2.pdf` §2.2, Table 2.2.1 convention text | Breakpoint rainfall sequence conventions required by channel infiltration/runoff assembly. | `[DIRECT][Static]` |
+| REF-SYSTEM-INFILE-WEPPUI | `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md` §4, §8, §11 | Cross-contract authority for requested/effective `wepp_ui` mode propagation to runtime lane selection and publication provenance. | `[DIRECT][Static]` |
 | REF-SYSTEM-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative volumetric fluxes, explicit branch behavior, and conservation-consistent handoff are required for physically valid integration. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -121,6 +122,10 @@ Out of scope:
 | INV-SYSTEM-015 | PL15R Tier-A recloseout supersession invariant: refreshed hold-lift governance must classify residual Tier-A deltas from the latest PL14R schema-aligned strict replay evidence set (parquet comparator JSON artifacts plus day-by-day parity evidence) and must treat stale pre-supersession strict-failure signatures as historical context, not active blockers. If unresolved Tier-A blockers remain after supersession, explicit risk-acceptance reference is still mandatory. | governance-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-016 | WB20 forward-solver parity publication invariant: Tier-A forward-solver lane publication must include explicit lane-manifest evidence showing `wb20_forward_solver_lane_enabled = 1` and confirming observed closure targets are excluded from acceptance-driving inputs; missing manifest/no-substitution evidence is an unresolved governance blocker. | governance-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-017 | PL14S semantic replay-evidence invariant: Tier-A hillslope replay publication must persist semantic comparator evidence (`h5_wat_semantic_comparator.json`) with row-key presence deltas, per-column tolerance verdicts, and top divergent-key diagnostics for investigation; missing or malformed semantic report evidence, or suppressed strict-comparator skip/execution status in provenance output, is a hard-fail/HOLD condition. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-018 | SIMPIPE production runner ownership invariant: system-boundary publication and replay candidate staging for hillslope products must consume outputs from an executed runner -> scheduler/kernel lifecycle; publication from non-executed projection-only synthesis paths is invalid. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-019 | SIMMODE mode-propagation manifest invariant: requested/effective `wepp_ui` mode must be propagated into runtime lane selection and exposed in publication provenance with deterministic lane identity (`daily`/`hourly`); missing mode provenance or lane/mode mismatch is invalid. | hard-fail | REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-020 | SIMOUT simulation-owned publication invariant: required replay candidate surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) must be simulation-owned outputs emitted from executed runtime lanes with explicit provenance; synthetic/bootstrap substitution or projection-only reconstruction is invalid. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-021 | SIMCONS selective consolidated-intake governance invariant: consolidated-kernel/policy intake from candidate sources must remain selective and triaged with explicit `adopt`/`defer`/`reject` decisions and typed guard posture; wholesale adoption or untriaged qcap-style policy intake is forbidden. | governance-fail | REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -143,6 +148,10 @@ Out of scope:
 | `INV-SYSTEM-015` | governance | PL15R recloseout criteria matrix + refreshed hold-lift decision record + supersession references | Governance `HOLD` when active Tier-A blocker classification is derived from stale pre-supersession deltas, or when post-supersession unresolved blockers lack explicit approval reference | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-016` | governance | WB20 forward-solver lane publication checklist + disposition evidence gate | Governance `HOLD` when forward-lane manifest/no-substitution evidence is missing or does not prove observed-target exclusion from acceptance logic | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-017` | runtime + governance | PL14S semantic comparator publication gate + provenance integrity checklist | Typed hard error / explicit `HOLD` when semantic comparator JSON or required investigation diagnostics are missing, or when provenance omits strict-comparator skipped/executed posture | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-018` | runtime | Runner-execution provenance gate for system publication/replay staging | Typed hard error (`WS-SIMPIPE-E-001`) when publication is attempted without executed runner->scheduler lifecycle evidence | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-019` | runtime | Mode-propagation provenance and lane-identity closure guard | Typed hard error (`WS-SIMMODE-E-001`) on missing requested/effective mode or lane/mode mismatch in publication manifest | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-020` | runtime + governance | Simulation-owned replay-surface provenance gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required candidate surfaces are projection/synthesis-first | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-021` | governance | Consolidated intake triage governance gate | Governance `HOLD` (`WS-SIMCONS-E-001`) when candidate consolidated kernels/policies are adopted without explicit triage/provenance disposition | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -212,6 +221,18 @@ explicit divergent names.
   verdicts, top divergent keys, and explicit strict-comparator skip/execution
   provenance status; silent omission of these diagnostics is forbidden.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-007: Production runner publication paths must emit explicit
+  execution provenance proving runner -> scheduler/kernel lifecycle execution
+  before system-boundary publication or replay staging.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-008: Publication provenance must include requested/effective
+  `wepp_ui` mode and selected runtime lane identity; lane/mode divergence is a
+  typed hard-fail condition.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-009: Consolidated kernel/policy intake claims must remain
+  selective with explicit triage dispositions (`adopt`/`defer`/`reject`) and
+  may not silently import qcap-style clamp policy overlays.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -244,6 +265,10 @@ explicit divergent names.
 | PL15R recloseout supersession governance (`INV-SYSTEM-015`) | comparator re-disposition and refreshed PL08 hold-lift decision boundary | Governance `HOLD` when active blocker classification ignores superseding schema-aligned strict replay evidence, or when post-supersession unresolved blockers lack explicit risk-acceptance reference | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB20 forward-solver parity lane governance (`INV-SYSTEM-016`) | parity-lane evidence publication and disposition boundary | Governance `HOLD` when WB20 lane-manifest/no-substitution evidence is absent or does not prove observed-target exclusion from acceptance-driving closure logic | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL14S semantic replay diagnostics completeness (`INV-SYSTEM-017`) | semantic comparator artifact publication and provenance boundary | Hard error / `HOLD` when semantic comparator report content or strict-skip provenance status is absent, malformed, or silently suppressed | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMPIPE runner execution ownership closure (`INV-SYSTEM-018`) | runner publication and replay-staging boundary | Hard error when required publication surfaces are emitted without executed runner->scheduler lifecycle provenance | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMMODE publication lane-provenance closure (`INV-SYSTEM-019`) | publication provenance manifest boundary | Hard error when requested/effective mode provenance is absent or lane identity diverges from effective mode | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMOUT simulation-owned replay-surface closure (`INV-SYSTEM-020`) | replay candidate publication boundary | Hard error / `HOLD` when required candidate surfaces are projection/synthesis-first instead of simulation-owned execution outputs | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMCONS consolidated-intake governance closure (`INV-SYSTEM-021`) | consolidated-kernel adoption boundary | Governance `HOLD` when intake claims lack explicit triage disposition or include untriaged policy overlays | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -379,6 +404,30 @@ Minimum WS12 integration vectors:
 | Hydraulics-to-erosion coupling (`fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe`) | `SC-HYDRAULICS-001` | `SC-SED-001` | Producer and consumer guard ownership is canonicalized for required boundaries. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Sediment export to routing (`sed_det_total`, `sed_dep_total`, `sed_conc_i`, `sed_frac_i`) | `SC-SED-001` | `SC-ROUTE-001` | Routing consumer guard ownership for sediment handoff completeness is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
+## SIMIMPL03 Production Runner and Publication-Provenance Addendum
+
+### System-Level Execution Ownership Rules
+
+1. System publication authority for hillslope replay candidate surfaces is
+   execution-owned and requires successful runner -> scheduler/kernel lane
+   execution provenance.
+2. Projection-first helper publication is non-authoritative for required
+   candidate surfaces once execution-owned publication is claimed.
+3. Required publication provenance minimum:
+   - requested/effective `wepp_ui` mode;
+   - selected runtime lane identity (`daily`/`hourly`);
+   - execution result status and typed guard code when failed.
+
+### Consolidated Intake Governance Rules
+
+1. Consolidated intake from `/workdir/wepp-forest/fpm-src` is selective and
+   must be explicitly triaged per kernel/policy family before integration
+   claims are accepted.
+2. qcap-style clamp policy overlays remain non-authoritative until explicit
+   triage disposition and guard mapping are recorded.
+3. Missing triage disposition is a governance blocker for downstream execution
+   promotion.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -408,3 +457,4 @@ Minimum WS12 integration vectors:
 | `2026-05-24` | `13` | `Codex` | WS12 amendment: added impoundment physics-equivalence integration authority requiring continuity/regime-driven impoundment routing with parser-projected coefficient families and preserved WS10 guard-family continuity for boundary failures. |
 | `2026-05-24` | `14` | `Codex` | WS11 amendment: added channel-routing physics-equivalence integration authority requiring explicit `ipeak` branch execution (Rational/CREAMS/KW/MC), prohibited pre-WS11 gain-factor surrogate substitution, and anchored integration semantics to pinned legacy routing provenance while preserving existing WS10 guard-family continuity. |
 | `2026-05-24` | `15` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-SYSTEM-017`), semantic/provenance publication guard authority, semantic replay producer obligations, and explicit semantic-tolerance profile authority for investigation-grade Tier-A replay evidence. |
+| `2026-05-24` | `16` | `Codex` | SIMIMPL03 amendment: added production runner execution ownership, mode-propagation manifest closure, simulation-owned replay-surface provenance, and selective consolidated-intake governance invariants (`INV-SYSTEM-018..021`) with typed guard families (`WS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`). |

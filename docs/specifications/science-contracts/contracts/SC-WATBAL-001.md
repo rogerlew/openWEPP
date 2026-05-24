@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 27
+contract_version: 28
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -62,6 +62,7 @@ Out of scope:
 | REF-WATBAL-CH4-COUPLING | `references/50201000/chap4.pdf` §4.2 and §4.5 | Infiltration/runoff outputs feeding daily `Q` and antecedent-moisture coupling with Chapter 5. | `[DIRECT][Static]` |
 | REF-WATBAL-CH6-COUPLING | `references/50201000/chap6.pdf` §6.2.1, Eq. [6.2.1]-[6.2.5] | Daily subsurface lateral-flow/drainage terms consistent with Chapter-5 `Qd` accounting. | `[DIRECT][Static]` |
 | REF-WATBAL-CH8-COUPLING | `references/50201000/chap8.pdf` §8.2.4 and §8.1 coupling text | Plant-water-stress consumption of `Ws` and required plant-surface inputs to water balance. | `[DIRECT][Static]` |
+| REF-WATBAL-INFILE-WEPPUI | `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md` §4, §8, §11 | Cross-contract requested/effective `wepp_ui` mode propagation authority from parser boundary to runtime lane selection. | `[DIRECT][Static]` |
 | REF-WATBAL-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes and bounded stress factors required for physically valid accounting. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -167,6 +168,10 @@ lateral/drainage).
 | INV-WATBAL-015 | PL15R schema-aligned replay supersession invariant: Tier-A `H.wat.parquet` residual classification must use canonical 25-column schema-aligned strict replay evidence and day-by-day keyed parity (`OFE,J,Y`) before declaring residual blockers. Schema-only pre-alignment failures are historical context once superseding strict-pass evidence is present. | governance-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-016 | WB20 forward-solver lane invariant: when `wb20_forward_solver_lane_enabled = 1`, runoff/storage closure acceptance must be solver-output-derived (`wb12_*_closure_delta` from solver residual identities) and must not consume `wb12_runoff_observed` or `wb12_storage_observed` as acceptance-driving terms. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH4-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-017 | PL14S semantic replay diagnostics invariant: Tier-A hillslope replay evidence for WB13 surfaces must include semantic comparator diagnostics keyed by `(OFE,J,Y)` with row-presence deltas, per-column tolerance verdicts, baseline-only column disclosure, and top divergent rows over required investigation columns (`P`, `Q`, `Ep`, `Es`, `Er`, `Dp`, `Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`); missing/malformed semantic report content is a hard-fail evidence defect. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-018 | SIMPIPE production execution ownership invariant: publication of water-balance boundary/output surfaces (`Q`, `ET`, `D`, `Qd`, `interchange/H.wat.parquet`) is valid only when derived from an executed scheduler/kernel lane; projection-only synthesis paths without lane execution provenance are invalid. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-019 | SIMMODE runtime lane-selection invariant: effective `wepp_ui` mode (`ui_run`) must deterministically select water-balance execution lane (`daily` when `ui_run=0`, `hourly` when `ui_run=1`) with requested/effective mode observability preserved; missing mode surfaces or lane/mode mismatch must hard-fail without silent fallback. | hard-fail | REF-WATBAL-INFILE-WEPPUI, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-020 | SIMOUT simulation-owned WB13 provenance invariant: WB13/H.wat publication authority is simulation-owned and must originate from executed hydrology lane state/flux writeback surfaces; synthetic/bootstrap substitution or projection-only reconstruction for required candidate surfaces is invalid. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-021 | SIMCONS selective consolidated-intake invariant: consolidated watbal kernel intake from `/workdir/wepp-forest/fpm-src` must remain selective and provenance-triaged (`adopt`, `defer`, `reject`) with explicit typed guard posture; wholesale import or untriaged policy-surface adoption (including qcap-style clamp overlays) is forbidden. | governance-fail | REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -189,6 +194,10 @@ lateral/drainage).
 | `INV-WATBAL-015` | governance | PL15R schema-aligned WB13 replay reclassification gate | Governance `HOLD` when active Tier-A WB13 blocker classification ignores superseding schema-aligned strict-pass/day-parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-016` | runtime | WB12 runoff/storage reconciliation lane selector and closure-delta assembler | Typed hard error when forward lane consumes excluded observed targets or emits non-residual closure deltas | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-017` | runtime + governance | PL14S semantic comparator report schema/content gate | Typed hard error / explicit `HOLD` when semantic report omits row-presence deltas, per-column tolerance verdicts, required investigation diagnostics, or baseline-only column disclosure | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-018` | runtime | Runner-to-orchestrator execution provenance gate for watbal publication surfaces | Typed hard error (`HS-SIMPIPE-E-001`) when required surfaces are published without executed lane provenance | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-019` | runtime | `wepp_ui` effective-mode to watbal-lane selector closure guard | Typed hard error (`HS-SIMMODE-E-001`) on missing mode surfaces or lane/mode mismatch | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-020` | runtime + governance | WB13 simulation-owned publication provenance gate | Typed hard error / explicit `HOLD` (`HS-SIMOUT-E-001`) on projection-only/synthetic WB13 publication for required candidate surfaces | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-021` | governance | Consolidated-kernel intake triage authority gate | Governance `HOLD` (`HS-SIMCONS-E-001`) when consolidated kernels/policies are adopted without explicit provenance triage and guard disposition | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -261,6 +270,10 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 - `Etp = 0` day with non-zero `Σ Ui`, or undefined/non-explicit `Ws` branch handling. `[DIRECT][Static] + [INFERENCE][Static]`
 - Percolation emitted when `Θi <= FCi` or non-physical conductivity/percolation domain failure in Eq. [5.4.*]. `[DIRECT][Static]`
 - Missing required coupling payloads from climate/runoff/subsurface/plant surfaces at daily closure assembly time. `[DIRECT][Static] + [INFERENCE][Static]`
+- Water-balance boundary/output publication attempted without executed scheduler/kernel lane provenance (`INV-WATBAL-018`). `[DIRECT][Static] + [INFERENCE][Static]`
+- Effective `wepp_ui` mode missing at lane selection boundary, or selected lane inconsistent with effective mode (`INV-WATBAL-019`). `[DIRECT][Static] + [INFERENCE][Static]`
+- WB13/H.wat required candidate surfaces emitted from projection-only/synthetic reconstruction rather than simulation-owned execution surfaces (`INV-WATBAL-020`). `[DIRECT][Static] + [INFERENCE][Static]`
+- Consolidated watbal intake/policy adoption performed without explicit provenance triage and typed guard disposition (`INV-WATBAL-021`). `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -272,6 +285,17 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   emit semantic comparator artifacts with row-key deltas, per-column tolerance
   verdicts, and top divergent rows; silent omission of semantic diagnostics is
   invalid. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-006: Production execution pathways must publish explicit
+  scheduler/kernel lane provenance for required water-balance outputs and
+  must reject projection-only publication for required candidate surfaces.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-007: Effective `wepp_ui` mode must be propagated unchanged from
+  parser boundary into lane selection and mismatch must surface typed failure;
+  no silent daily fallback is permitted for missing/invalid mode closure.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-008: Consolidated kernel/policy intake from candidate sources
+  must remain selective and triaged with explicit `adopt`/`defer`/`reject`
+  disposition before runtime enablement claims are made. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -296,6 +320,10 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | PL15R schema-aligned WB13 supersession (`INV-WATBAL-015`) | strict replay delta reclassification boundary | Governance `HOLD` when residual WB13 blockers are asserted without evaluating superseding 25-column schema-aligned strict replay and keyed day-by-day parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB20 forward-solver lane closure semantics (`INV-WATBAL-016`) | WB12 runoff/storage closure-delta assembly boundary | Hard error when forward-solver lane consumes observed targets in acceptance logic or emits non-residual closure deltas | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL14S semantic replay diagnostics completeness (`INV-WATBAL-017`) | semantic comparator report publication boundary | Hard error / `HOLD` when semantic replay evidence omits row-presence deltas, per-column verdicts, required investigation diagnostics, or baseline-only column disclosure | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMPIPE runner execution ownership closure (`INV-WATBAL-018`) | runner publication boundary for hydrology outputs | Hard error when required water-balance outputs are published without executed scheduler/kernel provenance | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMMODE lane-propagation closure (`INV-WATBAL-019`) | runner/orchestrator lane selector boundary | Hard error when selected lane diverges from effective `wepp_ui` mode or mode surfaces are missing | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMOUT simulation-owned WB13 provenance closure (`INV-WATBAL-020`) | WB13 output publication boundary | Hard error / `HOLD` when WB13 candidate surfaces are projection/synthesis-first rather than simulation-owned | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMCONS consolidated-intake guard closure (`INV-WATBAL-021`) | consolidated-kernel adoption boundary | Governance `HOLD` when candidate kernel/policy intake lacks explicit triage/provenance disposition | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -312,6 +340,10 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `WB13_OUTPUT_GUARD_MISSING` | status message id | `HKERNEL-WB13-HWAT-E-001` | Typed missing-required-symbol guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
 | `WB13_OUTPUT_GUARD_NONFINITE` | status message id | `HKERNEL-WB13-HWAT-E-002` | Typed non-finite-value guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
 | `WB13_OUTPUT_GUARD_DOMAIN` | status message id | `HKERNEL-WB13-HWAT-E-003` | Typed domain/order/schema guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
+| `SIMPIPE_EXECUTION_OWNERSHIP_GUARD` | status message id | `HS-SIMPIPE-E-001` | Typed guard code for publication without executed scheduler/kernel provenance | REF-WATBAL-PHYS-BOUNDS |
+| `SIMMODE_LANE_CLOSURE_GUARD` | status message id | `HS-SIMMODE-E-001` | Typed guard code for effective-mode to lane-selection mismatch | REF-WATBAL-INFILE-WEPPUI, REF-WATBAL-PHYS-BOUNDS |
+| `SIMOUT_WB13_PROVENANCE_GUARD` | status message id | `HS-SIMOUT-E-001` | Typed guard code for projection-first/synthetic WB13 candidate publication | REF-WATBAL-PHYS-BOUNDS |
+| `SIMCONS_INTAKE_TRIAGE_GUARD` | status message id | `HS-SIMCONS-E-001` | Typed governance code for untriaged consolidated intake/adoption claims | REF-WATBAL-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -740,6 +772,23 @@ canonical order:
    - per-column tolerance verdicts,
    - required investigation columns,
    - explicit baseline-only column disclosure and top divergent rows.
+9. SIMPIPE vectors:
+   - required watbal outputs published only when executed lane provenance is
+     present;
+   - projection-only publication attempt hard-fails with `HS-SIMPIPE-E-001`.
+10. SIMMODE vectors:
+   - `ui_run=0` selects daily lane;
+   - `ui_run=1` selects hourly lane;
+   - any mismatch or missing mode surfaces hard-fails with
+     `HS-SIMMODE-E-001`.
+11. SIMOUT vectors:
+   - WB13 candidate rows emitted from executed lane surfaces publish as valid;
+   - projection-only/synthetic substitution hard-fails with
+     `HS-SIMOUT-E-001`.
+12. SIMCONS vectors:
+   - consolidated kernel/policy adoption claim without explicit
+     `adopt`/`defer`/`reject` disposition hard-fails governance with
+     `HS-SIMCONS-E-001`.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -761,6 +810,38 @@ canonical order:
    deterministic state/flux publications under typed symbol resolution.
 3. Failure migration vectors: missing/non-finite/domain-invalid symbols retain
    existing typed boundary classes and guard IDs.
+
+## SIMIMPL03 Production Execution Ownership and Intake Guardrail Addendum
+
+### Required Execution Ownership Closure
+
+1. Production watbal boundary publication is execution-owned: required
+   hydrology surfaces must originate from accepted scheduler/kernel lane
+   execution and carry lane provenance metadata.
+2. Projection-first helpers are non-authoritative for required candidate
+   surfaces once production execution ownership is claimed.
+3. Required publication provenance minimum:
+   - lane identity (`daily` or `hourly`);
+   - effective mode source (`wepp_ui.mode.ui_run`);
+   - execution result (`accepted`/typed failure code).
+
+### Required Mode-Propagation Closure
+
+1. Parser-owned `wepp_ui` effective mode is immutable runtime input to lane
+   selection.
+2. Daily lane is the only valid lane for `ui_run=0`; hourly lane is the only
+   valid lane for `ui_run=1`.
+3. Lane selection may not silently collapse to daily on missing/invalid mode
+   closure.
+
+### Consolidated Intake Guardrails
+
+1. Consolidated intake from `/workdir/wepp-forest/fpm-src` is selective and
+   must be provenance-triaged per kernel/policy family.
+2. qcap-style clamp/policy overlays are non-authoritative until explicitly
+   triaged and dispositioned under canonical contract governance.
+3. Intake guardrails are governance blockers for runtime enablement claims
+   until explicit triage evidence exists.
 
 ## Gap Register
 
@@ -803,3 +884,4 @@ canonical order:
 | `2026-05-23` | `25` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum for required erosion-lane hydrology boundary exports while preserving existing non-Wave-0 companion-gap posture (`GAP-WATBAL-002`). |
 | `2026-05-24` | `26` | `Codex` | CLI02 amendment: replaced required replay include-surface authority from legacy/bootstrap candidate files (`H5.wat.dat`, `H5.plot.dat`) to simulation-driven partitioned interchange candidate surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) and updated WB13 replay vector wording accordingly. |
 | `2026-05-24` | `27` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-WATBAL-017`), semantic comparator guard/disposition authority, WB13 semantic evidence vectors, and explicit producer obligations for investigation-grade WB13 parity reporting. |
+| `2026-05-24` | `28` | `Codex` | SIMIMPL03 amendment: added production execution ownership, mode-propagation closure, simulation-owned WB13 provenance, and selective consolidated-intake guardrail invariants (`INV-WATBAL-018..021`) with typed guards (`HS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`) and addendum authority. |
