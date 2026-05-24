@@ -2,34 +2,33 @@
 
 Status: `complete`
 Evidence mode: `Static + Ran`
-Assessment: `ACCEPTANCE-POSITIVE (Tier-A required surfaces closed)`
+Assessment: `UNRESOLVED / HOLD (provenance-invalid Tier-A lane)`
 
 Static:
 - Semantic parity (not bitwise parity) remains project target.
-- Tier-A single-OFE daily water-balance surfaces remain high-confidence
-  acceptance-direction signals.
+- Tier-A single-OFE daily water-balance surfaces remain high-confidence signals
+  only when candidate provenance is direct openWEPP runtime execution.
 
 Ran:
-- PL14R schema-aligned strict replay artifacts show:
-  - `H5.wat.dat`: `strict_pass=true` with `identical=1`
-  - `H5.plot.dat`: `strict_pass=true` with `identical=1`
-- Day-by-day keyed parity artifact shows:
-  - `all_columns_exact=true`
-  - `common_row_count=1095`
+- PL14R schema-aligned strict replay artifacts show strict-pass signatures.
+- PL14R provenance and schema-aligned retest artifacts show candidate lane
+  substitution from legacy `/tmp/pl08_tiera_cmp_20260522/candidate` outputs.
 
 ## Direction Verdict
 
-`ACCEPTANCE-POSITIVE`
+`UNRESOLVED / HOLD`
 
 Why:
 
-1. Both required Tier-A surfaces pass strict replay in the refreshed evidence
-   lane.
-2. `H5.wat.dat` parity is exact on all 25 canonical measures day-by-day under
-   shared keyspace.
-3. No unresolved Tier-A blocker remains after supersession classification.
+1. Required Tier-A surfaces are not backed by direct openWEPP candidate lane
+   emission for the accepted strict-pass classification.
+2. Strict-pass signals are legacy-vs-legacy after schema-upcast alignment,
+   which is non-authoritative for openWEPP hold-lift claims.
+3. Physics parity packages for ET/percolation/lateral/drainage forward-solver
+   lane remain explicit prerequisites for valid Tier-A parity closure.
 
 ## Scope Note
 
-This assessment is scoped to PL15R Tier-A required surfaces and does not claim
-that all non-Tier-A lanes are closed as release gates.
+This assessment rejects PL08 hold-lift on provenance/physics-authority grounds.
+Future lift eligibility is gated on the parity-recovery queue in
+`pl08-hold-lift-work-package-queue.md` (`CLI10`, `WB17..WB20`, `PL14S`, `PL15S`).
