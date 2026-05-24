@@ -16,6 +16,12 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   autonomously from kickoff through disposition without user intervention.
 - `package.md` and kickoff prompts must define concrete sequencing, explicit
   file targets, gate commands, and expected evidence updates.
+- Kickoff prompts must include an explicit `Autonomy:` line requiring
+  end-to-end execution for the declared scope without additional user
+  intervention unless hard-blocked.
+- Kickoff prompts must include a `Required reading` list with explicit path
+  references to orientation and authority documents so agents do not need to
+  independently search onboarding context.
 - Work-package authoring must reference and follow:
   `docs/codex_exec_plans.md`.
 
@@ -502,6 +508,11 @@ Authorized packages:
     refreshed PL08 hold-lift verdict with contract-first sequencing (contract
     updates, contract tests, pre-implementation gate, then closeout
     decision-surface code).
+- `20260524-pl14s-tier-a-openwepp-candidate-emission-and-replay-001/`
+  - Purpose: execute semantic-parity Tier-A openWEPP-vs-legacy hillslope
+    water-balance replay (erosion excluded) and stand up reusable
+    investigation-grade legacy comparison suite tooling for recurring parity
+    diagnostics.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
@@ -581,6 +592,13 @@ Authorized packages:
     dedicated crate `crates/openwepp-hillslope-output/` under contract-first
     sequencing (contract sufficiency check, contract tests,
     pre-implementation gate, then runner/CLI code).
+- `20260524-cli04-openwepp-output-hillslope-wat-parquet-architecture-001/`
+  - Purpose: define and implement shared output crate architecture for
+    hillslope/watershed parquet families and land real `outputs.wat` parquet
+    emission (with WEPPpy/WEPPpyo3 schema metadata parity, including
+    post-`wepp_260430` `InterceptionStorage` authority) under contract-first
+    sequencing (contract/spec amendments, contract tests,
+    pre-implementation gate, then runner/output code).
 - `20260523-erod10-sediment-kernelization-intake-001/`
   - Purpose: convert erosion-kernel deferral into an executable intake/phase
     plan with explicit package-wave ownership, dependency graph, and

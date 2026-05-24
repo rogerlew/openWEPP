@@ -1,0 +1,19 @@
+{
+  "default": {
+    "abs": 0.1,
+    "rel": 0.02
+  },
+  "columns": {
+    "P": { "abs": 0.1, "rel": 0.01 },
+    "RM": { "abs": 0.1, "rel": 0.02 },
+    "Q": { "abs": 0.05, "rel": 0.03 },
+    "Ep": { "abs": 0.05, "rel": 0.03 },
+    "Es": { "abs": 0.05, "rel": 0.03 },
+    "Er": { "abs": 0.05, "rel": 0.03 },
+    "Dp": { "abs": 0.05, "rel": 0.03 },
+    "Total-Soil": { "abs": 0.5, "rel": 0.01 },
+    "frozwt": { "abs": 0.2, "rel": 0.02 },
+    "Snow-Water": { "abs": 0.2, "rel": 0.02 },
+    "SoilWaterTotal": { "abs": 0.5, "rel": 0.01 }
+  }
+}
