@@ -4,7 +4,7 @@ title: Climate Input Parser Contract (.cli)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.3
+contract_version: 0.1.4
 evidence_mode: Static
 last_updated_utc: 2026-05-23T00:00:00Z
 ---
@@ -23,6 +23,8 @@ Evidence mode: `Static`
 - `[DIRECT][E-WF-CLI-02]` `/home/workdir/wepp-forest/src/stmget.for:11-246` and `/home/workdir/wepp-forest/src/idat.for:1-60` (breakpoint/storm-path consumption references cited by survey).
 - `[DIRECT][E-WP-CLI-01]` `/workdir/wepppy/wepppy/climates/cligen/cligen.py` (`ClimateFile` parser surface cited by survey).
 - `[DIRECT][E-WP3-CLI-01]` `/workdir/wepppyo3/cli_revision/src/lib.rs` (Rust climate transform readers cited by survey).
+- `[DIRECT][E-WP-CLIM02-CLI-01]` `/home/workdir/openWEPP/docs/work-packages/20260522-clim02-climate-parser-to-runtime-seam-adapters-001/artifacts/climate-seam-adapter-ownership-contract.md` (authoritative parser-to-runtime seam ownership mapping and `datver` policy guard posture).
+- `[DIRECT][E-WP-CLIM07-CLI-01]` `/home/workdir/openWEPP/docs/work-packages/20260523-clim07-climate-comparator-and-closure-evidence-001/artifacts/clim07-parser-to-kernel-seam-check-evidence.md` (executed seam vector closure checks across hillslope/watershed runtime seams).
 - `[INFERENCE][E-PHYS-CLI-01]` Physical/common-sense invariants: day/month/date validity, non-negative precipitation/duration, monotone cumulative precipitation within a day.
 
 ## 1. Scope and Version Applicability
@@ -228,13 +230,14 @@ Required vector obligations:
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
 | `CLI-GAP-001` | Final openWEPP policy for `itemp=2` legacy single-storm acceptance is not ratified. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]` | `HOLD` |
-| `CLI-GAP-002` | Exact parser-vs-runtime responsibility boundary for historical `datver=4.0` `ip` handling is not yet encoded in executable architecture docs. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-01]` | `HOLD` |
+| `CLI-GAP-002` | Parser-vs-runtime responsibility boundary for historical `datver=4.0` `ip` handling is now encoded by CLIM02 seam-ownership authority and CLIM07 runtime seam-vector closure evidence. | `[DIRECT][E-SPEC-CLI-01]`, `[DIRECT][E-WP-CLIM02-CLI-01]`, `[DIRECT][E-WP-CLIM07-CLI-01]` | `RESOLVED-IN-OPENWEPP` |
 | `CLI-GAP-003` | Parser/runtime breakpoint cardinality policy is aligned to `1500` in openWEPP; cross-port comparator limits outside openWEPP remain investigative only. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-02]` | `RESOLVED-IN-OPENWEPP` |
 
 ## 15. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-23` | `0.1.4` | CLIM08 governance closeout: reclassified `CLI-GAP-002` as `RESOLVED-IN-OPENWEPP` using CLIM02 seam-ownership authority plus CLIM07 executed seam-vector closure evidence. |
 | `2026-05-23` | `0.1.3` | CLIM07 amendment: added comparator/seam vector obligations linking parser surfaces to runtime climate seam checks for continuous-daily and breakpoint modes. |
 | `2026-05-22` | `0.1.2` | Updated breakpoint policy to `1500`, added strict breakpoint-time monotonicity policy text, and documented explicit legacy timing compat control. |
 | `2026-05-21` | `0.1.1` | Added boundary export mapping, generator command propagation, and explicit strict/compat breakpoint cardinality guard policy. |

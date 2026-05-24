@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -373,6 +373,25 @@ states and must hard-fail with typed hydrology guard posture.
 4. Confidence-tier reporting vectors verify deterministic routing metadata and
    typed missing-metadata failure behavior.
 
+## CLIM08 Governance Closeout Addendum
+
+### CLIM08 HOLD-Closure Mapping
+
+1. Parser/runtime seam ownership closure is ratified through implemented
+   CLIM02 seam authority and executable seam-guard behavior, with canonical
+   parser/runtime boundary disposition tracked in
+   `SC-INFILE-CLIMATE-001` (`CLI-GAP-002` now `RESOLVED-IN-OPENWEPP`).
+2. Climate seam integration-test closure is ratified through CLIM07 executed
+   parser-to-kernel seam checks for both hillslope and watershed assignment
+   surfaces.
+
+### CLIM08 Promotability Impact
+
+1. CLIM08 closes seam-specific governance HOLD objectives from the CLIM queue.
+2. CLIM08 does not retire non-seam climate limitations tracked in
+   `GAP-CLIMATE-003`..`GAP-CLIMATE-005`; those rows continue to control overall
+   promotability posture for this contract.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -396,3 +415,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-23` | `6` | `Codex` | CLIM06 amendment: added parsed frost-control runtime coupling requirements, explicit climate freeze/thaw branch-selection authority, and typed active-coupling guard posture for frozen-soil boundary failures. |
 | `2026-05-23` | `7` | `Codex` | IRRIG10 amendment: added climate schedule-key authority (`day`, `year`) and downstream irrigation-coupled forcing closure requirements for fixed-date/depletion runtime scheduling. |
 | `2026-05-23` | `8` | `Codex` | CLIM07 amendment: added explicit comparator/seam vector obligations for continuous-daily and breakpoint climate modes, parser-to-kernel namespace projection checks, and confidence-tier routing evidence requirements; reclassified `GAP-CLIMATE-001` as resolved in openWEPP scope. |
+| `2026-05-23` | `9` | `Codex` | CLIM08 governance closeout: added seam HOLD-closure mapping to CLIM02/CLIM07 evidence and clarified that seam closeout does not retire non-seam promotability gaps (`GAP-CLIMATE-003`..`GAP-CLIMATE-005`). |
