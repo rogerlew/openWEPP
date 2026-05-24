@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 18
+contract_version: 20
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -92,7 +92,7 @@ Out of scope:
 | `Ksi`, `Ksai`, `Bi` | `m s^-1`, `m s^-1`, `fraction` | Saturated and adjusted hydraulic conductivity with conductivity-shape parameter. | soil/percolation routine | percolation routing |
 | `Ws` | `fraction` | Plant growth water-stress factor (`0..1`) from supply/demand ratio. | water-balance/ET coupling | plant growth regulation |
 
-## Algorithm State Surfaces (WB11/WB17 Hydrology Production Kernels)
+## Algorithm State Surfaces (WB18/WB17 Hydrology Production Kernels)
 
 ### Required Inputs
 
@@ -102,44 +102,46 @@ Out of scope:
 | Coupled PL ordering preconditions | `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` (validated at growth dispatch before hydrology lane entry) |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET + WB11 perc/lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `wb11_field_capacity`, `wb11_perc_fraction`, `wb11_drainable_storage`, `wb11_lateral_fraction`, `wb11_drainage_fraction`, `wb11_drainage_coefficient` |
+| WB17 ET + WB18 perc + WB11 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `wb11_drainable_storage`, `wb11_lateral_fraction`, `wb11_drainage_fraction`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
-| WB17 ET + WB11 perc flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er`, `D`, `Pe` |
+| WB17 ET + WB18 perc flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe` |
 | WB11 lateral/drainage outputs | `q`, `Qdd`, `Qd` |
 | WB11 state updates | `wb11_soil_water`, `wb11_drainable_storage` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range WB11 hydrology domains |
 
 ### Mutated State Surfaces
 
-WB11/WB17 mutate water-balance hydrology surfaces deterministically through
+WB18/WB17 mutate water-balance hydrology surfaces deterministically through
 phase-specific ET/percolation/lateral/drainage kernels while preserving
 orchestrator-owned writeback commit authority. ET execution is WB17
 equation-driven (`Esp`, `Etp`, `Er`, `Es`, `Ep`) while percolation/lateral/
-drainage remain WB11 deterministic kernels.
+drainage remain deterministic kernels (WB18 percolation + WB11
+lateral/drainage).
 
-## Algorithm Specification (WB11/WB17 Scheduler Hydrology Production Execution)
+## Algorithm Specification (WB18/WB17 Scheduler Hydrology Production Execution)
 
 1. Map canonical scheduler phase to typed hillslope kernel phase class.
 2. Execute WB17 ET phase (`hydrology_evapotranspiration`) using equation-driven
-   partition and stress updates, then execute WB11 percolation/lateral/drainage
-   phases with deterministic state/flux updates and typed invariant guards.
-3. Enforce finite and domain bounds for all required WB11 inputs and emitted
-   outputs prior to writeback acceptance.
+   partition and stress updates, then execute WB18 percolation and WB11
+   lateral/drainage phases with deterministic state/flux updates and typed
+   invariant guards.
+3. Enforce finite and domain bounds for all required WB18/WB11 inputs and
+   emitted outputs prior to writeback acceptance.
 4. Preserve explicit routing hard-fail posture for unsupported/mismatched
    hydrology phase-class combinations.
 5. Apply only accepted writeback payloads via orchestrator-owned state/flux
    maps; reject malformed payloads with typed status signals.
 
-## Branch and Guard Table (WB11/WB17 Hydrology Kernel Set)
+## Branch and Guard Table (WB18/WB17 Hydrology Kernel Set)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
 | `BR-WATBAL-WB17-ET` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` | runtime | deterministic WB17 ET partition/writeback execution with typed guards (`HKERNEL-WB11-ET-E-001..003`) |
-| `BR-WATBAL-WB11-PERC` | phase class `hydrology_percolation_deep_seepage` | `wb11_soil_water`, `wb11_field_capacity`, `wb11_perc_fraction` | runtime | deterministic percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
+| `BR-WATBAL-WB18-PERC` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` | runtime | deterministic WB18 per-layer percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
 | `BR-WATBAL-WB11-LAT` | phase class `hydrology_lateral_transfer` | `wb11_drainable_storage`, `wb11_lateral_fraction`, `Pe` | runtime | deterministic lateral/writeback execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-WATBAL-WB11-DRAIN` | phase class `hydrology_drainage` | `wb11_drainable_storage`, `wb11_drainage_fraction`, `wb11_drainage_coefficient`, `q` | runtime | deterministic drainage/writeback execution with typed guards (`HKERNEL-WB11-DRAIN-E-001..003`) |
 | `BR-WATBAL-WB11-UNSUPPORTED` | unsupported hydrology phase-class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
@@ -156,7 +158,7 @@ drainage remain WB11 deterministic kernels.
 | INV-WATBAL-006 | Percolation eligibility invariant: per-layer percolation obeys Eq. [5.4.1] (`pei = 0` when `Θi <= FCi`; otherwise `pei >= 0`), and adjusted conductivity/percolation semantics follow Eq. [5.4.2]-[5.4.5]. | hard-fail | REF-WATBAL-CH5-PERC | `[DIRECT][Static]` |
 | INV-WATBAL-007 | Coupling invariant: daily runoff/infiltration (`Q`, antecedent near-surface moisture), snow contribution (`S`), subsurface/drain loss (`Qd`), and plant forcing inputs (`LAI`, root depth, biomass/residue context for ET partition) must be present with declared units before closure is accepted. | hard-fail | REF-WATBAL-CH3-COUPLING, REF-WATBAL-CH4-COUPLING, REF-WATBAL-CH5-LINK, REF-WATBAL-CH6-COUPLING, REF-WATBAL-CH8-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-008 | Governance invariant: water moving below root zone (`D`) is treated as loss from this component and cannot be silently reintroduced into root-zone closure without explicit cross-contract authority. | governance-fail | REF-WATBAL-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-009 | WB17/WB11 production execution invariant: ET/percolation/lateral/drainage kernels must emit deterministic state/flux updates (`ET`, `Ws`, `Ep`, `Es`, `Er`, `D`, `Pe`, `q`, `Qdd`, `Qd`) and update owned state surfaces (`wb11_soil_water`, `wb11_drainable_storage`). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST, REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-009 | WB17/WB18 production execution invariant: ET/percolation/lateral/drainage kernels must emit deterministic state/flux updates (`ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe`, `q`, `Qdd`, `Qd`) and update owned state surfaces (`wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage`). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST, REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-010 | WB11 guard + routing invariant: unsupported hydrology phase classes and missing/non-finite/out-of-range WB11 domains must surface typed hard failures (`HS-HYDRO-E-001`, `HKERNEL-WB11-*-E-*`) without silent reassignment/clamping/defaulting. | hard-fail | REF-WATBAL-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-WATBAL-011 | INT10 coupled lane-entry invariant: watbal/hydrology phases execute only after successful plant-lane decomposition/growth transition completion with valid ordering preconditions (`pl_order_growth_after_decomp = 1`, `pl_order_watbal_after_growth = 1`); ordering-symbol violations must hard-fail before watbal-lane completion. | hard-fail | REF-WATBAL-CH5-LINK, REF-WATBAL-CH8-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-012 | PL14 replay-candidate emission invariant: WB13 candidate rows staged for strict Tier-A replay must preserve canonical 25-column schema and deterministic `(Y, J, OFE)` ordering; missing required symbols/artifacts or schema/arity violations must hard-fail replay staging without truncation, padding, or legacy-surface substitution. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -176,7 +178,7 @@ drainage remain WB11 deterministic kernels.
 | `INV-WATBAL-006` | runtime | Percolation routing by layer | Typed hard error on invalid percolation eligibility/conductivity domains | Tier-A gate | `[DIRECT][Static]` |
 | `INV-WATBAL-007` | runtime | Component-boundary payload validator | Typed hard error on missing/invalid required coupling surfaces | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-008` | governance | Contract review/disposition/verification and promotion checklist | Promotion `HOLD` until cross-contract authority for reuse of `D` is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-WATBAL-009` | runtime | WB17 ET + WB11 perc/lateral/drain production kernel execution paths | Typed hard error on non-deterministic/malformed hydrology writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-009` | runtime | WB17 ET + WB18 perc + WB11 lateral/drain production kernel execution paths | Typed hard error on non-deterministic/malformed hydrology writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-010` | runtime | WB11 routing + guard tables | Typed hard error on unsupported phase classes or WB11 domain-invalid inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-WATBAL-011` | runtime | Scheduler phase closure and coupled lane-entry guard between growth dispatch and hydrology execution | Typed hard error on ordering-precondition violation and halt before watbal completion | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-012` | runtime | WB13 replay-candidate staging gate before strict comparator execution | Typed hard error on missing/invalid WB13 replay rows or missing replay artifacts; no schema rewrite/fallback padding | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -187,15 +189,16 @@ drainage remain WB11 deterministic kernels.
 ## Symbol Alias Map
 
 Canonical symbols in this contract follow Chapter-5 WEPP notation and legacy
-lineage names by default. WB17 ET execution now has explicit runtime aliases
-for selected ET partition symbols while remaining water-balance symbols retain
-identity mapping.
+lineage names by default. EROD11 ratifies Wave-0 erosion-lane alias ownership
+for required runoff and peak-duration coupling surfaces while remaining
+water-balance symbols retain existing canonical or explicitly typed mappings.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
 | `Θ` | `Θ` (identity) | root-zone daily state surface | `m` -> `m` | `[DIRECT][Static]` |
 | `Θin` | `Θin` (identity) | root-zone daily initial-state surface | `m` -> `m` | `[DIRECT][Static]` |
 | `P`, `I`, `S`, `Q`, `ET`, `D`, `Qd` | identity names | daily closure terms | `m` -> `m` | `[DIRECT][Static]` |
+| `Q` (typed runoff flux alias) | `HillslopeProductionFluxSymbol::Wb12RunoffQ -> Q` | runoff-depth coupling surface exported to runoff/erosion consumers | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Eu` | `wb11_et_demand` | WB17 ET demand input consumed by partition runtime | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
 | `L` | `lai` | WB17 LAI partition driver | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | WB17 residue evaporation partition | `m d^-1` input -> `m` daily flux output | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -206,9 +209,22 @@ identity mapping.
 | `dx`, `ds` | identity names | evaporation-depth surfaces | `m` -> `m` | `[DIRECT][Static]` |
 | `Θr`, `Θi`, `FCi`, `ULi` | identity names | layer-state and thresholds | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Θc` | `Θc` (identity) | layer critical-water threshold surface | `m^3 m^-3` -> `m^3 m^-3` | `[DIRECT][Static]` |
-| `pei`, `ti`, `Δt` | identity names | percolation routing surfaces | `m d^-1` and `s` preserved | `[DIRECT][Static]` |
-| `Ksi`, `Ksai`, `Bi` | identity names | conductivity/routing parameter surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
+| `Θi` | `wb18_perc_theta_####` | WB18 per-layer moisture routing surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `FCi` | `wb18_perc_fc_####` | WB18 per-layer field-capacity threshold surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ULi` | `wb18_perc_ul_####` | WB18 per-layer upper-limit storage surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Ksi` | `wb18_perc_ssc_####` | WB18 per-layer conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `pei` | `wb18_perc_pei_####` | WB18 per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ti`, `Δt`, `Ksai`, `Bi` | WB18 derived runtime intermediates | per-layer percolation routing diagnostics/intermediate terms | chapter-declared units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ws` | `Ws` (identity) | plant-stress coupling surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `peakro`, `watdur` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | WB16 peak-duration diagnostics used by erosion/routing consumers | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionStateSymbol::{Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | WB16 branch-traceability surfaces for downstream contract diagnostics | branch metadata + scalar continuity diagnostics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## EROD11 Alias Ownership Register
+
+| Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
+|---|---|---|---|---|---|
+| `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-WATBAL-001` via WB12/WB16 kernel outputs | `SC-RUNOFFPART-001`, `SC-SED-001`, `SC-ROUTE-001` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-005` | `D`, `Qd`, `ET`, `I` (daily closure companions) | `HillslopeProductionFluxSymbol::{Wb11PercLossD,Wb11SubhydQd,Wb11Et,Wb15InterceptionI}` | `SC-WATBAL-001` | downstream hydrology consumers and closure diagnostics | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -254,7 +270,7 @@ identity mapping.
 | Percolation routing (`INV-WATBAL-006`) | layer routing stage | Hard error on eligibility/domain failure; block downstream percolation publish | Tier-A gate | `[DIRECT][Static]` |
 | Coupling completeness (`INV-WATBAL-007`) | daily boundary handoff | Hard error on missing malformed field/units mismatch | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Governance boundary (`INV-WATBAL-008`) | review/verification/promotion | Governance `HOLD` until cross-contract ownership of `D` reuse is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB17/WB11 hydrology production execution + guards (`INV-WATBAL-009/010`) | ET/perc/lateral/drain kernel execution and routing/guard validation | Hard error on malformed hydrology domains or unsupported hydrology phase classes | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB17/WB18 hydrology production execution + guards (`INV-WATBAL-009/010`) | ET/perc/lateral/drain kernel execution and routing/guard validation | Hard error on malformed hydrology domains or unsupported hydrology phase classes | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB13 replay-candidate schema/order and artifact completeness (`INV-WATBAL-012`) | WB13 output staging and replay boundary | Hard error when strict replay staging sees missing required WB13 symbols/artifacts or schema/ordering violations | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | CLIM05 snow-coupled WB12 storage closure (`INV-WATBAL-013`) | WB12 storage reconciliation stage | Hard error on missing/non-finite/domain-invalid signed `S` term or CLIM05 storage equation violation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL14R strict include-surface completeness (`INV-WATBAL-014`) | strict replay candidate staging boundary | Hard error / `HOLD` when candidate rerun artifact set omits `H5.wat.dat` or `H5.plot.dat`, or when fallback artifacts are substituted | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -267,7 +283,7 @@ identity mapping.
 | `WB11_HYDRO_UNSUPPORTED_ROUTING_CODE` | status message id | `HS-HYDRO-E-001` | Typed failure code for unsupported hydrology phase-class routing states | REF-WATBAL-PHYS-BOUNDS |
 | `WB11_ET_GUARD_CODES` | status message id range | `HKERNEL-WB11-ET-E-001..003` | Typed ET guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB17_ET_PARTITION_EXP_COEFF` | coefficient | `0.4` | WB17 ET LAI partition coefficient (`Esp = Eu * exp(-0.4 * L)`) | REF-WATBAL-CH5-ETDIST |
-| `WB11_PERC_GUARD_CODES` | status message id range | `HKERNEL-WB11-PERC-E-001..003` | Typed percolation guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
+| `WB18_PERC_GUARD_CODES` | status message id range | `HKERNEL-WB11-PERC-E-001..003` | Typed WB18 per-layer percolation guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB11_LATERAL_GUARD_CODES` | status message id range | `HKERNEL-WB11-LAT-E-001..003` | Typed lateral guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB11_DRAINAGE_GUARD_CODES` | status message id range | `HKERNEL-WB11-DRAIN-E-001..003` | Typed drainage guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB13_OUTPUT_STATUS_OK` | status message id | `HKERNEL-WB13-HWAT-OK-001` | Typed nominal status for WB13 daily output-row emission success | REF-WATBAL-PHYS-BOUNDS |
@@ -290,13 +306,13 @@ parity). Contract-specific tolerances used for comparator interpretation:
 
 ## Test-Vector Obligations
 
-Minimum WB17/WB11 hydrology production-kernel conformance vectors:
+Minimum WB17/WB18 hydrology production-kernel conformance vectors:
 
 1. WB17 ET phase emits deterministic partition outputs (`Ep`, `Es`, `Er`) plus
    closure outputs (`ET`, `Ws`) and mutates `wb11_soil_water` via typed
    writeback.
-2. WB11 percolation/lateral/drain phases emit deterministic WB11 outputs and
-   mutate only declared WB11 state surfaces via typed writeback.
+2. WB18 percolation plus WB11 lateral/drain phases emit deterministic outputs
+   and mutate only declared WB18/WB11 state surfaces via typed writeback.
 3. Non-finite and domain-invalid hydrology inputs hard-fail with typed
    guard codes and halt at the affected phase.
 4. Unsupported hydrology phase-class combinations hard-fail with typed routing
@@ -711,7 +727,7 @@ canonical order:
 |---|---|---|---|---|
 | GAP-WATBAL-001 | Per-invariant comparator vectors for all `INV-WATBAL-*` families are not yet curated in this package. | Limits immediate automation depth for invariant-specific acceptance gating. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-WATBAL-002 | Downstream companion contracts (`SC-RUNOFFPART-001`, `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`) are not yet fully authored. | Cross-contract ownership boundaries remain provisional. | non-promotable | `[DIRECT][Static]` |
-| GAP-WATBAL-003 | Concrete openWEPP API/field aliases for canonical Chapter-5 symbols are not yet fixed. | Alias map remains identity-only and requires amendment when boundary names diverge. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-WATBAL-003 | Full runtime alias coverage for all Chapter-5 internal symbols remains incomplete, but Wave-0 erosion-lane runoff/peak-duration alias ownership is now explicitly ratified in canonical contracts. | EROD10 alias-ambiguity gate is closed for required cross-contract boundaries; remaining internal alias expansion is deferred to future hydrology implementation packages. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-WATBAL-004 | Chapter-5 validation reports stronger near-surface (`0.05 m`) water-content agreement than full-profile (`0-2 m`) agreement in the cited watershed test. | Deep-profile closure interpretation confidence remains lower than near-surface Tier-A signals. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
@@ -737,3 +753,5 @@ canonical order:
 | `2026-05-23` | `16` | `Codex` | PL14R amendment: added strict replay rerun candidate-surface invariant (`INV-WATBAL-014`) requiring explicit candidate-lane coverage of `H5.wat.dat` and `H5.plot.dat` with no fallback substitution. |
 | `2026-05-23` | `17` | `Codex` | PL15R amendment: added schema-aligned replay supersession invariant (`INV-WATBAL-015`) requiring Tier-A WB13 residual classification from canonical 25-column strict replay and keyed day-by-day parity evidence before retaining blockers. |
 | `2026-05-23` | `18` | `Codex` | WB17 amendment: updated hydrology contract authority to reflect WB17 equation-driven ET partition execution (`Ep`, `Es`, `Er`, `ET`, `Ws`) with explicit runtime aliases (`Eu -> wb11_et_demand`, `L -> lai`, `Er -> wb17_residue_interception`). |
+| `2026-05-23` | `19` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership for runoff/peak-duration coupling surfaces, added explicit cross-contract ownership register, and downgraded `GAP-WATBAL-003` from non-promotable to promotable-with-risk pending broader internal alias expansion. |
+| `2026-05-23` | `20` | `Codex` | WB18 amendment: updated hydrology contract authority to require WB18 per-layer percolation symbols (`wb18_perc_theta/fc/ul/ssc/pei_####`) and WB18 per-layer deterministic routing semantics while preserving WB17 ET and WB11 lateral/drain guard posture. |

@@ -54,6 +54,39 @@ fn seeded_wb17_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("wb11_perc_fraction"),
         BoundaryValue::scalar(0.5),
     );
+    // Keep WB18 per-layer state aligned with the low-water WB17 ET vector.
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(2.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(2.0e-5),
+    );
     state_surface.insert(
         BoundarySymbol::from("wb11_lateral_fraction"),
         BoundaryValue::scalar(0.25),

@@ -55,6 +55,39 @@ fn seeded_wb15_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("wb11_perc_fraction"),
         BoundaryValue::scalar(0.5),
     );
+    // WB18 per-layer percolation inputs (WB11 compatibility lane).
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(2.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(4.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(2.0e-5),
+    );
     state_surface.insert(
         BoundarySymbol::from("wb11_lateral_fraction"),
         BoundaryValue::scalar(0.25),

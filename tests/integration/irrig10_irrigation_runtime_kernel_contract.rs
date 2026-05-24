@@ -48,6 +48,39 @@ fn seeded_irrig10_base_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("wb11_perc_fraction"),
         BoundaryValue::scalar(0.5),
     );
+    // WB18 per-layer percolation inputs (WB11 compatibility lane).
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(2.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(4.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(2.0e-5),
+    );
     state_surface.insert(
         BoundarySymbol::from("wb11_lateral_fraction"),
         BoundaryValue::scalar(0.25),
@@ -281,6 +314,7 @@ fn irrig10_fixeddate_contract_vector_couples_irrigation_depth_into_runoff_and_st
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn irrig10_depletion_contract_vector_activates_period_trigger() {
     let mut surface = seeded_irrig10_base_surface();
     surface.state_surface.insert(
@@ -306,6 +340,23 @@ fn irrig10_depletion_contract_vector_activates_period_trigger() {
     surface.state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),
         BoundaryValue::scalar(7.2),
+    );
+    // Keep depletion-trigger vector consistent across WB11 scalar and WB18 layer state.
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(0.0),
     );
     surface.state_surface.insert(
         BoundarySymbol::from("irrigation.depletion.period_0001.element_id"),

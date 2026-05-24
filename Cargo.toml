@@ -202,6 +202,10 @@ name = "wb17_et_physics_kernel_contract"
 path = "tests/integration/wb17_et_physics_kernel_contract.rs"
 
 [[test]]
+name = "wb18_percolation_physics_kernel_contract"
+path = "tests/integration/wb18_percolation_physics_kernel_contract.rs"
+
+[[test]]
 name = "ws10_watershed_kernel_contract"
 path = "tests/integration/ws10_watershed_kernel_contract.rs"
 
@@ -244,6 +248,10 @@ path = "tests/integration/pl15_tier_a_delta_closeout_contract.rs"
 [[test]]
 name = "pl15r_tier_a_delta_recloseout_contract"
 path = "tests/integration/pl15r_tier_a_delta_recloseout_contract.rs"
+
+[[test]]
+name = "erod11_alias_boundary_ownership_contract"
+path = "tests/integration/erod11_alias_boundary_ownership_contract.rs"
 
 [profile.release]
 lto = "thin"

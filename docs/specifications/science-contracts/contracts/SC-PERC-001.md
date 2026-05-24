@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -80,7 +80,7 @@ Out of scope:
 | `Pe` | `m d^-1` | Percolated water into subsurface drainable layer. | percolation routine | subsurface continuity Eq. [6.2.1], [6.2.5] |
 | `θ`, `θFC`, `θa` | `m^3 m^-3` | Total moisture, field-capacity moisture, and entrapped air defining drainable-water term in subsurface coupling. | subsurface state routine | drainable-layer storage accounting |
 
-## Algorithm State Surfaces (WB11 Percolation Production Kernel)
+## Algorithm State Surfaces (WB18 Percolation Production Kernel)
 
 ### Required Inputs
 
@@ -88,40 +88,51 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Percolation consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
-| WB11 percolation state inputs | `wb11_soil_water`, `wb11_field_capacity`, `wb11_perc_fraction` |
+| WB18 percolation state inputs | `wb11_soil_water`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
 | Percolation flux outputs | `D`, `Pe` |
-| Percolation state updates | `wb11_soil_water` |
+| Percolation state updates | `wb11_soil_water`, `wb18_perc_theta_####` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range percolation domains |
 
 ### Mutated State Surfaces
 
-WB11 mutates percolation boundary surfaces deterministically:
-- state update: `wb11_soil_water = wb11_soil_water - D`
-- flux update: `D = max(wb11_soil_water - wb11_field_capacity, 0) * wb11_perc_fraction`
-- flux update: `Pe = D` for subsurface recharge coupling
+WB18 mutates percolation boundary surfaces deterministically:
+- state update: per-layer moisture updates (`wb18_perc_theta_####`) are
+  bottom-up routed by layer percolation flux `pei`.
+- state update: `wb11_soil_water = Σ wb18_perc_theta_####` after per-layer
+  routing/writeback.
+- flux update: `D = pei(bottom layer)` (daily deep-percolation loss exported
+  below root zone).
+- flux update: `Pe = D` for subsurface recharge coupling.
 
-## Algorithm Specification (WB11 Percolation Production Execution)
+## Algorithm Specification (WB18 Percolation Production Execution)
 
-1. Require finite percolation inputs (`wb11_soil_water`, `wb11_field_capacity`,
-   `wb11_perc_fraction`) and enforce declared domains.
-2. Execute explicit field-capacity branch (`D = 0` when
-   `wb11_soil_water <= wb11_field_capacity`; otherwise positive proportional
-   loss).
-3. Emit deterministic loss/recharge outputs (`D`, `Pe`) and update
-   `wb11_soil_water` through orchestrator-owned writeback.
-4. Reject missing, non-finite, or out-of-range percolation domains with typed
+1. Require finite per-layer WB18 symbols (`wb18_perc_theta_####`,
+   `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`) for
+   `1..nsl` and enforce declared domains.
+2. Execute explicit per-layer field-capacity branch (`pei = 0` when
+   `Θi <= FCi`; otherwise `pei > 0`), routing layers from bottom to top.
+3. Compute conductivity-domain per-layer flow using Chapter-5 lineage:
+   - saturation fraction `stz = Θi / ULi`
+   - adjusted conductivity factor `fx = max(stz^Bi, 0.002)` for
+     `stz < 0.95`, else `fx = 1`
+   - travel-capacity-limited layer flux `pei_pre = min(Θi - FCi, Δt * Ksi * fx)`
+   - lower-layer restriction `pei = pei_pre * sqrt(1 - (Θi+1 / ULi+1))` for
+     non-bottom layers (bottom layer exports `D` directly).
+4. Emit deterministic `D`/`Pe`, per-layer state updates, and aggregate
+   `wb11_soil_water = ΣΘi`.
+5. Reject missing, non-finite, or out-of-range percolation domains with typed
    hard-fail status; no silent fallback/clamping paths are permitted.
 
-## Branch and Guard Table (WB11 Percolation Kernel)
+## Branch and Guard Table (WB18 Percolation Kernel)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-PERC-WB11-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `wb11_soil_water`, `wb11_field_capacity`, `wb11_perc_fraction` | runtime | deterministic percolation/writeback execution |
+| `BR-PERC-WB18-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` | runtime | deterministic per-layer percolation/writeback execution |
 | `BR-PERC-WB11-MISSING` | required percolation symbol absent | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-001`) |
 | `BR-PERC-WB11-NONFINITE` | percolation symbol is NaN/Inf | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-002`) |
 | `BR-PERC-WB11-DOMAIN` | percolation symbol/derived flux outside domain bounds | percolation required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-003`) |
@@ -139,8 +150,8 @@ WB11 mutates percolation boundary surfaces deterministically:
 | INV-PERC-007 | Subsurface coupling invariant: daily percolation recharge term `Pe` used by subsurface continuity equations is emitted with unit/sign consistency and complete boundary payload semantics. | hard-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-008 | Coupled root-zone update invariant: percolation processing remains explicitly coupled with infiltration/ET daily accounting paths described in §5.5 and does not permit silent omission of percolation updates from layer-water bookkeeping. | hard-fail | REF-PERC-CH5-LINK, REF-PERC-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-009 | Governance scope invariant: claims about subsurface lateral-flow/drainage mechanics beyond declared percolation boundary are non-promotable unless backed by `SC-SUBHYD-001` authority. | governance-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-010 | WB11 percolation execution invariant: percolation phase computes deterministic `D`/`Pe` and updates `wb11_soil_water` from required WB11 percolation symbols with explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-011 | WB11 percolation guard invariant: missing/non-finite/out-of-range percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-PERC-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-PERC-010 | WB18 percolation execution invariant: percolation phase computes deterministic per-layer `pei`, aggregates `D`/`Pe`, and updates both layer moisture (`wb18_perc_theta_####`) and aggregate soil-water state (`wb11_soil_water`) under explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-011 | WB18 percolation guard invariant: missing/non-finite/out-of-range per-layer percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-PERC-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -155,19 +166,22 @@ WB11 mutates percolation boundary surfaces deterministically:
 | `INV-PERC-007` | runtime | Percolation-to-subsurface boundary payload validator (`Pe`) | Typed hard error on missing malformed units/sign payload | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-008` | runtime | Layer-water bookkeeping integration checks with infiltration/ET update path | Typed hard error on omitted percolation update in daily coupled accounting | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-009` | governance | Contract review/disposition/promotion checklist | Promotion `HOLD` when subsurface mechanics claims exceed declared contract boundary | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PERC-010` | runtime | WB11 percolation production kernel execution path | Typed hard error on malformed/non-deterministic percolation writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PERC-011` | runtime | WB11 percolation guard table (`HKERNEL-WB11-PERC-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid percolation inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-PERC-010` | runtime | WB18 per-layer percolation production kernel execution path | Typed hard error on malformed/non-deterministic per-layer or aggregate percolation writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PERC-011` | runtime | WB18 per-layer guard table (`HKERNEL-WB11-PERC-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid per-layer percolation inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
-Canonical symbols follow Chapter-5/Chapter-6 WEPP notation. Concrete openWEPP
-runtime-field names are not fixed for this domain, so identity aliases are
-required until implementation surfaces diverge.
+Canonical symbols follow Chapter-5/Chapter-6 WEPP notation. WB18 establishes
+explicit runtime aliases for per-layer percolation state/flux surfaces.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
-| `Θi`, `FCi`, `ULi` | identity names | layer-state/percolation eligibility surfaces | `m` preserved | `[DIRECT][Static]` |
-| `pei`, `Pe`, `D` | identity names | percolation output and boundary-loss/recharge surfaces | `m d^-1` / `m` preserved | `[DIRECT][Static]` |
+| `Θi` | `wb18_perc_theta_####` | per-layer moisture state consumed and mutated by WB18 percolation routing | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `FCi` | `wb18_perc_fc_####` | per-layer field-capacity threshold surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ULi` | `wb18_perc_ul_####` | per-layer upper-limit storage surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Ksi` | `wb18_perc_ssc_####` | per-layer saturated hydraulic conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `pei` | `wb18_perc_pei_####` | per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Pe`, `D` | `Pe`, `D` | aggregate recharge/loss coupling surfaces | `m` preserved | `[DIRECT][Static]` |
 | `Δt`, `ti` | identity names | percolation routing-time surfaces | `s` preserved | `[DIRECT][Static]` |
 | `Ksi`, `Ksai`, `Bi` | identity names | percolation conductivity parameter/state surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Θi+1`, `ULi+1` | identity names | lower-layer restriction surfaces | `m` preserved | `[DIRECT][Static]` |
@@ -215,16 +229,19 @@ required until implementation surfaces diverge.
 | Below-root loss closure and daily coupling consistency (`INV-PERC-006/008`) | daily closure assembly | Hard error on inconsistent accounting/bookkeeping | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Subsurface boundary payload completeness (`INV-PERC-007`) | percolation-to-subsurface handoff | Hard error on missing malformed boundary field | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Scope/governance boundary (`INV-PERC-009`) | review/verification/promotion | Governance `HOLD` until subsurface-boundary claims are contract-aligned | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| WB11 percolation production execution and guards (`INV-PERC-010/011`) | percolation kernel execution and guard validation | Hard error on malformed percolation domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB18 percolation production execution and guards (`INV-PERC-010/011`) | percolation kernel execution and guard validation | Hard error on malformed per-layer percolation domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
 | Constant/parameter | Units | Domain | Contract use | Authority |
 |---|---|---|---|---|
-| `WB11_PERC_STATUS_OK` | status message id | `HKERNEL-WB11-PERC-OK-001` | Typed nominal status for successful percolation phase execution | REF-PERC-CH5-BAL |
-| `WB11_PERC_GUARD_MISSING` | status message id | `HKERNEL-WB11-PERC-E-001` | Typed missing-input guard code | REF-PERC-PHYS-BOUNDS |
-| `WB11_PERC_GUARD_NONFINITE` | status message id | `HKERNEL-WB11-PERC-E-002` | Typed non-finite guard code | REF-PERC-PHYS-BOUNDS |
-| `WB11_PERC_GUARD_DOMAIN` | status message id | `HKERNEL-WB11-PERC-E-003` | Typed domain guard code | REF-PERC-PHYS-BOUNDS |
+| `WB18_PERC_STATUS_OK` | status message id | `HKERNEL-WB11-PERC-OK-001` | Typed nominal status for successful WB18 per-layer percolation execution | REF-PERC-CH5-BAL |
+| `WB18_PERC_GUARD_MISSING` | status message id | `HKERNEL-WB11-PERC-E-001` | Typed missing-input guard code | REF-PERC-PHYS-BOUNDS |
+| `WB18_PERC_GUARD_NONFINITE` | status message id | `HKERNEL-WB11-PERC-E-002` | Typed non-finite guard code | REF-PERC-PHYS-BOUNDS |
+| `WB18_PERC_GUARD_DOMAIN` | status message id | `HKERNEL-WB11-PERC-E-003` | Typed domain guard code | REF-PERC-PHYS-BOUNDS |
+| `WB18_PERC_BI` | exponent | `1.0` | Conductivity-shape exponent used in WB18 adjusted conductivity factor (`fx = stz^Bi`) | REF-PERC-CH5-PERC + legacy baseline `/workdir/wepp-forest_260430_baseline/src/perc.for` |
+| `WB18_PERC_MIN_FX` | fraction | `0.002` | Minimum conductivity adjustment factor in active branch | legacy baseline `/workdir/wepp-forest_260430_baseline/src/perc.for` |
+| `WB18_PERC_TIMESTEP_S` | `s` | `86400` | Daily percolation timestep used by WB18 layer travel-capacity term | REF-PERC-CH5-PERC + legacy baseline `/workdir/wepp-forest_260430_baseline/src/perc.for` |
 
 ## Tolerance and Numeric Notes
 
@@ -240,13 +257,14 @@ bit-for-bit parity). Contract-specific tolerances:
 
 ## Test-Vector Obligations
 
-Minimum WB11 percolation production-kernel conformance vectors:
+Minimum WB18 percolation production-kernel conformance vectors:
 
-1. Percolation phase emits deterministic `D`/`Pe` and updates
-   `wb11_soil_water` from valid WB11 percolation inputs.
-2. Non-finite percolation inputs hard-fail with typed status
+1. Percolation phase emits deterministic per-layer `wb18_perc_pei_####`,
+   aggregate `D`/`Pe`, and updates `wb18_perc_theta_####` plus
+   `wb11_soil_water`.
+2. Non-finite per-layer percolation inputs hard-fail with typed status
    `HKERNEL-WB11-PERC-E-002`.
-3. Domain-invalid percolation inputs hard-fail with typed status
+3. Domain-invalid per-layer percolation inputs hard-fail with typed status
    `HKERNEL-WB11-PERC-E-003` and do not mutate orchestrator writeback surfaces.
 
 ## WB13 Daily Output Coupling Addendum
@@ -275,16 +293,16 @@ Minimum WB11 percolation production-kernel conformance vectors:
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-PERC-001 | Per-invariant comparator vectors for per-layer percolation and lower-layer restriction behavior are not yet curated in this package. | Limits immediate automation depth for invariant-specific acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-PERC-002 | Concrete openWEPP runtime-field aliases for percolation outputs and intermediate routing states are not yet fixed. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-PERC-002 | Extended alias coverage for optional per-layer diagnostics beyond WB18 core symbols (`wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `wb18_perc_pei_####`) is not yet finalized. | Core WB18 aliases are fixed; extended diagnostics remain provisional. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-PERC-003 | Companion contract `SC-SUBHYD-001` is not yet fully authored, so cross-domain ownership boundaries for subsurface routing remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-PERC-004 | Chapter-5 validation evidence is reported at aggregate water-balance behavior; dedicated per-layer percolation validation vectors are not explicitly separated in cited material. | Per-layer percolation confidence is lower than aggregate daily closure confidence until dedicated evidence is added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Promotion Readiness
 
 This revision remains intentionally non-promotable and stays in lifecycle state
-`in_review` while `GAP-PERC-002` and `GAP-PERC-003` remain open. Governance
-guard `INV-PERC-009` requires explicit `HOLD` until alias finalization and
-`SC-SUBHYD-001` authority closure are completed.
+`in_review` while `GAP-PERC-003` remains open. Governance guard
+`INV-PERC-009` requires explicit `HOLD` until cross-domain `SC-SUBHYD-001`
+authority closure is completed.
 
 ## Revision History
 
@@ -296,3 +314,4 @@ guard `INV-PERC-009` requires explicit `HOLD` until alias finalization and
 | `2026-05-23` | `3` | `Codex` | WB10 amendment: added explicit percolation phase-entry routing authority, unsupported-class typed hard-fail posture, and WB10 percolation test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted percolation section from routing-only scaffolding to production-kernel authority with deterministic `D`/`Pe` updates, typed percolation guard codes (`HKERNEL-WB11-PERC-E-001..003`), and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB13 amendment: added percolation/profile coupling authority for canonical daily output columns (`Dp`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) with explicit malformed-output hard-fail posture. |
+| `2026-05-23` | `6` | `Codex` | WB18 amendment: replaced WB11 scalar percolation authority with WB18 per-layer physics authority (`wb18_perc_theta/fc/ul/ssc/pei_####`), bottom-up layer routing semantics, conductivity-domain constants (`Bi=1`, `fx_min=0.002`, `Δt=86400s`), and updated guard/test obligations. |

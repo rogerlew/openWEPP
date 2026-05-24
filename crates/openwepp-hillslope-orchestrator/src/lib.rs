@@ -292,6 +292,10 @@ const WB16_SYMBOL_VSTAR: HillslopeProductionStateSymbol = HillslopeProductionSta
 const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
 const WB16_MAX_DURATION_S: f64 = 86_400.0;
 const WB17_LAI_PARTITION_COEFFICIENT: f64 = 0.4;
+const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
+const WB18_PERC_MIN_FX: f64 = 0.002;
+const WB18_PERC_SHAPE_EXPONENT: f64 = 1.0;
+const WB18_PERC_TIMESTEP_S: f64 = 86_400.0;
 
 /// Deterministic hillslope scheduler phases.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -1898,6 +1902,46 @@ impl Wb11HydrologyKernel {
         Ok(scalar)
     }
 
+    fn require_state_non_negative_integral_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+    ) -> Result<usize, Wb11HydrologyKernelGuardError> {
+        let scalar = Self::require_state_scalar_for_symbol(request, phase_class, symbol)?;
+        if scalar < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let rounded = scalar.round();
+        if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let rounded_text = format!("{rounded:.0}");
+        let Ok(parsed_count) = rounded_text.parse::<usize>() else {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+                minimum: Some(0.0),
+                maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
+            });
+        };
+        Ok(parsed_count)
+    }
+
     fn require_state_range(
         phase_class: HillslopeKernelPhaseClass,
         symbol: HillslopeProductionStateSymbol,
@@ -1921,6 +1965,38 @@ impl Wb11HydrologyKernel {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
                     symbol: BoundarySymbol::from(symbol),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn require_state_range_for_symbol(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(minimum_value) = minimum {
+            if value < minimum_value - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        if let Some(maximum_value) = maximum {
+            if value > maximum_value + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: symbol.clone(),
                     value,
                     minimum,
                     maximum,
@@ -1960,6 +2036,46 @@ impl Wb11HydrologyKernel {
             }
         }
         Ok(())
+    }
+
+    fn require_flux_range_for_symbol(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(minimum_value) = minimum {
+            if value < minimum_value - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                    phase_class,
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        if let Some(maximum_value) = maximum {
+            if value > maximum_value + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+                    phase_class,
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn wb18_perc_state_symbol(field: &str, layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb18_perc_{field}_{layer_index:04}"))
+    }
+
+    fn wb18_perc_flux_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb18_perc_pei_{layer_index:04}"))
     }
 
     fn diagnostic_count_to_f64(value: usize) -> f64 {
@@ -3822,6 +3938,7 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    #[allow(clippy::too_many_lines)]
     fn run_percolation(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
@@ -3835,33 +3952,209 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let field_capacity =
+        // Keep legacy WB11 symbol validation to preserve mixed-lane seam guard
+        // posture while WB18 per-layer symbols carry the execution authority.
+        let field_capacity_legacy =
             Self::require_state_scalar(request, phase_class, WB11_SYMBOL_FIELD_CAPACITY)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_FIELD_CAPACITY,
-            field_capacity,
+            field_capacity_legacy,
             Some(0.0),
             None,
         )?;
-
-        let perc_fraction =
+        let perc_fraction_legacy =
             Self::require_state_scalar(request, phase_class, WB11_SYMBOL_PERC_FRACTION)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_PERC_FRACTION,
-            perc_fraction,
+            perc_fraction_legacy,
             Some(0.0),
             Some(1.0),
         )?;
 
-        let excess = if soil_water > field_capacity {
-            soil_water - field_capacity
-        } else {
-            0.0
-        };
-        let percolation_loss = excess * perc_fraction;
-        let soil_water_after = soil_water - percolation_loss;
+        let nsl_symbol = BoundarySymbol::from("nsl");
+        let layer_count = Self::require_state_non_negative_integral_for_symbol(
+            request,
+            phase_class,
+            &nsl_symbol,
+        )?;
+        if layer_count == 0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: nsl_symbol,
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
+        let mut theta = Vec::with_capacity(layer_count);
+        let mut field_capacity = Vec::with_capacity(layer_count);
+        let mut upper_limit = Vec::with_capacity(layer_count);
+        let mut conductivity = Vec::with_capacity(layer_count);
+
+        for layer_index in 1..=layer_count {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
+            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
+            let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
+            let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
+
+            let layer_theta =
+                Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &theta_symbol,
+                layer_theta,
+                Some(0.0),
+                None,
+            )?;
+
+            let layer_fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &fc_symbol,
+                layer_fc,
+                Some(0.0),
+                None,
+            )?;
+
+            let layer_ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
+            if layer_ul <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ul_symbol,
+                    value: layer_ul,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            if layer_fc > layer_ul + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_symbol,
+                    value: layer_fc,
+                    minimum: Some(0.0),
+                    maximum: Some(layer_ul),
+                });
+            }
+
+            let layer_ssc =
+                Self::require_state_scalar_for_symbol(request, phase_class, &ssc_symbol)?;
+            if layer_ssc <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ssc_symbol,
+                    value: layer_ssc,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            theta.push(layer_theta);
+            field_capacity.push(layer_fc);
+            upper_limit.push(layer_ul);
+            conductivity.push(layer_ssc);
+        }
+
+        let mut per_layer_flux = vec![0.0_f64; layer_count];
+        let mut percolation_loss = 0.0_f64;
+
+        // Bottom-up routing mirrors legacy WEPP percolation ordering in PURK.
+        for layer_index in (0..layer_count).rev() {
+            let layer_theta = theta[layer_index];
+            let layer_fc = field_capacity[layer_index];
+            let layer_ul = upper_limit[layer_index];
+            let layer_ssc = conductivity[layer_index];
+
+            let excess = layer_theta - layer_fc;
+            if excess <= WB11_ZERO_THRESHOLD {
+                per_layer_flux[layer_index] = 0.0;
+                continue;
+            }
+
+            let stz = layer_theta / layer_ul;
+            if !stz.is_finite() || stz < 0.0 {
+                let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: theta_symbol,
+                    value: stz,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+
+            let fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
+                stz.powf(WB18_PERC_SHAPE_EXPONENT).max(WB18_PERC_MIN_FX)
+            } else {
+                1.0
+            };
+            if !fx.is_finite() || fx <= 0.0 {
+                let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ssc_symbol,
+                    value: fx,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let ks_adjusted = layer_ssc * fx;
+            let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
+            let pei = if layer_index < layer_count - 1 {
+                let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
+                let lower_radicand = 1.0 - lower_ratio;
+                if lower_radicand < -WB11_ZERO_THRESHOLD {
+                    let lower_theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 2);
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: lower_theta_symbol,
+                        value: lower_ratio,
+                        minimum: Some(0.0),
+                        maximum: Some(1.0),
+                    });
+                }
+                let lower_factor = if lower_radicand <= 0.0 {
+                    0.0
+                } else {
+                    lower_radicand.sqrt()
+                };
+                pei_pre * lower_factor
+            } else {
+                pei_pre
+            };
+
+            let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
+            Self::require_flux_range_for_symbol(
+                phase_class,
+                &pei_symbol,
+                pei,
+                Some(0.0),
+                Some(excess),
+            )?;
+
+            theta[layer_index] -= pei;
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &theta_symbol,
+                theta[layer_index],
+                Some(0.0),
+                None,
+            )?;
+
+            if layer_index < layer_count - 1 {
+                theta[layer_index + 1] += pei;
+            } else {
+                percolation_loss = pei;
+            }
+
+            per_layer_flux[layer_index] = pei;
+        }
+
+        let soil_water_after: f64 = theta.iter().sum();
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,
@@ -3874,7 +4167,7 @@ impl Wb11HydrologyKernel {
             WB11_SYMBOL_PERC_LOSS_D,
             percolation_loss,
             Some(0.0),
-            Some(excess),
+            None,
         )?;
 
         let Ok(status) =
@@ -3882,23 +4175,45 @@ impl Wb11HydrologyKernel {
         else {
             unreachable!("status message ids are non-empty WB11 constants")
         };
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                WB11_SYMBOL_SOIL_WATER,
-                soil_water_after,
+        let mut state_updates = Vec::with_capacity(layer_count + 1);
+        state_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        ));
+        for (index, value) in theta.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                Self::wb18_perc_state_symbol("theta", index + 1),
+                *value,
                 Some(0.0),
                 None,
-            )],
-            vec![
-                WritebackField::bounded(WB11_SYMBOL_PERC_LOSS_D, percolation_loss, Some(0.0), None),
-                WritebackField::bounded(
-                    WB11_SYMBOL_PERC_RECHARGE_PE,
-                    percolation_loss,
-                    Some(0.0),
-                    None,
-                ),
-            ],
-        );
+            ));
+        }
+
+        let mut flux_updates = Vec::with_capacity(layer_count + 2);
+        for (index, value) in per_layer_flux.iter().enumerate() {
+            flux_updates.push(WritebackField::bounded(
+                Self::wb18_perc_flux_symbol(index + 1),
+                *value,
+                Some(0.0),
+                None,
+            ));
+        }
+        flux_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_PERC_LOSS_D,
+            percolation_loss,
+            Some(0.0),
+            None,
+        ));
+        flux_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_PERC_RECHARGE_PE,
+            percolation_loss,
+            Some(0.0),
+            None,
+        ));
+
+        let writeback = KernelWritebackPayload::with_updates(state_updates, flux_updates);
         Ok(KernelRunResponse::new(status, writeback))
     }
 
