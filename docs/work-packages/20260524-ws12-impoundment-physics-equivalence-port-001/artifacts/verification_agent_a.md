@@ -1,10 +1,15 @@
 # WS12 Verification Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: `completed-with-hold`
+Evidence mode: `Static + Ran`
+Verdict: `HOLD`
 
-## Static
-- queued
+## Verification Checks
+- WS12 targeted contract vectors: `pass` (`4/4`).
+- WS10 non-regression vectors: `pass` (`4/4`).
+- Parity traces: `not-run`.
+- Final gate sweep: `not-fully-pass`.
 
-## Ran
-- not-run
+## Outcome
+- Hold recommendation confirmed pending parity traces and gate-blocker
+  disposition.
