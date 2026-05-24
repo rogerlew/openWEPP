@@ -1,0 +1,211 @@
+{
+  "inputs": {
+    "baseline": "/tmp/pl14r_tiera_cmp_20260523_schemafix/baseline/output/H5.wat.dat",
+    "candidate": "/tmp/pl08_tiera_cmp_20260522/candidate/output/H5.wat.dat",
+    "upcast_candidate": "/tmp/pl14r_tiera_cmp_20260523_schemafix/candidate/output/H5.wat.dat"
+  },
+  "profile_constants": {
+    "profile_depth": 400.0,
+    "profile_porosity_cap": 171.48,
+    "profile_fc_store": 38.75,
+    "profile_wp_store": 14.38,
+    "inferred_from_baseline": {
+      "profile_depth": 400.0,
+      "profile_porosity_cap": 171.48,
+      "profile_fc_store": 38.75,
+      "profile_wp_store": 14.38
+    }
+  },
+  "baseline_numeric_row_width": 25,
+  "candidate_numeric_row_widths": [
+    20
+  ],
+  "upcast_numeric_row_width": 25,
+  "day_compare": {
+    "baseline_row_count": 1095,
+    "candidate_row_count": 1095,
+    "common_row_count": 1095,
+    "only_baseline_count": 0,
+    "only_candidate_count": 0,
+    "only_baseline_examples": [],
+    "only_candidate_examples": [],
+    "all_columns_exact": true,
+    "column_stats": [
+      {
+        "column": "OFE",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "J",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Y",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "P",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "RM",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Q",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Ep",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Es",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Er",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Dp",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "UpStrmQ",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "SubRIn",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "latqcc",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Total-Soil",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "frozwt",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Snow-Water",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "QOFE",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Tile",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Irr",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Area",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "SoilWaterTotal",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileDepth",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfilePorosityCap",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileFCStore",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileWPStore",
+        "nonzero_days": 0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      }
+    ]
+  }
+}

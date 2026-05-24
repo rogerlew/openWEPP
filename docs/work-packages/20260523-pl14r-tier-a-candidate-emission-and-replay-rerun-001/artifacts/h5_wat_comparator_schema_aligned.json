@@ -1,0 +1,48 @@
+{
+  "baseline": {
+    "label": "/tmp/pl14r_tiera_cmp_20260523_schemafix/baseline",
+    "resolved_root": "/tmp/pl14r_tiera_cmp_20260523_schemafix/baseline"
+  },
+  "candidate": {
+    "label": "/tmp/pl14r_tiera_cmp_20260523_schemafix/candidate",
+    "resolved_root": "/tmp/pl14r_tiera_cmp_20260523_schemafix/candidate"
+  },
+  "settings": {
+    "runs_root": "/wc1/runs",
+    "output_subdir": "output",
+    "include_globs": [
+      "H5.wat.dat"
+    ],
+    "exclude_globs": [],
+    "abs_tolerance": 0.0,
+    "rel_tolerance": 0.0,
+    "top_n": 20
+  },
+  "raw": {
+    "baseline_dir": "/tmp/pl14r_tiera_cmp_20260523_schemafix/baseline/output",
+    "candidate_dir": "/tmp/pl14r_tiera_cmp_20260523_schemafix/candidate/output",
+    "include_globs": [
+      "H5.wat.dat"
+    ],
+    "exclude_globs": [],
+    "abs_tolerance": 0.0,
+    "rel_tolerance": 0.0,
+    "baseline_file_count": 1,
+    "candidate_file_count": 1,
+    "common_file_count": 1,
+    "only_baseline_count": 0,
+    "only_candidate_count": 0,
+    "only_baseline_examples": [],
+    "only_candidate_examples": [],
+    "identical_count": 1,
+    "changed_count": 0,
+    "status_counts": {
+      "identical": 1
+    },
+    "max_abs_any": 0.0,
+    "max_rel_any": 0.0,
+    "top_changed_files": [],
+    "strict_pass": true
+  },
+  "strict_pass": true
+}
