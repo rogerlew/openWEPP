@@ -525,6 +525,11 @@ Authorized packages:
     and emit implementation-driving queue deliverable
     `simulation-implementation-wp-queue.md` for the
     `cli -> runner -> simulation -> orchestration` pipeline.
+- `20260524-simimpl02-phase-b-full-routine-inventory-and-gap-closure-map-001/`
+  - Purpose: execute the full SIMIMPL02 inventory wave by producing a complete
+    hillslope routine inventory from baseline legacy sources and an
+    evidence-linked owner-surface gap-closure map that drives SIMIMPL03+
+    contract-first implementation sequencing.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
