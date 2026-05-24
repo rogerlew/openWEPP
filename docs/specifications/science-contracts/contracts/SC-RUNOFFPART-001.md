@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -123,6 +123,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-008 | Multiple-OFE aggregation invariant: weighted averages and equivalent-plane transformations (Eq. [4.5.1]-[4.5.3], [4.5.15]) must preserve non-negative domains and declared geometric weighting. | hard-fail | REF-RUNOFFPART-CH4-MULTIOFE, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-009 | Coupling invariant: runoff depth `Q` exported to daily water balance and runoff surfaces exported to erosion consumers (`Qv`, `qp`, `De`) must be unit-consistent and sign-consistent with downstream contract assumptions. | hard-fail | REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-CH11-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-010 | Governance limitation invariant: model outputs must remain labeled as Hortonian-flow-scope surfaces; scenarios needing explicit variable-source-area or return-flow physics are out of contract scope and block promotion if unlabeled. | governance-fail | REF-RUNOFFPART-CH4-LIMITS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-011 | WB20 forward-solver lane invariant: when `wb20_forward_solver_lane_enabled = 1`, WB12 runoff closure-delta acceptance must be solver-residual-derived and must not consume `wb12_runoff_observed` as an acceptance-driving target. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -138,6 +139,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-008` | runtime | OFE weighted-parameter/equivalent-plane calculator | Typed hard error on invalid weighting geometry or negative transformed coefficients | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-009` | runtime | Boundary payload validator for water-balance/erosion consumers | Typed hard error on missing required surfaces or units/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-010` | governance | Contract review + promotion checklist | Promotion `HOLD` if Hortonian-only scope is not explicitly carried into downstream interpretation | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-011` | runtime | WB12 runoff closure-delta lane selector and assembler | Typed hard error when forward lane consumes observed target in acceptance logic or emits non-residual closure delta | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -155,6 +157,7 @@ runoff partition internals.
 | `Sd`, `rr`, `So` | identity names | depression-storage surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Qv`, `qp` | identity names | routed-runoff and peak-runoff outputs | `m` and `m^2 s^-1` preserved | `[DIRECT][Static]` |
 | `Q` | `HillslopeProductionFluxSymbol::Wb12RunoffQ -> Q` | runoff-depth handoff to daily water-balance and erosion consumers | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb20_forward_solver_lane_enabled` | `wb20_forward_solver_lane_enabled` | WB20 runoff closure lane selector (`1` forward-solver, `0`/absent compatibility) for WB12 closure-delta semantics | scalar in `{0,1}` preserved | `[INFERENCE][Static]` |
 | `peakro`, `watdur` | `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur}` | WB16 peak-runoff/duration state aliases exported for erosion and routing intake | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionStateSymbol::{Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | WB16 branch-traceability surfaces required by downstream contract diagnostics | branch metadata + scalar continuity diagnostics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `De` | identity name | effective-runoff-duration coupling surface | `s` preserved | `[DIRECT][Static]` |
@@ -223,6 +226,7 @@ runoff partition internals.
 | Multi-OFE branching and aggregation semantics (`INV-RUNOFFPART-007/008`) | OFE cascade evaluator | Hard error on branch/aggregation domain violation | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Boundary coupling completeness (`INV-RUNOFFPART-009`) | cross-domain handoff | Hard error on missing malformed boundary field | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Hortonian-scope governance (`INV-RUNOFFPART-010`) | review/verification/promotion | Governance `HOLD` until scope label is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB20 forward-solver lane closure semantics (`INV-RUNOFFPART-011`) | WB12 runoff closure-delta lane boundary | Hard error when forward lane consumes observed target for acceptance or emits non-residual closure delta | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -243,14 +247,20 @@ bit-for-bit parity). Contract-level tolerance declarations:
 
 | Surface | Symbols |
 |---|---|
-| WB12 runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| WB12 runoff reconciliation required inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance` |
+| WB20 lane selector | `wb20_forward_solver_lane_enabled` (`1` forward-solver lane, `0` or absent compatibility lane) |
+| Compatibility-lane observed target | `wb12_runoff_observed` |
 | WB12 runoff reconciliation outputs | `Q`, `wb12_runoff_reconciled`, `wb12_runoff_closure_delta` |
 
 ### WB12 Reconciliation Rule
 
 Runoff reconciliation publishes:
 - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
-- `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+- forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
+  - `wb12_runoff_closure_delta = (wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+  - observed targets are excluded from acceptance-driving inputs.
+- compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
+  - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
 
 Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state.
 
@@ -266,7 +276,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 1. Valid WB12 runoff inputs emit deterministic `Q` and reconciliation diagnostics.
 2. Non-finite WB12 runoff input hard-fails with `HKERNEL-WB12-RUNOFF-E-002`.
-3. Closure-delta overflow beyond tolerance hard-fails with `HKERNEL-WB12-RUNOFF-E-003` and no writeback mutation.
+3. Forward-solver lane vectors with perturbed `wb12_runoff_observed` still emit solver-residual closure deltas and remain acceptance-valid when required inputs are valid.
+4. Compatibility-lane closure-delta overflow beyond tolerance hard-fails with `HKERNEL-WB12-RUNOFF-E-003` and no writeback mutation.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -295,7 +306,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 |---|---|
 | Hyetograph forcing inputs | `ninten` or `nbrkpt`; `timem_####`; `intsty_####` |
 | Soil-derived infiltration inputs | `ssc`, `dg`, `thetdr`, `thetfc` |
-| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`1` forward-solver lane, `0` or absent compatibility lane) |
+| Compatibility-lane observed target input | `wb12_runoff_observed` |
 | Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 
 ### WB14 Deterministic Infiltration and Runoff Rules
@@ -325,7 +337,10 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    `wb12_runoff_closure_tolerance`; mismatch is an invalid state.
 7. Reconciled runoff is:
    - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
-   - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+   - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
+     - `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+   - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
+     - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
 8. Missing/non-finite/out-of-domain symbols and closure violations hard-fail;
    no silent clamping/defaulting of hyetograph or infiltration terms is
    allowed.
@@ -629,3 +644,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `12` | `Codex` | EROD11 amendment: ratified Wave-0 alias ownership for runoff/peak-duration coupling surfaces, added explicit cross-contract ownership register, and downgraded `GAP-RUNOFFPART-002` from non-promotable to promotable-with-risk pending `EROD14` internal alias expansion. |
 | `2026-05-23` | `13` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-RUNOFFPART-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `14` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-RUNOFFPART-001` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
+| `2026-05-23` | `15` | `Codex` | WB20 amendment: added forward-solver lane selector authority (`wb20_forward_solver_lane_enabled`) and lane-scoped WB12 runoff closure semantics so parity-lane acceptance is solver-residual-derived and excludes observed target substitution. |

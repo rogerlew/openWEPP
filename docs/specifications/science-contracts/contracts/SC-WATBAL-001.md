@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -165,6 +165,7 @@ lateral/drainage).
 | INV-WATBAL-013 | CLIM05 snow-coupled closure invariant: when active snow coupling publishes signed `S`, WB12 storage reconciliation must use `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd` and hard-fail on missing/non-finite/domain-invalid `S`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-014 | PL14R replay rerun candidate-surface invariant: strict Tier-A rerun candidate staging must explicitly publish both required include surfaces (`H5.wat.dat`, `H5.plot.dat`) from direct openWEPP candidate outputs; missing required surface coverage or synthetic fallback substitution must hard-fail rerun staging and keep disposition in `HOLD`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-015 | PL15R schema-aligned replay supersession invariant: Tier-A `H5.wat.dat` recloseout classification must use canonical 25-column schema-aligned strict replay evidence and day-by-day keyed parity (`OFE,J,Y`) before declaring residual blockers. Schema-only pre-alignment failures are historical context once superseding strict-pass evidence is present. | governance-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-016 | WB20 forward-solver lane invariant: when `wb20_forward_solver_lane_enabled = 1`, runoff/storage closure acceptance must be solver-output-derived (`wb12_*_closure_delta` from solver residual identities) and must not consume `wb12_runoff_observed` or `wb12_storage_observed` as acceptance-driving terms. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH4-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -185,6 +186,7 @@ lateral/drainage).
 | `INV-WATBAL-013` | runtime | WB12 storage reconciliation with active CLIM05 snow-coupled `S` term | Typed hard error on missing/non-finite/domain-invalid `S` or violated CLIM05 storage closure equation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-014` | runtime + governance | PL14R strict replay include-surface staging gate | Typed hard error / explicit `HOLD` when candidate lane lacks required include surfaces (`H5.wat.dat`, `H5.plot.dat`) or uses fallback substitution | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-015` | governance | PL15R schema-aligned WB13 replay reclassification gate | Governance `HOLD` when active Tier-A WB13 blocker classification ignores superseding schema-aligned strict-pass/day-parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-016` | runtime | WB12 runoff/storage reconciliation lane selector and closure-delta assembler | Typed hard error when forward lane consumes excluded observed targets or emits non-residual closure deltas | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -199,6 +201,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `Θin` | `Θin` (identity) | root-zone daily initial-state surface | `m` -> `m` | `[DIRECT][Static]` |
 | `P`, `I`, `S`, `Q`, `ET`, `D`, `Qd` | identity names | daily closure terms | `m` -> `m` | `[DIRECT][Static]` |
 | `Q` (typed runoff flux alias) | `HillslopeProductionFluxSymbol::Wb12RunoffQ -> Q` | runoff-depth coupling surface exported to runoff/erosion consumers | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `wb20_forward_solver_lane_enabled` | `wb20_forward_solver_lane_enabled` | WB20 parity-lane selector (`1` forward-solver lane, `0` compatibility lane) for WB12 closure-delta semantics | scalar in `{0,1}` preserved | `[INFERENCE][Static]` |
 | `Eu` | `wb11_et_demand` | WB17 ET demand input consumed by partition runtime | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
 | `L` | `lai` | WB17 LAI partition driver | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | WB17 residue evaporation partition | `m d^-1` input -> `m` daily flux output | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -278,6 +281,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | CLIM05 snow-coupled WB12 storage closure (`INV-WATBAL-013`) | WB12 storage reconciliation stage | Hard error on missing/non-finite/domain-invalid signed `S` term or CLIM05 storage equation violation | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL14R strict include-surface completeness (`INV-WATBAL-014`) | strict replay candidate staging boundary | Hard error / `HOLD` when candidate rerun artifact set omits `H5.wat.dat` or `H5.plot.dat`, or when fallback artifacts are substituted | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | PL15R schema-aligned WB13 supersession (`INV-WATBAL-015`) | strict replay delta reclassification boundary | Governance `HOLD` when residual WB13 blockers are asserted without evaluating superseding 25-column schema-aligned strict replay and keyed day-by-day parity evidence | Tier-A closeout gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB20 forward-solver lane closure semantics (`INV-WATBAL-016`) | WB12 runoff/storage closure-delta assembly boundary | Hard error when forward-solver lane consumes observed targets in acceptance logic or emits non-residual closure deltas | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -289,6 +293,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `WB18_PERC_GUARD_CODES` | status message id range | `HKERNEL-WB11-PERC-E-001..003` | Typed WB18 per-layer percolation guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB19_LATERAL_GUARD_CODES` | status message id range (legacy IDs retained) | `HKERNEL-WB11-LAT-E-001..003` | Typed WB19 lateral guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
 | `WB19_DRAINAGE_GUARD_CODES` | status message id range (legacy IDs retained) | `HKERNEL-WB11-DRAIN-E-001..003` | Typed WB19 drainage guard codes for missing/non-finite/domain failures | REF-WATBAL-PHYS-BOUNDS |
+| `WB20_FORWARD_SOLVER_LANE_FLAG` | scalar | `{0,1}` (optional; absence selects compatibility lane) | WB20 selector controlling whether WB12 closure deltas are observed-target-driven (`0`) or solver-residual-derived (`1`) | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS |
 | `WB13_OUTPUT_STATUS_OK` | status message id | `HKERNEL-WB13-HWAT-OK-001` | Typed nominal status for WB13 daily output-row emission success | REF-WATBAL-PHYS-BOUNDS |
 | `WB13_OUTPUT_GUARD_MISSING` | status message id | `HKERNEL-WB13-HWAT-E-001` | Typed missing-required-symbol guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
 | `WB13_OUTPUT_GUARD_NONFINITE` | status message id | `HKERNEL-WB13-HWAT-E-002` | Typed non-finite-value guard code for WB13 daily output rows | REF-WATBAL-PHYS-BOUNDS |
@@ -334,8 +339,10 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 | Surface | Symbols |
 |---|---|
-| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
-| Storage reconciliation inputs | `wb12_storage_initial`, `wb12_storage_observed`, `wb12_storage_closure_tolerance`, `wb12_precip_input`, `S`, `Q`, `ET`, `D`, `Qd` |
+| Runoff reconciliation required inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance` |
+| Storage reconciliation required inputs | `wb12_storage_initial`, `wb12_storage_closure_tolerance`, `wb12_precip_input`, `S`, `Q`, `ET`, `D`, `Qd` |
+| WB20 lane selector | `wb20_forward_solver_lane_enabled` (`0` compatibility lane, `1` forward-solver lane); symbol absence is compatibility lane |
+| Compatibility-lane observed targets (optional outside forward lane) | `wb12_runoff_observed`, `wb12_storage_observed` |
 | Runoff reconciliation outputs | `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 | Storage reconciliation outputs | `wb12_storage_closure_delta`, `wb12_storage_reconciled` |
 
@@ -343,12 +350,18 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 1. Runoff reconciliation emits:
    - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
-   - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
 2. Storage reconciliation emits:
    - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd`
-   - `wb12_storage_closure_delta = wb12_storage_reconciled - wb12_storage_observed`
-3. Absolute closure deltas above declared per-phase tolerances are invalid closure states.
-4. Missing/non-finite/out-of-range inputs and invalid closure states hard-fail with typed status and do not apply writeback.
+3. Closure-delta semantics are lane-scoped:
+   - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
+     - `wb12_runoff_closure_delta = (wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+     - `wb12_storage_closure_delta = (wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd) - wb12_storage_reconciled`
+     - observed targets are excluded from acceptance-driving inputs.
+   - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
+     - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+     - `wb12_storage_closure_delta = wb12_storage_reconciled - wb12_storage_observed`
+4. Absolute closure deltas above declared per-phase tolerances are invalid closure states.
+5. Missing/non-finite/out-of-range inputs and invalid closure states hard-fail with typed status and do not apply writeback.
 
 ### WB12 Guard Codes
 
@@ -361,7 +374,8 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 1. Valid WB12 runoff/storage inputs produce deterministic reconciliation outputs and state updates.
 2. Non-finite WB12 runoff/state input hard-fails at the corresponding reconciliation phase with typed non-finite guard code.
-3. Closure-delta overflow beyond tolerance hard-fails with typed domain/closure guard code and no writeback mutation.
+3. Forward-solver lane vectors with perturbed `wb12_runoff_observed` and `wb12_storage_observed` still emit solver-residual closure deltas and remain acceptance-valid when other required inputs are valid.
+4. Compatibility-lane vectors remain observed-target-driven and fail on closure-delta overflow beyond tolerance with typed domain/closure guard code and no writeback mutation.
 
 ## CLIM05 Snow-Coupled Reconciliation Addendum
 
@@ -439,7 +453,8 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 | Surface | Symbols |
 |---|---|
 | Runoff reconciliation forcing | `ninten` or `nbrkpt`; `timem_####`; `intsty_####`; `ssc`; `dg`; `thetdr`; `thetfc` |
-| Runoff reconciliation state inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_observed`, `wb12_runoff_closure_tolerance` |
+| Runoff reconciliation state inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`0`/absent compatibility, `1` forward-solver) |
+| Compatibility-lane observed target input | `wb12_runoff_observed` (required only when compatibility-lane closure semantics are active) |
 | Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 
 ### WB14 Deterministic Coupling Rules
@@ -452,7 +467,12 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 3. `wb12_rainfall_input` remains a required closure-consistency surface and must
    match hyetograph-integrated rainfall depth within
    `wb12_runoff_closure_tolerance`.
-4. Reconciliation and downstream storage closure (`wb12_storage_reconciled`)
+4. WB20 lane branch semantics apply to runoff closure delta:
+   - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
+     `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+   - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
+     `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
+5. Reconciliation and downstream storage closure (`wb12_storage_reconciled`)
    remain deterministic and typed-fail on missing/non-finite/domain-invalid
    inputs.
 
@@ -761,3 +781,4 @@ canonical order:
 | `2026-05-23` | `21` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-WATBAL-003` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `22` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-WATBAL-001` and `GAP-WATBAL-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `23` | `Codex` | WB19 amendment: updated hydrology authority from WB18+WB11 surrogate lateral/drain execution to WB18+WB19 layer-aware lateral/drainage execution, including explicit WB19 geometry/anisotropy symbol requirements and guard posture continuity on legacy status IDs. |
+| `2026-05-23` | `24` | `Codex` | WB20 amendment: added forward-solver lane selector authority (`wb20_forward_solver_lane_enabled`) and lane-scoped closure semantics so parity-lane acceptance is solver-residual-derived and excludes observed closure targets from acceptance-driving inputs. |

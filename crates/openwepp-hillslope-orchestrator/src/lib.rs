@@ -144,6 +144,7 @@ const WB19_SYMBOL_DRAIN_ENABLED: &str = "wb19_drain_enabled";
 const WB19_SYMBOL_DRAIN_DEPTH: &str = "wb19_drain_depth";
 const WB19_SYMBOL_DRAIN_SPACING: &str = "wb19_drain_spacing";
 const WB19_SYMBOL_DRAIN_DIAMETER: &str = "wb19_drain_diameter";
+const WB20_SYMBOL_FORWARD_SOLVER_LANE_ENABLED: &str = "wb20_forward_solver_lane_enabled";
 const WB19_DRAIN_ALPHA: f64 = 3.4;
 const WB19_DRAIN_HOURS_PER_DAY: f64 = 24.0;
 const WB12_SYMBOL_RAINFALL_INPUT: HillslopeProductionStateSymbol =
@@ -1885,6 +1886,25 @@ impl Wb11HydrologyKernel {
         Ok(Some(scalar))
     }
 
+    fn optional_state_scalar_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.state_surface.get(symbol) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+            });
+        }
+        Ok(Some(scalar))
+    }
+
     fn require_state_scalar_for_symbol(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -1905,6 +1925,30 @@ impl Wb11HydrologyKernel {
             });
         }
         Ok(scalar)
+    }
+
+    fn resolve_wb20_forward_solver_lane_enabled(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let symbol = BoundarySymbol::from(WB20_SYMBOL_FORWARD_SOLVER_LANE_ENABLED);
+        let Some(value) = Self::optional_state_scalar_for_symbol(request, phase_class, &symbol)?
+        else {
+            return Ok(false);
+        };
+        if value.abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(false);
+        }
+        if (value - 1.0).abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(true);
+        }
+        Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+            phase_class,
+            symbol,
+            value,
+            minimum: Some(0.0),
+            maximum: Some(1.0),
+        })
     }
 
     fn require_state_non_negative_integral_for_symbol(
@@ -5091,15 +5135,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let runoff_observed =
-            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_OBSERVED)?;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_RUNOFF_OBSERVED,
-            runoff_observed,
-            Some(0.0),
-            None,
-        )?;
+        let forward_solver_lane =
+            Self::resolve_wb20_forward_solver_lane_enabled(request, phase_class)?;
 
         let q_runoff = Self::compute_runoff_after_interception(
             phase_class,
@@ -5110,7 +5147,23 @@ impl Wb11HydrologyKernel {
             depression_storage_delta,
         )?;
 
-        let closure_delta = q_runoff - runoff_observed;
+        let closure_delta = if forward_solver_lane {
+            let solver_closure = liquid_after_interception + snow_coupling.signed_s + runon_input
+                - cumulative_infiltration
+                - depression_storage_delta;
+            solver_closure - q_runoff
+        } else {
+            let runoff_observed =
+                Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_OBSERVED)?;
+            Self::require_state_range(
+                phase_class,
+                WB12_SYMBOL_RUNOFF_OBSERVED,
+                runoff_observed,
+                Some(0.0),
+                None,
+            )?;
+            q_runoff - runoff_observed
+        };
         if closure_delta.abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -5253,15 +5306,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let storage_observed =
-            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_STORAGE_OBSERVED)?;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_STORAGE_OBSERVED,
-            storage_observed,
-            Some(0.0),
-            None,
-        )?;
+        let forward_solver_lane =
+            Self::resolve_wb20_forward_solver_lane_enabled(request, phase_class)?;
 
         let closure_tolerance = Self::require_state_scalar(
             request,
@@ -5348,7 +5394,27 @@ impl Wb11HydrologyKernel {
             subsurface_loss,
         )?;
 
-        let closure_delta = storage_reconciled - storage_observed;
+        let closure_delta = if forward_solver_lane {
+            let solver_closure =
+                storage_initial + precip_input + snow_coupling_s + irrigation_input
+                    - interception_i
+                    - q_runoff
+                    - et
+                    - percolation_loss
+                    - subsurface_loss;
+            solver_closure - storage_reconciled
+        } else {
+            let storage_observed =
+                Self::require_state_scalar(request, phase_class, WB12_SYMBOL_STORAGE_OBSERVED)?;
+            Self::require_state_range(
+                phase_class,
+                WB12_SYMBOL_STORAGE_OBSERVED,
+                storage_observed,
+                Some(0.0),
+                None,
+            )?;
+            storage_reconciled - storage_observed
+        };
         if closure_delta.abs() > closure_tolerance + WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
