@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 28
+contract_version: 29
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-05-24
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -843,6 +843,19 @@ canonical order:
 3. Intake guardrails are governance blockers for runtime enablement claims
    until explicit triage evidence exists.
 
+## EROD13 Wave-1 Active Producer-Coupling Addendum
+
+1. When `erod13_core_enabled = 1`, water-balance owned runoff/peak-duration
+   coupling surfaces (`Q`, `peakro`, `watdur`, and WB16 branch diagnostics) are
+   required erosion-core ingress payloads and must retain finite domain-valid
+   values.
+2. Producer ownership remains in `SC-WATBAL-001` and `SC-RUNOFFPART-001`;
+   erosion-core consumer guard ownership is enforced in `SC-SED-001` through
+   `HKERNEL-EROD13-CORE-E-001..003`.
+3. Enabled-path missing/non-finite/domain-invalid runoff coupling surfaces must
+   hard-fail; no fallback reconstruction of erosion-core forcing symbols is
+   allowed.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -885,3 +898,4 @@ canonical order:
 | `2026-05-24` | `26` | `Codex` | CLI02 amendment: replaced required replay include-surface authority from legacy/bootstrap candidate files (`H5.wat.dat`, `H5.plot.dat`) to simulation-driven partitioned interchange candidate surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) and updated WB13 replay vector wording accordingly. |
 | `2026-05-24` | `27` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-WATBAL-017`), semantic comparator guard/disposition authority, WB13 semantic evidence vectors, and explicit producer obligations for investigation-grade WB13 parity reporting. |
 | `2026-05-24` | `28` | `Codex` | SIMIMPL03 amendment: added production execution ownership, mode-propagation closure, simulation-owned WB13 provenance, and selective consolidated-intake guardrail invariants (`INV-WATBAL-018..021`) with typed guards (`HS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`) and addendum authority. |
+| `2026-05-25` | `29` | `Codex` | EROD13 amendment: activated Wave-1 runoff/peak-duration producer-coupling authority for erosion-core ingress under `erod13_core_enabled`, preserving typed hard-fail continuity (`HKERNEL-EROD13-CORE-E-001..003`) for missing/non-finite/domain-invalid coupling payloads. |

@@ -297,6 +297,41 @@ const WB16_SYMBOL_QPSTAR: HillslopeProductionStateSymbol =
 const WB16_SYMBOL_VSTAR: HillslopeProductionStateSymbol = HillslopeProductionStateSymbol::Wb16Vstar;
 const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
 const WB16_MAX_DURATION_S: f64 = 86_400.0;
+const EROD13_SYMBOL_CORE_ENABLED: &str = "erod13_core_enabled";
+const EROD13_SYMBOL_IE: &str = "Ie";
+const EROD13_SYMBOL_TE: &str = "te";
+const EROD13_SYMBOL_FS: &str = "fs";
+const EROD13_SYMBOL_FT: &str = "ft";
+const EROD13_SYMBOL_TAUFE: &str = "taufe";
+const EROD13_SYMBOL_Q: &str = "q";
+const EROD13_SYMBOL_G: &str = "G";
+const EROD13_SYMBOL_DI: &str = "Di";
+const EROD13_SYMBOL_BETA: &str = "beta";
+const EROD13_SYMBOL_VF: &str = "vf";
+const EROD13_SYMBOL_DGDX: &str = "dGdx";
+const EROD13_SYMBOL_CNTLEN: &str = "cntlen";
+const EROD13_SYMBOL_KR: &str = "kr";
+const EROD13_SYMBOL_KRADJF: &str = "kradjf";
+const EROD13_SYMBOL_TCADJF: &str = "tcadjf";
+const EROD13_SYMBOL_SHRSOL: &str = "shrsol";
+const EROD13_SYMBOL_TCEND: &str = "tcend";
+const EROD13_SYMBOL_SHCRIT: &str = "shcrit";
+const EROD13_SYMBOL_DETINR: &str = "detinr";
+const EROD13_SYMBOL_EFFDRR: &str = "effdrr";
+const EROD13_SYMBOL_EFFDRN: &str = "effdrn";
+const EROD13_SYMBOL_VELEFF: &str = "veleff";
+const EROD13_SYMBOL_PKRO: &str = "pkro";
+const EROD13_SYMBOL_TC_K: &str = "erod13_tc_k";
+const EROD13_SYMBOL_TC_M: &str = "erod13_tc_m";
+const EROD13_SYMBOL_DC: &str = "Dc";
+const EROD13_SYMBOL_TC: &str = "Tc";
+const EROD13_SYMBOL_DF: &str = "Df";
+const EROD13_SYMBOL_ETA: &str = "eta";
+const EROD13_SYMBOL_TAUCN: &str = "taucn";
+const EROD13_SYMBOL_THETA: &str = "theta";
+const EROD13_SYMBOL_PHI: &str = "phi";
+const EROD13_CONTINUITY_TOLERANCE: f64 = 1.0e-9;
+const EROD13_MIN_TCADJF: f64 = 0.30;
 const WB17_LAI_PARTITION_COEFFICIENT: f64 = 0.4;
 const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
 const WB18_PERC_MIN_FX: f64 = 0.002;
@@ -1626,6 +1661,19 @@ pub enum Wb11HydrologyKernelGuardError {
         minimum: Option<f64>,
         maximum: Option<f64>,
     },
+    Erod13MissingRequiredSymbol {
+        symbol: BoundarySymbol,
+    },
+    Erod13NonFiniteSymbol {
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    Erod13DomainViolation {
+        symbol: BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    },
 }
 
 impl Wb11HydrologyKernelGuardError {
@@ -1641,11 +1689,26 @@ impl Wb11HydrologyKernelGuardError {
             Self::StateSymbolOutOfRange { .. } | Self::FluxSymbolOutOfRange { .. } => {
                 BoundaryClass::DomainViolation
             }
+            Self::Erod13MissingRequiredSymbol { .. } => BoundaryClass::MissingRequiredInput,
+            Self::Erod13NonFiniteSymbol { .. } => BoundaryClass::NonFinite,
+            Self::Erod13DomainViolation { .. } => BoundaryClass::DomainViolation,
         }
     }
 
     #[must_use]
     pub fn code(&self) -> String {
+        match self {
+            Self::Erod13MissingRequiredSymbol { .. } => {
+                return String::from("HKERNEL-EROD13-CORE-E-001");
+            }
+            Self::Erod13NonFiniteSymbol { .. } => {
+                return String::from("HKERNEL-EROD13-CORE-E-002");
+            }
+            Self::Erod13DomainViolation { .. } => {
+                return String::from("HKERNEL-EROD13-CORE-E-003");
+            }
+            _ => {}
+        }
         let (phase_class, suffix) = match self {
             Self::MissingRequiredStateSymbol { phase_class, .. }
             | Self::MissingRequiredFluxSymbol { phase_class, .. } => (phase_class, "001"),
@@ -1653,6 +1716,9 @@ impl Wb11HydrologyKernelGuardError {
             | Self::NonFiniteFluxSymbol { phase_class, .. } => (phase_class, "002"),
             Self::StateSymbolOutOfRange { phase_class, .. }
             | Self::FluxSymbolOutOfRange { phase_class, .. } => (phase_class, "003"),
+            Self::Erod13MissingRequiredSymbol { .. }
+            | Self::Erod13NonFiniteSymbol { .. }
+            | Self::Erod13DomainViolation { .. } => unreachable!(),
         };
 
         let (kernel_family, phase_prefix) = match phase_class {
@@ -1671,6 +1737,7 @@ impl Wb11HydrologyKernelGuardError {
 }
 
 impl fmt::Display for Wb11HydrologyKernelGuardError {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingRequiredStateSymbol {
@@ -1744,6 +1811,33 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
                 "{}: phase class {} flux symbol {}={} outside [{:?}, {:?}]",
                 self.code(),
                 phase_class.as_str(),
+                symbol,
+                value,
+                minimum,
+                maximum
+            ),
+            Self::Erod13MissingRequiredSymbol { symbol } => write!(
+                f,
+                "{}: missing required EROD13 Wave-1 symbol {}",
+                self.code(),
+                symbol
+            ),
+            Self::Erod13NonFiniteSymbol { symbol, value } => write!(
+                f,
+                "{}: non-finite EROD13 Wave-1 symbol {} ({})",
+                self.code(),
+                symbol,
+                value
+            ),
+            Self::Erod13DomainViolation {
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => write!(
+                f,
+                "{}: EROD13 Wave-1 symbol {}={} outside [{:?}, {:?}]",
+                self.code(),
                 symbol,
                 value,
                 minimum,
@@ -2117,6 +2211,92 @@ impl Wb11HydrologyKernel {
             }
         }
         Ok(())
+    }
+
+    fn optional_erod13_state_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        symbol: &BoundarySymbol,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.state_surface.get(symbol) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::Erod13NonFiniteSymbol {
+                symbol: symbol.clone(),
+                value: scalar,
+            });
+        }
+        Ok(Some(scalar))
+    }
+
+    fn require_erod13_state_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        symbol: &BoundarySymbol,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.state_surface.get(symbol) else {
+            return Err(Wb11HydrologyKernelGuardError::Erod13MissingRequiredSymbol {
+                symbol: symbol.clone(),
+            });
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::Erod13NonFiniteSymbol {
+                symbol: symbol.clone(),
+                value: scalar,
+            });
+        }
+        Ok(scalar)
+    }
+
+    fn require_erod13_domain(
+        symbol: &BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(minimum_value) = minimum {
+            if value < minimum_value - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        if let Some(maximum_value) = maximum {
+            if value > maximum_value + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn resolve_erod13_core_enabled(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let enabled_symbol = BoundarySymbol::from(EROD13_SYMBOL_CORE_ENABLED);
+        let Some(value) = Self::optional_erod13_state_scalar(request, &enabled_symbol)? else {
+            return Ok(false);
+        };
+        if value.abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(false);
+        }
+        if (value - 1.0).abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(true);
+        }
+        Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+            symbol: enabled_symbol,
+            value,
+            minimum: Some(0.0),
+            maximum: Some(1.0),
+        })
     }
 
     fn wb18_perc_state_symbol(field: &str, layer_index: usize) -> BoundarySymbol {
@@ -5446,6 +5626,247 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    #[allow(clippy::similar_names, clippy::too_many_lines)]
+    fn run_erod13_wave1_core(
+        request: &HillslopeKernelRequest<'_>,
+        q_runoff: f64,
+        peakro: f64,
+        watdur: f64,
+    ) -> Result<Vec<WritebackField>, Wb11HydrologyKernelGuardError> {
+        if !Self::resolve_erod13_core_enabled(request)? {
+            return Ok(Vec::new());
+        }
+
+        let ie_symbol = BoundarySymbol::from(EROD13_SYMBOL_IE);
+        let te_symbol = BoundarySymbol::from(EROD13_SYMBOL_TE);
+        let fs_symbol = BoundarySymbol::from(EROD13_SYMBOL_FS);
+        let ft_symbol = BoundarySymbol::from(EROD13_SYMBOL_FT);
+        let taufe_symbol = BoundarySymbol::from(EROD13_SYMBOL_TAUFE);
+        let q_symbol = BoundarySymbol::from(EROD13_SYMBOL_Q);
+        let g_symbol = BoundarySymbol::from(EROD13_SYMBOL_G);
+        let di_symbol = BoundarySymbol::from(EROD13_SYMBOL_DI);
+        let beta_symbol = BoundarySymbol::from(EROD13_SYMBOL_BETA);
+        let vf_symbol = BoundarySymbol::from(EROD13_SYMBOL_VF);
+        let dgdx_symbol = BoundarySymbol::from(EROD13_SYMBOL_DGDX);
+        let cntlen_symbol = BoundarySymbol::from(EROD13_SYMBOL_CNTLEN);
+        let kr_symbol = BoundarySymbol::from(EROD13_SYMBOL_KR);
+        let kradjf_symbol = BoundarySymbol::from(EROD13_SYMBOL_KRADJF);
+        let tcadjf_symbol = BoundarySymbol::from(EROD13_SYMBOL_TCADJF);
+        let shrsol_symbol = BoundarySymbol::from(EROD13_SYMBOL_SHRSOL);
+        let tcend_symbol = BoundarySymbol::from(EROD13_SYMBOL_TCEND);
+        let shcrit_symbol = BoundarySymbol::from(EROD13_SYMBOL_SHCRIT);
+        let detinr_symbol = BoundarySymbol::from(EROD13_SYMBOL_DETINR);
+        let effdrr_symbol = BoundarySymbol::from(EROD13_SYMBOL_EFFDRR);
+        let effdrn_symbol = BoundarySymbol::from(EROD13_SYMBOL_EFFDRN);
+        let veleff_symbol = BoundarySymbol::from(EROD13_SYMBOL_VELEFF);
+        let pkro_symbol = BoundarySymbol::from(EROD13_SYMBOL_PKRO);
+        let tc_k_symbol = BoundarySymbol::from(EROD13_SYMBOL_TC_K);
+        let tc_m_symbol = BoundarySymbol::from(EROD13_SYMBOL_TC_M);
+
+        let ie = Self::require_erod13_state_scalar(request, &ie_symbol)?;
+        Self::require_erod13_domain(&ie_symbol, ie, Some(0.0), None)?;
+        let te = Self::require_erod13_state_scalar(request, &te_symbol)?;
+        Self::require_erod13_domain(&te_symbol, te, Some(WB11_ZERO_THRESHOLD), None)?;
+        let fs = Self::require_erod13_state_scalar(request, &fs_symbol)?;
+        Self::require_erod13_domain(&fs_symbol, fs, Some(0.0), None)?;
+        let ft = Self::require_erod13_state_scalar(request, &ft_symbol)?;
+        Self::require_erod13_domain(&ft_symbol, ft, Some(WB11_ZERO_THRESHOLD), None)?;
+        Self::require_erod13_domain(&fs_symbol, fs, Some(0.0), Some(ft))?;
+        let taufe = Self::require_erod13_state_scalar(request, &taufe_symbol)?;
+        Self::require_erod13_domain(&taufe_symbol, taufe, Some(0.0), None)?;
+        let q = Self::require_erod13_state_scalar(request, &q_symbol)?;
+        Self::require_erod13_domain(&q_symbol, q, Some(0.0), None)?;
+        let g = Self::require_erod13_state_scalar(request, &g_symbol)?;
+        Self::require_erod13_domain(&g_symbol, g, Some(0.0), None)?;
+        let di = Self::require_erod13_state_scalar(request, &di_symbol)?;
+        Self::require_erod13_domain(&di_symbol, di, Some(0.0), None)?;
+        let beta = Self::require_erod13_state_scalar(request, &beta_symbol)?;
+        Self::require_erod13_domain(&beta_symbol, beta, Some(0.0), None)?;
+        let vf = Self::require_erod13_state_scalar(request, &vf_symbol)?;
+        Self::require_erod13_domain(&vf_symbol, vf, Some(0.0), None)?;
+        let dgdx = Self::require_erod13_state_scalar(request, &dgdx_symbol)?;
+
+        let cntlen = Self::require_erod13_state_scalar(request, &cntlen_symbol)?;
+        Self::require_erod13_domain(&cntlen_symbol, cntlen, Some(WB11_ZERO_THRESHOLD), None)?;
+        let kr = Self::require_erod13_state_scalar(request, &kr_symbol)?;
+        Self::require_erod13_domain(&kr_symbol, kr, Some(WB11_ZERO_THRESHOLD), None)?;
+        let kradjf = Self::require_erod13_state_scalar(request, &kradjf_symbol)?;
+        Self::require_erod13_domain(&kradjf_symbol, kradjf, Some(WB11_ZERO_THRESHOLD), None)?;
+        let tcadjf = Self::require_erod13_state_scalar(request, &tcadjf_symbol)?;
+        Self::require_erod13_domain(&tcadjf_symbol, tcadjf, Some(EROD13_MIN_TCADJF), None)?;
+        let shrsol = Self::require_erod13_state_scalar(request, &shrsol_symbol)?;
+        Self::require_erod13_domain(&shrsol_symbol, shrsol, Some(WB11_ZERO_THRESHOLD), None)?;
+        let tcend = Self::require_erod13_state_scalar(request, &tcend_symbol)?;
+        Self::require_erod13_domain(&tcend_symbol, tcend, Some(WB11_ZERO_THRESHOLD), None)?;
+        let shcrit = Self::require_erod13_state_scalar(request, &shcrit_symbol)?;
+        Self::require_erod13_domain(&shcrit_symbol, shcrit, Some(0.0), None)?;
+        let detinr = Self::require_erod13_state_scalar(request, &detinr_symbol)?;
+        Self::require_erod13_domain(&detinr_symbol, detinr, Some(0.0), None)?;
+        let effdrr = Self::require_erod13_state_scalar(request, &effdrr_symbol)?;
+        Self::require_erod13_domain(&effdrr_symbol, effdrr, Some(WB11_ZERO_THRESHOLD), None)?;
+        let effdrn = Self::require_erod13_state_scalar(request, &effdrn_symbol)?;
+        Self::require_erod13_domain(&effdrn_symbol, effdrn, Some(WB11_ZERO_THRESHOLD), None)?;
+        let veleff = Self::require_erod13_state_scalar(request, &veleff_symbol)?;
+        Self::require_erod13_domain(&veleff_symbol, veleff, Some(0.0), None)?;
+        let pkro = Self::require_erod13_state_scalar(request, &pkro_symbol)?;
+        Self::require_erod13_domain(&pkro_symbol, pkro, Some(WB11_ZERO_THRESHOLD), None)?;
+        let tc_k = Self::require_erod13_state_scalar(request, &tc_k_symbol)?;
+        Self::require_erod13_domain(&tc_k_symbol, tc_k, Some(WB11_ZERO_THRESHOLD), None)?;
+        let tc_m = Self::require_erod13_state_scalar(request, &tc_m_symbol)?;
+        Self::require_erod13_domain(&tc_m_symbol, tc_m, Some(WB11_ZERO_THRESHOLD), None)?;
+
+        Self::require_erod13_domain(
+            &BoundarySymbol::from(WB12_SYMBOL_RUNOFF_Q),
+            q_runoff,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        Self::require_erod13_domain(
+            &BoundarySymbol::from(WB16_SYMBOL_PEAKRO),
+            peakro,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        Self::require_erod13_domain(
+            &BoundarySymbol::from(WB16_SYMBOL_WATDUR),
+            watdur,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+        let expected_watdur = q_runoff / peakro;
+        let continuity_residual = (watdur - expected_watdur).abs();
+        if continuity_residual > EROD13_CONTINUITY_TOLERANCE + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: BoundarySymbol::from(WB16_SYMBOL_WATDUR),
+                value: watdur,
+                minimum: Some(expected_watdur - EROD13_CONTINUITY_TOLERANCE),
+                maximum: Some(expected_watdur + EROD13_CONTINUITY_TOLERANCE),
+            });
+        }
+
+        let tau_f = taufe * (fs / ft);
+        if !tau_f.is_finite() || tau_f < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: taufe_symbol.clone(),
+                value: tau_f,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let eta = (cntlen * kr * kradjf * shrsol) / tcend;
+        if !eta.is_finite() || eta < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: BoundarySymbol::from(EROD13_SYMBOL_ETA),
+                value: eta,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let taucn = (tcadjf * shcrit) / shrsol;
+        if !taucn.is_finite() || taucn < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: BoundarySymbol::from(EROD13_SYMBOL_TAUCN),
+                value: taucn,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let theta = ((cntlen * detinr) / tcend) * (effdrr / effdrn);
+        if !theta.is_finite() || theta < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: BoundarySymbol::from(EROD13_SYMBOL_THETA),
+                value: theta,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let phi = (beta * veleff) / pkro;
+        if !phi.is_finite() || phi < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: BoundarySymbol::from(EROD13_SYMBOL_PHI),
+                value: phi,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let tc = tcadjf * tc_k * tau_f.powf(tc_m);
+        if !tc.is_finite() || tc < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: BoundarySymbol::from(EROD13_SYMBOL_TC),
+                value: tc,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let (dc, df) = if tau_f > taucn && g < tc {
+            if tc <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: BoundarySymbol::from(EROD13_SYMBOL_TC),
+                    value: tc,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            let dc = eta * (tau_f - taucn);
+            if !dc.is_finite() || dc < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: BoundarySymbol::from(EROD13_SYMBOL_DC),
+                    value: dc,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            let df = dc * ((tc - g) / tc);
+            if !df.is_finite() || df < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: BoundarySymbol::from(EROD13_SYMBOL_DF),
+                    value: df,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            (dc, df)
+        } else if g > tc {
+            Self::require_erod13_domain(&q_symbol, q, Some(WB11_ZERO_THRESHOLD), None)?;
+            let df = -((beta * vf / q) * (g - tc));
+            if !df.is_finite() || df > WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                    symbol: BoundarySymbol::from(EROD13_SYMBOL_DF),
+                    value: df,
+                    minimum: None,
+                    maximum: Some(0.0),
+                });
+            }
+            (0.0, df)
+        } else {
+            (0.0, 0.0)
+        };
+
+        let expected_dgdx = df + di;
+        let dgdx_residual = (dgdx - expected_dgdx).abs();
+        if dgdx_residual > EROD13_CONTINUITY_TOLERANCE + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod13DomainViolation {
+                symbol: dgdx_symbol,
+                value: dgdx,
+                minimum: Some(expected_dgdx - EROD13_CONTINUITY_TOLERANCE),
+                maximum: Some(expected_dgdx + EROD13_CONTINUITY_TOLERANCE),
+            });
+        }
+
+        Ok(vec![
+            WritebackField::bounded(EROD13_SYMBOL_DC, dc, Some(0.0), None),
+            WritebackField::bounded(EROD13_SYMBOL_TC, tc, Some(0.0), None),
+            WritebackField::unbounded(EROD13_SYMBOL_DF, df),
+            WritebackField::bounded(EROD13_SYMBOL_ETA, eta, Some(0.0), None),
+            WritebackField::bounded(EROD13_SYMBOL_TAUCN, taucn, Some(0.0), None),
+            WritebackField::bounded(EROD13_SYMBOL_THETA, theta, Some(0.0), None),
+            WritebackField::bounded(EROD13_SYMBOL_PHI, phi, Some(0.0), None),
+        ])
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_peak_runoff(
         request: &HillslopeKernelRequest<'_>,
@@ -5650,43 +6071,44 @@ impl Wb11HydrologyKernel {
         }
         let watdur = watdur_raw.min(WB16_MAX_DURATION_S);
 
-        let Ok(status) =
-            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB16-PEAK-OK-001")
+        let erod13_state_updates = Self::run_erod13_wave1_core(request, q_runoff, peakro, watdur)?;
+        let status_message_id = if erod13_state_updates.is_empty() {
+            "HKERNEL-WB16-PEAK-OK-001"
+        } else {
+            "HKERNEL-EROD13-CORE-OK-001"
+        };
+
+        let Ok(status) = SimulationStatus::ok(SimulationPhase::HillslopeKernel, status_message_id)
         else {
             unreachable!("status message ids are non-empty WB16 constants")
         };
 
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![
-                WritebackField::bounded(WB16_SYMBOL_PEAKRO, peakro, Some(WB16_PEAKRO_FLOOR), None),
-                WritebackField::bounded(
-                    WB16_SYMBOL_WATDUR,
-                    watdur,
-                    Some(0.0),
-                    Some(WB16_MAX_DURATION_S),
-                ),
-                WritebackField::bounded(
-                    WB16_SYMBOL_METHOD_BRANCH,
-                    method_branch,
-                    Some(1.0),
-                    Some(3.0),
-                ),
-                WritebackField::bounded(WB16_SYMBOL_TSTAR, tstar, Some(WB11_ZERO_THRESHOLD), None),
-                WritebackField::bounded(
-                    WB16_SYMBOL_QPSTAR,
-                    qpstar,
-                    Some(WB11_ZERO_THRESHOLD),
-                    None,
-                ),
-                WritebackField::bounded(
-                    WB16_SYMBOL_VSTAR,
-                    vstar,
-                    Some(WB11_ZERO_THRESHOLD),
-                    Some(1.0),
-                ),
-            ],
-            Vec::new(),
-        );
+        let mut state_updates = vec![
+            WritebackField::bounded(WB16_SYMBOL_PEAKRO, peakro, Some(WB16_PEAKRO_FLOOR), None),
+            WritebackField::bounded(
+                WB16_SYMBOL_WATDUR,
+                watdur,
+                Some(0.0),
+                Some(WB16_MAX_DURATION_S),
+            ),
+            WritebackField::bounded(
+                WB16_SYMBOL_METHOD_BRANCH,
+                method_branch,
+                Some(1.0),
+                Some(3.0),
+            ),
+            WritebackField::bounded(WB16_SYMBOL_TSTAR, tstar, Some(WB11_ZERO_THRESHOLD), None),
+            WritebackField::bounded(WB16_SYMBOL_QPSTAR, qpstar, Some(WB11_ZERO_THRESHOLD), None),
+            WritebackField::bounded(
+                WB16_SYMBOL_VSTAR,
+                vstar,
+                Some(WB11_ZERO_THRESHOLD),
+                Some(1.0),
+            ),
+        ];
+        state_updates.extend(erod13_state_updates);
+
+        let writeback = KernelWritebackPayload::with_updates(state_updates, Vec::new());
         Ok(KernelRunResponse::new(status, writeback))
     }
 }

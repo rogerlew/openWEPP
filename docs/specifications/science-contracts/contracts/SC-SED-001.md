@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -14,7 +14,7 @@ consumer_scope:
   - Comparator and replay consumers using erosion closure and sign-consistency surfaces
   - Adjacent soil/runoff/hydraulics domains providing required coupling inputs
 evidence_level: Static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -63,6 +63,9 @@ Out of scope:
 | REF-SED-CH7-EROD | `references/50201000/chap7.pdf` §7.10-§7.11, Eq. [7.10.1]-[7.10.15], [7.11.1]-[7.11.18] | Adjusted interrill/rill erodibility and critical-shear parameters (`Kiadj`, `Kradj`, `τcadj`) consumed by Chapter-11 normalizations. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SED-CH4-RUNOFF | `references/50201000/chap4.pdf` §4.4.2-§4.4.4, Eq. [4.4.17]-[4.4.30] | Hydrology component authority for peak-runoff and effective-duration surfaces used by erosion equations. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SED-CH13-COUPLING | `references/50201000/chap13.pdf` §13.1 pass-file list | Downstream coupling semantics for hillslope erosion outputs (detachment, deposition, class concentrations, class fractions). | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SED-LEGACY-PARAM | `/workdir/wepp-forest_260430_baseline/src/param.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy normalized-parameter authority (`eata`, `tauc`, `theta`, `phi`) used for Wave-1 runtime parameter derivation provenance. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-EROD | `/workdir/wepp-forest_260430_baseline/src/erod.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy detachment-capacity and branch-condition authority used for Wave-1 detachment/deposition runtime branch ordering. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-RUNGE | `/workdir/wepp-forest_260430_baseline/src/runge.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy continuity evolution form (`dG/dx` update term as `dcap*((tcap-load)/tcap) + theta`) used for Wave-1 branch/continuity guard alignment. | `[DIRECT][Static]` |
 | REF-SED-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative magnitudes for rates/loads where signed behavior is not explicitly defined; finite denominators and bounded fractions. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -240,6 +243,89 @@ bit-for-bit parity).
 | Non-finite required symbol | `HKERNEL-WB16-PEAK-E-002` |
 | Domain/closure violation | `HKERNEL-WB16-PEAK-E-003` |
 
+## EROD13 Wave-1 Core Runtime Addendum
+
+### Runtime Integration Point
+
+1. Wave-1 core erosion runtime executes in the hillslope
+   `closure_diagnostics` scheduler phase after WB16 peak-runoff state writeback
+   completes. The dispatched kernel phase class remains
+   `hydrology_peak_runoff`; EROD13 authority is enforced by explicit guard-code
+   family and symbol set below.
+2. Runtime activation is explicit:
+   - `erod13_core_enabled = 1` enables Wave-1 erosion execution.
+   - `erod13_core_enabled = 0` disables the erosion path for fixtures that do
+     not yet seed Wave-1 sediment inputs.
+3. When enabled, missing/non-finite/domain-invalid erosion inputs are typed
+   hard failures; no fallback synthesis, silent defaults, or silent clamping
+   is permitted. `[DIRECT][Static] + [INFERENCE][Static]`
+
+### Wave-1 Runtime Symbols
+
+| Surface family | Symbols | Runtime role |
+|---|---|---|
+| Activation + hydrology forcing | `erod13_core_enabled`, `Q`, `peakro`, `watdur`, `Ie`, `te` | Activation gate and Chapter-11 hydrologic forcing semantics (`INV-SED-004`). |
+| Hydraulics/shear forcing | `fs`, `ft`, `taufe`, `q` | Shear-partition and deposition-denominator semantics (`INV-SED-003`, `INV-SED-005`). |
+| Sediment branch forcing | `G`, `Di`, `beta`, `vf`, `dGdx` | Continuity + branch-state forcing for detachment/deposition evaluation (`INV-SED-001`..`003`). |
+| Normalization forcing | `cntlen`, `kr`, `kradjf`, `tcadjf`, `shrsol`, `tcend`, `shcrit`, `detinr`, `effdrr`, `effdrn`, `veleff`, `pkro` | Legacy-authority normalized parameter derivation (`INV-SED-007`). |
+| Transport-capacity forcing | `erod13_tc_k`, `erod13_tc_m` | Eq. [11.2.8]-style power-law transport-capacity coefficients (`INV-SED-006`). |
+| Core outputs | `Dc`, `Tc`, `Df`, `eta`, `taucn`, `theta`, `phi` | Wave-1 core runtime outputs required for invariant checks and downstream Wave-2 entry. |
+
+### Wave-1 Algorithm Specification
+
+1. Validate activation + required forcing symbols:
+   - when `erod13_core_enabled = 1`, all required symbols in the table above
+     are mandatory and finite.
+2. Validate hydrology-forcing continuity (`INV-SED-004`):
+   - `Q > 0`, `peakro > 0`, `watdur > 0`, `Ie >= 0`, `te > 0`,
+   - `abs(watdur - (Q/peakro)) <= TOL-SED-001`.
+3. Compute shear partition (`INV-SED-005`):
+   - require `ft > 0`, `0 <= fs <= ft`,
+   - compute `tau_f = taufe * (fs/ft)`.
+4. Compute normalized parameters (`INV-SED-007`) using pinned legacy `param.for`
+   lineage:
+   - `eta = cntlen * kr * kradjf * shrsol / tcend`,
+   - `taucn = tcadjf * shcrit / shrsol`,
+   - `theta = (cntlen * detinr / tcend) * (effdrr/effdrn)`,
+   - `phi = beta * veleff / pkro`.
+5. Compute transport capacity (`INV-SED-006`):
+   - require `tcadjf >= 0.30`,
+   - `Tc = tcadjf * erod13_tc_k * tau_f^(erod13_tc_m)`.
+6. Compute detachment/deposition branch (`INV-SED-002`, `INV-SED-003`):
+   - detachment branch (`tau_f > taucn` and `G < Tc`):
+     `Dc = eta * (tau_f - taucn)`,
+     `Df = Dc * ((Tc - G)/Tc)`.
+   - deposition branch (`G > Tc`):
+     require `q > 0`,
+     `Df = -(beta * vf / q) * (G - Tc)`.
+   - threshold/equilibrium branch:
+     `Df = 0`.
+7. Enforce continuity (`INV-SED-001`):
+   - `abs(dGdx - (Df + Di)) <= TOL-SED-001`.
+
+### EROD13 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol (Wave-1 enabled path) | `HKERNEL-EROD13-CORE-E-001` |
+| Non-finite required symbol | `HKERNEL-EROD13-CORE-E-002` |
+| Domain/closure violation | `HKERNEL-EROD13-CORE-E-003` |
+
+### Wave-1 Contract-Derived Test Vectors
+
+Minimum vectors required by EROD13 contract-derived tests:
+
+1. Nominal detachment vector (`tau_f > taucn`, `G < Tc`) emits finite
+   non-negative `Dc`, positive `Df`, and continuity residual within tolerance.
+2. Threshold vector (`tau_f <= taucn`) emits `Df = 0`.
+3. Deposition vector (`G > Tc`) emits negative `Df` with valid `q > 0`.
+4. Domain guard vector: `tcadjf < 0.30` fails with
+   `HKERNEL-EROD13-CORE-E-003`.
+5. Missing-symbol vector fails with `HKERNEL-EROD13-CORE-E-001`.
+6. Non-finite-symbol vector fails with `HKERNEL-EROD13-CORE-E-002`.
+7. Continuity residual violation (`dGdx != Df + Di`) fails with
+   `HKERNEL-EROD13-CORE-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -261,3 +347,4 @@ bit-for-bit parity).
 | `2026-05-23` | `5` | `Codex` | EROD11 closure amendment: dispositioned alias-ownership ambiguity row `GAP-SED-002` to `closed` for required boundary symbols and made explicit that erosion-physics implementation remains separately governed by non-promotable holds. |
 | `2026-05-23` | `6` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-SED-001` and `GAP-SED-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `7` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum for required erosion-lane boundaries and dispositioned `GAP-SED-003` to `closed` while preserving non-Wave-0 implementation holds. |
+| `2026-05-25` | `8` | `Codex` | EROD13 Wave-1 amendment: added pinned-baseline legacy authority anchors (`param.for`, `erod.for`, `runge.for`), runtime integration semantics, algorithm/guard specification, and contract-derived vector obligations for `INV-SED-001`..`007` core execution. |

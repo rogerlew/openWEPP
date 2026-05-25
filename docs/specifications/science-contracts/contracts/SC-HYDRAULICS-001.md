@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -14,7 +14,7 @@ consumer_scope:
   - Soil and management consumers that provide roughness/cover/canopy controls
   - Hillslope erosion consumers requiring soil-active shear and transport-capacity inputs
 evidence_level: Static
-last_reviewed: 2026-05-24
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -151,7 +151,7 @@ for not-yet-implemented hydraulics internals.
 | Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
 |---|---|---|---|---|---|
 | `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-RUNOFFPART-001` + `SC-WATBAL-001` | `SC-HYDRAULICS-001` and erosion-lane consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `EROD-BND-002` | `fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-HYDRAULICS-001` | `SC-SED-001` (`INV-SED-005..007`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-002` | `fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe` | canonical identity boundary symbols consumed by Wave-1 EROD13 runtime core | `SC-HYDRAULICS-001` | `SC-SED-001` (`INV-SED-005..007`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-004` | `hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration,ChannelNode}` | `SC-HYDRAULICS-001` + `SC-ROUTE-001` coupling surfaces | `SC-ROUTE-001` + `SC-IMPOUND-001` runtime consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD12 Cross-Domain Ownership and Guard Closure Addendum
@@ -161,6 +161,18 @@ for not-yet-implemented hydraulics internals.
 | Hydrology forcing ingress (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-RUNOFFPART-001` + `SC-WATBAL-001` | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-008`, `INV-HYDRAULICS-011`) | Required Wave-0 ingress ownership and guard semantics are canonicalized. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Hydraulics-to-sediment shear/friction payload (`fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe`) | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-009`..`011`) | `SC-SED-001` (`INV-SED-005`..`007`) | Producer and consumer guard ownership is explicit with typed failure continuity. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Watershed contributor boundary (`hs{ID}_peakro`, `hs{ID}_watdur`, `ws10_channel_*`) | `SC-HYDRAULICS-001` + `SC-ROUTE-001` | `SC-ROUTE-001` + `SC-SYSTEM-001` (`INV-SYSTEM-001`..`006`) | Cross-domain ownership for contributor + WS11 coupling boundaries is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+
+## EROD13 Wave-1 Active Consumer-Coupling Addendum
+
+1. When `erod13_core_enabled = 1`, hydraulics producer surfaces
+   (`fs`, `ft`, `taufe`, `q`) are mandatory runtime inputs for Wave-1 erosion
+   core execution and must be finite with declared domain semantics.
+2. Producer ownership remains in `SC-HYDRAULICS-001`; consumer guard ownership
+   is enforced at runtime in `SC-SED-001` using
+   `HKERNEL-EROD13-CORE-E-001..003`.
+3. Missing/non-finite/domain-invalid hydraulics coupling symbols must surface
+   typed hard failures; fallback synthesis of shear-partition terms is
+   prohibited.
 
 ## Allowed Degenerate States
 
@@ -362,3 +374,4 @@ Minimum WS12 coupling vectors:
 | `2026-05-23` | `9` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-HYD-003` to `closed` for required erosion-lane companion boundaries. |
 | `2026-05-24` | `10` | `Codex` | WS12 amendment: added impoundment physics-equivalence consumer coupling authority so downstream hydraulics consumers treat impoundment payloads as continuity/regime outputs (not headroom-surrogate reconstructions) while preserving WS10 guard-family continuity. |
 | `2026-05-24` | `11` | `Codex` | WS11 amendment: added channel-routing consumer-coupling authority requiring explicit `ipeak` branch semantics (Rational/CREAMS/KW/MC), prohibited pre-WS11 gain-factor surrogate substitution, and updated boundary-language continuity while preserving existing WS10 guard-family IDs. |
+| `2026-05-25` | `12` | `Codex` | EROD13 amendment: activated Wave-1 hydraulics-to-erosion coupling semantics, removed deferred language for `EROD-BND-002`, and added explicit runtime guard-family continuity (`HKERNEL-EROD13-CORE-E-001..003`). |

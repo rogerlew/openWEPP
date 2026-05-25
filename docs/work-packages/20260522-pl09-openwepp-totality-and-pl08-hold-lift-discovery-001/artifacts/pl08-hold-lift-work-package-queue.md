@@ -181,7 +181,7 @@ Purpose:
 
 | wp_id | wave | current state | dependency posture | queue decision |
 |---|---|---|---|---|
-| `EROD13-hillslope-core-erosion-kernel-001` | Wave 1 | `not-started` (package not yet scaffolded) | Entry dependencies satisfied (`EROD12`, `WB14`, `WB15`, `WB16`) | `NEXT` |
+| `EROD13-hillslope-core-erosion-kernel-001` | Wave 1 | `completed` | Entry dependencies satisfied and Wave-1 contract-first execution closed (`GO`) | `DONE` |
 | `EROD14-multiofe-and-enrichment-kernel-001` | Wave 2 | `not-started` | Blocked on `EROD13` completion | `QUEUE` |
 | `EROD15-routing-boundary-coupling-001` | Wave 3 | `not-started` | Blocked on `EROD14`; `WS10` upstream dependency is now satisfied | `QUEUE` |
 | `EROD16-sediment-closeout-and-comparator-001` | Wave 4 | `not-started` | Blocked on `EROD15` completion | `QUEUE` |
@@ -194,3 +194,21 @@ Purpose:
   `GAP-ROUTE-005`, `GAP-RUNOFFPART-003`, `GAP-WATBAL-002`, `GAP-SYSTEM-001`.
 - Queue reassessment does not supersede PL08 release-rule constraints for
   `PL14S -> PL15S`.
+
+## EROD13 Scaffold Update (2026-05-25 UTC)
+
+Status: `completed`
+Evidence mode: `Mixed`
+
+Static:
+- `EROD13` package scaffold is now present at:
+  `docs/work-packages/20260525-erod13-hillslope-core-erosion-kernel-001/`.
+- Queue execution note: `EROD13` has been executed end-to-end with Wave-1
+  `GO` verdict and required gates passing.
+
+Ran:
+- Wave-1 package gates completed:
+  - `cargo fmt --check`
+  - `cargo clippy --workspace --all-targets -- -D warnings`
+  - `cargo test --workspace`
+  - `cargo deny check`

@@ -283,6 +283,14 @@ name = "erod12_cross_domain_contract_closure_contract"
 path = "tests/integration/erod12_cross_domain_contract_closure_contract.rs"
 
 [[test]]
+name = "erod13_contract_authority_closure_contract"
+path = "tests/integration/erod13_contract_authority_closure_contract.rs"
+
+[[test]]
+name = "erod13_wave1_core_kernel_contract"
+path = "tests/integration/erod13_wave1_core_kernel_contract.rs"
+
+[[test]]
 name = "cli01_runner_contract_derived_tests"
 path = "tests/integration/cli01_runner_contract_derived_tests.rs"
 

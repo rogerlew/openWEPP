@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed outlet hydrograph/sediment-yield accounting consumers
   - Comparator/replay and governance-gate consumers
 evidence_level: Static
-last_reviewed: 2026-05-24
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -428,6 +428,19 @@ Minimum WS12 integration vectors:
 3. Missing triage disposition is a governance blocker for downstream execution
    promotion.
 
+## EROD13 Wave-1 Active Boundary-Carry Addendum
+
+1. System integration boundaries carrying hillslope runtime outputs must
+   preserve Wave-1 erosion-core forcing surfaces (`Q`, `peakro`, `watdur` and
+   WB16 branch diagnostics) without mutation when `erod13_core_enabled = 1`.
+2. Producer ownership for those coupling symbols remains in
+   `SC-RUNOFFPART-001` and `SC-WATBAL-001`; system-boundary consumers must
+   preserve typed failure posture when required Wave-1 coupling payloads are
+   absent or malformed.
+3. Cross-component publication pathways must not synthesize replacement erosion
+   forcing values to bypass Wave-1 guard failures
+   (`HKERNEL-EROD13-CORE-E-001..003`).
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -458,3 +471,4 @@ Minimum WS12 integration vectors:
 | `2026-05-24` | `14` | `Codex` | WS11 amendment: added channel-routing physics-equivalence integration authority requiring explicit `ipeak` branch execution (Rational/CREAMS/KW/MC), prohibited pre-WS11 gain-factor surrogate substitution, and anchored integration semantics to pinned legacy routing provenance while preserving existing WS10 guard-family continuity. |
 | `2026-05-24` | `15` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-SYSTEM-017`), semantic/provenance publication guard authority, semantic replay producer obligations, and explicit semantic-tolerance profile authority for investigation-grade Tier-A replay evidence. |
 | `2026-05-24` | `16` | `Codex` | SIMIMPL03 amendment: added production runner execution ownership, mode-propagation manifest closure, simulation-owned replay-surface provenance, and selective consolidated-intake governance invariants (`INV-SYSTEM-018..021`) with typed guard families (`WS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`). |
+| `2026-05-25` | `17` | `Codex` | EROD13 amendment: added Wave-1 system-boundary carry authority for erosion-core forcing surfaces under `erod13_core_enabled`, preserving producer/consumer ownership continuity and typed hard-fail guard posture (`HKERNEL-EROD13-CORE-E-001..003`). |
