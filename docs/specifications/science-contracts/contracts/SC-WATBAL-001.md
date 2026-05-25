@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 33
+contract_version: 34
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -176,6 +176,8 @@ lateral/drainage).
 | INV-WATBAL-023 | SIMIMPL15 strict-lane policy and source-provenance invariant: Tier-A replay tooling must publish explicit lane-policy classification by candidate surface format (`.dat` strict-required, `.parquet` strict-equivalent-required via semantic lane) and explicit candidate surface source classification (`native-runtime-dat`, `conversion-derived-dat`, `native-runtime-parquet`). Missing/ambiguous classification or implicit lane-policy fallback is invalid; conversion-derived dat strict evidence is non-promotable for final Tier-A closure claims. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-024 | SIMIMPL15 parquet semantic-alias/diagnostic continuity invariant: semantic comparator lane must canonicalize required investigation columns across accepted alias forms (`Total-Soil` and legacy `Total-Soil Water`) and publish format-consistent row-width diagnostics from observed row field counts (no sentinel placeholder widths). Missing alias continuity or placeholder-only width diagnostics is invalid evidence. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-025 | SIMIMPL16 replay contract-derived test-coverage invariant: Tier-A replay promotability claims must be backed by contract-derived tests that enforce span overlap closure (`common_row_count > 0` with no unresolved baseline-only/candidate-only key residuals for promotable lanes), simulation-year key-domain alignment, `Total-Soil` alias continuity, strict-lane skip compensation for parquet lanes, and conversion-derived dat provenance row-consistency guards. Missing/failed closure tests are non-authoritative evidence. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-026 | SIMIMPL18 day-key rain/snow partition and publication-source invariant: WB13 day-key `RM` must be derived from runtime liquid input (`rain + melt`) rather than direct precipitation passthrough, and published `Snow-Water`/hydout-equivalent snow storage values must derive from runtime snow state (`snow.runtime_swe`) instead of static sidecar controls (`snow.options.ssd`). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-027 | SIMIMPL18 storage-state mutation invariant: published WB13 storage terms (`Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`) must be runtime-state-derived and mutable across multi-day forcing; invariant publication of the full storage tuple under non-zero forcing/thermal variation is invalid and indicates static-parameter publication leakage. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -206,6 +208,8 @@ lateral/drainage).
 | `INV-WATBAL-023` | runtime + governance | Strict-lane policy classifier and candidate-source provenance gate at replay staging boundary | Typed hard error / explicit `HOLD` (`HS-SIMOUT-E-001`) when strict/parquet lane policy or candidate source class is missing/ambiguous; conversion-derived dat evidence remains non-promotable for final Tier-A closure | Tier-A replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-024` | runtime + governance | Parquet semantic alias and width-diagnostic validator at semantic report publication boundary | Typed hard error / explicit `HOLD` (`HS-SIMOUT-E-001`) when required alias continuity (`Total-Soil`/`Total-Soil Water`) is unresolved or width diagnostics use placeholder sentinel classes | Tier-A replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-025` | governance | Contract-derived replay closure-test validator at parity evidence gate | Typed hard error / explicit `HOLD` (`HS-SIMOUT-E-001`) when required SIMIMPL13 blind-spot closure tests are missing/failing, including conversion-derived dat row-consistency and strict-lane compensation coverage | Tier-A replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-026` | runtime | WB13 row assembler + hydout-equivalent publication mapper | Typed hard error on precipitation passthrough partition errors (`RM` sourced from raw `P` under snow-active cold branch) or when `Snow-Water` publication aliases static control `snow.options.ssd` rather than runtime SWE | Tier-A hydrology publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-027` | runtime + governance | Multi-day WB13 storage tuple continuity checker | Typed hard error / explicit `HOLD` when all published storage terms remain invariant across non-zero forcing and thermal transitions, indicating static publication leakage | Tier-A hydrology mutation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -286,6 +290,8 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 - Replay staging omits explicit strict/parquet lane-policy classification or omits candidate source-class provenance (`native-runtime-dat`, `conversion-derived-dat`, `native-runtime-parquet`) (`INV-WATBAL-023`). `[DIRECT][Static] + [INFERENCE][Static]`
 - Semantic comparator evidence reports unresolved `Total-Soil` alias continuity or placeholder-only parquet width diagnostics (`INV-WATBAL-024`). `[DIRECT][Static] + [INFERENCE][Static]`
 - Replay promotability evidence is asserted without contract-derived closure tests for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency classification (`INV-WATBAL-025`). `[DIRECT][Static] + [INFERENCE][Static]`
+- WB13/hydout publication maps `Snow-Water` to static sidecar controls (`snow.options.ssd`) rather than runtime snow-state surfaces (`snow.runtime_swe`) (`INV-WATBAL-026`). `[DIRECT][Static] + [INFERENCE][Static]`
+- Published storage tuple (`Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`) remains invariant under non-zero forcing and thermal transitions (`INV-WATBAL-027`). `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -329,6 +335,16 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   continuity checks, and conversion-derived dat row-consistency provenance
   gating before promotable Tier-A claims are emitted.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-013: WB13 publication producers must emit day-key `RM` from
+  runtime liquid partition (`rain + melt`) and derive `Snow-Water` from runtime
+  SWE state mapping; static sidecar controls are non-authoritative for dynamic
+  storage publication.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-014: Multi-day publication producers must preserve dynamic
+  mutation of storage-state surfaces (`Total-Soil`, `frozwt`, `Snow-Water`,
+  `SoilWaterTotal`) when forcing/thermal drivers vary and must surface typed
+  hard-fail evidence for static publication leakage.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -361,6 +377,8 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | SIMIMPL15 strict-lane policy and source-provenance closure (`INV-WATBAL-023`) | replay staging + provenance manifest boundary | Hard error / `HOLD` when strict/parquet lane policy or candidate source classification is absent/ambiguous; conversion-derived dat strict evidence is explicitly non-promotable for final Tier-A closure | Tier-A replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL15 parquet alias/diagnostic continuity closure (`INV-WATBAL-024`) | semantic comparator report publication boundary | Hard error / `HOLD` when `Total-Soil` alias continuity is unresolved or parquet width diagnostics are placeholder-based instead of observed-width based | Tier-A replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL16 replay contract-derived test-coverage closure (`INV-WATBAL-025`) | replay governance/test evidence boundary | Hard error / `HOLD` when closure tests for span/key overlap, strict-lane compensation, alias continuity, or conversion-derived dat row-consistency are missing/failing | Tier-A replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL18 day-key partition/publication-source closure (`INV-WATBAL-026`) | WB13 day-key publication + hydout-equivalent mapping boundary | Hard error when `RM` is sourced from raw precipitation passthrough under snow-active cold branches or when `Snow-Water` publication leaks static sidecar controls | Tier-A hydrology publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL18 storage-state mutation closure (`INV-WATBAL-027`) | multi-day WB13 storage publication boundary | Hard error / `HOLD` when storage tuple publication is invariant across non-zero forcing/thermal variation and runtime mutation closure is not demonstrable | Tier-A hydrology mutation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -956,6 +974,22 @@ canonical order:
 5. Alias continuity tests must preserve `Total-Soil` investigation lineage
    across accepted parquet alias forms without regressing required diagnostics.
 
+## SIMIMPL18 Rain/Snow Partition and Storage-State Mutation Closure Addendum
+
+1. WB13 day-key publication must treat `RM` as runtime liquid input
+   (`rain + melt`) and must not publish direct precipitation passthrough under
+   cold all-snow partition branches.
+2. `Snow-Water` publication aliases must be runtime-state-derived from
+   `snow.runtime_swe`; publishing static sidecar control (`snow.options.ssd`)
+   as dynamic snow storage is invalid.
+3. Hydout-equivalent storage publication (`Total-Soil`, `frozwt`,
+   `Snow-Water`, `SoilWaterTotal`) must originate from mutable runtime state
+   surfaces and preserve day-to-day mutation under varying forcing.
+4. Baseline/candidate parity closure artifacts must include explicit first-day
+   partition diagnostics (`P`, `RM`, `Snow-Water`, `Total-Soil`, `frozwt`,
+   `SoilWaterTotal`) plus multi-day storage mutation diagnostics to prevent
+   re-introducing static-parameter publication leakage.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1003,3 +1037,4 @@ canonical order:
 | `2026-05-25` | `31` | `Codex` | SIMIMPL14 amendment: added continuous runner span/key closure invariant (`INV-WATBAL-022`) requiring full climate-span day progression, carried-state daily lifecycle execution, simulation-year WB13 key mapping, monotonic `sim_day_index`, and manifest continuity assertions for replay-overlap readiness. |
 | `2026-05-25` | `32` | `Codex` | SIMIMPL15 amendment: added strict/parquet lane-policy + candidate-source provenance closure invariants (`INV-WATBAL-023`), parquet semantic alias/width diagnostic continuity invariant (`INV-WATBAL-024`), and explicit replay-tooling obligations for non-promotable conversion-derived dat strict evidence classification. |
 | `2026-05-25` | `33` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-WATBAL-025`) and explicit producer/governance obligations for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency test enforcement. |
+| `2026-05-25` | `34` | `Codex` | SIMIMPL18 amendment: added day-key rain/snow partition and publication-source closure invariant (`INV-WATBAL-026`), storage-state mutation invariant (`INV-WATBAL-027`), producer obligations for runtime-derived `RM`/`Snow-Water` publication, and addendum authority for first-day + multi-day storage diagnostics. |

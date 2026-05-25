@@ -26,6 +26,8 @@ CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT = "conversion-derived-dat"
 CANDIDATE_SOURCE_NATIVE_RUNTIME_PARQUET = "native-runtime-parquet"
 
 SEMANTIC_REPORT_SCHEMA_VERSION = "pl14s-semantic-wat-v2"
+BASELINE_YEAR_POLICY_PASSTHROUGH = "passthrough"
+BASELINE_YEAR_POLICY_REQUIRE_EXPECTED_COMMON = "require-expected-common"
 
 ALLOWED_CANDIDATE_SOURCE_CLASSES = {
     ".dat": {
@@ -115,6 +117,96 @@ def load_semantic_summary(path: Path) -> dict:
         "investigation_columns_used": comparison.get("investigation_columns_used", []),
         "investigation_columns_missing": comparison.get("investigation_columns_missing", []),
         "baseline_only_columns": comparison.get("baseline_only_columns", []),
+    }
+
+
+def parse_dat_rows_for_policy(path: Path) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for line in path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        parts = line.strip().split()
+        if len(parts) not in (20, 25):
+            continue
+        try:
+            key = [float(parts[index]) for index in (0, 1, 2)]
+        except ValueError:
+            continue
+        if not all(value.is_integer() for value in key):
+            continue
+        rows.append(parts)
+    return rows
+
+
+def write_dat_rows(path: Path, rows: list[list[str]]) -> None:
+    path.write_text("".join(" ".join(row) + "\n" for row in rows), encoding="utf-8")
+
+
+def apply_baseline_year_policy(
+    baseline_wat: Path,
+    policy: str,
+    expected_common_row_count: int | None,
+    investigation_root: Path,
+) -> tuple[Path, dict]:
+    if policy == BASELINE_YEAR_POLICY_PASSTHROUGH:
+        return baseline_wat, {
+            "policy_applied": False,
+            "policy_mode": policy,
+            "row_count_before": None,
+            "row_count_after": None,
+            "replicated_years": None,
+            "materialized_path": str(baseline_wat),
+        }
+
+    rows = parse_dat_rows_for_policy(baseline_wat)
+    if not rows:
+        raise RuntimeError(
+            "baseline-year-policy requires parsed baseline rows but none were found"
+        )
+    if expected_common_row_count is None:
+        raise RuntimeError(
+            "--expected-common-row-count is required when baseline-year-policy is "
+            f"{BASELINE_YEAR_POLICY_REQUIRE_EXPECTED_COMMON}"
+        )
+    if expected_common_row_count <= 0:
+        raise RuntimeError("--expected-common-row-count must be a positive integer")
+    if expected_common_row_count % len(rows) != 0:
+        raise RuntimeError(
+            "baseline-year-policy cannot derive integer replication factor: "
+            f"expected_common_row_count={expected_common_row_count}, baseline_rows={len(rows)}"
+        )
+
+    replicated_years = expected_common_row_count // len(rows)
+    if replicated_years < 1:
+        raise RuntimeError(
+            "baseline-year-policy derived invalid replication factor "
+            f"{replicated_years} from expected_common_row_count={expected_common_row_count}"
+        )
+
+    if replicated_years == 1:
+        return baseline_wat, {
+            "policy_applied": False,
+            "policy_mode": policy,
+            "row_count_before": len(rows),
+            "row_count_after": len(rows),
+            "replicated_years": replicated_years,
+            "materialized_path": str(baseline_wat),
+        }
+
+    expanded_rows: list[list[str]] = []
+    for sim_year in range(1, replicated_years + 1):
+        for source_row in rows:
+            row = list(source_row)
+            row[2] = str(sim_year)
+            expanded_rows.append(row)
+
+    materialized_path = investigation_root / "baseline_wat_year_policy.dat"
+    write_dat_rows(materialized_path, expanded_rows)
+    return materialized_path, {
+        "policy_applied": True,
+        "policy_mode": policy,
+        "row_count_before": len(rows),
+        "row_count_after": len(expanded_rows),
+        "replicated_years": replicated_years,
+        "materialized_path": str(materialized_path),
     }
 
 
@@ -217,6 +309,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--strict-json", type=str, default="h5_wat_strict_comparator.json")
     parser.add_argument("--semantic-json", type=str, default="h5_wat_semantic_comparator.json")
     parser.add_argument("--tolerance-config", type=Path, default=Path("tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json"))
+    parser.add_argument(
+        "--baseline-year-policy",
+        type=str,
+        default=BASELINE_YEAR_POLICY_PASSTHROUGH,
+        choices=[
+            BASELINE_YEAR_POLICY_PASSTHROUGH,
+            BASELINE_YEAR_POLICY_REQUIRE_EXPECTED_COMMON,
+        ],
+    )
+    parser.add_argument(
+        "--expected-common-row-count",
+        type=int,
+        default=None,
+    )
     return parser.parse_args()
 
 
@@ -262,6 +368,17 @@ def main() -> None:
         raise SystemExit(f"baseline replay failed with return code {baseline_run['returncode']}")
 
     baseline_wat = find_single(baseline_lane_root, "H*.wat.dat")
+    baseline_wat_for_compare, baseline_year_policy_materialization = (
+        apply_baseline_year_policy(
+            baseline_wat,
+            args.baseline_year_policy,
+            args.expected_common_row_count,
+            investigation_root,
+        )
+    )
+    if baseline_wat_for_compare != baseline_wat:
+        shutil.copy2(baseline_wat_for_compare, baseline_wat)
+        baseline_wat_for_compare = baseline_wat
 
     candidate_format = args.candidate_wat.suffix.lower()
     lane_policy = strict_lane_policy(candidate_format)
@@ -324,7 +441,7 @@ def main() -> None:
         sys.executable,
         str(semantic_script),
         "--baseline-wat",
-        str(baseline_wat),
+        str(baseline_wat_for_compare),
         "--candidate-wat",
         str(candidate_wat_for_compare),
         "--report-json",
@@ -337,6 +454,30 @@ def main() -> None:
         raise SystemExit(f"semantic comparator failed with return code {semantic_exec['returncode']}")
     semantic_summary = load_semantic_summary(semantic_json_path)
     strict_equivalence_blockers = semantic_strict_equivalence_blockers(semantic_summary)
+    common_row_count = int(semantic_summary["common_row_count"])
+    baseline_year_policy_blockers: list[str] = []
+
+    expected_common_row_count = args.expected_common_row_count
+    if expected_common_row_count is not None:
+        if expected_common_row_count <= 0:
+            raise SystemExit(
+                "--expected-common-row-count must be a positive integer when provided"
+            )
+        if common_row_count != expected_common_row_count:
+            baseline_year_policy_blockers.append(
+                "common-row-count mismatch under baseline year policy: "
+                f"expected {expected_common_row_count}, observed {common_row_count}"
+            )
+
+    full_span_policy_ready = not baseline_year_policy_blockers
+    if (
+        args.baseline_year_policy == BASELINE_YEAR_POLICY_REQUIRE_EXPECTED_COMMON
+        and not full_span_policy_ready
+    ):
+        raise SystemExit(
+            "baseline-year-policy requirements not satisfied: "
+            + "; ".join(baseline_year_policy_blockers)
+        )
 
     strict_equivalent_ready = not strict_equivalence_blockers
     if lane_policy["mode"] == STRICT_LANE_POLICY_STRICT_EQUIVALENT_REQUIRED and not strict_equivalent_ready:
@@ -370,8 +511,9 @@ def main() -> None:
             "run_file": args.baseline_run_file,
             "source_runs_dir": str(source_runs_dir),
             "baseline_lane_root": str(baseline_lane_root),
-            "baseline_wat": str(baseline_wat),
-            "baseline_wat_sha256": sha256_file(baseline_wat),
+            "baseline_wat": str(baseline_wat_for_compare),
+            "baseline_wat_sha256": sha256_file(baseline_wat_for_compare),
+            "baseline_year_policy_materialization": baseline_year_policy_materialization,
         },
         "candidate": {
             "input_wat": str(args.candidate_wat),
@@ -392,6 +534,10 @@ def main() -> None:
                 args.candidate_surface_source_class
                 != CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT
             ),
+            "baseline_year_policy": args.baseline_year_policy,
+            "expected_common_row_count": expected_common_row_count,
+            "full_span_policy_ready": full_span_policy_ready,
+            "full_span_policy_blockers": baseline_year_policy_blockers,
             "conversion_source_row_consistency_ready": (
                 conversion_source_row_consistency_ready
             ),

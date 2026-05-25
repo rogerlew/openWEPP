@@ -32,6 +32,9 @@
   under the current package or open a new one.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
+- Do not implement provisional, surrogate, or heuristic process-physics math in production kernel/runtime publication paths.
+- For legacy migration scope, required implementation target is baseline-authoritative physics migration from `/workdir/wepp-forest_260430_baseline` into openWEPP architecture, not behavioral approximation.
+- If baseline-authoritative process physics is not yet ported, keep disposition in `HOLD` and open a follow-on package; do not close gaps with temporary formulas.
 - Do not create or switch git branches unless the user explicitly asks.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
 - For kernel-affecting behavior (including runtime projection that controls kernel branches), treat canonical `SC-*` contracts as implementation authority and satisfy:
@@ -94,6 +97,10 @@ requirement, not optional package style guidance.
   `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` unless explicitly justified.
 - Do not invent physics: every equation, constant, guard, and invariant must
   trace to canonical contract text plus provenance citations.
+- Migration completeness is required for touched process families (for example
+  ET, infiltration, snow/frost, runoff, routing): do not merge or disposition
+  as complete with placeholder/proxy equations when baseline-authoritative
+  routines are known and in scope for migration.
 - Preserve variable naming continuity with legacy WEPP symbols; when runtime
   names differ, record explicit alias mappings in the relevant `SC-*` files.
 
@@ -166,6 +173,8 @@ scope.
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.
+- Explicit prohibition on heuristic/proxy process-physics substitutions in
+  production code for migration packages.
 - Dual review and dual verification requirements where applicable.
 - Autonomous execution expectation for the full assigned scope (no user
   intervention unless hard-blocked).
@@ -227,6 +236,9 @@ GIS, climate, and run state. Do not duplicate wepppy concerns in this repo.
   default to the pinned baseline unless explicitly justified.
 - Do not invent physics. Every kernel constant and invariant must trace to a
   citation or explicit physical rationale.
+- For migration packages, process-physics implementation closure means porting
+  baseline-authoritative routines into openWEPP architecture with explicit
+  provenance mapping; approximations are not acceptable as final closure.
 - Variable naming continuity is required in science contracts: default to
   `wepp-forest`/legacy WEPP symbols for canonical variable tables and equations;
   when openWEPP boundary names differ, provide explicit alias mappings rather

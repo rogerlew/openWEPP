@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -104,6 +104,7 @@ Out of scope:
 | INV-CLIMATE-006 | Radiation bound invariant: generated `RA` satisfies `0.05 * RAmax <= RA <= RAmax`. | hard-fail | REF-CLIMATE-CH2-SOLAR | `[DIRECT][Static]` |
 | INV-CLIMATE-007 | Coupling payload completeness: forcing payloads needed by Chapter-3 hourly winter processes, Chapter-4 runoff partition, Chapter-5 water-balance/ET, and Chapter-12 irrigation concurrent-event logic must be emitted in required units and sequence completeness. | hard-fail | REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-CH5-COUPLING, REF-CLIMATE-CH12-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-008 | Explicit model-limit governance invariant: depth-duration-frequency sensitivity limitations, tentative duration/peak equations, and unresolved multi-storm-per-day behavior must remain explicit and cannot be silently treated as closed science. | governance-fail | REF-CLIMATE-CH2-LIMIT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-CLIMATE-009 | SIMIMPL18 replay-span precipitation continuity invariant: parity lanes claiming identical baseline/candidate forcing must publish explicit full-span precipitation-key comparability policy (`P` over declared keyed horizon). When legacy baseline execution clamps to one year, year-policy adaptation (for example span expansion/rekey policy) must be explicit and deterministic; overlap-only silent comparison is non-authoritative. | hard-fail | REF-CLIMATE-CH2-AMT, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -117,6 +118,7 @@ Out of scope:
 | `INV-CLIMATE-006` | runtime | Daily radiation bound check | Typed hard error on out-of-bound radiation value | Tier-A/B gate | `[DIRECT][Static]` |
 | `INV-CLIMATE-007` | runtime | Forcing boundary payload validator | Typed hard error on missing/invalid forcing field | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-008` | governance | Review/disposition/verification + promotion checklist | Promotion `HOLD` until limitation scope/risk is explicitly dispositioned | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-CLIMATE-009` | runtime + governance | Replay forcing-span provenance + precipitation-key parity policy validator | Typed hard error / explicit `HOLD` when full-span `P` comparability policy is absent, overlap-only by-default, or baseline-year adaptation is implicit/ambiguous | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -161,6 +163,9 @@ introduce explicit aliases.
 - Breakpoint sequences with decreasing cumulative time/depth or missing required start/end intensity conventions. `[DIRECT][Static] + [INFERENCE][Static]`
 - Disaggregation restoration that materially fails to preserve input `P` and `D`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Missing required forcing payload fields for downstream chapter consumers. `[DIRECT][Static] + [INFERENCE][Static]`
+- Replay forcing evidence that asserts parity without explicit full-span `P`
+  key-policy metadata when baseline/candidate spans differ (for example legacy
+  one-year clamp cases). `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -168,12 +173,21 @@ introduce explicit aliases.
 - OBL-CLIMATE-P-002: Enforce all `INV-CLIMATE-*` runtime guards before boundary publish. `[INFERENCE][Static]`
 - OBL-CLIMATE-P-003: Surface typed errors for invalid probability/storm/disaggregation domains; no silent defaulting. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-CLIMATE-P-004: Keep model-limit assumptions explicit in contract and disposition artifacts. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-CLIMATE-P-005: Replay forcing producers must publish explicit keyed-span
+  precipitation comparability metadata (`expected_row_count`, baseline-year
+  adaptation policy, and row-key semantics) when baseline/candidate run spans
+  differ; implicit overlap-only comparison is forbidden.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
 - OBL-CLIMATE-C-001: Winter, runoff, ET, and irrigation consumers must reject malformed forcing payloads explicitly. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-CLIMATE-C-002: Consumers must preserve forcing units and sequence semantics (daily vs breakpoint/hours) without silent reinterpretation. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-CLIMATE-C-003: Consumers must propagate invariant-violation context to orchestrator-level typed errors. `[INFERENCE][Static]`
+- OBL-CLIMATE-C-004: Replay/comparator consumers must fail closed when
+  precipitation parity claims omit explicit full-span key-policy handling for
+  baseline/candidate span mismatch.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -184,6 +198,7 @@ introduce explicit aliases.
 | Radiation domain (`INV-CLIMATE-006`) | radiation generation step | Hard error on out-of-range radiation | Tier-A/B gate | `[DIRECT][Static]` |
 | Coupling completeness (`INV-CLIMATE-007`) | forcing boundary handoff | Hard error on missing/invalid field or sequence | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Model-limit governance (`INV-CLIMATE-008`) | review/verification/promotion check | Governance `HOLD` until explicit limitation disposition | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL18 forcing-span precipitation continuity (`INV-CLIMATE-009`) | replay forcing provenance and semantic parity policy publication boundary | Hard error / `HOLD` when full-span keyed `P` policy metadata is absent or overlap-only comparison is treated as authoritative | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -394,6 +409,16 @@ states and must hard-fail with typed hydrology guard posture.
    `GAP-CLIMATE-003`..`GAP-CLIMATE-005`; those rows continue to control overall
    promotability posture for this contract.
 
+## SIMIMPL18 Replay Forcing-Span Precipitation Closure Addendum
+
+1. Parity artifacts must encode explicit precipitation-span comparability policy
+   over declared replay keys (not overlap-only by default).
+2. When legacy baseline execution clamps to one year, baseline-year adaptation
+   policy used for full-span parity evidence must be explicit, deterministic,
+   and reproducible in provenance output.
+3. Full-span precipitation (`P`) parity claims must be evaluated against that
+   explicit policy and include row-count/key comparability diagnostics.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -419,3 +444,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-23` | `8` | `Codex` | CLIM07 amendment: added explicit comparator/seam vector obligations for continuous-daily and breakpoint climate modes, parser-to-kernel namespace projection checks, and confidence-tier routing evidence requirements; reclassified `GAP-CLIMATE-001` as resolved in openWEPP scope. |
 | `2026-05-23` | `9` | `Codex` | CLIM08 governance closeout: added seam HOLD-closure mapping to CLIM02/CLIM07 evidence and clarified that seam closeout does not retire non-seam promotability gaps (`GAP-CLIMATE-003`..`GAP-CLIMATE-005`). |
 | `2026-05-25` | `10` | `Codex` | SIMIMPL14 amendment: clarified schedule-key continuity authority so climate day/year keys progress deterministically across full continuous-run spans used by replay publication and irrigation-coupled forcing consumers. |
+| `2026-05-25` | `11` | `Codex` | SIMIMPL18 amendment: added forcing-span precipitation continuity invariant (`INV-CLIMATE-009`) and explicit producer/consumer obligations requiring deterministic full-span `P` comparability policy publication when legacy baseline span clamps require adaptation. |

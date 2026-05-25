@@ -594,6 +594,18 @@ Authorized packages:
   - Purpose: execute SIMIMPL17 by running final Tier-A strict/semantic replay
     reruns after SIMIMPL14/15/16 closure and publishing evidence-backed
     hold-lift disposition against `SIMIMPL13-CRIT-001..008`.
+- `20260525-simimpl18-rain-snow-partition-and-storage-state-mutation-closure-001/`
+  - Purpose: execute SIMIMPL18 by closing first-day rain/snow partition
+    divergence and restoring dynamic winter/soil storage-state mutation under
+    identical baseline/candidate inputs, including static-parameter publication
+    leak closure, baseline-year span policy closure, and 1095-row precipitation
+    parity evidence, using contract-first sequencing and replay rerun evidence.
+- `20260525-simimpl19-rm-snow-water-baseline-authoritative-closure-001/`
+  - Purpose: execute SIMIMPL19 by implementing baseline-authoritative `RM` and
+    `Snow-Water` closure under identical baseline/candidate inputs, including
+    rain/snow partition parity, runtime-SWE publication (no static-parameter
+    leak), contract-derived test closure, and Tier-A rerun disposition
+    evidence.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

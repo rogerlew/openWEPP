@@ -2,12 +2,14 @@ use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{Mutex, OnceLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use openwepp_comparator_metadata::{
     COMPMETA_HIGH_CONFIDENCE_SINGLE_OFE_DAILY_MESSAGE_ID, ComparatorConfidenceTier,
     ComparatorSurfaceClass, ComparatorTierRoutingRequest, route_comparator_tier_metadata,
 };
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
 
 const PL14S_SEMANTIC_COMPARATOR_SCRIPT: &str =
     include_str!("../../tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py");
@@ -135,12 +137,17 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
         &[
             "\"suite_schema_version\": \"pl14s-legacy-suite-v2\"",
             "--candidate-surface-source-class",
+            "--baseline-year-policy",
+            "--expected-common-row-count",
             "\"strict_lane_policy\"",
             "\"strict-equivalent-required\"",
             "\"native-runtime-dat\"",
             "\"conversion-derived-dat\"",
             "\"native-runtime-parquet\"",
             "\"common_row_count\"",
+            "\"baseline_year_policy\"",
+            "\"expected_common_row_count\"",
+            "\"full_span_policy_ready\"",
             "\"conversion_source_row_consistency_ready\"",
             "\"conversion_source_row_consistency_blockers\"",
             "semantic_summary = load_semantic_summary",
@@ -237,4 +244,171 @@ fn pl14s_contract_conformance_rejects_duplicate_row_keys_in_semantic_lane_inputs
     );
 
     let _ = fs::remove_dir_all(&temp_dir);
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Wb13Snapshot {
+    p: f64,
+    rm: f64,
+    total_soil: f64,
+    frozwt: f64,
+    snow_water: f64,
+    soil_water_total: f64,
+}
+
+#[test]
+fn simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_storage() {
+    let report = execute_simimpl18_fixture_run("simimpl18_partition");
+    let rows = load_wb13_rows(&report);
+    assert!(rows.len() >= 2, "expected at least two WB13 rows");
+
+    let day1 = rows[0];
+    assert!(
+        (day1.p - 4.4).abs() < 1.0e-6,
+        "fixture day-1 precipitation should be 4.4 mm"
+    );
+    assert!(
+        day1.rm.abs() < 1.0e-6,
+        "cold all-snow day must publish RM=0; observed {}",
+        day1.rm
+    );
+    assert!(
+        (day1.snow_water - 4.4).abs() < 1.0e-6,
+        "day-1 Snow-Water must follow runtime SWE accumulation (4.4 mm), not static control; observed {}",
+        day1.snow_water
+    );
+}
+
+#[test]
+fn simimpl18_contract_requires_multi_day_storage_state_mutation() {
+    let report = execute_simimpl18_fixture_run("simimpl18_storage_mutation");
+    let rows = load_wb13_rows(&report);
+    assert!(rows.len() >= 2, "expected at least two WB13 rows");
+
+    let day1 = rows[0];
+    let day2 = rows[1];
+
+    let invariant_tuple = (day1.total_soil - day2.total_soil).abs() < 1.0e-9
+        && (day1.frozwt - day2.frozwt).abs() < 1.0e-9
+        && (day1.snow_water - day2.snow_water).abs() < 1.0e-9
+        && (day1.soil_water_total - day2.soil_water_total).abs() < 1.0e-9;
+
+    assert!(
+        !invariant_tuple,
+        "published storage tuple must mutate across varying forcing/thermal days"
+    );
+}
+
+fn execute_simimpl18_fixture_run(prefix: &str) -> PathBuf {
+    let _execution_guard = runner_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let source_fixture_dir = repo_root()
+        .join("tests")
+        .join("fixtures")
+        .join("cli01")
+        .join("hillslope_run_dir");
+    let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
+
+    let climate_path = temp_run_dir.join("case.cli");
+    let climate = fs::read_to_string(&climate_path).expect("fixture climate should be readable");
+    let climate = climate
+        .replace(
+            "1 1 2000 10.0 2.0 0.25 3.0 12.0 2.0 200.0 3.0 180.0 -1.0",
+            "1 1 2000 4.4 2.0 0.25 3.0 -1.6 -14.6 200.0 3.0 180.0 -1.0",
+        )
+        .replace(
+            "2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0",
+            "2 1 2000 0.0 0.0 0.0 0.0 12.0 2.0 190.0 2.5 170.0 -2.0",
+        );
+    fs::write(&climate_path, climate).expect("modified climate should be writable");
+
+    let run_file_path = temp_run_dir.join("case.run");
+    let runfile_payload = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "simimpl18-contract-fixture"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "output/H5.hbp"
+loss = "output/H5.loss.json"
+wat = "output/H5.wat.parquet"
+"#;
+    fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
+
+    let output_dir = temp_run_dir.join("output");
+    let report = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: temp_run_dir.clone(),
+            run_file: PathBuf::from("case.run"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: true,
+            manifest_path: None,
+        },
+        &["openwepp-cli-hill".to_string()],
+    )
+    .expect("simimpl18 fixture run should execute");
+
+    report.output_pass
+}
+
+fn load_wb13_rows(pass_path: &Path) -> Vec<Wb13Snapshot> {
+    let pass_text = fs::read_to_string(pass_path).expect("pass output should be readable");
+    pass_text
+        .lines()
+        .filter_map(|line| {
+            let tokens: Vec<&str> = line.split_whitespace().collect();
+            if tokens.len() != 25 {
+                return None;
+            }
+            let parse = |index: usize| tokens[index].parse::<f64>().ok();
+            Some(Wb13Snapshot {
+                p: parse(3)?,
+                rm: parse(4)?,
+                total_soil: parse(13)?,
+                frozwt: parse(14)?,
+                snow_water: parse(15)?,
+                soil_water_total: parse(20)?,
+            })
+        })
+        .collect()
+}
+
+fn runner_execution_lock() -> &'static Mutex<()> {
+    static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    RUN_LOCK.get_or_init(|| Mutex::new(()))
+}
+
+fn copy_fixture_to_temp(source_dir: &Path, prefix: &str) -> PathBuf {
+    let stamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after unix epoch")
+        .as_nanos();
+    let destination = env::temp_dir().join(format!("{prefix}_{stamp}"));
+    copy_dir_recursive(source_dir, &destination);
+    destination
+}
+
+fn copy_dir_recursive(source: &Path, destination: &Path) {
+    fs::create_dir_all(destination).expect("destination directory should be creatable");
+    for entry in fs::read_dir(source).expect("source directory should be readable") {
+        let entry = entry.expect("directory entry should be readable");
+        let source_path = entry.path();
+        let destination_path = destination.join(entry.file_name());
+        if source_path.is_dir() {
+            copy_dir_recursive(&source_path, &destination_path);
+        } else {
+            fs::copy(&source_path, &destination_path).expect("file copy should succeed");
+        }
+    }
 }

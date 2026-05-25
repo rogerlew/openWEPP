@@ -68,6 +68,12 @@ authority location.
    - canonical contract symbols default to `wepp-forest` / legacy WEPP names,
    - if openWEPP boundary names differ, contracts must include explicit alias
      mappings from canonical symbols to boundary/API field names.
+8. Legacy-migration process-physics fidelity is mandatory:
+   - production kernel/runtime implementations for in-scope migrated physics
+     must port baseline-authoritative behavior from
+     `/workdir/wepp-forest_260430_baseline`,
+   - surrogate/proxy/heuristic formulas are not promotable closure unless
+     explicitly documented as non-promotable research branches under `HOLD`.
 
 ## Required File Layout Per Contract Cycle
 
@@ -197,6 +203,9 @@ Contract revision is promotable only if all conditions are true:
 5. Remaining open items are listed in the gap register with non-promotable
    labeling when applicable.
 6. No invariant is left without a declared guard mapping and enforcement path.
+7. For legacy migration packages, touched process-physics routines include
+   explicit provenance mapping evidence from baseline source
+   (file/function/line scope) to openWEPP implementation surfaces.
 
 If any condition fails, disposition is `HOLD`.
 
