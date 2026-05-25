@@ -66,6 +66,37 @@ fn compatibility_mode_accepts_missing_datver_header() {
 }
 
 #[test]
+fn strict_mode_rejects_shared_geometry_multi_ofe_form() {
+    let error = parse_slope_file(
+        &fixture_path("compat_shared_geom_multi_ofe.slp"),
+        SlopeParserOptions::strict(),
+    )
+    .expect_err("strict mode must reject shared-geometry compatibility form");
+
+    assert!(matches!(
+        error,
+        SlopeParserError::TokenParseError { .. } | SlopeParserError::RecordCountError { .. }
+    ));
+}
+
+#[test]
+fn compatibility_mode_accepts_shared_geometry_multi_ofe_form() {
+    let parsed = parse_slope_file(
+        &fixture_path("compat_shared_geom_multi_ofe.slp"),
+        SlopeParserOptions::compatibility(),
+    )
+    .expect("compatibility mode should accept shared-geometry compatibility form");
+
+    assert_eq!(parsed.ofe_count, 2);
+    assert_eq!(parsed.ofes[0].distance_mode, DistanceMode::Normalized);
+    assert_eq!(parsed.ofes[1].distance_mode, DistanceMode::Normalized);
+    assert!((parsed.ofes[0].azm - 263.1992).abs() < 1e-9);
+    assert!((parsed.ofes[1].azm - 263.1992).abs() < 1e-9);
+    assert!((parsed.ofes[0].fwidth - 86.9).abs() < 1e-9);
+    assert!((parsed.ofes[1].fwidth - 86.9).abs() < 1e-9);
+}
+
+#[test]
 fn strict_mode_rejects_non_canonical_datver() {
     let src = "96.9\n1\n180 20\n2 100\n0 0.05 1 0.05\n";
     let error = parse_slope_str(src, SlopeParserOptions::strict())

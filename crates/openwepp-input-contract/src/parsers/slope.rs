@@ -259,7 +259,7 @@ pub fn parse_slope_str(
     options: SlopeParserOptions,
 ) -> Result<SlopeProfile, SlopeParserError> {
     let tokens = tokenize(contents);
-    let mut cursor = TokenCursor::new(tokens);
+    let mut cursor = TokenCursor::new(tokens.clone());
 
     if cursor.is_empty() {
         return Err(SlopeParserError::RecordCountError {
@@ -301,6 +301,69 @@ pub fn parse_slope_str(
     };
 
     let peridot_2023_3 = approx_eq(datver, SLOPE_PERIDOT_DATVER, options.abs_tolerance);
+    let data_start_index = cursor.index;
+    let mut ofes =
+        match parse_ofes_per_ofe_geometry(&mut cursor, ofe_count, peridot_2023_3, options) {
+            Ok(parsed) => parsed,
+            Err(primary_error) => {
+                if options.mode == SlopeParserMode::Compatibility && !peridot_2023_3 {
+                    let mut shared_cursor = TokenCursor {
+                        tokens: tokens.clone(),
+                        index: data_start_index,
+                    };
+                    match parse_ofes_shared_geometry(&mut shared_cursor, ofe_count, options) {
+                        Ok(shared_form) => {
+                            cursor = shared_cursor;
+                            shared_form
+                        }
+                        Err(_) => return Err(primary_error),
+                    }
+                } else {
+                    return Err(primary_error);
+                }
+            }
+        };
+
+    if options.mode == SlopeParserMode::Compatibility
+        && !peridot_2023_3
+        && !cursor.at_end_of_tokens()
+    {
+        let mut shared_cursor = TokenCursor {
+            tokens: tokens.clone(),
+            index: data_start_index,
+        };
+        if let Ok(shared_form) = parse_ofes_shared_geometry(&mut shared_cursor, ofe_count, options)
+        {
+            cursor = shared_cursor;
+            ofes = shared_form;
+        }
+    }
+
+    if let Some(extra) = cursor.next_token() {
+        return Err(SlopeParserError::RecordCountError {
+            context: format!(
+                "unexpected trailing tokens beginning at line {}, column {}",
+                extra.line, extra.column
+            ),
+        });
+    }
+
+    verify_cross_ofe_boundary_continuity(&ofes, options.abs_tolerance)?;
+
+    Ok(SlopeProfile {
+        datver,
+        datver_source,
+        ofe_count,
+        ofes,
+    })
+}
+
+fn parse_ofes_per_ofe_geometry(
+    cursor: &mut TokenCursor,
+    ofe_count: usize,
+    peridot_2023_3: bool,
+    options: SlopeParserOptions,
+) -> Result<Vec<SlopeOfe>, SlopeParserError> {
     let mut ofes = Vec::with_capacity(ofe_count);
 
     for ofe_index in 0..ofe_count {
@@ -352,92 +415,132 @@ pub fn parse_slope_str(
             None
         };
 
-        let nslpts = parse_count(
-            cursor.next_required("missing nslpts", 2 * (ofe_count - ofe_index))?,
-            "nslpts",
-            "G-SLP-004",
-            Some(ofe_index),
-        )?;
-        if nslpts < 2 {
-            return Err(SlopeParserError::FieldRangeError {
-                field: "nslpts",
-                value: nslpts as f64,
-                expected: ">= 2",
-                guard_id: "G-SLP-004",
-                ofe_index: Some(ofe_index),
-            });
-        }
-
-        let slplen = parse_f64(cursor.next_required("missing slplen", 2 * nslpts)?)?;
-        if !slplen.is_finite() || slplen <= 0.0 {
-            return Err(SlopeParserError::FieldRangeError {
-                field: "slplen",
-                value: slplen,
-                expected: "> 0 and finite",
-                guard_id: "G-SLP-004",
-                ofe_index: Some(ofe_index),
-            });
-        }
-
-        let mut points = Vec::with_capacity(nslpts);
-        for _ in 0..nslpts {
-            let xinput = parse_f64(cursor.next_required("missing xinput", 2)?)?;
-            let slpinp = parse_f64(cursor.next_required("missing slpinp", 1)?)?;
-
-            if !xinput.is_finite() {
-                return Err(SlopeParserError::FieldRangeError {
-                    field: "xinput",
-                    value: xinput,
-                    expected: "finite",
-                    guard_id: "G-SLP-006",
-                    ofe_index: Some(ofe_index),
-                });
-            }
-
-            if !slpinp.is_finite() {
-                return Err(SlopeParserError::FieldRangeError {
-                    field: "slpinp",
-                    value: slpinp,
-                    expected: "finite",
-                    guard_id: "G-SLP-006",
-                    ofe_index: Some(ofe_index),
-                });
-            }
-
-            points.push(SlopePoint { xinput, slpinp });
-        }
-
-        let distance_mode =
-            derive_distance_mode(ofe_index, slplen, &points, options.abs_tolerance)?;
-
+        let shape = parse_ofe_shape(cursor, ofe_index, ofe_count, options.abs_tolerance)?;
         ofes.push(SlopeOfe {
             index: ofe_index,
             azm,
             fwidth,
             elevation,
-            nslpts,
-            slplen,
-            distance_mode,
-            points,
+            nslpts: shape.nslpts,
+            slplen: shape.slplen,
+            distance_mode: shape.distance_mode,
+            points: shape.points,
         });
     }
 
-    if let Some(extra) = cursor.next_token() {
-        return Err(SlopeParserError::RecordCountError {
-            context: format!(
-                "unexpected trailing tokens beginning at line {}, column {}",
-                extra.line, extra.column
-            ),
+    Ok(ofes)
+}
+
+fn parse_ofes_shared_geometry(
+    cursor: &mut TokenCursor,
+    ofe_count: usize,
+    options: SlopeParserOptions,
+) -> Result<Vec<SlopeOfe>, SlopeParserError> {
+    let azm = parse_f64(cursor.next_required("missing shared azm", 2 * ofe_count)?)?;
+    let fwidth = parse_f64(cursor.next_required("missing shared fwidth", 2 * ofe_count)?)?;
+    if !fwidth.is_finite() || fwidth <= 0.0 {
+        return Err(SlopeParserError::FieldRangeError {
+            field: "fwidth",
+            value: fwidth,
+            expected: "> 0 and finite",
+            guard_id: "G-SLP-003",
+            ofe_index: None,
         });
     }
 
-    verify_cross_ofe_boundary_continuity(&ofes, options.abs_tolerance)?;
+    let mut ofes = Vec::with_capacity(ofe_count);
+    for ofe_index in 0..ofe_count {
+        let shape = parse_ofe_shape(cursor, ofe_index, ofe_count, options.abs_tolerance)?;
+        ofes.push(SlopeOfe {
+            index: ofe_index,
+            azm,
+            fwidth,
+            elevation: None,
+            nslpts: shape.nslpts,
+            slplen: shape.slplen,
+            distance_mode: shape.distance_mode,
+            points: shape.points,
+        });
+    }
 
-    Ok(SlopeProfile {
-        datver,
-        datver_source,
-        ofe_count,
-        ofes,
+    Ok(ofes)
+}
+
+#[derive(Debug)]
+struct ParsedSlopeShape {
+    nslpts: usize,
+    slplen: f64,
+    distance_mode: DistanceMode,
+    points: Vec<SlopePoint>,
+}
+
+fn parse_ofe_shape(
+    cursor: &mut TokenCursor,
+    ofe_index: usize,
+    ofe_count: usize,
+    abs_tolerance: f64,
+) -> Result<ParsedSlopeShape, SlopeParserError> {
+    let nslpts = parse_count(
+        cursor.next_required("missing nslpts", 2 * (ofe_count - ofe_index))?,
+        "nslpts",
+        "G-SLP-004",
+        Some(ofe_index),
+    )?;
+    if nslpts < 2 {
+        return Err(SlopeParserError::FieldRangeError {
+            field: "nslpts",
+            value: nslpts as f64,
+            expected: ">= 2",
+            guard_id: "G-SLP-004",
+            ofe_index: Some(ofe_index),
+        });
+    }
+
+    let slplen = parse_f64(cursor.next_required("missing slplen", 2 * nslpts)?)?;
+    if !slplen.is_finite() || slplen <= 0.0 {
+        return Err(SlopeParserError::FieldRangeError {
+            field: "slplen",
+            value: slplen,
+            expected: "> 0 and finite",
+            guard_id: "G-SLP-004",
+            ofe_index: Some(ofe_index),
+        });
+    }
+
+    let mut points = Vec::with_capacity(nslpts);
+    for _ in 0..nslpts {
+        let xinput = parse_f64(cursor.next_required("missing xinput", 2)?)?;
+        let slpinp = parse_f64(cursor.next_required("missing slpinp", 1)?)?;
+
+        if !xinput.is_finite() {
+            return Err(SlopeParserError::FieldRangeError {
+                field: "xinput",
+                value: xinput,
+                expected: "finite",
+                guard_id: "G-SLP-006",
+                ofe_index: Some(ofe_index),
+            });
+        }
+
+        if !slpinp.is_finite() {
+            return Err(SlopeParserError::FieldRangeError {
+                field: "slpinp",
+                value: slpinp,
+                expected: "finite",
+                guard_id: "G-SLP-006",
+                ofe_index: Some(ofe_index),
+            });
+        }
+
+        points.push(SlopePoint { xinput, slpinp });
+    }
+
+    let distance_mode = derive_distance_mode(ofe_index, slplen, &points, abs_tolerance)?;
+    Ok(ParsedSlopeShape {
+        nslpts,
+        slplen,
+        distance_mode,
+        points,
     })
 }
 
@@ -693,6 +796,10 @@ impl TokenCursor {
                     "{missing_context}; at least {remaining_required_tokens} more token(s) required"
                 ),
             })
+    }
+
+    fn at_end_of_tokens(&self) -> bool {
+        self.index >= self.tokens.len()
     }
 }
 

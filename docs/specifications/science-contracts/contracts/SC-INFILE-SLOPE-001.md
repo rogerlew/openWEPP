@@ -4,9 +4,9 @@ title: Slope Input Parser Contract (.slp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.2
+contract_version: 0.1.3
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-05-25T00:00:00Z
 ---
 
 # SC-INFILE-SLOPE-001 Slope Input Parser Contract
@@ -42,16 +42,18 @@ Out of scope: channel `2025.8` bundle parsing and `.slps` flowpath-bundle parsin
 | C | legacy no datver line | Strict reject, compat optional branch only. | Compatibility branch must be explicit and typed. | `[DIRECT][E-SPEC-SLP-01]` |
 | D | explicit older datver >= compatibility threshold | Compat-only candidate. | Requires explicit policy flag. | `[DIRECT][E-SPEC-SLP-01]` |
 | E | unsupported datver (< threshold or unknown) | Reject. | Emit typed `UnsupportedDatver`. | `[DIRECT][E-SPEC-SLP-01]` |
+| F | `datver=97.5` legacy shared-geometry MOFE form (`azm fwidth` emitted once before OFE shape blocks) | Strict reject. | Compatibility mode may accept only when `nelem > 1`, preserving one shared geometry tuple across OFEs with no silent shape repair. | `[DIRECT][E-WF-SLP-01]`, `[DIRECT][E-WP-SLP-01]` |
 
 ## 2. Source Grammar and Source-vs-Simulation Model
 
 ### 2.1 Source Grammar (Normative Draft)
 
 ```ebnf
-slope_file = [datver_line] nelem_line ofe_block{nelem} ;
+slope_file = [datver_line] nelem_line (ofe_block{nelem} | shared_geom_form) ;
 
 datver_line = real ;
 ofe_block = azm_fwidth_line nslpts_slplen_line slope_pairs ;
+shared_geom_form = azm_fwidth_line (nslpts_slplen_line slope_pairs){nelem} ;
 
 azm_fwidth_line = azm fwidth [elevation] ;
 nslpts_slplen_line = nslpts slplen ;
@@ -162,6 +164,10 @@ No silent parser-side correction of malformed slope input is permitted.
   - may enable explicit legacy no-datver read path;
   - may accept explicit legacy datver when `datver >= 91.5` (legacy `slpchk` threshold) and compatibility flag is enabled;
   - rejects explicit datver `< 91.5`;
+  - may accept legacy shared-geometry MOFE form where one `azm fwidth` row is
+    shared across all OFEs and only `nslpts/slplen/pairs` repeat per OFE;
+    this branch is compatibility-only and must preserve original OFE shape
+    records without parser-side slope-point repair;
   - still rejects malformed cardinality/shape violations.
 
 wepppy/wepppyo3 utility-only variants are not canonical parser authority unless explicitly ratified.
@@ -179,6 +185,7 @@ wepppy/wepppyo3 utility-only variants are not canonical parser authority unless 
 | `G-SLP-007` | cross-OFE boundary continuity with `abs_tol=1e-6` | file finalize | `SLP-E-008` |
 | `G-SLP-008` | cross-file topology closure | cross-surface validator | `SLP-E-007` |
 | `G-SLP-009` | `2023.3` metadata row arity/domain (`azm fwidth elevation`, finite elevation) | datver-conditioned OFE header parse | `SLP-E-010` |
+| `G-SLP-010` | compatibility-only shared-geometry MOFE branch requires exactly one leading geometry row and exactly `nelem` subsequent OFE shape blocks (`nslpts/slplen/pairs`) | compatibility parse branch | `SLP-E-002`/`SLP-E-006` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -198,6 +205,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-25` | `0.1.3` | MOFE07 addendum: compatibility-only authority for legacy shared-geometry `datver=97.5` multi-OFE slope form (`azm fwidth` once + repeated OFE shape blocks), plus guard linkage `G-SLP-010`. |
 | `2026-05-21` | `0.1.2` | Ratified strict-mode support for exact hillslope `datver=2023.3`; added per-OFE `elevation` metadata mapping, comma-delimited pair tolerance, and `G-SLP-009`/`SLP-E-010` coverage. |
 | `2026-05-21` | `0.1.1` | Added boundary export mapping, explicit compat datver threshold behavior, missing-file typed error class, and tolerance-aware closure policy. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE04. |

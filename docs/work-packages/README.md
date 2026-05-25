@@ -870,3 +870,7 @@ Authorized packages:
   - Purpose: execute one carved-letter MOFE hillslope semantic-parity lane by
     selecting a reasonable-closure MOFE hillslope via wepppy audit tooling and
     running openWEPP candidate/comparator execution with typed blocker capture.
+- `20260525-mofe07-carved-letter-slope-soil-parser-compatibility-001/`
+  - Purpose: close MOFE06 carved-letter parser blockers by implementing
+    contract-authorized compatibility-mode slope/soil intake support needed for
+    single-hillslope semantic parity execution.

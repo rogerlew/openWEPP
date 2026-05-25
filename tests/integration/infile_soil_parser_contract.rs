@@ -12,6 +12,10 @@ const INVALID_LAYER_ARITY_9002: &str =
 const INVALID_NON_MONOTONE_DEPTH: &str =
     include_str!("../fixtures/infile/soil/invalid_non_monotone_depth.sol");
 const ALIAS_97_0: &str = include_str!("../fixtures/infile/soil/alias_97_0.sol");
+const COMPAT_QUOTED_HEADER_7778: &str =
+    include_str!("../fixtures/infile/soil/compat_quoted_header_7778.sol");
+const COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE: &str =
+    include_str!("../fixtures/infile/soil/compat_quoted_header_7778_per_ofe_restrictive.sol");
 
 fn strict() -> SoilParserOptions {
     SoilParserOptions::default()
@@ -128,4 +132,62 @@ fn returns_sol_e_007_on_cross_file_topology_count_mismatch() {
     let err = parse_soil(VALID_97_5, options)
         .expect_err("ntemp mismatch against topology should return cross-file error");
     assert_eq!(err.code, SoilErrorCode::SolE007);
+}
+
+#[test]
+fn compatibility_accepts_quoted_7778_soil_header_form() {
+    let strict_err = parse_soil(COMPAT_QUOTED_HEADER_7778, strict())
+        .expect_err("strict should reject quoted 7778 compatibility header");
+    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+
+    let compat_options = SoilParserOptions {
+        mode: ParserMode::Compatibility,
+        allow_legacy_aliases: true,
+        expected_topology_count: None,
+        topology_scope: None,
+    };
+    let parsed = parse_soil(COMPAT_QUOTED_HEADER_7778, compat_options)
+        .expect("compatibility mode should accept quoted 7778 header");
+
+    assert_eq!(parsed.datver, SoilDatver::V7778);
+    assert_eq!(parsed.ofes.len(), 1);
+    assert_eq!(parsed.ofes[0].layers.len(), 2);
+    assert_eq!(
+        parsed.ofes[0].slid,
+        "Hummington gravelly loam, 50 to 75 percent slopes"
+    );
+    assert_eq!(parsed.ofes[0].texid, "GR-L");
+    assert!((parsed.ofes[0].avke - 0.0).abs() < 1e-12);
+}
+
+#[test]
+fn strict_rejects_quoted_7778_with_per_ofe_restrictive_rows() {
+    let strict_err = parse_soil(COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE, strict())
+        .expect_err("strict should reject per-OFE restrictive-row compatibility form");
+    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+}
+
+#[test]
+fn compatibility_accepts_quoted_7778_with_per_ofe_restrictive_rows() {
+    let compat_options = SoilParserOptions {
+        mode: ParserMode::Compatibility,
+        allow_legacy_aliases: true,
+        expected_topology_count: None,
+        topology_scope: None,
+    };
+    let parsed = parse_soil(
+        COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE,
+        compat_options,
+    )
+    .expect("compatibility mode should accept per-OFE restrictive-row form");
+
+    assert_eq!(parsed.datver, SoilDatver::V7778);
+    assert_eq!(parsed.ofes.len(), 2);
+    let restrictive = parsed
+        .restrictive_layer
+        .as_ref()
+        .expect("compatibility normalization should produce restrictive layer");
+    assert!(restrictive.slflag);
+    assert!((restrictive.ui_bdrkth_mm - 10000.0).abs() < 1e-9);
+    assert!((restrictive.kslast_mm_h - 0.001).abs() < 1e-9);
 }

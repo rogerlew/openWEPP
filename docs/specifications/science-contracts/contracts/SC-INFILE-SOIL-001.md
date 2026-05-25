@@ -4,9 +4,9 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.1
+contract_version: 0.1.4
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-05-25T00:00:00Z
 ---
 
 # SC-INFILE-SOIL-001 Soil Input Parser Contract
@@ -20,6 +20,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-SPEC-SOL-01]` `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/soil-file.spec.md` (canonical openWEPP soil input format and datver variants).
 - `[DIRECT][E-SURVEY-SOL-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (`.sol` parser coverage and legacy/runtime provenance references).
 - `[DIRECT][E-WF-SOL-01]` `/home/workdir/wepp-forest/src/infile.for` and `/home/workdir/wepp-forest/src/input.for` (legacy soil parse branches cited by survey).
+- `[DIRECT][E-WF-SOL-02]` `/workdir/wepp-forest_260430_baseline/src/input.for:475-482` (legacy parser branch for `solwpv >= 7777` reads 8 OFE-header fields through `shcrit`, omitting `avke`).
 - `[DIRECT][E-WP-SOL-01]` `/workdir/wepppy/wepp/soils/utils/wepp_soil_util.py` (`_parse_sol` parser surface cited by survey).
 - `[INFERENCE][E-PHYS-SOL-01]` Physical/common-sense invariants: positive layer depths, bounded volumetric fractions, non-negative conductivity and erodibility parameters.
 
@@ -40,6 +41,8 @@ This contract governs parser behavior for surface `infile-soil-sol` (`.sol`) and
 | `9002` | Accept. | Parse disturbed-land pre-layer controls + extended layer records. | `[DIRECT][E-SPEC-SOL-01]` |
 | `9003` | Accept. | Parse disturbed-land + burn-code variant. | `[DIRECT][E-SPEC-SOL-01]` |
 | `9005` | Accept. | Parse revegetation controls + extended layer records. | `[DIRECT][E-SPEC-SOL-01]` |
+| `7778` quoted legacy header form | Strict reject. | Compatibility mode may accept OFE header rows where `slid`/`texid` are single-quoted string fields with embedded whitespace and optional trailing `avke` omission (`avke` normalized to `0.0` when omitted). | `[DIRECT][E-WF-SOL-01]`, `[DIRECT][E-WF-SOL-02]`, `[DIRECT][E-WP-SOL-01]` |
+| `7778` per-OFE restrictive footer legacy form | Strict reject. | Compatibility mode may accept one restrictive-layer row per OFE block when all per-OFE restrictive rows are identical; normalized to a single profile restrictive-layer state. | `[DIRECT][E-WP-SOL-01]` |
 | unknown numeric | Strict reject. Compat reject unless explicitly allowlisted. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-SOL-01]` |
 
 ## 2. Source Grammar and Source-vs-Simulation Model
@@ -49,12 +52,14 @@ This contract governs parser behavior for surface `infile-soil-sol` (`.sol`) and
 ```ebnf
 sol_file = datver_line solcom_line ntemp_ksflag_line ofe_block{ntemp} [restrictive_layer_line] ;
 
-ofe_block = line4_header layer_control_line? layer_row{nsl} ;
+ofe_block = line4_header layer_control_line? layer_row{nsl} [compat_ofe_restrictive_line] ;
 
-line4_header = slid texid nsl salb sat ki kr shcrit avke ;
+line4_header = (slid texid nsl salb sat ki kr shcrit avke)
+             | (quoted(slid) quoted(texid) nsl salb sat ki kr shcrit [avke]) ;  (* quoted header form is compatibility-only *)
 layer_control_line = (ksatadj luse stext ksatfac ksatrec)
                  | (ksatadj luse burn_code stext lkeff)
                  | (ksatadj luse burn_code stext texid_enum uksat lkeff) ;
+compat_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* compatibility-only: per-OFE legacy placement *)
 ```
 
 ### 2.2 Two-Layer Model Contract
@@ -82,7 +87,7 @@ layer_control_line = (ksatadj luse stext ksatfac ksatrec)
 | `ki` | `ofe[i].ki` | `soil.ofe[i].ki_base` | kg*s/m^4 | real | ntemp | yes | all | none | `ki_base` |
 | `kr` | `ofe[i].kr` | `soil.ofe[i].kr_base` | s/m | real | ntemp | yes | all | none | `kr_base` |
 | `shcrit` | `ofe[i].shcrit` | `soil.ofe[i].tau_c_base` | N/m^2 | real | ntemp | yes | all | none | `tau_c_base` |
-| `avke` | `ofe[i].avke` | `soil.ofe[i].avke_mm_h` | mm/h | real | ntemp | yes | all | none | `avke_mm_h` |
+| `avke` | `ofe[i].avke` | `soil.ofe[i].avke_mm_h` | mm/h | real | ntemp | yes | all | compatibility-only quoted `7778` legacy form may omit trailing field, normalized to `0.0` | `avke_mm_h` |
 | `solthk` | `layer[j].solthk` | `soil.ofe[i].layers[j].depth_mm` | mm | real | sum(nsl) | yes | all | none | `depth_mm` |
 | `sand` | `layer[j].sand` | `soil.ofe[i].layers[j].sand_pct` | % | real | sum(nsl) | conditional | all | none | `sand_pct` |
 | `clay` | `layer[j].clay` | `soil.ofe[i].layers[j].clay_pct` | % | real | sum(nsl) | conditional | all | none | `clay_pct` |
@@ -110,7 +115,7 @@ layer_control_line = (ksatadj luse stext ksatfac ksatrec)
 | `lkeff` | `ofe[i].disturbed_hdr.lkeff` | `soil.ofe[i].disturbed_policy.ksat_lower_mm_h` | mm/h | real | 0..ntemp | conditional | 9003+ | none | `ksat_lower_mm_h` |
 | `texid_enum` | `ofe[i].reveg_hdr.texid_enum` | `soil.ofe[i].reveg_policy.texture_enum` | enum | int | 0..ntemp | conditional | 9005 | none | `texture_enum` |
 | `uksat` | `ofe[i].reveg_hdr.uksat` | `soil.ofe[i].reveg_policy.ksat_upper_mm_h` | mm/h | real | 0..ntemp | conditional | 9005 | none | `ksat_upper_mm_h` |
-| `slflag,ui_bdrkth,kslast` | `footer.restrictive` | `soil.restrictive_layer` | mixed | record | 0..1 | conditional | 2006.2,7777,7778,9002,9003,9005 | none | `restrictive_layer` |
+| `slflag,ui_bdrkth,kslast` | `footer.restrictive` | `soil.restrictive_layer` | mixed | record | 0..1 | conditional | 2006.2,7777,7778,9002,9003,9005 | compatibility-only `7778` legacy MOFE form may place one row per OFE; all per-OFE rows must match and normalize to one profile row | `restrictive_layer` |
 
 ## 4. Propagation Map Table
 
@@ -189,6 +194,15 @@ No silent fallback masking for invalid required inputs. `[DIRECT][E-SPEC-SOL-01]
   - reject unknown/ambiguous disturbed-land policy shapes.
 - Compatibility mode:
   - does not silently rewrite between datver variants;
+  - may accept legacy quoted OFE-header identifiers (`'slid' 'texid'`) for
+    datver forms observed in legacy MOFE stacks when tokenization is lossless;
+  - for quoted legacy `7778` forms, may accept either:
+    - 9-token headers (`slid texid nsl salb sat ki kr shcrit avke`), or
+    - 8-token headers (`slid texid nsl salb sat ki kr shcrit`) with explicit
+      compatibility normalization `avke := 0.0`;
+  - for legacy `7778` MOFE stacks, may accept restrictive-layer rows placed
+    per OFE (immediately after each OFE layer block) when all per-OFE rows are
+    identical; normalize to a single profile restrictive-layer row;
   - may allow explicitly configured legacy aliases only when row-shape mapping is lossless and documented.
 
 Unsupported forms must fail with typed errors from Section 7.
@@ -206,6 +220,8 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-007` | monotone positive `solthk`, bounded fractions | layer closure | `SOL-E-005`/`SOL-E-009` |
 | `G-SOL-008` | disturbed/reveg policy row validity | policy parse | `SOL-E-006`/`SOL-E-005` |
 | `G-SOL-009` | restrictive-layer closure | footer parse | `SOL-E-009` |
+| `G-SOL-010` | compatibility-only quoted header parse must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token legacy form (omits `avke`, normalized to `0.0`) | OFE header parse | `SOL-E-006` |
+| `G-SOL-011` | compatibility-only per-OFE restrictive-layer rows must either be absent or pairwise identical before profile-level normalization | OFE/footer compatibility parse | `SOL-E-006` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -225,5 +241,8 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-25` | `0.1.4` | MOFE07 compatibility amendment: accept legacy `7778` per-OFE restrictive-layer row placement in compatibility mode when rows are identical; normalize to one profile restrictive layer (`G-SOL-011`). |
+| `2026-05-25` | `0.1.3` | MOFE07 compatibility amendment: accept quoted legacy `7778` 8-token OFE headers missing trailing `avke`, with explicit normalization `avke := 0.0`; added baseline evidence anchor `E-WF-SOL-02`. |
+| `2026-05-25` | `0.1.2` | MOFE07 addendum: compatibility-only authority for quoted OFE header identifiers in legacy soil forms (`'slid' 'texid' ...`) with explicit guard linkage `G-SOL-010`. |
 | `2026-05-21` | `0.1.1` | Expanded per-field coverage for 7777+/9002+/9005 layer and policy fields, added boundary export mapping, and clarified `ntemp` mode-scoped topology authority. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE02. |
