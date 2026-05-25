@@ -623,6 +623,11 @@ Authorized packages:
     pre-implementation gate evidence for SIMIMPL21 WB11 ET/soil-water
     authority closures (stage-memory, root-uptake/stress lineage, ordering,
     WB13 publication aliases) before SIMIMPL23 runtime migration.
+- `20260525-simimpl23-wb11-et-full-fidelity-kernel-migration-001/`
+  - Purpose: execute SIMIMPL23 by implementing baseline-authoritative WB11 ET
+    runtime migration (`evap` + `swu` semantics) with contract-derived closure
+    evidence for stage-memory and uptake-lineage behavior under typed guards,
+    preparing downstream WB13/publication lineage closeout scope.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
