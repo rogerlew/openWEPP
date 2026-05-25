@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 22
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -132,6 +132,7 @@ Out of scope:
 | INV-SYSTEM-022 | SIMIMPL14 replay-span comparability invariant: runner publication provenance must demonstrate continuous multi-day execution closure (`executed_day_count == climate_day_count`), replay-surface row closure (`wb13_row_count == executed_day_count`), monotonic key progression (`sim_day_index = 1..N`), and simulation-year row-key semantics for `Y`; missing continuity proofs or key-domain mismatch keeps replay comparability in hard-fail/HOLD posture. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-023 | SIMIMPL15 replay-lane policy/provenance invariant: comparator suite provenance must explicitly encode strict/parquet lane policy mode and candidate source classification (`native-runtime-dat`, `conversion-derived-dat`, `native-runtime-parquet`) with deterministic no-default behavior. Missing/ambiguous policy metadata is a hard-fail/HOLD condition; conversion-derived dat strict evidence is non-promotable for final Tier-A closeout claims. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-024 | SIMIMPL15 semantic report structural-continuity invariant: parquet semantic reports must resolve required investigation alias continuity for `Total-Soil` and publish observed row-width diagnostics comparable to dat lanes; alias drift or placeholder width diagnostics is a hard-fail/HOLD evidence defect. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-025 | SIMIMPL16 replay contract-derived test-coverage invariant: system replay closeout claims must be backed by contract-derived tests covering `SIMIMPL13-TEST-001..005`, including span overlap closure, key-domain alignment, parquet alias continuity, strict-lane compensation when parquet strict is skipped, and conversion-derived dat provenance row-consistency checks. Missing/failed closure tests keep replay governance evidence non-authoritative. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -161,6 +162,7 @@ Out of scope:
 | `INV-SYSTEM-022` | runtime + governance | Continuous replay-span/key provenance closure gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when execution-day, publication-row, monotonic-key, or simulation-year key-domain continuity assertions are missing or violated | SIMIMPL replay comparability gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-023` | runtime + governance | Replay-lane policy + candidate-source provenance classifier gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when strict/parquet lane policy or candidate source classification is missing/ambiguous; conversion-derived dat strict evidence is non-promotable for final Tier-A closeout | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-024` | runtime + governance | Semantic alias and row-width structural continuity gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when `Total-Soil` alias continuity is unresolved or semantic width diagnostics use placeholder sentinel classes | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-025` | governance | Replay contract-derived closure-test coverage gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required SIMIMPL13 blind-spot closure tests are missing/failing, including strict-lane compensation and conversion-derived dat row-consistency assertions | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -212,6 +214,10 @@ explicit divergent names.
   `[DIRECT][Static] + [INFERENCE][Static]`
 - Semantic parquet evidence omits `Total-Soil` alias continuity or publishes
   placeholder-only width diagnostics (`INV-SYSTEM-024`).
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- Replay closeout evidence is asserted without contract-derived closure tests
+  for span/key overlap, strict-lane compensation, alias continuity, and
+  conversion-derived dat provenance row-consistency (`INV-SYSTEM-025`).
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
@@ -265,6 +271,12 @@ explicit divergent names.
   continuity and publish observed row-width diagnostics for parquet lanes;
   placeholder sentinel width diagnostics are non-authoritative.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-013: Replay governance/test producers must maintain and enforce
+  contract-derived closure tests for `SIMIMPL13-TEST-001..005`, including
+  span/key comparability assertions, strict-lane compensation checks, alias
+  continuity checks, and conversion-derived dat provenance row-consistency
+  gates before promotable Tier-A replay closure claims are published.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -304,6 +316,7 @@ explicit divergent names.
 | SIMIMPL14 replay-span and key-domain closure (`INV-SYSTEM-022`) | runner manifest + replay-surface publication boundary | Hard error / `HOLD` when climate-span execution, WB13 row-span, monotonic key progression, or simulation-year key-domain assertions fail | SIMIMPL replay comparability gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL15 replay-lane policy/source closure (`INV-SYSTEM-023`) | replay provenance manifest boundary | Hard error / `HOLD` when strict/parquet lane policy metadata or candidate source class is absent/ambiguous; conversion-derived dat strict evidence remains non-promotable for final Tier-A closeout | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL15 semantic alias/diagnostic structural closure (`INV-SYSTEM-024`) | semantic report publication boundary | Hard error / `HOLD` when `Total-Soil` alias continuity is unresolved or width diagnostics use placeholder sentinel classes instead of observed row widths | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL16 replay contract-derived test-coverage closure (`INV-SYSTEM-025`) | replay governance/test evidence boundary | Hard error / `HOLD` when closure tests for span/key overlap, strict-lane compensation, alias continuity, or conversion-derived dat row-consistency are missing/failing | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -493,6 +506,19 @@ Minimum WS12 integration vectors:
 5. Missing policy/source metadata or unresolved alias/diagnostic continuity is
    a hard-fail/HOLD condition under `WS-SIMOUT-E-001`.
 
+## SIMIMPL16 Replay Contract-Derived Test-Coverage Closure Addendum
+
+1. System replay governance evidence is promotable only when contract-derived
+   tests for `SIMIMPL13-TEST-001..005` are present and passing.
+2. Span/key closure tests must explicitly fail on replay row-span collapse and
+   simulation-year key-domain mismatch before comparator promotion assertions.
+3. Strict-lane governance tests must compensate for parquet strict-lane skips
+   by requiring strict-equivalent semantic evidence readiness.
+4. Conversion-derived dat provenance tests must assert row-consistency against
+   baseline replay spans before final Tier-A promotability claims.
+5. Alias continuity tests must preserve `Total-Soil` investigation lineage and
+   block regressions that reopen semantic column-mapping drift.
+
 ## EROD13 Wave-1 Active Boundary-Carry Addendum
 
 1. System integration boundaries carrying hillslope runtime outputs must
@@ -575,3 +601,4 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `19` | `Codex` | EROD15 amendment: added Wave-3 HBP boundary-carry authority for routing payload exports (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, class-indexed concentration/fraction arrays) with explicit WS10 guard-family continuity at watershed routing boundaries. |
 | `2026-05-25` | `20` | `Codex` | SIMIMPL14 amendment: added continuous replay-span/key-domain closure invariant (`INV-SYSTEM-022`) requiring full climate-span execution provenance, WB13 row-span closure, monotonic `sim_day_index`, and simulation-year key semantics for replay comparability authority. |
 | `2026-05-25` | `21` | `Codex` | SIMIMPL15 amendment: added replay-lane policy + candidate-source provenance invariant (`INV-SYSTEM-023`), semantic alias/row-width structural continuity invariant (`INV-SYSTEM-024`), and explicit producer obligations for deterministic strict/parquet policy publication and non-promotable conversion-derived dat classification. |
+| `2026-05-25` | `22` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-SYSTEM-025`) plus explicit producer/governance obligations requiring blind-spot closure tests for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency gating. |

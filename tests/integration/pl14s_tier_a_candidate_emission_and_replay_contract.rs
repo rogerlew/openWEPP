@@ -28,6 +28,12 @@ enum CandidateSourceClass {
     NativeRuntimeParquet,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ConversionSourceRowConsistencyVerdict {
+    Ready,
+    Hold,
+}
+
 fn strict_lane_mode(candidate_extension: &str) -> StrictLaneMode {
     if candidate_extension.eq_ignore_ascii_case(".dat") {
         StrictLaneMode::Required
@@ -49,6 +55,17 @@ fn candidate_source_class(
     } else {
         CandidateSourceClass::NativeRuntimeParquet
     }
+}
+
+fn conversion_derived_dat_row_consistency_verdict(
+    common_row_count: usize,
+    only_baseline_count: usize,
+    only_candidate_count: usize,
+) -> ConversionSourceRowConsistencyVerdict {
+    if common_row_count == 0 || only_baseline_count > 0 || only_candidate_count > 0 {
+        return ConversionSourceRowConsistencyVerdict::Hold;
+    }
+    ConversionSourceRowConsistencyVerdict::Ready
 }
 
 fn contains_all(haystack: &str, needles: &[&str]) -> bool {
@@ -123,6 +140,9 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
             "\"native-runtime-dat\"",
             "\"conversion-derived-dat\"",
             "\"native-runtime-parquet\"",
+            "\"common_row_count\"",
+            "\"conversion_source_row_consistency_ready\"",
+            "\"conversion_source_row_consistency_blockers\"",
             "semantic_summary = load_semantic_summary",
         ]
     ));
@@ -163,6 +183,15 @@ fn pl14s_contract_conformance_classifies_candidate_source_provenance() {
         candidate_source_class(".parquet", false),
         CandidateSourceClass::NativeRuntimeParquet
     );
+}
+
+#[test]
+fn pl14s_contract_conformance_requires_conversion_dat_row_consistency_for_evidence_readiness() {
+    let collapsed = conversion_derived_dat_row_consistency_verdict(1, 1, 0);
+    assert_eq!(collapsed, ConversionSourceRowConsistencyVerdict::Hold);
+
+    let aligned = conversion_derived_dat_row_consistency_verdict(2, 0, 0);
+    assert_eq!(aligned, ConversionSourceRowConsistencyVerdict::Ready);
 }
 
 #[test]

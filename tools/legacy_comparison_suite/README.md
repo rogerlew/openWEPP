@@ -28,6 +28,8 @@ with a default focus on hillslope water-balance semantic parity (PL14S scope).
   - emits provenance schema `pl14s-legacy-suite-v2`.
   - enforces deterministic strict-lane policy metadata and candidate source
     classification before writing provenance.
+  - enforces conversion-derived dat row-consistency checks against replay-span
+    overlap evidence before closeout readiness is emitted.
 
 ## Repo-local uv environment (replicable)
 
@@ -96,7 +98,8 @@ python3 tools/legacy_comparison_suite/run_pl14s_legacy_suite.py \
 - `--candidate-surface-source-class` is required and must be one of:
   `native-runtime-dat`, `conversion-derived-dat`, or
   `native-runtime-parquet`. `conversion-derived-dat` evidence is tagged as
-  non-promotable for final Tier-A closeout claims.
+  non-promotable for final Tier-A closeout claims and must satisfy explicit
+  row-consistency checks (`common_row_count > 0`, no unmatched baseline/candidate rows).
 - Semantic comparator evidence is required for all runs and must include:
   - row-presence deltas,
   - per-column tolerance verdicts,

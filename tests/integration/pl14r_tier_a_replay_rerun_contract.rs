@@ -19,9 +19,32 @@ enum Pl14rReplayGateVerdict {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum StrictLaneEvidenceMode {
+    StrictRequired,
+    StrictEquivalentRequired,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct ReplaySurfaceStatus {
     strict_pass: bool,
     present_in_candidate_lane: bool,
+}
+
+fn strict_lane_compensation_verdict(
+    lane_mode: StrictLaneEvidenceMode,
+    strict_compare_skipped: bool,
+    strict_equivalent_ready: bool,
+) -> Pl14rReplayGateVerdict {
+    if lane_mode == StrictLaneEvidenceMode::StrictRequired && strict_compare_skipped {
+        return Pl14rReplayGateVerdict::Hold;
+    }
+    if lane_mode == StrictLaneEvidenceMode::StrictEquivalentRequired
+        && strict_compare_skipped
+        && !strict_equivalent_ready
+    {
+        return Pl14rReplayGateVerdict::Hold;
+    }
+    Pl14rReplayGateVerdict::Pass
 }
 
 fn pl14r_replay_gate_verdict(
@@ -230,4 +253,28 @@ fn pl14r_contract_conformance_holds_when_strict_source_is_non_promotable() {
         false,
     );
     assert_eq!(non_promotable_source, Pl14rReplayGateVerdict::Hold);
+}
+
+#[test]
+fn pl14r_contract_conformance_requires_strict_equivalent_compensation_when_parquet_strict_skips() {
+    let parquet_missing_comp = strict_lane_compensation_verdict(
+        StrictLaneEvidenceMode::StrictEquivalentRequired,
+        true,
+        false,
+    );
+    assert_eq!(parquet_missing_comp, Pl14rReplayGateVerdict::Hold);
+
+    let parquet_with_comp = strict_lane_compensation_verdict(
+        StrictLaneEvidenceMode::StrictEquivalentRequired,
+        true,
+        true,
+    );
+    assert_eq!(parquet_with_comp, Pl14rReplayGateVerdict::Pass);
+}
+
+#[test]
+fn pl14r_contract_conformance_rejects_skipped_strict_lane_for_dat_mode() {
+    let dat_skipped =
+        strict_lane_compensation_verdict(StrictLaneEvidenceMode::StrictRequired, true, false);
+    assert_eq!(dat_skipped, Pl14rReplayGateVerdict::Hold);
 }

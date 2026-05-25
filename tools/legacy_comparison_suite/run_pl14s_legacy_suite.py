@@ -92,6 +92,7 @@ def load_semantic_summary(path: Path) -> dict:
 
     required_keys = [
         "semantic_pass",
+        "common_row_count",
         "only_baseline_count",
         "only_candidate_count",
         "column_stats",
@@ -106,6 +107,7 @@ def load_semantic_summary(path: Path) -> dict:
     return {
         "report_schema_version": payload.get("report_schema_version"),
         "semantic_pass": comparison["semantic_pass"],
+        "common_row_count": comparison["common_row_count"],
         "only_baseline_count": comparison["only_baseline_count"],
         "only_candidate_count": comparison["only_candidate_count"],
         "column_stat_count": len(comparison.get("column_stats", [])),
@@ -159,6 +161,37 @@ def semantic_strict_equivalence_blockers(semantic_summary: dict) -> list[str]:
         )
     if semantic_summary.get("column_stat_count", 0) <= 0:
         blockers.append("semantic comparator emitted no column statistics")
+    return blockers
+
+
+def conversion_derived_dat_row_consistency_blockers(
+    candidate_format: str,
+    source_class: str,
+    semantic_summary: dict,
+) -> list[str]:
+    if source_class != CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT:
+        return []
+
+    blockers: list[str] = []
+    if candidate_format != ".dat":
+        blockers.append(
+            "conversion-derived dat classification is valid only for .dat candidate surfaces"
+        )
+
+    common_row_count = int(semantic_summary.get("common_row_count", 0))
+    only_baseline_count = int(semantic_summary.get("only_baseline_count", 0))
+    only_candidate_count = int(semantic_summary.get("only_candidate_count", 0))
+
+    if common_row_count <= 0:
+        blockers.append("conversion-derived dat has no common keyed overlap with baseline")
+    if only_baseline_count > 0:
+        blockers.append(
+            "conversion-derived dat row-count mismatch: baseline has unmatched replay rows"
+        )
+    if only_candidate_count > 0:
+        blockers.append(
+            "conversion-derived dat row-count mismatch: candidate has unmatched replay rows"
+        )
     return blockers
 
 
@@ -312,6 +345,22 @@ def main() -> None:
             + "; ".join(strict_equivalence_blockers)
         )
 
+    conversion_source_row_consistency_blockers = (
+        conversion_derived_dat_row_consistency_blockers(
+            candidate_format,
+            args.candidate_surface_source_class,
+            semantic_summary,
+        )
+    )
+    conversion_source_row_consistency_ready = (
+        not conversion_source_row_consistency_blockers
+    )
+    if conversion_source_row_consistency_blockers:
+        raise SystemExit(
+            "conversion-derived dat row-consistency requirements not satisfied: "
+            + "; ".join(conversion_source_row_consistency_blockers)
+        )
+
     provenance = {
         "suite_schema_version": "pl14s-legacy-suite-v2",
         "baseline": {
@@ -342,6 +391,12 @@ def main() -> None:
             "strict_source_promotable_for_final_tier_a_closeout": (
                 args.candidate_surface_source_class
                 != CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT
+            ),
+            "conversion_source_row_consistency_ready": (
+                conversion_source_row_consistency_ready
+            ),
+            "conversion_source_row_consistency_blockers": (
+                conversion_source_row_consistency_blockers
             ),
         },
         "tooling": {

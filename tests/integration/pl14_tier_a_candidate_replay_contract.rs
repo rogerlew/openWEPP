@@ -23,6 +23,23 @@ const PL14_REQUIRED_INVESTIGATION_COLUMNS: [&str; 10] = [
     "SoilWaterTotal",
 ];
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ReplayOverlapGateVerdict {
+    Pass,
+    Hold,
+}
+
+fn promotable_replay_overlap_verdict(
+    common_row_count: usize,
+    only_baseline_count: usize,
+    only_candidate_count: usize,
+) -> ReplayOverlapGateVerdict {
+    if common_row_count == 0 || only_baseline_count > 0 || only_candidate_count > 0 {
+        return ReplayOverlapGateVerdict::Hold;
+    }
+    ReplayOverlapGateVerdict::Pass
+}
+
 fn seeded_wb13_surface() -> SummaryScalarSurface {
     SummaryScalarSurface::from_pairs([
         ("P", 4.40),
@@ -159,5 +176,28 @@ fn pl14_contract_conformance_requires_total_soil_in_investigation_columns() {
     assert!(
         !PL14_REQUIRED_INVESTIGATION_COLUMNS.contains(&"Total-Soil Water"),
         "legacy alias should normalize to canonical Total-Soil marker"
+    );
+}
+
+#[test]
+fn pl14_contract_conformance_requires_nonzero_replay_span_overlap_for_promotion() {
+    let aligned = promotable_replay_overlap_verdict(2, 0, 0);
+    assert_eq!(aligned, ReplayOverlapGateVerdict::Pass);
+
+    let collapsed = promotable_replay_overlap_verdict(1, 1, 0);
+    assert_eq!(
+        collapsed,
+        ReplayOverlapGateVerdict::Hold,
+        "one-row collapse versus baseline span must block promotable replay claims"
+    );
+}
+
+#[test]
+fn pl14_contract_conformance_rejects_key_domain_mismatch_before_comparator_promotion() {
+    let y_domain_mismatch = promotable_replay_overlap_verdict(0, 2, 2);
+    assert_eq!(
+        y_domain_mismatch,
+        ReplayOverlapGateVerdict::Hold,
+        "calendar-year keyed candidate rows must not promote against simulation-year baseline keys"
     );
 }

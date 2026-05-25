@@ -585,6 +585,11 @@ Authorized packages:
     across strict/semantic lanes, closing parquet alias and provenance
     classification drift, and producing deterministic cross-format parity
     evidence surfaces for SIMIMPL16/SIMIMPL17 closeout waves.
+- `20260525-simimpl16-replay-contract-derived-test-coverage-closure-001/`
+  - Purpose: execute SIMIMPL16 by closing replay contract-derived test blind
+    spots (`SIMIMPL13-TEST-001..005`) with enforceable span/key/alias/
+    provenance governance tests so SIMIMPL17 reruns operate with deterministic
+    promotion gates.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
