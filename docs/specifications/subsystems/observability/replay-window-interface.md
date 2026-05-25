@@ -1,6 +1,6 @@
 # Replay Window Interface (`OBS-REPLAY-001`)
 
-Status: draft-normative
+Status: active
 Promoted by: `20260520-obs01-observability-subsystem-foundation`
 Evidence mode: `Static`
 Ran evidence: none in OBS01 promotion
