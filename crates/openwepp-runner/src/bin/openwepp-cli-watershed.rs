@@ -38,10 +38,14 @@ use openwepp_watershed_orchestrator::{
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
 use openwepp_watershed_output::writers::write_interchange_parquet_outputs;
 use serde::Deserialize;
+use serde_json::Value;
 
 const WATERSHED_RUNFILE_SCHEMA_ID: &str = "openwepp-watershed-runfile-v1";
+const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manifest-v1";
 const DEFAULT_DTCHR_SECONDS: f64 = 3_600.0;
 const DEFAULT_NTCHR: f64 = 24.0;
+const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
+const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
 
 fn main() {
     if let Err(error) = run() {
@@ -316,6 +320,11 @@ fn run() -> Result<(), String> {
                 hillslope_id
             ));
         }
+        validate_contributor_mofe_metadata(
+            *hillslope_id,
+            hbp.nofe,
+            block.manifest_file_path.as_deref(),
+        )?;
 
         let peak = latest_event_payload
             .as_ref()
@@ -545,6 +554,8 @@ struct WatershedHillslopeBlock {
     hillslope_id: u32,
     pass_file: String,
     #[serde(default)]
+    manifest_file: Option<String>,
+    #[serde(default)]
     unit_system: Option<String>,
     #[serde(default)]
     use_existing_pass_file: Option<bool>,
@@ -553,6 +564,7 @@ struct WatershedHillslopeBlock {
 #[derive(Debug)]
 struct WatershedHillslopeBlockResolved {
     pass_file_path: PathBuf,
+    manifest_file_path: Option<PathBuf>,
 }
 
 type WatershedOutputsResolved = WatershedOutputConfig;
@@ -682,11 +694,28 @@ fn parse_watershed_runfile(
                 id = block.hillslope_id
             ));
         }
+        let manifest_file_path = resolve_optional_runfile_path(
+            run_file_path,
+            block.manifest_file.as_deref(),
+            "inputs.hillslopes_block[].manifest_file",
+        )?;
+        if let Some(path) = manifest_file_path.as_ref()
+            && !path.is_file()
+        {
+            return Err(format!(
+                "CLIWAT-E-036 hillslopes_block[{id}] manifest file '{}' is not a readable file",
+                path.display(),
+                id = block.hillslope_id
+            ));
+        }
 
         if hillslope_blocks_by_id
             .insert(
                 block.hillslope_id,
-                WatershedHillslopeBlockResolved { pass_file_path },
+                WatershedHillslopeBlockResolved {
+                    pass_file_path,
+                    manifest_file_path,
+                },
             )
             .is_some()
         {
@@ -724,6 +753,12 @@ fn parse_watershed_runfile(
             hillslope_blocks_by_id
                 .values()
                 .map(|block| file_name_string(&block.pass_file_path)),
+        );
+        excluded_files.extend(
+            hillslope_blocks_by_id
+                .values()
+                .filter_map(|block| block.manifest_file_path.as_ref())
+                .map(|path| file_name_string(path)),
         );
         excluded_files.extend(watershed_output_file_names(&runfile.outputs));
 
@@ -1026,6 +1061,140 @@ fn contributor_hillslope_ids(topology: &TopologyGraph) -> BTreeSet<u32> {
         }
     }
     ids
+}
+
+fn validate_contributor_mofe_metadata(
+    hillslope_id: u32,
+    contributor_nofe: u16,
+    manifest_file_path: Option<&Path>,
+) -> Result<(), String> {
+    if contributor_nofe > 1 {
+        let Some(path) = manifest_file_path else {
+            return Err(format!(
+                "CLIWAT-E-036 hillslope {hillslope_id} requires inputs.hillslopes_block[].manifest_file when pass nofe={contributor_nofe} > 1"
+            ));
+        };
+        validate_manifest_publication_metadata(hillslope_id, contributor_nofe, path)?;
+    } else if let Some(path) = manifest_file_path {
+        validate_manifest_publication_metadata(hillslope_id, contributor_nofe, path)?;
+    }
+
+    Ok(())
+}
+
+#[allow(clippy::too_many_lines)]
+fn validate_manifest_publication_metadata(
+    hillslope_id: u32,
+    contributor_nofe: u16,
+    manifest_file_path: &Path,
+) -> Result<(), String> {
+    let manifest_text = fs::read_to_string(manifest_file_path).map_err(|error| {
+        format!(
+            "CLIWAT-E-036 failed reading hillslope {hillslope_id} manifest_file '{}': {error}",
+            manifest_file_path.display()
+        )
+    })?;
+    let manifest: Value = serde_json::from_str(&manifest_text).map_err(|error| {
+        format!(
+            "CLIWAT-E-037 invalid JSON in hillslope {hillslope_id} manifest_file '{}': {error}",
+            manifest_file_path.display()
+        )
+    })?;
+
+    let schema = manifest
+        .pointer("/schema")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string /schema",
+                manifest_file_path.display()
+            )
+        })?;
+    if schema != HILLSLOPE_RUN_MANIFEST_SCHEMA_ID {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported schema '{}' (expected '{}')",
+            manifest_file_path.display(),
+            schema,
+            HILLSLOPE_RUN_MANIFEST_SCHEMA_ID
+        ));
+    }
+
+    let publication_policy = manifest
+        .pointer("/wb13_publication/publication_ofe_policy")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string /wb13_publication/publication_ofe_policy",
+                manifest_file_path.display()
+            )
+        })?;
+    if publication_policy != MOFE04_PUBLICATION_OFE_POLICY {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported publication_ofe_policy '{}' (expected '{}')",
+            manifest_file_path.display(),
+            publication_policy,
+            MOFE04_PUBLICATION_OFE_POLICY
+        ));
+    }
+
+    let contributor_ofe_count =
+        manifest
+            .pointer("/wb13_publication/contributor_ofe_count")
+            .and_then(Value::as_u64)
+            .ok_or_else(|| {
+                format!(
+                    "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /wb13_publication/contributor_ofe_count",
+                    manifest_file_path.display()
+                )
+            })?;
+    if contributor_ofe_count == 0 {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has contributor_ofe_count=0",
+            manifest_file_path.display()
+        ));
+    }
+    if contributor_ofe_count != u64::from(contributor_nofe) {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} contributor_ofe_count mismatch: manifest={contributor_ofe_count} vs pass_nofe={contributor_nofe}"
+        ));
+    }
+
+    let area_policy = manifest
+        .pointer("/wb13_publication/area_policy")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string /wb13_publication/area_policy",
+                manifest_file_path.display()
+            )
+        })?;
+    if area_policy != MOFE04_PUBLICATION_AREA_POLICY {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported area_policy '{}' (expected '{}')",
+            manifest_file_path.display(),
+            area_policy,
+            MOFE04_PUBLICATION_AREA_POLICY
+        ));
+    }
+
+    let publication_area_m2 = manifest
+        .pointer("/wb13_publication/publication_area_m2")
+        .and_then(Value::as_f64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing numeric /wb13_publication/publication_area_m2",
+                manifest_file_path.display()
+            )
+        })?;
+    if !publication_area_m2.is_finite() || publication_area_m2 <= 0.0 {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' invalid publication_area_m2 {} (must be finite and > 0)",
+            manifest_file_path.display(),
+            publication_area_m2
+        ));
+    }
+
+    Ok(())
 }
 
 #[allow(clippy::too_many_lines)]

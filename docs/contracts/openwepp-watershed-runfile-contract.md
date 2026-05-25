@@ -74,6 +74,23 @@ Top-level required keys:
 
 - `unit_system` (`"M"` or `"metric"` only when present)
 - `use_existing_pass_file` (`true` only when present)
+- `manifest_file` (hillslope run manifest JSON path; required when contributor
+  pass shard reports `nofe > 1`)
+
+`inputs.hillslopes_block[].manifest_file` metadata contract:
+
+- source schema: `openwepp-hillslope-run-manifest-v1`
+- required fields under `wb13_publication`:
+  - `publication_ofe_policy`
+  - `contributor_ofe_count`
+  - `area_policy`
+  - `publication_area_m2`
+- required consistency checks at watershed intake:
+  - `contributor_ofe_count == hbp.nofe`
+  - `publication_ofe_policy == "single-row-canonicalized-hillslope-aggregate"`
+  - `area_policy == "sum-ofe-geometry-area"`
+  - `publication_area_m2` finite and `> 0`
+- failures are typed hard-fail intake errors; no implicit defaults/coercion.
 
 `[inputs]` optional sidecar keys:
 
@@ -167,6 +184,7 @@ tcr = "runs/tcr.txt"
 [[inputs.hillslopes_block]]
 hillslope_id = 7
 pass_file = "output/H7.hbp"
+manifest_file = "output/openwepp_hillslope_run_manifest.json"
 unit_system = "metric"
 use_existing_pass_file = true
 

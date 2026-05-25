@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 26
+contract_version: 27
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -602,6 +602,42 @@ Minimum WS12 integration vectors:
    `sum-ofe-geometry-area` under MOFE04 and may not regress to
    primary-OFE-only assumptions when `contributor_ofe_count > 1`.
 
+## MOFE05 Watershed Contributor Metadata Intake Validation Addendum
+
+1. Watershed contributor intake authority must support per-contributor MOFE
+   publication metadata carry through `inputs.hillslopes_block[]` at CLI
+   boundary, referencing hillslope run manifest lineage when provided.
+2. Multi-OFE contributor intake (`hbp.nofe > 1`) must fail closed unless
+   contributor metadata is supplied and parseable from the declared metadata
+   source surface.
+3. Contributor metadata intake must hard-fail on missing/malformed required
+   fields:
+   - `wb13_publication.publication_ofe_policy`
+   - `wb13_publication.contributor_ofe_count`
+   - `wb13_publication.area_policy`
+   - `wb13_publication.publication_area_m2`.
+4. Contributor metadata consistency must be enforced at watershed intake:
+   - `contributor_ofe_count` must equal contributor `hbp.nofe`,
+   - `publication_ofe_policy` must remain
+     `single-row-canonicalized-hillslope-aggregate`,
+   - `area_policy` must remain `sum-ofe-geometry-area`,
+   - `publication_area_m2` must be finite and `> 0`.
+5. Metadata intake violations are typed hard-fail boundary errors and must
+   terminate before watershed routing dispatch; no silent defaults, coercion,
+   or inferred substitutions are authorized.
+
+### MOFE05 Contract-Test Vectors
+
+1. Multi-OFE contributor with missing metadata source surface hard-fails at
+   watershed intake with typed metadata-missing boundary code.
+2. Contributor metadata source with malformed or missing required publication
+   fields hard-fails at watershed intake with typed metadata-shape boundary
+   code.
+3. Contributor metadata `contributor_ofe_count` mismatch versus `hbp.nofe`
+   hard-fails at watershed intake before routing dispatch.
+4. Valid contributor metadata for multi-OFE intake passes metadata gates and
+   reaches downstream watershed execution/output boundaries.
+
 ## EROD13 Wave-1 Active Boundary-Carry Addendum
 
 1. System integration boundaries carrying hillslope runtime outputs must
@@ -693,3 +729,4 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
+| `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |

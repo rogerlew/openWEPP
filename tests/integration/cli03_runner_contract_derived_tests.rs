@@ -63,6 +63,7 @@ fn cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block() {
         "pw0_cli",
         "pw0_sol",
         "inputs.hillslopes_block",
+        "manifest_file",
         "inputs.chaninp",
         "inputs.tcr",
         "ebe_pw0",
@@ -102,6 +103,7 @@ fn cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag()
         "inputs.pw0_cli",
         "inputs.pw0_sol",
         "inputs.hillslopes_block",
+        "manifest_file",
         "outputs.loss_all_years_class_data",
         "write_watershed_interchange_outputs",
     ] {

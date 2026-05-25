@@ -204,6 +204,157 @@ fn watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior() {
     );
 }
 
+#[test]
+fn watershed_cli_mofe05_rejects_multiofe_contributor_without_manifest_metadata() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_mofe05_missing_manifest");
+    write_hbp_fixture_with_nofe(
+        run_dir.join("H1.hbp"),
+        1,
+        3,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should hard-fail when multi-OFE contributor metadata is missing"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-036"),
+        "expected MOFE05 missing-metadata intake guard code in stderr, observed: {stderr}"
+    );
+}
+
+#[test]
+fn watershed_cli_mofe05_rejects_multiofe_contributor_manifest_shape_violation() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_mofe05_manifest_shape_violation");
+    write_hbp_fixture_with_nofe(
+        run_dir.join("H1.hbp"),
+        1,
+        3,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile_with_manifest(&run_dir, &[1], true);
+    prepare_output_guard_fixture(&run_dir);
+    write_hillslope_manifest_fixture_missing_count(run_dir.join("H1.manifest.json"));
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should hard-fail malformed MOFE05 contributor metadata"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-037"),
+        "expected MOFE05 metadata-shape intake guard code in stderr, observed: {stderr}"
+    );
+}
+
+#[test]
+fn watershed_cli_mofe05_rejects_multiofe_manifest_count_mismatch() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_mofe05_manifest_count_mismatch");
+    write_hbp_fixture_with_nofe(
+        run_dir.join("H1.hbp"),
+        1,
+        3,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile_with_manifest(&run_dir, &[1], true);
+    prepare_output_guard_fixture(&run_dir);
+    write_hillslope_manifest_fixture(run_dir.join("H1.manifest.json"), 2, 3_600.0);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should hard-fail contributor metadata count mismatch"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-037"),
+        "expected MOFE05 metadata consistency guard code in stderr, observed: {stderr}"
+    );
+    assert!(
+        stderr.contains("contributor_ofe_count"),
+        "expected contributor count mismatch detail in stderr, observed: {stderr}"
+    );
+}
+
+#[test]
+fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_reaches_output_guard() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_mofe05_valid_manifest");
+    write_hbp_fixture_with_nofe(
+        run_dir.join("H1.hbp"),
+        1,
+        3,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile_with_manifest(&run_dir, &[1], true);
+    write_hillslope_manifest_fixture(run_dir.join("H1.manifest.json"), 3, 3_600.0);
+    prepare_output_guard_fixture(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should proceed past metadata intake and fail only on output guard"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("CLIWAT-E-036") && !stderr.contains("CLIWAT-E-037"),
+        "valid contributor metadata should not trigger MOFE05 intake guard codes, observed: {stderr}"
+    );
+    assert!(
+        stderr.contains("CLIWAT-E-034"),
+        "expected downstream output guard failure after valid metadata intake, observed: {stderr}"
+    );
+}
+
 fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {
     let timestamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -271,6 +422,14 @@ fn prepare_output_guard_fixture(run_dir: &Path) {
 }
 
 fn write_watershed_runfile(run_dir: &Path, hillslope_ids: &[u32]) {
+    write_watershed_runfile_with_manifest(run_dir, hillslope_ids, false);
+}
+
+fn write_watershed_runfile_with_manifest(
+    run_dir: &Path,
+    hillslope_ids: &[u32],
+    include_manifest_file: bool,
+) {
     let mut runfile_payload = String::from(
         r#"
 schema = "openwepp-watershed-runfile-v1"
@@ -290,16 +449,19 @@ chaninp = "chan.inp"
     );
 
     for hillslope_id in hillslope_ids {
-        runfile_payload.push_str(
-            format!(
-                r#"
+        let mut block = format!(
+            r#"
 [[inputs.hillslopes_block]]
 hillslope_id = {hillslope_id}
 pass_file = "H{hillslope_id}.hbp"
 "#
-            )
-            .as_str(),
         );
+        if include_manifest_file {
+            block.push_str("manifest_file = \"H");
+            block.push_str(hillslope_id.to_string().as_str());
+            block.push_str(".manifest.json\"\n");
+        }
+        runfile_payload.push_str(&block);
     }
 
     runfile_payload.push_str(
@@ -322,6 +484,35 @@ loss_all_years_class_data = "interchange/loss_pw0.all_years.class_data.parquet"
 "#,
     );
     fs::write(run_dir.join("case.run"), runfile_payload).expect("runfile should be writable");
+}
+
+fn write_hillslope_manifest_fixture(path: PathBuf, contributor_ofe_count: usize, area_m2: f64) {
+    let payload = format!(
+        r#"{{
+  "schema": "openwepp-hillslope-run-manifest-v1",
+  "wb13_publication": {{
+    "publication_ofe_policy": "single-row-canonicalized-hillslope-aggregate",
+    "contributor_ofe_count": {contributor_ofe_count},
+    "area_policy": "sum-ofe-geometry-area",
+    "publication_area_m2": {area_m2}
+  }}
+}}
+"#
+    );
+    fs::write(path, payload).expect("hillslope manifest fixture should be writable");
+}
+
+fn write_hillslope_manifest_fixture_missing_count(path: PathBuf) {
+    let payload = r#"{
+  "schema": "openwepp-hillslope-run-manifest-v1",
+  "wb13_publication": {
+    "publication_ofe_policy": "single-row-canonicalized-hillslope-aggregate",
+    "area_policy": "sum-ofe-geometry-area",
+    "publication_area_m2": 3600.0
+  }
+}
+"#;
+    fs::write(path, payload).expect("hillslope manifest fixture should be writable");
 }
 
 fn put_u8(buf: &mut Vec<u8>, value: u8) {
@@ -460,6 +651,7 @@ fn append_common_prefix(
     schema_major: u16,
     schema_minor: u16,
     hillslope_id: u32,
+    nofe: u16,
     nyear: u32,
     begin_year: i32,
     simulation_mode: u8,
@@ -489,7 +681,6 @@ fn append_common_prefix(
     file.extend_from_slice(&header);
 
     let npart = 1u16;
-    let nofe = 1u16;
     let max_layers = 1u16;
 
     put_u32(&mut file, hillslope_id);
@@ -543,6 +734,7 @@ fn scaled_i64(value: f64) -> i64 {
 }
 
 fn build_event_payload(
+    nofe: u16,
     sim_year_index: u32,
     calendar_year: i32,
     julian_day: u16,
@@ -553,7 +745,7 @@ fn build_event_payload(
     total_detachment_kg: f64,
     total_deposition_kg: f64,
 ) -> Vec<u8> {
-    let nofe = 1u32;
+    let nofe = u32::from(nofe);
     let max_layers = 1u32;
 
     let mut payload = Vec::new();
@@ -591,6 +783,7 @@ fn build_event_payload(
 
 fn build_schema1_event_fixture(
     hillslope_id: u32,
+    nofe: u16,
     concentration: f64,
     fraction: f64,
     peak_runoff_m3_s: f64,
@@ -598,8 +791,9 @@ fn build_schema1_event_fixture(
     total_detachment_kg: f64,
     total_deposition_kg: f64,
 ) -> Vec<u8> {
-    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, 1, 2004, 1);
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1);
     let payload = build_event_payload(
+        nofe,
         1,
         2004,
         1,
@@ -649,8 +843,33 @@ fn write_hbp_fixture(
     total_detachment_kg: f64,
     total_deposition_kg: f64,
 ) {
+    write_hbp_fixture_with_nofe(
+        path,
+        hillslope_id,
+        1,
+        concentration,
+        fraction,
+        peak_runoff_m3_s,
+        duration_seconds,
+        total_detachment_kg,
+        total_deposition_kg,
+    );
+}
+
+fn write_hbp_fixture_with_nofe(
+    path: PathBuf,
+    hillslope_id: u32,
+    nofe: u16,
+    concentration: f64,
+    fraction: f64,
+    peak_runoff_m3_s: f64,
+    duration_seconds: f64,
+    total_detachment_kg: f64,
+    total_deposition_kg: f64,
+) {
     let bytes = build_schema1_event_fixture(
         hillslope_id,
+        nofe,
         concentration,
         fraction,
         peak_runoff_m3_s,

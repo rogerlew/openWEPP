@@ -862,3 +862,11 @@ Authorized packages:
   - Purpose: close multi-OFE WB13/WAT publication assumptions by defining
     explicit output policy/provenance semantics and implementing deterministic
     OFE-aware publication geometry behavior for MOFE runs.
+- `20260525-mofe05-watershed-contributor-metadata-and-intake-validation-001/`
+  - Purpose: add watershed contributor MOFE metadata intake surfaces and typed
+    hard-fail validation so malformed or inconsistent contributor metadata is
+    rejected at the watershed boundary before routing execution.
+- `20260525-mofe06-single-hillslope-semantic-parity-carved-letter-001/`
+  - Purpose: execute one carved-letter MOFE hillslope semantic-parity lane by
+    selecting a reasonable-closure MOFE hillslope via wepppy audit tooling and
+    running openWEPP candidate/comparator execution with typed blocker capture.

@@ -309,6 +309,10 @@ name = "mofe04_publication_contract_authority_closure_contract"
 path = "tests/integration/mofe04_publication_contract_authority_closure_contract.rs"
 
 [[test]]
+name = "mofe05_watershed_contributor_metadata_contract_authority_closure_contract"
+path = "tests/integration/mofe05_watershed_contributor_metadata_contract_authority_closure_contract.rs"
+
+[[test]]
 name = "cli01_runner_contract_derived_tests"
 path = "tests/integration/cli01_runner_contract_derived_tests.rs"
 
