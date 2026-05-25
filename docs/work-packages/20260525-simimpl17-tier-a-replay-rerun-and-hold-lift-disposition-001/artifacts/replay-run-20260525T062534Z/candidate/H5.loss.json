@@ -1,0 +1,14 @@
+{
+  "climate_day_count": 2,
+  "executed_day_count": 2,
+  "first_day_julian": 1,
+  "first_day_year": 2000,
+  "frost_wint_red": 1,
+  "last_day_julian": 2,
+  "last_day_year": 2000,
+  "ofe_count": 1,
+  "precipitation_mm": 10000.0,
+  "run_name": "cli01-fixture-success",
+  "schema": "openwepp-hillslope-loss-v1",
+  "snow_override_applied": false
+}

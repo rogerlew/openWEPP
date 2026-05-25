@@ -1,0 +1,3 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.09s
+     Running tests/simimpl04_runner_kernel_execution_contract.rs (target/debug/deps/simimpl04_runner_kernel_execution_contract-f1abcc0f529da691)
+     Running tests/simimpl04_wb13_publication_contract.rs (target/debug/deps/simimpl04_wb13_publication_contract-8b96912e0a3d1189)

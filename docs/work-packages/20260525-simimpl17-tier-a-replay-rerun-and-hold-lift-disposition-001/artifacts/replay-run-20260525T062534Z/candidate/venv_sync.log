@@ -1,0 +1,7 @@
+Using Python 3.12.3 environment at: /tmp/simimpl17_replay_20260525T062534Z/venv
+Resolved 1 package in 96ms
+warning: Failed to hardlink files; falling back to full copy. This may lead to degraded performance.
+         If the cache and target directories are on different filesystems, hardlinking may not be supported.
+         If this is intentional, set `export UV_LINK_MODE=copy` or use `--link-mode=copy` to suppress this warning.
+Installed 1 package in 202ms
+ + pyarrow==22.0.0

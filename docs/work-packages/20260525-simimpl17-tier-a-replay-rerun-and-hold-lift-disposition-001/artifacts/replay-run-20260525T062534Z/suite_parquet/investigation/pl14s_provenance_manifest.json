@@ -1,0 +1,103 @@
+{
+  "suite_schema_version": "pl14s-legacy-suite-v2",
+  "baseline": {
+    "binary": "/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill",
+    "binary_sha256": "3b2fdd2b7a9e264b84f1e7b161dfb0730d49d3cb652218139efeb3ba17d7a160",
+    "run_dir": "/workdir/wepp-forest_260430_baseline/tests/fixtures/delicate_game_pw0",
+    "run_file": "p5.run",
+    "source_runs_dir": "/workdir/wepp-forest_260430_baseline/tests/fixtures/delicate_game_pw0/runs",
+    "baseline_lane_root": "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/baseline/lane",
+    "baseline_wat": "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/baseline/lane/output/H5.wat.dat",
+    "baseline_wat_sha256": "c383b31d42b311f9af9124db2fee1b1905a831b2e533ff63d9d667eafaf7ff83"
+  },
+  "candidate": {
+    "input_wat": "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.wat.parquet",
+    "input_wat_format": ".parquet",
+    "candidate_surface_source_class": "native-runtime-parquet",
+    "input_wat_sha256": "d34e3c6882c6ac0e7f159047c6f49029bfe36826820a4fe77f9afe482b0853f5",
+    "candidate_wat_for_compare": "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.wat.parquet",
+    "candidate_wat_for_compare_sha256": "d34e3c6882c6ac0e7f159047c6f49029bfe36826820a4fe77f9afe482b0853f5",
+    "candidate_plot": null
+  },
+  "strict_lane_policy": {
+    "mode": "strict-equivalent-required",
+    "strict_required": false,
+    "strict_equivalent_lane": "semantic",
+    "strict_equivalent_ready": true,
+    "strict_equivalent_blockers": [],
+    "strict_source_promotable_for_final_tier_a_closeout": true,
+    "conversion_source_row_consistency_ready": true,
+    "conversion_source_row_consistency_blockers": []
+  },
+  "tooling": {
+    "legacy_comparator_tool": "/workdir/wepp-forest_260430_baseline/tools/compare_wepp_raw_outputs.py",
+    "legacy_comparator_tool_sha256": "c9c5f2eac59cdd4c6b8f7bc8423577e679effd68554b87ff62abf76371af91c8",
+    "semantic_script": "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+    "semantic_script_sha256": "da4ec8a1efdf287c9fb72a6135aaa3efdf6901e7b80b55151e9335f06fc9b4c5",
+    "tolerance_config": "tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+    "tolerance_config_sha256": "dfabae701af645b5e44fbb0c233daa906610e9dd13e687484132453e58bcfb57"
+  },
+  "executions": {
+    "baseline_replay": {
+      "cmd": [
+        "/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/baseline/lane/runs",
+      "returncode": 0
+    },
+    "strict_compare": {
+      "skipped": true,
+      "reason": "strict raw comparator requires .dat input surfaces",
+      "required": false,
+      "policy_mode": "strict-equivalent-required",
+      "candidate_surface_source_class": "native-runtime-parquet"
+    },
+    "semantic_compare": {
+      "cmd": [
+        "/tmp/simimpl17_replay_20260525T062534Z/venv/bin/python",
+        "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+        "--baseline-wat",
+        "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/baseline/lane/output/H5.wat.dat",
+        "--candidate-wat",
+        "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.wat.parquet",
+        "--report-json",
+        "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/investigation/h5_wat_semantic_comparator.json",
+        "--tolerance-config",
+        "tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json"
+      ],
+      "cwd": null,
+      "returncode": 0
+    }
+  },
+  "outputs": {
+    "semantic_json": "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/investigation/h5_wat_semantic_comparator.json",
+    "semantic_json_sha256": "a23f74029c2ea0c5bc7f927d8a36dd21b66526b6e881ddb4e2dc0f33f080d4f9",
+    "semantic_summary": {
+      "report_schema_version": "pl14s-semantic-wat-v2",
+      "semantic_pass": false,
+      "common_row_count": 2,
+      "only_baseline_count": 1093,
+      "only_candidate_count": 0,
+      "column_stat_count": 22,
+      "top_divergent_row_count": 2,
+      "investigation_columns_used": [
+        "P",
+        "Q",
+        "Ep",
+        "Es",
+        "Er",
+        "Dp",
+        "Total-Soil",
+        "frozwt",
+        "Snow-Water",
+        "SoilWaterTotal"
+      ],
+      "investigation_columns_missing": [],
+      "baseline_only_columns": []
+    },
+    "strict_json": null,
+    "strict_json_sha256": null,
+    "baseline_stdout": "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/investigation/baseline_stdout.txt",
+    "baseline_stderr": "/tmp/simimpl17_replay_20260525T062534Z/suite_parquet/investigation/baseline_stderr.txt"
+  }
+}

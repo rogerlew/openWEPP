@@ -1,0 +1,10 @@
+openwepp_optional_output_v1
+run_name=cli01-fixture-success
+file=H5.plot.parquet
+first_year=2000
+first_day=1
+last_year=2000
+last_day=2
+climate_day_count=2
+executed_day_count=2
+precipitation_mm=10000.000

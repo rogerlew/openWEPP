@@ -1,0 +1,145 @@
+{
+  "schema": "openwepp-hillslope-run-manifest-v1",
+  "engine": "openwepp",
+  "binary_path": "/home/workdir/openWEPP/target/debug/openwepp-cli-hill",
+  "binary_sha256": "c40b58c70a5d14851f195b6cd75c4af23c8ea5f1a0da9b5eb1bc811a1b348f16",
+  "binary_sidecar_path": "/home/workdir/openWEPP/target/debug/openwepp-cli-hill.json",
+  "binary_sidecar_sha256": "c59100d4b5ebc48b3c922029407a6939b0e049345dd80ff2fba9689181e2629d",
+  "source_commit": "d5b4c407b63e7e5d955b414a369e49be149e0fd8",
+  "invoked_utc": "2026-05-25T06:25:42.269496947Z",
+  "argv": [
+    "./target/debug/openwepp-cli-hill",
+    "--run-dir",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir",
+    "--run-file",
+    "case.run",
+    "--output-dir",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/output",
+    "--policy",
+    "strict",
+    "--manifest-path",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/output/openwepp_hillslope_run_manifest.json"
+  ],
+  "run_dir": "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir",
+  "run_file": "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/case.run",
+  "sidecar_policy": "strict",
+  "sidecar_discovery_mode": "runfile-sidecar-overrides",
+  "resolved_sidecars": {
+    "pmetpara": "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/pmetpara.txt",
+    "wepp_ui": "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/wepp_ui.txt"
+  },
+  "input_checksums": {
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/case.cli": "7f101480b2ca4e3138fd6c8f76b6319e25b912362707b2306d6ab13ed12dda86",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/case.man": "160efd42a3240fc94326bf73f10df17d58b402440a878a8b9c9af12bca55752c",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/case.run": "c6e75cd867627ad2f69c6a6dcf75af9a596bd4cbfce8aa1cfbc326b9a941ec1f",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/case.slp": "0a8d412cc693e9b93b8c3a5b424d143b2a1a456ab39092d0b83fe2f4d30b5b7f",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/case.sol": "df115a020475e21082c6d3ce9a1e0fc8ac4a7bdab31911c5d7ffdbc40df0f54e",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/pmetpara.txt": "c1ab053eedca5f4a4df3b05746e3a8660dbe44c00d92b54de60a71789742c8fa",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/wepp_ui.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "output_checksums": {
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.hbp": "2895fe6da31d4fb8193b22241f297648dc5091b63ba9f395c1690d73ed60f6e4",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.loss.json": "7f726834af5ce5dd63bc28ac31295300b84560fcde158748f91a18f907b3f6a9",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.plot.parquet": "038dc560b465e8b6554b7193585f4977a254f40c9f5acd2f2d801d8a99c45fcc",
+    "/tmp/simimpl17_replay_20260525T062534Z/candidate/run_dir/output/H5.wat.parquet": "d34e3c6882c6ac0e7f159047c6f49029bfe36826820a4fe77f9afe482b0853f5"
+  },
+  "mode_selection": {
+    "wepp_ui": {
+      "requested": 1,
+      "effective": 1,
+      "selected_lane": "hourly",
+      "mode_divergence": false,
+      "guard_id": "WUI-E-005"
+    }
+  },
+  "timestep_policy": {
+    "scheduler_mode": "hourly",
+    "requested_mode": "hourly",
+    "effective_mode": "hourly",
+    "selected_lane": "hourly",
+    "policy": "hourly",
+    "timestep_seconds": 3600,
+    "physics_enabled": true,
+    "subhourly_scaffold_available": true,
+    "guard_id": "HS-SIMMODE-E-001"
+  },
+  "adapter_boundary": {
+    "selected_lane": "hourly",
+    "scheduler_mode": "hourly",
+    "requested_mode": "hourly",
+    "effective_mode": "hourly",
+    "adopt_profile": "SIMIMPL08-adopt-only",
+    "reject_surfaces_excluded": true,
+    "defer_surfaces_excluded": true,
+    "guard_id": "HS-SIMCONS-E-001"
+  },
+  "execution_provenance": {
+    "scheduler_kernel_executed": true,
+    "publication_source": "scheduler-kernel",
+    "simpipe_guard_id": "HS-SIMPIPE-E-001",
+    "selected_lane": "hourly",
+    "scheduler_outcome_class": "completed",
+    "scheduler_status_message_id": "HSCHED-OK-001",
+    "climate_day_count": 2,
+    "executed_day_count": 2
+  },
+  "wb13_publication": {
+    "source": "simulation-owned",
+    "projection_fallback_used": false,
+    "guard_id": "HS-SIMOUT-E-001",
+    "replay_candidate_surfaces": [
+      "interchange/H.wat.parquet",
+      "interchange/H.pass.parquet"
+    ],
+    "row_count": 2,
+    "sim_day_index_monotonic": true,
+    "first_row_key": {
+      "year": 1,
+      "julian_day": 1,
+      "ofe": 1,
+      "sim_day_index": 1
+    },
+    "last_row_key": {
+      "year": 1,
+      "julian_day": 2,
+      "ofe": 1,
+      "sim_day_index": 2
+    }
+  },
+  "coupling_vectors": {
+    "guard_id": "HS-SIMCOUP-E-001",
+    "winter": {
+      "active": false,
+      "snow_file_present": false,
+      "rst": 0.0,
+      "newsnw": 100.0,
+      "ssd": 250.0,
+      "runtime_swe": 0.0
+    },
+    "soil": {
+      "ssc": 4.166666666666667e-6,
+      "infiltration_capacity_frozen": 0.0,
+      "infcap_within_ssc": true
+    },
+    "frsoil": {
+      "active": false,
+      "frost_file_present": false,
+      "wint_red_enabled": true,
+      "dfrost": 0.0,
+      "dthaw": 0.0,
+      "nft": 0.0,
+      "ws_frz": 0.0,
+      "infcap_frz": 0.0
+    },
+    "hydout_equivalent": {
+      "source": "simulation-owned",
+      "total_soil": 76.0,
+      "frozwt": 0.0,
+      "snow_water": 250.0,
+      "soil_water_total": 76.0,
+      "closure_delta": 0.0,
+      "closure_tolerance": 1e-6,
+      "closure_within_tolerance": true
+    }
+  }
+}

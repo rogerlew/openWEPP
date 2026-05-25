@@ -1,0 +1,5 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running tests/integration/comparator_tier_routing_metadata.rs (target/debug/deps/comparator_tier_routing_metadata-89720d5535f4e033)
+     Running tests/integration/pl14_tier_a_candidate_replay_contract.rs (target/debug/deps/pl14_tier_a_candidate_replay_contract-37d00de328a8c351)
+     Running tests/integration/pl14r_tier_a_replay_rerun_contract.rs (target/debug/deps/pl14r_tier_a_replay_rerun_contract-f8fb79fea237418f)
+     Running tests/integration/pl14s_tier_a_candidate_emission_and_replay_contract.rs (target/debug/deps/pl14s_tier_a_candidate_emission_and_replay_contract-b0edf5bfc6979670)

@@ -590,6 +590,10 @@ Authorized packages:
     spots (`SIMIMPL13-TEST-001..005`) with enforceable span/key/alias/
     provenance governance tests so SIMIMPL17 reruns operate with deterministic
     promotion gates.
+- `20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/`
+  - Purpose: execute SIMIMPL17 by running final Tier-A strict/semantic replay
+    reruns after SIMIMPL14/15/16 closure and publishing evidence-backed
+    hold-lift disposition against `SIMIMPL13-CRIT-001..008`.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

@@ -1,0 +1,14 @@
+
+running 1 test
+test simimpl04_contract_requires_runner_kernel_execution_provenance_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.83s
+
+
+running 3 tests
+test simimpl04_contract_requires_simulation_owned_wb13_publication_provenance ... ok
+test simimpl14_contract_requires_continuous_wb13_span_and_simulation_year_row_keys ... ok
+test simimpl14_contract_requires_run_span_truthful_loss_output_summary ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 47.63s
+

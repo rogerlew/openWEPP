@@ -1,0 +1,49 @@
+
+running 7 tests
+test candidate_source_class_policy_distinguishes_native_vs_conversion_dat ... ok
+test deterministic_tier_mapping_routes_hourly_and_watershed_to_investigation ... ok
+test deterministic_tier_mapping_routes_single_ofe_daily_to_higher_confidence ... ok
+test missing_required_single_ofe_metadata_is_typed_error ... ok
+test strict_lane_policy_mode_is_deterministic_by_candidate_extension ... ok
+test summary_constructor_rejects_invalid_routing_metadata ... ok
+test summary_rollups_propagate_routing_metadata ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test pl14_contract_conformance_rejects_key_domain_mismatch_before_comparator_promotion ... ok
+test pl14_contract_conformance_rejects_missing_or_mismatched_single_ofe_metadata ... ok
+test pl14_contract_conformance_requires_nonzero_replay_span_overlap_for_promotion ... ok
+test pl14_contract_conformance_emits_replay_staging_rows_with_canonical_25_columns ... ok
+test pl14_contract_conformance_rejects_missing_required_replay_symbol ... ok
+test pl14_contract_conformance_requires_total_soil_in_investigation_columns ... ok
+test pl14_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test pl14r_contract_conformance_holds_when_required_surface_missing_or_strict_failure_present ... ok
+test pl14r_contract_conformance_holds_when_strict_source_is_non_promotable ... ok
+test pl14r_contract_conformance_rejects_missing_required_single_ofe_metadata ... ok
+test pl14r_contract_conformance_rejects_skipped_strict_lane_for_dat_mode ... ok
+test pl14r_contract_conformance_requires_complete_hash_provenance_for_pass ... ok
+test pl14r_contract_conformance_requires_interchange_wat_and_pass_include_surfaces ... ok
+test pl14r_contract_conformance_requires_strict_equivalent_compensation_when_parquet_strict_skips ... ok
+test pl14r_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14r_contract_conformance_wb13_rows_remain_canonical_25_column_schema ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test pl14s_contract_conformance_classifies_candidate_source_provenance ... ok
+test pl14s_contract_conformance_enforces_strict_lane_required_vs_strict_equivalent_modes ... ok
+test pl14s_contract_conformance_requires_conversion_dat_row_consistency_for_evidence_readiness ... ok
+test pl14s_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_markers ... ok
+test pl14s_contract_conformance_rejects_duplicate_row_keys_in_semantic_lane_inputs ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
