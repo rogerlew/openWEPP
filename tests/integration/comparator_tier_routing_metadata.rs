@@ -9,6 +9,42 @@ use openwepp_summary_accumulator::{
     CalendarDay, SummaryAccumulator, SummaryAccumulatorError, SummaryScalarSurface, SummaryWindow,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum StrictLanePolicyMode {
+    StrictRequired,
+    StrictEquivalentRequired,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CandidateSourceClass {
+    NativeRuntimeDat,
+    ConversionDerivedDat,
+    NativeRuntimeParquet,
+}
+
+fn strict_lane_policy_for_extension(candidate_extension: &str) -> StrictLanePolicyMode {
+    if candidate_extension.eq_ignore_ascii_case(".dat") {
+        StrictLanePolicyMode::StrictRequired
+    } else {
+        StrictLanePolicyMode::StrictEquivalentRequired
+    }
+}
+
+fn candidate_source_class_for_extension(
+    candidate_extension: &str,
+    conversion_derived_dat: bool,
+) -> CandidateSourceClass {
+    if candidate_extension.eq_ignore_ascii_case(".dat") {
+        if conversion_derived_dat {
+            CandidateSourceClass::ConversionDerivedDat
+        } else {
+            CandidateSourceClass::NativeRuntimeDat
+        }
+    } else {
+        CandidateSourceClass::NativeRuntimeParquet
+    }
+}
+
 #[test]
 fn deterministic_tier_mapping_routes_single_ofe_daily_to_higher_confidence() {
     let metadata = route_comparator_tier_metadata(ComparatorTierRoutingRequest::new(
@@ -133,4 +169,36 @@ fn summary_constructor_rejects_invalid_routing_metadata() {
             ComparatorTierRoutingError::MissingRequiredMetadata { .. }
         )
     ));
+}
+
+#[test]
+fn strict_lane_policy_mode_is_deterministic_by_candidate_extension() {
+    assert_eq!(
+        strict_lane_policy_for_extension(".dat"),
+        StrictLanePolicyMode::StrictRequired
+    );
+    assert_eq!(
+        strict_lane_policy_for_extension(".DAT"),
+        StrictLanePolicyMode::StrictRequired
+    );
+    assert_eq!(
+        strict_lane_policy_for_extension(".parquet"),
+        StrictLanePolicyMode::StrictEquivalentRequired
+    );
+}
+
+#[test]
+fn candidate_source_class_policy_distinguishes_native_vs_conversion_dat() {
+    assert_eq!(
+        candidate_source_class_for_extension(".dat", false),
+        CandidateSourceClass::NativeRuntimeDat
+    );
+    assert_eq!(
+        candidate_source_class_for_extension(".dat", true),
+        CandidateSourceClass::ConversionDerivedDat
+    );
+    assert_eq!(
+        candidate_source_class_for_extension(".parquet", false),
+        CandidateSourceClass::NativeRuntimeParquet
+    );
 }

@@ -29,10 +29,10 @@ enum CandidateSourceClass {
 }
 
 fn strict_lane_mode(candidate_extension: &str) -> StrictLaneMode {
-    match candidate_extension.to_ascii_lowercase().as_str() {
-        ".dat" => StrictLaneMode::Required,
-        ".parquet" => StrictLaneMode::StrictEquivalentRequired,
-        _ => StrictLaneMode::StrictEquivalentRequired,
+    if candidate_extension.eq_ignore_ascii_case(".dat") {
+        StrictLaneMode::Required
+    } else {
+        StrictLaneMode::StrictEquivalentRequired
     }
 }
 

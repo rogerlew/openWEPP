@@ -10,6 +10,19 @@ use openwepp_summary_accumulator::{
     Wb13DailyWaterBalanceSurface,
 };
 
+const PL14_REQUIRED_INVESTIGATION_COLUMNS: [&str; 10] = [
+    "P",
+    "Q",
+    "Ep",
+    "Es",
+    "Er",
+    "Dp",
+    "Total-Soil",
+    "frozwt",
+    "Snow-Water",
+    "SoilWaterTotal",
+];
+
 fn seeded_wb13_surface() -> SummaryScalarSurface {
     SummaryScalarSurface::from_pairs([
         ("P", 4.40),
@@ -134,5 +147,17 @@ fn pl14_contract_conformance_rejects_missing_required_replay_symbol() {
         SummaryAccumulatorError::MissingRequiredOutputSymbol {
             symbol: "ProfileDepth".to_string(),
         }
+    );
+}
+
+#[test]
+fn pl14_contract_conformance_requires_total_soil_in_investigation_columns() {
+    assert!(
+        PL14_REQUIRED_INVESTIGATION_COLUMNS.contains(&"Total-Soil"),
+        "required investigation columns must include Total-Soil continuity marker"
+    );
+    assert!(
+        !PL14_REQUIRED_INVESTIGATION_COLUMNS.contains(&"Total-Soil Water"),
+        "legacy alias should normalize to canonical Total-Soil marker"
     );
 }

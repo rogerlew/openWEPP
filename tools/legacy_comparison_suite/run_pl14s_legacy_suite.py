@@ -18,6 +18,23 @@ import subprocess
 import sys
 from pathlib import Path
 
+STRICT_LANE_POLICY_STRICT_REQUIRED = "strict-required"
+STRICT_LANE_POLICY_STRICT_EQUIVALENT_REQUIRED = "strict-equivalent-required"
+
+CANDIDATE_SOURCE_NATIVE_RUNTIME_DAT = "native-runtime-dat"
+CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT = "conversion-derived-dat"
+CANDIDATE_SOURCE_NATIVE_RUNTIME_PARQUET = "native-runtime-parquet"
+
+SEMANTIC_REPORT_SCHEMA_VERSION = "pl14s-semantic-wat-v2"
+
+ALLOWED_CANDIDATE_SOURCE_CLASSES = {
+    ".dat": {
+        CANDIDATE_SOURCE_NATIVE_RUNTIME_DAT,
+        CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT,
+    },
+    ".parquet": {CANDIDATE_SOURCE_NATIVE_RUNTIME_PARQUET},
+}
+
 
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
@@ -99,12 +116,68 @@ def load_semantic_summary(path: Path) -> dict:
     }
 
 
+def strict_lane_policy(candidate_format: str) -> dict:
+    if candidate_format == ".dat":
+        return {
+            "mode": STRICT_LANE_POLICY_STRICT_REQUIRED,
+            "strict_required": True,
+            "strict_equivalent_lane": None,
+        }
+    if candidate_format == ".parquet":
+        return {
+            "mode": STRICT_LANE_POLICY_STRICT_EQUIVALENT_REQUIRED,
+            "strict_required": False,
+            "strict_equivalent_lane": "semantic",
+        }
+    raise SystemExit(f"unsupported candidate format for replay suite: {candidate_format}")
+
+
+def validate_candidate_source_class(candidate_format: str, source_class: str) -> None:
+    allowed = ALLOWED_CANDIDATE_SOURCE_CLASSES.get(candidate_format)
+    if allowed is None:
+        raise SystemExit(f"unsupported candidate format for source-class validation: {candidate_format}")
+    if source_class not in allowed:
+        allowed_list = ", ".join(sorted(allowed))
+        raise SystemExit(
+            "candidate source class "
+            f"{source_class!r} is invalid for {candidate_format} input; "
+            f"expected one of: {allowed_list}"
+        )
+
+
+def semantic_strict_equivalence_blockers(semantic_summary: dict) -> list[str]:
+    blockers: list[str] = []
+    if semantic_summary.get("report_schema_version") != SEMANTIC_REPORT_SCHEMA_VERSION:
+        blockers.append(
+            "semantic report schema mismatch: expected "
+            f"{SEMANTIC_REPORT_SCHEMA_VERSION}, got {semantic_summary.get('report_schema_version')}"
+        )
+    missing_columns = semantic_summary.get("investigation_columns_missing", [])
+    if missing_columns:
+        blockers.append(
+            "semantic investigation columns missing: " + ", ".join(sorted(missing_columns))
+        )
+    if semantic_summary.get("column_stat_count", 0) <= 0:
+        blockers.append("semantic comparator emitted no column statistics")
+    return blockers
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline-run-dir", type=Path, required=True)
     parser.add_argument("--baseline-binary", type=Path, required=True)
     parser.add_argument("--baseline-run-file", type=str, required=True)
     parser.add_argument("--candidate-wat", type=Path, required=True)
+    parser.add_argument(
+        "--candidate-surface-source-class",
+        type=str,
+        required=True,
+        choices=[
+            CANDIDATE_SOURCE_NATIVE_RUNTIME_DAT,
+            CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT,
+            CANDIDATE_SOURCE_NATIVE_RUNTIME_PARQUET,
+        ],
+    )
     parser.add_argument("--candidate-plot", type=Path, default=None)
     parser.add_argument("--legacy-comparator-tool", type=Path, default=Path("/workdir/wepp-forest_260430_baseline/tools/compare_wepp_raw_outputs.py"))
     parser.add_argument("--output-root", type=Path, required=True)
@@ -158,10 +231,14 @@ def main() -> None:
     baseline_wat = find_single(baseline_lane_root, "H*.wat.dat")
 
     candidate_format = args.candidate_wat.suffix.lower()
+    lane_policy = strict_lane_policy(candidate_format)
+    validate_candidate_source_class(candidate_format, args.candidate_surface_source_class)
     strict_result = {
         "skipped": True,
-        "reason": "candidate is not .dat; strict raw comparator requires text surfaces",
-        "required": candidate_format == ".dat",
+        "reason": "strict raw comparator requires .dat input surfaces",
+        "required": lane_policy["strict_required"],
+        "policy_mode": lane_policy["mode"],
+        "candidate_surface_source_class": args.candidate_surface_source_class,
     }
     strict_json_path = investigation_root / args.strict_json
 
@@ -199,6 +276,11 @@ def main() -> None:
         strict_result = {
             "skipped": False,
             "required": True,
+            "policy_mode": lane_policy["mode"],
+            "candidate_surface_source_class": args.candidate_surface_source_class,
+            "strict_source_promotable_for_final_tier_a_closeout": (
+                args.candidate_surface_source_class == CANDIDATE_SOURCE_NATIVE_RUNTIME_DAT
+            ),
             "execution": strict_exec,
             "json_path": str(strict_json_path),
         }
@@ -221,9 +303,17 @@ def main() -> None:
     if semantic_exec["returncode"] != 0:
         raise SystemExit(f"semantic comparator failed with return code {semantic_exec['returncode']}")
     semantic_summary = load_semantic_summary(semantic_json_path)
+    strict_equivalence_blockers = semantic_strict_equivalence_blockers(semantic_summary)
+
+    strict_equivalent_ready = not strict_equivalence_blockers
+    if lane_policy["mode"] == STRICT_LANE_POLICY_STRICT_EQUIVALENT_REQUIRED and not strict_equivalent_ready:
+        raise SystemExit(
+            "strict-equivalent semantic lane requirements not satisfied: "
+            + "; ".join(strict_equivalence_blockers)
+        )
 
     provenance = {
-        "suite_schema_version": "pl14s-legacy-suite-v1",
+        "suite_schema_version": "pl14s-legacy-suite-v2",
         "baseline": {
             "binary": str(args.baseline_binary),
             "binary_sha256": sha256_file(args.baseline_binary),
@@ -237,10 +327,22 @@ def main() -> None:
         "candidate": {
             "input_wat": str(args.candidate_wat),
             "input_wat_format": candidate_format,
+            "candidate_surface_source_class": args.candidate_surface_source_class,
             "input_wat_sha256": sha256_file(args.candidate_wat),
             "candidate_wat_for_compare": str(candidate_wat_for_compare),
             "candidate_wat_for_compare_sha256": sha256_file(candidate_wat_for_compare),
             "candidate_plot": str(args.candidate_plot) if args.candidate_plot else None,
+        },
+        "strict_lane_policy": {
+            "mode": lane_policy["mode"],
+            "strict_required": lane_policy["strict_required"],
+            "strict_equivalent_lane": lane_policy["strict_equivalent_lane"],
+            "strict_equivalent_ready": strict_equivalent_ready,
+            "strict_equivalent_blockers": strict_equivalence_blockers,
+            "strict_source_promotable_for_final_tier_a_closeout": (
+                args.candidate_surface_source_class
+                != CANDIDATE_SOURCE_CONVERSION_DERIVED_DAT
+            ),
         },
         "tooling": {
             "legacy_comparator_tool": str(args.legacy_comparator_tool),

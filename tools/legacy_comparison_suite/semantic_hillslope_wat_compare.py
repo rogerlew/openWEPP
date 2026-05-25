@@ -18,7 +18,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Tuple
+from typing import Dict, List, Mapping, Tuple
 
 LEGACY_20_COLUMNS = [
     "OFE",
@@ -66,6 +66,7 @@ PARQUET_TO_CANONICAL = {
     "UpStrmQ": "UpStrmQ",
     "SubRIn": "SubRIn",
     "latqcc": "latqcc",
+    "Total-Soil": "Total-Soil",
     "Total-Soil Water": "Total-Soil",
     "frozwt": "frozwt",
     "Snow-Water": "Snow-Water",
@@ -94,7 +95,7 @@ DEFAULT_INVESTIGATION_COLUMNS = [
 ]
 
 KEY_FIELDS = ("OFE", "J", "Y")
-REPORT_SCHEMA_VERSION = "pl14s-semantic-wat-v1"
+REPORT_SCHEMA_VERSION = "pl14s-semantic-wat-v2"
 
 
 @dataclass
@@ -147,7 +148,11 @@ def parse_dat_rows(path: Path) -> tuple[Dict[Tuple[int, int, int], Dict[str, flo
     return row_map, widths_seen
 
 
-def parse_parquet_rows(path: Path) -> Dict[Tuple[int, int, int], Dict[str, float]]:
+def parse_parquet_rows(
+    path: Path,
+) -> tuple[
+    Dict[Tuple[int, int, int], Dict[str, float]], List[int], Dict[str, List[str]]
+]:
     try:
         import pyarrow.parquet as pq
     except Exception as exc:  # pragma: no cover - environment dependent
@@ -160,6 +165,8 @@ def parse_parquet_rows(path: Path) -> Dict[Tuple[int, int, int], Dict[str, float
     arrays = {name: table[name].to_pylist() for name in column_names}
 
     row_map: Dict[Tuple[int, int, int], Dict[str, float]] = {}
+    widths_seen: List[int] = []
+    alias_sources: Dict[str, set[str]] = {}
     row_count = table.num_rows
 
     for idx in range(row_count):
@@ -172,6 +179,7 @@ def parse_parquet_rows(path: Path) -> Dict[Tuple[int, int, int], Dict[str, float
             if value is None:
                 continue
             row[dst] = float(value)
+            alias_sources.setdefault(dst, set()).add(src)
 
         if "OFE" not in row and "ofe_id" in arrays and arrays["ofe_id"][idx] is not None:
             row["OFE"] = float(arrays["ofe_id"][idx])
@@ -188,18 +196,29 @@ def parse_parquet_rows(path: Path) -> Dict[Tuple[int, int, int], Dict[str, float
         if key in row_map:
             raise RuntimeError(f"duplicate row key {key} in parquet input {path}")
         row_map[key] = row
+        width = len(row)
+        if width not in widths_seen:
+            widths_seen.append(width)
 
-    return row_map
+    widths_seen.sort()
+    alias_sources_sorted = {
+        canonical: sorted(sources) for canonical, sources in sorted(alias_sources.items())
+    }
+    return row_map, widths_seen, alias_sources_sorted
 
 
-def load_rows(path: Path) -> tuple[Dict[Tuple[int, int, int], Dict[str, float]], List[int], str]:
+def load_rows(
+    path: Path,
+) -> tuple[
+    Dict[Tuple[int, int, int], Dict[str, float]], List[int], str, Dict[str, List[str]]
+]:
     suffix = path.suffix.lower()
     if suffix == ".parquet":
-        row_map = parse_parquet_rows(path)
-        return row_map, [0], "parquet"
+        row_map, widths, alias_sources = parse_parquet_rows(path)
+        return row_map, widths, "parquet", alias_sources
 
     row_map, widths = parse_dat_rows(path)
-    return row_map, widths, "dat"
+    return row_map, widths, "dat", {}
 
 
 def load_tolerance_config(path: Path | None, default_abs: float, default_rel: float) -> tuple[Tolerance, Dict[str, Tolerance]]:
@@ -368,8 +387,12 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    baseline_rows, baseline_widths, baseline_format = load_rows(args.baseline_wat)
-    candidate_rows, candidate_widths, candidate_format = load_rows(args.candidate_wat)
+    baseline_rows, baseline_widths, baseline_format, baseline_alias_sources = load_rows(
+        args.baseline_wat
+    )
+    candidate_rows, candidate_widths, candidate_format, candidate_alias_sources = load_rows(
+        args.candidate_wat
+    )
 
     if not baseline_rows:
         raise SystemExit(f"no baseline rows parsed from {args.baseline_wat}")
@@ -396,8 +419,11 @@ def main() -> None:
             "baseline_format": baseline_format,
             "candidate_format": candidate_format,
             "row_key_fields": list(KEY_FIELDS),
+            "width_diagnostic_mode": "observed_row_field_count",
             "baseline_numeric_widths": baseline_widths,
             "candidate_numeric_widths": candidate_widths,
+            "baseline_column_alias_sources": baseline_alias_sources,
+            "candidate_column_alias_sources": candidate_alias_sources,
             "baseline_sha256": sha256_file(args.baseline_wat),
             "candidate_sha256": sha256_file(args.candidate_wat),
         },
