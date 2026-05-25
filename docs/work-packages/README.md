@@ -632,6 +632,10 @@ Authorized packages:
   - Purpose: execute SIMIMPL24 by closing `wb11_soil_water` aggregate lineage
     and WB13 publication semantics (`Total-Soil`, `SoilWaterTotal`, ET
     components) using simulation-owned runtime surfaces only.
+- `20260525-simimpl25-wb11-tier-a-rerun-and-hold-lift-disposition-001/`
+  - Purpose: execute SIMIMPL25 by running Tier-A replay/comparator reruns after
+    SIMIMPL24 closure, recording semantic closure evidence, and producing an
+    explicit hold-lift disposition recommendation.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
