@@ -34,8 +34,10 @@ Implementation path:
 2. HBP magic acceptance/rejection policy is adapter-local and must not be
    duplicated in kernels.
 3. Unknown sidecars and legacy aliases never silently disappear:
-   - strict mode: typed hard failure
-   - compat mode: typed warning with explicit message IDs
+   - unknown sidecars are ignored with typed warning `LSB-W-002` in both strict
+     and compat modes
+   - legacy aliases fail in strict mode and emit typed warning `LSB-W-001` in
+     compat mode when accepted
 4. Required sidecars are explicit contract entries; absence is a typed failure.
 
 ## Strict vs Compat Semantics
@@ -44,7 +46,7 @@ Implementation path:
 
 - strict:
   - reject legacy alias usage
-  - reject unknown discovered sidecars
+  - ignore unknown sidecars and emit `LSB-W-002`
   - reject missing required sidecars
 - compat:
   - accept configured legacy aliases and emit `LSB-W-001`
@@ -64,7 +66,8 @@ Implementation path:
 
 - `INV-LSB-001`: canonical sidecar bindings are deterministic by `sidecar_id`.
 - `INV-LSB-002`: strict policy never accepts alias-only sidecar matches.
-- `INV-LSB-003`: strict policy never accepts unknown discovered sidecars.
+- `INV-LSB-003`: unknown discovered sidecars are warning-only (`LSB-W-002`)
+  and never become typed hard failures by policy mode.
 - `INV-LSB-004`: required sidecar absence is always a typed failure.
 - `INV-LSB-005`: HBP shard shorter than contract `minimum_bytes` is always a
   typed failure.

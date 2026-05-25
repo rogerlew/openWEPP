@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_runner::{
-    BinaryRole, HillslopeCliError, HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
+    BinaryRole, HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
     validate_release_sidecar, write_release_sidecar_for_binary,
 };
 
@@ -55,12 +55,12 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
 }
 
 #[test]
-fn cli01_contract_conformance_strict_sidecar_policy_rejects_unknown_discovery() {
+fn cli01_contract_conformance_strict_sidecar_policy_warns_on_unknown_discovery() {
     let fixture = fixture_path("hillslope_run_dir_unknown");
     let temp_run_dir = copy_fixture_to_temp(&fixture, "cli01_hillslope_strict_unknown");
     let output_dir = temp_run_dir.join("output");
 
-    let error = execute_hillslope_run(
+    let report = execute_hillslope_run(
         &HillslopeRunRequest {
             run_dir: temp_run_dir,
             run_file: PathBuf::from("case.run"),
@@ -71,14 +71,14 @@ fn cli01_contract_conformance_strict_sidecar_policy_rejects_unknown_discovery() 
         },
         &["openwepp-cli-hill".to_string()],
     )
-    .expect_err("strict policy should reject unknown sidecar");
+    .expect("strict policy should allow unknown sidecar with warning");
 
-    match error {
-        HillslopeCliError::SidecarAdapter { source } => {
-            assert_eq!(source.code(), "LSB-E-009");
-        }
-        other => panic!("expected sidecar adapter error, got {other}"),
-    }
+    assert!(
+        report
+            .sidecar_warnings
+            .iter()
+            .any(|warning| warning.contains("LSB-W-002"))
+    );
 }
 
 #[test]

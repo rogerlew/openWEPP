@@ -182,9 +182,6 @@ pub enum SidecarAdapterError {
         sidecar_id: SidecarId,
         alias_file_name: String,
     },
-    UnknownSidecarDisallowed {
-        file_name: String,
-    },
 }
 
 impl SidecarAdapterError {
@@ -199,7 +196,6 @@ impl SidecarAdapterError {
             Self::DuplicateDiscoveredFileName { .. } => "LSB-E-006",
             Self::MissingRequiredSidecar { .. } => "LSB-E-007",
             Self::LegacyAliasDisallowed { .. } => "LSB-E-008",
-            Self::UnknownSidecarDisallowed { .. } => "LSB-E-009",
         }
     }
 }
@@ -263,13 +259,6 @@ impl fmt::Display for SidecarAdapterError {
                     sidecar_id.as_str()
                 )
             }
-            Self::UnknownSidecarDisallowed { file_name } => {
-                write!(
-                    f,
-                    "{} strict policy disallows unknown sidecar {file_name}",
-                    self.code()
-                )
-            }
         }
     }
 }
@@ -296,7 +285,7 @@ pub fn adapt_sidecar_bindings(
         &mut warnings,
     )?;
 
-    append_unknown_discovery_warnings(request.policy, discovered, &consumed, &mut warnings)?;
+    append_unknown_discovery_warnings(discovered, &consumed, &mut warnings);
 
     bindings.sort_by(|left, right| left.sidecar_id.cmp(&right.sidecar_id));
 
@@ -437,20 +426,13 @@ fn resolve_bindings_for_contracts(
 }
 
 fn append_unknown_discovery_warnings(
-    policy: CompatibilityPolicy,
     discovered: BTreeMap<String, &SidecarDiscovery>,
     consumed: &BTreeSet<String>,
     warnings: &mut Vec<SidecarWarning>,
-) -> Result<(), SidecarAdapterError> {
+) {
     for (normalized_name, found) in discovered {
         if consumed.contains(&normalized_name) {
             continue;
-        }
-
-        if !policy.allows_legacy() {
-            return Err(SidecarAdapterError::UnknownSidecarDisallowed {
-                file_name: found.file_name.clone(),
-            });
         }
 
         warnings.push(SidecarWarning {
@@ -464,8 +446,6 @@ fn append_unknown_discovery_warnings(
             ),
         });
     }
-
-    Ok(())
 }
 
 struct PreparedContract<'a> {
@@ -608,7 +588,7 @@ mod tests {
     }
 
     #[test]
-    fn strict_mode_rejects_unknown_sidecar() {
+    fn strict_mode_ignores_unknown_sidecar_with_warning() {
         let request = SidecarAdapterRequest {
             policy: CompatibilityPolicy::Strict,
             contracts: vec![contract(
@@ -620,12 +600,14 @@ mod tests {
             discovered: vec![discovery("wepp_ui.txt", "/runs/x/wepp_ui.txt")],
         };
 
-        let error = adapt_sidecar_bindings(&request).expect_err("unknown strict must fail");
-        assert_eq!(error.code(), "LSB-E-009");
-        assert!(matches!(
-            error,
-            SidecarAdapterError::UnknownSidecarDisallowed { .. }
-        ));
+        let response = adapt_sidecar_bindings(&request).expect("unknown strict should warn");
+        assert!(response.bindings.is_empty());
+        assert_eq!(response.warnings.len(), 1);
+        assert_eq!(
+            response.warnings[0].code,
+            SidecarWarningCode::UnknownSidecarIgnored
+        );
+        assert_eq!(response.warnings[0].code.message_id(), "LSB-W-002");
     }
 
     #[test]

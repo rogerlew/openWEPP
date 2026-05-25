@@ -55,7 +55,7 @@ Error:
 | warning class | message id | mode | semantics |
 | --- | --- | --- | --- |
 | sidecar legacy alias accepted | `LSB-W-001` | compat | sidecar resolved via configured alias |
-| sidecar unknown ignored | `LSB-W-002` | compat | discovered sidecar not in contract set |
+| sidecar unknown ignored | `LSB-W-002` | strict, compat | discovered sidecar not in contract set |
 | HBP legacy magic accepted | `HBP-W-001` | compat | shard magic matched configured legacy alias |
 
 ## Deterministic Sidecar Error IDs
@@ -70,7 +70,6 @@ Error:
 | duplicate discovery file name | `LSB-E-006` | duplicate discovered filename after normalization |
 | missing required sidecar | `LSB-E-007` | required contract sidecar unresolved |
 | strict alias disallowed | `LSB-E-008` | alias-only match rejected in strict mode |
-| strict unknown disallowed | `LSB-E-009` | unknown discovery rejected in strict mode |
 
 ## Deterministic HBP Error IDs
 
@@ -89,8 +88,8 @@ Error:
   request.
 - `INV-LSB-CONTRACT-002`: Required sidecars must resolve to exactly one
   canonical or compat-allowed alias discovery.
-- `INV-LSB-CONTRACT-003`: Strict mode emits no compatibility warnings because
-  compat-only branches are rejected as errors.
+- `INV-LSB-CONTRACT-003`: Strict mode never accepts alias-only matches, but
+  unknown discoveries remain warning-only (`LSB-W-002`) in all policy modes.
 - `INV-LSB-CONTRACT-004`: HBP contract must define at least a 4-byte minimum
   to permit magic extraction.
 - `INV-LSB-CONTRACT-005`: HBP magic resolution is deterministic with precedence:
@@ -99,7 +98,7 @@ Error:
 ## No-Fallback Policy
 
 - No default sidecar synthesis on missing required inputs.
-- No implicit acceptance of unknown sidecar files in strict mode.
+- Unknown sidecar files are never silently accepted; they emit `LSB-W-002`.
 - No implicit acceptance of unknown or short HBP shards in any mode.
 - Compatibility acceptance always emits typed warnings with stable IDs.
 
