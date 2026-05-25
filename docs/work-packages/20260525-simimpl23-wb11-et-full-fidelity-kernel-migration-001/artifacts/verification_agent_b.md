@@ -1,11 +1,15 @@
 # Verification Agent B
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: ran
 Date: 2026-05-25
 
 ## Static
-- Queued placeholder. Update during SIMIMPL23 execution.
+- Verification target: write-set and required gates match SIMIMPL23 scope.
 
 ## Ran
-- not-run
+- `git status --short`
+- `cargo fmt --check`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `cargo test --workspace`
+- `cargo deny check`

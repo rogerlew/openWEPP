@@ -127,6 +127,20 @@ const WB17_SYMBOL_ES: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb17SoilEvaporationEs;
 const WB17_SYMBOL_ER: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb17ResidueEvaporationEr;
+const WB17_STAGE_SYMBOL_S1: &str = "s1";
+const WB17_STAGE_SYMBOL_S2: &str = "s2";
+const WB17_STAGE_SYMBOL_TU: &str = "tu";
+const WB17_STAGE_SYMBOL_TV: &str = "tv";
+const WB17_FLUX_SYMBOL_ETP: &str = "Etp";
+const WB17_FLUX_SYMBOL_UPI: &str = "UPi";
+const WB17_FLUX_SYMBOL_UI: &str = "Ui";
+const WB13_STATE_SYMBOL_WATCON: &str = "watcon";
+const WB13_STATE_SYMBOL_TOTAL_SOIL: &str = "Total-Soil";
+const WB13_STATE_SYMBOL_SOIL_WATER_TOTAL: &str = "SoilWaterTotal";
+const WB17_STAGE_ONE_DEFICIT_SCALE: f64 = 0.4;
+const WB17_STAGE_TWO_DEFICIT_SCALE: f64 = 0.6;
+const WB17_STAGE_TWO_DENOMINATOR: f64 = 0.0035;
+const WB13_DEPTH_TO_MM: f64 = 1000.0;
 const WB11_SYMBOL_PERC_LOSS_D: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb11PercLossD;
 const WB11_SYMBOL_PERC_RECHARGE_PE: HillslopeProductionFluxSymbol =
@@ -409,8 +423,8 @@ impl HillslopePhase {
         Self::ResiduePartitionTransition,
         Self::AnnualGrowthTransition,
         Self::PerennialGrowthTransition,
-        Self::Evapotranspiration,
         Self::PercolationDeepSeepage,
+        Self::Evapotranspiration,
         Self::LateralTransfer,
         Self::Drainage,
         Self::RunoffReconciliation,
@@ -446,8 +460,8 @@ impl HillslopePhase {
             Self::ResiduePartitionTransition => 3,
             Self::AnnualGrowthTransition => 4,
             Self::PerennialGrowthTransition => 5,
-            Self::Evapotranspiration => 6,
-            Self::PercolationDeepSeepage => 7,
+            Self::PercolationDeepSeepage => 6,
+            Self::Evapotranspiration => 7,
             Self::LateralTransfer => 8,
             Self::Drainage => 9,
             Self::RunoffReconciliation => 10,
@@ -4384,6 +4398,70 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
+        let stage_s1_symbol = BoundarySymbol::from(WB17_STAGE_SYMBOL_S1);
+        let stage_s2_symbol = BoundarySymbol::from(WB17_STAGE_SYMBOL_S2);
+        let stage_threshold_symbol = BoundarySymbol::from(WB17_STAGE_SYMBOL_TU);
+        let stage_counter_symbol = BoundarySymbol::from(WB17_STAGE_SYMBOL_TV);
+        let stage_s1 =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &stage_s1_symbol)?;
+        let stage_s2 =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &stage_s2_symbol)?;
+        let stage_threshold =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &stage_threshold_symbol)?;
+        let stage_counter =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &stage_counter_symbol)?;
+        let stage_state = match (stage_s1, stage_s2, stage_threshold, stage_counter) {
+            (None, None, None, None) => None,
+            (Some(s1), Some(s2), Some(tu), Some(tv)) => {
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &stage_s1_symbol,
+                    s1,
+                    Some(0.0),
+                    None,
+                )?;
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &stage_s2_symbol,
+                    s2,
+                    Some(0.0),
+                    None,
+                )?;
+                if tu <= WB11_ZERO_THRESHOLD {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: stage_threshold_symbol.clone(),
+                        value: tu,
+                        minimum: Some(WB11_ZERO_THRESHOLD),
+                        maximum: None,
+                    });
+                }
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &stage_counter_symbol,
+                    tv,
+                    Some(0.0),
+                    None,
+                )?;
+                Some((s1, s2, tu, tv))
+            }
+            _ => {
+                let missing_symbol = if stage_s1.is_none() {
+                    stage_s1_symbol.clone()
+                } else if stage_s2.is_none() {
+                    stage_s2_symbol.clone()
+                } else if stage_threshold.is_none() {
+                    stage_threshold_symbol.clone()
+                } else {
+                    stage_counter_symbol.clone()
+                };
+                return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                    phase_class,
+                    symbol: missing_symbol,
+                });
+            }
+        };
+
         let soil_evaporation_partition_potential =
             et_demand * (-WB17_LAI_PARTITION_COEFFICIENT * lai).exp();
         Self::require_flux_range(
@@ -4421,7 +4499,120 @@ impl Wb11HydrologyKernel {
             Some(soil_evaporation_partition_potential),
         )?;
 
-        let soil_evaporation_actual = soil_water.min(soil_evaporation_potential);
+        let mut stage_state_updates = Vec::new();
+        let soil_evaporation_demand = if let Some((mut s1, mut s2, tu, mut tv)) = stage_state {
+            let infiltration =
+                Self::optional_state_scalar(request, phase_class, WB12_SYMBOL_INFILTRATION)?
+                    .unwrap_or(0.0);
+            Self::require_state_range(
+                phase_class,
+                WB12_SYMBOL_INFILTRATION,
+                infiltration,
+                Some(0.0),
+                None,
+            )?;
+
+            let mut es_stage = soil_evaporation_potential;
+            if s1 < tu {
+                s2 = 0.0;
+                let sp = s1 - infiltration;
+                s1 = if sp > 0.0 { sp } else { 0.0 };
+                s1 += soil_evaporation_potential;
+                let su = s1 - tu;
+                if su > 0.0 {
+                    es_stage = soil_evaporation_potential - WB17_STAGE_ONE_DEFICIT_SCALE * su;
+                    s2 = WB17_STAGE_TWO_DEFICIT_SCALE * su;
+                    tv = (s2 / WB17_STAGE_TWO_DENOMINATOR).powi(2);
+                }
+            } else {
+                let sb = infiltration - s2;
+                if sb < 0.0 {
+                    tv += 1.0;
+                    es_stage = WB17_STAGE_TWO_DENOMINATOR * tv.sqrt() - s2;
+                    if infiltration > 0.0 {
+                        let mut esx = 0.8 * infiltration;
+                        if es_stage > esx {
+                            esx = es_stage + infiltration;
+                        }
+                        if esx > soil_evaporation_potential {
+                            esx = soil_evaporation_potential;
+                        }
+                        es_stage = esx;
+                    } else if es_stage > soil_evaporation_potential {
+                        es_stage = soil_evaporation_potential;
+                    }
+                    s2 += es_stage - infiltration;
+                    tv = (s2 / WB17_STAGE_TWO_DENOMINATOR).powi(2);
+                } else {
+                    s1 = tu - sb;
+                    tv = 0.0;
+                    s2 = 0.0;
+                    if s1 < 0.0 {
+                        s1 = 0.0;
+                    }
+                    s1 += soil_evaporation_potential;
+                    let su = s1 - tu;
+                    if su > 0.0 {
+                        es_stage = soil_evaporation_potential - WB17_STAGE_ONE_DEFICIT_SCALE * su;
+                        s2 = WB17_STAGE_TWO_DEFICIT_SCALE * su;
+                        tv = (s2 / WB17_STAGE_TWO_DENOMINATOR).powi(2);
+                    }
+                }
+            }
+
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &stage_s1_symbol,
+                s1,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &stage_s2_symbol,
+                s2,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &stage_threshold_symbol,
+                tu,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &stage_counter_symbol,
+                tv,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_flux_range(
+                phase_class,
+                WB17_SYMBOL_ES,
+                es_stage,
+                Some(0.0),
+                Some(soil_evaporation_potential),
+            )?;
+
+            stage_state_updates.extend([
+                WritebackField::bounded(stage_s1_symbol.clone(), s1, Some(0.0), None),
+                WritebackField::bounded(stage_s2_symbol.clone(), s2, Some(0.0), None),
+                WritebackField::bounded(
+                    stage_threshold_symbol.clone(),
+                    tu,
+                    Some(WB11_ZERO_THRESHOLD),
+                    None,
+                ),
+                WritebackField::bounded(stage_counter_symbol.clone(), tv, Some(0.0), None),
+            ]);
+            es_stage
+        } else {
+            soil_evaporation_potential
+        };
+
+        let soil_evaporation_actual = soil_water.min(soil_evaporation_demand);
         let soil_after_evaporation = soil_water - soil_evaporation_actual;
         Self::require_state_range(
             phase_class,
@@ -4458,10 +4649,38 @@ impl Wb11HydrologyKernel {
             Some(et_demand),
         )?;
 
-        let ws = if transpiration_partition_potential <= WB11_ZERO_THRESHOLD {
+        let etp = transpiration_partition_potential;
+        let upi = etp;
+        let ui = transpiration_actual;
+        let etp_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_ETP);
+        let uptake_potential_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UPI);
+        let uptake_actual_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UI);
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &etp_symbol,
+            etp,
+            Some(0.0),
+            Some(et_demand),
+        )?;
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &uptake_potential_symbol,
+            upi,
+            Some(0.0),
+            Some(et_demand),
+        )?;
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &uptake_actual_symbol,
+            ui,
+            Some(0.0),
+            Some(upi),
+        )?;
+
+        let ws = if etp <= WB11_ZERO_THRESHOLD {
             1.0
         } else {
-            transpiration_actual / transpiration_partition_potential
+            ui / etp
         };
         Self::require_flux_range(phase_class, WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0))?;
         Self::require_flux_range(
@@ -4469,7 +4688,7 @@ impl Wb11HydrologyKernel {
             WB17_SYMBOL_ES,
             soil_evaporation_actual,
             Some(0.0),
-            Some(soil_evaporation_potential),
+            Some(soil_evaporation_demand),
         )?;
         Self::require_flux_range(
             phase_class,
@@ -4484,19 +4703,25 @@ impl Wb11HydrologyKernel {
         else {
             unreachable!("status message ids are non-empty WB11 constants")
         };
+        let mut state_updates = vec![WritebackField::bounded(
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )];
+        state_updates.extend(stage_state_updates);
+
         let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                WB11_SYMBOL_SOIL_WATER,
-                soil_water_after,
-                Some(0.0),
-                None,
-            )],
+            state_updates,
             vec![
                 WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
                 WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
                 WritebackField::bounded(WB17_SYMBOL_EP, transpiration_actual, Some(0.0), None),
                 WritebackField::bounded(WB17_SYMBOL_ES, soil_evaporation_actual, Some(0.0), None),
                 WritebackField::bounded(WB17_SYMBOL_ER, residue_evaporation, Some(0.0), None),
+                WritebackField::bounded(etp_symbol, etp, Some(0.0), None),
+                WritebackField::bounded(uptake_potential_symbol, upi, Some(0.0), None),
+                WritebackField::bounded(uptake_actual_symbol, ui, Some(0.0), None),
             ],
         );
         Ok(KernelRunResponse::new(status, writeback))
@@ -6911,6 +7136,19 @@ impl Wb11HydrologyKernel {
         }
         let watdur = watdur_raw.min(WB16_MAX_DURATION_S);
 
+        let wb11_soil_water =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            wb11_soil_water,
+            Some(0.0),
+            None,
+        )?;
+        let watcon = wb11_soil_water;
+        let total_soil = watcon * WB13_DEPTH_TO_MM;
+        let soil_water_total = total_soil;
+
         let erod13_state_updates = Self::run_erod13_wave1_core(request, q_runoff, peakro, watdur)?;
         let erod14_state_updates = Self::run_erod14_wave2(request, &erod13_state_updates)?;
         let status_message_id = if !erod14_state_updates.is_empty() {
@@ -6947,6 +7185,24 @@ impl Wb11HydrologyKernel {
                 vstar,
                 Some(WB11_ZERO_THRESHOLD),
                 Some(1.0),
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from(WB13_STATE_SYMBOL_WATCON),
+                watcon,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from(WB13_STATE_SYMBOL_TOTAL_SOIL),
+                total_soil,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from(WB13_STATE_SYMBOL_SOIL_WATER_TOTAL),
+                soil_water_total,
+                Some(0.0),
+                None,
             ),
         ];
         state_updates.extend(erod13_state_updates);
@@ -10000,16 +10256,16 @@ impl HillslopePhaseGraph {
                 depends_on: HillslopePhase::AnnualGrowthTransition,
             },
             PhaseDependency {
-                phase: HillslopePhase::Evapotranspiration,
+                phase: HillslopePhase::PercolationDeepSeepage,
                 depends_on: HillslopePhase::PerennialGrowthTransition,
             },
             PhaseDependency {
-                phase: HillslopePhase::PercolationDeepSeepage,
-                depends_on: HillslopePhase::Evapotranspiration,
+                phase: HillslopePhase::Evapotranspiration,
+                depends_on: HillslopePhase::PercolationDeepSeepage,
             },
             PhaseDependency {
                 phase: HillslopePhase::LateralTransfer,
-                depends_on: HillslopePhase::PercolationDeepSeepage,
+                depends_on: HillslopePhase::Evapotranspiration,
             },
             PhaseDependency {
                 phase: HillslopePhase::Drainage,
@@ -11554,7 +11810,6 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
                 HillslopePhase::ResiduePartitionTransition,
                 HillslopePhase::AnnualGrowthTransition,
                 HillslopePhase::PerennialGrowthTransition,
-                HillslopePhase::Evapotranspiration,
                 HillslopePhase::PercolationDeepSeepage,
             ]
         );

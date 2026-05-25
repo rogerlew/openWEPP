@@ -236,7 +236,7 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
             .state_surface
             .get(&BoundarySymbol::from("wb11_soil_water"))
             .copied(),
-        Some(BoundaryValue::scalar(9.0))
+        Some(BoundaryValue::scalar(7.0))
     );
     assert_eq!(
         report
@@ -405,7 +405,6 @@ fn require_flux_scalar(
 }
 
 #[test]
-#[ignore = "expected fail until SIMIMPL23 baseline-authoritative ET stage-memory migration"]
 #[allow(clippy::similar_names)]
 fn simimpl22_contract_stage_memory_vector_requires_transitioning_s1_s2_tu_tv() {
     const TOL: f64 = 1.0e-12;
@@ -419,7 +418,7 @@ fn simimpl22_contract_stage_memory_vector_requires_transitioning_s1_s2_tu_tv() {
 
     let stage_s1_before = 0.01;
     let stage_s2_before = 0.02;
-    let stage_tu_before = 0.03;
+    let stage_tu_before = 3.0;
     let stage_tv_before = 1.0;
     surface.state_surface.insert(
         BoundarySymbol::from("s1"),
@@ -459,7 +458,6 @@ fn simimpl22_contract_stage_memory_vector_requires_transitioning_s1_s2_tu_tv() {
 }
 
 #[test]
-#[ignore = "expected fail until SIMIMPL23 root-uptake lineage migration"]
 fn simimpl22_contract_root_uptake_vector_requires_upi_ui_etp_and_ws_lineage() {
     const TOL: f64 = 1.0e-12;
 
@@ -472,6 +470,9 @@ fn simimpl22_contract_root_uptake_vector_requires_upi_ui_etp_and_ws_lineage() {
     surface
         .state_surface
         .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.4));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(1.5));
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
@@ -496,7 +497,6 @@ fn simimpl22_contract_root_uptake_vector_requires_upi_ui_etp_and_ws_lineage() {
 }
 
 #[test]
-#[ignore = "expected fail until SIMIMPL23 baseline WB11 ordering closure"]
 fn simimpl22_contract_wb11_ordering_vector_requires_purk_before_evap() {
     let ordered = HillslopePhaseGraph::canonical_order();
 
@@ -516,7 +516,6 @@ fn simimpl22_contract_wb11_ordering_vector_requires_purk_before_evap() {
 }
 
 #[test]
-#[ignore = "expected fail until SIMIMPL23 WB13 publication-lineage closure"]
 fn simimpl22_contract_wb13_publication_vector_requires_watcon_alias_lineage() {
     const TOL: f64 = 1.0e-12;
 

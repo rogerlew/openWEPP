@@ -1,9 +1,10 @@
 # 20260525-simimpl23-wb11-et-full-fidelity-kernel-migration-001
 
 ## Status
-- state: queued
+- state: package-complete-with-hold
 - date: 2026-05-25
 - timezone: UTC
+- decision: HOLD
 
 ## Objective
 Implement baseline-authoritative WB11 ET runtime migration (`evap` + `swu`
