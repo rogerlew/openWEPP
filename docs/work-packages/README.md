@@ -628,6 +628,10 @@ Authorized packages:
     runtime migration (`evap` + `swu` semantics) with contract-derived closure
     evidence for stage-memory and uptake-lineage behavior under typed guards,
     preparing downstream WB13/publication lineage closeout scope.
+- `20260525-simimpl24-wb11-soil-water-lineage-and-publication-closure-001/`
+  - Purpose: execute SIMIMPL24 by closing `wb11_soil_water` aggregate lineage
+    and WB13 publication semantics (`Total-Soil`, `SoilWaterTotal`, ET
+    components) using simulation-owned runtime surfaces only.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
