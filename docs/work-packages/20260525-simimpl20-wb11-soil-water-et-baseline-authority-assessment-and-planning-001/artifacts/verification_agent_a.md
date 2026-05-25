@@ -1,11 +1,18 @@
 # Verification Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: ran
 Date: 2026-05-25
 
 ## Static
-- Queued placeholder. Update during SIMIMPL20 execution.
+- Verification target: required SIMIMPL20 deliverables are no longer queued
+  placeholders and contain phase outputs.
 
 ## Ran
-- not-run
+- `for f in artifacts/*.md; do sed -n '1,12p' "$f"; done`
+- Confirmed completion artifacts for:
+  - baseline authority path assessment,
+  - ET risk register,
+  - contract crosswalk,
+  - follow-on queue,
+  - governance/disposition/review/verification/handoff set.

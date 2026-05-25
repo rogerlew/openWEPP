@@ -1,9 +1,10 @@
 # 20260525-simimpl20-wb11-soil-water-et-baseline-authority-assessment-and-planning-001
 
 ## Status
-- state: queued
+- state: package-complete-with-hold
 - date: 2026-05-25
 - timezone: UTC
+- decision: HOLD
 
 ## Objective
 Produce a baseline-authoritative assessment and execution plan for the
