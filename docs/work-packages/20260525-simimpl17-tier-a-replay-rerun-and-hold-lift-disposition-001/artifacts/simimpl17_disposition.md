@@ -29,6 +29,40 @@ Decision: HOLD
 - partial: `CRIT-008`
 - Required repository gates all passed (`fmt`, `clippy`, `test`, `deny`).
 
+## Hydrologic semantic guidance for follow-on package
+- Shared forcing is aligned in the overlap window: `P` passes semantic tolerance
+  with near-zero numeric drift across `365` common rows (no precipitation ingest
+  mismatch signal).
+- Divergence starts at the first shared key (`OFE=1`, `J=1`, `Y=1`):
+  baseline row reports `RM=0.00`, `Snow-Water=4.40`, `Total-Soil=102.70`,
+  `frozwt=1.22`, `SoilWaterTotal=103.92`; candidate row reports `RM=4.40`,
+  `Snow-Water=250.00`, `Total-Soil=76.00`, `frozwt=0.00`,
+  `SoilWaterTotal=76.00`.
+- Candidate storage surfaces are invariant for all `1095` candidate rows in this
+  bundle (`Total-Soil=76.00`, `frozwt=0.00`, `Snow-Water=250.00`,
+  `SoilWaterTotal=76.00`), while baseline year-1 storage evolves
+  (`Total-Soil` range `48.59..102.70`, `frozwt` range `0.00..27.43`,
+  `Snow-Water` range `0.00..16.67`, `SoilWaterTotal` range `55.16..103.92`).
+- Candidate provenance records
+  `coupling_vectors.winter.ssd=250.0` and
+  `coupling_vectors.hydout_equivalent.snow_water=250.0`, which is consistent
+  with a static-parameter-to-state publication leak in the winter/hydout
+  mapping.
+- Legacy baseline logs in both lanes still emit one-year clamp warnings
+  (`Number of years to simulate can't be larger than 1`; `1 years used`), so
+  row-span closure requires explicit baseline-year policy handling in the next
+  package in addition to day-1 physics closure.
+- Potential contract/test amendments for next package:
+- add a day-1 keyed semantic contract fixture asserting parity on
+  `RM`, `Snow-Water`, `Total-Soil`, `frozwt`, `SoilWaterTotal`;
+- add a non-invariant storage-state guard over the executed span for winter
+  climate fixtures (reject constant `Snow-Water`/`frozwt`/soil-store surfaces
+  when forcing and temperatures vary);
+- add explicit mapping/closure checks that published `Snow-Water` derives from
+  runtime SWE state, not `snow.txt` static density parameters;
+- codify baseline replay-span policy (clamp-to-one-year vs multi-year rerun)
+  before re-running hold-lift criteria.
+
 ## Final disposition
 - Package `COMPLETED` with retained `HOLD`.
 - Hold-lift is not approved pending closure of remaining hard replay parity

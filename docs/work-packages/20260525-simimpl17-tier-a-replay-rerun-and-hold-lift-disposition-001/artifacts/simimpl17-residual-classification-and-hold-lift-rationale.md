@@ -28,6 +28,17 @@ Date: 2026-05-25
   span closure unresolved under current lane inputs.
 - No risk-acceptance reference is provided for `CRIT-008` partial status.
 
+## Diagnostic clues carried forward
+- First shared row mismatch is immediate (`OFE=1`, `J=1`, `Y=1`) with opposing
+  winter partition signatures (`baseline RM=0.00` vs `candidate RM=4.40`,
+  `baseline Snow-Water=4.40` vs `candidate Snow-Water=250.00`).
+- Candidate storage outputs are invariant across all emitted days in this rerun
+  (`Total-Soil=76.00`, `frozwt=0.00`, `Snow-Water=250.00`,
+  `SoilWaterTotal=76.00`), while baseline storage is dynamic in year 1.
+- Semantic report confirms forcing alignment in overlap (`P` column passes), so
+  next package should target winter-state/update coupling and hydout emission
+  mapping rather than precipitation ingest.
+
 ## Ownership posture
 - Residual closure ownership remains with the replay/parity implementation
   stream tracked from SIMIMPL13 queue artifacts.

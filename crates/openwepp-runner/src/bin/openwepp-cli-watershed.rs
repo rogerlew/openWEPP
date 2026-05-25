@@ -18,6 +18,10 @@ use openwepp_input_contract::parsers::watershed_structure::{
     WatershedStructureParseOptions, parse_watershed_structure_from_path,
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue, WatershedProductionStateSymbol};
+use openwepp_legacy_bridge::sidecar::{
+    SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
+    SidecarRequirement, adapt_sidecar_bindings,
+};
 use openwepp_runner::SidecarPolicy;
 use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
@@ -51,6 +55,7 @@ fn run() -> Result<(), String> {
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
+    let mut sidecar_policy = SidecarPolicy::Compat;
     let mut legacy_sidecar_discovery = false;
 
     let args: Vec<String> = std::env::args().collect();
@@ -83,7 +88,7 @@ fn run() -> Result<(), String> {
                 let Some(value) = args.get(cursor) else {
                     return Err("CLIWAT-E-001 missing value for --policy".to_string());
                 };
-                let _parsed_policy: SidecarPolicy = value.parse().map_err(|detail: String| {
+                sidecar_policy = value.parse().map_err(|detail: String| {
                     format!("CLIWAT-E-001 invalid --policy value: {detail}")
                 })?;
             }
@@ -134,6 +139,7 @@ fn run() -> Result<(), String> {
 
     let runfile = parse_watershed_runfile(
         &run_file_path,
+        sidecar_policy,
         legacy_sidecar_discovery,
         &run_dir,
         &output_dir,
@@ -417,11 +423,11 @@ fn run() -> Result<(), String> {
         ));
     }
 
-    write_watershed_interchange_outputs(&runfile.outputs)?;
-
-    for warning in sidecar_warnings {
+    for warning in &sidecar_warnings {
         eprintln!("sidecar-warning: {warning}");
     }
+
+    write_watershed_interchange_outputs(&runfile.outputs)?;
 
     Ok(())
 }
@@ -566,6 +572,7 @@ struct WatershedRunfileResolved {
 #[allow(clippy::too_many_lines)]
 fn parse_watershed_runfile(
     run_file_path: &Path,
+    sidecar_policy: SidecarPolicy,
     legacy_sidecar_discovery: bool,
     run_dir: &Path,
     output_dir: &Path,
@@ -691,26 +698,69 @@ fn parse_watershed_runfile(
     }
 
     let mut runfile_warnings = Vec::new();
-    let chaninp_path = if legacy_sidecar_discovery {
-        let discovered = run_dir.join("chan.inp");
+    let (chaninp_path, tcr_overlay_present) = if legacy_sidecar_discovery {
         if runfile.inputs.chaninp.is_some() {
             runfile_warnings.push(
                 "legacy-sidecar-discovery is active; ignoring configured inputs.chaninp and probing run_dir/chan.inp".to_string(),
             );
         }
-        if discovered.is_file() {
-            Some(discovered)
+        if runfile.inputs.tcr.is_some() {
+            runfile_warnings.push(
+                "legacy-sidecar-discovery is active; ignoring configured inputs.tcr and probing run_dir/tcr.txt".to_string(),
+            );
+        }
+
+        let mut excluded_files = vec![
+            file_name_string(run_file_path),
+            file_name_string(&watershed_structure_path),
+            file_name_string(&watershed_channel_path),
+            file_name_string(&watershed_impoundment_path),
+            file_name_string(&management_path),
+            file_name_string(&slope_path),
+            file_name_string(&climate_path),
+            file_name_string(&soil_path),
+        ];
+        excluded_files.extend(
+            hillslope_blocks_by_id
+                .values()
+                .map(|block| file_name_string(&block.pass_file_path)),
+        );
+        excluded_files.extend(watershed_output_file_names(&runfile.outputs));
+
+        let discovered_sidecars = discover_sidecars(run_dir, &excluded_files)?;
+        let sidecar_contracts = watershed_sidecar_contracts(true)?;
+        let sidecar_response = adapt_sidecar_bindings(&SidecarAdapterRequest {
+            policy: sidecar_policy.as_legacy_bridge_policy(),
+            contracts: sidecar_contracts,
+            discovered: discovered_sidecars,
+        })
+        .map_err(|error| format!("CLIWAT-E-035 sidecar adaptation failed: {error}"))?;
+
+        runfile_warnings.extend(
+            sidecar_response
+                .warnings
+                .iter()
+                .map(|warning| format!("{} {}", warning.code.message_id(), warning.detail)),
+        );
+
+        let chaninp_path = optional_sidecar_binding_path(&sidecar_response.bindings, "chaninp")
+            .unwrap_or_else(|| run_dir.join("chan.inp"));
+        let tcr_path = optional_sidecar_binding_path(&sidecar_response.bindings, "tcr")
+            .unwrap_or_else(|| run_dir.join("tcr.txt"));
+
+        let chaninp_path = if chaninp_path.is_file() {
+            Some(chaninp_path)
         } else {
             None
-        }
+        };
+        (chaninp_path, tcr_path.is_file())
     } else {
-        let configured = resolve_optional_runfile_path(
+        let configured_chaninp = resolve_optional_runfile_path(
             run_file_path,
             runfile.inputs.chaninp.as_deref(),
             "inputs.chaninp",
         )?;
-
-        if let Some(path) = configured.as_ref()
+        if let Some(path) = configured_chaninp.as_ref()
             && !path.is_file()
         {
             return Err(format!(
@@ -719,24 +769,12 @@ fn parse_watershed_runfile(
             ));
         }
 
-        configured
-    };
-
-    let tcr_overlay_present = if legacy_sidecar_discovery {
-        let discovered = run_dir.join("tcr.txt");
-        if runfile.inputs.tcr.is_some() {
-            runfile_warnings.push(
-                "legacy-sidecar-discovery is active; ignoring configured inputs.tcr and probing run_dir/tcr.txt".to_string(),
-            );
-        }
-        discovered.is_file()
-    } else {
-        let configured = resolve_optional_runfile_path(
+        let configured_tcr = resolve_optional_runfile_path(
             run_file_path,
             runfile.inputs.tcr.as_deref(),
             "inputs.tcr",
         )?;
-        if let Some(path) = configured.as_ref()
+        if let Some(path) = configured_tcr.as_ref()
             && !path.is_file()
         {
             return Err(format!(
@@ -744,7 +782,8 @@ fn parse_watershed_runfile(
                 path.display()
             ));
         }
-        configured.is_some()
+
+        (configured_chaninp, configured_tcr.is_some())
     };
 
     let outputs = WatershedOutputsResolved {
@@ -837,6 +876,146 @@ fn logical_watershed_structure_line_count(path: &Path) -> Result<usize, std::io:
         .map(str::trim)
         .filter(|line| !line.is_empty() && !line.starts_with('#'))
         .count())
+}
+
+fn file_name_string(path: &Path) -> String {
+    path.file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("")
+        .to_string()
+}
+
+fn path_has_extension_case_insensitive(path: &Path, extension: &str) -> bool {
+    path.extension()
+        .and_then(|value| value.to_str())
+        .is_some_and(|value| value.eq_ignore_ascii_case(extension))
+}
+
+fn discover_sidecars(
+    run_dir: &Path,
+    excluded_file_names: &[String],
+) -> Result<Vec<SidecarDiscovery>, String> {
+    let mut discoveries = Vec::new();
+    let entries = fs::read_dir(run_dir)
+        .map_err(|error| format!("CLIWAT-E-035 failed reading run directory sidecars: {error}"))?;
+
+    for entry_result in entries {
+        let entry = entry_result.map_err(|error| {
+            format!("CLIWAT-E-035 failed scanning run directory sidecars: {error}")
+        })?;
+        let path = entry.path();
+        if !path.is_file() {
+            continue;
+        }
+
+        let file_name = file_name_string(&path);
+        if excluded_file_names
+            .iter()
+            .any(|excluded| excluded == &file_name)
+        {
+            continue;
+        }
+        let file_name_lower = file_name.to_ascii_lowercase();
+        if path_has_extension_case_insensitive(&path, "hbp")
+            || file_name_lower.ends_with(".pass.dat")
+        {
+            continue;
+        }
+
+        discoveries.push(SidecarDiscovery::new(file_name, path));
+    }
+
+    discoveries.sort_by(|left, right| left.file_name.cmp(&right.file_name));
+    Ok(discoveries)
+}
+
+fn watershed_sidecar_contracts(
+    legacy_optional_core_sidecars: bool,
+) -> Result<Vec<SidecarContract>, String> {
+    let core_sidecars = [
+        ("frost", "frost.txt"),
+        ("snow", "snow.txt"),
+        ("wepp_ui", "wepp_ui.txt"),
+        ("pmetpara", "pmetpara.txt"),
+    ];
+
+    let optional = [
+        ("irrigation_depletion", "irrigation_depletion.txt"),
+        ("irrigation_fixeddate", "irrigation_fixeddate.ifd"),
+        ("gwcoeff", "gwcoeff.txt"),
+        ("phosphorus", "phosphorus.txt"),
+        ("tc", "tc.txt"),
+        ("tcr", "tcr.txt"),
+        ("lcwb", "lcwb.txt"),
+        ("chaninp", "chan.inp"),
+    ];
+
+    let mut contracts = Vec::new();
+    for (id, file_name) in core_sidecars {
+        let requirement = if legacy_optional_core_sidecars {
+            SidecarRequirement::Optional
+        } else {
+            SidecarRequirement::Required
+        };
+        contracts.push(build_sidecar_contract(id, file_name, requirement)?);
+    }
+    for (id, file_name) in optional {
+        contracts.push(build_sidecar_contract(
+            id,
+            file_name,
+            SidecarRequirement::Optional,
+        )?);
+    }
+
+    Ok(contracts)
+}
+
+fn build_sidecar_contract(
+    id: &'static str,
+    file_name: &'static str,
+    requirement: SidecarRequirement,
+) -> Result<SidecarContract, String> {
+    let sidecar_id =
+        SidecarId::new(id).map_err(|error| format!("CLIWAT-E-035 invalid sidecar id: {error}"))?;
+    Ok(SidecarContract::new(
+        sidecar_id,
+        file_name,
+        Vec::new(),
+        requirement,
+    ))
+}
+
+fn optional_sidecar_binding_path(
+    bindings: &[SidecarBinding],
+    sidecar_id: &'static str,
+) -> Option<PathBuf> {
+    bindings
+        .iter()
+        .find(|binding| binding.sidecar_id.as_str() == sidecar_id)
+        .map(|binding| binding.resolved_path.clone())
+}
+
+fn watershed_output_file_names(outputs: &WatershedRunfileOutputs) -> Vec<String> {
+    [
+        outputs.ebe_pw0.as_str(),
+        outputs.chan_out.as_str(),
+        outputs.chanwb.as_str(),
+        outputs.chnwb.as_str(),
+        outputs.soil_pw0.as_str(),
+        outputs.totalwatsed3.as_str(),
+        outputs.loss_hill.as_str(),
+        outputs.loss_chn.as_str(),
+        outputs.loss_out.as_str(),
+        outputs.loss_class_data.as_str(),
+        outputs.loss_all_years_hill.as_str(),
+        outputs.loss_all_years_chn.as_str(),
+        outputs.loss_all_years_out.as_str(),
+        outputs.loss_all_years_class_data.as_str(),
+    ]
+    .iter()
+    .map(|path| file_name_string(Path::new(path.trim())))
+    .filter(|name| !name.is_empty())
+    .collect()
 }
 
 fn contributor_hillslope_ids(topology: &TopologyGraph) -> BTreeSet<u32> {

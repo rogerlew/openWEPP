@@ -56,7 +56,7 @@ fn watershed_cli_rejects_negative_hbp_payload_via_ws10_domain_guards() {
     write_watershed_runfile(&run_dir, &[1, 2]);
 
     let output_dir = run_dir.join("out");
-    let output = run_watershed_cli(&run_dir, &output_dir, None);
+    let output = run_watershed_cli(&run_dir, &output_dir, None, false);
     assert!(
         !output.status.success(),
         "watershed CLI should fail on domain-invalid contributor payload"
@@ -95,7 +95,7 @@ fn watershed_cli_rejects_placeholder_watershed_output_emission() {
     prepare_output_guard_fixture(&run_dir);
 
     let output_dir = run_dir.join("out");
-    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"));
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
     assert!(
         !output.status.success(),
         "watershed CLI should fail with explicit output guard until data-backed writers exist"
@@ -121,6 +121,7 @@ fn run_watershed_cli(
     run_dir: &Path,
     output_dir: &Path,
     policy: Option<&str>,
+    legacy_sidecar_discovery: bool,
 ) -> std::process::Output {
     let mut command = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-watershed"));
     command
@@ -133,9 +134,74 @@ fn run_watershed_cli(
     if let Some(policy_name) = policy {
         command.arg("--policy").arg(policy_name);
     }
+    if legacy_sidecar_discovery {
+        command.arg("--legacy-sidecar-discovery");
+    }
     command
         .output()
         .expect("watershed CLI process should execute")
+}
+
+#[test]
+fn watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_legacy_sidecar_discovery");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let runfile_path = run_dir.join("case.run");
+    let runfile_payload = fs::read_to_string(&runfile_path)
+        .expect("legacy sidecar runfile payload should be readable");
+    let mutated_payload = runfile_payload.replace(
+        "chaninp = \"chan.inp\"\n",
+        "chaninp = \"configured_chan_should_be_ignored.inp\"\ntcr = \"configured_tcr_should_be_ignored.txt\"\n",
+    );
+    fs::write(&runfile_path, mutated_payload)
+        .expect("legacy sidecar runfile payload should be writable");
+    fs::write(run_dir.join("random_notes.txt"), "unknown sidecar payload")
+        .expect("unknown sidecar fixture should be writable");
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), true);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should still reach output guard in legacy discovery mode"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-034"),
+        "expected writer failure wrapper code in stderr, observed: {stderr}"
+    );
+    assert!(
+        stderr.contains("legacy-sidecar-discovery is active; ignoring configured inputs.chaninp"),
+        "expected legacy override warning for configured chaninp in stderr, observed: {stderr}"
+    );
+    assert!(
+        stderr.contains("legacy-sidecar-discovery is active; ignoring configured inputs.tcr"),
+        "expected legacy override warning for configured tcr in stderr, observed: {stderr}"
+    );
+    assert!(
+        stderr.contains("LSB-W-002 ignored unknown sidecar random_notes.txt"),
+        "expected unknown sidecar warning parity with hillslope in stderr, observed: {stderr}"
+    );
+    assert!(
+        !stderr.contains("CLIWAT-E-029"),
+        "legacy discovery should ignore configured sidecar path validation, observed: {stderr}"
+    );
 }
 
 fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {
