@@ -613,6 +613,11 @@ Authorized packages:
     landmine analysis (plant/runtime coupling), required canonical `SC-*`
     amendment map, and contract-first execution sequencing for downstream
     physics implementation packages.
+- `20260525-simimpl21-wb11-et-soil-water-contract-authority-closure-001/`
+  - Purpose: execute SIMIMPL21 by implementing canonical `SC-*` contract
+    authority closure for WB11 ET and soil-water migration scope (stage-memory
+    state, root-uptake semantics, ordering authority, alias lineage), with
+    baseline-provenance citations and downstream SIMIMPL22 handoff readiness.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

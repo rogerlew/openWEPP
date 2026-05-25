@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Plant-growth and residue-state consumers influenced by ET stress signals
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -63,6 +63,9 @@ Out of scope:
 | REF-EVAP-CH8-LINK | `references/50201000/chap8.pdf` §8.2.4 Eq. [8.2.14]-[8.2.15] | Plant growth regulation consumes ET-derived water-stress factor. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-EVAP-CH2-FORCING | `references/50201000/chap2.pdf` §2.1.6-§2.1.8 Eq. [2.1.12]-[2.1.14] | Climate generator provides daily solar radiation, dew point, and wind inputs used by ET potential pathways. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-EVAP-CH5-SNOW | `references/50201000/chap5.pdf` §5.1 and §5.3 text | Soil evaporation can be satisfied from snowpack first, then soil water. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-EVAP-LEGACY-STAGE | `/workdir/wepp-forest_260430_baseline/src/evap.for:458-564` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline stage-memory authority for `s1`, `s2`, `tu`, `tv` branch transitions and deficit-coupled `Es` evolution. | `[DIRECT][Static]` |
+| REF-EVAP-LEGACY-SOILX | `/workdir/wepp-forest_260430_baseline/src/evap.for:609-668` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layerwise soil-water extraction authority for soil evaporation from `st(i)` with depth-aware allocation. | `[DIRECT][Static]` |
+| REF-EVAP-LEGACY-SWU | `/workdir/wepp-forest_260430_baseline/src/swu.for:122-191` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline root-zone transpiration uptake authority (`UPi`, `Ui`) and water-stress ratio lineage (`watstr = ΣUi/ep`). | `[DIRECT][Static]` |
 | REF-EVAP-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative rate/depth domains and bounded stress factors. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -75,6 +78,7 @@ Out of scope:
 | `Esu` | `m d^-1` | Stage-one soil-evaporation upper limit (Eq. [5.2.10]). | soil-evaporation stage logic | stage-transition logic |
 | `Esb`, `Es` | `m d^-1` | Bare-soil and residue-adjusted actual soil evaporation (Eq. [5.2.12], [5.2.13]). | soil-evaporation stage logic | root-zone ET withdrawal |
 | `Tr`, `d2` | `mm d^-0.5`, `d` | Soil transmissivity and stage-two day counter driving Eq. [5.2.11]-[5.2.12]. | soil parameterization + stage state | stage-two evaporation computation |
+| `s1`, `s2`, `tu`, `tv` | `m`, `m`, `m`, `d` | Baseline stage-memory state surfaces controlling stage-one/stage-two soil-evaporation transition dynamics. | ET stage-memory pathway | stage-transition and `Es` branch logic |
 | `Cr` | `kg ha^-1` | Plant residue mass for evaporation attenuation (Eq. [5.2.13]). | residue/crop state | soil-evaporation attenuation |
 | `L` | `m^2 m^-2` | Leaf area index for ET partition and transpiration adjustment. | crop-growth state | ET partition and LAI adjustment |
 | `dx`, `ds` | `m` | Maximum and realized soil-evaporation depth (Eq. [5.3.1]-[5.3.2]). | ET root-zone pathway | soil-layer water updates |
@@ -94,6 +98,7 @@ Out of scope:
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | ET consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | WB17 ET state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` |
+| Baseline-authoritative ET stage-memory/state family | `s1`, `s2`, `tu`, `tv`, `st_####`, `rtd`, `pltol` |
 
 ### Required Outputs
 
@@ -157,6 +162,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-010 | Governance limitation invariant: ET contract interpretation must remain explicit about daily-step process scope and cited method assumptions (modified Ritchie framework and pathway preconditions); missing scope labeling blocks promotion. | governance-fail | REF-EVAP-CH5-POT, REF-EVAP-CH5-STAGE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-011 | WB17 ET execution invariant: ET phase computes deterministic partitioned ET components (`Er`, `Es`, `Ep`) and derived closure outputs (`ET`, `Ws`) from required WB17 ET symbols and updates `wb11_soil_water` without implicit fallback branches. | hard-fail | REF-EVAP-CH5-PART, REF-EVAP-CH5-LINK, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-012 | WB17 ET guard invariant: missing/non-finite/out-of-range WB17 ET domains must surface typed hard failures (`HKERNEL-WB11-ET-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-EVAP-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-EVAP-013 | SIMIMPL21 baseline-authority invariant: ET contract authority must preserve baseline stage-memory transitions (`s1`, `s2`, `tu`, `tv`), depth-aware soil evaporation extraction from `st(i)`, and root-zone uptake semantics (`UPi`, `Ui`, `Ws = ΣUi/Etp`) with explicit branch lineage to legacy `evap` + `swu` routines. | hard-fail | REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -174,6 +180,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-010` | governance | Contract review + promotion checklist | Promotion `HOLD` if method/scope caveats are not explicit in contract/disposition artifacts | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-011` | runtime | WB17 ET production kernel execution path | Typed hard error on non-deterministic/malformed partition/writeback ET outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-012` | runtime | WB17 ET guard table (`HKERNEL-WB11-ET-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid ET inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-EVAP-013` | runtime + governance | Stage-memory/root-uptake lineage validator for legacy `evap` + `swu` authority closure | Typed hard error / explicit `HOLD` when stage-memory, depth extraction, or `UPi`/`Ui` lineage semantics are missing or contradicted | SIMIMPL ET migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -187,6 +194,7 @@ equation vectors.
 | `L` | `lai` | LAI-driven partition surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | residue evaporation partition surface | `m d^-1` -> `m` daily flux output | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Esp`, `Etp`, `Es`, `Ep` | `Esp`, `Etp` (derived runtime), `Es`, `Ep` (flux outputs) | ET partition and component output surfaces | `m d^-1` potential -> `m` daily component flux outputs | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `s1`, `s2`, `tu`, `tv` | identity names (canonical stage-memory surface family) | stage-transition memory and threshold state | `m` / `d` preserved | `[DIRECT][Static]` |
 | `dx`, `ds`, `UPi`, `Ui` | identity names | root-zone distribution and uptake surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Θ`, `Θi`, `Θr`, `Θc`, `ULi` | identity names | soil-water state surfaces used by ET | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Ws` | identity name | ET-to-plant stress boundary surface | `fraction` preserved | `[DIRECT][Static]` |
@@ -220,6 +228,7 @@ equation vectors.
 - OBL-EVAP-P-002: Apply explicit Eq. [5.2.*] and Eq. [5.3.*] branch logic for stage transitions, LAI adjustment, and deficit uptake; no implicit fallback branches. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-EVAP-P-003: Enforce invariant failures via typed errors; no silent clamping/defaulting for invalid ET/stress states. `[INFERENCE][Static]`
 - OBL-EVAP-P-004: Preserve coupling-ready stress semantics for plant-growth consumers (`Ws` bounded and unit-consistent). `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-EVAP-P-005: Preserve baseline-authoritative stage-memory and uptake lineage surfaces (`s1`, `s2`, `tu`, `tv`, `UPi`, `Ui`) so downstream contracts/tests can validate deterministic `evap` + `swu` semantics. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -227,6 +236,7 @@ equation vectors.
 - OBL-EVAP-C-002: Plant-growth consumers must reject malformed/out-of-domain stress payloads and preserve Eq. [8.2.15] supply-demand interpretation. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-EVAP-C-003: Climate and winter boundary consumers/providers must preserve forcing/snow semantics required for ET branch selection and snow-first evaporation precedence. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-EVAP-C-004: All consumers must fail explicitly on invariant-violating payloads and carry invariant IDs in error context. `[INFERENCE][Static]`
+- OBL-EVAP-C-005: Water-balance consumers must preserve stage-memory and root-uptake lineage ordering assertions required for baseline-authoritative ET closure and must not substitute simplified scalar-only ET extraction semantics once SIMIMPL23 migration gates activate. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -276,6 +286,12 @@ Minimum WB17 ET production-kernel conformance vectors:
 4. Non-finite/domain-invalid WB17 ET inputs hard-fail with typed status
    family `HKERNEL-WB11-ET-E-002/003` and do not mutate orchestrator
    writeback surfaces.
+5. Stage-memory transition vector proves deterministic `s1/s2/tu/tv` branch
+   progression and deficit transition behavior under infiltration/non-infiltration
+   days.
+6. Root-uptake lineage vector proves depth-aware `UPi`/`Ui` extraction and
+   stress ratio lineage (`Ws = ΣUi/Etp`) consistent with baseline `swu`
+   semantics.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -326,6 +342,23 @@ Minimum WB17 ET production-kernel conformance vectors:
    with typed missing-input status.
 3. Non-finite interception symbol `I` hard-fails with typed non-finite status.
 
+## SIMIMPL21 WB11 ET Stage-Memory and Root-Uptake Authority Addendum
+
+1. Canonical ET authority includes baseline stage-memory state surfaces
+   `s1`, `s2`, `tu`, and `tv` with deterministic branch transitions for
+   stage-one/stage-two evaporation, including infiltration-coupled reset and
+   deficit branch behavior from baseline `evap.for`.
+2. Soil-evaporation extraction authority is layer-aware: evaporation demand is
+   satisfied from layer storage `st(i)` using explicit depth-partitioned
+   withdrawal semantics and cannot be represented solely as scalar
+   `wb11_soil_water` decrement in canonical closure claims.
+3. Root-zone transpiration extraction authority follows baseline `swu.for`:
+   layer potential uptake (`UPi`) distribution, deficit adjustment to actual
+   uptake (`Ui`), and stress ratio lineage to `Ws`.
+4. Contract-derived tests for SIMIMPL22 must include stage-memory and
+   root-uptake vectors keyed to these baseline lineage assertions before any
+   production-kernel ET migration edits are promotable.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -334,7 +367,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 | GAP-EVAP-002 | WB17 now fixes executed runtime aliases for `Eu`, `L`, and residue-partition ET symbols, but cross-domain alias harmonization for full Chapter-5 ET variable family remains incomplete. | Partial alias closure still leaves downstream harmonization risk. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-EVAP-003 | Companion contracts (`SC-PERC-001`, `SC-SUBHYD-001`, `SC-RESIDUE-001`) are not fully authored, so coupled ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-EVAP-004 | Chapter-5 validation emphasizes total ET and water-balance behavior; component-level partition validation (`Esp` vs `Etp` vs stage transitions) is not fully separated in available cited evidence. | Partition-subcomponent confidence is lower than aggregate ET confidence until dedicated evidence is added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-EVAP-005 | Full legacy stage-memory/state transition physics (`s1`, `s2`, `tu`, root-layer extraction surfaces) is not yet projected as first-class WB17 runtime symbols in openWEPP. | Limits strict one-to-one legacy state trajectory comparison despite equation-driven partition replacement of WB11 surrogate behavior. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-EVAP-005 | Canonical authority now explicitly defines legacy stage-memory/state-transition and `swu` uptake lineage (`s1`, `s2`, `tu`, `tv`, `UPi`, `Ui`), but production WB17 runtime projection of these surfaces remains pending. | Contract authority is closed for SIMIMPL21; implementation promotability remains blocked until SIMIMPL23 runtime migration and SIMIMPL22 contract-derived tests land. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -348,3 +381,4 @@ Minimum WB17 ET production-kernel conformance vectors:
 | `2026-05-23` | `5` | `Codex` | WB13 amendment: added ET component coupling authority for canonical daily output columns (`Ep`, `Es`, `Er`) with explicit WB13 malformed-output hard-fail posture. |
 | `2026-05-23` | `6` | `Codex` | WB15 amendment: added explicit canopy-interception coupling requirements so `I` remains a distinct closure term relative to ET outputs (`ET`, `Ws`) under typed consumer guard posture. |
 | `2026-05-23` | `7` | `Codex` | WB17 amendment: replaced WB11 ET surrogate algorithm authority with equation-driven WB17 partition semantics (`Esp`, `Etp`, `Er`, `Es`, `Ep`) using explicit runtime alias mapping and WB17 contract-derived vector obligations. |
+| `2026-05-25` | `8` | `Codex` | SIMIMPL21 amendment: added baseline-authoritative stage-memory and root-uptake lineage authority (`s1`, `s2`, `tu`, `tv`, layer extraction, `UPi/Ui/Ws`) with explicit legacy provenance anchors and downstream SIMIMPL22/SIMIMPL23 gating obligations. |

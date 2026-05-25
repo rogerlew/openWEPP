@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -14,7 +14,7 @@ consumer_scope:
   - Percolation and water-balance consumers requiring conductivity and storage-domain consistency
   - Erosion/hydraulics consumers requiring valid interrill/rill erodibility and shear-threshold surfaces
 evidence_level: Static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -58,6 +58,7 @@ Out of scope:
 | REF-SOIL-CH7-KRTAU | `references/50201000/chap7.pdf` §7.11 Eq. [7.11.1]-[7.11.18], Table 7.10.1, Table 7.10.4 | Baseline and adjusted rill erodibility/critical shear semantics and suggested domain limits. | `[DIRECT][Static]` |
 | REF-SOIL-CH4-DEPSTOR | `references/50201000/chap4.pdf` §4.3 Eq. [4.3.3]-[4.3.4] | Runoff partition consumes soil random roughness (`rr`) through maximum depression storage relation. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SOIL-CH5-PERC | `references/50201000/chap5.pdf` §5.4 Eq. [5.4.3]-[5.4.4] | Percolation uses saturated/adjusted conductivity (`Ksi`, `Ksai`) semantics tied to Chapter-7 soil parameterization. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SOIL-LEGACY-WB11 | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layer-storage to aggregate-water lineage authority (`st(i)`/`soilw(i)`/`watcon`) consumed by ET/soil-water closure surfaces. | `[DIRECT][Static]` |
 | REF-SOIL-CH11-ERODE | `references/50201000/chap11.pdf` §11.2 Eq. [11.2.3], §11.3 Eq. [11.3.7]-[11.3.10] | Hillslope erosion equations consume adjusted interrill/rill erodibility and critical shear parameters. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SOIL-CH7-FT | `references/50201000/chap7.pdf` §7.10.2.6, §7.11.2.4, §7.11.3.3 + `references/50201000/chap3.pdf` intro context | Freeze-thaw state and cycles influence soil erodibility and conductivity adjustments. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SOIL-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative depths/rates, bounded porosity fractions, and finite parameter domains. | `[INFERENCE][Static]` |
@@ -96,6 +97,7 @@ Out of scope:
 | INV-SOIL-010 | Erosion-coupling invariant: soil erodibility/shear boundary payloads (`Kiadj`, `Kradj`, `τcadj`) must be emitted with units/sign conventions compatible with Chapter-11 continuity/detachment equations. | hard-fail | REF-SOIL-CH11-ERODE, REF-SOIL-CH7-KI, REF-SOIL-CH7-KRTAU | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-011 | Update-order invariant: daily soil-state updates must retain explicit ordering across disturbance, consolidation/weathering, and freeze-thaw adjustments; no silent reordering is permitted. | hard-fail | REF-SOIL-CH7-INTRO, REF-SOIL-CH7-BD, REF-SOIL-CH7-KI, REF-SOIL-CH7-KRTAU | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-012 | Governance-range invariant: when empirical equations are used outside cited calibration ranges or suggested limits, outputs are non-promotable unless explicitly labeled and dispositioned with risk rationale. | governance-fail | REF-SOIL-CH7-KI, REF-SOIL-CH7-KRTAU, REF-SOIL-CH7-KE | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SOIL-013 | SIMIMPL21 soil-water alias-lineage invariant: ET/soil-water closure surfaces must preserve deterministic alias continuity from layer storage (`st(i)` / `Θi`) to aggregate publication lineage (`watcon`, `Total-Soil`, `SoilWaterTotal`) without projection-side surrogate reconstruction. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH5-PERC, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -113,6 +115,7 @@ Out of scope:
 | `INV-SOIL-010` | runtime | Soil-to-erosion boundary payload validator | Typed hard error on malformed erodibility/shear payload semantics | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-011` | runtime | Cross-driver soil update-order validator | Typed hard error on silent branch reordering across daily update drivers | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-012` | governance | Review/disposition/promotion checklist | Promotion `HOLD` when range-exceedance labels/rationale are missing | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SOIL-013` | runtime + governance | Soil layer-to-aggregate alias-lineage validator for ET/soil-water publication surfaces | Typed hard error / explicit `HOLD` when layer storage aliases and aggregate lineage cannot be traced from runtime-owned state | SIMIMPL soil-water lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -128,6 +131,8 @@ required until implementation surfaces diverge.
 | `φt`, `Fa`, `Fcf`, `φe` | identity names | porosity and storage-parameter surfaces | fraction semantics preserved | `[DIRECT][Static]` |
 | `Kb`, `Kec`, `Ke` | identity names | effective-conductivity mode surfaces | `mm h^-1` preserved | `[DIRECT][Static]` |
 | `Ksi`, `Ksai`, `Bi` | identity names | per-layer conductivity surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
+| `st(i)` / `Θi` | `wb18_perc_theta_####` | ET/soil-water layer-storage coupling surface | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watcon` lineage | `wb11_soil_water` -> `Total-Soil` / `SoilWaterTotal` | aggregate soil-water publication lineage surface | runtime `m` -> publication `mm` with declared conversion | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `FSa`, `Fθ`, `θf`, `θfc`, `Kfrozen` | identity names | frozen-soil conductivity adjustment surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Kib`, `Kiadj`, `Krb`, `Kradj` | identity names | erodibility state surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `τcb`, `τcadj` | identity names | critical-shear threshold baseline/adjusted surfaces | `Pa` preserved | `[DIRECT][Static]` |
@@ -161,6 +166,7 @@ required until implementation surfaces diverge.
 - OBL-SOIL-P-002: Apply Eq. [7.5.*], [7.6.*], [7.7.*], [7.9.*], [7.10.*], and [7.11.*] branch logic explicitly; no implicit fallbacks. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SOIL-P-003: Propagate invariant failures as typed errors; do not silently clamp materially invalid states. `[INFERENCE][Static]`
 - OBL-SOIL-P-004: Publish coupling-ready payloads for runoff/percolation/erosion domains with explicit unit/sign semantics. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SOIL-P-005: Preserve ET/soil-water alias-lineage surfaces (`st(i)`/`Θi` to `watcon` to WB13 aggregates) so downstream publication closure checks remain layer-authoritative. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -168,6 +174,7 @@ required until implementation surfaces diverge.
 - OBL-SOIL-C-002: Percolation consumers must enforce Chapter-5 conductivity semantics (`Ksi`, `Ksai`) and reject malformed soil-conductivity states. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SOIL-C-003: Erosion consumers must reject invalid erodibility/shear payloads and preserve Chapter-11 sign/unit conventions. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SOIL-C-004: Snow/freeze and management consumers must preserve freeze-thaw and disturbance signals needed by soil adjustment branches. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SOIL-C-005: Hydrology/publication consumers must reject aggregate soil-water surfaces that are not traceable to runtime layer-storage lineage. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -179,6 +186,7 @@ required until implementation surfaces diverge.
 | Erodibility/shear semantics (`INV-SOIL-007/008`) | erodibility updater stage | Hard error on invalid erodibility/shear outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Cross-domain payload completeness (`INV-SOIL-009/010/011`) | soil boundary publish stage | Hard error on malformed or incomplete coupling payloads | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Empirical-range governance labeling (`INV-SOIL-012`) | review/verification/promotion | Governance `HOLD` until range-exceedance handling is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL21 soil-water alias-lineage closure (`INV-SOIL-013`) | ET/soil-water boundary publication stage | Hard error / `HOLD` when `st(i)`/`Θi` to aggregate publication lineage is incomplete or synthetic | SIMIMPL soil-water lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -230,12 +238,26 @@ bit-for-bit parity). `[DIRECT][Static]`
 4. Out-of-domain active-coupling frost symbol/state hard-fails with typed
    domain posture.
 
+## SIMIMPL21 WB11 Soil-Water Alias-Lineage Addendum
+
+1. Soil-layer storage alias continuity for ET/soil-water closure is explicit:
+   canonical `st(i)`/`Θi` layer states map to WB18 runtime layer-storage
+   surfaces (`wb18_perc_theta_####`) consumed by ET extraction and aggregate
+   lineage checks.
+2. Aggregate soil-water publication lineage is explicit and layered:
+   `st(i)` -> `soilw(i)` -> `watcon` -> WB13 aggregate fields
+   (`Total-Soil`, `SoilWaterTotal`).
+3. Contract-derived tests in SIMIMPL22 must fail closed when aggregate
+   publications cannot be traced to runtime-owned layer storage surfaces.
+4. This addendum closes contract-authority ambiguity for ET/soil-water alias
+   lineage without asserting production implementation completion.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SOIL-001 | Per-invariant comparator vectors for soil-state transitions and erodibility adjustment factors are not yet curated in this package. | Limits immediate automation depth for invariant-specific acceptance checks. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SOIL-002 | Concrete openWEPP runtime-field aliases for soil state and erosion-boundary payloads are not yet fixed. | Alias map remains identity-only pending boundary finalization. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SOIL-002 | SIMIMPL21 closes ET/soil-water alias-lineage authority, but full soil-domain runtime alias finalization (including non-hydrology consumers) remains incomplete. | ET/soil-water contract authority is explicit; broader soil-boundary alias harmonization remains open. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SOIL-003 | Companion contracts for residue-management and hillslope sediment-domain internals are incomplete, so some coupled obligations remain provisional. | Full cross-domain closure semantics remain partially provisional. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SOIL-004 | Chapter-7 empirical equations include documented calibration ranges and suggested limits; enforcement strategy for out-of-range operational runs is not yet wired to comparator policy artifacts. | Promotion-risk labeling is available, but implementation-level policy automation is incomplete. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -247,3 +269,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-7 soil authority anchors, coupling invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-10 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, strengthened freeze-thaw anchor specificity/path consistency, added `τcadj` alias coverage, and evidence-tagged all degenerate-state claims. |
 | `2026-05-23` | `3` | `Codex` | CLIM06 amendment: added frozen-soil conductivity coupling authority from parsed frost controls, bounded `Dfrost/Dthaw/Nft/Ws_frz/InfCap_frz` runtime-state requirements, and typed active-coupling guard posture. |
+| `2026-05-25` | `4` | `Codex` | SIMIMPL21 amendment: added WB11 ET/soil-water alias-lineage authority (`INV-SOIL-013`) with explicit layer-storage to aggregate publication mapping and downstream SIMIMPL22 gating obligations. |

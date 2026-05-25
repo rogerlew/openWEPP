@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 34
+contract_version: 35
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -62,6 +62,9 @@ Out of scope:
 | REF-WATBAL-CH4-COUPLING | `references/50201000/chap4.pdf` §4.2 and §4.5 | Infiltration/runoff outputs feeding daily `Q` and antecedent-moisture coupling with Chapter 5. | `[DIRECT][Static]` |
 | REF-WATBAL-CH6-COUPLING | `references/50201000/chap6.pdf` §6.2.1, Eq. [6.2.1]-[6.2.5] | Daily subsurface lateral-flow/drainage terms consistent with Chapter-5 `Qd` accounting. | `[DIRECT][Static]` |
 | REF-WATBAL-CH8-COUPLING | `references/50201000/chap8.pdf` §8.2.4 and §8.1 coupling text | Plant-water-stress consumption of `Ws` and required plant-surface inputs to water balance. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-ORDER | `/workdir/wepp-forest_260430_baseline/src/watbal.for:486-497,551-552,918-922,958-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB11 execution ordering authority (`purk -> evap/evappm -> drain/lateral -> swu -> watcon recompute`). | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline aggregate root-zone water lineage from layer storage (`st`) through `soilw(i)` into `watcon`. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-WB13 | `/workdir/wepp-forest_260430_baseline/src/outfil.for:623-643` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB13 publication semantics for `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal`. | `[DIRECT][Static]` |
 | REF-WATBAL-INFILE-WEPPUI | `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md` §4, §8, §11 | Cross-contract requested/effective `wepp_ui` mode propagation authority from parser boundary to runtime lane selection. | `[DIRECT][Static]` |
 | REF-WATBAL-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes and bounded stress factors required for physically valid accounting. | `[INFERENCE][Static]` |
 
@@ -88,6 +91,9 @@ Out of scope:
 | `Θc` | `m^3 m^-3` | Critical soil-water fraction for plant-stress response. | crop parameterization | layer uptake adjustment |
 | `FCi` | `m` | Field-capacity water content for layer `i` (per Chapter-5 convention). | soil-layer parameterization | percolation eligibility |
 | `ULi` | `m` | Upper-limit water content for layer `i`. | soil-layer parameterization | uptake/percolation limits |
+| `st(i)` | `m` | Baseline per-layer liquid storage state used by ET extraction, lateral/drain updates, and aggregate root-zone recomputation. | WB11 hydrology kernel | ET/root uptake + `watcon` lineage |
+| `soilw(i)` | `m` | Baseline per-layer unfrozen-water intermediate: `st(i) + thetdr(i)*(dg(i)-frozen(i))`. | WB11 aggregate recomputation path | `watcon`/WB13 publication |
+| `watcon` | `m` | Baseline aggregate root-zone unfrozen water (`Σ soilw(i)`) used for closure/publication lineage. | WB11 aggregate recomputation path | WB13 `Total-Soil` lineage |
 | `pei` | `m d^-1` | Percolation rate through layer `i`. | percolation routine | lower-layer routing and `D` term assembly |
 | `ti`, `Δt` | `s` | Travel time through layer `i` and travel interval. | percolation routine | percolation step update |
 | `Ksi`, `Ksai`, `Bi` | `m s^-1`, `m s^-1`, `fraction` | Saturated and adjusted hydraulic conductivity with conductivity-shape parameter. | soil/percolation routine | percolation routing |
@@ -178,6 +184,8 @@ lateral/drainage).
 | INV-WATBAL-025 | SIMIMPL16 replay contract-derived test-coverage invariant: Tier-A replay promotability claims must be backed by contract-derived tests that enforce span overlap closure (`common_row_count > 0` with no unresolved baseline-only/candidate-only key residuals for promotable lanes), simulation-year key-domain alignment, `Total-Soil` alias continuity, strict-lane skip compensation for parquet lanes, and conversion-derived dat provenance row-consistency guards. Missing/failed closure tests are non-authoritative evidence. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-026 | SIMIMPL18 day-key rain/snow partition and publication-source invariant: WB13 day-key `RM` must be derived from runtime liquid input (`rain + melt`) rather than direct precipitation passthrough, and published `Snow-Water`/hydout-equivalent snow storage values must derive from runtime snow state (`snow.runtime_swe`) instead of static sidecar controls (`snow.options.ssd`). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-027 | SIMIMPL18 storage-state mutation invariant: published WB13 storage terms (`Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`) must be runtime-state-derived and mutable across multi-day forcing; invariant publication of the full storage tuple under non-zero forcing/thermal variation is invalid and indicates static-parameter publication leakage. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-028 | SIMIMPL21 baseline execution-order invariant: canonical WB11 authority preserves baseline ordering `purk -> evap/evappm -> drain/lateral -> swu -> watcon recompute`; ET transpiration uptake (`swu`) is not authoritative when executed ahead of drainage/lateral mutation. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-029 | SIMIMPL21 aggregate-lineage invariant: root-zone aggregate publication lineage must remain layer-authoritative such that `watcon = Σ soilw(i)` with `soilw(i)` derived from layer storage state and unfrozen-depth adjustment; WB13 `Total-Soil`/`SoilWaterTotal` values must trace to this lineage plus declared frozen/snow components. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -210,6 +218,8 @@ lateral/drainage).
 | `INV-WATBAL-025` | governance | Contract-derived replay closure-test validator at parity evidence gate | Typed hard error / explicit `HOLD` (`HS-SIMOUT-E-001`) when required SIMIMPL13 blind-spot closure tests are missing/failing, including conversion-derived dat row-consistency and strict-lane compensation coverage | Tier-A replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-026` | runtime | WB13 row assembler + hydout-equivalent publication mapper | Typed hard error on precipitation passthrough partition errors (`RM` sourced from raw `P` under snow-active cold branch) or when `Snow-Water` publication aliases static control `snow.options.ssd` rather than runtime SWE | Tier-A hydrology publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-027` | runtime + governance | Multi-day WB13 storage tuple continuity checker | Typed hard error / explicit `HOLD` when all published storage terms remain invariant across non-zero forcing and thermal transitions, indicating static publication leakage | Tier-A hydrology mutation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-028` | runtime + governance | Baseline WB11 sequencing validator for ET/perc/lateral/drain/root-uptake ordering | Typed hard error / explicit `HOLD` when execution order deviates from baseline-authoritative ordering in promoted WB11 closure claims | SIMIMPL ET/soil-water migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-029` | runtime + governance | Layer-to-aggregate water-lineage validator for WB13 publication surfaces | Typed hard error / explicit `HOLD` when aggregate/publication values are not traceable to declared `st(i)` -> `soilw(i)` -> `watcon` lineage | SIMIMPL hydrology publication-lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -238,6 +248,9 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `Θi` | `wb18_perc_theta_####` | WB18 per-layer moisture routing surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `FCi` | `wb18_perc_fc_####` | WB18 per-layer field-capacity threshold surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ULi` | `wb18_perc_ul_####` | WB18 per-layer upper-limit storage surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `st(i)` | `wb18_perc_theta_####` | WB11/WB18 canonical layer-storage alias family used by ET and hydrology mutations | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watcon` | `wb11_soil_water` | WB11 aggregate unfrozen root-zone storage state | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watcon` publication lineage | `Total-Soil`, `SoilWaterTotal` | WB13/hydout-equivalent aggregate publication alias family | `mm` publication units preserve declared depth-conversion semantics | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | WB18 per-layer conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `pei` | `wb18_perc_pei_####` | WB18 per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -345,6 +358,11 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   `SoilWaterTotal`) when forcing/thermal drivers vary and must surface typed
   hard-fail evidence for static publication leakage.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-015: WB11 ET/soil-water migration producers must preserve
+  baseline ordering and lineage authority (`purk -> evap/evappm -> drain/lateral -> swu -> watcon`)
+  and must publish explicit lineage diagnostics proving `st(i)`/`soilw(i)` to
+  `Total-Soil`/`SoilWaterTotal` continuity.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -352,6 +370,10 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 - OBL-WATBAL-C-002: Infiltration/runoff consumers must treat `Θ`/near-surface moisture linkage in declared units without hidden reinterpretation. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-WATBAL-C-003: Subsurface/drainage consumers must preserve `Qd` accounting semantics and avoid untracked reinjection into root-zone closure. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-WATBAL-C-004: All consumers must fail explicitly on invariant-violating payloads and propagate invariant IDs in error context. `[INFERENCE][Static]`
+- OBL-WATBAL-C-005: Publication/replay consumers must preserve ET component and
+  soil-water aggregate lineage semantics from simulation-owned runtime surfaces
+  and reject projection-side recomputation that bypasses declared lineage checks.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -379,6 +401,8 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | SIMIMPL16 replay contract-derived test-coverage closure (`INV-WATBAL-025`) | replay governance/test evidence boundary | Hard error / `HOLD` when closure tests for span/key overlap, strict-lane compensation, alias continuity, or conversion-derived dat row-consistency are missing/failing | Tier-A replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL18 day-key partition/publication-source closure (`INV-WATBAL-026`) | WB13 day-key publication + hydout-equivalent mapping boundary | Hard error when `RM` is sourced from raw precipitation passthrough under snow-active cold branches or when `Snow-Water` publication leaks static sidecar controls | Tier-A hydrology publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL18 storage-state mutation closure (`INV-WATBAL-027`) | multi-day WB13 storage publication boundary | Hard error / `HOLD` when storage tuple publication is invariant across non-zero forcing/thermal variation and runtime mutation closure is not demonstrable | Tier-A hydrology mutation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL21 baseline WB11 ordering closure (`INV-WATBAL-028`) | WB11 ET/soil-water migration staging boundary | Hard error / `HOLD` when promoted ordering differs from canonical baseline sequence (`purk -> evap/evappm -> drain/lateral -> swu -> watcon`) | SIMIMPL ET/soil-water migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL21 aggregate lineage closure (`INV-WATBAL-029`) | WB13/hydout aggregate publication boundary | Hard error / `HOLD` when `Total-Soil`/`SoilWaterTotal` cannot be traced to declared layer-authoritative `st(i)`/`soilw(i)`/`watcon` lineage | SIMIMPL hydrology publication-lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -990,12 +1014,28 @@ canonical order:
    `SoilWaterTotal`) plus multi-day storage mutation diagnostics to prevent
    re-introducing static-parameter publication leakage.
 
+## SIMIMPL21 WB11 ET/Soil-Water Baseline Ordering and Lineage Addendum
+
+1. Canonical WB11 authority preserves baseline daily sequencing:
+   `purk` percolation call, ET partition/stage-memory update (`evap`/`evappm`),
+   drainage + lateral mutations, root-uptake extraction (`swu`), then aggregate
+   root-zone recomputation (`watcon`).
+2. Canonical ET-root uptake closure requires `swu` execution after drainage and
+   lateral mutations when transpiration demand and root depth are both
+   positive; moving this extraction earlier is non-authoritative.
+3. Aggregate soil-water lineage authority is layer-first:
+   `st(i)` updates feed `soilw(i)` and then `watcon`; WB13
+   `Total-Soil`/`SoilWaterTotal` publications must trace to this lineage.
+4. SIMIMPL22 contract-derived tests must include ordering and lineage vectors
+   proving these assertions before SIMIMPL23 production ET migration claims are
+   promotable.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-WATBAL-001 | Per-invariant comparator vectors for `INV-WATBAL-*` families remain uncurated, and this residual automation limitation is explicitly risk-accepted for current governance progression. | Automated per-invariant acceptance remains limited; manual comparator interpretation is required where vectors are absent. | closed | `[DIRECT][Static]` |
-| GAP-WATBAL-002 | Downstream companion contracts (`SC-RUNOFFPART-001`, `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`) are not yet fully authored. | Cross-contract ownership boundaries remain provisional. | non-promotable | `[DIRECT][Static]` |
+| GAP-WATBAL-002 | Companion contracts (`SC-RUNOFFPART-001`, `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`) are authored but retain open implementation-promotability gaps for full WB11 ET/soil-water runtime closure. | Cross-contract ownership is explicit, but promotable runtime closure remains provisional pending SIMIMPL22/SIMIMPL23 execution. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-WATBAL-003 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-WATBAL-004 | Chapter-5 validation caveat (stronger near-surface than full-profile agreement) remains and is explicitly retained as a documented limitation with governance risk acceptance. | Deep-profile closure confidence remains lower than near-surface Tier-A signals and requires explicit interpretation in governance decisions; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -1038,3 +1078,4 @@ canonical order:
 | `2026-05-25` | `32` | `Codex` | SIMIMPL15 amendment: added strict/parquet lane-policy + candidate-source provenance closure invariants (`INV-WATBAL-023`), parquet semantic alias/width diagnostic continuity invariant (`INV-WATBAL-024`), and explicit replay-tooling obligations for non-promotable conversion-derived dat strict evidence classification. |
 | `2026-05-25` | `33` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-WATBAL-025`) and explicit producer/governance obligations for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency test enforcement. |
 | `2026-05-25` | `34` | `Codex` | SIMIMPL18 amendment: added day-key rain/snow partition and publication-source closure invariant (`INV-WATBAL-026`), storage-state mutation invariant (`INV-WATBAL-027`), producer obligations for runtime-derived `RM`/`Snow-Water` publication, and addendum authority for first-day + multi-day storage diagnostics. |
+| `2026-05-25` | `35` | `Codex` | SIMIMPL21 amendment: added baseline WB11 ET/soil-water ordering authority (`INV-WATBAL-028`) and layer-to-aggregate publication-lineage authority (`INV-WATBAL-029`) with explicit legacy provenance anchors and SIMIMPL22/SIMIMPL23 gating obligations. |

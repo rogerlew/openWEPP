@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -65,6 +65,8 @@ Out of scope:
 | REF-SYSTEM-WSHDRV-ORDER | `/workdir/wepp-forest_260430_baseline/src/wshdrv.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Watershed execution-order authority for channel lane (`wshcqi -> wshirs -> wshrun/wshpek`) including direct `wshchr` routing path when `ipeak > 2` and local channel runoff is absent. | `[DIRECT][Static]` |
 | REF-SYSTEM-WSHPEK-IPEAK | `/workdir/wepp-forest_260430_baseline/src/wshpek.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | `ipeak`-selected outlet branch authority (`1` Rational, `2` CREAMS, `>=3` wave routing) and routed peak/duration publication semantics. | `[DIRECT][Static]` |
 | REF-SYSTEM-WSHCHR-WAVE | `/workdir/wepp-forest_260430_baseline/src/wshchr.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing authority (linear kinematic-wave and Muskingum-Cunge branches, storage closure, routed `peakot`/`runvol`/`rundur` outputs). | `[DIRECT][Static]` |
+| REF-SYSTEM-LEGACY-WATBAL | `/workdir/wepp-forest_260430_baseline/src/watbal.for:958-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | WB11 aggregate recomputation authority linking layer-water state to published daily soil-water totals consumed by WB13 outputs. | `[DIRECT][Static]` |
+| REF-SYSTEM-LEGACY-OUTFIL | `/workdir/wepp-forest_260430_baseline/src/outfil.for:623-643` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | WB13 publication authority for ET components (`Ep`, `Es`, `Er`) and soil-water aggregates (`Total-Soil`, `SoilWaterTotal`). | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-SEDCONT | `chap13.pdf` §13.5.5, Eq. [13.5.17] | Channel sediment continuity with upstream/lateral inflow and flow detachment/deposition terms. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH14-HYDCONT | `references/50201000/chap14.pdf` §14.2, Eq. [14.2.1]-[14.2.5] | Impoundment hydraulic continuity and stage-discharge/stage-area coupling. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH14-ADAPT | `chap14.pdf` §14.2.3, Eq. [14.2.7]-[14.2.9] | Adaptive timestep semantics and mandatory minimum-step reset at regime transitions. | `[DIRECT][Static]` |
@@ -84,6 +86,8 @@ Out of scope:
 | `qdepth` | `m` | Runoff depth exported by contributing element. | hillslope/channel/impoundment element | downstream runon assembly |
 | `rof` | `m^3` | Runoff volume exported by contributing element. | hillslope/channel/impoundment element | downstream runon/hydrograph assembly |
 | `qp` | `m^3 s^-1` | Peak runoff from contributing element. | hillslope/channel/impoundment element | downstream hydrograph merge |
+| `Ep`, `Es`, `Er` | `mm` (daily depth-equivalent publication units) | Daily ET component publications consumed by replay/comparator surfaces and downstream summaries. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
+| `Total-Soil`, `SoilWaterTotal` | `mm` | Daily soil-water aggregate publications derived from runtime layer-state lineage plus frozen/snow components. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `total_detachment_kg` | `kg` | Total hillslope detachment payload at event endpoint. | hillslope erosion component | channel sediment-load assembly |
 | `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
 | `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
@@ -134,6 +138,7 @@ Out of scope:
 | INV-SYSTEM-024 | SIMIMPL15 semantic report structural-continuity invariant: parquet semantic reports must resolve required investigation alias continuity for `Total-Soil` and publish observed row-width diagnostics comparable to dat lanes; alias drift or placeholder width diagnostics is a hard-fail/HOLD evidence defect. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-025 | SIMIMPL16 replay contract-derived test-coverage invariant: system replay closeout claims must be backed by contract-derived tests covering `SIMIMPL13-TEST-001..005`, including span overlap closure, key-domain alignment, parquet alias continuity, strict-lane compensation when parquet strict is skipped, and conversion-derived dat provenance row-consistency checks. Missing/failed closure tests keep replay governance evidence non-authoritative. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-026 | SIMIMPL18 baseline-year policy and full-span precipitation parity invariant: replay comparability claims across legacy baseline and openWEPP candidate must publish explicit baseline-year policy that yields a declared common keyed horizon, preserve identical input/sidecar provenance references, and evaluate precipitation (`P`) parity across the full keyed span (not overlap-only subsets). Missing policy metadata or unmatched-span `P` claims are hard-fail/HOLD defects. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-027 | SIMIMPL21 WB13 ET/soil-water publication-lineage invariant: published `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal` surfaces must be simulation-owned outputs traceable to canonical WB11/WB13 lineage (`st(i)`/`soilw(i)` -> `watcon` -> WB13) with explicit alias continuity and no projection-side surrogate reconstruction. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-LEGACY-OUTFIL, REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -165,6 +170,7 @@ Out of scope:
 | `INV-SYSTEM-024` | runtime + governance | Semantic alias and row-width structural continuity gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when `Total-Soil` alias continuity is unresolved or semantic width diagnostics use placeholder sentinel classes | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-025` | governance | Replay contract-derived closure-test coverage gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required SIMIMPL13 blind-spot closure tests are missing/failing, including strict-lane compensation and conversion-derived dat row-consistency assertions | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-026` | runtime + governance | Baseline-year policy + full-span precipitation comparability gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when baseline-year expansion/rekey policy is missing, input-provenance parity is unproven, or full-span keyed `P` comparability is reduced to overlap-only subsets | SIMIMPL replay span-policy gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-027` | runtime + governance | WB13 ET/soil-water publication-lineage validator for ET components and aggregate soil-water outputs | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal` are not traceable to simulation-owned WB11 lineage with declared aliases | SIMIMPL ET/soil-water publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -184,6 +190,8 @@ explicit divergent names.
 | `qci`, `qcf`, `tl` | identity names | channel runoff-case and transmission-loss surfaces | `m` and `m^3` preserved | `[DIRECT][Static]` |
 | `tb`, `tp`, `Aw`, `qa`, `qpi` | identity names | synthetic hydrograph merge surfaces | `min`, `m^2`, `m`, `m^3 s^-1` preserved | `[DIRECT][Static]` |
 | `qpo`, `tc`, `tcc`, `tcs`, `tci` | identity names | channel/watershed outlet peak-flow surface | `m^3 s^-1` and `h` preserved | `[DIRECT][Static]` |
+| `Ep`, `Es`, `Er` | `Ep`, `Es`, `Er` (identity) | WB13 ET component publication surfaces | `mm` daily publication units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Total-Soil`, `SoilWaterTotal` | `Total-Soil`, `SoilWaterTotal` (identity; legacy semantic alias `Total-Soil Water` accepted in comparator tooling only) | WB13 aggregate soil-water publication surfaces | `mm` publication units preserved with WB11 lineage continuity | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qi`, `Qo`, `H`, `Aimp`, `Qtotal` | identity names | impoundment hydraulic routing surfaces | `ft^3 s^-1`, `ft`, `ft^2` preserved | `[DIRECT][Static]` |
 | `M`, `Ci`, `Co`, `Dep` | identity names | impoundment sediment-mass surfaces | `lb` and `lb ft^-3` preserved | `[DIRECT][Static]` |
 
@@ -224,6 +232,11 @@ explicit divergent names.
 - Replay comparability evidence claims full-span parity without explicit
   baseline-year policy metadata or without full-span keyed precipitation (`P`)
   diagnostics under that policy (`INV-SYSTEM-026`).
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- WB13 ET/soil-water publication outputs (`Ep`, `Es`, `Er`, `Total-Soil`,
+  `SoilWaterTotal`) are emitted from projection-side surrogates or alias-only
+  reconstruction without traceable simulation-owned WB11 lineage
+  (`INV-SYSTEM-027`).
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
@@ -288,6 +301,11 @@ explicit divergent names.
   when legacy baseline clamps) and must report full-span keyed precipitation
   parity diagnostics (`P`) under that policy before promotable parity claims.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-015: WB13 publication producers must preserve simulation-owned
+  lineage for `Ep`/`Es`/`Er` and `Total-Soil`/`SoilWaterTotal`, including
+  explicit alias continuity to baseline WB13 semantics; projection-side
+  surrogate reconstruction is forbidden.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -303,6 +321,10 @@ explicit divergent names.
 - OBL-SYSTEM-C-004: Comparator/replay consumers must classify violations at
   tier-appropriate gates and preserve `HOLD` when governance guards remain open.
   `[INFERENCE][Static]`
+- OBL-SYSTEM-C-005: Reporting/replay consumers must reject WB13 ET and
+  soil-water publications that cannot be traced to simulation-owned WB11
+  lineage with declared alias continuity.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -329,6 +351,7 @@ explicit divergent names.
 | SIMIMPL15 semantic alias/diagnostic structural closure (`INV-SYSTEM-024`) | semantic report publication boundary | Hard error / `HOLD` when `Total-Soil` alias continuity is unresolved or width diagnostics use placeholder sentinel classes instead of observed row widths | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL16 replay contract-derived test-coverage closure (`INV-SYSTEM-025`) | replay governance/test evidence boundary | Hard error / `HOLD` when closure tests for span/key overlap, strict-lane compensation, alias continuity, or conversion-derived dat row-consistency are missing/failing | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL18 baseline-year policy and precipitation full-span closure (`INV-SYSTEM-026`) | replay provenance + semantic parity publication boundary | Hard error / `HOLD` when baseline-year adaptation policy is absent/implicit or when keyed full-span precipitation comparability (`P`) is not demonstrated under the declared policy | SIMIMPL replay span-policy gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL21 WB13 ET/soil-water publication lineage closure (`INV-SYSTEM-027`) | WB13/reporting publication boundary | Hard error / `HOLD` when `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal` are not simulation-owned outputs with traceable WB11 lineage and declared alias continuity | SIMIMPL ET/soil-water publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -545,6 +568,21 @@ Minimum WS12 integration vectors:
    `frozwt`, `SoilWaterTotal`) and multi-day storage mutation diagnostics are
    required evidence surfaces for follow-on hydrology closure waves.
 
+## SIMIMPL21 WB13 ET/Soil-Water Publication Lineage Addendum
+
+1. System publication authority explicitly includes WB13 ET components
+   (`Ep`, `Es`, `Er`) and aggregate soil-water outputs (`Total-Soil`,
+   `SoilWaterTotal`) as simulation-owned runtime products.
+2. Publication lineage must remain traceable to canonical WB11 layer-water
+   closure (`st(i)`/`soilw(i)` -> `watcon`) plus declared frozen/snow
+   composition semantics before report/replay emission.
+3. Comparator/replay/reporting pathways may canonicalize accepted aliases
+   (for example legacy `Total-Soil Water`) but must not fabricate surrogate
+   values when required simulation-owned symbols are missing.
+4. Contract-derived follow-on tests must include lineage-preservation vectors
+   that fail closed on missing alias continuity or projection-side
+   reconstruction.
+
 ## EROD13 Wave-1 Active Boundary-Carry Addendum
 
 1. System integration boundaries carrying hillslope runtime outputs must
@@ -597,7 +635,7 @@ Minimum WS12 integration vectors:
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SYSTEM-001 | Companion contracts for channel hydraulics/erosion (`SC-HYDRAULICS-001`, `SC-SED-001`), watershed routing (`SC-ROUTE-001`), and impoundment internals (`SC-IMPOUND-001`) remain in-review with open non-Wave-0 promotability gaps and staged production-kernel completion. | Full system-boundary promotion remains provisional for watershed-wide release, while EROD12 Wave-0 ownership/guard closure for required erosion boundaries is explicit. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-SYSTEM-002 | Alias map remains identity-only because concrete openWEPP boundary field names for system payloads are not finalized. | Symbol continuity to implementation surfaces is incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-002 | Most system alias mappings remain identity-only because concrete openWEPP boundary field names are still being finalized outside WB13 ET/soil-water publication surfaces. | WB13 ET/soil-water alias obligations are explicit, but full system-boundary symbol continuity to implementation surfaces remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-003 | Chapter 13 notes that separate climate files for hillslope and channel/impoundment components are possible but "not been tested" in cited text. | Cross-file forcing consistency risk remains for mixed-forcing configurations. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-SYSTEM-004 | CREAMS outlet peak-flow method is statistical and chapter-cited dataset support is for watersheds in the `70 ha` to `6200 ha` range. | Method-selection risk exists when applied outside referenced dataset conditions. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -629,3 +667,4 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `21` | `Codex` | SIMIMPL15 amendment: added replay-lane policy + candidate-source provenance invariant (`INV-SYSTEM-023`), semantic alias/row-width structural continuity invariant (`INV-SYSTEM-024`), and explicit producer obligations for deterministic strict/parquet policy publication and non-promotable conversion-derived dat classification. |
 | `2026-05-25` | `22` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-SYSTEM-025`) plus explicit producer/governance obligations requiring blind-spot closure tests for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency gating. |
 | `2026-05-25` | `23` | `Codex` | SIMIMPL18 amendment: added baseline-year policy and full-span precipitation comparability invariant (`INV-SYSTEM-026`), explicit replay-provenance obligations for declared span-policy metadata, and addendum authority requiring first-day and multi-day storage diagnostics for hydrology closure evidence. |
+| `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |

@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -62,6 +62,8 @@ Out of scope:
 | REF-PLANT-CH8-MGMT | `chap8.pdf` §8.3-§8.5 | Management conversion/removal constraints (harvest, grazing, dormancy, burning). | `[DIRECT][Static]` |
 | REF-PLANT-CH8-RANGE | `chap8.pdf` §8.4-§8.5 | Rangeland growth-curve (`gi`) and dormancy/stress transfer semantics. | `[DIRECT][Static]` |
 | REF-PLANT-CH5-COUPLING | `references/50201000/chap5.pdf` §5.5 | ET/water-balance receives daily LAI, root depth, biomass, residue cover; returns plant water-stress factor. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-WATBAL | `/workdir/wepp-forest_260430_baseline/src/watbal.for:918-922,958-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline ordering/linkage authority for root-uptake dispatch (`swu`) and post-uptake aggregate water recomputation consumed by plant stress coupling surfaces. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-SWU | `/workdir/wepp-forest_260430_baseline/src/swu.for:122-191` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layer-uptake and stress lineage authority for `UPi`, `Ui`, root depth (`rtd`), and stress ratio used by plant growth regulation. | `[DIRECT][Static]` |
 | REF-PLANT-CH9-COUPLING | `references/50201000/chap9.pdf` §9.2, §9.4 | Residue domain consumes standing/flat/root biomass transfers and management outcomes. | `[DIRECT][Static]` |
 | REF-PLANT-CH11-COUPLING | `references/50201000/chap11.pdf` §11.6 | Erosion adjustments depend on canopy/surface cover and residue surfaces from plant/residue routines. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INFILE | `/workdir/wepp-forest_260430_baseline/src/infile.for:1115-1220` | Yearly-scenario decoding of annual extension controls and perennial event/cycle payload arrays. | `[DIRECT][Static]` |
@@ -318,6 +320,7 @@ algorithm.
 | INV-PLANT-020 | Senescence/harvest dynamics: post-threshold senescence uses explicit decline equations/parameters (`dropfc`, `decfct`, `spriod`) and preserves non-negative biomass/canopy state while enforcing explicit reset only for canonical reset-class actions (`planting`, `harvest`, `stop`). | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-PTGRA | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-021 | Growth-physics required-symbol guard: climate/stress/parameter inputs required by PL16 equations (`tmax`, `tmin`, `rad`, `Ws`, `btemp`, `otemp`, `gddmax`, `bb`, `beinp`, `extnct`, `rdmax`, `rsr`, `xmxlai`, etc.) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error. | hard-fail | REF-PLANT-CH8-GROWTH, REF-PLANT-CH8-STRESS, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-022 | PL17 decomposition-kinetics parameter projection invariant: transition-control runtime projection must emit slot/crop decomposition-rate symbols (`oratea`, `orater`) on decomposition surfaces for active crops, preserving finite positive domains and typed hard-fail posture on invalid projection input. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-023 | SIMIMPL21 root-uptake stress-lineage invariant: plant growth stress coupling must consume ET stress (`Ws`) and root-depth/uptake lineage (`Rd`/`rtd`, `UPi`, `Ui`) derived from canonical WB11 `swu` semantics; synthetic stress substitution detached from layer-uptake lineage is invalid. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-SWU, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -352,6 +355,7 @@ algorithm.
 - OBL-PLANT-P-005: Emit full annual extension payload controls when annual/fallow branch is active, with explicit zero-sentinel for non-selected option families. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-006: Emit full indexed perennial payload families for `cutday` and grazing cycles exactly through declared cardinalities. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-007: Reject invalid transition-control runtime projection domains with typed failures; no silent coercion. `[INFERENCE][Static]`
+- OBL-PLANT-P-008: Preserve coupled ET stress/root-uptake lineage surfaces (`WS`/`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) and expose typed failures when lineage inputs are missing/non-finite/out-of-domain. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -360,6 +364,7 @@ algorithm.
 - OBL-PLANT-C-003: Residue consumer must preserve mass-accounting semantics for plant-to-residue transfers. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-C-004: All consumers must propagate invariant-violation context without silent clamping/defaulting. `[INFERENCE][Static]`
 - OBL-PLANT-C-005: Scheduler/growth/decomp consumers must treat transition-control symbol families as deterministic indexed sets; missing/extra indices are hard failures. `[INFERENCE][Static]`
+- OBL-PLANT-C-006: Hydrology/ET consumers must preserve WB11 `swu`-derived stress and root-uptake lineage semantics when returning `Ws` to growth regulation; surrogate stress substitution is non-authoritative. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -369,6 +374,7 @@ algorithm.
 | Transfer closure (`INV-PLANT-004`) | senescence/management transfer step | Hard error if closure residual exceeds tolerance; require fix before promotion | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Management removal bounds (`INV-PLANT-006/008`) | management event application | Hard error and event rejection on impossible removal/conversion | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Coupling completeness (`INV-PLANT-007`) | plant->consumer handoff | Hard error on missing/invalid field; no fallback payload synthesis | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL21 ET stress/root-uptake lineage closure (`INV-PLANT-023`) | plant growth stress coupling boundary (`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) | Hard error / `HOLD` when stress lineage is detached from WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Transition-control projection closure (`INV-PLANT-011/012/013/014/015`) | parser->runtime projection boundary and scheduler pre-dispatch | Hard error on missing/incoherent/index-invalid/out-of-domain control surface | Tier-A gate for PL transition execution; Tier-B investigation otherwise | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Model-limit governance (`INV-PLANT-009`) | review/verification and runtime config audit | Governance failure; requires explicit contract amendment before promotion | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -398,6 +404,7 @@ algorithm.
 | `INV-PLANT-020` | runtime | Senescence/harvest branch update path | Typed hard error on invalid senescence-rate parameters, negative post-update state, or unauthorized implicit reset | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/non-positive decomposition-rate projection symbols | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-023` | runtime + governance | ET stress/root-uptake lineage validator for coupled growth regulation | Typed hard error / explicit `HOLD` when `Ws` and root-uptake lineage are not traceable to WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -411,18 +418,19 @@ states required deterministic alias mapping for transition-control projections.
 | `HUI` | `HUI` (identity) | plant daily phenology surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `Bm` | `Bm` (identity) | plant state export surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Brt` | `Brt` (identity) | plant state export surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
-| `Rd` | `Rd` (identity) | plant->ET coupling surface | `m` -> `m` | `[DIRECT][Static]` |
+| `Rd` | `Rd` (canonical) / `rtd` (runtime growth-state alias) | plant->ET root-depth coupling surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `LAI` | `LAI` (identity) | plant->ET/erosion coupling surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `Cc` | `Cc` (identity) | plant->erosion coupling surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `Hc` | `Hc` (identity) | plant->erosion coupling surface | `m` -> `m` | `[DIRECT][Static]` |
 | `YLD` | `YLD` (identity) | output/reporting surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Mf` | `Mf` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Ms` | `Ms` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
-| `WS` | `WS` (identity) | ET stress return surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `WS` | `WS` (canonical) / `Ws` (runtime stress alias) | ET stress return surface | `fraction` -> `fraction` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `TS` | `TS` (identity) | plant stress surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `REG` | `REG` (identity) | plant growth regulator surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `EP` / `Etp` | `EP` / `Etp` (identity) | ET demand surface | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
 | `u_l` | `u_l` (identity) | layered uptake surface | `mm` -> `mm` | `[DIRECT][Static]` |
+| `UPi`, `Ui` | `UPi`, `Ui` (identity) | ET root-uptake lineage surfaces consumed by stress coupling | `m d^-1` -> `m d^-1` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `DeltaBp`, `DeltaBi` | `DeltaBp`, `DeltaBi` (identity) | biomass increment surfaces | `kg m^-2 d^-1` -> `kg m^-2 d^-1` | `[DIRECT][Static]` |
 | `Rdx` | `Rdx` (identity) | root-envelope parameter surface | `m` -> `m` | `[DIRECT][Static]` |
 | `CRITVM` | `CRITVM` (identity) | grazing-floor parameter surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
@@ -530,6 +538,14 @@ Minimum required scenario families for contract conformance:
    - primary slot/crop alias projection emits root `oratea`/`orater` symbols;
    - missing/non-finite/non-positive decomposition-rate parameters fail with
      typed projection status.
+13. SIMIMPL21 stress-lineage vectors:
+   - canonical ET return path publishes finite `Ws` coupled to WB11 `swu`
+     lineage surfaces (`UPi`, `Ui`, `rtd`) and plant growth consumes those
+     surfaces without surrogate substitution;
+   - missing or non-finite `UPi`/`Ui` lineage surfaces hard-fail prior to
+     growth-regulation publication;
+   - stress lineage detached from declared WB11 uptake semantics is
+     non-promotable and retains explicit `HOLD`.
 
 ## WB15 Plant-to-Interception Coupling Addendum
 
@@ -579,6 +595,27 @@ Minimum required scenario families for contract conformance:
 3. Failure migration vectors: missing/non-finite/domain-invalid canopy symbols
    still produce typed hard-fail boundary classifications and IDs.
 
+## SIMIMPL21 WB11 ET Stress-Lineage Authority Addendum
+
+### SIMIMPL21 Coupled-Lineage Closure
+
+1. Plant stress coupling authority now explicitly requires WB11 lineage
+   continuity from ET uptake surfaces (`UPi`, `Ui`) and root-depth state
+   (`Rd`/`rtd`) into returned stress factor `Ws`.
+2. Plant consumers must treat stress/uptake lineage surfaces as first-class
+   coupled state, not interchangeable scalar hints.
+3. Any growth regulation result derived from surrogate stress without declared
+   WB11 lineage evidence is non-authoritative for parity/disposition claims.
+
+### SIMIMPL21 Contract-Test Vector Obligations
+
+1. Nominal lineage vector: `Ws` publication includes finite lineage payload
+   (`UPi`, `Ui`, `Rd`/`rtd`) and growth regulation consumes it deterministically.
+2. Missing-lineage vector: omission of `UPi`/`Ui` or root-depth lineage
+   hard-fails with typed boundary status.
+3. Detached-lineage vector: scalar stress substitution without WB11 lineage
+   evidence is classified non-promotable and triggers explicit `HOLD`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -586,7 +623,7 @@ Minimum required scenario families for contract conformance:
 | GAP-PLANT-001 | Per-equation comparator vectors for `INV-PLANT-*` are not yet curated in this package. | Limits immediate regression-gate automation for each invariant family. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-PLANT-002 | Nutrient/pest/aeration coupling is outside current WEPP plant routines and remains parameterization-only. | Reduces causal fidelity for yield stress attribution without external calibration workflow. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-PLANT-003 | Legacy routine provenance is mapped at domain level (`grow.for`, `growop.for`, `range.for`) but not yet per-invariant line anchor. | Traceability for implementation-level acceptance is partial. | promotable-with-risk | `[INFERENCE][Static]` |
-| GAP-PLANT-004 | Boundary contract IDs for plant consumers (`SC-WATBAL-001`, `SC-RESIDUE-001`, `SC-SED-001`) are not yet fully authored. | Cross-contract closure is provisional until downstream contracts reach draft status. | non-promotable | `[DIRECT][Static]` |
+| GAP-PLANT-004 | Companion contracts are authored, but full ET/soil-water runtime closure for WB11 lineage obligations (`Ws`, `UPi`, `Ui`, `Rd`/`rtd`) remains pending SIMIMPL22/SIMIMPL23 test+implementation waves. | Cross-contract authority is explicit, but promotable coupled-runtime closure remains provisional until downstream migration packages land. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-PLANT-005 | Transition-control projection families are implemented and contract-conformance tests pass for PL11 scope (`annual extension symbols`, `cutday indexed projection`, `grazing cycle payload projection`, and typed rejects for grazing window/cardinality). | Closed by PL11 runtime implementation and explicit conformance execution evidence. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but full cross-domain consumer harmonization of error labels is still open. | Residual traceability work remains for downstream consumers; runtime projection labels are implemented. | promotable-with-risk | `[INFERENCE][Static] + [Ran]` |
 | GAP-PLANT-007 | Alias continuity for projected PL slot/crop runtime naming required explicit closure (`conset/drset` schedule drift and PL11 projected family template continuity). | Closed by PL13A canonical registry + contract alias-map reconciliation; remaining non-canonical structural scheduler symbols are explicitly exceptioned. | closed | `[DIRECT][Static] + [Ran]` |
@@ -609,3 +646,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `10` | `Codex` | PL17 amendment: added decomposition-kinetics parameter projection authority (`oratea`, `orater`) to PL transition-control runtime projection semantics, introduced `INV-PLANT-022` plus guard-map row, and expanded test-vector obligations for decomposition-rate projection and failure posture. |
 | `2026-05-23` | `11` | `Codex` | WB15 amendment: added plant-to-interception coupling authority for hydrology consumption of `cancov`, `lai`, and `vdmt`, including required producer-domain guarantees and coupled failure vectors for missing/non-finite/out-of-domain canopy-state payloads. |
 | `2026-05-23` | `12` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered hydrology/plant coupling interfaces to consume boundary symbols via ARCH22 typed symbol families and preserving WB15 guard/failure semantics under typed migration. |
+| `2026-05-25` | `13` | `Codex` | SIMIMPL21 amendment: added WB11 ET stress/root-uptake lineage authority (`INV-PLANT-023`) with coupled boundary disposition, explicit WB11 lineage obligations (`Ws`, `UPi`, `Ui`, `Rd`/`rtd`), and downstream SIMIMPL22/SIMIMPL23 gating posture. |
