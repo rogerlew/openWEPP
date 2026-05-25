@@ -575,6 +575,114 @@ loss = "output/H1.loss.json"
     );
 }
 
+#[test]
+fn cli03_mofe04_multiofe_publication_uses_canonicalized_oferow_and_total_area() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe04-publication-multiofe"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe04_publication_multiofe",
+        false,
+        |run_dir| {
+            let _ = fs::remove_file(run_dir.join("wepp_ui.txt"));
+            write_three_ofe_slope(&run_dir.join("case.slp"));
+            write_soil_with_ntemp_low_conductivity(&run_dir.join("case.sol"), 3);
+            write_high_runoff_climate(&run_dir.join("case.cli"));
+            write_three_ofe_management(&run_dir.join("case.man"));
+        },
+    )
+    .expect("aligned multi-OFE fixture should execute");
+
+    let manifest =
+        fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest.contains(
+            "\"publication_ofe_policy\": \"single-row-canonicalized-hillslope-aggregate\""
+        ),
+        "manifest missing MOFE04 publication policy marker: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"area_policy\": \"sum-ofe-geometry-area\""),
+        "manifest missing MOFE04 area policy marker: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"contributor_ofe_count\": 3"),
+        "manifest missing MOFE04 contributor OFE count marker: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"publication_area_m2\": 3600.0"),
+        "manifest missing MOFE04 publication area marker for multi-OFE case: {manifest}"
+    );
+
+    let first_row = first_numeric_pass_row(&report.output_pass);
+    assert!(
+        (first_row[0] - 1.0).abs() < 1.0e-9,
+        "WB13 OFE key must remain canonicalized to 1, observed {}",
+        first_row[0]
+    );
+    assert!(
+        (first_row[19] - 3_600.0).abs() < 1.0e-9,
+        "WB13 Area column must carry summed OFE geometry area for multi-OFE runs, observed {}",
+        first_row[19]
+    );
+}
+
+#[test]
+fn cli03_mofe04_single_ofe_publication_reports_single_contributor_policy() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe04-publication-singleofe"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe04_publication_singleofe",
+        false,
+        |run_dir| {
+            let _ = fs::remove_file(run_dir.join("wepp_ui.txt"));
+        },
+    )
+    .expect("single-OFE fixture should execute");
+
+    let manifest =
+        fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest.contains("\"contributor_ofe_count\": 1"),
+        "manifest missing MOFE04 contributor OFE count marker: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"publication_area_m2\": 1800.0"),
+        "manifest missing MOFE04 publication area marker for single-OFE case: {manifest}"
+    );
+}
+
 fn execute_fixture_with_runfile(
     runfile_payload: &str,
     prefix: &str,
@@ -741,6 +849,25 @@ fn write_three_ofe_management(path: &Path) {
     ))
     .expect("three-OFE management fixture should be readable");
     fs::write(path, payload).expect("three-OFE management fixture should be writable");
+}
+
+fn first_numeric_pass_row(pass_path: &Path) -> Vec<f64> {
+    let pass_text = fs::read_to_string(pass_path).expect("pass output should be readable");
+    let row = pass_text
+        .lines()
+        .find(|line| {
+            line.split_whitespace()
+                .next()
+                .is_some_and(|token| token.parse::<f64>().is_ok())
+        })
+        .expect("pass output must include at least one numeric WB13 row");
+    row.split_whitespace()
+        .map(|token| {
+            token.parse::<f64>().unwrap_or_else(|error| {
+                panic!("WB13 row token should parse as f64 ({token}): {error}")
+            })
+        })
+        .collect()
 }
 
 fn runner_execution_lock() -> &'static Mutex<()> {

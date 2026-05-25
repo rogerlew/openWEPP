@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 24
+contract_version: 26
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -583,6 +583,25 @@ Minimum WS12 integration vectors:
    that fail closed on missing alias continuity or projection-side
    reconstruction.
 
+## MOFE04 Multi-OFE WB13/WAT Publication Boundary-Carry Addendum
+
+1. System-boundary publication authority for hillslope WB13/H.wat outputs must
+   carry explicit MOFE04 canonicalized publication policy provenance:
+   - `publication_ofe_policy`
+   - `contributor_ofe_count`
+   - `area_policy`
+   - `publication_area_m2`.
+2. In MOFE multi-OFE contexts, published `OFE = 1` is interpreted as canonical
+   output-row identity only; contributor topology dimensionality must be taken
+   from explicit `contributor_ofe_count` provenance rather than inferred from
+   row key alone.
+3. System-level replay/reporting consumers must fail closed on missing or
+   malformed MOFE04 publication policy provenance fields and must not silently
+   reinterpret canonicalized row ids as topology cardinality.
+4. `Area` publication semantics at system boundary remain
+   `sum-ofe-geometry-area` under MOFE04 and may not regress to
+   primary-OFE-only assumptions when `contributor_ofe_count > 1`.
+
 ## EROD13 Wave-1 Active Boundary-Carry Addendum
 
 1. System integration boundaries carrying hillslope runtime outputs must
@@ -673,3 +692,4 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `23` | `Codex` | SIMIMPL18 amendment: added baseline-year policy and full-span precipitation comparability invariant (`INV-SYSTEM-026`), explicit replay-provenance obligations for declared span-policy metadata, and addendum authority requiring first-day and multi-day storage diagnostics for hydrology closure evidence. |
 | `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
+| `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |

@@ -152,6 +152,10 @@ struct HillslopeWb13PublicationProvenance {
     projection_fallback_used: bool,
     guard_id: String,
     replay_candidate_surfaces: Vec<String>,
+    publication_ofe_policy: String,
+    contributor_ofe_count: usize,
+    area_policy: String,
+    publication_area_m2: f64,
     row_count: usize,
     sim_day_index_monotonic: bool,
     first_row_key: HillslopeWb13RowKeyProvenance,
@@ -699,7 +703,8 @@ pub fn execute_hillslope_run(
         (snow, frost, build_mode_selection_provenance(&wepp_ui)?)
     };
 
-    let slope_primary_area_m2 = derive_primary_ofe_area_from_slope(&slope)?;
+    let publication_area_m2 = derive_mofe04_publication_area_from_slope(&slope)?;
+    let contributor_ofe_count = slope.ofe_count;
 
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -780,7 +785,7 @@ pub fn execute_hillslope_run(
             simulation_year_from_calendar_year(day_projection.year, climate_span.first_day.year)?;
         let execution_result = execute_scheduler_kernel_lifecycle(
             runtime_surface,
-            slope_primary_area_m2,
+            publication_area_m2,
             simulation_year,
             day_index + 1,
             day_projection,
@@ -823,7 +828,8 @@ pub fn execute_hillslope_run(
         )?,
         erod14_wave2_kernel_status_seen,
     };
-    let wb13_publication = build_wb13_publication_provenance(&wb13_rows)?;
+    let wb13_publication =
+        build_wb13_publication_provenance(&wb13_rows, contributor_ofe_count, publication_area_m2)?;
     let pass_text = build_h5_wat_output(&wb13_rows)?;
     let loss_text = build_loss_output_json(
         &runfile.run_name,
@@ -2174,7 +2180,7 @@ fn seed_mofe03_wave2_class_symbols(
 
 fn execute_scheduler_kernel_lifecycle(
     runtime_surface: HillslopeWritebackSurface,
-    slope_primary_area_m2: f64,
+    publication_area_m2: f64,
     simulation_year: i32,
     sim_day_index: usize,
     calendar_day: &ClimateDayProjection,
@@ -2221,7 +2227,7 @@ fn execute_scheduler_kernel_lifecycle(
 
     let wb13_row = build_simulation_owned_wb13_row(
         &execution_report.writeback_surface,
-        slope_primary_area_m2,
+        publication_area_m2,
         simulation_year,
         sim_day_index,
         calendar_day,
@@ -2394,8 +2400,13 @@ fn build_simimpl10_coupling_vector_provenance(
     })
 }
 
+const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
+const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
+
 fn build_wb13_publication_provenance(
     rows: &[SimulationOwnedWb13Row],
+    contributor_ofe_count: usize,
+    publication_area_m2: f64,
 ) -> Result<HillslopeWb13PublicationProvenance, HillslopeCliError> {
     let Some(first_row) = rows.first() else {
         return Err(wb13_simout_failure(
@@ -2412,6 +2423,21 @@ fn build_wb13_publication_provenance(
             "sim_day_index must be positive for every WB13 publication row",
         ));
     }
+    if contributor_ofe_count == 0 {
+        return Err(wb13_simout_failure(
+            "contributor_ofe_count must be >= 1 for WB13 publication provenance",
+        ));
+    }
+    if !publication_area_m2.is_finite() || publication_area_m2 <= 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "publication_area_m2 must be finite and > 0.0, observed {publication_area_m2}"
+        )));
+    }
+    if rows.iter().any(|row| row.wb13_row.ofe != 1) {
+        return Err(wb13_simout_failure(
+            "MOFE04 canonicalized publication policy requires WB13 OFE key = 1 for all rows",
+        ));
+    }
     let sim_day_index_monotonic = rows
         .windows(2)
         .all(|window| window[1].sim_day_index > window[0].sim_day_index);
@@ -2424,6 +2450,10 @@ fn build_wb13_publication_provenance(
             WB13_REPLAY_CANDIDATE_SURFACE_WAT.to_string(),
             WB13_REPLAY_CANDIDATE_SURFACE_PASS.to_string(),
         ],
+        publication_ofe_policy: MOFE04_PUBLICATION_OFE_POLICY.to_string(),
+        contributor_ofe_count,
+        area_policy: MOFE04_PUBLICATION_AREA_POLICY.to_string(),
+        publication_area_m2,
         row_count: rows.len(),
         sim_day_index_monotonic,
         first_row_key: wb13_row_key_provenance(first_row),
@@ -2550,30 +2580,37 @@ fn build_hillslope_wat_row(
     })
 }
 
-fn derive_primary_ofe_area_from_slope(slope: &SlopeProfile) -> Result<f64, HillslopeCliError> {
-    let Some(primary_ofe) = slope.ofes.first() else {
+fn derive_mofe04_publication_area_from_slope(
+    slope: &SlopeProfile,
+) -> Result<f64, HillslopeCliError> {
+    if slope.ofes.is_empty() {
         return Err(wb13_simout_failure(
             "slope profile contains no OFE entries for Area derivation",
         ));
-    };
-
-    if !primary_ofe.fwidth.is_finite() || primary_ofe.fwidth <= 0.0 {
-        return Err(wb13_simout_failure(format!(
-            "primary OFE fwidth must be > 0.0, observed {}",
-            primary_ofe.fwidth
-        )));
-    }
-    if !primary_ofe.slplen.is_finite() || primary_ofe.slplen <= 0.0 {
-        return Err(wb13_simout_failure(format!(
-            "primary OFE slplen must be > 0.0, observed {}",
-            primary_ofe.slplen
-        )));
     }
 
-    let area = primary_ofe.fwidth * primary_ofe.slplen;
+    let mut area = 0.0_f64;
+    for (ofe_position, ofe) in slope.ofes.iter().enumerate() {
+        let ofe_index = ofe_position + 1;
+        if !ofe.fwidth.is_finite() || ofe.fwidth <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "OFE {ofe_index} fwidth must be > 0.0, observed {}",
+                ofe.fwidth
+            )));
+        }
+        if !ofe.slplen.is_finite() || ofe.slplen <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "OFE {ofe_index} slplen must be > 0.0, observed {}",
+                ofe.slplen
+            )));
+        }
+
+        area += ofe.fwidth * ofe.slplen;
+    }
+
     if !area.is_finite() || area <= 0.0 {
         return Err(wb13_simout_failure(format!(
-            "primary OFE Area must be > 0.0, observed {area}"
+            "aggregate OFE Area must be > 0.0, observed {area}"
         )));
     }
 
@@ -2583,7 +2620,7 @@ fn derive_primary_ofe_area_from_slope(slope: &SlopeProfile) -> Result<f64, Hills
 #[allow(clippy::too_many_lines)]
 fn build_simulation_owned_wb13_row(
     runtime_surface: &HillslopeWritebackSurface,
-    slope_primary_area_m2: f64,
+    publication_area_m2: f64,
     simulation_year: i32,
     sim_day_index: usize,
     calendar_day: &ClimateDayProjection,
@@ -2754,7 +2791,7 @@ fn build_simulation_owned_wb13_row(
     let er = residue_evap_er_m * 1_000.0;
     let dp = dp_m * 1_000.0;
     let latqcc = latqcc_m * 1_000.0;
-    let area = slope_primary_area_m2;
+    let area = publication_area_m2;
     let soil_water_total = total_soil + frozwt;
     let profile_porosity_cap = profile_fc_store_mm.max(profile_wp_store_mm) + 20.0;
 
@@ -3300,7 +3337,7 @@ mod tests {
     }
 
     #[test]
-    fn simimpl11_area_derives_from_primary_ofe_geometry() {
+    fn simimpl11_area_derives_from_aggregate_ofe_geometry() {
         let slope = SlopeProfile {
             datver: 2023.3,
             datver_source: DatverSource::Header,
@@ -3347,9 +3384,9 @@ mod tests {
             ],
         };
 
-        let observed = derive_primary_ofe_area_from_slope(&slope)
-            .expect("valid primary OFE geometry should yield area");
-        assert!((observed - 1_800.0).abs() < 1.0e-12);
+        let observed = derive_mofe04_publication_area_from_slope(&slope)
+            .expect("valid aggregate OFE geometry should yield area");
+        assert!((observed - 3_000.0).abs() < 1.0e-12);
     }
 
     #[test]

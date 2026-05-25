@@ -858,3 +858,7 @@ Authorized packages:
   - Purpose: make EROD14 Wave-2 routing executable from production runfile
     intake by defining activation policy and deriving/seeding required
     `erod14_*` symbols from parsed/runtime surfaces with typed guards.
+- `20260525-mofe04-output-publication-closure-001/`
+  - Purpose: close multi-OFE WB13/WAT publication assumptions by defining
+    explicit output policy/provenance semantics and implementing deterministic
+    OFE-aware publication geometry behavior for MOFE runs.

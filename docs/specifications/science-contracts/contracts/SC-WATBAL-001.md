@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 35
+contract_version: 36
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -814,7 +814,8 @@ canonical order:
 
 ### WB13 Output-Surface Invariants
 
-1. `QOFE = Q` for single-OFE daily Tier-A rows.
+1. `QOFE = Q` for canonicalized WB13 daily rows, including MOFE multi-OFE
+   publication contexts.
 2. `SoilWaterTotal = Total-Soil + frozwt` within `1e-6 mm`.
 3. `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 4. Required depth-like and storage-like columns in this WB13 surface are
@@ -869,6 +870,38 @@ canonical order:
    - consolidated kernel/policy adoption claim without explicit
      `adopt`/`defer`/`reject` disposition hard-fails governance with
      `HS-SIMCONS-E-001`.
+
+## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
+
+1. WB13/H.wat publication policy for hillslope MOFE contexts is explicit and
+   canonicalized as single-row daily publication with `OFE = 1`.
+2. Published `OFE = 1` under this policy is a canonical row id, not a claim
+   that contributor topology cardinality equals one.
+3. Publication provenance must carry contributor cardinality and policy
+   semantics explicitly:
+   - `publication_ofe_policy = "single-row-canonicalized-hillslope-aggregate"`
+   - `contributor_ofe_count = slope.ofe_count`
+   - `area_policy = "sum-ofe-geometry-area"`
+   - `publication_area_m2 = Σ(fwidth_i * slplen_i)` over all contributing OFEs.
+4. WB13 `Area` and H.wat `Area` must equal the canonicalized aggregate area
+   from all contributing OFE geometries (not primary-OFE-only area) for both
+   single-OFE and multi-OFE runs.
+5. Missing/non-finite/non-positive contributor geometry terms or invalid
+   aggregate publication area are hard-fail publication-domain violations under
+   existing WB13 guard-family continuity (`HKERNEL-WB13-HWAT-E-003`).
+6. `QOFE = Q` remains required under MOFE04 canonicalized policy and does not
+   authorize surrogate per-OFE runoff synthesis.
+
+### MOFE04 Contract-Test Vectors
+
+1. Multi-OFE publication vector: aligned multi-OFE run publishes deterministic
+   WB13/H.wat rows with `OFE = 1`, aggregate `Area = Σ(fwidth_i * slplen_i)`,
+   and explicit MOFE04 publication provenance fields.
+2. Single-OFE publication vector: single-OFE run publishes identical canonical
+   policy fields with `contributor_ofe_count = 1` and aggregate area equal to
+   single contributor geometry.
+3. Missing/invalid contributor geometry vector hard-fails publication assembly
+   with WB13 domain guard continuity and does not emit malformed rows.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -1079,3 +1112,4 @@ canonical order:
 | `2026-05-25` | `33` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-WATBAL-025`) and explicit producer/governance obligations for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency test enforcement. |
 | `2026-05-25` | `34` | `Codex` | SIMIMPL18 amendment: added day-key rain/snow partition and publication-source closure invariant (`INV-WATBAL-026`), storage-state mutation invariant (`INV-WATBAL-027`), producer obligations for runtime-derived `RM`/`Snow-Water` publication, and addendum authority for first-day + multi-day storage diagnostics. |
 | `2026-05-25` | `35` | `Codex` | SIMIMPL21 amendment: added baseline WB11 ET/soil-water ordering authority (`INV-WATBAL-028`) and layer-to-aggregate publication-lineage authority (`INV-WATBAL-029`) with explicit legacy provenance anchors and SIMIMPL22/SIMIMPL23 gating obligations. |
+| `2026-05-25` | `36` | `Codex` | MOFE04 amendment: added explicit multi-OFE WB13/H.wat canonicalized publication policy authority (`OFE=1` row id semantics), required publication provenance fields (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`), and aggregate OFE-geometry area closure obligations. |
