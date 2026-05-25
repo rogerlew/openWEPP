@@ -874,3 +874,8 @@ Authorized packages:
   - Purpose: close MOFE06 carved-letter parser blockers by implementing
     contract-authorized compatibility-mode slope/soil intake support needed for
     single-hillslope semantic parity execution.
+- `20260525-mofe08-cligen-5323-compat-and-h324-parity-rerun-001/`
+  - Purpose: add CLIGEN `5.323` compatibility policy for openWEPP climate
+    intake (`>=5.3,<5.4 -> 5.3`), rerun carved-letter `H324` MOFE semantic
+    parity lane, and align external CLIGEN versioning guidance with openWEPP
+    compatibility expectations.

@@ -5,7 +5,9 @@ use std::fmt::{Display, Formatter};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const ALLOWED_DATVERS: [f64; 4] = [0.0, 4.0, 4.3, 5.3];
+const ALLOWED_DATVERS_EXACT: [f64; 3] = [0.0, 4.0, 4.3];
+const DATVER_53_FAMILY_MIN: f64 = 5.3;
+const DATVER_53_FAMILY_MAX_EXCLUSIVE: f64 = 5.4;
 const MAX_BREAKPOINTS_PER_DAY: usize = 1_500;
 const FLOAT_EQ_TOLERANCE: f64 = 1e-9;
 
@@ -353,16 +355,13 @@ pub fn parse_climate_from_str(
     let datver_line = require_line(&lines, &mut cursor, "datver line")?;
     let datver_tokens = tokenize(datver_line.text);
     expect_arity_exact(&datver_tokens, datver_line.number, "datver line", 1)?;
-    let datver = parse_f64(datver_tokens[0], datver_line.number, "datver")?;
-    if !ALLOWED_DATVERS
-        .iter()
-        .any(|allowed| (datver - *allowed).abs() <= FLOAT_EQ_TOLERANCE)
-    {
+    let datver_raw = parse_f64(datver_tokens[0], datver_line.number, "datver")?;
+    let Some(datver) = canonicalize_datver(datver_raw) else {
         return Err(ClimateParseError::UnsupportedDatver {
             line: datver_line.number,
-            value: datver,
+            value: datver_raw,
         });
-    }
+    };
 
     let flags_line = require_line(&lines, &mut cursor, "flags line")?;
     let flags_tokens = tokenize(flags_line.text);
@@ -505,6 +504,20 @@ pub fn parse_climate_from_str(
         },
         daily_records,
     })
+}
+
+fn canonicalize_datver(datver_raw: f64) -> Option<f64> {
+    for allowed in ALLOWED_DATVERS_EXACT {
+        if (datver_raw - allowed).abs() <= FLOAT_EQ_TOLERANCE {
+            return Some(allowed);
+        }
+    }
+    if (datver_raw - DATVER_53_FAMILY_MIN).abs() <= FLOAT_EQ_TOLERANCE
+        || (datver_raw > DATVER_53_FAMILY_MIN && datver_raw < DATVER_53_FAMILY_MAX_EXCLUSIVE)
+    {
+        return Some(DATVER_53_FAMILY_MIN);
+    }
+    None
 }
 
 fn collect_non_empty_lines(input: &str) -> Vec<LocatedLine<'_>> {

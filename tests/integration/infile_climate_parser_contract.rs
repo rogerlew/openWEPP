@@ -48,6 +48,19 @@ fn strict_mode_accepts_valid_non_breakpoint_fixture() {
 }
 
 #[test]
+fn strict_mode_accepts_datver_5_323_and_canonicalizes_to_5_3() {
+    let parsed = parse_climate_file(fixture_path("datver_5_323.cli"), ParserMode::Strict)
+        .expect("5.323 should be accepted as CLIGEN 5.3-family datver");
+
+    assert!((parsed.datver - 5.3).abs() < 1e-9);
+    assert_eq!(
+        parsed.metadata.generator_cmd.as_deref(),
+        Some("CLIGEN 5.323 --seed 123")
+    );
+    assert_eq!(parsed.daily_records.len(), 2);
+}
+
+#[test]
 fn strict_mode_rejects_itemp2_single_storm() {
     let err = parse_climate_file(fixture_path("single_storm_itemp2.cli"), ParserMode::Strict)
         .unwrap_err();
@@ -75,6 +88,16 @@ fn compat_mode_allows_itemp2_when_enabled() {
 fn strict_mode_rejects_unsupported_datver() {
     let err =
         parse_climate_file(fixture_path("unsupported_datver.cli"), ParserMode::Strict).unwrap_err();
+
+    assert!(matches!(err, ClimateParseError::UnsupportedDatver { .. }));
+}
+
+#[test]
+fn strict_mode_rejects_datver_5_4_boundary() {
+    let src =
+        include_str!("../fixtures/infile/climate/strict_valid.cli").replacen("5.30", "5.4", 1);
+    let err = parse_climate_from_str(&src, ParserMode::Strict)
+        .expect_err("5.4 must remain outside the accepted 5.3-family domain");
 
     assert!(matches!(err, ClimateParseError::UnsupportedDatver { .. }));
 }

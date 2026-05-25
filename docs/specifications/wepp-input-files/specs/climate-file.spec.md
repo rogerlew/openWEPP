@@ -5,8 +5,8 @@
 - `surface_id`: `infile-climate-cli`
 - `status`: `draft-HOLD`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `spec_version`: `0.1.1`
+- `last_updated_utc`: `2026-05-25T00:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Parser-Contract Authority Note
@@ -25,7 +25,7 @@ _See also: [CLIGEN station statistics input file format](cligenparms.md)._
     - 0.0 - use actual storm ip values in this file
     - 4.0 - WEPP will internally multiply ip by a factor of 0.70 to compensate for the steady-state erosion model assumption.
     - 4.30 – Reference to which version of CLIGEN generated this file
-    - 5.30 - Reference to which version of CLIGEN generated this file
+    - 5.30+ (`>=5.3` and `<5.4`) - CLIGEN 5.3-family lineage; openWEPP parser canonicalizes this range to `5.3`
 
 - Line 2:
 
@@ -175,3 +175,5 @@ _See also: [CLIGEN station statistics input file format](cligenparms.md)._
   - `docs/work-packages/20260520-infile01-author-sc-infile-climate-001/`
 - Boundary/export authority (process handoff mapping and strict/compat breakpoint cardinality policy) is governed by contract Sections 9-11.
 - Current specification status remains `draft-HOLD` until parser-contract HOLD gaps are dispositioned.
+- CLIGEN 5.3-family compatibility cross-reference:
+  - `/workdir/jimf-cligen532/README.md` (version-lineage guidance used by openWEPP contract policy).

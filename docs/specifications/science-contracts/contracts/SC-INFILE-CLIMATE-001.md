@@ -4,7 +4,7 @@ title: Climate Input Parser Contract (.cli)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.5
+contract_version: 0.1.6
 evidence_mode: Static
 last_updated_utc: 2026-05-25T00:00:00Z
 ---
@@ -25,6 +25,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-WP3-CLI-01]` `/workdir/wepppyo3/cli_revision/src/lib.rs` (Rust climate transform readers cited by survey).
 - `[DIRECT][E-WP-CLIM02-CLI-01]` `/home/workdir/openWEPP/docs/work-packages/20260522-clim02-climate-parser-to-runtime-seam-adapters-001/artifacts/climate-seam-adapter-ownership-contract.md` (authoritative parser-to-runtime seam ownership mapping and `datver` policy guard posture).
 - `[DIRECT][E-WP-CLIM07-CLI-01]` `/home/workdir/openWEPP/docs/work-packages/20260523-clim07-climate-comparator-and-closure-evidence-001/artifacts/clim07-parser-to-kernel-seam-check-evidence.md` (executed seam vector closure checks across hillslope/watershed runtime seams).
+- `[DIRECT][E-CLIGEN532-README-01]` `/workdir/jimf-cligen532/README.md` (CLIGEN `5.32.x` series lineage and compatibility notes for `5.3x` datver normalization authority).
 - `[INFERENCE][E-PHYS-CLI-01]` Physical/common-sense invariants: day/month/date validity, non-negative precipitation/duration, monotone cumulative precipitation within a day.
 
 ## 1. Scope and Version Applicability
@@ -39,10 +40,11 @@ This contract governs parser behavior for surface `infile-climate-cli` (`.cli`) 
 | --- | --- | --- | --- | --- |
 | A | `0.0` | Accept. | Preserve source values without CLIGEN `ip` scaling interpretation in parser layer. | `[DIRECT][E-SPEC-CLI-01]` |
 | B | `4.0` | Accept. | Preserve raw parsed values; scaling policy is runtime/model logic, not parser mutation. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-WF-CLI-01]` |
-| C | `4.30`, `5.30` | Accept. | Preserve version tag and records as canonical modern forms. | `[DIRECT][E-SPEC-CLI-01]` |
-| D | unrecognized numeric `datver` | Strict: reject. Compat: reject unless explicit allowlist extension is configured. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-CLI-01]` |
-| E | `itemp=1` continuous | Accept. | Build continuous daily forcing stream. | `[DIRECT][E-SPEC-CLI-01]` |
-| F | `itemp=2` single-storm | Strict: reject by policy. Compat: accepted only when explicit legacy mode is enabled. | Default contract posture is unsupported in openWEPP startup policy. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]` |
+| C | `4.30` | Accept. | Preserve version tag as canonical modern form (`4.3`). | `[DIRECT][E-SPEC-CLI-01]` |
+| D | `5.3 <= datver < 5.4` (e.g., `5.30`, `5.323`) | Accept. | Normalize parser output `climate.version.datver := 5.3`. | `[DIRECT][E-SPEC-CLI-01]`, `[DIRECT][E-CLIGEN532-README-01]` |
+| E | unrecognized numeric `datver` | Strict: reject. Compat: reject unless explicit allowlist extension is configured. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-CLI-01]` |
+| F | `itemp=1` continuous | Accept. | Build continuous daily forcing stream. | `[DIRECT][E-SPEC-CLI-01]` |
+| G | `itemp=2` single-storm | Strict: reject by policy. Compat: accepted only when explicit legacy mode is enabled. | Default contract posture is unsupported in openWEPP startup policy. | `[DIRECT][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]` |
 
 ## 2. Source Grammar and Source-vs-Simulation Model
 
@@ -75,7 +77,7 @@ daily_records =
 
 | Canonical symbol | Source-model field | Simulation-model field | Units | Type | Cardinality | Required | Datver applicability | Default/derivation | openWEPP alias |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `datver` | `header.datver` | `climate.version.datver` | none | real | 1 | yes | all | none | `climate.datver` |
+| `datver` | `header.datver` | `climate.version.datver` | none | real | 1 | yes | all | canonicalize `5.3 <= datver < 5.4` to `5.3` | `climate.datver` |
 | `itemp` | `header.itemp` | `climate.mode.itemp` | enum | int | 1 | yes | all | none | `climate.mode` |
 | `ibrkpt` | `header.ibrkpt` | `climate.mode.breakpoint_enabled` | flag | int/bool | 1 | yes | all | bool derived from int | `climate.breakpoint_flag` |
 | `iwind` | `header.iwind` | `climate.mode.wind_et_mode` | enum | int | 1 | yes | all | none | `climate.wind_mode` |
@@ -169,13 +171,16 @@ No silent fallback/default masking is permitted for required invalid inputs. `[D
 ## 10. Compatibility Policy
 
 - Strict mode:
-  - accept allowlisted `datver` only;
+  - accept only `datver` values in domain: exact `0.0`, `4.0`, `4.3`, and
+    any `5.3 <= datver < 5.4`;
+  - canonicalize accepted `5.3x` values to `5.3` in parser output;
   - reject `itemp=2` legacy single-storm mode;
   - reject `nbrkpt > 1500` (`CLI-POL-003`) for breakpoint days;
   - reject duplicate/decreasing breakpoint `timem` (`dtime<=0`) for all intervals;
   - reject malformed breakpoint days and invalid cumulative rainfall structure.
 - Compatibility mode:
   - `itemp=2` may be accepted only under explicit legacy flag;
+  - shares strict `datver` domain/canonicalization (`5.3x -> 5.3`);
   - unrecognized but numerically parseable `datver` remains rejected by default pending explicit policy extension;
   - `nbrkpt > 1500` remains rejected unless explicit `allow_breakpoint_cardinality_override` is enabled for controlled investigations;
   - legacy zero-drain non-positive `dtime` acceptance is disabled by default and must be explicitly enabled with `allow_legacy_zero_drain_non_positive_dtime` for controlled investigations;
@@ -187,7 +192,7 @@ Unsupported forms are hard errors with typed taxonomy entries from Section 7.
 
 | Guard ID | Invariant / rule | Enforcement path | Failure behavior |
 | --- | --- | --- | --- |
-| `G-CLI-001` | datver allowlist/compat policy | header parse | `CLI-E-003` |
+| `G-CLI-001` | datver domain/canonicalization policy (`0.0`,`4.0`,`4.3`, or `5.3<=datver<5.4` with `5.3x -> 5.3` normalization) | header parse | `CLI-E-003` |
 | `G-CLI-002` | mode enums in domain | header parse | `CLI-E-004` |
 | `G-CLI-003` | strict single-storm rejection | mode policy gate | `CLI-E-004` |
 | `G-CLI-004` | optional metadata payload (`generator_cmd`) must remain UTF-8/text-safe | metadata parse | `CLI-E-001` |
@@ -237,6 +242,7 @@ Required vector obligations:
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-25` | `0.1.6` | MOFE08 amendment: accept CLIGEN `5.3x` datver family (`5.3 <= datver < 5.4`) and canonicalize parser output to `5.3`; add cross-reference evidence anchor to `jimf-cligen532` lineage guidance. |
 | `2026-05-23` | `0.1.4` | CLIM08 governance closeout: reclassified `CLI-GAP-002` as `RESOLVED-IN-OPENWEPP` using CLIM02 seam-ownership authority plus CLIM07 executed seam-vector closure evidence. |
 | `2026-05-25` | `0.1.5` | SIMIMPL14 amendment: clarified cross-file continuity expectation for deterministic ordered daily-date progression feeding continuous runner replay publication boundaries. |
 | `2026-05-23` | `0.1.3` | CLIM07 amendment: added comparator/seam vector obligations linking parser surfaces to runtime climate seam checks for continuous-daily and breakpoint modes. |
