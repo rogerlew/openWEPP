@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -326,6 +326,76 @@ Minimum vectors required by EROD13 contract-derived tests:
 7. Continuity residual violation (`dGdx != Df + Di`) fails with
    `HKERNEL-EROD13-CORE-E-003`.
 
+## EROD14 Wave-2 Multi-OFE and Enrichment Runtime Addendum
+
+### Runtime Integration Point
+
+1. Wave-2 executes in the hillslope `closure_diagnostics` scheduler phase
+   after WB16 peak/runoff closure and after EROD13 Wave-1 core calculations
+   when both lanes are enabled.
+2. Runtime activation is explicit:
+   - `erod14_wave2_enabled = 1` enables Wave-2 multi-OFE/enrichment logic.
+   - `erod14_wave2_enabled = 0` disables the Wave-2 lane.
+3. When enabled, missing/non-finite/domain-invalid Wave-2 symbols are typed
+   hard failures; fallback synthesis, silent defaults, and silent domain
+   masking are prohibited.
+
+### Wave-2 Runtime Symbols
+
+| Surface family | Symbols | Runtime role |
+|---|---|---|
+| Activation and case semantics | `erod14_wave2_enabled`, `erod14_case`, `erod14_Qj_minus_1`, `erod14_Vj`, `erod14_Qj`, `erod14_Fh`, `erod14_Fp` | Multi-OFE branch-classification and runon/runoff condition guards (`INV-SED-008`). |
+| Geometry and load-transition surfaces | `erod14_xtop`, `erod14_xbot`, `erod14_xdetst`, `erod14_ldtop`, `erod14_ldbot`, `erod14_lddend`, `erod14_qout`, `erod14_qin`, `erod14_qostar`, `erod14_slplen` | Deposition-strip transition boundaries and normalized load scaling (`INV-SED-008`, `INV-SED-009`). |
+| Coefficients and class families | `erod14_class_count`, `erod14_ktrato`, `erod14_ainftc`, `erod14_binftc`, `erod14_cinftc`, `erod14_beta`, `theta`, `erod14_fall_*`, `erod14_frcflw_*`, `erod14_frac_*`, `erod14_fidel_*`, `erod14_tcf1_*` | Class-wise enrichment/deposition update surfaces with pinned legacy-form branch semantics (`INV-SED-009`). |
+| Class outputs and enrichment exports | `erod14_gend_*`, `erod14_sedmax_*`, `sed_frac_*`, `erod14_sumg`, `ER`, `erod14_ssa_soil`, `erod14_ssa_class_*` | Class-mass closure and enrichment ratio export surfaces. |
+
+### Wave-2 Algorithm Specification
+
+1. Validate multi-OFE case classification (`erod14_case`) using explicit
+   case semantics:
+   - Case 1: `Qj-1 = 0`, `Vj = 0`, `Qj = 0`
+   - Case 2: `Qj-1 > 0`, `Vj > 0`, `Qj > 0`
+   - Case 3: `Qj-1 > 0`, `Vj = 0`, `Fh - Fp > 0`, `Qj > 0`
+   - Case 4: `Qj-1 > 0`, `Vj = 0`, `Fh - Fp <= 0`, `Qj = 0`
+2. Compute class-wise deposition-transition predictions (`gend_i`) from
+   legacy `enrich.for` lineage using `pkro`, per-class `phi`, and
+   (`xtop`,`xbot`,`qostar`) ratio terms.
+3. Scale class-wise loads to `ldbot`, enforce non-negative floors, and enforce
+   class-wise maximum mass constraints:
+   - `sedmax_i = gu_i + ftheta_i*(xbot-xtop)`,
+   - iterative reproportioning for classes below `sedmax_i` until closure.
+4. Enforce `INV-SED-009` class-mass conservation:
+   - `gend_i <= sedmax_i` for all classes at convergence,
+   - `sum(gend_i)` must remain finite and non-negative,
+   - emitted `sed_frac_i` values are normalized from final class loads.
+5. Compute enrichment ratio export:
+   - `ER = (sum_i(sed_frac_i * ssa_class_i) / ssa_soil) + 0.005`.
+
+### EROD14 Typed Guard Codes
+
+| Condition | Code |
+|---|---|
+| Missing required symbol (Wave-2 enabled path) | `HKERNEL-EROD14-WAVE2-E-001` |
+| Non-finite required symbol | `HKERNEL-EROD14-WAVE2-E-002` |
+| Domain/closure violation | `HKERNEL-EROD14-WAVE2-E-003` |
+
+### Wave-2 Contract-Derived Test Vectors
+
+Minimum vectors required by EROD14 contract-derived tests:
+
+1. Nominal multi-OFE vector emits finite `erod14_gend_*`, normalized
+   `sed_frac_*`, and finite `ER`.
+2. Case-four branch vector (`Fh - Fp <= 0`) retains explicit case-four closure
+   with zero downstream runoff indicator (`Qj = 0`).
+3. Missing-symbol vector fails with `HKERNEL-EROD14-WAVE2-E-001`.
+4. Non-finite-symbol vector fails with `HKERNEL-EROD14-WAVE2-E-002`.
+5. Case-classification mismatch vector fails with
+   `HKERNEL-EROD14-WAVE2-E-003`.
+6. Class-conservation violation vector (no feasible reproportion closure)
+   fails with `HKERNEL-EROD14-WAVE2-E-003`.
+7. Class-fraction normalization violation vector fails with
+   `HKERNEL-EROD14-WAVE2-E-003`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -348,3 +418,4 @@ Minimum vectors required by EROD13 contract-derived tests:
 | `2026-05-23` | `6` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-SED-001` and `GAP-SED-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `7` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum for required erosion-lane boundaries and dispositioned `GAP-SED-003` to `closed` while preserving non-Wave-0 implementation holds. |
 | `2026-05-25` | `8` | `Codex` | EROD13 Wave-1 amendment: added pinned-baseline legacy authority anchors (`param.for`, `erod.for`, `runge.for`), runtime integration semantics, algorithm/guard specification, and contract-derived vector obligations for `INV-SED-001`..`007` core execution. |
+| `2026-05-25` | `9` | `Codex` | EROD14 Wave-2 amendment: added multi-OFE case-classification/runtime authority and class-wise enrichment mass-conservation closure semantics (`INV-SED-008..009`) with typed guard-family continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |

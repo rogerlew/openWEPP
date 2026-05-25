@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 17
+contract_version: 18
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -636,6 +636,23 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    Wave-1 path must hard-fail; fallback synthesis of peak/duration or runoff
    inputs is prohibited.
 
+## EROD14 Wave-2 Active Producer-Coupling Addendum
+
+1. When `erod14_wave2_enabled = 1`, runoff-partition producer surfaces needed
+   for multi-OFE routing-classification and enrichment transitions are
+   mandatory:
+   - `erod14_Qj_minus_1`, `erod14_Vj`, `erod14_Qj`, `erod14_Fh`,
+     `erod14_Fp`, `erod14_case`,
+   - `erod14_qout`, `erod14_qin`, `erod14_qostar`, `erod14_slplen`.
+2. Producer ownership remains in `SC-RUNOFFPART-001` with continuity from
+   `INV-RUNOFFPART-007..009`; consumer guard ownership is enforced in
+   `SC-SED-001` through `HKERNEL-EROD14-WAVE2-E-001..003`.
+3. Enabled-path missing/non-finite/domain-invalid multi-OFE producer symbols
+   must hard-fail; implicit case fallback (including case-three/case-four
+   collapse) is prohibited.
+4. Wave-2 activation does not weaken existing Wave-1 producer-coupling guard
+   obligations.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -667,3 +684,4 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | `2026-05-23` | `15` | `Codex` | WB20 amendment: added forward-solver lane selector authority (`wb20_forward_solver_lane_enabled`) and lane-scoped WB12 runoff closure semantics so parity-lane acceptance is solver-residual-derived and excludes observed target substitution. |
 | `2026-05-23` | `16` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-RUNOFFPART-004` to `closed` for required erosion-lane runoff boundaries while retaining Hortonian-scope governance hold row `GAP-RUNOFFPART-003`. |
 | `2026-05-25` | `17` | `Codex` | EROD13 amendment: activated Wave-1 runoff producer coupling semantics for erosion-core execution (`erod13_core_enabled` path), requiring explicit WB12/WB16 runoff and peak-duration surfaces with typed hard-fail continuity (`HKERNEL-EROD13-CORE-E-001..003`). |
+| `2026-05-25` | `18` | `Codex` | EROD14 amendment: added active Wave-2 runoff producer-coupling authority for multi-OFE case symbols and runon/runoff transition surfaces with typed hard-fail continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |

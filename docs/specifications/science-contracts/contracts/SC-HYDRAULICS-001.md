@@ -4,7 +4,7 @@ title: Overland Hydraulics Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Overland-flow friction-factor and rill-geometry state surfaces
   - Shear-partition semantics coupling hydraulics to hillslope erosion
@@ -349,6 +349,21 @@ Minimum WS12 coupling vectors:
 3. Failure migration vectors: existing guard IDs and boundary classes remain
    unchanged for missing/non-finite/domain violations.
 
+## EROD14 Wave-2 Active Companion-Coupling Addendum
+
+1. When `erod14_wave2_enabled = 1`, hydraulics-coupled deposition-routing
+   surfaces consumed by Wave-2 (`erod14_qout`, `erod14_qin`, `erod14_qostar`,
+   `erod14_slplen`, `erod14_tcf1_*`, `erod14_fall_*`) must be present, finite,
+   and domain-valid.
+2. Producer ownership for those coupled surfaces remains with hydraulics/runoff
+   companion contracts; Wave-2 consumer guard ownership is enforced in
+   `SC-SED-001` via `HKERNEL-EROD14-WAVE2-E-001..003`.
+3. Missing/non-finite/out-of-domain coupled surfaces on enabled Wave-2 paths
+   must hard-fail; fallback synthesis of deposition-routing coefficients is
+   prohibited.
+4. Existing Wave-1 hydraulics coupling requirements remain active and are not
+   relaxed by Wave-2 activation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -375,3 +390,4 @@ Minimum WS12 coupling vectors:
 | `2026-05-24` | `10` | `Codex` | WS12 amendment: added impoundment physics-equivalence consumer coupling authority so downstream hydraulics consumers treat impoundment payloads as continuity/regime outputs (not headroom-surrogate reconstructions) while preserving WS10 guard-family continuity. |
 | `2026-05-24` | `11` | `Codex` | WS11 amendment: added channel-routing consumer-coupling authority requiring explicit `ipeak` branch semantics (Rational/CREAMS/KW/MC), prohibited pre-WS11 gain-factor surrogate substitution, and updated boundary-language continuity while preserving existing WS10 guard-family IDs. |
 | `2026-05-25` | `12` | `Codex` | EROD13 amendment: activated Wave-1 hydraulics-to-erosion coupling semantics, removed deferred language for `EROD-BND-002`, and added explicit runtime guard-family continuity (`HKERNEL-EROD13-CORE-E-001..003`). |
+| `2026-05-25` | `13` | `Codex` | EROD14 amendment: added active Wave-2 companion-coupling authority for deposition-routing and class transport surfaces required by enrichment runtime execution with typed guard continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |

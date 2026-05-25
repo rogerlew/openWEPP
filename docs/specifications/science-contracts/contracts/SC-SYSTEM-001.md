@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 17
+contract_version: 18
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -441,6 +441,19 @@ Minimum WS12 integration vectors:
    forcing values to bypass Wave-1 guard failures
    (`HKERNEL-EROD13-CORE-E-001..003`).
 
+## EROD14 Wave-2 Active Boundary-Carry Addendum
+
+1. System integration boundaries carrying hillslope erosion outputs must
+   preserve Wave-2 enrichment/class-conservation exports
+   (`sed_frac_*`, `ER`, `erod14_sumg`, and class-wise closure surfaces)
+   without mutation when `erod14_wave2_enabled = 1`.
+2. Producer ownership remains in `SC-SED-001`; system-boundary consumers must
+   preserve typed hard-fail posture for missing/non-finite/domain-invalid
+   Wave-2 payload symbols using `HKERNEL-EROD14-WAVE2-E-001..003` continuity.
+3. Cross-component publication pathways must not synthesize replacement
+   class-fraction or enrichment payloads to bypass Wave-2 guard failures.
+4. Existing Wave-1 boundary-carry requirements remain active and additive.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -472,3 +485,4 @@ Minimum WS12 integration vectors:
 | `2026-05-24` | `15` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-SYSTEM-017`), semantic/provenance publication guard authority, semantic replay producer obligations, and explicit semantic-tolerance profile authority for investigation-grade Tier-A replay evidence. |
 | `2026-05-24` | `16` | `Codex` | SIMIMPL03 amendment: added production runner execution ownership, mode-propagation manifest closure, simulation-owned replay-surface provenance, and selective consolidated-intake governance invariants (`INV-SYSTEM-018..021`) with typed guard families (`WS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`). |
 | `2026-05-25` | `17` | `Codex` | EROD13 amendment: added Wave-1 system-boundary carry authority for erosion-core forcing surfaces under `erod13_core_enabled`, preserving producer/consumer ownership continuity and typed hard-fail guard posture (`HKERNEL-EROD13-CORE-E-001..003`). |
+| `2026-05-25` | `18` | `Codex` | EROD14 amendment: added Wave-2 system-boundary carry authority for enrichment and class-conservation payload exports under `erod14_wave2_enabled` with typed hard-fail guard continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |

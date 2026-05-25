@@ -1,0 +1,635 @@
+use openwepp_hillslope_orchestrator::{
+    HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
+};
+use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_sim_contract::status::BoundaryClass;
+use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
+
+const VALID_TOPOLOGY: &str = r"
+HILLSLOPES 3
+CHANNELS 2
+IMPOUNDMENTS 1
+NODE CHANNEL 1 H 1 2 0 C 0 0 0 I 0 0 0
+NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
+NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
+";
+
+const TEST_TOLERANCE: f64 = 1.0e-6;
+const WAVE2_TEST_CLASSES: usize = 3;
+const WAVE2_TEST_CLASSES_SCALAR: f64 = 3.0;
+
+#[allow(clippy::too_many_lines)]
+fn seeded_surface() -> HillslopeWritebackSurface {
+    let mut state_surface = std::collections::BTreeMap::new();
+
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(0.5));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
+
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(12.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(2.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_field_capacity"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_perc_fraction"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(2.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(4.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(2.0e-5),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("nslpts"), BoundaryValue::scalar(2.0));
+    state_surface.insert(
+        BoundarySymbol::from("xinput_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("slpinp_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+        BoundaryValue::scalar(39.653_865_297_983_295),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_depth"),
+        BoundaryValue::scalar(0.15),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_spacing"),
+        BoundaryValue::scalar(0.285),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_diameter"),
+        BoundaryValue::scalar(0.1),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_lateral_fraction"),
+        BoundaryValue::scalar(0.25),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_drainage_fraction"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_drainage_coefficient"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(2.0),
+    );
+
+    state_surface.insert(
+        BoundarySymbol::from("wb12_rainfall_input"),
+        BoundaryValue::scalar(3.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(0.4),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_infiltration"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_depression_storage_delta"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(0.290_068_906_744_067),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_closure_tolerance"),
+        BoundaryValue::scalar(TEST_TOLERANCE),
+    );
+
+    state_surface.insert(
+        BoundarySymbol::from("wb12_storage_initial"),
+        BoundaryValue::scalar(12.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_storage_observed"),
+        BoundaryValue::scalar(9.959_931_093_255_933),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(TEST_TOLERANCE),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_precip_input"),
+        BoundaryValue::scalar(3.0),
+    );
+
+    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(4.0));
+    state_surface.insert(
+        BoundarySymbol::from("timem_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("timem_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("timem_0003"),
+        BoundaryValue::scalar(2.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("timem_0004"),
+        BoundaryValue::scalar(3.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0003"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("intsty_0004"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    state_surface.insert(BoundarySymbol::from("timep"), BoundaryValue::scalar(0.25));
+    state_surface.insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
+
+    state_surface.insert(
+        BoundarySymbol::from("erod13_core_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(BoundarySymbol::from("Ie"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("te"), BoundaryValue::scalar(3.0));
+    state_surface.insert(BoundarySymbol::from("fs"), BoundaryValue::scalar(0.6));
+    state_surface.insert(BoundarySymbol::from("ft"), BoundaryValue::scalar(1.2));
+    state_surface.insert(BoundarySymbol::from("taufe"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("q"), BoundaryValue::scalar(0.4));
+
+    state_surface.insert(BoundarySymbol::from("G"), BoundaryValue::scalar(0.2));
+    state_surface.insert(BoundarySymbol::from("Di"), BoundaryValue::scalar(0.05));
+    state_surface.insert(BoundarySymbol::from("beta"), BoundaryValue::scalar(0.5));
+    state_surface.insert(BoundarySymbol::from("vf"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("dGdx"), BoundaryValue::scalar(0.8816));
+
+    state_surface.insert(BoundarySymbol::from("cntlen"), BoundaryValue::scalar(10.0));
+    state_surface.insert(BoundarySymbol::from("kr"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("kradjf"), BoundaryValue::scalar(1.1));
+    state_surface.insert(BoundarySymbol::from("tcadjf"), BoundaryValue::scalar(0.5));
+    state_surface.insert(BoundarySymbol::from("shrsol"), BoundaryValue::scalar(0.8));
+    state_surface.insert(BoundarySymbol::from("tcend"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("shcrit"), BoundaryValue::scalar(0.4));
+    state_surface.insert(BoundarySymbol::from("detinr"), BoundaryValue::scalar(0.2));
+    state_surface.insert(BoundarySymbol::from("effdrr"), BoundaryValue::scalar(1.2));
+    state_surface.insert(BoundarySymbol::from("effdrn"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("veleff"), BoundaryValue::scalar(0.9));
+    state_surface.insert(BoundarySymbol::from("pkro"), BoundaryValue::scalar(1.5));
+    state_surface.insert(
+        BoundarySymbol::from("erod13_tc_k"),
+        BoundaryValue::scalar(2.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod13_tc_m"),
+        BoundaryValue::scalar(1.2),
+    );
+
+    state_surface.insert(
+        BoundarySymbol::from("erod14_wave2_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_class_count"),
+        BoundaryValue::scalar(WAVE2_TEST_CLASSES_SCALAR),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_xtop"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_xbot"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_xdetst"),
+        BoundaryValue::scalar(0.1),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_ldtop"),
+        BoundaryValue::scalar(0.8),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_ldbot"),
+        BoundaryValue::scalar(0.6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_lddend"),
+        BoundaryValue::scalar(0.3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_qout"),
+        BoundaryValue::scalar(1.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_qin"),
+        BoundaryValue::scalar(0.3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_qostar"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_slplen"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_ktrato"),
+        BoundaryValue::scalar(1.1),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_ainftc"),
+        BoundaryValue::scalar(0.4),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_binftc"),
+        BoundaryValue::scalar(0.3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_cinftc"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_beta"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_Qj_minus_1"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_Vj"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_Qj"),
+        BoundaryValue::scalar(0.4),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_Fh"),
+        BoundaryValue::scalar(0.8),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_Fp"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_case"),
+        BoundaryValue::scalar(2.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("erod14_ssa_soil"),
+        BoundaryValue::scalar(5.0),
+    );
+
+    for (index, (fall, frcflw, frac, fidel, tcf1, ssa_class)) in [
+        (0.02, 0.3, 0.3, 0.25, 0.4, 1.5),
+        (0.01, 0.4, 0.4, 0.35, 0.3, 4.0),
+        (0.005, 0.3, 0.3, 0.40, 0.2, 8.0),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let class = index + 1;
+        state_surface.insert(
+            BoundarySymbol::from(format!("erod14_fall_{class:04}")),
+            BoundaryValue::scalar(fall),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("erod14_frcflw_{class:04}")),
+            BoundaryValue::scalar(frcflw),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("erod14_frac_{class:04}")),
+            BoundaryValue::scalar(frac),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("erod14_fidel_{class:04}")),
+            BoundaryValue::scalar(fidel),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("erod14_tcf1_{class:04}")),
+            BoundaryValue::scalar(tcf1),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("erod14_ssa_class_{class:04}")),
+            BoundaryValue::scalar(ssa_class),
+        );
+    }
+
+    HillslopeWritebackSurface {
+        state_surface,
+        flux_surface: std::collections::BTreeMap::new(),
+    }
+}
+
+fn run_surface(
+    surface: HillslopeWritebackSurface,
+) -> openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("erod14 execution should return typed report")
+}
+
+fn closure_phase_report(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+) -> &openwepp_hillslope_orchestrator::HillslopeKernelPhaseReport {
+    report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::ClosureDiagnostics)
+        .expect("closure diagnostics report should exist")
+}
+
+#[test]
+fn erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs() {
+    let report = run_surface(seeded_surface());
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let mut sed_frac_sum = 0.0;
+    for class in 1..=WAVE2_TEST_CLASSES {
+        let gend = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!("erod14_gend_{class:04}")))
+            .expect("class gend should be present")
+            .as_f64();
+        let sedmax = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!("erod14_sedmax_{class:04}")))
+            .expect("class sedmax should be present")
+            .as_f64();
+        let sed_frac = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!("sed_frac_{class:04}")))
+            .expect("class sed_frac should be present")
+            .as_f64();
+
+        assert!(gend.is_finite() && gend >= 0.0, "gend[{class}]={gend}");
+        assert!(
+            sedmax.is_finite() && sedmax >= 0.0,
+            "sedmax[{class}]={sedmax}"
+        );
+        assert!(
+            gend <= sedmax + TEST_TOLERANCE,
+            "gend[{class}]={gend} exceeds sedmax={sedmax}"
+        );
+        assert!(
+            sed_frac.is_finite() && sed_frac >= 0.0,
+            "sed_frac[{class}]={sed_frac}"
+        );
+        sed_frac_sum += sed_frac;
+    }
+    assert!(
+        (sed_frac_sum - 1.0).abs() <= TEST_TOLERANCE,
+        "sed_frac_sum={sed_frac_sum}"
+    );
+
+    let sumg = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("erod14_sumg"))
+        .expect("erod14_sumg should be present")
+        .as_f64();
+    let er = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("ER"))
+        .expect("ER should be present")
+        .as_f64();
+
+    assert!(sumg.is_finite() && sumg > 0.0, "sumg={sumg}");
+    assert!(er.is_finite() && er > 0.0, "ER={er}");
+}
+
+#[test]
+fn erod14_contract_vector_case_four_zero_outflow_emits_zero_class_fractions() {
+    let mut surface = seeded_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_case"),
+        BoundaryValue::scalar(4.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Vj"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Qj"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Fh"),
+        BoundaryValue::scalar(0.1),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Fp"),
+        BoundaryValue::scalar(0.2),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_qout"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = run_surface(surface);
+    assert!(report.scheduler_report.is_success());
+
+    for class in 1..=WAVE2_TEST_CLASSES {
+        let sed_frac = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!("sed_frac_{class:04}")))
+            .expect("sed_frac should be present")
+            .as_f64();
+        assert!(
+            sed_frac.abs() <= TEST_TOLERANCE,
+            "sed_frac[{class}]={sed_frac}"
+        );
+    }
+}
+
+#[test]
+fn erod14_contract_vector_rejects_missing_required_symbol() {
+    let mut surface = seeded_surface();
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("erod14_xbot"));
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD14-WAVE2-E-001"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn erod14_contract_vector_rejects_non_finite_required_symbol() {
+    let mut surface = seeded_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_qostar"),
+        BoundaryValue::scalar(f64::NAN),
+    );
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD14-WAVE2-E-002"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::NonFinite
+    );
+}
+
+#[test]
+fn erod14_contract_vector_rejects_case_classification_mismatch() {
+    let mut surface = seeded_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_case"),
+        BoundaryValue::scalar(3.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Vj"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Fh"),
+        BoundaryValue::scalar(0.1),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Fp"),
+        BoundaryValue::scalar(0.2),
+    );
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD14-WAVE2-E-003"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn erod14_contract_vector_rejects_unreproportionable_mass_request() {
+    let mut surface = seeded_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("erod14_ldbot"),
+        BoundaryValue::scalar(10.0),
+    );
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD14-WAVE2-E-003"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}

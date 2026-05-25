@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 29
+contract_version: 30
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -856,6 +856,20 @@ canonical order:
    hard-fail; no fallback reconstruction of erosion-core forcing symbols is
    allowed.
 
+## EROD14 Wave-2 Active Producer-Coupling Addendum
+
+1. When `erod14_wave2_enabled = 1`, water-balance-owned runoff/runon closure
+   exports required by Wave-2 (`erod14_qout`, `erod14_qin`) must remain
+   finite, domain-valid, and provenance-consistent with WB12/WB16 closure
+   surfaces.
+2. Producer ownership remains in `SC-WATBAL-001` and `SC-RUNOFFPART-001`;
+   Wave-2 consumer guard ownership is enforced by `SC-SED-001` under
+   `HKERNEL-EROD14-WAVE2-E-001..003`.
+3. Enabled-path missing/non-finite/domain-invalid runoff coupling exports must
+   hard-fail; no fallback reconstruction or silent substitution is allowed.
+4. Wave-2 producer-coupling adds to, and does not replace, the existing
+   Wave-1 coupling requirements.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -899,3 +913,4 @@ canonical order:
 | `2026-05-24` | `27` | `Codex` | PL14S amendment: added semantic replay diagnostics invariant (`INV-WATBAL-017`), semantic comparator guard/disposition authority, WB13 semantic evidence vectors, and explicit producer obligations for investigation-grade WB13 parity reporting. |
 | `2026-05-24` | `28` | `Codex` | SIMIMPL03 amendment: added production execution ownership, mode-propagation closure, simulation-owned WB13 provenance, and selective consolidated-intake guardrail invariants (`INV-WATBAL-018..021`) with typed guards (`HS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`) and addendum authority. |
 | `2026-05-25` | `29` | `Codex` | EROD13 amendment: activated Wave-1 runoff/peak-duration producer-coupling authority for erosion-core ingress under `erod13_core_enabled`, preserving typed hard-fail continuity (`HKERNEL-EROD13-CORE-E-001..003`) for missing/non-finite/domain-invalid coupling payloads. |
+| `2026-05-25` | `30` | `Codex` | EROD14 amendment: added Wave-2 runoff producer-coupling continuity for multi-OFE/enrichment ingress surfaces (`erod14_qout`, `erod14_qin`) with typed hard-fail guard continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |

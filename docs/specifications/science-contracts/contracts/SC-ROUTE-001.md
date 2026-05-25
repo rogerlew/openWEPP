@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-05-24
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -360,6 +360,22 @@ Minimum WS11 routing conformance vectors:
 3. Failure migration vectors: missing/non-finite/domain/dependency violations
    preserve existing typed boundary classes and WS10 guard IDs.
 
+## EROD14 Wave-2 Active Consumer-Coupling Addendum
+
+1. Routing consumers of hillslope sediment exports must preserve Wave-2 class
+   enrichment payload semantics for:
+   - `sed_frac_*` class-fraction exports,
+   - class-wise load closure surfaces (`erod14_gend_*`, `erod14_sedmax_*`),
+   - enrichment ratio surface `ER`.
+2. Producer ownership for Wave-2 class enrichment remains in `SC-SED-001`;
+   routing consumer guard ownership remains `SC-ROUTE-001` under
+   `INV-ROUTE-011` coupling completeness.
+3. Missing/non-finite/domain-invalid Wave-2 enrichment payloads must hard-fail;
+   consumer-side fallback defaults, truncation, or implicit renormalization are
+   prohibited.
+4. Wave-2 coupling continuity does not alter WS10 channel guard-family IDs
+   (`WKERNEL-WS10-CHANNEL-E-001..003`) for routing boundary failures.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -386,3 +402,4 @@ Minimum WS11 routing conformance vectors:
 | `2026-05-23` | `8` | `Codex` | EROD11 risk-acceptance amendment: dispositioned `GAP-ROUTE-001` and `GAP-ROUTE-004` from promotable-with-risk to `closed` via explicit governance risk acceptance while preserving non-promotable erosion-physics HOLD posture. |
 | `2026-05-23` | `9` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-ROUTE-003` to `closed` for required erosion-lane routing boundaries while retaining non-Wave-0 applicability holds. |
 | `2026-05-24` | `10` | `Codex` | WS11 amendment: replaced WS10 gain-factor surrogate routing authority with legacy-equivalent channel-routing branch authority (`ipeak`-selected Rational/CREAMS/KW/MC), added pinned baseline provenance anchors, expanded routing closure invariants, and published WS11 contract-derived vector obligations while preserving existing channel guard-family IDs. |
+| `2026-05-25` | `11` | `Codex` | EROD14 amendment: added active Wave-2 consumer-coupling authority for hillslope enrichment payload continuity (`sed_frac_*`, `ER`, class-wise closure surfaces) with explicit hard-fail posture for malformed boundary payloads. |
