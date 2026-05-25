@@ -1828,6 +1828,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundarySymbol::from("solthk"),
                 BoundaryValue::scalar(primary_profile_depth_mm / 1_000.0),
             );
+            state_surface.insert(
+                BoundarySymbol::from("salb"),
+                BoundaryValue::scalar(ofe.salb),
+            );
         }
     }
 

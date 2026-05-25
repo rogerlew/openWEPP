@@ -1,11 +1,20 @@
 # Gate Results
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: ran
 Date: 2026-05-25
 
 ## Static
-- Queued placeholder. Update during SIMIMPL24 execution.
+- SIMIMPL24 modifies production kernel/runtime publication paths and therefore
+  requires all non-doc gates.
 
 ## Ran
-- not-run
+- `cargo fmt --check`
+  - result: pass
+- `cargo clippy --workspace --all-targets -- -D warnings`
+  - result: pass
+- `cargo test --workspace`
+  - result: pass
+- `cargo deny check`
+  - result: pass (warnings only: duplicate crate versions and unmatched allowed
+    licenses in `deny.toml`)

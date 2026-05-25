@@ -1967,6 +1967,7 @@ pub struct Wb11HydrologyKernel;
 #[derive(Debug, Clone, Copy)]
 struct SnowCouplingOutcome {
     signed_s: f64,
+    accumulation: f64,
     runtime_swe: f64,
 }
 
@@ -3846,6 +3847,7 @@ impl Wb11HydrologyKernel {
 
         Ok(SnowCouplingOutcome {
             signed_s,
+            accumulation,
             runtime_swe: runtime_swe_after,
         })
     }
@@ -4000,15 +4002,16 @@ impl Wb11HydrologyKernel {
     fn resolve_interception_rainfall_scale(
         phase_class: HillslopeKernelPhaseClass,
         hyetograph_rainfall: f64,
+        interception_rainfall_input: f64,
         interception: f64,
     ) -> Result<(f64, f64), Wb11HydrologyKernelGuardError> {
-        let liquid_after_interception = hyetograph_rainfall - interception;
+        let liquid_after_interception = interception_rainfall_input - interception;
         Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
             liquid_after_interception,
             Some(0.0),
-            Some(hyetograph_rainfall),
+            Some(interception_rainfall_input),
         )?;
 
         if hyetograph_rainfall <= WB11_ZERO_THRESHOLD {
@@ -4021,7 +4024,7 @@ impl Wb11HydrologyKernel {
             WB15_SYMBOL_INTERCEPTION_I,
             rainfall_scale,
             Some(0.0),
-            Some(1.0),
+            None,
         )?;
         Ok((liquid_after_interception, rainfall_scale))
     }
@@ -5672,12 +5675,32 @@ impl Wb11HydrologyKernel {
             });
         }
 
+        let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
+        let snow_coupling = if active_snow_coupling {
+            Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
+        } else {
+            SnowCouplingOutcome {
+                signed_s: 0.0,
+                accumulation: 0.0,
+                runtime_swe: 0.0,
+            }
+        };
+        let hyetograph_liquid_input = hyetograph_rainfall - snow_coupling.accumulation;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            hyetograph_liquid_input,
+            Some(0.0),
+            None,
+        )?;
+
         let interception =
-            Self::compute_canopy_interception_depth(request, phase_class, hyetograph_rainfall)?;
+            Self::compute_canopy_interception_depth(request, phase_class, hyetograph_liquid_input)?;
         let (hyetograph_liquid_after_interception, rainfall_scale) =
             Self::resolve_interception_rainfall_scale(
                 phase_class,
                 hyetograph_rainfall,
+                hyetograph_liquid_input,
                 interception,
             )?;
         let cumulative_infiltration = Self::compute_coupled_infiltration_depth(
@@ -5708,16 +5731,6 @@ impl Wb11HydrologyKernel {
             liquid_after_interception,
         )?;
 
-        let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
-        let snow_coupling = if active_snow_coupling {
-            Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
-        } else {
-            SnowCouplingOutcome {
-                signed_s: 0.0,
-                runtime_swe: 0.0,
-            }
-        };
-
         let runon_input =
             Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNON_INPUT)?;
         Self::require_state_range(
@@ -5740,18 +5753,19 @@ impl Wb11HydrologyKernel {
 
         let forward_solver_lane =
             Self::resolve_wb20_forward_solver_lane_enabled(request, phase_class)?;
+        let runoff_snow_term = snow_coupling.signed_s + snow_coupling.accumulation;
 
         let q_runoff = Self::compute_runoff_after_interception(
             phase_class,
             liquid_after_interception,
-            snow_coupling.signed_s,
+            runoff_snow_term,
             runon_input,
             cumulative_infiltration,
             depression_storage_delta,
         )?;
 
         let closure_delta = if forward_solver_lane {
-            let solver_closure = liquid_after_interception + snow_coupling.signed_s + runon_input
+            let solver_closure = liquid_after_interception + runon_input + runoff_snow_term
                 - cumulative_infiltration
                 - depression_storage_delta;
             solver_closure - q_runoff
@@ -6941,13 +6955,81 @@ impl Wb11HydrologyKernel {
         let q_runoff = Self::require_flux_scalar(request, phase_class, WB12_SYMBOL_RUNOFF_Q)?;
         Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
         if q_runoff <= WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::FluxSymbolOutOfRange {
+            let wb11_soil_water =
+                Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+            Self::require_state_range(
                 phase_class,
-                symbol: BoundarySymbol::from(WB12_SYMBOL_RUNOFF_Q),
-                value: q_runoff,
-                minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: None,
-            });
+                WB11_SYMBOL_SOIL_WATER,
+                wb11_soil_water,
+                Some(0.0),
+                None,
+            )?;
+            let watcon = wb11_soil_water;
+            let total_soil = watcon * WB13_DEPTH_TO_MM;
+            let soil_water_total = total_soil;
+
+            let Ok(status) = SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HKERNEL-WB16-PEAK-ZERO-001",
+            ) else {
+                unreachable!("status message ids are non-empty WB16 constants")
+            };
+
+            let writeback = KernelWritebackPayload::with_updates(
+                vec![
+                    WritebackField::bounded(
+                        WB16_SYMBOL_PEAKRO,
+                        WB16_PEAKRO_FLOOR,
+                        Some(WB16_PEAKRO_FLOOR),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_WATDUR,
+                        0.0,
+                        Some(0.0),
+                        Some(WB16_MAX_DURATION_S),
+                    ),
+                    WritebackField::bounded(WB16_SYMBOL_METHOD_BRANCH, 1.0, Some(1.0), Some(3.0)),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_TSTAR,
+                        WB11_ZERO_THRESHOLD,
+                        Some(WB11_ZERO_THRESHOLD),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_QPSTAR,
+                        WB11_ZERO_THRESHOLD,
+                        Some(WB11_ZERO_THRESHOLD),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_VSTAR,
+                        WB11_ZERO_THRESHOLD,
+                        Some(WB11_ZERO_THRESHOLD),
+                        Some(1.0),
+                    ),
+                    WritebackField::bounded(
+                        BoundarySymbol::from(WB13_STATE_SYMBOL_WATCON),
+                        watcon,
+                        Some(0.0),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        BoundarySymbol::from(WB13_STATE_SYMBOL_TOTAL_SOIL),
+                        total_soil,
+                        Some(0.0),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        BoundarySymbol::from(WB13_STATE_SYMBOL_SOIL_WATER_TOTAL),
+                        soil_water_total,
+                        Some(0.0),
+                        None,
+                    ),
+                ],
+                Vec::new(),
+            );
+            return Ok(KernelRunResponse::new(status, writeback));
         }
 
         let hyetograph_point_count = Self::resolve_hyetograph_point_count(request, phase_class)?;
@@ -7040,7 +7122,7 @@ impl Wb11HydrologyKernel {
             .copied()
             .fold(0.0_f64, f64::max)
             + irrigation_rate_m_per_s;
-        if !remax.is_finite() || remax <= WB11_ZERO_THRESHOLD {
+        if !remax.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
                 symbol: BoundarySymbol::from("intsty_0001"),
@@ -7048,6 +7130,83 @@ impl Wb11HydrologyKernel {
                 minimum: Some(WB11_ZERO_THRESHOLD),
                 maximum: None,
             });
+        }
+        if remax <= WB11_ZERO_THRESHOLD {
+            let wb11_soil_water =
+                Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+            Self::require_state_range(
+                phase_class,
+                WB11_SYMBOL_SOIL_WATER,
+                wb11_soil_water,
+                Some(0.0),
+                None,
+            )?;
+            let watcon = wb11_soil_water;
+            let total_soil = watcon * WB13_DEPTH_TO_MM;
+            let soil_water_total = total_soil;
+
+            let Ok(status) = SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HKERNEL-WB16-PEAK-ZERO-002",
+            ) else {
+                unreachable!("status message ids are non-empty WB16 constants")
+            };
+
+            let writeback = KernelWritebackPayload::with_updates(
+                vec![
+                    WritebackField::bounded(
+                        WB16_SYMBOL_PEAKRO,
+                        WB16_PEAKRO_FLOOR,
+                        Some(WB16_PEAKRO_FLOOR),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_WATDUR,
+                        0.0,
+                        Some(0.0),
+                        Some(WB16_MAX_DURATION_S),
+                    ),
+                    WritebackField::bounded(WB16_SYMBOL_METHOD_BRANCH, 1.0, Some(1.0), Some(3.0)),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_TSTAR,
+                        WB11_ZERO_THRESHOLD,
+                        Some(WB11_ZERO_THRESHOLD),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_QPSTAR,
+                        WB11_ZERO_THRESHOLD,
+                        Some(WB11_ZERO_THRESHOLD),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        WB16_SYMBOL_VSTAR,
+                        WB11_ZERO_THRESHOLD,
+                        Some(WB11_ZERO_THRESHOLD),
+                        Some(1.0),
+                    ),
+                    WritebackField::bounded(
+                        BoundarySymbol::from(WB13_STATE_SYMBOL_WATCON),
+                        watcon,
+                        Some(0.0),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        BoundarySymbol::from(WB13_STATE_SYMBOL_TOTAL_SOIL),
+                        total_soil,
+                        Some(0.0),
+                        None,
+                    ),
+                    WritebackField::bounded(
+                        BoundarySymbol::from(WB13_STATE_SYMBOL_SOIL_WATER_TOTAL),
+                        soil_water_total,
+                        Some(0.0),
+                        None,
+                    ),
+                ],
+                Vec::new(),
+            );
+            return Ok(KernelRunResponse::new(status, writeback));
         }
 
         let vstar = vave / remax;

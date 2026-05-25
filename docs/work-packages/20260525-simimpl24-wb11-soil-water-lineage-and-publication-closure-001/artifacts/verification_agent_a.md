@@ -1,11 +1,16 @@
 # Verification Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: ran
 Date: 2026-05-25
 
 ## Static
-- Queued placeholder. Update during SIMIMPL24 execution.
+- Verification target: required SIMIMPL24 non-doc gates and failing replay
+  vectors are green on current worktree.
 
 ## Ran
-- not-run
+- `cargo fmt --check`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `cargo test --workspace`
+- `cargo deny check`
+- `cargo test -p openwepp --test pl14s_tier_a_candidate_emission_and_replay_contract`

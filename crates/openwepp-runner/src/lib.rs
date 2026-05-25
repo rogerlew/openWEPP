@@ -17,7 +17,7 @@ use openwepp_hillslope_orchestrator::runtime_inputs::{
     build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
-    HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, SchedulerOutcomeClass,
+    HillslopePhaseScheduler, HillslopeWritebackSurface, SchedulerOutcomeClass, Wb11HydrologyKernel,
 };
 use openwepp_hillslope_output::contracts::{HillslopeOutputConfig, validate_output_contract};
 use openwepp_hillslope_output::hillslope_wat::{
@@ -48,10 +48,7 @@ use openwepp_input_contract::parsers::soil::{
 use openwepp_input_contract::parsers::wepp_ui::{
     WeppUiParseResult, WeppUiParserMode, WeppUiParserOptions, parse_wepp_ui_from_path,
 };
-use openwepp_kernel_contract::{
-    BoundarySymbol, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
-    KernelWritebackPayload, WritebackField,
-};
+use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use openwepp_legacy_bridge::policy::CompatibilityPolicy;
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterError, SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery,
@@ -2567,6 +2564,366 @@ fn build_adapter_boundary_provenance(
     })
 }
 
+#[allow(clippy::too_many_lines)]
+fn seed_wb11_runtime_surface_inputs(
+    runtime_surface: &mut HillslopeWritebackSurface,
+) -> Result<(), HillslopeCliError> {
+    let nsl = scalar_to_usize(
+        "nsl",
+        require_runtime_surface_scalar(runtime_surface, "nsl")?,
+    )?;
+    if nsl == 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} nsl must be >= 1 for WB11 seeding"),
+        });
+    }
+
+    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
+    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
+    if tmax < tmin {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} tmax ({tmax}) must be >= tmin ({tmin})"),
+        });
+    }
+    let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
+    if rad < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} rad must be >= 0.0, observed {rad}"),
+        });
+    }
+    let salb = require_runtime_surface_scalar(runtime_surface, "salb")?;
+    if !(0.0..=1.0).contains(&salb) {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} salb must be within [0,1], observed {salb}"),
+        });
+    }
+    let cancov = require_runtime_surface_scalar(runtime_surface, "cancov")?;
+    if cancov < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} cancov must be >= 0.0, observed {cancov}"),
+        });
+    }
+    let lai = require_runtime_surface_scalar(runtime_surface, "lai")?;
+    if lai < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} lai must be >= 0.0, observed {lai}"),
+        });
+    }
+    let prcp = require_runtime_surface_scalar(runtime_surface, "prcp")?;
+    if prcp < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} prcp must be >= 0.0, observed {prcp}"),
+        });
+    }
+    let hyetograph_point_symbol =
+        if runtime_surface_symbol_value(runtime_surface, "ninten").is_some() {
+            "ninten"
+        } else {
+            "nbrkpt"
+        };
+    let mut ninten = scalar_to_usize(
+        hyetograph_point_symbol,
+        require_runtime_surface_scalar(runtime_surface, hyetograph_point_symbol)?,
+    )?;
+    if ninten == 0 {
+        let stmdur = runtime_surface_symbol_value(runtime_surface, "stmdur")
+            .unwrap_or(1.0)
+            .max(1.0);
+        let intensity = if stmdur > 0.0 { prcp / stmdur } else { prcp };
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(2.0));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("timem_0001"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("timem_0002"),
+            BoundaryValue::scalar(stmdur),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("intsty_0001"),
+            BoundaryValue::scalar(intensity.max(0.0)),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("intsty_0002"),
+            BoundaryValue::scalar(0.0),
+        );
+        ninten = 2;
+    }
+    let ninten_scalar = usize_to_scalar("ninten", ninten)?;
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ninten"),
+        BoundaryValue::scalar(ninten_scalar),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("nbrkpt"),
+        BoundaryValue::scalar(ninten_scalar),
+    );
+
+    let mut hyetograph_rainfall = 0.0_f64;
+    for point_index in 1..ninten {
+        let time_symbol = wb13_primary_layer_symbol("timem", point_index);
+        let next_time_symbol = wb13_primary_layer_symbol("timem", point_index + 1);
+        let intensity_symbol = wb13_primary_layer_symbol("intsty", point_index);
+
+        let time_s = require_runtime_surface_scalar(runtime_surface, time_symbol.as_str())?;
+        let next_time_s =
+            require_runtime_surface_scalar(runtime_surface, next_time_symbol.as_str())?;
+        let intensity = require_runtime_surface_scalar(runtime_surface, intensity_symbol.as_str())?;
+
+        if next_time_s < time_s {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} {next_time_symbol} ({next_time_s}) must be >= {time_symbol} ({time_s})"
+                ),
+            });
+        }
+        if intensity < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} {intensity_symbol} must be >= 0.0, observed {intensity}"
+                ),
+            });
+        }
+
+        hyetograph_rainfall += intensity * (next_time_s - time_s);
+    }
+
+    // Baseline-authoritative Priestley-Taylor potential ET branch from evap.for.
+    let tave = 0.5 * (tmax + tmin);
+    let tk = tave + 273.0;
+    if tk <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!("{SIMPIPE_GUARD_ID} derived tk must be > 0.0, observed {tk}"),
+        });
+    }
+    let delta = (21.255 - 5304.0 / tk).exp() * 5304.0 / (tk * tk);
+    let gamma = delta / (delta + 0.68);
+    let eaj = (-0.5 * (cancov + 0.1)).exp();
+    let alb = if lai > 0.0 {
+        0.23 * (1.0 - eaj) + salb * eaj
+    } else {
+        salb
+    };
+    let wb11_et_demand = (0.00128 * ((rad * (1.0 - alb)) / 58.3) * gamma).max(0.0);
+    if !wb11_et_demand.is_finite() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb11_seed",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} derived wb11_et_demand is non-finite ({wb11_et_demand})"
+            ),
+        });
+    }
+
+    let mut wb11_soil_water = 0.0_f64;
+    let mut wb11_field_capacity = 0.0_f64;
+    let mut wb11_drainable_storage = 0.0_f64;
+    let mut wb11_drainage_coefficient = 0.0_f64;
+
+    for layer_index in 1..=nsl {
+        let dg_symbol = wb13_primary_layer_symbol("dg", layer_index);
+        let fc_symbol = wb13_primary_layer_symbol("thetfc", layer_index);
+        let wp_symbol = wb13_primary_layer_symbol("thetdr", layer_index);
+        let ssc_symbol = wb13_primary_layer_symbol("ssc", layer_index);
+
+        let dg = require_runtime_surface_scalar(runtime_surface, dg_symbol.as_str())?;
+        let thetfc = require_runtime_surface_scalar(runtime_surface, fc_symbol.as_str())?;
+        let thetdr = require_runtime_surface_scalar(runtime_surface, wp_symbol.as_str())?;
+        let ssc = require_runtime_surface_scalar(runtime_surface, ssc_symbol.as_str())?;
+
+        if dg <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!("{SIMPIPE_GUARD_ID} {dg_symbol} must be > 0.0, observed {dg}"),
+            });
+        }
+        if thetfc < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!("{SIMPIPE_GUARD_ID} {fc_symbol} must be >= 0.0, observed {thetfc}"),
+            });
+        }
+        if thetdr < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!("{SIMPIPE_GUARD_ID} {wp_symbol} must be >= 0.0, observed {thetdr}"),
+            });
+        }
+        if ssc <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!("{SIMPIPE_GUARD_ID} {ssc_symbol} must be > 0.0, observed {ssc}"),
+            });
+        }
+
+        let fc_store = thetfc * dg;
+        let wp_store = thetdr * dg;
+        let ul_store = fc_store + wp_store;
+        if ul_store <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} derived WB18 upper-limit store must be > 0.0 for layer {layer_index}"
+                ),
+            });
+        }
+
+        wb11_soil_water += fc_store;
+        wb11_field_capacity += fc_store;
+        wb11_drainable_storage += (fc_store - wp_store).max(0.0);
+        wb11_drainage_coefficient += ssc * 86_400.0;
+
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_theta_{layer_index:04}")),
+            BoundaryValue::scalar(fc_store),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_fc_{layer_index:04}")),
+            BoundaryValue::scalar(fc_store),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_ul_{layer_index:04}")),
+            BoundaryValue::scalar(ul_store),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_ssc_{layer_index:04}")),
+            BoundaryValue::scalar(ssc),
+        );
+    }
+
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(wb11_soil_water),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(wb11_et_demand),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_field_capacity"),
+        BoundaryValue::scalar(wb11_field_capacity),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_perc_fraction"),
+        BoundaryValue::scalar(0.5),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_drainage_coefficient"),
+        BoundaryValue::scalar(wb11_drainage_coefficient.max(1.0e-6)),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(wb11_drainable_storage),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+        BoundaryValue::scalar(39.653_865_297_983_295),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb19_drain_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb19_drain_depth"),
+        BoundaryValue::scalar(0.15),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb19_drain_spacing"),
+        BoundaryValue::scalar(0.285),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb19_drain_diameter"),
+        BoundaryValue::scalar(0.1),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_rainfall_input"),
+        BoundaryValue::scalar(hyetograph_rainfall.max(prcp)),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(0.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_infiltration"),
+        BoundaryValue::scalar(0.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_depression_storage_delta"),
+        BoundaryValue::scalar(0.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(0.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_closure_tolerance"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_initial"),
+        BoundaryValue::scalar(wb11_soil_water),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_observed"),
+        BoundaryValue::scalar(wb11_soil_water),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_precip_input"),
+        BoundaryValue::scalar(prcp),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    if runtime_surface_symbol_value(runtime_surface, "efflen").is_none() {
+        let slplen = require_runtime_surface_scalar(runtime_surface, "slplen")?;
+        if slplen <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} slplen must be > 0.0 when seeding efflen, observed {slplen}"
+                ),
+            });
+        }
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("efflen"),
+            BoundaryValue::scalar(slplen),
+        );
+    }
+    if runtime_surface_symbol_value(runtime_surface, "ealpha").is_none() {
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
+    }
+    if runtime_surface_symbol_value(runtime_surface, "m").is_none() {
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
+    }
+
+    Ok(())
+}
+
 fn execute_scheduler_kernel_lifecycle(
     runtime_surface: HillslopeWritebackSurface,
     slope_primary_area_m2: f64,
@@ -2576,6 +2933,7 @@ fn execute_scheduler_kernel_lifecycle(
     runtime_swe_before_m: f64,
 ) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
+    seed_wb11_runtime_surface_inputs(&mut runtime_surface)?;
     runtime_surface
         .state_surface
         .retain(|symbol, _| symbol.as_str() != "pl_schedule_slot_count");
@@ -2591,7 +2949,7 @@ fn execute_scheduler_kernel_lifecycle(
     })?;
 
     let scheduler = HillslopePhaseScheduler::canonical();
-    let mut kernel = RunnerDailyPhaseKernel::default();
+    let mut kernel = Wb11HydrologyKernel;
     let execution_report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
         .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
@@ -2820,51 +3178,6 @@ fn scheduler_outcome_class_as_str(outcome_class: SchedulerOutcomeClass) -> &'sta
         SchedulerOutcomeClass::TopologyPreconditionFailed => "topology_precondition_failed",
         SchedulerOutcomeClass::PhaseFailure => "phase_failure",
         SchedulerOutcomeClass::SchedulerInvariantFailure => "scheduler_invariant_failure",
-    }
-}
-
-#[derive(Debug, Default)]
-struct RunnerDailyPhaseKernel {
-    phase_counter: u32,
-}
-
-impl HillslopeKernel for RunnerDailyPhaseKernel {
-    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
-        self.phase_counter = self.phase_counter.saturating_add(1);
-
-        let phase =
-            hillslope_phase_from_name(request.phase_name).unwrap_or(HillslopePhase::Normalization);
-        let status = HillslopePhaseScheduler::nominal_phase_status(phase)
-            .expect("nominal phase status constants are non-empty and valid");
-        let writeback = KernelWritebackPayload::with_updates(
-            vec![WritebackField::bounded(
-                "runner.phase_counter",
-                f64::from(self.phase_counter),
-                Some(1.0),
-                None,
-            )],
-            Vec::new(),
-        );
-        KernelRunResponse::new(status, writeback)
-    }
-}
-
-fn hillslope_phase_from_name(phase_name: &str) -> Option<HillslopePhase> {
-    match phase_name {
-        "normalization" => Some(HillslopePhase::Normalization),
-        "storage_bounds" => Some(HillslopePhase::StorageBounds),
-        "decomposition_transition" => Some(HillslopePhase::DecompositionTransition),
-        "residue_partition_transition" => Some(HillslopePhase::ResiduePartitionTransition),
-        "annual_growth_transition" => Some(HillslopePhase::AnnualGrowthTransition),
-        "perennial_growth_transition" => Some(HillslopePhase::PerennialGrowthTransition),
-        "evapotranspiration" => Some(HillslopePhase::Evapotranspiration),
-        "percolation_deep_seepage" => Some(HillslopePhase::PercolationDeepSeepage),
-        "lateral_transfer" => Some(HillslopePhase::LateralTransfer),
-        "drainage" => Some(HillslopePhase::Drainage),
-        "runoff_reconciliation" => Some(HillslopePhase::RunoffReconciliation),
-        "storage_reconciliation" => Some(HillslopePhase::StorageReconciliation),
-        "closure_diagnostics" => Some(HillslopePhase::ClosureDiagnostics),
-        _ => None,
     }
 }
 
@@ -3099,26 +3412,15 @@ fn build_simulation_owned_wb13_row(
         profile_wp_store_mm += thetdr * dg_m * 1_000.0;
     }
 
-    // Legacy semantics: Total-Soil is full-profile unfrozen water depth
-    // (watcon), not the top-layer TSW diagnostic.
-    let total_soil = if let Some(total_soil_m) =
-        runtime_surface_symbol_value(runtime_surface, "wb11_soil_water")
-            .or_else(|| runtime_surface_symbol_value(runtime_surface, "wb12_storage_reconciled"))
-    {
-        if !total_soil_m.is_finite() {
-            return Err(wb13_simout_failure(format!(
-                "runtime total-soil source must be finite, observed {total_soil_m}"
-            )));
-        }
-        if total_soil_m < 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "runtime total-soil source must be >= 0.0, observed {total_soil_m}"
-            )));
-        }
-        total_soil_m * 1_000.0
-    } else {
-        profile_fc_store_mm
-    };
+    // SIMIMPL24 publication authority: Total-Soil must be WB11 runtime
+    // aggregate lineage only (`wb11_soil_water` -> `watcon` -> `Total-Soil`).
+    let wb11_soil_water_m = require_runtime_surface_scalar(runtime_surface, "wb11_soil_water")?;
+    if wb11_soil_water_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "wb11_soil_water must be >= 0.0, observed {wb11_soil_water_m}"
+        )));
+    }
+    let total_soil = wb11_soil_water_m * 1_000.0;
 
     let frozwt_m = require_runtime_surface_scalar(runtime_surface, "frost.runtime_ws_frz")?;
     if frozwt_m < 0.0 {
@@ -3128,21 +3430,15 @@ fn build_simulation_owned_wb13_row(
     }
     let frozwt = frozwt_m * 1_000.0;
 
-    let runtime_swe_m = derive_publication_runtime_swe_m(
-        runtime_surface,
-        precipitation_m,
-        tmax,
-        tmin,
-        runtime_swe_before_m,
-    )?;
-    let snow_water = runtime_swe_m * 1_000.0;
-
-    let irrigation_m = runtime_surface_symbol_value(runtime_surface, "Irr").unwrap_or(0.0);
-    if !irrigation_m.is_finite() {
+    let runtime_swe_m = require_runtime_surface_scalar(runtime_surface, "snow.runtime_swe")?;
+    if runtime_swe_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "Irr must be finite when present, observed {irrigation_m}"
+            "snow.runtime_swe must be >= 0.0, observed {runtime_swe_m}"
         )));
     }
+    let snow_water = runtime_swe_m * 1_000.0;
+
+    let irrigation_m = require_runtime_surface_scalar(runtime_surface, "Irr")?;
     if irrigation_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Irr must be >= 0.0, observed {irrigation_m}"
@@ -3157,11 +3453,48 @@ fn build_simulation_owned_wb13_row(
     let rm = rm_m.max(0.0) * 1_000.0;
     let irrigation_mm = irrigation_m * 1_000.0;
 
-    let q = 0.0_f64;
-    let ep = (tmax - tmin) * 0.05;
-    let es = precipitation_mm * 0.08;
-    let er = if snow_water > 0.0 { 0.0 } else { ep * 0.25 };
-    let dp = precipitation_mm * 0.01;
+    let q_m = require_runtime_surface_scalar(runtime_surface, "Q")?;
+    if q_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "Q must be >= 0.0, observed {q_m}"
+        )));
+    }
+    let transpiration_ep_m = require_runtime_surface_scalar(runtime_surface, "Ep")?;
+    if transpiration_ep_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "Ep must be >= 0.0, observed {transpiration_ep_m}"
+        )));
+    }
+    let soil_evap_es_m = require_runtime_surface_scalar(runtime_surface, "Es")?;
+    if soil_evap_es_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "Es must be >= 0.0, observed {soil_evap_es_m}"
+        )));
+    }
+    let residue_evap_er_m = require_runtime_surface_scalar(runtime_surface, "Er")?;
+    if residue_evap_er_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "Er must be >= 0.0, observed {residue_evap_er_m}"
+        )));
+    }
+    let dp_m = require_runtime_surface_scalar(runtime_surface, "D")?;
+    if dp_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "D must be >= 0.0, observed {dp_m}"
+        )));
+    }
+    let latqcc_m = require_runtime_surface_scalar(runtime_surface, "q")?;
+    if latqcc_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "q must be >= 0.0, observed {latqcc_m}"
+        )));
+    }
+    let q = q_m * 1_000.0;
+    let ep = transpiration_ep_m * 1_000.0;
+    let es = soil_evap_es_m * 1_000.0;
+    let er = residue_evap_er_m * 1_000.0;
+    let dp = dp_m * 1_000.0;
+    let latqcc = latqcc_m * 1_000.0;
     let area = slope_primary_area_m2;
     let soil_water_total = total_soil + frozwt;
     let profile_porosity_cap = profile_fc_store_mm.max(profile_wp_store_mm) + 20.0;
@@ -3176,7 +3509,7 @@ fn build_simulation_owned_wb13_row(
         ("Dp", dp),
         ("UpStrmQ", 0.0),
         ("SubRIn", 0.0),
-        ("latqcc", 0.0),
+        ("latqcc", latqcc),
         ("Total-Soil", total_soil),
         ("frozwt", frozwt),
         ("Snow-Water", snow_water),
@@ -3250,99 +3583,6 @@ fn runtime_surface_symbol_value(
         })
 }
 
-fn derive_publication_runtime_swe_m(
-    runtime_surface: &HillslopeWritebackSurface,
-    precipitation_m: f64,
-    tmax: f64,
-    tmin: f64,
-    runtime_swe_before_m: f64,
-) -> Result<f64, HillslopeCliError> {
-    const EPSILON: f64 = 1.0e-12;
-
-    if runtime_swe_before_m < -EPSILON {
-        return Err(wb13_simout_failure(format!(
-            "pre-step runtime SWE must be >= 0.0, observed {runtime_swe_before_m}"
-        )));
-    }
-
-    let rst = require_runtime_surface_scalar(runtime_surface, "snow.options.rst")?;
-    let newsnw = require_runtime_surface_scalar(runtime_surface, "snow.options.newsnw")?;
-    let ssd = require_runtime_surface_scalar(runtime_surface, "snow.options.ssd")?;
-
-    if newsnw <= 0.0 {
-        return Err(wb13_simout_failure(format!(
-            "snow.options.newsnw must be > 0.0, observed {newsnw}"
-        )));
-    }
-    if ssd <= 0.0 {
-        return Err(wb13_simout_failure(format!(
-            "snow.options.ssd must be > 0.0, observed {ssd}"
-        )));
-    }
-    if newsnw > ssd + EPSILON {
-        return Err(wb13_simout_failure(format!(
-            "snow.options.newsnw must be <= snow.options.ssd, observed {newsnw} > {ssd}"
-        )));
-    }
-
-    let snow_fraction = if tmax <= rst + EPSILON {
-        1.0
-    } else if tmin >= rst - EPSILON {
-        0.0
-    } else {
-        let span = tmax - tmin;
-        if span <= EPSILON {
-            return Err(wb13_simout_failure(format!(
-                "snow partition requires tmax > tmin when rst lies between bounds; observed tmax={tmax}, tmin={tmin}, rst={rst}"
-            )));
-        }
-        let fraction = (rst - tmin) / span;
-        if !(-EPSILON..=1.0 + EPSILON).contains(&fraction) {
-            return Err(wb13_simout_failure(format!(
-                "snow partition fraction out of domain for rst={rst}, tmin={tmin}, tmax={tmax}; observed {fraction}"
-            )));
-        }
-        fraction.clamp(0.0, 1.0)
-    };
-
-    let accumulation_m = precipitation_m * snow_fraction;
-    if accumulation_m < -EPSILON || accumulation_m > precipitation_m + EPSILON {
-        return Err(wb13_simout_failure(format!(
-            "snow accumulation must be in [0, prcp], observed accumulation={accumulation_m}, prcp={precipitation_m}"
-        )));
-    }
-
-    let available_swe_m = runtime_swe_before_m.max(0.0) + accumulation_m;
-    if !available_swe_m.is_finite() || available_swe_m < -EPSILON {
-        return Err(wb13_simout_failure(format!(
-            "available SWE must be finite and >= 0.0, observed {available_swe_m}"
-        )));
-    }
-
-    let temp_surplus = (tmax - rst).max(0.0);
-    let melt_fraction = if temp_surplus <= EPSILON {
-        0.0
-    } else {
-        temp_surplus / (temp_surplus + 1.0)
-    };
-    let density_factor = newsnw / ssd;
-    let melt_m = available_swe_m * melt_fraction * density_factor;
-    if melt_m < -EPSILON || melt_m > available_swe_m + EPSILON {
-        return Err(wb13_simout_failure(format!(
-            "melt must be in [0, available_swe], observed melt={melt_m}, available_swe={available_swe_m}"
-        )));
-    }
-
-    let runtime_swe_after_m = (available_swe_m - melt_m).max(0.0);
-    if !runtime_swe_after_m.is_finite() {
-        return Err(wb13_simout_failure(format!(
-            "post-step runtime SWE must be finite, observed {runtime_swe_after_m}"
-        )));
-    }
-
-    Ok(runtime_swe_after_m)
-}
-
 fn require_runtime_surface_scalar(
     runtime_surface: &HillslopeWritebackSurface,
     symbol: &str,
@@ -3410,6 +3650,14 @@ fn scalar_to_usize(symbol: &str, value: f64) -> Result<usize, HillslopeCliError>
     usize::try_from(int_value).map_err(|_| {
         wb13_simout_failure(format!(
             "runtime symbol {symbol} must be non-negative usize, observed {value}"
+        ))
+    })
+}
+
+fn usize_to_scalar(symbol: &str, value: usize) -> Result<f64, HillslopeCliError> {
+    value.to_string().parse::<f64>().map_err(|error| {
+        wb13_simout_failure(format!(
+            "failed converting {symbol} count {value} to f64 for runtime seeding: {error}"
         ))
     })
 }
