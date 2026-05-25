@@ -1,0 +1,25 @@
+pub const BINARY_RELEASE_SCHEMA_ID: &str = "openwepp-binary-release-metadata-v1";
+pub const HILLSLOPE_RUN_MANIFEST_SCHEMA_ID: &str = "openwepp-hillslope-run-manifest-v1";
+pub const HILLSLOPE_RUNFILE_SCHEMA_ID: &str = "openwepp-hillslope-runfile-v1";
+pub const REQUIRED_RUN_OUTPUT_PASS: &str = "outputs.pass (.hbp)";
+pub const REQUIRED_RUN_OUTPUT_LOSS: &str = "outputs.loss (.json)";
+pub const SIMPIPE_GUARD_ID: &str = "HS-SIMPIPE-E-001";
+pub const SIMOUT_GUARD_ID: &str = "HS-SIMOUT-E-001";
+pub const WUI_MODE_GUARD_ID: &str = "WUI-E-005";
+pub const SIMMODE_TIMESTEP_GUARD_ID: &str = "HS-SIMMODE-E-001";
+pub const SIMCONS_INTAKE_GUARD_ID: &str = "HS-SIMCONS-E-001";
+pub const SIMCOUP_GUARD_ID: &str = "HS-SIMCOUP-E-001";
+pub const DAILY_EXECUTION_LANE: &str = "daily";
+pub const HOURLY_EXECUTION_LANE: &str = "hourly";
+pub const SUBHOURLY_EXECUTION_LANE: &str = "subhourly";
+pub const SCHEDULER_KERNEL_PUBLICATION_SOURCE: &str = "scheduler-kernel";
+pub const WB13_PUBLICATION_SOURCE_SIMULATION_OWNED: &str = "simulation-owned";
+pub const WB13_REPLAY_CANDIDATE_SURFACE_WAT: &str = "interchange/H.wat.parquet";
+pub const WB13_REPLAY_CANDIDATE_SURFACE_PASS: &str = "interchange/H.pass.parquet";
+pub const SIMIMPL09_ADOPT_PROFILE: &str = "SIMIMPL08-adopt-only";
+
+pub(crate) const DAILY_TIMESTEP_SECONDS: u32 = 86_400;
+pub(crate) const HOURLY_TIMESTEP_SECONDS: u32 = 3_600;
+pub(crate) const SIMIMPL10_FROST_MAX_DEPTH_M: f64 = 0.20;
+pub(crate) const SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM: f64 = 1.0e-6;
+pub(crate) const SIMIMPL10_FLAG_TOLERANCE: f64 = 1.0e-9;

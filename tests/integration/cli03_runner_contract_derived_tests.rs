@@ -16,7 +16,6 @@ const HILLSLOPE_CLI_SPEC: &str = include_str!(
     "../../docs/specifications/subsystems/runner/openwepp-hillslope-cli-specification.md"
 );
 const RUNNER_CRATE_MANIFEST: &str = include_str!("../../crates/openwepp-runner/Cargo.toml");
-const RUNNER_CRATE_LIB: &str = include_str!("../../crates/openwepp-runner/src/lib.rs");
 const WATERSHED_CLI_SOURCE: &str =
     include_str!("../../crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs");
 const OUTPUT_CRATE_MANIFEST: &str =
@@ -149,8 +148,8 @@ fn cli03_runner_crate_wires_output_surface_dependency() {
         "CLI03 requires watershed output-surface delegation to openwepp-watershed-output crate"
     );
     assert!(
-        RUNNER_CRATE_LIB.contains("openwepp_hillslope_output"),
-        "CLI03 requires lib wiring from runner boundary into openwepp-hillslope-output APIs"
+        runner_src_tree_contains("openwepp_hillslope_output"),
+        "CLI03 requires runner source-tree wiring into openwepp-hillslope-output APIs"
     );
 }
 
@@ -428,4 +427,33 @@ fn copy_dir_recursive(source: &Path, destination: &Path) {
             fs::copy(&source_path, &destination_path).expect("file copy should succeed");
         }
     }
+}
+
+fn runner_src_tree_contains(needle: &str) -> bool {
+    let source_root = Path::new(file!())
+        .parent()
+        .expect("integration file parent exists")
+        .parent()
+        .expect("tests directory exists")
+        .join("../crates/openwepp-runner/src");
+    source_tree_contains_rs(&source_root, needle)
+}
+
+fn source_tree_contains_rs(root: &Path, needle: &str) -> bool {
+    fs::read_dir(root)
+        .ok()
+        .into_iter()
+        .flat_map(|entries| entries.filter_map(Result::ok))
+        .any(|entry| {
+            let path = entry.path();
+            if path.is_dir() {
+                return source_tree_contains_rs(&path, needle);
+            }
+            if path.extension().and_then(|ext| ext.to_str()) != Some("rs") {
+                return false;
+            }
+            fs::read_to_string(path)
+                .map(|contents| contents.contains(needle))
+                .unwrap_or(false)
+        })
 }

@@ -640,6 +640,11 @@ Authorized packages:
   - Purpose: prepare and execute SIMIMPL26 by comparing baseline vs candidate
     `soil.dat`/`.sol` artifacts with reproducible provenance, explicit delta
     classification, and evidence-backed follow-on disposition guidance.
+- `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR001 by mechanically modularizing
+    `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
+    updating layout-coupled tests to remain contract-accurate under the new
+    module tree.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
