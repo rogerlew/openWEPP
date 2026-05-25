@@ -676,6 +676,23 @@ Authorized packages:
     before EROD13 production kernel authoring, under contract-first
     sequencing (contract amendments, contract tests, pre-implementation gate,
     then any code edits if explicitly authorized).
+- `20260525-erod13-hillslope-core-erosion-kernel-001/`
+  - Purpose: implement Wave-1 core hillslope erosion kernel behavior after
+    EROD12 entry authorization, including canonical `SC-*` authority
+    amendments, contract-derived tests, pre-implementation gate evidence, and
+    typed production runtime integration under contract-first sequencing.
+- `20260525-erod14-multiofe-and-enrichment-kernel-001/`
+  - Purpose: implement Wave-2 multi-OFE routing and enrichment kernel behavior
+    after EROD13 completion, including canonical `SC-*` authority amendments,
+    contract-derived conservation-vector tests, pre-implementation gate
+    evidence, and typed production runtime integration under contract-first
+    sequencing.
+- `20260525-erod15-routing-boundary-coupling-001/`
+  - Purpose: implement Wave-3 routing-boundary sediment coupling after EROD14
+    completion, including canonical `SC-*` authority amendments,
+    contract-derived handoff-completeness tests, pre-implementation gate
+    evidence, and typed production route-boundary integration under
+    contract-first sequencing.
 - `20260523-ws10-channel-impoundment-production-kernels-001/`
   - Purpose: replace watershed test/probe posture with production
     channel/impoundment kernels under typed boundary integration using

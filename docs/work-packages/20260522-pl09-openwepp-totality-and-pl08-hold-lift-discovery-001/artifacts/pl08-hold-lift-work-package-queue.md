@@ -182,8 +182,8 @@ Purpose:
 | wp_id | wave | current state | dependency posture | queue decision |
 |---|---|---|---|---|
 | `EROD13-hillslope-core-erosion-kernel-001` | Wave 1 | `completed` | Entry dependencies satisfied and Wave-1 contract-first execution closed (`GO`) | `DONE` |
-| `EROD14-multiofe-and-enrichment-kernel-001` | Wave 2 | `not-started` | Blocked on `EROD13` completion | `QUEUE` |
-| `EROD15-routing-boundary-coupling-001` | Wave 3 | `not-started` | Blocked on `EROD14`; `WS10` upstream dependency is now satisfied | `QUEUE` |
+| `EROD14-multiofe-and-enrichment-kernel-001` | Wave 2 | `completed` | Wave-2 contract-first execution closed (`GO`) | `DONE` |
+| `EROD15-routing-boundary-coupling-001` | Wave 3 | `queued` (package scaffolded; execution not started) | EROD14 completion satisfied; `WS10` upstream dependency remains satisfied | `NEXT` |
 | `EROD16-sediment-closeout-and-comparator-001` | Wave 4 | `not-started` | Blocked on `EROD15` completion | `QUEUE` |
 
 ### Hold/Promotability Posture
@@ -212,3 +212,29 @@ Ran:
   - `cargo clippy --workspace --all-targets -- -D warnings`
   - `cargo test --workspace`
   - `cargo deny check`
+
+## EROD14 Completion Update (2026-05-25 UTC)
+
+Status: `completed`
+Evidence mode: `Mixed`
+
+Static:
+- `EROD14` execution is complete with Wave-2 `GO` verdict for EROD15 entry.
+
+Ran:
+- Wave-2 package gates completed:
+  - `cargo fmt --check`
+  - `cargo clippy --workspace --all-targets -- -D warnings`
+  - `cargo test --workspace`
+  - `cargo deny check`
+
+## EROD15 Scaffold Update (2026-05-25 UTC)
+
+Status: `queued`
+Evidence mode: `Static`
+
+Static:
+- `EROD15` package scaffold is now present at:
+  `docs/work-packages/20260525-erod15-routing-boundary-coupling-001/`.
+- Queue progression update: Wave-3 is promoted to `NEXT` after EROD14
+  completion; EROD16 remains blocked on EROD15 completion.
