@@ -32,6 +32,12 @@ It implements a deliberate blend:
    `docs/governance/legacy-source-attribution-and-contributors-policy.md`.
 8. Unsafe code and FFI/interoperability boundaries must follow
    `docs/governance/unsafe-and-interop-restrictions-policy.md`.
+9. Production-path code must not ship with unresolved stubs (`todo!`,
+   `unimplemented!`, or placeholder `panic!`/`unreachable!` messages such as
+   `TODO`, `stub`, or `not implemented`).
+10. If behavior is intentionally unavailable, return a typed error and wire
+    runtime diagnostics through structured observability events rather than
+    placeholder panics.
 
 ## 3) Naming and symbol policy
 
@@ -315,10 +321,11 @@ would be harder to test externally.
 Before merge:
 
 1. `cargo fmt --check`
-2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo test --workspace`
-4. `cargo test --doc`
-5. `cargo deny check`
+2. `cargo clippy --workspace --all-targets -- -D warnings -D clippy::todo -D clippy::unimplemented`
+3. `rg -n --glob '!target' 'todo!\(|unimplemented!\(|panic!\(.*(TODO|todo|stub|not implemented)|unreachable!\(.*(TODO|todo|stub|not implemented)' crates src`
+4. `cargo test --workspace`
+5. `cargo test --doc`
+6. `cargo deny check`
 
 ### 7.3 Scientific-model verification requirements
 
@@ -347,6 +354,23 @@ Every PR touching kernel math should confirm:
 - Keep `clippy` strict (`-D warnings`) and use targeted `#[allow(...)]` only
   with justification comments.
 - Use rustdoc examples for behavioral documentation and executable examples.
+
+### 8.1 Stub detection and runtime observability requirements
+
+Treat stub detection as a two-layer gate:
+
+1. Clippy catches explicit placeholder macros (`todo!`, `unimplemented!`).
+2. Pattern scan catches placeholder panic/unreachable messages that can evade
+   macro-only linting.
+
+If a production-path branch is intentionally unavailable:
+
+1. Return a typed error variant (no placeholder panic).
+2. Emit a structured observability event aligned with
+   `docs/specifications/subsystems/observability/trace-event-schema.md`
+   (`guard_violation` and/or `intent_rejected` as applicable).
+3. Include contract/invariant identity in the emitted payload so failures are
+   attributable in replay and diagnostics workflows.
 
 ## 9) Relationship to other openWEPP governance docs
 
