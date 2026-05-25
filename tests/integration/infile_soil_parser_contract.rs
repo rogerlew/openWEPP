@@ -4,6 +4,8 @@ use openwepp_input_contract::parsers::soil::{
 
 const VALID_97_5: &str = include_str!("../fixtures/infile/soil/valid_97_5.sol");
 const VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
+const VALID_9002_POLICY_FIRST_COMPAT: &str =
+    include_str!("../fixtures/infile/soil/valid_9002_policy_first_compat.sol");
 const UNKNOWN_DATVER: &str = include_str!("../fixtures/infile/soil/unknown_datver.sol");
 const INVALID_LAYER_ARITY_9002: &str =
     include_str!("../fixtures/infile/soil/invalid_layer_arity_9002.sol");
@@ -43,6 +45,27 @@ fn strict_parses_9002_profile_with_policy_and_restrictive_footer() {
         .expect("9002 must include restrictive-layer footer");
     assert!(restrictive.slflag);
     assert!((restrictive.ui_bdrkth_mm - 500.0).abs() < 1e-9);
+}
+
+#[test]
+fn compatibility_parses_9002_policy_first_variant() {
+    let strict_err = parse_soil(VALID_9002_POLICY_FIRST_COMPAT, strict())
+        .expect_err("strict should reject policy-first variant");
+    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+
+    let compat_options = SoilParserOptions {
+        mode: ParserMode::Compatibility,
+        allow_legacy_aliases: true,
+        expected_topology_count: None,
+        topology_scope: None,
+    };
+    let parsed = parse_soil(VALID_9002_POLICY_FIRST_COMPAT, compat_options)
+        .expect("compat should accept policy-first variant");
+
+    assert_eq!(parsed.datver, SoilDatver::V9002);
+    assert_eq!(parsed.ofes.len(), 1);
+    assert_eq!(parsed.ofes[0].layers.len(), 2);
+    assert!(parsed.ofes[0].policy.is_some());
 }
 
 #[test]

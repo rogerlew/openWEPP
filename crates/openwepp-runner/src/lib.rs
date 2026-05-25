@@ -97,93 +97,60 @@ static RELEASE_SIDECAR_IO_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::ne
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SidecarPolicy {
-    Strict,
     Compat,
 }
 
 impl SidecarPolicy {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Strict => "strict",
-            Self::Compat => "compat",
-        }
+        "compat"
     }
 
     #[must_use]
     pub const fn as_legacy_bridge_policy(self) -> CompatibilityPolicy {
-        match self {
-            Self::Strict => CompatibilityPolicy::Strict,
-            Self::Compat => CompatibilityPolicy::Compat,
-        }
+        CompatibilityPolicy::Compat
     }
 
     #[must_use]
     pub const fn as_soil_parser_mode(self) -> SoilParserMode {
-        match self {
-            Self::Strict => SoilParserMode::Strict,
-            Self::Compat => SoilParserMode::Compatibility,
-        }
+        SoilParserMode::Compatibility
     }
 
     #[must_use]
     pub const fn as_slope_parser_options(self) -> SlopeParserOptions {
-        match self {
-            Self::Strict => SlopeParserOptions::strict(),
-            Self::Compat => SlopeParserOptions::compatibility(),
-        }
+        SlopeParserOptions::compatibility()
     }
 
     #[must_use]
     pub const fn as_management_parser_mode(self) -> ManagementParseMode {
-        match self {
-            Self::Strict => ManagementParseMode::Strict,
-            Self::Compat => ManagementParseMode::Compatibility,
-        }
+        ManagementParseMode::Compatibility
     }
 
     #[must_use]
     pub fn as_climate_parser_mode(self) -> ClimateParserMode {
-        match self {
-            Self::Strict => ClimateParserMode::Strict,
-            Self::Compat => ClimateParserMode::Compatibility(CompatibilityOptions::default()),
-        }
+        ClimateParserMode::Compatibility(CompatibilityOptions::default())
     }
 
     #[must_use]
     pub const fn as_snow_parse_options(self) -> SnowParseOptions {
-        match self {
-            Self::Strict => SnowParseOptions {
-                mode: SnowParseMode::Strict,
-            },
-            Self::Compat => SnowParseOptions {
-                mode: SnowParseMode::Compatibility,
-            },
+        SnowParseOptions {
+            mode: SnowParseMode::Compatibility,
         }
     }
 
     #[must_use]
     pub const fn as_frost_parse_mode(self) -> FrostParseMode {
-        match self {
-            Self::Strict => FrostParseMode::Strict,
-            Self::Compat => FrostParseMode::Compatibility,
-        }
+        FrostParseMode::Compatibility
     }
 
     #[must_use]
     pub const fn as_wepp_ui_parse_mode(self) -> WeppUiParserMode {
-        match self {
-            Self::Strict => WeppUiParserMode::Strict,
-            Self::Compat => WeppUiParserMode::Compatibility,
-        }
+        WeppUiParserMode::Compatibility
     }
 
     #[must_use]
     pub const fn as_pmetpara_parse_mode(self) -> PmetparaParseMode {
-        match self {
-            Self::Strict => PmetparaParseMode::Strict,
-            Self::Compat => PmetparaParseMode::Compatibility,
-        }
+        PmetparaParseMode::Compatibility
     }
 }
 
@@ -192,10 +159,9 @@ impl std::str::FromStr for SidecarPolicy {
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
         match value {
-            "strict" => Ok(Self::Strict),
             "compat" => Ok(Self::Compat),
             _ => Err(format!(
-                "unsupported sidecar policy '{value}' (expected strict|compat)"
+                "unsupported sidecar policy '{value}' (expected compat)"
             )),
         }
     }
@@ -1406,7 +1372,7 @@ pub fn execute_hillslope_run(
     })?;
     let soil_options = SoilParserOptions {
         mode: request.sidecar_policy.as_soil_parser_mode(),
-        allow_legacy_aliases: request.sidecar_policy == SidecarPolicy::Compat,
+        allow_legacy_aliases: true,
         expected_topology_count: None,
         topology_scope: None,
     };
@@ -3790,7 +3756,7 @@ mod tests {
                 run_dir: temp_run_dir.clone(),
                 run_file: PathBuf::from("case.run"),
                 output_dir,
-                sidecar_policy: SidecarPolicy::Strict,
+                sidecar_policy: SidecarPolicy::Compat,
                 legacy_sidecar_discovery: false,
                 manifest_path: None,
             },

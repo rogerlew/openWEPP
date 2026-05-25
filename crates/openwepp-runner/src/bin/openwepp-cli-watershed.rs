@@ -51,7 +51,6 @@ fn run() -> Result<(), String> {
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
-    let mut policy = SidecarPolicy::Strict;
     let mut legacy_sidecar_discovery = false;
 
     let args: Vec<String> = std::env::args().collect();
@@ -84,7 +83,7 @@ fn run() -> Result<(), String> {
                 let Some(value) = args.get(cursor) else {
                     return Err("CLIWAT-E-001 missing value for --policy".to_string());
                 };
-                policy = value.parse().map_err(|detail: String| {
+                let _parsed_policy: SidecarPolicy = value.parse().map_err(|detail: String| {
                     format!("CLIWAT-E-001 invalid --policy value: {detail}")
                 })?;
             }
@@ -158,10 +157,7 @@ fn run() -> Result<(), String> {
     })?;
 
     let structure_options = WatershedStructureParseOptions {
-        mode: match policy {
-            SidecarPolicy::Strict => WatershedStructureParseMode::Strict,
-            SidecarPolicy::Compat => WatershedStructureParseMode::Compatibility,
-        },
+        mode: WatershedStructureParseMode::Compatibility,
         nhill: runfile.hillslope_blocks_by_id.len(),
         expected_rows: Some(expected_structure_rows),
         expected_channel_count: None,
@@ -188,10 +184,7 @@ fn run() -> Result<(), String> {
     }
 
     let mut channel_options = WatershedChannelParseOptions {
-        mode: match policy {
-            SidecarPolicy::Strict => WatershedChannelParseMode::Strict,
-            SidecarPolicy::Compat => WatershedChannelParseMode::Compatibility,
-        },
+        mode: WatershedChannelParseMode::Compatibility,
         expected_channel_count: Some(structure.summary.channel_count),
         chan_inp_present: runfile.chaninp_path.is_some(),
         tcr_overlay_present: runfile.tcr_overlay_present,
@@ -211,10 +204,7 @@ fn run() -> Result<(), String> {
             })?;
 
     let impoundment_options = WatershedImpoundmentParseOptions {
-        mode: match policy {
-            SidecarPolicy::Strict => WatershedImpoundmentParseMode::Strict,
-            SidecarPolicy::Compat => WatershedImpoundmentParseMode::Compatibility,
-        },
+        mode: WatershedImpoundmentParseMode::Compatibility,
         expected_structural_count: Some(structure.summary.impoundment_count),
         ..WatershedImpoundmentParseOptions::default()
     };
@@ -249,14 +239,8 @@ fn run() -> Result<(), String> {
             })
             .collect::<Result<BTreeSet<_>, _>>()?;
 
-        let chaninp_options = match policy {
-            SidecarPolicy::Strict => {
-                ChaninpParseOptions::strict(watershed_channel.ipeak, watershed_channel.nchan)
-            }
-            SidecarPolicy::Compat => {
-                ChaninpParseOptions::compatibility(watershed_channel.ipeak, watershed_channel.nchan)
-            }
-        };
+        let chaninp_options =
+            ChaninpParseOptions::compatibility(watershed_channel.ipeak, watershed_channel.nchan);
 
         let chaninp =
             parse_chaninp_from_path(chaninp_path, chaninp_options, &valid_channel_element_ids)
@@ -299,10 +283,7 @@ fn run() -> Result<(), String> {
         }
     }
 
-    let hbp_parse_mode = match policy {
-        SidecarPolicy::Strict => HbpParseMode::Strict,
-        SidecarPolicy::Compat => HbpParseMode::Compatibility,
-    };
+    let hbp_parse_mode = HbpParseMode::Compatibility;
 
     for (hillslope_id, block) in &runfile.hillslope_blocks_by_id {
         let hbp_options = HbpParseOptions {
@@ -1048,6 +1029,6 @@ fn write_watershed_interchange_outputs(outputs: &WatershedOutputsResolved) -> Re
 
 fn print_help() {
     println!(
-        "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy strict|compat] [--legacy-sidecar-discovery]"
+        "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery]"
     );
 }

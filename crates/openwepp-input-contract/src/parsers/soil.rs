@@ -364,7 +364,7 @@ pub fn parse_soil(input: &str, options: SoilParserOptions) -> Result<SoilProfile
 
     let mut ofes = Vec::with_capacity(ntemp);
     for _ in 0..ntemp {
-        ofes.push(parse_ofe_block(&mut cursor, datver)?);
+        ofes.push(parse_ofe_block(&mut cursor, datver, options.mode)?);
     }
 
     let restrictive_layer = if datver.requires_restrictive_footer() {
@@ -409,9 +409,10 @@ pub fn parse_soil(input: &str, options: SoilParserOptions) -> Result<SoilProfile
 fn parse_ofe_block(
     cursor: &mut LineCursor,
     datver: SoilDatver,
+    mode: ParserMode,
 ) -> Result<SoilOfe, SoilParserError> {
     let next = cursor.next_line();
-    let (header_line_no, header_line) = match next {
+    let (first_line_no, first_line) = match next {
         Some(v) => v,
         None => {
             return Err(SoilParserError::new(
@@ -422,6 +423,32 @@ fn parse_ofe_block(
             ));
         }
     };
+
+    let mut policy = None;
+    let (header_line_no, header_line) =
+        if datver.requires_policy_row() && mode == ParserMode::Compatibility {
+            match parse_policy_row(datver, first_line, first_line_no) {
+                Ok(policy_first) => {
+                    policy = Some(policy_first);
+                    let next_header = cursor.next_line();
+                    match next_header {
+                        Some(v) => v,
+                        None => {
+                            return Err(SoilParserError::new(
+                                SoilErrorCode::SolE002,
+                                cursor.current_line_number(),
+                                "slid,texid,nsl,salb,sat,ki,kr,shcrit,avke",
+                                "missing OFE header line after policy row",
+                            ));
+                        }
+                    }
+                }
+                Err(_) => (first_line_no, first_line),
+            }
+        } else {
+            (first_line_no, first_line)
+        };
+
     let t = tokens_exact(
         header_line,
         9,
@@ -455,7 +482,7 @@ fn parse_ofe_block(
     validate_non_negative(shcrit, header_line_no, "shcrit")?;
     validate_non_negative(avke, header_line_no, "avke")?;
 
-    let policy = if datver.requires_policy_row() {
+    if policy.is_none() && datver.requires_policy_row() {
         let next = cursor.next_line();
         let (policy_line_no, policy_line) = match next {
             Some(v) => v,
@@ -468,10 +495,8 @@ fn parse_ofe_block(
                 ));
             }
         };
-        Some(parse_policy_row(datver, policy_line, policy_line_no)?)
-    } else {
-        None
-    };
+        policy = Some(parse_policy_row(datver, policy_line, policy_line_no)?);
+    }
 
     let mut layers = Vec::with_capacity(nsl);
     let mut prev_depth = 0.0;

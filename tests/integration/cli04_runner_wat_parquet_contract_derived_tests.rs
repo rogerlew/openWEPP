@@ -167,7 +167,7 @@ fn execute_fixture_with_runfile_report(
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from("case.run"),
             output_dir,
-            sidecar_policy: SidecarPolicy::Strict,
+            sidecar_policy: SidecarPolicy::Compat,
             legacy_sidecar_discovery: false,
             manifest_path: None,
         },

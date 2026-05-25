@@ -26,7 +26,7 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
             run_dir: temp_run_dir.clone(),
             run_file: PathBuf::from("case.run"),
             output_dir: output_dir.clone(),
-            sidecar_policy: SidecarPolicy::Strict,
+            sidecar_policy: SidecarPolicy::Compat,
             legacy_sidecar_discovery: false,
             manifest_path: None,
         },
@@ -39,10 +39,10 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
             "--output-dir".to_string(),
             output_dir.display().to_string(),
             "--policy".to_string(),
-            "strict".to_string(),
+            "compat".to_string(),
         ],
     )
-    .expect("strict CLI01 run fixture should complete");
+    .expect("compat CLI01 run fixture should complete");
 
     assert!(report.output_pass.is_file());
     assert!(report.output_loss.is_file());
@@ -55,36 +55,9 @@ fn cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest(
 }
 
 #[test]
-fn cli01_contract_conformance_strict_sidecar_policy_warns_on_unknown_discovery() {
+fn cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery() {
     let fixture = fixture_path("hillslope_run_dir_unknown");
-    let temp_run_dir = copy_fixture_to_temp(&fixture, "cli01_hillslope_strict_unknown");
-    let output_dir = temp_run_dir.join("output");
-
-    let report = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: temp_run_dir,
-            run_file: PathBuf::from("case.run"),
-            output_dir,
-            sidecar_policy: SidecarPolicy::Strict,
-            legacy_sidecar_discovery: true,
-            manifest_path: None,
-        },
-        &["openwepp-cli-hill".to_string()],
-    )
-    .expect("strict policy should allow unknown sidecar with warning");
-
-    assert!(
-        report
-            .sidecar_warnings
-            .iter()
-            .any(|warning| warning.contains("LSB-W-002"))
-    );
-}
-
-#[test]
-fn cli01_contract_conformance_compat_sidecar_policy_warns_on_unknown_discovery() {
-    let fixture = fixture_path("hillslope_run_dir_unknown");
-    let temp_run_dir = copy_fixture_to_temp(&fixture, "cli01_hillslope_compat_unknown");
+    let temp_run_dir = copy_fixture_to_temp(&fixture, "cli01_hillslope_unknown");
     let output_dir = temp_run_dir.join("output");
 
     let report = execute_hillslope_run(

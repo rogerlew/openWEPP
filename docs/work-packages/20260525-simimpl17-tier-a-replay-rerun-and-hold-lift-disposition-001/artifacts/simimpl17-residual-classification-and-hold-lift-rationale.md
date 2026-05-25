@@ -20,9 +20,12 @@ Date: 2026-05-25
 ## Hold-lift rationale
 - Hold-lift cannot be granted because required hard closure criteria fail.
 - Primary unresolved blocker class is replay span/key parity closure against
-  baseline (`1093` unmatched baseline rows).
-- Dat strict lane is non-promotable and guard-terminated under
-  conversion-derived row-consistency policy.
+  baseline (`730` unmatched candidate rows after shared-key join).
+- Dat strict lane remains non-promotable (`structure_diff`, `393` baseline
+  lines vs `1095` candidate lines).
+- Legacy baseline evidence in both lanes records a one-year clamp
+  (`Number of years to simulate can't be larger than 1`), which keeps replay
+  span closure unresolved under current lane inputs.
 - No risk-acceptance reference is provided for `CRIT-008` partial status.
 
 ## Ownership posture

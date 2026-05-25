@@ -42,7 +42,7 @@ fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
-    let mut sidecar_policy = SidecarPolicy::Strict;
+    let mut sidecar_policy = SidecarPolicy::Compat;
     let mut legacy_sidecar_discovery = false;
     let mut manifest_path: Option<PathBuf> = None;
 
@@ -89,11 +89,11 @@ fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
                 cursor += 1;
                 let Some(value) = args.get(cursor) else {
                     return Err(RunnerError::MissingArgument {
-                        argument: "--policy <strict|compat>".to_string(),
+                        argument: "--policy <compat>".to_string(),
                     });
                 };
                 sidecar_policy = value.parse().map_err(|_| RunnerError::MissingArgument {
-                    argument: "--policy <strict|compat>".to_string(),
+                    argument: "--policy <compat>".to_string(),
                 })?;
             }
             "--manifest-path" => {
@@ -199,7 +199,7 @@ fn run_release_command(args: &[String]) -> Result<(), RunnerError> {
 
 fn print_help() {
     println!(
-        "open_wepp_runner run-hillslope --hillslope-binary <path> --run-dir <path> --run-file <path> --output-dir <path> [--policy strict|compat] [--legacy-sidecar-discovery] [--manifest-path <path>]"
+        "open_wepp_runner run-hillslope --hillslope-binary <path> --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--manifest-path <path>]"
     );
     println!("open_wepp_runner release lint --release-dir <path>");
 }

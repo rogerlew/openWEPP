@@ -11,7 +11,7 @@ Date: 2026-05-25
 ## Ran
 - Verified persisted rerun bundle exists and contains candidate, comparator,
   provenance, and hash manifests:
-- `artifacts/replay-run-20260525T062534Z/`
+- `artifacts/replay-run-20260525T072842Z/`
 - Confirmed parquet lane provenance schema and semantic summary values:
 - `strict-equivalent-required`, `strict_equivalent_ready=true`,
-  `semantic_pass=false`, `common_row_count=2`, `only_baseline_count=1093`.
+  `semantic_pass=false`, `common_row_count=365`, `only_candidate_count=730`.

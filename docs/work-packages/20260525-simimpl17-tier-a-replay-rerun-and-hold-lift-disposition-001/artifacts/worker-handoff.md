@@ -10,6 +10,8 @@ Date: 2026-05-25
 - Follow-on work required:
 - new replay/parity closure package(s) to address failing hard criteria
   (`CRIT-001..004`) and governance completeness (`CRIT-008`).
+- investigate/resolve legacy one-year clamp behavior observed in baseline lane
+  logs for shared-input reruns before reattempting hold-lift disposition.
 
 ## Ran
 - Not run (handoff artifact).
