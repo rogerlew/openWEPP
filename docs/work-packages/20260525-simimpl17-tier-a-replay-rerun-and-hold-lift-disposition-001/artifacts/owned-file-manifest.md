@@ -22,8 +22,11 @@ Date: 2026-05-25
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
 - `tests/integration/infile_soil_parser_contract.rs`
 - `tests/fixtures/infile/soil/valid_9002_policy_first_compat.sol`
+- Parity governance/doc updates:
+- `tools/legacy_comparison_suite/README.md`
+- `docs/work-packages/20260525-simimpl13-comprehensive-hillslope-replay-parity-gap-assessment-001/artifacts/simimpl13-replay-parity-full-closure-criteria.md`
 - Persisted SIMIMPL17 replay evidence bundle:
-- `docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/**`
+- `docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/**`
 
 ## Ran
 - Not run (manifest artifact).

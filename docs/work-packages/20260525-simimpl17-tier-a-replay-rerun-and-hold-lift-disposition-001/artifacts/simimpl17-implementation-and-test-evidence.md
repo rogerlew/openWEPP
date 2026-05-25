@@ -12,7 +12,9 @@ Date: 2026-05-25
 - soil parser compatibility accepts the policy-first `9002` fixture variant
   used by the shared replay lane.
 - Tier-A evidence bundle captured at:
-- `artifacts/replay-run-20260525T072842Z/`
+- `artifacts/replay-run-20260525T075424Z/`
+- Shared-input identity evidence captured at:
+- `artifacts/replay-run-20260525T075424Z/shared_fixture/input_file_sha256.txt`
 - Candidate execution surfaces captured:
 - `candidate/openwepp_hillslope_run_manifest.json`
 - `candidate/H5.wat.parquet`
@@ -24,15 +26,16 @@ Date: 2026-05-25
 ## Ran
 - Candidate execution commands:
 - `cargo build -q -p openwepp-runner --bin open_wepp_runner --bin openwepp-cli-hill`
-- `./target/debug/open_wepp_runner run-hillslope --hillslope-binary ./target/debug/openwepp-cli-hill --run-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/shared_fixture/runs --run-file case.run --output-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/candidate --policy compat --legacy-sidecar-discovery --manifest-path docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/candidate/openwepp_hillslope_run_manifest.json`
+- `./target/debug/open_wepp_runner run-hillslope --hillslope-binary ./target/debug/openwepp-cli-hill --run-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/shared_fixture/runs --run-file case.run --output-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/candidate --policy compat --legacy-sidecar-discovery --manifest-path docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/candidate/openwepp_hillslope_run_manifest.json`
 - Replay harness commands:
-- `uv pip sync --python docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/venv/bin/python tools/legacy_comparison_suite/requirements.lock.txt`
-- `docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/venv/bin/python tools/legacy_comparison_suite/run_pl14s_legacy_suite.py --baseline-run-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/shared_fixture --baseline-binary /workdir/wepp-forest_260430_baseline/release/wepp_260430_hill --baseline-run-file case_legacy.run --candidate-wat docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/candidate/H5.wat.parquet --candidate-surface-source-class native-runtime-parquet --output-root docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/suite_parquet`
-- `docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/venv/bin/python tools/legacy_comparison_suite/run_pl14s_legacy_suite.py --baseline-run-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/shared_fixture --baseline-binary /workdir/wepp-forest_260430_baseline/release/wepp_260430_hill --baseline-run-file case_legacy.run --candidate-wat docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/candidate/H5.wat.dat --candidate-surface-source-class conversion-derived-dat --output-root docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T072842Z/suite_dat`
+- `uv pip sync --python docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/venv/bin/python tools/legacy_comparison_suite/requirements.lock.txt`
+- `docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/venv/bin/python tools/legacy_comparison_suite/run_pl14s_legacy_suite.py --baseline-run-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/shared_fixture --baseline-binary /workdir/wepp-forest_260430_baseline/release/wepp_260430_hill --baseline-run-file case_legacy.run --candidate-wat docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/candidate/H5.wat.parquet --candidate-surface-source-class native-runtime-parquet --output-root docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/suite_parquet`
+- `docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/venv/bin/python tools/legacy_comparison_suite/run_pl14s_legacy_suite.py --baseline-run-dir docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/shared_fixture --baseline-binary /workdir/wepp-forest_260430_baseline/release/wepp_260430_hill --baseline-run-file case_legacy.run --candidate-wat docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/candidate/H5.wat.dat --candidate-surface-source-class conversion-derived-dat --output-root docs/work-packages/20260525-simimpl17-tier-a-replay-rerun-and-hold-lift-disposition-001/artifacts/replay-run-20260525T075424Z/suite_dat`
 - Candidate manifest summary:
 - `climate_day_count=1095`
 - `executed_day_count=1095`
 - `wb13_publication.row_count=1095`
 - Dat lane outcome:
-- non-zero exit with comparator failure (`suite_dat_rc=1`):
-  `semantic comparator failed with return code 1`.
+- non-zero exit with guard failure (`suite_dat_rc=1`):
+  `conversion-derived dat row-consistency requirements not satisfied:
+  conversion-derived dat row-count mismatch: candidate has unmatched replay rows`.

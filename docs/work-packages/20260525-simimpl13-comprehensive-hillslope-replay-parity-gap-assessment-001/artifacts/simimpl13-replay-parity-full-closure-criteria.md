@@ -7,6 +7,10 @@ Date: 2026-05-25
 ## Static
 - Criteria below define the minimum measurable conditions for declaring
   hillslope replay/parity implementation fully closed and promotable.
+- Input identity is a mandatory precondition for parity claims: baseline and
+  candidate must run with identical soil, management/landuse, slope, climate,
+  and required sidecar files. Evidence bundles must include input-file hash
+  manifests for this set.
 
 ## Ran
 - Criteria are derived from SIMIMPL11 replay evidence and SIMIMPL13 gap audits
@@ -15,8 +19,8 @@ Date: 2026-05-25
 ## Closure criteria
 | criterion_id | promotable condition | measurement / artifact requirement | current status |
 |---|---|---|---|
-| `SIMIMPL13-CRIT-001` | Candidate timeseries span matches required replay window semantics for the target fixture lane. | Candidate `H*.wat` keyed row count aligns with baseline replay window expectations; evidence in strict + semantic artifacts. | fail |
-| `SIMIMPL13-CRIT-002` | Candidate and baseline row-key domains overlap for all required replay keys. | Semantic report: `only_baseline_count=0`, `only_candidate_count=0`, `common_row_count>0` for required lane. | fail |
+| `SIMIMPL13-CRIT-001` | Candidate timeseries span matches required replay window semantics for the target fixture lane. | Candidate `H*.wat` keyed row count aligns with baseline replay window expectations; evidence in strict + semantic artifacts; input hash manifest proves identical baseline/candidate lane inputs. | fail |
+| `SIMIMPL13-CRIT-002` | Candidate and baseline row-key domains overlap for all required replay keys. | Semantic report: `only_baseline_count=0`, `only_candidate_count=0`, `common_row_count>0` for required lane; hash evidence confirms same soil/management/slope/climate/sidecar inputs across engines. | fail |
 | `SIMIMPL13-CRIT-003` | Dat strict comparator lane passes for required dat replay surfaces. | Strict comparator JSON `strict_pass=true` with required include surfaces present. | fail |
 | `SIMIMPL13-CRIT-004` | Semantic comparator passes for dat and parquet candidate surfaces. | Semantic JSON `semantic_pass=true`; no unresolved column or key-domain blockers. | fail |
 | `SIMIMPL13-CRIT-005` | Required investigation-column set is complete in semantic reports. | `investigation_columns_missing=[]`; `baseline_only_columns=[]`; `candidate_only_columns` dispositioned. | fail |

@@ -20,4 +20,4 @@ Date: 2026-05-25
 - `cargo test --workspace`
 - `cargo deny check`
 - Gate logs:
-- `artifacts/replay-run-20260525T072842Z/gates/*.log`
+- `artifacts/replay-run-20260525T075424Z/gates/*.log`

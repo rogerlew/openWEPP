@@ -10,6 +10,18 @@ with a default focus on hillslope water-balance semantic parity (PL14S scope).
   tolerance verdicts, top divergent rows), not only strict byte-level diff
   status.
 
+## Mandatory input identity
+- Parity runs are valid only when baseline and candidate use the same input
+  surfaces for the tested lane.
+- At minimum, the following files must be identical across baseline/candidate
+  runs: soil (`*.sol`), management/landuse (`*.man`), slope (`*.slp`), climate
+  (`*.cli`), plus required sidecars (`pmetpara.txt`, `snow.txt`,
+  `wepp_ui.txt`, and any other lane-required sidecar).
+- Record and retain input hash evidence (for example `sha256sum`) for these
+  files in each parity evidence bundle.
+- Comparator outcomes produced without identical input-file evidence are
+  investigation-only and are not promotable parity closure evidence.
+
 ## Why this exists
 - Parity policy is semantic, not bit-for-bit (`ADR-0003`).
 - Strict raw compare remains useful for structure checks, but by itself is not

@@ -12,8 +12,8 @@ Date: 2026-05-25
 
 ## Ran
 - Reviewed parquet lane evidence:
-- `replay-run-20260525T072842Z/suite_parquet/investigation/pl14s_provenance_manifest.json`
-- `replay-run-20260525T072842Z/suite_parquet/investigation/h5_wat_semantic_comparator.json`
+- `replay-run-20260525T075424Z/suite_parquet/investigation/pl14s_provenance_manifest.json`
+- `replay-run-20260525T075424Z/suite_parquet/investigation/h5_wat_semantic_comparator.json`
 
 ## Findings
 - No review defects in SIMIMPL17 evidence-to-criteria mapping.

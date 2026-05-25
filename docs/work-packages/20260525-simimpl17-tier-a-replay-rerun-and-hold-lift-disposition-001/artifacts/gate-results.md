@@ -13,8 +13,8 @@ Date: 2026-05-25
 - `cargo test --workspace` -> pass (`rc=0`)
 - `cargo deny check` -> pass (`rc=0`)
 - Logs:
-- `artifacts/replay-run-20260525T072842Z/gates/gate_exit_codes.log`
-- `artifacts/replay-run-20260525T072842Z/gates/fmt.stdout.log`
-- `artifacts/replay-run-20260525T072842Z/gates/clippy.stdout.log`
-- `artifacts/replay-run-20260525T072842Z/gates/test.stdout.log`
-- `artifacts/replay-run-20260525T072842Z/gates/deny.stdout.log`
+- `artifacts/replay-run-20260525T075424Z/gates/gate_exit_codes.log`
+- `artifacts/replay-run-20260525T075424Z/gates/fmt.stdout.log`
+- `artifacts/replay-run-20260525T075424Z/gates/clippy.stdout.log`
+- `artifacts/replay-run-20260525T075424Z/gates/test.stdout.log`
+- `artifacts/replay-run-20260525T075424Z/gates/deny.stdout.log`
