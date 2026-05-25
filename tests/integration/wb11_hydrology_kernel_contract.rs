@@ -1,5 +1,6 @@
 use openwepp_hillslope_orchestrator::{
-    HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
+    HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
+    Wb11HydrologyKernel,
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use openwepp_sim_contract::status::BoundaryClass;
@@ -376,5 +377,172 @@ fn wb11_contract_conformance_rejects_invalid_percolation_fraction() {
     assert_eq!(
         perc_phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+fn require_state_scalar(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing expected state symbol {symbol}"))
+        .as_f64()
+}
+
+fn require_flux_scalar(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing expected flux symbol {symbol}"))
+        .as_f64()
+}
+
+#[test]
+#[ignore = "expected fail until SIMIMPL23 baseline-authoritative ET stage-memory migration"]
+#[allow(clippy::similar_names)]
+fn simimpl22_contract_stage_memory_vector_requires_transitioning_s1_s2_tu_tv() {
+    const TOL: f64 = 1.0e-12;
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+    let mut surface = seeded_wb11_surface();
+
+    let stage_s1_before = 0.01;
+    let stage_s2_before = 0.02;
+    let stage_tu_before = 0.03;
+    let stage_tv_before = 1.0;
+    surface.state_surface.insert(
+        BoundarySymbol::from("s1"),
+        BoundaryValue::scalar(stage_s1_before),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("s2"),
+        BoundaryValue::scalar(stage_s2_before),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("tu"),
+        BoundaryValue::scalar(stage_tu_before),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("tv"),
+        BoundaryValue::scalar(stage_tv_before),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("SIMIMPL22 stage-memory vector should return typed report");
+    assert!(report.scheduler_report.is_success());
+
+    let stage_s1_after = require_state_scalar(&report, "s1");
+    let stage_s2_after = require_state_scalar(&report, "s2");
+    let stage_tu_after = require_state_scalar(&report, "tu");
+    let stage_tv_after = require_state_scalar(&report, "tv");
+
+    let transitioned = (stage_s1_after - stage_s1_before).abs() > TOL
+        || (stage_s2_after - stage_s2_before).abs() > TOL
+        || (stage_tu_after - stage_tu_before).abs() > TOL
+        || (stage_tv_after - stage_tv_before).abs() > TOL;
+    assert!(
+        transitioned,
+        "baseline-authoritative ET stage-memory transition was not observed"
+    );
+}
+
+#[test]
+#[ignore = "expected fail until SIMIMPL23 root-uptake lineage migration"]
+fn simimpl22_contract_root_uptake_vector_requires_upi_ui_etp_and_ws_lineage() {
+    const TOL: f64 = 1.0e-12;
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+    let mut surface = seeded_wb11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.4));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("SIMIMPL22 uptake-lineage vector should return typed report");
+    assert!(report.scheduler_report.is_success());
+
+    let upi = require_flux_scalar(&report, "UPi");
+    let ui = require_flux_scalar(&report, "Ui");
+    let etp = require_flux_scalar(&report, "Etp");
+    let ws = require_flux_scalar(&report, "Ws");
+
+    assert!(upi >= -TOL, "UPi must be non-negative");
+    assert!(ui >= -TOL, "Ui must be non-negative");
+    assert!(ui <= upi + TOL, "Ui must not exceed UPi");
+    assert!(etp > TOL, "Etp must be positive for lineage ratio checks");
+
+    let expected_ws = ui / etp;
+    assert!(
+        (ws - expected_ws).abs() <= 1.0e-9,
+        "Ws must follow canonical lineage Ws = ΣUi / Etp"
+    );
+}
+
+#[test]
+#[ignore = "expected fail until SIMIMPL23 baseline WB11 ordering closure"]
+fn simimpl22_contract_wb11_ordering_vector_requires_purk_before_evap() {
+    let ordered = HillslopePhaseGraph::canonical_order();
+
+    let evap_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase must exist");
+    let percolation_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::PercolationDeepSeepage)
+        .expect("percolation phase must exist");
+
+    assert!(
+        percolation_index < evap_index,
+        "baseline WB11 ordering requires purk/percolation before evap/evappm"
+    );
+}
+
+#[test]
+#[ignore = "expected fail until SIMIMPL23 WB13 publication-lineage closure"]
+fn simimpl22_contract_wb13_publication_vector_requires_watcon_alias_lineage() {
+    const TOL: f64 = 1.0e-12;
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, seeded_wb11_surface())
+        .expect("SIMIMPL22 WB13 lineage vector should return typed report");
+    assert!(report.scheduler_report.is_success());
+
+    let _ep = require_flux_scalar(&report, "Ep");
+    let _es = require_flux_scalar(&report, "Es");
+    let _er = require_flux_scalar(&report, "Er");
+
+    let watcon = require_state_scalar(&report, "watcon");
+    let total_soil = require_state_scalar(&report, "Total-Soil");
+    let soil_water_total = require_state_scalar(&report, "SoilWaterTotal");
+
+    assert!(watcon >= 0.0, "watcon must remain non-negative");
+    assert!(total_soil >= 0.0, "Total-Soil must remain non-negative");
+    assert!(
+        soil_water_total + TOL >= total_soil,
+        "SoilWaterTotal must be >= Total-Soil"
     );
 }

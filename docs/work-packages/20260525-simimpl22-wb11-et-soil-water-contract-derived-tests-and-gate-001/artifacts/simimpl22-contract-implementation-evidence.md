@@ -1,11 +1,14 @@
-# simimpl22-contract-implementation-evidence
+# SIMIMPL22 Contract Implementation Evidence
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: static+ran
 Date: 2026-05-25
 
 ## Static
-- Queued placeholder. Update during SIMIMPL22 execution.
+- SIMIMPL22 scope executes contract-first steps 2 and 3 only (tests + gate).
+- Canonical authority remained in existing SIMIMPL21-amended `SC-*` files.
+- No canonical contract text edits were required for SIMIMPL22 completion.
 
 ## Ran
-- not-run
+- `git status --short tests/integration/wb11_hydrology_kernel_contract.rs docs/work-packages/20260525-simimpl22-wb11-et-soil-water-contract-derived-tests-and-gate-001`
+- `rg -n "simimpl22_contract_" tests/integration/wb11_hydrology_kernel_contract.rs`

@@ -1,9 +1,10 @@
 # 20260525-simimpl22-wb11-et-soil-water-contract-derived-tests-and-gate-001
 
 ## Status
-- state: queued
+- state: package-complete-with-hold
 - date: 2026-05-25
 - timezone: UTC
+- decision: HOLD
 
 ## Objective
 Implement SIMIMPL22 contract-derived tests and pre-implementation contract-gate
