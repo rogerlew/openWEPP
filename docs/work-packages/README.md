@@ -618,6 +618,11 @@ Authorized packages:
     authority closure for WB11 ET and soil-water migration scope (stage-memory
     state, root-uptake semantics, ordering authority, alias lineage), with
     baseline-provenance citations and downstream SIMIMPL22 handoff readiness.
+- `20260525-simimpl22-wb11-et-soil-water-contract-derived-tests-and-gate-001/`
+  - Purpose: execute SIMIMPL22 by implementing contract-derived tests and
+    pre-implementation gate evidence for SIMIMPL21 WB11 ET/soil-water
+    authority closures (stage-memory, root-uptake/stress lineage, ordering,
+    WB13 publication aliases) before SIMIMPL23 runtime migration.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
