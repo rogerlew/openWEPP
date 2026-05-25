@@ -416,6 +416,7 @@ fn closure_phase_report(
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs() {
     let report = run_surface(seeded_surface());
     assert!(
@@ -425,6 +426,7 @@ fn erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs() {
     );
 
     let mut sed_frac_sum = 0.0;
+    let mut particle_flow_fraction_sum = 0.0;
     for class in 1..=WAVE2_TEST_CLASSES {
         let gend = report
             .writeback_surface
@@ -444,6 +446,22 @@ fn erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs() {
             .get(&BoundarySymbol::from(format!("sed_frac_{class:04}")))
             .expect("class sed_frac should be present")
             .as_f64();
+        let concentration = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!(
+                "sediment_concentration_kg_m3_{class:04}"
+            )))
+            .expect("class concentration should be present")
+            .as_f64();
+        let particle_flow_fraction = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!(
+                "particle_flow_fraction_{class:04}"
+            )))
+            .expect("class particle flow fraction should be present")
+            .as_f64();
 
         assert!(gend.is_finite() && gend >= 0.0, "gend[{class}]={gend}");
         assert!(
@@ -458,11 +476,24 @@ fn erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs() {
             sed_frac.is_finite() && sed_frac >= 0.0,
             "sed_frac[{class}]={sed_frac}"
         );
+        assert!(
+            concentration.is_finite() && concentration >= 0.0,
+            "concentration[{class}]={concentration}"
+        );
+        assert!(
+            particle_flow_fraction.is_finite() && particle_flow_fraction >= 0.0,
+            "particle_flow_fraction[{class}]={particle_flow_fraction}"
+        );
         sed_frac_sum += sed_frac;
+        particle_flow_fraction_sum += particle_flow_fraction;
     }
     assert!(
         (sed_frac_sum - 1.0).abs() <= TEST_TOLERANCE,
         "sed_frac_sum={sed_frac_sum}"
+    );
+    assert!(
+        (particle_flow_fraction_sum - 1.0).abs() <= TEST_TOLERANCE,
+        "particle_flow_fraction_sum={particle_flow_fraction_sum}"
     );
 
     let sumg = report
@@ -477,9 +508,36 @@ fn erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs() {
         .get(&BoundarySymbol::from("ER"))
         .expect("ER should be present")
         .as_f64();
+    let total_detachment = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("total_detachment_kg"))
+        .expect("total_detachment_kg should be present")
+        .as_f64();
+    let total_deposition = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("total_deposition_kg"))
+        .expect("total_deposition_kg should be present")
+        .as_f64();
+    let particle_class_count = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("particle_class_count"))
+        .expect("particle_class_count should be present")
+        .as_f64();
 
     assert!(sumg.is_finite() && sumg > 0.0, "sumg={sumg}");
     assert!(er.is_finite() && er > 0.0, "ER={er}");
+    assert!(
+        (total_detachment - sumg).abs() <= TEST_TOLERANCE,
+        "total_detachment_kg must match erod14_sumg"
+    );
+    assert!(total_deposition.is_finite() && total_deposition >= 0.0);
+    assert!(
+        (particle_class_count - WAVE2_TEST_CLASSES_SCALAR).abs() <= TEST_TOLERANCE,
+        "particle_class_count={particle_class_count}"
+    );
 }
 
 #[test]
@@ -520,11 +578,60 @@ fn erod14_contract_vector_case_four_zero_outflow_emits_zero_class_fractions() {
             .get(&BoundarySymbol::from(format!("sed_frac_{class:04}")))
             .expect("sed_frac should be present")
             .as_f64();
+        let concentration = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!(
+                "sediment_concentration_kg_m3_{class:04}"
+            )))
+            .expect("concentration should be present")
+            .as_f64();
+        let particle_flow_fraction = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!(
+                "particle_flow_fraction_{class:04}"
+            )))
+            .expect("particle_flow_fraction should be present")
+            .as_f64();
         assert!(
             sed_frac.abs() <= TEST_TOLERANCE,
             "sed_frac[{class}]={sed_frac}"
         );
+        assert!(
+            concentration.abs() <= TEST_TOLERANCE,
+            "concentration[{class}]={concentration}"
+        );
+        assert!(
+            particle_flow_fraction.abs() <= TEST_TOLERANCE,
+            "particle_flow_fraction[{class}]={particle_flow_fraction}"
+        );
     }
+
+    let total_detachment = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("total_detachment_kg"))
+        .expect("total_detachment_kg should be present")
+        .as_f64();
+    let total_deposition = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("total_deposition_kg"))
+        .expect("total_deposition_kg should be present")
+        .as_f64();
+    let particle_class_count = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("particle_class_count"))
+        .expect("particle_class_count should be present")
+        .as_f64();
+    assert!(total_detachment.abs() <= TEST_TOLERANCE);
+    assert!((total_deposition - 0.3).abs() <= TEST_TOLERANCE);
+    assert!(
+        (particle_class_count - WAVE2_TEST_CLASSES_SCALAR).abs() <= TEST_TOLERANCE,
+        "particle_class_count={particle_class_count}"
+    );
 }
 
 #[test]

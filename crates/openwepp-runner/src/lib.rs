@@ -3779,7 +3779,7 @@ mod tests {
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {
         let _execution_guard = runner_execution_lock()
             .lock()
-            .unwrap_or_else(|poisoned| poisoned.into_inner());
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
 
         let source_fixture_dir = fixture_path("hillslope_run_dir");
         let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);

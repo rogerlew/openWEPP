@@ -18,14 +18,36 @@ const PL14S_SUITE_README: &str = include_str!("../../tools/legacy_comparison_sui
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum StrictLaneMode {
     Required,
-    Skipped,
+    StrictEquivalentRequired,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CandidateSourceClass {
+    NativeRuntimeDat,
+    ConversionDerivedDat,
+    NativeRuntimeParquet,
 }
 
 fn strict_lane_mode(candidate_extension: &str) -> StrictLaneMode {
+    match candidate_extension.to_ascii_lowercase().as_str() {
+        ".dat" => StrictLaneMode::Required,
+        ".parquet" => StrictLaneMode::StrictEquivalentRequired,
+        _ => StrictLaneMode::StrictEquivalentRequired,
+    }
+}
+
+fn candidate_source_class(
+    candidate_extension: &str,
+    conversion_derived_dat: bool,
+) -> CandidateSourceClass {
     if candidate_extension.eq_ignore_ascii_case(".dat") {
-        StrictLaneMode::Required
+        if conversion_derived_dat {
+            CandidateSourceClass::ConversionDerivedDat
+        } else {
+            CandidateSourceClass::NativeRuntimeDat
+        }
     } else {
-        StrictLaneMode::Skipped
+        CandidateSourceClass::NativeRuntimeParquet
     }
 }
 
@@ -80,20 +102,27 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
     assert!(contains_all(
         PL14S_SEMANTIC_COMPARATOR_SCRIPT,
         &[
-            "REPORT_SCHEMA_VERSION = \"pl14s-semantic-wat-v1\"",
+            "REPORT_SCHEMA_VERSION = \"pl14s-semantic-wat-v2\"",
             "duplicate row key",
+            "\"Total-Soil\": \"Total-Soil\"",
+            "\"Total-Soil Water\": \"Total-Soil\"",
             "baseline_only_columns",
             "candidate_only_columns",
             "investigation_columns_used",
+            "candidate_column_alias_sources",
             "row_key_fields",
         ]
     ));
     assert!(contains_all(
         PL14S_REPLAY_SUITE_SCRIPT,
         &[
-            "\"suite_schema_version\": \"pl14s-legacy-suite-v1\"",
-            "\"required\": candidate_format == \".dat\"",
-            "\"skipped\": True",
+            "\"suite_schema_version\": \"pl14s-legacy-suite-v2\"",
+            "--candidate-surface-source-class",
+            "\"strict_lane_policy\"",
+            "\"strict-equivalent-required\"",
+            "\"native-runtime-dat\"",
+            "\"conversion-derived-dat\"",
+            "\"native-runtime-parquet\"",
             "semantic_summary = load_semantic_summary",
         ]
     ));
@@ -101,7 +130,9 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
         PL14S_SUITE_README,
         &[
             "Strict comparator is required when candidate input is `.dat`",
-            "strict compare is explicitly marked as skipped in provenance",
+            "`--candidate-surface-source-class`",
+            "strict-equivalent-required",
+            "conversion-derived-dat",
             "row-presence deltas",
             "top divergent rows",
         ]
@@ -109,10 +140,29 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
 }
 
 #[test]
-fn pl14s_contract_conformance_enforces_strict_lane_required_vs_skipped_modes() {
+fn pl14s_contract_conformance_enforces_strict_lane_required_vs_strict_equivalent_modes() {
     assert_eq!(strict_lane_mode(".dat"), StrictLaneMode::Required);
     assert_eq!(strict_lane_mode(".DAT"), StrictLaneMode::Required);
-    assert_eq!(strict_lane_mode(".parquet"), StrictLaneMode::Skipped);
+    assert_eq!(
+        strict_lane_mode(".parquet"),
+        StrictLaneMode::StrictEquivalentRequired
+    );
+}
+
+#[test]
+fn pl14s_contract_conformance_classifies_candidate_source_provenance() {
+    assert_eq!(
+        candidate_source_class(".dat", false),
+        CandidateSourceClass::NativeRuntimeDat
+    );
+    assert_eq!(
+        candidate_source_class(".dat", true),
+        CandidateSourceClass::ConversionDerivedDat
+    );
+    assert_eq!(
+        candidate_source_class(".parquet", false),
+        CandidateSourceClass::NativeRuntimeParquet
+    );
 }
 
 #[test]

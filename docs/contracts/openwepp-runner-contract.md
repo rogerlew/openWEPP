@@ -60,10 +60,9 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
 8. Required/optional hillslope output serialization and manifest checksum
    assembly are delegated to a dedicated outputs crate boundary with crate-owned
    typed contracts and tests.
-9. CLI03 predecessor output crate path is `crates/openwepp-hillslope-output/`;
-   CLI04 shared-boundary target path is `crates/openwepp-output/` for
-   hillslope+watershed output families. Production implementation may use the
-   predecessor path only during explicit rename-transition phases.
+9. Output serialization is delegated to dedicated crate boundaries:
+   - hillslope: `crates/openwepp-hillslope-output/`,
+   - watershed: `crates/openwepp-watershed-output/`.
 10. When `.run` `outputs.wat` is configured, emitted `H.wat.parquet` must
     preserve WEPPpy/WEPPpyo3 metadata parity:
     - field metadata keys `units` and `description`,

@@ -1,9 +1,27 @@
 # 20260525-erod15-routing-boundary-coupling-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-25
 - timezone: UTC
+
+## Scope Amendments
+- 2026-05-25: user-directed amendment to include
+  `crates/openwepp-runner/**` in this package write set and to implement a
+  watershed CLI entrypoint (`openwepp-cli-watershed`) under
+  `crates/openwepp-runner` as part of Wave-3 coupling execution.
+- 2026-05-25: user-directed amendment to add authoritative hillslope pass
+  serialization contract dependencies:
+  - `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`
+  - `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md`
+- 2026-05-25: user-directed amendment to define watershed `.run` contract
+  authority for `openwepp-cli-watershed` using required `pw0.*` surfaces,
+  `hillslopes_block`, and `--legacy-sidecar-discovery` parity behavior in:
+  - `docs/contracts/openwepp-watershed-runfile-contract.md`
+  - `docs/contracts/README.md`
+- 2026-05-25: user-directed amendment to follow hillslope output architecture
+  pattern and implement watershed interchange writers in a dedicated crate:
+  - `crates/openwepp-watershed-output/**`
 
 ## Objective
 Implement Wave-3 routing-boundary sediment coupling in openWEPP with
@@ -29,6 +47,9 @@ and proving typed seam non-regression across erosion-to-routing boundaries.
   edits.
 - Implement production routing-boundary coupling behavior and typed handoff
   failures for missing/invalid payload surfaces.
+- Implement watershed CLI surface wiring in `crates/openwepp-runner` so
+  Wave-3 routing-boundary coupling is executable through
+  `openwepp-cli-watershed`.
 - Publish explicit Wave-3 `GO`/`HOLD` verdict for EROD16 entry readiness.
 - Complete dual review and dual verification artifacts for closure claims.
 
@@ -124,6 +145,8 @@ non-compliant.
 - `/workdir/openWEPP/docs/work-packages/20260525-erod14-multiofe-and-enrichment-kernel-001/artifacts/erod14_disposition.md`
 - `/workdir/openWEPP/docs/work-packages/20260525-erod14-multiofe-and-enrichment-kernel-001/artifacts/worker-handoff.md`
 - `/workdir/openWEPP/docs/work-packages/20260523-ws10-channel-impoundment-production-kernels-001/artifacts/ws10_disposition.md`
+- `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`
+- `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md`
 
 ## Intended Write Set
 - `docs/specifications/science-contracts/contracts/SC-SED-001.md`
@@ -133,8 +156,12 @@ non-compliant.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
 - `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md`
 - `docs/specifications/science-contracts/index.md`
+- `docs/contracts/README.md`
+- `docs/contracts/openwepp-watershed-runfile-contract.md`
 - `crates/openwepp-hillslope-orchestrator/**`
 - `crates/openwepp-watershed-orchestrator/**`
+- `crates/openwepp-runner/**`
+- `crates/openwepp-watershed-output/**`
 - `crates/openwepp-kernel-contract/**`
 - `crates/openwepp-sim-contract/**`
 - `tests/integration/**`
@@ -159,6 +186,8 @@ non-compliant.
 - Implement production route-boundary payload export and coupling integration.
 - Wire typed failures for missing/invalid route-boundary sediment payload
   surfaces.
+- Implement `openwepp-cli-watershed` in `crates/openwepp-runner` for
+  production invocation of Wave-3 coupling behavior.
 
 ### Phase E - Verification and Disposition
 - Run required repository gates.
@@ -168,6 +197,8 @@ non-compliant.
 ## Exit Criteria
 - Wave-3 scope (`INV-SED-010`) is implemented in canonical authority and
   production route-coupling behavior.
+- Watershed CLI invocation surface exists under `crates/openwepp-runner`
+  (`openwepp-cli-watershed`) and is covered by package evidence/tests.
 - Route-boundary payload handoff completeness checks are evidenced and passing.
 - Cross-lane typed seam non-regression evidence is complete.
 - No silent fallback/default branches exist in route-boundary coupling paths.

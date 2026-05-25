@@ -367,6 +367,11 @@ const EROD14_ROOT_SSA_CLASS: &str = "erod14_ssa_class";
 const EROD14_ROOT_GEND: &str = "erod14_gend";
 const EROD14_ROOT_SEDMAX: &str = "erod14_sedmax";
 const EROD14_ROOT_SED_FRAC: &str = "sed_frac";
+const EROD15_SYMBOL_TOTAL_DETACHMENT_KG: &str = "total_detachment_kg";
+const EROD15_SYMBOL_TOTAL_DEPOSITION_KG: &str = "total_deposition_kg";
+const EROD15_SYMBOL_PARTICLE_CLASS_COUNT: &str = "particle_class_count";
+const EROD15_ROOT_SEDIMENT_CONCENTRATION_KG_M3: &str = "sediment_concentration_kg_m3";
+const EROD15_ROOT_PARTICLE_FLOW_FRACTION: &str = "particle_flow_fraction";
 const EROD14_PKRO_ZERO_THRESHOLD: f64 = 1.0e-15;
 const EROD14_CLASS_FLOOR: f64 = 1.0e-15;
 const EROD14_CASE_TOLERANCE: f64 = 1.0e-12;
@@ -6104,6 +6109,14 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
+        let class_count_f64 = f64::from(u32::try_from(class_count).map_err(|_| {
+            Wb11HydrologyKernelGuardError::Erod14DomainViolation {
+                symbol: BoundarySymbol::from(EROD14_SYMBOL_CLASS_COUNT),
+                value: class_count_value,
+                minimum: Some(1.0),
+                maximum: None,
+            }
+        })?);
 
         let xtop_symbol = BoundarySymbol::from(EROD14_SYMBOL_XTOP);
         let xbot_symbol = BoundarySymbol::from(EROD14_SYMBOL_XBOT);
@@ -6296,7 +6309,7 @@ impl Wb11HydrologyKernel {
                 frcflw[i] = 0.0;
                 sed_frac[i] = 0.0;
             }
-            let mut updates = Vec::with_capacity(2 + (class_count * 4));
+            let mut updates = Vec::with_capacity(5 + (class_count * 6));
             updates.push(WritebackField::bounded(
                 EROD14_SYMBOL_SUMG,
                 0.0,
@@ -6307,6 +6320,24 @@ impl Wb11HydrologyKernel {
                 EROD14_SYMBOL_ER,
                 0.0,
                 Some(0.0),
+                None,
+            ));
+            updates.push(WritebackField::bounded(
+                EROD15_SYMBOL_TOTAL_DETACHMENT_KG,
+                0.0,
+                Some(0.0),
+                None,
+            ));
+            updates.push(WritebackField::bounded(
+                EROD15_SYMBOL_TOTAL_DEPOSITION_KG,
+                lddend.max(0.0),
+                Some(0.0),
+                None,
+            ));
+            updates.push(WritebackField::bounded(
+                EROD15_SYMBOL_PARTICLE_CLASS_COUNT,
+                class_count_f64,
+                Some(1.0),
                 None,
             ));
             for class_index in 1..=class_count {
@@ -6330,6 +6361,21 @@ impl Wb11HydrologyKernel {
                 ));
                 updates.push(WritebackField::bounded(
                     Self::erod14_class_symbol(EROD14_ROOT_SED_FRAC, class_index),
+                    0.0,
+                    Some(0.0),
+                    Some(1.0),
+                ));
+                updates.push(WritebackField::bounded(
+                    Self::erod14_class_symbol(
+                        EROD15_ROOT_SEDIMENT_CONCENTRATION_KG_M3,
+                        class_index,
+                    ),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                updates.push(WritebackField::bounded(
+                    Self::erod14_class_symbol(EROD15_ROOT_PARTICLE_FLOW_FRACTION, class_index),
                     0.0,
                     Some(0.0),
                     Some(1.0),
@@ -6570,7 +6616,7 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let mut updates = Vec::with_capacity(2 + (class_count * 4));
+        let mut updates = Vec::with_capacity(5 + (class_count * 6));
         updates.push(WritebackField::bounded(
             EROD14_SYMBOL_SUMG,
             sumg.max(0.0),
@@ -6583,9 +6629,43 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         ));
+        updates.push(WritebackField::bounded(
+            EROD15_SYMBOL_TOTAL_DETACHMENT_KG,
+            sumg.max(0.0),
+            Some(0.0),
+            None,
+        ));
+        updates.push(WritebackField::bounded(
+            EROD15_SYMBOL_TOTAL_DEPOSITION_KG,
+            lddend.max(0.0),
+            Some(0.0),
+            None,
+        ));
+        updates.push(WritebackField::bounded(
+            EROD15_SYMBOL_PARTICLE_CLASS_COUNT,
+            class_count_f64,
+            Some(1.0),
+            None,
+        ));
 
         for class_index in 1..=class_count {
             let i = class_index - 1;
+            let concentration = if qout > WB11_ZERO_THRESHOLD {
+                gend[i] / qout
+            } else {
+                0.0
+            };
+            if !concentration.is_finite() || concentration < 0.0 {
+                return Err(Wb11HydrologyKernelGuardError::Erod14DomainViolation {
+                    symbol: Self::erod14_class_symbol(
+                        EROD15_ROOT_SEDIMENT_CONCENTRATION_KG_M3,
+                        class_index,
+                    ),
+                    value: concentration,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
             updates.push(WritebackField::bounded(
                 Self::erod14_class_symbol(EROD14_ROOT_GEND, class_index),
                 gend[i],
@@ -6606,6 +6686,18 @@ impl Wb11HydrologyKernel {
             ));
             updates.push(WritebackField::bounded(
                 Self::erod14_class_symbol(EROD14_ROOT_SED_FRAC, class_index),
+                sed_frac[i],
+                Some(0.0),
+                Some(1.0),
+            ));
+            updates.push(WritebackField::bounded(
+                Self::erod14_class_symbol(EROD15_ROOT_SEDIMENT_CONCENTRATION_KG_M3, class_index),
+                concentration,
+                Some(0.0),
+                None,
+            ));
+            updates.push(WritebackField::bounded(
+                Self::erod14_class_symbol(EROD15_ROOT_PARTICLE_FLOW_FRACTION, class_index),
                 sed_frac[i],
                 Some(0.0),
                 Some(1.0),

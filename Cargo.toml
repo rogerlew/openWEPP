@@ -12,6 +12,7 @@ resolver = "2"
 members = [
     "crates/openwepp-climate-runtime-adapter",
     "crates/openwepp-hillslope-output",
+    "crates/openwepp-watershed-output",
     "crates/openwepp-input-contract",
     "crates/openwepp-sim-contract",
     "crates/openwepp-kernel-contract",
@@ -50,6 +51,7 @@ openwepp-sim-contract = { path = "crates/openwepp-sim-contract", version = "0.1.
 openwepp-kernel-contract = { path = "crates/openwepp-kernel-contract", version = "0.1.0" }
 openwepp-topology = { path = "crates/openwepp-topology", version = "0.1.0" }
 openwepp-hillslope-orchestrator = { path = "crates/openwepp-hillslope-orchestrator", version = "0.1.0" }
+openwepp-watershed-output = { path = "crates/openwepp-watershed-output", version = "0.1.0" }
 openwepp-watershed-orchestrator = { path = "crates/openwepp-watershed-orchestrator", version = "0.1.0" }
 openwepp-legacy-bridge = { path = "crates/openwepp-legacy-bridge", version = "0.1.0" }
 openwepp-unit-boundary = { path = "crates/openwepp-unit-boundary", version = "0.1.0" }
@@ -297,6 +299,10 @@ path = "tests/integration/erod14_contract_authority_closure_contract.rs"
 [[test]]
 name = "erod14_wave2_multiofe_enrichment_kernel_contract"
 path = "tests/integration/erod14_wave2_multiofe_enrichment_kernel_contract.rs"
+
+[[test]]
+name = "erod15_wave3_contract_authority_closure_contract"
+path = "tests/integration/erod15_wave3_contract_authority_closure_contract.rs"
 
 [[test]]
 name = "cli01_runner_contract_derived_tests"

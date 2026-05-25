@@ -12,12 +12,14 @@ workspace = true
 
 [dependencies]
 openwepp-hillslope-output = { path = "../openwepp-hillslope-output", version = "0.1.0" }
+openwepp-watershed-output = { path = "../openwepp-watershed-output", version = "0.1.0" }
 openwepp-hillslope-orchestrator = { path = "../openwepp-hillslope-orchestrator", version = "0.1.0" }
 openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
 openwepp-kernel-contract = { path = "../openwepp-kernel-contract", version = "0.1.0" }
 openwepp-legacy-bridge = { path = "../openwepp-legacy-bridge", version = "0.1.0" }
 openwepp-summary-accumulator = { path = "../openwepp-summary-accumulator", version = "0.1.0" }
 openwepp-topology = { path = "../openwepp-topology", version = "0.1.0" }
+openwepp-watershed-orchestrator = { path = "../openwepp-watershed-orchestrator", version = "0.1.0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.10"
@@ -31,3 +33,7 @@ path = "src/bin/open_wepp_runner.rs"
 [[bin]]
 name = "openwepp-cli-hill"
 path = "src/bin/openwepp-cli-hill.rs"
+
+[[bin]]
+name = "openwepp-cli-watershed"
+path = "src/bin/openwepp-cli-watershed.rs"

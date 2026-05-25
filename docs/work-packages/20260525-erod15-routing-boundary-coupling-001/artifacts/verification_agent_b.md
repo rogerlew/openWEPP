@@ -1,10 +1,13 @@
 # Erod15 verification agent b
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: ran
 
 ## Static
-- Queued placeholder for EROD15 execution.
+- Verification scope: package-required global closure gates.
 
 ## Ran
-- Not run.
+- `cargo fmt --check` -> PASS.
+- `cargo clippy --workspace --all-targets -- -D warnings` -> PASS.
+- `cargo test --workspace` -> PASS.
+- `cargo deny check` -> PASS (warnings only; no failing policy classes).

@@ -575,6 +575,16 @@ Authorized packages:
   - Purpose: execute SIMIMPL11 by re-running strict + semantic Tier-A replay
     after SIMOUT/SIMCOUP closure and classifying residuals into explicit
     promote/hold posture using confidence-tier governance.
+- `20260525-simimpl14-runner-wb13-timeseries-span-and-row-key-closure-001/`
+  - Purpose: execute SIMIMPL14 by implementing continuous day-indexed runner
+    execution, replay-length WB13/H.wat publication continuity, and candidate
+    row-key policy alignment to close SIMIMPL13 continuous-run blockers and
+    prepare promotable replay overlap evidence for SIMIMPL15+.
+- `20260525-simimpl15-replay-comparator-tooling-alignment-001/`
+  - Purpose: execute SIMIMPL15 by aligning replay comparator/tooling behavior
+    across strict/semantic lanes, closing parquet alias and provenance
+    classification drift, and producing deterministic cross-format parity
+    evidence surfaces for SIMIMPL16/SIMIMPL17 closeout waves.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

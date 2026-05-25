@@ -427,6 +427,104 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((peak, duration))
     }
 
+    fn read_hillslope_sediment_payload(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        hillslope_id: u32,
+    ) -> Result<(), Ws10GuardError> {
+        let total_detachment_symbol =
+            WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg { hillslope_id };
+        let total_deposition_symbol =
+            WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg { hillslope_id };
+        let class_count_symbol =
+            WatershedProductionStateSymbol::HillslopeContributorParticleClassCount { hillslope_id };
+
+        let total_detachment =
+            Self::require_state_scalar(request, node_class, total_detachment_symbol)?;
+        let total_deposition =
+            Self::require_state_scalar(request, node_class, total_deposition_symbol)?;
+        let class_count_value =
+            Self::require_state_scalar(request, node_class, class_count_symbol)?;
+
+        Self::require_state_range(
+            node_class,
+            total_detachment_symbol,
+            total_detachment,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(
+            node_class,
+            total_deposition_symbol,
+            total_deposition,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(
+            node_class,
+            class_count_symbol,
+            class_count_value,
+            Some(1.0),
+            None,
+        )?;
+
+        let rounded_class_count = class_count_value.round();
+        if (class_count_value - rounded_class_count).abs() > WS11_IPEAK_INTEGER_TOLERANCE {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+        if rounded_class_count < 1.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+        let class_count = format!("{rounded_class_count:.0}")
+            .parse::<usize>()
+            .map_err(|_| {
+                Self::domain_violation(node_class, class_count_symbol, class_count_value)
+            })?;
+        if class_count == 0 {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+
+        for class_index in 1..=class_count {
+            let concentration_symbol =
+                WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
+                    hillslope_id,
+                    class_index,
+                };
+            let fraction_symbol =
+                WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
+                    hillslope_id,
+                    class_index,
+                };
+
+            let concentration =
+                Self::require_state_scalar(request, node_class, concentration_symbol)?;
+            let fraction = Self::require_state_scalar(request, node_class, fraction_symbol)?;
+
+            Self::require_state_range(
+                node_class,
+                concentration_symbol,
+                concentration,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_state_range(node_class, fraction_symbol, fraction, Some(0.0), Some(1.0))?;
+        }
+
+        Ok(())
+    }
+
     fn read_dependency_peak_payload(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
@@ -475,6 +573,7 @@ impl Ws10ChannelImpoundmentKernel {
         for &hillslope_id in request.contributor_hillslopes {
             let (peak, duration) =
                 Self::read_hillslope_peak_payload(request, node_class, hillslope_id)?;
+            Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
             incoming_peak += peak;
             incoming_duration = incoming_duration.max(duration);
         }

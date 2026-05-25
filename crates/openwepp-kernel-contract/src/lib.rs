@@ -646,6 +646,23 @@ pub enum WatershedProductionStateSymbol {
     HillslopeContributorDuration {
         hillslope_id: u32,
     },
+    HillslopeContributorTotalDetachmentKg {
+        hillslope_id: u32,
+    },
+    HillslopeContributorTotalDepositionKg {
+        hillslope_id: u32,
+    },
+    HillslopeContributorParticleClassCount {
+        hillslope_id: u32,
+    },
+    HillslopeContributorSedimentConcentrationKgM3 {
+        hillslope_id: u32,
+        class_index: usize,
+    },
+    HillslopeContributorParticleFlowFraction {
+        hillslope_id: u32,
+        class_index: usize,
+    },
 }
 
 impl From<WatershedProductionStateSymbol> for BoundarySymbol {
@@ -666,6 +683,27 @@ impl From<WatershedProductionStateSymbol> for BoundarySymbol {
             WatershedProductionStateSymbol::HillslopeContributorDuration { hillslope_id } => {
                 Self::from(format!("hs{hillslope_id}_watdur"))
             }
+            WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg {
+                hillslope_id,
+            } => Self::from(format!("hs{hillslope_id}_total_detachment_kg")),
+            WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg {
+                hillslope_id,
+            } => Self::from(format!("hs{hillslope_id}_total_deposition_kg")),
+            WatershedProductionStateSymbol::HillslopeContributorParticleClassCount {
+                hillslope_id,
+            } => Self::from(format!("hs{hillslope_id}_particle_class_count")),
+            WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
+                hillslope_id,
+                class_index,
+            } => Self::from(format!(
+                "hs{hillslope_id}_sediment_concentration_kg_m3_{class_index:04}"
+            )),
+            WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
+                hillslope_id,
+                class_index,
+            } => Self::from(format!(
+                "hs{hillslope_id}_particle_flow_fraction_{class_index:04}"
+            )),
         }
     }
 }

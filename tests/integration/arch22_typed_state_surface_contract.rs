@@ -89,6 +89,40 @@ fn arch22_watershed_hillslope_payload_symbol_projection_matches_authority() {
         WatershedProductionStateSymbol::HillslopeContributorDuration { hillslope_id: 21 },
     );
     assert_eq!(hillslope_duration.as_str(), "hs21_watdur");
+
+    let total_detachment = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg { hillslope_id: 21 },
+    );
+    assert_eq!(total_detachment.as_str(), "hs21_total_detachment_kg");
+
+    let total_deposition = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg { hillslope_id: 21 },
+    );
+    assert_eq!(total_deposition.as_str(), "hs21_total_deposition_kg");
+
+    let particle_class_count = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorParticleClassCount { hillslope_id: 21 },
+    );
+    assert_eq!(particle_class_count.as_str(), "hs21_particle_class_count");
+
+    let concentration = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
+            hillslope_id: 21,
+            class_index: 3,
+        },
+    );
+    assert_eq!(
+        concentration.as_str(),
+        "hs21_sediment_concentration_kg_m3_0003"
+    );
+
+    let fraction = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
+            hillslope_id: 21,
+            class_index: 3,
+        },
+    );
+    assert_eq!(fraction.as_str(), "hs21_particle_flow_fraction_0003");
 }
 
 #[test]

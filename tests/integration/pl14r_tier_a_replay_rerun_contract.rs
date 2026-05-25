@@ -9,7 +9,8 @@ use openwepp_summary_accumulator::{
     Wb13DailyWaterBalanceSurface,
 };
 
-const PL14R_REQUIRED_REPLAY_INCLUDE_SURFACES: [&str; 2] = ["H5.wat.dat", "H5.plot.dat"];
+const PL14R_REQUIRED_REPLAY_INCLUDE_SURFACES: [&str; 2] =
+    ["interchange/H.wat.parquet", "interchange/H.pass.parquet"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Pl14rReplayGateVerdict {
@@ -24,15 +25,20 @@ struct ReplaySurfaceStatus {
 }
 
 fn pl14r_replay_gate_verdict(
-    h5_wat: ReplaySurfaceStatus,
-    h5_plot: ReplaySurfaceStatus,
+    h_wat: ReplaySurfaceStatus,
+    h_pass: ReplaySurfaceStatus,
     provenance_hashes_complete: bool,
+    strict_source_promotable: bool,
 ) -> Pl14rReplayGateVerdict {
     if !provenance_hashes_complete {
         return Pl14rReplayGateVerdict::Hold;
     }
 
-    for surface in [h5_wat, h5_plot] {
+    if !strict_source_promotable {
+        return Pl14rReplayGateVerdict::Hold;
+    }
+
+    for surface in [h_wat, h_pass] {
         if !surface.present_in_candidate_lane || !surface.strict_pass {
             return Pl14rReplayGateVerdict::Hold;
         }
@@ -140,10 +146,10 @@ fn pl14r_contract_conformance_wb13_rows_remain_canonical_25_column_schema() {
 }
 
 #[test]
-fn pl14r_contract_conformance_requires_h5_wat_and_h5_plot_include_surfaces() {
+fn pl14r_contract_conformance_requires_interchange_wat_and_pass_include_surfaces() {
     assert_eq!(
         PL14R_REQUIRED_REPLAY_INCLUDE_SURFACES,
-        ["H5.wat.dat", "H5.plot.dat"]
+        ["interchange/H.wat.parquet", "interchange/H.pass.parquet"]
     );
 }
 
@@ -159,6 +165,7 @@ fn pl14r_contract_conformance_holds_when_required_surface_missing_or_strict_fail
             present_in_candidate_lane: false,
         },
         true,
+        true,
     );
     assert_eq!(missing_plot, Pl14rReplayGateVerdict::Hold);
 
@@ -171,6 +178,7 @@ fn pl14r_contract_conformance_holds_when_required_surface_missing_or_strict_fail
             strict_pass: true,
             present_in_candidate_lane: true,
         },
+        true,
         true,
     );
     assert_eq!(strict_failure, Pl14rReplayGateVerdict::Hold);
@@ -188,6 +196,7 @@ fn pl14r_contract_conformance_requires_complete_hash_provenance_for_pass() {
             present_in_candidate_lane: true,
         },
         false,
+        true,
     );
     assert_eq!(missing_hashes, Pl14rReplayGateVerdict::Hold);
 
@@ -201,6 +210,24 @@ fn pl14r_contract_conformance_requires_complete_hash_provenance_for_pass() {
             present_in_candidate_lane: true,
         },
         true,
+        true,
     );
     assert_eq!(complete, Pl14rReplayGateVerdict::Pass);
+}
+
+#[test]
+fn pl14r_contract_conformance_holds_when_strict_source_is_non_promotable() {
+    let non_promotable_source = pl14r_replay_gate_verdict(
+        ReplaySurfaceStatus {
+            strict_pass: true,
+            present_in_candidate_lane: true,
+        },
+        ReplaySurfaceStatus {
+            strict_pass: true,
+            present_in_candidate_lane: true,
+        },
+        true,
+        false,
+    );
+    assert_eq!(non_promotable_source, Pl14rReplayGateVerdict::Hold);
 }

@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -73,6 +73,8 @@ Out of scope:
 | REF-ROUTE-CH13-LIMIT | `chap13.pdf` §13.6 summary limitations | Applicability bounds: intended small agricultural watersheds and explicit limitations (no partial-area response, no headcutting, no bank sloughing, no perennial streams). | `[DIRECT][Static]` |
 | REF-ROUTE-CH4-COUPLING | `references/50201000/chap4.pdf` Eq. [4.2.1]-[4.2.9], [4.3.1]-[4.3.5], [4.4.27]-[4.4.29], [4.5.4], [4.5.6] | Channel hydrology uses hillslope infiltration/rainfall-excess and recession-infiltration relationships by explicit Chapter-13 linkage. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1-§5.4 and `chap13.pdf` §13.3 | Channel water-balance/percolation routines are stated as identical to hillslope routines. | `[DIRECT][Static]` |
+| REF-ROUTE-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical binary pass serialization field names and units consumed at routing boundary (`total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
+| REF-ROUTE-HBP-READER | `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Read Contract`, `Required Invariants`) | Reader/index fail-closed semantics for malformed/missing hillslope payload fields and no-text-fallback posture. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative area/volume/duration domains and explicit branch handling for no-flow states. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -112,7 +114,7 @@ Out of scope:
 | INV-ROUTE-008 | Spatially-varied flow/shear invariant: channel erosion solver must use consistent spatially-varied flow outputs (`Sf`, `Sstar`, `leff`, `q`) to compute shear terms, and soil shear relation Eq. [13.5.13]-[13.5.16] must preserve finite physically valid domains. | hard-fail | REF-ROUTE-CH13-SVF, REF-ROUTE-CH13-SHEAR | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-009 | Sediment continuity invariant: quasi-steady sediment continuity Eq. [13.5.17]-[13.5.18] must be conserved across segments and particle classes with explicit inlet (`qsed_top`) and lateral (`qsed_lat`) source accounting. | hard-fail | REF-ROUTE-CH13-CONT | `[DIRECT][Static]` |
 | INV-ROUTE-010 | Detachment/deposition branch invariant: detachment capacity Eq. [13.5.19]/[13.5.20], deposition Eq. [13.5.21]-[13.5.22], and transport-capacity branch iteration semantics from §13.5.6 must be explicit; silent branch collapse is invalid. | hard-fail | REF-ROUTE-CH13-DETDEP | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-ROUTE-011 | Coupling completeness invariant: required hillslope/impoundment/channel handoff payloads (runon volumes, durations, peak flow, sediment class fluxes) must be present and parseable before routing calculations proceed. | hard-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-CONT, REF-ROUTE-CH4-COUPLING, REF-ROUTE-CH5-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-011 | Coupling completeness invariant: required hillslope/impoundment/channel handoff payloads (runon volumes, durations, peak flow, and HBP sediment payload family `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`) must be present and parseable before routing calculations proceed. | hard-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-CONT, REF-ROUTE-CH4-COUPLING, REF-ROUTE-CH5-COUPLING, REF-ROUTE-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-012 | Governance invariant: channel-routing outputs are watershed-integrated Tier-B surfaces; unresolved major discrepancies must route to investigation/disposition and cannot be silently promoted as Tier-A-equivalent confidence. | governance-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-DETDEP, REF-ROUTE-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-ROUTE-013 | Applicability-bound invariant: authoritative scope is limited to small agricultural watersheds (Chapter-13 summary intent) with explicit exclusions (`no partial area response`, `no headcutting`, `no bank sloughing`, `no perennial streams`); use outside these limits requires explicit governance disposition. | governance-fail | REF-ROUTE-CH13-LIMIT | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -155,13 +157,17 @@ channel erosion internals.
 | `D`, `DF`, `DL`, `qsed`, `qsed_top`, `qsed_lat`, `Tc` | identity names | sediment continuity/detachment boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Kch`, `wc`, `Ech` | identity names | active-channel detachment boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | hillslope contributor forcing aliases consumed at WS10 channel ingress | contributor-scoped peak/duration semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hs{ID}_total_detachment_kg`, `hs{ID}_total_deposition_kg` | `WatershedProductionStateSymbol::{HillslopeContributorTotalDetachmentKg,HillslopeContributorTotalDepositionKg}` | hillslope contributor sediment-total payload aliases consumed at WS10 channel ingress | contributor-scoped sediment-total semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hs{ID}_particle_class_count` | `WatershedProductionStateSymbol::HillslopeContributorParticleClassCount` | hillslope contributor class-count payload alias consumed by WS10 sediment payload validator | contributor-scoped class-cardinality semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hs{ID}_sediment_concentration_kg_m3_{class:04}` | `WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3` | hillslope contributor per-class sediment concentration payload aliases consumed at WS10 channel ingress | contributor-scoped concentration semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hs{ID}_particle_flow_fraction_{class:04}` | `WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction` | hillslope contributor per-class particle-flow-fraction payload aliases consumed at WS10 channel ingress | contributor-scoped fraction semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD11 Alias Ownership Register
 
 | Boundary ID | Canonical symbols | Runtime alias surface | Producer ownership | Consumer ownership | Evidence |
 |---|---|---|---|---|---|
 | `EROD-BND-001` | `hs{ID}_peakro`, `hs{ID}_watdur` | `WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}` | `SC-RUNOFFPART-001` + `SC-WATBAL-001` via WB16 coupling | `SC-ROUTE-001` WS10 intake guards (`INV-ROUTE-011`) | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `EROD-BND-003` | `sed_det_total`, `sed_dep_total`, `sed_conc_i`, `sed_frac_i` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-SED-001` | `SC-ROUTE-001` segment/channel consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-003` | `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i` | `WatershedProductionStateSymbol::{HillslopeContributorTotalDetachmentKg,HillslopeContributorTotalDepositionKg,HillslopeContributorParticleClassCount,HillslopeContributorSedimentConcentrationKgM3,HillslopeContributorParticleFlowFraction}` | `SC-SED-001` | `SC-ROUTE-001` segment/channel consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-004` | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` | `WatershedProductionStateSymbol::ChannelNode`; `WatershedProductionFluxSymbol::ChannelNode` | `SC-ROUTE-001` | downstream channel/impoundment/watershed consumers | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD12 Cross-Domain Ownership and Guard Closure Addendum
@@ -169,7 +175,7 @@ channel erosion internals.
 | Cross-domain lane | Producer ownership | Consumer guard ownership | Closure posture | Evidence |
 |---|---|---|---|---|
 | Hillslope contributor intake (`hs{ID}_peakro`, `hs{ID}_watdur`) | `SC-RUNOFFPART-001` + `SC-WATBAL-001` via WB16 | `SC-ROUTE-001` (`INV-ROUTE-011`) | Required Wave-0 intake ownership and guard semantics are canonicalized. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| Sediment boundary intake (`sed_det_total`, `sed_dep_total`, `sed_conc_i`, `sed_frac_i`) | `SC-SED-001` (`INV-SED-010`) | `SC-ROUTE-001` (`INV-ROUTE-011`) | Routing consumer guard ownership for sediment payload completeness is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Sediment boundary intake (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`) | `SC-SED-001` (`INV-SED-010`) | `SC-ROUTE-001` (`INV-ROUTE-011`) | Routing consumer guard ownership for sediment payload completeness is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WS10 routing publication (`ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff`) | `SC-ROUTE-001` | `SC-SYSTEM-001` (`INV-SYSTEM-001`..`006`) + `SC-IMPOUND-001` | Cross-domain publication ownership and downstream guard owners are explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
@@ -192,7 +198,7 @@ channel erosion internals.
 - Threshold/closure violation where `ipeak <= 2` and `roff <= 0.001 m^3` still emits positive `qpo`/`durrof`, or where `ipeak >= 3` emits `roff`/`qpo`/`durrof` values violating declared routed-closure semantics. `[DIRECT][Static] + [INFERENCE][Static]`
 - Shear/transport calculations with invalid domains (`Sf`, `tau`, `taucr`, `Tc`, or segment discharge terms non-finite or non-physical). `[DIRECT][Static] + [INFERENCE][Static]`
 - Sediment continuity violation where segment-to-segment `qsed` updates break Eq. [13.5.17] semantics. `[DIRECT][Static]`
-- Missing mandatory handoff payload fields (runon, duration, peak, sediment class flux) before routing/erosion calculations. `[DIRECT][Static] + [INFERENCE][Static]`
+- Missing mandatory handoff payload fields (runon, duration, peak, and HBP sediment payload family fields) before routing/erosion calculations. `[DIRECT][Static] + [INFERENCE][Static]`
 - Applying this contract to conditions outside §13.6 scope without explicit governance disposition. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
@@ -272,6 +278,7 @@ bit-for-bit parity). Contract-specific tolerances:
 | Channel global routing controls | `dtchr`, `nchnum`, `cbase`, `ipeak` |
 | Channel per-node controls | `ws10_channel_{id}_chnn`, `ws10_channel_{id}_ctlslp`, `ws10_channel_{id}_chnk` |
 | Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
+| Contributor sediment payloads | `hs{ID}_total_detachment_kg`, `hs{ID}_total_deposition_kg`, `hs{ID}_particle_class_count`, `hs{ID}_sediment_concentration_kg_m3_{class:04}`, `hs{ID}_particle_flow_fraction_{class:04}` |
 | Upstream node payloads | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout` |
 | Channel published outputs | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` |
 | Canonical wave-routing internals | `q1(it)`, `qin(it)`, `qlat(it)`, `qref`, `ckref`, `c0`, `c1`, `c2`, `c3`, `c4`, `chvol` |
@@ -376,6 +383,27 @@ Minimum WS11 routing conformance vectors:
 4. Wave-2 coupling continuity does not alter WS10 channel guard-family IDs
    (`WKERNEL-WS10-CHANNEL-E-001..003`) for routing boundary failures.
 
+## EROD15 Wave-3 HBP Contributor-Payload Coupling Addendum
+
+1. WS10 production routing intake must validate the full contributor-scoped HBP
+   sediment payload family before channel or impoundment routing proceeds:
+   - `hs{ID}_total_detachment_kg`,
+   - `hs{ID}_total_deposition_kg`,
+   - `hs{ID}_particle_class_count`,
+   - `hs{ID}_sediment_concentration_kg_m3_{class:04}`,
+   - `hs{ID}_particle_flow_fraction_{class:04}`.
+2. `hs{ID}_particle_class_count` must be finite, integer-valued, and strictly
+   positive; class-indexed concentration/fraction fields are required for every
+   class in `1..particle_class_count`.
+3. Concentration/fraction payload fields must be finite and non-negative; all
+   missing/non-finite/out-of-domain payloads are hard-fail routing boundary
+   states under `INV-ROUTE-011`.
+4. Wave-3 coupling continuity preserves WS10 guard-family IDs
+   (`WKERNEL-WS10-CHANNEL-E-001..003`, `WKERNEL-WS10-IMPOUNDMENT-E-001..003`)
+   for routing boundary failures.
+5. Routing consumers must not synthesize fallback sediment payload values when
+   contributor payload fields are absent or invalid.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -403,3 +431,4 @@ Minimum WS11 routing conformance vectors:
 | `2026-05-23` | `9` | `Codex` | EROD12 amendment: added cross-domain ownership/guard closure addendum and dispositioned `GAP-ROUTE-003` to `closed` for required erosion-lane routing boundaries while retaining non-Wave-0 applicability holds. |
 | `2026-05-24` | `10` | `Codex` | WS11 amendment: replaced WS10 gain-factor surrogate routing authority with legacy-equivalent channel-routing branch authority (`ipeak`-selected Rational/CREAMS/KW/MC), added pinned baseline provenance anchors, expanded routing closure invariants, and published WS11 contract-derived vector obligations while preserving existing channel guard-family IDs. |
 | `2026-05-25` | `11` | `Codex` | EROD14 amendment: added active Wave-2 consumer-coupling authority for hillslope enrichment payload continuity (`sed_frac_*`, `ER`, class-wise closure surfaces) with explicit hard-fail posture for malformed boundary payloads. |
+| `2026-05-25` | `12` | `Codex` | EROD15 amendment: added Wave-3 HBP contributor-payload intake authority (`hs{ID}_total_detachment_kg`, `hs{ID}_total_deposition_kg`, class-counted concentration/fraction arrays) with explicit WS10 guard continuity under `INV-ROUTE-011`. |

@@ -9,8 +9,9 @@ use openwepp_runner::{
 const RUNNER_CRATE_MANIFEST: &str = include_str!("../../crates/openwepp-runner/Cargo.toml");
 
 #[test]
-fn cli01_contract_conformance_runner_crate_declares_hillslope_and_runner_binaries() {
+fn cli01_contract_conformance_runner_crate_declares_hillslope_watershed_and_runner_binaries() {
     assert!(RUNNER_CRATE_MANIFEST.contains("name = \"openwepp-cli-hill\""));
+    assert!(RUNNER_CRATE_MANIFEST.contains("name = \"openwepp-cli-watershed\""));
     assert!(RUNNER_CRATE_MANIFEST.contains("name = \"open_wepp_runner\""));
 }
 

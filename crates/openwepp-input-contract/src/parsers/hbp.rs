@@ -28,6 +28,7 @@ const PAYLOAD_CODEC_ZLIB: u8 = 1;
 const DIM_SCALAR: u8 = 0;
 const DIM_NOFE: u8 = 1;
 const DIM_NOFE_LAYERS: u8 = 2;
+const SCALE_I64: f64 = 1e-9;
 
 const REQUIRED_STATE_IDS: &[u16] = &[
     1, 2, 3, 4, 5, 6, 7, 100, 101, 102, 103, 104, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209,
@@ -149,6 +150,19 @@ pub struct HbpPayloadBlock {
     pub payload_codec: u8,
     pub stored_block_crc32c: u32,
     pub raw_block_crc32c: u32,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct HbpLatestEventPayload {
+    pub sim_year_index: u32,
+    pub calendar_year: i32,
+    pub julian_day: u16,
+    pub duration_seconds: f64,
+    pub peak_runoff_m3_s: f64,
+    pub total_detachment_kg: f64,
+    pub total_deposition_kg: f64,
+    pub sediment_concentration_kg_m3: Vec<f64>,
+    pub particle_flow_fraction: Vec<f64>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -566,6 +580,15 @@ fn u64_to_usize(value: u64, field_name: &str) -> Result<usize, HbpParseError> {
         format_violation(
             HbpFormatErrorCode::HbpE013,
             format!("{field_name} exceeds platform limits"),
+        )
+    })
+}
+
+fn scaled_i64_to_f64(value: i64) -> Result<f64, HbpParseError> {
+    value.to_string().parse::<f64>().map_err(|_| {
+        format_violation(
+            HbpFormatErrorCode::HbpE013,
+            "failed converting scaled i64 payload value to f64",
         )
     })
 }
@@ -1483,11 +1506,16 @@ fn parse_layout(data: &[u8]) -> Result<Layout, HbpParseError> {
     }
 }
 
+#[derive(Debug, Clone, Default, PartialEq)]
+struct PayloadValidationResult {
+    latest_event_payload: Option<HbpLatestEventPayload>,
+}
+
 fn validate_payload(
     data: &[u8],
     layout: &Layout,
     entry: &DirectoryEntry,
-) -> Result<(), HbpParseError> {
+) -> Result<PayloadValidationResult, HbpParseError> {
     let payload = match entry.payload {
         EntryPayload::SchemaV1 {
             payload_offset,
@@ -1605,87 +1633,109 @@ fn validate_payload(
         ));
     }
 
-    match event_kind {
-        0 => {
-            let _baseflow = cursor
-                .i64()
-                .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            let _dissolved = cursor
-                .i64()
-                .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-        }
-        1 => {
-            for _ in 0..6 {
-                let _ = cursor
+    let latest_event_payload =
+        match event_kind {
+            0 => {
+                let _baseflow = cursor
                     .i64()
                     .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
+                let _dissolved = cursor
+                    .i64()
+                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
+                None
             }
-        }
-        2 => {
-            for _ in 0..3 {
-                let _ = cursor
+            1 => {
+                for _ in 0..6 {
+                    let _ = cursor.i64().map_err(|msg| {
+                        map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg)
+                    })?;
+                }
+                None
+            }
+            2 => {
+                let duration_seconds = cursor
                     .f64()
                     .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            }
-            for _ in 0..6 {
-                let _ = cursor
+                let _time_of_concentration_hours = cursor
+                    .f64()
+                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
+                let _overland_flow_alpha = cursor
+                    .f64()
+                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
+                for _ in 0..6 {
+                    let _ = cursor.i64().map_err(|msg| {
+                        map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg)
+                    })?;
+                }
+                let peak_runoff_m3_s = cursor
+                    .f64()
+                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
+                let total_detachment_scaled = cursor
                     .i64()
                     .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            }
-            let _peak = cursor
-                .f64()
-                .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            for _ in 0..2 {
-                let _ = cursor
+                let total_deposition_scaled = cursor
                     .i64()
                     .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            }
 
-            let sediment_count = cursor
-                .u32()
-                .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?
-                as usize;
-            if sediment_count != usize::from(layout.npart) {
+                let sediment_count = cursor
+                    .u32()
+                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?
+                    as usize;
+                if sediment_count != usize::from(layout.npart) {
+                    return Err(format_violation(
+                        HbpFormatErrorCode::HbpE013,
+                        "event sediment count mismatch",
+                    ));
+                }
+                let mut sediment_concentration_kg_m3 = Vec::with_capacity(sediment_count);
+                for _ in 0..sediment_count {
+                    sediment_concentration_kg_m3.push(cursor.f64().map_err(|msg| {
+                        map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg)
+                    })?);
+                }
+
+                let fraction_count = cursor
+                    .u32()
+                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?
+                    as usize;
+                if fraction_count != usize::from(layout.npart) {
+                    return Err(format_violation(
+                        HbpFormatErrorCode::HbpE013,
+                        "event particle fraction count mismatch",
+                    ));
+                }
+                let mut particle_flow_fraction = Vec::with_capacity(fraction_count);
+                for _ in 0..fraction_count {
+                    particle_flow_fraction.push(cursor.f64().map_err(|msg| {
+                        map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg)
+                    })?);
+                }
+
+                for _ in 0..2 {
+                    let _ = cursor.i64().map_err(|msg| {
+                        map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg)
+                    })?;
+                }
+
+                Some(HbpLatestEventPayload {
+                    sim_year_index,
+                    calendar_year,
+                    julian_day,
+                    duration_seconds,
+                    peak_runoff_m3_s,
+                    total_detachment_kg: scaled_i64_to_f64(total_detachment_scaled)? * SCALE_I64,
+                    total_deposition_kg: scaled_i64_to_f64(total_deposition_scaled)? * SCALE_I64,
+                    sediment_concentration_kg_m3,
+                    particle_flow_fraction,
+                })
+            }
+            _ => {
                 return Err(format_violation(
-                    HbpFormatErrorCode::HbpE013,
-                    "event sediment count mismatch",
+                    HbpFormatErrorCode::HbpE010,
+                    "unsupported event kind",
                 ));
             }
-            for _ in 0..sediment_count {
-                let _ = cursor
-                    .f64()
-                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            }
-
-            let fraction_count = cursor
-                .u32()
-                .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?
-                as usize;
-            if fraction_count != usize::from(layout.npart) {
-                return Err(format_violation(
-                    HbpFormatErrorCode::HbpE013,
-                    "event particle fraction count mismatch",
-                ));
-            }
-            for _ in 0..fraction_count {
-                let _ = cursor
-                    .f64()
-                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            }
-
-            for _ in 0..2 {
-                let _ = cursor
-                    .i64()
-                    .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "payload", msg))?;
-            }
-        }
-        _ => {
-            return Err(format_violation(
-                HbpFormatErrorCode::HbpE010,
-                "unsupported event kind",
-            ));
-        }
-    }
+        };
 
     let mut state_ids_seen: HashSet<u16> = HashSet::new();
 
@@ -1835,7 +1885,9 @@ fn validate_payload(
         ));
     }
 
-    Ok(())
+    Ok(PayloadValidationResult {
+        latest_event_payload,
+    })
 }
 
 fn has_forbidden_pass_suffix(path_str: &str) -> bool {
@@ -1893,11 +1945,11 @@ fn resolve_path(
     })
 }
 
-pub fn parse_hbp_from_bytes(
+fn parse_hbp_from_bytes_internal(
     bytes: &[u8],
     source_path: &Path,
     options: HbpParseOptions,
-) -> Result<HbpParseResult, HbpParseError> {
+) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
     let (resolved_path, path_resolution, warnings) = resolve_path(source_path, options.mode)?;
 
     let layout = parse_layout(bytes)?;
@@ -1911,8 +1963,12 @@ pub fn parse_hbp_from_bytes(
         });
     }
 
+    let mut latest_event_payload = None;
     for entry in &layout.entries {
-        validate_payload(bytes, &layout, entry)?;
+        let payload_validation = validate_payload(bytes, &layout, entry)?;
+        if let Some(event_payload) = payload_validation.latest_event_payload {
+            latest_event_payload = Some(event_payload);
+        }
     }
 
     let year_entries = layout
@@ -1990,26 +2046,46 @@ pub fn parse_hbp_from_bytes(
         HbpSchemaProfile::Schema1x
     };
 
-    Ok(HbpParseResult {
-        resolved_path,
-        path_resolution,
-        schema_profile,
-        schema_major: layout.schema_major,
-        schema_minor: layout.schema_minor,
-        hillslope_id: layout.hillslope_id,
-        nyear: layout.nyear,
-        begin_year: layout.begin_year,
-        npart: layout.npart,
-        nofe: layout.nofe,
-        max_layers: layout.max_layers,
-        simulation_mode: layout.simulation_mode,
-        record_count: layout.entries.len() as u32,
-        block_count: layout.payload_blocks.len() as u32,
-        year_entries,
-        directory_entries,
-        payload_blocks,
-        warnings,
-    })
+    Ok((
+        HbpParseResult {
+            resolved_path,
+            path_resolution,
+            schema_profile,
+            schema_major: layout.schema_major,
+            schema_minor: layout.schema_minor,
+            hillslope_id: layout.hillslope_id,
+            nyear: layout.nyear,
+            begin_year: layout.begin_year,
+            npart: layout.npart,
+            nofe: layout.nofe,
+            max_layers: layout.max_layers,
+            simulation_mode: layout.simulation_mode,
+            record_count: layout.entries.len() as u32,
+            block_count: layout.payload_blocks.len() as u32,
+            year_entries,
+            directory_entries,
+            payload_blocks,
+            warnings,
+        },
+        latest_event_payload,
+    ))
+}
+
+pub fn parse_hbp_from_bytes(
+    bytes: &[u8],
+    source_path: &Path,
+    options: HbpParseOptions,
+) -> Result<HbpParseResult, HbpParseError> {
+    let (parsed, _) = parse_hbp_from_bytes_internal(bytes, source_path, options)?;
+    Ok(parsed)
+}
+
+pub fn parse_hbp_from_bytes_with_latest_event_payload(
+    bytes: &[u8],
+    source_path: &Path,
+    options: HbpParseOptions,
+) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
+    parse_hbp_from_bytes_internal(bytes, source_path, options)
 }
 
 pub fn parse_hbp_from_path(
@@ -2022,4 +2098,16 @@ pub fn parse_hbp_from_path(
         source,
     })?;
     parse_hbp_from_bytes(&bytes, path.as_ref(), options)
+}
+
+pub fn parse_hbp_from_path_with_latest_event_payload(
+    path: impl AsRef<Path>,
+    options: HbpParseOptions,
+) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
+    let (resolved_path, _path_resolution, _warnings) = resolve_path(path.as_ref(), options.mode)?;
+    let bytes = fs::read(&resolved_path).map_err(|source| HbpParseError::InputOpenError {
+        path: resolved_path.clone(),
+        source,
+    })?;
+    parse_hbp_from_bytes_with_latest_event_payload(&bytes, path.as_ref(), options)
 }

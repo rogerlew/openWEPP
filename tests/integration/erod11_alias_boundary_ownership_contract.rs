@@ -86,6 +86,40 @@ fn erod11_wave0_watershed_alias_projection_matches_authority() {
         field: WatershedChannelFluxField::Roff,
     });
     assert_eq!(channel_roff.as_str(), "ws10_channel_4_roff");
+
+    let total_detachment = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg { hillslope_id: 17 },
+    );
+    assert_eq!(total_detachment.as_str(), "hs17_total_detachment_kg");
+
+    let total_deposition = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorTotalDepositionKg { hillslope_id: 17 },
+    );
+    assert_eq!(total_deposition.as_str(), "hs17_total_deposition_kg");
+
+    let class_count = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorParticleClassCount { hillslope_id: 17 },
+    );
+    assert_eq!(class_count.as_str(), "hs17_particle_class_count");
+
+    let concentration = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
+            hillslope_id: 17,
+            class_index: 2,
+        },
+    );
+    assert_eq!(
+        concentration.as_str(),
+        "hs17_sediment_concentration_kg_m3_0002"
+    );
+
+    let fraction = BoundarySymbol::from(
+        WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
+            hillslope_id: 17,
+            class_index: 2,
+        },
+    );
+    assert_eq!(fraction.as_str(), "hs17_particle_flow_fraction_0002");
 }
 
 #[test]

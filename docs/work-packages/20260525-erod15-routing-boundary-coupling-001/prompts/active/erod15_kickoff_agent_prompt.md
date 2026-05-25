@@ -25,6 +25,8 @@ Required reading (read before edits):
 - `/workdir/openWEPP/docs/work-packages/20260525-erod14-multiofe-and-enrichment-kernel-001/artifacts/erod14-wave2-go-no-go-verdict.md`
 - `/workdir/openWEPP/docs/work-packages/20260525-erod14-multiofe-and-enrichment-kernel-001/artifacts/erod14_disposition.md`
 - `/workdir/openWEPP/docs/work-packages/20260525-erod14-multiofe-and-enrichment-kernel-001/artifacts/worker-handoff.md`
+- `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`
+- `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md`
 
 Files:
 - `docs/work-packages/20260525-erod15-routing-boundary-coupling-001/package.md`
@@ -37,6 +39,7 @@ Files:
 - `docs/specifications/science-contracts/index.md`
 - `crates/openwepp-hillslope-orchestrator/**`
 - `crates/openwepp-watershed-orchestrator/**`
+- `crates/openwepp-runner/**`
 - `crates/openwepp-kernel-contract/**`
 - `crates/openwepp-sim-contract/**`
 - `tests/integration/**`

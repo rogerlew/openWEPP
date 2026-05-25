@@ -32,6 +32,7 @@ const STRICT_VALID_WATERSHED_CHANNEL: &str =
     include_str!("../fixtures/infile/watershed_channel/strict_valid_single_channel.chn");
 const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str =
     include_str!("../fixtures/infile/watershed_impoundment/strict_valid_minimal.imp");
+const EROD15_CLASS_COUNT_SCALAR: f64 = 3.0;
 
 const WS12_COEFFICIENT_SURFACE: [(&str, f64); 14] = [
     ("a", 0.0),
@@ -56,6 +57,54 @@ fn seed_ws12_coefficient_surface(surface: &mut WatershedWritebackSurface) {
         surface
             .state_surface
             .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+}
+
+fn class_index_scalar(class: usize) -> f64 {
+    f64::from(u32::try_from(class).expect("class index should fit within u32 range"))
+}
+
+fn seed_erod15_hillslope_payload(
+    surface: &mut WatershedWritebackSurface,
+    hillslope_id: u32,
+    peakro: f64,
+    watdur: f64,
+) {
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_peakro")),
+        BoundaryValue::scalar(peakro),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_watdur")),
+        BoundaryValue::scalar(watdur),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_total_detachment_kg")),
+        BoundaryValue::scalar((peakro * watdur * 0.01).max(0.0)),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_total_deposition_kg")),
+        BoundaryValue::scalar((peakro * watdur * 0.0025).max(0.0)),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("hs{hillslope_id}_particle_class_count")),
+        BoundaryValue::scalar(EROD15_CLASS_COUNT_SCALAR),
+    );
+
+    for (class_index, fraction) in [0.2, 0.3, 0.5].into_iter().enumerate() {
+        let class = class_index + 1;
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!(
+                "hs{hillslope_id}_sediment_concentration_kg_m3_{class:04}"
+            )),
+            BoundaryValue::scalar(0.25 + (class_index_scalar(class) * 0.1)),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!(
+                "hs{hillslope_id}_particle_flow_fraction_{class:04}"
+            )),
+            BoundaryValue::scalar(fraction),
+        );
     }
 }
 
@@ -102,30 +151,9 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
         .expect("watershed impoundment runtime seed should project ws10 symbols");
     seed_ws12_coefficient_surface(&mut runtime_surface);
 
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("hs1_peakro"),
-        BoundaryValue::scalar(2.0),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("hs1_watdur"),
-        BoundaryValue::scalar(300.0),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("hs2_peakro"),
-        BoundaryValue::scalar(1.5),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("hs2_watdur"),
-        BoundaryValue::scalar(400.0),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("hs3_peakro"),
-        BoundaryValue::scalar(0.5),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("hs3_watdur"),
-        BoundaryValue::scalar(200.0),
-    );
+    seed_erod15_hillslope_payload(&mut runtime_surface, 1, 2.0, 300.0);
+    seed_erod15_hillslope_payload(&mut runtime_surface, 2, 1.5, 400.0);
+    seed_erod15_hillslope_payload(&mut runtime_surface, 3, 0.5, 200.0);
     runtime_surface
 }
 
@@ -206,6 +234,25 @@ fn ws10_contract_conformance_rejects_non_finite_required_symbol() {
     assert_eq!(
         report.step_reports[0].decision_status.boundary_class(),
         BoundaryClass::NonFinite
+    );
+}
+
+#[test]
+fn ws10_contract_conformance_rejects_missing_required_erod15_payload_symbol() {
+    let mut surface = seeded_ws10_surface();
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("hs1_particle_flow_fraction_0003"));
+
+    let report = run_ws10_surface(surface);
+    assert_eq!(report.step_reports.len(), 1);
+    assert_eq!(
+        report.step_reports[0].decision_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-001"
+    );
+    assert_eq!(
+        report.step_reports[0].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
     );
 }
 

@@ -706,6 +706,7 @@ dependencies = [
  "openwepp-topology",
  "openwepp-unit-boundary",
  "openwepp-watershed-orchestrator",
+ "openwepp-watershed-output",
  "parquet",
 ]
 
@@ -770,6 +771,8 @@ dependencies = [
  "openwepp-legacy-bridge",
  "openwepp-summary-accumulator",
  "openwepp-topology",
+ "openwepp-watershed-orchestrator",
+ "openwepp-watershed-output",
  "serde",
  "serde_json",
  "sha2",
@@ -809,6 +812,15 @@ dependencies = [
  "openwepp-kernel-contract",
  "openwepp-sim-contract",
  "openwepp-topology",
+]
+
+[[package]]
+name = "openwepp-watershed-output"
+version = "0.1.0"
+dependencies = [
+ "arrow-array",
+ "arrow-schema",
+ "parquet",
 ]
 
 [[package]]

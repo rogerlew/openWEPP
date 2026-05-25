@@ -9,12 +9,16 @@ use openwepp_runner::{
 
 const RUNFILE_CONTRACT: &str =
     include_str!("../../docs/contracts/openwepp-hillslope-runfile-contract.md");
+const WATERSHED_RUNFILE_CONTRACT: &str =
+    include_str!("../../docs/contracts/openwepp-watershed-runfile-contract.md");
 const RUNNER_CONTRACT: &str = include_str!("../../docs/contracts/openwepp-runner-contract.md");
 const HILLSLOPE_CLI_SPEC: &str = include_str!(
     "../../docs/specifications/subsystems/runner/openwepp-hillslope-cli-specification.md"
 );
 const RUNNER_CRATE_MANIFEST: &str = include_str!("../../crates/openwepp-runner/Cargo.toml");
 const RUNNER_CRATE_LIB: &str = include_str!("../../crates/openwepp-runner/src/lib.rs");
+const WATERSHED_CLI_SOURCE: &str =
+    include_str!("../../crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs");
 const OUTPUT_CRATE_MANIFEST: &str =
     include_str!("../../crates/openwepp-hillslope-output/Cargo.toml");
 const OUTPUT_CRATE_LIB: &str = include_str!("../../crates/openwepp-hillslope-output/src/lib.rs");
@@ -48,6 +52,68 @@ fn cli03_contract_surface_declares_metric_runfile_and_required_outputs() {
 }
 
 #[test]
+fn cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block() {
+    for expected in [
+        "openwepp-watershed-runfile-v1",
+        "--legacy-sidecar-discovery",
+        "pw0_str",
+        "pw0_chn",
+        "pw0_imp",
+        "pw0_man",
+        "pw0_slp",
+        "pw0_cli",
+        "pw0_sol",
+        "inputs.hillslopes_block",
+        "inputs.chaninp",
+        "inputs.tcr",
+        "ebe_pw0",
+        "chan_out",
+        "chanwb",
+        "chnwb",
+        "soil_pw0",
+        "totalwatsed3",
+        "loss_hill",
+        "loss_chn",
+        "loss_out",
+        "loss_class_data",
+        "loss_all_years_hill",
+        "loss_all_years_chn",
+        "loss_all_years_out",
+        "loss_all_years_class_data",
+    ] {
+        assert!(
+            WATERSHED_RUNFILE_CONTRACT.contains(expected),
+            "watershed runfile contract missing expected text: {expected}"
+        );
+    }
+}
+
+#[test]
+fn cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag() {
+    for expected in [
+        "\"--run-dir\"",
+        "\"--run-file\"",
+        "\"--output-dir\"",
+        "\"--legacy-sidecar-discovery\"",
+        "inputs.pw0_str",
+        "inputs.pw0_chn",
+        "inputs.pw0_imp",
+        "inputs.pw0_man",
+        "inputs.pw0_slp",
+        "inputs.pw0_cli",
+        "inputs.pw0_sol",
+        "inputs.hillslopes_block",
+        "outputs.loss_all_years_class_data",
+        "write_watershed_interchange_outputs",
+    ] {
+        assert!(
+            WATERSHED_CLI_SOURCE.contains(expected),
+            "watershed CLI source missing expected runfile surface marker: {expected}"
+        );
+    }
+}
+
+#[test]
 fn cli03_contract_surface_declares_output_crate_layout() {
     assert!(
         OUTPUT_CRATE_MANIFEST.contains("name = \"openwepp-hillslope-output\""),
@@ -67,8 +133,9 @@ fn cli03_contract_surface_declares_output_crate_layout() {
 }
 
 #[test]
-fn cli03_runner_crate_declares_hillslope_binary_target() {
+fn cli03_runner_crate_declares_hillslope_and_watershed_binary_targets() {
     assert!(RUNNER_CRATE_MANIFEST.contains("name = \"openwepp-cli-hill\""));
+    assert!(RUNNER_CRATE_MANIFEST.contains("name = \"openwepp-cli-watershed\""));
 }
 
 #[test]
@@ -76,6 +143,10 @@ fn cli03_runner_crate_wires_output_surface_dependency() {
     assert!(
         RUNNER_CRATE_MANIFEST.contains("openwepp-hillslope-output"),
         "CLI03 requires runner output-surface delegation to openwepp-hillslope-output crate"
+    );
+    assert!(
+        RUNNER_CRATE_MANIFEST.contains("openwepp-watershed-output"),
+        "CLI03 requires watershed output-surface delegation to openwepp-watershed-output crate"
     );
     assert!(
         RUNNER_CRATE_LIB.contains("openwepp_hillslope_output"),
