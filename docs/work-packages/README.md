@@ -606,6 +606,13 @@ Authorized packages:
     rain/snow partition parity, runtime-SWE publication (no static-parameter
     leak), contract-derived test closure, and Tier-A rerun disposition
     evidence.
+- `20260525-simimpl20-wb11-soil-water-et-baseline-authority-assessment-and-planning-001/`
+  - Purpose: execute SIMIMPL20 by producing a baseline-authoritative
+    assessment and follow-on implementation queue for `wb11_soil_water` and
+    full-fidelity `Ep`/`Es`/`Er` migration, including dependency/consumer
+    landmine analysis (plant/runtime coupling), required canonical `SC-*`
+    amendment map, and contract-first execution sequencing for downstream
+    physics implementation packages.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
