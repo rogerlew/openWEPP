@@ -5,6 +5,7 @@ use openwepp_kernel_contract::{
     WatershedProductionFluxSymbol, WatershedProductionStateSymbol,
 };
 use std::fs;
+use std::path::Path;
 
 #[test]
 fn arch22_hillslope_static_symbol_projection_matches_authority() {
@@ -127,15 +128,14 @@ fn arch22_watershed_hillslope_payload_symbol_projection_matches_authority() {
 
 #[test]
 fn arch22_hillslope_guard_accessor_signature_is_typed() {
-    let source = fs::read_to_string(concat!(
-        env!("CARGO_MANIFEST_DIR"),
-        "/crates/openwepp-hillslope-orchestrator/src/lib.rs"
-    ))
-    .expect("hillslope orchestrator source should be readable");
+    let source_root =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-hillslope-orchestrator/src");
 
     assert!(
-        !source
-            .contains("symbol: &'static str,\n    ) -> Result<f64, Wb11HydrologyKernelGuardError>"),
+        !source_tree_contains_rs(
+            &source_root,
+            "symbol: &'static str,\n    ) -> Result<f64, Wb11HydrologyKernelGuardError>"
+        ),
         "Wb11 guard accessors must not accept raw string symbol parameters"
     );
 }
@@ -152,4 +152,23 @@ fn arch22_watershed_guard_accessor_signature_is_typed() {
         !source.contains("symbol: &str,\n    ) -> Result<f64, Ws10GuardError>"),
         "Ws10 guard accessors must not accept raw string symbol parameters"
     );
+}
+
+fn source_tree_contains_rs(root: &Path, needle: &str) -> bool {
+    fs::read_dir(root)
+        .ok()
+        .into_iter()
+        .flat_map(|entries| entries.filter_map(Result::ok))
+        .any(|entry| {
+            let path = entry.path();
+            if path.is_dir() {
+                return source_tree_contains_rs(&path, needle);
+            }
+            if path.extension().and_then(|ext| ext.to_str()) != Some("rs") {
+                return false;
+            }
+            fs::read_to_string(path)
+                .map(|contents| contents.contains(needle))
+                .unwrap_or(false)
+        })
 }

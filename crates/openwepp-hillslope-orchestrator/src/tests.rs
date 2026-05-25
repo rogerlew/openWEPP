@@ -1,0 +1,2366 @@
+use std::cell::Cell;
+use std::collections::BTreeMap;
+
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, HillslopeAnnualDecompositionAction,
+    HillslopeAnnualDecompositionControl, HillslopeAnnualGrowthAction, HillslopeAnnualGrowthControl,
+    HillslopeConsumerAdapter, HillslopeDecompositionManagementClass,
+    HillslopeDecompositionTransitionControl, HillslopeGrowthManagementClass,
+    HillslopeGrowthTransitionControl, HillslopeKernel, HillslopeKernelPhaseClass,
+    HillslopeKernelRequest, HillslopePerennialDecompositionAction,
+    HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
+    HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackPayload,
+    WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID, WritebackDecisionOutcome, WritebackField,
+};
+use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, StatusClassification};
+use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
+
+use super::{
+    HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
+    SchedulerOutcomeClass, hillslope_consumer_adapter_for_phase,
+    required_hillslope_consumer_state_symbols, validate_hillslope_consumer_boundary,
+};
+
+const VALID_TOPOLOGY: &str = r"
+HILLSLOPES 3
+CHANNELS 2
+IMPOUNDMENTS 1
+NODE CHANNEL 1 H 1 2 0 C 0 0 0 I 0 0 0
+NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
+NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
+";
+
+const INVALID_TOPOLOGY: &str = r"
+HILLSLOPES 3
+CHANNELS 2
+IMPOUNDMENTS 1
+NODE CHANNEL 1 H 0 0 0 C 0 0 0 I 0 0 0
+NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
+NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
+";
+
+fn valid_topology_report() -> openwepp_topology::TopologyValidationReport {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    validate_pre_execution_topology(&graph).expect("topology report should build")
+}
+
+#[allow(clippy::too_many_lines)]
+fn seeded_growth_runtime_surface_for_day_year(
+    imngmt: f64,
+    day_of_year: f64,
+    runtime_year: f64,
+) -> HillslopeWritebackSurface {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_count"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_rotation_years"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_rotation_repeats"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("day"),
+        BoundaryValue::scalar(day_of_year),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("year"),
+        BoundaryValue::scalar(runtime_year),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_rotation_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_year_in_rotation"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_0001_imngmt"),
+        BoundaryValue::scalar(imngmt),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_order_decomp_before_soil"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_order_growth_after_decomp"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_order_watbal_after_growth"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_imngmt"),
+        BoundaryValue::scalar(imngmt),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+        BoundaryValue::scalar(240.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+        BoundaryValue::scalar(120.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"),
+        BoundaryValue::scalar(1.3),
+    );
+    for (root, value) in [
+        ("btemp", 10.0),
+        ("otemp", 25.0),
+        ("gddmax", 1700.0),
+        ("dlai", 0.85),
+        ("dropfc", 0.98),
+        ("decfct", 0.65),
+        ("spriod", 30.0),
+        ("bb", 3.6),
+        ("beinp", 35.00196),
+        ("extnct", 0.65),
+        ("hi", 0.5),
+        ("xmxlai", 3.5),
+        ("rsr", 0.25),
+        ("rtmmax", 3.0),
+        ("rdmax", 1.51995),
+    ] {
+        state_surface.insert(
+            BoundarySymbol::from(format!("pl_growth_slot_0001_crop_0001_{root}")),
+            BoundaryValue::scalar(value),
+        );
+    }
+    state_surface.insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(25.0));
+    state_surface.insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(13.0));
+    state_surface.insert(BoundarySymbol::from("rad"), BoundaryValue::scalar(210.0));
+    state_surface.insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.003));
+    state_surface.insert(BoundarySymbol::from("Ws"), BoundaryValue::scalar(0.8));
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.15));
+    state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.35));
+    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(0.2));
+    state_surface.insert(BoundarySymbol::from("sumgdd"), BoundaryValue::scalar(640.0));
+    state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(2.4));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.65));
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.1));
+    state_surface.insert(BoundarySymbol::from("rtmass"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.35));
+    state_surface.insert(BoundarySymbol::from("hia"), BoundaryValue::scalar(0.45));
+    state_surface.insert(
+        BoundarySymbol::from("iresd_seed"),
+        BoundaryValue::scalar(3.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("sumrtm_seed"),
+        BoundaryValue::scalar(2.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("sumsrm_seed"),
+        BoundaryValue::scalar(1.5),
+    );
+    for (root, value) in [("oratea", 0.0065), ("orater", 0.0065)] {
+        state_surface.insert(
+            BoundarySymbol::from(format!("pl_decomp_slot_0001_crop_0001_{root}")),
+            BoundaryValue::scalar(value),
+        );
+        state_surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+    }
+
+    if (imngmt - 2.0).abs() < f64::EPSILON {
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gday_0001"),
+            BoundaryValue::scalar(150.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gend_0001"),
+            BoundaryValue::scalar(250.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_animal_0001"),
+            BoundaryValue::scalar(20.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_bodywt_0001"),
+            BoundaryValue::scalar(450.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_area_0001"),
+            BoundaryValue::scalar(1200.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_digest_0001"),
+            BoundaryValue::scalar(0.62),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdstop"),
+            BoundaryValue::scalar(310.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_growth_slot_0001_crop_0001_mgtopt"),
+            BoundaryValue::scalar(2.0),
+        );
+    } else {
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_resmgt"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdherb"),
+            BoundaryValue::scalar(200.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdburn"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdslge"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdmove"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnag"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnog"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frcut"),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frmove"),
+            BoundaryValue::scalar(0.0),
+        );
+    }
+
+    HillslopeWritebackSurface {
+        state_surface,
+        flux_surface: BTreeMap::new(),
+    }
+}
+
+fn seeded_growth_runtime_surface(imngmt: f64) -> HillslopeWritebackSurface {
+    seeded_growth_runtime_surface_for_day_year(imngmt, 200.0, 1.0)
+}
+
+#[allow(clippy::too_many_lines)]
+fn seeded_multislot_rotation_surface(
+    runtime_year: f64,
+    day_of_year: f64,
+) -> HillslopeWritebackSurface {
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, day_of_year, runtime_year);
+    let state = &mut surface.state_surface;
+
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_count"),
+        BoundaryValue::scalar(6.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_rotation_years"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_rotation_repeats"),
+        BoundaryValue::scalar(2.0),
+    );
+    for slot_index in 1..=6 {
+        for (root, value) in [
+            ("btemp", 10.0),
+            ("otemp", 25.0),
+            ("gddmax", 1700.0),
+            ("dlai", 0.85),
+            ("dropfc", 0.98),
+            ("decfct", 0.65),
+            ("spriod", 30.0),
+            ("bb", 3.6),
+            ("beinp", 35.00196),
+            ("extnct", 0.65),
+            ("hi", 0.5),
+            ("xmxlai", 3.5),
+            ("rsr", 0.25),
+            ("rtmmax", 3.0),
+            ("rdmax", 1.51995),
+        ] {
+            state.insert(
+                BoundarySymbol::from(format!("pl_growth_slot_{slot_index:04}_crop_0001_{root}")),
+                BoundaryValue::scalar(value),
+            );
+        }
+        for (root, value) in [("oratea", 0.0065), ("orater", 0.0065)] {
+            state.insert(
+                BoundarySymbol::from(format!("pl_decomp_slot_{slot_index:04}_crop_0001_{root}")),
+                BoundaryValue::scalar(value),
+            );
+        }
+    }
+
+    // Slot 1 / year 1 / annual.
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_rotation_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_year_in_rotation"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_0001_imngmt"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_imngmt"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+        BoundaryValue::scalar(240.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+        BoundaryValue::scalar(120.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"),
+        BoundaryValue::scalar(1.1),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_resmgt"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdherb"),
+        BoundaryValue::scalar(200.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdburn"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdslge"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_jdmove"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnag"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_fbrnog"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_frmove"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    // Slot 2 / year 2 / annual-fallow.
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0002_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0002_rotation_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0002_year_in_rotation"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0002_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0002_crop_0001_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0002_crop_0001_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0002_crop_0001_jdharv"),
+        BoundaryValue::scalar(365.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0002_crop_0001_jdplt"),
+        BoundaryValue::scalar(228.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0002_crop_0001_rw"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_resmgt"),
+        BoundaryValue::scalar(6.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdherb"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdburn"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdslge"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_jdmove"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_fbrnag"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_fbrnog"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_frcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0002_crop_0001_frmove"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    // Slot 3 / year 3 / perennial.
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0003_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0003_rotation_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0003_year_in_rotation"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0003_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0003_crop_0001_imngmt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0003_crop_0001_imngmt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0003_crop_0001_jdharv"),
+        BoundaryValue::scalar(288.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0003_crop_0001_jdplt"),
+        BoundaryValue::scalar(130.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0003_crop_0001_jdstop"),
+        BoundaryValue::scalar(310.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0003_crop_0001_rw"),
+        BoundaryValue::scalar(0.762),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0003_crop_0001_mgtopt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_mgtopt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_ncut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_ncycle"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_gday_0001"),
+        BoundaryValue::scalar(150.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_gend_0001"),
+        BoundaryValue::scalar(220.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_animal_0001"),
+        BoundaryValue::scalar(20.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_bodywt_0001"),
+        BoundaryValue::scalar(450.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_area_0001"),
+        BoundaryValue::scalar(1200.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0003_crop_0001_digest_0001"),
+        BoundaryValue::scalar(0.62),
+    );
+
+    // Slot 4 / year 1 / annual (rotation repeat 2).
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0004_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0004_rotation_index"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0004_year_in_rotation"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0004_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0004_crop_0001_imngmt"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0004_crop_0001_imngmt"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0004_crop_0001_jdharv"),
+        BoundaryValue::scalar(240.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0004_crop_0001_jdplt"),
+        BoundaryValue::scalar(120.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0004_crop_0001_rw"),
+        BoundaryValue::scalar(1.1),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_resmgt"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdherb"),
+        BoundaryValue::scalar(200.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdburn"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdslge"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_jdmove"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_fbrnag"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_fbrnog"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_frcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0004_crop_0001_frmove"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    // Slot 5 / year 2 / annual-fallow (rotation repeat 2).
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0005_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0005_rotation_index"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0005_year_in_rotation"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0005_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0005_crop_0001_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0005_crop_0001_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0005_crop_0001_jdharv"),
+        BoundaryValue::scalar(365.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0005_crop_0001_jdplt"),
+        BoundaryValue::scalar(228.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0005_crop_0001_rw"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_resmgt"),
+        BoundaryValue::scalar(6.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdherb"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdburn"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdslge"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_jdmove"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_fbrnag"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_fbrnog"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_frcut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0005_crop_0001_frmove"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    // Slot 6 / year 3 / perennial (rotation repeat 2).
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0006_ofe_index"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0006_rotation_index"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0006_year_in_rotation"),
+        BoundaryValue::scalar(3.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0006_crop_slots"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_schedule_slot_0006_crop_0001_imngmt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0006_crop_0001_imngmt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0006_crop_0001_jdharv"),
+        BoundaryValue::scalar(288.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0006_crop_0001_jdplt"),
+        BoundaryValue::scalar(130.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0006_crop_0001_jdstop"),
+        BoundaryValue::scalar(310.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0006_crop_0001_rw"),
+        BoundaryValue::scalar(0.762),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_growth_slot_0006_crop_0001_mgtopt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_mgtopt"),
+        BoundaryValue::scalar(2.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_ncut"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_ncycle"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_gday_0001"),
+        BoundaryValue::scalar(150.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_gend_0001"),
+        BoundaryValue::scalar(220.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_animal_0001"),
+        BoundaryValue::scalar(20.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_bodywt_0001"),
+        BoundaryValue::scalar(450.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_area_0001"),
+        BoundaryValue::scalar(1200.0),
+    );
+    state.insert(
+        BoundarySymbol::from("pl_decomp_slot_0006_crop_0001_digest_0001"),
+        BoundaryValue::scalar(0.62),
+    );
+
+    surface
+}
+
+#[test]
+fn canonical_graph_order_is_deterministic() {
+    let graph = HillslopePhaseGraph::canonical();
+    let order = graph
+        .topological_order()
+        .expect("canonical graph should always topologically sort");
+
+    assert_eq!(
+        order,
+        Vec::from(HillslopePhaseGraph::canonical_order()),
+        "ARCH05 requires explicit deterministic scheduler order"
+    );
+    assert_eq!(graph.dependency_edges().len(), 12);
+}
+
+#[test]
+fn topology_precondition_failure_blocks_phase_execution() {
+    let graph = parse_topology_fixture_str(INVALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    assert_eq!(
+        topology_report.status.classification(),
+        StatusClassification::Failure
+    );
+
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let call_count = Cell::new(0_usize);
+
+    let report = scheduler
+        .execute_with(&topology_report, |_| {
+            call_count.set(call_count.get() + 1);
+            HillslopePhaseScheduler::nominal_phase_status(HillslopePhase::Normalization)
+                .expect("nominal status should build")
+        })
+        .expect("scheduler should not error");
+
+    assert_eq!(call_count.get(), 0);
+    assert_eq!(
+        report.outcome_class,
+        SchedulerOutcomeClass::TopologyPreconditionFailed
+    );
+    assert_eq!(
+        report.scheduler_status.classification(),
+        StatusClassification::Failure
+    );
+    assert_eq!(
+        report.scheduler_status.boundary_class(),
+        BoundaryClass::TopologyInvalid
+    );
+}
+
+#[test]
+fn phase_failure_is_typed_and_fail_fast() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+
+    let report = scheduler
+        .execute_with(&topology_report, |phase| {
+            if phase == HillslopePhase::PercolationDeepSeepage {
+                return openwepp_sim_contract::status::SimulationStatus::failure(
+                    SimulationPhase::HillslopeKernel,
+                    true,
+                    false,
+                    BoundaryClass::DomainViolation,
+                    "HSCHED-PHASE-E-004",
+                )
+                .expect("failure status should build");
+            }
+
+            HillslopePhaseScheduler::nominal_phase_status(phase)
+                .expect("nominal status should build")
+        })
+        .expect("scheduler should not error");
+
+    assert_eq!(report.outcome_class, SchedulerOutcomeClass::PhaseFailure);
+    assert_eq!(
+        report.scheduler_status.classification(),
+        StatusClassification::Failure
+    );
+    assert_eq!(
+        report.scheduler_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+    assert_eq!(
+        report.executed_phases(),
+        vec![
+            HillslopePhase::Normalization,
+            HillslopePhase::StorageBounds,
+            HillslopePhase::DecompositionTransition,
+            HillslopePhase::ResiduePartitionTransition,
+            HillslopePhase::AnnualGrowthTransition,
+            HillslopePhase::PerennialGrowthTransition,
+            HillslopePhase::PercolationDeepSeepage,
+        ]
+    );
+    assert_eq!(
+        report.halted_phase,
+        Some(HillslopePhase::PercolationDeepSeepage)
+    );
+}
+
+#[test]
+fn phase_status_phase_mismatch_returns_mode_mismatch_failure() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+
+    let report = scheduler
+        .execute_with(&topology_report, |_| {
+            openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::PreExecutionValidation,
+                "HSCHED-PHASE-INVALID-STATUS",
+            )
+            .expect("status should build")
+        })
+        .expect("scheduler should not error");
+
+    assert_eq!(
+        report.outcome_class,
+        SchedulerOutcomeClass::SchedulerInvariantFailure
+    );
+    assert_eq!(
+        report.scheduler_status.classification(),
+        StatusClassification::Failure
+    );
+    assert_eq!(
+        report.scheduler_status.boundary_class(),
+        BoundaryClass::ModeMismatch
+    );
+    assert_eq!(report.halted_phase, Some(HillslopePhase::Normalization));
+}
+
+#[test]
+fn nominal_execution_completes_in_canonical_order() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+
+    let report = scheduler
+        .execute_with(&topology_report, |phase| {
+            HillslopePhaseScheduler::nominal_phase_status(phase)
+                .expect("nominal status should build")
+        })
+        .expect("scheduler should not error");
+
+    assert!(report.is_success());
+    assert_eq!(report.outcome_class, SchedulerOutcomeClass::Completed);
+    assert_eq!(report.halted_phase, None);
+    assert_eq!(
+        report.executed_phases(),
+        Vec::from(HillslopePhaseGraph::canonical_order())
+    );
+    assert_eq!(
+        report.scheduler_status.phase(),
+        SimulationPhase::HillslopeKernel
+    );
+    assert_eq!(
+        report.scheduler_status.classification(),
+        StatusClassification::Nominal
+    );
+}
+
+#[test]
+fn consumer_adapter_mapping_matches_phase_contract() {
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::Normalization),
+        HillslopeConsumerAdapter::Soil
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::StorageBounds),
+        HillslopeConsumerAdapter::Soil
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::DecompositionTransition),
+        HillslopeConsumerAdapter::Decomposition
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::ResiduePartitionTransition),
+        HillslopeConsumerAdapter::Decomposition
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::AnnualGrowthTransition),
+        HillslopeConsumerAdapter::Growth
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::PerennialGrowthTransition),
+        HillslopeConsumerAdapter::Growth
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::Evapotranspiration),
+        HillslopeConsumerAdapter::Watbal
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::PercolationDeepSeepage),
+        HillslopeConsumerAdapter::Perc
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::LateralTransfer),
+        HillslopeConsumerAdapter::Watbal
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::Drainage),
+        HillslopeConsumerAdapter::Perc
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::RunoffReconciliation),
+        HillslopeConsumerAdapter::Runoff
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::StorageReconciliation),
+        HillslopeConsumerAdapter::Watbal
+    );
+    assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::ClosureDiagnostics),
+        HillslopeConsumerAdapter::Watbal
+    );
+}
+
+#[test]
+fn wb10_contract_conformance_hydrology_phase_classes_are_not_generic() {
+    #[derive(Default)]
+    struct ProbeKernel {
+        observed_phase_classes: BTreeMap<String, String>,
+    }
+
+    impl HillslopeKernel for ProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if matches!(
+                request.phase_name,
+                "evapotranspiration"
+                    | "percolation_deep_seepage"
+                    | "lateral_transfer"
+                    | "drainage"
+                    | "runoff_reconciliation"
+                    | "storage_reconciliation"
+                    | "closure_diagnostics"
+            ) {
+                self.observed_phase_classes.insert(
+                    request.phase_name.to_owned(),
+                    request.phase_class.as_str().to_owned(),
+                );
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-WB10-PHASE-CLASS",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = ProbeKernel::default();
+    let surface = seeded_growth_runtime_surface(1.0);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("wb10 phase-class conformance probe should execute");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(
+        kernel.observed_phase_classes.get("evapotranspiration"),
+        Some(&"hydrology_evapotranspiration".to_owned())
+    );
+    assert_eq!(
+        kernel
+            .observed_phase_classes
+            .get("percolation_deep_seepage"),
+        Some(&"hydrology_percolation_deep_seepage".to_owned())
+    );
+    assert_eq!(
+        kernel.observed_phase_classes.get("lateral_transfer"),
+        Some(&"hydrology_lateral_transfer".to_owned())
+    );
+    assert_eq!(
+        kernel.observed_phase_classes.get("drainage"),
+        Some(&"hydrology_drainage".to_owned())
+    );
+    assert_eq!(
+        kernel.observed_phase_classes.get("runoff_reconciliation"),
+        Some(&"hydrology_runoff_reconciliation".to_owned())
+    );
+    assert_eq!(
+        kernel.observed_phase_classes.get("storage_reconciliation"),
+        Some(&"hydrology_storage_reconciliation".to_owned())
+    );
+    assert_eq!(
+        kernel.observed_phase_classes.get("closure_diagnostics"),
+        Some(&"hydrology_peak_runoff".to_owned())
+    );
+}
+
+#[test]
+fn wb10_contract_conformance_rejects_unsupported_hydrology_phase_class() {
+    let error = super::hydrology_phase_dispatch_for_phase(
+        HillslopePhase::Evapotranspiration,
+        HillslopeKernelPhaseClass::Hydrology,
+    )
+    .expect_err("evapotranspiration must not accept generic hydrology class");
+
+    assert_eq!(error.code(), "HS-HYDRO-E-001");
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn required_consumer_symbols_are_empty_without_slope_or_soil_families() {
+    let empty_surface = BTreeMap::new();
+
+    for phase in HillslopePhaseGraph::canonical_order() {
+        let required = required_hillslope_consumer_state_symbols(phase, &empty_surface);
+        assert!(
+            required.is_empty(),
+            "phase {} should not require slope/soil symbols when neither family is seeded",
+            phase.as_str()
+        );
+        validate_hillslope_consumer_boundary(phase, &empty_surface)
+            .expect("empty non-slope/non-soil surface should not trigger consumer guard");
+    }
+}
+
+#[test]
+fn consumer_boundary_reports_typed_missing_symbol_for_seeded_family() {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.25));
+    state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.31));
+    state_surface.insert(
+        BoundarySymbol::from("ssc"),
+        BoundaryValue::scalar(0.000_004),
+    );
+
+    let error = validate_hillslope_consumer_boundary(HillslopePhase::Normalization, &state_surface)
+        .expect_err("missing thetdr must fail with typed consumer boundary error");
+    assert_eq!(error.code(), "HS-CONSUMER-E-001");
+    assert!(matches!(
+        error,
+        super::HillslopeConsumerBoundaryError::MissingRequiredStateSymbol {
+            phase: HillslopePhase::Normalization,
+            adapter: HillslopeConsumerAdapter::Soil,
+            symbol,
+        } if symbol.as_str() == "thetdr"
+    ));
+}
+
+#[test]
+fn annual_growth_phase_emits_typed_growth_context() {
+    #[derive(Default)]
+    struct ProbeKernel {
+        decomp: usize,
+        annual: usize,
+        perennial: usize,
+    }
+
+    impl HillslopeKernel for ProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            match request.phase_class {
+                HillslopeKernelPhaseClass::DecompositionTransition
+                | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                    let context = request
+                        .decomposition_context
+                        .expect("decomposition phases should carry decomposition context");
+                    assert_eq!(
+                        context.management_class,
+                        HillslopeDecompositionManagementClass::AnnualOrFallow
+                    );
+                    let transition_payload = context
+                        .transition_payload
+                        .expect("decomposition context should carry transition payload");
+                    assert!(matches!(
+                        transition_payload.control,
+                        HillslopeDecompositionTransitionControl::Annual(
+                            HillslopeAnnualDecompositionControl {
+                                active_action: HillslopeAnnualDecompositionAction::Herbicide,
+                                ..
+                            }
+                        )
+                    ));
+                    assert!(request.growth_context.is_none());
+                    self.decomp += 1;
+                }
+                HillslopeKernelPhaseClass::GrowthAnnualTransition => {
+                    let context = request
+                        .growth_context
+                        .expect("annual growth phase should carry growth context");
+                    assert_eq!(
+                        context.management_class,
+                        HillslopeGrowthManagementClass::AnnualOrFallow
+                    );
+                    let transition_payload = context
+                        .transition_payload
+                        .expect("annual growth context should carry transition payload");
+                    assert!(matches!(
+                        transition_payload.control,
+                        HillslopeGrowthTransitionControl::Annual(HillslopeAnnualGrowthControl {
+                            active_action: HillslopeAnnualGrowthAction::None,
+                            ..
+                        })
+                    ));
+                    self.annual += 1;
+                }
+                HillslopeKernelPhaseClass::GrowthPerennialTransition => {
+                    assert!(
+                        request.growth_context.is_none(),
+                        "perennial phase should skip context when annual branch is active"
+                    );
+                    self.perennial += 1;
+                }
+                phase_class if phase_class.is_hydrology_phase() => {
+                    assert!(request.growth_context.is_none());
+                    assert!(request.decomposition_context.is_none());
+                }
+                _ => unreachable!("unexpected phase class for annual growth test"),
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-GROWTH-CONTEXT",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = ProbeKernel::default();
+    let surface = seeded_growth_runtime_surface(1.0);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("annual growth context execution should succeed");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(kernel.decomp, 2);
+    assert_eq!(kernel.annual, 1);
+    assert_eq!(kernel.perennial, 1);
+}
+
+#[test]
+fn perennial_growth_phase_emits_typed_growth_context() {
+    #[derive(Default)]
+    struct ProbeKernel {
+        decomp: usize,
+        annual: usize,
+        perennial: usize,
+    }
+
+    impl HillslopeKernel for ProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            match request.phase_class {
+                HillslopeKernelPhaseClass::DecompositionTransition
+                | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                    let context = request
+                        .decomposition_context
+                        .expect("decomposition phases should carry decomposition context");
+                    assert_eq!(
+                        context.management_class,
+                        HillslopeDecompositionManagementClass::Perennial
+                    );
+                    let transition_payload = context
+                        .transition_payload
+                        .expect("decomposition context should carry transition payload");
+                    assert!(matches!(
+                        transition_payload.control,
+                        HillslopeDecompositionTransitionControl::Perennial(
+                            HillslopePerennialDecompositionControl {
+                                active_action: HillslopePerennialDecompositionAction::Grazing {
+                                    cycle_index: 1
+                                },
+                                ..
+                            }
+                        )
+                    ));
+                    assert!(request.growth_context.is_none());
+                    self.decomp += 1;
+                }
+                HillslopeKernelPhaseClass::GrowthAnnualTransition => {
+                    assert!(
+                        request.growth_context.is_none(),
+                        "annual phase should skip context when perennial branch is active"
+                    );
+                    self.annual += 1;
+                }
+                HillslopeKernelPhaseClass::GrowthPerennialTransition => {
+                    let context = request
+                        .growth_context
+                        .expect("perennial growth phase should carry growth context");
+                    assert_eq!(
+                        context.management_class,
+                        HillslopeGrowthManagementClass::Perennial
+                    );
+                    let transition_payload = context
+                        .transition_payload
+                        .expect("perennial growth context should carry transition payload");
+                    assert!(matches!(
+                        transition_payload.control,
+                        HillslopeGrowthTransitionControl::Perennial(
+                            HillslopePerennialGrowthControl {
+                                active_action: HillslopePerennialGrowthAction::None,
+                                ..
+                            }
+                        )
+                    ));
+                    self.perennial += 1;
+                }
+                phase_class if phase_class.is_hydrology_phase() => {
+                    assert!(request.growth_context.is_none());
+                    assert!(request.decomposition_context.is_none());
+                }
+                _ => unreachable!("unexpected phase class for perennial growth test"),
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-GROWTH-CONTEXT",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = ProbeKernel::default();
+    let surface = seeded_growth_runtime_surface(2.0);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("perennial growth context execution should succeed");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(kernel.decomp, 2);
+    assert_eq!(kernel.annual, 1);
+    assert_eq!(kernel.perennial, 1);
+}
+
+#[test]
+fn active_slot_resolution_uses_year_three_perennial_slot() {
+    #[derive(Default)]
+    struct ProbeKernel {
+        saw_decomp_perennial: bool,
+        saw_annual_context: bool,
+        saw_perennial_context: bool,
+    }
+
+    impl HillslopeKernel for ProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            match request.phase_class {
+                HillslopeKernelPhaseClass::DecompositionTransition
+                | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                    let context = request
+                        .decomposition_context
+                        .expect("decomposition phases should carry decomposition context");
+                    self.saw_decomp_perennial = context.management_class
+                        == HillslopeDecompositionManagementClass::Perennial;
+                }
+                HillslopeKernelPhaseClass::GrowthAnnualTransition => {
+                    self.saw_annual_context = request.growth_context.is_some();
+                }
+                HillslopeKernelPhaseClass::GrowthPerennialTransition => {
+                    self.saw_perennial_context = request.growth_context.is_some();
+                }
+                phase_class if phase_class.is_hydrology_phase() => {}
+                _ => unreachable!("unexpected phase class for active-slot perennial test"),
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-ACTIVE-SLOT",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = ProbeKernel::default();
+    let surface = seeded_multislot_rotation_surface(3.0, 200.0);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("year-three slot resolution should succeed");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_decomp_perennial);
+    assert!(!kernel.saw_annual_context);
+    assert!(kernel.saw_perennial_context);
+}
+
+#[test]
+fn active_slot_resolution_wraps_rotation_boundary_to_year_one() {
+    #[derive(Default)]
+    struct ProbeKernel {
+        saw_decomp_annual: bool,
+        saw_annual_context: bool,
+        saw_perennial_context: bool,
+    }
+
+    impl HillslopeKernel for ProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            match request.phase_class {
+                HillslopeKernelPhaseClass::DecompositionTransition
+                | HillslopeKernelPhaseClass::ResiduePartitionTransition => {
+                    let context = request
+                        .decomposition_context
+                        .expect("decomposition phases should carry decomposition context");
+                    self.saw_decomp_annual = context.management_class
+                        == HillslopeDecompositionManagementClass::AnnualOrFallow;
+                }
+                HillslopeKernelPhaseClass::GrowthAnnualTransition => {
+                    self.saw_annual_context = request.growth_context.is_some();
+                }
+                HillslopeKernelPhaseClass::GrowthPerennialTransition => {
+                    self.saw_perennial_context = request.growth_context.is_some();
+                }
+                phase_class if phase_class.is_hydrology_phase() => {}
+                _ => unreachable!("unexpected phase class for active-slot annual test"),
+            }
+
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-ACTIVE-SLOT",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = ProbeKernel::default();
+    let surface = seeded_multislot_rotation_surface(4.0, 200.0);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("rotation-boundary slot resolution should succeed");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_decomp_annual);
+    assert!(kernel.saw_annual_context);
+    assert!(!kernel.saw_perennial_context);
+}
+
+#[test]
+fn active_slot_resolution_rejects_ambiguous_slot_candidates() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_multislot_rotation_surface(1.0, 200.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0002_year_in_rotation"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("ambiguous slot candidate must return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-PLDISP-E-006"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn active_slot_resolution_rejects_missing_active_crop_for_day() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 30.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_0002_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+        BoundaryValue::scalar(120.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+        BoundaryValue::scalar(150.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdplt"),
+        BoundaryValue::scalar(200.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdharv"),
+        BoundaryValue::scalar(240.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_rw"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0002_resmgt"),
+        BoundaryValue::scalar(6.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("missing active crop must return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-PLDISP-E-008"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn active_slot_resolution_rejects_ambiguous_active_crops_for_day() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 210.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_slots"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_schedule_slot_0001_crop_0002_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_imngmt"),
+        BoundaryValue::scalar(3.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+        BoundaryValue::scalar(180.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+        BoundaryValue::scalar(300.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdplt"),
+        BoundaryValue::scalar(200.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_jdharv"),
+        BoundaryValue::scalar(240.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0002_rw"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0002_resmgt"),
+        BoundaryValue::scalar(6.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("ambiguous active crop must return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-PLDISP-E-009"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn decomposition_boundary_missing_required_symbol_returns_typed_failure() {
+    #[derive(Default)]
+    struct NoopKernel {
+        invocation_count: usize,
+    }
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.invocation_count += 1;
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel::default();
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface.state_surface.remove(&BoundarySymbol::from(
+        "pl_decomp_slot_0001_crop_0001_resmgt",
+    ));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("typed decomposition guard failure should produce report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(kernel.invocation_count, 2);
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-001"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn decomposition_boundary_invalid_ordering_flag_returns_typed_failure() {
+    #[derive(Default)]
+    struct NoopKernel {
+        invocation_count: usize,
+    }
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.invocation_count += 1;
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel::default();
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_order_decomp_before_soil"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("typed decomposition guard failure should produce report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(kernel.invocation_count, 2);
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-003"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn pl12_contract_conformance_rejects_missing_perennial_cutday_payload() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface(2.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+        BoundaryValue::scalar(0.0),
+    );
+    for symbol in [
+        "pl_decomp_slot_0001_crop_0001_gday_0001",
+        "pl_decomp_slot_0001_crop_0001_gend_0001",
+        "pl_decomp_slot_0001_crop_0001_animal_0001",
+        "pl_decomp_slot_0001_crop_0001_bodywt_0001",
+        "pl_decomp_slot_0001_crop_0001_area_0001",
+        "pl_decomp_slot_0001_crop_0001_digest_0001",
+    ] {
+        surface.state_surface.remove(&BoundarySymbol::from(symbol));
+    }
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("missing perennial cutday payload should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-007"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn pl12_contract_conformance_rejects_invalid_perennial_grazing_window() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface(2.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_mgtopt"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncut"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_ncycle"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gday_0001"),
+        BoundaryValue::scalar(220.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_gend_0001"),
+        BoundaryValue::scalar(200.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_animal_0001"),
+        BoundaryValue::scalar(20.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_bodywt_0001"),
+        BoundaryValue::scalar(450.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_area_0001"),
+        BoundaryValue::scalar(1200.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_digest_0001"),
+        BoundaryValue::scalar(0.62),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("invalid perennial grazing window should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-009"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn pl13_contract_conformance_rejects_missing_growth_state_surface() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("sumgdd"));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("missing growth transition state should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::AnnualGrowthTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 5);
+    assert_eq!(
+        report.phase_reports[4].decision_status.message_id(),
+        "HS-GROWTH-E-001"
+    );
+    assert_eq!(
+        report.phase_reports[4].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn pl13_contract_conformance_rejects_growth_state_domain_violation() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(1.1));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("invalid growth transition state should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::AnnualGrowthTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 5);
+    assert_eq!(
+        report.phase_reports[4].decision_status.message_id(),
+        "HS-GROWTH-E-007"
+    );
+    assert_eq!(
+        report.phase_reports[4].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn growth_boundary_missing_required_symbol_returns_typed_failure() {
+    #[derive(Default)]
+    struct NoopKernel {
+        invocation_count: usize,
+    }
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.invocation_count += 1;
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel::default();
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("pl_growth_slot_0001_crop_0001_rw"));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("typed growth guard failure should produce report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::AnnualGrowthTransition)
+    );
+    assert_eq!(kernel.invocation_count, 4);
+    assert_eq!(report.phase_reports.len(), 5);
+    assert_eq!(
+        report.phase_reports[4].decision_status.message_id(),
+        "HS-GROWTH-E-001"
+    );
+    assert_eq!(
+        report.phase_reports[4].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn growth_boundary_non_finite_ordering_flag_returns_typed_failure() {
+    #[derive(Default)]
+    struct NoopKernel {
+        invocation_count: usize,
+    }
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.invocation_count += 1;
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel::default();
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_order_watbal_after_growth"),
+        BoundaryValue::scalar(f64::NAN),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("typed growth guard failure should produce report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::AnnualGrowthTransition)
+    );
+    assert_eq!(kernel.invocation_count, 4);
+    assert_eq!(report.phase_reports.len(), 5);
+    assert_eq!(
+        report.phase_reports[4].decision_status.message_id(),
+        "HS-GROWTH-E-002"
+    );
+    assert_eq!(
+        report.phase_reports[4].decision_status.boundary_class(),
+        BoundaryClass::NonFinite
+    );
+}
+
+#[test]
+fn execute_with_kernel_applies_writeback_updates() {
+    #[derive(Default)]
+    struct NominalKernel {
+        call_index: u32,
+    }
+
+    impl HillslopeKernel for NominalKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.call_index += 1;
+            let call_value = f64::from(self.call_index);
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                format!("HKERNEL-PHASE-OK-{}", self.call_index),
+            )
+            .expect("status should construct");
+            let writeback = KernelWritebackPayload::with_updates(
+                vec![WritebackField::bounded(
+                    "soil_storage",
+                    call_value,
+                    Some(0.0),
+                    Some(1000.0),
+                )],
+                vec![WritebackField::bounded(
+                    "runoff_total",
+                    call_value * 0.25,
+                    Some(0.0),
+                    None,
+                )],
+            );
+
+            KernelRunResponse::new(status, writeback)
+        }
+    }
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NominalKernel::default();
+
+    let report = scheduler
+        .execute_with_kernel(
+            &topology_report,
+            &mut kernel,
+            HillslopeWritebackSurface::default(),
+        )
+        .expect("kernel execution should succeed");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(
+        report.scheduler_report.executed_phases(),
+        Vec::from(HillslopePhaseGraph::canonical_order())
+    );
+    assert_eq!(
+        report.phase_reports.len(),
+        HillslopePhaseGraph::canonical_order().len()
+    );
+    assert!(report.phase_reports.iter().all(|phase| {
+        phase.decision_outcome == WritebackDecisionOutcome::Apply && phase.apply_result.is_some()
+    }));
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from("soil_storage"))
+            .copied(),
+        Some(BoundaryValue::from(13.0))
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .flux_surface
+            .get(&BoundarySymbol::from("runoff_total"))
+            .copied(),
+        Some(BoundaryValue::from(3.25))
+    );
+}
+
+#[test]
+fn execute_with_kernel_lends_stable_surface_references() {
+    #[derive(Default)]
+    struct PointerProbeKernel {
+        call_index: u32,
+        state_surface_ptrs: Vec<usize>,
+        flux_surface_ptrs: Vec<usize>,
+    }
+
+    impl HillslopeKernel for PointerProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.call_index += 1;
+            self.state_surface_ptrs
+                .push(std::ptr::from_ref(request.state_surface) as usize);
+            self.flux_surface_ptrs
+                .push(std::ptr::from_ref(request.flux_surface) as usize);
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                format!("HKERNEL-PHASE-POINTER-{}", self.call_index),
+            )
+            .expect("status should construct");
+
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = PointerProbeKernel::default();
+
+    let report = scheduler
+        .execute_with_kernel(
+            &topology_report,
+            &mut kernel,
+            HillslopeWritebackSurface::default(),
+        )
+        .expect("kernel execution should succeed");
+
+    assert!(report.scheduler_report.is_success());
+    assert_eq!(kernel.state_surface_ptrs.len(), 13);
+    assert_eq!(kernel.flux_surface_ptrs.len(), 13);
+    assert!(
+        kernel
+            .state_surface_ptrs
+            .windows(2)
+            .all(|pair| pair[0] == pair[1]),
+        "state surface reference should remain stable across phase calls"
+    );
+    assert!(
+        kernel
+            .flux_surface_ptrs
+            .windows(2)
+            .all(|pair| pair[0] == pair[1]),
+        "flux surface reference should remain stable across phase calls"
+    );
+}
+
+#[test]
+fn execute_with_kernel_rejects_non_finite_writeback() {
+    struct RejectKernel;
+
+    impl HillslopeKernel for RejectKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HKERNEL-PHASE-OK-REJECT",
+            )
+            .expect("status should construct");
+            let writeback = KernelWritebackPayload::with_updates(
+                vec![WritebackField::unbounded("soil_storage", f64::NAN)],
+                Vec::new(),
+            );
+            KernelRunResponse::new(status, writeback)
+        }
+    }
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = RejectKernel;
+
+    let report = scheduler
+        .execute_with_kernel(
+            &topology_report,
+            &mut kernel,
+            HillslopeWritebackSurface::default(),
+        )
+        .expect("execution should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.outcome_class,
+        SchedulerOutcomeClass::PhaseFailure
+    );
+    assert_eq!(report.phase_reports.len(), 1);
+    assert_eq!(
+        report.phase_reports[0].decision_outcome,
+        WritebackDecisionOutcome::Reject
+    );
+    assert_eq!(
+        report.phase_reports[0].decision_status.message_id(),
+        WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID
+    );
+    assert!(
+        !report
+            .writeback_surface
+            .state_surface
+            .contains_key(&BoundarySymbol::from("soil_storage")),
+        "rejected payload must not mutate orchestrator writeback state"
+    );
+}
+
+#[test]
+fn execute_with_kernel_rejects_kernel_phase_mismatch() {
+    struct PhaseMismatchKernel;
+
+    impl HillslopeKernel for PhaseMismatchKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::PreExecutionValidation,
+                "HKERNEL-PHASE-INVALID",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = PhaseMismatchKernel;
+
+    let report = scheduler
+        .execute_with_kernel(
+            &topology_report,
+            &mut kernel,
+            HillslopeWritebackSurface::default(),
+        )
+        .expect("execution should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.outcome_class,
+        SchedulerOutcomeClass::PhaseFailure
+    );
+    assert_eq!(
+        report.scheduler_report.scheduler_status.boundary_class(),
+        BoundaryClass::ModeMismatch
+    );
+    assert_eq!(report.phase_reports.len(), 1);
+    assert_eq!(
+        report.phase_reports[0].decision_outcome,
+        WritebackDecisionOutcome::Reject
+    );
+}

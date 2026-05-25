@@ -841,3 +841,8 @@ Authorized packages:
 - `20260520-inspec16-author-wepp-input-spec-chaninp-001/`
   - Purpose: author and disposition canonical `chan.inp` specification
     (`chaninp.spec.md`).
+- `20260525-refactor002-openwepp-hillslope-orchestrator-lib-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR002 by mechanically modularizing
+    `openwepp-hillslope-orchestrator/src/lib.rs`, preserving public
+    API/runtime behavior, and updating layout-coupled tests to remain
+    contract-accurate under the new module tree.
