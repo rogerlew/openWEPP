@@ -165,7 +165,7 @@ soil = "case.sol"
 management = "case.man"
 slope = "case.slp"
 climate = "case.cli"
-wepp_ui = true
+wepp_ui = false
 
 [outputs]
 pass = "output/H1.hbp"
@@ -191,7 +191,7 @@ soil = "case.sol"
 management = "case.man"
 slope = "case.slp"
 climate = "case.cli"
-wepp_ui = true
+wepp_ui = false
 
 [outputs]
 pass = "output/H1.hbp"
@@ -249,7 +249,7 @@ soil = "case.sol"
 management = "case.man"
 slope = "case.slp"
 climate = "case.cli"
-wepp_ui = true
+wepp_ui = false
 
 [outputs]
 pass = "output/H1.hbp"
@@ -354,7 +354,7 @@ soil = "case.sol"
 management = "case.man"
 slope = "case.slp"
 climate = "case.cli"
-wepp_ui = true
+wepp_ui = false
 
 [outputs]
 pass = "output/H1.hbp"
@@ -390,7 +390,7 @@ soil = "case.sol"
 management = "case.man"
 slope = "case.slp"
 climate = "case.cli"
-wepp_ui = true
+wepp_ui = false
 
 [outputs]
 pass = "output/H1.hbp"
@@ -423,7 +423,7 @@ soil = "case.sol"
 management = "case.man"
 slope = "case.slp"
 climate = "case.cli"
-wepp_ui = true
+wepp_ui = false
 
 [outputs]
 pass = "output/H1.hbp"
@@ -484,6 +484,95 @@ loss = "output/H1.loss.json"
     assert!(message.contains("slope=2"));
     assert!(message.contains("management=1"));
     assert!(message.contains("soil=3"));
+}
+
+#[test]
+fn cli03_mofe03_multiofe_runfile_executes_wave2_without_manual_symbol_injection() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe03-wave2-enabled"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe03_wave2_enabled",
+        false,
+        |run_dir| {
+            let _ = fs::remove_file(run_dir.join("wepp_ui.txt"));
+            write_three_ofe_slope(&run_dir.join("case.slp"));
+            write_soil_with_ntemp_low_conductivity(&run_dir.join("case.sol"), 3);
+            write_high_runoff_climate(&run_dir.join("case.cli"));
+            write_three_ofe_management(&run_dir.join("case.man"));
+        },
+    )
+    .expect("aligned multi-OFE fixture should execute through Wave-2");
+
+    assert!(report.output_pass.is_file());
+    assert!(report.output_loss.is_file());
+
+    let manifest =
+        fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest.contains("\"erod14_wave2_enabled\": true"),
+        "multi-OFE run should enable Wave-2 under MOFE03 policy, observed manifest: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"erod14_wave2_kernel_status_seen\": true"),
+        "multi-OFE run should observe Wave-2 kernel status, observed manifest: {manifest}"
+    );
+}
+
+#[test]
+fn cli03_mofe03_single_ofe_policy_disables_wave2_by_default() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe03-wave2-disabled"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe03_wave2_disabled",
+        false,
+        |run_dir| {
+            let _ = fs::remove_file(run_dir.join("wepp_ui.txt"));
+        },
+    )
+    .expect("single-OFE baseline fixture should execute");
+
+    let manifest =
+        fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest.contains("\"erod14_wave2_enabled\": false"),
+        "single-OFE policy should keep Wave-2 disabled, observed manifest: {manifest}"
+    );
+    assert!(
+        manifest.contains("\"erod14_wave2_kernel_status_seen\": false"),
+        "single-OFE policy should keep Wave-2 kernel status absent, observed manifest: {manifest}"
+    );
 }
 
 fn execute_fixture_with_runfile(
@@ -573,6 +662,24 @@ fn write_two_ofe_slope(path: &Path) {
     fs::write(path, payload).expect("two-OFE slope fixture should be writable");
 }
 
+fn write_three_ofe_slope(path: &Path) {
+    let payload = "\
+# Canonical three-OFE slope profile
+97.5
+3
+180.0 30.0
+3 60.0
+0.0 0.0200 0.6 0.0800 1.0 0.0600
+180.0 30.0
+3 40.0
+0.0 0.0600 0.5 0.0400 1.0 0.0300
+180.0 30.0
+3 20.0
+0.0 0.0300 0.5 0.0200 1.0 0.0100
+";
+    fs::write(path, payload).expect("three-OFE slope fixture should be writable");
+}
+
 fn write_soil_with_ntemp(path: &Path, ntemp: usize) {
     assert!(ntemp > 0, "ntemp must remain positive");
     let mut payload = format!("9002\nDisturbed soil profile\n{ntemp} 1\n");
@@ -589,6 +696,53 @@ SOIL_B CLAY_LOAM 2 0.20 0.55 900000 0.005 4.2 10.5
     fs::write(path, payload).expect("soil fixture should be writable");
 }
 
+fn write_soil_with_ntemp_low_conductivity(path: &Path, ntemp: usize) {
+    assert!(ntemp > 0, "ntemp must remain positive");
+    let mut payload = format!("9002\nDisturbed soil profile\n{ntemp} 1\n");
+    let ofe_block = "\
+SOIL_B CLAY_LOAM 2 0.20 0.55 900000 0.005 4.2 10.5
+1 forest silt_loam 0.20 0.001
+100 1.25 0.05 1.20 0.30 0.15 35 25 2.0 15 5 0.05 0.45 0.02 1.40 120 0.16 0.31
+250 1.30 0.02 1.10 0.28 0.14 33 27 1.8 14 7 0.06 0.43 0.03 1.35 110 0.15 0.30
+";
+    for _ in 0..ntemp {
+        payload.push_str(ofe_block);
+    }
+    payload.push_str("1 500 0.8\n");
+    fs::write(path, payload).expect("low-conductivity soil fixture should be writable");
+}
+
+fn write_high_runoff_climate(path: &Path) {
+    let payload = "\
+5.30
+1 0 0
+TEST STATION 0001
+DAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT
+45.0 -120.0 1000.0 30 2000 1 CLIGEN 5.30 --seed 123
+MONTHLY MAX TEMP HEADER
+1 2 3 4 5 6 7 8 9 10 11 12
+MONTHLY MIN TEMP HEADER
+-5 -4 -3 -2 -1 0 1 2 3 4 5 6
+MONTHLY RAD HEADER
+100 101 102 103 104 105 106 107 108 109 110 111
+MONTHLY RAIN HEADER
+10 11 12 13 14 15 16 17 18 19 20 21
+DAILY HEADER
+DAILY UNITS
+1 1 2000 120.0 0.25 0.10 8.0 12.0 2.0 200.0 3.0 180.0 -1.0
+2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0
+";
+    fs::write(path, payload).expect("high-runoff climate fixture should be writable");
+}
+
+fn write_three_ofe_management(path: &Path) {
+    let payload = fs::read_to_string(infile_fixture_path(
+        "management/canonical_rotation_nonzero_98_4.man",
+    ))
+    .expect("three-OFE management fixture should be readable");
+    fs::write(path, payload).expect("three-OFE management fixture should be writable");
+}
+
 fn runner_execution_lock() -> &'static Mutex<()> {
     static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     RUN_LOCK.get_or_init(|| Mutex::new(()))
@@ -603,6 +757,17 @@ fn fixture_path(name: &str) -> PathBuf {
         .join("fixtures")
         .join("cli01")
         .join(name)
+}
+
+fn infile_fixture_path(relative_path: &str) -> PathBuf {
+    Path::new(file!())
+        .parent()
+        .expect("integration file parent exists")
+        .parent()
+        .expect("tests directory exists")
+        .join("fixtures")
+        .join("infile")
+        .join(relative_path)
 }
 
 fn copy_fixture_to_temp(source_dir: &Path, prefix: &str) -> PathBuf {

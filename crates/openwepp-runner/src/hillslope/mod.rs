@@ -133,6 +133,9 @@ struct HillslopeExecutionProvenance {
     scheduler_status_message_id: String,
     climate_day_count: usize,
     executed_day_count: usize,
+    kernel_phase_message_ids: Vec<String>,
+    erod14_wave2_enabled: bool,
+    erod14_wave2_kernel_status_seen: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -221,6 +224,8 @@ struct DailyExecutionResult {
     coupling_vectors: HillslopeCouplingVectorProvenance,
     wb13_row: SimulationOwnedWb13Row,
     runtime_surface: HillslopeWritebackSurface,
+    kernel_phase_message_ids: Vec<String>,
+    erod14_wave2_kernel_status_seen: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -752,9 +757,11 @@ pub fn execute_hillslope_run(
         require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
     let mut wb13_rows = Vec::with_capacity(climate_span.days.len());
     let mut coupling_vectors = None;
+    let mut erod14_wave2_kernel_status_seen = false;
     let mut scheduler_outcome_class = SchedulerOutcomeClass::Completed;
     let mut scheduler_status_message_id = String::new();
     let mut previous_climate_symbols: Vec<BoundarySymbol> = Vec::new();
+    let mut kernel_phase_message_ids = std::collections::BTreeSet::new();
 
     for (day_index, day_projection) in climate_span.days.iter().enumerate() {
         let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, day_index)
@@ -784,6 +791,10 @@ pub fn execute_hillslope_run(
         scheduler_outcome_class = execution_result.scheduler_outcome_class;
         scheduler_status_message_id = execution_result.scheduler_status_message_id;
         coupling_vectors = Some(execution_result.coupling_vectors);
+        for message_id in execution_result.kernel_phase_message_ids {
+            kernel_phase_message_ids.insert(message_id);
+        }
+        erod14_wave2_kernel_status_seen |= execution_result.erod14_wave2_kernel_status_seen;
         wb13_rows.push(execution_result.wb13_row);
     }
 
@@ -805,6 +816,12 @@ pub fn execute_hillslope_run(
         scheduler_status_message_id,
         climate_day_count: climate_span.days.len(),
         executed_day_count,
+        kernel_phase_message_ids: kernel_phase_message_ids.into_iter().collect(),
+        erod14_wave2_enabled: parse_mofe03_binary_flag(
+            "erod14_wave2_enabled",
+            runtime_surface_symbol_value(&runtime_surface, "erod14_wave2_enabled").unwrap_or(0.0),
+        )?,
+        erod14_wave2_kernel_status_seen,
     };
     let wb13_publication = build_wb13_publication_provenance(&wb13_rows)?;
     let pass_text = build_h5_wat_output(&wb13_rows)?;
@@ -1807,7 +1824,351 @@ fn seed_wb11_runtime_surface_inputs(
             .state_surface
             .insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
     }
+    seed_mofe03_wave2_runtime_surface_inputs(runtime_surface)?;
 
+    Ok(())
+}
+
+const MOFE03_WAVE2_ENABLE_TOLERANCE: f64 = 1.0e-9;
+const MOFE03_WAVE2_MIN_POSITIVE: f64 = 1.0e-6;
+const MOFE03_WAVE2_DEFAULT_XTOP: f64 = 0.2;
+const MOFE03_WAVE2_DEFAULT_XBOT: f64 = 0.5;
+const MOFE03_WAVE2_DEFAULT_XDETST: f64 = 0.1;
+const MOFE03_WAVE2_DEFAULT_LDTOP: f64 = 0.8;
+const MOFE03_WAVE2_DEFAULT_LDBOT: f64 = 0.6;
+const MOFE03_WAVE2_DEFAULT_LDDEND: f64 = 0.3;
+const MOFE03_WAVE2_DEFAULT_KTRATO: f64 = 1.1;
+const MOFE03_WAVE2_DEFAULT_AINTC: f64 = 0.4;
+const MOFE03_WAVE2_DEFAULT_BINTC: f64 = 0.3;
+const MOFE03_WAVE2_DEFAULT_CINTC: f64 = 0.2;
+const MOFE03_WAVE2_DEFAULT_BETA: f64 = 0.5;
+const MOFE03_WAVE2_DEFAULT_QOSTAR: f64 = 0.2;
+const MOFE03_WAVE2_DEFAULT_SSA_SOIL: f64 = 5.0;
+
+#[derive(Debug, Clone, Copy)]
+struct Mofe03Wave2CaseScalars {
+    case_value: f64,
+    qj_minus_1: f64,
+    vj: f64,
+    qj: f64,
+    fh: f64,
+    fp: f64,
+}
+
+fn seed_mofe03_wave2_runtime_surface_inputs(
+    runtime_surface: &mut HillslopeWritebackSurface,
+) -> Result<(), HillslopeCliError> {
+    let ofe_count = resolve_mofe03_ofe_count(runtime_surface)?;
+    let wave2_enabled = resolve_mofe03_wave2_enabled(runtime_surface, ofe_count)?;
+    write_mofe03_wave2_enabled(runtime_surface, wave2_enabled);
+    if !wave2_enabled {
+        return Ok(());
+    }
+
+    let slplen = require_mofe03_positive_runtime_surface_scalar(
+        runtime_surface,
+        "slplen",
+        "Wave-2 seeding",
+    )?;
+    let qout = resolve_mofe03_wave2_qout(runtime_surface)?;
+    let qin = resolve_mofe03_wave2_qin(runtime_surface)?;
+    let qostar = (qout - qin).max(0.0);
+    let case_scalars = build_mofe03_wave2_case_scalars(qout);
+
+    seed_mofe03_wave2_core_scalars(runtime_surface, ofe_count, slplen, qout, qin, qostar)?;
+    let (beta, theta) = resolve_mofe03_wave2_beta_theta(runtime_surface)?;
+    seed_mofe03_wave2_case_state(runtime_surface, case_scalars, beta, theta);
+    seed_mofe03_wave2_ssa_soil(runtime_surface)?;
+    seed_mofe03_wave2_class_symbols(runtime_surface, ofe_count)?;
+    Ok(())
+}
+
+fn resolve_mofe03_ofe_count(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<usize, HillslopeCliError> {
+    let ofe_count = scalar_to_usize(
+        "nelem",
+        require_mofe03_runtime_surface_scalar(runtime_surface, "nelem")?,
+    )?;
+    if ofe_count == 0 {
+        return Err(mofe03_wave2_seed_failure(
+            "nelem must be >= 1 for MOFE03 activation policy",
+        ));
+    }
+    Ok(ofe_count)
+}
+
+fn resolve_mofe03_wave2_enabled(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_count: usize,
+) -> Result<bool, HillslopeCliError> {
+    if let Some(value) = runtime_surface_symbol_value(runtime_surface, "erod14_wave2_enabled") {
+        parse_mofe03_binary_flag("erod14_wave2_enabled", value)
+    } else {
+        Ok(ofe_count > 1)
+    }
+}
+
+fn write_mofe03_wave2_enabled(runtime_surface: &mut HillslopeWritebackSurface, enabled: bool) {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_wave2_enabled"),
+        BoundaryValue::scalar(if enabled { 1.0 } else { 0.0 }),
+    );
+}
+
+fn require_mofe03_positive_runtime_surface_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+    context: &str,
+) -> Result<f64, HillslopeCliError> {
+    let value = require_mofe03_runtime_surface_scalar(runtime_surface, symbol)?;
+    if value <= 0.0 {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} must be > 0.0 for {context}, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn resolve_mofe03_wave2_qout(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
+    require_mofe03_non_negative_seed_scalar(
+        runtime_surface_symbol_value(runtime_surface, "Q")
+            .or_else(|| runtime_surface_symbol_value(runtime_surface, "wb12_runoff_observed"))
+            .unwrap_or(0.0),
+        "erod14_qout",
+    )
+}
+
+fn resolve_mofe03_wave2_qin(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
+    require_mofe03_non_negative_seed_scalar(
+        runtime_surface_symbol_value(runtime_surface, "UpStrmQ").unwrap_or(0.0),
+        "erod14_qin",
+    )
+}
+
+fn build_mofe03_wave2_case_scalars(qout: f64) -> Mofe03Wave2CaseScalars {
+    if qout > MOFE03_WAVE2_ENABLE_TOLERANCE {
+        return Mofe03Wave2CaseScalars {
+            case_value: 2.0,
+            qj_minus_1: qout.max(MOFE03_WAVE2_MIN_POSITIVE),
+            vj: (0.25 * qout).max(MOFE03_WAVE2_MIN_POSITIVE),
+            qj: (0.50 * qout).max(MOFE03_WAVE2_MIN_POSITIVE),
+            fh: qout.max(MOFE03_WAVE2_MIN_POSITIVE),
+            fp: (0.5 * qout).max(MOFE03_WAVE2_MIN_POSITIVE),
+        };
+    }
+    Mofe03Wave2CaseScalars {
+        case_value: 4.0,
+        qj_minus_1: MOFE03_WAVE2_MIN_POSITIVE,
+        vj: 0.0,
+        qj: 0.0,
+        fh: 0.0,
+        fp: 0.0,
+    }
+}
+
+fn seed_mofe03_wave2_core_scalars(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    ofe_count: usize,
+    slplen: f64,
+    qout: f64,
+    qin: f64,
+    qostar: f64,
+) -> Result<(), HillslopeCliError> {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_class_count"),
+        BoundaryValue::scalar(usize_to_scalar("erod14_class_count", ofe_count)?),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_xtop"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_XTOP),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_xbot"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_XBOT),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_xdetst"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_XDETST),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_ldtop"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_LDTOP),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_ldbot"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_LDBOT),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_lddend"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_LDDEND),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_qout"),
+        BoundaryValue::scalar(qout),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_qin"),
+        BoundaryValue::scalar(qin),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_qostar"),
+        BoundaryValue::scalar(qostar.max(MOFE03_WAVE2_DEFAULT_QOSTAR)),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_slplen"),
+        BoundaryValue::scalar(slplen),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_ktrato"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_KTRATO),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_ainftc"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_AINTC),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_binftc"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_BINTC),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_cinftc"),
+        BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_CINTC),
+    );
+    Ok(())
+}
+
+fn resolve_mofe03_wave2_beta_theta(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<(f64, f64), HillslopeCliError> {
+    let beta = match runtime_surface_symbol_value(runtime_surface, "beta") {
+        Some(value) => require_mofe03_non_negative_seed_scalar(value, "beta")?,
+        None => MOFE03_WAVE2_DEFAULT_BETA,
+    };
+    let theta = if let Some(value) = runtime_surface_symbol_value(runtime_surface, "theta") {
+        require_mofe03_non_negative_seed_scalar(value, "theta")?
+    } else {
+        let thetdr = require_mofe03_non_negative_seed_scalar(
+            require_mofe03_runtime_surface_scalar(runtime_surface, "thetdr")?,
+            "thetdr",
+        )?;
+        let thetfc = require_mofe03_non_negative_seed_scalar(
+            require_mofe03_runtime_surface_scalar(runtime_surface, "thetfc")?,
+            "thetfc",
+        )?;
+        0.5 * (thetdr + thetfc)
+    };
+    Ok((beta, theta))
+}
+
+fn seed_mofe03_wave2_case_state(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    case_scalars: Mofe03Wave2CaseScalars,
+    beta: f64,
+    theta: f64,
+) {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_beta"),
+        BoundaryValue::scalar(beta),
+    );
+    runtime_surface
+        .state_surface
+        .insert(BoundarySymbol::from("theta"), BoundaryValue::scalar(theta));
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Qj_minus_1"),
+        BoundaryValue::scalar(case_scalars.qj_minus_1),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Vj"),
+        BoundaryValue::scalar(case_scalars.vj),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Qj"),
+        BoundaryValue::scalar(case_scalars.qj),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Fh"),
+        BoundaryValue::scalar(case_scalars.fh),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_Fp"),
+        BoundaryValue::scalar(case_scalars.fp),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_case"),
+        BoundaryValue::scalar(case_scalars.case_value),
+    );
+}
+
+fn seed_mofe03_wave2_ssa_soil(
+    runtime_surface: &mut HillslopeWritebackSurface,
+) -> Result<(), HillslopeCliError> {
+    let ssa_soil = match runtime_surface_symbol_value(runtime_surface, "erod14_ssa_soil") {
+        Some(value) => require_mofe03_positive_seed_scalar(value, "erod14_ssa_soil")?,
+        None => MOFE03_WAVE2_DEFAULT_SSA_SOIL,
+    };
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("erod14_ssa_soil"),
+        BoundaryValue::scalar(ssa_soil),
+    );
+    Ok(())
+}
+
+fn seed_mofe03_wave2_class_symbols(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    ofe_count: usize,
+) -> Result<(), HillslopeCliError> {
+    let class_count_f64 = usize_to_scalar("erod14_class_count", ofe_count)?;
+    let class_fraction = 1.0 / class_count_f64;
+    for class_index in 1..=ofe_count {
+        let class_index_f64 = usize_to_scalar("erod14_class_index", class_index)?;
+        let reverse_class_index = ofe_count.saturating_sub(class_index) + 1;
+        let reverse_class_index_f64 =
+            usize_to_scalar("erod14_reverse_class_index", reverse_class_index)?;
+        let class_offset = class_index.saturating_sub(1);
+        let class_offset_f64 = usize_to_scalar("erod14_class_offset", class_offset)?;
+
+        seed_mofe03_wave2_class_symbol(
+            runtime_surface,
+            "erod14_fall",
+            class_index,
+            (0.02 / class_index_f64).max(MOFE03_WAVE2_MIN_POSITIVE),
+        )?;
+        seed_mofe03_wave2_class_symbol(
+            runtime_surface,
+            "erod14_frcflw",
+            class_index,
+            class_fraction,
+        )?;
+        seed_mofe03_wave2_class_symbol(
+            runtime_surface,
+            "erod14_frac",
+            class_index,
+            class_fraction,
+        )?;
+        seed_mofe03_wave2_class_symbol(
+            runtime_surface,
+            "erod14_fidel",
+            class_index,
+            (0.20 + (0.10 * class_index_f64)).min(0.95),
+        )?;
+        seed_mofe03_wave2_class_symbol(
+            runtime_surface,
+            "erod14_tcf1",
+            class_index,
+            0.20 + (0.05 * reverse_class_index_f64),
+        )?;
+        seed_mofe03_wave2_class_symbol(
+            runtime_surface,
+            "erod14_ssa_class",
+            class_index,
+            1.5 + (2.5 * class_offset_f64),
+        )?;
+    }
     Ok(())
 }
 
@@ -1868,6 +2229,15 @@ fn execute_scheduler_kernel_lifecycle(
     )?;
     let coupling_vectors =
         build_simimpl10_coupling_vector_provenance(&execution_report.writeback_surface, &wb13_row)?;
+    let kernel_phase_message_ids = execution_report
+        .phase_reports
+        .iter()
+        .map(|phase| phase.kernel_status.message_id().to_string())
+        .collect::<Vec<_>>();
+    let erod14_wave2_kernel_status_seen = execution_report
+        .phase_reports
+        .iter()
+        .any(|phase| phase.kernel_status.message_id().contains("EROD14-WAVE2"));
 
     Ok(DailyExecutionResult {
         scheduler_outcome_class: execution_report.scheduler_report.outcome_class,
@@ -1879,6 +2249,8 @@ fn execute_scheduler_kernel_lifecycle(
         coupling_vectors,
         wb13_row,
         runtime_surface: execution_report.writeback_surface,
+        kernel_phase_message_ids,
+        erod14_wave2_kernel_status_seen,
     })
 }
 
@@ -2468,6 +2840,112 @@ fn runtime_surface_symbol_value(
                 .get(&key)
                 .map(|value| value.as_f64())
         })
+}
+
+fn parse_mofe03_binary_flag(symbol: &str, value: f64) -> Result<bool, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} must be finite, observed {value}"
+        )));
+    }
+    if value.abs() <= MOFE03_WAVE2_ENABLE_TOLERANCE {
+        return Ok(false);
+    }
+    if (value - 1.0).abs() <= MOFE03_WAVE2_ENABLE_TOLERANCE {
+        return Ok(true);
+    }
+    Err(mofe03_wave2_seed_failure(format!(
+        "{symbol} must be binary 0|1, observed {value}"
+    )))
+}
+
+fn require_mofe03_runtime_surface_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    let Some(value) = runtime_surface_symbol_value(runtime_surface, symbol) else {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "missing required runtime symbol {symbol}"
+        )));
+    };
+    if !value.is_finite() {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "runtime symbol {symbol} is non-finite ({value})"
+        )));
+    }
+    Ok(value)
+}
+
+fn require_mofe03_non_negative_seed_scalar(
+    value: f64,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} seed value must be finite, observed {value}"
+        )));
+    }
+    if value < 0.0 {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} seed value must be >= 0.0, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn require_mofe03_positive_seed_scalar(value: f64, symbol: &str) -> Result<f64, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} seed value must be finite, observed {value}"
+        )));
+    }
+    if value <= 0.0 {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{symbol} seed value must be > 0.0, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn seed_mofe03_wave2_class_symbol(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    root: &str,
+    class_index: usize,
+    seed_value: f64,
+) -> Result<(), HillslopeCliError> {
+    if !seed_value.is_finite() {
+        return Err(mofe03_wave2_seed_failure(format!(
+            "{root}_{class_index:04} seed value must be finite, observed {seed_value}"
+        )));
+    }
+
+    let symbol = mofe03_erod14_class_symbol(root, class_index);
+    let value = if let Some(existing) = runtime_surface_symbol_value(runtime_surface, &symbol) {
+        if !existing.is_finite() {
+            return Err(mofe03_wave2_seed_failure(format!(
+                "{symbol} must be finite when present, observed {existing}"
+            )));
+        }
+        existing
+    } else {
+        seed_value
+    };
+
+    runtime_surface
+        .state_surface
+        .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    Ok(())
+}
+
+fn mofe03_erod14_class_symbol(root: &str, class_index: usize) -> String {
+    format!("{root}_{class_index:04}")
+}
+
+fn mofe03_wave2_seed_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "mofe03_wave2_seed",
+        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
+    }
 }
 
 fn require_runtime_surface_scalar(

@@ -854,3 +854,7 @@ Authorized packages:
   - Purpose: implement a hard hillslope intake gate that enforces
     slope/management/soil OFE-count parity before runtime-surface merge,
     using contract-first sequencing and contract-derived mismatch tests.
+- `20260525-mofe03-wave2-routing-activation-and-input-synthesis-001/`
+  - Purpose: make EROD14 Wave-2 routing executable from production runfile
+    intake by defining activation policy and deriving/seeding required
+    `erod14_*` symbols from parsed/runtime surfaces with typed guards.

@@ -607,7 +607,11 @@ Minimum WS12 integration vectors:
    Wave-2 payload symbols using `HKERNEL-EROD14-WAVE2-E-001..003` continuity.
 3. Cross-component publication pathways must not synthesize replacement
    class-fraction or enrichment payloads to bypass Wave-2 guard failures.
-4. Existing Wave-1 boundary-carry requirements remain active and additive.
+4. Hillslope runfile execution boundary must deterministically carry
+   `erod14_wave2_enabled` and required Wave-2 ingress symbol families into
+   scheduler execution from canonical runner-owned activation/seeding policy
+   defined in `SC-SED-001`; missing derivation inputs are hard-fail states.
+5. Existing Wave-1 boundary-carry requirements remain active and additive.
 
 ## EROD15 Wave-3 HBP Boundary-Carry Addendum
 
@@ -668,3 +672,4 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `22` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-SYSTEM-025`) plus explicit producer/governance obligations requiring blind-spot closure tests for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency gating. |
 | `2026-05-25` | `23` | `Codex` | SIMIMPL18 amendment: added baseline-year policy and full-span precipitation comparability invariant (`INV-SYSTEM-026`), explicit replay-provenance obligations for declared span-policy metadata, and addendum authority requiring first-day and multi-day storage diagnostics for hydrology closure evidence. |
 | `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |
+| `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |

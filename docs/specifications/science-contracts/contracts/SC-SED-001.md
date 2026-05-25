@@ -341,7 +341,18 @@ Minimum vectors required by EROD13 contract-derived tests:
 2. Runtime activation is explicit:
    - `erod14_wave2_enabled = 1` enables Wave-2 multi-OFE/enrichment logic.
    - `erod14_wave2_enabled = 0` disables the Wave-2 lane.
-3. When enabled, missing/non-finite/domain-invalid Wave-2 symbols are typed
+3. Production hillslope runner activation policy is explicit:
+   - if `erod14_wave2_enabled` is explicitly supplied on the runtime surface,
+     it must be finite and binary (`0|1`);
+   - if it is absent, runner-owned intake projection must set it from aligned
+     OFE topology authority: `1` when validated `nelem > 1`, else `0`.
+4. Runner-owned Wave-2 ingress seeding policy is explicit for enabled paths:
+   - required symbols must be present before `closure_diagnostics` execution,
+   - symbol synthesis must be deterministic from parsed/runtime surfaces plus
+     canonical seed families,
+   - missing/non-finite/domain-invalid derivation inputs are typed hard-fail
+     states (no silent fallback).
+5. When enabled, missing/non-finite/domain-invalid Wave-2 symbols are typed
    hard failures; fallback synthesis, silent defaults, and silent domain
    masking are prohibited.
 
@@ -488,3 +499,4 @@ Minimum vectors required by EROD15 contract-derived tests:
 | `2026-05-25` | `8` | `Codex` | EROD13 Wave-1 amendment: added pinned-baseline legacy authority anchors (`param.for`, `erod.for`, `runge.for`), runtime integration semantics, algorithm/guard specification, and contract-derived vector obligations for `INV-SED-001`..`007` core execution. |
 | `2026-05-25` | `9` | `Codex` | EROD14 Wave-2 amendment: added multi-OFE case-classification/runtime authority and class-wise enrichment mass-conservation closure semantics (`INV-SED-008..009`) with typed guard-family continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |
 | `2026-05-25` | `10` | `Codex` | EROD15 Wave-3 amendment: replaced generic sediment handoff naming with HBP pass-serialization field authority, added contributor-prefixed routing alias family, and added Wave-3 export mapping/guard continuity requirements for `INV-SED-010`. |
+| `2026-05-25` | `11` | `Codex` | MOFE03 amendment: added production runner activation/seeding authority for `erod14_wave2_enabled` and enabled-path deterministic Wave-2 ingress synthesis from aligned topology/runtime surfaces with typed hard-fail derivation posture. |

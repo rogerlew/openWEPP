@@ -38,6 +38,25 @@ fn erod14_wave2_addenda_are_present_in_required_contracts() {
             "{path} must include EROD14 authority section: {section}"
         );
     }
+
+    let sed_contract = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SED-001.md"
+    ))
+    .expect("SC-SED-001 should be readable");
+    assert!(
+        sed_contract.contains("Production hillslope runner activation policy is explicit"),
+        "SC-SED-001 must encode MOFE03 production activation policy authority"
+    );
+
+    let system_contract = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md"
+    ))
+    .expect("SC-SYSTEM-001 should be readable");
+    assert!(
+        system_contract.contains("must deterministically carry")
+            && system_contract.contains("erod14_wave2_enabled"),
+        "SC-SYSTEM-001 must encode MOFE03 boundary-carry authority for Wave-2 activation surfaces"
+    );
 }
 
 #[test]
