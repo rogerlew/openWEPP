@@ -1688,6 +1688,8 @@ pub fn execute_hillslope_run(
     let climate_span = build_climate_run_span_summary(&climate)?;
 
     let mut runtime_surface = static_runtime_surface;
+    let mut runtime_swe_publication_state_m =
+        require_runtime_surface_scalar(&runtime_surface, "snow.runtime_swe")?;
     let mut wb13_rows = Vec::with_capacity(climate_span.days.len());
     let mut coupling_vectors = None;
     let mut scheduler_outcome_class = SchedulerOutcomeClass::Completed;
@@ -1715,8 +1717,10 @@ pub fn execute_hillslope_run(
             simulation_year,
             day_index + 1,
             day_projection,
+            runtime_swe_publication_state_m,
         )?;
         runtime_surface = execution_result.runtime_surface;
+        runtime_swe_publication_state_m = execution_result.wb13_row.wb13_row.snow_water / 1_000.0;
         scheduler_outcome_class = execution_result.scheduler_outcome_class;
         scheduler_status_message_id = execution_result.scheduler_status_message_id;
         coupling_vectors = Some(execution_result.coupling_vectors);
@@ -2569,6 +2573,7 @@ fn execute_scheduler_kernel_lifecycle(
     simulation_year: i32,
     sim_day_index: usize,
     calendar_day: &ClimateDayProjection,
+    runtime_swe_before_m: f64,
 ) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
     runtime_surface
@@ -2614,6 +2619,7 @@ fn execute_scheduler_kernel_lifecycle(
         simulation_year,
         sim_day_index,
         calendar_day,
+        runtime_swe_before_m,
     )?;
     let coupling_vectors =
         build_simimpl10_coupling_vector_provenance(&execution_report.writeback_surface, &wb13_row)?;
@@ -2643,7 +2649,7 @@ fn build_simimpl10_coupling_vector_provenance(
     let rst = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.rst")?;
     let newsnw = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.newsnw")?;
     let ssd = require_simimpl10_coupling_scalar(runtime_surface, "snow.options.ssd")?;
-    let runtime_swe = require_simimpl10_coupling_scalar(runtime_surface, "snow.runtime_swe")?;
+    let runtime_swe = wb13_row.wb13_row.snow_water / 1_000.0;
 
     if newsnw <= 0.0 {
         return Err(simcoup_failure(format!(
@@ -3009,6 +3015,7 @@ fn build_simulation_owned_wb13_row(
     simulation_year: i32,
     sim_day_index: usize,
     calendar_day: &ClimateDayProjection,
+    runtime_swe_before_m: f64,
 ) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
     if simulation_year <= 0 {
         return Err(wb13_simout_failure(format!(
@@ -3092,26 +3099,69 @@ fn build_simulation_owned_wb13_row(
         profile_wp_store_mm += thetdr * dg_m * 1_000.0;
     }
 
-    let total_soil = profile_fc_store_mm;
-    let frozwt = require_runtime_surface_scalar(runtime_surface, "frost.runtime_ws_frz")?;
-    if frozwt < 0.0 {
+    // Legacy semantics: Total-Soil is full-profile unfrozen water depth
+    // (watcon), not the top-layer TSW diagnostic.
+    let total_soil = if let Some(total_soil_m) =
+        runtime_surface_symbol_value(runtime_surface, "wb11_soil_water")
+            .or_else(|| runtime_surface_symbol_value(runtime_surface, "wb12_storage_reconciled"))
+    {
+        if !total_soil_m.is_finite() {
+            return Err(wb13_simout_failure(format!(
+                "runtime total-soil source must be finite, observed {total_soil_m}"
+            )));
+        }
+        if total_soil_m < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "runtime total-soil source must be >= 0.0, observed {total_soil_m}"
+            )));
+        }
+        total_soil_m * 1_000.0
+    } else {
+        profile_fc_store_mm
+    };
+
+    let frozwt_m = require_runtime_surface_scalar(runtime_surface, "frost.runtime_ws_frz")?;
+    if frozwt_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "frost.runtime_ws_frz must be >= 0.0, observed {frozwt}"
+            "frost.runtime_ws_frz must be >= 0.0, observed {frozwt_m}"
         )));
     }
-    let snow_water = require_runtime_surface_scalar(runtime_surface, "snow.options.ssd")?;
-    if snow_water < 0.0 {
+    let frozwt = frozwt_m * 1_000.0;
+
+    let runtime_swe_m = derive_publication_runtime_swe_m(
+        runtime_surface,
+        precipitation_m,
+        tmax,
+        tmin,
+        runtime_swe_before_m,
+    )?;
+    let snow_water = runtime_swe_m * 1_000.0;
+
+    let irrigation_m = runtime_surface_symbol_value(runtime_surface, "Irr").unwrap_or(0.0);
+    if !irrigation_m.is_finite() {
         return Err(wb13_simout_failure(format!(
-            "snow.options.ssd must be >= 0.0, observed {snow_water}"
+            "Irr must be finite when present, observed {irrigation_m}"
         )));
     }
+    if irrigation_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "Irr must be >= 0.0, observed {irrigation_m}"
+        )));
+    }
+    let rm_m = precipitation_m + runtime_swe_before_m - runtime_swe_m + irrigation_m;
+    if rm_m < -1.0e-12 {
+        return Err(wb13_simout_failure(format!(
+            "RM source (prcp + SWE_before - SWE_after + Irr) must be >= 0.0, observed {rm_m}"
+        )));
+    }
+    let rm = rm_m.max(0.0) * 1_000.0;
+    let irrigation_mm = irrigation_m * 1_000.0;
 
     let q = 0.0_f64;
     let ep = (tmax - tmin) * 0.05;
     let es = precipitation_mm * 0.08;
     let er = if snow_water > 0.0 { 0.0 } else { ep * 0.25 };
     let dp = precipitation_mm * 0.01;
-    let rm = precipitation_mm;
     let area = slope_primary_area_m2;
     let soil_water_total = total_soil + frozwt;
     let profile_porosity_cap = profile_fc_store_mm.max(profile_wp_store_mm) + 20.0;
@@ -3132,7 +3182,7 @@ fn build_simulation_owned_wb13_row(
         ("Snow-Water", snow_water),
         ("QOFE", q),
         ("Tile", 0.0),
-        ("Irr", 0.0),
+        ("Irr", irrigation_mm),
         ("Area", area),
         ("SoilWaterTotal", soil_water_total),
         ("ProfileDepth", profile_depth_mm),
@@ -3198,6 +3248,99 @@ fn runtime_surface_symbol_value(
                 .get(&key)
                 .map(|value| value.as_f64())
         })
+}
+
+fn derive_publication_runtime_swe_m(
+    runtime_surface: &HillslopeWritebackSurface,
+    precipitation_m: f64,
+    tmax: f64,
+    tmin: f64,
+    runtime_swe_before_m: f64,
+) -> Result<f64, HillslopeCliError> {
+    const EPSILON: f64 = 1.0e-12;
+
+    if runtime_swe_before_m < -EPSILON {
+        return Err(wb13_simout_failure(format!(
+            "pre-step runtime SWE must be >= 0.0, observed {runtime_swe_before_m}"
+        )));
+    }
+
+    let rst = require_runtime_surface_scalar(runtime_surface, "snow.options.rst")?;
+    let newsnw = require_runtime_surface_scalar(runtime_surface, "snow.options.newsnw")?;
+    let ssd = require_runtime_surface_scalar(runtime_surface, "snow.options.ssd")?;
+
+    if newsnw <= 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "snow.options.newsnw must be > 0.0, observed {newsnw}"
+        )));
+    }
+    if ssd <= 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "snow.options.ssd must be > 0.0, observed {ssd}"
+        )));
+    }
+    if newsnw > ssd + EPSILON {
+        return Err(wb13_simout_failure(format!(
+            "snow.options.newsnw must be <= snow.options.ssd, observed {newsnw} > {ssd}"
+        )));
+    }
+
+    let snow_fraction = if tmax <= rst + EPSILON {
+        1.0
+    } else if tmin >= rst - EPSILON {
+        0.0
+    } else {
+        let span = tmax - tmin;
+        if span <= EPSILON {
+            return Err(wb13_simout_failure(format!(
+                "snow partition requires tmax > tmin when rst lies between bounds; observed tmax={tmax}, tmin={tmin}, rst={rst}"
+            )));
+        }
+        let fraction = (rst - tmin) / span;
+        if !(-EPSILON..=1.0 + EPSILON).contains(&fraction) {
+            return Err(wb13_simout_failure(format!(
+                "snow partition fraction out of domain for rst={rst}, tmin={tmin}, tmax={tmax}; observed {fraction}"
+            )));
+        }
+        fraction.clamp(0.0, 1.0)
+    };
+
+    let accumulation_m = precipitation_m * snow_fraction;
+    if accumulation_m < -EPSILON || accumulation_m > precipitation_m + EPSILON {
+        return Err(wb13_simout_failure(format!(
+            "snow accumulation must be in [0, prcp], observed accumulation={accumulation_m}, prcp={precipitation_m}"
+        )));
+    }
+
+    let available_swe_m = runtime_swe_before_m.max(0.0) + accumulation_m;
+    if !available_swe_m.is_finite() || available_swe_m < -EPSILON {
+        return Err(wb13_simout_failure(format!(
+            "available SWE must be finite and >= 0.0, observed {available_swe_m}"
+        )));
+    }
+
+    let temp_surplus = (tmax - rst).max(0.0);
+    let melt_fraction = if temp_surplus <= EPSILON {
+        0.0
+    } else {
+        temp_surplus / (temp_surplus + 1.0)
+    };
+    let density_factor = newsnw / ssd;
+    let melt_m = available_swe_m * melt_fraction * density_factor;
+    if melt_m < -EPSILON || melt_m > available_swe_m + EPSILON {
+        return Err(wb13_simout_failure(format!(
+            "melt must be in [0, available_swe], observed melt={melt_m}, available_swe={available_swe_m}"
+        )));
+    }
+
+    let runtime_swe_after_m = (available_swe_m - melt_m).max(0.0);
+    if !runtime_swe_after_m.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "post-step runtime SWE must be finite, observed {runtime_swe_after_m}"
+        )));
+    }
+
+    Ok(runtime_swe_after_m)
 }
 
 fn require_runtime_surface_scalar(

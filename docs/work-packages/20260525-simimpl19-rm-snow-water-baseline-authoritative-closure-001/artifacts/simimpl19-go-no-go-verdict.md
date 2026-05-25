@@ -1,11 +1,14 @@
 # simimpl19-go-no-go-verdict
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: static+ran
 Date: 2026-05-25
+Decision: HOLD
 
 ## Static
-- queued
+- RM/Snow-Water closure objective is satisfied for the targeted regression lane.
+- Package remains HOLD for baseline-authoritative completion due remaining
+  `Total-Soil` source authority and `Ep/Es/Er` fidelity gaps.
 
 ## Ran
-- not run
+- Targeted contract tests passed.
