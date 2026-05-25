@@ -571,6 +571,10 @@ Authorized packages:
   - Purpose: execute SIMIMPL10 by closing winter/soil/frsoil/hydout coupling
     gaps in production execution flow with typed invariants, explicit coupling
     boundary provenance, and no silent fallback behavior.
+- `20260525-simimpl11-tier-a-semantic-replay-recloseout-and-residual-classification-001/`
+  - Purpose: execute SIMIMPL11 by re-running strict + semantic Tier-A replay
+    after SIMOUT/SIMCOUP closure and classifying residuals into explicit
+    promote/hold posture using confidence-tier governance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

@@ -1,0 +1,8 @@
+total 44
+drwxrwxr-x 2 roger roger  4096 May 24 17:14 .
+drwxrwxr-x 3 roger roger  4096 May 24 17:14 ..
+-rw-rw-r-- 1 roger roger   413 May 24 17:14 H5.hbp
+-rw-rw-r-- 1 roger roger   214 May 24 17:14 H5.loss.json
+-rw-rw-r-- 1 roger roger   123 May 24 17:14 H5.plot.parquet
+-rw-rw-r-- 1 roger roger 13478 May 24 17:14 H5.wat.parquet
+-rw-rw-r-- 1 roger roger  4995 May 24 17:14 openwepp_hillslope_run_manifest.json
