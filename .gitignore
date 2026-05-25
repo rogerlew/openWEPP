@@ -26,4 +26,11 @@ texput.log
 references/copyrighted/**
 !references/copyrighted/.gitkeep
 
+# Python
+*.pyc
+__pycache__/
+
+# Local replay bundles (can be very large; avoid accidental repo bloat)
+docs/work-packages/**/artifacts/replay-run-*/
+
 # Note: Cargo.lock IS committed (this workspace ships binaries).
