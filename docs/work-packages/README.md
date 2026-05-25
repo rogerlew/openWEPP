@@ -636,6 +636,10 @@ Authorized packages:
   - Purpose: execute SIMIMPL25 by running Tier-A replay/comparator reruns after
     SIMIMPL24 closure, recording semantic closure evidence, and producing an
     explicit hold-lift disposition recommendation.
+- `20260525-simimpl26-soil-dat-comparator-baseline-candidate-assessment-001/`
+  - Purpose: prepare and execute SIMIMPL26 by comparing baseline vs candidate
+    `soil.dat`/`.sol` artifacts with reproducible provenance, explicit delta
+    classification, and evidence-backed follow-on disposition guidance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
