@@ -24,7 +24,7 @@ use openwepp_input_contract::parsers::slope::{SlopeProfile, parse_slope_file};
 use openwepp_input_contract::parsers::snow::{
     SnowParseOutput, parse_snow_file, parse_snow_from_str,
 };
-use openwepp_input_contract::parsers::soil::{SoilParserOptions, parse_soil};
+use openwepp_input_contract::parsers::soil::{SoilParserOptions, TopologyScope, parse_soil};
 use openwepp_input_contract::parsers::wepp_ui::{
     WeppUiParseResult, WeppUiParserOptions, parse_wepp_ui_from_path,
 };
@@ -420,22 +420,6 @@ pub fn execute_hillslope_run(
     let slope_path = runfile.slope_path.clone();
     let climate_path = runfile.climate_path.clone();
 
-    let soil_raw = fs::read_to_string(&soil_path).map_err(|source| HillslopeCliError::Io {
-        path: soil_path.clone(),
-        source,
-    })?;
-    let soil_options = SoilParserOptions {
-        mode: request.sidecar_policy.as_soil_parser_mode(),
-        allow_legacy_aliases: true,
-        expected_topology_count: None,
-        topology_scope: None,
-    };
-    let soil =
-        parse_soil(&soil_raw, soil_options).map_err(|error| HillslopeCliError::ParseFailure {
-            surface: "soil",
-            detail: error.to_string(),
-        })?;
-
     let slope = parse_slope_file(
         &slope_path,
         request.sidecar_policy.as_slope_parser_options(),
@@ -453,6 +437,28 @@ pub fn execute_hillslope_run(
         surface: "management",
         detail: error.to_string(),
     })?;
+
+    let soil_raw = fs::read_to_string(&soil_path).map_err(|source| HillslopeCliError::Io {
+        path: soil_path.clone(),
+        source,
+    })?;
+    let expected_soil_topology_count = if slope.ofe_count == management.topology_count {
+        Some(slope.ofe_count)
+    } else {
+        None
+    };
+    let soil_options = SoilParserOptions {
+        mode: request.sidecar_policy.as_soil_parser_mode(),
+        allow_legacy_aliases: true,
+        expected_topology_count: expected_soil_topology_count,
+        topology_scope: expected_soil_topology_count.map(|_| TopologyScope::Hillslope),
+    };
+    let soil =
+        parse_soil(&soil_raw, soil_options).map_err(|error| HillslopeCliError::ParseFailure {
+            surface: "soil",
+            detail: error.to_string(),
+        })?;
+    validate_hillslope_ofe_topology_parity(slope.ofe_count, management.topology_count, soil.ntemp)?;
 
     let climate = parse_climate_file(
         &climate_path,
@@ -1307,6 +1313,22 @@ fn merge_runtime_surfaces(
     base.state_surface.extend(overlay.state_surface);
     base.flux_surface.extend(overlay.flux_surface);
     base
+}
+
+fn validate_hillslope_ofe_topology_parity(
+    slope_ofe_count: usize,
+    management_topology_count: usize,
+    soil_topology_count: usize,
+) -> Result<(), HillslopeCliError> {
+    if slope_ofe_count == management_topology_count && slope_ofe_count == soil_topology_count {
+        return Ok(());
+    }
+
+    Err(HillslopeCliError::OfeTopologyMismatch {
+        slope_ofe_count,
+        management_topology_count,
+        soil_topology_count,
+    })
 }
 
 fn build_mode_selection_provenance(

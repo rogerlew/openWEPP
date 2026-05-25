@@ -850,3 +850,7 @@ Authorized packages:
   - Purpose: assess MOFE readiness across routing plus slope/landuse/soil
     OFE-cardinality parity and produce a dependency-aware
     `mofe-readiness-wp-queue.md` follow-on package plan.
+- `20260525-mofe02-cross-file-ofe-parity-hard-gate-001/`
+  - Purpose: implement a hard hillslope intake gate that enforces
+    slope/management/soil OFE-count parity before runtime-surface merge,
+    using contract-first sequencing and contract-derived mismatch tests.

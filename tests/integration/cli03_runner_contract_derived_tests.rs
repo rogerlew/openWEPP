@@ -342,6 +342,150 @@ loss = "output/Hlegacy.loss.json"
     assert!(!manifest.contains("<inline>"));
 }
 
+#[test]
+fn cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe02-soil-topology-guard"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe02_soil_guard",
+        false,
+        |run_dir| {
+            write_single_ofe_slope(&run_dir.join("case.slp"));
+            write_soil_with_ntemp(&run_dir.join("case.sol"), 2);
+        },
+    )
+    .expect_err("soil topology guard should fail when ntemp differs from aligned slope/management");
+
+    assert_eq!(error.code(), "CLIHILL-E-010");
+    let message = error.to_string();
+    assert!(message.contains("SOL-E-007"));
+    assert!(message.contains("hillslope"));
+}
+
+#[test]
+fn cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe02-slope-mismatch"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe02_slope_mismatch",
+        false,
+        |run_dir| write_two_ofe_slope(&run_dir.join("case.slp")),
+    )
+    .expect_err("slope topology mismatch should fail before runtime merge");
+
+    assert_eq!(error.code(), "CLIHILL-E-019");
+    let message = error.to_string();
+    assert!(message.contains("slope-management"));
+    assert!(message.contains("slope-soil"));
+}
+
+#[test]
+fn cli03_mofe02_rejects_management_soil_mismatch() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe02-management-soil-mismatch"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe02_management_soil_mismatch",
+        false,
+        |run_dir| {
+            write_two_ofe_slope(&run_dir.join("case.slp"));
+            write_soil_with_ntemp(&run_dir.join("case.sol"), 2);
+        },
+    )
+    .expect_err("management/soil topology mismatch should fail before runtime merge");
+
+    assert_eq!(error.code(), "CLIHILL-E-019");
+    let message = error.to_string();
+    assert!(message.contains("management-soil"));
+}
+
+#[test]
+fn cli03_mofe02_rejects_full_triad_topology_mismatch() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-mofe02-triad-mismatch"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let error = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_mofe02_triad_mismatch",
+        false,
+        |run_dir| {
+            write_two_ofe_slope(&run_dir.join("case.slp"));
+            write_soil_with_ntemp(&run_dir.join("case.sol"), 3);
+        },
+    )
+    .expect_err("triad topology mismatch should fail before runtime merge");
+
+    assert_eq!(error.code(), "CLIHILL-E-019");
+    let message = error.to_string();
+    assert!(message.contains("slope-management"));
+    assert!(message.contains("slope-soil"));
+    assert!(message.contains("management-soil"));
+    assert!(message.contains("slope=2"));
+    assert!(message.contains("management=1"));
+    assert!(message.contains("soil=3"));
+}
+
 fn execute_fixture_with_runfile(
     runfile_payload: &str,
     prefix: &str,
@@ -361,12 +505,28 @@ fn execute_fixture_with_runfile_report_with_mode(
     prefix: &str,
     legacy_sidecar_discovery: bool,
 ) -> Result<(HillslopeRunReport, PathBuf), HillslopeCliError> {
+    execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile_payload,
+        prefix,
+        legacy_sidecar_discovery,
+        |_| {},
+    )
+}
+
+fn execute_fixture_with_runfile_report_with_mode_and_customizer(
+    runfile_payload: &str,
+    prefix: &str,
+    legacy_sidecar_discovery: bool,
+    customizer: impl FnOnce(&Path),
+) -> Result<(HillslopeRunReport, PathBuf), HillslopeCliError> {
     let _execution_guard = runner_execution_lock()
         .lock()
         .expect("runner execution lock should be acquirable");
 
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);
+    customizer(&temp_run_dir);
+
     let run_file_path = temp_run_dir.join("case.run");
     fs::write(&run_file_path, runfile_payload).expect("runfile fixture should be writable");
 
@@ -384,6 +544,49 @@ fn execute_fixture_with_runfile_report_with_mode(
     )?;
 
     Ok((report, temp_run_dir))
+}
+
+fn write_single_ofe_slope(path: &Path) {
+    let payload = "\
+# Canonical one-OFE slope profile
+97.5
+1
+180.0 30.0
+3 60.0
+0.0 0.0200 0.6 0.0800 1.0 0.0600
+";
+    fs::write(path, payload).expect("single-OFE slope fixture should be writable");
+}
+
+fn write_two_ofe_slope(path: &Path) {
+    let payload = "\
+# Canonical two-OFE slope profile
+97.5
+2
+180.0 30.0
+3 60.0
+0.0 0.0200 0.6 0.0800 1.0 0.0600
+180.0 30.0
+3 40.0
+0.0 0.0600 0.5 0.0400 1.0 0.0300
+";
+    fs::write(path, payload).expect("two-OFE slope fixture should be writable");
+}
+
+fn write_soil_with_ntemp(path: &Path, ntemp: usize) {
+    assert!(ntemp > 0, "ntemp must remain positive");
+    let mut payload = format!("9002\nDisturbed soil profile\n{ntemp} 1\n");
+    let ofe_block = "\
+SOIL_B CLAY_LOAM 2 0.20 0.55 900000 0.005 4.2 10.5
+1 forest silt_loam 0.20 0.001
+100 1.25 15.0 1.20 0.30 0.15 35 25 2.0 15 5 0.05 0.45 0.02 1.40 120 0.16 0.31
+250 1.30 8.0 1.10 0.28 0.14 33 27 1.8 14 7 0.06 0.43 0.03 1.35 110 0.15 0.30
+";
+    for _ in 0..ntemp {
+        payload.push_str(ofe_block);
+    }
+    payload.push_str("1 500 0.8\n");
+    fs::write(path, payload).expect("soil fixture should be writable");
 }
 
 fn runner_execution_lock() -> &'static Mutex<()> {

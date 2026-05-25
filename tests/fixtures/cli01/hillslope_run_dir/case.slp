@@ -1,9 +1,6 @@
-# Canonical two-OFE slope profile
+# Canonical one-OFE slope profile
 97.5
-2
+1
 180.0 30.0
 3 60.0
 0.0 0.0200 0.6 0.0800 1.0 0.0600
-180.0 30.0
-3 40.0
-0.0 0.0600 0.5 0.0400 1.0 0.0300

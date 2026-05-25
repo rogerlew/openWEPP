@@ -319,6 +319,11 @@ pub enum HillslopeCliError {
         surface: &'static str,
         detail: String,
     },
+    OfeTopologyMismatch {
+        slope_ofe_count: usize,
+        management_topology_count: usize,
+        soil_topology_count: usize,
+    },
     OutputWrite {
         path: PathBuf,
         source: io::Error,
@@ -367,11 +372,13 @@ impl HillslopeCliError {
             Self::ManifestWrite { .. } => "CLIHILL-E-016",
             Self::Io { .. } => "CLIHILL-E-017",
             Self::TimeFormat { .. } => "CLIHILL-E-018",
+            Self::OfeTopologyMismatch { .. } => "CLIHILL-E-019",
         }
     }
 }
 
 impl fmt::Display for HillslopeCliError {
+    #[allow(clippy::too_many_lines)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::MissingArgument { argument } => {
@@ -436,6 +443,20 @@ impl fmt::Display for HillslopeCliError {
                 "{} runtime surface failure for {surface}: {detail}",
                 self.code()
             ),
+            Self::OfeTopologyMismatch {
+                slope_ofe_count,
+                management_topology_count,
+                soil_topology_count,
+            } => write!(
+                f,
+                "{}",
+                format_hillslope_topology_mismatch(
+                    self.code(),
+                    *slope_ofe_count,
+                    *management_topology_count,
+                    *soil_topology_count
+                )
+            ),
             Self::OutputWrite { path, source } => write!(
                 f,
                 "{} failed writing output {}: {source}",
@@ -470,6 +491,33 @@ impl fmt::Display for HillslopeCliError {
     }
 }
 
+fn format_hillslope_topology_mismatch(
+    error_code: &str,
+    slope_ofe_count: usize,
+    management_topology_count: usize,
+    soil_topology_count: usize,
+) -> String {
+    let mut mismatches = Vec::new();
+    if slope_ofe_count != management_topology_count {
+        mismatches.push("slope-management");
+    }
+    if slope_ofe_count != soil_topology_count {
+        mismatches.push("slope-soil");
+    }
+    if management_topology_count != soil_topology_count {
+        mismatches.push("management-soil");
+    }
+    let mismatch_text = if mismatches.is_empty() {
+        "none".to_string()
+    } else {
+        mismatches.join(",")
+    };
+
+    format!(
+        "{error_code} hillslope OFE topology mismatch: slope={slope_ofe_count} management={management_topology_count} soil={soil_topology_count} mismatches=[{mismatch_text}]"
+    )
+}
+
 impl Error for HillslopeCliError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
@@ -489,6 +537,7 @@ impl Error for HillslopeCliError {
             | Self::SidecarBindingMissing { .. }
             | Self::ParseFailure { .. }
             | Self::RuntimeSurfaceFailure { .. }
+            | Self::OfeTopologyMismatch { .. }
             | Self::MissingRequiredOutput { .. }
             | Self::TimeFormat { .. } => None,
         }
