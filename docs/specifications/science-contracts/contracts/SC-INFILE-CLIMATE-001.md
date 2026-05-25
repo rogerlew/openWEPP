@@ -4,9 +4,9 @@ title: Climate Input Parser Contract (.cli)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.4
+contract_version: 0.1.5
 evidence_mode: Static
-last_updated_utc: 2026-05-23T00:00:00Z
+last_updated_utc: 2026-05-25T00:00:00Z
 ---
 
 # SC-INFILE-CLIMATE-001 Climate Input Parser Contract
@@ -152,7 +152,7 @@ No silent fallback/default masking is permitted for required invalid inputs. `[D
 
 ## 8. Cross-File Consistency Constraints
 
-1. `climate.meta.num_years` and parsed date coverage must be consistent with management/run schedule years (`nyears * nrots`) where coupled. `[INFERENCE][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]`
+1. `climate.meta.num_years` and parsed date coverage must be consistent with management/run schedule years (`nyears * nrots`) where coupled, and daily date rows must preserve deterministic ordered progression for continuous-run replay publication boundaries. `[INFERENCE][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]`
 2. For `ibrkpt=1`, each day must provide exactly `nbrkpt` breakpoint pairs. `[DIRECT][E-SPEC-CLI-01]`
 3. ET/wind mode compatibility branch from `iwind` must be preserved for downstream ET subsystem mode selection. `[DIRECT][E-SPEC-CLI-01]`
 4. Climate forcing fields needed by snow/freeze, watbal, evap, and runoff consumers must be complete for every parsed day. `[INFERENCE][E-SURVEY-CLI-01]`
@@ -238,6 +238,7 @@ Required vector obligations:
 | Date UTC | Version | Change |
 | --- | --- | --- |
 | `2026-05-23` | `0.1.4` | CLIM08 governance closeout: reclassified `CLI-GAP-002` as `RESOLVED-IN-OPENWEPP` using CLIM02 seam-ownership authority plus CLIM07 executed seam-vector closure evidence. |
+| `2026-05-25` | `0.1.5` | SIMIMPL14 amendment: clarified cross-file continuity expectation for deterministic ordered daily-date progression feeding continuous runner replay publication boundaries. |
 | `2026-05-23` | `0.1.3` | CLIM07 amendment: added comparator/seam vector obligations linking parser surfaces to runtime climate seam checks for continuous-daily and breakpoint modes. |
 | `2026-05-22` | `0.1.2` | Updated breakpoint policy to `1500`, added strict breakpoint-time monotonicity policy text, and documented explicit legacy timing compat control. |
 | `2026-05-21` | `0.1.1` | Added boundary export mapping, generator command propagation, and explicit strict/compat breakpoint cardinality guard policy. |

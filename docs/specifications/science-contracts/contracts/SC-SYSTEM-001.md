@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 18
+contract_version: 20
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -56,6 +56,8 @@ Out of scope:
 | REF-SYSTEM-CH1-WATERSHED | `references/50201000/chap1.pdf` §1.1 and Fig. 1.1.1 | Watershed decomposition into hillslopes, channels, and impoundments plus linkage semantics. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH1-COMPONENTS | `chap1.pdf` §1.4 and §1.4.11 | Continuous simulation component coupling and watershed extension assumptions. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-PASSFILE | `references/50201000/chap13.pdf` intro paragraph before §13.2 | Required hillslope pass-file payload fields consumed by channel/impoundment components. | `[DIRECT][Static]` |
+| REF-SYSTEM-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical HBP payload field names and units for hillslope-to-watershed routing-boundary coupling. | `[DIRECT][Static]` |
+| REF-SYSTEM-HBP-READER | `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Read Contract`, `Required Invariants`) | Watershed reader fail-closed payload-completeness semantics and no-text-fallback posture. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SYSTEM-CH13-RUNON | `chap13.pdf` §13.2, Eq. [13.2.1]-[13.2.3] | Channel runon decomposition, depth conversion, and event-duration maximum rule. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-TRANSLOSS | `chap13.pdf` §13.2, Eq. [13.2.4]-[13.2.6] | Case-partitioned transmission-loss and final-runoff assembly semantics. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-PEAKIN | `chap13.pdf` §13.4.1, Eq. [13.4.1]-[13.4.2] | Triangular-hydrograph merge semantics when multiple watershed elements contribute runon. | `[DIRECT][Static]` |
@@ -82,10 +84,11 @@ Out of scope:
 | `qdepth` | `m` | Runoff depth exported by contributing element. | hillslope/channel/impoundment element | downstream runon assembly |
 | `rof` | `m^3` | Runoff volume exported by contributing element. | hillslope/channel/impoundment element | downstream runon/hydrograph assembly |
 | `qp` | `m^3 s^-1` | Peak runoff from contributing element. | hillslope/channel/impoundment element | downstream hydrograph merge |
-| `det_hs` | `kg` | Total hillslope detachment at endpoint. | hillslope erosion component | channel sediment-load assembly |
-| `dep_hs` | `kg` | Total hillslope deposition at endpoint. | hillslope erosion component | watershed sediment bookkeeping |
-| `Csed,k` | `kg m^-3` | Sediment concentration for particle class `k` at handoff. | hillslope/channel/impoundment element | downstream sediment-routing component |
-| `Fsize,k` | `fraction` | Fraction of particle class `k` in eroded sediment payload. | hillslope/channel/impoundment element | downstream sediment-routing component |
+| `total_detachment_kg` | `kg` | Total hillslope detachment payload at event endpoint. | hillslope erosion component | channel sediment-load assembly |
+| `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
+| `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
+| `sediment_concentration_kg_m3,k` | `kg m^-3` | Sediment concentration for particle class `k` at handoff. | hillslope/channel/impoundment element | downstream sediment-routing component |
+| `particle_flow_fraction_k` | `fraction` | Fraction of particle class `k` in eroded sediment payload. | hillslope/channel/impoundment element | downstream sediment-routing component |
 | `rov`, `rol`, `roi` | `m^3` | Total, lateral, and inlet runon volumes for channel inlet assembly. | channel integration routine | channel runoff assembly |
 | `rod` | `m` | Runon depth computed from runon volume and channel area. | channel integration routine | channel runoff case logic |
 | `Ach` | `m^2` | Physical channel area used for depth conversion. | channel geometry surface | channel runon depth conversion |
@@ -126,6 +129,7 @@ Out of scope:
 | INV-SYSTEM-019 | SIMMODE mode-propagation manifest invariant: requested/effective `wepp_ui` mode must be propagated into runtime lane selection and exposed in publication provenance with deterministic lane identity (`daily`/`hourly`); missing mode provenance or lane/mode mismatch is invalid. | hard-fail | REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-020 | SIMOUT simulation-owned publication invariant: required replay candidate surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) must be simulation-owned outputs emitted from executed runtime lanes with explicit provenance; synthetic/bootstrap substitution or projection-only reconstruction is invalid. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-021 | SIMCONS selective consolidated-intake governance invariant: consolidated-kernel/policy intake from candidate sources must remain selective and triaged with explicit `adopt`/`defer`/`reject` decisions and typed guard posture; wholesale adoption or untriaged qcap-style policy intake is forbidden. | governance-fail | REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-022 | SIMIMPL14 replay-span comparability invariant: runner publication provenance must demonstrate continuous multi-day execution closure (`executed_day_count == climate_day_count`), replay-surface row closure (`wb13_row_count == executed_day_count`), monotonic key progression (`sim_day_index = 1..N`), and simulation-year row-key semantics for `Y`; missing continuity proofs or key-domain mismatch keeps replay comparability in hard-fail/HOLD posture. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -152,6 +156,7 @@ Out of scope:
 | `INV-SYSTEM-019` | runtime | Mode-propagation provenance and lane-identity closure guard | Typed hard error (`WS-SIMMODE-E-001`) on missing requested/effective mode or lane/mode mismatch in publication manifest | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-020` | runtime + governance | Simulation-owned replay-surface provenance gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required candidate surfaces are projection/synthesis-first | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-021` | governance | Consolidated intake triage governance gate | Governance `HOLD` (`WS-SIMCONS-E-001`) when candidate consolidated kernels/policies are adopted without explicit triage/provenance disposition | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-022` | runtime + governance | Continuous replay-span/key provenance closure gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when execution-day, publication-row, monotonic-key, or simulation-year key-domain continuity assertions are missing or violated | SIMIMPL replay comparability gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -163,8 +168,9 @@ explicit divergent names.
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
 | `durstorm`, `tc_h`, `alpha`, `qdepth`, `rof`, `qp` | identity names | hillslope pass-file payload | chapter-declared units preserved | `[DIRECT][Static]` |
-| `det_hs`, `dep_hs` | identity names | hillslope sediment endpoint payload | `kg` -> `kg` | `[DIRECT][Static]` |
-| `Csed,k`, `Fsize,k` | identity names | particle-class concentration/fraction vectors | `kg m^-3` and `fraction` preserved | `[DIRECT][Static]` |
+| `total_detachment_kg`, `total_deposition_kg` | identity names | hillslope sediment endpoint payload | `kg` preserved | `[DIRECT][Static]` |
+| `particle_class_count` | identity name | particle-class vector cardinality payload | count semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `sediment_concentration_kg_m3,k`, `particle_flow_fraction_k` | identity names | particle-class concentration/fraction vectors | `kg m^-3` and `fraction` preserved | `[DIRECT][Static]` |
 | `rov`, `rol`, `roi`, `rod`, `Ach` | identity names | channel runon-runoff assembly | `m^3`/`m`/`m^2` preserved | `[DIRECT][Static]` |
 | `durc`, `durrunon`, `durchan`, `durirrig` | identity names | channel event-duration harmonization surfaces | `s` -> `s` | `[DIRECT][Static]` |
 | `qci`, `qcf`, `tl` | identity names | channel runoff-case and transmission-loss surfaces | `m` and `m^3` preserved | `[DIRECT][Static]` |
@@ -233,6 +239,12 @@ explicit divergent names.
   selective with explicit triage dispositions (`adopt`/`defer`/`reject`) and
   may not silently import qcap-style clamp policy overlays.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SYSTEM-P-010: Continuous replay publication must expose run-span
+  continuity assertions (climate day count, executed day count, WB13 row
+  count, first/last replay row keys, and monotonic `sim_day_index` verdict)
+  and must encode replay row-year keys as simulation-year ordinals rather than
+  absolute calendar-year keys.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -269,6 +281,7 @@ explicit divergent names.
 | SIMMODE publication lane-provenance closure (`INV-SYSTEM-019`) | publication provenance manifest boundary | Hard error when requested/effective mode provenance is absent or lane identity diverges from effective mode | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMOUT simulation-owned replay-surface closure (`INV-SYSTEM-020`) | replay candidate publication boundary | Hard error / `HOLD` when required candidate surfaces are projection/synthesis-first instead of simulation-owned execution outputs | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMCONS consolidated-intake governance closure (`INV-SYSTEM-021`) | consolidated-kernel adoption boundary | Governance `HOLD` when intake claims lack explicit triage disposition or include untriaged policy overlays | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL14 replay-span and key-domain closure (`INV-SYSTEM-022`) | runner manifest + replay-surface publication boundary | Hard error / `HOLD` when climate-span execution, WB13 row-span, monotonic key progression, or simulation-year key-domain assertions fail | SIMIMPL replay comparability gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -402,7 +415,7 @@ Minimum WS12 integration vectors:
 |---|---|---|---|---|
 | Hydrology forcing to erosion/routing (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-RUNOFFPART-001` + `SC-WATBAL-001` | `SC-SED-001`, `SC-HYDRAULICS-001`, `SC-ROUTE-001` | Required Wave-0 ownership/guard semantics are explicit in canonical companion contracts. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Hydraulics-to-erosion coupling (`fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe`) | `SC-HYDRAULICS-001` | `SC-SED-001` | Producer and consumer guard ownership is canonicalized for required boundaries. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| Sediment export to routing (`sed_det_total`, `sed_dep_total`, `sed_conc_i`, `sed_frac_i`) | `SC-SED-001` | `SC-ROUTE-001` | Routing consumer guard ownership for sediment handoff completeness is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Sediment export to routing (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`) | `SC-SED-001` | `SC-ROUTE-001` | Routing consumer guard ownership for sediment handoff completeness is explicit. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## SIMIMPL03 Production Runner and Publication-Provenance Addendum
 
@@ -427,6 +440,20 @@ Minimum WS12 integration vectors:
    triage disposition and guard mapping are recorded.
 3. Missing triage disposition is a governance blocker for downstream execution
    promotion.
+
+## SIMIMPL14 Continuous Replay-Span and Key-Domain Addendum
+
+1. Runner publication claims for replay-ready hillslope surfaces require
+   continuous day progression across the full climate forcing span for the run.
+2. System provenance must expose, at minimum, `climate_day_count`,
+   `executed_day_count`, `wb13_row_count`, first/last replay row keys, and
+   monotonic `sim_day_index` verdict.
+3. Replay row keys must remain comparator-aligned with simulation-year
+   semantics for `Y` (`calendar_year - start_year + 1`), not absolute
+   calendar-year keys.
+4. Any span/key closure failure is a typed hard-fail/HOLD condition under
+   `WS-SIMOUT-E-001`; silent fallback to one-day or calendar-year keyed output
+   is non-authoritative.
 
 ## EROD13 Wave-1 Active Boundary-Carry Addendum
 
@@ -453,6 +480,27 @@ Minimum WS12 integration vectors:
 3. Cross-component publication pathways must not synthesize replacement
    class-fraction or enrichment payloads to bypass Wave-2 guard failures.
 4. Existing Wave-1 boundary-carry requirements remain active and additive.
+
+## EROD15 Wave-3 HBP Boundary-Carry Addendum
+
+1. System integration boundaries carrying hillslope erosion outputs must
+   preserve Wave-3 HBP routing-boundary payload symbols without mutation when
+   `erod14_wave2_enabled = 1`:
+   `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`,
+   `sediment_concentration_kg_m3_{class:04}`, and
+   `particle_flow_fraction_{class:04}`.
+2. Producer ownership remains in `SC-SED-001`; system-boundary routing
+   consumers must preserve typed hard-fail payload-completeness posture from
+   `SC-ROUTE-001` (`INV-ROUTE-011`) for missing/non-finite/domain-invalid
+   Wave-3 symbols.
+3. Cross-component publication pathways must not synthesize replacement HBP
+   payload values when required Wave-3 contributor symbols are absent or
+   invalid.
+4. Wave-3 coupling continuity preserves existing WS10 guard families
+   (`WKERNEL-WS10-CHANNEL-E-001..003`,
+   `WKERNEL-WS10-IMPOUNDMENT-E-001..003`) for routing-boundary failures.
+5. Existing Wave-1 and Wave-2 boundary-carry requirements remain active and
+   additive.
 
 ## Gap Register
 
@@ -486,3 +534,5 @@ Minimum WS12 integration vectors:
 | `2026-05-24` | `16` | `Codex` | SIMIMPL03 amendment: added production runner execution ownership, mode-propagation manifest closure, simulation-owned replay-surface provenance, and selective consolidated-intake governance invariants (`INV-SYSTEM-018..021`) with typed guard families (`WS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`). |
 | `2026-05-25` | `17` | `Codex` | EROD13 amendment: added Wave-1 system-boundary carry authority for erosion-core forcing surfaces under `erod13_core_enabled`, preserving producer/consumer ownership continuity and typed hard-fail guard posture (`HKERNEL-EROD13-CORE-E-001..003`). |
 | `2026-05-25` | `18` | `Codex` | EROD14 amendment: added Wave-2 system-boundary carry authority for enrichment and class-conservation payload exports under `erod14_wave2_enabled` with typed hard-fail guard continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |
+| `2026-05-25` | `19` | `Codex` | EROD15 amendment: added Wave-3 HBP boundary-carry authority for routing payload exports (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, class-indexed concentration/fraction arrays) with explicit WS10 guard-family continuity at watershed routing boundaries. |
+| `2026-05-25` | `20` | `Codex` | SIMIMPL14 amendment: added continuous replay-span/key-domain closure invariant (`INV-SYSTEM-022`) requiring full climate-span execution provenance, WB13 row-span closure, monotonic `sim_day_index`, and simulation-year key semantics for replay comparability authority. |

@@ -59,6 +59,150 @@ plot = "output/H5.plot.parquet"
     );
 }
 
+#[test]
+fn simimpl14_contract_requires_continuous_wb13_span_and_simulation_year_row_keys() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "simimpl14-continuous-span"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "output/H5.hbp"
+loss = "output/H5.loss.json"
+wat = "output/H5.wat.parquet"
+plot = "output/H5.plot.parquet"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report(runfile, "simimpl14_span");
+    let pass_text = fs::read_to_string(&report.output_pass).unwrap_or_else(|error| {
+        panic!(
+            "pass output should be readable at {}: {error}",
+            report.output_pass.display()
+        )
+    });
+
+    let numeric_rows: Vec<&str> = pass_text
+        .lines()
+        .filter(|line| {
+            line.split_whitespace()
+                .next()
+                .is_some_and(|token| token.parse::<f64>().is_ok())
+        })
+        .collect();
+    assert_eq!(
+        numeric_rows.len(),
+        2,
+        "fixture climate includes two daily rows; WB13 publication must preserve full span"
+    );
+
+    let first_tokens: Vec<&str> = numeric_rows[0].split_whitespace().collect();
+    let second_tokens: Vec<&str> = numeric_rows[1].split_whitespace().collect();
+
+    assert_eq!(
+        first_tokens
+            .first()
+            .and_then(|value| value.parse::<i32>().ok()),
+        Some(1)
+    );
+    assert_eq!(
+        second_tokens
+            .first()
+            .and_then(|value| value.parse::<i32>().ok()),
+        Some(1)
+    );
+    assert_eq!(
+        first_tokens
+            .get(1)
+            .and_then(|value| value.parse::<i32>().ok()),
+        Some(1)
+    );
+    assert_eq!(
+        second_tokens
+            .get(1)
+            .and_then(|value| value.parse::<i32>().ok()),
+        Some(2)
+    );
+    assert_eq!(
+        first_tokens
+            .get(2)
+            .and_then(|value| value.parse::<i32>().ok()),
+        Some(1),
+        "WB13 Y key must use simulation-year semantics"
+    );
+    assert_eq!(
+        second_tokens
+            .get(2)
+            .and_then(|value| value.parse::<i32>().ok()),
+        Some(1),
+        "WB13 Y key must stay in simulation-year domain for same calendar year"
+    );
+
+    let manifest_json = read_manifest_json(&report);
+    assert_json_i64(&manifest_json, "/execution_provenance/climate_day_count", 2);
+    assert_json_i64(
+        &manifest_json,
+        "/execution_provenance/executed_day_count",
+        2,
+    );
+    assert_json_i64(&manifest_json, "/wb13_publication/row_count", 2);
+    assert_json_bool(
+        &manifest_json,
+        "/wb13_publication/sim_day_index_monotonic",
+        true,
+    );
+    assert_json_i64(&manifest_json, "/wb13_publication/first_row_key/year", 1);
+    assert_json_i64(
+        &manifest_json,
+        "/wb13_publication/last_row_key/julian_day",
+        2,
+    );
+}
+
+#[test]
+fn simimpl14_contract_requires_run_span_truthful_loss_output_summary() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "simimpl14-loss-span"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "output/H5.hbp"
+loss = "output/H5.loss.json"
+plot = "output/H5.plot.parquet"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report(runfile, "simimpl14_loss");
+    let loss_text = fs::read_to_string(&report.output_loss).unwrap_or_else(|error| {
+        panic!(
+            "loss output should be readable at {}: {error}",
+            report.output_loss.display()
+        )
+    });
+    let loss_json: serde_json::Value =
+        serde_json::from_str(&loss_text).expect("loss output should parse as JSON");
+
+    assert_json_i64(&loss_json, "/climate_day_count", 2);
+    assert_json_i64(&loss_json, "/executed_day_count", 2);
+    assert_json_i64(&loss_json, "/first_day_julian", 1);
+    assert_json_i64(&loss_json, "/last_day_julian", 2);
+}
+
 fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {
     let manifest_text = fs::read_to_string(&report.manifest_path).unwrap_or_else(|error| {
         panic!(
@@ -86,13 +230,21 @@ fn assert_json_bool(document: &serde_json::Value, pointer: &str, expected: bool)
     assert_eq!(observed, expected, "unexpected value at {pointer}");
 }
 
+fn assert_json_i64(document: &serde_json::Value, pointer: &str, expected: i64) {
+    let observed = document
+        .pointer(pointer)
+        .and_then(serde_json::Value::as_i64)
+        .unwrap_or_else(|| panic!("missing integer JSON pointer {pointer}"));
+    assert_eq!(observed, expected, "unexpected value at {pointer}");
+}
+
 fn execute_fixture_with_runfile_report(
     runfile_payload: &str,
     prefix: &str,
 ) -> (HillslopeRunReport, PathBuf) {
     let _execution_guard = runner_execution_lock()
         .lock()
-        .expect("runner execution lock should be acquirable");
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
 
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, prefix);

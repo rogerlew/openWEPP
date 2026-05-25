@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 30
+contract_version: 31
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -172,6 +172,7 @@ lateral/drainage).
 | INV-WATBAL-019 | SIMMODE runtime lane-selection invariant: effective `wepp_ui` mode (`ui_run`) must deterministically select water-balance execution lane (`daily` when `ui_run=0`, `hourly` when `ui_run=1`) with requested/effective mode observability preserved; missing mode surfaces or lane/mode mismatch must hard-fail without silent fallback. | hard-fail | REF-WATBAL-INFILE-WEPPUI, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-020 | SIMOUT simulation-owned WB13 provenance invariant: WB13/H.wat publication authority is simulation-owned and must originate from executed hydrology lane state/flux writeback surfaces; synthetic/bootstrap substitution or projection-only reconstruction for required candidate surfaces is invalid. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-021 | SIMCONS selective consolidated-intake invariant: consolidated watbal kernel intake from `/workdir/wepp-forest/fpm-src` must remain selective and provenance-triaged (`adopt`, `defer`, `reject`) with explicit typed guard posture; wholesale import or untriaged policy-surface adoption (including qcap-style clamp overlays) is forbidden. | governance-fail | REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-022 | SIMIMPL14 continuous WB13 span/key invariant: continuous hillslope execution must iterate ordered climate-day forcing across the full available run span, execute scheduler/kernel lifecycle once per day with carried runtime state, and publish one WB13/H.wat row per executed day. Published keys must remain monotonic (`sim_day_index = 1..N`) and use simulation-year key semantics (`Y = calendar_year - start_year + 1`) for replay overlap; span collapse, non-monotonic keys, or calendar-year key substitution are invalid. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-INFILE-WEPPUI, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -198,6 +199,7 @@ lateral/drainage).
 | `INV-WATBAL-019` | runtime | `wepp_ui` effective-mode to watbal-lane selector closure guard | Typed hard error (`HS-SIMMODE-E-001`) on missing mode surfaces or lane/mode mismatch | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-020` | runtime + governance | WB13 simulation-owned publication provenance gate | Typed hard error / explicit `HOLD` (`HS-SIMOUT-E-001`) on projection-only/synthetic WB13 publication for required candidate surfaces | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-021` | governance | Consolidated-kernel intake triage authority gate | Governance `HOLD` (`HS-SIMCONS-E-001`) when consolidated kernels/policies are adopted without explicit provenance triage and guard disposition | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-022` | runtime | Continuous run-span and WB13 row-key closure validator at runner publication boundary | Typed hard error (`HS-SIMOUT-E-001`) on climate-span under-run, non-monotonic `sim_day_index`, row-count mismatch, or non-simulation-year key mapping | Tier-A replay span/key gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -274,6 +276,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 - Effective `wepp_ui` mode missing at lane selection boundary, or selected lane inconsistent with effective mode (`INV-WATBAL-019`). `[DIRECT][Static] + [INFERENCE][Static]`
 - WB13/H.wat required candidate surfaces emitted from projection-only/synthetic reconstruction rather than simulation-owned execution surfaces (`INV-WATBAL-020`). `[DIRECT][Static] + [INFERENCE][Static]`
 - Consolidated watbal intake/policy adoption performed without explicit provenance triage and typed guard disposition (`INV-WATBAL-021`). `[DIRECT][Static] + [INFERENCE][Static]`
+- Continuous-run publication emits fewer rows than executed climate days, emits non-monotonic `sim_day_index`, or exports calendar-year keyed WB13 rows instead of simulation-year keys (`INV-WATBAL-022`). `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -296,6 +299,11 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 - OBL-WATBAL-P-008: Consolidated kernel/policy intake from candidate sources
   must remain selective and triaged with explicit `adopt`/`defer`/`reject`
   disposition before runtime enablement claims are made. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-009: Continuous-run publication must emit one WB13/H.wat row
+  per executed climate day, preserve monotonic `sim_day_index` (`1..N`), map
+  `Y` to simulation-year key semantics, and publish continuity assertions in
+  run provenance (executed day count, first/last key tuple, and monotonicity
+  verdict). `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -324,6 +332,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | SIMMODE lane-propagation closure (`INV-WATBAL-019`) | runner/orchestrator lane selector boundary | Hard error when selected lane diverges from effective `wepp_ui` mode or mode surfaces are missing | SIMIMPL execution gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMOUT simulation-owned WB13 provenance closure (`INV-WATBAL-020`) | WB13 output publication boundary | Hard error / `HOLD` when WB13 candidate surfaces are projection/synthesis-first rather than simulation-owned | Tier-A replay integrity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMCONS consolidated-intake guard closure (`INV-WATBAL-021`) | consolidated-kernel adoption boundary | Governance `HOLD` when candidate kernel/policy intake lacks explicit triage/provenance disposition | Consolidated-intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL14 continuous WB13 span/key closure (`INV-WATBAL-022`) | continuous runner publication boundary | Hard error when run-span row count under-runs executed climate days, `sim_day_index` is non-monotonic, or `Y` key mapping diverges from simulation-year semantics | Tier-A replay span/key gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -343,6 +352,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `SIMPIPE_EXECUTION_OWNERSHIP_GUARD` | status message id | `HS-SIMPIPE-E-001` | Typed guard code for publication without executed scheduler/kernel provenance | REF-WATBAL-PHYS-BOUNDS |
 | `SIMMODE_LANE_CLOSURE_GUARD` | status message id | `HS-SIMMODE-E-001` | Typed guard code for effective-mode to lane-selection mismatch | REF-WATBAL-INFILE-WEPPUI, REF-WATBAL-PHYS-BOUNDS |
 | `SIMOUT_WB13_PROVENANCE_GUARD` | status message id | `HS-SIMOUT-E-001` | Typed guard code for projection-first/synthetic WB13 candidate publication | REF-WATBAL-PHYS-BOUNDS |
+| `SIMIMPL14_WB13_SPAN_KEY_GUARD` | status message id | `HS-SIMOUT-E-001` | Typed guard code for continuous-run WB13 span/key closure failures (row-count under-run, non-monotonic keys, or non-simulation-year mapping) | REF-WATBAL-PHYS-BOUNDS |
 | `SIMCONS_INTAKE_TRIAGE_GUARD` | status message id | `HS-SIMCONS-E-001` | Typed governance code for untriaged consolidated intake/adoption claims | REF-WATBAL-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
@@ -870,6 +880,22 @@ canonical order:
 4. Wave-2 producer-coupling adds to, and does not replace, the existing
    Wave-1 coupling requirements.
 
+## SIMIMPL14 Continuous Runner and WB13 Span/Key Addendum
+
+1. Continuous hillslope execution must iterate all available climate daily
+   forcing rows in deterministic order and execute one scheduler/kernel cycle
+   per day with carried runtime state between days.
+2. WB13/H.wat publication must emit exactly one row per executed day with
+   monotonic `sim_day_index` starting at `1`.
+3. Published WB13 key tuple must preserve canonical comparator ordering
+   semantics `(Y, J, OFE)` where `Y` is simulation-year ordinal
+   (`calendar_year - start_year + 1`), not absolute calendar year.
+4. Publication provenance must include continuity assertions at minimum:
+   executed day count, published row count, first row key, last row key, and
+   monotonic-key verdict.
+5. Missing continuity assertions, span collapse, or key-domain mismatch are
+   typed hard-fail states under `HS-SIMOUT-E-001`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -914,3 +940,4 @@ canonical order:
 | `2026-05-24` | `28` | `Codex` | SIMIMPL03 amendment: added production execution ownership, mode-propagation closure, simulation-owned WB13 provenance, and selective consolidated-intake guardrail invariants (`INV-WATBAL-018..021`) with typed guards (`HS-SIMPIPE/SIMMODE/SIMOUT/SIMCONS`) and addendum authority. |
 | `2026-05-25` | `29` | `Codex` | EROD13 amendment: activated Wave-1 runoff/peak-duration producer-coupling authority for erosion-core ingress under `erod13_core_enabled`, preserving typed hard-fail continuity (`HKERNEL-EROD13-CORE-E-001..003`) for missing/non-finite/domain-invalid coupling payloads. |
 | `2026-05-25` | `30` | `Codex` | EROD14 amendment: added Wave-2 runoff producer-coupling continuity for multi-OFE/enrichment ingress surfaces (`erod14_qout`, `erod14_qin`) with typed hard-fail guard continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |
+| `2026-05-25` | `31` | `Codex` | SIMIMPL14 amendment: added continuous runner span/key closure invariant (`INV-WATBAL-022`) requiring full climate-span day progression, carried-state daily lifecycle execution, simulation-year WB13 key mapping, monotonic `sim_day_index`, and manifest continuity assertions for replay-overlap readiness. |

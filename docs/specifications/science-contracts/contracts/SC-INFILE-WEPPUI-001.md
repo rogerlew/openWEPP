@@ -4,7 +4,7 @@ title: WEPP UI Sentinel Sidecar Input Parser Contract (wepp_ui.txt)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.0
+contract_version: 0.3.0
 evidence_mode: Static
 last_updated_utc: 2026-05-24T00:00:00Z
 ---
@@ -148,6 +148,11 @@ No silent parser-side masking is permitted in strict mode.
    lane identity and preserve mode closure (`ui_run=0 -> daily`, `ui_run=1 ->
    hourly`) without silent fallback. `[DIRECT][E-SIMPIPE-WUI-01]`,
    `[INFERENCE][E-PHYS-WUI-01]`
+6. Continuous replay publication must preserve deterministic WB13 key-domain
+   closure: monotonic `sim_day_index=1..N`, one row per executed climate day,
+   and simulation-year `Y` mapping (`calendar_year - start_year + 1`) at the
+   runner publication boundary. `[DIRECT][E-SIMPIPE-WUI-01]`,
+   `[INFERENCE][E-PHYS-WUI-01]`
 
 ## 9. Boundary Export Mapping
 
@@ -155,6 +160,7 @@ No silent parser-side masking is permitted in strict mode.
 | --- | --- | --- | --- | --- |
 | `ui_run_requested,ui_run,mode_divergence` | `wepp_ui.mode.{ui_run_requested,ui_run,mode_divergence}` | `openwepp.boundary.mode_selection.wepp_ui.v1` | explicit requested/effective/divergence fields + aliases | primary mode-selection observability surface |
 | `ui_run_requested,ui_run,selected_lane` | runner/orchestrator publication provenance tuple | `openwepp.boundary.mode_selection.wepp_ui.v1` | required lane identity where `selected_lane in {daily,hourly}` and matches `ui_run` | SIMIMPL03 execution-ownership closure surface |
+| `ui_run,sim_day_index,year` | runner WB13 publication provenance tuple | `openwepp.boundary.mode_selection.wepp_ui.v1` + replay surface keys | required monotonic `sim_day_index` and simulation-year key mapping for `year` when replay publication is active | SIMIMPL14 replay span/key closure surface |
 | `wepp_ui_file_present,payload_bytes,payload_nonempty,open_result` | `wepp_ui.mode.*` | `openwepp.boundary.observability.parser_warnings.v1` | explicit sentinel provenance/open-branch fields | strict/compat diagnostics |
 | `solwpv,solwpv_reduced_min,soil_compatibility_state` | `wepp_ui.crossfile.*` | `openwepp.boundary.crossfile.compatibility.v1` | canonical + aliases `soil.version*` | compatibility policy observability |
 
@@ -190,6 +196,7 @@ No silent parser-side masking is permitted in strict mode.
 | `G-WUI-007` | requested-vs-effective mode observability export closure | parse/runtime boundary validator | `WUI-E-003` |
 | `G-WUI-008` | effective-mode to lane-selection closure (`ui_run=0 -> daily`, `ui_run=1 -> hourly`) | runner/orchestrator publication boundary | `WUI-E-005` |
 | `G-WUI-009` | simulation-owned publication provenance closure for required replay surfaces | runner publication provenance validator | `WUI-E-005` |
+| `G-WUI-010` | continuous replay span/key closure (`sim_day_index` monotonic, row count matches executed climate days, and `year` key uses simulation-year mapping) | runner publication provenance validator | `WUI-E-005` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -204,7 +211,7 @@ openWEPP boundary names are aliases only (Section 3).
 | --- | --- | --- | --- |
 | `WEPPUI-GAP-001` | Usersum 7778-soil recommendation vs permissive legacy behavior requires governance ratification of enforcement severity. | `[DIRECT][E-SPEC-WUI-01]` | `HOLD` |
 | `WEPPUI-GAP-002` | Legacy merges missing and open-failure branches; strict typed IO-fault policy requires fixture-backed migration evidence. | `[DIRECT][E-SPEC-WUI-01]`, `[DIRECT][E-WF-WUI-01]` | `HOLD` |
-| `WEPPUI-GAP-003` | Production runner path has not yet completed lane-selection propagation and simulation-owned publication closure despite parser-mode availability. | `[DIRECT][E-SIMPIPE-WUI-01]` | `HOLD` |
+| `WEPPUI-GAP-003` | Production runner path has not yet completed continuous replay closure at publication boundary (lane-selection propagation, simulation-owned publication, monotonic `sim_day_index`, and simulation-year key mapping) despite parser-mode availability. | `[DIRECT][E-SIMPIPE-WUI-01]` | `HOLD` |
 
 ## 14. Revision History
 
@@ -212,3 +219,4 @@ openWEPP boundary names are aliases only (Section 3).
 | --- | --- | --- |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE15. |
 | `2026-05-24` | `0.2.0` | SIMIMPL03 amendment: added runner/orchestrator mode-propagation closure requirements, lane-provenance export surface, new guard rules (`G-WUI-008/009`), and HOLD gap for unresolved production lane/publication integration. |
+| `2026-05-25` | `0.3.0` | SIMIMPL14 amendment: added continuous replay span/key closure requirements at runner publication boundary, including monotonic `sim_day_index`, row-count closure, simulation-year key mapping, and guard linkage (`G-WUI-010`). |

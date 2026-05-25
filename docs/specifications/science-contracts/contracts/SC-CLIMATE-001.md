@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration forcing consumers
   - Water-balance and irrigation event-coupling consumers
 evidence_level: static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -312,7 +312,9 @@ states and must hard-fail with typed hydrology guard posture.
 ### IRRIG10 Deterministic Climate Coupling Requirements
 
 1. Climate runtime seam must publish finite `day` and `year` keys for each
-   simulated day consumed by irrigation fixed-date scheduling.
+   simulated day consumed by irrigation fixed-date scheduling, with
+   deterministic day-sequence progression across the full available climate
+   run span.
 2. Hyetograph forcing-series symbols remain authoritative forcing inputs under
    irrigation coupling; irrigation additions are coupled downstream without
    mutating climate-source parser records.
@@ -416,3 +418,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-23` | `7` | `Codex` | IRRIG10 amendment: added climate schedule-key authority (`day`, `year`) and downstream irrigation-coupled forcing closure requirements for fixed-date/depletion runtime scheduling. |
 | `2026-05-23` | `8` | `Codex` | CLIM07 amendment: added explicit comparator/seam vector obligations for continuous-daily and breakpoint climate modes, parser-to-kernel namespace projection checks, and confidence-tier routing evidence requirements; reclassified `GAP-CLIMATE-001` as resolved in openWEPP scope. |
 | `2026-05-23` | `9` | `Codex` | CLIM08 governance closeout: added seam HOLD-closure mapping to CLIM02/CLIM07 evidence and clarified that seam closeout does not retire non-seam promotability gaps (`GAP-CLIMATE-003`..`GAP-CLIMATE-005`). |
+| `2026-05-25` | `10` | `Codex` | SIMIMPL14 amendment: clarified schedule-key continuity authority so climate day/year keys progress deterministically across full continuous-run spans used by replay publication and irrigation-coupled forcing consumers. |
