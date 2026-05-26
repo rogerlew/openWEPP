@@ -676,6 +676,12 @@ Authorized packages:
     `rtpart.for` provenance mismatch), and publish a dependency-ordered queue
     to migrate full segment routing and eliminate sediment-routing magic
     numbers.
+- `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
+  - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
+    `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
+    routine mapping, explicit `mshear`/deposition invariants and alias
+    continuity requirements, and corrected `rtpart.for` provenance
+    classification before EROD17 contract-derived tests.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline

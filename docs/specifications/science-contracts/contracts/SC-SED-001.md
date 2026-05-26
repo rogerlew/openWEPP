@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 12
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -14,7 +14,7 @@ consumer_scope:
   - Comparator and replay consumers using erosion closure and sign-consistency surfaces
   - Adjacent soil/runoff/hydraulics domains providing required coupling inputs
 evidence_level: Static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-26
 supersedes: []
 superseded_by: []
 ---
@@ -68,6 +68,13 @@ Out of scope:
 | REF-SED-LEGACY-PARAM | `/workdir/wepp-forest_260430_baseline/src/param.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy normalized-parameter authority (`eata`, `tauc`, `theta`, `phi`) used for Wave-1 runtime parameter derivation provenance. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-EROD | `/workdir/wepp-forest_260430_baseline/src/erod.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy detachment-capacity and branch-condition authority used for Wave-1 detachment/deposition runtime branch ordering. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-RUNGE | `/workdir/wepp-forest_260430_baseline/src/runge.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy continuity evolution form (`dG/dx` update term as `dcap*((tcap-load)/tcap) + theta`) used for Wave-1 branch/continuity guard alignment. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-CONTIN-ROUTE | `/workdir/wepp-forest_260430_baseline/src/contin.for` + `/workdir/wepp-forest_260430_baseline/src/route.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy call-chain authority for hillslope sediment routing (`call route` from CONTIN) and per-segment upper-boundary detach/deposit routing control flow. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-XCRIT | `/workdir/wepp-forest_260430_baseline/src/xcrit.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy `mshear` case classification authority (`1..5`) used by hillslope segment routing branch dispatch. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-DEPC | `/workdir/wepp-forest_260430_baseline/src/depc.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy deposition-equation partial-solution authority used at route segment upper boundaries and post-detachment deposition follow-up. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-DEPEND | `/workdir/wepp-forest_260430_baseline/src/depend.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy authority for solving where deposition ends inside a segment (`xdend`) under increasing/decreasing flow cases. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-DEPOS | `/workdir/wepp-forest_260430_baseline/src/depos.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy segment deposition profile update authority (`detach`, `tc`, `load`) in route deposition branches. | `[DIRECT][Static]` |
+| REF-SED-LEGACY-ENRICH | `/workdir/wepp-forest_260430_baseline/src/enrich.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy particle-class enrichment authority for deposition transitions and OFE-end finalization (`iendfg` terminal call). | `[DIRECT][Static]` |
+| REF-SED-LEGACY-RTPART | `/workdir/wepp-forest_260430_baseline/src/rtpart.for` + `/workdir/wepp-forest_260430_baseline/src/grow.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Provenance correction anchor: `rtpart.for` is plant root-mass partitioning (growth domain) and is not an erosion-routing companion routine. | `[DIRECT][Static]` |
 | REF-SED-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative magnitudes for rates/loads where signed behavior is not explicitly defined; finite denominators and bounded fractions. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -475,6 +482,54 @@ Minimum vectors required by EROD15 contract-derived tests:
 5. Domain-invalid payload symbol vector fails with
    `HKERNEL-EROD14-WAVE2-E-003`.
 
+## EROD16 Hillslope ROUTE Branch Authority Addendum
+
+### Authoritative Routine Chain and Ownership
+
+1. Baseline hillslope sediment routing authority is the `CONTIN -> ROUTE`
+   call chain (`REF-SED-LEGACY-CONTIN-ROUTE`), not watershed WS10 channel
+   routing branches.
+2. `route.for` branch companions are:
+   - `xcrit.for` (`mshear` classification),
+   - `depc.for` and `depend.for` (deposition start/end solution terms),
+   - `depos.for` (segment deposition profile updates),
+   - `erod.for` (detachment-branch integration),
+   - `enrich.for` (class-fraction updates and OFE-end finalization).
+3. `rtpart.for` is explicitly out of routing scope (`REF-SED-LEGACY-RTPART`);
+   it belongs to plant-growth/root partitioning lineage and must not be cited
+   as a sediment-routing companion.
+
+### ROUTE Branch Invariants (Canonical)
+
+1. Segment-loop invariant: route branch execution iterates segmentwise over
+   `k = 2..nslpts(iplane)` with explicit case-4 flow-end guards before
+   branch dispatch.
+2. Upper-boundary deposition invariant: when upper-segment `du < 0`,
+   routing must execute `depc -> depend -> depos` semantics before any
+   detachment-after-deposition branch calls.
+3. `mshear` dispatch invariant: route branch selection is explicit for cases
+   `1..5` from `xcrit`, with no branch collapsing or silent fallback between
+   case families.
+4. Post-detachment deposition invariant: when `ndep != 0`, deposition follow-up
+   from `xdbeg` to segment end must execute before advancing to the next
+   segment.
+5. OFE-end enrichment invariant: terminal `enrich(..., iendfg=1)` semantics are
+   required at OFE end even when no additional deposition region is opened in
+   the final segment.
+
+### Alias Continuity Requirements
+
+Canonical symbol continuity for route migration in this contract must preserve:
+
+- segment geometry/state: `xu`, `xl`, `nslpts`, `xdbeg`, `xdend`, `xdetst`,
+  `ldlast`, `lddend`
+- branch controls: `du`, `dl`, `mshear`, `ndep`, `xc1`, `xc2`
+- deposition/transport controls: `ktrato`, `qostar`, `ainftc`, `binftc`,
+  `cinftc`, `phi`, `theta`
+
+If runtime symbol names differ, explicit alias mappings are required in
+canonical `SC-*` contracts before production migration packages.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -483,6 +538,7 @@ Minimum vectors required by EROD15 contract-derived tests:
 | GAP-SED-002 | Wave-0 erosion-lane alias-ownership ambiguity for required cross-contract boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SED-003 | EROD12 ratifies cross-domain ownership/guard closure for required erosion-lane companion boundaries (`SC-HYDRAULICS-001`, `SC-ROUTE-001`) using canonical `SC-*` addenda and row-scoped guard ownership mapping. | Required Wave-0 cross-domain ownership semantics are canonicalized; erosion production implementation remains separately gated by `EROD13+` and non-Wave-0 companion gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SED-004 | Chapter-11 enrichment caveats for mixed-soil, multi-OFE composition effects remain and are explicitly retained as a documented limitation with governance risk acceptance. | Mixed-soil enrichment interpretation may still require manual investigation; this is accepted as an explicit model-governance caveat. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SED-005 | Baseline `route.for` segment-level branch family (`mshear 1..5`, upper-end deposition/detachment trees, post-detachment deposition closure) is now canonicalized but not yet migrated into openWEPP runtime kernels. | Hillslope sediment-routing process parity remains incomplete until EROD19 runtime migration lands with contract-derived closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -500,3 +556,4 @@ Minimum vectors required by EROD15 contract-derived tests:
 | `2026-05-25` | `9` | `Codex` | EROD14 Wave-2 amendment: added multi-OFE case-classification/runtime authority and class-wise enrichment mass-conservation closure semantics (`INV-SED-008..009`) with typed guard-family continuity (`HKERNEL-EROD14-WAVE2-E-001..003`). |
 | `2026-05-25` | `10` | `Codex` | EROD15 Wave-3 amendment: replaced generic sediment handoff naming with HBP pass-serialization field authority, added contributor-prefixed routing alias family, and added Wave-3 export mapping/guard continuity requirements for `INV-SED-010`. |
 | `2026-05-25` | `11` | `Codex` | MOFE03 amendment: added production runner activation/seeding authority for `erod14_wave2_enabled` and enabled-path deterministic Wave-2 ingress synthesis from aligned topology/runtime surfaces with typed hard-fail derivation posture. |
+| `2026-05-26` | `12` | `Codex` | EROD16 amendment: added canonical hillslope `CONTIN -> ROUTE` branch-authority mapping (`mshear 1..5`, `depc/depend/depos/erod/enrich` routine chain), codified route-branch invariants and alias continuity requirements, corrected `rtpart.for` provenance classification, and opened `GAP-SED-005` until runtime migration closure. |

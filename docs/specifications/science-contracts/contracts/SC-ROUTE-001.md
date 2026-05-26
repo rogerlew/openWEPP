@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-26
 supersedes: []
 superseded_by: []
 ---
@@ -48,7 +48,8 @@ Out of scope:
 - Classical gully headcutting, bank sloughing, and perennial stream mechanics
   not represented by WEPP channel routines. `[DIRECT][Static]`
 - Hillslope-only runoff partition internals owned by `SC-RUNOFFPART-001`,
-  hillslope erosion internals owned by `SC-SED-001`, and impoundment internals
+  hillslope erosion internals owned by `SC-SED-001` (including baseline
+  `CONTIN -> ROUTE` hillslope segment routing), and impoundment internals
   owned by `SC-IMPOUND-001` except explicit coupling boundaries. `[INFERENCE][Static]`
 
 ## Authority Anchors
@@ -75,6 +76,8 @@ Out of scope:
 | REF-ROUTE-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1-§5.4 and `chap13.pdf` §13.3 | Channel water-balance/percolation routines are stated as identical to hillslope routines. | `[DIRECT][Static]` |
 | REF-ROUTE-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical binary pass serialization field names and units consumed at routing boundary (`total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
 | REF-ROUTE-HBP-READER | `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Read Contract`, `Required Invariants`) | Reader/index fail-closed semantics for malformed/missing hillslope payload fields and no-text-fallback posture. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-ROUTE-LEGACY-HSROUTE-BOUNDARY | `/workdir/wepp-forest_260430_baseline/src/contin.for` + `/workdir/wepp-forest_260430_baseline/src/route.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Scope-boundary provenance anchor: legacy `call route` from `CONTIN` is hillslope sediment routing authority governed by `SC-SED-001`, not WS10 watershed/channel routing authority in this contract. | `[DIRECT][Static]` |
+| REF-ROUTE-LEGACY-RTPART-BOUNDARY | `/workdir/wepp-forest_260430_baseline/src/rtpart.for` + `/workdir/wepp-forest_260430_baseline/src/grow.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Provenance correction anchor: `rtpart.for` belongs to plant root-mass partitioning lineage and is out of routing-contract scope. | `[DIRECT][Static]` |
 | REF-ROUTE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative area/volume/duration domains and explicit branch handling for no-flow states. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -404,6 +407,28 @@ Minimum WS11 routing conformance vectors:
 5. Routing consumers must not synthesize fallback sediment payload values when
    contributor payload fields are absent or invalid.
 
+## EROD16 Hillslope ROUTE Scope-Partition Addendum
+
+1. Baseline `route.for` provenance from `CONTIN` is explicitly classified as
+   hillslope sediment-routing authority under `SC-SED-001`
+   (`REF-ROUTE-LEGACY-HSROUTE-BOUNDARY`).
+2. This routing contract (`SC-ROUTE-001`) remains authoritative for
+   watershed/channel routing branches (`wshpek`, `wshchr`, WS10 symbol
+   families) and for consumer-side validation of hillslope contributor payload
+   completeness under `INV-ROUTE-011`.
+3. `rtpart.for` is explicitly excluded from routing provenance in this domain;
+   it remains a plant/root partitioning routine (`REF-ROUTE-LEGACY-RTPART-BOUNDARY`).
+4. Contributor-payload alias continuity for WS10 intake remains unchanged and
+   authoritative in this contract:
+   - `hs{ID}_total_detachment_kg`
+   - `hs{ID}_total_deposition_kg`
+   - `hs{ID}_particle_class_count`
+   - `hs{ID}_sediment_concentration_kg_m3_{class:04}`
+   - `hs{ID}_particle_flow_fraction_{class:04}`
+5. Any implementation package claiming watershed-routing closure must not use
+   hillslope `route.for` presence/absence as a WS10 branch-conformance signal;
+   hillslope branch parity is governed by `SC-SED-001` migration gaps.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -414,6 +439,7 @@ Minimum WS11 routing conformance vectors:
 | GAP-ROUTE-004 | Chapter-13 mixed-unit and regression-derived formulation caveats remain and are explicitly retained as documented limitations with governance risk acceptance. | Unit-conversion and regression-lineage interpretation risk remains and requires explicit review in sensitive analyses; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-005 | Runtime workload guards for Chapter-13 applicability limits (small watershed intent and excluded process classes) are not yet bound to a concrete input-contract validator surface. | Applicability enforcement is governance-only until companion system/input contracts add explicit runtime selectors/guards. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-006 | WS11 wave-routing branch authority is anchored to pinned legacy static-code provenance (`wshcqi`, `wshdrv`, `wshpek`, `wshchr`) pending companion documentation that cross-indexes non-chapter method-lineage references in one canonical note. | Migration authority is executable and explicit, but review burden for non-chapter lineage remains elevated until companion documentation lands. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-007 | Legacy provenance confusion between watershed routing and hillslope `CONTIN -> ROUTE` branch logic required explicit scope partitioning; EROD16 closes the documentation ambiguity but downstream hillslope runtime parity remains governed by `SC-SED-001` queue stages. | Prevents false attribution of hillslope branch parity status to WS10 routing closure decisions. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -432,3 +458,4 @@ Minimum WS11 routing conformance vectors:
 | `2026-05-24` | `10` | `Codex` | WS11 amendment: replaced WS10 gain-factor surrogate routing authority with legacy-equivalent channel-routing branch authority (`ipeak`-selected Rational/CREAMS/KW/MC), added pinned baseline provenance anchors, expanded routing closure invariants, and published WS11 contract-derived vector obligations while preserving existing channel guard-family IDs. |
 | `2026-05-25` | `11` | `Codex` | EROD14 amendment: added active Wave-2 consumer-coupling authority for hillslope enrichment payload continuity (`sed_frac_*`, `ER`, class-wise closure surfaces) with explicit hard-fail posture for malformed boundary payloads. |
 | `2026-05-25` | `12` | `Codex` | EROD15 amendment: added Wave-3 HBP contributor-payload intake authority (`hs{ID}_total_detachment_kg`, `hs{ID}_total_deposition_kg`, class-counted concentration/fraction arrays) with explicit WS10 guard continuity under `INV-ROUTE-011`. |
+| `2026-05-26` | `13` | `Codex` | EROD16 amendment: added explicit scope partitioning between watershed routing authority and hillslope `CONTIN -> ROUTE` sediment-branch authority, corrected `rtpart.for` provenance classification, and ratified boundary continuity requirements for WS10 contributor-payload aliases. |
