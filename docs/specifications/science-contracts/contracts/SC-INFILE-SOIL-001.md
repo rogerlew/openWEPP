@@ -4,7 +4,7 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.5
+contract_version: 0.1.6
 evidence_mode: Static
 last_updated_utc: 2026-05-25T00:00:00Z
 ---
@@ -148,12 +148,14 @@ compat_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* compatibility-only: 
 | `D-SOL-002` | Normalize optional disturbed/reveg control blocks into one policy enum surface by datver. | per OFE parse finalize | `C-SOL-002` |
 | `D-SOL-003` | Derive restrictive-layer effective presence from `slflag` and validate dependent fields. | footer parse finalize | `C-SOL-003` |
 | `D-SOL-004` | Runtime export precedence for canonical hydrology theta symbols is datver-compatible and fail-closed: `thetdr := theta_r_rosetta` when present, else `wp_measured`; `thetfc := fc_rosetta` when present, else `fc_measured`; if neither source exists for a required layer, projection fails with typed runtime error. | parser-to-runtime seam projection | `C-SOL-004` |
+| `D-SOL-005` | Runtime export of disturbed-land conductivity-adjustment regime metadata is deterministic and fail-closed: `solwpv := datver_raw`; per-OFE policy aliases (`ofe{i}_ksatadj`, `ofe{i}_ksatfac`, `ofe{i}_ksatrec`, `ofe{i}_lkeff`) are projected when datver policy fields exist; primary OFE aliases (`ksatadj`, `ksatfac`, `ksatrec`, `lkeff`) mirror OFE1; when policy is absent, `ksatadj := 0` and regime-only fields remain omitted. | parser-to-runtime seam projection | `C-SOL-005` |
 
 Closure hooks:
 - `C-SOL-001`: layer-depth closure and count closure (`nsl` rows present).
 - `C-SOL-002`: datver-policy-row arity closure.
 - `C-SOL-003`: restrictive-layer field closure and domain checks.
 - `C-SOL-004`: runtime theta export source closure (`Rosetta` preferred with measured fallback; no silent defaults when both missing).
+- `C-SOL-005`: runtime `ksatadj` regime export closure (`solwpv` + policy aliases) with no silent fabrication of regime-only fields.
 
 ## 7. Validation and Error Taxonomy
 
@@ -188,6 +190,7 @@ No silent fallback masking for invalid required inputs. `[DIRECT][E-SPEC-SOL-01]
 | `solthk,sand,clay,orgmat,cec,rfg,bd,ksat,anisotropy,fc,wp,theta_r,theta_s,alpha,npar,ks,wp(rosetta),fc(rosetta)` | `soil.ofe[*].layers[*]` | interchange/hydrology-state export | canonical symbol continuity with explicit alias names for duplicate `wp`/`fc` fields | measured vs Rosetta variants remain distinct in boundary schema |
 | `theta_r,fc_rosetta,wp(measured),fc(measured)` | `soil.ofe[*].layers[*]` | hillslope runtime seed projection (`thetdr`,`thetfc`) | `thetdr := theta_r_rosetta` else `wp_measured`; `thetfc := fc_rosetta` else `fc_measured` | fail-closed typed runtime error when required source pair is unavailable or non-finite |
 | `ksatadj,luse,stext,ksatfac,ksatrec,burn_code,lkeff,texid_enum,uksat` | `soil.ofe[*].policy_state` | disturbed/revegetation policy boundary | exported as datver-scoped policy blocks | missing datver-inapplicable fields are omitted, not default-filled |
+| `datver_raw,ksatadj,ksatfac,ksatrec,lkeff` | `soil.version.datver` + `soil.ofe[*].policy_state` | hillslope runtime seed projection (`solwpv`,`ksatadj`,`ksatfac`,`ksatrec`,`lkeff`) | `solwpv := datver_raw`; primary aliases mirror OFE1 policy; per-OFE aliases prefixed `ofe{i}_*` | `ksatadj` defaults to `0` only when policy is absent; regime-only fields are not synthetic defaults |
 | `slflag,ui_bdrkth,kslast` | `soil.restrictive_layer` | lower-boundary/percolation payload | exported as optional restrictive-layer object | present only when `slflag=1` |
 
 ## 10. Compatibility Policy
@@ -227,6 +230,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-010` | compatibility-only quoted header parse must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token legacy form (omits `avke`, normalized to `0.0`) | OFE header parse | `SOL-E-006` |
 | `G-SOL-011` | compatibility-only per-OFE restrictive-layer rows must either be absent or pairwise identical before profile-level normalization | OFE/footer compatibility parse | `SOL-E-006` |
 | `G-SOL-012` | runtime theta export closure requires at least one valid source per required layer for each canonical symbol (`thetdr`: `theta_r_rosetta` or `wp_measured`; `thetfc`: `fc_rosetta` or `fc_measured`) with no silent defaulting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
+| `G-SOL-013` | runtime `ksatadj` regime metadata export closure requires finite `solwpv` and binary `ksatadj` aliases; active-regime fields (`ksatfac`, `ksatrec`, `lkeff`) must only be exported from datver-applicable policy records | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -246,6 +250,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-25` | `0.1.6` | MOFE13 amendment: added deterministic parser-to-runtime export authority for `solwpv`/`ksatadj` regime metadata (`ksatfac`,`ksatrec`,`lkeff`) including primary + per-OFE aliases and fail-closed closure hook `C-SOL-005`. |
 | `2026-05-25` | `0.1.5` | MOFE09 amendment: ratified parser-to-runtime theta export precedence (`theta_r_rosetta -> wp_measured` fallback for `thetdr`; `fc_rosetta -> fc_measured` fallback for `thetfc`) with explicit fail-closed guard linkage (`D-SOL-004`, `G-SOL-012`). |
 | `2026-05-25` | `0.1.4` | MOFE07 compatibility amendment: accept legacy `7778` per-OFE restrictive-layer row placement in compatibility mode when rows are identical; normalize to one profile restrictive layer (`G-SOL-011`). |
 | `2026-05-25` | `0.1.3` | MOFE07 compatibility amendment: accept quoted legacy `7778` 8-token OFE headers missing trailing `avke`, with explicit normalization `avke := 0.0`; added baseline evidence anchor `E-WF-SOL-02`. |

@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 36
+contract_version: 37
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -579,6 +579,7 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 | Surface | Symbols |
 |---|---|
 | Runoff reconciliation forcing | `ninten` or `nbrkpt`; `timem_####`; `intsty_####`; `ssc`; `dg`; `thetdr`; `thetfc` |
+| Disturbed-soil conductivity-adjustment forcing | `solwpv`, `ksatadj`, `ksatfac`, `ksatrec`, `lkeff`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `dg_####` |
 | Runoff reconciliation state inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`0`/absent compatibility, `1` forward-solver) |
 | Compatibility-lane observed target input | `wb12_runoff_observed` (required only when compatibility-lane closure semantics are active) |
 | Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
@@ -588,17 +589,30 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 1. Runoff reconciliation computes infiltration from subdaily hyetograph forcing
    within the runoff kernel branch; externally seeded `wb12_infiltration` is no
    longer a required input for acceptance paths.
-2. Reconciliation uses computed infiltration and hyetograph rainfall depth in:
+2. Runoff reconciliation derives WB14 effective infiltration conductivity
+   `Ke` with baseline-authoritative `ksatadj` regime selection:
+   - default path: `Ke = ssc`;
+   - active disturbed path is gated by `ksatadj = 1`;
+   - `sat_frac = min((theta_1 + theta_2)/(ul_1 + ul_2), 1.0)` from WB18
+     first-two-layer stores;
+   - `solwpv = 9001`: exponential recovery using `ksatfac` and `ksatrec`;
+   - `solwpv >= 9002`: Saxton-Rawls Brooks-Corey effective conductivity with
+     `psi = ln(1500/33)/ln(avthetafc/avthetadr)`, `lambda = 1/psi`,
+     `keff = (ssc*3.6e6) * sat_frac^(2*lambda+3)`; `solwpv = 9003` applies
+     `keff = max(keff, lkeff)` when `lkeff > 0`;
+   - active-path domain violations are typed hard-fail states; no silent
+     defaults/clamping.
+3. Reconciliation uses computed infiltration and hyetograph rainfall depth in:
    - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
-3. `wb12_rainfall_input` remains a required closure-consistency surface and must
+4. `wb12_rainfall_input` remains a required closure-consistency surface and must
    match hyetograph-integrated rainfall depth within
    `wb12_runoff_closure_tolerance`.
-4. WB20 lane branch semantics apply to runoff closure delta:
+5. WB20 lane branch semantics apply to runoff closure delta:
    - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
      `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
    - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
      `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
-5. Reconciliation and downstream storage closure (`wb12_storage_reconciled`)
+6. Reconciliation and downstream storage closure (`wb12_storage_reconciled`)
    remain deterministic and typed-fail on missing/non-finite/domain-invalid
    inputs.
 
@@ -618,6 +632,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    `HKERNEL-WB14-RUNOFF-E-002`.
 4. Non-monotone hyetograph time, negative intensity, rainfall mismatch, or
    runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
+5. Active `ksatadj` regime vectors (`solwpv=9001/9002/9003`) produce
+   deterministic conductivity-adjusted infiltration behavior and preserve typed
+   hard-fail posture for invalid active-regime domains.
 
 ## WB15 Canopy Interception Coupling Addendum
 
@@ -1076,6 +1093,7 @@ canonical order:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-25` | `37` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity selection authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor), including required regime symbols and typed active-path guard obligations. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-04 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-04 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: clarified daily-step closure enforcement, added explicit zero-demand `Ws` branch, expanded alias map coverage, and added Chapter-5 validation caveat gap entry. |

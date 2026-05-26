@@ -895,3 +895,8 @@ Authorized packages:
   - Purpose: run an incident-aligned diagnostic lane for `H2637` to determine
     whether openWEPP reproduces the documented day-44 closure-spike defect
     signature from the uncapped-spectacular ablation package.
+- `20260525-mofe13-ksatadj-three-regime-kernel-alignment-001/`
+  - Purpose: align openWEPP WB14 conductivity selection with
+    `wepp-forest_260430` `ksatadj` regime authority (9001 exponential recovery,
+    9002 Saxton-Rawls Brooks-Corey effective K, 9003 burn-severity floor) and
+    rerun carved-letter `H324` parity evidence.

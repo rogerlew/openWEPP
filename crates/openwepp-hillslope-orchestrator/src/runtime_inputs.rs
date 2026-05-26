@@ -19,7 +19,7 @@ use openwepp_input_contract::parsers::{
     },
     slope::{SlopePoint, SlopeProfile},
     snow::SnowParseOutput,
-    soil::SoilProfile,
+    soil::{DisturbedPolicy, SoilProfile},
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
@@ -1655,6 +1655,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
         BoundarySymbol::from("ntemp"),
         BoundaryValue::scalar(f64::from(ntemp)),
     );
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(soil.datver_raw),
+    );
 
     for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;
@@ -1675,6 +1679,52 @@ pub fn build_hillslope_runtime_surface_from_soil(
             soil_ofe_symbol("nsl", ofe_index),
             BoundaryValue::scalar(f64::from(nsl)),
         );
+
+        let (ofe_ksatadj, ofe_ksatfac, ofe_ksatrec, ofe_lkeff) = match &ofe.policy {
+            Some(DisturbedPolicy::V9002 {
+                ksatadj,
+                ksatfac_mm_h,
+                ksatrec_per_day,
+                ..
+            }) => (*ksatadj, Some(*ksatfac_mm_h), Some(*ksatrec_per_day), None),
+            Some(
+                DisturbedPolicy::V9003 {
+                    ksatadj,
+                    lkeff_mm_h,
+                    ..
+                }
+                | DisturbedPolicy::V9005 {
+                    ksatadj,
+                    lkeff_mm_h,
+                    ..
+                },
+            ) => (*ksatadj, None, None, Some(*lkeff_mm_h)),
+            None => (false, None, None, None),
+        };
+
+        let ofe_ksatadj_value = if ofe_ksatadj { 1.0 } else { 0.0 };
+        state_surface.insert(
+            soil_ofe_symbol("ksatadj", ofe_index),
+            BoundaryValue::scalar(ofe_ksatadj_value),
+        );
+        if let Some(value) = ofe_ksatfac {
+            state_surface.insert(
+                soil_ofe_symbol("ksatfac", ofe_index),
+                BoundaryValue::scalar(value),
+            );
+        }
+        if let Some(value) = ofe_ksatrec {
+            state_surface.insert(
+                soil_ofe_symbol("ksatrec", ofe_index),
+                BoundaryValue::scalar(value),
+            );
+        }
+        if let Some(value) = ofe_lkeff {
+            state_surface.insert(
+                soil_ofe_symbol("lkeff", ofe_index),
+                BoundaryValue::scalar(value),
+            );
+        }
 
         let mut previous_depth_mm = 0.0_f64;
         for (layer_position, layer) in ofe.layers.iter().enumerate() {
@@ -1829,6 +1879,25 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundarySymbol::from("nsl"),
                 BoundaryValue::scalar(f64::from(nsl)),
             );
+            state_surface.insert(
+                BoundarySymbol::from("ksatadj"),
+                BoundaryValue::scalar(ofe_ksatadj_value),
+            );
+            if let Some(value) = ofe_ksatfac {
+                state_surface.insert(
+                    BoundarySymbol::from("ksatfac"),
+                    BoundaryValue::scalar(value),
+                );
+            }
+            if let Some(value) = ofe_ksatrec {
+                state_surface.insert(
+                    BoundarySymbol::from("ksatrec"),
+                    BoundaryValue::scalar(value),
+                );
+            }
+            if let Some(value) = ofe_lkeff {
+                state_surface.insert(BoundarySymbol::from("lkeff"), BoundaryValue::scalar(value));
+            }
             state_surface.insert(
                 BoundarySymbol::from("solthk"),
                 BoundaryValue::scalar(primary_profile_depth_mm / 1_000.0),
@@ -4094,6 +4163,108 @@ mod tests {
         assert!((dg_layer2 - 0.15).abs() < 1e-12);
         assert!((solthk_layer2 - 0.25).abs() < 1e-12);
         assert!((ssc_layer2 - (8.0 / 3.6e6)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn soil_runtime_surface_projects_ksatadj_policy_symbols_for_9002() {
+        let soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from parsed soil");
+
+        let solwpv = surface
+            .state_surface
+            .get(&BoundarySymbol::from("solwpv"))
+            .expect("solwpv should be present")
+            .as_f64();
+        assert!((solwpv - 9002.0).abs() < 1e-12);
+
+        let ksatadj = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ksatadj"))
+            .expect("ksatadj should be present")
+            .as_f64();
+        assert!((ksatadj - 1.0).abs() < 1e-12);
+
+        let ksatfac = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ksatfac"))
+            .expect("ksatfac should be present")
+            .as_f64();
+        assert!((ksatfac - 0.20).abs() < 1e-12);
+
+        let ksatrec = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ksatrec"))
+            .expect("ksatrec should be present")
+            .as_f64();
+        assert!((ksatrec - 0.001).abs() < 1e-12);
+
+        let ofe_ksatadj = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ofe1_ksatadj"))
+            .expect("ofe1_ksatadj should be present")
+            .as_f64();
+        assert!((ofe_ksatadj - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn soil_runtime_surface_defaults_ksatadj_to_zero_without_policy_block() {
+        let soil = parse_soil(
+            VALID_7778,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("7778 soil fixture should parse");
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from parsed soil");
+
+        let solwpv = surface
+            .state_surface
+            .get(&BoundarySymbol::from("solwpv"))
+            .expect("solwpv should be present")
+            .as_f64();
+        assert!((solwpv - 7778.0).abs() < 1e-12);
+
+        let ksatadj = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ksatadj"))
+            .expect("ksatadj should be present")
+            .as_f64();
+        assert!(ksatadj.abs() < 1e-12);
+
+        assert!(
+            !surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("ksatfac")),
+            "ksatfac should be absent when datver policy block is absent"
+        );
+        assert!(
+            !surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("ksatrec")),
+            "ksatrec should be absent when datver policy block is absent"
+        );
+        assert!(
+            !surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("lkeff")),
+            "lkeff should be absent when datver policy block is absent"
+        );
     }
 
     #[test]

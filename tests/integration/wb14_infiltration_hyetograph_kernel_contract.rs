@@ -17,6 +17,135 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 const EXPECTED_WB14_INFILTRATION: f64 = 2.909_931_093_255_933;
 const EXPECTED_WB14_Q: f64 = 0.290_068_906_744_067;
 const WB14_TEST_TOLERANCE: f64 = 1.0e-6;
+const WB14_KSATADJ_TOLERANCE: f64 = 1.0e-9;
+
+fn state_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> f64 {
+    surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .expect("required seeded symbol should be present")
+        .as_f64()
+}
+
+fn run_wb14_reconciliation_outputs(surface: HillslopeWritebackSurface) -> (f64, f64) {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("wb14 execution should return typed report");
+    if !report.scheduler_report.is_success() {
+        let phase_trace = report
+            .phase_reports
+            .iter()
+            .map(|phase| {
+                (
+                    phase.phase,
+                    phase.decision_status.message_id().to_string(),
+                    format!("{:?}", phase.decision_status),
+                )
+            })
+            .collect::<Vec<_>>();
+        panic!(
+            "scheduler halted at {:?}; phase trace: {:?}",
+            report.scheduler_report.halted_phase, phase_trace
+        );
+    }
+
+    let infiltration = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb12_infiltration"))
+        .expect("wb12_infiltration should be present")
+        .as_f64();
+    let q_runoff = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Q"))
+        .expect("Q should be present")
+        .as_f64();
+    (infiltration, q_runoff)
+}
+
+fn capture_pre_runoff_state_surface(
+    mut surface: HillslopeWritebackSurface,
+) -> HillslopeWritebackSurface {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("timem_0002"));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("runoff probe should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-001"
+    );
+
+    report.writeback_surface
+}
+
+fn wb14_expected_ke_9001(surface: &HillslopeWritebackSurface, ksatfac: f64, ksatrec: f64) -> f64 {
+    let ssc = state_scalar(surface, "ssc");
+    let theta_1 = state_scalar(surface, "wb18_perc_theta_0001");
+    let theta_2 = state_scalar(surface, "wb18_perc_theta_0002");
+    let ul_1 = state_scalar(surface, "wb18_perc_ul_0001");
+    let ul_2 = state_scalar(surface, "wb18_perc_ul_0002");
+    let sat_frac = ((theta_1 + theta_2) / (ul_1 + ul_2)).min(1.0);
+
+    let upper_ks = ssc * 3.6e6;
+    let lower_ks = upper_ks / ksatfac;
+    let keff = ((upper_ks - lower_ks) / ((1.0 / ksatrec).exp() - 1.0))
+        * ((sat_frac / ksatrec).exp() - 1.0)
+        + lower_ks;
+    keff / 3.6e6
+}
+
+fn wb14_expected_ke_9002_or_9003(surface: &HillslopeWritebackSurface, lkeff: Option<f64>) -> f64 {
+    let ssc = state_scalar(surface, "ssc");
+    let theta_1 = state_scalar(surface, "wb18_perc_theta_0001");
+    let theta_2 = state_scalar(surface, "wb18_perc_theta_0002");
+    let ul_1 = state_scalar(surface, "wb18_perc_ul_0001");
+    let ul_2 = state_scalar(surface, "wb18_perc_ul_0002");
+    let sat_frac = ((theta_1 + theta_2) / (ul_1 + ul_2)).min(1.0);
+
+    let fc_1 = state_scalar(surface, "wb18_perc_fc_0001");
+    let fc_2 = state_scalar(surface, "wb18_perc_fc_0002");
+    let dg_1 = state_scalar(surface, "dg_0001");
+    let dg_2 = state_scalar(surface, "dg_0002");
+    let tillage_depth = dg_1 + dg_2;
+    let avthetafc = (fc_1 + fc_2) / tillage_depth;
+    let avthetadr = ((ul_1 - fc_1) + (ul_2 - fc_2)) / tillage_depth;
+
+    let psi = (1500.0_f64.ln() - 33.0_f64.ln()) / (avthetafc.ln() - avthetadr.ln());
+    let lambda = 1.0 / psi;
+    let mut keff = (ssc * 3.6e6) * sat_frac.powf((2.0 * lambda) + 3.0);
+    if let Some(lower_bound) = lkeff {
+        if lower_bound > 0.0 && keff < lower_bound {
+            keff = lower_bound;
+        }
+    }
+    keff / 3.6e6
+}
 
 #[allow(clippy::too_many_lines)]
 fn seeded_wb14_surface() -> HillslopeWritebackSurface {
@@ -319,6 +448,200 @@ fn wb14_contract_conformance_rejects_non_monotone_hyetograph_time() {
         .execute_with_kernel(&topology_report, &mut kernel, surface)
         .expect("wb14 failure should return typed report");
 
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
+
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-003"
+    );
+    assert_eq!(
+        runoff_phase.decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn wb14_contract_conformance_applies_ksatadj_9001_regime() {
+    let mut ksatadj_surface = seeded_wb14_surface();
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9001.0),
+    );
+    ksatadj_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(1.0));
+    ksatadj_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatfac"), BoundaryValue::scalar(5.0));
+    ksatadj_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatrec"), BoundaryValue::scalar(0.35));
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let pre_runoff_surface = capture_pre_runoff_state_surface(ksatadj_surface.clone());
+    let expected_ke = wb14_expected_ke_9001(&pre_runoff_surface, 5.0, 0.35);
+
+    let mut expected_surface = ksatadj_surface.clone();
+    expected_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(0.0));
+    expected_surface.state_surface.insert(
+        BoundarySymbol::from("ssc"),
+        BoundaryValue::scalar(expected_ke),
+    );
+    expected_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let (ksatadj_infiltration, ksatadj_q) = run_wb14_reconciliation_outputs(ksatadj_surface);
+    let (expected_infiltration, expected_q) = run_wb14_reconciliation_outputs(expected_surface);
+
+    assert!(
+        (ksatadj_infiltration - expected_infiltration).abs() <= WB14_KSATADJ_TOLERANCE,
+        "infiltration mismatch: actual={ksatadj_infiltration:.12}, expected={expected_infiltration:.12}, delta={:.12}",
+        (ksatadj_infiltration - expected_infiltration).abs()
+    );
+    assert!(
+        (ksatadj_q - expected_q).abs() <= WB14_KSATADJ_TOLERANCE,
+        "runoff mismatch: actual={ksatadj_q:.12}, expected={expected_q:.12}, delta={:.12}",
+        (ksatadj_q - expected_q).abs()
+    );
+}
+
+#[test]
+fn wb14_contract_conformance_applies_ksatadj_9002_regime() {
+    let mut ksatadj_surface = seeded_wb14_surface();
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9002.0),
+    );
+    ksatadj_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(1.0));
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let pre_runoff_surface = capture_pre_runoff_state_surface(ksatadj_surface.clone());
+    let expected_ke = wb14_expected_ke_9002_or_9003(&pre_runoff_surface, None);
+
+    let mut expected_surface = ksatadj_surface.clone();
+    expected_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(0.0));
+    expected_surface.state_surface.insert(
+        BoundarySymbol::from("ssc"),
+        BoundaryValue::scalar(expected_ke),
+    );
+    expected_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let (ksatadj_infiltration, ksatadj_q) = run_wb14_reconciliation_outputs(ksatadj_surface);
+    let (expected_infiltration, expected_q) = run_wb14_reconciliation_outputs(expected_surface);
+
+    assert!(
+        (ksatadj_infiltration - expected_infiltration).abs() <= WB14_KSATADJ_TOLERANCE,
+        "infiltration mismatch: actual={ksatadj_infiltration:.12}, expected={expected_infiltration:.12}, delta={:.12}",
+        (ksatadj_infiltration - expected_infiltration).abs()
+    );
+    assert!(
+        (ksatadj_q - expected_q).abs() <= WB14_KSATADJ_TOLERANCE,
+        "runoff mismatch: actual={ksatadj_q:.12}, expected={expected_q:.12}, delta={:.12}",
+        (ksatadj_q - expected_q).abs()
+    );
+}
+
+#[test]
+fn wb14_contract_conformance_applies_ksatadj_9003_burn_floor() {
+    let mut ksatadj_surface = seeded_wb14_surface();
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9003.0),
+    );
+    ksatadj_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(1.0));
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("lkeff"),
+        BoundaryValue::scalar(1_000_000.0),
+    );
+    ksatadj_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let pre_runoff_surface = capture_pre_runoff_state_surface(ksatadj_surface.clone());
+    let expected_ke = wb14_expected_ke_9002_or_9003(&pre_runoff_surface, Some(1_000_000.0));
+
+    let mut expected_surface = ksatadj_surface.clone();
+    expected_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(0.0));
+    expected_surface.state_surface.insert(
+        BoundarySymbol::from("ssc"),
+        BoundaryValue::scalar(expected_ke),
+    );
+    expected_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let (ksatadj_infiltration, ksatadj_q) = run_wb14_reconciliation_outputs(ksatadj_surface);
+    let (expected_infiltration, expected_q) = run_wb14_reconciliation_outputs(expected_surface);
+
+    assert!(
+        (ksatadj_infiltration - expected_infiltration).abs() <= WB14_KSATADJ_TOLERANCE,
+        "infiltration mismatch: actual={ksatadj_infiltration:.12}, expected={expected_infiltration:.12}, delta={:.12}",
+        (ksatadj_infiltration - expected_infiltration).abs()
+    );
+    assert!(
+        (ksatadj_q - expected_q).abs() <= WB14_KSATADJ_TOLERANCE,
+        "runoff mismatch: actual={ksatadj_q:.12}, expected={expected_q:.12}, delta={:.12}",
+        (ksatadj_q - expected_q).abs()
+    );
+}
+
+#[test]
+fn wb14_contract_conformance_rejects_active_9001_zero_ksatrec() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb14_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9001.0),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatadj"), BoundaryValue::scalar(1.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatfac"), BoundaryValue::scalar(5.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ksatrec"), BoundaryValue::scalar(0.0));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("wb14 failure should return typed report");
     assert_eq!(
         report.scheduler_report.halted_phase,
         Some(HillslopePhase::RunoffReconciliation)

@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 18
+contract_version: 19
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -313,6 +313,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 |---|---|
 | Hyetograph forcing inputs | `ninten` or `nbrkpt`; `timem_####`; `intsty_####` |
 | Soil-derived infiltration inputs | `ssc`, `dg`, `thetdr`, `thetfc` |
+| Disturbed-soil conductivity-adjustment inputs | `solwpv`, `ksatadj`, `ksatfac`, `ksatrec`, `lkeff`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `dg_####` |
 | Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`1` forward-solver lane, `0` or absent compatibility lane) |
 | Compatibility-lane observed target input | `wb12_runoff_observed` |
 | Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
@@ -321,11 +322,33 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 1. Build event subdaily intervals from `timem_####` and `intsty_####` with
    strict time monotonicity and non-negative interval intensities.
-2. Derive Green-Ampt lineage parameters from runtime symbols:
-   - `Ke = ssc`
+2. Derive baseline-authoritative effective conductivity `Ke`:
+   - default path: `Ke = ssc`;
+   - disturbed path is gated by `ksatadj = 1`;
+   - disturbed-path saturation fraction uses first-two-layer WB18 stores:
+     `sat_frac = min((theta_1 + theta_2)/(ul_1 + ul_2), 1.0)`;
+   - `solwpv = 9001`:
+     - `keffu = ssc * 3.6e6`
+     - `keffl = keffu / ksatfac`
+     - `keff = ((keffu-keffl)/(exp(1/ksatrec)-1))*(exp(sat_frac/ksatrec)-1)+keffl`
+     - `Ke = keff / 3.6e6`;
+   - `solwpv >= 9002`:
+     - top-two-layer weighted volumetric terms:
+       - `avthetafc = (fc_1 + fc_2) / (dg_1 + dg_2)`
+       - `avthetadr = ((ul_1-fc_1) + (ul_2-fc_2)) / (dg_1 + dg_2)`
+     - `psi = ln(1500/33) / ln(avthetafc/avthetadr)`
+     - `lambda = 1/psi`
+     - `keff = (ssc * 3.6e6) * sat_frac^(2*lambda + 3)`
+     - `solwpv = 9003` applies burn-severity floor when `lkeff > 0`:
+       `keff = max(keff, lkeff)`
+     - `Ke = keff / 3.6e6`.
+3. Active disturbed-path domain violations (missing/non-finite/non-positive
+   required regime symbols or invalid logarithmic-domain terms) are typed
+   hard-fail states; no silent defaults/clamping are allowed.
+4. Derive Green-Ampt lineage moisture parameters from runtime symbols:
    - `θd = thetfc - thetdr`
    - `Sm = dg * θd`
-3. For each interval `j`, compute rainfall depth
+5. For each interval `j`, compute rainfall depth
    `Rj = intsty_j * (timem_{j+1} - timem_j)` and cumulative infiltration `F`:
    - if `intsty_j <= Ke`, interval infiltration increment is `Rj`;
    - if `intsty_j > Ke`, evaluate ponding threshold
@@ -335,20 +358,20 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
      - ponded branch: solve the Green-Ampt implicit cumulative relation
        `(F - Fp) - Sm * ln((F + Sm)/(Fp + Sm)) = Ke * Δtp`
        for the ponded sub-interval duration `Δtp`.
-4. Interval rainfall excess is `max(Rj - ΔFj, 0)` where `ΔFj` is interval
+6. Interval rainfall excess is `max(Rj - ΔFj, 0)` where `ΔFj` is interval
    infiltration increment.
-5. Event totals are:
+7. Event totals are:
    - `wb14_hyetograph_rainfall = Σ Rj`
    - `wb12_infiltration = Σ ΔFj`
-6. `wb14_hyetograph_rainfall` and `wb12_rainfall_input` must agree within
+8. `wb14_hyetograph_rainfall` and `wb12_rainfall_input` must agree within
    `wb12_runoff_closure_tolerance`; mismatch is an invalid state.
-7. Reconciled runoff is:
+9. Reconciled runoff is:
    - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
    - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
      - `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
    - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
      - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
-8. Missing/non-finite/out-of-domain symbols and closure violations hard-fail;
+10. Missing/non-finite/out-of-domain symbols and closure violations hard-fail;
    no silent clamping/defaulting of hyetograph or infiltration terms is
    allowed.
 
@@ -370,6 +393,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    `HKERNEL-WB14-RUNOFF-E-002`.
 4. Non-monotone hyetograph time, negative intensity, rainfall-mismatch, or
    runoff closure overflow hard-fail with `HKERNEL-WB14-RUNOFF-E-003`.
+5. Active `ksatadj` regime vectors (`solwpv=9001/9002/9003`) must produce
+   deterministic conductivity-adjusted infiltration behavior; active-regime
+   domain violations hard-fail with typed `HKERNEL-WB14-RUNOFF-E-00x` posture.
 
 ## WB15 Canopy Interception Runtime Coupling Addendum
 
@@ -666,6 +692,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-25` | `19` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor) with explicit active-path guard posture and WB18 layer-state coupling inputs. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-06 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-4 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit event-closure term identity, added normative multi-OFE case outcome table, added alias row for `De`, and split rate tolerances for clearer unit-specific governance. |

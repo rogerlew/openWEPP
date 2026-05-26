@@ -3536,6 +3536,325 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    fn wb14_ksatadj_flag(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let symbol = BoundarySymbol::from("ksatadj");
+        let Some(value) = Self::optional_state_scalar_for_symbol(request, phase_class, &symbol)?
+        else {
+            return Ok(false);
+        };
+        if value.abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(false);
+        }
+        if (value - 1.0).abs() <= WB11_ZERO_THRESHOLD {
+            return Ok(true);
+        }
+        Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+            phase_class,
+            symbol,
+            value,
+            minimum: Some(0.0),
+            maximum: Some(1.0),
+        })
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn wb14_load_top_two_layer_ksatadj_metrics(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<(f64, f64, f64), Wb11HydrologyKernelGuardError> {
+        let mut theta_sum = 0.0_f64;
+        let mut ul_sum = 0.0_f64;
+        let mut fc_sum = 0.0_f64;
+        let mut dg_sum = 0.0_f64;
+
+        for layer_index in 1..=2 {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
+            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
+            let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+
+            let theta = Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
+            let fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
+            let ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
+            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+
+            if theta < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: theta_symbol,
+                    value: theta,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            if fc < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_symbol,
+                    value: fc,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            if ul <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ul_symbol,
+                    value: ul,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            if dg <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: dg_symbol,
+                    value: dg,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            if fc > ul + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_symbol,
+                    value: fc,
+                    minimum: Some(0.0),
+                    maximum: Some(ul),
+                });
+            }
+            if theta > ul + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: theta_symbol,
+                    value: theta,
+                    minimum: Some(0.0),
+                    maximum: Some(ul),
+                });
+            }
+
+            theta_sum += theta.max(0.0);
+            ul_sum += ul;
+            fc_sum += fc.max(0.0);
+            dg_sum += dg;
+        }
+
+        if ul_sum <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("wb18_perc_ul_agg_0001_0002"),
+                value: ul_sum,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+        if dg_sum <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("dg_agg_0001_0002"),
+                value: dg_sum,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        let mut sat_frac = theta_sum / ul_sum;
+        if !sat_frac.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("sat_frac"),
+                value: sat_frac,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            });
+        }
+        if sat_frac < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("sat_frac"),
+                value: sat_frac,
+                minimum: Some(0.0),
+                maximum: Some(1.0),
+            });
+        }
+        sat_frac = sat_frac.clamp(0.0, 1.0);
+
+        let avthetafc = fc_sum / dg_sum;
+        let avthetadr = (ul_sum - fc_sum) / dg_sum;
+
+        if avthetafc <= WB11_ZERO_THRESHOLD || avthetadr <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("avthetafc_avthetadr"),
+                value: avthetafc.min(avthetadr),
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+        if avthetafc <= avthetadr + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("avthetafc"),
+                value: avthetafc,
+                minimum: Some(avthetadr + WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        Ok((sat_frac, avthetafc, avthetadr))
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn resolve_wb14_effective_soil_conductivity(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        soil_conductivity: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if !Self::wb14_ksatadj_flag(request, phase_class)? {
+            return Ok(soil_conductivity);
+        }
+
+        let solwpv_symbol = BoundarySymbol::from("solwpv");
+        let solwpv =
+            Self::require_state_scalar_for_symbol(request, phase_class, &solwpv_symbol)?;
+        if solwpv < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: solwpv_symbol,
+                value: solwpv,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let solwpv_rounded = solwpv.round();
+        if (solwpv - solwpv_rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("solwpv"),
+                value: solwpv,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let (sat_frac, avthetafc, avthetadr) =
+            Self::wb14_load_top_two_layer_ksatadj_metrics(request, phase_class)?;
+        let upper_ks_mm_h = soil_conductivity * 3.6e6;
+
+        let effective_ks_mm_h = if (solwpv_rounded - 9001.0).abs() <= WB11_ZERO_THRESHOLD {
+            let ksatfac_symbol = BoundarySymbol::from("ksatfac");
+            let ksatfac =
+                Self::require_state_scalar_for_symbol(request, phase_class, &ksatfac_symbol)?;
+            if ksatfac <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ksatfac_symbol,
+                    value: ksatfac,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let ksatrec_symbol = BoundarySymbol::from("ksatrec");
+            let ksatrec =
+                Self::require_state_scalar_for_symbol(request, phase_class, &ksatrec_symbol)?;
+            if ksatrec <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ksatrec_symbol,
+                    value: ksatrec,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let lower_ks_mm_h = upper_ks_mm_h / ksatfac;
+            let denominator = (1.0 / ksatrec).exp() - 1.0;
+            if denominator <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("ksatrec"),
+                    value: denominator,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            ((upper_ks_mm_h - lower_ks_mm_h) / denominator) * ((sat_frac / ksatrec).exp() - 1.0)
+                + lower_ks_mm_h
+        } else if solwpv_rounded >= 9002.0 - WB11_ZERO_THRESHOLD {
+            let psi_denominator = avthetafc.ln() - avthetadr.ln();
+            if psi_denominator <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("avthetafc_avthetadr"),
+                    value: psi_denominator,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            let psi = (1500.0_f64.ln() - 33.0_f64.ln()) / psi_denominator;
+            if psi <= WB11_ZERO_THRESHOLD || !psi.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("psi"),
+                    value: psi,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let lambda = 1.0 / psi;
+            let exponent = (2.0 * lambda) + 3.0;
+            if !lambda.is_finite() || !exponent.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("lambda"),
+                    value: lambda,
+                    minimum: None,
+                    maximum: None,
+                });
+            }
+
+            let mut effective_ks = upper_ks_mm_h * sat_frac.powf(exponent);
+            if (solwpv_rounded - 9003.0).abs() <= WB11_ZERO_THRESHOLD {
+                let lkeff_symbol = BoundarySymbol::from("lkeff");
+                let lkeff =
+                    Self::require_state_scalar_for_symbol(request, phase_class, &lkeff_symbol)?;
+                if lkeff > 0.0 && effective_ks < lkeff {
+                    effective_ks = lkeff;
+                }
+            }
+            effective_ks
+        } else {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("solwpv"),
+                value: solwpv,
+                minimum: Some(9001.0),
+                maximum: None,
+            });
+        };
+
+        if !effective_ks_mm_h.is_finite() || effective_ks_mm_h < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("keff"),
+                value: effective_ks_mm_h,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        Ok((if effective_ks_mm_h < 0.0 {
+            0.0
+        } else {
+            effective_ks_mm_h
+        }) / 3.6e6)
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_runoff_reconciliation(
         request: &HillslopeKernelRequest<'_>,
@@ -3569,6 +3888,12 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        let soil_conductivity = Self::resolve_wb14_effective_soil_conductivity(
+            request,
+            phase_class,
+            soil_conductivity,
+        )?;
+
         let active_frost_coupling = Self::resolve_active_frost_coupling(request, phase_class)?;
         let frost_coupling = if active_frost_coupling {
             Some(Self::compute_active_frost_coupling(
@@ -5410,4 +5735,3 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 }
-
