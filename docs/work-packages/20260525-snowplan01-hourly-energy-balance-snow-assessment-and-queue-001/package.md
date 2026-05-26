@@ -1,9 +1,10 @@
 # 20260525-snowplan01-hourly-energy-balance-snow-assessment-and-queue-001
 
 ## Status
-- state: queued
-- date: 2026-05-25
+- state: package-complete
+- date: 2026-05-26
 - timezone: UTC
+- decision: GO
 
 ## Objective
 Assess closure scope for baseline-authoritative hourly energy-balance snow
@@ -137,7 +138,7 @@ All evidence artifacts must include explicit `Static:` and/or `Ran:` sections.
 ## Exit Criteria
 - A dependency-ordered 4-package queue exists with explicit contract-first
   constraints and baseline provenance posture.
-- Required preparation artifacts exist and are queued/traceable.
+- Required preparation artifacts exist and are populated/traceable.
 - Package entry is registered in `docs/work-packages/README.md`.
 
 ## Security Impact and Review Gate
