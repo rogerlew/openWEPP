@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Infiltration/runoff partition consumers affected by frozen-soil state
   - Soil/erosion coupling consumers requiring freeze-thaw context
 evidence_level: static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-26
 supersedes: []
 superseded_by: []
 ---
@@ -112,6 +112,8 @@ Out of scope:
 | INV-SNOWFREEZE-009 | Winter-routine activation branch is explicit: winter hourly processing is invoked when at least one trigger condition is true (existing snowpack, existing soil frost layer, or average daily temperature below `0 degC`), with no silent bypass. | hard-fail | REF-SNOWFREEZE-CH3-INTRO | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-010 | CLIM05 parsed snow-control coupling invariant: when parsed `snow.options.*` controls are projected to runtime, coupling must enforce finite/valid control domains (`newsnw > 0`, `ssd > 0`, `newsnw <= ssd`), publish signed `S = melt - accumulation`, and maintain non-negative `snow.runtime_swe` without silent fallback/defaulting. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH5-COUPLING, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-011 | SIMIMPL18 day-key partition/publication closure: for active snow coupling and precipitation days where `Tmax <= rst`, liquid runoff-coupling input from direct rainfall/melt is zero for that day key (`RM = 0`), snow storage update remains explicit (`snow.runtime_swe(new) = snow.runtime_swe(old) + accumulation - melt`), and downstream published `Snow-Water`/hydout-equivalent snow storage values derive from runtime SWE state rather than static sidecar control `snow.options.ssd`. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-HRPRECIP, REF-SNOWFREEZE-CH5-COUPLING, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-012 | Frost routine-chain dispatch and handoff closure: active winter-hourly frost triggers dispatch `winter -> frostN`, `frostN` performs water-state handoff with `frwatc(1)` at hourly entry and `frwatc(0)` at day-end/thaw-complete exit, and freeze-active branches execute `frzng -> frznw` lineage without silent bypass. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-FROST | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SNOWFREEZE-013 | Frozen-soil conductivity authority closure: when frost is present, saturated-conductivity coupling follows `frsoil` fine-layer aggregation with `getFreezeCond` land-use-dependent `kfactor` selection and remains explicitly bounded/typed at the runtime seam (`frost.runtime_infcap_frz`). | hard-fail | REF-SNOWFREEZE-CH3-FROST, REF-SNOWFREEZE-CH4-COUPLING, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -128,6 +130,8 @@ Out of scope:
 | `INV-SNOWFREEZE-009` | runtime | Winter-routine trigger-condition branch gate | Typed hard error on silent skip when trigger condition is true | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SNOWFREEZE-010` | runtime | CLIM05 snow-control adapter + hydrology snow-coupling branch | Typed hard error on missing/non-finite/domain-invalid `snow.options.*` controls or invalid `S`/`snow.runtime_swe` closure | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SNOWFREEZE-011` | runtime | CLIM05 partition branch + WB13/hydout publication mapper | Typed hard error on cold-day liquid-partition mismatch (`RM > 0` when `Tmax <= rst`) or publication of `Snow-Water` from static `snow.options.ssd` instead of runtime SWE state | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SNOWFREEZE-012` | runtime | Winter/frost dispatch gate and routine-chain sequencing validator (`winter`, `frostN`, `frwatc`, `frzng`, `frznw`) | Typed hard error on active-branch dispatch mismatch, missing handoff call sequencing, or silent bypass | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SNOWFREEZE-013` | runtime | Frozen-soil conductivity coupling validator (`frsoil` + `getFreezeCond`) | Typed hard error on missing land-use coefficient selection, invalid frozen-zone conductivity aggregation, or non-finite seam export | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -137,7 +141,7 @@ winter snow/freeze migration scope. Existing typed aliases use
 `HillslopeProductionStateSymbol` / `HillslopeProductionFluxSymbol` mappings;
 hourly-internal aliases that are not yet produced on runtime writeback are
 reserved under explicit `snow.hourly.*` / `winter.hourly.*` / `frost.hourly.*`
-namespaces for SIMIMPL28/SIMIMPL29 implementation.
+namespaces for staged SIMIMPL28/SIMIMPL29/SIMIMPL32 implementation.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
@@ -186,6 +190,8 @@ namespaces for SIMIMPL28/SIMIMPL29 implementation.
 - Active CLIM05 coupling with missing/non-finite/out-of-domain `snow.options.*` controls or negative `snow.runtime_swe`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Published `Snow-Water` or hydout-equivalent snow storage value sourced from static sidecar control `snow.options.ssd` instead of runtime `snow.runtime_swe`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Drift-active process claims in promotion evidence without updated active-lineage authority. `[DIRECT][Static] + [INFERENCE][Static]`
+- Active frost branch execution that omits required routine-chain handoff semantics (`frwatc(1)` at active-hour ingress and `frwatc(0)` at day-end/thaw-complete egress). `[DIRECT][Static] + [INFERENCE][Static]`
+- Frost-active conductivity coupling that bypasses `frsoil`/`getFreezeCond` authority mapping or exports non-finite `frost.runtime_infcap_frz`. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -196,6 +202,8 @@ namespaces for SIMIMPL28/SIMIMPL29 implementation.
 - OBL-SNOWFREEZE-P-005: Keep drift-activation assumptions explicit; do not imply active drift transport without authority-backed contract amendment. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SNOWFREEZE-P-006: When parsed snow controls are projected, publish `S` and `snow.runtime_swe` as explicit coupled boundary/state outputs and hard-fail on active-coupling symbol/domain violations. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SNOWFREEZE-P-007: Publish day-key `Snow-Water` storage outputs from runtime SWE state mapping (not static sidecar controls) and preserve cold-day partition closure (`Tmax <= rst` implies no direct liquid `RM` contribution). `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-008: Preserve baseline-authoritative frost routine-chain dispatch semantics in active branches (`winter -> frostN -> {frzng/mlt*}` with required `frwatc` ingress/egress handoff) and hard-fail on sequencing violations. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SNOWFREEZE-P-009: Apply frozen-soil conductivity authority via `frsoil` + `getFreezeCond` lineage when frost is present and publish bounded, finite `frost.runtime_infcap_frz` seam outputs. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -216,6 +224,8 @@ namespaces for SIMIMPL28/SIMIMPL29 implementation.
 | Frost heat-flow semantics (`INV-SNOWFREEZE-006`) | frost routine bookkeeping | Hard error on invalid equation domain; investigate hourly-heavy deltas per ADR confidence tiers | Tier-B investigation gate | `[DIRECT][Static]` |
 | Coupling completeness (`INV-SNOWFREEZE-007`) | winter payload boundary handoff | Hard error on missing/invalid field or unit mismatch | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | CLIM05 parsed snow-control coupling (`INV-SNOWFREEZE-010`) | runtime snow-control adaptation and hydrology coupling branch | Hard error on missing/non-finite/out-of-domain controls or invalid `S`/`snow.runtime_swe` closure | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Frost routine-chain dispatch/handoff (`INV-SNOWFREEZE-012`) | active winter-frost branch execution path | Hard error on routine-chain dispatch mismatch or missing `frwatc` handoff sequencing | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Frozen-soil conductivity closure (`INV-SNOWFREEZE-013`) | frost-active conductivity/infiltration-capacity coupling path | Hard error on non-authoritative conductivity path or non-finite/invalid `frost.runtime_infcap_frz` export | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Drift activation governance (`INV-SNOWFREEZE-008`) | review/disposition/promotion gate | Governance `HOLD` until active-implementation authority is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
@@ -321,11 +331,11 @@ Cross-contract consumer ownership for the ratified winter payload is explicit:
 |---|---|---|
 | `S`, `snow.runtime_swe`, day-key `Snow-Water` publication lineage | `SC-SNOWFREEZE-001`, `SC-WATBAL-001` | `SC-RUNOFFPART-001`, `SC-SYSTEM-001` |
 | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` | `SC-SNOWFREEZE-001` | `SC-SOIL-001`, `SC-WATBAL-001`, `SC-SYSTEM-001` |
-| Hourly reserved aliases under `snow.hourly.*`, `winter.hourly.*`, `frost.hourly.*` | `SC-SNOWFREEZE-001` | SIMIMPL28/SIMIMPL29 runtime implementation and downstream coupling tests |
+| Hourly reserved aliases under `snow.hourly.*`, `winter.hourly.*`, `frost.hourly.*` | `SC-SNOWFREEZE-001` | SIMIMPL28/SIMIMPL29/SIMIMPL32 runtime implementation and downstream coupling tests |
 
 ### Contract-Derived Test Requirements (Downstream)
 
-SIMIMPL28/SIMIMPL29 must implement contract-derived tests covering:
+SIMIMPL28/SIMIMPL29/SIMIMPL32 must implement contract-derived tests covering:
 
 1. Alias projection closure:
    existing typed runtime symbols map exactly to the contract alias names for
@@ -337,15 +347,20 @@ SIMIMPL28/SIMIMPL29 must implement contract-derived tests covering:
    `winter.hourly.cloud_fraction_####`, `snow.hourly.rain_m_####`,
    `snow.hourly.snowfall_m_####`) must be present with valid units/domains
    before boundary publication.
-3. SIMIMPL29 reserved hourly kernel payload completeness:
-   migration-complete hourly snow/frost families (`snow.hourly.depth_*`,
+3. SIMIMPL29 reserved hourly snow-kernel payload completeness:
+   migration-complete hourly snow families (`snow.hourly.depth_*`,
    `snow.hourly.density_*`, `snow.hourly.depth_available_m`,
-   `snow.hourly.melt_m`, `frost.hourly.*`) must be present with valid
-   units/domains before boundary publication.
+   `snow.hourly.melt_m`) must be present with valid units/domains before
+   boundary publication.
 4. `Dsavail` timing closure:
    melt upper-bound branch uses pre-hour available snow-depth state
    (`snow.hourly.depth_available_m`) with no off-by-one timing drift.
-5. Typed failure posture:
+5. SIMIMPL32 frost-hourly payload and routine-chain completeness:
+   required `frost.hourly.*` families plus active routine-chain dispatch/
+   handoff semantics (`winter -> frostN`, `frwatc` ingress/egress, `frzng`/
+   `frznw` freeze lineage, `frsoil`/`getFreezeCond` conductivity lineage) are
+   present and validated with typed failures.
+6. Typed failure posture:
    missing/non-finite/out-of-domain winter payload symbols in active hourly
    branches hard-fail with typed error paths and no silent fallback.
 
@@ -353,10 +368,10 @@ SIMIMPL28/SIMIMPL29 must implement contract-derived tests covering:
 
 SIMIMPL28 closure scope is restricted to baseline-authoritative hourly forcing
 families generated from climate + slope + active snow controls (`sunmap`,
-`radcur`, `hr_tmp`, `stmtim` lineage). Frost heat-flow hourly families and
-hourly snow depth/density/melt state families remain SIMIMPL29 closure scope.
-Promotion claims for those deferred families must remain explicit `HOLD`
-ownership until SIMIMPL29 evidence exists.
+`radcur`, `hr_tmp`, `stmtim` lineage). Frost heat-flow hourly families remain
+SIMIMPL32 closure scope, while hourly snow depth/density/melt state families
+remain SIMIMPL29 closure scope. Promotion claims for deferred families must
+remain explicit `HOLD` ownership until corresponding evidence exists.
 
 ### SIMIMPL29 Snow Kernel Port and Hourly State Closure
 
@@ -387,14 +402,53 @@ snow control execution. Required closure surface for this wave:
 SIMIMPL29 does not claim full baseline frost energy-balance migration closure.
 `frost.hourly.*` family closure remains explicit follow-on ownership.
 
+## SIMIMPL31 Frost Routine-Chain Authority and Contract-Test Requirements Addendum
+
+### Baseline Routine-Chain Authority Map
+
+SIMIMPL31 closes migration-scope authority ambiguity for the baseline frost
+routine chain by ratifying routine-to-alias/invariant ownership in canonical
+contract text.
+
+| Baseline routine (source) | Call lineage authority | Canonical responsibility | Contract boundary aliases |
+|---|---|---|---|
+| `winter` (`winter.for`) | Active hourly trigger dispatches `frostN(hour)` when frost trigger conditions are present; frost path is explicitly skipped only when winter coupling is disabled. | Winter-hourly orchestration entry point for frost processing within daily winter loop. | `winter.hourly.*`, `snow.hourly.*`, downstream `frost.runtime_*` payload handoff |
+| `frostN` (`frostn.for`) | Main hourly frost driver; performs ingress `frwatc(1)` handoff at active-hour initialization, branch-specific freeze/thaw process dispatch, and egress `frwatc(0)` handoff at hour-24 or thaw-complete closure. | Freeze/thaw branch routing, heat-flow bookkeeping, and daily handoff closure. | `frost.hourly.*`, `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+| `frzng` (`frzng.for`) | Freeze-active branch extension path called by `frostN`; invokes `frznw` when infiltrated/frozen-zone liquid-water freezing is required. | Energy-limited frost-front extension and latent-heat bookkeeping. | `frost.hourly.qsrf_w_m2`, `frost.hourly.quf_w_m2`, `frost.runtime_dfrost`, `frost.runtime_ws_frz`, `frost.runtime_nft` |
+| `frznw` (`frznw.for`) | Layer-local freezing helper called by `frzng`. | Fine-layer freezing time/energy closure and frozen/liquid partition updates. | `frost.runtime_ws_frz`, `frost.runtime_dfrost` (through parent update lineage) |
+| `frwatc` (`frwatc.for`) | Bidirectional handoff routine: `wbtofs=1` maps water-balance state to frost fine-layer state; `wbtofs=0` maps frost-updated fine-layer state back to coarse soil/water-balance state. | Water-state exchange seam between frost routines and water-balance/soil consumers. | `frost.runtime_ws_frz`, soil-water lineage surfaces consumed by `SC-SOIL-001` / `SC-WATBAL-001` |
+| `frsoil` (`frsoil.for`) + `getFreezeCond` (`getfreezecond.for`) | Soil conductivity adjustment path for frost-active conditions; `getFreezeCond` selects frozen-soil coefficient from land-use/plant class; `frsoil` aggregates fine-layer conductivity to layer exports. | Frozen-soil conductivity and infiltration-capacity coupling authority under frost-active state. | `frost.runtime_infcap_frz`, `frost.options.kfactor{1,2,3}`, `frost.options.wintRed` |
+| `winthd` (`winthd.for`) | Winter report/output helper routine. | Output/reporting surface for winter diagnostics; does not replace runtime boundary authority. | governance/reporting only |
+
+### SIMIMPL32 Contract-Derived Test Requirements (Frost Scope)
+
+SIMIMPL32 must implement contract-derived tests that demonstrate:
+
+1. Dispatch trigger closure:
+   active winter-frost trigger conditions dispatch frost processing and
+   explicit disabled conditions skip processing without ambiguous side effects.
+2. Handoff direction closure:
+   `frwatc(1)` and `frwatc(0)` direction semantics are preserved at runtime
+   seam boundaries with typed failures on missing/invalid handoff state.
+3. Freeze lineage closure:
+   `frzng`/`frznw` branch execution preserves finite/non-negative
+   freeze-depth/water-state updates with explicit failure posture on invalid
+   energy-time domains.
+4. Conductivity lineage closure:
+   `frsoil` + `getFreezeCond` land-use coefficient selection remains explicit
+   and drives frost-active infiltration-capacity coupling exports.
+5. Cross-contract seam closure:
+   frost runtime payloads consumed by `SC-SOIL-001`, `SC-RUNOFFPART-001`,
+   `SC-WATBAL-001`, and `SC-SYSTEM-001` remain complete, finite, and typed.
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Snow kernel-state hourly families are now implemented (`snow.hourly.depth_*`, `snow.hourly.density_*`, `snow.hourly.melt_m`), but `frost.hourly.*` families remain implementation-open for full hourly snow/frost payload closure. | Snow wave closure is materially improved, but frost hourly state/process parity remains outstanding. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | SIMIMPL31 closes frost routine-chain authority mapping, but `frost.hourly.*` runtime family implementation and contract-derived frost execution tests remain open. | Authority ambiguity is removed, but executable frost hourly/process parity evidence is still pending. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is now explicit, but executable cross-contract comparator vectors for hourly-heavy winter internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled hourly vectors remains limited pending SIMIMPL28/SIMIMPL30. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is explicit, but executable cross-contract comparator vectors for frost-hourly internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled frost vectors remains limited pending SIMIMPL32 and SIMIMPL35. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`) and SIMIMPL29 emits the hourly family, but comparator-tier depth/density/melt vector breadth remains limited for broad climate regimes. | Residual risk is evidence-depth, not missing alias/state publication. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
@@ -410,3 +464,4 @@ SIMIMPL29 does not claim full baseline frost energy-balance migration closure.
 | `2026-05-25` | `6` | `Codex` | SIMIMPL27 amendment: finalized concrete snow/freeze boundary alias mapping (typed + reserved hourly namespaces), added downstream contract-derived test requirements for hourly migration waves, and reclassified boundary/API gap posture from non-promotable ambiguity to implementation-queued promotable-with-risk. |
 | `2026-05-25` | `7` | `Codex` | SIMIMPL28 amendment: split hourly reserved-family obligations into SIMIMPL28 forcing-emission scope vs SIMIMPL29 kernel-state closure scope, clarified deferred frost/depth-density family ownership, and updated gap posture to reflect staged hourly alias closure. |
 | `2026-05-25` | `8` | `Codex` | SIMIMPL29 amendment: added baseline-authoritative snow kernel (`snowd`/`melt`) hourly state closure authority, runtime carry-state publication requirements, active hourly symbol hard-fail posture, and updated gap posture to reflect snow-family closure with frost-hourly follow-on ownership. |
+| `2026-05-26` | `9` | `Codex` | SIMIMPL31 amendment: ratified baseline frost routine-chain authority (`winter`/`frostN`/`frwatc`/`frzng`/`frznw`/`frsoil`/`getFreezeCond`/`winthd`), added frost dispatch/conductivity closure invariants (`INV-SNOWFREEZE-012/013`), and defined SIMIMPL32 contract-derived frost test obligations with updated gap ownership. |

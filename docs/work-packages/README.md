@@ -670,6 +670,11 @@ Authorized packages:
     publish `frost-energy-solver-wp-queue.md`, a dependency-ordered
     contract-first implementation queue to close frost process-parity gaps and
     unblock SIMIMPL30 hold-lift prerequisites.
+- `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
+  - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
+    authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline
+    routine-to-alias/invariant mapping, and defining downstream
+    contract-derived test requirements for SIMIMPL32.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
