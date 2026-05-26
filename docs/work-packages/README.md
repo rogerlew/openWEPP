@@ -657,6 +657,10 @@ Authorized packages:
     coupling, publishing `snow.hourly.depth_*`, `snow.hourly.density_*`, and
     `snow.hourly.melt_m` families with typed active-winter guard posture and
     runtime snow carry-state closure.
+- `20260525-simimpl30-winter-hourly-semantic-parity-rerun-and-disposition-001/`
+  - Purpose: execute SIMIMPL30 by running winter-hourly semantic parity reruns,
+    classifying residuals by confidence tier and contract guards, and
+    publishing explicit GO/HOLD hold-lift disposition for the SNOWPLAN01 wave.
 - `20260525-snowplan01-hourly-energy-balance-snow-assessment-and-queue-001/`
   - Purpose: assess feasibility for baseline-authoritative hourly
     energy-balance snow closure and publish a dependency-ordered four-package
