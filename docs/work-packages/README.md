@@ -640,6 +640,10 @@ Authorized packages:
   - Purpose: prepare and execute SIMIMPL26 by comparing baseline vs candidate
     `soil.dat`/`.sol` artifacts with reproducible provenance, explicit delta
     classification, and evidence-backed follow-on disposition guidance.
+- `20260525-snowplan01-hourly-energy-balance-snow-assessment-and-queue-001/`
+  - Purpose: assess feasibility for baseline-authoritative hourly
+    energy-balance snow closure and publish a dependency-ordered four-package
+    implementation queue with mandatory contract-first sequencing constraints.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
