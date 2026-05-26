@@ -59,6 +59,19 @@ pub enum Wb11HydrologyKernelGuardError {
         minimum: Option<f64>,
         maximum: Option<f64>,
     },
+    Erod18MissingRequiredSymbol {
+        symbol: BoundarySymbol,
+    },
+    Erod18NonFiniteSymbol {
+        symbol: BoundarySymbol,
+        value: f64,
+    },
+    Erod18DomainViolation {
+        symbol: BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    },
 }
 
 impl Wb11HydrologyKernelGuardError {
@@ -68,15 +81,18 @@ impl Wb11HydrologyKernelGuardError {
             Self::MissingRequiredStateSymbol { .. }
             | Self::MissingRequiredFluxSymbol { .. }
             | Self::Erod13MissingRequiredSymbol { .. }
-            | Self::Erod14MissingRequiredSymbol { .. } => BoundaryClass::MissingRequiredInput,
+            | Self::Erod14MissingRequiredSymbol { .. }
+            | Self::Erod18MissingRequiredSymbol { .. } => BoundaryClass::MissingRequiredInput,
             Self::NonFiniteStateSymbol { .. }
             | Self::NonFiniteFluxSymbol { .. }
             | Self::Erod13NonFiniteSymbol { .. }
-            | Self::Erod14NonFiniteSymbol { .. } => BoundaryClass::NonFinite,
+            | Self::Erod14NonFiniteSymbol { .. }
+            | Self::Erod18NonFiniteSymbol { .. } => BoundaryClass::NonFinite,
             Self::StateSymbolOutOfRange { .. }
             | Self::FluxSymbolOutOfRange { .. }
             | Self::Erod13DomainViolation { .. }
-            | Self::Erod14DomainViolation { .. } => BoundaryClass::DomainViolation,
+            | Self::Erod14DomainViolation { .. }
+            | Self::Erod18DomainViolation { .. } => BoundaryClass::DomainViolation,
         }
     }
 
@@ -101,6 +117,15 @@ impl Wb11HydrologyKernelGuardError {
             Self::Erod14DomainViolation { .. } => {
                 return String::from("HKERNEL-EROD14-WAVE2-E-003");
             }
+            Self::Erod18MissingRequiredSymbol { .. } => {
+                return String::from("HKERNEL-EROD18-ROUTE-E-001");
+            }
+            Self::Erod18NonFiniteSymbol { .. } => {
+                return String::from("HKERNEL-EROD18-ROUTE-E-002");
+            }
+            Self::Erod18DomainViolation { .. } => {
+                return String::from("HKERNEL-EROD18-ROUTE-E-003");
+            }
             _ => {}
         }
         let (phase_class, suffix) = match self {
@@ -115,7 +140,10 @@ impl Wb11HydrologyKernelGuardError {
             | Self::Erod13DomainViolation { .. }
             | Self::Erod14MissingRequiredSymbol { .. }
             | Self::Erod14NonFiniteSymbol { .. }
-            | Self::Erod14DomainViolation { .. } => unreachable!(),
+            | Self::Erod14DomainViolation { .. }
+            | Self::Erod18MissingRequiredSymbol { .. }
+            | Self::Erod18NonFiniteSymbol { .. }
+            | Self::Erod18DomainViolation { .. } => unreachable!(),
         };
 
         let (kernel_family, phase_prefix) = match phase_class {
@@ -261,6 +289,33 @@ impl fmt::Display for Wb11HydrologyKernelGuardError {
             } => write!(
                 f,
                 "{}: EROD14 Wave-2 symbol {}={} outside [{:?}, {:?}]",
+                self.code(),
+                symbol,
+                value,
+                minimum,
+                maximum
+            ),
+            Self::Erod18MissingRequiredSymbol { symbol } => write!(
+                f,
+                "{}: missing required EROD18 route topology symbol {}",
+                self.code(),
+                symbol
+            ),
+            Self::Erod18NonFiniteSymbol { symbol, value } => write!(
+                f,
+                "{}: non-finite EROD18 route topology symbol {} ({})",
+                self.code(),
+                symbol,
+                value
+            ),
+            Self::Erod18DomainViolation {
+                symbol,
+                value,
+                minimum,
+                maximum,
+            } => write!(
+                f,
+                "{}: EROD18 route topology symbol {}={} outside [{:?}, {:?}]",
                 self.code(),
                 symbol,
                 value,

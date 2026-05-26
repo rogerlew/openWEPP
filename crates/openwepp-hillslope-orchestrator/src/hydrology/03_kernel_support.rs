@@ -678,8 +678,60 @@ impl Wb11HydrologyKernel {
         })
     }
 
+    fn require_erod18_state_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        symbol: &BoundarySymbol,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.state_surface.get(symbol) else {
+            return Err(Wb11HydrologyKernelGuardError::Erod18MissingRequiredSymbol {
+                symbol: symbol.clone(),
+            });
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::Erod18NonFiniteSymbol {
+                symbol: symbol.clone(),
+                value: scalar,
+            });
+        }
+        Ok(scalar)
+    }
+
+    fn require_erod18_domain(
+        symbol: &BoundarySymbol,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if let Some(minimum_value) = minimum {
+            if value < minimum_value - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        if let Some(maximum_value) = maximum {
+            if value > maximum_value + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: symbol.clone(),
+                    value,
+                    minimum,
+                    maximum,
+                });
+            }
+        }
+        Ok(())
+    }
+
     fn erod14_class_symbol(root: &str, class_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{class_index:04}"))
+    }
+
+    fn erod18_route_segment_symbol(root: &str, segment_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("{root}_{segment_index:04}"))
     }
 
     fn extract_state_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
@@ -6489,6 +6541,146 @@ impl Wb11HydrologyKernel {
     }
 
     #[allow(clippy::too_many_lines)]
+    fn run_erod18_route_segment_topology(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<Vec<WritebackField>, Wb11HydrologyKernelGuardError> {
+        if !Self::resolve_erod14_wave2_enabled(request)? {
+            return Ok(Vec::new());
+        }
+
+        let nslpts_symbol = BoundarySymbol::from(EROD18_SYMBOL_NSLPTS);
+        let nslpts_value = Self::require_erod18_state_scalar(request, &nslpts_symbol)?;
+
+        let segment_index_u32 =
+            u32::try_from(EROD18_ROUTE_SEGMENT_INDEX).map_err(|_| {
+                Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: nslpts_symbol.clone(),
+                    value: nslpts_value,
+                    minimum: Some(2.0),
+                    maximum: None,
+                }
+            })?;
+        let min_segment_value = f64::from(segment_index_u32);
+        Self::require_erod18_domain(&nslpts_symbol, nslpts_value, Some(min_segment_value), None)?;
+
+        let nslpts_rounded = nslpts_value.round();
+        if (nslpts_value - nslpts_rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                symbol: nslpts_symbol.clone(),
+                value: nslpts_value,
+                minimum: Some(min_segment_value),
+                maximum: None,
+            });
+        }
+        let nslpts = format!("{nslpts_rounded:.0}").parse::<usize>().map_err(|_| {
+            Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                symbol: nslpts_symbol.clone(),
+                value: nslpts_value,
+                minimum: Some(min_segment_value),
+                maximum: None,
+            }
+        })?;
+        if nslpts < EROD18_ROUTE_SEGMENT_INDEX {
+            return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                symbol: nslpts_symbol.clone(),
+                value: nslpts_value,
+                minimum: Some(min_segment_value),
+                maximum: None,
+            });
+        }
+
+        let segment_index = EROD18_ROUTE_SEGMENT_INDEX;
+        let xu_symbol = Self::erod18_route_segment_symbol(EROD18_ROOT_XU, segment_index);
+        let xl_symbol = Self::erod18_route_segment_symbol(EROD18_ROOT_XL, segment_index);
+        let ainf_symbol = Self::erod18_route_segment_symbol(EROD18_ROOT_AINF, segment_index);
+        let binf_symbol = Self::erod18_route_segment_symbol(EROD18_ROOT_BINF, segment_index);
+        let cinf_symbol = Self::erod18_route_segment_symbol(EROD18_ROOT_CINF, segment_index);
+        let ainftc_symbol =
+            Self::erod18_route_segment_symbol(EROD18_ROOT_AINTC, segment_index);
+        let binftc_symbol =
+            Self::erod18_route_segment_symbol(EROD18_ROOT_BINTC, segment_index);
+        let cinftc_symbol =
+            Self::erod18_route_segment_symbol(EROD18_ROOT_CINTC, segment_index);
+
+        let xu = Self::require_erod18_state_scalar(request, &xu_symbol)?;
+        let xl = Self::require_erod18_state_scalar(request, &xl_symbol)?;
+        let ainf = Self::require_erod18_state_scalar(request, &ainf_symbol)?;
+        let binf = Self::require_erod18_state_scalar(request, &binf_symbol)?;
+        let cinf = Self::require_erod18_state_scalar(request, &cinf_symbol)?;
+        let ainftc = Self::require_erod18_state_scalar(request, &ainftc_symbol)?;
+        let binftc = Self::require_erod18_state_scalar(request, &binftc_symbol)?;
+        let cinftc = Self::require_erod18_state_scalar(request, &cinftc_symbol)?;
+
+        Self::require_erod18_domain(&xu_symbol, xu, Some(0.0), None)?;
+        Self::require_erod18_domain(&xl_symbol, xl, Some(xu), None)?;
+
+        let qostar_symbol = BoundarySymbol::from(EROD18_SYMBOL_QOSTAR);
+        let qostar = Self::require_erod18_state_scalar(request, &qostar_symbol)?;
+
+        let xdetst_symbol = BoundarySymbol::from(EROD18_SYMBOL_XDETST);
+        let xdetst = Self::require_erod18_state_scalar(request, &xdetst_symbol)?;
+        Self::require_erod18_domain(&xdetst_symbol, xdetst, Some(0.0), Some(xl))?;
+
+        let lddend_symbol = BoundarySymbol::from(EROD18_SYMBOL_LDDEND);
+        let lddend = Self::require_erod18_state_scalar(request, &lddend_symbol)?;
+        Self::require_erod18_domain(&lddend_symbol, lddend, Some(0.0), None)?;
+
+        let ldlast = lddend;
+        let xdbeg = 0.0;
+        let ndep = 0.0;
+        let xc1 = xu;
+        let xc2 = xl;
+        let xdend = xl;
+        let mshear = EROD18_MSHEAR_MIN;
+
+        Self::require_erod18_domain(
+            &BoundarySymbol::from(EROD18_SYMBOL_MSHEAR),
+            mshear,
+            Some(EROD18_MSHEAR_MIN),
+            Some(EROD18_MSHEAR_MAX),
+        )?;
+
+        let dl = 0.0;
+        let du = dl;
+
+        let updates = vec![
+            WritebackField::bounded(EROD18_SYMBOL_NSLPTS, nslpts_value, Some(min_segment_value), None),
+            WritebackField::bounded(xu_symbol, xu, Some(0.0), None),
+            WritebackField::bounded(xl_symbol, xl, Some(xu), None),
+            WritebackField::unbounded(ainf_symbol, ainf),
+            WritebackField::unbounded(binf_symbol, binf),
+            WritebackField::unbounded(cinf_symbol, cinf),
+            WritebackField::unbounded(ainftc_symbol, ainftc),
+            WritebackField::unbounded(binftc_symbol, binftc),
+            WritebackField::unbounded(cinftc_symbol, cinftc),
+            WritebackField::unbounded(EROD18_SYMBOL_QOSTAR, qostar),
+            WritebackField::bounded(EROD18_SYMBOL_XDBEG, xdbeg, Some(0.0), None),
+            WritebackField::bounded(EROD18_SYMBOL_XDEND, xdend, Some(xu), Some(xl)),
+            WritebackField::bounded(EROD18_SYMBOL_XDETST, xdetst, Some(0.0), Some(xl)),
+            WritebackField::bounded(EROD18_SYMBOL_LDLAST, ldlast, Some(0.0), None),
+            WritebackField::bounded(EROD18_SYMBOL_LDDEND, lddend, Some(0.0), None),
+            WritebackField::unbounded(EROD18_SYMBOL_DU, du),
+            WritebackField::unbounded(EROD18_SYMBOL_DL, dl),
+            WritebackField::bounded(
+                EROD18_SYMBOL_NDEP,
+                ndep,
+                Some(0.0),
+                Some(1.0),
+            ),
+            WritebackField::bounded(
+                EROD18_SYMBOL_MSHEAR,
+                mshear,
+                Some(EROD18_MSHEAR_MIN),
+                Some(EROD18_MSHEAR_MAX),
+            ),
+            WritebackField::bounded(EROD18_SYMBOL_XC1, xc1, Some(xu), Some(xl)),
+            WritebackField::bounded(EROD18_SYMBOL_XC2, xc2, Some(xu), Some(xl)),
+        ];
+
+        Ok(updates)
+    }
+
+    #[allow(clippy::too_many_lines)]
     fn run_peak_runoff(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
@@ -6852,7 +7044,10 @@ impl Wb11HydrologyKernel {
 
         let erod13_state_updates = Self::run_erod13_wave1_core(request, q_runoff, peakro, watdur)?;
         let erod14_state_updates = Self::run_erod14_wave2(request, &erod13_state_updates)?;
-        let status_message_id = if !erod14_state_updates.is_empty() {
+        let erod18_state_updates = Self::run_erod18_route_segment_topology(request)?;
+        let status_message_id = if !erod18_state_updates.is_empty() {
+            "HKERNEL-EROD18-ROUTE-OK-001"
+        } else if !erod14_state_updates.is_empty() {
             "HKERNEL-EROD14-WAVE2-OK-001"
         } else if !erod13_state_updates.is_empty() {
             "HKERNEL-EROD13-CORE-OK-001"
@@ -6908,6 +7103,7 @@ impl Wb11HydrologyKernel {
         ];
         state_updates.extend(erod13_state_updates);
         state_updates.extend(erod14_state_updates);
+        state_updates.extend(erod18_state_updates);
 
         let writeback = KernelWritebackPayload::with_updates(state_updates, Vec::new());
         Ok(KernelRunResponse::new(status, writeback))

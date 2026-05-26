@@ -1862,6 +1862,7 @@ const MOFE03_WAVE2_DEFAULT_CINTC: f64 = 0.2;
 const MOFE03_WAVE2_DEFAULT_BETA: f64 = 0.5;
 const MOFE03_WAVE2_DEFAULT_QOSTAR: f64 = 0.2;
 const MOFE03_WAVE2_DEFAULT_SSA_SOIL: f64 = 5.0;
+const MOFE03_ROUTE_SEGMENT_INDEX: usize = 2;
 
 #[derive(Debug, Clone, Copy)]
 struct Mofe03Wave2CaseScalars {
@@ -1894,6 +1895,7 @@ fn seed_mofe03_wave2_runtime_surface_inputs(
     let case_scalars = build_mofe03_wave2_case_scalars(qout);
 
     seed_mofe03_wave2_core_scalars(runtime_surface, ofe_count, slplen, qout, qin, qostar)?;
+    seed_mofe03_wave2_route_topology_ingress(runtime_surface, qostar);
     let (beta, theta) = resolve_mofe03_wave2_beta_theta(runtime_surface)?;
     seed_mofe03_wave2_case_state(runtime_surface, case_scalars, beta, theta);
     seed_mofe03_wave2_ssa_soil(runtime_surface)?;
@@ -2058,6 +2060,66 @@ fn seed_mofe03_wave2_core_scalars(
         BoundaryValue::scalar(MOFE03_WAVE2_DEFAULT_CINTC),
     );
     Ok(())
+}
+
+fn seed_mofe03_wave2_route_topology_ingress(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    qostar: f64,
+) {
+    let xu = runtime_surface_symbol_value(runtime_surface, "erod14_xtop")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_XTOP);
+    let xl = runtime_surface_symbol_value(runtime_surface, "erod14_xbot")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_XBOT);
+    let xdetst = runtime_surface_symbol_value(runtime_surface, "erod14_xdetst")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_XDETST);
+    let lddend = runtime_surface_symbol_value(runtime_surface, "erod14_lddend")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_LDDEND);
+    let ainftc = runtime_surface_symbol_value(runtime_surface, "erod14_ainftc")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_AINTC);
+    let binftc = runtime_surface_symbol_value(runtime_surface, "erod14_binftc")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_BINTC);
+    let cinftc = runtime_surface_symbol_value(runtime_surface, "erod14_cinftc")
+        .unwrap_or(MOFE03_WAVE2_DEFAULT_CINTC);
+    let segment = MOFE03_ROUTE_SEGMENT_INDEX;
+
+    seed_mofe03_scalar_if_absent(
+        runtime_surface,
+        "qostar",
+        qostar.max(MOFE03_WAVE2_DEFAULT_QOSTAR),
+    );
+    seed_mofe03_scalar_if_absent(runtime_surface, "xdetst", xdetst);
+    seed_mofe03_scalar_if_absent(runtime_surface, "lddend", lddend);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "xu", segment, xu);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "xl", segment, xl);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "ainf", segment, ainftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "binf", segment, binftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "cinf", segment, cinftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "ainftc", segment, ainftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "binftc", segment, binftc);
+    seed_mofe03_segment_scalar_if_absent(runtime_surface, "cinftc", segment, cinftc);
+}
+
+fn seed_mofe03_scalar_if_absent(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    symbol: &str,
+    value: f64,
+) {
+    if runtime_surface_symbol_value(runtime_surface, symbol).is_some() {
+        return;
+    }
+    runtime_surface
+        .state_surface
+        .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+}
+
+fn seed_mofe03_segment_scalar_if_absent(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    root: &str,
+    segment_index: usize,
+    value: f64,
+) {
+    let symbol = format!("{root}_{segment_index:04}");
+    seed_mofe03_scalar_if_absent(runtime_surface, &symbol, value);
 }
 
 fn resolve_mofe03_wave2_beta_theta(
@@ -2285,10 +2347,10 @@ fn execute_scheduler_kernel_lifecycle(
         .iter()
         .map(|phase| phase.kernel_status.message_id().to_string())
         .collect::<Vec<_>>();
-    let erod14_wave2_kernel_status_seen = execution_report
-        .phase_reports
-        .iter()
-        .any(|phase| phase.kernel_status.message_id().contains("EROD14-WAVE2"));
+    let erod14_wave2_kernel_status_seen = execution_report.phase_reports.iter().any(|phase| {
+        let message_id = phase.kernel_status.message_id();
+        message_id.contains("EROD14-WAVE2") || message_id.contains("EROD18-ROUTE")
+    });
 
     Ok(DailyExecutionResult {
         scheduler_outcome_class: execution_report.scheduler_report.outcome_class,

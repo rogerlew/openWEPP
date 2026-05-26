@@ -688,6 +688,12 @@ Authorized packages:
     `qostar` threshold behavior), recording expected pre-migration failures,
     and publishing pre-implementation gate evidence before EROD18/EROD19
     runtime migration work.
+- `20260526-erod18-route-runtime-segment-state-topology-and-ingress-closure-001/`
+  - Purpose: execute EROD18 by implementing typed route segment-state topology
+    and runner-to-kernel ingress closure (`nslpts`, `xu/xl`,
+    `ainf/binf/cinf`, `ainftc/binftc/cinftc`, route seam publication family)
+    with typed guard enforcement before EROD19 full `route.for` branch-family
+    migration.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline

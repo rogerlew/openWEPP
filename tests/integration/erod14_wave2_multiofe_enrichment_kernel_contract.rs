@@ -297,6 +297,7 @@ fn seeded_surface() -> HillslopeWritebackSurface {
         BoundarySymbol::from("erod14_qostar"),
         BoundaryValue::scalar(0.2),
     );
+    state_surface.insert(BoundarySymbol::from("qostar"), BoundaryValue::scalar(0.2));
     state_surface.insert(
         BoundarySymbol::from("erod14_slplen"),
         BoundaryValue::scalar(1.0),
@@ -315,6 +316,34 @@ fn seeded_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("erod14_cinftc"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(BoundarySymbol::from("xdetst"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("lddend"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("xu_0002"), BoundaryValue::scalar(0.2));
+    state_surface.insert(BoundarySymbol::from("xl_0002"), BoundaryValue::scalar(0.5));
+    state_surface.insert(
+        BoundarySymbol::from("ainf_0002"),
+        BoundaryValue::scalar(0.4),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("binf_0002"),
+        BoundaryValue::scalar(0.3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("cinf_0002"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("ainftc_0002"),
+        BoundaryValue::scalar(0.4),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("binftc_0002"),
+        BoundaryValue::scalar(0.3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("cinftc_0002"),
         BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
@@ -741,6 +770,79 @@ fn erod14_contract_vector_rejects_unreproportionable_mass_request() {
     );
 }
 
+#[test]
+fn erod18_contract_route_topology_rejects_missing_required_symbol() {
+    let mut surface = seeded_surface();
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("ainf_0002"));
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD18-ROUTE-E-001"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn erod18_contract_route_topology_rejects_non_finite_required_symbol() {
+    let mut surface = seeded_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("xu_0002"),
+        BoundaryValue::scalar(f64::NAN),
+    );
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD18-ROUTE-E-002"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::NonFinite
+    );
+}
+
+#[test]
+fn erod18_contract_route_topology_rejects_domain_violation() {
+    let mut surface = seeded_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("xu_0002"), BoundaryValue::scalar(0.6));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("xl_0002"), BoundaryValue::scalar(0.5));
+
+    let report = run_surface(surface);
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::ClosureDiagnostics)
+    );
+    let phase = closure_phase_report(&report);
+    assert_eq!(
+        phase.decision_status.message_id(),
+        "HKERNEL-EROD18-ROUTE-E-003"
+    );
+    assert_eq!(
+        phase.decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
 fn require_state_scalar(
     report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
     symbol: &str,
@@ -757,26 +859,32 @@ fn require_state_scalar(
 #[ignore = "EROD19 route segment migration pending"]
 fn erod17_contract_mshear_dispatch_vector_requires_segment_case_publication() {
     let mut low_shear = seeded_surface();
-    low_shear
-        .state_surface
-        .insert(BoundarySymbol::from("ainf_0002"), BoundaryValue::scalar(0.01));
-    low_shear
-        .state_surface
-        .insert(BoundarySymbol::from("binf_0002"), BoundaryValue::scalar(0.01));
-    low_shear
-        .state_surface
-        .insert(BoundarySymbol::from("cinf_0002"), BoundaryValue::scalar(0.01));
+    low_shear.state_surface.insert(
+        BoundarySymbol::from("ainf_0002"),
+        BoundaryValue::scalar(0.01),
+    );
+    low_shear.state_surface.insert(
+        BoundarySymbol::from("binf_0002"),
+        BoundaryValue::scalar(0.01),
+    );
+    low_shear.state_surface.insert(
+        BoundarySymbol::from("cinf_0002"),
+        BoundaryValue::scalar(0.01),
+    );
 
     let mut high_shear = seeded_surface();
-    high_shear
-        .state_surface
-        .insert(BoundarySymbol::from("ainf_0002"), BoundaryValue::scalar(10.0));
-    high_shear
-        .state_surface
-        .insert(BoundarySymbol::from("binf_0002"), BoundaryValue::scalar(10.0));
-    high_shear
-        .state_surface
-        .insert(BoundarySymbol::from("cinf_0002"), BoundaryValue::scalar(10.0));
+    high_shear.state_surface.insert(
+        BoundarySymbol::from("ainf_0002"),
+        BoundaryValue::scalar(10.0),
+    );
+    high_shear.state_surface.insert(
+        BoundarySymbol::from("binf_0002"),
+        BoundaryValue::scalar(10.0),
+    );
+    high_shear.state_surface.insert(
+        BoundarySymbol::from("cinf_0002"),
+        BoundaryValue::scalar(10.0),
+    );
 
     let low_report = run_surface(low_shear);
     let high_report = run_surface(high_shear);
@@ -795,32 +903,26 @@ fn erod17_contract_mshear_dispatch_vector_requires_segment_case_publication() {
 #[ignore = "EROD19 route segment migration pending"]
 fn erod17_contract_deposition_end_vector_requires_xdend_publication() {
     let mut in_segment = seeded_surface();
-    in_segment.state_surface.insert(
-        BoundarySymbol::from("qostar"),
-        BoundaryValue::scalar(0.3),
-    );
-    in_segment.state_surface.insert(
-        BoundarySymbol::from("xu_0002"),
-        BoundaryValue::scalar(0.10),
-    );
-    in_segment.state_surface.insert(
-        BoundarySymbol::from("xl_0002"),
-        BoundaryValue::scalar(0.60),
-    );
+    in_segment
+        .state_surface
+        .insert(BoundarySymbol::from("qostar"), BoundaryValue::scalar(0.3));
+    in_segment
+        .state_surface
+        .insert(BoundarySymbol::from("xu_0002"), BoundaryValue::scalar(0.10));
+    in_segment
+        .state_surface
+        .insert(BoundarySymbol::from("xl_0002"), BoundaryValue::scalar(0.60));
 
     let mut extends_to_end = seeded_surface();
-    extends_to_end.state_surface.insert(
-        BoundarySymbol::from("qostar"),
-        BoundaryValue::scalar(-0.3),
-    );
-    extends_to_end.state_surface.insert(
-        BoundarySymbol::from("xu_0002"),
-        BoundaryValue::scalar(0.10),
-    );
-    extends_to_end.state_surface.insert(
-        BoundarySymbol::from("xl_0002"),
-        BoundaryValue::scalar(0.60),
-    );
+    extends_to_end
+        .state_surface
+        .insert(BoundarySymbol::from("qostar"), BoundaryValue::scalar(-0.3));
+    extends_to_end
+        .state_surface
+        .insert(BoundarySymbol::from("xu_0002"), BoundaryValue::scalar(0.10));
+    extends_to_end
+        .state_surface
+        .insert(BoundarySymbol::from("xl_0002"), BoundaryValue::scalar(0.60));
 
     let in_segment_report = run_surface(in_segment);
     let extends_report = run_surface(extends_to_end);
@@ -845,16 +947,14 @@ fn erod17_contract_deposition_end_vector_requires_xdend_publication() {
 #[ignore = "EROD19 route segment migration pending"]
 fn erod17_contract_ndep_followup_vector_requires_post_detachment_deposition_path() {
     let mut no_followup = seeded_surface();
-    no_followup.state_surface.insert(
-        BoundarySymbol::from("G"),
-        BoundaryValue::scalar(0.2),
-    );
+    no_followup
+        .state_surface
+        .insert(BoundarySymbol::from("G"), BoundaryValue::scalar(0.2));
 
     let mut followup = seeded_surface();
-    followup.state_surface.insert(
-        BoundarySymbol::from("G"),
-        BoundaryValue::scalar(0.25),
-    );
+    followup
+        .state_surface
+        .insert(BoundarySymbol::from("G"), BoundaryValue::scalar(0.25));
 
     let no_followup_report = run_surface(no_followup);
     let followup_report = run_surface(followup);
@@ -888,10 +988,9 @@ fn erod17_contract_qostar_threshold_vector_requires_upper_boundary_branch_diverg
     );
 
     let mut non_zero = seeded_surface();
-    non_zero.state_surface.insert(
-        BoundarySymbol::from("qostar"),
-        BoundaryValue::scalar(0.02),
-    );
+    non_zero
+        .state_surface
+        .insert(BoundarySymbol::from("qostar"), BoundaryValue::scalar(0.02));
 
     let near_zero_report = run_surface(near_zero);
     let non_zero_report = run_surface(non_zero);
@@ -908,22 +1007,12 @@ fn erod17_contract_qostar_threshold_vector_requires_upper_boundary_branch_diverg
 }
 
 #[test]
-#[ignore = "EROD19 route segment migration pending"]
 fn erod17_contract_route_branch_seam_vector_requires_core_publication_family() {
     let report = run_surface(seeded_surface());
     assert!(report.scheduler_report.is_success());
 
     for symbol in [
-        "mshear",
-        "xc1",
-        "xc2",
-        "du",
-        "dl",
-        "xdbeg",
-        "xdend",
-        "xdetst",
-        "ndep",
-        "lddend",
+        "mshear", "xc1", "xc2", "du", "dl", "xdbeg", "xdend", "xdetst", "ndep", "lddend",
     ] {
         let _ = require_state_scalar(&report, symbol);
     }
