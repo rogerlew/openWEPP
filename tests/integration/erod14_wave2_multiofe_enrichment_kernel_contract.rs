@@ -740,3 +740,191 @@ fn erod14_contract_vector_rejects_unreproportionable_mass_request() {
         BoundaryClass::DomainViolation
     );
 }
+
+fn require_state_scalar(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing expected state symbol {symbol}"))
+        .as_f64()
+}
+
+#[test]
+#[ignore = "EROD19 route segment migration pending"]
+fn erod17_contract_mshear_dispatch_vector_requires_segment_case_publication() {
+    let mut low_shear = seeded_surface();
+    low_shear
+        .state_surface
+        .insert(BoundarySymbol::from("ainf_0002"), BoundaryValue::scalar(0.01));
+    low_shear
+        .state_surface
+        .insert(BoundarySymbol::from("binf_0002"), BoundaryValue::scalar(0.01));
+    low_shear
+        .state_surface
+        .insert(BoundarySymbol::from("cinf_0002"), BoundaryValue::scalar(0.01));
+
+    let mut high_shear = seeded_surface();
+    high_shear
+        .state_surface
+        .insert(BoundarySymbol::from("ainf_0002"), BoundaryValue::scalar(10.0));
+    high_shear
+        .state_surface
+        .insert(BoundarySymbol::from("binf_0002"), BoundaryValue::scalar(10.0));
+    high_shear
+        .state_surface
+        .insert(BoundarySymbol::from("cinf_0002"), BoundaryValue::scalar(10.0));
+
+    let low_report = run_surface(low_shear);
+    let high_report = run_surface(high_shear);
+    assert!(low_report.scheduler_report.is_success());
+    assert!(high_report.scheduler_report.is_success());
+
+    let low_case = require_state_scalar(&low_report, "mshear");
+    let high_case = require_state_scalar(&high_report, "mshear");
+    assert!(
+        (low_case - high_case).abs() > TEST_TOLERANCE,
+        "route mshear branch publication must distinguish low/high shear segment vectors"
+    );
+}
+
+#[test]
+#[ignore = "EROD19 route segment migration pending"]
+fn erod17_contract_deposition_end_vector_requires_xdend_publication() {
+    let mut in_segment = seeded_surface();
+    in_segment.state_surface.insert(
+        BoundarySymbol::from("qostar"),
+        BoundaryValue::scalar(0.3),
+    );
+    in_segment.state_surface.insert(
+        BoundarySymbol::from("xu_0002"),
+        BoundaryValue::scalar(0.10),
+    );
+    in_segment.state_surface.insert(
+        BoundarySymbol::from("xl_0002"),
+        BoundaryValue::scalar(0.60),
+    );
+
+    let mut extends_to_end = seeded_surface();
+    extends_to_end.state_surface.insert(
+        BoundarySymbol::from("qostar"),
+        BoundaryValue::scalar(-0.3),
+    );
+    extends_to_end.state_surface.insert(
+        BoundarySymbol::from("xu_0002"),
+        BoundaryValue::scalar(0.10),
+    );
+    extends_to_end.state_surface.insert(
+        BoundarySymbol::from("xl_0002"),
+        BoundaryValue::scalar(0.60),
+    );
+
+    let in_segment_report = run_surface(in_segment);
+    let extends_report = run_surface(extends_to_end);
+    assert!(in_segment_report.scheduler_report.is_success());
+    assert!(extends_report.scheduler_report.is_success());
+
+    let xdend_in_segment = require_state_scalar(&in_segment_report, "xdend");
+    let xdend_extends = require_state_scalar(&extends_report, "xdend");
+    let xl_extends = require_state_scalar(&extends_report, "xl_0002");
+
+    assert!(
+        xdend_in_segment < xl_extends - TEST_TOLERANCE,
+        "deposition-end-in-segment vector must publish xdend strictly inside segment"
+    );
+    assert!(
+        (xdend_extends - xl_extends).abs() <= TEST_TOLERANCE,
+        "deposition-extends-to-end vector must publish xdend equal to segment end"
+    );
+}
+
+#[test]
+#[ignore = "EROD19 route segment migration pending"]
+fn erod17_contract_ndep_followup_vector_requires_post_detachment_deposition_path() {
+    let mut no_followup = seeded_surface();
+    no_followup.state_surface.insert(
+        BoundarySymbol::from("G"),
+        BoundaryValue::scalar(0.2),
+    );
+
+    let mut followup = seeded_surface();
+    followup.state_surface.insert(
+        BoundarySymbol::from("G"),
+        BoundaryValue::scalar(0.25),
+    );
+
+    let no_followup_report = run_surface(no_followup);
+    let followup_report = run_surface(followup);
+
+    let ndep_no_followup = require_state_scalar(&no_followup_report, "ndep");
+    let ndep_followup = require_state_scalar(&followup_report, "ndep");
+    let lddend_no_followup = require_state_scalar(&no_followup_report, "lddend");
+    let lddend_followup = require_state_scalar(&followup_report, "lddend");
+
+    assert!(
+        ndep_no_followup <= TEST_TOLERANCE,
+        "no-followup vector should keep ndep at zero"
+    );
+    assert!(
+        ndep_followup > 0.0,
+        "followup vector must publish non-zero ndep when detachment transitions into deposition"
+    );
+    assert!(
+        (lddend_followup - lddend_no_followup).abs() > TEST_TOLERANCE,
+        "post-detachment deposition path should alter lddend"
+    );
+}
+
+#[test]
+#[ignore = "EROD19 route segment migration pending"]
+fn erod17_contract_qostar_threshold_vector_requires_upper_boundary_branch_divergence() {
+    let mut near_zero = seeded_surface();
+    near_zero.state_surface.insert(
+        BoundarySymbol::from("qostar"),
+        BoundaryValue::scalar(0.0005),
+    );
+
+    let mut non_zero = seeded_surface();
+    non_zero.state_surface.insert(
+        BoundarySymbol::from("qostar"),
+        BoundaryValue::scalar(0.02),
+    );
+
+    let near_zero_report = run_surface(near_zero);
+    let non_zero_report = run_surface(non_zero);
+    assert!(near_zero_report.scheduler_report.is_success());
+    assert!(non_zero_report.scheduler_report.is_success());
+
+    let dl_near_zero = require_state_scalar(&near_zero_report, "dl");
+    let dl_non_zero = require_state_scalar(&non_zero_report, "dl");
+
+    assert!(
+        (dl_near_zero - dl_non_zero).abs() > TEST_TOLERANCE,
+        "near-zero qostar threshold branch should publish distinct upper-boundary deposition-rate behavior"
+    );
+}
+
+#[test]
+#[ignore = "EROD19 route segment migration pending"]
+fn erod17_contract_route_branch_seam_vector_requires_core_publication_family() {
+    let report = run_surface(seeded_surface());
+    assert!(report.scheduler_report.is_success());
+
+    for symbol in [
+        "mshear",
+        "xc1",
+        "xc2",
+        "du",
+        "dl",
+        "xdbeg",
+        "xdend",
+        "xdetst",
+        "ndep",
+        "lddend",
+    ] {
+        let _ = require_state_scalar(&report, symbol);
+    }
+}

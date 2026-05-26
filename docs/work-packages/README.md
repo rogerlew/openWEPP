@@ -682,6 +682,12 @@ Authorized packages:
     routine mapping, explicit `mshear`/deposition invariants and alias
     continuity requirements, and corrected `rtpart.for` provenance
     classification before EROD17 contract-derived tests.
+- `20260526-erod17-route-branch-contract-derived-tests-and-preimplementation-gate-001/`
+  - Purpose: execute EROD17 by implementing route-branch contract-derived test
+    vectors (`mshear`, deposition-end branching, `ndep` follow-up, and
+    `qostar` threshold behavior), recording expected pre-migration failures,
+    and publishing pre-implementation gate evidence before EROD18/EROD19
+    runtime migration work.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline
