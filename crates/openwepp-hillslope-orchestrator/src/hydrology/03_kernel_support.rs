@@ -6540,9 +6540,279 @@ impl Wb11HydrologyKernel {
         Ok(updates)
     }
 
-    #[allow(clippy::too_many_lines)]
-    fn run_erod18_route_segment_topology(
+    fn erod19_shear(a: f64, b: f64, c: f64, x: f64) -> f64 {
+        let mut value = (a * x * x) + (b * x) + c;
+        if value < 0.0 {
+            value = 0.0;
+        }
+        let mut shear = value.powf(0.666_666_67);
+        if shear <= 0.0 {
+            shear = 0.0001;
+        }
+        shear
+    }
+
+    fn erod19_root(a: f64, b: f64, c: f64) -> Option<(f64, f64)> {
+        if a.abs() <= WB11_ZERO_THRESHOLD {
+            return None;
+        }
+        let discriminant = (b * b) + (4.0 * a * c);
+        if discriminant < 0.0 {
+            return None;
+        }
+        let part = discriminant.sqrt();
+        let two_a = 2.0 * a;
+        if two_a.abs() <= WB11_ZERO_THRESHOLD {
+            return None;
+        }
+        let mut x1 = (-b - part) / two_a;
+        let mut x2 = (-b + part) / two_a;
+        if x1 > x2 {
+            std::mem::swap(&mut x1, &mut x2);
+        }
+        Some((x1, x2))
+    }
+
+    #[allow(clippy::similar_names, clippy::too_many_lines)]
+    fn erod19_xcrit_classification(
+        a: f64,
+        b: f64,
+        c: f64,
+        tauc: f64,
+        xb: f64,
+        xe: f64,
+    ) -> (f64, f64, f64) {
+        let mut xc1 = xb;
+        let mut xc2 = xe;
+        let mut mshear = 1.0;
+
+        let mut tauchk = tauc.powf(1.5) - c;
+        if tauchk < 0.0 {
+            tauchk = 0.0;
+        }
+
+        let taub = Self::erod19_shear(a, b, c, xb);
+        let taue = Self::erod19_shear(a, b, c, xe);
+
+        if a.abs() <= WB11_ZERO_THRESHOLD {
+            if b.abs() > WB11_ZERO_THRESHOLD {
+                xc1 = tauchk / b;
+            } else {
+                xc1 = 1000.0;
+            }
+            if taue > taub {
+                mshear = 3.0;
+                if xc1 <= xb {
+                    mshear = 2.0;
+                }
+                if xc1 >= xe {
+                    mshear = 1.0;
+                }
+            } else {
+                mshear = 4.0;
+                if xc1 >= xe {
+                    mshear = 2.0;
+                }
+                if xc1 <= xb {
+                    mshear = 1.0;
+                }
+            }
+        } else if a > 0.0 && taue > taub {
+            if taub >= tauc {
+                mshear = 2.0;
+            } else if taue <= tauc {
+                mshear = 1.0;
+            } else {
+                mshear = 3.0;
+                if let Some((x1, x2)) = Self::erod19_root(a, b, tauchk) {
+                    if x1 >= xb && x1 <= xe {
+                        xc1 = x1;
+                    } else if x2 >= xb && x2 <= xe {
+                        xc1 = x2;
+                    }
+                }
+            }
+        } else if taue >= tauc && taub >= tauc {
+            mshear = 2.0;
+        } else {
+            let part = (b * b) + (4.0 * a * tauchk);
+            if part <= 0.0 {
+                mshear = 1.0;
+            } else if let Some((x1, x2)) = Self::erod19_root(a, b, tauchk) {
+                if taub <= tauc && taue >= tauc {
+                    mshear = 3.0;
+                    xc1 = if x1 <= xb || x1 >= xe { x2 } else { x1 };
+                } else if taub >= tauc && taue <= tauc {
+                    mshear = 4.0;
+                    xc1 = if x1 <= xb || x1 >= xe { x2 } else { x1 };
+                } else if taub <= tauc && taue <= tauc {
+                    mshear = 5.0;
+                    xc1 = x1;
+                    xc2 = x2;
+                    if x1 < xb
+                        || x1 > xe
+                        || x2 < xb
+                        || x2 > xe
+                        || (x1 - x2).abs() <= WB11_ZERO_THRESHOLD
+                    {
+                        mshear = 1.0;
+                    }
+                }
+            }
+        }
+
+        (mshear, xc1.clamp(xb, xe), xc2.clamp(xb, xe))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn erod19_depc(
+        xu: f64,
+        a: f64,
+        b: f64,
+        phi: f64,
+        theta: f64,
+        du: f64,
+        ktrato: f64,
+        qostar: f64,
+    ) -> f64 {
+        if (qostar + xu).abs() >= 1.0e-7 {
+            du - ((a * ktrato * phi * 2.0 * (qostar + xu)) / (phi + 2.0))
+                - (((b * ktrato) - (2.0 * a * ktrato * qostar) - theta) * phi / (phi + 1.0))
+        } else {
+            0.0
+        }
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn erod19_depend(
+        xu: f64,
+        xl: f64,
+        a: f64,
+        b: f64,
+        cdep: f64,
+        phi: f64,
+        theta: f64,
+        ktrato: f64,
+        qostar: f64,
+    ) -> f64 {
+        let tmpvr1 = 2.0 * a * ktrato;
+        let r1 = (phi / (1.0 + phi)) * ((b * ktrato) - theta - (tmpvr1 * qostar));
+        let r2 = tmpvr1 * phi / (2.0 + phi);
+
+        let mut xdend;
+        if qostar >= 0.0 {
+            xdend = xl;
+            let denominator = xdend + qostar;
+            let mut ratio = if denominator.abs() > WB11_ZERO_THRESHOLD {
+                (xu + qostar) / denominator
+            } else {
+                1.0
+            };
+            if ratio <= 0.0 {
+                ratio = 1.0;
+            }
+            let expon = 1.0 + phi;
+            let f = r1 + (r2 * (xdend + qostar)) + (cdep * ratio.powf(expon));
+            if f < 0.0 {
+                return xdend;
+            }
+            xdend = xu + 0.01;
+            if xdend > xl {
+                xdend = f64::midpoint(xu, xl);
+            }
+        } else {
+            if (xu + qostar).abs() <= 0.0001 {
+                return -qostar;
+            }
+            xdend = xu + 0.0001;
+            if xdend > xl {
+                xdend = f64::midpoint(xu, xl);
+            }
+            let denominator = xdend + qostar;
+            let mut ratio = if denominator.abs() > WB11_ZERO_THRESHOLD {
+                (xu + qostar) / denominator
+            } else {
+                1.0
+            };
+            if ratio <= 0.0 {
+                ratio = 1.0;
+            }
+            let expon = 1.0 + phi;
+            let f = r1 + (r2 * (xdend + qostar)) + (cdep * ratio.powf(expon));
+            if f >= 0.0 {
+                return xdend;
+            }
+        }
+
+        let mut xmin = xl;
+        let mut positive_f_count = 0_u32;
+        let mut converged = false;
+        for _ in 0..10 {
+            let tmp = xdend + qostar;
+            let mut ratio = if tmp.abs() > WB11_ZERO_THRESHOLD {
+                (xu + qostar) / tmp
+            } else {
+                1.0
+            };
+            if ratio < 0.0 {
+                ratio = 1.0;
+            }
+            let expon = 1.0 + phi;
+            let ratio_pow = ratio.powf(expon);
+            let f = r1 + (r2 * (xdend + qostar)) + (cdep * ratio_pow);
+
+            if f > 0.0 && qostar < 0.0 {
+                positive_f_count += 1;
+                if xdend < xmin {
+                    xmin = xdend;
+                }
+            }
+
+            if f.abs() <= 0.001 {
+                converged = true;
+                break;
+            }
+
+            if tmp.abs() > WB11_ZERO_THRESHOLD {
+                let df = r2 - (((1.0 + phi) * cdep * ratio_pow) / tmp);
+                if df.abs() > WB11_ZERO_THRESHOLD {
+                    xdend -= f / df;
+                    if qostar < 0.0 {
+                        if xdend < xu {
+                            xdend = xu + 0.0001;
+                        }
+                        if xdend > -qostar {
+                            xdend = -qostar - 0.0001;
+                        }
+                        if xdend > xl {
+                            xdend = xl;
+                        }
+                    }
+                } else {
+                    xdend = xu + 0.0001;
+                }
+            }
+
+            if xdend < xu {
+                xdend = xu + 0.0001;
+            }
+        }
+
+        if !converged && qostar < 0.0 {
+            if positive_f_count == 0 {
+                xdend = xl;
+            } else {
+                xdend = xmin;
+            }
+        }
+
+        xdend
+    }
+
+    #[allow(clippy::similar_names, clippy::too_many_lines)]
+    fn run_erod19_route_segment_migration(
         request: &HillslopeKernelRequest<'_>,
+        erod13_state_updates: &[WritebackField],
     ) -> Result<Vec<WritebackField>, Wb11HydrologyKernelGuardError> {
         if !Self::resolve_erod14_wave2_enabled(request)? {
             return Ok(Vec::new());
@@ -6625,13 +6895,214 @@ impl Wb11HydrologyKernel {
         let lddend = Self::require_erod18_state_scalar(request, &lddend_symbol)?;
         Self::require_erod18_domain(&lddend_symbol, lddend, Some(0.0), None)?;
 
-        let ldlast = lddend;
-        let xdbeg = 0.0;
-        let ndep = 0.0;
-        let xc1 = xu;
-        let xc2 = xl;
-        let xdend = xl;
-        let mshear = EROD18_MSHEAR_MIN;
+        let ktrato_symbol = BoundarySymbol::from(EROD14_SYMBOL_KTRATO);
+        let ktrato = Self::require_erod18_state_scalar(request, &ktrato_symbol)?;
+        Self::require_erod18_domain(&ktrato_symbol, ktrato, Some(WB11_ZERO_THRESHOLD), None)?;
+
+        let theta_symbol = BoundarySymbol::from(EROD13_SYMBOL_THETA);
+        let theta = if let Some(value) =
+            Self::extract_state_update_scalar(erod13_state_updates, EROD13_SYMBOL_THETA)
+        {
+            value
+        } else if request.state_surface.contains_key(&theta_symbol) {
+            Self::require_erod18_state_scalar(request, &theta_symbol)?
+        } else {
+            let cntlen_symbol = BoundarySymbol::from(EROD13_SYMBOL_CNTLEN);
+            let detinr_symbol = BoundarySymbol::from(EROD13_SYMBOL_DETINR);
+            let tcend_symbol = BoundarySymbol::from(EROD13_SYMBOL_TCEND);
+            let effdrr_symbol = BoundarySymbol::from(EROD13_SYMBOL_EFFDRR);
+            let effdrn_symbol = BoundarySymbol::from(EROD13_SYMBOL_EFFDRN);
+
+            let cntlen = Self::require_erod18_state_scalar(request, &cntlen_symbol)?;
+            let detinr = Self::require_erod18_state_scalar(request, &detinr_symbol)?;
+            let tcend = Self::require_erod18_state_scalar(request, &tcend_symbol)?;
+            let effdrr = Self::require_erod18_state_scalar(request, &effdrr_symbol)?;
+            let effdrn = Self::require_erod18_state_scalar(request, &effdrn_symbol)?;
+
+            Self::require_erod18_domain(&cntlen_symbol, cntlen, Some(WB11_ZERO_THRESHOLD), None)?;
+            Self::require_erod18_domain(&detinr_symbol, detinr, Some(0.0), None)?;
+            Self::require_erod18_domain(&tcend_symbol, tcend, Some(WB11_ZERO_THRESHOLD), None)?;
+            Self::require_erod18_domain(&effdrr_symbol, effdrr, Some(WB11_ZERO_THRESHOLD), None)?;
+            Self::require_erod18_domain(&effdrn_symbol, effdrn, Some(WB11_ZERO_THRESHOLD), None)?;
+
+            ((cntlen * detinr) / tcend) * (effdrr / effdrn)
+        };
+        Self::require_erod18_domain(&theta_symbol, theta, Some(0.0), None)?;
+
+        let phi_symbol = BoundarySymbol::from(EROD13_SYMBOL_PHI);
+        let phi = if let Some(value) =
+            Self::extract_state_update_scalar(erod13_state_updates, EROD13_SYMBOL_PHI)
+        {
+            value
+        } else if request.state_surface.contains_key(&phi_symbol) {
+            Self::require_erod18_state_scalar(request, &phi_symbol)?
+        } else if request
+            .state_surface
+            .contains_key(&BoundarySymbol::from(EROD14_SYMBOL_BETA))
+        {
+            let route_beta_symbol = BoundarySymbol::from(EROD14_SYMBOL_BETA);
+            let route_beta = Self::require_erod18_state_scalar(request, &route_beta_symbol)?;
+            Self::require_erod18_domain(&route_beta_symbol, route_beta, Some(0.0), None)?;
+            route_beta
+        } else {
+            let beta_symbol = BoundarySymbol::from(EROD13_SYMBOL_BETA);
+            let veleff_symbol = BoundarySymbol::from(EROD13_SYMBOL_VELEFF);
+            let pkro_symbol = BoundarySymbol::from(EROD13_SYMBOL_PKRO);
+
+            let beta = Self::require_erod18_state_scalar(request, &beta_symbol)?;
+            let veleff = Self::require_erod18_state_scalar(request, &veleff_symbol)?;
+            let pkro = Self::require_erod18_state_scalar(request, &pkro_symbol)?;
+
+            Self::require_erod18_domain(&beta_symbol, beta, Some(0.0), None)?;
+            Self::require_erod18_domain(&veleff_symbol, veleff, Some(0.0), None)?;
+            Self::require_erod18_domain(&pkro_symbol, pkro, Some(WB11_ZERO_THRESHOLD), None)?;
+
+            (beta * veleff) / pkro
+        };
+        Self::require_erod18_domain(&phi_symbol, phi, Some(0.0), None)?;
+        Self::require_erod18_domain(
+            &phi_symbol,
+            phi,
+            Some(WB11_ZERO_THRESHOLD),
+            Some(EROD14_MAX_PHI),
+        )?;
+
+        let tauc_symbol = BoundarySymbol::from(EROD13_SYMBOL_TAUCN);
+        let tauc = if let Some(value) =
+            Self::extract_state_update_scalar(erod13_state_updates, EROD13_SYMBOL_TAUCN)
+        {
+            value
+        } else if request.state_surface.contains_key(&tauc_symbol) {
+            Self::require_erod18_state_scalar(request, &tauc_symbol)?
+        } else if request
+            .state_surface
+            .contains_key(&BoundarySymbol::from(EROD13_SYMBOL_SHRSOL))
+        {
+            let tcadjf_symbol = BoundarySymbol::from(EROD13_SYMBOL_TCADJF);
+            let shcrit_symbol = BoundarySymbol::from(EROD13_SYMBOL_SHCRIT);
+            let shrsol_symbol = BoundarySymbol::from(EROD13_SYMBOL_SHRSOL);
+
+            let tcadjf = Self::require_erod18_state_scalar(request, &tcadjf_symbol)?;
+            let shcrit = Self::require_erod18_state_scalar(request, &shcrit_symbol)?;
+            let shrsol = Self::require_erod18_state_scalar(request, &shrsol_symbol)?;
+
+            Self::require_erod18_domain(&tcadjf_symbol, tcadjf, Some(EROD13_MIN_TCADJF), None)?;
+            Self::require_erod18_domain(&shcrit_symbol, shcrit, Some(0.0), None)?;
+            Self::require_erod18_domain(&shrsol_symbol, shrsol, Some(WB11_ZERO_THRESHOLD), None)?;
+
+            (tcadjf * shcrit) / shrsol
+        } else {
+            theta * 0.2
+        };
+        Self::require_erod18_domain(&tauc_symbol, tauc, Some(0.0), None)?;
+
+        let g_symbol = BoundarySymbol::from(EROD13_SYMBOL_G);
+        let ldlast = if let Some(value) = request.state_surface.get(&g_symbol) {
+            let scalar = value.as_f64();
+            if !scalar.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::Erod18NonFiniteSymbol {
+                    symbol: g_symbol,
+                    value: scalar,
+                });
+            }
+            Self::require_erod18_domain(&g_symbol, scalar, Some(0.0), None)?;
+            scalar
+        } else {
+            lddend
+        };
+
+        let mut dl = if qostar.abs() < EROD19_QOSTAR_NEAR_ZERO_THRESHOLD {
+            (phi / (phi + 1.0)) * ((ktrato * binftc) - theta)
+        } else {
+            if qostar.abs() <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: qostar_symbol.clone(),
+                    value: qostar,
+                    minimum: Some(EROD19_QOSTAR_NEAR_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            (phi / qostar) * ((ktrato * cinftc) - ldlast)
+        };
+        if !dl.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                symbol: qostar_symbol,
+                value: dl,
+                minimum: None,
+                maximum: None,
+            });
+        }
+        let mut du = dl;
+
+        let (mshear, xc1, xc2) = Self::erod19_xcrit_classification(ainf, binf, cinf, tauc, xu, xl);
+
+        let (xdbeg, xdend, ndep, lddend_out, ldlast_out) = if du < 0.0 {
+            let cdep = Self::erod19_depc(xu, ainftc, binftc, phi, theta, du, ktrato, qostar);
+            if !cdep.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: BoundarySymbol::from(EROD18_SYMBOL_DL),
+                    value: cdep,
+                    minimum: None,
+                    maximum: None,
+                });
+            }
+
+            let mut xdend =
+                Self::erod19_depend(xu, xl, ainftc, binftc, cdep, phi, theta, ktrato, qostar);
+            if !xdend.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::Erod18DomainViolation {
+                    symbol: BoundarySymbol::from(EROD18_SYMBOL_XDEND),
+                    value: xdend,
+                    minimum: Some(xu),
+                    maximum: Some(xl),
+                });
+            }
+            xdend = xdend.clamp(xu, xl);
+            let mut xdbeg = 0.0;
+            let mut ndep = 0.0;
+            let mut ldlast_out = ldlast;
+            let lddend_out;
+
+            if xdend < xl - WB11_ZERO_THRESHOLD {
+                let tc_xdend = (((ainftc * xdend * xdend) + (binftc * xdend) + cinftc).max(0.0))
+                    * ktrato;
+                let tc_xl = (((ainftc * xl * xl) + (binftc * xl) + cinftc).max(0.0)) * ktrato;
+                if mshear > EROD18_MSHEAR_MIN + WB11_ZERO_THRESHOLD
+                    && ldlast_out > tc_xdend + WB11_ZERO_THRESHOLD
+                {
+                    ndep = 1.0;
+                    xdbeg = xdend;
+                    ldlast_out = ldlast_out.min(tc_xl).max(0.0);
+                    lddend_out = ldlast_out;
+                } else {
+                    lddend_out = ldlast_out.max(0.0);
+                }
+            } else {
+                xdend = xl;
+                lddend_out = ldlast_out.max(0.0);
+            }
+            (xdbeg, xdend, ndep, lddend_out, ldlast_out)
+        } else {
+            dl = 0.0;
+            du = 0.0;
+            let mut xdbeg = 0.0;
+            let xdend = xl;
+            let mut ndep = 0.0;
+            let mut ldlast_out = ldlast;
+            let lddend_out;
+
+            let tc_upper = (ktrato * cinftc).max(0.0);
+            let tc_xl = (((ainftc * xl * xl) + (binftc * xl) + cinftc).max(0.0)) * ktrato;
+            if ldlast_out > tc_upper + WB11_ZERO_THRESHOLD {
+                ndep = 1.0;
+                xdbeg = xu;
+                ldlast_out = ldlast_out.min(tc_xl).max(0.0);
+                lddend_out = ldlast_out;
+            } else {
+                lddend_out = ldlast_out.max(0.0);
+            }
+            (xdbeg, xdend, ndep, lddend_out, ldlast_out)
+        };
 
         Self::require_erod18_domain(
             &BoundarySymbol::from(EROD18_SYMBOL_MSHEAR),
@@ -6639,9 +7110,6 @@ impl Wb11HydrologyKernel {
             Some(EROD18_MSHEAR_MIN),
             Some(EROD18_MSHEAR_MAX),
         )?;
-
-        let dl = 0.0;
-        let du = dl;
 
         let updates = vec![
             WritebackField::bounded(EROD18_SYMBOL_NSLPTS, nslpts_value, Some(min_segment_value), None),
@@ -6657,8 +7125,8 @@ impl Wb11HydrologyKernel {
             WritebackField::bounded(EROD18_SYMBOL_XDBEG, xdbeg, Some(0.0), None),
             WritebackField::bounded(EROD18_SYMBOL_XDEND, xdend, Some(xu), Some(xl)),
             WritebackField::bounded(EROD18_SYMBOL_XDETST, xdetst, Some(0.0), Some(xl)),
-            WritebackField::bounded(EROD18_SYMBOL_LDLAST, ldlast, Some(0.0), None),
-            WritebackField::bounded(EROD18_SYMBOL_LDDEND, lddend, Some(0.0), None),
+            WritebackField::bounded(EROD18_SYMBOL_LDLAST, ldlast_out, Some(0.0), None),
+            WritebackField::bounded(EROD18_SYMBOL_LDDEND, lddend_out, Some(0.0), None),
             WritebackField::unbounded(EROD18_SYMBOL_DU, du),
             WritebackField::unbounded(EROD18_SYMBOL_DL, dl),
             WritebackField::bounded(
@@ -7044,9 +7512,9 @@ impl Wb11HydrologyKernel {
 
         let erod13_state_updates = Self::run_erod13_wave1_core(request, q_runoff, peakro, watdur)?;
         let erod14_state_updates = Self::run_erod14_wave2(request, &erod13_state_updates)?;
-        let erod18_state_updates = Self::run_erod18_route_segment_topology(request)?;
-        let status_message_id = if !erod18_state_updates.is_empty() {
-            "HKERNEL-EROD18-ROUTE-OK-001"
+        let erod19_state_updates = Self::run_erod19_route_segment_migration(request, &erod13_state_updates)?;
+        let status_message_id = if !erod19_state_updates.is_empty() {
+            "HKERNEL-EROD19-ROUTE-OK-001"
         } else if !erod14_state_updates.is_empty() {
             "HKERNEL-EROD14-WAVE2-OK-001"
         } else if !erod13_state_updates.is_empty() {
@@ -7103,7 +7571,7 @@ impl Wb11HydrologyKernel {
         ];
         state_updates.extend(erod13_state_updates);
         state_updates.extend(erod14_state_updates);
-        state_updates.extend(erod18_state_updates);
+        state_updates.extend(erod19_state_updates);
 
         let writeback = KernelWritebackPayload::with_updates(state_updates, Vec::new());
         Ok(KernelRunResponse::new(status, writeback))

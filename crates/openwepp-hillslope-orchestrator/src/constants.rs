@@ -407,6 +407,7 @@ pub(crate) const EROD14_MAX_PHI: f64 = 100_000.0;
 pub(crate) const EROD14_MAX_REPROPORTION_ITERS: usize = 64;
 pub(crate) const EROD18_MSHEAR_MIN: f64 = 1.0;
 pub(crate) const EROD18_MSHEAR_MAX: f64 = 5.0;
+pub(crate) const EROD19_QOSTAR_NEAR_ZERO_THRESHOLD: f64 = 0.0011;
 pub(crate) const WB17_LAI_PARTITION_COEFFICIENT: f64 = 0.4;
 pub(crate) const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
 pub(crate) const WB18_PERC_MIN_FX: f64 = 0.002;

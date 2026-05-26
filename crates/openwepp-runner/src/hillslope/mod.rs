@@ -2349,7 +2349,9 @@ fn execute_scheduler_kernel_lifecycle(
         .collect::<Vec<_>>();
     let erod14_wave2_kernel_status_seen = execution_report.phase_reports.iter().any(|phase| {
         let message_id = phase.kernel_status.message_id();
-        message_id.contains("EROD14-WAVE2") || message_id.contains("EROD18-ROUTE")
+        message_id.contains("EROD14-WAVE2")
+            || message_id.contains("EROD18-ROUTE")
+            || message_id.contains("EROD19-ROUTE")
     });
 
     Ok(DailyExecutionResult {

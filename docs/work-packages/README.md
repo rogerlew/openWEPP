@@ -694,6 +694,12 @@ Authorized packages:
     `ainf/binf/cinf`, `ainftc/binftc/cinftc`, route seam publication family)
     with typed guard enforcement before EROD19 full `route.for` branch-family
     migration.
+- `20260526-erod19-route-mshear-segment-kernel-migration-001/`
+  - Purpose: execute EROD19 by migrating baseline-derived `route.for`
+    segment-branch behavior (`xcrit` `mshear` classification, upper-boundary
+    `dl` branch, `depc/depend` deposition-end publication, and route branch
+    follow-up state surfaces) and activating EROD17 route vectors before
+    EROD20 literal/symbol cleanup.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline
