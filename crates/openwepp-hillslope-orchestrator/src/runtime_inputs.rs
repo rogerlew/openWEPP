@@ -365,12 +365,12 @@ impl fmt::Display for HillslopeRuntimeInputError {
             }
             Self::MissingThetaResidual => write!(
                 f,
-                "{}: primary soil layer missing required theta_r_rosetta (thetdr)",
+                "{}: primary soil layer missing required theta source for thetdr (theta_r_rosetta or wp_measured)",
                 self.code()
             ),
             Self::MissingThetaFieldCapacity => write!(
                 f,
-                "{}: primary soil layer missing required fc_rosetta (thetfc)",
+                "{}: primary soil layer missing required theta source for thetfc (fc_rosetta or fc_measured)",
                 self.code()
             ),
             Self::NonFiniteProfileDepth { value_mm } => write!(
@@ -1622,6 +1622,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
     let primary_thetdr = primary_top_layer
         .theta_r_rosetta
+        .or(primary_top_layer.wp_measured)
         .ok_or(HillslopeRuntimeInputError::MissingThetaResidual)?;
     if !primary_thetdr.is_finite() {
         return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual {
@@ -1631,6 +1632,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
     let primary_thetfc = primary_top_layer
         .fc_rosetta
+        .or(primary_top_layer.fc_measured)
         .ok_or(HillslopeRuntimeInputError::MissingThetaFieldCapacity)?;
     if !primary_thetfc.is_finite() {
         return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
@@ -1706,6 +1708,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
             let layer_thetdr = layer
                 .theta_r_rosetta
+                .or(layer.wp_measured)
                 .ok_or(HillslopeRuntimeInputError::MissingThetaResidual)?;
             if !layer_thetdr.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual {
@@ -1715,6 +1718,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
             let layer_thetfc = layer
                 .fc_rosetta
+                .or(layer.fc_measured)
                 .ok_or(HillslopeRuntimeInputError::MissingThetaFieldCapacity)?;
             if !layer_thetfc.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
@@ -3943,6 +3947,7 @@ mod tests {
     const SLOPE_STRICT_VALID_CANONICAL: &str =
         include_str!("../../../tests/fixtures/infile/slope/strict_valid_canonical.slp");
     const VALID_9002: &str = include_str!("../../../tests/fixtures/infile/soil/valid_9002.sol");
+    const VALID_7778: &str = include_str!("../../../tests/fixtures/infile/soil/valid_7778.sol");
     const VALID_97_5: &str = include_str!("../../../tests/fixtures/infile/soil/valid_97_5.sol");
     const MANAGEMENT_CANONICAL_NONZERO_98_4: &str = include_str!(
         "../../../tests/fixtures/infile/management/canonical_cropland_nonzero_98_4.man"
@@ -4041,6 +4046,49 @@ mod tests {
         assert!((dg_layer2 - 0.15).abs() < 1e-12);
         assert!((solthk_layer2 - 0.25).abs() < 1e-12);
         assert!((ssc_layer2 - (8.0 / 3.6e6)).abs() < 1e-12);
+    }
+
+    #[test]
+    fn soil_runtime_surface_uses_measured_theta_fallback_for_7778() {
+        let soil = parse_soil(
+            VALID_7778,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("7778 soil fixture should parse");
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from 7778 measured theta fields");
+
+        let thetdr = surface
+            .state_surface
+            .get(&BoundarySymbol::from("thetdr"))
+            .expect("thetdr should be present")
+            .as_f64();
+        let thetfc = surface
+            .state_surface
+            .get(&BoundarySymbol::from("thetfc"))
+            .expect("thetfc should be present")
+            .as_f64();
+        let layer2_thetdr = surface
+            .state_surface
+            .get(&BoundarySymbol::from("thetdr_0002"))
+            .expect("thetdr_0002 should be present")
+            .as_f64();
+        let layer2_thetfc = surface
+            .state_surface
+            .get(&BoundarySymbol::from("thetfc_0002"))
+            .expect("thetfc_0002 should be present")
+            .as_f64();
+
+        assert!((thetdr - 0.1009).abs() < 1e-12);
+        assert!((thetfc - 0.3282).abs() < 1e-12);
+        assert!((layer2_thetdr - 0.0950).abs() < 1e-12);
+        assert!((layer2_thetfc - 0.3120).abs() < 1e-12);
     }
 
     #[test]

@@ -879,3 +879,5 @@ Authorized packages:
     intake (`>=5.3,<5.4 -> 5.3`), rerun carved-letter `H324` MOFE semantic
     parity lane, and align external CLIGEN versioning guidance with openWEPP
     compatibility expectations.
+- `20260525-mofe09-hs-runtime-e-003-soil-runtime-fallback-and-h324-parity-rerun-001/`
+  - Purpose: close carved-letter `H324` runtime soil seam blocker `HS-RUNTIME-E-003` by contract-authorized measured-theta fallback for legacy `7778` soils and rerun semantic parity.

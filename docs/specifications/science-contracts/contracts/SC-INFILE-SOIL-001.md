@@ -4,7 +4,7 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.4
+contract_version: 0.1.5
 evidence_mode: Static
 last_updated_utc: 2026-05-25T00:00:00Z
 ---
@@ -22,6 +22,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-WF-SOL-01]` `/home/workdir/wepp-forest/src/infile.for` and `/home/workdir/wepp-forest/src/input.for` (legacy soil parse branches cited by survey).
 - `[DIRECT][E-WF-SOL-02]` `/workdir/wepp-forest_260430_baseline/src/input.for:475-482` (legacy parser branch for `solwpv >= 7777` reads 8 OFE-header fields through `shcrit`, omitting `avke`).
 - `[DIRECT][E-WP-SOL-01]` `/workdir/wepppy/wepp/soils/utils/wepp_soil_util.py` (`_parse_sol` parser surface cited by survey).
+- `[DIRECT][E-OW-SOIL-SEAM-01]` `/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/runtime_inputs.rs` (soil parser-to-runtime projection seam for canonical `thetdr`/`thetfc` symbols).
 - `[INFERENCE][E-PHYS-SOL-01]` Physical/common-sense invariants: positive layer depths, bounded volumetric fractions, non-negative conductivity and erodibility parameters.
 
 ## 1. Scope and Version Applicability
@@ -146,11 +147,13 @@ compat_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* compatibility-only: 
 | `D-SOL-001` | Derive cumulative layer bottoms and verify strictly increasing `solthk` per OFE. | parse finalize | `C-SOL-001` |
 | `D-SOL-002` | Normalize optional disturbed/reveg control blocks into one policy enum surface by datver. | per OFE parse finalize | `C-SOL-002` |
 | `D-SOL-003` | Derive restrictive-layer effective presence from `slflag` and validate dependent fields. | footer parse finalize | `C-SOL-003` |
+| `D-SOL-004` | Runtime export precedence for canonical hydrology theta symbols is datver-compatible and fail-closed: `thetdr := theta_r_rosetta` when present, else `wp_measured`; `thetfc := fc_rosetta` when present, else `fc_measured`; if neither source exists for a required layer, projection fails with typed runtime error. | parser-to-runtime seam projection | `C-SOL-004` |
 
 Closure hooks:
 - `C-SOL-001`: layer-depth closure and count closure (`nsl` rows present).
 - `C-SOL-002`: datver-policy-row arity closure.
 - `C-SOL-003`: restrictive-layer field closure and domain checks.
+- `C-SOL-004`: runtime theta export source closure (`Rosetta` preferred with measured fallback; no silent defaults when both missing).
 
 ## 7. Validation and Error Taxonomy
 
@@ -183,6 +186,7 @@ No silent fallback masking for invalid required inputs. `[DIRECT][E-SPEC-SOL-01]
 | `datver,solcom,ntemp,ksflag` | `soil.version`, `soil.meta`, `soil.mode` | hillslope/watershed parse result payload | same canonical names in metadata block | no parser-side coercion |
 | `slid,texid,nsl,salb,sat,ki,kr,shcrit,avke` | `soil.ofe[*].base_params` | runtime initialization payload | aliases from Section 3; units preserved | shared across watbal/evap/erosion setup |
 | `solthk,sand,clay,orgmat,cec,rfg,bd,ksat,anisotropy,fc,wp,theta_r,theta_s,alpha,npar,ks,wp(rosetta),fc(rosetta)` | `soil.ofe[*].layers[*]` | interchange/hydrology-state export | canonical symbol continuity with explicit alias names for duplicate `wp`/`fc` fields | measured vs Rosetta variants remain distinct in boundary schema |
+| `theta_r,fc_rosetta,wp(measured),fc(measured)` | `soil.ofe[*].layers[*]` | hillslope runtime seed projection (`thetdr`,`thetfc`) | `thetdr := theta_r_rosetta` else `wp_measured`; `thetfc := fc_rosetta` else `fc_measured` | fail-closed typed runtime error when required source pair is unavailable or non-finite |
 | `ksatadj,luse,stext,ksatfac,ksatrec,burn_code,lkeff,texid_enum,uksat` | `soil.ofe[*].policy_state` | disturbed/revegetation policy boundary | exported as datver-scoped policy blocks | missing datver-inapplicable fields are omitted, not default-filled |
 | `slflag,ui_bdrkth,kslast` | `soil.restrictive_layer` | lower-boundary/percolation payload | exported as optional restrictive-layer object | present only when `slflag=1` |
 
@@ -222,6 +226,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-009` | restrictive-layer closure | footer parse | `SOL-E-009` |
 | `G-SOL-010` | compatibility-only quoted header parse must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token legacy form (omits `avke`, normalized to `0.0`) | OFE header parse | `SOL-E-006` |
 | `G-SOL-011` | compatibility-only per-OFE restrictive-layer rows must either be absent or pairwise identical before profile-level normalization | OFE/footer compatibility parse | `SOL-E-006` |
+| `G-SOL-012` | runtime theta export closure requires at least one valid source per required layer for each canonical symbol (`thetdr`: `theta_r_rosetta` or `wp_measured`; `thetfc`: `fc_rosetta` or `fc_measured`) with no silent defaulting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -233,7 +238,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
-| `SOL-GAP-001` | Precedence/interaction policy for duplicated measured vs Rosetta-derived `wp`/`fc` fields in `9002+` layer rows is not fully ratified. | `[DIRECT][E-SPEC-SOL-01]`, `[INFERENCE][E-SURVEY-SOL-01]` | `HOLD` |
+| `SOL-GAP-001` | Runtime export precedence for duplicated measured vs Rosetta `wp`/`fc` fields is ratified in `D-SOL-004`; non-runtime downstream interaction policy outside parser-to-runtime seam remains partially unspecified. | `[DIRECT][E-SPEC-SOL-01]`, `[DIRECT][E-OW-SOIL-SEAM-01]`, `[INFERENCE][E-SURVEY-SOL-01]` | `HOLD` |
 | `SOL-GAP-002` | `ksflag` frost/freeze suppression behavior is documented as build-specific in current WEPP-Forest usage and is not yet formalized as a portable parser-contract compatibility rule. | `[DIRECT][E-SPEC-SOL-01]`, `[INFERENCE][E-WF-SOL-01]` | `HOLD` |
 | `SOL-GAP-003` | Operational policy for `9005` revegetation controls (`uksat`, `lkeff`, `texid_enum`) is partially wepppy-derived and needs finalized openWEPP authority language. | `[DIRECT][E-SPEC-SOL-01]`, `[DIRECT][E-WP-SOL-01]` | `HOLD` |
 
@@ -241,6 +246,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-25` | `0.1.5` | MOFE09 amendment: ratified parser-to-runtime theta export precedence (`theta_r_rosetta -> wp_measured` fallback for `thetdr`; `fc_rosetta -> fc_measured` fallback for `thetfc`) with explicit fail-closed guard linkage (`D-SOL-004`, `G-SOL-012`). |
 | `2026-05-25` | `0.1.4` | MOFE07 compatibility amendment: accept legacy `7778` per-OFE restrictive-layer row placement in compatibility mode when rows are identical; normalize to one profile restrictive layer (`G-SOL-011`). |
 | `2026-05-25` | `0.1.3` | MOFE07 compatibility amendment: accept quoted legacy `7778` 8-token OFE headers missing trailing `avke`, with explicit normalization `avke := 0.0`; added baseline evidence anchor `E-WF-SOL-02`. |
 | `2026-05-25` | `0.1.2` | MOFE07 addendum: compatibility-only authority for quoted OFE header identifiers in legacy soil forms (`'slid' 'texid' ...`) with explicit guard linkage `G-SOL-010`. |

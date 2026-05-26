@@ -53,6 +53,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
 
 const SOIL_VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
+const SOIL_VALID_7778: &str = include_str!("../fixtures/infile/soil/valid_7778.sol");
 const SLOPE_STRICT_VALID_CANONICAL: &str =
     include_str!("../fixtures/infile/slope/strict_valid_canonical.slp");
 const CHANINP_STRICT_VALID: &str = include_str!("../fixtures/infile/chaninp/strict_valid.chaninp");
@@ -253,6 +254,19 @@ fn parser_to_hillslope_runtime_surface_closure() {
         kernel.invocation_count,
         HillslopePhaseGraph::canonical_order().len()
     );
+}
+
+#[test]
+fn parser_to_hillslope_runtime_surface_7778_measured_theta_fallback_closure() {
+    let soil = parse_soil(SOIL_VALID_7778, SoilParserOptions::default())
+        .expect("7778 soil fixture should parse for seam closure");
+    let runtime_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("runtime surface should build with measured theta fallback");
+
+    assert_state_value(&runtime_surface.state_surface, "thetdr", 0.1009);
+    assert_state_value(&runtime_surface.state_surface, "thetfc", 0.3282);
+    assert_state_value(&runtime_surface.state_surface, "thetdr_0002", 0.095);
+    assert_state_value(&runtime_surface.state_surface, "thetfc_0002", 0.312);
 }
 
 #[test]
