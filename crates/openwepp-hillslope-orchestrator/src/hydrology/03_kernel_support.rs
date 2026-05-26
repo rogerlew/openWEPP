@@ -25,13 +25,43 @@ struct SnowCouplingOutcome {
     hourly_state: Vec<SnowHourlyState>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 struct FrostCouplingOutcome {
     dfrost: f64,
     dthaw: f64,
     nft: f64,
     ws_frz: f64,
     infcap_frz: f64,
+    frdp_m: f64,
+    thdp_m: f64,
+    tfrdp_m: f64,
+    tthawd_m: f64,
+    fgthwd_flag: f64,
+    total_fine_layer_count: f64,
+    conductivity_tilled_w_m_k: f64,
+    conductivity_untilled_w_m_k: f64,
+    conductivity_residue_w_m_k: f64,
+    hourly_state: [FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
+    layer_topology_state: Vec<FrostLayerTopologyState>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FrostHourlyState {
+    hour: usize,
+    qsrf_w_m2: f64,
+    quf_w_m2: f64,
+    ksrf_w_m_k: f64,
+    snow_depth_m: f64,
+    residue_depth_m: f64,
+    tilled_frozen_depth_m: f64,
+    untilled_frozen_depth_m: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct FrostLayerTopologyState {
+    layer_index: usize,
+    fine_layer_count: usize,
+    fine_layer_thickness_m: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -75,6 +105,30 @@ const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
 const WINTER_HOURLY_AIR_TEMP_ROOT: &str = "winter.hourly.air_temp_c";
 const WINTER_HOURLY_CLOUD_ROOT: &str = "winter.hourly.cloud_fraction";
+const FROST_HOURLY_QSRF_ROOT: &str = "frost.hourly.qsrf_w_m2";
+const FROST_HOURLY_QUF_ROOT: &str = "frost.hourly.quf_w_m2";
+const FROST_HOURLY_KSRF_ROOT: &str = "frost.hourly.ksrf_w_m_k";
+const FROST_HOURLY_SNOW_DEPTH_ROOT: &str = "frost.hourly.snow_depth_m";
+const FROST_HOURLY_RESIDUE_DEPTH_ROOT: &str = "frost.hourly.residue_depth_m";
+const FROST_HOURLY_TILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.tilled_frozen_depth_m";
+const FROST_HOURLY_UNTILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.untilled_frozen_depth_m";
+const FROST_RUNTIME_FRDP_M_SYMBOL: &str = "frost.runtime_frdp_m";
+const FROST_RUNTIME_THDP_M_SYMBOL: &str = "frost.runtime_thdp_m";
+const FROST_RUNTIME_TFRDP_M_SYMBOL: &str = "frost.runtime_tfrdp_m";
+const FROST_RUNTIME_TTHAWD_M_SYMBOL: &str = "frost.runtime_tthawd_m";
+const FROST_RUNTIME_FGTHWD_FLAG_SYMBOL: &str = "frost.runtime_fgthwd_flag";
+const FROST_RUNTIME_TOTAL_FINE_LAYER_COUNT_SYMBOL: &str = "frost.runtime_total_fine_layer_count";
+const FROST_RUNTIME_LAYER_FINE_COUNT_ROOT: &str = "frost.runtime_nfine";
+const FROST_RUNTIME_LAYER_FINE_THICKNESS_ROOT: &str = "frost.runtime_fine_thickness_m";
+const FROST_RUNTIME_CONDUCTIVITY_TILLED_SYMBOL: &str = "frost.runtime_kftill_w_m_k";
+const FROST_RUNTIME_CONDUCTIVITY_UNTILLED_SYMBOL: &str = "frost.runtime_kfutil_w_m_k";
+const FROST_RUNTIME_CONDUCTIVITY_RESIDUE_SYMBOL: &str = "frost.runtime_kres_w_m_k";
+const FROST_RUNTIME_SNOW_DEPTH_SYMBOL: &str = "snow.runtime_depth_m";
+const FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL: &str = "frost.runtime_residue_depth_m";
+const FROST_RUNTIME_TILLAGE_DEPTH_M: f64 = 0.20;
+const FROST_RUNTIME_KFTILL_W_M_K: f64 = 1.75;
+const FROST_RUNTIME_KFUTIL_W_M_K: f64 = 2.1;
+const FROST_RUNTIME_KRES_BASE_W_M_K: f64 = 0.05;
 
 const SIMIMPL29_HOURS_PER_DAY: usize = 24;
 const SIMIMPL29_SNOW_DENSITY_CAP_KG_M3: f64 = 522.0;
@@ -646,6 +700,10 @@ impl Wb11HydrologyKernel {
 
     fn wb19_dg_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("dg_{layer_index:04}"))
+    }
+
+    fn frost_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("{root}_{layer_index:04}"))
     }
 
     #[allow(clippy::type_complexity)]
@@ -1762,6 +1820,136 @@ impl Wb11HydrologyKernel {
             }
         }
 
+        let fine_top_count = {
+            let rounded = fine_top.round();
+            let parsed = format!("{rounded:.0}")
+                .parse::<usize>()
+                .map_err(|_| Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FINE_TOP),
+                    value: fine_top,
+                    minimum: Some(1.0),
+                    maximum: Some(10.0),
+                })?;
+            if !(1..=10).contains(&parsed) {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FINE_TOP),
+                    value: fine_top,
+                    minimum: Some(1.0),
+                    maximum: Some(10.0),
+                });
+            }
+            parsed
+        };
+        let fine_bot_count = {
+            let rounded = fine_bot.round();
+            let parsed = format!("{rounded:.0}")
+                .parse::<usize>()
+                .map_err(|_| Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FINE_BOT),
+                    value: fine_bot,
+                    minimum: Some(1.0),
+                    maximum: Some(10.0),
+                })?;
+            if !(1..=10).contains(&parsed) {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FINE_BOT),
+                    value: fine_bot,
+                    minimum: Some(1.0),
+                    maximum: Some(10.0),
+                });
+            }
+            parsed
+        };
+
+        let nsl_symbol = BoundarySymbol::from("nsl");
+        let layer_count =
+            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &nsl_symbol)?;
+        if layer_count == 0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: nsl_symbol,
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
+        let mut layer_topology_state = Vec::with_capacity(layer_count);
+        let mut total_fine_layer_count = 0usize;
+        for layer_index in 1..=layer_count {
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let dg_m = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &dg_symbol,
+                dg_m,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            let fine_layer_count = if layer_index == layer_count {
+                let spacing_mm = if layer_index > 2 {
+                    200.0 / Self::diagnostic_count_to_f64(fine_bot_count)
+                } else {
+                    100.0 / Self::diagnostic_count_to_f64(fine_top_count)
+                };
+                let dg_mm = dg_m * 1_000.0;
+                let dg_mm_trunc = dg_mm.trunc();
+                let ratio_trunc = (dg_mm / spacing_mm).trunc();
+                let mut count = format!("{ratio_trunc:.0}")
+                    .parse::<usize>()
+                    .map_err(|_| Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: dg_symbol.clone(),
+                        value: ratio_trunc,
+                        minimum: Some(0.0),
+                        maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
+                    })?;
+                let count_trunc_mm = (Self::diagnostic_count_to_f64(count) * spacing_mm).trunc();
+                if (count_trunc_mm - dg_mm_trunc).abs() > WB11_ZERO_THRESHOLD {
+                    count += 1;
+                }
+                count.max(1)
+            } else if layer_index < 3 {
+                fine_top_count
+            } else {
+                fine_bot_count
+            };
+
+            total_fine_layer_count += fine_layer_count;
+            layer_topology_state.push(FrostLayerTopologyState {
+                layer_index,
+                fine_layer_count,
+                fine_layer_thickness_m: dg_m / Self::diagnostic_count_to_f64(fine_layer_count),
+            });
+        }
+
+        let snow_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_SNOW_DEPTH_SYMBOL);
+        let snow_depth_m =
+            Self::require_state_scalar_for_symbol(request, phase_class, &snow_depth_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            snow_depth_symbol,
+            snow_depth_m,
+            Some(0.0),
+            None,
+        )?;
+
+        let residue_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL);
+        let residue_depth_m =
+            Self::require_state_scalar_for_symbol(request, phase_class, &residue_depth_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            residue_depth_symbol,
+            residue_depth_m,
+            Some(0.0),
+            None,
+        )?;
+
         let tmax = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
         let tmin = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
         if tmax < tmin - WB11_ZERO_THRESHOLD {
@@ -1793,6 +1981,20 @@ impl Wb11HydrologyKernel {
         let freeze_fraction = (dfrost / WB14_FROST_MAX_DEPTH_M).clamp(0.0, 1.0);
         let infcap_frz =
             soil_conductivity * (1.0 - freeze_fraction + freeze_fraction * kfactor_floor);
+        let tilled_frozen_depth_m = dfrost.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
+        let untilled_frozen_depth_m = (dfrost - tilled_frozen_depth_m).max(0.0);
+        let fgthwd_flag = if freeze_active { 0.0 } else { 1.0 };
+        let conductivity_residue_w_m_k = FROST_RUNTIME_KRES_BASE_W_M_K * kresf;
+        let hourly_state = std::array::from_fn(|hour_index| FrostHourlyState {
+            hour: hour_index + 1,
+            qsrf_w_m2: 0.0,
+            quf_w_m2: 0.0,
+            ksrf_w_m_k: conductivity_mean,
+            snow_depth_m,
+            residue_depth_m,
+            tilled_frozen_depth_m,
+            untilled_frozen_depth_m,
+        });
 
         Self::require_state_range(
             phase_class,
@@ -1836,6 +2038,17 @@ impl Wb11HydrologyKernel {
             nft,
             ws_frz,
             infcap_frz,
+            frdp_m: dfrost,
+            thdp_m: dthaw,
+            tfrdp_m: 0.0,
+            tthawd_m: 0.0,
+            fgthwd_flag,
+            total_fine_layer_count: Self::diagnostic_count_to_f64(total_fine_layer_count),
+            conductivity_tilled_w_m_k: FROST_RUNTIME_KFTILL_W_M_K,
+            conductivity_untilled_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
+            conductivity_residue_w_m_k,
+            hourly_state,
+            layer_topology_state,
         })
     }
 
@@ -4347,8 +4560,9 @@ impl Wb11HydrologyKernel {
         } else {
             None
         };
-        let infiltration_conductivity =
-            frost_coupling.map_or(soil_conductivity, |outcome| outcome.infcap_frz);
+        let infiltration_conductivity = frost_coupling
+            .as_ref()
+            .map_or(soil_conductivity, |outcome| outcome.infcap_frz);
 
         let soil_layer_depth =
             Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_LAYER_DEPTH)?;
@@ -4751,6 +4965,121 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 Some(soil_conductivity),
             ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
+                frost_outcome.frdp_m,
+                Some(0.0),
+                Some(WB14_FROST_MAX_DEPTH_M),
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_THDP_M_SYMBOL),
+                frost_outcome.thdp_m,
+                Some(0.0),
+                Some(WB14_FROST_MAX_DEPTH_M),
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_TFRDP_M_SYMBOL),
+                frost_outcome.tfrdp_m,
+                Some(0.0),
+                Some(WB14_FROST_MAX_DEPTH_M),
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_TTHAWD_M_SYMBOL),
+                frost_outcome.tthawd_m,
+                Some(0.0),
+                Some(WB14_FROST_MAX_DEPTH_M),
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FGTHWD_FLAG_SYMBOL),
+                frost_outcome.fgthwd_flag,
+                Some(0.0),
+                Some(1.0),
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_TOTAL_FINE_LAYER_COUNT_SYMBOL),
+                frost_outcome.total_fine_layer_count,
+                Some(1.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_CONDUCTIVITY_TILLED_SYMBOL),
+                frost_outcome.conductivity_tilled_w_m_k,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_CONDUCTIVITY_UNTILLED_SYMBOL),
+                frost_outcome.conductivity_untilled_w_m_k,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_CONDUCTIVITY_RESIDUE_SYMBOL),
+                frost_outcome.conductivity_residue_w_m_k,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            ));
+            for layer in &frost_outcome.layer_topology_state {
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(FROST_RUNTIME_LAYER_FINE_COUNT_ROOT, layer.layer_index),
+                    Self::diagnostic_count_to_f64(layer.fine_layer_count),
+                    Some(1.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(
+                        FROST_RUNTIME_LAYER_FINE_THICKNESS_ROOT,
+                        layer.layer_index,
+                    ),
+                    layer.fine_layer_thickness_m,
+                    Some(WB11_ZERO_THRESHOLD),
+                    None,
+                ));
+            }
+            for hourly in &frost_outcome.hourly_state {
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_QSRF_ROOT, hourly.hour),
+                    hourly.qsrf_w_m2,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_QUF_ROOT, hourly.hour),
+                    hourly.quf_w_m2,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_KSRF_ROOT, hourly.hour),
+                    hourly.ksrf_w_m_k,
+                    Some(WB11_ZERO_THRESHOLD),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_SNOW_DEPTH_ROOT, hourly.hour),
+                    hourly.snow_depth_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_RESIDUE_DEPTH_ROOT, hourly.hour),
+                    hourly.residue_depth_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_TILLED_FROZEN_DEPTH_ROOT, hourly.hour),
+                    hourly.tilled_frozen_depth_m,
+                    Some(0.0),
+                    Some(FROST_RUNTIME_TILLAGE_DEPTH_M),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_UNTILLED_FROZEN_DEPTH_ROOT, hourly.hour),
+                    hourly.untilled_frozen_depth_m,
+                    Some(0.0),
+                    None,
+                ));
+            }
         }
 
         let flux_updates = vec![

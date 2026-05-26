@@ -680,6 +680,11 @@ Authorized packages:
     tests and pre-implementation gate evidence for SIMIMPL31 authority
     closure, recording expected reductive-path failures before
     SIMIMPL33/SIMIMPL34 runtime migration edits.
+- `20260526-simimpl33-frost-energy-runtime-state-topology-and-seam-closure-001/`
+  - Purpose: execute SIMIMPL33 by implementing runtime frost state topology and
+    typed seam wiring (fine-layer indexing/count lineage, conductivity
+    lineage, and `frost.hourly.*` seam families) required before SIMIMPL34
+    baseline-authoritative frost solver migration.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and

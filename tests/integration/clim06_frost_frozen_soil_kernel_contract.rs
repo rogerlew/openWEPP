@@ -258,6 +258,14 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
         BoundarySymbol::from("frost.options.frost_file_present"),
         BoundaryValue::scalar(if active_frost { 1.0 } else { 0.0 }),
     );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_depth_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_residue_depth_m"),
+        BoundaryValue::scalar(0.0),
+    );
     state_surface.insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-2.0));
     state_surface.insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-10.0));
 
@@ -465,6 +473,66 @@ fn clim06_contract_conformance_rejects_out_of_domain_active_frost_symbol() {
         runoff_phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
     );
+}
+
+#[test]
+fn simimpl33_contract_conformance_rejects_missing_frost_runtime_residue_depth_symbol() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_clim06_surface(true);
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("frost.runtime_residue_depth_m"));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("clim06 missing frost-runtime residue depth should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
+
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-001"
+    );
+    assert_eq!(
+        runoff_phase.decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_symbols() {
+    let report = execute_clim06_surface(seeded_clim06_surface(true));
+    assert!(report.scheduler_report.is_success());
+
+    let total_fine_layers = require_state_scalar(&report, "frost.runtime_total_fine_layer_count");
+    assert!(total_fine_layers >= 2.0);
+    assert!(require_state_scalar(&report, "frost.runtime_nfine_0001") >= 1.0);
+    assert!(require_state_scalar(&report, "frost.runtime_nfine_0002") >= 1.0);
+    assert!(require_state_scalar(&report, "frost.runtime_fine_thickness_m_0001") > 0.0);
+    assert!(require_state_scalar(&report, "frost.runtime_fine_thickness_m_0002") > 0.0);
+    assert!(require_state_scalar(&report, "frost.runtime_kftill_w_m_k") > 0.0);
+    assert!(require_state_scalar(&report, "frost.runtime_kfutil_w_m_k") > 0.0);
+    assert!(require_state_scalar(&report, "frost.runtime_kres_w_m_k") > 0.0);
+    let _ = require_state_scalar(&report, "frost.hourly.qsrf_w_m2_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.quf_w_m2_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.ksrf_w_m_k_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.snow_depth_m_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.residue_depth_m_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.tilled_frozen_depth_m_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.untilled_frozen_depth_m_0001");
 }
 
 fn execute_clim06_surface(

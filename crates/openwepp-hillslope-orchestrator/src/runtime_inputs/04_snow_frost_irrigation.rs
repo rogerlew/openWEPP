@@ -810,7 +810,46 @@ pub fn seed_hillslope_runtime_surface_from_frost(
         BoundarySymbol::from("frost.runtime_infcap_frz"),
         BoundaryValue::scalar(0.0),
     );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_frdp_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_thdp_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_tfrdp_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_tthawd_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_fgthwd_flag"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_total_fine_layer_count"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_kftill_w_m_k"),
+        BoundaryValue::scalar(1.75),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_kfutil_w_m_k"),
+        BoundaryValue::scalar(2.1),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_kres_w_m_k"),
+        BoundaryValue::scalar(0.05 * kresf),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("frost.runtime_residue_depth_m"),
+        BoundaryValue::scalar(0.0),
+    );
 
     Ok(())
 }
-

@@ -592,6 +592,44 @@ fn frost_parser_to_hillslope_runtime_surface_closure() {
         "frost.runtime_infcap_frz",
         0.0,
     );
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_frdp_m", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_thdp_m", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "frost.runtime_tfrdp_m", 0.0);
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_tthawd_m",
+        0.0,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_fgthwd_flag",
+        0.0,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_total_fine_layer_count",
+        0.0,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_kftill_w_m_k",
+        1.75,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_kfutil_w_m_k",
+        2.1,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_kres_w_m_k",
+        0.01,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "frost.runtime_residue_depth_m",
+        0.0,
+    );
 }
 
 #[test]
