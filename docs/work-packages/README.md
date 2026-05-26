@@ -665,6 +665,11 @@ Authorized packages:
   - Purpose: assess feasibility for baseline-authoritative hourly
     energy-balance snow closure and publish a dependency-ordered four-package
     implementation queue with mandatory contract-first sequencing constraints.
+- `20260526-frostplan01-frost-energy-solver-assessment-and-queue-001/`
+  - Purpose: review openWEPP vs baseline frost-process implementations and
+    publish `frost-energy-solver-wp-queue.md`, a dependency-ordered
+    contract-first implementation queue to close frost process-parity gaps and
+    unblock SIMIMPL30 hold-lift prerequisites.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
