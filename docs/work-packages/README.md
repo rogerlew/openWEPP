@@ -970,3 +970,9 @@ Authorized packages:
     `wepp-forest_260430` `ksatadj` regime authority (9001 exponential recovery,
     9002 Saxton-Rawls Brooks-Corey effective K, 9003 burn-severity floor) and
     rerun carved-letter `H324` parity evidence.
+- `20260526-hrref01-hairsine-rose-references-intake-001/`
+  - Purpose: execute references-intake step for the Hairsine-Rose multi-class
+    sediment model concept backlog by adding R-17+ entries to
+    `references/annotated_bibliography.md`, performing first-pass rights
+    classification, and best-effort vendoring of acquirable artifacts. Docs-only;
+    closes the "reference closure" promotion-from-backlog acceptance criterion.
