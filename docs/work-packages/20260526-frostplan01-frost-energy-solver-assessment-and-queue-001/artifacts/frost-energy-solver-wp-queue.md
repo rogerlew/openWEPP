@@ -1,7 +1,7 @@
 # Frost Energy Solver Work-Package Queue
 
-Status: queued
-Evidence mode: static
+Status: complete
+Evidence mode: static+ran
 Date: 2026-05-26
 
 ## Static

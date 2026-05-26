@@ -1,11 +1,26 @@
-# frostplan01 kernel profile compliance checklist
+# FROSTPLAN01 Kernel Profile Compliance Checklist
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: static
 Date: 2026-05-26
 
 ## Static
-- Queued placeholder for FROSTPLAN01 execution.
+Package classification:
+- FROSTPLAN01 is not kernel-affecting implementation; it is planning/governance
+  only.
+- Kernel profile artifact is provided to satisfy scaffold governance and
+  document non-applicability for runtime edits in this package.
+
+Checklist:
+1. Canonical `SC-*` file updated: not applicable (no contract amendments in
+   scope).
+2. Required contract schema sections updated: not applicable.
+3. Algorithm steps/branch tables updated for changed behavior: not applicable.
+4. Guard/error mapping updated and aligned with code errors: not applicable.
+5. Contract-derived tests reflected in implementation evidence: deferred to
+   queued SIMIMPL32..SIMIMPL35 sequence.
+6. Production kernel/runtime edits attempted before contract/test gates:
+   no (compliant).
 
 ## Ran
-- not-run
+- not run
