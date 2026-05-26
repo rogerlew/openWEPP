@@ -640,6 +640,11 @@ Authorized packages:
   - Purpose: prepare and execute SIMIMPL26 by comparing baseline vs candidate
     `soil.dat`/`.sol` artifacts with reproducible provenance, explicit delta
     classification, and evidence-backed follow-on disposition guidance.
+- `20260525-simimpl27-snowfreeze-contract-boundary-closure-for-hourly-energy-balance-001/`
+  - Purpose: execute SIMIMPL27 by closing canonical `SC-SNOWFREEZE-001`
+    boundary/API authority gaps for hourly snow/freeze migration scope,
+    ratifying concrete alias mappings and downstream contract-derived test
+    requirements before SIMIMPL28 forcing/kernel implementation work.
 - `20260525-snowplan01-hourly-energy-balance-snow-assessment-and-queue-001/`
   - Purpose: assess feasibility for baseline-authoritative hourly
     energy-balance snow closure and publish a dependency-ordered four-package

@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -132,31 +132,38 @@ Out of scope:
 ## Symbol Alias Map
 
 Canonical symbols in this contract follow WEPP Chapter-3 notation and lineage
-names by default. For this revision, openWEPP boundary/API field names are not
-yet fixed; alias mapping therefore remains identity-form and must be amended
-once concrete runtime schemas are finalized.
+names by default. SIMIMPL27 ratifies concrete openWEPP boundary/API aliases for
+winter snow/freeze migration scope. Existing typed aliases use
+`HillslopeProductionStateSymbol` / `HillslopeProductionFluxSymbol` mappings;
+hourly-internal aliases that are not yet produced on runtime writeback are
+reserved under explicit `snow.hourly.*` / `winter.hourly.*` / `frost.hourly.*`
+namespaces for SIMIMPL28/SIMIMPL29 implementation.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
-| `Dsold`, `Dsnew` | identity | hourly snow-depth state surface | `m` -> `m` | `[DIRECT][Static]` |
-| `Dsavail` | identity (pre-hour snow-depth state) | melt upper-bound branch state | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `ρsold`, `ρsnew` | identity | hourly snow-density state surface | `kg m^-3` -> `kg m^-3` | `[DIRECT][Static]` |
-| `hrsnow` | identity | hourly snowfall input | `m` -> `m` | `[DIRECT][Static]` |
-| `faldr`, `grdri` | legacy identity (inactive) | drift formulation provenance only while drift is inactive | `m` -> `m` | `[DIRECT][Static]` |
-| `hrmelt`, `hrrain` | identity | hourly melt/rainfall forcing to runoff/infiltration | `m` -> `m` | `[DIRECT][Static]` |
-| `Thr`, `Thra` | identity | hourly thermal forcing surfaces | `degC` -> `degC` | `[DIRECT][Static]` |
-| `Tmax`, `Tmin` | identity | daily thermal forcing surface | `degC` -> `degC` | `[DIRECT][Static]` |
-| `hrrad` | identity | hourly radiation surface | `MJ m^-2` -> `MJ m^-2` | `[DIRECT][Static]` |
-| `cancov`, `clouds` | identity | melt and surface-temperature modifiers | `fraction` -> `fraction` | `[DIRECT][Static]` |
-| `Qsrf`, `Quf`, `Ksrf` | identity | frost heat-flow bookkeeping surface | `W m^-2` / `W m^-1 degC^-1` unchanged | `[DIRECT][Static]` |
-| `Snowd`, `Resd`, `Tilld`, `Utilld` | identity | layered conductivity state inputs | `m` -> `m` | `[DIRECT][Static]` |
-| `Dfrost`, `Dthaw` | identity | hourly frost/thaw depth boundary outputs | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `S` | identity | daily snow-water term in water-balance closure | `m` -> `m` | `[DIRECT][Static]` |
+| `Dsold` | `snow.hourly.depth_before_m` | hourly snow-depth state surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Dsnew` | `snow.hourly.depth_after_m` | hourly snow-depth state surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Dsavail` | `snow.hourly.depth_available_m` | melt upper-bound branch pre-hour state | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ρsold` | `snow.hourly.density_before_kg_m3` | hourly snow-density state surface | `kg m^-3` -> `kg m^-3` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ρsnew` | `snow.hourly.density_after_kg_m3` | hourly snow-density state surface | `kg m^-3` -> `kg m^-3` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hrsnow` | `snow.hourly.snowfall_m` | hourly snowfall input | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `faldr`, `grdri` | `snow.drift.faldr_m`, `snow.drift.grdri_m` (inactive/governance-only) | drift formulation provenance only while drift is inactive | `m` -> `m` | `[DIRECT][Static]` |
+| `hrmelt` | `snow.hourly.melt_m` | hourly melt forcing to runoff/infiltration | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hrrain` | `snow.hourly.rain_m` | hourly rainfall forcing to runoff/infiltration | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Thr` | `winter.hourly.air_temp_c` | hourly thermal forcing surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Thra` | `winter.hourly.surface_temp_c` | hourly adjusted thermal forcing surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Tmax`, `Tmin` | `tmax`, `tmin` (`HillslopeProductionStateSymbol::{Wb14Tmax,Wb14Tmin}`) | daily thermal forcing surface | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `hrrad` | `winter.hourly.rad_mj_m2` | hourly radiation surface | `MJ m^-2` -> `MJ m^-2` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `cancov`, `clouds` | `cancov` (`HillslopeProductionStateSymbol::Wb15PlantCancov`), `winter.hourly.cloud_fraction` | melt and surface-temperature modifiers | `fraction` -> `fraction` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Qsrf`, `Quf`, `Ksrf` | `frost.hourly.qsrf_w_m2`, `frost.hourly.quf_w_m2`, `frost.hourly.ksrf_w_m_k` | frost heat-flow bookkeeping surface | `W m^-2` / `W m^-1 degC^-1` unchanged | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Snowd`, `Resd`, `Tilld`, `Utilld` | `frost.hourly.snow_depth_m`, `frost.hourly.residue_depth_m`, `frost.hourly.tilled_frozen_depth_m`, `frost.hourly.untilled_frozen_depth_m` | layered conductivity state inputs | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Dfrost`, `Dthaw` | `frost.runtime_dfrost`, `frost.runtime_dthaw` (`HillslopeProductionStateSymbol::{Wb14FrostRuntimeDfrost,Wb14FrostRuntimeDthaw}`) | hourly frost/thaw depth boundary outputs | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `S` | `S` (`HillslopeProductionFluxSymbol::Wb12SnowCouplingS`) | daily snow-water term in water-balance closure | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Snow-Water` (WB13/hydout publication surface) | derived alias from `snow.runtime_swe` at publication boundary | replay/output storage-state publication | runtime SWE (`m`) is converted to published snow-water storage units at boundary without sidecar-control substitution | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` | identity | parsed snow sidecar controls projected to runtime seam | scalar controls preserved; `snow_file_present` in `{0,1}` | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `snow.runtime_swe` | identity | runtime snow-water-equivalent storage state | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `Ws_frz`, `Nft` | provisional identity | frozen-soil coupling boundary outputs | units preserved as declared | `[INFERENCE][Static]` |
-| `InfCap_frz` | provisional identity | frozen-soil infiltration-capacity boundary output | `m s^-1` required at exported boundary | `[INFERENCE][Static]` |
+| `snow.options.rst`, `snow.options.newsnw`, `snow.options.ssd`, `snow.options.snow_file_present` | identity (`HillslopeProductionStateSymbol::{Wb14SnowRst,Wb14SnowNewsnw,Wb14SnowSsd,Wb14SnowFilePresent}`) | parsed snow sidecar controls projected to runtime seam | scalar controls preserved; `snow_file_present` in `{0,1}` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `snow.runtime_swe` | identity (`HillslopeProductionStateSymbol::Wb14SnowRuntimeSwe`) | runtime snow-water-equivalent storage state | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Ws_frz`, `Nft` | `frost.runtime_ws_frz`, `frost.runtime_nft` (`HillslopeProductionStateSymbol::{Wb14FrostRuntimeWsFrz,Wb14FrostRuntimeNft}`) | frozen-soil coupling boundary outputs | units preserved as declared | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `InfCap_frz` | `frost.runtime_infcap_frz` (`HillslopeProductionStateSymbol::Wb14FrostRuntimeInfcapFrz`) | frozen-soil infiltration-capacity boundary output | `m s^-1` required at exported boundary | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -301,15 +308,49 @@ parity). Contract-specific interpretation tolerances:
 4. Out-of-domain active-coupling frost control/state hard-fails with typed
    domain posture and no fallback.
 
+## SIMIMPL27 Boundary/API Closure and Contract-Test Requirements Addendum
+
+### Boundary/API Closure Scope
+
+SIMIMPL27 closes the authority-side boundary/API ambiguity for hourly snow and
+freeze migration scope by ratifying concrete alias names in this contract.
+
+Cross-contract consumer ownership for the ratified winter payload is explicit:
+
+| Boundary payload family | Producer authority | Consumer authority |
+|---|---|---|
+| `S`, `snow.runtime_swe`, day-key `Snow-Water` publication lineage | `SC-SNOWFREEZE-001`, `SC-WATBAL-001` | `SC-RUNOFFPART-001`, `SC-SYSTEM-001` |
+| `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` | `SC-SNOWFREEZE-001` | `SC-SOIL-001`, `SC-WATBAL-001`, `SC-SYSTEM-001` |
+| Hourly reserved aliases under `snow.hourly.*`, `winter.hourly.*`, `frost.hourly.*` | `SC-SNOWFREEZE-001` | SIMIMPL28/SIMIMPL29 runtime implementation and downstream coupling tests |
+
+### Contract-Derived Test Requirements (Downstream)
+
+SIMIMPL28/SIMIMPL29 must implement contract-derived tests covering:
+
+1. Alias projection closure:
+   existing typed runtime symbols map exactly to the contract alias names for
+   `snow.options.*`, `snow.runtime_swe`, `frost.runtime_*`, `tmax`, `tmin`, and
+   flux `S`.
+2. Reserved hourly payload completeness:
+   when hourly winter processing is active, required reserved alias families
+   (`snow.hourly.*`, `winter.hourly.*`, `frost.hourly.*`) must be present with
+   valid units/domains before boundary publication.
+3. `Dsavail` timing closure:
+   melt upper-bound branch uses pre-hour available snow-depth state
+   (`snow.hourly.depth_available_m`) with no off-by-one timing drift.
+4. Typed failure posture:
+   missing/non-finite/out-of-domain winter payload symbols in active hourly
+   branches hard-fail with typed error paths and no silent fallback.
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Concrete openWEPP boundary/API field names for winter payloads are not yet finalized. | Alias map remains provisional identity and must be amended once schemas stabilize. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | Concrete boundary/API alias names are now ratified, but reserved hourly alias families (`snow.hourly.*`, `winter.hourly.*`, `frost.hourly.*`) are not yet emitted by runtime writeback surfaces. | Implementation closure remains queued to SIMIMPL28/SIMIMPL29 even though authority-side naming is fixed. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-004 | Cross-contract closure with forthcoming soil-state and runoff-partition contracts (`SC-SOIL-001`, `SC-RUNOFFPART-001`) remains provisional. | Some freeze-thaw coupling checks remain contract-incomplete until dependent contracts are drafted. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-SNOWFREEZE-005 | Exact openWEPP boundary-state mapping for Chapter-3 melt upper-bound variable timing (`Dsavail` alias to preceding-hour state) is not yet locked to implementation symbol names. | Off-by-one/timing interpretation risk remains until implementation-level alias mapping is finalized. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is now explicit, but executable cross-contract comparator vectors for hourly-heavy winter internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled hourly vectors remains limited pending SIMIMPL28/SIMIMPL30. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`), but timing-branch validation against implementation-level hourly execution remains pending. | Off-by-one/timing interpretation risk remains until SIMIMPL28/SIMIMPL29 contract-derived tests execute. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -321,3 +362,4 @@ parity). Contract-specific interpretation tolerances:
 | `2026-05-23` | `3` | `Codex` | CLIM05 amendment: added parsed snow-control runtime coupling authority (`snow.options.*`), signed `S` and `snow.runtime_swe` closure requirements, and active-coupling typed guard posture. |
 | `2026-05-23` | `4` | `Codex` | CLIM06 amendment: added parsed frost-control runtime coupling authority (`frost.options.*`), explicit frozen-soil infiltration-capacity reduction envelope, and active-coupling typed guard posture for derived frost runtime surfaces. |
 | `2026-05-25` | `5` | `Codex` | SIMIMPL18 amendment: added day-key cold-partition/publication closure (`INV-SNOWFREEZE-011`), explicit runtime-SWE-to-`Snow-Water` publication authority, and obligations preventing static sidecar (`snow.options.ssd`) leakage into dynamic storage outputs. |
+| `2026-05-25` | `6` | `Codex` | SIMIMPL27 amendment: finalized concrete snow/freeze boundary alias mapping (typed + reserved hourly namespaces), added downstream contract-derived test requirements for hourly migration waves, and reclassified boundary/API gap posture from non-promotable ambiguity to implementation-queued promotable-with-risk. |
