@@ -705,6 +705,11 @@ Authorized packages:
     in EROD14/EROD19 production paths with named constants (case bounds,
     vector sizing, attenuation/enrichment thresholds, and route solver
     thresholds), preserving behavior and closing queue item 5 before EROD21.
+- `20260526-erod21-route-parity-rerun-and-hold-lift-disposition-001/`
+  - Purpose: execute EROD21 by rerunning route-focused branch-family parity
+    lanes (EROD17/EROD18 vectors plus MOFE03 runner continuity), executing
+    validation gates, and publishing explicit GO/HOLD disposition to close the
+    sediment-routing queue.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline

@@ -1,0 +1,7 @@
+
+running 2 tests
+test cli03_mofe03_multiofe_runfile_executes_wave2_without_manual_symbol_injection ... ok
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 33.38s
+

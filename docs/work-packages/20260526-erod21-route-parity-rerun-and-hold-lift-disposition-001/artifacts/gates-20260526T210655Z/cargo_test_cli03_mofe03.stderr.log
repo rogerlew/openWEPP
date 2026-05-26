@@ -1,0 +1,2 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/cli03_runner_contract_derived_tests.rs (target/debug/deps/cli03_runner_contract_derived_tests-74afdebd67957ba2)

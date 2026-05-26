@@ -1,0 +1,19 @@
+
+running 14 tests
+test erod14_contract_vector_rejects_case_classification_mismatch ... ok
+test erod14_contract_vector_rejects_unreproportionable_mass_request ... ok
+test erod14_contract_vector_rejects_missing_required_symbol ... ok
+test erod14_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod14_contract_vector_case_four_zero_outflow_emits_zero_class_fractions ... ok
+test erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs ... ok
+test erod18_contract_route_topology_rejects_missing_required_symbol ... ok
+test erod17_contract_route_branch_seam_vector_requires_core_publication_family ... ok
+test erod18_contract_route_topology_rejects_domain_violation ... ok
+test erod18_contract_route_topology_rejects_non_finite_required_symbol ... ok
+test erod17_contract_deposition_end_vector_requires_xdend_publication ... ok
+test erod17_contract_ndep_followup_vector_requires_post_detachment_deposition_path ... ok
+test erod17_contract_mshear_dispatch_vector_requires_segment_case_publication ... ok
+test erod17_contract_qostar_threshold_vector_requires_upper_boundary_branch_divergence ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
