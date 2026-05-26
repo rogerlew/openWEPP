@@ -9,6 +9,10 @@ Date: 2026-05-25
   risk across contract, forcing, kernel, and parity surfaces.
 - Baseline authority for migration remains:
   `/workdir/wepp-forest_260430_baseline@dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
+- Reference parity candidate context:
+  - `/wc1/runs/ne/neither-liking/` was run with `wepp_260430`.
+  - Scenario climate spans 3 years in Big Sky, Montana and should exhibit
+    snowpack accumulation and melt behavior.
 - Every code-authoring package below must follow internal contract sequencing:
   1. contract amendments,
   2. contract-derived tests,

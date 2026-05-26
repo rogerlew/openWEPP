@@ -19,6 +19,11 @@ hourly forcing synthesis, snow kernel routines, and parity/disposition gates.
 This planning package prepares a bounded four-package queue so execution can
 proceed with explicit dependencies and observable exit signals.
 
+Reference run context for downstream parity planning:
+- `/wc1/runs/ne/neither-liking/` was executed with `wepp_260430`.
+- The project contains 3 years of climate in Big Sky, Montana.
+- Expected winter behavior includes snowpack accumulation and seasonal melt.
+
 ## Scope
 ### Included
 - Confirm one-package feasibility posture for hourly snow energy-balance
