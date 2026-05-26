@@ -561,7 +561,6 @@ fn require_state_scalar(
 }
 
 #[test]
-#[ignore = "SIMIMPL32 expected-failure baseline; frost.hourly.* emission requires SIMIMPL33/34 migration"]
 fn simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission() {
     let active = execute_clim06_surface(seeded_clim06_surface(true));
     let inactive = execute_clim06_surface(seeded_clim06_surface(false));
@@ -581,7 +580,6 @@ fn simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emiss
 }
 
 #[test]
-#[ignore = "SIMIMPL32 expected-failure baseline; frwatc direction closure requires SIMIMPL33/34 migration"]
 fn simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect() {
     let active = execute_clim06_surface(seeded_clim06_surface(true));
     let inactive = execute_clim06_surface(seeded_clim06_surface(false));
@@ -608,7 +606,6 @@ fn simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_ef
 }
 
 #[test]
-#[ignore = "SIMIMPL32 expected-failure baseline; frzng/frznw freeze-lineage migration requires SIMIMPL34"]
 fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression() {
     let mut mild = seeded_clim06_surface(true);
     mild.state_surface
@@ -645,7 +642,6 @@ fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost
 }
 
 #[test]
-#[ignore = "SIMIMPL32 expected-failure baseline; frsoil/getFreezeCond land-use lineage requires SIMIMPL34"]
 fn simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kfactor_selection() {
     let mut forest_surface = seeded_clim06_surface(true);
     forest_surface.state_surface.insert(
@@ -698,7 +694,6 @@ fn simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kf
 }
 
 #[test]
-#[ignore = "SIMIMPL32 expected-failure baseline; cross-contract frost.hourly seam payload requires SIMIMPL33/34"]
 fn simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_completeness() {
     let report = execute_clim06_surface(seeded_clim06_surface(true));
     assert!(report.scheduler_report.is_success());

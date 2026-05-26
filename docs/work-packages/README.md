@@ -685,6 +685,11 @@ Authorized packages:
     typed seam wiring (fine-layer indexing/count lineage, conductivity
     lineage, and `frost.hourly.*` seam families) required before SIMIMPL34
     baseline-authoritative frost solver migration.
+- `20260526-simimpl34-frost-energy-solver-kernel-migration-and-coupling-001/`
+  - Purpose: execute SIMIMPL34 by replacing reductive active-frost coupling
+    with baseline-authoritative frost solver migration (`frostN` family with
+    `frwatc`/`frzng`/`frznw`/`frsoil` + `getFreezeCond`) and coupling closure
+    in runoff/infiltration/water-balance runtime outputs.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
