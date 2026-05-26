@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -68,6 +68,8 @@ Out of scope:
 | REF-PLANT-CH11-COUPLING | `references/50201000/chap11.pdf` §11.6 | Erosion adjustments depend on canopy/surface cover and residue surfaces from plant/residue routines. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INFILE | `/workdir/wepp-forest_260430_baseline/src/infile.for:1115-1220` | Yearly-scenario decoding of annual extension controls and perennial event/cycle payload arrays. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-TILAGE | `/workdir/wepp-forest_260430_baseline/src/tilage.for:234-417` | Runtime schedule expansion and branch-specific assignment of annual/perennial transition controls. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-YLDOPT | `/workdir/wepp-forest_260430_baseline/src/yldopt.for:121-200,271-277` | Legacy `gddmax<=0` sentinel authority: annual summer/winter branch split and perennial full-year resolution before growth equations consume `gddmax`. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-GDMAX | `/workdir/wepp-forest_260430_baseline/src/gdmax.for:1-130` | Legacy `gdmax` monthly-temperature integration authority (leap-year month lengths; monthly average `(obmaxt+obmint)/2` against `btemp`). | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-CUTGRZ | `/workdir/wepp-forest_260430_baseline/src/cutgrz.for:18-41` | Perennial harvest-date progression semantics through cut and grazing cycles. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRP | `/workdir/wepp-forest_260430_baseline/src/ptgrp.for:351-375` | Grazing day-window and `ncycle`-bounded cycle progression semantics. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRA | `/workdir/wepp-forest_260430_baseline/src/ptgra.for:188-291` | Annual event-day trigger precedence and event-day reset behavior for growth state. | `[DIRECT][Static]` |
@@ -208,7 +210,7 @@ This projection algorithm is pure with respect to plant-process state:
 
 | Surface | Symbols |
 |---|---|
-| Runtime day/climate forcing | `day`, `tmax`, `tmin`, `rad` |
+| Runtime day/climate forcing | `day`, `tmax`, `tmin`, `rad`, `obmaxt[1..12]`, `obmint[1..12]` |
 | Runtime growth state | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
 | Coupled stress carryover | `Ws` (previous-day water-stress factor) |
 | Active crop transition controls | `imngmt`, `jdplt`, `jdharv`, `jdstop`, `mgtopt` |
@@ -242,40 +244,56 @@ algorithm.
    `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
 4. On non-reset active-growth updates, compute daily heat units:
    `gdd = max(0, ((tmax + tmin) / 2) - btemp)`.
-5. Update cumulative heat units and phenology:
-   `sumgdd_next = min(gddmax, sumgdd_prev + gdd)`,
-   `fphu = clamp(sumgdd_next / gddmax, 0, 1)`.
-6. Compute temperature and water regulation:
+5. Resolve effective maturity heat-unit requirement (`gddmax_eff`) before
+   growth-physics updates:
+   - when projected `gddmax > 0`, set `gddmax_eff = gddmax`;
+   - when projected `gddmax <= 0` and annual/fallow branch is active:
+     - summer crop (`jdharv > jdplt`):
+       `gddmax_eff = gdmax(jdplt, jdharv, btemp, obmaxt[1..12], obmint[1..12])`;
+     - winter crop (`jdharv <= jdplt`):
+       `gddmax_eff = gdmax(jdplt, 365, ...) + gdmax(1, jdharv, ...)`;
+   - when projected `gddmax <= 0` and perennial branch is active:
+     `gddmax_eff = gdmax(1, 365, ...)`;
+   - `gdmax(start,end,...)` uses legacy monthly integration semantics from
+     `gdmax.for`: leap-year month lengths, monthly-average
+     `tave=(obmaxt+obmint)/2`, and positive contribution only when
+     `tave > btemp`.
+   - resolved `gddmax_eff` must be finite and strictly positive or runtime
+     must hard-fail.
+6. Update cumulative heat units and phenology:
+   `sumgdd_next = min(gddmax_eff, sumgdd_prev + gdd)`,
+   `fphu = clamp(sumgdd_next / gddmax_eff, 0, 1)`.
+7. Compute temperature and water regulation:
    `temstr = clamp(sin((pi/2) * min(1, gdd / (otemp - btemp))), 0, 1)`,
    `reg = min(Ws, temstr)`.
-7. Compute potential radiation-driven biomass increment using projected crop
+8. Compute potential radiation-driven biomass increment using projected crop
    parameters:
    `par = 0.02092 * rad * (1 - exp(-extnct * (lai_prev + 0.05)))`,
    `ddm = 0.0001 * beinp * par`,
    `vdmt_growth = vdmt_prev + ddm * reg`.
-8. Compute senescence branch using projected thresholds:
+9. Compute senescence branch using projected thresholds:
    - when `fphu < dlai`, use growth branch (`vdmt_next = vdmt_growth`);
    - when `fphu >= dlai`, apply explicit decline rates from `dropfc`, `decfct`,
      `spriod` to reduce biomass/canopy continuously (not immediate zeroing).
-9. Update harvest index with bounded heat/stress adjustment and explicit cap:
+10. Update harvest index with bounded heat/stress adjustment and explicit cap:
    `0 <= hia_next <= hi`.
-10. Update canopy and LAI from equation-driven biomass state:
+11. Update canopy and LAI from equation-driven biomass state:
     - canopy: `cancov = 1 - exp(-bb * vdmt_effective)` (bounded to `[0,0.999]`);
     - annual LAI uses vegetative biomass (`vdmt*(1-hia)`) with chapter-form
       denominator constants;
     - perennial LAI uses total biomass formulation.
-11. Update roots:
+12. Update roots:
     `rtmass_next = clamp(rtmass_prev + (vdmt_next - vdmt_prev) * rsr, 0, rtmmax)`,
     with non-decreasing active-growth behavior unless explicit reset occurs.
-12. Update root depth:
+13. Update root depth:
     - annual uses Eq. 8.2.12 heat-unit shape with `rdmax`;
     - perennial uses incremental root-mass-driven depth growth with minimum
       depth floor derived from the annual heat-unit curve;
     - cap `rtd_next <= min(rdmax, solthk)`.
-13. Any missing/non-finite/out-of-domain required symbol (climate, stress,
+14. Any missing/non-finite/out-of-domain required symbol (climate, stress,
     crop parameter, or state symbol) is a typed hard failure. No silent
     defaulting/clamping to proceed is allowed.
-14. Covered active growth branches (`imngmt in {1,2,3}` while dispatch is
+15. Covered active growth branches (`imngmt in {1,2,3}` while dispatch is
     active for the branch) must emit equation-driven updates and may not use
     skip/no-op or unconditional zero-reset fallback behavior.
 
@@ -321,6 +339,7 @@ algorithm.
 | INV-PLANT-021 | Growth-physics required-symbol guard: climate/stress/parameter inputs required by PL16 equations (`tmax`, `tmin`, `rad`, `Ws`, `btemp`, `otemp`, `gddmax`, `bb`, `beinp`, `extnct`, `rdmax`, `rsr`, `xmxlai`, etc.) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error. | hard-fail | REF-PLANT-CH8-GROWTH, REF-PLANT-CH8-STRESS, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-022 | PL17 decomposition-kinetics parameter projection invariant: transition-control runtime projection must emit slot/crop decomposition-rate symbols (`oratea`, `orater`) on decomposition surfaces for active crops, preserving finite positive domains and typed hard-fail posture on invalid projection input. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-023 | SIMIMPL21 root-uptake stress-lineage invariant: plant growth stress coupling must consume ET stress (`Ws`) and root-depth/uptake lineage (`Rd`/`rtd`, `UPi`, `Ui`) derived from canonical WB11 `swu` semantics; synthetic stress substitution detached from layer-uptake lineage is invalid. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-SWU, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-024 | Legacy `gddmax` sentinel closure: projected `gddmax<=0` must resolve through `yldopt/gdmax`-authoritative monthly-climate integration (`obmaxt`, `obmint`, `btemp`, management day controls) to a finite strictly positive `gddmax_eff` before phenology equations execute. | hard-fail | REF-PLANT-LEGACY-YLDOPT, REF-PLANT-LEGACY-GDMAX, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -345,6 +364,7 @@ algorithm.
 - `ncut`/`ncycle` cardinality mismatch with indexed payload families. `[DIRECT][Static] + [INFERENCE][Static]`
 - Grazing cycle where `gday[k] >= gend[k]`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Transition-control projection domain violations handled through silent default or clamp. `[INFERENCE][Static]`
+- `gddmax<=0` branch without valid monthly climate vectors (`obmaxt`, `obmint`) or with non-positive resolved `gddmax_eff`. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -356,6 +376,7 @@ algorithm.
 - OBL-PLANT-P-006: Emit full indexed perennial payload families for `cutday` and grazing cycles exactly through declared cardinalities. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-007: Reject invalid transition-control runtime projection domains with typed failures; no silent coercion. `[INFERENCE][Static]`
 - OBL-PLANT-P-008: Preserve coupled ET stress/root-uptake lineage surfaces (`WS`/`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) and expose typed failures when lineage inputs are missing/non-finite/out-of-domain. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-P-009: Publish monthly climate vectors (`obmaxt[1..12]`, `obmint[1..12]`) to growth runtime surfaces and resolve projected `gddmax<=0` via legacy `yldopt/gdmax` semantics before phenology updates; unresolved or non-positive outcomes are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -375,6 +396,7 @@ algorithm.
 | Management removal bounds (`INV-PLANT-006/008`) | management event application | Hard error and event rejection on impossible removal/conversion | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Coupling completeness (`INV-PLANT-007`) | plant->consumer handoff | Hard error on missing/invalid field; no fallback payload synthesis | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL21 ET stress/root-uptake lineage closure (`INV-PLANT-023`) | plant growth stress coupling boundary (`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) | Hard error / `HOLD` when stress lineage is detached from WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Legacy `gddmax` sentinel closure (`INV-PLANT-024`) | growth input resolution boundary prior to PL16 equations | Hard error when `gddmax<=0` cannot resolve to finite positive `gddmax_eff` via monthly-climate integration | Tier-A gate for PL16 growth-physics execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Transition-control projection closure (`INV-PLANT-011/012/013/014/015`) | parser->runtime projection boundary and scheduler pre-dispatch | Hard error on missing/incoherent/index-invalid/out-of-domain control surface | Tier-A gate for PL transition execution; Tier-B investigation otherwise | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Model-limit governance (`INV-PLANT-009`) | review/verification and runtime config audit | Governance failure; requires explicit contract amendment before promotion | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -405,6 +427,7 @@ algorithm.
 | `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/non-positive decomposition-rate projection symbols | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-023` | runtime + governance | ET stress/root-uptake lineage validator for coupled growth regulation | Typed hard error / explicit `HOLD` when `Ws` and root-uptake lineage are not traceable to WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-024` | runtime | Legacy `gddmax` sentinel resolver (`yldopt/gdmax` branch) | Typed hard error on missing/non-finite monthly climate vectors or non-positive resolved `gddmax_eff` | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -436,6 +459,8 @@ states required deterministic alias mapping for transition-control projections.
 | `CRITVM` | `CRITVM` (identity) | grazing-floor parameter surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `gi` | `gi` (identity) | rangeland growth-curve surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `RGCMIN` | `RGCMIN` (identity) | evergreen floor parameter surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `obmaxt[m]` | `obmaxt_{month:04}` | monthly climate max-temperature vector consumed by legacy `gdmax` sentinel resolution (`m=1..12`) | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `obmint[m]` | `obmint_{month:04}` | monthly climate min-temperature vector consumed by legacy `gdmax` sentinel resolution (`m=1..12`) | `degC` -> `degC` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `lanuse` | `pl_schedule_ofe{ofe}_lanuse`, `pl_schedule_slot_{slot:04}_crop_{crop:04}_lanuse` | projected schedule topology/branch surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `itype` | `pl_schedule_slot_{slot:04}_crop_{crop:04}_itype`, `pl_growth_slot_{slot:04}_crop_{crop:04}_itype` | projected schedule/growth branch surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `imngmt` | `pl_schedule_slot_{slot:04}_crop_{crop:04}_imngmt`, `pl_growth_slot_{slot:04}_crop_{crop:04}_imngmt`, `pl_growth_ofe{ofe}_imngmt_seed` | projected schedule/growth management-class surface | categorical integer -> categorical integer | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -546,6 +571,17 @@ Minimum required scenario families for contract conformance:
      growth-regulation publication;
    - stress lineage detached from declared WB11 uptake semantics is
      non-promotable and retains explicit `HOLD`.
+14. PL16 legacy `gddmax` sentinel vectors:
+   - annual summer branch (`jdharv > jdplt`) with projected `gddmax=0` resolves
+     to positive `gddmax_eff` from `gdmax(jdplt,jdharv,...)` and executes
+     equation path;
+   - annual winter branch (`jdharv <= jdplt`) with projected `gddmax=0`
+     resolves to positive `gddmax_eff` from split-window
+     `gdmax(jdplt,365)+gdmax(1,jdharv)`;
+   - perennial branch with projected `gddmax=0` resolves to positive
+     `gddmax_eff` from `gdmax(1,365)`;
+   - missing/non-finite monthly vectors or non-positive resolved `gddmax_eff`
+     hard-fail with typed boundary status.
 
 ## WB15 Plant-to-Interception Coupling Addendum
 
@@ -647,3 +683,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `11` | `Codex` | WB15 amendment: added plant-to-interception coupling authority for hydrology consumption of `cancov`, `lai`, and `vdmt`, including required producer-domain guarantees and coupled failure vectors for missing/non-finite/out-of-domain canopy-state payloads. |
 | `2026-05-23` | `12` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered hydrology/plant coupling interfaces to consume boundary symbols via ARCH22 typed symbol families and preserving WB15 guard/failure semantics under typed migration. |
 | `2026-05-25` | `13` | `Codex` | SIMIMPL21 amendment: added WB11 ET stress/root-uptake lineage authority (`INV-PLANT-023`) with coupled boundary disposition, explicit WB11 lineage obligations (`Ws`, `UPi`, `Ui`, `Rd`/`rtd`), and downstream SIMIMPL22/SIMIMPL23 gating posture. |
+| `2026-05-25` | `14` | `Codex` | MOFE10 amendment: added legacy `gddmax<=0` sentinel authority from `yldopt/gdmax` (`INV-PLANT-024`), monthly climate input aliasing (`obmaxt`/`obmint`), PL16 resolution algorithm step, and required typed-fail vectors for unresolved sentinel branches. |

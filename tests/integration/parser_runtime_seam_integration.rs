@@ -192,6 +192,10 @@ impl HillslopeKernel for HillslopeClimateProbeKernel {
         assert_state_value(request.state_surface, "rad", 200.0);
         assert_state_value(request.state_surface, "tdpt", -1.0);
         assert_state_value(request.state_surface, "vwind", 3.0);
+        assert_state_value(request.state_surface, "obmaxt_0001", 1.0);
+        assert_state_value(request.state_surface, "obmaxt_0012", 12.0);
+        assert_state_value(request.state_surface, "obmint_0001", -5.0);
+        assert_state_value(request.state_surface, "obmint_0012", 6.0);
 
         self.invocation_count += 1;
         KernelRunResponse::new(

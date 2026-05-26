@@ -7006,20 +7006,21 @@ fn require_growth_equation_inputs(
         );
     }
 
-    let gddmax = require_slot_growth_value(
+    let gddmax_projected = require_slot_growth_value(
         phase,
         state_surface,
         slot_index,
         crop_slot_index,
         PL_GROWTH_PARAM_GDDMAX_ROOT,
     )?;
-    validate_growth_state_range(
+    let gddmax = resolve_effective_gddmax(
         phase,
-        PL_GROWTH_PARAM_GDDMAX_ROOT,
-        gddmax,
-        Some(f64::EPSILON),
-        None,
-        "gddmax must be positive",
+        state_surface,
+        slot_index,
+        crop_slot_index,
+        management_class,
+        btemp,
+        gddmax_projected,
     )?;
 
     let dlai = require_slot_growth_value(
@@ -7248,6 +7249,195 @@ fn require_slot_growth_value(
 ) -> Result<f64, HillslopeGrowthBoundaryError> {
     let symbol = pl_growth_slot_crop_symbol(root, slot_index, crop_slot_index);
     require_finite_state_value(phase, state_surface, symbol.as_str())
+}
+
+#[allow(clippy::too_many_arguments)]
+fn resolve_effective_gddmax(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    management_class: u8,
+    btemp: f64,
+    gddmax_projected: f64,
+) -> Result<f64, HillslopeGrowthBoundaryError> {
+    if gddmax_projected > 0.0 {
+        return Ok(gddmax_projected);
+    }
+    if gddmax_projected < 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_PARAM_GDDMAX_ROOT),
+                value: gddmax_projected,
+                reason: "gddmax must be non-negative",
+            },
+        );
+    }
+
+    let obmaxt =
+        require_monthly_temperature_vector(phase, state_surface, PL_GROWTH_CLIMATE_OBMAX_ROOT)?;
+    let obmint =
+        require_monthly_temperature_vector(phase, state_surface, PL_GROWTH_CLIMATE_OBMIN_ROOT)?;
+
+    let gddmax_resolved = if management_class == 2 {
+        legacy_gdmax_from_monthly(
+            phase,
+            1,
+            PL_GROWTH_GDMAX_YEAR_END_DAY,
+            btemp,
+            &obmaxt,
+            &obmint,
+        )?
+    } else {
+        let jdplt_symbol = pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index);
+        let jdharv_symbol = pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index);
+        let jdplt = require_integral_state_value_in_range_for_growth(
+            phase,
+            state_surface,
+            jdplt_symbol.as_str(),
+            1,
+            366,
+        )?;
+        let jdharv = require_integral_state_value_in_range_for_growth(
+            phase,
+            state_surface,
+            jdharv_symbol.as_str(),
+            1,
+            366,
+        )?;
+
+        if jdharv > jdplt {
+            legacy_gdmax_from_monthly(phase, jdplt, jdharv, btemp, &obmaxt, &obmint)?
+        } else {
+            legacy_gdmax_from_monthly(
+                phase,
+                jdplt,
+                PL_GROWTH_GDMAX_YEAR_END_DAY,
+                btemp,
+                &obmaxt,
+                &obmint,
+            )? + legacy_gdmax_from_monthly(phase, 1, jdharv, btemp, &obmaxt, &obmint)?
+        }
+    };
+
+    if !gddmax_resolved.is_finite() || gddmax_resolved <= 0.0 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_PARAM_GDDMAX_ROOT),
+                value: gddmax_resolved,
+                reason: "resolved gddmax must be finite and positive",
+            },
+        );
+    }
+
+    Ok(gddmax_resolved)
+}
+
+fn require_monthly_temperature_vector(
+    phase: HillslopePhase,
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    root: &str,
+) -> Result<[f64; 12], HillslopeGrowthBoundaryError> {
+    let mut monthly = [0.0; 12];
+    for (index, month_value) in monthly.iter_mut().enumerate() {
+        let month = index + 1;
+        let symbol = format!("{root}_{month:04}");
+        *month_value = require_finite_state_value(phase, state_surface, symbol.as_str())?;
+    }
+    Ok(monthly)
+}
+
+fn legacy_gdmax_from_monthly(
+    phase: HillslopePhase,
+    start_day: usize,
+    end_day: usize,
+    btemp: f64,
+    obmaxt: &[f64; 12],
+    obmint: &[f64; 12],
+) -> Result<f64, HillslopeGrowthBoundaryError> {
+    if start_day == 0 || end_day == 0 || start_day > end_day || end_day > 366 {
+        return Err(
+            HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+                phase,
+                symbol: BoundarySymbol::from(PL_GROWTH_PARAM_GDDMAX_ROOT),
+                value: usize_to_f64_for_growth_error(end_day),
+                reason: "legacy gdmax day-window must satisfy 1 <= start <= end <= 366",
+            },
+        );
+    }
+
+    let start_month = legacy_gdmax_month_for_day(start_day).ok_or(
+        HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+            phase,
+            symbol: BoundarySymbol::from(PL_GROWTH_PARAM_GDDMAX_ROOT),
+            value: usize_to_f64_for_growth_error(start_day),
+            reason: "legacy gdmax could not resolve start month",
+        },
+    )?;
+    let end_month = legacy_gdmax_month_for_day(end_day).ok_or(
+        HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+            phase,
+            symbol: BoundarySymbol::from(PL_GROWTH_PARAM_GDDMAX_ROOT),
+            value: usize_to_f64_for_growth_error(end_day),
+            reason: "legacy gdmax could not resolve end month",
+        },
+    )?;
+
+    let start_days = PL_GROWTH_GDMAX_MONTH_DAY_STARTS[start_month] - start_day + 1;
+    let end_days = end_day - PL_GROWTH_GDMAX_MONTH_DAY_STARTS[end_month - 1];
+    let start_days = day_count_to_f64_for_gdmax(phase, start_days)?;
+    let end_days = day_count_to_f64_for_gdmax(phase, end_days)?;
+
+    let mut sumgd = 0.0;
+
+    let start_tave = f64::midpoint(obmaxt[start_month - 1], obmint[start_month - 1]);
+    if start_tave > btemp {
+        sumgd += (start_tave - btemp) * start_days;
+    }
+
+    for month in (start_month + 1)..end_month {
+        let tave = f64::midpoint(obmaxt[month - 1], obmint[month - 1]);
+        if tave > btemp {
+            let month_days =
+                day_count_to_f64_for_gdmax(phase, PL_GROWTH_GDMAX_MONTH_LENGTHS[month - 1])?;
+            sumgd += (tave - btemp) * month_days;
+        }
+    }
+
+    let end_tave = f64::midpoint(obmaxt[end_month - 1], obmint[end_month - 1]);
+    if end_tave > btemp {
+        sumgd += (end_tave - btemp) * end_days;
+    }
+
+    Ok(sumgd)
+}
+
+fn legacy_gdmax_month_for_day(day: usize) -> Option<usize> {
+    if day == 0 || day > PL_GROWTH_GDMAX_MONTH_DAY_STARTS[12] {
+        return None;
+    }
+    (1..=12).find(|month| day <= PL_GROWTH_GDMAX_MONTH_DAY_STARTS[*month])
+}
+
+fn day_count_to_f64_for_gdmax(
+    phase: HillslopePhase,
+    day_count: usize,
+) -> Result<f64, HillslopeGrowthBoundaryError> {
+    let day_count_u16 = u16::try_from(day_count).map_err(|_| {
+        HillslopeGrowthBoundaryError::InvalidTransitionPayloadState {
+            phase,
+            symbol: BoundarySymbol::from(PL_GROWTH_PARAM_GDDMAX_ROOT),
+            value: usize_to_f64_for_growth_error(day_count),
+            reason: "legacy gdmax day-count exceeds supported conversion range",
+        }
+    })?;
+    Ok(f64::from(day_count_u16))
+}
+
+fn usize_to_f64_for_growth_error(value: usize) -> f64 {
+    u32::try_from(value).map(f64::from).unwrap_or(f64::NAN)
 }
 
 fn validate_growth_state_surface(

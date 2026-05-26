@@ -9,7 +9,7 @@ use openwepp_climate_runtime_adapter::{
     build_climate_runtime_request, select_day_forcing,
 };
 use openwepp_input_contract::parsers::{
-    climate::ClimateFile,
+    climate::{ClimateFile, ClimateMonthlyStats},
     frost::FrostParseOutput,
     irrigation_depletion::{IrrigationDepletionFile, IrrigationPeriodData},
     irrigation_fixeddate::{FixedDateEvent, FixedDateIrrigationFile},
@@ -927,6 +927,7 @@ impl Error for HillslopeRuntimeInputError {}
 #[derive(Debug, Clone, PartialEq)]
 pub struct HillslopeClimateRuntimeRequest {
     shared: SharedHillslopeClimateRuntimeRequest,
+    monthly: ClimateMonthlyStats,
     day_symbol_surfaces: Vec<ClimateForcingSymbolSurface>,
 }
 
@@ -1986,6 +1987,7 @@ pub fn build_hillslope_climate_runtime_request(
 
     Ok(HillslopeClimateRuntimeRequest {
         shared,
+        monthly: climate.monthly.clone(),
         day_symbol_surfaces,
     })
 }
@@ -2031,6 +2033,7 @@ pub fn seed_hillslope_runtime_surface_from_climate(
         BoundarySymbol::from("iwind"),
         BoundaryValue::scalar(f64::from(climate.shared.iwind)),
     );
+    insert_monthly_climate_symbols(state_surface, &climate.monthly)?;
 
     match forcing {
         HillslopeClimateDailyForcing::NoBreakpoint(day) => {
@@ -2984,6 +2987,39 @@ fn insert_common_day_symbols(
     );
 }
 
+fn insert_monthly_climate_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    monthly: &ClimateMonthlyStats,
+) -> Result<(), ClimateRuntimeInputError> {
+    insert_monthly_vector_symbols(surface, "obmaxt", "obmaxt[*]", &monthly.obmaxt)?;
+    insert_monthly_vector_symbols(surface, "obmint", "obmint[*]", &monthly.obmint)?;
+    insert_monthly_vector_symbols(surface, "radave", "radave[*]", &monthly.radave)?;
+    insert_monthly_vector_symbols(surface, "obrain", "obrain[*]", &monthly.obrain)?;
+    Ok(())
+}
+
+fn insert_monthly_vector_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    root: &str,
+    field: &'static str,
+    values: &[f64; 12],
+) -> Result<(), ClimateRuntimeInputError> {
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(ClimateRuntimeInputError::NonFiniteField {
+                field,
+                value: *value,
+            });
+        }
+        let month = index + 1;
+        surface.insert(
+            BoundarySymbol::from(format!("{root}_{month:04}")),
+            BoundaryValue::scalar(*value),
+        );
+    }
+    Ok(())
+}
+
 fn validate_snow_control_finite(
     field: &'static str,
     value: f64,
@@ -3236,8 +3272,12 @@ fn growth_equation_parameter_values(
         crop_slot_index,
         plant.growth_line[2],
     )?;
-    let gddmax =
-        validate_projection_positive("gddmax", slot_index, crop_slot_index, plant.growth_line[5])?;
+    let gddmax = validate_projection_non_negative(
+        "gddmax",
+        slot_index,
+        crop_slot_index,
+        plant.growth_line[5],
+    )?;
     let hi = validate_projection_fraction("hi", slot_index, crop_slot_index, plant.growth_line[6])?;
 
     let otemp =
@@ -3910,8 +3950,8 @@ mod tests {
     use openwepp_input_contract::parsers::{
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
         management::{
-            ParseMode as ManagementParseMode, YearlyCroplandBranch, YearlyPerennialData,
-            YearlyScenarioData, parse_management_from_str,
+            ParseMode as ManagementParseMode, PlantScenarioData, YearlyCroplandBranch,
+            YearlyPerennialData, YearlyScenarioData, parse_management_from_str,
         },
         slope::{SlopeParserOptions, parse_slope_str},
         soil::{ParserMode, SoilParserOptions, parse_soil},
@@ -4389,6 +4429,27 @@ mod tests {
     }
 
     #[test]
+    fn management_runtime_projection_allows_zero_gddmax_sentinel_for_legacy_resolution() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let plant = &mut management.registries.plants[0];
+        let PlantScenarioData::Cropland(cropland) = &mut plant.data;
+        cropland.growth_line[5] = 0.0;
+
+        let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("gddmax zero sentinel should project for runtime resolution");
+        assert_eq!(
+            pl_surfaces.pl_growth_surface.get(&BoundarySymbol::from(
+                "pl_growth_slot_0001_crop_0001_gddmax"
+            )),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+    }
+
+    #[test]
     fn climate_runtime_surface_contains_canonical_daily_symbols() {
         let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
             .expect("strict climate fixture should parse");
@@ -4435,6 +4496,16 @@ mod tests {
             .get(&BoundarySymbol::from("intsty_0001"))
             .expect("intsty_0001 should exist")
             .as_f64();
+        let obmaxt_0001 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("obmaxt_0001"))
+            .expect("obmaxt_0001 should exist")
+            .as_f64();
+        let obmint_0012 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("obmint_0012"))
+            .expect("obmint_0012 should exist")
+            .as_f64();
 
         assert!((datver - 5.3).abs() < 1e-12);
         assert!((iclig - 1.0).abs() < 1e-12);
@@ -4444,6 +4515,8 @@ mod tests {
         assert!(ninten >= 2.0);
         assert!(timem_first.abs() < 1e-12);
         assert!(intsty_first.is_finite());
+        assert!((obmaxt_0001 - 1.0).abs() < 1e-12);
+        assert!((obmint_0012 - 6.0).abs() < 1e-12);
     }
 
     #[test]

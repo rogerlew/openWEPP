@@ -277,6 +277,27 @@ fn seeded_growth_runtime_surface(imngmt: f64) -> HillslopeWritebackSurface {
     seeded_growth_runtime_surface_for_day_year(imngmt, 200.0, 1.0)
 }
 
+fn seed_legacy_monthly_temperature_vectors(surface: &mut HillslopeWritebackSurface) {
+    const OBMAX: [f64; 12] = [
+        5.0, 7.0, 11.0, 16.0, 21.0, 25.0, 27.0, 26.0, 22.0, 16.0, 10.0, 6.0,
+    ];
+    const OBMIN: [f64; 12] = [
+        -4.0, -2.0, 1.0, 5.0, 9.0, 13.0, 15.0, 14.0, 10.0, 5.0, 1.0, -3.0,
+    ];
+
+    for (month_index, (obmaxt, obmint)) in OBMAX.iter().zip(OBMIN.iter()).enumerate() {
+        let month = month_index + 1;
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("obmaxt_{month:04}")),
+            BoundaryValue::scalar(*obmaxt),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("obmint_{month:04}")),
+            BoundaryValue::scalar(*obmint),
+        );
+    }
+}
+
 #[allow(clippy::too_many_lines)]
 fn seeded_multislot_rotation_surface(
     runtime_year: f64,
@@ -1357,6 +1378,169 @@ fn perennial_growth_phase_emits_typed_growth_context() {
     assert_eq!(kernel.decomp, 2);
     assert_eq!(kernel.annual, 1);
     assert_eq!(kernel.perennial, 1);
+}
+
+#[test]
+fn pl16_annual_growth_accepts_zero_gddmax_sentinel_for_summer_branch() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-GDDMAX-SUMMER",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 200.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_gddmax"),
+        BoundaryValue::scalar(0.0),
+    );
+    seed_legacy_monthly_temperature_vectors(&mut surface);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("annual gddmax sentinel branch should execute");
+
+    assert!(report.scheduler_report.is_success());
+}
+
+#[test]
+fn pl16_annual_growth_accepts_zero_gddmax_sentinel_for_winter_branch() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-GDDMAX-WINTER",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 20.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+        BoundaryValue::scalar(300.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+        BoundaryValue::scalar(100.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_gddmax"),
+        BoundaryValue::scalar(0.0),
+    );
+    seed_legacy_monthly_temperature_vectors(&mut surface);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("winter annual gddmax sentinel branch should execute");
+
+    assert!(report.scheduler_report.is_success());
+}
+
+#[test]
+fn pl16_perennial_growth_accepts_zero_gddmax_sentinel() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-GDDMAX-PERENNIAL",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(2.0, 200.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_gddmax"),
+        BoundaryValue::scalar(0.0),
+    );
+    seed_legacy_monthly_temperature_vectors(&mut surface);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("perennial gddmax sentinel branch should execute");
+
+    assert!(report.scheduler_report.is_success());
+}
+
+#[test]
+fn pl16_gddmax_sentinel_requires_monthly_temperature_vectors() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-GDDMAX-MISSING-MONTHLY",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(1.0, 200.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_gddmax"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("missing monthly temperature vectors should return typed failure report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::AnnualGrowthTransition)
+    );
+    assert_eq!(report.phase_reports.len(), 5);
+    assert_eq!(
+        report.phase_reports[4].decision_status.message_id(),
+        "HS-GROWTH-E-001"
+    );
+    assert_eq!(
+        report.phase_reports[4].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
 }
 
 #[test]

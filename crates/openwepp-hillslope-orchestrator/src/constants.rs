@@ -44,6 +44,8 @@ pub(crate) const PL_GROWTH_STATE_HIA_SYMBOL: &str = "hia";
 pub(crate) const PL_GROWTH_CLIMATE_TMAX_SYMBOL: &str = "tmax";
 pub(crate) const PL_GROWTH_CLIMATE_TMIN_SYMBOL: &str = "tmin";
 pub(crate) const PL_GROWTH_CLIMATE_RAD_SYMBOL: &str = "rad";
+pub(crate) const PL_GROWTH_CLIMATE_OBMAX_ROOT: &str = "obmaxt";
+pub(crate) const PL_GROWTH_CLIMATE_OBMIN_ROOT: &str = "obmint";
 pub(crate) const PL_DECOMP_CLIMATE_TMAX_SYMBOL: &str = "tmax";
 pub(crate) const PL_DECOMP_CLIMATE_TMIN_SYMBOL: &str = "tmin";
 pub(crate) const PL_DECOMP_CLIMATE_PRCP_SYMBOL: &str = "prcp";
@@ -80,6 +82,11 @@ pub(crate) const PL_GROWTH_PERENNIAL_LAI_B: f64 = 13.6;
 pub(crate) const PL_GROWTH_ROOT_DEPTH_CURVE_A: f64 = 3.03;
 pub(crate) const PL_GROWTH_ROOT_DEPTH_CURVE_B: f64 = 1.47;
 pub(crate) const PL_GROWTH_CANCOV_MAX: f64 = 0.999;
+pub(crate) const PL_GROWTH_GDMAX_YEAR_END_DAY: usize = 365;
+pub(crate) const PL_GROWTH_GDMAX_MONTH_DAY_STARTS: [usize; 13] =
+    [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366];
+pub(crate) const PL_GROWTH_GDMAX_MONTH_LENGTHS: [usize; 12] =
+    [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 pub(crate) const ORDER_FLAG_EPSILON: f64 = 1.0e-12;
 pub(crate) const MANAGEMENT_CLASS_EPSILON: f64 = 1.0e-9;
 pub(crate) const WB11_ZERO_THRESHOLD: f64 = 1.0e-12;

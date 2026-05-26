@@ -9,7 +9,7 @@ use openwepp_climate_runtime_adapter::{
 };
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
-    climate::ClimateFile,
+    climate::{ClimateFile, ClimateMonthlyStats},
     watershed_channel::WatershedChannelFile,
     watershed_impoundment::WatershedImpoundmentFile,
 };
@@ -181,6 +181,7 @@ pub struct WatershedClimateRuntimeRequest {
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedHillslopeClimateAssignment {
     forcing: WatershedHillslopeClimateRequest,
+    monthly: ClimateMonthlyStats,
     day_symbol_surfaces: Vec<ClimateForcingSymbolSurface>,
 }
 
@@ -720,6 +721,7 @@ pub fn build_watershed_climate_runtime_request_from_assignments(
             hillslope_id,
             WatershedHillslopeClimateAssignment {
                 forcing,
+                monthly: climate.monthly.clone(),
                 day_symbol_surfaces,
             },
         );
@@ -780,6 +782,7 @@ pub fn seed_watershed_runtime_surface_from_climate(
             "iwind",
             f64::from(request.iwind),
         );
+        insert_hillslope_monthly_climate_symbols(state_surface, hillslope_id, &assignment.monthly)?;
 
         let forcing = select_day_forcing(request, day_index)
             .map_err(|error| map_shared_error_for_hillslope(hillslope_id, &error))?;
@@ -1023,6 +1026,62 @@ fn insert_hillslope_symbol(
 ) {
     let key = format!("hs{hillslope_id}_{symbol}");
     surface.insert(BoundarySymbol::from(key), BoundaryValue::scalar(value));
+}
+
+fn insert_hillslope_monthly_climate_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    hillslope_id: u32,
+    monthly: &ClimateMonthlyStats,
+) -> Result<(), WatershedClimateRuntimeInputError> {
+    insert_hillslope_monthly_vector_symbols(
+        surface,
+        hillslope_id,
+        "obmaxt",
+        "obmaxt[*]",
+        &monthly.obmaxt,
+    )?;
+    insert_hillslope_monthly_vector_symbols(
+        surface,
+        hillslope_id,
+        "obmint",
+        "obmint[*]",
+        &monthly.obmint,
+    )?;
+    insert_hillslope_monthly_vector_symbols(
+        surface,
+        hillslope_id,
+        "radave",
+        "radave[*]",
+        &monthly.radave,
+    )?;
+    insert_hillslope_monthly_vector_symbols(
+        surface,
+        hillslope_id,
+        "obrain",
+        "obrain[*]",
+        &monthly.obrain,
+    )?;
+    Ok(())
+}
+
+fn insert_hillslope_monthly_vector_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    hillslope_id: u32,
+    root: &str,
+    field: &'static str,
+    values: &[f64; 12],
+) -> Result<(), WatershedClimateRuntimeInputError> {
+    for (index, value) in values.iter().enumerate() {
+        if !value.is_finite() {
+            return Err(WatershedClimateRuntimeInputError::NonFiniteField {
+                field,
+                value: *value,
+            });
+        }
+        let month = index + 1;
+        insert_hillslope_symbol(surface, hillslope_id, &format!("{root}_{month:04}"), *value);
+    }
+    Ok(())
 }
 
 fn insert_series_values(
