@@ -884,3 +884,5 @@ Authorized packages:
 - `20260525-mofe10-legacy-gddmax-runtime-resolution-and-h324-parity-rerun-001/`
   - Purpose: replicate legacy `gddmax=0` sentinel resolution (yldopt/gdmax monthly-climate behavior) in openWEPP runtime seams and rerun carved-letter `H324` MOFE semantic parity.
 
+- `20260525-mofe11-oratea-zero-domain-compatibility-and-h324-parity-rerun-001/`
+  - Purpose: close carved-letter `H324` runtime decomposition-rate blocker by replicating legacy-compatible `oratea/orater=0` (no-decay) behavior, then rerun MOFE semantic parity.

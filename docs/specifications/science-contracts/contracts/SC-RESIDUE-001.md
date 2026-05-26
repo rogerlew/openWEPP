@@ -4,7 +4,7 @@ title: Residue Management Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Cropland residue and root decomposition state/flux surfaces (standing, flat, buried, root)
   - Cropland management-operation residue transitions (tillage, cutting/shredding, burning, removal)
@@ -15,7 +15,7 @@ consumer_scope:
   - Soil and erosion consumers using residue placement/cover effects on erodibility and transport
   - Plant-management and snow/freeze consumers requiring residue boundary continuity
 evidence_level: Static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-25
 supersedes: []
 superseded_by: []
 ---
@@ -60,6 +60,7 @@ Out of scope:
 | REF-RESIDUE-CH5-ET | `references/50201000/chap5.pdf` §5.2 Eq. [5.2.13], §5.5 | Soil-evaporation attenuation uses plant residue mass (`Cr`) and daily coupling inputs include residue cover context. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-RESIDUE-CH11-EROSION | `references/50201000/chap11.pdf` §11.3 Eq. [11.3.7]-[11.3.10], §11.6 | Erosion adjustments include residue effects via soil-parameter adjustments and surface-cover semantics from plant/residue routines. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-RESIDUE-CH7-RIDGE-SOIL | `references/50201000/chap7.pdf` §7.6, §7.10, §7.11 | Ridge/furrow criteria and soil erodibility pathways coupled to residue placement/cover conditions. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-RESIDUE-LEGACY-ORATE-DOMAIN | `/workdir/wepp-forest_260430_baseline/src/infile.for:539-541`, `/workdir/wepp-forest_260430_baseline/src/decomp.for:575-633` | Legacy decomposition-rate domain authority: `oratea/orater` are consumed directly by exponential decay equations; zero-valued constants yield no-decay factors (`exp(0)=1`). | `[DIRECT][Static]` |
 | REF-RESIDUE-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative biomass pools, bounded fractions, and mass-transfer closure across management/decomposition operations. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -193,6 +194,8 @@ delegated to kernel handlers consuming the typed contexts.
    - `envinx = min(tmpfac, fwatfc)`
    - `surface_decay = exp(-envinx * oratea)`
    - `root_decay = exp(-envinx * orater)`
+   - `oratea=0` and/or `orater=0` are valid and produce no-decay factors
+     (`surface_decay=1` and/or `root_decay=1`) for the affected pool updates.
 4. Apply decomposition kinetics to tracked pools:
    - `sumsrm_next = sumsrm_prev * surface_decay`
    - `sumrtm_next = sumrtm_prev * root_decay`
@@ -254,7 +257,7 @@ delegated to kernel handlers consuming the typed contexts.
 | INV-RESIDUE-015 | Growth transition reset invariant: reset-class actions (`planting`, `harvest`, `stop`) emit explicit zero-state payloads for `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` and do not rely on implicit defaults. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH9-CROP-SUMMARY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-016 | INT10 coupled replay invariant: daily coupled transition/hydrology execution preserves `decomp -> growth -> watbal` ordering, with typed context and writeback state transfer observable by downstream hydrology phases; ordering-symbol violations are hard-fail with no silent fallback. | hard-fail | REF-RESIDUE-CH8-COUPLING, REF-RESIDUE-CH5-ET, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RESIDUE-017 | PL17 decomposition equation-update invariant: active decomposition payload assembly updates tracked seed residue/root pools (`sumsrm_seed`, `sumrtm_seed`) using explicit equation-driven exponential decay factors derived from environmental indices and decomposition-rate constants; pass-through/no-op fallback is prohibited for covered branches. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-RESIDUE-018 | PL17 decomposition required-symbol guard invariant: decomposition equation and event-transfer inputs (`tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater`, event fractions/payloads) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error; silent defaults/clamps are prohibited. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RESIDUE-018 | PL17 decomposition required-symbol guard invariant: decomposition equation and event-transfer inputs (`tmax`, `tmin`, `prcp`, `Ws`, `oratea`, `orater`, event fractions/payloads) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error; `oratea/orater` are non-negative with zero-valued no-decay constants allowed, while negative values are invalid. Silent defaults/clamps are prohibited. | hard-fail | REF-RESIDUE-CH9-CROP-DECOMP, REF-RESIDUE-CH9-MGMT, REF-RESIDUE-LEGACY-ORATE-DOMAIN, REF-RESIDUE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -277,7 +280,7 @@ delegated to kernel handlers consuming the typed contexts.
 | `INV-RESIDUE-015` | runtime | Growth transition reset payload assembler | Typed hard error when required reset-class state projection is missing or malformed | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-016` | runtime | Coupled replay transition/hydrology lane-order guard and state-transfer boundary checks | Typed hard error on missing/non-finite/invalid ordering symbols or failed transition preconditions before watbal lane | Tier-A gate for INT10 coupled replay | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RESIDUE-017` | runtime | Decomposition transition payload equation updater (`state_after`) for tracked residue/root seed pools | Typed hard error when covered decomposition branches emit pass-through/no-op state in place of equation update | Tier-A gate for PL17 decomposition physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-RESIDUE-018` | runtime | Decomposition equation/event input validator before payload update execution | Typed hard error on missing/non-finite/out-of-domain required decomposition symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RESIDUE-018` | runtime | Decomposition equation/event input validator before payload update execution | Typed hard error on missing/non-finite/negative required decomposition symbols; zero-valued `oratea/orater` are valid no-decay constants | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -318,6 +321,7 @@ field names remain provisional and must preserve these mappings.
 - Silent residue mass creation/loss during standing-flat-buried transfers not explainable by declared equations/events. `[DIRECT][Static] + [INFERENCE][Static]`
 - Missing residue coupling payloads required for ET attenuation (`Cr`) or erosion/cover adjustment pathways. `[DIRECT][Static] + [INFERENCE][Static]`
 - Silent reordering of daily residue update stages relative to the §9.4 sequence. `[DIRECT][Static] + [INFERENCE][Static]`
+- Negative decomposition-rate constants (`oratea`, `orater`) in decomposition payload surfaces. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -426,6 +430,8 @@ Minimum required scenario families for contract conformance:
      transfer/removal updates to tracked pools in addition to daily decay.
 13. PL17 decomposition required-symbol guard obligations:
    - missing `pl_decomp_slot_*_oratea` or `..._orater` fails with typed status;
+   - zero-valued `oratea`/`orater` are accepted and preserve no-decay behavior;
+   - negative `oratea`/`orater` values fail with typed domain status;
    - non-finite `prcp` or out-of-domain `Ws` fails with typed status;
    - active branch does not silently default missing decomposition symbols.
 
@@ -473,3 +479,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `7` | `Codex` | PL16 amendment: aligned growth transition authority to reset-only (`planting/harvest/stop`) plus equation-driven non-reset payload behavior, added explicit PL16 growth-equation guard branch, and updated PL16-oriented test-vector obligations/failure posture. |
 | `2026-05-23` | `8` | `Codex` | PL17 amendment: added decomposition equation/update addendum with legacy-aligned environmental factors and decay forms, introduced decomposition payload equation-updated seed-pool authority and event-transfer update obligations, added `INV-RESIDUE-017/018` plus guard-map rows, and expanded PL17 test-vector obligations for decomposition kinetics and required-symbol failure posture. |
 | `2026-05-23` | `9` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring residue-coupled production interfaces to consume boundary symbols via ARCH22 typed symbol families while preserving PL17/INT10 typed failure semantics under migration. |
+| `2026-05-25` | `10` | `Codex` | MOFE11 amendment: added legacy `oratea/orater` domain authority (`infile.for` direct read + `decomp.for` exponential usage), revised PL17 required-symbol domain semantics to allow zero-valued no-decay constants, and updated guard/test vectors to typed-reject negative decomposition-rate constants. |

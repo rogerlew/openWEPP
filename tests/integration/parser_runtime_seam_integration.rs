@@ -1658,6 +1658,116 @@ fn pl17_contract_conformance_scheduler_emits_equation_updated_annual_decompositi
 }
 
 #[test]
+fn pl17_contract_conformance_scheduler_preserves_seed_masses_when_decomposition_constants_are_zero()
+{
+    struct AnnualDecompZeroRateProbeKernel {
+        saw_equation_update: bool,
+        before_sumrtm: f64,
+        before_sumsrm: f64,
+    }
+
+    impl HillslopeKernel for AnnualDecompZeroRateProbeKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            if request.phase_class
+                == openwepp_kernel_contract::HillslopeKernelPhaseClass::DecompositionTransition
+            {
+                let context = request
+                    .decomposition_context
+                    .expect("decomposition phase should carry decomposition context");
+                let payload = context
+                    .transition_payload
+                    .expect("decomposition context should carry transition payload");
+                assert!(matches!(
+                    payload.control,
+                    HillslopeDecompositionTransitionControl::Annual(control)
+                        if control.active_action == HillslopeAnnualDecompositionAction::None
+                ));
+                assert!(
+                    (payload.sumrtm_seed - self.before_sumrtm).abs() < 1e-12,
+                    "zero decomposition constants should preserve dead-root residue mass"
+                );
+                assert!(
+                    (payload.sumsrm_seed - self.before_sumsrm).abs() < 1e-12,
+                    "zero decomposition constants should preserve submerged residue mass"
+                );
+                self.saw_equation_update = true;
+            }
+
+            KernelRunResponse::new(
+                SimulationStatus::ok(SimulationPhase::HillslopeKernel, "PL17-INTEGRATION-OK")
+                    .expect("status should construct"),
+                KernelWritebackPayload::empty(),
+            )
+        }
+    }
+
+    let management = parse_management_fixture("canonical_cropland_nonzero_98_4.man");
+    let surface = build_hillslope_runtime_surface_from_management(&management)
+        .expect("management runtime surface should build");
+    let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    let soil_surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect("soil runtime surface should build");
+    let climate = parse_climate_from_str(CLIMATE_STRICT_VALID, ClimateParserMode::Strict)
+        .expect("climate fixture should parse");
+    let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("climate runtime surface should build");
+    let mut surface = merge_hillslope_runtime_surfaces(
+        merge_hillslope_runtime_surfaces(surface, soil_surface),
+        climate_surface,
+    );
+    seed_pl16_equation_symbols(&mut surface, Pl16EquationSeed { ws: 0.8 });
+    seed_pl17_decomposition_symbols(&mut surface);
+    for symbol in [
+        "pl_decomp_slot_0001_crop_0001_oratea",
+        "pl_decomp_slot_0001_crop_0001_orater",
+        "oratea",
+        "orater",
+    ] {
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from(symbol), 0.0.into());
+    }
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("day"), 200.0.into());
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("year"), 1.0.into());
+
+    let before_sumrtm = surface
+        .state_surface
+        .get(&BoundarySymbol::from("sumrtm_seed"))
+        .expect("sumrtm_seed should be present")
+        .as_f64();
+    let before_sumsrm = surface
+        .state_surface
+        .get(&BoundarySymbol::from("sumsrm_seed"))
+        .expect("sumsrm_seed should be present")
+        .as_f64();
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("topology should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = AnnualDecompZeroRateProbeKernel {
+        saw_equation_update: false,
+        before_sumrtm,
+        before_sumsrm,
+    };
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("scheduler should execute annual decomposition equation path");
+
+    assert!(report.scheduler_report.is_success());
+    assert!(kernel.saw_equation_update);
+}
+
+#[test]
 #[allow(clippy::too_many_lines)]
 fn pl17_contract_conformance_scheduler_emits_equation_updated_perennial_decomposition_state_on_active_day()
  {

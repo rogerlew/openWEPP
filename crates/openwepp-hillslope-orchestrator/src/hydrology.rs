@@ -7991,9 +7991,9 @@ fn require_decomposition_equation_inputs(
         phase,
         PL_DECOMP_PARAM_ORATEA_ROOT,
         annual_decay_rate,
-        Some(f64::EPSILON),
+        Some(0.0),
         None,
-        "oratea must be positive",
+        "oratea must be non-negative",
     )?;
 
     let root_decay_rate = require_slot_decomposition_value(
@@ -8007,9 +8007,9 @@ fn require_decomposition_equation_inputs(
         phase,
         PL_DECOMP_PARAM_ORATER_ROOT,
         root_decay_rate,
-        Some(f64::EPSILON),
+        Some(0.0),
         None,
-        "orater must be positive",
+        "orater must be non-negative",
     )?;
 
     Ok(DecompositionEquationInputs {

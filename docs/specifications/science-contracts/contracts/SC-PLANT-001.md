@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -75,6 +75,7 @@ Out of scope:
 | REF-PLANT-LEGACY-PTGRA | `/workdir/wepp-forest_260430_baseline/src/ptgra.for:188-291` | Annual event-day trigger precedence and event-day reset behavior for growth state. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-GROW | `/workdir/wepp-forest_260430_baseline/src/grow.for:280-930` | Canonical equation authority for daily GDD accumulation, stress-regulated biomass, canopy/LAI development, root growth/depth, and senescence decline dynamics. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-DECOMP | `/workdir/wepp-forest_260430_baseline/src/decomp.for:666-714` | Residue/decomposition event handling for annual extension controls (`jdburn`, `jdcut`, `jdmove`). | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-ORATE-DOMAIN | `/workdir/wepp-forest_260430_baseline/src/infile.for:539-541`, `/workdir/wepp-forest_260430_baseline/src/decomp.for:575-633` | Legacy decomposition-rate domain authority: `oratea/orater` are read directly from management payloads and used in exponential decay equations; zero-valued constants produce no-decay factors (`exp(0)=1`). | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INIDAT | `/workdir/wepp-forest_260430_baseline/src/inidat.for:613-647` | Zero-sentinel initialization and default domains for management schedule arrays. | `[DIRECT][Static]` |
 | REF-PLANT-INFILE-CONTRACT | `docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md` §3, §8 | Canonical field domains for `jd*`, `ncut`, `cutday`, `ncycle`, `gday`, `gend`, payload arrays. | `[DIRECT][Static]` |
 | REF-PLANT-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative mass/depth and bounded fractions are required for physically valid state. | `[INFERENCE][Static]` |
@@ -201,8 +202,10 @@ This projection algorithm is pure with respect to plant-process state:
      surfaces as slot/crop symbols (`oratea`, `orater`);
    - primary slot/crop aliases for these parameters are emitted when
      `slot=1,crop=1` to satisfy deterministic single-slot replay seams;
-   - missing/non-finite/out-of-domain decomposition-rate parameters are typed
-     hard failures with no silent fallback.
+   - missing/non-finite/negative decomposition-rate parameters are typed
+     hard failures with no silent fallback;
+   - zero-valued decomposition-rate constants are legacy-compatible and
+     represent deterministic no-decay constants for equation updates.
 
 ## Algorithm State Surfaces (PL16 Growth Physics Runtime Update)
 
@@ -337,7 +340,7 @@ algorithm.
 | INV-PLANT-019 | GDD and phenology boundedness: `gdd = max(0, ((tmax+tmin)/2)-btemp)`, cumulative `sumgdd` is monotone non-decreasing between explicit reset events, and `fphu=sumgdd/gddmax` is bounded to `[0,1]`. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-LEGACY-GROW | `[DIRECT][Static]` |
 | INV-PLANT-020 | Senescence/harvest dynamics: post-threshold senescence uses explicit decline equations/parameters (`dropfc`, `decfct`, `spriod`) and preserves non-negative biomass/canopy state while enforcing explicit reset only for canonical reset-class actions (`planting`, `harvest`, `stop`). | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-PTGRA | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-021 | Growth-physics required-symbol guard: climate/stress/parameter inputs required by PL16 equations (`tmax`, `tmin`, `rad`, `Ws`, `btemp`, `otemp`, `gddmax`, `bb`, `beinp`, `extnct`, `rdmax`, `rsr`, `xmxlai`, etc.) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error. | hard-fail | REF-PLANT-CH8-GROWTH, REF-PLANT-CH8-STRESS, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PLANT-022 | PL17 decomposition-kinetics parameter projection invariant: transition-control runtime projection must emit slot/crop decomposition-rate symbols (`oratea`, `orater`) on decomposition surfaces for active crops, preserving finite positive domains and typed hard-fail posture on invalid projection input. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-022 | PL17 decomposition-kinetics parameter projection invariant: transition-control runtime projection must emit slot/crop decomposition-rate symbols (`oratea`, `orater`) on decomposition surfaces for active crops, preserving finite non-negative domains; zero-valued constants are valid no-decay controls and negative values are typed hard-fail projection input violations. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-LEGACY-ORATE-DOMAIN, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-023 | SIMIMPL21 root-uptake stress-lineage invariant: plant growth stress coupling must consume ET stress (`Ws`) and root-depth/uptake lineage (`Rd`/`rtd`, `UPi`, `Ui`) derived from canonical WB11 `swu` semantics; synthetic stress substitution detached from layer-uptake lineage is invalid. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-SWU, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-024 | Legacy `gddmax` sentinel closure: projected `gddmax<=0` must resolve through `yldopt/gdmax`-authoritative monthly-climate integration (`obmaxt`, `obmint`, `btemp`, management day controls) to a finite strictly positive `gddmax_eff` before phenology equations execute. | hard-fail | REF-PLANT-LEGACY-YLDOPT, REF-PLANT-LEGACY-GDMAX, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -365,6 +368,7 @@ algorithm.
 - Grazing cycle where `gday[k] >= gend[k]`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Transition-control projection domain violations handled through silent default or clamp. `[INFERENCE][Static]`
 - `gddmax<=0` branch without valid monthly climate vectors (`obmaxt`, `obmint`) or with non-positive resolved `gddmax_eff`. `[DIRECT][Static] + [INFERENCE][Static]`
+- Negative decomposition-rate constants (`oratea`, `orater`) in projected transition payloads. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -377,6 +381,7 @@ algorithm.
 - OBL-PLANT-P-007: Reject invalid transition-control runtime projection domains with typed failures; no silent coercion. `[INFERENCE][Static]`
 - OBL-PLANT-P-008: Preserve coupled ET stress/root-uptake lineage surfaces (`WS`/`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) and expose typed failures when lineage inputs are missing/non-finite/out-of-domain. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-009: Publish monthly climate vectors (`obmaxt[1..12]`, `obmint[1..12]`) to growth runtime surfaces and resolve projected `gddmax<=0` via legacy `yldopt/gdmax` semantics before phenology updates; unresolved or non-positive outcomes are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-P-010: Project decomposition-rate constants (`oratea`, `orater`) as finite non-negative values; zero is an explicit no-decay control and negative values are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -425,7 +430,7 @@ algorithm.
 | `INV-PLANT-019` | runtime | Daily GDD / phenology update path | Typed hard error on out-of-domain GDD/fphu or non-monotone cumulative heat units outside reset actions | Tier-A gate | `[DIRECT][Static]` |
 | `INV-PLANT-020` | runtime | Senescence/harvest branch update path | Typed hard error on invalid senescence-rate parameters, negative post-update state, or unauthorized implicit reset | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/non-positive decomposition-rate projection symbols | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/negative decomposition-rate projection symbols; zero is accepted as no-decay | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-023` | runtime + governance | ET stress/root-uptake lineage validator for coupled growth regulation | Typed hard error / explicit `HOLD` when `Ws` and root-uptake lineage are not traceable to WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-024` | runtime | Legacy `gddmax` sentinel resolver (`yldopt/gdmax` branch) | Typed hard error on missing/non-finite monthly climate vectors or non-positive resolved `gddmax_eff` | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -561,8 +566,10 @@ Minimum required scenario families for contract conformance:
    - canonical management projection emits slot/crop `oratea` and `orater`
      symbols on decomposition surfaces;
    - primary slot/crop alias projection emits root `oratea`/`orater` symbols;
-   - missing/non-finite/non-positive decomposition-rate parameters fail with
-     typed projection status.
+   - zero-valued decomposition-rate parameters are accepted and preserve
+     no-decay equation behavior;
+   - missing/non-finite/negative decomposition-rate parameters fail with typed
+     projection status.
 13. SIMIMPL21 stress-lineage vectors:
    - canonical ET return path publishes finite `Ws` coupled to WB11 `swu`
      lineage surfaces (`UPi`, `Ui`, `rtd`) and plant growth consumes those
@@ -684,3 +691,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-23` | `12` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered hydrology/plant coupling interfaces to consume boundary symbols via ARCH22 typed symbol families and preserving WB15 guard/failure semantics under typed migration. |
 | `2026-05-25` | `13` | `Codex` | SIMIMPL21 amendment: added WB11 ET stress/root-uptake lineage authority (`INV-PLANT-023`) with coupled boundary disposition, explicit WB11 lineage obligations (`Ws`, `UPi`, `Ui`, `Rd`/`rtd`), and downstream SIMIMPL22/SIMIMPL23 gating posture. |
 | `2026-05-25` | `14` | `Codex` | MOFE10 amendment: added legacy `gddmax<=0` sentinel authority from `yldopt/gdmax` (`INV-PLANT-024`), monthly climate input aliasing (`obmaxt`/`obmint`), PL16 resolution algorithm step, and required typed-fail vectors for unresolved sentinel branches. |
+| `2026-05-25` | `15` | `Codex` | MOFE11 amendment: added legacy `oratea/orater` domain authority (`infile.for` direct read + `decomp.for` exponential usage), revised PL17 decomposition-rate domain from positive to non-negative (`zero` as explicit no-decay), and updated guards/test vectors to reject negative constants while preserving typed fail-closed posture. |

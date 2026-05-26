@@ -1964,6 +1964,57 @@ fn decomposition_boundary_invalid_ordering_flag_returns_typed_failure() {
 }
 
 #[test]
+fn decomposition_boundary_rejects_negative_oratea_with_typed_failure() {
+    #[derive(Default)]
+    struct NoopKernel {
+        invocation_count: usize,
+    }
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            self.invocation_count += 1;
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-NOOP",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel::default();
+    let mut surface = seeded_growth_runtime_surface(1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_decomp_slot_0001_crop_0001_oratea"),
+        BoundaryValue::scalar(-0.1),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("typed decomposition guard failure should produce report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::DecompositionTransition)
+    );
+    assert_eq!(kernel.invocation_count, 2);
+    assert_eq!(report.phase_reports.len(), 3);
+    assert_eq!(
+        report.phase_reports[2].decision_status.message_id(),
+        "HS-DECOMP-E-010"
+    );
+    assert_eq!(
+        report.phase_reports[2].decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
 fn pl12_contract_conformance_rejects_missing_perennial_cutday_payload() {
     #[derive(Default)]
     struct NoopKernel;

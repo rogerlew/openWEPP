@@ -3342,10 +3342,18 @@ fn decomposition_equation_parameter_values(
     crop_slot_index: usize,
     plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
 ) -> Result<[(&'static str, f64); 2], HillslopeRuntimeInputError> {
-    let annual_decay_rate =
-        validate_projection_positive("oratea", slot_index, crop_slot_index, plant.residue_line[0])?;
-    let root_decay_rate =
-        validate_projection_positive("orater", slot_index, crop_slot_index, plant.residue_line[1])?;
+    let annual_decay_rate = validate_projection_non_negative(
+        "oratea",
+        slot_index,
+        crop_slot_index,
+        plant.residue_line[0],
+    )?;
+    let root_decay_rate = validate_projection_non_negative(
+        "orater",
+        slot_index,
+        crop_slot_index,
+        plant.residue_line[1],
+    )?;
     Ok([("oratea", annual_decay_rate), ("orater", root_decay_rate)])
 }
 
@@ -4447,6 +4455,60 @@ mod tests {
             )),
             Some(&BoundaryValue::scalar(0.0))
         );
+    }
+
+    #[test]
+    fn management_runtime_projection_allows_zero_oratea_orater_for_legacy_no_decay() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let plant = &mut management.registries.plants[0];
+        let PlantScenarioData::Cropland(cropland) = &mut plant.data;
+        cropland.residue_line[0] = 0.0;
+        cropland.residue_line[1] = 0.0;
+
+        let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("zero decomposition constants should project for legacy no-decay semantics");
+        assert_eq!(
+            pl_surfaces.pl_decomp_surface.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_oratea"
+            )),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            pl_surfaces.pl_decomp_surface.get(&BoundarySymbol::from(
+                "pl_decomp_slot_0001_crop_0001_orater"
+            )),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_negative_oratea_projection_field() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let plant = &mut management.registries.plants[0];
+        let PlantScenarioData::Cropland(cropland) = &mut plant.data;
+        cropland.residue_line[0] = -0.1;
+
+        let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect_err("negative decomposition constants must fail runtime seam");
+        assert_eq!(error.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "oratea",
+                slot_index: 1,
+                crop_slot_index: 1,
+                value,
+                ..
+            } if (value + 0.1).abs() < 1e-12
+        ));
     }
 
     #[test]
