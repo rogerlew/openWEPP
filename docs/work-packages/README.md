@@ -846,6 +846,11 @@ Authorized packages:
     `openwepp-hillslope-orchestrator/src/lib.rs`, preserving public
     API/runtime behavior, and updating layout-coupled tests to remain
     contract-accurate under the new module tree.
+- `20260525-refactor003-openwepp-hillslope-orchestrator-hydrology-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR003 by mechanically modularizing
+    `openwepp-hillslope-orchestrator/src/hydrology.rs` into multiple source
+    files while preserving exported API/runtime behavior and typed guard
+    semantics.
 - `20260525-mofe01-multi-ofe-readiness-assessment-and-queue-001/`
   - Purpose: assess MOFE readiness across routing plus slope/landuse/soil
     OFE-cardinality parity and produce a dependency-aware

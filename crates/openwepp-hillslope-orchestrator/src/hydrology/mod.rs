@@ -1,0 +1,8 @@
+include!("00_pl_slot_resolution.rs");
+include!("01_phase_routing.rs");
+include!("02_guard_errors.rs");
+include!("03_kernel_support.rs");
+include!("04_kernel_execution.rs");
+include!("05_pl_phase_dispatch.rs");
+include!("06_growth_state.rs");
+include!("07_decomposition_equations.rs");
