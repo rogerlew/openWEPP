@@ -466,3 +466,190 @@ fn clim06_contract_conformance_rejects_out_of_domain_active_frost_symbol() {
         BoundaryClass::DomainViolation
     );
 }
+
+fn execute_clim06_surface(
+    surface: HillslopeWritebackSurface,
+) -> openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+    scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("CLIM06 execution should return typed report")
+}
+
+fn require_state_scalar(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing expected state symbol {symbol}"))
+        .as_f64()
+}
+
+#[test]
+#[ignore = "SIMIMPL32 expected-failure baseline; frost.hourly.* emission requires SIMIMPL33/34 migration"]
+fn simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission() {
+    let active = execute_clim06_surface(seeded_clim06_surface(true));
+    let inactive = execute_clim06_surface(seeded_clim06_surface(false));
+    assert!(active.scheduler_report.is_success());
+    assert!(inactive.scheduler_report.is_success());
+
+    let _active_qsrf = require_state_scalar(&active, "frost.hourly.qsrf_w_m2_0001");
+    let _active_quf = require_state_scalar(&active, "frost.hourly.quf_w_m2_0001");
+
+    assert!(
+        !inactive
+            .writeback_surface
+            .state_surface
+            .contains_key(&BoundarySymbol::from("frost.hourly.qsrf_w_m2_0001")),
+        "inactive frost coupling should not emit frost.hourly.* branch payloads"
+    );
+}
+
+#[test]
+#[ignore = "SIMIMPL32 expected-failure baseline; frwatc direction closure requires SIMIMPL33/34 migration"]
+fn simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect() {
+    let active = execute_clim06_surface(seeded_clim06_surface(true));
+    let inactive = execute_clim06_surface(seeded_clim06_surface(false));
+    assert!(active.scheduler_report.is_success());
+    assert!(inactive.scheduler_report.is_success());
+
+    let active_ws_frz = require_state_scalar(&active, "frost.runtime_ws_frz");
+    let inactive_ws_frz = inactive
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("frost.runtime_ws_frz"))
+        .map_or(0.0, |value| value.as_f64());
+    let active_soil_water = require_state_scalar(&active, "wb11_soil_water");
+    let inactive_soil_water = require_state_scalar(&inactive, "wb11_soil_water");
+
+    assert!(
+        active_ws_frz > inactive_ws_frz + CLIM06_TEST_TOLERANCE,
+        "active frost handoff should increase frozen-water ledger relative to inactive path"
+    );
+    assert!(
+        active_soil_water + CLIM06_TEST_TOLERANCE < inactive_soil_water,
+        "frwatc-style ingress/egress handoff should reduce liquid wb11 soil-water under active frost"
+    );
+}
+
+#[test]
+#[ignore = "SIMIMPL32 expected-failure baseline; frzng/frznw freeze-lineage migration requires SIMIMPL34"]
+fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression() {
+    let mut mild = seeded_clim06_surface(true);
+    mild.state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(0.1));
+    mild.state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-0.1));
+
+    let mut severe = seeded_clim06_surface(true);
+    severe
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-2.0));
+    severe
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-12.0));
+
+    let mild_report = execute_clim06_surface(mild);
+    let severe_report = execute_clim06_surface(severe);
+    assert!(mild_report.scheduler_report.is_success());
+    assert!(severe_report.scheduler_report.is_success());
+
+    let mild_dfrost = require_state_scalar(&mild_report, "frost.runtime_dfrost");
+    let severe_dfrost = require_state_scalar(&severe_report, "frost.runtime_dfrost");
+    let mild_ws = require_state_scalar(&mild_report, "frost.runtime_ws_frz");
+    let severe_ws = require_state_scalar(&severe_report, "frost.runtime_ws_frz");
+
+    assert!(
+        severe_dfrost > mild_dfrost + CLIM06_TEST_TOLERANCE,
+        "freeze-lineage closure requires stronger cold forcing to deepen frost front"
+    );
+    assert!(
+        severe_ws > mild_ws + CLIM06_TEST_TOLERANCE,
+        "freeze-lineage closure requires stronger cold forcing to increase frozen-water accumulation"
+    );
+}
+
+#[test]
+#[ignore = "SIMIMPL32 expected-failure baseline; frsoil/getFreezeCond land-use lineage requires SIMIMPL34"]
+fn simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kfactor_selection() {
+    let mut forest_surface = seeded_clim06_surface(true);
+    forest_surface.state_surface.insert(
+        BoundarySymbol::from("landuse.class_proxy"),
+        BoundaryValue::scalar(3.0),
+    );
+    forest_surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor1"),
+        BoundaryValue::scalar(0.2),
+    );
+    forest_surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor2"),
+        BoundaryValue::scalar(0.4),
+    );
+    forest_surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor3"),
+        BoundaryValue::scalar(0.9),
+    );
+
+    let mut annual_surface = seeded_clim06_surface(true);
+    annual_surface.state_surface.insert(
+        BoundarySymbol::from("landuse.class_proxy"),
+        BoundaryValue::scalar(1.0),
+    );
+    annual_surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor1"),
+        BoundaryValue::scalar(0.2),
+    );
+    annual_surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor2"),
+        BoundaryValue::scalar(0.4),
+    );
+    annual_surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.kfactor3"),
+        BoundaryValue::scalar(0.9),
+    );
+
+    let forest_report = execute_clim06_surface(forest_surface);
+    let annual_report = execute_clim06_surface(annual_surface);
+    assert!(forest_report.scheduler_report.is_success());
+    assert!(annual_report.scheduler_report.is_success());
+
+    let forest_infcap = require_state_scalar(&forest_report, "frost.runtime_infcap_frz");
+    let annual_infcap = require_state_scalar(&annual_report, "frost.runtime_infcap_frz");
+
+    assert!(
+        (forest_infcap - annual_infcap).abs() > CLIM06_TEST_TOLERANCE,
+        "getFreezeCond lineage closure requires land-use-dependent conductivity divergence when kfactor set differs by class"
+    );
+}
+
+#[test]
+#[ignore = "SIMIMPL32 expected-failure baseline; cross-contract frost.hourly seam payload requires SIMIMPL33/34"]
+fn simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_completeness() {
+    let report = execute_clim06_surface(seeded_clim06_surface(true));
+    assert!(report.scheduler_report.is_success());
+
+    let _dfrost = require_state_scalar(&report, "frost.runtime_dfrost");
+    let _dthaw = require_state_scalar(&report, "frost.runtime_dthaw");
+    let _nft = require_state_scalar(&report, "frost.runtime_nft");
+    let _ws_frz = require_state_scalar(&report, "frost.runtime_ws_frz");
+    let _infcap = require_state_scalar(&report, "frost.runtime_infcap_frz");
+
+    for symbol in [
+        "frost.hourly.qsrf_w_m2_0001",
+        "frost.hourly.quf_w_m2_0001",
+        "frost.hourly.ksrf_w_m_k_0001",
+        "frost.hourly.snow_depth_m_0001",
+        "frost.hourly.residue_depth_m_0001",
+        "frost.hourly.tilled_frozen_depth_m_0001",
+        "frost.hourly.untilled_frozen_depth_m_0001",
+    ] {
+        let _ = require_state_scalar(&report, symbol);
+    }
+}

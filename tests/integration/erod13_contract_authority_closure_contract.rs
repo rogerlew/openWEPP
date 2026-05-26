@@ -45,8 +45,8 @@ fn erod13_registry_updates_reference_wave1_authority() {
     .expect("science-contract index should be readable");
 
     assert!(
-        index.contains("Last updated: 2026-05-25"),
-        "index must carry 2026-05-25 update stamp for EROD13 authority"
+        index.contains("Last updated: 2026-05-25") || index.contains("Last updated: 2026-05-26"),
+        "index must carry a post-EROD13 registry update stamp"
     );
     assert!(
         index.contains("HKERNEL-EROD13-CORE-E-001..003"),

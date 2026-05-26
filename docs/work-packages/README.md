@@ -675,6 +675,11 @@ Authorized packages:
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline
     routine-to-alias/invariant mapping, and defining downstream
     contract-derived test requirements for SIMIMPL32.
+- `20260526-simimpl32-frost-hourly-contract-derived-tests-and-preimplementation-gate-001/`
+  - Purpose: execute SIMIMPL32 by implementing frost-hourly contract-derived
+    tests and pre-implementation gate evidence for SIMIMPL31 authority
+    closure, recording expected reductive-path failures before
+    SIMIMPL33/SIMIMPL34 runtime migration edits.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
