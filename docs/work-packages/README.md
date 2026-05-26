@@ -670,6 +670,12 @@ Authorized packages:
     publish `frost-energy-solver-wp-queue.md`, a dependency-ordered
     contract-first implementation queue to close frost process-parity gaps and
     unblock SIMIMPL30 hold-lift prerequisites.
+- `20260526-routeplan01-hillslope-sediment-routing-assessment-and-queue-001/`
+  - Purpose: assess baseline `route.for` sediment-routing branch parity versus
+    openWEPP runtime implementation, classify implementation gaps (including
+    `rtpart.for` provenance mismatch), and publish a dependency-ordered queue
+    to migrate full segment routing and eliminate sediment-routing magic
+    numbers.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline
