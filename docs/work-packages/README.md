@@ -690,6 +690,10 @@ Authorized packages:
     with baseline-authoritative frost solver migration (`frostN` family with
     `frwatc`/`frzng`/`frznw`/`frsoil` + `getFreezeCond`) and coupling closure
     in runoff/infiltration/water-balance runtime outputs.
+- `20260526-simimpl35-winter-hourly-frost-parity-rerun-and-hold-lift-disposition-001/`
+  - Purpose: execute SIMIMPL35 by rerunning winter-hourly frost parity lanes
+    after SIMIMPL34 migration and publishing explicit GO/HOLD hold-lift
+    disposition with residual ownership.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and
