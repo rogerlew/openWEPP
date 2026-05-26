@@ -146,6 +146,19 @@ pub enum SharedClimateRuntimeInputError {
         expected_prcp_m: f64,
         reconstructed_prcp_m: f64,
     },
+    MissingRuntimeContextSymbol {
+        symbol: String,
+    },
+    RuntimeContextSymbolOutOfRange {
+        symbol: String,
+        value: f64,
+        allowed: &'static str,
+    },
+    InvalidCalendarDate {
+        day: i32,
+        mon: i32,
+        year: i32,
+    },
 }
 
 impl SharedClimateRuntimeInputError {
@@ -170,6 +183,9 @@ impl SharedClimateRuntimeInputError {
             Self::DisaggregationRootSolveDomain { .. } => "CLIM-RUNTIME-E-013",
             Self::DisaggregationRootSolveNonConvergent { .. } => "CLIM-RUNTIME-E-014",
             Self::DisaggregationClosureResidual { .. } => "CLIM-RUNTIME-E-015",
+            Self::MissingRuntimeContextSymbol { .. } => "CLIM-RUNTIME-E-016",
+            Self::RuntimeContextSymbolOutOfRange { .. } => "CLIM-RUNTIME-E-017",
+            Self::InvalidCalendarDate { .. } => "CLIM-RUNTIME-E-018",
         }
     }
 }
@@ -285,6 +301,32 @@ impl fmt::Display for SharedClimateRuntimeInputError {
                 self.code(),
                 expected_prcp_m,
                 reconstructed_prcp_m
+            ),
+            Self::MissingRuntimeContextSymbol { symbol } => write!(
+                f,
+                "{}: missing required runtime context symbol {} for active winter forcing synthesis",
+                self.code(),
+                symbol
+            ),
+            Self::RuntimeContextSymbolOutOfRange {
+                symbol,
+                value,
+                allowed,
+            } => write!(
+                f,
+                "{}: runtime context symbol {}={} is out of domain (allowed {})",
+                self.code(),
+                symbol,
+                value,
+                allowed
+            ),
+            Self::InvalidCalendarDate { day, mon, year } => write!(
+                f,
+                "{}: invalid calendar date day={} mon={} year={}",
+                self.code(),
+                day,
+                mon,
+                year
             ),
         }
     }

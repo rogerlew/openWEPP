@@ -251,6 +251,22 @@ pub enum WatershedClimateRuntimeInputError {
         expected_prcp_m: f64,
         reconstructed_prcp_m: f64,
     },
+    MissingRuntimeContextSymbol {
+        hillslope_id: u32,
+        symbol: String,
+    },
+    RuntimeContextSymbolOutOfRange {
+        hillslope_id: u32,
+        symbol: String,
+        value: f64,
+        allowed: &'static str,
+    },
+    InvalidCalendarDate {
+        hillslope_id: u32,
+        day: i32,
+        mon: i32,
+        year: i32,
+    },
 }
 
 impl WatershedClimateRuntimeInputError {
@@ -276,6 +292,9 @@ impl WatershedClimateRuntimeInputError {
             Self::DisaggregationRootSolveDomain { .. } => "CLIM-RUNTIME-E-014",
             Self::DisaggregationRootSolveNonConvergent { .. } => "CLIM-RUNTIME-E-015",
             Self::DisaggregationClosureResidual { .. } => "CLIM-RUNTIME-E-016",
+            Self::MissingRuntimeContextSymbol { .. } => "CLIM-RUNTIME-E-017",
+            Self::RuntimeContextSymbolOutOfRange { .. } => "CLIM-RUNTIME-E-018",
+            Self::InvalidCalendarDate { .. } => "CLIM-RUNTIME-E-019",
         }
     }
 }
@@ -422,6 +441,44 @@ impl fmt::Display for WatershedClimateRuntimeInputError {
                 hillslope_id,
                 expected_prcp_m,
                 reconstructed_prcp_m
+            ),
+            Self::MissingRuntimeContextSymbol {
+                hillslope_id,
+                symbol,
+            } => write!(
+                f,
+                "{}: hillslope {} missing required runtime context symbol {}",
+                self.code(),
+                hillslope_id,
+                symbol
+            ),
+            Self::RuntimeContextSymbolOutOfRange {
+                hillslope_id,
+                symbol,
+                value,
+                allowed,
+            } => write!(
+                f,
+                "{}: hillslope {} runtime context symbol {}={} is out of domain (allowed {})",
+                self.code(),
+                hillslope_id,
+                symbol,
+                value,
+                allowed
+            ),
+            Self::InvalidCalendarDate {
+                hillslope_id,
+                day,
+                mon,
+                year,
+            } => write!(
+                f,
+                "{}: hillslope {} invalid calendar date day={} mon={} year={}",
+                self.code(),
+                hillslope_id,
+                day,
+                mon,
+                year
             ),
         }
     }
@@ -878,6 +935,7 @@ pub fn build_watershed_runtime_surface_from_climate_assignments(
     Ok(surface)
 }
 
+#[allow(clippy::too_many_lines)]
 fn map_shared_error_for_hillslope(
     hillslope_id: u32,
     error: &SharedClimateRuntimeInputError,
@@ -971,6 +1029,30 @@ fn map_shared_error_for_hillslope(
             expected_prcp_m: *expected_prcp_m,
             reconstructed_prcp_m: *reconstructed_prcp_m,
         },
+        SharedClimateRuntimeInputError::MissingRuntimeContextSymbol { symbol } => {
+            WatershedClimateRuntimeInputError::MissingRuntimeContextSymbol {
+                hillslope_id,
+                symbol: symbol.clone(),
+            }
+        }
+        SharedClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol,
+            value,
+            allowed,
+        } => WatershedClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            hillslope_id,
+            symbol: symbol.clone(),
+            value: *value,
+            allowed,
+        },
+        SharedClimateRuntimeInputError::InvalidCalendarDate { day, mon, year } => {
+            WatershedClimateRuntimeInputError::InvalidCalendarDate {
+                hillslope_id,
+                day: *day,
+                mon: *mon,
+                year: *year,
+            }
+        }
     }
 }
 

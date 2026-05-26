@@ -645,6 +645,12 @@ Authorized packages:
     boundary/API authority gaps for hourly snow/freeze migration scope,
     ratifying concrete alias mappings and downstream contract-derived test
     requirements before SIMIMPL28 forcing/kernel implementation work.
+- `20260525-simimpl28-hourly-winter-forcing-synthesis-port-001/`
+  - Purpose: execute SIMIMPL28 by porting baseline-authoritative hourly
+    winter forcing synthesis (`sunmap`, `radcur`, `hr_tmp`, `stmtim`) into
+    openWEPP runtime seams with typed guards, reserved hourly alias emission,
+    and contract-derived test closure for downstream snow/frost kernel
+    migration waves.
 - `20260525-snowplan01-hourly-energy-balance-snow-assessment-and-queue-001/`
   - Purpose: assess feasibility for baseline-authoritative hourly
     energy-balance snow closure and publish a dependency-ordered four-package

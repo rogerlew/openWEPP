@@ -3,9 +3,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_frost,
-    build_hillslope_runtime_surface_from_management, build_hillslope_runtime_surface_from_slope,
-    build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
+    build_hillslope_climate_runtime_request,
+    build_hillslope_runtime_surface_from_climate_request_with_context,
+    build_hillslope_runtime_surface_from_frost, build_hillslope_runtime_surface_from_management,
+    build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_snow,
+    build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
     HillslopePhaseScheduler, HillslopeWritebackSurface, SchedulerOutcomeClass, Wb11HydrologyKernel,
@@ -756,6 +758,12 @@ pub fn execute_hillslope_run(
     let timestep_policy = build_timestep_policy_provenance(&lane_context);
     let adapter_boundary = build_adapter_boundary_provenance(&lane_context)?;
     let climate_span = build_climate_run_span_summary(&climate)?;
+    let climate_request = build_hillslope_climate_runtime_request(&climate).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "climate",
+            detail: error.to_string(),
+        }
+    })?;
 
     let mut runtime_surface = static_runtime_surface;
     let mut runtime_swe_publication_state_m =
@@ -769,11 +777,15 @@ pub fn execute_hillslope_run(
     let mut kernel_phase_message_ids = std::collections::BTreeSet::new();
 
     for (day_index, day_projection) in climate_span.days.iter().enumerate() {
-        let climate_surface = build_hillslope_runtime_surface_from_climate(&climate, day_index)
-            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "climate",
-                detail: error.to_string(),
-            })?;
+        let climate_surface = build_hillslope_runtime_surface_from_climate_request_with_context(
+            &climate_request,
+            day_index,
+            &runtime_surface.state_surface,
+        )
+        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "climate",
+            detail: error.to_string(),
+        })?;
         for symbol in &previous_climate_symbols {
             runtime_surface.state_surface.remove(symbol);
             runtime_surface.flux_surface.remove(symbol);

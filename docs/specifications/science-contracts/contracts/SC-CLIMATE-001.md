@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -419,6 +419,50 @@ states and must hard-fail with typed hydrology guard posture.
 3. Full-span precipitation (`P`) parity claims must be evaluated against that
    explicit policy and include row-count/key comparability diagnostics.
 
+## SIMIMPL28 Hourly Winter Forcing Synthesis Addendum
+
+### SIMIMPL28 Required Hourly Forcing Surfaces
+
+| Surface family | Symbols |
+|---|---|
+| Winter hourly meteorology/radiation forcing | `winter.hourly.rad_mj_m2_####`, `winter.hourly.air_temp_c_####`, `winter.hourly.cloud_fraction_####` |
+| Snow hourly phase-partition forcing | `snow.hourly.rain_m_####`, `snow.hourly.snowfall_m_####` |
+
+### SIMIMPL28 Deterministic Lineage Requirements
+
+1. Active winter forcing synthesis is baseline-authoritative and uses legacy
+   call-sequence semantics from `winter.for`:
+   `aspect` geometry -> `sunmap` daily radiation partition -> hourly `radcur`
+   radiation ratio -> `hr_tmp` hourly thermal/radiation synthesis ->
+   `stmtim` hourly rain/snow partition.
+2. `sunmap` and `radcur` constants/transformations must remain lineage-stable
+   (including declination/eccentricity terms, daily potential-radiation branch
+   logic, cloud-fraction derivation, and hourly potential-radiation ratio
+   transform) with typed hard-fail guards for non-finite/invalid domains.
+3. `stmtim` precipitation-phase partition semantics are explicit:
+   `hrtemp > rst` routes event share to `snow.hourly.rain_m_####`, otherwise to
+   `snow.hourly.snowfall_m_####`; event start-time and duration use baseline
+   rounding/start rules (`stmstr` for breakpoint forcing, deterministic
+   day-seeded start-time for non-breakpoint forcing).
+4. Missing/non-finite/out-of-domain required winter forcing context symbols
+   under active synthesis must hard-fail with typed runtime errors (no silent
+   fallback/defaulting).
+5. Frost heat-flow hourly families (`frost.hourly.*`) remain SIMIMPL29 scope;
+   SIMIMPL28 must not claim closure by emitting surrogate frost heat-flow
+   proxies unsupported by baseline-authoritative equations.
+
+### SIMIMPL28 Contract-Test Vectors
+
+1. Active winter forcing vector emits deterministic 24-hour `winter.hourly.*`
+   radiation/air-temperature/cloud families and `snow.hourly.*` rain/snowfall
+   phase-partition families with finite non-negative domains.
+2. Breakpoint vector confirms storm-start (`stmstr`) branch and duration
+   rounding semantics in hourly rain/snow partition outputs.
+3. Threshold-branch vectors confirm warm-hour vs cold-hour routing behavior for
+   `rst` partition semantics.
+4. Missing required active-synthesis context symbols hard-fail with typed
+   missing-input posture.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -445,3 +489,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-23` | `9` | `Codex` | CLIM08 governance closeout: added seam HOLD-closure mapping to CLIM02/CLIM07 evidence and clarified that seam closeout does not retire non-seam promotability gaps (`GAP-CLIMATE-003`..`GAP-CLIMATE-005`). |
 | `2026-05-25` | `10` | `Codex` | SIMIMPL14 amendment: clarified schedule-key continuity authority so climate day/year keys progress deterministically across full continuous-run spans used by replay publication and irrigation-coupled forcing consumers. |
 | `2026-05-25` | `11` | `Codex` | SIMIMPL18 amendment: added forcing-span precipitation continuity invariant (`INV-CLIMATE-009`) and explicit producer/consumer obligations requiring deterministic full-span `P` comparability policy publication when legacy baseline span clamps require adaptation. |
+| `2026-05-25` | `12` | `Codex` | SIMIMPL28 amendment: added baseline-authoritative hourly winter forcing synthesis authority (`sunmap`/`radcur`/`hr_tmp`/`stmtim` lineage), required hourly forcing symbol families, typed active-synthesis guard posture, and SIMIMPL28-specific contract-test vectors. |
