@@ -116,7 +116,9 @@ def is_int_like(value: float) -> bool:
     return float(int(value)) == value
 
 
-def parse_dat_rows(path: Path) -> tuple[Dict[Tuple[int, int, int], Dict[str, float]], List[int]]:
+def parse_dat_rows(
+    path: Path, row_year_offset: int = 0
+) -> tuple[Dict[Tuple[int, int, int], Dict[str, float]], List[int]]:
     row_map: Dict[Tuple[int, int, int], Dict[str, float]] = {}
     widths_seen: List[int] = []
 
@@ -137,7 +139,9 @@ def parse_dat_rows(path: Path) -> tuple[Dict[Tuple[int, int, int], Dict[str, flo
 
         columns = LEGACY_20_COLUMNS if len(values) == 20 else CANONICAL_25_COLUMNS
         row = {name: values[idx] for idx, name in enumerate(columns)}
-        key = (int(row["OFE"]), int(row["J"]), int(row["Y"]))
+        key_year = int(row["Y"]) + row_year_offset
+        row["Y"] = float(key_year)
+        key = (int(row["OFE"]), int(row["J"]), key_year)
         if key in row_map:
             raise RuntimeError(f"duplicate row key {key} in dat input {path}")
         row_map[key] = row
@@ -150,6 +154,9 @@ def parse_dat_rows(path: Path) -> tuple[Dict[Tuple[int, int, int], Dict[str, flo
 
 def parse_parquet_rows(
     path: Path,
+    candidate_partition_value: int | None,
+    candidate_partition_column: str,
+    candidate_year_offset: int,
 ) -> tuple[
     Dict[Tuple[int, int, int], Dict[str, float]], List[int], Dict[str, List[str]]
 ]:
@@ -164,12 +171,29 @@ def parse_parquet_rows(
     column_names = table.column_names
     arrays = {name: table[name].to_pylist() for name in column_names}
 
+    if candidate_partition_value is not None and candidate_partition_column not in arrays:
+        raise RuntimeError(
+            "candidate partition column "
+            f"{candidate_partition_column!r} not present in parquet input {path}"
+        )
+
     row_map: Dict[Tuple[int, int, int], Dict[str, float]] = {}
     widths_seen: List[int] = []
     alias_sources: Dict[str, set[str]] = {}
     row_count = table.num_rows
 
     for idx in range(row_count):
+        if candidate_partition_value is not None:
+            raw_partition = arrays[candidate_partition_column][idx]
+            if raw_partition is None:
+                continue
+            try:
+                partition_value = int(raw_partition)
+            except (TypeError, ValueError):
+                continue
+            if partition_value != candidate_partition_value:
+                continue
+
         row: Dict[str, float] = {}
 
         for src, dst in PARQUET_TO_CANONICAL.items():
@@ -192,7 +216,9 @@ def parse_parquet_rows(
         if missing:
             continue
 
-        key = (int(row["OFE"]), int(row["J"]), int(row["Y"]))
+        key_year = int(row["Y"]) + candidate_year_offset
+        row["Y"] = float(key_year)
+        key = (int(row["OFE"]), int(row["J"]), key_year)
         if key in row_map:
             raise RuntimeError(f"duplicate row key {key} in parquet input {path}")
         row_map[key] = row
@@ -209,15 +235,28 @@ def parse_parquet_rows(
 
 def load_rows(
     path: Path,
+    candidate_partition_value: int | None,
+    candidate_partition_column: str,
+    candidate_year_offset: int,
 ) -> tuple[
     Dict[Tuple[int, int, int], Dict[str, float]], List[int], str, Dict[str, List[str]]
 ]:
     suffix = path.suffix.lower()
     if suffix == ".parquet":
-        row_map, widths, alias_sources = parse_parquet_rows(path)
+        row_map, widths, alias_sources = parse_parquet_rows(
+            path,
+            candidate_partition_value,
+            candidate_partition_column,
+            candidate_year_offset,
+        )
         return row_map, widths, "parquet", alias_sources
 
-    row_map, widths = parse_dat_rows(path)
+    if candidate_partition_value is not None:
+        raise RuntimeError(
+            "--candidate-partition-value requires parquet candidate input (.parquet)"
+        )
+
+    row_map, widths = parse_dat_rows(path, row_year_offset=candidate_year_offset)
     return row_map, widths, "dat", {}
 
 
@@ -381,6 +420,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--abs-tol-default", type=float, default=0.1)
     parser.add_argument("--rel-tol-default", type=float, default=0.02)
     parser.add_argument("--top-n", type=int, default=25)
+    parser.add_argument("--candidate-partition-value", type=int, default=None)
+    parser.add_argument("--candidate-partition-column", type=str, default="wepp_id")
+    parser.add_argument("--candidate-year-offset", type=int, default=0)
     return parser.parse_args()
 
 
@@ -388,10 +430,13 @@ def main() -> None:
     args = parse_args()
 
     baseline_rows, baseline_widths, baseline_format, baseline_alias_sources = load_rows(
-        args.baseline_wat
+        args.baseline_wat, None, args.candidate_partition_column, 0
     )
     candidate_rows, candidate_widths, candidate_format, candidate_alias_sources = load_rows(
-        args.candidate_wat
+        args.candidate_wat,
+        args.candidate_partition_value,
+        args.candidate_partition_column,
+        args.candidate_year_offset,
     )
 
     if not baseline_rows:
@@ -424,6 +469,9 @@ def main() -> None:
             "candidate_numeric_widths": candidate_widths,
             "baseline_column_alias_sources": baseline_alias_sources,
             "candidate_column_alias_sources": candidate_alias_sources,
+            "candidate_partition_value": args.candidate_partition_value,
+            "candidate_partition_column": args.candidate_partition_column,
+            "candidate_year_offset": args.candidate_year_offset,
             "baseline_sha256": sha256_file(args.baseline_wat),
             "candidate_sha256": sha256_file(args.candidate_wat),
         },

@@ -1144,10 +1144,16 @@ fn parse_ofe_header_tokens(
     mode: ParserMode,
     field: &'static str,
 ) -> Result<Vec<String>, SoilParserError> {
-    if mode == ParserMode::Compatibility && datver == SoilDatver::V7778 && line.contains('\'') {
+    if mode == ParserMode::Compatibility
+        && matches!(
+            datver,
+            SoilDatver::V7778 | SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005
+        )
+        && line.contains('\'')
+    {
         let mut tokens = tokenize_whitespace_and_single_quotes(line, line_no, field)?;
         if tokens.len() == 8 {
-            // Legacy 7778 compatibility rows can omit `avke`; normalize to explicit 0.0.
+            // Legacy quoted compatibility rows can omit `avke`; normalize to explicit 0.0.
             tokens.push("0.0".to_string());
         }
         if tokens.len() != 9 {

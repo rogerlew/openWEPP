@@ -3087,6 +3087,13 @@ impl Wb11HydrologyKernel {
         Ok(())
     }
 
+    fn normalize_non_negative_within_tolerance(value: f64) -> f64 {
+        if (-WB11_ZERO_THRESHOLD..0.0).contains(&value) {
+            return 0.0;
+        }
+        value
+    }
+
     fn compute_runoff_after_interception(
         phase_class: HillslopeKernelPhaseClass,
         liquid_after_interception: f64,
@@ -3101,7 +3108,7 @@ impl Wb11HydrologyKernel {
         let q_runoff =
             liquid_input + runon_input - cumulative_infiltration - depression_storage_delta;
         Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
-        Ok(q_runoff)
+        Ok(Self::normalize_non_negative_within_tolerance(q_runoff))
     }
 
     #[allow(clippy::too_many_arguments)]

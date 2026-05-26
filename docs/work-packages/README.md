@@ -694,6 +694,11 @@ Authorized packages:
   - Purpose: execute SIMIMPL35 by rerunning winter-hourly frost parity lanes
     after SIMIMPL34 migration and publishing explicit GO/HOLD hold-lift
     disposition with residual ownership.
+- `20260526-simimpl36-frost-hold-blocker-closure-and-rerun-001/`
+  - Purpose: execute SIMIMPL36 by closing SIMIMPL35 blockers
+    (`KWRITEBACK-E-DOMAIN-VIOLATION`, `SOL-E-006`, and multi-hillslope
+    parquet duplicate-key admissibility), rerunning fresh post-fix lanes, and
+    publishing updated GO/HOLD hold-lift disposition evidence.
 - `20260525-refactor001-openwepp-runner-lib-mechanical-modularization-001/`
   - Purpose: execute REFACTOR001 by mechanically modularizing
     `openwepp-runner/src/lib.rs`, preserving public API/runtime behavior, and

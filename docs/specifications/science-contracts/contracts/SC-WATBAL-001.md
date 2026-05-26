@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 37
+contract_version: 38
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-26
 supersedes: []
 superseded_by: []
 ---
@@ -437,6 +437,7 @@ parity). Contract-specific tolerances used for comparator interpretation:
 | TOL-WATBAL-003 | Layer percolation non-negativity comparator tolerance (`pei`) | lower bound `>= -1e-12 m d^-1` | Negative values beyond tolerance are invalid-state failures. |
 | TOL-WATBAL-004 | Stress-factor bound tolerance for `Ws` | `abs(bound violation) <= 1e-12` | Domain expectation remains `[0,1]`. |
 | TOL-WATBAL-005 | Zero-demand transpiration threshold for denominator guard | `Etp <= 1e-12 m d^-1` treated as zero-demand branch | Runtime still requires explicit `Σ Ui = 0` and `Ws = 1` behavior. |
+| TOL-WATBAL-006 | WB12/WB14 reconciled runoff near-zero canonicalization tolerance (`Q`, `wb12_runoff_reconciled`) | normalize to `0` when `-1e-12 m <= value < 0` before writeback/publication; `value < -1e-12 m` is domain-invalid | Explicit roundoff canonicalization only; not a fallback for material negative runoff. |
 
 ## Test-Vector Obligations
 
@@ -476,6 +477,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 1. Runoff reconciliation emits:
    - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - apply explicit near-zero canonicalization before writeback/closure-delta
+     publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
+     `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
 2. Storage reconciliation emits:
    - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd`
 3. Closure-delta semantics are lane-scoped:
@@ -604,6 +608,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
      defaults/clamping.
 3. Reconciliation uses computed infiltration and hyetograph rainfall depth in:
    - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - apply explicit near-zero canonicalization before writeback/closure-delta
+     publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
+     `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
 4. `wb12_rainfall_input` remains a required closure-consistency surface and must
    match hyetograph-integrated rainfall depth within
    `wb12_runoff_closure_tolerance`.
@@ -635,6 +642,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 5. Active `ksatadj` regime vectors (`solwpv=9001/9002/9003`) produce
    deterministic conductivity-adjusted infiltration behavior and preserve typed
    hard-fail posture for invalid active-regime domains.
+6. Within-tolerance negative reconciled runoff (`-1e-12 <= Q < 0`) is
+   canonicalized to zero at writeback/publication boundary; values below
+   tolerance remain typed domain failures.
 
 ## WB15 Canopy Interception Coupling Addendum
 
@@ -1093,6 +1103,7 @@ canonical order:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-26` | `38` | `Codex` | SIMIMPL36 amendment: added explicit WB12/WB14 near-zero reconciled-runoff canonicalization authority (`TOL-WATBAL-006`) requiring `Q`/`wb12_runoff_reconciled` normalization to zero only within `[-1e-12, 0)` before writeback/publication while preserving typed domain-fail posture for material negatives. |
 | `2026-05-25` | `37` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity selection authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor), including required regime symbols and typed active-path guard obligations. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-04 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-04 review cycle. |

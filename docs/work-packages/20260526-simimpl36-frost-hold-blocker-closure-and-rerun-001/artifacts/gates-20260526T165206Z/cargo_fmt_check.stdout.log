@@ -1,0 +1,22 @@
+Diff in /home/workdir/openWEPP/tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs:395:
+ 
+ #[test]
+ fn wb14_contract_conformance_normalizes_within_tolerance_negative_runoff_before_writeback() {
+[31m-    let (_baseline_infiltration, baseline_q) = run_wb14_reconciliation_outputs(seeded_wb14_surface());
+[m[32m+    let (_baseline_infiltration, baseline_q) =
+[m[32m+        run_wb14_reconciliation_outputs(seeded_wb14_surface());
+[m 
+     let mut adjusted_surface = seeded_wb14_surface();
+     let original_runon = state_scalar(&adjusted_surface, "wb12_runon_input");
+Diff in /home/workdir/openWEPP/tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs:441:
+         .expect("Q should be present")
+         .as_f64();
+ 
+[31m-    assert!(runoff_state >= 0.0, "wb12_runoff_reconciled must be non-negative");
+[m[32m+    assert!(
+[m[32m+        runoff_state >= 0.0,
+[m[32m+        "wb12_runoff_reconciled must be non-negative"
+[m[32m+    );
+[m     assert!(runoff_flux >= 0.0, "Q must be non-negative");
+     assert!(
+         runoff_state <= WB14_TEST_TOLERANCE,

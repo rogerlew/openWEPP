@@ -130,6 +130,9 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
             "investigation_columns_used",
             "candidate_column_alias_sources",
             "row_key_fields",
+            "--candidate-partition-value",
+            "--candidate-partition-column",
+            "--candidate-year-offset",
         ]
     ));
     assert!(contains_all(
@@ -137,6 +140,9 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
         &[
             "\"suite_schema_version\": \"pl14s-legacy-suite-v2\"",
             "--candidate-surface-source-class",
+            "--candidate-partition-value",
+            "--candidate-partition-column",
+            "--candidate-year-offset",
             "--baseline-year-policy",
             "--expected-common-row-count",
             "\"strict_lane_policy\"",
@@ -145,6 +151,9 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
             "\"conversion-derived-dat\"",
             "\"native-runtime-parquet\"",
             "\"common_row_count\"",
+            "\"candidate_partition_value\"",
+            "\"candidate_partition_column\"",
+            "\"candidate_year_offset\"",
             "\"baseline_year_policy\"",
             "\"expected_common_row_count\"",
             "\"full_span_policy_ready\"",
@@ -162,6 +171,9 @@ fn pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_mar
             "conversion-derived-dat",
             "row-presence deltas",
             "top divergent rows",
+            "--candidate-partition-value",
+            "wepp_id",
+            "--candidate-year-offset",
         ]
     ));
 }

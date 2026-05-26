@@ -239,6 +239,7 @@ pub struct HillslopeKernelPhaseReport {
     pub kernel_status: SimulationStatus,
     pub decision_outcome: WritebackDecisionOutcome,
     pub decision_status: SimulationStatus,
+    pub decision_violations: Vec<ClosureViolation>,
     pub apply_result: Option<KernelWritebackApplyResult>,
 }
 
@@ -545,6 +546,7 @@ impl HillslopePhaseScheduler {
                                     kernel_status: deferred_error_status.clone(),
                                     decision_outcome: WritebackDecisionOutcome::Reject,
                                     decision_status: deferred_error_status.clone(),
+                                    decision_violations: Vec::new(),
                                     apply_result: None,
                                 });
                                 return deferred_error_status.clone();
@@ -556,6 +558,7 @@ impl HillslopePhaseScheduler {
                             kernel_status: boundary_status.clone(),
                             decision_outcome: WritebackDecisionOutcome::Reject,
                             decision_status: boundary_status.clone(),
+                            decision_violations: Vec::new(),
                             apply_result: None,
                         });
                         return boundary_status;
@@ -588,6 +591,7 @@ impl HillslopePhaseScheduler {
                                     kernel_status: deferred_error_status.clone(),
                                     decision_outcome: WritebackDecisionOutcome::Reject,
                                     decision_status: deferred_error_status.clone(),
+                                    decision_violations: Vec::new(),
                                     apply_result: None,
                                 });
                                 return deferred_error_status.clone();
@@ -599,6 +603,7 @@ impl HillslopePhaseScheduler {
                             kernel_status: boundary_status.clone(),
                             decision_outcome: WritebackDecisionOutcome::Reject,
                             decision_status: boundary_status.clone(),
+                            decision_violations: Vec::new(),
                             apply_result: None,
                         });
                         return boundary_status;
@@ -625,6 +630,7 @@ impl HillslopePhaseScheduler {
                                 kernel_status: deferred_error_status.clone(),
                                 decision_outcome: WritebackDecisionOutcome::Reject,
                                 decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
                                 apply_result: None,
                             });
                             return deferred_error_status.clone();
@@ -636,6 +642,7 @@ impl HillslopePhaseScheduler {
                         kernel_status: boundary_status.clone(),
                         decision_outcome: WritebackDecisionOutcome::Reject,
                         decision_status: boundary_status.clone(),
+                        decision_violations: Vec::new(),
                         apply_result: None,
                     });
                     return boundary_status;
@@ -659,6 +666,7 @@ impl HillslopePhaseScheduler {
                                 kernel_status: deferred_error_status.clone(),
                                 decision_outcome: WritebackDecisionOutcome::Reject,
                                 decision_status: deferred_error_status.clone(),
+                                decision_violations: Vec::new(),
                                 apply_result: None,
                             });
                             return deferred_error_status.clone();
@@ -670,6 +678,7 @@ impl HillslopePhaseScheduler {
                         kernel_status: boundary_status.clone(),
                         decision_outcome: WritebackDecisionOutcome::Reject,
                         decision_status: boundary_status.clone(),
+                        decision_violations: Vec::new(),
                         apply_result: None,
                     });
                     return boundary_status;
@@ -696,6 +705,7 @@ impl HillslopePhaseScheduler {
                     kernel_status,
                     decision_outcome: WritebackDecisionOutcome::Reject,
                     decision_status: mode_mismatch_status.clone(),
+                    decision_violations: Vec::new(),
                     apply_result: None,
                 });
                 return mode_mismatch_status.clone();
@@ -707,6 +717,7 @@ impl HillslopePhaseScheduler {
                     kernel_status: kernel_status.clone(),
                     decision_outcome: WritebackDecisionOutcome::Reject,
                     decision_status: kernel_status.clone(),
+                    decision_violations: Vec::new(),
                     apply_result: None,
                 });
                 return kernel_status;
@@ -724,6 +735,7 @@ impl HillslopePhaseScheduler {
                         kernel_status,
                         decision_outcome: WritebackDecisionOutcome::Reject,
                         decision_status: deferred_error_status.clone(),
+                        decision_violations: Vec::new(),
                         apply_result: None,
                     });
                     return deferred_error_status.clone();
@@ -736,6 +748,7 @@ impl HillslopePhaseScheduler {
                     kernel_status,
                     decision_outcome: WritebackDecisionOutcome::Reject,
                     decision_status: decision.status.clone(),
+                    decision_violations: decision.violations.clone(),
                     apply_result: None,
                 });
                 return decision.status;
@@ -756,6 +769,7 @@ impl HillslopePhaseScheduler {
                         kernel_status,
                         decision_outcome: WritebackDecisionOutcome::Reject,
                         decision_status: deferred_error_status.clone(),
+                        decision_violations: Vec::new(),
                         apply_result: None,
                     });
                     return deferred_error_status.clone();
@@ -767,6 +781,7 @@ impl HillslopePhaseScheduler {
                 kernel_status: kernel_status.clone(),
                 decision_outcome: apply_result.outcome,
                 decision_status: apply_result.status.clone(),
+                decision_violations: Vec::new(),
                 apply_result: Some(apply_result),
             });
 

@@ -2225,14 +2225,47 @@ fn execute_scheduler_kernel_lifecycle(
 
     if !execution_report.scheduler_report.is_success() {
         let scheduler_status = &execution_report.scheduler_report.scheduler_status;
+        let phase_context = execution_report
+            .phase_reports
+            .last()
+            .map(|phase_report| {
+                let mut context = format!(
+                    ", last_phase={}, last_kernel_message_id={}, last_decision_outcome={:?}, last_decision_message_id={}",
+                    phase_report.phase.as_str(),
+                    phase_report.kernel_status.message_id(),
+                    phase_report.decision_outcome,
+                    phase_report.decision_status.message_id()
+                );
+
+                if !phase_report.decision_violations.is_empty() {
+                    let violation_summary = phase_report
+                        .decision_violations
+                        .iter()
+                        .take(3)
+                        .map(|violation| {
+                            format!(
+                                "{}:{}:{:?}",
+                                violation.check_id, violation.subject, violation.details
+                            )
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" | ");
+                    context.push_str(", last_decision_violations=");
+                    context.push_str(&violation_summary);
+                }
+
+                context
+            })
+            .unwrap_or_default();
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "execution_provenance",
             detail: format!(
-                "{SIMPIPE_GUARD_ID} scheduler lifecycle did not complete successfully (outcome_class={}, status_class={:?}, boundary_class={}, message_id={})",
+                "{SIMPIPE_GUARD_ID} scheduler lifecycle did not complete successfully (outcome_class={}, status_class={:?}, boundary_class={}, message_id={}{})",
                 scheduler_outcome_class_as_str(execution_report.scheduler_report.outcome_class),
                 scheduler_status.classification(),
                 scheduler_status.boundary_class().as_str(),
-                scheduler_status.message_id()
+                scheduler_status.message_id(),
+                phase_context
             ),
         });
     }

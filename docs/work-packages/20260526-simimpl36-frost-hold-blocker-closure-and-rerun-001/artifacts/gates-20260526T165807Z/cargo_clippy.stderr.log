@@ -1,0 +1,18 @@
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+error: `format!(..)` appended to existing `String`
+    --> crates/openwepp-runner/src/hillslope/mod.rs:2253:21
+     |
+2253 | /                     context.push_str(&format!(
+2254 | |                         ", last_decision_violations={violation_summary}"
+2255 | |                     ));
+     | |______________________^
+     |
+     = help: consider using `write!` to avoid the extra allocation
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#format_push_string
+     = note: `-D clippy::format-push-string` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::format_push_string)]`
+
+error: could not compile `openwepp-runner` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-runner` (lib test) due to 1 previous error

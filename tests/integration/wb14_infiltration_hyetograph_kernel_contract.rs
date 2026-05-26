@@ -394,6 +394,70 @@ fn wb14_contract_conformance_computes_infiltration_from_hyetograph() {
 }
 
 #[test]
+fn wb14_contract_conformance_normalizes_within_tolerance_negative_runoff_before_writeback() {
+    let (_baseline_infiltration, baseline_q) =
+        run_wb14_reconciliation_outputs(seeded_wb14_surface());
+
+    let mut adjusted_surface = seeded_wb14_surface();
+    let original_runon = state_scalar(&adjusted_surface, "wb12_runon_input");
+    let target_runon = original_runon - baseline_q - 5.0e-13;
+    adjusted_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(target_runon),
+    );
+    adjusted_surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(0.0),
+    );
+    adjusted_surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, adjusted_surface)
+        .expect("wb14 execution should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let runoff_state = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb12_runoff_reconciled"))
+        .expect("wb12_runoff_reconciled should be present")
+        .as_f64();
+    let runoff_flux = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Q"))
+        .expect("Q should be present")
+        .as_f64();
+
+    assert!(
+        runoff_state >= 0.0,
+        "wb12_runoff_reconciled must be non-negative"
+    );
+    assert!(runoff_flux >= 0.0, "Q must be non-negative");
+    assert!(
+        runoff_state <= WB14_TEST_TOLERANCE,
+        "within-tolerance negative runoff should normalize to near-zero state; observed {runoff_state}"
+    );
+    assert!(
+        runoff_flux <= WB14_TEST_TOLERANCE,
+        "within-tolerance negative runoff should normalize to near-zero flux; observed {runoff_flux}"
+    );
+}
+
+#[test]
 fn wb14_contract_conformance_rejects_missing_hyetograph_symbol() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =

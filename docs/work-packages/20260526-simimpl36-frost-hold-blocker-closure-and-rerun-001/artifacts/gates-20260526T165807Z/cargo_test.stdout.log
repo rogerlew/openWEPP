@@ -1,0 +1,1255 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test arch22_hillslope_dynamic_irrigation_symbol_projection_matches_authority ... ok
+test arch22_hillslope_static_symbol_projection_matches_authority ... ok
+test arch22_watershed_hillslope_payload_symbol_projection_matches_authority ... ok
+test arch22_watershed_node_scoped_symbol_projection_matches_authority ... ok
+test arch22_watershed_guard_accessor_signature_is_typed ... ok
+test arch22_hillslope_guard_accessor_signature_is_typed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test cli01_contract_surface_declares_release_sidecar_validation_fields ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_compat ... ok
+test cli01_contract_surface_declares_runner_commands_and_error_ids ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_strict ... ok
+test cli01_sidecar_contract_unknown_discovery_warns_in_compat ... ok
+test cli01_contract_surface_declares_required_hillslope_sidecars_and_manifest_schema ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test cli01_contract_conformance_runner_crate_declares_hillslope_watershed_and_runner_binaries ... ok
+test cli01_contract_conformance_generated_release_sidecar_is_schema_valid ... ok
+test cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery ... ok
+test cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 34.55s
+
+
+running 19 tests
+test cli03_contract_surface_declares_output_crate_layout ... ok
+test cli03_contract_surface_declares_metric_runfile_and_required_outputs ... ok
+test cli03_runner_crate_declares_hillslope_and_watershed_binary_targets ... ok
+test cli03_runner_crate_wires_output_surface_dependency ... ok
+test cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block ... ok
+test cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag ... ok
+test cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides ... ok
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align ... ok
+test cli03_mofe02_rejects_management_soil_mismatch ... ok
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch ... ok
+test cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums ... ok
+test cli03_mofe02_rejects_full_triad_topology_mismatch ... ok
+test cli03_mofe03_multiofe_runfile_executes_wave2_without_manual_symbol_injection ... ok
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default has been running for over 60 seconds
+test cli03_mofe04_multiofe_publication_uses_canonicalized_oferow_and_total_area has been running for over 60 seconds
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy has been running for over 60 seconds
+test cli03_runfile_validation_rejects_non_metric_unit_system has been running for over 60 seconds
+test cli03_runfile_validation_rejects_schema_mismatch has been running for over 60 seconds
+test cli03_runfile_validation_rejects_unresolved_required_input_paths has been running for over 60 seconds
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default ... ok
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy ... ok
+test cli03_mofe04_multiofe_publication_uses_canonicalized_oferow_and_total_area ... ok
+test cli03_runfile_validation_rejects_non_metric_unit_system ... ok
+test cli03_runfile_validation_rejects_schema_mismatch ... ok
+test cli03_runfile_validation_rejects_unresolved_required_input_paths ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 102.53s
+
+
+running 2 tests
+test cli04_contract_surface_declares_wat_metadata_parity_and_dependency_posture ... ok
+test cli04_fixture_run_emits_valid_wat_parquet_with_required_metadata_keys ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.16s
+
+
+running 5 tests
+test clim05_contract_conformance_rejects_missing_active_snow_control_symbol ... ok
+test clim05_contract_conformance_rejects_non_finite_active_snow_control_symbol ... ok
+test clim05_contract_conformance_rejects_invalid_active_snow_control_domain ... ok
+test simimpl29_contract_conformance_rejects_missing_hourly_snow_kernel_symbol ... ok
+test clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliation ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test clim06_contract_conformance_rejects_missing_active_frost_symbol ... ok
+test clim06_contract_conformance_rejects_non_finite_active_frost_symbol ... ok
+test clim06_contract_conformance_rejects_out_of_domain_active_frost_symbol ... ok
+test simimpl33_contract_conformance_rejects_missing_frost_runtime_residue_depth_symbol ... ok
+test simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_completeness ... ok
+test clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_capacity ... ok
+test simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_symbols ... ok
+test simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission ... ok
+test simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect ... ok
+test simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression ... ok
+test simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kfactor_selection ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test clim07_breakpoint_domain_violation_remains_typed_hard_fail ... ok
+test clim07_confidence_tier_routing_vectors_match_governance_policy ... ok
+test clim07_breakpoint_vector_projects_expected_runtime_surface ... ok
+test clim07_continuous_daily_vector_projects_expected_runtime_surface ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test candidate_source_class_policy_distinguishes_native_vs_conversion_dat ... ok
+test deterministic_tier_mapping_routes_hourly_and_watershed_to_investigation ... ok
+test deterministic_tier_mapping_routes_single_ofe_daily_to_higher_confidence ... ok
+test missing_required_single_ofe_metadata_is_typed_error ... ok
+test strict_lane_policy_mode_is_deterministic_by_candidate_extension ... ok
+test summary_constructor_rejects_invalid_routing_metadata ... ok
+test summary_rollups_propagate_routing_metadata ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test erod11_wave0_hillslope_alias_projection_matches_authority ... ok
+test erod11_wave0_watershed_alias_projection_matches_authority ... ok
+test erod11_peak_duration_alias_registry_entries_exist ... ok
+test erod11_contract_addenda_and_gap_posture_are_present ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test erod12_cross_domain_addenda_are_present ... ok
+test erod12_wave0_cross_domain_blockers_are_closed ... ok
+test erod12_non_wave0_holds_remain_explicit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test erod13_registry_updates_reference_wave1_authority ... ok
+test erod13_wave1_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test erod13_contract_vector_deposition_branch_emits_negative_df ... ok
+test erod13_contract_vector_nominal_detachment_emits_core_outputs ... ok
+test erod13_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod13_contract_vector_rejects_missing_required_symbol ... ok
+test erod13_contract_vector_rejects_continuity_residual_violation ... ok
+test erod13_contract_vector_rejects_domain_violation ... ok
+test erod13_contract_vector_threshold_branch_sets_zero_df ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test erod14_registry_updates_reference_wave2_authority ... ok
+test erod14_wave2_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test erod14_contract_vector_rejects_unreproportionable_mass_request ... ok
+test erod14_contract_vector_case_four_zero_outflow_emits_zero_class_fractions ... ok
+test erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs ... ok
+test erod14_contract_vector_rejects_missing_required_symbol ... ok
+test erod14_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod14_contract_vector_rejects_case_classification_mismatch ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test erod15_registry_updates_reference_wave3_authority ... ok
+test erod15_wave3_addenda_are_present_in_required_contracts ... ok
+test erod15_alias_registry_contains_hbp_payload_templates ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test phase_to_consumer_adapter_contract_remains_stable ... ok
+test missing_runoff_slope_symbol_fails_at_runoff_reconciliation_boundary ... ok
+test missing_soil_consumer_symbol_fails_with_typed_missing_input_status ... ok
+test consumer_adapter_boundaries_receive_runtime_seam_symbols ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 17 tests
+test cbase_namespace_is_explicit_and_not_gwcoeff_alias ... ok
+test compatibility_collapses_parse_failure_to_default_branch ... ok
+test compatibility_missing_file_defaults_with_chn_w_001 ... ok
+test compatibility_non_enoent_open_error_collapses_with_chn_w_002 ... ok
+test compatibility_normalizes_ichout_to_writer_subset_with_warning ... ok
+test ipeak_le_two_returns_not_applicable_without_file_dependency ... ok
+test prefixed_variant_is_rejected_in_both_modes ... ok
+test strict_enforces_topology_closure_and_compatibility_clamps_count ... ok
+test strict_mode_captures_trailing_token_provenance ... ok
+test strict_mode_enforces_line4_arity ... ok
+test strict_mode_missing_required_file_is_chn_e_009 ... ok
+test strict_mode_non_enoent_open_error_is_chn_e_000 ... ok
+test strict_mode_parses_canonical_payload ... ok
+test strict_mode_rejects_invalid_ichout_domain ... ok
+test strict_rejects_dtchr_out_of_range_and_compatibility_normalizes ... ok
+test strict_rejects_negative_cbase_and_compatibility_clamps ... ok
+test strict_rejects_unknown_ichnum_and_compatibility_retains_with_w005 ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+test compat_mode_allows_itemp2_when_enabled ... ok
+test parse_file_reports_io_error_for_missing_path ... ok
+test compat_mode_can_enable_legacy_zero_drain_non_positive_dtime ... ok
+test strict_mode_accepts_breakpoint_cardinality_51_under_1500_policy ... ok
+test strict_mode_accepts_datver_5_323_and_canonicalizes_to_5_3 ... ok
+test strict_mode_accepts_curated_wc1_breakpoint_fixture_with_42_points ... ok
+test strict_mode_rejects_datver_5_4_boundary ... ok
+test strict_mode_accepts_valid_non_breakpoint_fixture ... ok
+test strict_mode_rejects_daily_record_arity_mismatch ... ok
+test strict_mode_rejects_itemp2_single_storm ... ok
+test strict_mode_rejects_duplicate_breakpoint_times ... ok
+test strict_mode_rejects_non_monotone_breakpoint_precipitation ... ok
+test strict_mode_rejects_unsupported_datver ... ok
+test strict_mode_rejects_breakpoint_cardinality_over_1500 ... ok
+test compat_mode_can_override_breakpoint_cardinality_policy ... ok
+test strict_mode_accepts_breakpoint_cardinality_at_1500_boundary ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 10 tests
+test compatibility_mode_clamps_out_of_range_values_and_marks_provenance ... ok
+test compatibility_mode_defaults_missing_line2_with_warnings ... ok
+test compatibility_mode_defaults_line2_on_arity_failure ... ok
+test missing_file_returns_defaults_with_mode_specific_warning_behavior ... ok
+test prefixed_variant_is_rejected_in_both_modes ... ok
+test strict_mode_rejects_line1_arity_violation ... ok
+test strict_mode_parses_two_line_frost_file ... ok
+test strict_mode_rejects_line2_token_parse_error ... ok
+test strict_mode_rejects_missing_line2_record ... ok
+test strict_mode_rejects_out_of_range_values ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test compatibility_mode_collapses_non_enoent_open_error_with_warning ... ok
+test compatibility_mode_keeps_record_closure_guard_for_extra_nonempty_line ... ok
+test compatibility_mode_missing_file_emits_warning ... ok
+test strict_mode_missing_file_is_optional_absence_branch_without_defaults ... ok
+test namespace_conflation_is_rejected_with_typed_cross_file_error ... ok
+test strict_mode_non_enoent_open_error_is_typed_failure ... ok
+test strict_mode_parses_valid_gwcoeff_with_trailing_tokens ... ok
+test strict_mode_rejects_missing_record_count ... ok
+test strict_mode_rejects_negative_domain_values ... ok
+test strict_mode_rejects_non_finite_tokens ... ok
+test strict_mode_rejects_non_numeric_tokens ... ok
+test strict_mode_rejects_prefixed_variant ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test bad_magic_maps_to_hbp_e_002 ... ok
+test header_truncation_maps_to_hbp_e_013 ... ok
+test non_enoent_open_error_is_typed_hbp_e_000 ... ok
+test forbidden_pass_suffix_is_rejected ... ok
+test required_state_registry_ids_are_covered_by_fixture_schema ... ok
+test parser_and_bridge_share_hbp_w_001_warning_id ... ok
+test expected_hillslope_id_mismatch_maps_to_hbp_e_014 ... ok
+test footer_corruption_maps_to_hbp_e_012 ... ok
+test compatibility_mode_derives_hbp_path_from_pass_dat ... ok
+test strict_mode_rejects_pass_dat_input_name ... ok
+test compatibility_policy_accepts_legacy_forms_with_hbp_w_001 ... ok
+test strict_policy_rejects_legacy_forms_across_parser_and_bridge ... ok
+test strict_schema1_parse_succeeds_with_expected_hillslope_id ... ok
+test strict_schema2_parse_succeeds ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+
+running 12 tests
+test compat_accepts_legacy_furrow_datver_and_normalizes_depsrg ... ok
+test compat_accepts_legacy_no_datver_and_injects_nozzle_defaults ... ok
+test compat_mode_warns_and_marks_disabled_when_furrow_context_is_disallowed ... ok
+test missing_file_reports_typed_input_open_error ... ok
+test rejects_unknown_element_ids_when_topology_context_is_provided ... ok
+test reports_cross_file_element_count_mismatch ... ok
+test strict_mode_errors_when_furrow_context_is_disallowed ... ok
+test strict_parses_valid_sprinkler_with_continuation_rows ... ok
+test strict_rejects_invalid_initialization_order ... ok
+test strict_rejects_invalid_ktemp_header_domain ... ok
+test strict_rejects_legacy_no_datver_branch ... ok
+test strict_rejects_non_monotone_continuation_order ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test compatibility_mode_accepts_initial_ordering_anomaly_with_warning ... ok
+test compatibility_mode_accepts_legacy_explicit_datver_with_warning ... ok
+test furrow_surge_range_violation_is_typed ... ok
+test compatibility_mode_accepts_legacy_furrow_line5_arity_with_warning ... ok
+test compatibility_mode_accepts_no_datver_and_missing_nozzle ... ok
+test header_domain_violation_is_typed ... ok
+test missing_event_successor_line3_is_typed_as_closure_error ... ok
+test missing_file_is_typed_open_error ... ok
+test strict_mode_parses_valid_furrow_fixture ... ok
+test strict_mode_parses_valid_sprinkler_fixture ... ok
+test strict_mode_rejects_initial_ordering_anomaly ... ok
+test strict_mode_rejects_legacy_explicit_datver ... ok
+test strict_mode_rejects_legacy_furrow_line5_arity ... ok
+test strict_mode_rejects_no_datver_compatibility_branch ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test compatibility_missing_sentinel_warns_and_records_divergence ... ok
+test compatibility_non_enoent_open_error_collapses_with_warning ... ok
+test compatibility_non_watershed_context_is_not_applicable_branch ... ok
+test compatibility_nonempty_payload_is_accepted_with_warning ... ok
+test strict_missing_sentinel_with_requested_mode_errors ... ok
+test strict_missing_sentinel_without_request_is_valid_missing_branch ... ok
+test strict_non_enoent_open_error_is_typed ... ok
+test strict_non_watershed_context_is_rejected ... ok
+test strict_nonwhitespace_payload_is_rejected ... ok
+test strict_watershed_accepts_whitespace_only_payload ... ok
+test strict_watershed_open_success_with_empty_sentinel_enables_lcwb_mode ... ok
+test w4dr_001_legacy_source_authority_presence_controls_lcwbflg ... ok
+test w4dr_003_and_w4dr_011_policy_projection_is_derived_not_payload_parsed ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test missing_required_line_rejected ... ok
+test negative_count_rejected ... ok
+test open_failure_is_typed ... ok
+test dangling_operation_reference_rejected ... ok
+test compatibility_mode_accepts_trailing_tokens_on_control_records ... ok
+test invalid_surface_date_domain_rejected ... ok
+test dangling_yearly_reference_rejected ... ok
+test rangeland_landuse_is_explicitly_unsupported ... ok
+test unsupported_datver_rejected ... ok
+test strict_mode_rejects_trailing_tokens_on_control_records ... ok
+test strict_mode_parses_canonical_nonzero_cropland_fixture ... ok
+test total_year_closure_enforced ... ok
+test strict_mode_accepts_supported_datver_branches ... ok
+test strict_mode_parses_rotation_fixture_with_schedule_expansion ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test compatibility_mode_accepts_noncanonical_header_with_warning ... ok
+test negative_concentration_is_typed ... ok
+test non_numeric_concentration_is_typed ... ok
+test optional_missing_sidecar_in_compat_mode_emits_warning ... ok
+test non_finite_concentration_is_typed ... ok
+test optional_missing_sidecar_in_strict_mode_defaults_disabled_without_warning ... ok
+test required_missing_sidecar_is_typed_open_error ... ok
+test short_record_count_is_typed ... ok
+test strict_mode_accepts_numeric_leading_lines_with_trailing_tokens ... ok
+test strict_mode_parses_canonical_fixture_and_fanout_closes ... ok
+test strict_mode_rejects_header_literal_mismatch ... ok
+test w4dr_009_non_negative_only_policy_accepts_large_positive_values ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test absent_sidecar_optional_sets_iflget_one_and_warning_in_compat ... ok
+test compatibility_lookup_uses_first_row_fallback_and_marks_state ... ok
+test compatibility_mode_normalizes_multitoken_actlnam_with_warning ... ok
+test compatibility_mode_truncates_long_crop_key_with_warning ... ok
+test strict_lookup_rejects_crop_name_miss ... ok
+test strict_mode_rejects_datver_prefixed_header_variant ... ok
+test strict_mode_accepts_canonical_count_and_rows ... ok
+test strict_mode_rejects_duplicate_normalized_crop_keys ... ok
+test strict_mode_rejects_long_crop_key_width ... ok
+test strict_mode_rejects_multitoken_actlnam_form ... ok
+test strict_mode_rejects_record_count_mismatch ... ok
+test strict_required_mode_rejects_missing_sidecar ... ok
+test strict_mode_rejects_row_arity_mismatch ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 18 tests
+test compatibility_mode_accepts_legacy_threshold_datver ... ok
+test compatibility_mode_accepts_missing_datver_header ... ok
+test compatibility_mode_rejects_datver_below_threshold ... ok
+test compatibility_mode_accepts_shared_geometry_multi_ofe_form ... ok
+test parse_file_returns_missing_file_error ... ok
+test parser_rejects_cross_ofe_boundary_slope_discontinuity ... ok
+test parser_rejects_missing_terminal_endpoint ... ok
+test parser_rejects_mixed_distance_mode ... ok
+test parser_rejects_non_numeric_tokens ... ok
+test parser_rejects_nslpts_less_than_two ... ok
+test parser_rejects_peridot_metadata_arity_violation ... ok
+test parser_rejects_peridot_non_numeric_pair_token ... ok
+test parser_rejects_peridot_pair_cardinality_violation ... ok
+test strict_mode_accepts_canonical_datver_profile ... ok
+test strict_mode_accepts_peridot_2023_3_profile ... ok
+test strict_mode_rejects_non_canonical_datver ... ok
+test strict_mode_rejects_missing_datver_header ... ok
+test strict_mode_rejects_shared_geometry_multi_ofe_form ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test compatibility_mode_accepts_surplus_records_with_warning ... ok
+test compatibility_mode_accepts_trailing_tokens_with_provenance_warning ... ok
+test compatibility_mode_missing_file_emits_default_warning ... ok
+test strict_mode_missing_file_uses_defaults_without_warning ... ok
+test strict_mode_parses_canonical_three_record_file ... ok
+test strict_mode_rejects_non_finite_values ... ok
+test prefixed_variant_is_rejected_in_both_modes ... ok
+test strict_mode_rejects_non_numeric_token ... ok
+test strict_mode_rejects_non_positive_density_values ... ok
+test strict_mode_rejects_record_count_underflow ... ok
+test strict_mode_rejects_surplus_records ... ok
+test strict_mode_rejects_trailing_tokens ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 12 tests
+test compatibility_accepts_explicit_datver_alias_only_when_enabled ... ok
+test compatibility_accepts_quoted_7778_soil_header_form ... ok
+test compatibility_accepts_quoted_7778_with_per_ofe_restrictive_rows ... ok
+test compatibility_accepts_quoted_9002_policy_first_header_form ... ok
+test compatibility_parses_9002_policy_first_variant ... ok
+test returns_sol_e_007_on_cross_file_topology_count_mismatch ... ok
+test strict_parses_9002_profile_with_policy_and_restrictive_footer ... ok
+test strict_parses_97_5_base_profile ... ok
+test strict_rejects_layer_arity_mismatch_with_sol_e_006 ... ok
+test strict_rejects_non_monotone_layer_depth_with_sol_e_009 ... ok
+test strict_rejects_quoted_7778_with_per_ofe_restrictive_rows ... ok
+test strict_rejects_unknown_datver_with_sol_e_003 ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test compatibility_missing_sentinel_emits_tc_w_001 ... ok
+test compatibility_non_enoent_open_error_collapses_with_tc_w_002 ... ok
+test hillslope_context_is_rejected_with_tc_e_001 ... ok
+test compatibility_nonempty_payload_emits_tc_w_003_and_marker ... ok
+test strict_missing_sentinel_is_normalized_without_warning ... ok
+test strict_non_enoent_open_error_is_typed_tc_e_000 ... ok
+test strict_nonempty_payload_is_content_insensitive_without_warning ... ok
+test strict_watershed_empty_sentinel_enables_tc_output ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+test compatibility_mode_accepts_blank_present_file_as_missing_branch ... ok
+test compatibility_mode_accepts_relational_invariant_with_tcr_w003 ... ok
+test compatibility_mode_missing_file_emits_tcr_w001 ... ok
+test compatibility_mode_non_enoent_open_error_collapses_with_tcr_w002 ... ok
+test strict_mode_missing_file_uses_optional_absence_branch_without_warning ... ok
+test strict_mode_non_enoent_open_error_is_typed_tcr_e_000 ... ok
+test strict_mode_parses_valid_tcr_and_applies_override_curve ... ok
+test strict_mode_rejects_blank_present_file_with_tcr_e_002 ... ok
+test strict_mode_rejects_context_cardinality_mismatch_with_tcr_e_005 ... ok
+test strict_mode_rejects_denominator_curve_domain_with_tcr_e_008 ... ok
+test strict_mode_rejects_domain_kch_zero_with_tcr_e_004 ... ok
+test strict_mode_rejects_missing_line_with_tcr_e_002 ... ok
+test strict_mode_rejects_prefixed_variant_with_tcr_e_007 ... ok
+test strict_mode_rejects_relational_invariant_with_tcr_e_009 ... ok
+test strict_mode_rejects_token_parse_error_with_tcr_e_001 ... ok
+test strict_mode_requires_cross_file_context_when_sidecar_present ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test compatibility_mode_accepts_legacy_datver_with_warning ... ok
+test compatibility_mode_applies_icntrl0_override_with_warning ... ok
+test compatibility_mode_normalizes_legacy_ishape ... ok
+test compatibility_mode_warns_for_missing_chan_inp_sidecar ... ok
+test strict_mode_enforces_cross_file_channel_count_closure ... ok
+test strict_mode_parses_canonical_single_channel_rating_curve_profile ... ok
+test strict_mode_rejects_extra_trailing_records ... ok
+test strict_mode_rejects_ishape_out_of_domain ... ok
+test strict_mode_rejects_missing_rating_curve_line_for_icntrl4 ... ok
+test strict_mode_rejects_non_numeric_tokens ... ok
+test strict_mode_rejects_unsupported_datver ... ok
+test strict_mode_requires_chan_inp_sidecar_when_ipeak_gt_2 ... ok
+test tcr_overlay_presence_is_exported_as_compatibility_warning_marker ... ok
+test strict_mode_requires_slplst_override_for_icntrl0_closure ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test compatibility_mode_accepts_legacy_no_datver_with_warning ... ok
+test compatibility_mode_truncates_surplus_impoundments_with_warning ... ok
+test ies_rating_branch_missing_qes_vector_is_typed_eof_error ... ok
+test invalid_drop_spillway_domain_is_typed ... ok
+test missing_file_is_typed_open_error ... ok
+test negative_initial_timestep_is_typed_physical_domain_error ... ok
+test non_monotone_stage_curve_is_typed_invariant_error ... ok
+test oversupplied_curve_vector_is_typed_branch_arity_error ... ok
+test strict_mode_parses_minimal_valid_impoundment ... ok
+test strict_mode_rejects_datver_below_minimum ... ok
+test strict_mode_rejects_legacy_no_datver_preamble ... ok
+test strict_mode_rejects_structural_count_mismatch ... ok
+test token_parse_error_maps_to_imp_e_001 ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 16 tests
+test compatibility_mode_accepts_legacy_no_datver_and_warns ... ok
+test strict_mode_parses_valid_watershed_structure ... ok
+test strict_mode_rejects_channel_count_mismatch ... ok
+test strict_mode_rejects_disconnected_structure_row ... ok
+test strict_mode_rejects_hillslope_coverage_mismatch ... ok
+test strict_mode_rejects_impoundment_count_mismatch ... ok
+test strict_mode_rejects_invalid_element_type_domain ... ok
+test strict_mode_rejects_invalid_hillslope_domain ... ok
+test strict_mode_rejects_invalid_nhill_context ... ok
+test strict_mode_rejects_invalid_row_arity ... ok
+test strict_mode_rejects_invalid_upstream_reference_domain ... ok
+test strict_mode_rejects_missing_file_with_typed_open_error ... ok
+test strict_mode_rejects_no_datver_path ... ok
+test strict_mode_rejects_row_count_mismatch ... ok
+test strict_mode_rejects_unsupported_datver ... ok
+test strict_mode_requires_expected_rows_context ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 11 tests
+test compatibility_hourly_mode_with_legacy_soil_versions_warns ... ok
+test compatibility_missing_sentinel_with_hourly_request_warns_and_diverges ... ok
+test compatibility_non_enoent_open_error_collapses_with_warning ... ok
+test compatibility_nonempty_payload_is_accepted_with_warning ... ok
+test strict_hourly_mode_with_legacy_soil_versions_is_rejected ... ok
+test strict_missing_sentinel_with_daily_request_defaults_daily_without_error ... ok
+test strict_hourly_mode_without_soil_versions_is_rejected ... ok
+test strict_missing_sentinel_with_hourly_request_errors_on_mode_closure_mismatch ... ok
+test strict_non_enoent_open_error_is_typed ... ok
+test strict_nonempty_sentinel_payload_is_rejected ... ok
+test strict_requested_hourly_with_empty_sentinel_and_compatible_soil_enables_hourly_mode ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test int10_contract_conformance_rejects_non_finite_coupled_ordering_value ... ok
+test int10_contract_conformance_rejects_missing_growth_to_watbal_ordering_symbol ... ok
+test int10_contract_conformance_validates_coupled_replay_ordering_and_state_transfer ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test irrig10_contract_vector_missing_schedule_day_symbol_is_typed ... ok
+test irrig10_depletion_contract_vector_activates_period_trigger ... ok
+test irrig10_fixeddate_contract_vector_couples_irrigation_depth_into_runoff_and_storage ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test apply_reject_path_propagates_typed_error ... ok
+test reject_status_has_failure_domain_signal ... ok
+test watershed_writeback_reject_keeps_orchestrator_surface_unchanged ... ok
+test hillslope_writeback_success_applies_updates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test mofe04_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 1 test
+test mofe05_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 47 tests
+test frost_runtime_surface_projects_missing_file_flag_as_inactive ... ok
+test frost_parser_to_hillslope_runtime_surface_closure ... ok
+test climate_wc1_fixture_applies_timep_floor_and_ip_policy_scaling ... ok
+test frost_runtime_surface_rejects_invalid_kfactor_domain_projection ... ok
+test climate_wc1_fixture_caps_storm_duration_before_runtime_projection ... ok
+test climate_runtime_projection_parity_hillslope_vs_watershed_adapter_path ... ok
+test climate_parser_to_watershed_runtime_surface_closure ... ok
+test climate_parser_to_hillslope_runtime_surface_closure ... ok
+test management_runtime_surface_rejects_out_of_range_initial_reference_projection ... ok
+test management_runtime_surface_rejects_out_of_range_yearly_reference_projection ... ok
+test management_runtime_surface_rejects_non_finite_required_growth_projection ... ok
+test management_runtime_surface_rejects_overflowed_projection_count ... ok
+test management_runtime_surface_rejects_schedule_ofe_index_out_of_range_projection ... ok
+test management_fixture_projects_full_pl_runtime_surface_families ... ok
+test management_runtime_surface_rejects_slot_count_mismatch_projection ... ok
+test management_runtime_surface_rejects_slot_arity_mismatch_projection ... ok
+test management_runtime_surface_rejects_topology_count_mismatch_projection ... ok
+test parser_to_hillslope_runtime_surface_7778_measured_theta_fallback_closure ... ok
+test management_runtime_surface_rejects_unsupported_landuse_projection ... ok
+test parser_to_watershed_runtime_surface_closure ... ok
+test management_runtime_surface_rejects_unsupported_perennial_option_projection ... ok
+test parser_to_hillslope_runtime_surface_closure ... ok
+test pl10b_contract_conformance_rejects_empty_perennial_grazing_cardinality ... ok
+test pl10b_contract_conformance_rejects_invalid_grazing_window_domain ... ok
+test pl10b_contract_conformance_requires_perennial_cutday_indexed_projection ... ok
+test pl10b_contract_conformance_requires_perennial_grazing_cycle_payload_projection ... ok
+test pl10b_contract_conformance_requires_annual_extension_projection_symbols ... ok
+test slope_runtime_surface_rejects_declared_nslpts_mismatch_projection ... ok
+test pl17_contract_conformance_requires_decomposition_rate_projection_symbols ... ok
+test slope_runtime_surface_rejects_non_positive_avgslp_projection ... ok
+test snow_parser_to_hillslope_runtime_surface_closure ... ok
+test snow_runtime_surface_projects_missing_file_flag_as_inactive ... ok
+test snow_runtime_surface_rejects_invalid_density_domain_projection ... ok
+test slope_parser_to_hillslope_runtime_surface_closure ... ok
+test pl13_contract_conformance_scheduler_emits_annual_growth_transition_payload ... ok
+test soil_runtime_surface_rejects_declared_nsl_mismatch_projection ... ok
+test soil_runtime_surface_rejects_missing_saturated_conductivity_projection ... ok
+test slope_and_soil_parser_outputs_propagate_to_hillslope_runtime_surface_closure ... ok
+test pl13_contract_conformance_scheduler_emits_perennial_growth_transition_payload ... ok
+test pl17_contract_conformance_rejects_missing_decomposition_equation_symbol ... ok
+test pl16_contract_conformance_rejects_missing_growth_equation_symbol ... ok
+test pl16_contract_conformance_scheduler_emits_equation_updated_annual_growth_state_on_active_day ... ok
+test pl17_contract_conformance_scheduler_emits_equation_updated_annual_decomposition_state_on_active_day ... ok
+test pl16_contract_conformance_scheduler_emits_equation_updated_perennial_growth_state_on_active_day ... ok
+test pl17_contract_conformance_scheduler_emits_equation_updated_perennial_decomposition_state_on_active_day ... ok
+test pl17_contract_conformance_scheduler_preserves_seed_masses_when_decomposition_constants_are_zero ... ok
+test management_rotation_fixture_projects_schedule_growth_and_decomp_runtime_surface_families ... ok
+
+test result: ok. 47 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 7 tests
+test pl14_contract_conformance_rejects_key_domain_mismatch_before_comparator_promotion ... ok
+test pl14_contract_conformance_emits_replay_staging_rows_with_canonical_25_columns ... ok
+test pl14_contract_conformance_rejects_missing_or_mismatched_single_ofe_metadata ... ok
+test pl14_contract_conformance_requires_nonzero_replay_span_overlap_for_promotion ... ok
+test pl14_contract_conformance_rejects_missing_required_replay_symbol ... ok
+test pl14_contract_conformance_requires_total_soil_in_investigation_columns ... ok
+test pl14_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test pl14r_contract_conformance_holds_when_required_surface_missing_or_strict_failure_present ... ok
+test pl14r_contract_conformance_holds_when_strict_source_is_non_promotable ... ok
+test pl14r_contract_conformance_rejects_skipped_strict_lane_for_dat_mode ... ok
+test pl14r_contract_conformance_rejects_missing_required_single_ofe_metadata ... ok
+test pl14r_contract_conformance_requires_interchange_wat_and_pass_include_surfaces ... ok
+test pl14r_contract_conformance_requires_complete_hash_provenance_for_pass ... ok
+test pl14r_contract_conformance_requires_strict_equivalent_compensation_when_parquet_strict_skips ... ok
+test pl14r_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14r_contract_conformance_wb13_rows_remain_canonical_25_column_schema ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test pl14s_contract_conformance_classifies_candidate_source_provenance ... ok
+test pl14s_contract_conformance_enforces_strict_lane_required_vs_strict_equivalent_modes ... ok
+test pl14s_contract_conformance_requires_conversion_dat_row_consistency_for_evidence_readiness ... ok
+test pl14s_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_markers ... ok
+test pl14s_contract_conformance_rejects_duplicate_row_keys_in_semantic_lane_inputs ... ok
+test simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_storage ... ok
+test simimpl18_contract_requires_multi_day_storage_state_mutation ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.76s
+
+
+running 4 tests
+test pl15_contract_conformance_flags_plot_artifact_absence_from_pl14_replay ... ok
+test pl15_contract_conformance_requires_explicit_risk_acceptance_reference ... ok
+test pl15_contract_conformance_routes_tier_a_surface_as_higher_confidence ... ok
+test pl15_contract_conformance_flags_wat_structure_delta_from_pl14_replay ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test pl15r_contract_conformance_requires_day_by_day_25_measure_parity ... ok
+test pl15r_contract_conformance_requires_explicit_risk_acceptance_only_when_blockers_remain ... ok
+test pl15r_contract_conformance_requires_schema_aligned_plot_strict_pass ... ok
+test pl15r_contract_conformance_requires_schema_aligned_wat_strict_pass ... ok
+test pl15r_contract_conformance_routes_tier_a_surface_as_higher_confidence ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test count_check_rejects_cardinality_mismatch ... ok
+test finite_check_accepts_finite_values ... ok
+test finite_check_rejects_nan_with_typed_violation ... ok
+test min_check_rejects_negative_values_with_typed_violation ... ok
+test residual_check_enforces_closure_tolerance ... ok
+test range_and_unit_interval_checks_enforce_domain_bounds ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test advisory_constructor_rejects_failure_boundary_class ... ok
+test boundary_advisory_class_without_clamp_is_warning ... ok
+test clamp_status_is_classified_as_advisory ... ok
+test empty_message_id_is_rejected ... ok
+test nominal_status_is_classified_as_ok ... ok
+test non_finite_status_is_classified_as_failure ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test constructor_rejects_ambiguous_boundary_aliases ... ok
+test constructor_rejects_ambiguous_template_alias_strings ... ok
+test constructor_rejects_duplicate_rows ... ok
+test constructor_rejects_invalid_template_token ... ok
+test reverse_lookup_reports_ambiguous_template_matches ... ok
+test canonical_wepp_registry_contains_pl11_slot_crop_projection_alias_entries ... ok
+test canonical_wepp_registry_contains_sr04_slope_soil_alias_entries ... ok
+test canonical_wepp_registry_contains_arch03_baseline_aliases ... ok
+test missing_canonical_or_boundary_alias_returns_typed_errors ... ok
+test canonical_wepp_registry_contains_pl04_schedule_growth_and_decomp_alias_entries ... ok
+test reverse_lookup_resolves_pl11_slot_crop_projection_aliases ... ok
+test reverse_lookup_resolves_each_boundary_alias_to_single_canonical_symbol ... ok
+test reverse_lookup_resolves_pl04_aliases_to_single_canonical_symbol ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test canonical_topology_fixture_passes_pre_execution_validation ... ok
+test declared_count_mismatch_fixture_fails_with_typed_violation ... ok
+test directed_cycle_fixture_fails_with_cycle_violation ... ok
+test disconnected_node_fixture_fails_with_typed_violation ... ok
+test missing_fixture_file_returns_typed_read_error ... ok
+test out_of_domain_reference_fixture_fails_with_typed_violation ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test simimpl22_contract_wb11_ordering_vector_requires_purk_before_evap ... ok
+test wb11_contract_conformance_rejects_invalid_percolation_fraction ... ok
+test wb11_contract_conformance_rejects_non_finite_et_demand ... ok
+test simimpl22_contract_root_uptake_vector_requires_upi_ui_etp_and_ws_lineage ... ok
+test simimpl22_contract_wb13_publication_vector_requires_watcon_alias_lineage ... ok
+test wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces ... ok
+test simimpl22_contract_stage_memory_vector_requires_transitioning_s1_s2_tu_tv ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test wb12_contract_conformance_rejects_non_finite_runoff_input ... ok
+test wb12_contract_conformance_rejects_storage_closure_delta_over_tolerance ... ok
+test wb12_contract_conformance_reconciles_runoff_and_storage_surfaces ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test wb13_contract_conformance_rejects_missing_required_profile_symbol ... ok
+test wb13_contract_conformance_rejects_non_finite_and_domain_invalid_symbols ... ok
+test wb13_contract_conformance_emits_canonical_25_column_rows_and_monotonic_order ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test wb14_contract_conformance_rejects_active_9001_zero_ksatrec ... ok
+test wb14_contract_conformance_rejects_missing_hyetograph_symbol ... ok
+test wb14_contract_conformance_rejects_non_monotone_hyetograph_time ... ok
+test wb14_contract_conformance_computes_infiltration_from_hyetograph ... ok
+test wb14_contract_conformance_normalizes_within_tolerance_negative_runoff_before_writeback ... ok
+test wb14_contract_conformance_applies_ksatadj_9003_burn_floor ... ok
+test wb14_contract_conformance_applies_ksatadj_9001_regime ... ok
+test wb14_contract_conformance_applies_ksatadj_9002_regime ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test wb15_contract_conformance_rejects_missing_canopy_state_symbol ... ok
+test wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol ... ok
+test wb15_contract_conformance_rejects_non_finite_canopy_state_symbol ... ok
+test wb15_contract_conformance_couples_canopy_interception_into_runoff_and_storage_closure ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test wb16_contract_conformance_rejects_missing_peak_symbol ... ok
+test wb16_contract_conformance_rejects_non_finite_peak_symbol ... ok
+test wb16_contract_conformance_rejects_out_of_domain_peak_symbol ... ok
+test wb16_contract_conformance_emits_peak_runoff_outputs_with_branch_authority ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test wb17_contract_conformance_rejects_domain_invalid_residue_interception ... ok
+test wb17_contract_conformance_rejects_non_finite_lai ... ok
+test wb17_contract_conformance_rejects_missing_residue_interception_symbol ... ok
+test wb17_contract_conformance_emits_partitioned_et_components ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test wb18_contract_conformance_emits_layerwise_percolation_fluxes ... ok
+test wb18_contract_conformance_rejects_domain_invalid_layer_upper_limit ... ok
+test wb18_contract_conformance_rejects_missing_layer_symbol ... ok
+test wb18_contract_conformance_rejects_non_finite_layer_conductivity ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test wb19_contract_conformance_rejects_domain_invalid_drain_enable_flag ... ok
+test wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes ... ok
+test wb19_contract_conformance_rejects_missing_lateral_symbol ... ok
+test wb19_contract_conformance_rejects_non_finite_drainage_symbol ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test wb20_contract_conformance_compatibility_lane_keeps_observed_closure_path ... ok
+test wb20_contract_conformance_forward_lane_excludes_observed_targets ... ok
+test wb20_contract_conformance_rejects_invalid_lane_selector_domain ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test orchestrators_declare_direct_parser_contract_dependency ... ok
+test root_crate_stays_non_reexport_aggregator ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test ws10_contract_conformance_rejects_missing_required_erod15_payload_symbol ... ok
+test ws10_contract_conformance_rejects_missing_required_symbol ... ok
+test ws10_contract_conformance_rejects_non_finite_required_symbol ... ok
+test ws10_contract_conformance_rejects_out_of_domain_impoundment_state ... ok
+test ws10_contract_conformance_executes_channel_impoundment_production_path ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test ws11_contract_conformance_rejects_non_finite_ipeak ... ok
+test ws11_contract_conformance_rejects_out_of_domain_ipeak ... ok
+test ws11_contract_conformance_requires_ipeak_symbol ... ok
+test ws11_contract_conformance_executes_ipeak_1_and_2_with_finite_outputs ... ok
+test ws11_contract_conformance_distinguishes_ipeak_branches ... ok
+test ws11_contract_conformance_executes_ipeak_3_and_4_with_routed_closure ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test ws12_contract_conformance_rejects_invalid_area_denominator ... ok
+test ws12_contract_conformance_rejects_missing_required_coefficient_payload ... ok
+test ws12_contract_conformance_rejects_non_finite_coefficient_payload ... ok
+test ws12_contract_conformance_deauthorizes_surrogate_when_structures_are_inactive ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test tests::runtime_request_rejects_negative_breakpoint_drain_with_e006 ... ok
+test tests::runtime_request_rejects_non_monotone_breakpoint_times_with_e009 ... ok
+test tests::runtime_request_rejects_breakpoint_cardinality_over_1500_even_with_parser_override ... ok
+test tests::runtime_request_rejects_declared_cardinality_over_1500_when_rows_are_truncated ... ok
+test tests::runtime_request_accepts_breakpoint_cardinality_at_1500_boundary ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test tests::hourly_and_watershed_route_to_investigation ... ok
+test tests::missing_single_ofe_count_is_typed_error ... ok
+test tests::non_positive_ofe_count_is_typed_error ... ok
+test tests::single_ofe_count_mismatch_is_typed_error ... ok
+test tests::single_ofe_daily_routes_to_higher_confidence ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 65 tests
+test runtime_inputs::tests::breakpoint_runtime_surface_projects_stmstr_elapsed_timem_and_mxint ... ok
+test runtime_inputs::tests::breakpoint_runtime_surface_supports_curated_wc1_42_point_event_shape ... ok
+test runtime_inputs::tests::climate_runtime_surface_applies_timep_floor_for_wet_nonconstant_events ... ok
+test runtime_inputs::tests::climate_runtime_surface_contains_canonical_daily_symbols ... ok
+test runtime_inputs::tests::climate_runtime_surface_caps_storm_duration_to_23_999_hours ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_duplicate_breakpoint_times ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_single_storm_even_in_compat_parser_mode ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_negative_breakpoint_drain ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_pre4_nonzero_datver_branch ... ok
+test runtime_inputs::tests::climate_runtime_surface_supports_explicit_datver_zero_override ... ok
+test runtime_inputs::tests::climate_runtime_surface_with_context_rejects_missing_required_winter_symbol ... ok
+test runtime_inputs::tests::management_runtime_projection_allows_zero_gddmax_sentinel_for_legacy_resolution ... ok
+test runtime_inputs::tests::climate_runtime_surface_with_context_emits_simimpl28_hourly_forcing_symbols ... ok
+test runtime_inputs::tests::management_runtime_projection_rejects_negative_oratea_projection_field ... ok
+test runtime_inputs::tests::management_runtime_projection_allows_zero_oratea_orater_for_legacy_no_decay ... ok
+test runtime_inputs::tests::management_runtime_projection_rejects_out_of_range_initial_reference ... ok
+test runtime_inputs::tests::slope_runtime_surface_rejects_non_positive_derived_avgslp ... ok
+test runtime_inputs::tests::slope_runtime_surface_contains_canonical_state_symbols ... ok
+test runtime_inputs::tests::management_runtime_projection_rejects_non_finite_row_width ... ok
+test runtime_inputs::tests::management_runtime_projection_rejects_unsupported_perennial_option ... ok
+test runtime_inputs::tests::management_runtime_projection_rejects_unsupported_pl_landuse ... ok
+test runtime_inputs::tests::soil_runtime_surface_contains_canonical_state_symbols ... ok
+test runtime_inputs::tests::soil_runtime_surface_defaults_ksatadj_to_zero_without_policy_block ... ok
+test runtime_inputs::tests::soil_runtime_surface_projects_ksatadj_policy_symbols_for_9002 ... ok
+test runtime_inputs::tests::soil_runtime_surface_rejects_missing_saturated_conductivity ... ok
+test runtime_inputs::tests::soil_runtime_surface_rejects_missing_theta_fields ... ok
+test runtime_inputs::tests::climate_runtime_surface_with_context_respects_rst_partition_branches ... ok
+test runtime_inputs::tests::management_runtime_surfaces_project_required_pl_controls_and_seeds ... ok
+test runtime_inputs::tests::soil_runtime_surface_uses_measured_theta_fallback_for_7778 ... ok
+test tests::consumer_adapter_mapping_matches_phase_contract ... ok
+test tests::canonical_graph_order_is_deterministic ... ok
+test tests::active_slot_resolution_rejects_ambiguous_active_crops_for_day ... ok
+test tests::consumer_boundary_reports_typed_missing_symbol_for_seeded_family ... ok
+test tests::active_slot_resolution_rejects_missing_active_crop_for_day ... ok
+test tests::active_slot_resolution_rejects_ambiguous_slot_candidates ... ok
+test tests::decomposition_boundary_invalid_ordering_flag_returns_typed_failure ... ok
+test tests::annual_growth_phase_emits_typed_growth_context ... ok
+test tests::decomposition_boundary_missing_required_symbol_returns_typed_failure ... ok
+test tests::decomposition_boundary_rejects_negative_oratea_with_typed_failure ... ok
+test tests::execute_with_kernel_applies_writeback_updates ... ok
+test tests::execute_with_kernel_lends_stable_surface_references ... ok
+test tests::execute_with_kernel_rejects_kernel_phase_mismatch ... ok
+test tests::execute_with_kernel_rejects_non_finite_writeback ... ok
+test tests::nominal_execution_completes_in_canonical_order ... ok
+test tests::active_slot_resolution_wraps_rotation_boundary_to_year_one ... ok
+test tests::phase_failure_is_typed_and_fail_fast ... ok
+test tests::growth_boundary_missing_required_symbol_returns_typed_failure ... ok
+test tests::phase_status_phase_mismatch_returns_mode_mismatch_failure ... ok
+test tests::growth_boundary_non_finite_ordering_flag_returns_typed_failure ... ok
+test tests::active_slot_resolution_uses_year_three_perennial_slot ... ok
+test tests::required_consumer_symbols_are_empty_without_slope_or_soil_families ... ok
+test tests::pl12_contract_conformance_rejects_missing_perennial_cutday_payload ... ok
+test tests::wb10_contract_conformance_rejects_unsupported_hydrology_phase_class ... ok
+test tests::topology_precondition_failure_blocks_phase_execution ... ok
+test tests::pl12_contract_conformance_rejects_invalid_perennial_grazing_window ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_breakpoint_cardinality_over_1500_even_with_parser_override ... ok
+test tests::pl13_contract_conformance_rejects_missing_growth_state_surface ... ok
+test tests::perennial_growth_phase_emits_typed_growth_context ... ok
+test tests::pl13_contract_conformance_rejects_growth_state_domain_violation ... ok
+test tests::pl16_gddmax_sentinel_requires_monthly_temperature_vectors ... ok
+test tests::pl16_annual_growth_accepts_zero_gddmax_sentinel_for_summer_branch ... ok
+test tests::pl16_annual_growth_accepts_zero_gddmax_sentinel_for_winter_branch ... ok
+test tests::wb10_contract_conformance_hydrology_phase_classes_are_not_generic ... ok
+test tests::pl16_perennial_growth_accepts_zero_gddmax_sentinel ... ok
+test runtime_inputs::tests::climate_runtime_surface_accepts_breakpoint_cardinality_at_1500_boundary ... ok
+
+test result: ok. 65 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 14 tests
+test contracts::tests::output_contract_accepts_required_and_optional_output_extensions ... ok
+test contracts::tests::output_contract_rejects_missing_required_pass_path ... ok
+test contracts::tests::output_contract_rejects_required_output_extension_mismatch ... ok
+test contracts::tests::output_contract_rejects_optional_output_extension_mismatch ... ok
+test contracts::tests::output_contract_reports_only_configured_optional_outputs ... ok
+test hillslope_wat::tests::schema_includes_required_dataset_metadata_keys ... ok
+test hillslope_wat::tests::schema_includes_units_and_description_field_metadata ... ok
+test manifest::tests::manifest_checksum_assembly_rejects_duplicate_paths ... ok
+test manifest::tests::manifest_checksum_assembly_rejects_empty_checksum ... ok
+test manifest::tests::manifest_checksum_assembly_rejects_empty_output_path ... ok
+test manifest::tests::manifest_checksum_assembly_sorts_paths_deterministically ... ok
+test writers::tests::writer_paths_include_only_configured_optional_outputs ... ok
+test writers::tests::writer_paths_include_required_outputs ... ok
+test hillslope_wat::tests::writer_emits_valid_parquet_file_with_schema_metadata ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test parsers::slope::tests::tokenizer_skips_blank_and_comment_lines ... ok
+test parsers::slope::tests::tokenizer_splits_comma_delimited_pairs ... ok
+test parsers::watershed_structure::tests::materialize_lines_skips_comment_and_blank_lines ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 14 tests
+test tests::accepts_finite_domain_valid_payload ... ok
+test tests::accepts_unit_boundary_typed_values ... ok
+test tests::apply_requires_accept_outcome ... ok
+test tests::climate_forcing_symbol_surface_hillslope_uses_canonical_aliases ... ok
+test tests::climate_forcing_symbol_surface_rejects_unsupported_point_count ... ok
+test tests::climate_forcing_symbol_surface_watershed_scope_uses_canonical_aliases ... ok
+test tests::decomposition_context_can_carry_typed_transition_payload ... ok
+test tests::growth_context_can_carry_typed_transition_payload ... ok
+test tests::phase_class_decomposition_predicate_matches_contract ... ok
+test tests::phase_class_growth_predicate_matches_contract ... ok
+test tests::phase_class_hydrology_predicate_matches_contract ... ok
+test tests::rejects_non_finite_payload_with_typed_status ... ok
+test tests::request_with_decomposition_context_preserves_typed_phase_metadata ... ok
+test tests::request_with_growth_context_preserves_typed_phase_metadata ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 13 tests
+test hbp::tests::compat_mode_accepts_legacy_magic_alias_with_warning ... ok
+test hbp::tests::reject_contract_with_duplicate_alias ... ok
+test hbp::tests::reject_short_shard ... ok
+test hbp::tests::reject_unknown_magic ... ok
+test hbp::tests::strict_mode_accepts_canonical_magic ... ok
+test hbp::tests::strict_mode_rejects_legacy_magic_alias ... ok
+test sidecar::tests::compat_mode_accepts_legacy_alias_with_warning ... ok
+test sidecar::tests::compat_mode_ignores_unknown_sidecar_with_warning ... ok
+test sidecar::tests::duplicate_discovery_file_name_is_rejected ... ok
+test sidecar::tests::strict_mode_accepts_canonical_required_and_optional_bindings ... ok
+test sidecar::tests::strict_mode_ignores_unknown_sidecar_with_warning ... ok
+test sidecar::tests::strict_mode_rejects_legacy_alias ... ok
+test sidecar::tests::strict_mode_rejects_missing_required_sidecar ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test hillslope::tests::simimpl09_lane_context_matches_mode_selection_tuple ... ok
+test hillslope::tests::simimpl09_timestep_policy_scaffolds_subhourly_without_physics_enablement ... ok
+test hillslope::tests::simimpl11_area_derives_from_aggregate_ofe_geometry ... ok
+test launch::tests::launch_argv_contains_required_explicit_args ... ok
+test release::tests::release_name_validator_accepts_expected_patterns ... ok
+test release::tests::release_name_validator_rejects_invalid_patterns ... ok
+test hillslope::tests::simimpl14_contract_gate_continuous_wb13_span_and_keys ... ok
+test hillslope::tests::simimpl14_contract_gate_loss_output_is_run_span_truthful ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 33.59s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test simimpl04_contract_requires_runner_kernel_execution_provenance_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.97s
+
+
+running 3 tests
+test simimpl04_contract_requires_simulation_owned_wb13_publication_provenance ... ok
+test simimpl14_contract_requires_continuous_wb13_span_and_simulation_year_row_keys ... ok
+test simimpl14_contract_requires_run_span_truthful_loss_output_summary ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 50.96s
+
+
+running 1 test
+test simimpl04_contract_requires_wepp_ui_requested_effective_lane_closure_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.83s
+
+
+running 7 tests
+test watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior ... ok
+test watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_reaches_output_guard ... ok
+test watershed_cli_mofe05_rejects_multiofe_contributor_manifest_shape_violation ... ok
+test watershed_cli_mofe05_rejects_multiofe_contributor_without_manifest_metadata ... ok
+test watershed_cli_mofe05_rejects_multiofe_manifest_count_mismatch ... ok
+test watershed_cli_rejects_negative_hbp_payload_via_ws10_domain_guards ... ok
+test watershed_cli_rejects_placeholder_watershed_output_emission ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 9 tests
+test tests::accumulates_multiple_samples_within_same_day_before_rollup ... ok
+test tests::emits_deterministic_rollups_across_day_month_year_and_eos ... ok
+test tests::finalize_without_samples_is_rejected ... ok
+test tests::invalid_comparator_routing_is_rejected_at_construction ... ok
+test tests::rejects_duplicate_symbol_in_pair_builder ... ok
+test tests::rejects_empty_scalar_surfaces ... ok
+test tests::rejects_invalid_calendar_dates ... ok
+test tests::rejects_non_finite_scalar_inputs ... ok
+test tests::rejects_non_monotonic_days ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test tests::flow_rate_liters_round_trip ... ok
+test tests::process_rate_meters_per_second_round_trip ... ok
+test tests::process_rate_rejects_non_finite_conversion ... ok
+test tests::runoff_conversion_rejects_overflow ... ok
+test tests::runoff_depth_meters_round_trip ... ok
+test tests::runoff_depth_rejects_negative ... ok
+test tests::runoff_depth_rejects_non_finite ... ok
+test tests::runoff_depth_to_volume_conversion ... ok
+test tests::storage_volume_to_depth_conversion ... ok
+test tests::storage_volume_to_depth_rejects_zero_area ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 26 tests
+test runtime_inputs::tests::chaninp_runtime_surface_rejects_compat_defaulted_parse_outcome ... ok
+test runtime_inputs::tests::chaninp_runtime_surface_contains_required_symbols ... ok
+test runtime_inputs::tests::breakpoint_runtime_surface_projects_stmstr_elapsed_timem_and_mxint ... ok
+test runtime_inputs::tests::breakpoint_runtime_surface_supports_curated_wc1_42_point_event_shape ... ok
+test runtime_inputs::tests::climate_runtime_surface_applies_timep_floor_for_wet_nonconstant_events ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_empty_assignment_map ... ok
+test runtime_inputs::tests::climate_runtime_surface_caps_storm_duration_to_23_999_hours ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_duplicate_breakpoint_times ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_pre4_nonzero_datver_branch ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_negative_breakpoint_drain ... ok
+test runtime_inputs::tests::watershed_channel_runtime_seed_rejects_out_of_domain_symbol ... ok
+test runtime_inputs::tests::watershed_channel_runtime_seed_projects_ws10_symbols ... ok
+test runtime_inputs::tests::climate_runtime_surface_contains_per_hillslope_symbols ... ok
+test runtime_inputs::tests::climate_runtime_surface_supports_explicit_datver_zero_override ... ok
+test runtime_inputs::tests::watershed_impoundment_runtime_seed_projects_ws10_symbols ... ok
+test runtime_inputs::tests::watershed_impoundment_runtime_seed_rejects_h_above_hfull ... ok
+test tests::blocks_dispatch_when_topology_precondition_fails ... ok
+test tests::classifies_cycle_as_typed_failure_class ... ok
+test tests::classifies_missing_dependency_as_typed_failure_class ... ok
+test tests::execute_with_kernel_applies_writeback ... ok
+test tests::execute_with_kernel_lends_stable_surface_references ... ok
+test tests::execute_with_kernel_rejects_non_finite_writeback ... ok
+test tests::execute_with_kernel_rejects_status_phase_mismatch ... ok
+test tests::schedules_dispatch_in_deterministic_dependency_order ... ok
+test runtime_inputs::tests::climate_runtime_surface_rejects_breakpoint_cardinality_over_1500_even_with_parser_override ... ok
+test runtime_inputs::tests::climate_runtime_surface_accepts_breakpoint_cardinality_at_1500_boundary ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 4 tests
+test contracts::tests::output_contract_accepts_required_parquet_outputs ... ok
+test contracts::tests::output_contract_rejects_extension_mismatch ... ok
+test contracts::tests::output_contract_rejects_missing_required_output_path ... ok
+test writers::tests::writer_rejects_placeholder_emission_with_typed_guard ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

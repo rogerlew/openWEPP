@@ -4,9 +4,9 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.6
+contract_version: 0.1.7
 evidence_mode: Static
-last_updated_utc: 2026-05-25T00:00:00Z
+last_updated_utc: 2026-05-26T00:00:00Z
 ---
 
 # SC-INFILE-SOIL-001 Soil Input Parser Contract
@@ -42,7 +42,7 @@ This contract governs parser behavior for surface `infile-soil-sol` (`.sol`) and
 | `9002` | Accept. | Parse disturbed-land pre-layer controls + extended layer records. | `[DIRECT][E-SPEC-SOL-01]` |
 | `9003` | Accept. | Parse disturbed-land + burn-code variant. | `[DIRECT][E-SPEC-SOL-01]` |
 | `9005` | Accept. | Parse revegetation controls + extended layer records. | `[DIRECT][E-SPEC-SOL-01]` |
-| `7778` quoted legacy header form | Strict reject. | Compatibility mode may accept OFE header rows where `slid`/`texid` are single-quoted string fields with embedded whitespace and optional trailing `avke` omission (`avke` normalized to `0.0` when omitted). | `[DIRECT][E-WF-SOL-01]`, `[DIRECT][E-WF-SOL-02]`, `[DIRECT][E-WP-SOL-01]` |
+| `7778`, `9002`, `9003`, `9005` quoted legacy header form | Strict reject. | Compatibility mode may accept OFE header rows where `slid`/`texid` are single-quoted string fields with embedded whitespace and optional trailing `avke` omission (`avke` normalized to `0.0` when omitted). | `[DIRECT][E-WF-SOL-01]`, `[DIRECT][E-WF-SOL-02]`, `[DIRECT][E-WP-SOL-01]` |
 | `7778` per-OFE restrictive footer legacy form | Strict reject. | Compatibility mode may accept one restrictive-layer row per OFE block when all per-OFE restrictive rows are identical; normalized to a single profile restrictive-layer state. | `[DIRECT][E-WP-SOL-01]` |
 | unknown numeric | Strict reject. Compat reject unless explicitly allowlisted. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-SOL-01]` |
 
@@ -88,7 +88,7 @@ compat_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* compatibility-only: 
 | `ki` | `ofe[i].ki` | `soil.ofe[i].ki_base` | kg*s/m^4 | real | ntemp | yes | all | none | `ki_base` |
 | `kr` | `ofe[i].kr` | `soil.ofe[i].kr_base` | s/m | real | ntemp | yes | all | none | `kr_base` |
 | `shcrit` | `ofe[i].shcrit` | `soil.ofe[i].tau_c_base` | N/m^2 | real | ntemp | yes | all | none | `tau_c_base` |
-| `avke` | `ofe[i].avke` | `soil.ofe[i].avke_mm_h` | mm/h | real | ntemp | yes | all | compatibility-only quoted `7778` legacy form may omit trailing field, normalized to `0.0` | `avke_mm_h` |
+| `avke` | `ofe[i].avke` | `soil.ofe[i].avke_mm_h` | mm/h | real | ntemp | yes | all | compatibility-only quoted `7778/9002/9003/9005` legacy forms may omit trailing field, normalized to `0.0` | `avke_mm_h` |
 | `solthk` | `layer[j].solthk` | `soil.ofe[i].layers[j].depth_mm` | mm | real | sum(nsl) | yes | all | none | `depth_mm` |
 | `sand` | `layer[j].sand` | `soil.ofe[i].layers[j].sand_pct` | % | real | sum(nsl) | conditional | all | none | `sand_pct` |
 | `clay` | `layer[j].clay` | `soil.ofe[i].layers[j].clay_pct` | % | real | sum(nsl) | conditional | all | none | `clay_pct` |
@@ -203,7 +203,7 @@ No silent fallback masking for invalid required inputs. `[DIRECT][E-SPEC-SOL-01]
   - does not silently rewrite between datver variants;
   - may accept legacy quoted OFE-header identifiers (`'slid' 'texid'`) for
     datver forms observed in legacy MOFE stacks when tokenization is lossless;
-  - for quoted legacy `7778` forms, may accept either:
+  - for quoted legacy `7778/9002/9003/9005` forms, may accept either:
     - 9-token headers (`slid texid nsl salb sat ki kr shcrit avke`), or
     - 8-token headers (`slid texid nsl salb sat ki kr shcrit`) with explicit
       compatibility normalization `avke := 0.0`;
@@ -227,7 +227,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-007` | monotone positive `solthk`, bounded fractions | layer closure | `SOL-E-005`/`SOL-E-009` |
 | `G-SOL-008` | disturbed/reveg policy row validity | policy parse | `SOL-E-006`/`SOL-E-005` |
 | `G-SOL-009` | restrictive-layer closure | footer parse | `SOL-E-009` |
-| `G-SOL-010` | compatibility-only quoted header parse must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token legacy form (omits `avke`, normalized to `0.0`) | OFE header parse | `SOL-E-006` |
+| `G-SOL-010` | compatibility-only quoted header parse (`7778/9002/9003/9005`) must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token legacy form (omits `avke`, normalized to `0.0`) | OFE header parse | `SOL-E-006` |
 | `G-SOL-011` | compatibility-only per-OFE restrictive-layer rows must either be absent or pairwise identical before profile-level normalization | OFE/footer compatibility parse | `SOL-E-006` |
 | `G-SOL-012` | runtime theta export closure requires at least one valid source per required layer for each canonical symbol (`thetdr`: `theta_r_rosetta` or `wp_measured`; `thetfc`: `fc_rosetta` or `fc_measured`) with no silent defaulting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 | `G-SOL-013` | runtime `ksatadj` regime metadata export closure requires finite `solwpv` and binary `ksatadj` aliases; active-regime fields (`ksatfac`, `ksatrec`, `lkeff`) must only be exported from datver-applicable policy records | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
@@ -250,6 +250,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-26` | `0.1.7` | SIMIMPL36 amendment: extended compatibility-only quoted OFE-header authority (`G-SOL-010`) to disturbed datver families (`9002/9003/9005`) with the same optional trailing `avke` normalization (`avke := 0.0`) already ratified for `7778`. |
 | `2026-05-25` | `0.1.6` | MOFE13 amendment: added deterministic parser-to-runtime export authority for `solwpv`/`ksatadj` regime metadata (`ksatfac`,`ksatrec`,`lkeff`) including primary + per-OFE aliases and fail-closed closure hook `C-SOL-005`. |
 | `2026-05-25` | `0.1.5` | MOFE09 amendment: ratified parser-to-runtime theta export precedence (`theta_r_rosetta -> wp_measured` fallback for `thetdr`; `fc_rosetta -> fc_measured` fallback for `thetfc`) with explicit fail-closed guard linkage (`D-SOL-004`, `G-SOL-012`). |
 | `2026-05-25` | `0.1.4` | MOFE07 compatibility amendment: accept legacy `7778` per-OFE restrictive-layer row placement in compatibility mode when rows are identical; normalize to one profile restrictive layer (`G-SOL-011`). |

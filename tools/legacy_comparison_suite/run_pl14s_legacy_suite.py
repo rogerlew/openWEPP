@@ -294,6 +294,24 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--baseline-run-file", type=str, required=True)
     parser.add_argument("--candidate-wat", type=Path, required=True)
     parser.add_argument(
+        "--candidate-partition-value",
+        type=int,
+        default=None,
+        help="Optional integer partition value (for example wepp_id) used to pre-filter parquet candidate rows before semantic comparison.",
+    )
+    parser.add_argument(
+        "--candidate-partition-column",
+        type=str,
+        default="wepp_id",
+        help="Column name used with --candidate-partition-value when candidate input is parquet.",
+    )
+    parser.add_argument(
+        "--candidate-year-offset",
+        type=int,
+        default=0,
+        help="Optional integer offset applied to candidate Y-key values before semantic comparison (for example 1996 maps simulation years 1..N to calendar years 1997..).",
+    )
+    parser.add_argument(
         "--candidate-surface-source-class",
         type=str,
         required=True,
@@ -381,6 +399,10 @@ def main() -> None:
         baseline_wat_for_compare = baseline_wat
 
     candidate_format = args.candidate_wat.suffix.lower()
+    if args.candidate_partition_value is not None and candidate_format != ".parquet":
+        raise SystemExit(
+            "--candidate-partition-value requires parquet candidate input (.parquet)"
+        )
     lane_policy = strict_lane_policy(candidate_format)
     validate_candidate_source_class(candidate_format, args.candidate_surface_source_class)
     strict_result = {
@@ -449,6 +471,22 @@ def main() -> None:
         "--tolerance-config",
         str(args.tolerance_config),
     ]
+    if args.candidate_partition_value is not None:
+        semantic_cmd.extend(
+            [
+                "--candidate-partition-value",
+                str(args.candidate_partition_value),
+                "--candidate-partition-column",
+                args.candidate_partition_column,
+            ]
+        )
+    if args.candidate_year_offset != 0:
+        semantic_cmd.extend(
+            [
+                "--candidate-year-offset",
+                str(args.candidate_year_offset),
+            ]
+        )
     semantic_exec = run_cmd(semantic_cmd)
     if semantic_exec["returncode"] != 0:
         raise SystemExit(f"semantic comparator failed with return code {semantic_exec['returncode']}")
@@ -523,6 +561,9 @@ def main() -> None:
             "candidate_wat_for_compare": str(candidate_wat_for_compare),
             "candidate_wat_for_compare_sha256": sha256_file(candidate_wat_for_compare),
             "candidate_plot": str(args.candidate_plot) if args.candidate_plot else None,
+            "candidate_partition_value": args.candidate_partition_value,
+            "candidate_partition_column": args.candidate_partition_column,
+            "candidate_year_offset": args.candidate_year_offset,
         },
         "strict_lane_policy": {
             "mode": lane_policy["mode"],

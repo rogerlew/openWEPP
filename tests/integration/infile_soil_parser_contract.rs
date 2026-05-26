@@ -16,6 +16,8 @@ const COMPAT_QUOTED_HEADER_7778: &str =
     include_str!("../fixtures/infile/soil/compat_quoted_header_7778.sol");
 const COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE: &str =
     include_str!("../fixtures/infile/soil/compat_quoted_header_7778_per_ofe_restrictive.sol");
+const COMPAT_QUOTED_HEADER_9002_POLICY_FIRST: &str =
+    include_str!("../fixtures/infile/soil/compat_quoted_header_9002_policy_first.sol");
 
 fn strict() -> SoilParserOptions {
     SoilParserOptions::default()
@@ -190,4 +192,27 @@ fn compatibility_accepts_quoted_7778_with_per_ofe_restrictive_rows() {
     assert!(restrictive.slflag);
     assert!((restrictive.ui_bdrkth_mm - 10000.0).abs() < 1e-9);
     assert!((restrictive.kslast_mm_h - 0.001).abs() < 1e-9);
+}
+
+#[test]
+fn compatibility_accepts_quoted_9002_policy_first_header_form() {
+    let strict_err = parse_soil(COMPAT_QUOTED_HEADER_9002_POLICY_FIRST, strict())
+        .expect_err("strict should reject quoted 9002 policy-first compatibility form");
+    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+
+    let compat_options = SoilParserOptions {
+        mode: ParserMode::Compatibility,
+        allow_legacy_aliases: true,
+        expected_topology_count: None,
+        topology_scope: None,
+    };
+    let parsed = parse_soil(COMPAT_QUOTED_HEADER_9002_POLICY_FIRST, compat_options)
+        .expect("compatibility mode should accept quoted 9002 policy-first header");
+
+    assert_eq!(parsed.datver, SoilDatver::V9002);
+    assert_eq!(parsed.ofes.len(), 1);
+    assert_eq!(parsed.ofes[0].layers.len(), 2);
+    assert_eq!(parsed.ofes[0].slid, "SOIL B with spaces");
+    assert_eq!(parsed.ofes[0].texid, "CLAY LOAM");
+    assert!((parsed.ofes[0].avke - 0.0).abs() < 1e-12);
 }

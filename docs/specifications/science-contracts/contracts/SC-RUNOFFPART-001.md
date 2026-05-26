@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 19
+contract_version: 20
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-26
 supersedes: []
 superseded_by: []
 ---
@@ -247,6 +247,7 @@ bit-for-bit parity). Contract-level tolerance declarations:
 | TOL-RUNOFFPART-003 | Non-negative-domain tolerance for infiltration/rainfall-excess rates (`fi`, `vi`) | lower bound `>= -1e-12 m s^-1` | Comparator-noise allowance only; runtime still hard-fails on material negatives. |
 | TOL-RUNOFFPART-004 | Non-negative-domain tolerance for peak runoff rate (`qp`) | lower bound `>= -1e-12 m^2 s^-1` | No silent clamping in runtime path. |
 | TOL-RUNOFFPART-005 | Multi-OFE branch threshold tolerance around `Fh - Fp` case boundary | `abs(Fh - Fp) <= 1e-12 m^3 m^-1` treated as case-four boundary | Prevents numerical jitter from toggling case-three/case-four branch outcomes. |
+| TOL-RUNOFFPART-006 | WB12/WB14 reconciled runoff near-zero canonicalization tolerance (`Q`, `wb12_runoff_reconciled`) | normalize to `0` when `-1e-12 m <= value < 0` before writeback/publication; `value < -1e-12 m` is domain-invalid | Explicit roundoff canonicalization only; not a fallback for material negative runoff. |
 
 ## WB12 Runoff Reconciliation Addendum
 
@@ -263,6 +264,9 @@ bit-for-bit parity). Contract-level tolerance declarations:
 
 Runoff reconciliation publishes:
 - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+- apply explicit near-zero canonicalization before writeback/closure-delta
+  publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
+  `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
 - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
   - `wb12_runoff_closure_delta = (wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
   - observed targets are excluded from acceptance-driving inputs.
@@ -367,6 +371,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    `wb12_runoff_closure_tolerance`; mismatch is an invalid state.
 9. Reconciled runoff is:
    - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - apply explicit near-zero canonicalization before writeback/closure-delta
+     publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
+     `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
    - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
      - `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
    - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
@@ -396,6 +403,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 5. Active `ksatadj` regime vectors (`solwpv=9001/9002/9003`) must produce
    deterministic conductivity-adjusted infiltration behavior; active-regime
    domain violations hard-fail with typed `HKERNEL-WB14-RUNOFF-E-00x` posture.
+6. Within-tolerance negative reconciled runoff (`-1e-12 <= Q < 0`) is
+   canonicalized to zero at writeback/publication boundary; values below
+   tolerance remain typed domain failures.
 
 ## WB15 Canopy Interception Runtime Coupling Addendum
 
@@ -692,6 +702,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-26` | `20` | `Codex` | SIMIMPL36 amendment: added explicit WB12/WB14 near-zero reconciled-runoff canonicalization authority (`TOL-RUNOFFPART-006`) requiring `Q`/`wb12_runoff_reconciled` normalization to zero only within `[-1e-12, 0)` before writeback/publication while preserving hard-fail posture for material negatives. |
 | `2026-05-25` | `19` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor) with explicit active-path guard posture and WB18 layer-state coupling inputs. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-06 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-4 authority anchors, invariants, guard map, alias map, obligations, boundary dispositions, tolerances, and gap register. |

@@ -1,0 +1,17 @@
+    Checking openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+error: manual `Range::contains` implementation
+    --> crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support.rs:3091:12
+     |
+3091 |         if value < 0.0 && value >= -WB11_ZERO_THRESHOLD {
+     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: use: `(-WB11_ZERO_THRESHOLD..0.0).contains(&value)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_range_contains
+     = note: `-D clippy::manual-range-contains` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::manual_range_contains)]`
+
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

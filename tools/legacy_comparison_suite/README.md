@@ -34,6 +34,11 @@ with a default focus on hillslope water-balance semantic parity (PL14S scope).
   - semantic comparator for hillslope `wat` surfaces.
   - emits report schema `pl14s-semantic-wat-v2`.
   - hard-fails on duplicate `(OFE,J,Y)` row keys.
+  - supports optional parquet pre-filtering via
+    `--candidate-partition-value` + `--candidate-partition-column`
+    (default column: `wepp_id`) before row-key evaluation.
+  - supports optional candidate year-key offset via
+    `--candidate-year-offset` before `(OFE,J,Y)` comparison.
 - `run_pl14s_legacy_suite.py`
   - baseline replay + strict comparator (when candidate is `.dat`) + semantic
     comparator orchestration with provenance output.
@@ -100,8 +105,19 @@ python3 tools/legacy_comparison_suite/run_pl14s_legacy_suite.py \
   --baseline-run-file p5.run \
   --candidate-wat /tmp/openwepp_candidate/interchange/H.wat.parquet \
   --candidate-surface-source-class native-runtime-parquet \
+  --candidate-partition-value 5 \
+  --candidate-partition-column wepp_id \
+  --candidate-year-offset 1996 \
   --output-root /tmp/pl14s_suite_run
 ```
+
+Notes:
+- Use candidate partitioning for multi-hillslope parquet inputs when semantic
+  row keys `(OFE,J,Y)` are otherwise duplicated across hillslopes.
+- `--candidate-partition-value` is parquet-only and is recorded in provenance.
+- Use `--candidate-year-offset` when candidate rows use simulation-year keys
+  (`1..N`) and baseline rows use calendar-year keys (for example offset `1996`
+  maps candidate `1..3` to `1997..1999`).
 
 ## Guard posture
 - Strict comparator is required when candidate input is `.dat`; parquet runs
