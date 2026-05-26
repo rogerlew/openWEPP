@@ -886,3 +886,7 @@ Authorized packages:
 
 - `20260525-mofe11-oratea-zero-domain-compatibility-and-h324-parity-rerun-001/`
   - Purpose: close carved-letter `H324` runtime decomposition-rate blocker by replicating legacy-compatible `oratea/orater=0` (no-decay) behavior, then rerun MOFE semantic parity.
+- `20260525-mofe12-h2637-closure-spike-replication-diagnostic-001/`
+  - Purpose: run an incident-aligned diagnostic lane for `H2637` to determine
+    whether openWEPP reproduces the documented day-44 closure-spike defect
+    signature from the uncapped-spectacular ablation package.
