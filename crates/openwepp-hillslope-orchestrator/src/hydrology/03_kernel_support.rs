@@ -6022,24 +6022,24 @@ impl Wb11HydrologyKernel {
             return Err(Wb11HydrologyKernelGuardError::Erod14DomainViolation {
                 symbol: case_symbol,
                 value: case_value,
-                minimum: Some(1.0),
-                maximum: Some(4.0),
+                minimum: Some(f64::from(EROD14_CASE_MIN)),
+                maximum: Some(f64::from(EROD14_CASE_MAX)),
             });
         }
         let case_number = format!("{case_rounded:.0}").parse::<i32>().map_err(|_| {
             Wb11HydrologyKernelGuardError::Erod14DomainViolation {
                 symbol: BoundarySymbol::from(EROD14_SYMBOL_CASE),
                 value: case_value,
-                minimum: Some(1.0),
-                maximum: Some(4.0),
+                minimum: Some(f64::from(EROD14_CASE_MIN)),
+                maximum: Some(f64::from(EROD14_CASE_MAX)),
             }
         })?;
-        if !(1..=4).contains(&case_number) {
+        if !(EROD14_CASE_MIN..=EROD14_CASE_MAX).contains(&case_number) {
             return Err(Wb11HydrologyKernelGuardError::Erod14DomainViolation {
                 symbol: BoundarySymbol::from(EROD14_SYMBOL_CASE),
                 value: case_value,
-                minimum: Some(1.0),
-                maximum: Some(4.0),
+                minimum: Some(f64::from(EROD14_CASE_MIN)),
+                maximum: Some(f64::from(EROD14_CASE_MAX)),
             });
         }
 
@@ -6069,8 +6069,8 @@ impl Wb11HydrologyKernel {
             return Err(Wb11HydrologyKernelGuardError::Erod14DomainViolation {
                 symbol: BoundarySymbol::from(EROD14_SYMBOL_CASE),
                 value: case_value,
-                minimum: Some(1.0),
-                maximum: Some(4.0),
+                minimum: Some(f64::from(EROD14_CASE_MIN)),
+                maximum: Some(f64::from(EROD14_CASE_MAX)),
             });
         }
 
@@ -6142,7 +6142,9 @@ impl Wb11HydrologyKernel {
                 frcflw[i] = 0.0;
                 sed_frac[i] = 0.0;
             }
-            let mut updates = Vec::with_capacity(5 + (class_count * 6));
+            let mut updates = Vec::with_capacity(
+                EROD14_BASE_UPDATE_FIELD_COUNT + (class_count * EROD14_CLASS_UPDATE_FIELD_COUNT),
+            );
             updates.push(WritebackField::bounded(
                 EROD14_SYMBOL_SUMG,
                 0.0,
@@ -6290,7 +6292,7 @@ impl Wb11HydrologyKernel {
                     maximum: None,
                 });
             }
-            if attenuation_factor < 1.0e-8 {
+            if attenuation_factor < EROD14_ATTENUATION_FLOOR {
                 attenuation_factor = 0.0;
             }
 
@@ -6436,7 +6438,7 @@ impl Wb11HydrologyKernel {
             sumssa += sed_frac[i] * ssa_class[i];
         }
         let er = if sumg > 0.0 {
-            (sumssa / ssa_soil) + 0.005
+            (sumssa / ssa_soil) + EROD14_ENRICHMENT_RATIO_OFFSET
         } else {
             0.0
         };
@@ -6449,7 +6451,9 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let mut updates = Vec::with_capacity(5 + (class_count * 6));
+        let mut updates = Vec::with_capacity(
+            EROD14_BASE_UPDATE_FIELD_COUNT + (class_count * EROD14_CLASS_UPDATE_FIELD_COUNT),
+        );
         updates.push(WritebackField::bounded(
             EROD14_SYMBOL_SUMG,
             sumg.max(0.0),
@@ -6547,7 +6551,7 @@ impl Wb11HydrologyKernel {
         }
         let mut shear = value.powf(0.666_666_67);
         if shear <= 0.0 {
-            shear = 0.0001;
+            shear = EROD19_SHEAR_FLOOR;
         }
         shear
     }
@@ -6598,7 +6602,7 @@ impl Wb11HydrologyKernel {
             if b.abs() > WB11_ZERO_THRESHOLD {
                 xc1 = tauchk / b;
             } else {
-                xc1 = 1000.0;
+                xc1 = EROD19_UNIFORM_XC_SENTINEL;
             }
             if taue > taub {
                 mshear = 3.0;
@@ -6675,7 +6679,7 @@ impl Wb11HydrologyKernel {
         ktrato: f64,
         qostar: f64,
     ) -> f64 {
-        if (qostar + xu).abs() >= 1.0e-7 {
+        if (qostar + xu).abs() >= EROD19_DEPC_QOSTAR_XU_EPSILON {
             du - ((a * ktrato * phi * 2.0 * (qostar + xu)) / (phi + 2.0))
                 - (((b * ktrato) - (2.0 * a * ktrato * qostar) - theta) * phi / (phi + 1.0))
         } else {
@@ -6716,15 +6720,15 @@ impl Wb11HydrologyKernel {
             if f < 0.0 {
                 return xdend;
             }
-            xdend = xu + 0.01;
+            xdend = xu + EROD19_DEPEND_INITIAL_STEP_POSITIVE;
             if xdend > xl {
                 xdend = f64::midpoint(xu, xl);
             }
         } else {
-            if (xu + qostar).abs() <= 0.0001 {
+            if (xu + qostar).abs() <= EROD19_DEPEND_XU_QOSTAR_NEAR_ZERO {
                 return -qostar;
             }
-            xdend = xu + 0.0001;
+            xdend = xu + EROD19_DEPEND_INITIAL_STEP_NEGATIVE;
             if xdend > xl {
                 xdend = f64::midpoint(xu, xl);
             }
@@ -6747,7 +6751,7 @@ impl Wb11HydrologyKernel {
         let mut xmin = xl;
         let mut positive_f_count = 0_u32;
         let mut converged = false;
-        for _ in 0..10 {
+        for _ in 0..EROD19_DEPEND_NEWTON_MAX_ITERS {
             let tmp = xdend + qostar;
             let mut ratio = if tmp.abs() > WB11_ZERO_THRESHOLD {
                 (xu + qostar) / tmp
@@ -6768,7 +6772,7 @@ impl Wb11HydrologyKernel {
                 }
             }
 
-            if f.abs() <= 0.001 {
+            if f.abs() <= EROD19_DEPEND_NEWTON_RESIDUAL_TOLERANCE {
                 converged = true;
                 break;
             }
@@ -6779,22 +6783,22 @@ impl Wb11HydrologyKernel {
                     xdend -= f / df;
                     if qostar < 0.0 {
                         if xdend < xu {
-                            xdend = xu + 0.0001;
+                            xdend = xu + EROD19_DEPEND_INITIAL_STEP_NEGATIVE;
                         }
                         if xdend > -qostar {
-                            xdend = -qostar - 0.0001;
+                            xdend = -qostar - EROD19_DEPEND_INITIAL_STEP_NEGATIVE;
                         }
                         if xdend > xl {
                             xdend = xl;
                         }
                     }
                 } else {
-                    xdend = xu + 0.0001;
+                    xdend = xu + EROD19_DEPEND_INITIAL_STEP_NEGATIVE;
                 }
             }
 
             if xdend < xu {
-                xdend = xu + 0.0001;
+                xdend = xu + EROD19_DEPEND_INITIAL_STEP_NEGATIVE;
             }
         }
 
@@ -6992,7 +6996,7 @@ impl Wb11HydrologyKernel {
 
             (tcadjf * shcrit) / shrsol
         } else {
-            theta * 0.2
+            theta * EROD19_TAUC_FALLBACK_SCALE
         };
         Self::require_erod18_domain(&tauc_symbol, tauc, Some(0.0), None)?;
 

@@ -700,6 +700,11 @@ Authorized packages:
     `dl` branch, `depc/depend` deposition-end publication, and route branch
     follow-up state surfaces) and activating EROD17 route vectors before
     EROD20 literal/symbol cleanup.
+- `20260526-erod20-sediment-routing-constant-symbolization-and-magic-number-elimination-001/`
+  - Purpose: execute EROD20 by replacing remaining sediment-routing literals
+    in EROD14/EROD19 production paths with named constants (case bounds,
+    vector sizing, attenuation/enrichment thresholds, and route solver
+    thresholds), preserving behavior and closing queue item 5 before EROD21.
 - `20260526-simimpl31-frost-energy-contract-authority-and-routine-map-001/`
   - Purpose: execute SIMIMPL31 by closing canonical frost routine-chain
     authority gaps in `SC-SNOWFREEZE-001`, ratifying explicit baseline
