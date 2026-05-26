@@ -2974,6 +2974,18 @@ pub fn seed_hillslope_runtime_surface_from_snow(
         BoundarySymbol::from("snow.runtime_swe"),
         BoundaryValue::scalar(0.0),
     );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_depth_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_density_kg_m3"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_settle_day_count"),
+        BoundaryValue::scalar(0.0),
+    );
 
     Ok(())
 }

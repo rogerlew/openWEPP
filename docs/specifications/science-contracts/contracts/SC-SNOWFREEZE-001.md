@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -358,15 +358,44 @@ hourly snow depth/density/melt state families remain SIMIMPL29 closure scope.
 Promotion claims for those deferred families must remain explicit `HOLD`
 ownership until SIMIMPL29 evidence exists.
 
+### SIMIMPL29 Snow Kernel Port and Hourly State Closure
+
+SIMIMPL29 ports baseline-authoritative snow update and melt branch structure
+(`snowd` + `melt` lineage) into openWEPP hydrology runtime coupling for active
+snow control execution. Required closure surface for this wave:
+
+1. Hourly snow kernel state publication:
+   - `snow.hourly.depth_before_m_####`
+   - `snow.hourly.depth_available_m_####`
+   - `snow.hourly.density_before_kg_m3_####`
+   - `snow.hourly.depth_after_m_####`
+   - `snow.hourly.density_after_kg_m3_####`
+   - `snow.hourly.melt_m_####`
+2. Runtime carry-state publication for day-to-day continuity:
+   - `snow.runtime_swe`
+   - `snow.runtime_depth_m`
+   - `snow.runtime_density_kg_m3`
+   - `snow.runtime_settle_day_count`
+3. Active branch inputs are required and typed:
+   - `snow.hourly.{rain,snowfall}_####`
+   - `winter.hourly.{rad_mj_m2,air_temp_c,cloud_fraction}_####`
+   Missing or non-finite active-branch symbols are hard-fail conditions.
+4. Snow coupling closure remains `S = melt - accumulation` with accumulation
+   derived from hourly snowfall water-equivalent partition and non-negative
+   runtime snow-state closure.
+
+SIMIMPL29 does not claim full baseline frost energy-balance migration closure.
+`frost.hourly.*` family closure remains explicit follow-on ownership.
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Concrete boundary/API alias names are ratified; SIMIMPL28 forcing families are expected, but SIMIMPL29 kernel-state families (`snow.hourly.depth_*`, `snow.hourly.density_*`, `snow.hourly.melt_m`, `frost.hourly.*`) remain implementation-open. | Partial hourly alias closure is possible in SIMIMPL28, but full hourly snow/frost payload closure remains queued to SIMIMPL29. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | Snow kernel-state hourly families are now implemented (`snow.hourly.depth_*`, `snow.hourly.density_*`, `snow.hourly.melt_m`), but `frost.hourly.*` families remain implementation-open for full hourly snow/frost payload closure. | Snow wave closure is materially improved, but frost hourly state/process parity remains outstanding. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
 | GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is now explicit, but executable cross-contract comparator vectors for hourly-heavy winter internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled hourly vectors remains limited pending SIMIMPL28/SIMIMPL30. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`), but timing-branch validation against implementation-level hourly execution remains pending. | Off-by-one/timing interpretation risk remains until SIMIMPL28/SIMIMPL29 contract-derived tests execute. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`) and SIMIMPL29 emits the hourly family, but comparator-tier depth/density/melt vector breadth remains limited for broad climate regimes. | Residual risk is evidence-depth, not missing alias/state publication. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -380,3 +409,4 @@ ownership until SIMIMPL29 evidence exists.
 | `2026-05-25` | `5` | `Codex` | SIMIMPL18 amendment: added day-key cold-partition/publication closure (`INV-SNOWFREEZE-011`), explicit runtime-SWE-to-`Snow-Water` publication authority, and obligations preventing static sidecar (`snow.options.ssd`) leakage into dynamic storage outputs. |
 | `2026-05-25` | `6` | `Codex` | SIMIMPL27 amendment: finalized concrete snow/freeze boundary alias mapping (typed + reserved hourly namespaces), added downstream contract-derived test requirements for hourly migration waves, and reclassified boundary/API gap posture from non-promotable ambiguity to implementation-queued promotable-with-risk. |
 | `2026-05-25` | `7` | `Codex` | SIMIMPL28 amendment: split hourly reserved-family obligations into SIMIMPL28 forcing-emission scope vs SIMIMPL29 kernel-state closure scope, clarified deferred frost/depth-density family ownership, and updated gap posture to reflect staged hourly alias closure. |
+| `2026-05-25` | `8` | `Codex` | SIMIMPL29 amendment: added baseline-authoritative snow kernel (`snowd`/`melt`) hourly state closure authority, runtime carry-state publication requirements, active hourly symbol hard-fail posture, and updated gap posture to reflect snow-family closure with frost-hourly follow-on ownership. |

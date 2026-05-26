@@ -492,6 +492,17 @@ fn snow_parser_to_hillslope_runtime_surface_closure() {
         1.0,
     );
     assert_state_value(&runtime_surface.state_surface, "snow.runtime_swe", 0.0);
+    assert_state_value(&runtime_surface.state_surface, "snow.runtime_depth_m", 0.0);
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "snow.runtime_density_kg_m3",
+        0.0,
+    );
+    assert_state_value(
+        &runtime_surface.state_surface,
+        "snow.runtime_settle_day_count",
+        0.0,
+    );
 }
 
 #[test]

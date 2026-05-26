@@ -651,6 +651,12 @@ Authorized packages:
     openWEPP runtime seams with typed guards, reserved hourly alias emission,
     and contract-derived test closure for downstream snow/frost kernel
     migration waves.
+- `20260525-simimpl29-snowd-melt-energy-balance-kernel-port-and-coupling-001/`
+  - Purpose: execute SIMIMPL29 by porting baseline-authoritative snow-kernel
+    hourly state/melt lineage (`snowd`, `melt`) into hydrology runtime
+    coupling, publishing `snow.hourly.depth_*`, `snow.hourly.density_*`, and
+    `snow.hourly.melt_m` families with typed active-winter guard posture and
+    runtime snow carry-state closure.
 - `20260525-snowplan01-hourly-energy-balance-snow-assessment-and-queue-001/`
   - Purpose: assess feasibility for baseline-authoritative hourly
     energy-balance snow closure and publish a dependency-ordered four-package
