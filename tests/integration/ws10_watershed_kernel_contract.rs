@@ -34,32 +34,6 @@ const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str =
     include_str!("../fixtures/infile/watershed_impoundment/strict_valid_minimal.imp");
 const EROD15_CLASS_COUNT_SCALAR: f64 = 3.0;
 
-const WS12_COEFFICIENT_SURFACE: [(&str, f64); 14] = [
-    ("a", 0.0),
-    ("b", 0.0),
-    ("c", 0.0),
-    ("d", 0.0),
-    ("e", 0.0),
-    ("ha", 0.0),
-    ("ht", 0.0),
-    ("hlm", 0.0),
-    ("a0", 125.0),
-    ("a1", 15.0),
-    ("a2", 1.0),
-    ("l0", 25.0),
-    ("l1", 0.0),
-    ("l2", 0.0),
-];
-
-fn seed_ws12_coefficient_surface(surface: &mut WatershedWritebackSurface) {
-    for (suffix, value) in WS12_COEFFICIENT_SURFACE {
-        let symbol = format!("ws10_impoundment_1_{suffix}");
-        surface
-            .state_surface
-            .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
-    }
-}
-
 fn class_index_scalar(class: usize) -> f64 {
     f64::from(u32::try_from(class).expect("class index should fit within u32 range"))
 }
@@ -149,7 +123,6 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
     .expect("strict watershed impoundment fixture should parse");
     seed_watershed_runtime_surface_from_watershed_impoundment(&mut runtime_surface, &impoundment)
         .expect("watershed impoundment runtime seed should project ws10 symbols");
-    seed_ws12_coefficient_surface(&mut runtime_surface);
 
     seed_erod15_hillslope_payload(&mut runtime_surface, 1, 2.0, 300.0);
     seed_erod15_hillslope_payload(&mut runtime_surface, 2, 1.5, 400.0);

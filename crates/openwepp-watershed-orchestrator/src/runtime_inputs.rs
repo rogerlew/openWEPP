@@ -11,7 +11,7 @@ use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
     climate::{ClimateFile, ClimateMonthlyStats},
     watershed_channel::WatershedChannelFile,
-    watershed_impoundment::WatershedImpoundmentFile,
+    watershed_impoundment::{ImpoundmentRecord, WatershedImpoundmentFile},
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
@@ -64,6 +64,8 @@ pub enum WatershedRuntimeInputError {
         rule: &'static str,
     },
 }
+
+type Ws12ImpoundmentProjectionTuple = (&'static str, f64, Option<f64>, bool);
 
 impl WatershedRuntimeInputError {
     #[must_use]
@@ -632,6 +634,7 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
 /// - `ws10_impoundment_{id}_hfull`
 /// - `ws10_impoundment_{id}_deltat`
 /// - `ws10_impoundment_{id}_qinf`
+/// - `ws10_impoundment_{id}_{a,b,c,d,e,ha,ht,hlm,a0,a1,a2,l0,l1,l2}`
 ///
 /// # Errors
 ///
@@ -676,9 +679,183 @@ pub fn seed_watershed_runtime_surface_from_watershed_impoundment(
             BoundarySymbol::from(qinf_symbol.as_str()),
             BoundaryValue::scalar(record.qinf),
         );
+
+        let coefficients = derive_ws12_impoundment_coefficients(node_id, record)?;
+        for (suffix, value, minimum, allow_equal_minimum) in coefficients {
+            let symbol = format!("ws10_impoundment_{node_id}_{suffix}");
+            validate_ws10_impoundment_value(symbol.as_str(), value, minimum, allow_equal_minimum)?;
+            runtime_surface
+                .state_surface
+                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        }
     }
 
     Ok(())
+}
+
+fn derive_ws12_impoundment_coefficients(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+) -> Result<[Ws12ImpoundmentProjectionTuple; 14], WatershedRuntimeInputError> {
+    let has_active_structure = record.structure_flags.has_drop_spillway
+        || record.structure_flags.has_culvert_1
+        || record.structure_flags.has_culvert_2
+        || record.structure_flags.has_rockfill
+        || record.structure_flags.has_emergency_spillway
+        || record.structure_flags.has_filter_barrier
+        || record.structure_flags.has_perforated_riser;
+    if has_active_structure {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_a"),
+            value: 1.0,
+            rule: "active outlet-structure branches require projection payloads not yet exported by the parser",
+        });
+    }
+
+    let (a1, a2) = derive_power_law_curve_coefficients(
+        node_id,
+        "area",
+        &record.stage,
+        &record.area,
+        record.a0,
+    )?;
+    let (l1, l2) = derive_power_law_curve_coefficients(
+        node_id,
+        "length",
+        &record.stage,
+        &record.length,
+        record.l0,
+    )?;
+
+    let area_denominator = record.a0 + a1 * record.h.powf(a2);
+    if !area_denominator.is_finite() || area_denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_a0"),
+            value: area_denominator,
+            rule: "derived stage-area denominator at current stage must be finite and > 0",
+        });
+    }
+
+    let threshold = record.hfull;
+    Ok([
+        ("a", 0.0, Some(0.0), true),
+        ("b", 1.0, Some(0.0), false),
+        ("c", 0.0, Some(0.0), true),
+        ("d", 1.0, Some(0.0), false),
+        ("e", 0.0, Some(0.0), true),
+        ("ha", threshold, Some(0.0), true),
+        ("ht", threshold, Some(0.0), true),
+        ("hlm", threshold, Some(0.0), true),
+        ("a0", record.a0, None, true),
+        ("a1", a1, Some(0.0), false),
+        ("a2", a2, Some(0.0), false),
+        ("l0", record.l0, None, true),
+        ("l1", l1, Some(0.0), false),
+        ("l2", l2, Some(0.0), false),
+    ])
+}
+
+fn derive_power_law_curve_coefficients(
+    node_id: usize,
+    curve_family: &'static str,
+    stage: &[f64],
+    response: &[f64],
+    baseline: f64,
+) -> Result<(f64, f64), WatershedRuntimeInputError> {
+    if stage.is_empty() || stage.len() != response.len() {
+        let stage_len = u32::try_from(stage.len()).map_err(|_| {
+            WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+                value: f64::INFINITY,
+                rule: "stage/response vectors must have equal non-zero length",
+            }
+        })?;
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+            value: f64::from(stage_len),
+            rule: "stage/response vectors must have equal non-zero length",
+        });
+    }
+
+    let mut log_stage = Vec::with_capacity(stage.len());
+    let mut log_adjusted = Vec::with_capacity(stage.len());
+    for (&stage_value, &response_value) in stage.iter().zip(response.iter()) {
+        if !stage_value.is_finite() {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+                symbol: format!("ws10_impoundment_{node_id}_{curve_family}_stage"),
+                value: stage_value,
+            });
+        }
+        if !response_value.is_finite() {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+                symbol: format!("ws10_impoundment_{node_id}_{curve_family}_response"),
+                value: response_value,
+            });
+        }
+        if stage_value <= 0.0 {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+                value: stage_value,
+                rule: "stage values must be > 0 for coefficient projection",
+            });
+        }
+        let adjusted = response_value - baseline;
+        if adjusted <= 0.0 {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+                value: adjusted,
+                rule: "response-baseline values must be > 0 for coefficient projection",
+            });
+        }
+
+        log_stage.push(stage_value.ln());
+        log_adjusted.push(adjusted.ln());
+    }
+
+    let log_len_u32 = u32::try_from(log_stage.len()).map_err(|_| {
+        WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+            value: f64::INFINITY,
+            rule: "stage/response vectors must have equal non-zero length",
+        }
+    })?;
+    let log_len = f64::from(log_len_u32);
+    let mean_x = log_stage.iter().sum::<f64>() / log_len;
+    let mean_y = log_adjusted.iter().sum::<f64>() / log_len;
+
+    let mut numerator = 0.0;
+    let mut denominator = 0.0;
+    for (&x, &y) in log_stage.iter().zip(log_adjusted.iter()) {
+        let dx = x - mean_x;
+        numerator += dx * (y - mean_y);
+        denominator += dx * dx;
+    }
+    if denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+            value: denominator,
+            rule: "stage values must span a non-degenerate range for coefficient projection",
+        });
+    }
+
+    let exponent = numerator / denominator;
+    let intercept = mean_y - exponent * mean_x;
+    let slope = intercept.exp();
+    if !slope.is_finite() || !exponent.is_finite() {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+            symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+            value: if slope.is_finite() { exponent } else { slope },
+        });
+    }
+    if slope <= 0.0 || exponent <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{curve_family}"),
+            value: if slope <= 0.0 { slope } else { exponent },
+            rule: "derived slope and exponent must be > 0",
+        });
+    }
+
+    Ok((slope, exponent))
 }
 
 fn validate_ws10_channel_value(
@@ -1384,10 +1561,74 @@ mod tests {
             .get(&BoundarySymbol::from("ws10_impoundment_1_deltat"))
             .expect("ws10_impoundment_1_deltat should be present")
             .as_f64();
+        let a0 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_a0"))
+            .expect("ws10_impoundment_1_a0 should be present")
+            .as_f64();
+        let a1 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_a1"))
+            .expect("ws10_impoundment_1_a1 should be present")
+            .as_f64();
+        let a2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_a2"))
+            .expect("ws10_impoundment_1_a2 should be present")
+            .as_f64();
+        let l0 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_l0"))
+            .expect("ws10_impoundment_1_l0 should be present")
+            .as_f64();
+        let l1 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_l1"))
+            .expect("ws10_impoundment_1_l1 should be present")
+            .as_f64();
+        let l2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_l2"))
+            .expect("ws10_impoundment_1_l2 should be present")
+            .as_f64();
+        let ha = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_ha"))
+            .expect("ws10_impoundment_1_ha should be present")
+            .as_f64();
 
         assert!((h - 0.70).abs() < 1e-12);
         assert!((hfull - 0.75).abs() < 1e-12);
         assert!((deltat - 1.0).abs() < 1e-12);
+        assert!((a0 - 100.0).abs() < 1e-12);
+        assert!(a1 > 0.0);
+        assert!(a2 > 0.0);
+        assert!((l0 - 20.0).abs() < 1e-12);
+        assert!(l1 > 0.0);
+        assert!(l2 > 0.0);
+        assert!((ha - 0.75).abs() < 1e-12);
+    }
+
+    #[test]
+    fn watershed_impoundment_runtime_seed_rejects_active_structure_projection_gap() {
+        let mut parsed = parse_watershed_impoundment_from_str(
+            STRICT_VALID_WATERSHED_IMPOUNDMENT,
+            WatershedImpoundmentParseOptions::strict(),
+        )
+        .expect("strict watershed impoundment fixture should parse");
+        parsed.items[0].structure_flags.has_drop_spillway = true;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error =
+            seed_watershed_runtime_surface_from_watershed_impoundment(&mut surface, &parsed)
+                .expect_err("active structure projection without payload must fail closed");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-012");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_impoundment_1_a"
+        ));
     }
 
     #[test]

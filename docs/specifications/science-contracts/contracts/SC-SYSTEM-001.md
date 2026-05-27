@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 28
+contract_version: 29
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -699,7 +699,7 @@ Minimum WS12 integration vectors:
 | GAP-SYSTEM-004 | CREAMS outlet peak-flow method is statistical and chapter-cited dataset support is for watersheds in the `70 ha` to `6200 ha` range. | Method-selection risk exists when applied outside referenced dataset conditions. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-005 | WS11/WS12 integration vectors remain primarily synthetic and do not yet include a baseline-authoritative end-to-end `openwepp-cli-watershed` fixture lane that proves topology dispatch, branch execution, and published boundary payload closure together. | Integration closure claims remain provisional until WSHED03 vector expansion and WSHED09 end-to-end validation evidence land. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-006 | Watershed output publication remains fail-closed on `OWSOUT-E-004`; required watershed parquet outputs are not emitted from valid watershed execution paths. | System-level watershed orchestration cannot reach non-placeholder publication closure until WSHED08 output writer activation is complete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-SYSTEM-007 | WS12 parser-to-runtime coefficient projection is not fully closed in production integration paths; impoundment parity vectors still require synthetic/manual coefficient injection. | System integration for impoundment continuity remains blocked until WSHED04 runtime seam closure removes manual coefficient seeding. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-007 | WS12 parser-to-runtime coefficient projection no longer requires synthetic/manual seeding for inactive-structure conformance lanes after WSHED04 seam closure, but production integration still lacks full active-structure branch payload projection and remains fail-closed for those domains. | System integration manual-seeding dependency is removed for current conformance lanes, but full impoundment continuity promotion remains blocked pending active-structure projection expansion and downstream WS12 migration closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-008 | Watershed channel sediment process integration (`chnero/chnrt/detach`) is not yet executable in production system paths even though boundary ownership/guards are defined. | End-to-end watershed sediment continuity and downstream publication claims remain blocked pending WSHED06 migration closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
@@ -735,3 +735,4 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |
 | `2026-05-27` | `28` | `Codex` | WSHEDIMPL01 amendment: normalized unresolved watershed implementation gaps for system integration (WS11/WS12 end-to-end vector coverage, parser-to-runtime coefficient projection closure, channel sediment integration closure, and `OWSOUT-E-004` parquet publication blocker) with explicit WSHED03/04/06/08/09 dependency mapping. |
+| `2026-05-27` | `29` | `Codex` | WSHEDIMPL04 amendment: updated system-level WS12 seam posture to reflect removal of manual/synthetic coefficient seeding dependency for inactive-structure conformance lanes and explicit fail-closed residual blocker language for active structure branch projection payload gaps. |

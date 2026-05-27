@@ -691,6 +691,11 @@ Authorized packages:
     routing/impoundment/system vectors (including expected-failure closure for
     partial runtime seams) and recording pre-implementation gate evidence
     before WSHED04+ production migration packages.
+- `20260527-wshedimpl04-watershed-runtime-seam-closure-001/`
+  - Purpose: execute WSHED04 by closing parser-to-runtime impoundment
+    coefficient projection seams (`a,b,c,d,e,ha,ht,hlm,a0,a1,a2,l0,l1,l2`),
+    removing synthetic/manual WS12 coefficient seeding from contract vectors,
+    and preserving fail-closed typed seam guard posture before WSHED05/06/07.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
