@@ -754,6 +754,13 @@ Authorized packages:
     dispatch, branch execution, and publication-boundary signature continuity,
     closing `GAP-SYSTEM-005` while preserving program HOLD on residual
     watershed sediment parity blocker `GAP-SYSTEM-008`.
+- `20260527-wshedimpl15-watershed-channel-sediment-process-parity-migration-001/`
+  - Purpose: execute WSHEDIMPL15 by implementing WS15 channel-sediment runtime
+    projection and fail-closed kernel scaffold closure (`ishape/ienslp/chnz/
+    chnnbr/chntcr/chnedm/chneds/ctlz/ctln` plus baseline conversion state
+    scaffolds `crsh/depmid/depsid`) as required precursor for full
+    `chnero/chnrt/detach` parity migration while preserving explicit non-
+    promotable HOLD posture on remaining full process-parity blockers.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

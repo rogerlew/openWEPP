@@ -115,6 +115,42 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
         BoundarySymbol::from("ws10_channel_2_chnk"),
         BoundaryValue::scalar(0.000_002),
     );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ishape"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ienslp"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chnz"),
+        BoundaryValue::scalar(19.99),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chnnbr"),
+        BoundaryValue::scalar(0.03),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chntcr"),
+        BoundaryValue::scalar(19.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chnedm"),
+        BoundaryValue::scalar(900.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chneds"),
+        BoundaryValue::scalar(0.0001),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ctlz"),
+        BoundaryValue::scalar(4.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ctln"),
+        BoundaryValue::scalar(0.04),
+    );
 
     let impoundment = parse_watershed_impoundment_from_str(
         STRICT_VALID_WATERSHED_IMPOUNDMENT,

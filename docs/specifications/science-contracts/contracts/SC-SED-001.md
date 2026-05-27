@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -539,7 +539,7 @@ canonical `SC-*` contracts before production migration packages.
 | GAP-SED-003 | EROD12 ratifies cross-domain ownership/guard closure for required erosion-lane companion boundaries (`SC-HYDRAULICS-001`, `SC-ROUTE-001`) using canonical `SC-*` addenda and row-scoped guard ownership mapping. | Required Wave-0 cross-domain ownership semantics are canonicalized; erosion production implementation remains separately gated by `EROD13+` and non-Wave-0 companion gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SED-004 | Chapter-11 enrichment caveats for mixed-soil, multi-OFE composition effects remain and are explicitly retained as a documented limitation with governance risk acceptance. | Mixed-soil enrichment interpretation may still require manual investigation; this is accepted as an explicit model-governance caveat. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SED-005 | Baseline `route.for` segment-level branch family (`mshear 1..5`, upper-end deposition/detachment trees, post-detachment deposition closure) was migrated into openWEPP runtime kernels by EROD19 and revalidated by EROD21 parity rerun/hold-lift disposition. | Hillslope sediment-routing process parity closure is now recorded; ongoing comparator monitoring continues under EROD21 evidence artifacts. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-SED-006 | Watershed channel sediment process closure (`chnero/chnrt/detach`) remains open in companion watershed runtime work even though hillslope boundary payload authority (`INV-SED-010`) is explicit and enforced. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`) with typed guard continuity. | End-to-end watershed sediment-routing closure remains blocked pending full `chnero/chnrt/detach` process migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SED-006 | Watershed channel sediment process closure (`chnero/chnrt/detach`) remains open in companion watershed runtime work even though hillslope boundary payload authority (`INV-SED-010`) is explicit and enforced. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`), and WSHEDIMPL15 added WS15 channel control projection plus baseline conversion scaffold publication/guards (`crsh/depmid/depsid`). | End-to-end watershed sediment-routing closure remains blocked pending full `chnero/chnrt/detach` process migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -561,3 +561,4 @@ canonical `SC-*` contracts before production migration packages.
 | `2026-05-26` | `13` | `Codex` | EROD21 closure amendment: dispositioned `GAP-SED-005` to `closed` after EROD19 runtime migration + EROD21 parity rerun/hold-lift evidence, and updated impact language to reflect landed process parity. |
 | `2026-05-27` | `14` | `Codex` | WSHEDIMPL01 amendment: normalized unresolved cross-domain watershed sediment closure dependency (`GAP-SED-006`) so `SC-SED-001` boundary payload authority remains explicit while companion channel sediment migration (`chnero/chnrt/detach`) remains non-promotable until WSHED06 closure evidence lands. |
 | `2026-05-27` | `15` | `Codex` | WSHEDIMPL06 amendment: ratified WS11 channel sediment publication-family closure (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`) while preserving non-promotable `GAP-SED-006` posture for unresolved full `chnero/chnrt/detach` process-parity migration and validation closure. |
+| `2026-05-27` | `16` | `Codex` | WSHEDIMPL15 amendment: ratified WS15 channel-sediment control projection and baseline conversion scaffold publication (`ws10_channel_{id}_{crsh,depmid,depsid}` with fail-closed guards) while preserving non-promotable `GAP-SED-006` posture pending full companion `chnero/chnrt/detach` process migration closure. |

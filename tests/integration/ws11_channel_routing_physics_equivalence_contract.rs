@@ -113,6 +113,42 @@ fn seeded_ws11_surface() -> WatershedWritebackSurface {
         BoundarySymbol::from("ws10_channel_2_chnk"),
         BoundaryValue::scalar(0.000_002),
     );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ishape"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ienslp"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chnz"),
+        BoundaryValue::scalar(19.99),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chnnbr"),
+        BoundaryValue::scalar(0.03),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chntcr"),
+        BoundaryValue::scalar(19.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chnedm"),
+        BoundaryValue::scalar(900.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_chneds"),
+        BoundaryValue::scalar(0.0001),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ctlz"),
+        BoundaryValue::scalar(4.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_2_ctln"),
+        BoundaryValue::scalar(0.04),
+    );
 
     let impoundment = parse_watershed_impoundment_from_str(
         STRICT_VALID_WATERSHED_IMPOUNDMENT,
@@ -378,4 +414,59 @@ fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publicatio
             "missing required channel sediment lineage symbol {symbol}"
         );
     }
+}
+
+#[test]
+#[allow(clippy::similar_names)]
+fn wshedimpl15_contract_channel_sediment_scaffold_publishes_baseline_conversions() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(report.dispatch_report.is_success());
+
+    for symbol in [
+        "ws10_channel_1_chz",
+        "ws10_channel_1_nbarch",
+        "ws10_channel_1_crsh",
+        "ws10_channel_1_depmid",
+        "ws10_channel_1_depsid",
+    ] {
+        assert!(
+            has_state_symbol(&report, symbol),
+            "missing required WS15 scaffold symbol {symbol}"
+        );
+    }
+
+    let crsh = state_value(&report, "ws10_channel_1_crsh");
+    let depmid = state_value(&report, "ws10_channel_1_depmid");
+    let depsid = state_value(&report, "ws10_channel_1_depsid");
+
+    assert!((crsh - (19.0 * 0.021)).abs() <= 1.0e-12);
+    assert!((depmid - (900.0 * 3.281)).abs() <= 1.0e-9);
+    assert!((depsid - (0.0001 * 3.281)).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshedimpl15_contract_channel_sediment_scaffold_requires_projected_controls() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("ws10_channel_1_chntcr"));
+
+    let report = run_ws11_surface(surface);
+    assert_eq!(report.step_reports.len(), 1);
+    assert_eq!(
+        report.step_reports[0].decision_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-001"
+    );
+    assert_eq!(
+        report.step_reports[0].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
 }

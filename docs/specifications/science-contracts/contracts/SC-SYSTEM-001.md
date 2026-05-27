@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 37
+contract_version: 38
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -700,7 +700,7 @@ Minimum WS12 integration vectors:
 | GAP-SYSTEM-005 | WSHEDIMPL14 implemented a baseline-authoritative end-to-end `openwepp-cli-watershed` comparator lane in `watershed_cli_behavior_contract`, seeded from baseline `ebe_pw0` fixture authority and asserting dispatch/branch/publication continuity at emitted parquet boundaries. | System integration comparator-lane closure is now explicit and executable for baseline-authoritative watershed CLI end-to-end evidence scope. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-006 | WSHED08 activated watershed row-model-backed parquet publication for all required watershed outputs and removed valid-lane placeholder blocking on `OWSOUT-E-004`. | Required watershed publication surfaces now emit non-placeholder parquet outputs; residual system-level hold posture is governed by remaining non-WSHED08 gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-007 | WSHED10 exported active impoundment branch payload families, WSHED11 projected reduced coefficients, and WSHED13 completed WS12 runtime projection of full function families (`f01..f15`) with kernel 15-function min-controller composition at watershed runtime boundaries. | Active-lane structure-family parity closure is complete for WS12 runtime/kernel integration scope; residual watershed HOLD posture is governed by remaining out-of-scope blocker (`GAP-SYSTEM-008`). | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-SYSTEM-008 | Watershed channel sediment process integration (`chnero/chnrt/detach`) is not yet executable in production system paths even though boundary ownership/guards are defined. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`) with typed guard continuity, but full process parity remains unresolved. | End-to-end watershed sediment continuity and downstream publication claims remain blocked pending full `chnero/chnrt/detach` migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-008 | Watershed channel sediment process integration (`chnero/chnrt/detach`) is not yet executable in production system paths even though boundary ownership/guards are defined. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`); WSHEDIMPL15 added WS15 runtime channel-control projection and baseline conversion scaffolds (`crsh/depmid/depsid`) with fail-closed kernel guard continuity, but full process parity remains unresolved. | End-to-end watershed sediment continuity and downstream publication claims remain blocked pending full `chnero/chnrt/detach` migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -744,3 +744,4 @@ Minimum WS12 integration vectors:
 | `2026-05-27` | `35` | `Codex` | WSHEDIMPL11 amendment: synchronized system boundary posture to reflect active runtime reduced-family coefficient projection from exported impoundment branch payloads, and narrowed `GAP-SYSTEM-007` to residual full 15-function active-lane parity closure scope. |
 | `2026-05-27` | `36` | `Codex` | WSHEDIMPL13 amendment: ratified full active-lane WS12 function-family projection and 15-function min-controller composition closure at watershed runtime boundaries, dispositioning `GAP-SYSTEM-007` to `closed` while preserving out-of-scope blockers (`GAP-SYSTEM-005`, `GAP-SYSTEM-008`). |
 | `2026-05-27` | `37` | `Codex` | WSHEDIMPL14 amendment: ratified baseline-authoritative end-to-end watershed comparator lane closure in runner CLI contract tests (baseline `ebe_pw0` signature seeded vector with dispatch/branch/publication continuity assertions), dispositioning `GAP-SYSTEM-005` to `closed` while preserving residual blocker `GAP-SYSTEM-008`. |
+| `2026-05-27` | `38` | `Codex` | WSHEDIMPL15 amendment: ratified WS15 watershed channel-sediment scaffold closure (runtime projection of channel sediment controls plus fail-closed kernel publication of baseline conversion states `crsh/depmid/depsid`) while preserving non-promotable `GAP-SYSTEM-008` posture pending full `chnero/chnrt/detach` process-parity migration. |

@@ -635,21 +635,45 @@ pub fn build_watershed_runtime_surface_from_chaninp(
 /// - `ws10_channel_{id}_chnn`
 /// - `ws10_channel_{id}_ctlslp`
 /// - `ws10_channel_{id}_chnk`
+/// - `ws10_channel_{id}_ishape`
+/// - `ws10_channel_{id}_ienslp`
+/// - `ws10_channel_{id}_chnz`
+/// - `ws10_channel_{id}_chnnbr`
+/// - `ws10_channel_{id}_chntcr`
+/// - `ws10_channel_{id}_chnedm`
+/// - `ws10_channel_{id}_chneds`
+/// - `ws10_channel_{id}_ctlz`
+/// - `ws10_channel_{id}_ctln`
 ///
 /// # Errors
 ///
 /// Returns `WatershedRuntimeInputError` when required symbols are non-finite or
 /// violate declared domains.
+#[allow(clippy::similar_names)]
 pub fn seed_watershed_runtime_surface_from_watershed_channel(
     runtime_surface: &mut WatershedWritebackSurface,
     channel: &WatershedChannelFile,
 ) -> Result<(), WatershedRuntimeInputError> {
     for definition in &channel.channels {
         let node_id = definition.channel_id;
+        let ishape_symbol = format!("ws10_channel_{node_id}_ishape");
+        let ienslp_symbol = format!("ws10_channel_{node_id}_ienslp");
         let chnn_symbol = format!("ws10_channel_{node_id}_chnn");
         let ctlslp_symbol = format!("ws10_channel_{node_id}_ctlslp");
         let conductivity_symbol = format!("ws10_channel_{node_id}_chnk");
+        let chnz_symbol = format!("ws10_channel_{node_id}_chnz");
+        let chnnbr_symbol = format!("ws10_channel_{node_id}_chnnbr");
+        let chntcr_symbol = format!("ws10_channel_{node_id}_chntcr");
+        let chnedm_symbol = format!("ws10_channel_{node_id}_chnedm");
+        let chneds_symbol = format!("ws10_channel_{node_id}_chneds");
+        let ctlz_symbol = format!("ws10_channel_{node_id}_ctlz");
+        let ctln_symbol = format!("ws10_channel_{node_id}_ctln");
 
+        let ishape = f64::from(definition.ishape);
+        let ienslp = f64::from(definition.ienslp);
+
+        validate_ws10_channel_value(ishape_symbol.as_str(), ishape, Some(0.0), false)?;
+        validate_ws10_channel_value(ienslp_symbol.as_str(), ienslp, Some(0.0), false)?;
         validate_ws10_channel_value(chnn_symbol.as_str(), definition.chnn, Some(0.0), false)?;
         validate_ws10_channel_value(
             ctlslp_symbol.as_str(),
@@ -663,6 +687,32 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
             Some(0.0),
             true,
         )?;
+        validate_ws10_channel_value(chnz_symbol.as_str(), definition.chnz, Some(0.0), false)?;
+        validate_ws10_channel_value(chnnbr_symbol.as_str(), definition.chnnbr, Some(0.0), false)?;
+        validate_ws10_channel_value(chntcr_symbol.as_str(), definition.chntcr, Some(0.0), true)?;
+        validate_ws10_channel_value(chnedm_symbol.as_str(), definition.chnedm, Some(0.0), true)?;
+        validate_ws10_channel_value(chneds_symbol.as_str(), definition.chneds, Some(0.0), true)?;
+        validate_ws10_channel_value(
+            ctlz_symbol.as_str(),
+            definition.ctlz_effective,
+            Some(0.0),
+            false,
+        )?;
+        validate_ws10_channel_value(
+            ctln_symbol.as_str(),
+            definition.ctln_effective,
+            Some(0.0),
+            false,
+        )?;
+
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(ishape_symbol.as_str()),
+            BoundaryValue::scalar(ishape),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(ienslp_symbol.as_str()),
+            BoundaryValue::scalar(ienslp),
+        );
 
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(chnn_symbol.as_str()),
@@ -675,6 +725,34 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(conductivity_symbol.as_str()),
             BoundaryValue::scalar(definition.chnk),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(chnz_symbol.as_str()),
+            BoundaryValue::scalar(definition.chnz),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(chnnbr_symbol.as_str()),
+            BoundaryValue::scalar(definition.chnnbr),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(chntcr_symbol.as_str()),
+            BoundaryValue::scalar(definition.chntcr),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(chnedm_symbol.as_str()),
+            BoundaryValue::scalar(definition.chnedm),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(chneds_symbol.as_str()),
+            BoundaryValue::scalar(definition.chneds),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(ctlz_symbol.as_str()),
+            BoundaryValue::scalar(definition.ctlz_effective),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(ctln_symbol.as_str()),
+            BoundaryValue::scalar(definition.ctln_effective),
         );
     }
 
@@ -2809,6 +2887,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::similar_names)]
     fn watershed_channel_runtime_seed_projects_ws10_symbols() {
         let parsed = parse_watershed_channel_from_str(
             STRICT_VALID_WATERSHED_CHANNEL,
@@ -2835,10 +2914,58 @@ mod tests {
             .get(&BoundarySymbol::from("ws10_channel_1_chnk"))
             .expect("ws10_channel_1_chnk should be present")
             .as_f64();
+        let ishape = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_ishape"))
+            .expect("ws10_channel_1_ishape should be present")
+            .as_f64();
+        let chnz = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chnz"))
+            .expect("ws10_channel_1_chnz should be present")
+            .as_f64();
+        let chnnbr = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chnnbr"))
+            .expect("ws10_channel_1_chnnbr should be present")
+            .as_f64();
+        let chntcr = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chntcr"))
+            .expect("ws10_channel_1_chntcr should be present")
+            .as_f64();
+        let chnedm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chnedm"))
+            .expect("ws10_channel_1_chnedm should be present")
+            .as_f64();
+        let chneds = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_chneds"))
+            .expect("ws10_channel_1_chneds should be present")
+            .as_f64();
+        let ctlz = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_ctlz"))
+            .expect("ws10_channel_1_ctlz should be present")
+            .as_f64();
+        let ctln = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_ctln"))
+            .expect("ws10_channel_1_ctln should be present")
+            .as_f64();
 
         assert!((chnn - 0.04).abs() < 1e-12);
         assert!((ctlslp - 0.02).abs() < 1e-12);
         assert!((conductivity - 0.000_001).abs() < 1e-12);
+        assert!((ishape - 1.0).abs() < 1e-12);
+        assert!((chnz - 19.99).abs() < 1e-12);
+        assert!((chnnbr - 0.03).abs() < 1e-12);
+        assert!((chntcr - 19.0).abs() < 1e-12);
+        assert!((chnedm - 900.0).abs() < 1e-12);
+        assert!((chneds - 0.0001).abs() < 1e-12);
+        assert!((ctlz - 4.0).abs() < 1e-12);
+        assert!((ctln - 0.04).abs() < 1e-12);
     }
 
     #[test]
