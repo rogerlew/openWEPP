@@ -32,6 +32,8 @@ const STRICT_VALID_WATERSHED_CHANNEL: &str =
     include_str!("../fixtures/infile/watershed_channel/strict_valid_single_channel.chn");
 const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str =
     include_str!("../fixtures/infile/watershed_impoundment/strict_valid_minimal.imp");
+const STRICT_VALID_WATERSHED_IMPOUNDMENT_ACTIVE: &str =
+    include_str!("../fixtures/infile/watershed_impoundment/strict_valid_active_payloads.imp");
 const EROD15_CLASS_COUNT_SCALAR: f64 = 3.0;
 
 fn class_index_scalar(class: usize) -> f64 {
@@ -82,7 +84,9 @@ fn seed_erod15_hillslope_payload(
     }
 }
 
-fn seeded_ws12_surface() -> WatershedWritebackSurface {
+fn seeded_ws12_surface_with_impoundment_fixture(
+    impoundment_fixture: &str,
+) -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
         STRICT_VALID_CHANINP,
@@ -117,7 +121,7 @@ fn seeded_ws12_surface() -> WatershedWritebackSurface {
     );
 
     let impoundment = parse_watershed_impoundment_from_str(
-        STRICT_VALID_WATERSHED_IMPOUNDMENT,
+        impoundment_fixture,
         WatershedImpoundmentParseOptions::strict(),
     )
     .expect("strict watershed impoundment fixture should parse");
@@ -128,6 +132,14 @@ fn seeded_ws12_surface() -> WatershedWritebackSurface {
     seed_erod15_hillslope_payload(&mut runtime_surface, 2, 1.5, 400.0);
     seed_erod15_hillslope_payload(&mut runtime_surface, 3, 0.5, 200.0);
     runtime_surface
+}
+
+fn seeded_ws12_surface() -> WatershedWritebackSurface {
+    seeded_ws12_surface_with_impoundment_fixture(STRICT_VALID_WATERSHED_IMPOUNDMENT)
+}
+
+fn seeded_ws12_active_surface() -> WatershedWritebackSurface {
+    seeded_ws12_surface_with_impoundment_fixture(STRICT_VALID_WATERSHED_IMPOUNDMENT_ACTIVE)
 }
 
 fn run_ws12_surface(
@@ -259,6 +271,24 @@ fn wshed03_contract_ws12_vector_requires_parser_projected_coefficients_without_m
     assert!(durout.is_finite() && durout >= 0.0);
     assert!(hnext.is_finite() && hnext >= 0.0);
     assert!(outflow_volume.is_finite() && outflow_volume >= 0.0);
+}
+
+#[test]
+fn wshed11_contract_ws12_vector_projects_active_structure_payloads() {
+    let report = run_ws12_surface(seeded_ws12_active_surface());
+    assert!(
+        report.dispatch_report.is_success(),
+        "ws12 execution should succeed on active payload projection surfaces; step_reports={:?}",
+        report.step_reports
+    );
+
+    let qo = state_value(&report, "ws10_impoundment_1_qo");
+    let durout = state_value(&report, "ws10_impoundment_1_durout");
+    let hnext = state_value(&report, "ws10_impoundment_1_hnext");
+
+    assert!(qo.is_finite() && qo >= 0.0);
+    assert!(durout.is_finite() && durout >= 0.0);
+    assert!(hnext.is_finite() && hnext >= 0.0);
 }
 
 #[test]

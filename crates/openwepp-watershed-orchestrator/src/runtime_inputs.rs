@@ -11,7 +11,9 @@ use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
     climate::{ClimateFile, ClimateMonthlyStats},
     watershed_channel::WatershedChannelFile,
-    watershed_impoundment::{ImpoundmentRecord, WatershedImpoundmentFile},
+    watershed_impoundment::{
+        CulvertPayload, EmergencySpillwayPayload, ImpoundmentRecord, WatershedImpoundmentFile,
+    },
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
@@ -66,6 +68,22 @@ pub enum WatershedRuntimeInputError {
 }
 
 type Ws12ImpoundmentProjectionTuple = (&'static str, f64, Option<f64>, bool);
+
+const STANDARD_GRAVITY_M_S2: f64 = 9.806_65;
+const ACTIVE_PROJECTION_STAGE_DELTA_M: f64 = 0.01;
+const EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT: f64 = 3.087;
+
+#[derive(Debug, Clone, Copy)]
+struct Ws12ActiveProjection {
+    drop_coefficient: f64,
+    drop_exponent: f64,
+    culvert_coefficient: f64,
+    culvert_exponent: f64,
+    riser_coefficient: f64,
+    drop_threshold: f64,
+    culvert_threshold: f64,
+    riser_threshold: f64,
+}
 
 impl WatershedRuntimeInputError {
     #[must_use]
@@ -704,13 +722,6 @@ fn derive_ws12_impoundment_coefficients(
         || record.structure_flags.has_emergency_spillway
         || record.structure_flags.has_filter_barrier
         || record.structure_flags.has_perforated_riser;
-    if has_active_structure {
-        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
-            symbol: format!("ws10_impoundment_{node_id}_a"),
-            value: 1.0,
-            rule: "active outlet-structure coefficient projection is not yet implemented in the runtime seam",
-        });
-    }
 
     let (a1, a2) = derive_power_law_curve_coefficients(
         node_id,
@@ -736,16 +747,31 @@ fn derive_ws12_impoundment_coefficients(
         });
     }
 
-    let threshold = record.hfull;
+    let projection = if has_active_structure {
+        derive_ws12_active_structure_projection(node_id, record)?
+    } else {
+        let threshold = record.hfull;
+        Ws12ActiveProjection {
+            drop_coefficient: 0.0,
+            drop_exponent: 1.0,
+            culvert_coefficient: 0.0,
+            culvert_exponent: 1.0,
+            riser_coefficient: 0.0,
+            drop_threshold: threshold,
+            culvert_threshold: threshold,
+            riser_threshold: threshold,
+        }
+    };
+
     Ok([
-        ("a", 0.0, Some(0.0), true),
-        ("b", 1.0, Some(0.0), false),
-        ("c", 0.0, Some(0.0), true),
-        ("d", 1.0, Some(0.0), false),
-        ("e", 0.0, Some(0.0), true),
-        ("ha", threshold, Some(0.0), true),
-        ("ht", threshold, Some(0.0), true),
-        ("hlm", threshold, Some(0.0), true),
+        ("a", projection.drop_coefficient, Some(0.0), true),
+        ("b", projection.drop_exponent, Some(0.0), false),
+        ("c", projection.culvert_coefficient, Some(0.0), true),
+        ("d", projection.culvert_exponent, Some(0.0), false),
+        ("e", projection.riser_coefficient, Some(0.0), true),
+        ("ha", projection.drop_threshold, Some(0.0), true),
+        ("ht", projection.culvert_threshold, Some(0.0), true),
+        ("hlm", projection.riser_threshold, Some(0.0), true),
         ("a0", record.a0, None, true),
         ("a1", a1, Some(0.0), false),
         ("a2", a2, Some(0.0), false),
@@ -753,6 +779,586 @@ fn derive_ws12_impoundment_coefficients(
         ("l1", l1, Some(0.0), false),
         ("l2", l2, Some(0.0), false),
     ])
+}
+
+#[allow(clippy::too_many_lines)]
+fn derive_ws12_active_structure_projection(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+) -> Result<Ws12ActiveProjection, WatershedRuntimeInputError> {
+    let reference_stage = derive_active_projection_reference_stage(node_id, record)?;
+    let mut active_projection_used = false;
+
+    let (drop_coefficient, drop_exponent, drop_threshold) = if let Some((
+        projected_drop_coefficient,
+        projected_drop_exponent,
+        projected_drop_threshold,
+    )) =
+        derive_drop_spillway_projection(node_id, record)?
+    {
+        active_projection_used = true;
+        (
+            projected_drop_coefficient,
+            projected_drop_exponent,
+            projected_drop_threshold,
+        )
+    } else {
+        (0.0, 1.0, record.hfull)
+    };
+
+    let mut c_stage_thresholds = Vec::new();
+    if let Some(threshold) = culvert_stage_threshold(&record.culverts[0])? {
+        c_stage_thresholds.push(threshold);
+    }
+    if let Some(threshold) = culvert_stage_threshold(&record.culverts[1])? {
+        c_stage_thresholds.push(threshold);
+    }
+    if let Some(rockfill) = &record.rockfill {
+        c_stage_thresholds.push(rockfill.hrf);
+    }
+    match &record.emergency_spillway {
+        EmergencySpillwayPayload::None => {}
+        EmergencySpillwayPayload::OpenChannel { payload, .. } => {
+            c_stage_thresholds.push(payload.hes);
+        }
+        EmergencySpillwayPayload::RatingCurve { payload, .. } => {
+            c_stage_thresholds.push(payload.hes);
+        }
+    }
+    if let Some(filter) = &record.filter_barrier {
+        c_stage_thresholds.push(filter.hff);
+    }
+
+    let (culvert_coefficient, culvert_exponent, culvert_threshold) =
+        if c_stage_thresholds.is_empty() {
+            (0.0, 1.0, record.hfull)
+        } else {
+            active_projection_used = true;
+            let culvert_threshold = c_stage_thresholds
+                .iter()
+                .copied()
+                .fold(f64::INFINITY, f64::min);
+            if !culvert_threshold.is_finite() {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+                    symbol: format!("ws10_impoundment_{node_id}_ht"),
+                    value: culvert_threshold,
+                });
+            }
+            let stage = reference_stage.max(culvert_threshold + ACTIVE_PROJECTION_STAGE_DELTA_M);
+            let mut projected_discharge = 0.0;
+            projected_discharge +=
+                culvert_pipe_discharge_at_stage(node_id, &record.culverts[0], stage)?;
+            projected_discharge +=
+                culvert_pipe_discharge_at_stage(node_id, &record.culverts[1], stage)?;
+            projected_discharge += rockfill_discharge_at_stage(node_id, record, stage)?;
+            projected_discharge += emergency_discharge_at_stage(node_id, record, stage)?;
+            projected_discharge += filter_barrier_discharge_at_stage(node_id, record, stage)?;
+
+            if !projected_discharge.is_finite() || projected_discharge < 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_c"),
+                    value: projected_discharge,
+                    rule: "projected active-structure discharge must be finite and >= 0",
+                });
+            }
+
+            let span = stage - culvert_threshold;
+            if !span.is_finite() || span <= 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_ht"),
+                    value: span,
+                    rule: "reference-stage span above ht must be finite and > 0",
+                });
+            }
+
+            let culvert_exponent = 0.5;
+            let culvert_coefficient = if projected_discharge > 0.0 {
+                projected_discharge / span.powf(culvert_exponent)
+            } else {
+                0.0
+            };
+            (culvert_coefficient, culvert_exponent, culvert_threshold)
+        };
+
+    let (riser_coefficient, riser_threshold) =
+        if let Some((riser_reference_discharge, riser_threshold)) =
+            perforated_riser_reference_discharge(node_id, record, reference_stage)?
+        {
+            active_projection_used = true;
+            let stage = reference_stage.max(riser_threshold + ACTIVE_PROJECTION_STAGE_DELTA_M);
+            let span = stage - riser_threshold;
+            if !span.is_finite() || span <= 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_hlm"),
+                    value: span,
+                    rule: "reference-stage span above hlm must be finite and > 0",
+                });
+            }
+            (riser_reference_discharge / span, riser_threshold)
+        } else {
+            (0.0, record.hfull)
+        };
+
+    if !active_projection_used {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_a"),
+            value: 0.0,
+            rule: "active outlet-structure flags require at least one projectable payload branch",
+        });
+    }
+
+    Ok(Ws12ActiveProjection {
+        drop_coefficient,
+        drop_exponent,
+        culvert_coefficient,
+        culvert_exponent,
+        riser_coefficient,
+        drop_threshold,
+        culvert_threshold,
+        riser_threshold,
+    })
+}
+
+fn derive_active_projection_reference_stage(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+) -> Result<f64, WatershedRuntimeInputError> {
+    let reference_stage = record.h.max(record.hfull);
+    if !reference_stage.is_finite() {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+            symbol: format!("ws10_impoundment_{node_id}_h"),
+            value: reference_stage,
+        });
+    }
+    Ok(reference_stage.max(ACTIVE_PROJECTION_STAGE_DELTA_M))
+}
+
+fn derive_drop_spillway_projection(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+) -> Result<Option<(f64, f64, f64)>, WatershedRuntimeInputError> {
+    match &record.drop_spillway {
+        openwepp_input_contract::parsers::watershed_impoundment::DropSpillwayPayload::None => {
+            Ok(None)
+        }
+        openwepp_input_contract::parsers::watershed_impoundment::DropSpillwayPayload::Ids1 {
+            payload,
+            ..
+        } => {
+            let coefficient = payload.coefw * std::f64::consts::PI * payload.diars;
+            validate_active_projected_positive(
+                node_id,
+                "a",
+                coefficient,
+                "drop-spillway weir coefficient must be finite and > 0",
+            )?;
+            Ok(Some((coefficient, 1.5, payload.hrs)))
+        }
+        openwepp_input_contract::parsers::watershed_impoundment::DropSpillwayPayload::Ids2 {
+            payload,
+            ..
+        } => {
+            let perimeter = 2.0 * (payload.lenrs + payload.widrs);
+            let coefficient = payload.coefw * perimeter;
+            validate_active_projected_positive(
+                node_id,
+                "a",
+                coefficient,
+                "drop-spillway weir coefficient must be finite and > 0",
+            )?;
+            Ok(Some((coefficient, 1.5, payload.hrs)))
+        }
+        openwepp_input_contract::parsers::watershed_impoundment::DropSpillwayPayload::Ids3 {
+            payload,
+            ..
+        } => {
+            let perimeter = 2.0 * (payload.lenrs + payload.widrs);
+            let coefficient = payload.coefw * perimeter;
+            validate_active_projected_positive(
+                node_id,
+                "a",
+                coefficient,
+                "drop-spillway weir coefficient must be finite and > 0",
+            )?;
+            Ok(Some((coefficient, 1.5, payload.hrs)))
+        }
+    }
+}
+
+fn culvert_stage_threshold(
+    culvert: &CulvertPayload,
+) -> Result<Option<f64>, WatershedRuntimeInputError> {
+    if culvert.icv < 1 {
+        return Ok(None);
+    }
+    let Some(parameters) = &culvert.parameters else {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: "ws10_impoundment_active_culvert".to_owned(),
+            value: f64::from(culvert.icv),
+            rule: "active culvert payload must include hydraulic parameters",
+        });
+    };
+    Ok(Some(
+        parameters.hcv - parameters.scv * parameters.lcv + 0.6 * parameters.hitcv,
+    ))
+}
+
+fn culvert_pipe_discharge_at_stage(
+    node_id: usize,
+    culvert: &CulvertPayload,
+    stage: f64,
+) -> Result<f64, WatershedRuntimeInputError> {
+    if culvert.icv < 1 {
+        return Ok(0.0);
+    }
+    let Some(parameters) = &culvert.parameters else {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: f64::from(culvert.icv),
+            rule: "active culvert payload must include hydraulic parameters",
+        });
+    };
+
+    let threshold = parameters.hcv - parameters.scv * parameters.lcv + 0.6 * parameters.hitcv;
+    if stage <= threshold {
+        return Ok(0.0);
+    }
+
+    let denominator = 1.0 + parameters.ke + parameters.kb + parameters.kc * parameters.lcv;
+    if !denominator.is_finite() || denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: denominator,
+            rule: "active culvert loss denominator must be finite and > 0",
+        });
+    }
+
+    let count = f64::from(culvert.ncv);
+    if !count.is_finite() || count <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: count,
+            rule: "active culvert count must be finite and > 0",
+        });
+    }
+
+    let coefficient =
+        parameters.arcv * (2.0 * STANDARD_GRAVITY_M_S2).sqrt() * count / denominator.sqrt();
+    if !coefficient.is_finite() || coefficient <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: coefficient,
+            rule: "active culvert projected coefficient must be finite and > 0",
+        });
+    }
+
+    Ok(coefficient * (stage - threshold).sqrt())
+}
+
+fn rockfill_discharge_at_stage(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    stage: f64,
+) -> Result<f64, WatershedRuntimeInputError> {
+    let Some(rockfill) = &record.rockfill else {
+        return Ok(0.0);
+    };
+    if stage <= rockfill.hrf {
+        return Ok(0.0);
+    }
+    if !rockfill.diarf.is_finite() || rockfill.diarf <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: rockfill.diarf,
+            rule: "rockfill diarf must be finite and > 0",
+        });
+    }
+    if !rockfill.lnrf.is_finite() || rockfill.lnrf <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: rockfill.lnrf,
+            rule: "rockfill lnrf must be finite and > 0",
+        });
+    }
+
+    let arf = rockfill_arf(rockfill.lnrf, rockfill.diarf);
+    let brf_denominator = 1.500_560_9 - 0.000_131_719_05 * rockfill.diarf.ln() / rockfill.diarf;
+    if !brf_denominator.is_finite() || brf_denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: brf_denominator,
+            rule: "rockfill brf denominator must be finite and > 0",
+        });
+    }
+
+    let brf = 1.0 / brf_denominator;
+    let b10 = rockfill.lnrf * arf;
+    if !b10.is_finite() || b10 <= 0.0 || !brf.is_finite() || brf <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: if b10 <= 0.0 { b10 } else { brf },
+            rule: "rockfill projected coefficients must be finite and > 0",
+        });
+    }
+
+    let mut discharge = 0.0;
+    let stage_delta = stage - rockfill.hrf;
+    if stage_delta > 0.0 {
+        discharge += rockfill.wdrf * (stage_delta / b10).powf(1.0 / brf);
+    }
+    let overtopping_delta = stage - rockfill.hotrf;
+    if overtopping_delta > 0.0 {
+        discharge += 3.087 * rockfill.wdrf * overtopping_delta.powf(1.5);
+    }
+    if !discharge.is_finite() || discharge < 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: discharge,
+            rule: "rockfill projected discharge must be finite and >= 0",
+        });
+    }
+    Ok(discharge)
+}
+
+fn rockfill_arf(length_m: f64, diarf_m: f64) -> f64 {
+    if length_m < 0.5 {
+        let arf1 = 3.041_846 * diarf_m.powf(-0.346_77);
+        let arf2 = 1.910_413 * diarf_m.powf(-0.349_35);
+        arf1 - ((arf2 - arf1) / 0.5) * (0.5 - length_m)
+    } else if length_m < 1.0 {
+        let arf1 = 3.041_846 * diarf_m.powf(-0.346_77);
+        let arf2 = 1.910_413 * diarf_m.powf(-0.349_35);
+        arf1 + ((arf2 - arf1) / 0.5) * (length_m - 0.5)
+    } else if length_m < 2.0 {
+        let arf1 = 1.910_413 * diarf_m.powf(-0.349_35);
+        let arf2 = 1.196_37 * diarf_m.powf(-0.354_22);
+        arf1 + (arf2 - arf1) * (length_m - 1.0)
+    } else if length_m < 3.0 {
+        let arf1 = 1.196_37 * diarf_m.powf(-0.354_22);
+        let arf2 = 0.909_902 * diarf_m.powf(-0.357_05);
+        arf1 + (arf2 - arf1) * (length_m - 2.0)
+    } else {
+        let arf1 = 1.196_37 * diarf_m.powf(-0.354_22);
+        let arf2 = 0.909_902 * diarf_m.powf(-0.357_05);
+        arf2 + (arf2 - arf1) * (length_m - 3.0)
+    }
+}
+
+fn emergency_discharge_at_stage(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    stage: f64,
+) -> Result<f64, WatershedRuntimeInputError> {
+    match &record.emergency_spillway {
+        EmergencySpillwayPayload::None => Ok(0.0),
+        EmergencySpillwayPayload::OpenChannel { payload, .. } => {
+            if stage <= payload.hes {
+                return Ok(0.0);
+            }
+            let delta = stage - payload.hes;
+            let discharge =
+                EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT * payload.bwes * delta.powf(1.5);
+            if !discharge.is_finite() || discharge < 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_c"),
+                    value: discharge,
+                    rule: "emergency open-channel projected discharge must be finite and >= 0",
+                });
+            }
+            Ok(discharge)
+        }
+        EmergencySpillwayPayload::RatingCurve { payload, .. } => {
+            if stage <= payload.hes {
+                return Ok(0.0);
+            }
+            if payload.hest.len() != payload.qes.len() || payload.hest.is_empty() {
+                let hest_len = u32::try_from(payload.hest.len()).map_err(|_| {
+                    WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                        symbol: format!("ws10_impoundment_{node_id}_c"),
+                        value: f64::INFINITY,
+                        rule: "emergency rating curve vectors must have equal non-zero length",
+                    }
+                })?;
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_c"),
+                    value: f64::from(hest_len),
+                    rule: "emergency rating curve vectors must have equal non-zero length",
+                });
+            }
+            interpolate_rating_curve_discharge(
+                node_id,
+                payload.hes,
+                &payload.hest,
+                &payload.qes,
+                stage,
+            )
+        }
+    }
+}
+
+fn interpolate_rating_curve_discharge(
+    node_id: usize,
+    hes: f64,
+    stage_values: &[f64],
+    discharge_values: &[f64],
+    stage: f64,
+) -> Result<f64, WatershedRuntimeInputError> {
+    let mut previous_stage = hes;
+    let mut previous_discharge = 0.0;
+
+    for (&curve_stage, &curve_discharge) in stage_values.iter().zip(discharge_values.iter()) {
+        if !curve_stage.is_finite() || !curve_discharge.is_finite() {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_c"),
+                value: if curve_stage.is_finite() {
+                    curve_discharge
+                } else {
+                    curve_stage
+                },
+                rule: "emergency rating-curve points must be finite",
+            });
+        }
+        if curve_stage <= previous_stage {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_c"),
+                value: curve_stage,
+                rule: "emergency rating-curve stage points must be strictly increasing",
+            });
+        }
+        if stage <= curve_stage {
+            let fraction = (stage - previous_stage) / (curve_stage - previous_stage);
+            let projected = previous_discharge + fraction * (curve_discharge - previous_discharge);
+            return Ok(projected.max(0.0));
+        }
+        previous_stage = curve_stage;
+        previous_discharge = curve_discharge;
+    }
+
+    if stage_values.len() == 1 {
+        return Ok(previous_discharge.max(0.0));
+    }
+
+    let last_index = stage_values.len() - 1;
+    let stage_left = stage_values[last_index - 1];
+    let stage_right = stage_values[last_index];
+    let discharge_left = discharge_values[last_index - 1];
+    let discharge_right = discharge_values[last_index];
+    let slope = (discharge_right - discharge_left) / (stage_right - stage_left);
+    let extrapolated = discharge_right + slope * (stage - stage_right);
+    Ok(extrapolated.max(0.0))
+}
+
+fn filter_barrier_discharge_at_stage(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    stage: f64,
+) -> Result<f64, WatershedRuntimeInputError> {
+    let Some(filter) = &record.filter_barrier else {
+        return Ok(0.0);
+    };
+
+    if stage <= filter.hff {
+        return Ok(0.0);
+    }
+    let through = filter.wdff * filter.vsl * (stage - filter.hff);
+    let overtopping = if stage > filter.hotff {
+        let delta = stage - filter.hotff;
+        if record.filter_code == 1 {
+            if filter.hotff <= filter.hff {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_c"),
+                    value: filter.hotff - filter.hff,
+                    rule: "filter overtopping stage must be > base stage",
+                });
+            }
+            let b = 3.27 * filter.wdff;
+            let c = (0.4 / (filter.hotff - filter.hff)) * filter.wdff;
+            (b + c * delta) * delta.powf(1.5)
+        } else {
+            3.087 * filter.wdff * delta.powf(1.5)
+        }
+    } else {
+        0.0
+    };
+    let discharge = through + overtopping;
+    if !discharge.is_finite() || discharge < 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_c"),
+            value: discharge,
+            rule: "filter-barrier projected discharge must be finite and >= 0",
+        });
+    }
+    Ok(discharge)
+}
+
+fn perforated_riser_reference_discharge(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    reference_stage: f64,
+) -> Result<Option<(f64, f64)>, WatershedRuntimeInputError> {
+    let Some(riser) = &record.perforated_riser else {
+        return Ok(None);
+    };
+    if !riser.diar.is_finite() || riser.diar <= 0.0 || !riser.diab.is_finite() || riser.diab <= 0.0
+    {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_e"),
+            value: if riser.diar <= 0.0 {
+                riser.diar
+            } else {
+                riser.diab
+            },
+            rule: "riser diameters must be finite and > 0",
+        });
+    }
+    let ko = (-0.60721 + 0.329_229 * (riser.diab / riser.diar)).exp();
+    let denominator = 1.0 + riser.ke + riser.kb + riser.kc * riser.lbl + ko;
+    if !denominator.is_finite() || denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_e"),
+            value: denominator,
+            rule: "riser loss denominator must be finite and > 0",
+        });
+    }
+
+    let ha = riser.hr - (riser.hrh + riser.sbl * riser.lbl - 0.6 * riser.diabl);
+    let coefficient = std::f64::consts::PI * riser.diabl.powi(2) / 4.0
+        * (2.0 * STANDARD_GRAVITY_M_S2).sqrt()
+        / denominator.sqrt();
+    if !coefficient.is_finite() || coefficient <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_e"),
+            value: coefficient,
+            rule: "riser projected coefficient must be finite and > 0",
+        });
+    }
+
+    let stage = reference_stage.max(ha + ACTIVE_PROJECTION_STAGE_DELTA_M);
+    let discharge = coefficient * (stage - ha).sqrt();
+    if !discharge.is_finite() || discharge < 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_e"),
+            value: discharge,
+            rule: "riser projected discharge must be finite and >= 0",
+        });
+    }
+    Ok(Some((discharge, ha)))
+}
+
+fn validate_active_projected_positive(
+    node_id: usize,
+    suffix: &str,
+    value: f64,
+    rule: &'static str,
+) -> Result<(), WatershedRuntimeInputError> {
+    if !value.is_finite() || value <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{suffix}"),
+            value,
+            rule,
+        });
+    }
+    Ok(())
 }
 
 fn derive_power_law_curve_coefficients(
@@ -1613,7 +2219,7 @@ mod tests {
     }
 
     #[test]
-    fn watershed_impoundment_runtime_seed_rejects_active_structure_projection_gap() {
+    fn watershed_impoundment_runtime_seed_projects_active_structure_coefficients() {
         let parsed = parse_watershed_impoundment_from_str(
             STRICT_VALID_WATERSHED_IMPOUNDMENT_ACTIVE,
             WatershedImpoundmentParseOptions::strict(),
@@ -1625,16 +2231,28 @@ mod tests {
         );
 
         let mut surface = WatershedWritebackSurface::default();
-        let error =
-            seed_watershed_runtime_surface_from_watershed_impoundment(&mut surface, &parsed)
-                .expect_err("active structure projection without payload must fail closed");
+        seed_watershed_runtime_surface_from_watershed_impoundment(&mut surface, &parsed)
+            .expect("active structure payloads should project runtime coefficient symbols");
 
-        assert_eq!(error.code(), "WS-RUNTIME-E-012");
-        assert!(matches!(
-            error,
-            WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain { symbol, .. }
-            if symbol == "ws10_impoundment_1_a"
-        ));
+        let a = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_a"))
+            .expect("ws10_impoundment_1_a should be present")
+            .as_f64();
+        let c = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_c"))
+            .expect("ws10_impoundment_1_c should be present")
+            .as_f64();
+        let e = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_e"))
+            .expect("ws10_impoundment_1_e should be present")
+            .as_f64();
+
+        assert!(a.is_finite() && a > 0.0);
+        assert!(c.is_finite() && c > 0.0);
+        assert!(e.is_finite() && e > 0.0);
     }
 
     #[test]

@@ -271,6 +271,23 @@ Minimum WS10 impoundment conformance vectors:
 | Contributor peak payloads | `hs{ID}_peakro`, `hs{ID}_watdur` |
 | Impoundment published outputs | `ws10_impoundment_{id}_qo`, `ws10_impoundment_{id}_durout`, `ws10_impoundment_{id}_hnext`, `ws10_impoundment_{id}_outflow_volume` |
 
+### WSHED11 Active-Structure Projection Policy (Reduced Families)
+
+1. Runtime seeding must project active branch payload exports into required
+   WS12 runtime coefficient families without manual/synthetic seeding.
+2. Reduced-family projection authority for active payloads is:
+   - `a,b,ha`: derived from drop-spillway regime-2 weir branch payload fields.
+   - `c,d,ht`: derived by deterministic compression of active
+     culvert/rockfill/emergency/filter payload contributions at runtime-seam
+     reference stage into the WS12 culvert family with fixed `d=0.5`.
+   - `e,hlm`: derived from perforated-riser payload using runtime-seam
+     deterministic linearized projection of the riser pipe branch.
+3. Runtime seam projection must hard-fail with typed errors when projected
+   coefficients or intermediate derivation values are non-finite or violate
+   declared domains.
+4. Full active-lane 15-function min-controller parity remains outside reduced
+   family closure and must remain explicitly tracked in gap posture.
+
 ### WS12 Legacy Baseline Provenance Anchors
 
 | Legacy source surface | Baseline source anchor (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | WS12 authority use |
@@ -297,8 +314,9 @@ Minimum WS12 impoundment conformance vectors:
    continuity/stage-discharge path.
 2. Regime-transition vector: when stage evolution crosses regime bounds,
    integration retries with initial-step reset before state publish.
-3. Structure-control vector: inactive structures contribute zero and active
-   structures obey min-controller grouping before total outflow summation.
+3. Active-projection vector: active branch payloads seed runtime coefficient
+   families without projection-gap hard failure (`WS-RUNTIME-E-012`) and
+   execute finite/non-negative publish surfaces under reduced-family policy.
 4. Missing required impoundment symbol/coefficient payload fails with
    `WKERNEL-WS10-IMPOUNDMENT-E-001`.
 5. Non-finite state/intermediate payload fails with
@@ -342,7 +360,7 @@ Minimum WS12 impoundment conformance vectors:
 | GAP-IMPOUND-003 | Coupled canonical contracts (`SC-ROUTE-001`, `SC-SED-001`, `SC-SYSTEM-001`) are not yet all at draft `in_review` maturity. | Cross-contract closure of routing/sediment ownership boundaries remains provisional. | non-promotable | `[DIRECT][Static]` |
 | GAP-IMPOUND-004 | Filter-fence/straw-bale outflow behavior depends on slurry/clogging assumptions that Chapter 14 flags as user-sensitive and not fully captured by current coefficients. | High-flow performance interpretation for those structure types retains elevated uncertainty. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-005 | WSHED07 migrated WS12 parity-authoritative continuity behavior (RK4 stage integration, adaptive retry, and regime-transition retry controls from `imphnw/impflo/impmai`) into production impoundment continuity execution for currently supported inactive-structure coefficient domains. | WS12 surrogate-deauthorization and timestep-stability vectors are now active and passing for the supported coefficient domain; residual active-structure projection limits remain governed by `GAP-IMPOUND-006`. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-IMPOUND-006 | WSHED10 expands parser export coverage for active outlet-structure branch payload families (drop, culvert 1/2, rockfill, emergency spillway, filter barrier, perforated riser) and validates typed export surfaces via contract-derived parser vectors. Runtime seam still fails closed for active-structure coefficient projection because active `a,b,c,d,e,ha,ht,hlm` derivation from those payloads is not yet implemented in production. | Manual-seeding dependency is closed and active branch payload export is now available to runtime consumers, but full active-structure coefficient projection/runtime migration remains blocked. | non-promotable | `[DIRECT][Static] + [Ran]` |
+| GAP-IMPOUND-006 | WSHED10 exported active branch payloads and WSHED11 projects those payloads into runtime WS12 reduced coefficient families (`a,b,c,d,e,ha,ht,hlm`) at the parser-to-runtime seam. Residual active-lane parity does not yet implement full 15-function min-controller closure from legacy `impint/imphnw/impflo` families. | Projection-gap fail-closed blocker is removed for active runtime seeding, but full active-lane structure-family parity remains non-promotable until 15-function min-controller closure is migrated. | non-promotable | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
@@ -358,3 +376,4 @@ Minimum WS12 impoundment conformance vectors:
 | `2026-05-27` | `7` | `Codex` | WSHEDIMPL04 amendment: ratified parser-to-runtime coefficient projection closure for inactive-structure lanes and removed manual/synthetic WS12 coefficient seeding dependency from WSHED03 vector surfaces while retaining explicit fail-closed blocker posture for active structure branch payload export gaps. |
 | `2026-05-27` | `8` | `Codex` | WSHEDIMPL07 amendment: ratified production WS12 continuity migration for RK4/adaptive/regime-transition retry behavior in supported inactive-structure coefficient domains, activated WS12 timestep-stability vector coverage, and dispositioned `GAP-IMPOUND-005` to `closed` while retaining active-structure projection hold posture in `GAP-IMPOUND-006`. |
 | `2026-05-27` | `9` | `Codex` | WSHEDIMPL10 amendment: expanded parser export coverage for active-structure branch payload families with contract-derived parser test evidence, and re-anchored `GAP-IMPOUND-006` to remaining runtime active-coefficient projection implementation scope. |
+| `2026-05-27` | `10` | `Codex` | WSHEDIMPL11 amendment: ratified reduced-family runtime active-structure coefficient projection policy from exported branch payloads and re-anchored `GAP-IMPOUND-006` from projection-gap fail-closed behavior to residual full 15-function active-lane parity closure scope. |

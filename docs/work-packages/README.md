@@ -730,6 +730,12 @@ Authorized packages:
     emergency/filter/riser), adding contract-derived parser coverage, and
     narrowing residual HOLD posture to runtime active-coefficient projection
     closure.
+- `20260527-wshedimpl11-runtime-active-structure-coefficient-projection-001/`
+  - Purpose: execute WSHED11 by implementing runtime projection of exported
+    active impoundment branch payloads into WS12 coefficient families
+    (`a,b,c,d,e,ha,ht,hlm`), promoting active-lane conformance vectors, and
+    updating canonical gap posture for `GAP-IMPOUND-006` /
+    `GAP-SYSTEM-007`.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
