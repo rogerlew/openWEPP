@@ -67,9 +67,13 @@ fn erod14_registry_updates_reference_wave2_authority() {
     ))
     .expect("science-contract index should be readable");
 
+    let last_updated = index
+        .lines()
+        .find_map(|line| line.strip_prefix("Last updated: ").map(str::trim))
+        .expect("science-contract index must include a Last updated line");
     assert!(
-        index.contains("Last updated: 2026-05-25") || index.contains("Last updated: 2026-05-26"),
-        "index must retain a post-EROD14 authority update stamp"
+        last_updated >= "2026-05-25",
+        "index must retain a post-EROD14 authority update stamp (found: {last_updated})"
     );
     assert!(
         index.contains("HKERNEL-EROD14-WAVE2-E-001..003"),
