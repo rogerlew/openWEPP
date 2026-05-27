@@ -6,6 +6,7 @@ use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chani
 use openwepp_input_contract::parsers::hbp::{
     HbpParseMode, HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
 };
+use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::watershed_channel::{
     WatershedChannelParseMode, WatershedChannelParseOptions, parse_watershed_channel_from_path,
 };
@@ -32,6 +33,7 @@ use openwepp_topology::{
 };
 use openwepp_watershed_orchestrator::runtime_inputs::{
     build_watershed_runtime_surface_from_chaninp,
+    seed_watershed_runtime_surface_from_slope_channel_profile,
     seed_watershed_runtime_surface_from_watershed_channel,
     seed_watershed_runtime_surface_from_watershed_impoundment,
 };
@@ -218,6 +220,13 @@ fn run() -> Result<(), String> {
                     runfile.watershed_channel_path.display()
                 )
             })?;
+    let slope = parse_slope_file(&runfile.slope_path, SlopeParserOptions::compatibility())
+        .map_err(|error| {
+            format!(
+                "CLIWAT-E-038 failed parsing watershed slope {}: {error}",
+                runfile.slope_path.display()
+            )
+        })?;
 
     let impoundment_options = WatershedImpoundmentParseOptions {
         mode: WatershedImpoundmentParseMode::Compatibility,
@@ -281,6 +290,14 @@ fn run() -> Result<(), String> {
         .map_err(|error| {
             format!("CLIWAT-E-014 failed seeding watershed channel runtime surface: {error}")
         })?;
+    seed_watershed_runtime_surface_from_slope_channel_profile(
+        &mut runtime_surface,
+        &watershed_channel,
+        &slope,
+    )
+    .map_err(|error| {
+        format!("CLIWAT-E-039 failed seeding watershed channel segment runtime surface: {error}")
+    })?;
 
     seed_watershed_runtime_surface_from_watershed_impoundment(
         &mut runtime_surface,
@@ -610,6 +627,7 @@ struct WatershedRunfileResolved {
     watershed_structure_path: PathBuf,
     watershed_channel_path: PathBuf,
     watershed_impoundment_path: PathBuf,
+    slope_path: PathBuf,
     chaninp_path: Option<PathBuf>,
     tcr_overlay_present: bool,
     hillslope_blocks_by_id: BTreeMap<u32, WatershedHillslopeBlockResolved>,
@@ -932,6 +950,7 @@ fn parse_watershed_runfile(
         watershed_structure_path,
         watershed_channel_path,
         watershed_impoundment_path,
+        slope_path,
         chaninp_path,
         tcr_overlay_present,
         hillslope_blocks_by_id,

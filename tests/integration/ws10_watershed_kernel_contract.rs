@@ -86,6 +86,39 @@ fn seed_erod15_hillslope_payload(
     }
 }
 
+fn seed_ws17_channel_segment_scaffold(surface: &mut WatershedWritebackSurface, node_id: u32) {
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
+        BoundaryValue::scalar(3.0),
+    );
+    for (point_number, x, slope) in [(1, 0.0, 0.02), (2, 30.0, 0.08), (3, 60.0, 0.06)] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}")),
+            BoundaryValue::scalar(x),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}")),
+            BoundaryValue::scalar(slope),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depa_{point_number:04}")),
+            BoundaryValue::scalar(2_952.9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depb_{point_number:04}")),
+            BoundaryValue::scalar(2_952.9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_wida_{point_number:04}")),
+            BoundaryValue::scalar(98.43),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}")),
+            BoundaryValue::scalar(98.43),
+        );
+    }
+}
+
 fn seeded_ws10_surface() -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
@@ -104,6 +137,7 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
     .expect("strict watershed channel fixture should parse");
     seed_watershed_runtime_surface_from_watershed_channel(&mut runtime_surface, &watershed_channel)
         .expect("watershed channel runtime seed should project ws10 symbols");
+    seed_ws17_channel_segment_scaffold(&mut runtime_surface, 1);
 
     // The canonical strict fixture defines one channel record; duplicate it for
     // channel:2 so the three-node WS10 topology has per-channel controls.
@@ -155,6 +189,7 @@ fn seeded_ws10_surface() -> WatershedWritebackSurface {
         BoundarySymbol::from("ws10_channel_2_ctln"),
         BoundaryValue::scalar(0.04),
     );
+    seed_ws17_channel_segment_scaffold(&mut runtime_surface, 2);
 
     let impoundment = parse_watershed_impoundment_from_str(
         STRICT_VALID_WATERSHED_IMPOUNDMENT,

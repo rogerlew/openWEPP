@@ -86,6 +86,39 @@ fn seed_erod15_hillslope_payload(
     }
 }
 
+fn seed_ws17_channel_segment_scaffold(surface: &mut WatershedWritebackSurface, node_id: u32) {
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
+        BoundaryValue::scalar(3.0),
+    );
+    for (point_number, x, slope) in [(1, 0.0, 0.02), (2, 30.0, 0.08), (3, 60.0, 0.06)] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}")),
+            BoundaryValue::scalar(x),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}")),
+            BoundaryValue::scalar(slope),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depa_{point_number:04}")),
+            BoundaryValue::scalar(2_952.9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depb_{point_number:04}")),
+            BoundaryValue::scalar(2_952.9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_wida_{point_number:04}")),
+            BoundaryValue::scalar(98.43),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}")),
+            BoundaryValue::scalar(98.43),
+        );
+    }
+}
+
 fn seeded_ws11_surface() -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
@@ -104,6 +137,7 @@ fn seeded_ws11_surface() -> WatershedWritebackSurface {
     .expect("strict watershed channel fixture should parse");
     seed_watershed_runtime_surface_from_watershed_channel(&mut runtime_surface, &watershed_channel)
         .expect("watershed channel runtime seed should project ws10 symbols");
+    seed_ws17_channel_segment_scaffold(&mut runtime_surface, 1);
 
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("ws10_channel_2_chnn"),
@@ -153,6 +187,7 @@ fn seeded_ws11_surface() -> WatershedWritebackSurface {
         BoundarySymbol::from("ws10_channel_2_ctln"),
         BoundaryValue::scalar(0.04),
     );
+    seed_ws17_channel_segment_scaffold(&mut runtime_surface, 2);
 
     let impoundment = parse_watershed_impoundment_from_str(
         STRICT_VALID_WATERSHED_IMPOUNDMENT,
@@ -497,6 +532,28 @@ fn wshedimpl16_contract_channel_sediment_requires_particle_diameter_payload() {
     surface
         .state_surface
         .remove(&BoundarySymbol::from("hs1_particle_diameter_m_0003"));
+
+    let report = run_ws11_surface(surface);
+    assert_eq!(report.step_reports.len(), 1);
+    assert_eq!(
+        report.step_reports[0].decision_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-001"
+    );
+    assert_eq!(
+        report.step_reports[0].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn wshedimpl17_contract_channel_segment_scaffold_requires_ws17_symbols() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("ws10_channel_1_x_0002"));
 
     let report = run_ws11_surface(surface);
     assert_eq!(report.step_reports.len(), 1);

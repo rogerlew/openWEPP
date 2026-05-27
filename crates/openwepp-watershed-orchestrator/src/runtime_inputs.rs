@@ -10,6 +10,7 @@ use openwepp_climate_runtime_adapter::{
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
     climate::{ClimateFile, ClimateMonthlyStats},
+    slope::{DistanceMode, SlopeProfile},
     watershed_channel::WatershedChannelFile,
     watershed_impoundment::{
         CulvertPayload, EmergencySpillwayPayload, ImpoundmentRecord, WatershedImpoundmentFile,
@@ -73,6 +74,7 @@ const STANDARD_GRAVITY_M_S2: f64 = 9.806_65;
 const ACTIVE_PROJECTION_STAGE_DELTA_M: f64 = 0.01;
 const EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT: f64 = 3.087;
 const WS12_FUNCTION_COUNT: usize = 15;
+const WS17_METERS_TO_FEET: f64 = 3.281;
 
 #[derive(Debug, Clone, Copy)]
 struct Ws12ActiveProjection {
@@ -754,6 +756,157 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
             BoundarySymbol::from(ctln_symbol.as_str()),
             BoundaryValue::scalar(definition.ctln_effective),
         );
+    }
+
+    Ok(())
+}
+
+/// Seed WS10 channel segment geometry/hydraulic scaffold symbols from parsed
+/// slope profile input.
+///
+/// Inserts per-channel segment families:
+/// - `ws10_channel_{id}_nslpts`
+/// - `ws10_channel_{id}_x_{point:04}`
+/// - `ws10_channel_{id}_slope_{point:04}`
+/// - `ws10_channel_{id}_depa_{point:04}`
+/// - `ws10_channel_{id}_depb_{point:04}`
+/// - `ws10_channel_{id}_wida_{point:04}`
+/// - `ws10_channel_{id}_widb_{point:04}`
+///
+/// # Errors
+///
+/// Returns `WatershedRuntimeInputError` when slope/channel cardinality mapping
+/// is invalid or projected symbols are non-finite/out-of-domain.
+#[allow(clippy::too_many_lines, clippy::similar_names)]
+pub fn seed_watershed_runtime_surface_from_slope_channel_profile(
+    runtime_surface: &mut WatershedWritebackSurface,
+    channel: &WatershedChannelFile,
+    slope: &SlopeProfile,
+) -> Result<(), WatershedRuntimeInputError> {
+    for definition in &channel.channels {
+        let node_id = definition.channel_id;
+        if node_id == 0 {
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: "ws10_channel_0_nslpts".to_owned(),
+                value: 0.0,
+                rule: "channel_id must be >= 1 for slope-profile mapping",
+            });
+        }
+
+        let slope_index = node_id - 1;
+        let Some(ofe) = slope.ofes.get(slope_index) else {
+            let profile_count = u32::try_from(slope.ofes.len()).unwrap_or(u32::MAX);
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_nslpts"),
+                value: f64::from(profile_count),
+                rule: "slope profile count must cover every channel id (ordered by channel id)",
+            });
+        };
+
+        if ofe.points.len() < 2 {
+            let nslpts = u32::try_from(ofe.points.len()).unwrap_or(u32::MAX);
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_nslpts"),
+                value: f64::from(nslpts),
+                rule: "channel segment profile requires at least 2 slope points",
+            });
+        }
+
+        let nslpts = u32::try_from(ofe.points.len()).map_err(|_| {
+            WatershedRuntimeInputError::ChannelCountOutOfRange {
+                value: ofe.points.len(),
+            }
+        })?;
+        let nslpts_symbol = format!("ws10_channel_{node_id}_nslpts");
+        validate_ws10_channel_value(nslpts_symbol.as_str(), f64::from(nslpts), Some(1.0), false)?;
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(nslpts_symbol),
+            BoundaryValue::scalar(f64::from(nslpts)),
+        );
+
+        let width_ft = ofe.fwidth * WS17_METERS_TO_FEET;
+        let depth_ft = definition.chnedm * WS17_METERS_TO_FEET;
+        validate_ws10_channel_value(
+            format!("ws10_channel_{node_id}_wida_0001").as_str(),
+            width_ft,
+            Some(0.0),
+            false,
+        )?;
+        validate_ws10_channel_value(
+            format!("ws10_channel_{node_id}_widb_0001").as_str(),
+            width_ft,
+            Some(0.0),
+            false,
+        )?;
+        validate_ws10_channel_value(
+            format!("ws10_channel_{node_id}_depa_0001").as_str(),
+            depth_ft,
+            Some(0.0),
+            true,
+        )?;
+        validate_ws10_channel_value(
+            format!("ws10_channel_{node_id}_depb_0001").as_str(),
+            depth_ft,
+            Some(0.0),
+            true,
+        )?;
+
+        let mut previous_x = 0.0;
+        for (point_index, point) in ofe.points.iter().enumerate() {
+            let point_number = point_index + 1;
+            let x_raw = match ofe.distance_mode {
+                DistanceMode::Absolute => point.xinput,
+                DistanceMode::Normalized => point.xinput * ofe.slplen,
+            };
+            let slope_value = point.slpinp;
+
+            let x_symbol = format!("ws10_channel_{node_id}_x_{point_number:04}");
+            let slope_symbol = format!("ws10_channel_{node_id}_slope_{point_number:04}");
+            let depth_a_symbol = format!("ws10_channel_{node_id}_depa_{point_number:04}");
+            let depth_b_symbol = format!("ws10_channel_{node_id}_depb_{point_number:04}");
+            let width_a_symbol = format!("ws10_channel_{node_id}_wida_{point_number:04}");
+            let width_b_symbol = format!("ws10_channel_{node_id}_widb_{point_number:04}");
+
+            validate_ws10_channel_value(x_symbol.as_str(), x_raw, Some(0.0), true)?;
+            if point_index > 0 && x_raw + 1.0e-12 < previous_x {
+                return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                    symbol: x_symbol,
+                    value: x_raw,
+                    rule: "channel segment x positions must be monotonic non-decreasing",
+                });
+            }
+            validate_ws10_channel_value(slope_symbol.as_str(), slope_value, Some(0.0), true)?;
+            validate_ws10_channel_value(depth_a_symbol.as_str(), depth_ft, Some(0.0), true)?;
+            validate_ws10_channel_value(depth_b_symbol.as_str(), depth_ft, Some(0.0), true)?;
+            validate_ws10_channel_value(width_a_symbol.as_str(), width_ft, Some(0.0), false)?;
+            validate_ws10_channel_value(width_b_symbol.as_str(), width_ft, Some(0.0), false)?;
+
+            runtime_surface
+                .state_surface
+                .insert(BoundarySymbol::from(x_symbol), BoundaryValue::scalar(x_raw));
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(slope_symbol),
+                BoundaryValue::scalar(slope_value),
+            );
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(depth_a_symbol),
+                BoundaryValue::scalar(depth_ft),
+            );
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(depth_b_symbol),
+                BoundaryValue::scalar(depth_ft),
+            );
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(width_a_symbol),
+                BoundaryValue::scalar(width_ft),
+            );
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(width_b_symbol),
+                BoundaryValue::scalar(width_ft),
+            );
+
+            previous_x = x_raw;
+        }
     }
 
     Ok(())
@@ -2765,6 +2918,7 @@ mod tests {
     use openwepp_input_contract::parsers::{
         chaninp::{ChaninpParseOptions, ParseMode, parse_chaninp_from_str},
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
+        slope::{SlopeParserOptions, parse_slope_str},
         watershed_channel::{WatershedChannelParseOptions, parse_watershed_channel_from_str},
         watershed_impoundment::{
             WatershedImpoundmentParseOptions, parse_watershed_impoundment_from_str,
@@ -2776,6 +2930,7 @@ mod tests {
         WatershedClimateRuntimeInputError, WatershedRuntimeInputError, WatershedWritebackSurface,
         build_watershed_runtime_surface_from_chaninp,
         build_watershed_runtime_surface_from_climate_assignments,
+        seed_watershed_runtime_surface_from_slope_channel_profile,
         seed_watershed_runtime_surface_from_watershed_channel,
         seed_watershed_runtime_surface_from_watershed_impoundment,
     };
@@ -2801,6 +2956,8 @@ mod tests {
     const STRICT_VALID_WATERSHED_CHANNEL: &str = include_str!(
         "../../../tests/fixtures/infile/watershed_channel/strict_valid_single_channel.chn"
     );
+    const STRICT_VALID_SLOPE: &str =
+        include_str!("../../../tests/fixtures/infile/slope/strict_valid_canonical.slp");
     const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str = include_str!(
         "../../../tests/fixtures/infile/watershed_impoundment/strict_valid_minimal.imp"
     );
@@ -2986,6 +3143,92 @@ mod tests {
             error,
             WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
             if symbol == "ws10_channel_1_chnn"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_slope_runtime_seed_projects_ws17_segment_symbols() {
+        let channel = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        let slope = parse_slope_str(STRICT_VALID_SLOPE, SlopeParserOptions::strict())
+            .expect("strict slope fixture should parse");
+
+        let mut surface = WatershedWritebackSurface::default();
+        seed_watershed_runtime_surface_from_slope_channel_profile(&mut surface, &channel, &slope)
+            .expect("ws17 slope-to-channel seeding should project segment symbols");
+
+        let nslpts = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_nslpts"))
+            .expect("ws10_channel_1_nslpts should be present")
+            .as_f64();
+        let x2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_x_0002"))
+            .expect("ws10_channel_1_x_0002 should be present")
+            .as_f64();
+        let x3 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_x_0003"))
+            .expect("ws10_channel_1_x_0003 should be present")
+            .as_f64();
+        let slope2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_slope_0002"))
+            .expect("ws10_channel_1_slope_0002 should be present")
+            .as_f64();
+        let depa2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_depa_0002"))
+            .expect("ws10_channel_1_depa_0002 should be present")
+            .as_f64();
+        let wida2 = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_wida_0002"))
+            .expect("ws10_channel_1_wida_0002 should be present")
+            .as_f64();
+
+        assert!((nslpts - 3.0).abs() < 1.0e-12);
+        assert!((x2 - 36.0).abs() < 1.0e-12);
+        assert!((x3 - 60.0).abs() < 1.0e-12);
+        assert!((slope2 - 0.08).abs() < 1.0e-12);
+        assert!((depa2 - 2_952.9).abs() < 1.0e-9);
+        assert!((wida2 - 98.43).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn watershed_channel_slope_runtime_seed_rejects_profile_count_mismatch() {
+        let mut channel = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        let mut second = channel.channels[0].clone();
+        second.channel_id = 2;
+        channel.channels.push(second);
+
+        let slope = parse_slope_str(
+            "97.5\n1\n180.0 30.0\n3 60.0\n0.0 0.02 0.6 0.08 1.0 0.06\n",
+            SlopeParserOptions::strict(),
+        )
+        .expect("single-profile slope fixture should parse");
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_slope_channel_profile(
+            &mut surface,
+            &channel,
+            &slope,
+        )
+        .expect_err("slope profile count mismatch must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_2_nslpts"
         ));
     }
 

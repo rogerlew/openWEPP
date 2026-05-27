@@ -88,6 +88,39 @@ fn seed_erod15_hillslope_payload(
     }
 }
 
+fn seed_ws17_channel_segment_scaffold(surface: &mut WatershedWritebackSurface, node_id: u32) {
+    surface.state_surface.insert(
+        BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
+        BoundaryValue::scalar(3.0),
+    );
+    for (point_number, x, slope) in [(1, 0.0, 0.02), (2, 30.0, 0.08), (3, 60.0, 0.06)] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}")),
+            BoundaryValue::scalar(x),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}")),
+            BoundaryValue::scalar(slope),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depa_{point_number:04}")),
+            BoundaryValue::scalar(2_952.9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depb_{point_number:04}")),
+            BoundaryValue::scalar(2_952.9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_wida_{point_number:04}")),
+            BoundaryValue::scalar(98.43),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}")),
+            BoundaryValue::scalar(98.43),
+        );
+    }
+}
+
 fn seeded_ws12_surface_with_impoundment_fixture(
     impoundment_fixture: &str,
 ) -> WatershedWritebackSurface {
@@ -108,6 +141,7 @@ fn seeded_ws12_surface_with_impoundment_fixture(
     .expect("strict watershed channel fixture should parse");
     seed_watershed_runtime_surface_from_watershed_channel(&mut runtime_surface, &watershed_channel)
         .expect("watershed channel runtime seed should project ws10 symbols");
+    seed_ws17_channel_segment_scaffold(&mut runtime_surface, 1);
 
     // Duplicate channel-1 control symbols for channel:2 so the topology fixture
     // has per-channel controls on both channel nodes.
@@ -159,6 +193,7 @@ fn seeded_ws12_surface_with_impoundment_fixture(
         BoundarySymbol::from("ws10_channel_2_ctln"),
         BoundaryValue::scalar(0.04),
     );
+    seed_ws17_channel_segment_scaffold(&mut runtime_surface, 2);
 
     let impoundment = parse_watershed_impoundment_from_str(
         impoundment_fixture,

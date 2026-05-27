@@ -769,6 +769,13 @@ Authorized packages:
     baseline-authoritative comparator-lane evidence while preserving explicit
     non-promotable HOLD posture on remaining full `chnero/chnrt/detach`
     process-parity migration blockers.
+- `20260527-wshedimpl17-channel-segment-geometry-hydraulic-seam-intake-001/`
+  - Purpose: execute WSHEDIMPL17 immediate next actions from WSHEDIMPL16 by
+    projecting fail-closed WS10 channel segment/hydraulic scaffold families
+    (`nslpts`, per-segment `x/slope/depa/depb/wida/widb`) from slope+channel
+    parser payloads, wiring watershed CLI slope-driven seam seeding, and
+    preserving explicit non-promotable HOLD posture on remaining full
+    `chnero/chnrt/detach` process-parity migration blockers.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

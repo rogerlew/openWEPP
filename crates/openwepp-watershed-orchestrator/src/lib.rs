@@ -407,6 +407,21 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(scalar)
     }
 
+    fn require_channel_state_symbol_scalar(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        symbol: BoundarySymbol,
+    ) -> Result<f64, Ws10GuardError> {
+        let Some(value) = request.state_surface.get(&symbol) else {
+            return Err(Self::missing_required(node_class, symbol));
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Self::non_finite(node_class, symbol, scalar));
+        }
+        Ok(scalar)
+    }
+
     fn require_channel_control_range(
         node_class: Ws10NodeClass,
         symbol: BoundarySymbol,
@@ -519,6 +534,138 @@ impl Ws10ChannelImpoundmentKernel {
             chnedm,
             chneds,
         })
+    }
+
+    #[allow(clippy::too_many_lines, clippy::similar_names)]
+    fn require_ws17_channel_segment_scaffold(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<(), Ws10GuardError> {
+        let node_id = request.node_id;
+        let nslpts_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts"));
+        let nslpts_raw =
+            Self::require_channel_state_symbol_scalar(request, node_class, nslpts_symbol.clone())?;
+        Self::require_channel_control_range(
+            node_class,
+            nslpts_symbol.clone(),
+            nslpts_raw,
+            Some(2.0),
+            None,
+        )?;
+
+        let nslpts_rounded = nslpts_raw.round();
+        if (nslpts_raw - nslpts_rounded).abs() > WS11_IPEAK_INTEGER_TOLERANCE {
+            return Err(Self::domain_violation(
+                node_class,
+                nslpts_symbol,
+                nslpts_raw,
+            ));
+        }
+        if nslpts_rounded > f64::from(u32::MAX) {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
+                nslpts_raw,
+            ));
+        }
+        let nslpts_u32 = format!("{nslpts_rounded:.0}").parse::<u32>().map_err(|_| {
+            Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
+                nslpts_raw,
+            )
+        })?;
+        let nslpts = usize::try_from(nslpts_u32).map_err(|_| {
+            Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts")),
+                nslpts_raw,
+            )
+        })?;
+
+        let mut previous_x: Option<f64> = None;
+        for point_number in 1..=nslpts {
+            let x_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}"));
+            let slope_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}"));
+            let depth_a_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_depa_{point_number:04}"));
+            let depth_b_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_depb_{point_number:04}"));
+            let width_a_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_wida_{point_number:04}"));
+            let width_b_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}"));
+
+            let x =
+                Self::require_channel_state_symbol_scalar(request, node_class, x_symbol.clone())?;
+            let slope = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                slope_symbol.clone(),
+            )?;
+            let depth_a = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                depth_a_symbol.clone(),
+            )?;
+            let depth_b = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                depth_b_symbol.clone(),
+            )?;
+            let width_a = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                width_a_symbol.clone(),
+            )?;
+            let width_b = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                width_b_symbol.clone(),
+            )?;
+
+            Self::require_channel_control_range(node_class, x_symbol.clone(), x, Some(0.0), None)?;
+            if let Some(previous) = previous_x
+                && x + WS10_ZERO_THRESHOLD < previous
+            {
+                return Err(Self::domain_violation(node_class, x_symbol, x));
+            }
+            Self::require_channel_control_range(node_class, slope_symbol, slope, Some(0.0), None)?;
+            Self::require_channel_control_range(
+                node_class,
+                depth_a_symbol,
+                depth_a,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_channel_control_range(
+                node_class,
+                depth_b_symbol,
+                depth_b,
+                Some(0.0),
+                None,
+            )?;
+            Self::require_channel_control_range(
+                node_class,
+                width_a_symbol,
+                width_a,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            )?;
+            Self::require_channel_control_range(
+                node_class,
+                width_b_symbol,
+                width_b,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            previous_x = Some(x);
+        }
+
+        Ok(())
     }
 
     fn require_flux_scalar(
@@ -1719,6 +1866,7 @@ impl Ws10ChannelImpoundmentKernel {
             None,
         )?;
         let sediment_controls = Self::read_ws15_channel_sediment_controls(request, node_class)?;
+        Self::require_ws17_channel_segment_scaffold(request, node_class)?;
         let sediment_scaffold = Self::derive_ws15_channel_sediment_scaffold(
             node_class,
             request.node_id,
