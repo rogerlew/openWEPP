@@ -443,7 +443,7 @@ impl Ws10ChannelImpoundmentKernel {
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
         hillslope_id: u32,
-    ) -> Result<(), Ws10GuardError> {
+    ) -> Result<f64, Ws10GuardError> {
         let total_detachment_symbol =
             WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg { hillslope_id };
         let total_deposition_symbol =
@@ -534,7 +534,7 @@ impl Ws10ChannelImpoundmentKernel {
             Self::require_state_range(node_class, fraction_symbol, fraction, Some(0.0), Some(1.0))?;
         }
 
-        Ok(())
+        Ok((total_detachment - total_deposition).max(0.0))
     }
 
     fn read_dependency_peak_payload(
@@ -585,7 +585,7 @@ impl Ws10ChannelImpoundmentKernel {
         for &hillslope_id in request.contributor_hillslopes {
             let (peak, duration) =
                 Self::read_hillslope_peak_payload(request, node_class, hillslope_id)?;
-            Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
+            let _ = Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
             incoming_peak += peak;
             incoming_duration = incoming_duration.max(duration);
         }
@@ -632,6 +632,53 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Ok((incoming_peak, incoming_duration))
+    }
+
+    fn assemble_incoming_sediment_load_and_capacity(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        event_duration: f64,
+    ) -> Result<(f64, f64), Ws10GuardError> {
+        if !event_duration.is_finite() || event_duration <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("event_duration"),
+                event_duration,
+            ));
+        }
+
+        let mut incoming_sediment_mass_kg = 0.0_f64;
+        for &hillslope_id in request.contributor_hillslopes {
+            incoming_sediment_mass_kg +=
+                Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
+        }
+        if !incoming_sediment_mass_kg.is_finite() || incoming_sediment_mass_kg < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("incoming_sediment_mass_kg"),
+                incoming_sediment_mass_kg,
+            ));
+        }
+
+        let qsed = incoming_sediment_mass_kg / event_duration;
+        if !qsed.is_finite() || qsed < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("qsed"),
+                qsed,
+            ));
+        }
+
+        let tc = qsed;
+        if !tc.is_finite() || tc < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("tc"),
+                tc,
+            ));
+        }
+
+        Ok((qsed, tc))
     }
 
     fn require_ipeak_branch(
@@ -1063,6 +1110,11 @@ impl Ws10ChannelImpoundmentKernel {
                 durrof,
             ));
         }
+        let (qsed, tc) = Self::assemble_incoming_sediment_load_and_capacity(
+            request,
+            node_class,
+            event_duration,
+        )?;
 
         let Ok(status) =
             SimulationStatus::ok(SimulationPhase::WatershedKernel, WS10_CHANNEL_OK_MESSAGE_ID)
@@ -1086,6 +1138,18 @@ impl Ws10ChannelImpoundmentKernel {
         let mut state_updates = vec![
             WritebackField::bounded(qpo_symbol, qpo, Some(0.0), None),
             WritebackField::bounded(durrof_symbol, durrof, Some(0.0), None),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "qsed"),
+                qsed,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "tc"),
+                tc,
+                Some(0.0),
+                None,
+            ),
         ];
         if let Some(state) = wave_state {
             let node_id = request.node_id;

@@ -701,6 +701,12 @@ Authorized packages:
     lineage state-family publication (`q1/qin/qlat/c0..c4`), promoting the
     matching WSHED03 expected-failure vector to active conformance, and
     preserving typed fail-closed guard posture before WSHED06/07/08.
+- `20260527-wshedimpl06-watershed-channel-sediment-routing-foundation-001/`
+  - Purpose: execute WSHED06 publication-family closure by migrating WS11
+    channel sediment output symbols (`qsed`, `tc`) into production channel
+    writeback, promoting the matching WSHED03 expected-failure vector, and
+    preserving typed fail-closed guard posture while documenting residual
+    baseline `chnero/chnrt/detach` parity blockers for follow-on closure.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

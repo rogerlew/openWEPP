@@ -363,7 +363,6 @@ fn wshed03_contract_kw_mc_vector_requires_wave_routing_state_family_publication(
 }
 
 #[test]
-#[ignore = "WSHED03 expected-failure vector until WSHED06 channel sediment migration lands"]
 fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publication_family() {
     let mut surface = seeded_ws11_surface();
     surface
