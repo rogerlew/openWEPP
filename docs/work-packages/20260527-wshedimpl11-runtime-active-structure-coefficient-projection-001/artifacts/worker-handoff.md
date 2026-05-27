@@ -17,6 +17,9 @@ Date: 2026-05-27
   to close `GAP-SYSTEM-005`.
 - Execute channel sediment process-parity package(s) for
   `GAP-SYSTEM-008` / `GAP-ROUTE-009` / `GAP-SED-006`.
+- Immediate next actions operationally closed by
+  `20260527-wshedimpl12-worker-handoff-immediate-next-actions-closure-001`
+  (`artifacts/wshedimpl12-follow-on-package-specs.md`).
 
 ## Ran
 - validation and gates captured in `gate-results.md`

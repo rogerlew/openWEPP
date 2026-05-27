@@ -736,6 +736,12 @@ Authorized packages:
     (`a,b,c,d,e,ha,ht,hlm`), promoting active-lane conformance vectors, and
     updating canonical gap posture for `GAP-IMPOUND-006` /
     `GAP-SYSTEM-007`.
+- `20260527-wshedimpl12-worker-handoff-immediate-next-actions-closure-001/`
+  - Purpose: execute WSHEDIMPL12 by closing WSHEDIMPL11 worker-handoff
+    immediate actions operationally: author execution-ready follow-on package
+    specs for residual blockers (`GAP-SYSTEM-007`, `GAP-SYSTEM-005`,
+    `GAP-SYSTEM-008`) and publish dependency-ordered downstream execution
+    ownership.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
