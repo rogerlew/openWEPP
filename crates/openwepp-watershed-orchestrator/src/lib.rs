@@ -178,6 +178,8 @@ impl From<WritebackError> for WatershedDispatchError {
 
 const WS10_ZERO_THRESHOLD: f64 = 1.0e-12;
 const WS11_IPEAK_INTEGER_TOLERANCE: f64 = 1.0e-9;
+const WS12_IMPOUNDMENT_ERROR_SCALE: f64 = 1.0e-4;
+const WS12_IMPOUNDMENT_RETRY_LIMIT: usize = 64;
 
 const WS10_CHANNEL_GUARD_MISSING_SYMBOL: &str = "WKERNEL-WS10-CHANNEL-E-001";
 const WS10_CHANNEL_GUARD_NON_FINITE: &str = "WKERNEL-WS10-CHANNEL-E-002";
@@ -221,6 +223,21 @@ struct Ws11WaveRoutingState {
     c2: f64,
     c3: f64,
     c4: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws12ImpoundmentCoefficients {
+    a: f64,
+    b: f64,
+    c: f64,
+    d: f64,
+    e: f64,
+    ha: f64,
+    ht: f64,
+    hlm: f64,
+    a0: f64,
+    a1: f64,
+    a2: f64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -419,6 +436,349 @@ impl Ws10ChannelImpoundmentKernel {
                 -1.0,
             )),
         }
+    }
+
+    fn impoundment_outflow_at_stage(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> Result<f64, Ws10GuardError> {
+        let drop_spillway_q = if stage > coefficients.ha {
+            coefficients.a * (stage - coefficients.ha).powf(coefficients.b)
+        } else {
+            0.0
+        };
+        let culvert_q = if stage > coefficients.ht {
+            coefficients.c * (stage - coefficients.ht).powf(coefficients.d)
+        } else {
+            0.0
+        };
+        let riser_q = if stage > coefficients.hlm {
+            coefficients.e * (stage - coefficients.hlm)
+        } else {
+            0.0
+        };
+
+        let qo = drop_spillway_q + culvert_q + riser_q;
+        if !qo.is_finite() {
+            return Err(Self::non_finite(node_class, BoundarySymbol::from("qo"), qo));
+        }
+        if qo < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("qo"),
+                qo,
+            ));
+        }
+        Ok(qo)
+    }
+
+    fn impoundment_area_at_stage(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> Result<f64, Ws10GuardError> {
+        let area = coefficients.a0 + coefficients.a1 * stage.powf(coefficients.a2);
+        if !area.is_finite() || area <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("area"),
+                area,
+            ));
+        }
+        Ok(area)
+    }
+
+    fn impoundment_continuity_rate(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        incoming_peak: f64,
+        qinf: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> Result<f64, Ws10GuardError> {
+        if !stage.is_finite() {
+            return Err(Self::non_finite(
+                node_class,
+                BoundarySymbol::from("stage"),
+                stage,
+            ));
+        }
+        if stage < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("stage"),
+                stage,
+            ));
+        }
+
+        let area = Self::impoundment_area_at_stage(node_class, stage, coefficients)?;
+        let qo = Self::impoundment_outflow_at_stage(node_class, stage, coefficients)?;
+        let continuity_outflow = qo + qinf;
+        if !continuity_outflow.is_finite() || continuity_outflow < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("continuity_outflow"),
+                continuity_outflow,
+            ));
+        }
+
+        let dhdt = (incoming_peak - continuity_outflow) / area;
+        if !dhdt.is_finite() {
+            return Err(Self::non_finite(
+                node_class,
+                BoundarySymbol::from("dhdt"),
+                dhdt,
+            ));
+        }
+        Ok(dhdt)
+    }
+
+    fn impoundment_rk4_step(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        dt: f64,
+        incoming_peak: f64,
+        qinf: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> Result<f64, Ws10GuardError> {
+        if !dt.is_finite() || dt <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("dt"),
+                dt,
+            ));
+        }
+
+        let k1 = Self::impoundment_continuity_rate(
+            node_class,
+            stage,
+            incoming_peak,
+            qinf,
+            coefficients,
+        )?;
+        let k2 = Self::impoundment_continuity_rate(
+            node_class,
+            stage + 0.5 * dt * k1,
+            incoming_peak,
+            qinf,
+            coefficients,
+        )?;
+        let k3 = Self::impoundment_continuity_rate(
+            node_class,
+            stage + 0.5 * dt * k2,
+            incoming_peak,
+            qinf,
+            coefficients,
+        )?;
+        let k4 = Self::impoundment_continuity_rate(
+            node_class,
+            stage + dt * k3,
+            incoming_peak,
+            qinf,
+            coefficients,
+        )?;
+
+        let hnext = stage + (dt / 6.0) * (k1 + k4 + 2.0 * (k2 + k3));
+        if !hnext.is_finite() {
+            return Err(Self::non_finite(
+                node_class,
+                BoundarySymbol::from("hnext"),
+                hnext,
+            ));
+        }
+        Ok(hnext)
+    }
+
+    fn crosses_threshold(h_start: f64, h_end: f64, threshold: f64) -> bool {
+        (h_start < threshold && h_end > threshold) || (h_start > threshold && h_end < threshold)
+    }
+
+    fn impoundment_crosses_regime_transition(
+        h_start: f64,
+        h_end: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> bool {
+        Self::crosses_threshold(h_start, h_end, coefficients.ha)
+            || Self::crosses_threshold(h_start, h_end, coefficients.ht)
+            || Self::crosses_threshold(h_start, h_end, coefficients.hlm)
+    }
+
+    fn integrate_impoundment_stage_with_adaptive_retry(
+        node_class: Ws10NodeClass,
+        stage_h: f64,
+        hfull: f64,
+        deltat: f64,
+        incoming_peak: f64,
+        qinf: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> Result<(f64, f64), Ws10GuardError> {
+        let mut dt = deltat;
+        let mut retries = 0_usize;
+
+        loop {
+            if retries >= WS12_IMPOUNDMENT_RETRY_LIMIT {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("adaptive_retry"),
+                    dt,
+                ));
+            }
+            if !dt.is_finite() || dt <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("deltat"),
+                    dt,
+                ));
+            }
+
+            let half_dt = 0.5 * dt;
+            if half_dt <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("deltat"),
+                    dt,
+                ));
+            }
+
+            let half_stage = Self::impoundment_rk4_step(
+                node_class,
+                stage_h,
+                half_dt,
+                incoming_peak,
+                qinf,
+                coefficients,
+            )?;
+            let two_half_stage = Self::impoundment_rk4_step(
+                node_class,
+                half_stage,
+                half_dt,
+                incoming_peak,
+                qinf,
+                coefficients,
+            )?;
+            let full_stage = Self::impoundment_rk4_step(
+                node_class,
+                stage_h,
+                dt,
+                incoming_peak,
+                qinf,
+                coefficients,
+            )?;
+
+            let stage_error = two_half_stage - full_stage;
+            if !stage_error.is_finite() {
+                return Err(Self::non_finite(
+                    node_class,
+                    BoundarySymbol::from("stage_error"),
+                    stage_error,
+                ));
+            }
+            let errmax = stage_error.abs() / WS12_IMPOUNDMENT_ERROR_SCALE;
+            if !errmax.is_finite() {
+                return Err(Self::non_finite(
+                    node_class,
+                    BoundarySymbol::from("errmax"),
+                    errmax,
+                ));
+            }
+            if errmax > 1.0 {
+                dt = 0.9 * dt * errmax.powf(-0.25);
+                retries += 1;
+                continue;
+            }
+
+            let corrected_hnext = two_half_stage + (stage_error / 15.0);
+            if !corrected_hnext.is_finite() {
+                return Err(Self::non_finite(
+                    node_class,
+                    BoundarySymbol::from("hnext"),
+                    corrected_hnext,
+                ));
+            }
+            if !(0.0..=hfull).contains(&corrected_hnext) {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("hnext"),
+                    corrected_hnext,
+                ));
+            }
+
+            if Self::impoundment_crosses_regime_transition(stage_h, corrected_hnext, coefficients)
+                && dt > WS10_ZERO_THRESHOLD * 2.0
+            {
+                dt *= 0.5;
+                retries += 1;
+                continue;
+            }
+
+            return Ok((corrected_hnext, dt));
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn route_impoundment_stage_over_duration(
+        node_class: Ws10NodeClass,
+        stage_h: f64,
+        hfull: f64,
+        deltat: f64,
+        total_duration_hours: f64,
+        incoming_peak: f64,
+        qinf: f64,
+        coefficients: Ws12ImpoundmentCoefficients,
+    ) -> Result<(f64, f64), Ws10GuardError> {
+        if !total_duration_hours.is_finite() || total_duration_hours <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("total_duration_hours"),
+                total_duration_hours,
+            ));
+        }
+
+        let mut stage = stage_h;
+        let mut remaining = total_duration_hours;
+        let mut last_accepted_dt = deltat;
+        let mut iterations = 0_usize;
+
+        while remaining > WS10_ZERO_THRESHOLD {
+            if iterations >= WS12_IMPOUNDMENT_RETRY_LIMIT {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("integration_iterations"),
+                    remaining,
+                ));
+            }
+            let step_trial_dt = deltat.min(remaining);
+            let (step_hnext, accepted_dt) = Self::integrate_impoundment_stage_with_adaptive_retry(
+                node_class,
+                stage,
+                hfull,
+                step_trial_dt,
+                incoming_peak,
+                qinf,
+                coefficients,
+            )?;
+            if !accepted_dt.is_finite() || accepted_dt <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("accepted_dt"),
+                    accepted_dt,
+                ));
+            }
+            if accepted_dt > remaining + WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("accepted_dt"),
+                    accepted_dt,
+                ));
+            }
+
+            stage = step_hnext;
+            remaining -= accepted_dt;
+            last_accepted_dt = accepted_dt;
+            iterations += 1;
+        }
+
+        Ok((stage, last_accepted_dt))
     }
 
     fn read_hillslope_peak_payload(
@@ -1276,43 +1636,55 @@ impl Ws10ChannelImpoundmentKernel {
         let _l1 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "l1")?;
         let _l2 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "l2")?;
 
-        let area = a0 + a1 * stage_h.powf(a2);
-        if !area.is_finite() || area <= WS10_ZERO_THRESHOLD {
+        let coefficients = Ws12ImpoundmentCoefficients {
+            a: coef_a,
+            b: coef_b,
+            c: coef_c,
+            d: coef_d,
+            e: coef_e,
+            ha,
+            ht,
+            hlm,
+            a0,
+            a1,
+            a2,
+        };
+
+        let incoming_duration_hours = incoming_duration / 3600.0;
+        if !incoming_duration_hours.is_finite() || incoming_duration_hours < 0.0 {
             return Err(Self::domain_violation(
                 node_class,
-                BoundarySymbol::from("area"),
-                area,
+                BoundarySymbol::from("incoming_duration"),
+                incoming_duration,
+            ));
+        }
+        let integration_horizon_hours = if incoming_duration_hours > WS10_ZERO_THRESHOLD {
+            incoming_duration_hours
+        } else {
+            deltat
+        };
+        if !integration_horizon_hours.is_finite()
+            || integration_horizon_hours <= WS10_ZERO_THRESHOLD
+        {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("integration_horizon_hours"),
+                integration_horizon_hours,
             ));
         }
 
-        let drop_spillway_q = if stage_h > ha {
-            coef_a * (stage_h - ha).powf(coef_b)
-        } else {
-            0.0
-        };
-        let culvert_q = if stage_h > ht {
-            coef_c * (stage_h - ht).powf(coef_d)
-        } else {
-            0.0
-        };
-        let riser_q = if stage_h > hlm {
-            coef_e * (stage_h - hlm)
-        } else {
-            0.0
-        };
+        let (hnext, accepted_deltat) = Self::route_impoundment_stage_over_duration(
+            node_class,
+            stage_h,
+            hfull,
+            deltat,
+            integration_horizon_hours,
+            incoming_peak,
+            qinf,
+            coefficients,
+        )?;
 
-        let qo = drop_spillway_q + culvert_q + riser_q;
-        if !qo.is_finite() {
-            return Err(Self::non_finite(node_class, BoundarySymbol::from("qo"), qo));
-        }
-        if qo < 0.0 {
-            return Err(Self::domain_violation(
-                node_class,
-                BoundarySymbol::from("qo"),
-                qo,
-            ));
-        }
-
+        let qo = Self::impoundment_outflow_at_stage(node_class, hnext, coefficients)?;
         let continuity_outflow = qo + qinf;
         if !continuity_outflow.is_finite() || continuity_outflow < 0.0 {
             return Err(Self::domain_violation(
@@ -1322,23 +1694,16 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let hnext = stage_h + (deltat * (incoming_peak - continuity_outflow) / area);
-        if !hnext.is_finite() {
-            return Err(Self::non_finite(
-                node_class,
-                BoundarySymbol::from("hnext"),
-                hnext,
-            ));
-        }
-        if !(0.0..=hfull).contains(&hnext) {
+        let accepted_duration_seconds = accepted_deltat * 3600.0;
+        if !accepted_duration_seconds.is_finite() || accepted_duration_seconds < 0.0 {
             return Err(Self::domain_violation(
                 node_class,
-                BoundarySymbol::from("hnext"),
-                hnext,
+                BoundarySymbol::from("accepted_duration_seconds"),
+                accepted_duration_seconds,
             ));
         }
 
-        let durout = incoming_duration.max(deltat);
+        let durout = incoming_duration.max(accepted_duration_seconds);
         if !durout.is_finite() || durout < 0.0 {
             return Err(Self::domain_violation(
                 node_class,

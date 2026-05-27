@@ -707,6 +707,13 @@ Authorized packages:
     writeback, promoting the matching WSHED03 expected-failure vector, and
     preserving typed fail-closed guard posture while documenting residual
     baseline `chnero/chnrt/detach` parity blockers for follow-on closure.
+- `20260527-wshedimpl07-watershed-impoundment-continuity-migration-001/`
+  - Purpose: execute WSHED07 by migrating WS12 impoundment continuity behavior
+    (RK4 integration, adaptive timestep retry, and regime-transition retry
+    controls) into watershed production execution, promoting the matching
+    WSHED03 expected-failure timestep-stability vector to active conformance,
+    and preserving fail-closed typed guard continuity while retaining explicit
+    active-structure projection blockers for follow-on closure.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

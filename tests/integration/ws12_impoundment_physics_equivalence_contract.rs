@@ -262,7 +262,6 @@ fn wshed03_contract_ws12_vector_requires_parser_projected_coefficients_without_m
 }
 
 #[test]
-#[ignore = "WSHED03 expected-failure vector until WSHED07 RK4/adaptive regime-transition migration lands"]
 fn wshed03_contract_ws12_vector_requires_regime_transition_timestep_stability() {
     let mut fine_step = seeded_ws12_surface();
     fine_step.state_surface.insert(
