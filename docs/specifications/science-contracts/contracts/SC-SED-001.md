@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -14,7 +14,7 @@ consumer_scope:
   - Comparator and replay consumers using erosion closure and sign-consistency surfaces
   - Adjacent soil/runoff/hydraulics domains providing required coupling inputs
 evidence_level: Static
-last_reviewed: 2026-05-26
+last_reviewed: 2026-05-27
 supersedes: []
 superseded_by: []
 ---
@@ -539,6 +539,7 @@ canonical `SC-*` contracts before production migration packages.
 | GAP-SED-003 | EROD12 ratifies cross-domain ownership/guard closure for required erosion-lane companion boundaries (`SC-HYDRAULICS-001`, `SC-ROUTE-001`) using canonical `SC-*` addenda and row-scoped guard ownership mapping. | Required Wave-0 cross-domain ownership semantics are canonicalized; erosion production implementation remains separately gated by `EROD13+` and non-Wave-0 companion gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SED-004 | Chapter-11 enrichment caveats for mixed-soil, multi-OFE composition effects remain and are explicitly retained as a documented limitation with governance risk acceptance. | Mixed-soil enrichment interpretation may still require manual investigation; this is accepted as an explicit model-governance caveat. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SED-005 | Baseline `route.for` segment-level branch family (`mshear 1..5`, upper-end deposition/detachment trees, post-detachment deposition closure) was migrated into openWEPP runtime kernels by EROD19 and revalidated by EROD21 parity rerun/hold-lift disposition. | Hillslope sediment-routing process parity closure is now recorded; ongoing comparator monitoring continues under EROD21 evidence artifacts. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-SED-006 | Watershed channel sediment process closure (`chnero/chnrt/detach`) remains open in companion watershed runtime work even though hillslope boundary payload authority (`INV-SED-010`) is explicit and enforced. | End-to-end watershed sediment-routing closure is blocked until companion WS10/WS11 integration and WSHED06 channel-sediment migration are complete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -558,3 +559,4 @@ canonical `SC-*` contracts before production migration packages.
 | `2026-05-25` | `11` | `Codex` | MOFE03 amendment: added production runner activation/seeding authority for `erod14_wave2_enabled` and enabled-path deterministic Wave-2 ingress synthesis from aligned topology/runtime surfaces with typed hard-fail derivation posture. |
 | `2026-05-26` | `12` | `Codex` | EROD16 amendment: added canonical hillslope `CONTIN -> ROUTE` branch-authority mapping (`mshear 1..5`, `depc/depend/depos/erod/enrich` routine chain), codified route-branch invariants and alias continuity requirements, corrected `rtpart.for` provenance classification, and opened `GAP-SED-005` until runtime migration closure. |
 | `2026-05-26` | `13` | `Codex` | EROD21 closure amendment: dispositioned `GAP-SED-005` to `closed` after EROD19 runtime migration + EROD21 parity rerun/hold-lift evidence, and updated impact language to reflect landed process parity. |
+| `2026-05-27` | `14` | `Codex` | WSHEDIMPL01 amendment: normalized unresolved cross-domain watershed sediment closure dependency (`GAP-SED-006`) so `SC-SED-001` boundary payload authority remains explicit while companion channel sediment migration (`chnero/chnrt/detach`) remains non-promotable until WSHED06 closure evidence lands. |

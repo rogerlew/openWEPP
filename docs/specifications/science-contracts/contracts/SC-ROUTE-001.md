@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-05-26
+last_reviewed: 2026-05-27
 supersedes: []
 superseded_by: []
 ---
@@ -65,6 +65,7 @@ Out of scope:
 | REF-ROUTE-WSHDRV-ORDER | `/workdir/wepp-forest_260430_baseline/src/wshdrv.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Channel execution-order authority for WS11: `wshcqi -> wshirs -> wshrun/wshpek`, plus direct `wshchr` routing path when `ipeak > 2` and local channel runoff is absent. | `[DIRECT][Static]` |
 | REF-ROUTE-WSHPEK-IPEAK | `/workdir/wepp-forest_260430_baseline/src/wshpek.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | `ipeak` method-selection authority (`1` modified Rational, `2` CREAMS, `>=3` wave-routing via `wshchr`) and peak/duration post-processing semantics. | `[DIRECT][Static]` |
 | REF-ROUTE-WSHCHR-WAVE | `/workdir/wepp-forest_260430_baseline/src/wshchr.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing authority (linear kinematic wave and Muskingum-Cunge branch equations, storage closure, routed `peakot`/`runvol`/`rundur` outputs). | `[DIRECT][Static]` |
+| REF-ROUTE-CHRQIN-WAVE | `/workdir/wepp-forest_260430_baseline/src/chrqin.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing inflow-state assembly authority for `ipeak > 2` (`q1`, `qin`, `qlat`, and segment-coefficient preparation surfaces). | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-DUR | `chap13.pdf` §13.4.3 Eq. [13.4.26] | Effective runoff-duration computation from volume and outlet peak. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-SVF | `chap13.pdf` §13.5.2 Eq. [13.5.1]-[13.5.5] | Spatially-varied flow and friction-slope relationships used by channel erosion routines. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-EFFLEN | `chap13.pdf` §13.5.3 Eq. [13.5.6]-[13.5.12] | Effective channel-length and discharge-distribution semantics for segment routing. | `[DIRECT][Static]` |
@@ -440,6 +441,8 @@ Minimum WS11 routing conformance vectors:
 | GAP-ROUTE-005 | Runtime workload guards for Chapter-13 applicability limits (small watershed intent and excluded process classes) are not yet bound to a concrete input-contract validator surface. | Applicability enforcement is governance-only until companion system/input contracts add explicit runtime selectors/guards. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-006 | WS11 wave-routing branch authority is anchored to pinned legacy static-code provenance (`wshcqi`, `wshdrv`, `wshpek`, `wshchr`) pending companion documentation that cross-indexes non-chapter method-lineage references in one canonical note. | Migration authority is executable and explicit, but review burden for non-chapter lineage remains elevated until companion documentation lands. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-007 | Legacy provenance confusion between watershed routing and hillslope `CONTIN -> ROUTE` branch logic required explicit scope partitioning; EROD16 closes the documentation ambiguity but downstream hillslope runtime parity remains governed by `SC-SED-001` queue stages. | Prevents false attribution of hillslope branch parity status to WS10 routing closure decisions. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-008 | WS11 runtime branch closure is incomplete in openWEPP watershed execution surfaces: legacy-equivalent channel runon/runoff families (`wshcqi/wshirs/wshrun`) and full `ipeak > 2` wave-routing state families (`q1/qin/qlat/c0..c4`) are not yet migrated as production kernel behavior. | Contract authority is explicit, but runtime parity claims for channel hydrology/routing remain blocked pending WSHED04/WSHED05 migration closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-009 | Watershed channel sediment routing process families (`chnero/chnrt/detach`) are not yet migrated into openWEPP watershed production kernels. | Channel sediment continuity/detachment/deposition parity and downstream sediment publication claims remain blocked pending WSHED06 closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -459,3 +462,4 @@ Minimum WS11 routing conformance vectors:
 | `2026-05-25` | `11` | `Codex` | EROD14 amendment: added active Wave-2 consumer-coupling authority for hillslope enrichment payload continuity (`sed_frac_*`, `ER`, class-wise closure surfaces) with explicit hard-fail posture for malformed boundary payloads. |
 | `2026-05-25` | `12` | `Codex` | EROD15 amendment: added Wave-3 HBP contributor-payload intake authority (`hs{ID}_total_detachment_kg`, `hs{ID}_total_deposition_kg`, class-counted concentration/fraction arrays) with explicit WS10 guard continuity under `INV-ROUTE-011`. |
 | `2026-05-26` | `13` | `Codex` | EROD16 amendment: added explicit scope partitioning between watershed routing authority and hillslope `CONTIN -> ROUTE` sediment-branch authority, corrected `rtpart.for` provenance classification, and ratified boundary continuity requirements for WS10 contributor-payload aliases. |
+| `2026-05-27` | `14` | `Codex` | WSHEDIMPL01 amendment: added explicit `chrqin.for` wave-routing lineage anchor, normalized watershed open-gap rows for unresolved WS11 runtime branch migration (`wshcqi/wshirs/wshrun`, `ipeak>2` state families), and opened explicit channel sediment runtime closure dependency (`chnero/chnrt/detach`) for WSHED05/WSHED06 sequencing. |

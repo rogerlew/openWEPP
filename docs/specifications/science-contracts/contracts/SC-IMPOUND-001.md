@@ -4,7 +4,7 @@ title: Surface Impoundment Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 6
 producer_scope:
   - Daily hydraulic routing state/flux surfaces for surface impoundments
   - Stage-discharge, stage-area, and evaporation/infiltration update surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Sediment-routing consumers receiving effluent concentration and sediment-mass terms
   - Comparator/replay consumers using contract confidence signals for watershed investigations
 evidence_level: Static
-last_reviewed: 2026-05-24
+last_reviewed: 2026-05-27
 supersedes: []
 superseded_by: []
 ---
@@ -341,6 +341,8 @@ Minimum WS12 impoundment conformance vectors:
 | GAP-IMPOUND-002 | Concrete openWEPP boundary/API names and conversion carriers for full mixed-unit Chapter-14 symbol families are not yet fixed. | WS10/WS12 production paths pin initial runtime aliases (`ws10_impoundment_*`) but complete mixed-unit alias/conversion closure remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-003 | Coupled canonical contracts (`SC-ROUTE-001`, `SC-SED-001`, `SC-SYSTEM-001`) are not yet all at draft `in_review` maturity. | Cross-contract closure of routing/sediment ownership boundaries remains provisional. | non-promotable | `[DIRECT][Static]` |
 | GAP-IMPOUND-004 | Filter-fence/straw-bale outflow behavior depends on slurry/clogging assumptions that Chapter 14 flags as user-sensitive and not fully captured by current coefficients. | High-flow performance interpretation for those structure types retains elevated uncertainty. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-IMPOUND-005 | WS12 parity-authoritative continuity behavior (RK4 stage integration, adaptive retry, and regime-transition reset from `imphnw/impflo/impmai`) is not yet runtime-true in current openWEPP watershed production kernels. | Impoundment parity claims remain blocked pending WSHED07 migration closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-IMPOUND-006 | Required parser-authoritative impoundment coefficient families (`a,b,c,d,e,ha,ht,hlm,a0,a1,a2,l0,l1,l2`) are not yet fully projected into watershed runtime seams in production pathways; current vectors still rely on synthetic/manual coefficient seeding. | Production WS12 conformance is blocked until WSHED04 seam closure eliminates manual coefficient injection. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -352,3 +354,4 @@ Minimum WS12 impoundment conformance vectors:
 | `2026-05-23` | `3` | `Codex` | WS10 amendment: added watershed production-kernel impoundment runtime alias surfaces (`ws10_impoundment_*` + dependency payloads), typed WS10 impoundment guard family (`WKERNEL-WS10-IMPOUNDMENT-E-001..003`), and contract-derived WS10 impoundment test-vector obligations. |
 | `2026-05-23` | `4` | `Codex` | ARCH22 amendment: added typed production-surface authority requiring covered WS10 impoundment interfaces to consume boundary symbols via ARCH22 typed symbol families and node-scoped builders while preserving WS10 guard-family continuity. |
 | `2026-05-24` | `5` | `Codex` | WS12 amendment: replaced WS10 headroom-retention surrogate parity authority with legacy-equivalent continuity + stage-discharge authority, added baseline provenance anchors (`imphnw/impflo/impmai/wshiqi/wshimp`), and ratified WS12 vectors with WS10 guard-family continuity. |
+| `2026-05-27` | `6` | `Codex` | WSHEDIMPL01 amendment: normalized unresolved WS12 migration gaps for runtime continuity/regime-transition closure and parser-to-runtime coefficient projection closure, mapping remaining blockers to WSHED04 and WSHED07 package sequencing. |

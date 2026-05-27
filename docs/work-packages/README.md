@@ -676,6 +676,16 @@ Authorized packages:
     `rtpart.for` provenance mismatch), and publish a dependency-ordered queue
     to migrate full segment routing and eliminate sediment-routing magic
     numbers.
+- `20260527-wshedplan01-watershed-channel-routing-orchestration-parquet-assessment-001/`
+  - Purpose: assess the work needed to implement watershed channel routing and
+    watershed orchestration to a fully scaffolded runtime path that can produce
+    non-placeholder watershed parquet interchange outputs, then publish a
+    dependency-ordered contract-first implementation queue.
+- `20260527-wshedimpl01-watershed-contract-authority-closure-and-gap-normalization-001/`
+  - Purpose: execute WSHED02 by normalizing canonical watershed contract
+    authority (`SC-ROUTE-001`, `SC-IMPOUND-001`, `SC-SED-001`, `SC-SYSTEM-001`)
+    and publishing explicit residual-gap mapping before WSHED03
+    contract-derived test and pre-implementation gate work.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
@@ -955,6 +965,11 @@ Authorized packages:
     `openwepp-hillslope-orchestrator/src/runtime_inputs.rs` into multiple
     cohesive source files while preserving exported API/runtime behavior and
     typed guard semantics.
+- `20260526-refactor005-openwepp-hillslope-orchestrator-kernel-support-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR005 by mechanically modularizing
+    `openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support.rs`
+    into multiple section files while preserving exported API/runtime behavior
+    and typed guard semantics.
 - `20260525-mofe01-multi-ofe-readiness-assessment-and-queue-001/`
   - Purpose: assess MOFE readiness across routing plus slope/landuse/soil
     OFE-cardinality parity and produce a dependency-aware
