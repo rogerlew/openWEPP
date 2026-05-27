@@ -225,6 +225,7 @@ A "gap" here means: the baseline routine has no Rust analog with the same algori
 
 - **Note 2026-05-25 (PM row):** wepp-forest dispatches PM only when `pmetpara.txt` is present ([infile.for:1538](../../../wepp-forest_260430_baseline/src/infile.for), [watbal.for:494](../../../wepp-forest_260430_baseline/src/watbal.for)). The fallback `evap.for` is itself a Hargraves/PT/Penman dispatcher keyed by wind-data availability. openWEPP implements only the no-wind PT branch — actual gap is **PM + Penman**.
 - **Note 2026-05-25 (snow row):** drop `sndrft.for` from the gap list. Call site at [winter.for:313-315](../../../wepp-forest_260430_baseline/src/winter.for) has been commented out since 1994-08-01; drift is dead in wepp-forest too.
+- **Note 2026-05-25 (watbal_hourly row):** correction — openWEPP has hourly lane infrastructure. [TimestepPolicy at hillslope/mod.rs:262](../../crates/openwepp-runner/src/hillslope/mod.rs#L262) defines `Daily | Hourly | SubHourly` variants, [ExecutionLane at L238](../../crates/openwepp-runner/src/hillslope/mod.rs#L238) exposes `Daily` and `Hourly` (sub-hourly is scaffold-only, `physics_enabled() = false`). SIMIMPL09 delivered the hourly lane foundation. [ComparatorSurfaceClass::HourlyWaterBalance](../../crates/openwepp-comparator-metadata/src/lib.rs#L46) routes hourly comparisons to the Investigation confidence tier per ADR-0011. What is **not** verified by this audit is whether `Wb11HydrologyKernel` runs different physics at hourly vs daily cadence, or whether hourly mode just re-ticks the daily kernels — that needs a separate check before claiming Brooks/Dun `watbal_hourly.for` parity.
 
 ### 10.3 Algorithmic-shape divergences worth confirming against contracts
 
@@ -236,10 +237,14 @@ A "gap" here means: the baseline routine has no Rust analog with the same algori
 | Snow | Hourly energy-balance with radiation/wind/canopy (`melt.for`) | Linear-temperature partition + degree-day-like melt × density factor ([hydrology.rs:2543-2596](../../crates/openwepp-hillslope-orchestrator/src/hydrology.rs#L2543-L2596)) | Same posture as frost — guards pass, but snow accumulation/melt trajectory will diverge. |
 | Impoundment | RK4 with adaptive timestep, regime-transition retry | Direct stage-area-discharge with composite outflow | Single-step approximation; transient regime behavior will not match. |
 | Hyetograph | `disag.for`/`brkpt.for` disaggregation from daily | Consumed as pre-prepared state surface | Possibly upstream-of-openWEPP; needs a documented contract boundary. |
+| PURK unsat fx exponent | `fx = stz ** hk(k1)` — **per-layer** exponent [perc.for:131](../../../wepp-forest_260430_baseline/src/perc.for) | `fx = stz ** WB18_PERC_SHAPE_EXPONENT` — single global constant ([03_kernel_support.rs:2935](../../crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support.rs#L2935)) | per-layer attenuation lost; layered profiles will diverge |
+| PURK saturation incl. frzw | `stz = (st + frzw) / ul` includes frozen water [perc.for:130](../../../wepp-forest_260430_baseline/src/perc.for) | `stz = θ / UL` (liquid only) | under frost, openWEPP under-counts saturation → over-estimates drainage |
+| PURK saturated-lower-layer override | `meblfc=1 → fx=1` when lower layer ≥ 95% saturated (Brooks/Dun 2007, ui_run mode) [perc.for:145-163](../../../wepp-forest_260430_baseline/src/perc.for) | not present | openWEPP applies fx reduction even when lower layer is saturated |
 
 ### 10.4 Parser-without-consumer surfaces
 
 - `pmetpara.rs` → `kcb`, basal-coefficient table parsed at [parsers/pmetpara.rs:501](../../crates/openwepp-input-contract/src/parsers/pmetpara.rs#L501), discarded at [hillslope/mod.rs:592](../../crates/openwepp-runner/src/hillslope/mod.rs#L592). [SC-INFILE-PMETPARA-001.md](../specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md) defines the input but no SC-EVAP path wires it to the ET kernel.
+- `soil.rs` → `ksatadj`, `ksatfac_mm_h`, `ksatrec_per_day` parsed at [parsers/soil.rs:238-242](../../crates/openwepp-input-contract/src/parsers/soil.rs#L238-L242). wepp-forest applies these in [infpar.for:618-647](../../../wepp-forest_260430_baseline/src/infpar.for) (A. Srivastava) to mutate saturated K via three regimes — `solwpv==9001` exponential recovery, `solwpv==9002` Saxton-Rawls Brooks-Corey `keff = ks · sat_frac^(2λ+3)`, `solwpv==9003` with burn-severity floor `lkeff`. No openWEPP kernel consumes these fields; the disturbed-land / forest / burn-recovery K adjustment is silently inert. Distinct from the PURK `fx` unsaturated shape function — `fx` scales drainage flux per day, `ksatadj` mutates the saturated K once at input time before Green-Ampt.
 - `snow.rs`, `frost.rs` parsers exist under [parsers/](../../crates/openwepp-input-contract/src/parsers/) but the runtime snow/frost computations are the reductions described above; the parsed-file detail likely does not flow into the runtime computation.
 
 These should either be wired into kernels or excised; leaving them as parser-only is a hidden-contract risk because the input files appear active but their content is silently inert.
@@ -258,10 +263,11 @@ If snow, frost, and channel-erosion are intended to become first-class kernels, 
 
 ### 10.7 Bottom line for cross-reference
 
-- **Confirmed-implemented physics** (matches algorithmic shape): ET (Priestley-Taylor), Ritchie two-stage soil evaporation, PURK percolation, Darcy lateral, Hooghoudt drainage, Green-Ampt coupled infiltration, KINEROS peak runoff, Foster-Meyer rill detachment/deposition, particle-class enrichment, ipeak-branch channel routing, stage-area-discharge impoundment.
-- **Confirmed-missing physics**: Penman-Monteith ET, energy-balance snow, fine-layer frost, channel sediment (chnero), RK4 impoundment timestep, furrow irrigation, hyetograph disaggregation, watershed-side `wshcqi`/`wshscs` routines.
+- **Confirmed-implemented physics** (matches algorithmic shape): ET (Priestley-Taylor no-wind branch), Ritchie two-stage soil evaporation, PURK percolation (with the per-layer / frzw / meblfc gaps noted below), Darcy lateral, Hooghoudt drainage, Green-Ampt coupled infiltration, KINEROS peak runoff, Foster-Meyer rill detachment/deposition, particle-class enrichment, ipeak-branch channel routing, stage-area-discharge impoundment.
+- **Confirmed-missing physics**: Penman-Monteith ET + Penman wind-data branch, energy-balance snow, fine-layer frost, channel sediment (chnero), RK4 impoundment timestep, furrow irrigation, hyetograph disaggregation, watershed-side `wshcqi`/`wshscs` routines, `ksatadj` disturbed-land K adjustment (three regimes).
 - **Confirmed reductions/placeholders** (guard surface satisfied, physics simplified): snow and frost coupling outcomes.
-- **Confirmed parser-without-consumer**: `pmetpara.kcb`; likely `snow`/`frost` parser detail.
+- **Confirmed parser-without-consumer**: `pmetpara.kcb`; `soil.ksatadj/ksatfac/ksatrec`; likely `snow`/`frost` parser detail.
+- **Confirmed PURK fx narrow divergences** (fx itself matches Eq. 7.4.3; the per-layer exponent, frzw inclusion, and meblfc override do not): see 10.3 rows.
 - **Algorithmic-shape divergence to confirm**: Yalin transport capacity (intentional per SC-SED-001 simpler form).
 
 ### 10.8 Caveats specific to Section 10
