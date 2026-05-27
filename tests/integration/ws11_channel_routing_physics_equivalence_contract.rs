@@ -26,6 +26,14 @@ NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
 NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
 NODE CHANNEL 2 H 3 0 0 C 0 0 0 I 1 0 0
 ";
+const VALID_TOPOLOGY_CHANNEL_DEPENDENCY: &str = r"
+HILLSLOPES 3
+CHANNELS 2
+IMPOUNDMENTS 1
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+NODE IMPOUNDMENT 1 H 2 0 0 C 0 0 0 I 0 0 0
+NODE CHANNEL 2 H 3 0 0 C 1 0 0 I 0 0 0
+";
 
 const STRICT_VALID_CHANINP: &str = include_str!("../fixtures/infile/chaninp/strict_valid.chaninp");
 const STRICT_VALID_WATERSHED_CHANNEL: &str =
@@ -207,7 +215,14 @@ fn seeded_ws11_surface() -> WatershedWritebackSurface {
 fn run_ws11_surface(
     surface: WatershedWritebackSurface,
 ) -> openwepp_watershed_orchestrator::WatershedKernelExecutionReport {
-    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    run_ws11_surface_with_topology(surface, VALID_TOPOLOGY)
+}
+
+fn run_ws11_surface_with_topology(
+    surface: WatershedWritebackSurface,
+    topology: &str,
+) -> openwepp_watershed_orchestrator::WatershedKernelExecutionReport {
+    let graph = parse_topology_fixture_str(topology).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
 
@@ -450,7 +465,11 @@ fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publicatio
         .as_f64();
 
     let report = run_ws11_surface(surface);
-    assert!(report.dispatch_report.is_success());
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshed03 channel sediment vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
 
     for symbol in ["ws10_channel_1_qsed", "ws10_channel_1_tc"] {
         assert!(
@@ -465,7 +484,173 @@ fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publicatio
     let expected_qsed = incoming_mass_kg / dtchr.max(300.0);
 
     assert!((qsed - expected_qsed).abs() <= 1.0e-12);
-    assert!((tc - qsed).abs() <= 1.0e-12);
+    assert!(tc.is_finite() && tc >= 0.0);
+    assert!(
+        (tc - qsed).abs() > 1.0e-9,
+        "tc must not collapse to the pre-migration surrogate identity tc=qsed"
+    );
+}
+
+#[test]
+fn wshedimpl18_contract_channel_transport_capacity_responds_to_particle_diameter() {
+    let mut baseline_surface = seeded_ws11_surface();
+    baseline_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    let baseline_report = run_ws11_surface(baseline_surface);
+    assert!(baseline_report.dispatch_report.is_success());
+
+    let baseline_qsed = state_value(&baseline_report, "ws10_channel_1_qsed");
+    let baseline_tc = state_value(&baseline_report, "ws10_channel_1_tc");
+
+    let mut perturbed_surface = seeded_ws11_surface();
+    perturbed_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("hs1_particle_diameter_m_0001"),
+        BoundaryValue::scalar(0.0005),
+    );
+    let perturbed_report = run_ws11_surface(perturbed_surface);
+    assert!(perturbed_report.dispatch_report.is_success());
+
+    let perturbed_qsed = state_value(&perturbed_report, "ws10_channel_1_qsed");
+    let perturbed_tc = state_value(&perturbed_report, "ws10_channel_1_tc");
+
+    assert!((baseline_qsed - perturbed_qsed).abs() <= 1.0e-12);
+    assert!(
+        (baseline_tc - perturbed_tc).abs() > 1.0e-9,
+        "transport-capacity branch must respond to class-diameter changes"
+    );
+}
+
+#[test]
+fn wshedimpl19_contract_channel_exports_class_payload_family() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl19 class-payload export vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let class_count = state_value(&report, "ws10_channel_1_particle_class_count");
+    assert!((class_count - 3.0).abs() <= 1.0e-12);
+
+    let mut fraction_sum = 0.0_f64;
+    for class in 1..=3 {
+        let fraction = state_value(
+            &report,
+            &format!("ws10_channel_1_particle_flow_fraction_{class:04}"),
+        );
+        let diameter = state_value(
+            &report,
+            &format!("ws10_channel_1_particle_diameter_m_{class:04}"),
+        );
+
+        assert!(fraction.is_finite() && (0.0..=1.0).contains(&fraction));
+        assert!(diameter.is_finite() && diameter > 0.0);
+        fraction_sum += fraction;
+    }
+    assert!((fraction_sum - 1.0).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshedimpl19_contract_channel_ingresses_upstream_channel_payload() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("hs3_total_detachment_kg"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("hs3_total_deposition_kg"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = run_ws11_surface_with_topology(surface, VALID_TOPOLOGY_CHANNEL_DEPENDENCY);
+    assert!(report.dispatch_report.is_success());
+
+    let upstream_qsed = state_value(&report, "ws10_channel_1_qsed");
+    let downstream_qsed = state_value(&report, "ws10_channel_2_qsed");
+
+    assert!(upstream_qsed > 0.0);
+    assert!((downstream_qsed - upstream_qsed).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshedimpl20_contract_case12_routing_is_opt_in_and_defaults_to_zero_diagnostics() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl20 opt-in vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    for symbol in [
+        "ws10_channel_1_ws20_case1_segment_count",
+        "ws10_channel_1_ws20_case2_segment_count",
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
+    ] {
+        assert!(
+            has_state_symbol(&report, symbol),
+            "missing required wshedimpl20 diagnostics symbol {symbol}"
+        );
+    }
+
+    assert!((state_value(&report, "ws10_channel_1_ws20_case1_segment_count") - 0.0).abs() <= 1e-12);
+    assert!((state_value(&report, "ws10_channel_1_ws20_case2_segment_count") - 0.0).abs() <= 1e-12);
+    assert!(
+        (state_value(
+            &report,
+            "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+        ) - 0.0)
+            .abs()
+            <= 1e-12
+    );
+}
+
+#[test]
+fn wshedimpl20_contract_case12_opt_in_tracks_detachment_unmigrated_diagnostics() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl20 opt-in vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let case1_segments = state_value(&report, "ws10_channel_1_ws20_case1_segment_count");
+    let case2_segments = state_value(&report, "ws10_channel_1_ws20_case2_segment_count");
+    let detachment_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
+    );
+
+    assert!(case1_segments >= 0.0);
+    assert!(case2_segments >= 0.0);
+    assert!(
+        detachment_unmigrated > 0.0,
+        "expected detachment-unmigrated diagnostics to be tracked under ws20 opt-in"
+    );
 }
 
 #[test]

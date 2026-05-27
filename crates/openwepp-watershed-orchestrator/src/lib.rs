@@ -182,6 +182,50 @@ const WS12_IMPOUNDMENT_ERROR_SCALE: f64 = 1.0e-4;
 const WS12_IMPOUNDMENT_RETRY_LIMIT: usize = 64;
 const WS15_CRSH_FROM_CHNTCR_SCALE: f64 = 0.021;
 const WS15_DEPTH_FROM_METERS_TO_FEET: f64 = 3.281;
+const WS18_LBS_PER_KG: f64 = 2.2064;
+const WS18_CFS_PER_CMS: f64 = 35.31984;
+const WS18_MIN_CHANNEL_SLOPE: f64 = 0.00006;
+const WS18_COVSH: f64 = 1000.0;
+const WS18_AGRAV: f64 = 32.2;
+const WS18_MSDH2O: f64 = 1.94;
+const WS18_WTDH2O: f64 = 62.4;
+const WS18_KNVIS: f64 = 1.05e-05;
+const WS18_YALCON: f64 = 0.635;
+const WS18_DEFAULT_CRSPG: [f64; 5] = [2.60, 2.65, 1.80, 1.60, 2.65];
+const WS20_FALVEL_CDRE: [f64; 9] = [
+    -3.0 * std::f64::consts::LN_10,
+    -2.0 * std::f64::consts::LN_10,
+    -std::f64::consts::LN_10,
+    0.0,
+    std::f64::consts::LN_10,
+    2.0 * std::f64::consts::LN_10,
+    3.0 * std::f64::consts::LN_10,
+    4.0 * std::f64::consts::LN_10,
+    5.0 * std::f64::consts::LN_10,
+];
+const WS20_FALVEL_CDRE2: [f64; 9] = [
+    -4.50986, -1.51413, 0.78846, 3.12676, 6.04025, 9.30565, 13.08154, 17.50439, 22.29188,
+];
+
+const WS18_SHIELD_REYNOLDS: [f64; 8] = [1.0, 2.0, 4.0, 8.0, 12.0, 100.0, 400.0, 1000.0];
+const WS18_SHIELD_VALUES: [f64; 8] = [0.0772, 0.0579, 0.04, 0.035, 0.034, 0.045, 0.055, 0.057];
+
+const WS18_HYDCHN_XLC: [f64; 16] = [
+    0.0, 0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.22, 0.24, 0.26, 0.28,
+];
+const WS18_HYDCHN_FGLC: [f64; 16] = [
+    100_000.0, 32.91, 15.487, 7.307, 4.849, 3.713, 3.075, 2.676, 2.408, 2.222, 2.089, 1.994, 1.928,
+    1.884, 1.858, 1.84866,
+];
+const WS18_HYDCHN_XXB: [f64; 27] = [
+    0.0, 0.01, 0.02, 0.04, 0.06, 0.08, 0.1, 0.12, 0.14, 0.16, 0.18, 0.2, 0.22, 0.24, 0.26, 0.28,
+    0.3, 0.32, 0.34, 0.36, 0.38, 0.4, 0.42, 0.44, 0.46, 0.48, 0.5,
+];
+const WS18_HYDCHN_FHXB: [f64; 27] = [
+    0.0, 0.000_474, 0.00154, 0.00509, 0.0104, 0.0177, 0.0269, 0.0384, 0.0524, 0.0693, 0.0897,
+    0.114, 0.1432, 0.1782, 0.2207, 0.2724, 0.3361, 0.4159, 0.5176, 0.6506, 0.8307, 1.0858, 1.4722,
+    2.1212, 3.4264, 7.3566, 10000.0,
+];
 
 const WS10_CHANNEL_GUARD_MISSING_SYMBOL: &str = "WKERNEL-WS10-CHANNEL-E-001";
 const WS10_CHANNEL_GUARD_NON_FINITE: &str = "WKERNEL-WS10-CHANNEL-E-002";
@@ -242,11 +286,46 @@ struct Ws12ImpoundmentCoefficients {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Ws15ChannelSedimentControls {
+    ishape: f64,
+    ctlz: f64,
     chnz: f64,
     chnnbr: f64,
     chntcr: f64,
     chnedm: f64,
     chneds: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws18HillslopeSedimentPayload {
+    mass_kg: f64,
+    fractions: Vec<f64>,
+    particle_diameters_m: Vec<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws19ChannelSedimentPublication {
+    qsed: f64,
+    tc: f64,
+    particle_flow_fractions: Vec<f64>,
+    particle_diameters_m: Vec<f64>,
+    ws20_case1_segments: u32,
+    ws20_case2_segments: u32,
+    ws20_detachment_unmigrated_segments: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws20IncomingPeakPartition {
+    hillslope_peak_cms: f64,
+    dependency_peak_cms: f64,
+    duration_s: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[allow(clippy::struct_field_names)]
+struct Ws20SegmentRoutingDiagnostics {
+    case1_segments: u32,
+    case2_segments: u32,
+    detachment_unmigrated_segments: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -528,6 +607,8 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Ok(Ws15ChannelSedimentControls {
+            ishape,
+            ctlz,
             chnz,
             chnnbr,
             chntcr,
@@ -540,7 +621,7 @@ impl Ws10ChannelImpoundmentKernel {
     fn require_ws17_channel_segment_scaffold(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
-    ) -> Result<(), Ws10GuardError> {
+    ) -> Result<usize, Ws10GuardError> {
         let node_id = request.node_id;
         let nslpts_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_nslpts"));
         let nslpts_raw =
@@ -665,7 +746,7 @@ impl Ws10ChannelImpoundmentKernel {
             previous_x = Some(x);
         }
 
-        Ok(())
+        Ok(nslpts)
     }
 
     fn require_flux_scalar(
@@ -1275,11 +1356,12 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((peak, duration))
     }
 
+    #[allow(clippy::too_many_lines)]
     fn read_hillslope_sediment_payload(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
         hillslope_id: u32,
-    ) -> Result<f64, Ws10GuardError> {
+    ) -> Result<Ws18HillslopeSedimentPayload, Ws10GuardError> {
         let total_detachment_symbol =
             WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg { hillslope_id };
         let total_deposition_symbol =
@@ -1344,6 +1426,10 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
+        let mut fractions = Vec::with_capacity(class_count);
+        let mut particle_diameters_m = Vec::with_capacity(class_count);
+        let mut fraction_sum = 0.0_f64;
+
         for class_index in 1..=class_count {
             let concentration_symbol =
                 WatershedProductionStateSymbol::HillslopeContributorSedimentConcentrationKgM3 {
@@ -1382,9 +1468,155 @@ impl Ws10ChannelImpoundmentKernel {
                 None,
             )?;
             Self::require_state_range(node_class, fraction_symbol, fraction, Some(0.0), Some(1.0))?;
+            fractions.push(fraction);
+            particle_diameters_m.push(particle_diameter);
+            fraction_sum += fraction;
         }
 
-        Ok((total_detachment - total_deposition).max(0.0))
+        if fraction_sum <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+
+        Ok(Ws18HillslopeSedimentPayload {
+            mass_kg: (total_detachment - total_deposition).max(0.0),
+            fractions,
+            particle_diameters_m,
+        })
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn read_channel_sediment_payload(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        channel_id: u32,
+        event_duration: f64,
+    ) -> Result<Ws18HillslopeSedimentPayload, Ws10GuardError> {
+        let qsed_symbol = Self::channel_wave_state_symbol(channel_id, "qsed");
+        let qsed =
+            Self::require_channel_state_symbol_scalar(request, node_class, qsed_symbol.clone())?;
+        Self::require_channel_control_range(node_class, qsed_symbol, qsed, Some(0.0), None)?;
+
+        if qsed <= WS10_ZERO_THRESHOLD {
+            return Ok(Ws18HillslopeSedimentPayload {
+                mass_kg: 0.0,
+                fractions: Vec::new(),
+                particle_diameters_m: Vec::new(),
+            });
+        }
+
+        let mass_kg = qsed * event_duration;
+        if !mass_kg.is_finite() || mass_kg < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{channel_id}_incoming_mass_kg")),
+                mass_kg,
+            ));
+        }
+
+        let class_count_symbol =
+            Self::channel_wave_state_symbol(channel_id, "particle_class_count");
+        let class_count_value = Self::require_channel_state_symbol_scalar(
+            request,
+            node_class,
+            class_count_symbol.clone(),
+        )?;
+        Self::require_channel_control_range(
+            node_class,
+            class_count_symbol.clone(),
+            class_count_value,
+            Some(1.0),
+            None,
+        )?;
+
+        let rounded_class_count = class_count_value.round();
+        if (class_count_value - rounded_class_count).abs() > WS11_IPEAK_INTEGER_TOLERANCE {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+        if rounded_class_count < 1.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+        let class_count = format!("{rounded_class_count:.0}")
+            .parse::<usize>()
+            .map_err(|_| {
+                Self::domain_violation(node_class, class_count_symbol.clone(), class_count_value)
+            })?;
+        if class_count == 0 {
+            return Err(Self::domain_violation(
+                node_class,
+                class_count_symbol,
+                class_count_value,
+            ));
+        }
+
+        let mut fractions = Vec::with_capacity(class_count);
+        let mut particle_diameters_m = Vec::with_capacity(class_count);
+        let mut fraction_sum = 0.0_f64;
+        for class_index in 1..=class_count {
+            let fraction_symbol = Self::channel_wave_state_symbol(
+                channel_id,
+                &format!("particle_flow_fraction_{class_index:04}"),
+            );
+            let particle_diameter_symbol = Self::channel_wave_state_symbol(
+                channel_id,
+                &format!("particle_diameter_m_{class_index:04}"),
+            );
+
+            let fraction = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                fraction_symbol.clone(),
+            )?;
+            let particle_diameter = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                particle_diameter_symbol.clone(),
+            )?;
+
+            Self::require_channel_control_range(
+                node_class,
+                fraction_symbol,
+                fraction,
+                Some(0.0),
+                Some(1.0),
+            )?;
+            Self::require_channel_control_range(
+                node_class,
+                particle_diameter_symbol,
+                particle_diameter,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            fractions.push(fraction);
+            particle_diameters_m.push(particle_diameter);
+            fraction_sum += fraction;
+        }
+
+        if fraction_sum <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                Self::channel_wave_state_symbol(channel_id, "particle_flow_fraction_sum"),
+                fraction_sum,
+            ));
+        }
+
+        Ok(Ws18HillslopeSedimentPayload {
+            mass_kg,
+            fractions,
+            particle_diameters_m,
+        })
     }
 
     fn read_dependency_peak_payload(
@@ -1425,18 +1657,19 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((peak, duration))
     }
 
-    fn assemble_incoming_peak_and_duration(
+    fn assemble_incoming_peak_partition(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
-    ) -> Result<(f64, f64), Ws10GuardError> {
-        let mut incoming_peak = 0.0_f64;
+    ) -> Result<Ws20IncomingPeakPartition, Ws10GuardError> {
+        let mut hillslope_peak = 0.0_f64;
+        let mut dependency_peak = 0.0_f64;
         let mut incoming_duration = 0.0_f64;
 
         for &hillslope_id in request.contributor_hillslopes {
             let (peak, duration) =
                 Self::read_hillslope_peak_payload(request, node_class, hillslope_id)?;
             let _ = Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
-            incoming_peak += peak;
+            hillslope_peak += peak;
             incoming_duration = incoming_duration.max(duration);
         }
 
@@ -1448,9 +1681,11 @@ impl Ws10ChannelImpoundmentKernel {
                 dependency_class,
                 dependency_id,
             )?;
-            incoming_peak += peak;
+            dependency_peak += peak;
             incoming_duration = incoming_duration.max(duration);
         }
+
+        let incoming_peak = hillslope_peak + dependency_peak;
 
         if !incoming_peak.is_finite() {
             return Err(Self::non_finite(
@@ -1481,7 +1716,22 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        Ok((incoming_peak, incoming_duration))
+        Ok(Ws20IncomingPeakPartition {
+            hillslope_peak_cms: hillslope_peak,
+            dependency_peak_cms: dependency_peak,
+            duration_s: incoming_duration,
+        })
+    }
+
+    fn assemble_incoming_peak_and_duration(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<(f64, f64), Ws10GuardError> {
+        let partition = Self::assemble_incoming_peak_partition(request, node_class)?;
+        Ok((
+            partition.hillslope_peak_cms + partition.dependency_peak_cms,
+            partition.duration_s,
+        ))
     }
 
     #[allow(clippy::similar_names)]
@@ -1526,11 +1776,880 @@ impl Ws10ChannelImpoundmentKernel {
         })
     }
 
+    fn ws18_linear_interpolate(x1: f64, y1: f64, x2: f64, y2: f64, x: f64) -> f64 {
+        let denominator = x2 - x1;
+        if denominator.abs() <= WS10_ZERO_THRESHOLD {
+            0.5 * (y1 + y2)
+        } else {
+            y1 + ((y2 - y1) * (x - x1) / denominator)
+        }
+    }
+
+    fn ws18_inverse_interpolate(
+        xs: &[f64],
+        ys: &[f64],
+        given: f64,
+        increasing: bool,
+    ) -> Option<f64> {
+        if xs.len() != ys.len() || xs.len() < 2 {
+            return None;
+        }
+
+        for index in 1..xs.len() {
+            let y0 = ys[index - 1];
+            let y1 = ys[index];
+            let in_range = if increasing {
+                given >= y0 && given <= y1
+            } else {
+                given <= y0 && given >= y1
+            };
+            if in_range {
+                return Some(Self::ws18_linear_interpolate(
+                    y0,
+                    xs[index - 1],
+                    y1,
+                    xs[index],
+                    given,
+                ));
+            }
+        }
+
+        None
+    }
+
+    fn ws18_shield_parameter(reyn: f64) -> f64 {
+        if reyn <= WS10_ZERO_THRESHOLD {
+            return WS18_SHIELD_VALUES[0];
+        }
+
+        let reynolds = reyn.ln();
+        if reyn < WS18_SHIELD_REYNOLDS[0] {
+            let i = 1;
+            let slope = (WS18_SHIELD_VALUES[i].ln() - WS18_SHIELD_VALUES[i - 1].ln())
+                / (WS18_SHIELD_REYNOLDS[i].ln() - WS18_SHIELD_REYNOLDS[i - 1].ln());
+            let ycr =
+                WS18_SHIELD_VALUES[0].ln() - (slope * (WS18_SHIELD_REYNOLDS[0].ln() - reynolds));
+            return ycr.exp();
+        }
+
+        if reyn > WS18_SHIELD_REYNOLDS[WS18_SHIELD_REYNOLDS.len() - 1] {
+            let i = WS18_SHIELD_REYNOLDS.len() - 1;
+            let slope = (WS18_SHIELD_VALUES[i].ln() - WS18_SHIELD_VALUES[i - 1].ln())
+                / (WS18_SHIELD_REYNOLDS[i].ln() - WS18_SHIELD_REYNOLDS[i - 1].ln());
+            let ycr = WS18_SHIELD_VALUES[i] + (slope * (reynolds - WS18_SHIELD_REYNOLDS[i].ln()));
+            return ycr.exp();
+        }
+
+        for i in 1..WS18_SHIELD_REYNOLDS.len() {
+            if reyn >= WS18_SHIELD_REYNOLDS[i - 1] && reyn <= WS18_SHIELD_REYNOLDS[i] {
+                let slope = (WS18_SHIELD_VALUES[i].ln() - WS18_SHIELD_VALUES[i - 1].ln())
+                    / (WS18_SHIELD_REYNOLDS[i].ln() - WS18_SHIELD_REYNOLDS[i - 1].ln());
+                let ycr = WS18_SHIELD_VALUES[i - 1].ln()
+                    + (slope * (reynolds - WS18_SHIELD_REYNOLDS[i - 1].ln()));
+                return ycr.exp();
+            }
+        }
+
+        WS18_SHIELD_VALUES[WS18_SHIELD_VALUES.len() - 1]
+    }
+
+    #[allow(
+        clippy::many_single_char_names,
+        clippy::too_many_arguments,
+        clippy::too_many_lines
+    )]
+    fn ws18_hydchn(
+        node_class: Ws10NodeClass,
+        flagc: i32,
+        q_cfs: f64,
+        sf: f64,
+        c1: f64,
+        z: f64,
+        wb: f64,
+        n: f64,
+        crsh: f64,
+        nbarch: f64,
+    ) -> Result<(f64, f64), Ws10GuardError> {
+        if q_cfs <= WS10_ZERO_THRESHOLD {
+            return Ok((0.0, 0.0));
+        }
+        if sf <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws18_hydchn_sf"),
+                sf,
+            ));
+        }
+        if n <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws18_hydchn_n"),
+                n,
+            ));
+        }
+        if nbarch <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws18_hydchn_nbarch"),
+                nbarch,
+            ));
+        }
+        if crsh <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws18_hydchn_crsh"),
+                crsh,
+            ));
+        }
+
+        let mut flag = flagc;
+        let mut n_total = n;
+        for _ in 0..8 {
+            let ap = (q_cfs * n_total / (1.49 * sf.sqrt())).powf(0.375);
+            let (w, a, nt) = if flag == 2 {
+                if wb <= WS10_ZERO_THRESHOLD {
+                    if c1 <= WS10_ZERO_THRESHOLD {
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from("ws18_hydchn_c1"),
+                            c1,
+                        ));
+                    }
+                    let y = ap / c1.powf(0.375);
+                    let w = 2.0 * y * z;
+                    let a = z * y * y;
+                    (w, a, n_total)
+                } else {
+                    let w = wb;
+                    let hxb = (ap / w).powf(8.0 / 3.0);
+                    let xb = if hxb <= 0.114 {
+                        let mut xbo = 0.2_f64;
+                        let mut xbn = xbo;
+                        for _ in 0..32 {
+                            let core = ((1.0 - (2.0 * xbo)) * hxb).max(0.0);
+                            xbn = core.powf(0.6);
+                            if xbn.abs() <= WS10_ZERO_THRESHOLD {
+                                xbn = 1.0e-10;
+                            }
+                            let dif = ((xbn - xbo) / xbn).abs();
+                            if dif <= 0.001 {
+                                break;
+                            }
+                            xbo = xbn;
+                        }
+                        xbn
+                    } else {
+                        Self::ws18_inverse_interpolate(
+                            &WS18_HYDCHN_XXB,
+                            &WS18_HYDCHN_FHXB,
+                            hxb.min(9999.99),
+                            true,
+                        )
+                        .unwrap_or(WS18_HYDCHN_XXB[WS18_HYDCHN_XXB.len() - 1])
+                    };
+                    let denominator = (1.0 - (2.0 * xb)).max(WS10_ZERO_THRESHOLD);
+                    let y = w * xb / denominator;
+                    let a = y * w;
+                    (w, a, n_total)
+                }
+            } else if flag >= 3 {
+                let ap_natural = (q_cfs * nbarch / (1.49 * sf.sqrt())).powf(0.375);
+                let glc = ap_natural * WS18_WTDH2O * sf / crsh;
+                if glc <= 1.84866 {
+                    if wb <= WS10_ZERO_THRESHOLD {
+                        flag = 1;
+                        continue;
+                    }
+                    flag = 2;
+                    continue;
+                }
+                let lc = Self::ws18_inverse_interpolate(
+                    &WS18_HYDCHN_XLC,
+                    &WS18_HYDCHN_FGLC,
+                    glc.min(99_999.999),
+                    false,
+                )
+                .unwrap_or(WS18_HYDCHN_XLC[WS18_HYDCHN_XLC.len() - 1]);
+                let rstar = (-0.34707 * (0.5 - lc).powi(3)) - (0.54213 * (0.5 - lc).powi(2))
+                    + (0.66383 * (0.5 - lc));
+                if rstar <= WS10_ZERO_THRESHOLD {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws18_hydchn_rstar"),
+                        rstar,
+                    ));
+                }
+                let w = (ap_natural / rstar.powf(0.625)) * (0.73 - (1.46 * lc));
+                if w <= WS10_ZERO_THRESHOLD {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws18_hydchn_w"),
+                        w,
+                    ));
+                }
+                let hxb = (ap_natural / w).powf(8.0 / 3.0);
+                let xb = Self::ws18_inverse_interpolate(
+                    &WS18_HYDCHN_XXB,
+                    &WS18_HYDCHN_FHXB,
+                    hxb.min(9999.99),
+                    true,
+                )
+                .unwrap_or(WS18_HYDCHN_XXB[WS18_HYDCHN_XXB.len() - 1]);
+                let denominator = (1.0 - (2.0 * xb)).max(WS10_ZERO_THRESHOLD);
+                let y = w * xb / denominator;
+                let a = y * w;
+                (w, a, nbarch)
+            } else {
+                if c1 <= WS10_ZERO_THRESHOLD {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws18_hydchn_c1"),
+                        c1,
+                    ));
+                }
+                let y = ap / c1.powf(0.375);
+                let w = 2.0 * y * z;
+                let a = z * y * y;
+                (w, a, n_total)
+            };
+
+            let wetted_area = a.max(1.0e-10);
+            let velocity = q_cfs / wetted_area;
+            let rsh = (velocity * nbarch / (1.49 * sf.sqrt())).powf(1.5);
+            let rcov = (velocity * (nt - nbarch) / (1.49 * sf.sqrt())).powf(1.5);
+            let effsh = WS18_WTDH2O * rsh * sf;
+            let mulsh = WS18_WTDH2O * rcov * sf;
+            if mulsh < WS18_COVSH {
+                return Ok((w, effsh.max(0.0)));
+            }
+
+            n_total = nbarch;
+        }
+
+        Err(Self::domain_violation(
+            node_class,
+            BoundarySymbol::from("ws18_hydchn_iteration_limit"),
+            f64::from(flag),
+        ))
+    }
+
+    #[allow(clippy::similar_names, clippy::too_many_lines)]
+    fn ws18_trncap(effsh: f64, qs: &[f64], crdia_ft: &[f64], crspg: &[f64]) -> Vec<f64> {
+        let class_count = qs.len();
+        if class_count == 0 || effsh <= 0.0 {
+            return vec![0.0; class_count];
+        }
+
+        let vstar = (effsh / WS18_MSDH2O).sqrt();
+        let coef_base = vstar * WS18_AGRAV * WS18_MSDH2O;
+
+        let mut coef = vec![0.0_f64; class_count];
+        let mut delta = vec![0.0_f64; class_count];
+        let mut p = vec![0.0_f64; class_count];
+        let mut dltrat = vec![0.0_f64; class_count];
+        let mut ws = vec![0.0_f64; class_count];
+        let mut qs_local = vec![0.0_f64; class_count];
+
+        for k in 0..class_count {
+            coef[k] = coef_base * crdia_ft[k] * crspg[k];
+            qs_local[k] = qs[k].max(1.0e-31);
+        }
+
+        let mut t = 0.0_f64;
+        for k in 0..class_count {
+            let reyn = vstar * crdia_ft[k] / WS18_KNVIS;
+            let ycrit = Self::ws18_shield_parameter(reyn.max(1.0e-12));
+            let mut delta_k =
+                (vstar * vstar / ((crspg[k] - 1.0) * WS18_AGRAV * crdia_ft[k] * ycrit)) - 1.0;
+            if delta_k <= 0.0 || !delta_k.is_finite() {
+                delta_k = 0.0;
+                p[k] = 0.0;
+            } else {
+                let sigma = delta_k * 2.45 * crspg[k].powf(-0.4) * ycrit.sqrt();
+                if sigma <= WS10_ZERO_THRESHOLD {
+                    p[k] = 0.0;
+                } else {
+                    p[k] = WS18_YALCON * delta_k * (1.0 - ((1.0 / sigma) * (1.0 + sigma).ln()));
+                }
+            }
+            delta[k] = delta_k;
+            t += delta_k;
+        }
+
+        if t == 0.0 {
+            t = 1000.0;
+        }
+
+        for k in 0..class_count {
+            dltrat[k] = delta[k] / t;
+            ws[k] = p[k] * dltrat[k] * coef[k];
+        }
+
+        let mut mycount = 0_u32;
+        loop {
+            let mut flagd1 = 0_usize;
+            let mut flagd2 = 0_usize;
+            let mut flagd3 = 0_usize;
+            let mut wsqrat = vec![0.0_f64; class_count];
+
+            for k in 0..class_count {
+                if qs_local[k] > 0.0 {
+                    wsqrat[k] = ws[k] / qs_local[k];
+                    if wsqrat[k] > 1.0 {
+                        flagd3 += 1;
+                    }
+                    if wsqrat[k] >= 1.0 {
+                        flagd1 += 1;
+                    }
+                    if wsqrat[k] <= 1.0 {
+                        flagd2 += 1;
+                    }
+                }
+            }
+
+            if flagd2 == class_count || flagd3 == class_count {
+                return ws;
+            }
+
+            if flagd3 != class_count {
+                mycount += 1;
+                if mycount > 20 || flagd1 == class_count {
+                    let mut smdrat = 0.0_f64;
+                    for k in 0..class_count {
+                        let denominator = coef[k] * p[k];
+                        if denominator > WS10_ZERO_THRESHOLD {
+                            smdrat += qs_local[k] / denominator;
+                        }
+                    }
+                    let a = if smdrat > WS10_ZERO_THRESHOLD {
+                        let mut scale = 1.0 / smdrat;
+                        if scale > 0.999_99 && scale < 1.000_009_9 {
+                            scale = 1.0;
+                        }
+                        scale
+                    } else {
+                        1.0
+                    };
+
+                    return qs_local.iter().map(|value| a * value).collect();
+                }
+            }
+
+            let mut smdrqt = 0.0_f64;
+            let mut smdrat = 0.0_f64;
+
+            for k in 0..class_count {
+                let ratio = if qs_local[k] > 0.0 {
+                    ws[k] / qs_local[k]
+                } else {
+                    0.0
+                };
+                if ratio >= 1.0 {
+                    let denominator = coef[k] * p[k];
+                    if denominator > WS10_ZERO_THRESHOLD {
+                        smdrqt += qs_local[k] / denominator;
+                    }
+                    ws[k] = qs_local[k];
+                } else {
+                    smdrat += dltrat[k];
+                }
+            }
+
+            let excap = 1.0 - smdrqt;
+            let smdrat_guard = if smdrat.abs() <= WS10_ZERO_THRESHOLD {
+                1_000_000.0
+            } else {
+                smdrat
+            };
+            for k in 0..class_count {
+                let ratio = if qs_local[k] > 0.0 {
+                    ws[k] / qs_local[k]
+                } else {
+                    0.0
+                };
+                if ratio < 1.0 {
+                    ws[k] = dltrat[k] / smdrat_guard * excap * p[k] * coef[k];
+                }
+            }
+        }
+    }
+
+    fn ws20_fall_velocity_ft_s(specific_gravity: f64, particle_diameter_ft: f64) -> f64 {
+        if particle_diameter_ft <= WS10_ZERO_THRESHOLD {
+            return 0.0;
+        }
+
+        let rtsid = ((specific_gravity - 1.0) * WS18_AGRAV * particle_diameter_ft.powi(3)
+            / WS18_KNVIS.powi(2))
+            * (8.0 / 6.0);
+        if rtsid >= 0.024 {
+            let rtsid_ln = rtsid.ln();
+            for index in 1..WS20_FALVEL_CDRE2.len() {
+                if WS20_FALVEL_CDRE2[index] > rtsid_ln {
+                    let x0 = WS20_FALVEL_CDRE2[index - 1];
+                    let x1 = WS20_FALVEL_CDRE2[index];
+                    let y0 = WS20_FALVEL_CDRE[index - 1];
+                    let y1 = WS20_FALVEL_CDRE[index];
+                    let reynolds_log = y0 + (((rtsid_ln - x0) / (x1 - x0)) * (y1 - y0));
+                    return reynolds_log.exp() * WS18_KNVIS / particle_diameter_ft;
+                }
+            }
+
+            return WS20_FALVEL_CDRE[WS20_FALVEL_CDRE.len() - 1].exp() * WS18_KNVIS
+                / particle_diameter_ft;
+        }
+
+        (particle_diameter_ft.powi(2) * (specific_gravity - 1.0) * WS18_AGRAV) / (WS18_KNVIS * 18.0)
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        clippy::many_single_char_names,
+        clippy::too_many_lines,
+        clippy::similar_names
+    )]
+    fn ws20_route_case12_segment_family(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        event_duration: f64,
+        qpo: f64,
+        roughness: f64,
+        sediment_controls: Ws15ChannelSedimentControls,
+        nslpts: usize,
+        peak_partition: Ws20IncomingPeakPartition,
+        top_class_mass_kg: &[f64],
+        lateral_class_mass_kg: &[f64],
+        class_diameters_m: &[f64],
+    ) -> Result<(Vec<f64>, Ws20SegmentRoutingDiagnostics), Ws10GuardError> {
+        if class_diameters_m.is_empty() {
+            return Ok((Vec::new(), Ws20SegmentRoutingDiagnostics::default()));
+        }
+
+        let class_count = class_diameters_m.len();
+        if top_class_mass_kg.len() != class_count || lateral_class_mass_kg.len() != class_count {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_class_cardinality"),
+                f64::from(u32::try_from(class_count).unwrap_or(u32::MAX)),
+            ));
+        }
+
+        let node_id = request.node_id;
+        let mut x_points_ft = Vec::with_capacity(nslpts);
+        let mut slopes = Vec::with_capacity(nslpts);
+        let mut widths_ft = Vec::with_capacity(nslpts);
+        for point_number in 1..=nslpts {
+            let x_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}"));
+            let slope_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}"));
+            let width_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}"));
+
+            let x_ft =
+                Self::require_channel_state_symbol_scalar(request, node_class, x_symbol.clone())?;
+            let slope = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                slope_symbol.clone(),
+            )?;
+            let width_ft = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                width_symbol.clone(),
+            )?;
+
+            Self::require_channel_control_range(node_class, x_symbol, x_ft, Some(0.0), None)?;
+            Self::require_channel_control_range(node_class, slope_symbol, slope, Some(0.0), None)?;
+            Self::require_channel_control_range(
+                node_class,
+                width_symbol,
+                width_ft,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            x_points_ft.push(x_ft);
+            slopes.push(slope.max(WS18_MIN_CHANNEL_SLOPE));
+            widths_ft.push(width_ft);
+        }
+
+        let Some(&leff_ft) = x_points_ft.last() else {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_effective_length_ft"),
+                0.0,
+            ));
+        };
+        if leff_ft <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_effective_length_ft"),
+                leff_ft,
+            ));
+        }
+
+        let q_cfs = qpo * WS18_CFS_PER_CMS;
+        if !q_cfs.is_finite() || q_cfs < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_q_cfs"),
+                q_cfs,
+            ));
+        }
+
+        let peak_sum_cms = peak_partition.hillslope_peak_cms + peak_partition.dependency_peak_cms;
+        if !peak_sum_cms.is_finite() || peak_sum_cms < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_peak_sum_cms"),
+                peak_sum_cms,
+            ));
+        }
+        let top_fraction = if peak_sum_cms > WS10_ZERO_THRESHOLD {
+            peak_partition.dependency_peak_cms / peak_sum_cms
+        } else {
+            0.0
+        };
+        if !top_fraction.is_finite() || !(0.0..=1.0).contains(&top_fraction) {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_top_fraction"),
+                top_fraction,
+            ));
+        }
+
+        let qu_top_cfs = q_cfs * top_fraction;
+        let qlat_cfs_per_ft = (q_cfs - qu_top_cfs) / leff_ft;
+        if !qlat_cfs_per_ft.is_finite() || qlat_cfs_per_ft < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws20_qlat_cfs_per_ft"),
+                qlat_cfs_per_ft,
+            ));
+        }
+
+        let mut gstu_lbs_s = vec![0.0_f64; class_count];
+        let mut dlat_lbs_s_ft = vec![0.0_f64; class_count];
+        let mut crdia_ft = vec![0.0_f64; class_count];
+        let mut crspg = vec![0.0_f64; class_count];
+        let mut fall_ft_s = vec![0.0_f64; class_count];
+        for class_offset in 0..class_count {
+            let specific_gravity =
+                WS18_DEFAULT_CRSPG
+                    .get(class_offset)
+                    .copied()
+                    .ok_or_else(|| {
+                        Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from(format!(
+                                "ws20_particle_class_{:04}",
+                                class_offset + 1
+                            )),
+                            f64::from(u32::try_from(class_offset + 1).unwrap_or(u32::MAX)),
+                        )
+                    })?;
+
+            let top_flux = top_class_mass_kg[class_offset] * WS18_LBS_PER_KG / event_duration;
+            let lateral_flux =
+                lateral_class_mass_kg[class_offset] * WS18_LBS_PER_KG / event_duration;
+            if !top_flux.is_finite() || top_flux < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("ws20_top_flux_{:04}", class_offset + 1)),
+                    top_flux,
+                ));
+            }
+            if !lateral_flux.is_finite() || lateral_flux < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("ws20_lateral_flux_{:04}", class_offset + 1)),
+                    lateral_flux,
+                ));
+            }
+
+            gstu_lbs_s[class_offset] = top_flux;
+            dlat_lbs_s_ft[class_offset] = lateral_flux / leff_ft;
+            crdia_ft[class_offset] =
+                class_diameters_m[class_offset] * WS15_DEPTH_FROM_METERS_TO_FEET;
+            crspg[class_offset] = specific_gravity;
+            fall_ft_s[class_offset] =
+                Self::ws20_fall_velocity_ft_s(specific_gravity, crdia_ft[class_offset]);
+        }
+
+        let flagc = if (sediment_controls.ishape - 2.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            2
+        } else {
+            1
+        };
+        let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
+
+        let mut diagnostics = Ws20SegmentRoutingDiagnostics::default();
+        for segment_index in 1..nslpts {
+            let x_upper_ft = x_points_ft[segment_index - 1];
+            let x_lower_ft = x_points_ft[segment_index];
+            let dx_ft = x_lower_ft - x_upper_ft;
+            if dx_ft <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws20_dx_ft"),
+                    dx_ft,
+                ));
+            }
+
+            let qu_cfs = qu_top_cfs + (qlat_cfs_per_ft * x_upper_ft);
+            let ql_cfs = qu_top_cfs + (qlat_cfs_per_ft * x_lower_ft);
+            if !qu_cfs.is_finite() || qu_cfs < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws20_qu_cfs"),
+                    qu_cfs,
+                ));
+            }
+            if !ql_cfs.is_finite() || ql_cfs < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws20_ql_cfs"),
+                    ql_cfs,
+                ));
+            }
+
+            let (mut wfu_ft, mut effshu) = Self::ws18_hydchn(
+                node_class,
+                flagc,
+                qu_cfs,
+                slopes[segment_index - 1],
+                sediment_controls.ctlz,
+                sediment_controls.chnz,
+                widths_ft[segment_index - 1],
+                roughness,
+                crsh,
+                sediment_controls.chnnbr,
+            )?;
+            let (mut wfl_ft, mut effshl) = Self::ws18_hydchn(
+                node_class,
+                flagc,
+                ql_cfs,
+                slopes[segment_index],
+                sediment_controls.ctlz,
+                sediment_controls.chnz,
+                widths_ft[segment_index],
+                roughness,
+                crsh,
+                sediment_controls.chnnbr,
+            )?;
+
+            if wfu_ft <= WS10_ZERO_THRESHOLD && qu_cfs <= WS10_ZERO_THRESHOLD {
+                wfu_ft = widths_ft[segment_index - 1];
+                effshu = 0.0;
+            }
+            if wfl_ft <= WS10_ZERO_THRESHOLD && ql_cfs <= WS10_ZERO_THRESHOLD {
+                wfl_ft = widths_ft[segment_index];
+                effshl = 0.0;
+            }
+            if wfu_ft <= WS10_ZERO_THRESHOLD || wfl_ft <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws20_width_ft"),
+                    wfu_ft.min(wfl_ft),
+                ));
+            }
+
+            let gsu_lbs_s_ft: Vec<f64> = gstu_lbs_s.iter().map(|flux| flux / wfu_ft).collect();
+            let tcu_lbs_s_ft = Self::ws18_trncap(effshu, &gsu_lbs_s_ft, &crdia_ft, &crspg);
+
+            let mut potld_lbs_s_ft = vec![0.0_f64; class_count];
+            for class_offset in 0..class_count {
+                potld_lbs_s_ft[class_offset] =
+                    (gstu_lbs_s[class_offset] + (dlat_lbs_s_ft[class_offset] * dx_ft)) / wfl_ft;
+            }
+            let tcl_lbs_s_ft = Self::ws18_trncap(effshl, &potld_lbs_s_ft, &crdia_ft, &crspg);
+
+            let mut dtcdx_lbs_s_ft2 = vec![0.0_f64; class_count];
+            for class_offset in 0..class_count {
+                dtcdx_lbs_s_ft2[class_offset] = ((tcl_lbs_s_ft[class_offset] * wfl_ft)
+                    - (tcu_lbs_s_ft[class_offset] * wfu_ft))
+                    / dx_ft;
+            }
+
+            let wfa_ft = 0.5 * (wfl_ft + wfu_ft);
+            let qtemp_cfs_per_ft = if qlat_cfs_per_ft > WS10_ZERO_THRESHOLD {
+                qlat_cfs_per_ft
+            } else {
+                0.0
+            };
+            let phi: Vec<f64> = if qtemp_cfs_per_ft > 0.0 {
+                fall_ft_s
+                    .iter()
+                    .map(|fall| fall * wfa_ft / qtemp_cfs_per_ft)
+                    .collect()
+            } else {
+                vec![0.0; class_count]
+            };
+
+            let mut excess = 1.0_f64;
+            for class_offset in 0..class_count {
+                if tcu_lbs_s_ft[class_offset] <= 1.0e-8 {
+                    excess = 0.0;
+                    break;
+                }
+                excess =
+                    excess.min(1.0 - (gsu_lbs_s_ft[class_offset] / tcu_lbs_s_ft[class_offset]));
+            }
+
+            if excess > 0.0 {
+                diagnostics.detachment_unmigrated_segments =
+                    diagnostics.detachment_unmigrated_segments.saturating_add(1);
+                for class_offset in 0..class_count {
+                    gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
+                }
+                continue;
+            }
+
+            let mut saw_case1 = false;
+            let mut saw_case2 = false;
+            let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+            let mut segment_route_invalid = false;
+            for class_offset in 0..class_count {
+                let xrat = if x_lower_ft > WS10_ZERO_THRESHOLD {
+                    x_upper_ft / x_lower_ft
+                } else {
+                    0.0
+                };
+                let du_lbs_s_ft2 = if qu_cfs > 1.0e-8 {
+                    let candidate = (fall_ft_s[class_offset] * wfu_ft / qu_cfs)
+                        * ((tcu_lbs_s_ft[class_offset] * wfu_ft) - gstu_lbs_s[class_offset]);
+                    candidate.min(0.0)
+                } else if segment_index == 1
+                    && qu_cfs < 0.001
+                    && dtcdx_lbs_s_ft2[class_offset] < dlat_lbs_s_ft[class_offset]
+                {
+                    let phi_k = phi[class_offset];
+                    if phi_k > WS10_ZERO_THRESHOLD {
+                        (phi_k / (1.0 + phi_k))
+                            * (dtcdx_lbs_s_ft2[class_offset] - dlat_lbs_s_ft[class_offset])
+                    } else {
+                        0.0
+                    }
+                } else {
+                    0.0
+                };
+
+                let expon = 1.0 + phi[class_offset];
+                let mut dl_lbs_s_ft2 = if qlat_cfs_per_ft > WS10_ZERO_THRESHOLD {
+                    let phi_k = phi[class_offset];
+                    let numerator =
+                        phi_k * (dtcdx_lbs_s_ft2[class_offset] - dlat_lbs_s_ft[class_offset]);
+                    (numerator / (1.0 + phi_k)) * (1.0 - xrat.powf(expon))
+                } else {
+                    dtcdx_lbs_s_ft2[class_offset]
+                };
+                dl_lbs_s_ft2 += du_lbs_s_ft2 * xrat.powf(expon);
+
+                let next_flux = if dl_lbs_s_ft2 <= 0.0 {
+                    saw_case1 = true;
+                    let phi_k = phi[class_offset];
+                    let gsl = if phi_k > WS10_ZERO_THRESHOLD {
+                        tcl_lbs_s_ft[class_offset] - ((dl_lbs_s_ft2 * x_lower_ft / phi_k) / wfl_ft)
+                    } else {
+                        0.0
+                    };
+                    gsl * wfl_ft
+                } else {
+                    saw_case2 = true;
+                    let xde_ft = if du_lbs_s_ft2.abs() <= WS10_ZERO_THRESHOLD {
+                        x_upper_ft
+                    } else if qlat_cfs_per_ft > WS10_ZERO_THRESHOLD {
+                        let den = dtcdx_lbs_s_ft2[class_offset] - dlat_lbs_s_ft[class_offset];
+                        if den.abs() <= WS10_ZERO_THRESHOLD
+                            || phi[class_offset] <= WS10_ZERO_THRESHOLD
+                        {
+                            x_upper_ft
+                        } else {
+                            let core = (1.0
+                                - (((1.0 + phi[class_offset]) / phi[class_offset])
+                                    * (du_lbs_s_ft2 / den)))
+                                .abs();
+                            x_upper_ft * core.powf(1.0 / (1.0 + phi[class_offset]))
+                        }
+                    } else if dtcdx_lbs_s_ft2[class_offset].abs() <= WS10_ZERO_THRESHOLD {
+                        x_upper_ft
+                    } else {
+                        x_upper_ft * (1.0 - (du_lbs_s_ft2 / dtcdx_lbs_s_ft2[class_offset]))
+                    };
+
+                    let gstde_lbs_s = if du_lbs_s_ft2.abs() <= WS10_ZERO_THRESHOLD {
+                        gstu_lbs_s[class_offset]
+                    } else {
+                        (dtcdx_lbs_s_ft2[class_offset] * (xde_ft - x_upper_ft))
+                            + (tcu_lbs_s_ft[class_offset] * wfu_ft)
+                    };
+                    let gsl_lbs_s_ft = if (xde_ft - x_lower_ft).abs() > WS10_ZERO_THRESHOLD {
+                        (gstde_lbs_s + (dlat_lbs_s_ft[class_offset] * (x_lower_ft - xde_ft)))
+                            / wfl_ft
+                    } else {
+                        tcl_lbs_s_ft[class_offset]
+                    };
+
+                    gsl_lbs_s_ft * wfl_ft
+                };
+
+                if !next_flux.is_finite() || next_flux < 0.0 {
+                    segment_route_invalid = true;
+                    break;
+                }
+                next_gstu_lbs_s[class_offset] = next_flux;
+            }
+
+            if segment_route_invalid {
+                diagnostics.detachment_unmigrated_segments =
+                    diagnostics.detachment_unmigrated_segments.saturating_add(1);
+                for class_offset in 0..class_count {
+                    gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
+                }
+                continue;
+            }
+
+            if saw_case1 {
+                diagnostics.case1_segments = diagnostics.case1_segments.saturating_add(1);
+            }
+            if saw_case2 {
+                diagnostics.case2_segments = diagnostics.case2_segments.saturating_add(1);
+            }
+            gstu_lbs_s = next_gstu_lbs_s;
+        }
+
+        let mut outgoing_class_mass_kg = vec![0.0_f64; class_count];
+        for class_offset in 0..class_count {
+            let mass_kg = gstu_lbs_s[class_offset] * event_duration / WS18_LBS_PER_KG;
+            if !mass_kg.is_finite() || mass_kg < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("ws20_outgoing_mass_kg_{:04}", class_offset + 1)),
+                    mass_kg,
+                ));
+            }
+            outgoing_class_mass_kg[class_offset] = mass_kg;
+        }
+
+        Ok((outgoing_class_mass_kg, diagnostics))
+    }
+
+    #[allow(
+        clippy::similar_names,
+        clippy::too_many_lines,
+        clippy::too_many_arguments
+    )]
     fn assemble_incoming_sediment_load_and_capacity(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
         event_duration: f64,
-    ) -> Result<(f64, f64), Ws10GuardError> {
+        qpo: f64,
+        roughness: f64,
+        sediment_controls: Ws15ChannelSedimentControls,
+        nslpts: usize,
+        peak_partition: Ws20IncomingPeakPartition,
+    ) -> Result<Ws19ChannelSedimentPublication, Ws10GuardError> {
         if !event_duration.is_finite() || event_duration <= WS10_ZERO_THRESHOLD {
             return Err(Self::domain_violation(
                 node_class,
@@ -1538,12 +2657,98 @@ impl Ws10ChannelImpoundmentKernel {
                 event_duration,
             ));
         }
+        if !qpo.is_finite() || qpo < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("qpo"),
+                qpo,
+            ));
+        }
+        if !roughness.is_finite() || roughness <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("roughness"),
+                roughness,
+            ));
+        }
 
         let mut incoming_sediment_mass_kg = 0.0_f64;
+        let mut class_mass_kg: Vec<f64> = Vec::new();
+        let mut class_diameter_mass_m: Vec<f64> = Vec::new();
+        let mut top_class_mass_kg: Vec<f64> = Vec::new();
+        let mut lateral_class_mass_kg: Vec<f64> = Vec::new();
         for &hillslope_id in request.contributor_hillslopes {
-            incoming_sediment_mass_kg +=
-                Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
+            let payload = Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
+            incoming_sediment_mass_kg += payload.mass_kg;
+            let fraction_sum = payload.fractions.iter().sum::<f64>();
+            if !fraction_sum.is_finite() || fraction_sum <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("hs{hillslope_id}_particle_flow_fraction_sum")),
+                    fraction_sum,
+                ));
+            }
+
+            for class_offset in 0..payload.fractions.len() {
+                if class_mass_kg.len() <= class_offset {
+                    class_mass_kg.resize(class_offset + 1, 0.0);
+                    class_diameter_mass_m.resize(class_offset + 1, 0.0);
+                    top_class_mass_kg.resize(class_offset + 1, 0.0);
+                    lateral_class_mass_kg.resize(class_offset + 1, 0.0);
+                }
+
+                let normalized_fraction = payload.fractions[class_offset] / fraction_sum;
+                let class_mass = payload.mass_kg * normalized_fraction;
+                class_mass_kg[class_offset] += class_mass;
+                class_diameter_mass_m[class_offset] +=
+                    class_mass * payload.particle_diameters_m[class_offset];
+                lateral_class_mass_kg[class_offset] += class_mass;
+            }
         }
+
+        for dependency in &request.dependency_nodes {
+            let (dependency_class, dependency_id) = Self::parse_dependency(node_class, dependency)?;
+            if dependency_class != Ws10NodeClass::Channel {
+                continue;
+            }
+
+            let payload = Self::read_channel_sediment_payload(
+                request,
+                node_class,
+                dependency_id,
+                event_duration,
+            )?;
+            incoming_sediment_mass_kg += payload.mass_kg;
+            if payload.mass_kg <= WS10_ZERO_THRESHOLD {
+                continue;
+            }
+
+            let fraction_sum = payload.fractions.iter().sum::<f64>();
+            if !fraction_sum.is_finite() || fraction_sum <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    Self::channel_wave_state_symbol(dependency_id, "particle_flow_fraction_sum"),
+                    fraction_sum,
+                ));
+            }
+
+            for class_offset in 0..payload.fractions.len() {
+                if class_mass_kg.len() <= class_offset {
+                    class_mass_kg.resize(class_offset + 1, 0.0);
+                    class_diameter_mass_m.resize(class_offset + 1, 0.0);
+                    top_class_mass_kg.resize(class_offset + 1, 0.0);
+                    lateral_class_mass_kg.resize(class_offset + 1, 0.0);
+                }
+
+                let normalized_fraction = payload.fractions[class_offset] / fraction_sum;
+                let class_mass = payload.mass_kg * normalized_fraction;
+                class_mass_kg[class_offset] += class_mass;
+                class_diameter_mass_m[class_offset] +=
+                    class_mass * payload.particle_diameters_m[class_offset];
+                top_class_mass_kg[class_offset] += class_mass;
+            }
+        }
+
         if !incoming_sediment_mass_kg.is_finite() || incoming_sediment_mass_kg < 0.0 {
             return Err(Self::domain_violation(
                 node_class,
@@ -1552,7 +2757,93 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let qsed = incoming_sediment_mass_kg / event_duration;
+        let class_mass_total = class_mass_kg.iter().copied().sum::<f64>();
+        let mut active_class_mass_kg = Vec::new();
+        let mut active_top_class_mass_kg = Vec::new();
+        let mut active_lateral_class_mass_kg = Vec::new();
+        let mut active_particle_diameters_m = Vec::new();
+        if class_mass_total > WS10_ZERO_THRESHOLD {
+            for class_offset in 0..class_mass_kg.len() {
+                let class_mass = class_mass_kg[class_offset];
+                if class_mass <= WS10_ZERO_THRESHOLD {
+                    continue;
+                }
+
+                let class_diameter_m = class_diameter_mass_m[class_offset] / class_mass;
+                if !class_diameter_m.is_finite() || class_diameter_m <= WS10_ZERO_THRESHOLD {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from(format!(
+                            "ws19_class_diameter_m_{:04}",
+                            class_offset + 1
+                        )),
+                        class_diameter_m,
+                    ));
+                }
+
+                active_class_mass_kg.push(class_mass);
+                active_top_class_mass_kg.push(*top_class_mass_kg.get(class_offset).unwrap_or(&0.0));
+                active_lateral_class_mass_kg
+                    .push(*lateral_class_mass_kg.get(class_offset).unwrap_or(&0.0));
+                active_particle_diameters_m.push(class_diameter_m);
+            }
+        }
+
+        let mut outgoing_class_mass_kg = active_class_mass_kg.clone();
+        let mut ws20_diagnostics = Ws20SegmentRoutingDiagnostics::default();
+        let ws20_case12_enable_symbol =
+            Self::channel_wave_state_symbol(request.node_id, "ws20_case12_enable");
+        let ws20_case12_enabled = match request.state_surface.get(&ws20_case12_enable_symbol) {
+            Some(value) => {
+                let scalar = value.as_f64();
+                if !scalar.is_finite() {
+                    return Err(Self::non_finite(
+                        node_class,
+                        ws20_case12_enable_symbol,
+                        scalar,
+                    ));
+                }
+                if scalar.abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+                    false
+                } else if (scalar - 1.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+                    true
+                } else {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from(format!(
+                            "ws10_channel_{}_ws20_case12_enable",
+                            request.node_id
+                        )),
+                        scalar,
+                    ));
+                }
+            }
+            None => false,
+        };
+
+        if ws20_case12_enabled
+            && qpo > WS10_ZERO_THRESHOLD
+            && incoming_sediment_mass_kg > WS10_ZERO_THRESHOLD
+            && !active_class_mass_kg.is_empty()
+        {
+            let (routed_masses, diagnostics) = Self::ws20_route_case12_segment_family(
+                request,
+                node_class,
+                event_duration,
+                qpo,
+                roughness,
+                sediment_controls,
+                nslpts,
+                peak_partition,
+                &active_top_class_mass_kg,
+                &active_lateral_class_mass_kg,
+                &active_particle_diameters_m,
+            )?;
+            outgoing_class_mass_kg = routed_masses;
+            ws20_diagnostics = diagnostics;
+        }
+
+        let qsed = outgoing_class_mass_kg.iter().copied().sum::<f64>() / event_duration;
         if !qsed.is_finite() || qsed < 0.0 {
             return Err(Self::domain_violation(
                 node_class,
@@ -1561,7 +2852,155 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let tc = qsed;
+        let mut particle_flow_fractions = Vec::new();
+        let mut particle_diameters_m = Vec::new();
+        let routed_class_total = outgoing_class_mass_kg.iter().copied().sum::<f64>();
+        if routed_class_total > WS10_ZERO_THRESHOLD {
+            for class_offset in 0..outgoing_class_mass_kg.len() {
+                let class_mass = outgoing_class_mass_kg[class_offset];
+                if class_mass <= WS10_ZERO_THRESHOLD {
+                    continue;
+                }
+                particle_flow_fractions.push(class_mass / routed_class_total);
+                particle_diameters_m.push(active_particle_diameters_m[class_offset]);
+            }
+
+            let published_fraction_sum = particle_flow_fractions.iter().copied().sum::<f64>();
+            if !published_fraction_sum.is_finite() || published_fraction_sum <= WS10_ZERO_THRESHOLD
+            {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws19_published_fraction_sum"),
+                    published_fraction_sum,
+                ));
+            }
+            for fraction in &mut particle_flow_fractions {
+                *fraction /= published_fraction_sum;
+            }
+        }
+
+        if qpo <= WS10_ZERO_THRESHOLD || incoming_sediment_mass_kg <= WS10_ZERO_THRESHOLD {
+            return Ok(Ws19ChannelSedimentPublication {
+                qsed,
+                tc: 0.0,
+                particle_flow_fractions,
+                particle_diameters_m,
+                ws20_case1_segments: ws20_diagnostics.case1_segments,
+                ws20_case2_segments: ws20_diagnostics.case2_segments,
+                ws20_detachment_unmigrated_segments: ws20_diagnostics
+                    .detachment_unmigrated_segments,
+            });
+        }
+
+        let node_id = request.node_id;
+        let slope_symbol =
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{nslpts:04}"));
+        let width_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{nslpts:04}"));
+
+        let terminal_slope =
+            Self::require_channel_state_symbol_scalar(request, node_class, slope_symbol.clone())?;
+        let terminal_width_ft =
+            Self::require_channel_state_symbol_scalar(request, node_class, width_symbol.clone())?;
+        Self::require_channel_control_range(
+            node_class,
+            slope_symbol,
+            terminal_slope,
+            Some(WS18_MIN_CHANNEL_SLOPE),
+            None,
+        )?;
+        Self::require_channel_control_range(
+            node_class,
+            width_symbol,
+            terminal_width_ft,
+            Some(WS10_ZERO_THRESHOLD),
+            None,
+        )?;
+
+        let q_cfs = qpo * WS18_CFS_PER_CMS;
+        if !q_cfs.is_finite() || q_cfs < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws18_q_cfs"),
+                q_cfs,
+            ));
+        }
+
+        let flagc = if (sediment_controls.ishape - 2.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            2
+        } else {
+            1
+        };
+        let c1 = sediment_controls.ctlz;
+        let sf = terminal_slope;
+        let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
+        let (flow_width_ft, effsh) = Self::ws18_hydchn(
+            node_class,
+            flagc,
+            q_cfs,
+            sf,
+            c1,
+            sediment_controls.chnz,
+            terminal_width_ft,
+            roughness,
+            crsh,
+            sediment_controls.chnnbr,
+        )?;
+        if flow_width_ft <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws18_flow_width_ft"),
+                flow_width_ft,
+            ));
+        }
+
+        let mut qs = Vec::new();
+        let mut crdia_ft = Vec::new();
+        let mut crspg = Vec::new();
+        for class_offset in 0..class_mass_kg.len() {
+            let class_mass = class_mass_kg[class_offset];
+            if class_mass <= WS10_ZERO_THRESHOLD {
+                continue;
+            }
+            let class_diameter_m = class_diameter_mass_m[class_offset] / class_mass;
+            if !class_diameter_m.is_finite() || class_diameter_m <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("ws18_class_diameter_m_{:04}", class_offset + 1)),
+                    class_diameter_m,
+                ));
+            }
+            let class_load_lbs_per_s = class_mass * WS18_LBS_PER_KG / event_duration;
+            if !class_load_lbs_per_s.is_finite() || class_load_lbs_per_s < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("ws18_class_load_lbs_s_{:04}", class_offset + 1)),
+                    class_load_lbs_per_s,
+                ));
+            }
+
+            qs.push(class_load_lbs_per_s / flow_width_ft);
+            crdia_ft.push(class_diameter_m * WS15_DEPTH_FROM_METERS_TO_FEET);
+            let specific_gravity =
+                WS18_DEFAULT_CRSPG
+                    .get(class_offset)
+                    .copied()
+                    .ok_or_else(|| {
+                        let class_index_u32 = u32::try_from(class_offset + 1).unwrap_or(u32::MAX);
+                        Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from(format!(
+                                "ws18_particle_class_index_{:04}",
+                                class_offset + 1
+                            )),
+                            f64::from(class_index_u32),
+                        )
+                    })?;
+            crspg.push(specific_gravity);
+        }
+
+        let tc_per_width = Self::ws18_trncap(effsh, &qs, &crdia_ft, &crspg);
+        let tc_lbs_per_s = tc_per_width.iter().copied().sum::<f64>() * flow_width_ft;
+        let tc = tc_lbs_per_s / WS18_LBS_PER_KG;
         if !tc.is_finite() || tc < 0.0 {
             return Err(Self::domain_violation(
                 node_class,
@@ -1570,7 +3009,15 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        Ok((qsed, tc))
+        Ok(Ws19ChannelSedimentPublication {
+            qsed,
+            tc,
+            particle_flow_fractions,
+            particle_diameters_m,
+            ws20_case1_segments: ws20_diagnostics.case1_segments,
+            ws20_case2_segments: ws20_diagnostics.case2_segments,
+            ws20_detachment_unmigrated_segments: ws20_diagnostics.detachment_unmigrated_segments,
+        })
     }
 
     fn require_ipeak_branch(
@@ -1599,7 +3046,7 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(branch)
     }
 
-    fn channel_wave_state_symbol(node_id: u32, suffix: &'static str) -> BoundarySymbol {
+    fn channel_wave_state_symbol(node_id: u32, suffix: &str) -> BoundarySymbol {
         BoundarySymbol::from(format!("ws10_channel_{node_id}_{suffix}"))
     }
 
@@ -1866,15 +3313,16 @@ impl Ws10ChannelImpoundmentKernel {
             None,
         )?;
         let sediment_controls = Self::read_ws15_channel_sediment_controls(request, node_class)?;
-        Self::require_ws17_channel_segment_scaffold(request, node_class)?;
+        let nslpts = Self::require_ws17_channel_segment_scaffold(request, node_class)?;
         let sediment_scaffold = Self::derive_ws15_channel_sediment_scaffold(
             node_class,
             request.node_id,
             sediment_controls,
         )?;
 
-        let (incoming_peak, incoming_duration) =
-            Self::assemble_incoming_peak_and_duration(request, node_class)?;
+        let peak_partition = Self::assemble_incoming_peak_partition(request, node_class)?;
+        let incoming_peak = peak_partition.hillslope_peak_cms + peak_partition.dependency_peak_cms;
+        let incoming_duration = peak_partition.duration_s;
 
         let routing_gain = (1.0 + control_slope) / (1.0 + roughness);
         if !routing_gain.is_finite() || routing_gain <= 0.0 {
@@ -2009,10 +3457,15 @@ impl Ws10ChannelImpoundmentKernel {
                 durrof,
             ));
         }
-        let (qsed, tc) = Self::assemble_incoming_sediment_load_and_capacity(
+        let sediment_publication = Self::assemble_incoming_sediment_load_and_capacity(
             request,
             node_class,
             event_duration,
+            qpo,
+            roughness,
+            sediment_controls,
+            nslpts,
+            peak_partition,
         )?;
 
         let Ok(status) =
@@ -2039,13 +3492,34 @@ impl Ws10ChannelImpoundmentKernel {
             WritebackField::bounded(durrof_symbol, durrof, Some(0.0), None),
             WritebackField::bounded(
                 Self::channel_wave_state_symbol(request.node_id, "qsed"),
-                qsed,
+                sediment_publication.qsed,
                 Some(0.0),
                 None,
             ),
             WritebackField::bounded(
                 Self::channel_wave_state_symbol(request.node_id, "tc"),
-                tc,
+                sediment_publication.tc,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws20_case1_segment_count"),
+                f64::from(sediment_publication.ws20_case1_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws20_case2_segment_count"),
+                f64::from(sediment_publication.ws20_case2_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(
+                    request.node_id,
+                    "ws20_detachment_unmigrated_segment_count",
+                ),
+                f64::from(sediment_publication.ws20_detachment_unmigrated_segments),
                 Some(0.0),
                 None,
             ),
@@ -2080,6 +3554,41 @@ impl Ws10ChannelImpoundmentKernel {
                 None,
             ),
         ];
+        let class_count_scalar = f64::from(
+            u32::try_from(sediment_publication.particle_flow_fractions.len()).unwrap_or(u32::MAX),
+        );
+        state_updates.push(WritebackField::bounded(
+            Self::channel_wave_state_symbol(request.node_id, "particle_class_count"),
+            class_count_scalar,
+            Some(0.0),
+            None,
+        ));
+        for (class_index, (fraction, diameter)) in sediment_publication
+            .particle_flow_fractions
+            .iter()
+            .zip(sediment_publication.particle_diameters_m.iter())
+            .enumerate()
+        {
+            let class = class_index + 1;
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(
+                    request.node_id,
+                    &format!("particle_flow_fraction_{class:04}"),
+                ),
+                *fraction,
+                Some(0.0),
+                Some(1.0),
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(
+                    request.node_id,
+                    &format!("particle_diameter_m_{class:04}"),
+                ),
+                *diameter,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            ));
+        }
         if let Some(state) = wave_state {
             let node_id = request.node_id;
             state_updates.push(WritebackField::bounded(

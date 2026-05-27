@@ -776,6 +776,30 @@ Authorized packages:
     parser payloads, wiring watershed CLI slope-driven seam seeding, and
     preserving explicit non-promotable HOLD posture on remaining full
     `chnero/chnrt/detach` process-parity migration blockers.
+- `20260527-wshedimpl18-channel-sediment-transport-capacity-authority-migration-001/`
+  - Purpose: execute WSHEDIMPL18 immediate next actions from WSHEDIMPL17 by
+    migrating WS10 channel sediment publication from surrogate `tc=qsed` to
+    baseline-lineage transport-capacity authority (`shield`/`trncap` +
+    hydraulic coupling), promoting WS11 vectors for `tc` process behavior, and
+    preserving explicit non-promotable HOLD posture on remaining
+    `chnero/chnrt/detach` segment-loop parity blockers.
+- `20260527-wshedimpl19-channel-sediment-branch-payload-export-and-upstream-ingress-001/`
+  - Purpose: execute WSHEDIMPL19 immediate next actions from WSHEDIMPL18 by
+    adding fail-closed WS10 channel sediment branch payload export
+    (`particle_class_count`, `particle_flow_fraction_{class:04}`,
+    `particle_diameter_m_{class:04}`), ingesting upstream channel-dependency
+    payloads into class-aware aggregation, promoting WS11 vectors for payload
+    export/ingress continuity, and preserving explicit non-promotable HOLD
+    posture on remaining `chnero/chnrt/detach` segment-loop parity blockers.
+- `20260527-wshedimpl20-channel-segment-case12-routing-and-diagnostics-001/`
+  - Purpose: execute WSHEDIMPL20 immediate next actions from WSHEDIMPL19 by
+    adding opt-in WS20 channel segment-loop `case12` routing scaffolding,
+    publishing explicit unresolved-detachment diagnostics
+    (`ws20_case1_segment_count`, `ws20_case2_segment_count`,
+    `ws20_detachment_unmigrated_segment_count`), promoting WS11 vectors for
+    default-off/opt-in continuity, and preserving explicit non-promotable HOLD
+    posture on remaining baseline-authoritative `chnero/chnrt/detach`
+    segment-loop parity blockers.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
