@@ -800,6 +800,14 @@ Authorized packages:
     default-off/opt-in continuity, and preserving explicit non-promotable HOLD
     posture on remaining baseline-authoritative `chnero/chnrt/detach`
     segment-loop parity blockers.
+- `20260527-wshedimpl21-channel-case34-enddet-routing-and-detach-gate-001/`
+  - Purpose: execute WSHEDIMPL21 immediate next actions from WSHEDIMPL20 by
+    adding WS21 opt-in case34 branch diagnostics scaffolding
+    (`ws10_channel_{id}_ws21_case34_enable`) and explicit WS21 diagnostics
+    publication (`ws21_case3_segment_count`, `ws21_case4_segment_count`,
+    `ws21_enddet_segment_count`, `ws21_detach_unmigrated_segment_count`) while
+    preserving non-promotable HOLD posture for remaining baseline-authoritative
+    `detach/dcap` migration and full `chnero/chnrt` parity closure.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

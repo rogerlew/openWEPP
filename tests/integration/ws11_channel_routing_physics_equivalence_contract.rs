@@ -654,6 +654,93 @@ fn wshedimpl20_contract_case12_opt_in_tracks_detachment_unmigrated_diagnostics()
 }
 
 #[test]
+fn wshedimpl21_contract_case34_routing_is_opt_in_and_defaults_to_zero_diagnostics() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl21 default-off vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    for symbol in [
+        "ws10_channel_1_ws21_case3_segment_count",
+        "ws10_channel_1_ws21_case4_segment_count",
+        "ws10_channel_1_ws21_enddet_segment_count",
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
+    ] {
+        assert!(
+            has_state_symbol(&report, symbol),
+            "missing required wshedimpl21 diagnostics symbol {symbol}"
+        );
+    }
+
+    assert!((state_value(&report, "ws10_channel_1_ws21_case3_segment_count") - 0.0).abs() <= 1e-12);
+    assert!((state_value(&report, "ws10_channel_1_ws21_case4_segment_count") - 0.0).abs() <= 1e-12);
+    assert!(
+        (state_value(&report, "ws10_channel_1_ws21_enddet_segment_count") - 0.0).abs() <= 1e-12
+    );
+    assert!(
+        (state_value(
+            &report,
+            "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+        ) - 0.0)
+            .abs()
+            <= 1e-12
+    );
+}
+
+#[test]
+fn wshedimpl21_contract_case34_opt_in_tracks_case34_and_unmigrated_diagnostics() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl21 opt-in vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
+    let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
+    let enddet_segments = state_value(&report, "ws10_channel_1_ws21_enddet_segment_count");
+    let detach_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
+    );
+    let ws20_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
+    );
+
+    assert!(
+        (case3_segments + case4_segments) > 0.0,
+        "expected ws21 case34 diagnostics to register at least one case3/case4 segment"
+    );
+    assert!(enddet_segments >= 0.0);
+    assert!(
+        detach_unmigrated > 0.0,
+        "expected ws21 detach/dcap unmigrated diagnostics to be tracked under ws21 opt-in"
+    );
+    assert!(ws20_unmigrated >= detach_unmigrated);
+}
+
+#[test]
 #[allow(clippy::similar_names)]
 fn wshedimpl15_contract_channel_sediment_scaffold_publishes_baseline_conversions() {
     let mut surface = seeded_ws11_surface();

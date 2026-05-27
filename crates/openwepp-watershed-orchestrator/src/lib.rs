@@ -311,6 +311,10 @@ struct Ws19ChannelSedimentPublication {
     ws20_case1_segments: u32,
     ws20_case2_segments: u32,
     ws20_detachment_unmigrated_segments: u32,
+    ws21_case3_segments: u32,
+    ws21_case4_segments: u32,
+    ws21_enddet_segments: u32,
+    ws21_detach_unmigrated_segments: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -326,6 +330,10 @@ struct Ws20SegmentRoutingDiagnostics {
     case1_segments: u32,
     case2_segments: u32,
     detachment_unmigrated_segments: u32,
+    case3_segments: u32,
+    case4_segments: u32,
+    enddet_segments: u32,
+    ws21_detach_unmigrated_segments: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -2211,6 +2219,7 @@ impl Ws10ChannelImpoundmentKernel {
     fn ws20_route_case12_segment_family(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
+        ws21_case34_enabled: bool,
         event_duration: f64,
         qpo: f64,
         roughness: f64,
@@ -2498,6 +2507,21 @@ impl Ws10ChannelImpoundmentKernel {
             }
 
             if excess > 0.0 {
+                if ws21_case34_enabled {
+                    let case3_segment = tcl_lbs_s_ft
+                        .iter()
+                        .zip(&potld_lbs_s_ft)
+                        .all(|(tcl, potld)| *tcl <= *potld);
+                    if case3_segment {
+                        diagnostics.case3_segments = diagnostics.case3_segments.saturating_add(1);
+                    } else {
+                        diagnostics.case4_segments = diagnostics.case4_segments.saturating_add(1);
+                        diagnostics.enddet_segments = diagnostics.enddet_segments.saturating_add(1);
+                    }
+                    diagnostics.ws21_detach_unmigrated_segments = diagnostics
+                        .ws21_detach_unmigrated_segments
+                        .saturating_add(1);
+                }
                 diagnostics.detachment_unmigrated_segments =
                     diagnostics.detachment_unmigrated_segments.saturating_add(1);
                 for class_offset in 0..class_count {
@@ -2633,6 +2657,30 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         Ok((outgoing_class_mass_kg, diagnostics))
+    }
+
+    fn read_channel_opt_in_toggle(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        suffix: &'static str,
+    ) -> Result<bool, Ws10GuardError> {
+        let toggle_symbol = Self::channel_wave_state_symbol(request.node_id, suffix);
+        let Some(value) = request.state_surface.get(&toggle_symbol) else {
+            return Ok(false);
+        };
+
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Self::non_finite(node_class, toggle_symbol, scalar));
+        }
+        if scalar.abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            return Ok(false);
+        }
+        if (scalar - 1.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            return Ok(true);
+        }
+
+        Err(Self::domain_violation(node_class, toggle_symbol, scalar))
     }
 
     #[allow(
@@ -2791,35 +2839,10 @@ impl Ws10ChannelImpoundmentKernel {
 
         let mut outgoing_class_mass_kg = active_class_mass_kg.clone();
         let mut ws20_diagnostics = Ws20SegmentRoutingDiagnostics::default();
-        let ws20_case12_enable_symbol =
-            Self::channel_wave_state_symbol(request.node_id, "ws20_case12_enable");
-        let ws20_case12_enabled = match request.state_surface.get(&ws20_case12_enable_symbol) {
-            Some(value) => {
-                let scalar = value.as_f64();
-                if !scalar.is_finite() {
-                    return Err(Self::non_finite(
-                        node_class,
-                        ws20_case12_enable_symbol,
-                        scalar,
-                    ));
-                }
-                if scalar.abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
-                    false
-                } else if (scalar - 1.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
-                    true
-                } else {
-                    return Err(Self::domain_violation(
-                        node_class,
-                        BoundarySymbol::from(format!(
-                            "ws10_channel_{}_ws20_case12_enable",
-                            request.node_id
-                        )),
-                        scalar,
-                    ));
-                }
-            }
-            None => false,
-        };
+        let ws20_case12_enabled =
+            Self::read_channel_opt_in_toggle(request, node_class, "ws20_case12_enable")?;
+        let ws21_case34_enabled =
+            Self::read_channel_opt_in_toggle(request, node_class, "ws21_case34_enable")?;
 
         if ws20_case12_enabled
             && qpo > WS10_ZERO_THRESHOLD
@@ -2829,6 +2852,7 @@ impl Ws10ChannelImpoundmentKernel {
             let (routed_masses, diagnostics) = Self::ws20_route_case12_segment_family(
                 request,
                 node_class,
+                ws21_case34_enabled,
                 event_duration,
                 qpo,
                 roughness,
@@ -2889,6 +2913,10 @@ impl Ws10ChannelImpoundmentKernel {
                 ws20_case2_segments: ws20_diagnostics.case2_segments,
                 ws20_detachment_unmigrated_segments: ws20_diagnostics
                     .detachment_unmigrated_segments,
+                ws21_case3_segments: ws20_diagnostics.case3_segments,
+                ws21_case4_segments: ws20_diagnostics.case4_segments,
+                ws21_enddet_segments: ws20_diagnostics.enddet_segments,
+                ws21_detach_unmigrated_segments: ws20_diagnostics.ws21_detach_unmigrated_segments,
             });
         }
 
@@ -3017,6 +3045,10 @@ impl Ws10ChannelImpoundmentKernel {
             ws20_case1_segments: ws20_diagnostics.case1_segments,
             ws20_case2_segments: ws20_diagnostics.case2_segments,
             ws20_detachment_unmigrated_segments: ws20_diagnostics.detachment_unmigrated_segments,
+            ws21_case3_segments: ws20_diagnostics.case3_segments,
+            ws21_case4_segments: ws20_diagnostics.case4_segments,
+            ws21_enddet_segments: ws20_diagnostics.enddet_segments,
+            ws21_detach_unmigrated_segments: ws20_diagnostics.ws21_detach_unmigrated_segments,
         })
     }
 
@@ -3520,6 +3552,33 @@ impl Ws10ChannelImpoundmentKernel {
                     "ws20_detachment_unmigrated_segment_count",
                 ),
                 f64::from(sediment_publication.ws20_detachment_unmigrated_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws21_case3_segment_count"),
+                f64::from(sediment_publication.ws21_case3_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws21_case4_segment_count"),
+                f64::from(sediment_publication.ws21_case4_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws21_enddet_segment_count"),
+                f64::from(sediment_publication.ws21_enddet_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(
+                    request.node_id,
+                    "ws21_detach_unmigrated_segment_count",
+                ),
+                f64::from(sediment_publication.ws21_detach_unmigrated_segments),
                 Some(0.0),
                 None,
             ),
