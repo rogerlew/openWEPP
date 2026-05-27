@@ -331,7 +331,6 @@ fn ws11_contract_conformance_distinguishes_ipeak_branches() {
 }
 
 #[test]
-#[ignore = "WSHED03 expected-failure vector until WSHED05 wave-routing state-family migration lands"]
 fn wshed03_contract_kw_mc_vector_requires_wave_routing_state_family_publication() {
     for ipeak in [3.0, 4.0] {
         let mut surface = seeded_ws11_surface();

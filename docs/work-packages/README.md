@@ -696,6 +696,11 @@ Authorized packages:
     coefficient projection seams (`a,b,c,d,e,ha,ht,hlm,a0,a1,a2,l0,l1,l2`),
     removing synthetic/manual WS12 coefficient seeding from contract vectors,
     and preserving fail-closed typed seam guard posture before WSHED05/06/07.
+- `20260527-wshedimpl05-watershed-wave-routing-state-family-migration-001/`
+  - Purpose: execute WSHED05 by migrating WS11 `ipeak > 2` wave-routing
+    lineage state-family publication (`q1/qin/qlat/c0..c4`), promoting the
+    matching WSHED03 expected-failure vector to active conformance, and
+    preserving typed fail-closed guard posture before WSHED06/07/08.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

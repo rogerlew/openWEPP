@@ -211,6 +211,18 @@ enum Ws11IpeakBranch {
     MuskingumCunge,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11WaveRoutingState {
+    q1: f64,
+    qin: f64,
+    qlat: f64,
+    c0: f64,
+    c1: f64,
+    c2: f64,
+    c3: f64,
+    c4: f64,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 struct Ws10GuardError {
     node_class: Ws10NodeClass,
@@ -648,6 +660,211 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(branch)
     }
 
+    fn channel_wave_state_symbol(node_id: u32, suffix: &'static str) -> BoundarySymbol {
+        BoundarySymbol::from(format!("ws10_channel_{node_id}_{suffix}"))
+    }
+
+    fn require_non_negative_computed(
+        node_class: Ws10NodeClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let symbol = symbol.into();
+        if !value.is_finite() {
+            return Err(Self::non_finite(node_class, symbol, value));
+        }
+        if value < 0.0 {
+            return Err(Self::domain_violation(node_class, symbol, value));
+        }
+        Ok(value)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn compute_kinematic_wave_state(
+        node_class: Ws10NodeClass,
+        roughness: f64,
+        conductivity: f64,
+        nchnum: f64,
+        routing_gain: f64,
+        incoming_peak: f64,
+        available_peak: f64,
+        baseflow_peak: f64,
+        dtchr: f64,
+        event_duration: f64,
+    ) -> Result<Ws11WaveRoutingState, Ws10GuardError> {
+        let qin = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qin"),
+            available_peak,
+        )?;
+        let qin_previous = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("q1_previous"),
+            incoming_peak,
+        )?;
+        let qlat = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qlat"),
+            baseflow_peak / event_duration,
+        )?;
+
+        let wave_storage = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("wave_storage"),
+            1.0 + (roughness * dtchr) + (conductivity * nchnum),
+        )?;
+        if wave_storage <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("wave_storage"),
+                wave_storage,
+            ));
+        }
+
+        let c0 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c0"),
+            1.0 / wave_storage,
+        )?;
+        let c1 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c1"),
+            routing_gain / (1.0 + routing_gain),
+        )?;
+        let c2 = 0.0;
+        let c3 =
+            Self::require_non_negative_computed(node_class, BoundarySymbol::from("c3"), 1.0 - c1)?;
+        let c4 = Self::require_non_negative_computed(node_class, BoundarySymbol::from("c4"), qlat)?;
+        let q1 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("q1"),
+            ((c1 * qin) + (c3 * qin_previous) + c4) * c0,
+        )?;
+
+        Ok(Ws11WaveRoutingState {
+            q1,
+            qin,
+            qlat,
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+        })
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn compute_muskingum_cunge_state(
+        node_class: Ws10NodeClass,
+        roughness: f64,
+        control_slope: f64,
+        conductivity: f64,
+        nchnum: f64,
+        incoming_peak: f64,
+        available_peak: f64,
+        baseflow_peak: f64,
+        dtchr: f64,
+        event_duration: f64,
+    ) -> Result<Ws11WaveRoutingState, Ws10GuardError> {
+        let qin = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qin"),
+            available_peak,
+        )?;
+        let qin_previous = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qin_previous"),
+            incoming_peak,
+        )?;
+        let q1_previous = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("q1_previous"),
+            incoming_peak,
+        )?;
+        let qlat = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qlat"),
+            baseflow_peak / event_duration,
+        )?;
+
+        let mc_translation = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("mc_translation"),
+            1.0 + (conductivity * dtchr),
+        )?;
+        if mc_translation <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("mc_translation"),
+                mc_translation,
+            ));
+        }
+
+        let mc_storage = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("mc_storage"),
+            1.0 + (roughness * dtchr) + (control_slope * nchnum),
+        )?;
+        if mc_storage <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("mc_storage"),
+                mc_storage,
+            ));
+        }
+
+        let denominator = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("mc_denominator"),
+            mc_translation + mc_storage,
+        )?;
+        if denominator <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("mc_denominator"),
+                denominator,
+            ));
+        }
+
+        let c0 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c0"),
+            1.0 / denominator,
+        )?;
+        let c1 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c1"),
+            mc_translation * c0,
+        )?;
+        let c2 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c2"),
+            0.5 * mc_storage * c0,
+        )?;
+        let c3 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c3"),
+            1.0 - c1 - c2,
+        )?;
+        let c4 = Self::require_non_negative_computed(node_class, BoundarySymbol::from("c4"), qlat)?;
+        let q1 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("q1"),
+            (c1 * qin) + (c2 * qin_previous) + (c3 * q1_previous) + c4,
+        )?;
+
+        Ok(Ws11WaveRoutingState {
+            q1,
+            qin,
+            qlat,
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+        })
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_channel_node(
         request: &WatershedKernelRequest<'_>,
@@ -749,6 +966,7 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
+        let mut wave_state: Option<Ws11WaveRoutingState> = None;
         let qpo = if available_peak <= WS10_ZERO_THRESHOLD {
             0.0
         } else {
@@ -776,37 +994,38 @@ impl Ws10ChannelImpoundmentKernel {
                     available_peak * creams_gain
                 }
                 Ws11IpeakBranch::KinematicWave => {
-                    let wave_storage = 1.0 + (roughness * dtchr) + (conductivity * nchnum);
-                    if !wave_storage.is_finite() || wave_storage <= 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            BoundarySymbol::from("wave_storage"),
-                            wave_storage,
-                        ));
-                    }
-
-                    available_peak / wave_storage
+                    let state = Self::compute_kinematic_wave_state(
+                        node_class,
+                        roughness,
+                        conductivity,
+                        nchnum,
+                        routing_gain,
+                        incoming_peak,
+                        available_peak,
+                        baseflow_peak,
+                        dtchr,
+                        event_duration,
+                    )?;
+                    let q1 = state.q1;
+                    wave_state = Some(state);
+                    q1
                 }
                 Ws11IpeakBranch::MuskingumCunge => {
-                    let mc_translation = 1.0 + (conductivity * dtchr);
-                    if !mc_translation.is_finite() || mc_translation <= 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            BoundarySymbol::from("mc_translation"),
-                            mc_translation,
-                        ));
-                    }
-
-                    let mc_storage = 1.0 + (roughness * dtchr) + (control_slope * nchnum);
-                    if !mc_storage.is_finite() || mc_storage <= 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            BoundarySymbol::from("mc_storage"),
-                            mc_storage,
-                        ));
-                    }
-
-                    available_peak * (mc_translation / mc_storage)
+                    let state = Self::compute_muskingum_cunge_state(
+                        node_class,
+                        roughness,
+                        control_slope,
+                        conductivity,
+                        nchnum,
+                        incoming_peak,
+                        available_peak,
+                        baseflow_peak,
+                        dtchr,
+                        event_duration,
+                    )?;
+                    let q1 = state.q1;
+                    wave_state = Some(state);
+                    q1
                 }
             }
         };
@@ -864,11 +1083,64 @@ impl Ws10ChannelImpoundmentKernel {
             field: WatershedChannelFluxField::Roff,
         };
 
+        let mut state_updates = vec![
+            WritebackField::bounded(qpo_symbol, qpo, Some(0.0), None),
+            WritebackField::bounded(durrof_symbol, durrof, Some(0.0), None),
+        ];
+        if let Some(state) = wave_state {
+            let node_id = request.node_id;
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "q1"),
+                state.q1,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "qin"),
+                state.qin,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "qlat"),
+                state.qlat,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "c0"),
+                state.c0,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "c1"),
+                state.c1,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "c2"),
+                state.c2,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "c3"),
+                state.c3,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                Self::channel_wave_state_symbol(node_id, "c4"),
+                state.c4,
+                Some(0.0),
+                None,
+            ));
+        }
+
         let writeback = KernelWritebackPayload::with_updates(
-            vec![
-                WritebackField::bounded(qpo_symbol, qpo, Some(0.0), None),
-                WritebackField::bounded(durrof_symbol, durrof, Some(0.0), None),
-            ],
+            state_updates,
             vec![WritebackField::bounded(roff_symbol, roff, Some(0.0), None)],
         );
 
