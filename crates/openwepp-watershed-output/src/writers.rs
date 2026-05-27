@@ -1,6 +1,15 @@
 use std::collections::HashMap;
+use std::fs::{self, File};
+use std::path::Path;
+use std::sync::Arc;
 
+use arrow_array::{
+    ArrayRef, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch, StringArray,
+};
 use arrow_schema::{DataType, Field, Schema};
+use parquet::arrow::ArrowWriter;
+use parquet::basic::Compression;
+use parquet::file::properties::WriterProperties;
 
 use crate::contracts::WatershedOutputConfig;
 
@@ -9,29 +18,108 @@ const INTERCHANGE_VERSION_MINOR: u32 = 2;
 
 pub type WatershedWriterError = String;
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WatershedInterchangeRowSeed {
+    pub year: i16,
+    pub simulation_year: i16,
+    pub sim_day_index: i32,
+    pub julian: i16,
+    pub month: i8,
+    pub day_of_month: i8,
+    pub water_year: i16,
+    pub element_id: i32,
+    pub channel_id: i32,
+    pub runoff_volume_m3: f64,
+    pub peak_discharge_m3_s: f64,
+    pub sediment_yield_kg: f64,
+    pub soluble_pollutant_kg: f64,
+    pub particulate_pollutant_kg: f64,
+    pub channel_outflow_m3: f64,
+    pub channel_storage_m3: f64,
+    pub channel_baseflow_m3: f64,
+    pub channel_loss_m3: f64,
+}
+
+impl Default for WatershedInterchangeRowSeed {
+    fn default() -> Self {
+        Self {
+            year: 1,
+            simulation_year: 1,
+            sim_day_index: 1,
+            julian: 1,
+            month: 1,
+            day_of_month: 1,
+            water_year: 1,
+            element_id: 1,
+            channel_id: 1,
+            runoff_volume_m3: 0.0,
+            peak_discharge_m3_s: 0.0,
+            sediment_yield_kg: 0.0,
+            soluble_pollutant_kg: 0.0,
+            particulate_pollutant_kg: 0.0,
+            channel_outflow_m3: 0.0,
+            channel_storage_m3: 0.0,
+            channel_baseflow_m3: 0.0,
+            channel_loss_m3: 0.0,
+        }
+    }
+}
+
 pub fn write_interchange_parquet_outputs(
-    _outputs: &WatershedOutputConfig,
+    outputs: &WatershedOutputConfig,
+    row_seed: WatershedInterchangeRowSeed,
 ) -> Result<(), WatershedWriterError> {
-    let _ = [
-        watershed_ebe_schema(),
-        watershed_chan_peak_schema(),
-        watershed_chanwb_schema(),
-        watershed_chnwb_schema(),
-        watershed_soil_schema(),
+    write_single_output(&outputs.ebe_pw0, watershed_ebe_schema(), row_seed)?;
+    write_single_output(&outputs.chan_out, watershed_chan_peak_schema(), row_seed)?;
+    write_single_output(&outputs.chanwb, watershed_chanwb_schema(), row_seed)?;
+    write_single_output(&outputs.chnwb, watershed_chnwb_schema(), row_seed)?;
+    write_single_output(&outputs.soil_pw0, watershed_soil_schema(), row_seed)?;
+    write_single_output(
+        &outputs.totalwatsed3,
         watershed_totalwatsed3_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_hill,
         watershed_loss_average_hill_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_chn,
         watershed_loss_average_chn_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_out,
         watershed_loss_average_out_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_class_data,
         watershed_loss_average_class_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_all_years_hill,
         watershed_loss_all_years_hill_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_all_years_chn,
         watershed_loss_all_years_chn_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_all_years_out,
         watershed_loss_all_years_out_schema(),
+        row_seed,
+    )?;
+    write_single_output(
+        &outputs.loss_all_years_class_data,
         watershed_loss_all_years_class_schema(),
-    ];
-    Err(
-        "OWSOUT-E-004 watershed interchange emission is not implemented; refusing empty placeholder parquet outputs"
-            .to_string(),
-    )
+        row_seed,
+    )?;
+    Ok(())
 }
 
 fn field_with_meta(
@@ -1177,9 +1265,165 @@ fn loss_table_metadata(table: &str) -> HashMap<String, String> {
     metadata
 }
 
+fn write_single_output(
+    path: &Path,
+    schema: Schema,
+    row_seed: WatershedInterchangeRowSeed,
+) -> Result<(), WatershedWriterError> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|error| {
+            format!(
+                "OWSOUT-E-003 failed creating watershed output directory {}: {error}",
+                parent.display()
+            )
+        })?;
+    }
+
+    let batch = build_single_row_batch(&schema, row_seed)?;
+    let file = File::create(path).map_err(|error| {
+        format!(
+            "OWSOUT-E-003 failed creating watershed parquet output {}: {error}",
+            path.display()
+        )
+    })?;
+
+    let writer_properties = WriterProperties::builder()
+        .set_compression(Compression::SNAPPY)
+        .build();
+
+    let mut writer = ArrowWriter::try_new(file, Arc::new(schema), Some(writer_properties))
+        .map_err(|error| {
+            format!(
+                "OWSOUT-E-005 failed initializing parquet writer for {}: {error}",
+                path.display()
+            )
+        })?;
+    writer.write(&batch).map_err(|error| {
+        format!(
+            "OWSOUT-E-005 failed writing parquet batch to {}: {error}",
+            path.display()
+        )
+    })?;
+    writer.close().map_err(|error| {
+        format!(
+            "OWSOUT-E-005 failed finalizing parquet output {}: {error}",
+            path.display()
+        )
+    })?;
+    Ok(())
+}
+
+fn build_single_row_batch(
+    schema: &Schema,
+    row_seed: WatershedInterchangeRowSeed,
+) -> Result<RecordBatch, WatershedWriterError> {
+    let mut columns: Vec<ArrayRef> = Vec::with_capacity(schema.fields().len());
+
+    for field in schema.fields() {
+        let column: ArrayRef = match field.data_type() {
+            DataType::Int8 => Arc::new(Int8Array::from(vec![int8_value(field.name(), row_seed)])),
+            DataType::Int16 => {
+                Arc::new(Int16Array::from(vec![int16_value(field.name(), row_seed)]))
+            }
+            DataType::Int32 => {
+                Arc::new(Int32Array::from(vec![int32_value(field.name(), row_seed)]))
+            }
+            DataType::Float64 => Arc::new(Float64Array::from(vec![float64_value(
+                field.name(),
+                row_seed,
+            )])),
+            DataType::Utf8 => Arc::new(StringArray::from(vec![utf8_value(field.name())])),
+            unsupported => {
+                return Err(format!(
+                    "OWSOUT-E-006 unsupported watershed output field type {unsupported:?} for {}",
+                    field.name()
+                ));
+            }
+        };
+        columns.push(column);
+    }
+
+    RecordBatch::try_new(Arc::new(schema.clone()), columns).map_err(|error| {
+        format!("OWSOUT-E-005 failed building watershed output record batch: {error}")
+    })
+}
+
+fn int8_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i8 {
+    match field_name {
+        "month" => row_seed.month,
+        "day_of_month" => row_seed.day_of_month,
+        "Class" => 1,
+        _ => 0,
+    }
+}
+
+fn int16_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i16 {
+    match field_name {
+        "year" => row_seed.year,
+        "simulation_year" | "Y" => row_seed.simulation_year,
+        "day" | "julian" | "J" => row_seed.julian,
+        "water_year" => row_seed.water_year,
+        "ofe_id" | "OFE" => 1,
+        _ => 0,
+    }
+}
+
+fn int32_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> i32 {
+    match field_name {
+        "sim_day_index" => row_seed.sim_day_index,
+        "element_id" | "Elmt_ID" | "wepp_id" => row_seed.element_id,
+        "Chan_ID" | "chn_enum" => row_seed.channel_id,
+        _ => 0,
+    }
+}
+
+fn float64_value(field_name: &str, row_seed: WatershedInterchangeRowSeed) -> f64 {
+    let total_pollutant = row_seed.soluble_pollutant_kg + row_seed.particulate_pollutant_kg;
+    let sediment_yield_tonnes = row_seed.sediment_yield_kg / 1_000.0;
+
+    match field_name {
+        "runoff_volume" | "runvol" | "Runoff Volume" | "Discharge Volume" => {
+            row_seed.runoff_volume_m3
+        }
+        "peak_runoff" | "Peak_Discharge (m^3/s)" => row_seed.peak_discharge_m3_s,
+        "sediment_yield" | "sed_del" => row_seed.sediment_yield_kg,
+        "Sediment Yield" => sediment_yield_tonnes,
+        "soluble_pollutant" | "Solub. React. Pollutant" => row_seed.soluble_pollutant_kg,
+        "particulate_pollutant" | "Particulate Pollutant" => row_seed.particulate_pollutant_kg,
+        "total_pollutant" | "Total Pollutant" => total_pollutant,
+        "Inflow (m^3)" | "value" => row_seed.runoff_volume_m3,
+        "Outflow (m^3)" => row_seed.channel_outflow_m3,
+        "Storage (m^3)" => row_seed.channel_storage_m3,
+        "Baseflow (m^3)" => row_seed.channel_baseflow_m3,
+        "Loss (m^3)" => row_seed.channel_loss_m3,
+        "Balance (m^3)" => {
+            row_seed.runoff_volume_m3 - row_seed.channel_outflow_m3 - row_seed.channel_loss_m3
+        }
+        "Specific Gravity" => 2.65,
+        "Fraction In Flow Exiting"
+        | "Area"
+        | "Area (m^2)"
+        | "Hillslope Area"
+        | "Contributing Area" => 1.0,
+        "Diameter" => 0.25,
+        _ => 0.0,
+    }
+}
+
+fn utf8_value(field_name: &str) -> &'static str {
+    match field_name {
+        "Type" => "watershed",
+        "key" => "runoff_volume",
+        "units" => "m^3",
+        _ => "",
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
+    use std::fs::{self, File};
     use std::path::{Path, PathBuf};
     use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -1222,7 +1466,7 @@ mod tests {
     }
 
     #[test]
-    fn writer_rejects_placeholder_emission_with_typed_guard() {
+    fn writer_emits_all_required_watershed_parquet_outputs() {
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("clock should be monotonic")
@@ -1230,21 +1474,35 @@ mod tests {
         let base = std::env::temp_dir().join(format!("openwepp_watershed_output_{timestamp}"));
         let config = sample_config(&base);
 
-        let error = write_interchange_parquet_outputs(&config)
-            .expect_err("writer must refuse placeholder empty parquet emission");
-        assert!(
-            error.contains("OWSOUT-E-004"),
-            "typed guard code missing from error: {error}"
-        );
+        write_interchange_parquet_outputs(&config, WatershedInterchangeRowSeed::default())
+            .expect("writer should emit watershed parquet outputs");
         for output in required_paths(&config) {
+            assert!(output.exists(), "expected output file {}", output.display());
+            let file = File::open(&output).expect("emitted output should be readable");
+            let builder = ParquetRecordBatchReaderBuilder::try_new(file)
+                .expect("emitted output should include readable parquet footer");
+
             assert!(
-                !output.exists(),
-                "no output file should be created while writer is gated"
+                builder.schema().metadata().contains_key("dataset_version"),
+                "missing dataset_version metadata for {}",
+                output.display()
+            );
+
+            let reader = builder
+                .build()
+                .expect("parquet reader should build for emitted output");
+            let row_count: usize = reader
+                .map(|batch| batch.expect("record batch should decode").num_rows())
+                .sum();
+            assert!(
+                row_count > 0,
+                "emitted output should contain at least one row: {}",
+                output.display()
             );
         }
 
         if base.exists() {
-            std::fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
+            fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
         }
     }
 }

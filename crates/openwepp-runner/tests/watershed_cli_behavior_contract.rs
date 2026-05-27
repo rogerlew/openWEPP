@@ -75,7 +75,7 @@ fn watershed_cli_rejects_negative_hbp_payload_via_ws10_domain_guards() {
 }
 
 #[test]
-fn watershed_cli_rejects_placeholder_watershed_output_emission() {
+fn watershed_cli_emits_watershed_output_parquet_files() {
     let _execution_guard = watershed_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -97,23 +97,14 @@ fn watershed_cli_rejects_placeholder_watershed_output_emission() {
     let output_dir = run_dir.join("out");
     let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
     assert!(
-        !output.status.success(),
-        "watershed CLI should fail with explicit output guard until data-backed writers exist"
+        output.status.success(),
+        "watershed CLI should emit watershed parquet outputs; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
     );
-
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("CLIWAT-E-034"),
-        "expected writer failure wrapper code in stderr, observed: {stderr}"
-    );
-    assert!(
-        stderr.contains("OWSOUT-E-004"),
-        "expected typed writer guard code in stderr, observed: {stderr}"
-    );
+    assert_all_watershed_outputs_exist(&output_dir);
 }
 
 #[test]
-#[ignore = "WSHED03 expected-failure vector until WSHED08 watershed parquet writer activation lands"]
 fn wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission() {
     let _execution_guard = watershed_execution_lock()
         .lock()
@@ -141,31 +132,7 @@ fn wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission() 
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let expected_outputs = [
-        "ebe_pw0.parquet",
-        "chan.out.parquet",
-        "chanwb.parquet",
-        "chnwb.parquet",
-        "soil_pw0.parquet",
-        "totalwatsed3.parquet",
-        "loss_pw0.hill.parquet",
-        "loss_pw0.chn.parquet",
-        "loss_pw0.out.parquet",
-        "loss_pw0.class_data.parquet",
-        "loss_pw0.all_years.hill.parquet",
-        "loss_pw0.all_years.chn.parquet",
-        "loss_pw0.all_years.out.parquet",
-        "loss_pw0.all_years.class_data.parquet",
-    ];
-
-    for output_name in expected_outputs {
-        let output_path = output_dir.join("interchange").join(output_name);
-        assert!(
-            output_path.is_file(),
-            "missing expected watershed parquet output {}",
-            output_path.display()
-        );
-    }
+    assert_all_watershed_outputs_exist(&output_dir);
 }
 
 fn watershed_execution_lock() -> &'static Mutex<()> {
@@ -196,6 +163,34 @@ fn run_watershed_cli(
     command
         .output()
         .expect("watershed CLI process should execute")
+}
+
+fn assert_all_watershed_outputs_exist(output_dir: &Path) {
+    let expected_outputs = [
+        "ebe_pw0.parquet",
+        "chan.out.parquet",
+        "chanwb.parquet",
+        "chnwb.parquet",
+        "soil_pw0.parquet",
+        "totalwatsed3.parquet",
+        "loss_pw0.hill.parquet",
+        "loss_pw0.chn.parquet",
+        "loss_pw0.out.parquet",
+        "loss_pw0.class_data.parquet",
+        "loss_pw0.all_years.hill.parquet",
+        "loss_pw0.all_years.chn.parquet",
+        "loss_pw0.all_years.out.parquet",
+        "loss_pw0.all_years.class_data.parquet",
+    ];
+
+    for output_name in expected_outputs {
+        let output_path = output_dir.join("interchange").join(output_name);
+        assert!(
+            output_path.is_file(),
+            "missing expected watershed parquet output {}",
+            output_path.display()
+        );
+    }
 }
 
 #[test]
@@ -233,15 +228,12 @@ fn watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior() {
     let output_dir = run_dir.join("out");
     let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), true);
     assert!(
-        !output.status.success(),
-        "watershed CLI should still reach output guard in legacy discovery mode"
+        output.status.success(),
+        "watershed CLI should succeed in legacy discovery mode and emit outputs; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
     );
 
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains("CLIWAT-E-034"),
-        "expected writer failure wrapper code in stderr, observed: {stderr}"
-    );
     assert!(
         stderr.contains("legacy-sidecar-discovery is active; ignoring configured inputs.chaninp"),
         "expected legacy override warning for configured chaninp in stderr, observed: {stderr}"
@@ -258,6 +250,7 @@ fn watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior() {
         !stderr.contains("CLIWAT-E-029"),
         "legacy discovery should ignore configured sidecar path validation, observed: {stderr}"
     );
+    assert_all_watershed_outputs_exist(&output_dir);
 }
 
 #[test]
@@ -372,7 +365,7 @@ fn watershed_cli_mofe05_rejects_multiofe_manifest_count_mismatch() {
 }
 
 #[test]
-fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_reaches_output_guard() {
+fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_emits_outputs() {
     let _execution_guard = watershed_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
@@ -396,8 +389,9 @@ fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_reaches_output_guard
     let output_dir = run_dir.join("out");
     let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
     assert!(
-        !output.status.success(),
-        "watershed CLI should proceed past metadata intake and fail only on output guard"
+        output.status.success(),
+        "watershed CLI should proceed past metadata intake and emit watershed outputs; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
     );
 
     let stderr = String::from_utf8_lossy(&output.stderr);
@@ -405,10 +399,7 @@ fn watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_reaches_output_guard
         !stderr.contains("CLIWAT-E-036") && !stderr.contains("CLIWAT-E-037"),
         "valid contributor metadata should not trigger MOFE05 intake guard codes, observed: {stderr}"
     );
-    assert!(
-        stderr.contains("CLIWAT-E-034"),
-        "expected downstream output guard failure after valid metadata intake, observed: {stderr}"
-    );
+    assert_all_watershed_outputs_exist(&output_dir);
 }
 
 fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {

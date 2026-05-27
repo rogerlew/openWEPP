@@ -17,7 +17,10 @@ use openwepp_input_contract::parsers::watershed_structure::{
     ParseMode as WatershedStructureParseMode, WatershedStructureFile,
     WatershedStructureParseOptions, parse_watershed_structure_from_path,
 };
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue, WatershedProductionStateSymbol};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, WatershedChannelFluxField, WatershedChannelStateField,
+    WatershedImpoundmentFluxField, WatershedProductionFluxSymbol, WatershedProductionStateSymbol,
+};
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
@@ -33,10 +36,13 @@ use openwepp_watershed_orchestrator::runtime_inputs::{
     seed_watershed_runtime_surface_from_watershed_impoundment,
 };
 use openwepp_watershed_orchestrator::{
-    WatershedWritebackSurface, Ws10ChannelImpoundmentKernel, execute_watershed_dispatch_with_kernel,
+    WatershedKernelExecutionReport, WatershedWritebackSurface, Ws10ChannelImpoundmentKernel,
+    execute_watershed_dispatch_with_kernel,
 };
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
-use openwepp_watershed_output::writers::write_interchange_parquet_outputs;
+use openwepp_watershed_output::writers::{
+    WatershedInterchangeRowSeed, write_interchange_parquet_outputs,
+};
 use serde::Deserialize;
 use serde_json::Value;
 
@@ -436,7 +442,8 @@ fn run() -> Result<(), String> {
         eprintln!("sidecar-warning: {warning}");
     }
 
-    write_watershed_interchange_outputs(&runfile.outputs)?;
+    let row_seed = build_watershed_output_row_seed(&report);
+    write_watershed_interchange_outputs(&runfile.outputs, row_seed)?;
 
     Ok(())
 }
@@ -1370,9 +1377,131 @@ fn build_default_chaninp_surface(
     }
 }
 
-fn write_watershed_interchange_outputs(outputs: &WatershedOutputsResolved) -> Result<(), String> {
-    write_interchange_parquet_outputs(outputs)
+fn write_watershed_interchange_outputs(
+    outputs: &WatershedOutputsResolved,
+    row_seed: WatershedInterchangeRowSeed,
+) -> Result<(), String> {
+    write_interchange_parquet_outputs(outputs, row_seed)
         .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))
+}
+
+#[allow(clippy::too_many_lines)]
+fn build_watershed_output_row_seed(
+    report: &WatershedKernelExecutionReport,
+) -> WatershedInterchangeRowSeed {
+    let mut channel_ids = BTreeSet::new();
+    let mut impoundment_ids = BTreeSet::new();
+    let mut contributor_hillslopes = BTreeSet::new();
+
+    for step in &report.dispatch_report.steps {
+        match step.node.kind {
+            TopologyNodeKind::Channel => {
+                channel_ids.insert(step.node.id);
+            }
+            TopologyNodeKind::Impoundment => {
+                impoundment_ids.insert(step.node.id);
+            }
+            TopologyNodeKind::Hillslope => {}
+        }
+        contributor_hillslopes.extend(step.contributor_hillslopes.iter().copied());
+    }
+
+    let runoff_volume_m3 = channel_ids
+        .iter()
+        .copied()
+        .map(|node_id| {
+            boundary_scalar(
+                &report.writeback_surface.flux_surface,
+                WatershedProductionFluxSymbol::ChannelNode {
+                    node_id,
+                    field: WatershedChannelFluxField::Roff,
+                },
+            )
+        })
+        .sum::<f64>();
+    let channel_outflow_m3 = impoundment_ids
+        .iter()
+        .copied()
+        .map(|node_id| {
+            boundary_scalar(
+                &report.writeback_surface.flux_surface,
+                WatershedProductionFluxSymbol::ImpoundmentNode {
+                    node_id,
+                    field: WatershedImpoundmentFluxField::OutflowVolume,
+                },
+            )
+        })
+        .sum::<f64>();
+    let peak_discharge_m3_s = channel_ids.iter().copied().next().map_or(0.0, |node_id| {
+        boundary_scalar(
+            &report.writeback_surface.state_surface,
+            WatershedProductionStateSymbol::ChannelNode {
+                node_id,
+                field: WatershedChannelStateField::Qpo,
+            },
+        )
+    });
+    let sediment_yield_kg = channel_ids
+        .iter()
+        .copied()
+        .map(|node_id| {
+            report
+                .writeback_surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "ws10_channel_{node_id}_qsed"
+                )))
+                .map_or(0.0, |value| value.as_f64())
+        })
+        .sum::<f64>();
+    let soluble_pollutant_kg = 0.0;
+    let particulate_pollutant_kg = contributor_hillslopes
+        .iter()
+        .copied()
+        .map(|hillslope_id| {
+            boundary_scalar(
+                &report.writeback_surface.state_surface,
+                WatershedProductionStateSymbol::HillslopeContributorTotalDetachmentKg {
+                    hillslope_id,
+                },
+            )
+        })
+        .sum::<f64>();
+
+    WatershedInterchangeRowSeed {
+        year: 1,
+        simulation_year: 1,
+        sim_day_index: i32::try_from(report.dispatch_report.steps.len().max(1)).unwrap_or(i32::MAX),
+        julian: 1,
+        month: 1,
+        day_of_month: 1,
+        water_year: 1,
+        element_id: i32::try_from(channel_ids.iter().copied().next().unwrap_or(1))
+            .unwrap_or(i32::MAX),
+        channel_id: i32::try_from(channel_ids.iter().copied().next().unwrap_or(1))
+            .unwrap_or(i32::MAX),
+        runoff_volume_m3,
+        peak_discharge_m3_s,
+        sediment_yield_kg,
+        soluble_pollutant_kg,
+        particulate_pollutant_kg,
+        channel_outflow_m3,
+        channel_storage_m3: 0.0,
+        channel_baseflow_m3: boundary_scalar(
+            &report.writeback_surface.flux_surface,
+            WatershedProductionFluxSymbol::Cbase,
+        ),
+        channel_loss_m3: 0.0,
+    }
+}
+
+fn boundary_scalar<T>(surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol: T) -> f64
+where
+    T: Into<BoundarySymbol>,
+{
+    surface
+        .get(&symbol.into())
+        .map_or(0.0, |value| value.as_f64())
 }
 
 fn print_help() {
