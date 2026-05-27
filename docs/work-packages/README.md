@@ -724,6 +724,12 @@ Authorized packages:
     confidence-tier comparator evidence, then publishing explicit GO/HOLD
     disposition with residual ownership for unresolved watershed closure
     blockers.
+- `20260527-wshedimpl10-active-structure-impoundment-parser-payload-export-001/`
+  - Purpose: execute WSHED10 by exporting active impoundment outlet-structure
+    branch payloads from `.imp` parser outputs (drop/culvert/rockfill/
+    emergency/filter/riser), adding contract-derived parser coverage, and
+    narrowing residual HOLD posture to runtime active-coefficient projection
+    closure.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
