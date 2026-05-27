@@ -719,6 +719,11 @@ Authorized packages:
     (`OWSOUT-E-004`) with real row-model parquet emission for all required
     watershed outputs, promoting the WSHED03 non-stub parquet vector to active
     conformance, and preserving typed fail-closed writer behavior.
+- `20260527-wshedimpl09-end-to-end-validation-comparator-rerun-and-hold-lift-disposition-001/`
+  - Purpose: execute WSHED09 by rerunning watershed validation lanes and
+    confidence-tier comparator evidence, then publishing explicit GO/HOLD
+    disposition with residual ownership for unresolved watershed closure
+    blockers.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
