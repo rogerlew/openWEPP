@@ -112,6 +112,62 @@ fn watershed_cli_rejects_placeholder_watershed_output_emission() {
     );
 }
 
+#[test]
+#[ignore = "WSHED03 expected-failure vector until WSHED08 watershed parquet writer activation lands"]
+fn wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshed03_cli_non_stub_parquet");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        output.status.success(),
+        "watershed CLI should complete and emit non-placeholder parquet outputs once WSHED08 lands; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let expected_outputs = [
+        "ebe_pw0.parquet",
+        "chan.out.parquet",
+        "chanwb.parquet",
+        "chnwb.parquet",
+        "soil_pw0.parquet",
+        "totalwatsed3.parquet",
+        "loss_pw0.hill.parquet",
+        "loss_pw0.chn.parquet",
+        "loss_pw0.out.parquet",
+        "loss_pw0.class_data.parquet",
+        "loss_pw0.all_years.hill.parquet",
+        "loss_pw0.all_years.chn.parquet",
+        "loss_pw0.all_years.out.parquet",
+        "loss_pw0.all_years.class_data.parquet",
+    ];
+
+    for output_name in expected_outputs {
+        let output_path = output_dir.join("interchange").join(output_name);
+        assert!(
+            output_path.is_file(),
+            "missing expected watershed parquet output {}",
+            output_path.display()
+        );
+    }
+}
+
 fn watershed_execution_lock() -> &'static Mutex<()> {
     static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     RUN_LOCK.get_or_init(|| Mutex::new(()))

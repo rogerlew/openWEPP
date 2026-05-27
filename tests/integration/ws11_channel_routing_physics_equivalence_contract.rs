@@ -192,6 +192,16 @@ fn flux_value(
         .as_f64()
 }
 
+fn has_state_symbol(
+    report: &openwepp_watershed_orchestrator::WatershedKernelExecutionReport,
+    symbol: &str,
+) -> bool {
+    report
+        .writeback_surface
+        .state_surface
+        .contains_key(&BoundarySymbol::from(symbol))
+}
+
 #[test]
 fn ws11_contract_conformance_executes_ipeak_1_and_2_with_finite_outputs() {
     for ipeak in [1.0, 2.0] {
@@ -345,4 +355,56 @@ fn ws11_contract_conformance_distinguishes_ipeak_branches() {
         (qpo_ipeak_1 - qpo_ipeak_4).abs() > 1.0e-9,
         "ipeak branch outputs are identical ({qpo_ipeak_1}); expected explicit branch-dependent routing behavior"
     );
+}
+
+#[test]
+#[ignore = "WSHED03 expected-failure vector until WSHED05 wave-routing state-family migration lands"]
+fn wshed03_contract_kw_mc_vector_requires_wave_routing_state_family_publication() {
+    for ipeak in [3.0, 4.0] {
+        let mut surface = seeded_ws11_surface();
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(ipeak));
+
+        let report = run_ws11_surface(surface);
+        assert!(
+            report.dispatch_report.is_success(),
+            "ipeak={ipeak} execution must succeed before state-family assertions"
+        );
+
+        for symbol in [
+            "ws10_channel_1_q1",
+            "ws10_channel_1_qin",
+            "ws10_channel_1_qlat",
+            "ws10_channel_1_c0",
+            "ws10_channel_1_c1",
+            "ws10_channel_1_c2",
+            "ws10_channel_1_c3",
+            "ws10_channel_1_c4",
+        ] {
+            assert!(
+                has_state_symbol(&report, symbol),
+                "ipeak={ipeak} missing required KW/MC lineage state symbol {symbol}"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "WSHED03 expected-failure vector until WSHED06 channel sediment migration lands"]
+fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publication_family() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(report.dispatch_report.is_success());
+
+    for symbol in ["ws10_channel_1_qsed", "ws10_channel_1_tc"] {
+        assert!(
+            has_state_symbol(&report, symbol),
+            "missing required channel sediment lineage symbol {symbol}"
+        );
+    }
 }

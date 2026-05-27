@@ -686,6 +686,11 @@ Authorized packages:
     authority (`SC-ROUTE-001`, `SC-IMPOUND-001`, `SC-SED-001`, `SC-SYSTEM-001`)
     and publishing explicit residual-gap mapping before WSHED03
     contract-derived test and pre-implementation gate work.
+- `20260527-wshedimpl02-watershed-contract-derived-tests-and-preimplementation-gate-001/`
+  - Purpose: execute WSHED03 by authoring contract-derived watershed
+    routing/impoundment/system vectors (including expected-failure closure for
+    partial runtime seams) and recording pre-implementation gate evidence
+    before WSHED04+ production migration packages.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

@@ -170,6 +170,18 @@ fn run_ws12_surface(
         .expect("ws10 execution should return typed report")
 }
 
+fn state_value(
+    report: &openwepp_watershed_orchestrator::WatershedKernelExecutionReport,
+    symbol: &str,
+) -> f64 {
+    report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing state symbol {symbol}"))
+        .as_f64()
+}
+
 #[test]
 fn ws12_contract_conformance_deauthorizes_surrogate_when_structures_are_inactive() {
     let report = run_ws12_surface(seeded_ws12_surface());
@@ -247,5 +259,84 @@ fn ws12_contract_conformance_rejects_invalid_area_denominator() {
     assert_eq!(
         report.step_reports[1].decision_status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+#[ignore = "WSHED03 expected-failure vector until WSHED04 parser-to-runtime coefficient projection closure lands"]
+fn wshed03_contract_ws12_vector_requires_parser_projected_coefficients_without_manual_seed() {
+    let mut surface = seeded_ws12_surface();
+    for (suffix, _) in WS12_COEFFICIENT_SURFACE {
+        surface.state_surface.remove(&BoundarySymbol::from(format!(
+            "ws10_impoundment_1_{suffix}"
+        )));
+    }
+
+    let report = run_ws12_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "ws12 execution should succeed with parser-projected coefficients and no manual seed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let qo = state_value(&report, "ws10_impoundment_1_qo");
+    let durout = state_value(&report, "ws10_impoundment_1_durout");
+    let hnext = state_value(&report, "ws10_impoundment_1_hnext");
+    let outflow_volume = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("ws10_impoundment_1_outflow_volume"))
+        .unwrap_or_else(|| panic!("missing flux symbol ws10_impoundment_1_outflow_volume"))
+        .as_f64();
+
+    assert!(qo.is_finite() && qo >= 0.0);
+    assert!(durout.is_finite() && durout >= 0.0);
+    assert!(hnext.is_finite() && hnext >= 0.0);
+    assert!(outflow_volume.is_finite() && outflow_volume >= 0.0);
+}
+
+#[test]
+#[ignore = "WSHED03 expected-failure vector until WSHED07 RK4/adaptive regime-transition migration lands"]
+fn wshed03_contract_ws12_vector_requires_regime_transition_timestep_stability() {
+    let mut fine_step = seeded_ws12_surface();
+    fine_step.state_surface.insert(
+        BoundarySymbol::from("ws10_impoundment_1_deltat"),
+        BoundaryValue::scalar(0.1),
+    );
+    fine_step.state_surface.insert(
+        BoundarySymbol::from("hs1_peakro"),
+        BoundaryValue::scalar(4.0),
+    );
+    fine_step.state_surface.insert(
+        BoundarySymbol::from("hs2_peakro"),
+        BoundaryValue::scalar(3.0),
+    );
+    fine_step.state_surface.insert(
+        BoundarySymbol::from("hs3_peakro"),
+        BoundaryValue::scalar(2.0),
+    );
+
+    let mut coarse_step = fine_step.clone();
+    coarse_step.state_surface.insert(
+        BoundarySymbol::from("ws10_impoundment_1_deltat"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let fine_report = run_ws12_surface(fine_step);
+    let coarse_report = run_ws12_surface(coarse_step);
+    assert!(
+        fine_report.dispatch_report.is_success(),
+        "fine-step ws12 run should succeed for RK4/regime-transition comparison"
+    );
+    assert!(
+        coarse_report.dispatch_report.is_success(),
+        "coarse-step ws12 run should succeed for RK4/regime-transition comparison"
+    );
+
+    let fine_hnext = state_value(&fine_report, "ws10_impoundment_1_hnext");
+    let coarse_hnext = state_value(&coarse_report, "ws10_impoundment_1_hnext");
+    assert!(
+        (fine_hnext - coarse_hnext).abs() <= 1.0e-3,
+        "RK4/adaptive regime-transition lineage requires timestep stability (fine={fine_hnext}, coarse={coarse_hnext})"
     );
 }
