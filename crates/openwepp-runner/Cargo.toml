@@ -37,3 +37,6 @@ path = "src/bin/openwepp-cli-hill.rs"
 [[bin]]
 name = "openwepp-cli-watershed"
 path = "src/bin/openwepp-cli-watershed.rs"
+
+[dev-dependencies]
+parquet = "54.2.1"

@@ -8,10 +8,13 @@
     clippy::unreadable_literal
 )]
 
-use std::fs;
+use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Mutex, OnceLock};
+
+use parquet::file::reader::{FileReader, SerializedFileReader};
+use parquet::record::{Row, RowAccessor};
 
 const MAGIC: &[u8; 8] = b"WFPHBP01";
 const FOOTER_MAGIC: &[u8; 8] = b"ENDHBP01";
@@ -20,11 +23,21 @@ const DIM_SCALAR: u8 = 0;
 const DIM_NOFE: u8 = 1;
 const DIM_NOFE_LAYERS: u8 = 2;
 const SCALE_INV_I64: f64 = 1.0e9;
+const DELICATE_GAME_BASELINE_EBE_PATH: &str = "/workdir/wepp-forest_260430_baseline/tests/fixtures/delicate_game_pw0/outputs/wepp_dcc52a6/ebe_pw0.txt";
 
 const REQUIRED_STATE_IDS: &[u16] = &[
     1, 2, 3, 4, 5, 6, 7, 100, 101, 102, 103, 104, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209,
     210, 300, 900, 901,
 ];
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct BaselineEbeDailyRow {
+    day_of_month: i8,
+    month: i8,
+    simulation_year: i16,
+    runoff_volume_m3: f64,
+    peak_runoff_m3_s: f64,
+}
 
 #[test]
 fn watershed_cli_rejects_negative_hbp_payload_via_ws10_domain_guards() {
@@ -135,9 +148,270 @@ fn wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission() 
     assert_all_watershed_outputs_exist(&output_dir);
 }
 
+#[test]
+fn wshedimpl14_baseline_authoritative_cli_lane_replays_baseline_ebe_signature() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let baseline_path = Path::new(DELICATE_GAME_BASELINE_EBE_PATH);
+    if !baseline_path.is_file() {
+        eprintln!(
+            "WSHEDIMPL14 comparator lane skipped: missing baseline fixture {}",
+            baseline_path.display()
+        );
+        return;
+    }
+    let baseline_row = parse_baseline_ebe_first_row(baseline_path);
+    assert!(
+        baseline_row.peak_runoff_m3_s > 0.0,
+        "baseline comparator seed requires positive peak runoff"
+    );
+
+    let duration_seconds = baseline_row.runoff_volume_m3 / baseline_row.peak_runoff_m3_s;
+    assert!(
+        duration_seconds.is_finite() && duration_seconds > 0.0,
+        "derived baseline comparator duration must be finite and positive; observed {duration_seconds}"
+    );
+
+    let run_dir = build_watershed_fixture_dir("wshedimpl14_baseline_comparator_lane");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        baseline_row.peak_runoff_m3_s,
+        duration_seconds,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        output.status.success(),
+        "baseline-authoritative watershed CLI lane should complete successfully; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+
+    let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+    let chan_out_row = read_first_parquet_row(&output_dir.join("interchange/chan.out.parquet"));
+
+    let emitted_month = row_i32_value(&ebe_row, "month");
+    let emitted_day_of_month = row_i32_value(&ebe_row, "day_of_month");
+    let emitted_simulation_year = row_i32_value(&ebe_row, "simulation_year");
+    let emitted_sim_day_index = row_i32_value(&ebe_row, "sim_day_index");
+    let emitted_peak = row_f64_value(&ebe_row, "peak_runoff");
+    let emitted_runoff_volume = row_f64_value(&ebe_row, "runoff_volume");
+    let emitted_chan_out_peak = row_f64_value(&chan_out_row, "Peak_Discharge (m^3/s)");
+
+    assert_eq!(
+        emitted_month,
+        i32::from(baseline_row.month),
+        "baseline comparator lane requires month-key continuity"
+    );
+    assert_eq!(
+        emitted_day_of_month,
+        i32::from(baseline_row.day_of_month),
+        "baseline comparator lane requires day-of-month key continuity"
+    );
+    assert_eq!(
+        emitted_simulation_year,
+        i32::from(baseline_row.simulation_year),
+        "baseline comparator lane requires simulation-year key continuity"
+    );
+    assert_eq!(
+        emitted_sim_day_index, 1,
+        "baseline comparator lane expects single-step topology dispatch for this fixture"
+    );
+    assert_relative_close(
+        emitted_peak,
+        baseline_row.peak_runoff_m3_s,
+        1.0e-6,
+        1.0e-8,
+        "baseline comparator peak runoff signature",
+    );
+    assert_relative_close(
+        emitted_runoff_volume,
+        baseline_row.runoff_volume_m3,
+        1.0e-6,
+        1.0e-3,
+        "baseline comparator runoff-volume signature",
+    );
+    assert_relative_close(
+        emitted_chan_out_peak,
+        emitted_peak,
+        1.0e-10,
+        1.0e-10,
+        "branch-execution publication continuity (chan.out vs ebe peak)",
+    );
+}
+
 fn watershed_execution_lock() -> &'static Mutex<()> {
     static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     RUN_LOCK.get_or_init(|| Mutex::new(()))
+}
+
+fn parse_baseline_ebe_first_row(path: &Path) -> BaselineEbeDailyRow {
+    let payload = fs::read_to_string(path)
+        .unwrap_or_else(|error| panic!("baseline fixture should be readable: {error}"));
+    for line in payload.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        let Some(first) = trimmed.as_bytes().first() else {
+            continue;
+        };
+        if !first.is_ascii_digit() {
+            continue;
+        }
+
+        let fields: Vec<&str> = trimmed.split_whitespace().collect();
+        if fields.len() < 6 {
+            continue;
+        }
+
+        let day_of_month = fields[0].parse::<i8>();
+        let month = fields[1].parse::<i8>();
+        let simulation_year = fields[2].parse::<i16>();
+        let runoff_volume_m3 = fields[4].parse::<f64>();
+        let peak_runoff_m3_s = fields[5].parse::<f64>();
+        if let (
+            Ok(day_of_month),
+            Ok(month),
+            Ok(simulation_year),
+            Ok(runoff_volume_m3),
+            Ok(peak_runoff_m3_s),
+        ) = (
+            day_of_month,
+            month,
+            simulation_year,
+            runoff_volume_m3,
+            peak_runoff_m3_s,
+        ) {
+            return BaselineEbeDailyRow {
+                day_of_month,
+                month,
+                simulation_year,
+                runoff_volume_m3,
+                peak_runoff_m3_s,
+            };
+        }
+    }
+
+    panic!(
+        "baseline fixture {} does not contain a parseable daily EBE data row",
+        path.display()
+    );
+}
+
+fn read_first_parquet_row(path: &Path) -> Row {
+    let file = File::open(path).unwrap_or_else(|error| {
+        panic!(
+            "parquet output should be readable ({}): {error}",
+            path.display()
+        )
+    });
+    let reader = SerializedFileReader::new(file).unwrap_or_else(|error| {
+        panic!("parquet output should parse ({}): {error}", path.display())
+    });
+    let mut rows = reader.get_row_iter(None).unwrap_or_else(|error| {
+        panic!(
+            "parquet row iterator should open ({}): {error}",
+            path.display()
+        )
+    });
+    rows.next()
+        .unwrap_or_else(|| {
+            panic!(
+                "expected at least one row in parquet output {}",
+                path.display()
+            )
+        })
+        .unwrap_or_else(|error| {
+            panic!(
+                "first parquet row should decode ({}): {error}",
+                path.display()
+            )
+        })
+}
+
+fn row_index(row: &Row, column_name: &str) -> usize {
+    row.get_column_iter()
+        .enumerate()
+        .find(|(_, (name, _))| name.as_str() == column_name)
+        .map_or_else(
+            || panic!("missing required parquet column '{column_name}'"),
+            |(index, _)| index,
+        )
+}
+
+fn row_f64_value(row: &Row, column_name: &str) -> f64 {
+    let index = row_index(row, column_name);
+    if let Ok(value) = row.get_double(index) {
+        return value;
+    }
+    if let Ok(value) = row.get_float(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_int(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_short(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_long(index) {
+        return value as f64;
+    }
+    panic!("column '{column_name}' does not decode as numeric");
+}
+
+fn row_i32_value(row: &Row, column_name: &str) -> i32 {
+    let index = row_index(row, column_name);
+    if let Ok(value) = row.get_byte(index) {
+        return i32::from(value);
+    }
+    if let Ok(value) = row.get_int(index) {
+        return value;
+    }
+    if let Ok(value) = row.get_short(index) {
+        return i32::from(value);
+    }
+    if let Ok(value) = row.get_ubyte(index) {
+        return i32::from(value);
+    }
+    if let Ok(value) = row.get_ushort(index) {
+        return i32::from(value);
+    }
+    if let Ok(value) = row.get_uint(index) {
+        return i32::try_from(value)
+            .unwrap_or_else(|_| panic!("column '{column_name}' value {value} out of i32 range"));
+    }
+    if let Ok(value) = row.get_long(index) {
+        return i32::try_from(value)
+            .unwrap_or_else(|_| panic!("column '{column_name}' value {value} out of i32 range"));
+    }
+    panic!("column '{column_name}' does not decode as integer");
+}
+
+fn assert_relative_close(
+    observed: f64,
+    expected: f64,
+    relative_tolerance: f64,
+    absolute_tolerance: f64,
+    label: &str,
+) {
+    let delta = (observed - expected).abs();
+    let scale = expected.abs().max(1.0);
+    let tolerance = absolute_tolerance.max(relative_tolerance * scale);
+    assert!(
+        delta <= tolerance,
+        "{label} mismatch: expected {expected}, observed {observed}, delta {delta} exceeds tolerance {tolerance}"
+    );
 }
 
 fn run_watershed_cli(

@@ -773,6 +773,7 @@ dependencies = [
  "openwepp-topology",
  "openwepp-watershed-orchestrator",
  "openwepp-watershed-output",
+ "parquet",
  "serde",
  "serde_json",
  "sha2",

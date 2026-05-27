@@ -748,6 +748,12 @@ Authorized packages:
     15-function structure-family projection + min-controller composition,
     closing `GAP-IMPOUND-006` and `GAP-SYSTEM-007` while preserving program
     HOLD on residual watershed blockers (`GAP-SYSTEM-005`, `GAP-SYSTEM-008`).
+- `20260527-wshedimpl14-watershed-baseline-authoritative-end-to-end-comparator-lane-001/`
+  - Purpose: execute WSHEDIMPL14 by implementing a baseline-authoritative
+    end-to-end `openwepp-cli-watershed` comparator lane that validates topology
+    dispatch, branch execution, and publication-boundary signature continuity,
+    closing `GAP-SYSTEM-005` while preserving program HOLD on residual
+    watershed sediment parity blocker `GAP-SYSTEM-008`.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
