@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 
 use openwepp_input_contract::parsers::watershed_impoundment::{
-    ImpWarningCode, ParseMode, WatershedImpoundmentParseError, WatershedImpoundmentParseOptions,
+    DropSpillwayPayload, EmergencySpillwayPayload, ImpWarningCode, ParseMode,
+    WatershedImpoundmentParseError, WatershedImpoundmentParseOptions,
     parse_watershed_impoundment_from_path, parse_watershed_impoundment_from_str,
 };
 
@@ -35,6 +36,71 @@ fn strict_mode_parses_minimal_valid_impoundment() {
     assert_eq!(item.stage.len(), 3);
     assert_eq!(item.area.len(), 3);
     assert_eq!(item.length.len(), 3);
+}
+
+#[test]
+fn strict_mode_parses_active_structure_payload_exports() {
+    let parsed = parse_watershed_impoundment_from_path(
+        fixture_path("strict_valid_active_payloads.imp"),
+        WatershedImpoundmentParseOptions::strict(),
+    )
+    .expect("strict parser should parse active-structure impoundment payloads");
+
+    let item = &parsed.items[0];
+    assert!(item.structure_flags.has_drop_spillway);
+    assert!(item.structure_flags.has_culvert_1);
+    assert!(item.structure_flags.has_culvert_2);
+    assert!(item.structure_flags.has_rockfill);
+    assert!(item.structure_flags.has_emergency_spillway);
+    assert!(item.structure_flags.has_filter_barrier);
+    assert!(item.structure_flags.has_perforated_riser);
+
+    match &item.drop_spillway {
+        DropSpillwayPayload::Ids1 { payload, .. } => {
+            assert!((payload.diars - 0.60).abs() < 1.0e-12);
+            assert!((payload.coefw - 3.20).abs() < 1.0e-12);
+        }
+        other => panic!("unexpected drop spillway payload variant: {other:?}"),
+    }
+
+    let culvert_1 = &item.culverts[0];
+    assert_eq!(culvert_1.icv, 1);
+    assert_eq!(culvert_1.ncv, 2);
+    let culvert_1_params = culvert_1
+        .parameters
+        .as_ref()
+        .expect("culvert 1 parameters must be exported");
+    assert!((culvert_1_params.arcv - 0.15).abs() < 1.0e-12);
+    assert!((culvert_1_params.kus - 0.90).abs() < 1.0e-12);
+
+    let rockfill = item
+        .rockfill
+        .as_ref()
+        .expect("rockfill payload must be exported");
+    assert!((rockfill.lnrf - 1.20).abs() < 1.0e-12);
+
+    match &item.emergency_spillway {
+        EmergencySpillwayPayload::RatingCurve { payload, .. } => {
+            assert!((payload.hes - 0.50).abs() < 1.0e-12);
+            assert_eq!(payload.hest.len(), 3);
+            assert_eq!(payload.qes.len(), 3);
+            assert!((payload.qes[2] - 0.05).abs() < 1.0e-12);
+        }
+        other => panic!("unexpected emergency spillway variant: {other:?}"),
+    }
+
+    let filter = item
+        .filter_barrier
+        .as_ref()
+        .expect("filter barrier payload must be exported");
+    assert!((filter.vsl - 0.02).abs() < 1.0e-12);
+
+    let riser = item
+        .perforated_riser
+        .as_ref()
+        .expect("perforated riser payload must be exported");
+    assert!((riser.hr - 0.80).abs() < 1.0e-12);
+    assert!((riser.cs - 0.80).abs() < 1.0e-12);
 }
 
 #[test]

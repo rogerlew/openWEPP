@@ -708,7 +708,7 @@ fn derive_ws12_impoundment_coefficients(
         return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
             symbol: format!("ws10_impoundment_{node_id}_a"),
             value: 1.0,
-            rule: "active outlet-structure branches require projection payloads not yet exported by the parser",
+            rule: "active outlet-structure coefficient projection is not yet implemented in the runtime seam",
         });
     }
 
@@ -1401,6 +1401,9 @@ mod tests {
     const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str = include_str!(
         "../../../tests/fixtures/infile/watershed_impoundment/strict_valid_minimal.imp"
     );
+    const STRICT_VALID_WATERSHED_IMPOUNDMENT_ACTIVE: &str = include_str!(
+        "../../../tests/fixtures/infile/watershed_impoundment/strict_valid_active_payloads.imp"
+    );
 
     fn build_breakpoint_fixture(nbrkpt: usize) -> String {
         let mut climate = format!(
@@ -1611,12 +1614,15 @@ mod tests {
 
     #[test]
     fn watershed_impoundment_runtime_seed_rejects_active_structure_projection_gap() {
-        let mut parsed = parse_watershed_impoundment_from_str(
-            STRICT_VALID_WATERSHED_IMPOUNDMENT,
+        let parsed = parse_watershed_impoundment_from_str(
+            STRICT_VALID_WATERSHED_IMPOUNDMENT_ACTIVE,
             WatershedImpoundmentParseOptions::strict(),
         )
         .expect("strict watershed impoundment fixture should parse");
-        parsed.items[0].structure_flags.has_drop_spillway = true;
+        assert!(
+            parsed.items[0].structure_flags.has_drop_spillway,
+            "fixture should carry active outlet structures"
+        );
 
         let mut surface = WatershedWritebackSurface::default();
         let error =

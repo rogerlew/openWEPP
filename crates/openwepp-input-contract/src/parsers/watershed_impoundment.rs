@@ -99,6 +99,175 @@ pub struct StructureFlags {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct DropSpillwayIds1Payload {
+    pub diars: f64,
+    pub hrs: f64,
+    pub coefw: f64,
+    pub coefo: f64,
+    pub diabl: f64,
+    pub hrh: f64,
+    pub lbl: f64,
+    pub sbl: f64,
+    pub hblot: f64,
+    pub ke: f64,
+    pub kb: f64,
+    pub kc: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DropSpillwayIds2Payload {
+    pub lenrs: f64,
+    pub widrs: f64,
+    pub hrs: f64,
+    pub coefw: f64,
+    pub coefo: f64,
+    pub diabl: f64,
+    pub hrh: f64,
+    pub lbl: f64,
+    pub sbl: f64,
+    pub hblot: f64,
+    pub ke: f64,
+    pub kb: f64,
+    pub kc: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DropSpillwayIds3Payload {
+    pub lenrs: f64,
+    pub widrs: f64,
+    pub hrs: f64,
+    pub coefw: f64,
+    pub coefo: f64,
+    pub hitbl: f64,
+    pub wdbl: f64,
+    pub hrh: f64,
+    pub lbl: f64,
+    pub sbl: f64,
+    pub hblot: f64,
+    pub ke: f64,
+    pub kb: f64,
+    pub kc: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum DropSpillwayPayload {
+    None,
+    Ids1 {
+        comment: String,
+        payload: DropSpillwayIds1Payload,
+    },
+    Ids2 {
+        comment: String,
+        payload: DropSpillwayIds2Payload,
+    },
+    Ids3 {
+        comment: String,
+        payload: DropSpillwayIds3Payload,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CulvertParameters {
+    pub arcv: f64,
+    pub hitcv: f64,
+    pub hcv: f64,
+    pub lcv: f64,
+    pub scv: f64,
+    pub hcvot: f64,
+    pub ke: f64,
+    pub kb: f64,
+    pub kc: f64,
+    pub kus: f64,
+    pub mus: f64,
+    pub cs: f64,
+    pub ys: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct CulvertPayload {
+    pub icv: i32,
+    pub ncv: i32,
+    pub comment: Option<String>,
+    pub parameters: Option<CulvertParameters>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct RockfillPayload {
+    pub comment: String,
+    pub lnrf: f64,
+    pub hrf: f64,
+    pub hotrf: f64,
+    pub wdrf: f64,
+    pub diarf: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct EmergencyOpenChannelPayload {
+    pub bwes: f64,
+    pub sses: f64,
+    pub nes: f64,
+    pub hes: f64,
+    pub hmxes: f64,
+    pub ses1: f64,
+    pub les1: f64,
+    pub ses2: f64,
+    pub les2: f64,
+    pub ses3: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct EmergencyRatingCurvePayload {
+    pub hes: f64,
+    pub hest: Vec<f64>,
+    pub qes: Vec<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum EmergencySpillwayPayload {
+    None,
+    OpenChannel {
+        comment: String,
+        payload: EmergencyOpenChannelPayload,
+    },
+    RatingCurve {
+        comment: String,
+        payload: EmergencyRatingCurvePayload,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct FilterBarrierPayload {
+    pub comment: String,
+    pub vsl: f64,
+    pub wdff: f64,
+    pub hff: f64,
+    pub hotff: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct PerforatedRiserPayload {
+    pub comment: String,
+    pub hr: f64,
+    pub hb: f64,
+    pub hs: f64,
+    pub hd: f64,
+    pub diar: f64,
+    pub as_slot: f64,
+    pub diab: f64,
+    pub hrh: f64,
+    pub lbl: f64,
+    pub sbl: f64,
+    pub diabl: f64,
+    pub cb: f64,
+    pub coefw: f64,
+    pub coefo: f64,
+    pub cs: f64,
+    pub ke: f64,
+    pub kb: f64,
+    pub kc: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct ImpoundmentRecord {
     pub description: [String; 3],
     pub branch_comments: Vec<String>,
@@ -122,6 +291,12 @@ pub struct ImpoundmentRecord {
     pub stage: Vec<f64>,
     pub area: Vec<f64>,
     pub length: Vec<f64>,
+    pub drop_spillway: DropSpillwayPayload,
+    pub culverts: [CulvertPayload; 2],
+    pub rockfill: Option<RockfillPayload>,
+    pub emergency_spillway: EmergencySpillwayPayload,
+    pub filter_barrier: Option<FilterBarrierPayload>,
+    pub perforated_riser: Option<PerforatedRiserPayload>,
     pub structure_flags: StructureFlags,
 }
 
@@ -504,6 +679,7 @@ fn parse_impoundment(
     let ids_line = consume_i32_line(reader, "ids", 1)?;
     let ids = ids_line.values[0];
     validate_enum(ids_line.number, "ids", ids, &[0, 1, 2, 3])?;
+    let mut drop_spillway = DropSpillwayPayload::None;
 
     if ids != 0 {
         let strdes =
@@ -512,26 +688,81 @@ fn parse_impoundment(
                 .ok_or(WatershedImpoundmentParseError::UnexpectedEof {
                     context: "drop_spillway.strdes",
                 })?;
-        branch_comments.push(strdes.text);
+        let comment = strdes.text;
+        branch_comments.push(comment.clone());
 
-        match ids {
+        drop_spillway = match ids {
             1 => {
-                let _ = consume_f64_line(reader, "drop.ids1.line1", 4)?;
-                let _ = consume_f64_line(reader, "drop.ids1.line2", 5)?;
-                let _ = consume_f64_line(reader, "drop.ids1.line3", 3)?;
+                let line1 = consume_f64_line(reader, "drop.ids1.line1", 4)?;
+                let line2 = consume_f64_line(reader, "drop.ids1.line2", 5)?;
+                let line3 = consume_f64_line(reader, "drop.ids1.line3", 3)?;
+                DropSpillwayPayload::Ids1 {
+                    comment,
+                    payload: DropSpillwayIds1Payload {
+                        diars: line1.values[0],
+                        hrs: line1.values[1],
+                        coefw: line1.values[2],
+                        coefo: line1.values[3],
+                        diabl: line2.values[0],
+                        hrh: line2.values[1],
+                        lbl: line2.values[2],
+                        sbl: line2.values[3],
+                        hblot: line2.values[4],
+                        ke: line3.values[0],
+                        kb: line3.values[1],
+                        kc: line3.values[2],
+                    },
+                }
             }
             2 => {
-                let _ = consume_f64_line(reader, "drop.ids2.line1", 5)?;
-                let _ = consume_f64_line(reader, "drop.ids2.line2", 5)?;
-                let _ = consume_f64_line(reader, "drop.ids2.line3", 3)?;
+                let line1 = consume_f64_line(reader, "drop.ids2.line1", 5)?;
+                let line2 = consume_f64_line(reader, "drop.ids2.line2", 5)?;
+                let line3 = consume_f64_line(reader, "drop.ids2.line3", 3)?;
+                DropSpillwayPayload::Ids2 {
+                    comment,
+                    payload: DropSpillwayIds2Payload {
+                        lenrs: line1.values[0],
+                        widrs: line1.values[1],
+                        hrs: line1.values[2],
+                        coefw: line1.values[3],
+                        coefo: line1.values[4],
+                        diabl: line2.values[0],
+                        hrh: line2.values[1],
+                        lbl: line2.values[2],
+                        sbl: line2.values[3],
+                        hblot: line2.values[4],
+                        ke: line3.values[0],
+                        kb: line3.values[1],
+                        kc: line3.values[2],
+                    },
+                }
             }
             3 => {
-                let _ = consume_f64_line(reader, "drop.ids3.line1", 5)?;
-                let _ = consume_f64_line(reader, "drop.ids3.line2", 6)?;
-                let _ = consume_f64_line(reader, "drop.ids3.line3", 3)?;
+                let line1 = consume_f64_line(reader, "drop.ids3.line1", 5)?;
+                let line2 = consume_f64_line(reader, "drop.ids3.line2", 6)?;
+                let line3 = consume_f64_line(reader, "drop.ids3.line3", 3)?;
+                DropSpillwayPayload::Ids3 {
+                    comment,
+                    payload: DropSpillwayIds3Payload {
+                        lenrs: line1.values[0],
+                        widrs: line1.values[1],
+                        hrs: line1.values[2],
+                        coefw: line1.values[3],
+                        coefo: line1.values[4],
+                        hitbl: line2.values[0],
+                        wdbl: line2.values[1],
+                        hrh: line2.values[2],
+                        lbl: line2.values[3],
+                        sbl: line2.values[4],
+                        hblot: line2.values[5],
+                        ke: line3.values[0],
+                        kb: line3.values[1],
+                        kc: line3.values[2],
+                    },
+                }
             }
             _ => unreachable!(),
-        }
+        };
     }
 
     let culvert1 = parse_culvert(reader, 1, &mut branch_comments)?;
@@ -540,6 +771,7 @@ fn parse_impoundment(
     let irf_line = consume_i32_line(reader, "irf", 1)?;
     let rockfill_code = irf_line.values[0];
     validate_enum(irf_line.number, "irf", rockfill_code, &[0, 1])?;
+    let mut rockfill = None;
     if rockfill_code != 0 {
         let strdes =
             reader
@@ -547,13 +779,23 @@ fn parse_impoundment(
                 .ok_or(WatershedImpoundmentParseError::UnexpectedEof {
                     context: "rockfill.strdes",
                 })?;
-        branch_comments.push(strdes.text);
-        let _ = consume_f64_line(reader, "rockfill.payload", 5)?;
+        let comment = strdes.text;
+        branch_comments.push(comment.clone());
+        let payload = consume_f64_line(reader, "rockfill.payload", 5)?;
+        rockfill = Some(RockfillPayload {
+            comment,
+            lnrf: payload.values[0],
+            hrf: payload.values[1],
+            hotrf: payload.values[2],
+            wdrf: payload.values[3],
+            diarf: payload.values[4],
+        });
     }
 
     let ies_line = consume_i32_line(reader, "ies", 1)?;
     let emergency_code = ies_line.values[0];
     validate_enum(ies_line.number, "ies", emergency_code, &[0, 1, 2])?;
+    let mut emergency_spillway = EmergencySpillwayPayload::None;
     match emergency_code {
         0 => {}
         1 => {
@@ -562,9 +804,25 @@ fn parse_impoundment(
                     context: "emergency.strdes",
                 },
             )?;
-            branch_comments.push(strdes.text);
-            let _ = consume_f64_line(reader, "emergency.open_channel.line1", 5)?;
-            let _ = consume_f64_line(reader, "emergency.open_channel.line2", 5)?;
+            let comment = strdes.text;
+            branch_comments.push(comment.clone());
+            let line1 = consume_f64_line(reader, "emergency.open_channel.line1", 5)?;
+            let line2 = consume_f64_line(reader, "emergency.open_channel.line2", 5)?;
+            emergency_spillway = EmergencySpillwayPayload::OpenChannel {
+                comment,
+                payload: EmergencyOpenChannelPayload {
+                    bwes: line1.values[0],
+                    sses: line1.values[1],
+                    nes: line1.values[2],
+                    hes: line1.values[3],
+                    hmxes: line1.values[4],
+                    ses1: line2.values[0],
+                    les1: line2.values[1],
+                    ses2: line2.values[2],
+                    les2: line2.values[3],
+                    ses3: line2.values[4],
+                },
+            };
         }
         2 => {
             let strdes = reader.next_nonempty_line().ok_or(
@@ -572,40 +830,39 @@ fn parse_impoundment(
                     context: "emergency.rating.strdes",
                 },
             )?;
-            branch_comments.push(strdes.text);
+            let comment = strdes.text;
+            branch_comments.push(comment.clone());
 
             let npts_line = consume_i32_line(reader, "npts", 1)?;
-            let npts = npts_line.values[0];
-            if npts <= 0 {
+            let npts_i32 = npts_line.values[0];
+            if npts_i32 <= 0 {
                 return Err(WatershedImpoundmentParseError::DomainError {
                     line: npts_line.number,
                     field: "npts",
-                    value: npts.to_string(),
+                    value: npts_i32.to_string(),
                     allowed: ">= 1",
                 });
             }
+            let npts = usize::try_from(npts_i32).map_err(|_| {
+                WatershedImpoundmentParseError::DomainError {
+                    line: npts_line.number,
+                    field: "npts",
+                    value: npts_i32.to_string(),
+                    allowed: "positive integer",
+                }
+            })?;
 
-            let _ = consume_f64_line(reader, "emergency.rating.hes", 1)?;
-            let _ = consume_f64_vector(
-                reader,
-                usize::try_from(npts).map_err(|_| WatershedImpoundmentParseError::DomainError {
-                    line: npts_line.number,
-                    field: "npts",
-                    value: npts.to_string(),
-                    allowed: "positive integer",
-                })?,
-                "hest",
-            )?;
-            let _ = consume_f64_vector(
-                reader,
-                usize::try_from(npts).map_err(|_| WatershedImpoundmentParseError::DomainError {
-                    line: npts_line.number,
-                    field: "npts",
-                    value: npts.to_string(),
-                    allowed: "positive integer",
-                })?,
-                "qes",
-            )?;
+            let hes = consume_f64_line(reader, "emergency.rating.hes", 1)?;
+            let hest = consume_f64_vector(reader, npts, "hest")?;
+            let qes = consume_f64_vector(reader, npts, "qes")?;
+            emergency_spillway = EmergencySpillwayPayload::RatingCurve {
+                comment,
+                payload: EmergencyRatingCurvePayload {
+                    hes: hes.values[0],
+                    hest,
+                    qes,
+                },
+            };
         }
         _ => unreachable!(),
     }
@@ -613,6 +870,7 @@ fn parse_impoundment(
     let iff_line = consume_i32_line(reader, "iff", 1)?;
     let filter_code = iff_line.values[0];
     validate_enum(iff_line.number, "iff", filter_code, &[0, 1])?;
+    let mut filter_barrier = None;
     if filter_code != 0 {
         let strdes =
             reader
@@ -620,13 +878,22 @@ fn parse_impoundment(
                 .ok_or(WatershedImpoundmentParseError::UnexpectedEof {
                     context: "filter.strdes",
                 })?;
-        branch_comments.push(strdes.text);
-        let _ = consume_f64_line(reader, "filter.payload", 4)?;
+        let comment = strdes.text;
+        branch_comments.push(comment.clone());
+        let payload = consume_f64_line(reader, "filter.payload", 4)?;
+        filter_barrier = Some(FilterBarrierPayload {
+            comment,
+            vsl: payload.values[0],
+            wdff: payload.values[1],
+            hff: payload.values[2],
+            hotff: payload.values[3],
+        });
     }
 
     let ipr_line = consume_i32_line(reader, "ipr", 1)?;
     let riser_code = ipr_line.values[0];
     validate_enum(ipr_line.number, "ipr", riser_code, &[0, 1])?;
+    let mut perforated_riser = None;
     if riser_code != 0 {
         let strdes =
             reader
@@ -634,11 +901,33 @@ fn parse_impoundment(
                 .ok_or(WatershedImpoundmentParseError::UnexpectedEof {
                     context: "riser.strdes",
                 })?;
-        branch_comments.push(strdes.text);
-        let _ = consume_f64_line(reader, "riser.payload.line1", 7)?;
-        let _ = consume_f64_line(reader, "riser.payload.line2", 4)?;
-        let _ = consume_f64_line(reader, "riser.payload.line3", 4)?;
-        let _ = consume_f64_line(reader, "riser.payload.line4", 3)?;
+        let comment = strdes.text;
+        branch_comments.push(comment.clone());
+        let line1 = consume_f64_line(reader, "riser.payload.line1", 7)?;
+        let line2 = consume_f64_line(reader, "riser.payload.line2", 4)?;
+        let line3 = consume_f64_line(reader, "riser.payload.line3", 4)?;
+        let line4 = consume_f64_line(reader, "riser.payload.line4", 3)?;
+        perforated_riser = Some(PerforatedRiserPayload {
+            comment,
+            hr: line1.values[0],
+            hb: line1.values[1],
+            hs: line1.values[2],
+            hd: line1.values[3],
+            diar: line1.values[4],
+            as_slot: line1.values[5],
+            diab: line1.values[6],
+            hrh: line2.values[0],
+            lbl: line2.values[1],
+            sbl: line2.values[2],
+            diabl: line2.values[3],
+            cb: line3.values[0],
+            coefw: line3.values[1],
+            coefo: line3.values[2],
+            cs: line3.values[3],
+            ke: line4.values[0],
+            kb: line4.values[1],
+            kc: line4.values[2],
+        });
     }
 
     let misc_line = consume_f64_line(reader, "misc", 5)?;
@@ -726,11 +1015,14 @@ fn parse_impoundment(
         }
     }
 
+    let has_culvert_1 = culvert1.icv != 0;
+    let has_culvert_2 = culvert2.icv != 0;
+
     Ok(ImpoundmentRecord {
         description: [desc1.text, desc2.text, desc3.text],
         branch_comments,
         ids,
-        culvert_icv: [culvert1, culvert2],
+        culvert_icv: [culvert1.icv, culvert2.icv],
         rockfill_code,
         emergency_code,
         filter_code,
@@ -749,10 +1041,16 @@ fn parse_impoundment(
         stage,
         area,
         length,
+        drop_spillway,
+        culverts: [culvert1, culvert2],
+        rockfill,
+        emergency_spillway,
+        filter_barrier,
+        perforated_riser,
         structure_flags: StructureFlags {
             has_drop_spillway: ids != 0,
-            has_culvert_1: culvert1 != 0,
-            has_culvert_2: culvert2 != 0,
+            has_culvert_1,
+            has_culvert_2,
             has_rockfill: rockfill_code != 0,
             has_emergency_spillway: emergency_code != 0,
             has_filter_barrier: filter_code != 0,
@@ -765,7 +1063,7 @@ fn parse_culvert(
     reader: &mut LineReader,
     culvert_index: usize,
     branch_comments: &mut Vec<String>,
-) -> Result<i32, WatershedImpoundmentParseError> {
+) -> Result<CulvertPayload, WatershedImpoundmentParseError> {
     let header_ctx = if culvert_index == 1 {
         "culvert1_header"
     } else {
@@ -796,6 +1094,8 @@ fn parse_culvert(
         });
     }
 
+    let mut comment = None;
+    let mut parameters = None;
     if icv >= 1 {
         let strdes =
             reader
@@ -803,12 +1103,34 @@ fn parse_culvert(
                 .ok_or(WatershedImpoundmentParseError::UnexpectedEof {
                     context: "culvert.strdes",
                 })?;
-        branch_comments.push(strdes.text);
-        let _ = consume_f64_line(reader, payload1_ctx, 6)?;
-        let _ = consume_f64_line(reader, payload2_ctx, 7)?;
+        let strdes_text = strdes.text;
+        branch_comments.push(strdes_text.clone());
+        comment = Some(strdes_text);
+        let line1 = consume_f64_line(reader, payload1_ctx, 6)?;
+        let line2 = consume_f64_line(reader, payload2_ctx, 7)?;
+        parameters = Some(CulvertParameters {
+            arcv: line1.values[0],
+            hitcv: line1.values[1],
+            hcv: line1.values[2],
+            lcv: line1.values[3],
+            scv: line1.values[4],
+            hcvot: line1.values[5],
+            ke: line2.values[0],
+            kb: line2.values[1],
+            kc: line2.values[2],
+            kus: line2.values[3],
+            mus: line2.values[4],
+            cs: line2.values[5],
+            ys: line2.values[6],
+        });
     }
 
-    Ok(icv)
+    Ok(CulvertPayload {
+        icv,
+        ncv,
+        comment,
+        parameters,
+    })
 }
 
 #[derive(Debug, Clone)]
