@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 34
+contract_version: 36
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -699,7 +699,7 @@ Minimum WS12 integration vectors:
 | GAP-SYSTEM-004 | CREAMS outlet peak-flow method is statistical and chapter-cited dataset support is for watersheds in the `70 ha` to `6200 ha` range. | Method-selection risk exists when applied outside referenced dataset conditions. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-005 | WSHED09 reran watershed validation and confirmed active WS10/WS11/WS12 + CLI end-to-end conformance vectors, but these lanes remain synthetic and still do not provide a baseline-authoritative end-to-end `openwepp-cli-watershed` comparator fixture proving topology dispatch, branch execution, and published boundary payload closure together. | Integration closure claims remain provisional pending a baseline-authoritative watershed end-to-end comparator lane and disposition evidence for that lane. | non-promotable | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-006 | WSHED08 activated watershed row-model-backed parquet publication for all required watershed outputs and removed valid-lane placeholder blocking on `OWSOUT-E-004`. | Required watershed publication surfaces now emit non-placeholder parquet outputs; residual system-level hold posture is governed by remaining non-WSHED08 gaps. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-SYSTEM-007 | WSHED10 exported active impoundment branch payload families and WSHED11 projects those payloads into WS12 runtime reduced coefficient families at watershed runtime boundaries. Residual active-lane integration still lacks full 15-function structure-family parity with legacy min-controller composition semantics. | Active runtime seeding no longer hard-fails due projection-gap conditions, but full active-lane system promotion remains blocked on complete structure-family parity migration. | non-promotable | `[DIRECT][Static] + [Ran]` |
+| GAP-SYSTEM-007 | WSHED10 exported active impoundment branch payload families, WSHED11 projected reduced coefficients, and WSHED13 completed WS12 runtime projection of full function families (`f01..f15`) with kernel 15-function min-controller composition at watershed runtime boundaries. | Active-lane structure-family parity closure is complete for WS12 runtime/kernel integration scope; residual watershed HOLD posture is governed by remaining out-of-scope blockers (`GAP-SYSTEM-005`, `GAP-SYSTEM-008`). | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-008 | Watershed channel sediment process integration (`chnero/chnrt/detach`) is not yet executable in production system paths even though boundary ownership/guards are defined. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`) with typed guard continuity, but full process parity remains unresolved. | End-to-end watershed sediment continuity and downstream publication claims remain blocked pending full `chnero/chnrt/detach` migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
@@ -742,3 +742,4 @@ Minimum WS12 integration vectors:
 | `2026-05-27` | `33` | `Codex` | WSHEDIMPL09 amendment: recorded watershed rerun evidence and confidence-tier disposition; retained `GAP-SYSTEM-005` as non-promotable with updated evidence class (`[Ran]`) because baseline-authoritative end-to-end comparator lane closure remains outstanding. |
 | `2026-05-27` | `34` | `Codex` | WSHEDIMPL10 amendment: recorded active-structure parser payload export closure evidence and narrowed `GAP-SYSTEM-007` to remaining runtime active-coefficient projection implementation scope. |
 | `2026-05-27` | `35` | `Codex` | WSHEDIMPL11 amendment: synchronized system boundary posture to reflect active runtime reduced-family coefficient projection from exported impoundment branch payloads, and narrowed `GAP-SYSTEM-007` to residual full 15-function active-lane parity closure scope. |
+| `2026-05-27` | `36` | `Codex` | WSHEDIMPL13 amendment: ratified full active-lane WS12 function-family projection and 15-function min-controller composition closure at watershed runtime boundaries, dispositioning `GAP-SYSTEM-007` to `closed` while preserving out-of-scope blockers (`GAP-SYSTEM-005`, `GAP-SYSTEM-008`). |

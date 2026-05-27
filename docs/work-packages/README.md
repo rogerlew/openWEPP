@@ -742,6 +742,12 @@ Authorized packages:
     specs for residual blockers (`GAP-SYSTEM-007`, `GAP-SYSTEM-005`,
     `GAP-SYSTEM-008`) and publish dependency-ordered downstream execution
     ownership.
+- `20260527-wshedimpl13-active-lane-15-function-parity-migration-001/`
+  - Purpose: execute WSHEDIMPL13 by migrating WS12 active-lane runtime/kernel
+    behavior from reduced-family projection to full legacy-authoritative
+    15-function structure-family projection + min-controller composition,
+    closing `GAP-IMPOUND-006` and `GAP-SYSTEM-007` while preserving program
+    HOLD on residual watershed blockers (`GAP-SYSTEM-005`, `GAP-SYSTEM-008`).
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

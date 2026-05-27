@@ -72,6 +72,7 @@ type Ws12ImpoundmentProjectionTuple = (&'static str, f64, Option<f64>, bool);
 const STANDARD_GRAVITY_M_S2: f64 = 9.806_65;
 const ACTIVE_PROJECTION_STAGE_DELTA_M: f64 = 0.01;
 const EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT: f64 = 3.087;
+const WS12_FUNCTION_COUNT: usize = 15;
 
 #[derive(Debug, Clone, Copy)]
 struct Ws12ActiveProjection {
@@ -83,6 +84,42 @@ struct Ws12ActiveProjection {
     drop_threshold: f64,
     culvert_threshold: f64,
     riser_threshold: f64,
+}
+
+#[derive(Debug, Clone)]
+struct Ws12OutflowFunctionFamilies {
+    a: [f64; WS12_FUNCTION_COUNT],
+    b: [f64; WS12_FUNCTION_COUNT],
+    c: [f64; WS12_FUNCTION_COUNT],
+    d: [f64; WS12_FUNCTION_COUNT],
+    e: [f64; WS12_FUNCTION_COUNT],
+    ha: [f64; WS12_FUNCTION_COUNT],
+}
+
+impl Ws12OutflowFunctionFamilies {
+    fn inactive_default(hfull: f64) -> Self {
+        Self {
+            a: [0.0; WS12_FUNCTION_COUNT],
+            b: [0.0; WS12_FUNCTION_COUNT],
+            c: [0.0; WS12_FUNCTION_COUNT],
+            d: [0.0; WS12_FUNCTION_COUNT],
+            e: [0.0; WS12_FUNCTION_COUNT],
+            ha: [hfull; WS12_FUNCTION_COUNT],
+        }
+    }
+
+    fn coefficient_at(&self, family_index: usize, suffix: &'static str) -> f64 {
+        let index = family_index - 1;
+        match suffix {
+            "a" => self.a[index],
+            "b" => self.b[index],
+            "c" => self.c[index],
+            "d" => self.d[index],
+            "e" => self.e[index],
+            "ha" => self.ha[index],
+            _ => unreachable!("unsupported coefficient suffix"),
+        }
+    }
 }
 
 impl WatershedRuntimeInputError {
@@ -706,6 +743,21 @@ pub fn seed_watershed_runtime_surface_from_watershed_impoundment(
                 .state_surface
                 .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
         }
+
+        let function_families = derive_ws12_outflow_function_families(node_id, record)?;
+        for family_index in 1..=WS12_FUNCTION_COUNT {
+            for coefficient_suffix in ["a", "b", "c", "d", "e", "ha"] {
+                let symbol =
+                    format!("ws10_impoundment_{node_id}_f{family_index:02}_{coefficient_suffix}");
+                let coefficient =
+                    function_families.coefficient_at(family_index, coefficient_suffix);
+                validate_ws10_impoundment_value(symbol.as_str(), coefficient, None, true)?;
+                runtime_surface.state_surface.insert(
+                    BoundarySymbol::from(symbol),
+                    BoundaryValue::scalar(coefficient),
+                );
+            }
+        }
     }
 
     Ok(())
@@ -779,6 +831,673 @@ fn derive_ws12_impoundment_coefficients(
         ("l1", l1, Some(0.0), false),
         ("l2", l2, Some(0.0), false),
     ])
+}
+
+#[allow(clippy::too_many_lines)]
+fn derive_ws12_outflow_function_families(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+) -> Result<Ws12OutflowFunctionFamilies, WatershedRuntimeInputError> {
+    let mut families = Ws12OutflowFunctionFamilies::inactive_default(record.hfull);
+
+    project_drop_spillway_function_families(node_id, record, &mut families)?;
+    project_culvert_function_families(node_id, &record.culverts[0], 4, &mut families)?;
+    project_culvert_function_families(node_id, &record.culverts[1], 7, &mut families)?;
+    project_rockfill_function(node_id, record, &mut families)?;
+    project_emergency_function(node_id, record, &mut families)?;
+    project_filter_function(node_id, record, &mut families)?;
+    project_riser_functions(node_id, record, &mut families)?;
+
+    Ok(families)
+}
+
+fn project_drop_spillway_function_families(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    families: &mut Ws12OutflowFunctionFamilies,
+) -> Result<(), WatershedRuntimeInputError> {
+    use openwepp_input_contract::parsers::watershed_impoundment::DropSpillwayPayload;
+
+    match &record.drop_spillway {
+        DropSpillwayPayload::None => Ok(()),
+        DropSpillwayPayload::Ids1 { payload, .. } => {
+            let denominator =
+                1.0 + payload.ke + payload.kb + payload.kc * (payload.lbl + payload.hrh);
+            if !denominator.is_finite() || denominator <= 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_f03_b"),
+                    value: denominator,
+                    rule: "drop-spillway loss denominator must be finite and > 0",
+                });
+            }
+
+            families.a[0] = 1.0;
+            families.b[0] = payload.coefw * std::f64::consts::PI * payload.diars;
+            families.c[0] = 1.5;
+            families.ha[0] = payload.hrs;
+
+            families.a[1] = 1.0;
+            families.b[1] = payload.coefo * std::f64::consts::PI * payload.diars.powi(2) / 4.0
+                * (2.0 * STANDARD_GRAVITY_M_S2).sqrt();
+            families.c[1] = 0.5;
+            families.ha[1] = payload.hrs;
+
+            families.a[2] = payload.hblot + 0.6 * payload.diabl;
+            families.b[2] = std::f64::consts::PI * payload.diabl.powi(2) / 4.0
+                * (2.0 * STANDARD_GRAVITY_M_S2).sqrt()
+                / denominator.sqrt();
+            families.c[2] = 0.5;
+            families.ha[2] =
+                payload.hrs - (payload.hrh + payload.sbl * payload.lbl - 0.6 * payload.diabl);
+
+            Ok(())
+        }
+        DropSpillwayPayload::Ids2 { payload, .. } => {
+            let denominator =
+                1.0 + payload.ke + payload.kb + payload.kc * (payload.lbl + payload.hrh);
+            if !denominator.is_finite() || denominator <= 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_f03_b"),
+                    value: denominator,
+                    rule: "drop-spillway loss denominator must be finite and > 0",
+                });
+            }
+
+            families.a[0] = 1.0;
+            families.b[0] = payload.coefw * 2.0 * (payload.lenrs + payload.widrs);
+            families.c[0] = 1.5;
+            families.ha[0] = payload.hrs;
+
+            families.a[1] = 1.0;
+            families.b[1] = payload.coefo
+                * payload.lenrs
+                * payload.widrs
+                * (2.0 * STANDARD_GRAVITY_M_S2).sqrt();
+            families.c[1] = 0.5;
+            families.ha[1] = payload.hrs;
+
+            families.a[2] = payload.hblot + 0.6 * payload.diabl;
+            families.b[2] = std::f64::consts::PI * payload.diabl.powi(2) / 4.0
+                * (2.0 * STANDARD_GRAVITY_M_S2).sqrt()
+                / denominator.sqrt();
+            families.c[2] = 0.5;
+            families.ha[2] =
+                payload.hrs - (payload.hrh + payload.sbl * payload.lbl - 0.6 * payload.diabl);
+
+            Ok(())
+        }
+        DropSpillwayPayload::Ids3 { payload, .. } => {
+            let denominator =
+                1.0 + payload.ke + payload.kb + payload.kc * (payload.lbl + payload.hrh);
+            if !denominator.is_finite() || denominator <= 0.0 {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_f03_b"),
+                    value: denominator,
+                    rule: "drop-spillway loss denominator must be finite and > 0",
+                });
+            }
+
+            families.a[0] = 1.0;
+            families.b[0] = payload.coefw * 2.0 * (payload.lenrs + payload.widrs);
+            families.c[0] = 1.5;
+            families.ha[0] = payload.hrs;
+
+            families.a[1] = 1.0;
+            families.b[1] = payload.coefo
+                * payload.lenrs
+                * payload.widrs
+                * (2.0 * STANDARD_GRAVITY_M_S2).sqrt();
+            families.c[1] = 0.5;
+            families.ha[1] = payload.hrs;
+
+            families.a[2] = payload.hblot + 0.6 * payload.hitbl;
+            families.b[2] = payload.hitbl * payload.wdbl * (2.0 * STANDARD_GRAVITY_M_S2).sqrt()
+                / denominator.sqrt();
+            families.c[2] = 0.5;
+            families.ha[2] =
+                payload.hrs - (payload.hrh + payload.sbl * payload.lbl - 0.6 * payload.hitbl);
+
+            Ok(())
+        }
+    }
+}
+
+fn project_culvert_function_families(
+    node_id: usize,
+    culvert: &CulvertPayload,
+    family_start: usize,
+    families: &mut Ws12OutflowFunctionFamilies,
+) -> Result<(), WatershedRuntimeInputError> {
+    if culvert.icv < 1 {
+        return Ok(());
+    }
+
+    let Some(parameters) = &culvert.parameters else {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f{family_start:02}_a"),
+            value: f64::from(culvert.icv),
+            rule: "active culvert payload must include hydraulic parameters",
+        });
+    };
+
+    let ncv = f64::from(culvert.ncv);
+    let denominator = 1.0 + parameters.ke + parameters.kb + parameters.kc * parameters.lcv;
+    if !denominator.is_finite() || denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f{:02}_b", family_start + 2),
+            value: denominator,
+            rule: "culvert loss denominator must be finite and > 0",
+        });
+    }
+    if !ncv.is_finite() || ncv <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f{family_start:02}_a"),
+            value: ncv,
+            rule: "culvert count must be finite and > 0",
+        });
+    }
+    if !parameters.mus.is_finite() || parameters.mus.abs() <= 1.0e-12 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f{family_start:02}_c"),
+            value: parameters.mus,
+            rule: "culvert mus must be finite and non-zero",
+        });
+    }
+    if !parameters.cs.is_finite() || parameters.cs.abs() <= 1.0e-12 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f{:02}_d", family_start + 1),
+            value: parameters.cs,
+            rule: "culvert cs must be finite and non-zero",
+        });
+    }
+
+    let base = family_start - 1;
+    families.a[base] = parameters.arcv * parameters.hitcv.sqrt() * ncv;
+    families.b[base] = parameters.hitcv * parameters.kus;
+    families.c[base] = 1.0 / parameters.mus;
+    families.ha[base] = parameters.hcv;
+
+    families.a[base + 1] = parameters.arcv * parameters.hitcv.sqrt() * ncv;
+    families.b[base + 1] = parameters.hitcv;
+    families.c[base + 1] = 0.5 * parameters.scv - parameters.ys;
+    families.d[base + 1] = parameters.cs;
+    families.ha[base + 1] = parameters.hcv;
+
+    families.a[base + 2] = parameters.hcvot + 0.6 * parameters.hitcv;
+    families.b[base + 2] =
+        parameters.arcv * (2.0 * STANDARD_GRAVITY_M_S2).sqrt() * ncv / denominator.sqrt();
+    families.c[base + 2] = 0.5;
+    families.ha[base + 2] =
+        parameters.hcv - parameters.scv * parameters.lcv + 0.6 * parameters.hitcv;
+
+    Ok(())
+}
+
+fn project_rockfill_function(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    families: &mut Ws12OutflowFunctionFamilies,
+) -> Result<(), WatershedRuntimeInputError> {
+    let Some(rockfill) = &record.rockfill else {
+        return Ok(());
+    };
+    if !rockfill.diarf.is_finite() || rockfill.diarf <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f10_b"),
+            value: rockfill.diarf,
+            rule: "rockfill diarf must be finite and > 0",
+        });
+    }
+    if !rockfill.lnrf.is_finite() || rockfill.lnrf <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f10_b"),
+            value: rockfill.lnrf,
+            rule: "rockfill lnrf must be finite and > 0",
+        });
+    }
+
+    let arf = rockfill_arf(rockfill.lnrf, rockfill.diarf);
+    let brf_denominator = 1.500_560_9 - 0.000_131_719_05 * rockfill.diarf.ln() / rockfill.diarf;
+    if !brf_denominator.is_finite() || brf_denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f10_c"),
+            value: brf_denominator,
+            rule: "rockfill brf denominator must be finite and > 0",
+        });
+    }
+    let brf = 1.0 / brf_denominator;
+
+    let index = 9;
+    families.a[index] = rockfill.wdrf;
+    families.b[index] = rockfill.lnrf * arf;
+    families.c[index] = 1.0 / brf;
+    families.d[index] = EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT * rockfill.wdrf;
+    families.e[index] = rockfill.hotrf;
+    families.ha[index] = rockfill.hrf;
+    Ok(())
+}
+
+fn project_emergency_function(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    families: &mut Ws12OutflowFunctionFamilies,
+) -> Result<(), WatershedRuntimeInputError> {
+    let index = 10;
+    match &record.emergency_spillway {
+        EmergencySpillwayPayload::None => Ok(()),
+        EmergencySpillwayPayload::OpenChannel { payload, .. } => {
+            let span = (payload.hmxes - payload.hes).max(0.05);
+            let mut points = Vec::with_capacity(16);
+            points.push((0.0, 0.0));
+            for sample_idx in 1..=15_u32 {
+                let fraction = f64::from(sample_idx) / 15.0;
+                let delta = span * fraction;
+                let discharge =
+                    EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT * payload.bwes * delta.powf(1.5);
+                points.push((delta, discharge.max(0.0)));
+            }
+            let coefficients = fit_quartic_least_squares(node_id, &points, "f11")?;
+            families.a[index] = coefficients[0];
+            families.b[index] = coefficients[1];
+            families.c[index] = coefficients[2];
+            families.d[index] = coefficients[3];
+            families.e[index] = coefficients[4];
+            families.ha[index] = payload.hes;
+            Ok(())
+        }
+        EmergencySpillwayPayload::RatingCurve { payload, .. } => {
+            if payload.hest.len() != payload.qes.len() || payload.hest.is_empty() {
+                return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                    symbol: format!("ws10_impoundment_{node_id}_f11_a"),
+                    value: f64::from(u32::try_from(payload.hest.len()).unwrap_or(u32::MAX)),
+                    rule: "emergency rating curve vectors must have equal non-zero length",
+                });
+            }
+            let mut points = Vec::with_capacity(payload.hest.len() + 1);
+            points.push((0.0, 0.0));
+            for (&stage_value, &discharge_value) in payload.hest.iter().zip(payload.qes.iter()) {
+                let x = (stage_value - payload.hes).max(0.0);
+                points.push((x, discharge_value.max(0.0)));
+            }
+            let coefficients = fit_quartic_least_squares(node_id, &points, "f11")?;
+            families.a[index] = coefficients[0];
+            families.b[index] = coefficients[1];
+            families.c[index] = coefficients[2];
+            families.d[index] = coefficients[3];
+            families.e[index] = coefficients[4];
+            families.ha[index] = payload.hes;
+            Ok(())
+        }
+    }
+}
+
+fn project_filter_function(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    families: &mut Ws12OutflowFunctionFamilies,
+) -> Result<(), WatershedRuntimeInputError> {
+    let Some(filter) = &record.filter_barrier else {
+        return Ok(());
+    };
+    let index = 11;
+    families.a[index] = filter.wdff * filter.vsl;
+    families.ha[index] = filter.hff;
+    families.d[index] = filter.hotff;
+
+    if filter.hotff <= filter.hff {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f12_d"),
+            value: filter.hotff - filter.hff,
+            rule: "filter overtopping stage must be > base stage",
+        });
+    }
+
+    if record.filter_code == 1 {
+        families.b[index] = 3.27 * filter.wdff;
+        families.c[index] = (0.4 / (filter.hotff - filter.hff)) * filter.wdff;
+    } else {
+        families.b[index] = EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT * filter.wdff;
+        families.c[index] = 0.0;
+    }
+    Ok(())
+}
+
+fn project_riser_functions(
+    node_id: usize,
+    record: &ImpoundmentRecord,
+    families: &mut Ws12OutflowFunctionFamilies,
+) -> Result<(), WatershedRuntimeInputError> {
+    let Some(riser) = &record.perforated_riser else {
+        return Ok(());
+    };
+
+    if !riser.diar.is_finite() || riser.diar <= 0.0 || !riser.diab.is_finite() || riser.diab <= 0.0
+    {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f13_b"),
+            value: if riser.diar <= 0.0 {
+                riser.diar
+            } else {
+                riser.diab
+            },
+            rule: "riser diameters must be finite and > 0",
+        });
+    }
+
+    let (apr1, apr2) = derive_riser_apr_coefficients(node_id, riser)?;
+    let ko = (-0.60721 + 0.329_229 * (riser.diab / riser.diar)).exp();
+    let denominator = 1.0 + riser.ke + riser.kb + riser.kc * riser.lbl + ko;
+    if !denominator.is_finite() || denominator <= 0.0 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f15_b"),
+            value: denominator,
+            rule: "riser loss denominator must be finite and > 0",
+        });
+    }
+
+    let ab = std::f64::consts::PI * riser.diab.powi(2) / 4.0;
+    let index_13 = 12;
+    families.a[index_13] = 1.0;
+    families.b[index_13] = apr1;
+    families.c[index_13] = apr2;
+    families.ha[index_13] = riser.hd;
+
+    let index_14 = 13;
+    families.a[index_14] = riser.cb * ab * (2.0 * STANDARD_GRAVITY_M_S2).sqrt();
+    families.ha[index_14] = riser.hd - riser.hb;
+
+    let index_15 = 14;
+    families.b[index_15] = std::f64::consts::PI * riser.diabl.powi(2) / 4.0
+        * (2.0 * STANDARD_GRAVITY_M_S2).sqrt()
+        / denominator.sqrt();
+    families.c[index_15] = 0.5;
+    families.ha[index_15] = riser.hr - (riser.hrh + riser.sbl * riser.lbl - 0.6 * riser.diabl);
+
+    Ok(())
+}
+
+fn derive_riser_apr_coefficients(
+    node_id: usize,
+    riser: &openwepp_input_contract::parsers::watershed_impoundment::PerforatedRiserPayload,
+) -> Result<(f64, f64), WatershedRuntimeInputError> {
+    let points = sample_riser_unsubmerged_curve(node_id, riser)?;
+    if points.len() < 2 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f13_b"),
+            value: f64::from(u32::try_from(points.len()).unwrap_or(0)),
+            rule: "riser unsubmerged curve sampling requires at least two points",
+        });
+    }
+
+    let mut sum_inverse_head = 0.0;
+    let mut sum_inverse_discharge = 0.0;
+    let mut sum_inverse_head_squared = 0.0;
+    let mut sum_cross_term = 0.0;
+    for &(hp, q) in &points {
+        if !hp.is_finite() || hp <= 0.0 || !q.is_finite() || q <= 0.0 {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_f13_b"),
+                value: if hp <= 0.0 { hp } else { q },
+                rule: "riser regression points must be finite and > 0",
+            });
+        }
+        let u = 1.0 / hp.powf(1.5);
+        let z = 1.0 / q;
+        sum_inverse_head += u;
+        sum_inverse_discharge += z;
+        sum_inverse_head_squared += u * u;
+        sum_cross_term += u * z;
+    }
+
+    let n = f64::from(u32::try_from(points.len()).unwrap_or(u32::MAX));
+    let denominator = (n * sum_inverse_head_squared) - (sum_inverse_head * sum_inverse_head);
+    if !denominator.is_finite() || denominator.abs() <= 1.0e-12 {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f13_b"),
+            value: denominator,
+            rule: "riser regression denominator must be finite and non-zero",
+        });
+    }
+
+    let apr1 = ((sum_inverse_discharge * sum_inverse_head_squared)
+        - (sum_inverse_head * sum_cross_term))
+        / denominator;
+    let apr2 = ((n * sum_cross_term) - (sum_inverse_head * sum_inverse_discharge)) / denominator;
+    if !apr1.is_finite() || !apr2.is_finite() {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_f13_b"),
+            value: if apr1.is_finite() { apr2 } else { apr1 },
+            rule: "riser regression coefficients must be finite",
+        });
+    }
+
+    Ok((apr1, apr2))
+}
+
+#[allow(clippy::too_many_lines)]
+fn sample_riser_unsubmerged_curve(
+    node_id: usize,
+    riser: &openwepp_input_contract::parsers::watershed_impoundment::PerforatedRiserPayload,
+) -> Result<Vec<(f64, f64)>, WatershedRuntimeInputError> {
+    let mut points = Vec::new();
+    let mut hp_delta = 0.05;
+    let mut hp = hp_delta;
+    let mut y = -riser.hb;
+    let mut iterations = 0_usize;
+    let maximum_iterations = 20_000_usize;
+    let q_tolerance = 1.0e-12;
+    let y_delta = 1.0e-4;
+
+    let ko = (-0.60721 + 0.329_229 * (riser.diab / riser.diar)).exp();
+    let ab = std::f64::consts::PI * riser.diab.powi(2) / 4.0;
+
+    while iterations < maximum_iterations && points.len() < 99 {
+        iterations += 1;
+        let qb_head = riser.hb + y;
+        if qb_head <= 0.0 || !qb_head.is_finite() {
+            y += y_delta;
+            continue;
+        }
+
+        let qb = riser.cb * ab * (2.0 * STANDARD_GRAVITY_M_S2 * qb_head).sqrt();
+        let qs = compute_riser_qs(hp, y, ko, riser)?;
+        if !qb.is_finite() || !qs.is_finite() {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_f13_b"),
+                value: if qb.is_finite() { qs } else { qb },
+                rule: "riser sampled discharges must be finite",
+            });
+        }
+
+        if qb < qs {
+            y += y_delta;
+            if y >= hp {
+                points.push((hp.max(1.0e-6), qb.max(q_tolerance)));
+                hp += hp_delta;
+                if hp_delta <= 0.0 || !hp_delta.is_finite() {
+                    break;
+                }
+                continue;
+            }
+            if y > (riser.hr - riser.hd) {
+                break;
+            }
+            continue;
+        }
+
+        points.push((hp.max(1.0e-6), qs.max(q_tolerance)));
+        hp += hp_delta;
+        if points.len() >= 99 {
+            break;
+        }
+        if hp > 5.0 * (riser.hr + riser.hs + riser.hd + 1.0) {
+            hp_delta *= 2.0;
+            if hp_delta > 10.0 {
+                break;
+            }
+        }
+    }
+
+    Ok(points)
+}
+
+fn compute_riser_qs(
+    hp: f64,
+    y: f64,
+    ko: f64,
+    riser: &openwepp_input_contract::parsers::watershed_impoundment::PerforatedRiserPayload,
+) -> Result<f64, WatershedRuntimeInputError> {
+    let slot_factor = (riser.cs * riser.as_slot / riser.hs) * (2.0 * STANDARD_GRAVITY_M_S2).sqrt();
+    let qs = if hp < riser.hs {
+        if y <= 0.0 {
+            (2.0 / 3.0) * slot_factor * hp.powf(1.5)
+        } else {
+            slot_factor * (y * (hp - y).sqrt() + (2.0 / 3.0) * (hp - y).powf(1.5))
+        }
+    } else if hp <= (riser.hr - riser.hd) {
+        if y <= 0.0 {
+            (2.0 / 3.0) * slot_factor * (hp.powf(1.5) - (hp - riser.hs).powf(1.5))
+        } else if y <= riser.hs {
+            slot_factor
+                * (y * (hp - y).sqrt()
+                    + (2.0 / 3.0) * ((hp - y).powf(1.5) - (hp - riser.hs).powf(1.5)))
+        } else {
+            (riser.cs * riser.as_slot) * (2.0 * STANDARD_GRAVITY_M_S2 * (hp - y)).sqrt()
+        }
+    } else {
+        let qw = riser.coefw
+            * std::f64::consts::PI
+            * riser.diar
+            * (hp - (riser.hr - riser.hd)).powf(1.5);
+        let qo = riser.coefo * std::f64::consts::PI * riser.diar.powi(2) / 4.0
+            * (hp - (riser.hr - riser.hd)).sqrt();
+        let q_control = qw.min(qo);
+        if y <= 0.0 {
+            (2.0 / 3.0) * slot_factor * (hp.powf(1.5) - (hp - riser.hs).powf(1.5)) + q_control
+        } else if y <= riser.hs {
+            slot_factor
+                * (y * (hp - y).sqrt()
+                    + (2.0 / 3.0) * ((hp - y).powf(1.5) - (hp - riser.hs).powf(1.5)))
+                + q_control
+        } else {
+            (riser.cs * riser.as_slot) * (2.0 * STANDARD_GRAVITY_M_S2 * (hp - y)).sqrt() + q_control
+        }
+    };
+
+    let _ = ko;
+    if !qs.is_finite() {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: "ws10_impoundment_riser_qs".to_owned(),
+            value: qs,
+            rule: "riser sampled discharge must be finite",
+        });
+    }
+    Ok(qs.max(0.0))
+}
+
+fn fit_quartic_least_squares(
+    node_id: usize,
+    points: &[(f64, f64)],
+    family_label: &'static str,
+) -> Result<[f64; 5], WatershedRuntimeInputError> {
+    if points.is_empty() {
+        return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{family_label}_a"),
+            value: 0.0,
+            rule: "quartic fit requires at least one point",
+        });
+    }
+
+    let mut fit_points = points.to_vec();
+    while fit_points.len() < 5 {
+        let next = if fit_points.len() == 1 {
+            let (x, y) = fit_points[0];
+            (x + 0.05, y)
+        } else {
+            let (x_last, y_last) = fit_points[fit_points.len() - 1];
+            let (x_prev, y_prev) = fit_points[fit_points.len() - 2];
+            let dx = (x_last - x_prev).abs().max(0.05);
+            let slope = if dx > 0.0 {
+                (y_last - y_prev) / dx
+            } else {
+                0.0
+            };
+            (x_last + dx, (y_last + slope * dx).max(0.0))
+        };
+        fit_points.push(next);
+    }
+
+    let mut normal = [[0.0_f64; 5]; 5];
+    let mut rhs = [0.0_f64; 5];
+    for &(x, y) in &fit_points {
+        if !x.is_finite() || !y.is_finite() {
+            return Err(WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+                symbol: format!("ws10_impoundment_{node_id}_{family_label}_a"),
+                value: if x.is_finite() { y } else { x },
+                rule: "quartic fit points must be finite",
+            });
+        }
+        let powers = [1.0, x, x * x, x * x * x, x * x * x * x];
+        for row in 0..5 {
+            rhs[row] += y * powers[row];
+            for column in 0..5 {
+                normal[row][column] += powers[row] * powers[column];
+            }
+        }
+    }
+
+    solve_linear_system_5x5(normal, rhs).ok_or_else(|| {
+        WatershedRuntimeInputError::ImpoundmentSymbolOutOfDomain {
+            symbol: format!("ws10_impoundment_{node_id}_{family_label}_a"),
+            value: f64::NAN,
+            rule: "quartic fit normal system must be solvable",
+        }
+    })
+}
+
+#[allow(clippy::needless_range_loop)]
+fn solve_linear_system_5x5(mut matrix: [[f64; 5]; 5], mut rhs: [f64; 5]) -> Option<[f64; 5]> {
+    for pivot in 0..5 {
+        let mut max_row = pivot;
+        let mut max_value = matrix[pivot][pivot].abs();
+        for row in (pivot + 1)..5 {
+            let candidate = matrix[row][pivot].abs();
+            if candidate > max_value {
+                max_value = candidate;
+                max_row = row;
+            }
+        }
+        if max_value <= 1.0e-12 {
+            return None;
+        }
+
+        if max_row != pivot {
+            matrix.swap(pivot, max_row);
+            rhs.swap(pivot, max_row);
+        }
+
+        let pivot_value = matrix[pivot][pivot];
+        for column in pivot..5 {
+            matrix[pivot][column] /= pivot_value;
+        }
+        rhs[pivot] /= pivot_value;
+
+        for row in 0..5 {
+            if row == pivot {
+                continue;
+            }
+            let factor = matrix[row][pivot];
+            if factor.abs() <= 1.0e-20 {
+                continue;
+            }
+            for column in pivot..5 {
+                matrix[row][column] -= factor * matrix[pivot][column];
+            }
+            rhs[row] -= factor * rhs[pivot];
+        }
+    }
+
+    Some(rhs)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -2205,6 +2924,16 @@ mod tests {
             .get(&BoundarySymbol::from("ws10_impoundment_1_ha"))
             .expect("ws10_impoundment_1_ha should be present")
             .as_f64();
+        let f01_ha = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_f01_ha"))
+            .expect("ws10_impoundment_1_f01_ha should be present")
+            .as_f64();
+        let f15_b = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_f15_b"))
+            .expect("ws10_impoundment_1_f15_b should be present")
+            .as_f64();
 
         assert!((h - 0.70).abs() < 1e-12);
         assert!((hfull - 0.75).abs() < 1e-12);
@@ -2216,6 +2945,8 @@ mod tests {
         assert!(l1 > 0.0);
         assert!(l2 > 0.0);
         assert!((ha - 0.75).abs() < 1e-12);
+        assert!((f01_ha - 0.75).abs() < 1e-12);
+        assert!(f15_b.abs() <= 1.0e-12);
     }
 
     #[test]
@@ -2249,10 +2980,34 @@ mod tests {
             .get(&BoundarySymbol::from("ws10_impoundment_1_e"))
             .expect("ws10_impoundment_1_e should be present")
             .as_f64();
+        let f01_b = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_f01_b"))
+            .expect("ws10_impoundment_1_f01_b should be present")
+            .as_f64();
+        let f04_a = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_f04_a"))
+            .expect("ws10_impoundment_1_f04_a should be present")
+            .as_f64();
+        let f10_d = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_f10_d"))
+            .expect("ws10_impoundment_1_f10_d should be present")
+            .as_f64();
+        let f13_b = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_impoundment_1_f13_b"))
+            .expect("ws10_impoundment_1_f13_b should be present")
+            .as_f64();
 
         assert!(a.is_finite() && a > 0.0);
         assert!(c.is_finite() && c > 0.0);
         assert!(e.is_finite() && e > 0.0);
+        assert!(f01_b.is_finite() && f01_b > 0.0);
+        assert!(f04_a.is_finite() && f04_a > 0.0);
+        assert!(f10_d.is_finite() && f10_d > 0.0);
+        assert!(f13_b.is_finite() && f13_b > 0.0);
     }
 
     #[test]

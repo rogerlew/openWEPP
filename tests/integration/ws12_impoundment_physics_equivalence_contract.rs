@@ -292,6 +292,173 @@ fn wshed11_contract_ws12_vector_projects_active_structure_payloads() {
 }
 
 #[test]
+#[allow(clippy::many_single_char_names, clippy::too_many_lines)]
+fn wshed13_contract_ws12_vector_uses_full_min_controller_outflow_composition() {
+    let report = run_ws12_surface(seeded_ws12_active_surface());
+    assert!(
+        report.dispatch_report.is_success(),
+        "ws12 active run should succeed for min-controller composition verification"
+    );
+
+    let hnext = state_value(&report, "ws10_impoundment_1_hnext");
+    let qo = state_value(&report, "ws10_impoundment_1_qo");
+
+    let families = |index: usize, suffix: &str| -> f64 {
+        state_value(&report, &format!("ws10_impoundment_1_f{index:02}_{suffix}"))
+    };
+
+    let a: [f64; 15] = std::array::from_fn(|i| families(i + 1, "a"));
+    let b: [f64; 15] = std::array::from_fn(|i| families(i + 1, "b"));
+    let c: [f64; 15] = std::array::from_fn(|i| families(i + 1, "c"));
+    let d: [f64; 15] = std::array::from_fn(|i| families(i + 1, "d"));
+    let e: [f64; 15] = std::array::from_fn(|i| families(i + 1, "e"));
+    let ha: [f64; 15] = std::array::from_fn(|i| families(i + 1, "ha"));
+
+    let htw = 0.0;
+    let q1 = if hnext > ha[0] {
+        b[0] * (hnext - ha[0]).powf(c[0])
+    } else {
+        0.0
+    };
+    let q2 = if hnext > ha[1] {
+        b[1] * (hnext - ha[1]).powf(c[1])
+    } else {
+        0.0
+    };
+    let q3 = if hnext > ha[2] {
+        let head = if htw > a[2] {
+            hnext - (ha[2] + htw - a[2])
+        } else {
+            hnext - ha[2]
+        };
+        if head > 0.0 {
+            b[2] * head.powf(c[2])
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+    let q4 = if hnext > ha[3] {
+        let base = (hnext - ha[3]) / b[3];
+        if base > 0.0 {
+            a[3] * base.powf(c[3])
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+    let q5 = if hnext > ha[4] {
+        let base = (((hnext - ha[4]) / b[4]) + c[4]) / d[4];
+        if base > 0.0 { a[4] * base.sqrt() } else { 0.0 }
+    } else {
+        0.0
+    };
+    let q6 = if hnext > ha[5] {
+        let head = if htw > a[5] {
+            hnext - (ha[5] + htw - a[5])
+        } else {
+            hnext - ha[5]
+        };
+        if head > 0.0 {
+            b[5] * head.powf(c[5])
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+    let q7 = if hnext > ha[6] {
+        let base = (hnext - ha[6]) / b[6];
+        if base > 0.0 {
+            a[6] * base.powf(c[6])
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+    let q8 = if hnext > ha[7] {
+        let base = (((hnext - ha[7]) / b[7]) + c[7]) / d[7];
+        if base > 0.0 { a[7] * base.sqrt() } else { 0.0 }
+    } else {
+        0.0
+    };
+    let q9 = if hnext > ha[8] {
+        let head = if htw > a[8] {
+            hnext - (ha[8] + htw - a[8])
+        } else {
+            hnext - ha[8]
+        };
+        if head > 0.0 {
+            b[8] * head.powf(c[8])
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+    let mut q10 = if hnext > ha[9] {
+        let base = (hnext - ha[9]) / b[9];
+        if base > 0.0 {
+            a[9] * base.powf(c[9])
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    };
+    if hnext > e[9] {
+        q10 += d[9] * (hnext - e[9]).powf(1.5);
+    }
+    let q11 = if hnext > ha[10] {
+        let x = hnext - ha[10];
+        let poly = a[10] + b[10] * x + c[10] * x.powi(2) + d[10] * x.powi(3) + e[10] * x.powi(4);
+        poly.max(0.0)
+    } else {
+        0.0
+    };
+    let mut q12 = if hnext > ha[11] {
+        a[11] * (hnext - ha[11])
+    } else {
+        0.0
+    };
+    if hnext > d[11] {
+        let dx = hnext - d[11];
+        q12 += (b[11] + c[11] * dx) * dx.powf(1.5);
+    }
+    let q13 = if hnext > ha[12] {
+        let x = hnext - ha[12];
+        a[12] / (b[12] + c[12] / x.powf(1.5))
+    } else {
+        0.0
+    };
+    let q14 = if hnext > ha[13] {
+        a[13] * (hnext - ha[13]).sqrt()
+    } else {
+        0.0
+    };
+    let q15 = if hnext > ha[14] {
+        b[14] * (hnext - ha[14]).powf(c[14])
+    } else {
+        0.0
+    };
+
+    let expected_qo = q1.min(q2).min(q3)
+        + q4.min(q5).min(q6)
+        + q7.min(q8).min(q9)
+        + q10
+        + q11
+        + q12
+        + q13.min(q14).min(q15);
+    assert!(
+        (qo - expected_qo).abs() <= 1.0e-9,
+        "qo should match 15-function min-controller composition (expected={expected_qo}, observed={qo})"
+    );
+}
+
+#[test]
 fn wshed03_contract_ws12_vector_requires_regime_transition_timestep_stability() {
     let mut fine_step = seeded_ws12_surface();
     fine_step.state_surface.insert(

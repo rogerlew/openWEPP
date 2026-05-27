@@ -227,14 +227,12 @@ struct Ws11WaveRoutingState {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Ws12ImpoundmentCoefficients {
-    a: f64,
-    b: f64,
-    c: f64,
-    d: f64,
-    e: f64,
-    ha: f64,
-    ht: f64,
-    hlm: f64,
+    a: [f64; 15],
+    b: [f64; 15],
+    c: [f64; 15],
+    d: [f64; 15],
+    e: [f64; 15],
+    ha: [f64; 15],
     a0: f64,
     a1: f64,
     a2: f64,
@@ -352,6 +350,26 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(scalar)
     }
 
+    fn require_impoundment_function_coefficient_scalar(
+        request: &WatershedKernelRequest<'_>,
+        node_id: u32,
+        family_index: usize,
+        suffix: &'static str,
+    ) -> Result<f64, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Impoundment;
+        let key = BoundarySymbol::from(format!(
+            "ws10_impoundment_{node_id}_f{family_index:02}_{suffix}"
+        ));
+        let Some(value) = request.state_surface.get(&key) else {
+            return Err(Self::missing_required(node_class, key));
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Self::non_finite(node_class, key, scalar));
+        }
+        Ok(scalar)
+    }
+
     fn require_flux_scalar(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
@@ -438,28 +456,184 @@ impl Ws10ChannelImpoundmentKernel {
         }
     }
 
+    #[allow(clippy::too_many_lines)]
     fn impoundment_outflow_at_stage(
         node_class: Ws10NodeClass,
         stage: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> Result<f64, Ws10GuardError> {
-        let drop_spillway_q = if stage > coefficients.ha {
-            coefficients.a * (stage - coefficients.ha).powf(coefficients.b)
-        } else {
-            0.0
-        };
-        let culvert_q = if stage > coefficients.ht {
-            coefficients.c * (stage - coefficients.ht).powf(coefficients.d)
-        } else {
-            0.0
-        };
-        let riser_q = if stage > coefficients.hlm {
-            coefficients.e * (stage - coefficients.hlm)
-        } else {
-            0.0
-        };
+        let mut q = [0.0_f64; 15];
+        let htw = 0.0;
 
-        let qo = drop_spillway_q + culvert_q + riser_q;
+        // Drop spillway family (qo1..qo3)
+        if stage > coefficients.ha[0] {
+            q[0] = coefficients.b[0] * (stage - coefficients.ha[0]).powf(coefficients.c[0]);
+        }
+        if stage > coefficients.ha[1] {
+            q[1] = coefficients.b[1] * (stage - coefficients.ha[1]).powf(coefficients.c[1]);
+        }
+        if stage > coefficients.ha[2] {
+            let adjusted_head = if htw > coefficients.a[2] {
+                stage - (coefficients.ha[2] + htw - coefficients.a[2])
+            } else {
+                stage - coefficients.ha[2]
+            };
+            if adjusted_head > 0.0 {
+                q[2] = coefficients.b[2] * adjusted_head.powf(coefficients.c[2]);
+            }
+        }
+
+        // Culvert #1 family (qo4..qo6)
+        if stage > coefficients.ha[3] {
+            if coefficients.b[3] <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("f04_b"),
+                    coefficients.b[3],
+                ));
+            }
+            let base = (stage - coefficients.ha[3]) / coefficients.b[3];
+            if base > 0.0 {
+                q[3] = coefficients.a[3] * base.powf(coefficients.c[3]);
+            }
+        }
+        if stage > coefficients.ha[4] {
+            if coefficients.b[4].abs() <= WS10_ZERO_THRESHOLD
+                || coefficients.d[4].abs() <= WS10_ZERO_THRESHOLD
+            {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("f05_bd"),
+                    coefficients.b[4] + coefficients.d[4],
+                ));
+            }
+            let base = (((stage - coefficients.ha[4]) / coefficients.b[4]) + coefficients.c[4])
+                / coefficients.d[4];
+            if base > 0.0 {
+                q[4] = coefficients.a[4] * base.sqrt();
+            }
+        }
+        if stage > coefficients.ha[5] {
+            let adjusted_head = if htw > coefficients.a[5] {
+                stage - (coefficients.ha[5] + htw - coefficients.a[5])
+            } else {
+                stage - coefficients.ha[5]
+            };
+            if adjusted_head > 0.0 {
+                q[5] = coefficients.b[5] * adjusted_head.powf(coefficients.c[5]);
+            }
+        }
+
+        // Culvert #2 family (qo7..qo9)
+        if stage > coefficients.ha[6] {
+            if coefficients.b[6] <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("f07_b"),
+                    coefficients.b[6],
+                ));
+            }
+            let base = (stage - coefficients.ha[6]) / coefficients.b[6];
+            if base > 0.0 {
+                q[6] = coefficients.a[6] * base.powf(coefficients.c[6]);
+            }
+        }
+        if stage > coefficients.ha[7] {
+            if coefficients.b[7].abs() <= WS10_ZERO_THRESHOLD
+                || coefficients.d[7].abs() <= WS10_ZERO_THRESHOLD
+            {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("f08_bd"),
+                    coefficients.b[7] + coefficients.d[7],
+                ));
+            }
+            let base = (((stage - coefficients.ha[7]) / coefficients.b[7]) + coefficients.c[7])
+                / coefficients.d[7];
+            if base > 0.0 {
+                q[7] = coefficients.a[7] * base.sqrt();
+            }
+        }
+        if stage > coefficients.ha[8] {
+            let adjusted_head = if htw > coefficients.a[8] {
+                stage - (coefficients.ha[8] + htw - coefficients.a[8])
+            } else {
+                stage - coefficients.ha[8]
+            };
+            if adjusted_head > 0.0 {
+                q[8] = coefficients.b[8] * adjusted_head.powf(coefficients.c[8]);
+            }
+        }
+
+        // Rockfill family (qo10)
+        if stage > coefficients.ha[9] {
+            if coefficients.b[9] <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("f10_b"),
+                    coefficients.b[9],
+                ));
+            }
+            let base = (stage - coefficients.ha[9]) / coefficients.b[9];
+            if base > 0.0 {
+                q[9] += coefficients.a[9] * base.powf(coefficients.c[9]);
+            }
+        }
+        if stage > coefficients.e[9] {
+            q[9] += coefficients.d[9] * (stage - coefficients.e[9]).powf(1.5);
+        }
+
+        // Emergency spillway family (qo11)
+        if stage > coefficients.ha[10] {
+            let depth = stage - coefficients.ha[10];
+            let polynomial = coefficients.a[10]
+                + coefficients.b[10] * depth
+                + coefficients.c[10] * depth.powi(2)
+                + coefficients.d[10] * depth.powi(3)
+                + coefficients.e[10] * depth.powi(4);
+            if polynomial.is_finite() && polynomial > 0.0 {
+                q[10] = polynomial;
+            }
+        }
+
+        // Filter fence family (qo12)
+        if stage > coefficients.ha[11] {
+            q[11] = coefficients.a[11] * (stage - coefficients.ha[11]);
+            if stage > coefficients.d[11] {
+                let overtopping_depth = stage - coefficients.d[11];
+                q[11] += (coefficients.b[11] + coefficients.c[11] * overtopping_depth)
+                    * overtopping_depth.powf(1.5);
+            }
+        }
+
+        // Perforated riser family (qo13..qo15)
+        if stage > coefficients.ha[12] {
+            let depth = stage - coefficients.ha[12];
+            if depth > 0.0 {
+                let denominator = coefficients.b[12] + coefficients.c[12] / depth.powf(1.5);
+                if denominator <= WS10_ZERO_THRESHOLD || !denominator.is_finite() {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("f13_denominator"),
+                        denominator,
+                    ));
+                }
+                q[12] = coefficients.a[12] / denominator;
+            }
+        }
+        if stage > coefficients.ha[13] {
+            q[13] = coefficients.a[13] * (stage - coefficients.ha[13]).sqrt();
+        }
+        if stage > coefficients.ha[14] {
+            q[14] = coefficients.b[14] * (stage - coefficients.ha[14]).powf(coefficients.c[14]);
+        }
+
+        let group_1 = q[0].min(q[1]).min(q[2]);
+        let group_2 = q[3].min(q[4]).min(q[5]);
+        let group_3 = q[6].min(q[7]).min(q[8]);
+        let group_4 = q[12].min(q[13]).min(q[14]);
+        let qo = group_1 + group_2 + group_3 + q[9] + q[10] + q[11] + group_4;
+
         if !qo.is_finite() {
             return Err(Self::non_finite(node_class, BoundarySymbol::from("qo"), qo));
         }
@@ -476,7 +650,7 @@ impl Ws10ChannelImpoundmentKernel {
     fn impoundment_area_at_stage(
         node_class: Ws10NodeClass,
         stage: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> Result<f64, Ws10GuardError> {
         let area = coefficients.a0 + coefficients.a1 * stage.powf(coefficients.a2);
         if !area.is_finite() || area <= WS10_ZERO_THRESHOLD {
@@ -494,7 +668,7 @@ impl Ws10ChannelImpoundmentKernel {
         stage: f64,
         incoming_peak: f64,
         qinf: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> Result<f64, Ws10GuardError> {
         if !stage.is_finite() {
             return Err(Self::non_finite(
@@ -539,7 +713,7 @@ impl Ws10ChannelImpoundmentKernel {
         dt: f64,
         incoming_peak: f64,
         qinf: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> Result<f64, Ws10GuardError> {
         if !dt.is_finite() || dt <= WS10_ZERO_THRESHOLD {
             return Err(Self::domain_violation(
@@ -596,11 +770,15 @@ impl Ws10ChannelImpoundmentKernel {
     fn impoundment_crosses_regime_transition(
         h_start: f64,
         h_end: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> bool {
-        Self::crosses_threshold(h_start, h_end, coefficients.ha)
-            || Self::crosses_threshold(h_start, h_end, coefficients.ht)
-            || Self::crosses_threshold(h_start, h_end, coefficients.hlm)
+        coefficients
+            .ha
+            .iter()
+            .copied()
+            .any(|threshold| Self::crosses_threshold(h_start, h_end, threshold))
+            || Self::crosses_threshold(h_start, h_end, coefficients.e[9])
+            || Self::crosses_threshold(h_start, h_end, coefficients.d[11])
     }
 
     fn integrate_impoundment_stage_with_adaptive_retry(
@@ -610,7 +788,7 @@ impl Ws10ChannelImpoundmentKernel {
         deltat: f64,
         incoming_peak: f64,
         qinf: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> Result<(f64, f64), Ws10GuardError> {
         let mut dt = deltat;
         let mut retries = 0_usize;
@@ -724,7 +902,7 @@ impl Ws10ChannelImpoundmentKernel {
         total_duration_hours: f64,
         incoming_peak: f64,
         qinf: f64,
-        coefficients: Ws12ImpoundmentCoefficients,
+        coefficients: &Ws12ImpoundmentCoefficients,
     ) -> Result<(f64, f64), Ws10GuardError> {
         if !total_duration_hours.is_finite() || total_duration_hours <= WS10_ZERO_THRESHOLD {
             return Err(Self::domain_violation(
@@ -1621,14 +1799,53 @@ impl Ws10ChannelImpoundmentKernel {
 
         let (incoming_peak, incoming_duration) =
             Self::assemble_incoming_peak_and_duration(request, node_class)?;
-        let coef_a = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a")?;
-        let coef_b = Self::require_impoundment_coefficient_scalar(request, request.node_id, "b")?;
-        let coef_c = Self::require_impoundment_coefficient_scalar(request, request.node_id, "c")?;
-        let coef_d = Self::require_impoundment_coefficient_scalar(request, request.node_id, "d")?;
-        let coef_e = Self::require_impoundment_coefficient_scalar(request, request.node_id, "e")?;
-        let ha = Self::require_impoundment_coefficient_scalar(request, request.node_id, "ha")?;
-        let ht = Self::require_impoundment_coefficient_scalar(request, request.node_id, "ht")?;
-        let hlm = Self::require_impoundment_coefficient_scalar(request, request.node_id, "hlm")?;
+
+        let mut family_a = [0.0_f64; 15];
+        let mut family_b = [0.0_f64; 15];
+        let mut family_c = [0.0_f64; 15];
+        let mut family_d = [0.0_f64; 15];
+        let mut family_e = [0.0_f64; 15];
+        let mut family_head_threshold = [0.0_f64; 15];
+        for family_index in 1..=15 {
+            family_a[family_index - 1] = Self::require_impoundment_function_coefficient_scalar(
+                request,
+                request.node_id,
+                family_index,
+                "a",
+            )?;
+            family_b[family_index - 1] = Self::require_impoundment_function_coefficient_scalar(
+                request,
+                request.node_id,
+                family_index,
+                "b",
+            )?;
+            family_c[family_index - 1] = Self::require_impoundment_function_coefficient_scalar(
+                request,
+                request.node_id,
+                family_index,
+                "c",
+            )?;
+            family_d[family_index - 1] = Self::require_impoundment_function_coefficient_scalar(
+                request,
+                request.node_id,
+                family_index,
+                "d",
+            )?;
+            family_e[family_index - 1] = Self::require_impoundment_function_coefficient_scalar(
+                request,
+                request.node_id,
+                family_index,
+                "e",
+            )?;
+            family_head_threshold[family_index - 1] =
+                Self::require_impoundment_function_coefficient_scalar(
+                    request,
+                    request.node_id,
+                    family_index,
+                    "ha",
+                )?;
+        }
+
         let a0 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a0")?;
         let a1 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a1")?;
         let a2 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "a2")?;
@@ -1637,14 +1854,12 @@ impl Ws10ChannelImpoundmentKernel {
         let _l2 = Self::require_impoundment_coefficient_scalar(request, request.node_id, "l2")?;
 
         let coefficients = Ws12ImpoundmentCoefficients {
-            a: coef_a,
-            b: coef_b,
-            c: coef_c,
-            d: coef_d,
-            e: coef_e,
-            ha,
-            ht,
-            hlm,
+            a: family_a,
+            b: family_b,
+            c: family_c,
+            d: family_d,
+            e: family_e,
+            ha: family_head_threshold,
             a0,
             a1,
             a2,
@@ -1681,10 +1896,10 @@ impl Ws10ChannelImpoundmentKernel {
             integration_horizon_hours,
             incoming_peak,
             qinf,
-            coefficients,
+            &coefficients,
         )?;
 
-        let qo = Self::impoundment_outflow_at_stage(node_class, hnext, coefficients)?;
+        let qo = Self::impoundment_outflow_at_stage(node_class, hnext, &coefficients)?;
         let continuity_outflow = qo + qinf;
         if !continuity_outflow.is_finite() || continuity_outflow < 0.0 {
             return Err(Self::domain_violation(
