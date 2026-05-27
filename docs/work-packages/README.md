@@ -808,6 +808,14 @@ Authorized packages:
     `ws21_enddet_segment_count`, `ws21_detach_unmigrated_segment_count`) while
     preserving non-promotable HOLD posture for remaining baseline-authoritative
     `detach/dcap` migration and full `chnero/chnrt` parity closure.
+- `20260527-wshedimpl22-channel-detach-dcap-case34-enddet-migration-001/`
+  - Purpose: execute WSHEDIMPL22 immediate next actions from WSHEDIMPL21 by
+    replacing WS21 opt-in unresolved-detachment fallback scaffolding with
+    baseline-lineage `dcap` + `case34/enddet` execution, adding required
+    fail-closed `crfrac` projection gating
+    (`ws10_channel_{id}_crfrac_{class:04}`), and preserving explicit
+    non-promotable HOLD posture for residual baseline-authoritative WS21
+    `case4 -> detach` iterative closure (`nt < cnpart`).
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

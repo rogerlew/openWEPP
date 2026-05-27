@@ -127,6 +127,15 @@ fn seed_ws17_channel_segment_scaffold(surface: &mut WatershedWritebackSurface, n
     }
 }
 
+fn seed_ws22_channel_crfrac(surface: &mut WatershedWritebackSurface, node_id: u32) {
+    for (class, fraction) in [(1_u32, 0.2), (2, 0.3), (3, 0.5)] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_crfrac_{class:04}")),
+            BoundaryValue::scalar(fraction),
+        );
+    }
+}
+
 fn seeded_ws11_surface() -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
@@ -708,6 +717,7 @@ fn wshedimpl21_contract_case34_opt_in_tracks_case34_and_unmigrated_diagnostics()
         BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
         BoundaryValue::scalar(1.0),
     );
+    seed_ws22_channel_crfrac(&mut surface, 1);
 
     let report = run_ws11_surface(surface);
     assert!(
@@ -738,6 +748,73 @@ fn wshedimpl21_contract_case34_opt_in_tracks_case34_and_unmigrated_diagnostics()
         "expected ws21 detach/dcap unmigrated diagnostics to be tracked under ws21 opt-in"
     );
     assert!(ws20_unmigrated >= detach_unmigrated);
+}
+
+#[test]
+fn wshedimpl22_contract_ws21_detach_dcap_requires_crfrac_projection() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = run_ws11_surface(surface);
+    assert_eq!(report.step_reports.len(), 1);
+    assert_eq!(
+        report.step_reports[0].decision_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-001"
+    );
+    assert_eq!(
+        report.step_reports[0].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn wshedimpl22_contract_ws21_opt_in_routes_with_crfrac_projection() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl22 opt-in vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
+    let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
+    let enddet_segments = state_value(&report, "ws10_channel_1_ws21_enddet_segment_count");
+    let ws21_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
+    );
+    let ws20_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
+    );
+
+    assert!((case3_segments + case4_segments) > 0.0);
+    assert!(enddet_segments >= 0.0);
+    assert!(ws20_unmigrated >= ws21_unmigrated);
 }
 
 #[test]

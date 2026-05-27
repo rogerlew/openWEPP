@@ -206,6 +206,16 @@ const WS20_FALVEL_CDRE: [f64; 9] = [
 const WS20_FALVEL_CDRE2: [f64; 9] = [
     -4.50986, -1.51413, 0.78846, 3.12676, 6.04025, 9.30565, 13.08154, 17.50439, 22.29188,
 ];
+const WS22_DCAP_WTDSOI: f64 = 96.0;
+const WS22_DCAP_MIN_SLOPE: f64 = 0.00001;
+const WS22_DCAP_XXCF: [f64; 17] = [
+    0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30,
+    0.32,
+];
+const WS22_DCAP_FFXCF: [f64; 17] = [
+    1000.0, 33.872, 12.571, 7.3030, 5.1102, 3.9575, 3.2659, 2.8419, 2.5040, 2.2818, 2.1194, 1.9997,
+    1.9118, 1.8489, 1.8068, 1.7829, 1.7758,
+];
 
 const WS18_SHIELD_REYNOLDS: [f64; 8] = [1.0, 2.0, 4.0, 8.0, 12.0, 100.0, 400.0, 1000.0];
 const WS18_SHIELD_VALUES: [f64; 8] = [0.0772, 0.0579, 0.04, 0.035, 0.034, 0.045, 0.055, 0.057];
@@ -2210,6 +2220,252 @@ impl Ws10ChannelImpoundmentKernel {
         (particle_diameter_ft.powi(2) * (specific_gravity - 1.0) * WS18_AGRAV) / (WS18_KNVIS * 18.0)
     }
 
+    fn ws22_require_crfrac_vector(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        class_numbers: &[usize],
+    ) -> Result<Vec<f64>, Ws10GuardError> {
+        let mut crfrac = Vec::with_capacity(class_numbers.len());
+        for class_number in class_numbers {
+            let symbol = BoundarySymbol::from(format!(
+                "ws10_channel_{}_crfrac_{:04}",
+                request.node_id, class_number
+            ));
+            let value =
+                Self::require_channel_state_symbol_scalar(request, node_class, symbol.clone())?;
+            Self::require_channel_control_range(node_class, symbol, value, Some(0.0), Some(1.0))?;
+            crfrac.push(value);
+        }
+
+        let sum = crfrac.iter().copied().sum::<f64>();
+        if !sum.is_finite() || sum <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{}_crfrac_sum", request.node_id)),
+                sum,
+            ));
+        }
+        for value in &mut crfrac {
+            *value /= sum;
+        }
+        Ok(crfrac)
+    }
+
+    fn ws22_table_column2_to_column1(
+        col1: &[f64],
+        col2: &[f64],
+        given: f64,
+        column2_increasing: bool,
+    ) -> Option<f64> {
+        if col1.len() != col2.len() || col1.len() < 2 {
+            return None;
+        }
+
+        for index in 1..col1.len() {
+            let left = col2[index - 1];
+            let right = col2[index];
+            let in_range = if column2_increasing {
+                given >= left && given <= right
+            } else {
+                given <= left && given >= right
+            };
+            if in_range {
+                return Some(Self::ws18_linear_interpolate(
+                    left,
+                    col1[index - 1],
+                    right,
+                    col1[index],
+                    given,
+                ));
+            }
+        }
+
+        None
+    }
+
+    fn ws22_shdist(x: f64) -> f64 {
+        if x >= 0.02 {
+            return (0.12692
+                - (0.51634 * x.ln())
+                - (0.40825 * x.ln().powi(2))
+                - (0.03442 * x.ln().powi(3)))
+            .exp();
+        }
+        0.13 * x / 0.02
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        clippy::too_many_lines,
+        clippy::similar_names
+    )]
+    fn ws22_dcap_flagm1(
+        node_class: Ws10NodeClass,
+        q_cfs: f64,
+        sf: f64,
+        c1: f64,
+        z: f64,
+        effsh: f64,
+        depsid: f64,
+        depmid_input: f64,
+        werod_input: f64,
+        wflow: f64,
+        roughness: f64,
+        crsh: f64,
+        excess: f64,
+        tb: f64,
+        flagt: i32,
+        chnk: f64,
+        nbarch: f64,
+        crfrac: &[f64],
+    ) -> Result<Vec<f64>, Ws10GuardError> {
+        let mut df = vec![0.0; crfrac.len()];
+        let mut depmid = depmid_input;
+        let mut werod = werod_input;
+        if effsh <= crsh {
+            return Ok(df);
+        }
+
+        let mut timpot = 0.0_f64;
+        let mut timsh = tb * (1.0 - (crsh / effsh));
+        let mut di = 0.0_f64;
+
+        if depmid > WS10_ZERO_THRESHOLD {
+            if flagt == 3 {
+                werod = wflow;
+            } else {
+                let (wtmp, _) = Self::ws18_hydchn(
+                    node_class,
+                    4,
+                    q_cfs,
+                    sf.max(WS22_DCAP_MIN_SLOPE),
+                    c1,
+                    z,
+                    wflow,
+                    roughness,
+                    crsh,
+                    nbarch,
+                )?;
+                werod = wtmp;
+            }
+
+            let difsh = effsh - crsh;
+            if difsh <= 0.0 {
+                return Ok(df);
+            }
+
+            di = excess * chnk * difsh;
+            if di <= WS10_ZERO_THRESHOLD {
+                return Ok(df);
+            }
+
+            timpot = depmid * WS22_DCAP_WTDSOI / di;
+            if timpot >= timsh {
+                let dct = di * timsh * werod / (tb * wflow);
+                for class_offset in 0..crfrac.len() {
+                    df[class_offset] = dct * crfrac[class_offset];
+                }
+                depmid -= di * timsh / WS22_DCAP_WTDSOI;
+                if depmid < 0.005 {
+                    depmid = 0.0;
+                }
+                let _ = depmid;
+                return Ok(df);
+            }
+        }
+
+        let timex = timsh - timpot;
+        let ab = q_cfs * roughness / (1.49 * sf.max(WS22_DCAP_MIN_SLOPE).sqrt());
+
+        if werod <= WS10_ZERO_THRESHOLD {
+            let (wtmp, _) = Self::ws18_hydchn(
+                node_class,
+                4,
+                q_cfs,
+                sf.max(WS22_DCAP_MIN_SLOPE),
+                c1,
+                z,
+                wflow,
+                roughness,
+                crsh,
+                nbarch,
+            )?;
+            werod = wtmp;
+        }
+
+        let hxb = ab / werod.powf(8.0 / 3.0);
+        let Some(xb) = Self::ws22_table_column2_to_column1(
+            &WS18_HYDCHN_XXB,
+            &WS18_HYDCHN_FHXB,
+            hxb.min(9999.99),
+            true,
+        ) else {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws22_dcap_hxb"),
+                hxb,
+            ));
+        };
+
+        let difsh = effsh * Self::ws22_shdist(xb) - crsh;
+        if difsh <= 0.0 {
+            if depmid <= 0.0 {
+                return Ok(df);
+            }
+            timsh = timpot;
+            if di <= WS10_ZERO_THRESHOLD {
+                return Ok(df);
+            }
+            let dct = di * timsh * werod / (tb * wflow);
+            for class_offset in 0..crfrac.len() {
+                df[class_offset] = dct * crfrac[class_offset];
+            }
+            return Ok(df);
+        }
+
+        let dwdti = excess * 2.0 * chnk * difsh / WS22_DCAP_WTDSOI;
+        let ad = ab.powf(0.375) * WS18_WTDH2O * sf.max(WS22_DCAP_MIN_SLOPE) / crsh;
+        if ad <= WS22_DCAP_FFXCF[WS22_DCAP_FFXCF.len() - 1] {
+            return Ok(df);
+        }
+
+        let Some(xcf) = Self::ws22_table_column2_to_column1(
+            &WS22_DCAP_XXCF,
+            &WS22_DCAP_FFXCF,
+            ad.min(999.999),
+            false,
+        ) else {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws22_dcap_ad"),
+                ad,
+            ));
+        };
+
+        if xcf <= WS10_ZERO_THRESHOLD || (1.0 - (2.0 * xcf)) <= WS10_ZERO_THRESHOLD {
+            return Ok(df);
+        }
+        let wfin_core = xcf * (1.0 - (2.0 * xcf)) / xcf.powf(8.0 / 3.0);
+        if !wfin_core.is_finite() || wfin_core <= WS10_ZERO_THRESHOLD {
+            return Ok(df);
+        }
+        let wfin = ab.powf(0.375) * wfin_core.powf(0.375);
+        if wfin <= werod {
+            return Ok(df);
+        }
+
+        let tstar = timex * dwdti / (wfin - werod);
+        let wstar = (1.0 - (-1.0176 * tstar).exp()) / 1.0176;
+        let we = wstar * (wfin - werod) + werod;
+        let eros = (we - werod) * depsid + depmid * werod;
+        let dct = eros * WS22_DCAP_WTDSOI / (tb * wflow);
+
+        for class_offset in 0..crfrac.len() {
+            df[class_offset] = dct * crfrac[class_offset];
+        }
+        Ok(df)
+    }
+
     #[allow(
         clippy::too_many_arguments,
         clippy::many_single_char_names,
@@ -2229,13 +2485,17 @@ impl Ws10ChannelImpoundmentKernel {
         top_class_mass_kg: &[f64],
         lateral_class_mass_kg: &[f64],
         class_diameters_m: &[f64],
+        class_numbers: &[usize],
     ) -> Result<(Vec<f64>, Ws20SegmentRoutingDiagnostics), Ws10GuardError> {
         if class_diameters_m.is_empty() {
             return Ok((Vec::new(), Ws20SegmentRoutingDiagnostics::default()));
         }
 
         let class_count = class_diameters_m.len();
-        if top_class_mass_kg.len() != class_count || lateral_class_mass_kg.len() != class_count {
+        if top_class_mass_kg.len() != class_count
+            || lateral_class_mass_kg.len() != class_count
+            || class_numbers.len() != class_count
+        {
             return Err(Self::domain_violation(
                 node_class,
                 BoundarySymbol::from("ws20_class_cardinality"),
@@ -2344,20 +2604,17 @@ impl Ws10ChannelImpoundmentKernel {
         let mut crspg = vec![0.0_f64; class_count];
         let mut fall_ft_s = vec![0.0_f64; class_count];
         for class_offset in 0..class_count {
-            let specific_gravity =
-                WS18_DEFAULT_CRSPG
-                    .get(class_offset)
-                    .copied()
-                    .ok_or_else(|| {
-                        Self::domain_violation(
-                            node_class,
-                            BoundarySymbol::from(format!(
-                                "ws20_particle_class_{:04}",
-                                class_offset + 1
-                            )),
-                            f64::from(u32::try_from(class_offset + 1).unwrap_or(u32::MAX)),
-                        )
-                    })?;
+            let class_number = class_numbers[class_offset];
+            let specific_gravity = WS18_DEFAULT_CRSPG
+                .get(class_number.saturating_sub(1))
+                .copied()
+                .ok_or_else(|| {
+                    Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from(format!("ws20_particle_class_{class_number:04}")),
+                        f64::from(u32::try_from(class_number).unwrap_or(u32::MAX)),
+                    )
+                })?;
 
             let top_flux = top_class_mass_kg[class_offset] * WS18_LBS_PER_KG / event_duration;
             let lateral_flux =
@@ -2365,14 +2622,14 @@ impl Ws10ChannelImpoundmentKernel {
             if !top_flux.is_finite() || top_flux < 0.0 {
                 return Err(Self::domain_violation(
                     node_class,
-                    BoundarySymbol::from(format!("ws20_top_flux_{:04}", class_offset + 1)),
+                    BoundarySymbol::from(format!("ws20_top_flux_{class_number:04}")),
                     top_flux,
                 ));
             }
             if !lateral_flux.is_finite() || lateral_flux < 0.0 {
                 return Err(Self::domain_violation(
                     node_class,
-                    BoundarySymbol::from(format!("ws20_lateral_flux_{:04}", class_offset + 1)),
+                    BoundarySymbol::from(format!("ws20_lateral_flux_{class_number:04}")),
                     lateral_flux,
                 ));
             }
@@ -2392,6 +2649,10 @@ impl Ws10ChannelImpoundmentKernel {
             1
         };
         let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
+        let chnk_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_chnk"));
+        let chnk =
+            Self::require_channel_state_symbol_scalar(request, node_class, chnk_symbol.clone())?;
+        Self::require_channel_control_range(node_class, chnk_symbol, chnk, Some(0.0), None)?;
 
         let mut diagnostics = Ws20SegmentRoutingDiagnostics::default();
         for segment_index in 1..nslpts {
@@ -2507,26 +2768,261 @@ impl Ws10ChannelImpoundmentKernel {
             }
 
             if excess > 0.0 {
-                if ws21_case34_enabled {
-                    let case3_segment = tcl_lbs_s_ft
-                        .iter()
-                        .zip(&potld_lbs_s_ft)
-                        .all(|(tcl, potld)| *tcl <= *potld);
-                    if case3_segment {
-                        diagnostics.case3_segments = diagnostics.case3_segments.saturating_add(1);
-                    } else {
-                        diagnostics.case4_segments = diagnostics.case4_segments.saturating_add(1);
-                        diagnostics.enddet_segments = diagnostics.enddet_segments.saturating_add(1);
+                if !ws21_case34_enabled {
+                    diagnostics.detachment_unmigrated_segments =
+                        diagnostics.detachment_unmigrated_segments.saturating_add(1);
+                    for class_offset in 0..class_count {
+                        gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
                     }
+                    continue;
+                }
+
+                let crfrac = Self::ws22_require_crfrac_vector(request, node_class, class_numbers)?;
+                let depmid_ft = sediment_controls.chnedm * WS15_DEPTH_FROM_METERS_TO_FEET;
+                let depsid_ft = sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
+                let tb_s = 2.0 * event_duration;
+                let dcap_df_lbs_s_ft2 = Self::ws22_dcap_flagm1(
+                    node_class,
+                    qu_cfs,
+                    slopes[segment_index - 1].max(WS22_DCAP_MIN_SLOPE),
+                    sediment_controls.ctlz,
+                    sediment_controls.chnz,
+                    effshu,
+                    depsid_ft,
+                    depmid_ft,
+                    wfu_ft,
+                    wfu_ft,
+                    roughness,
+                    crsh,
+                    excess,
+                    tb_s,
+                    flagc,
+                    chnk,
+                    sediment_controls.chnnbr,
+                    &crfrac,
+                )?;
+
+                let mut du_lbs_s_ft = vec![0.0_f64; class_count];
+                for class_offset in 0..class_count {
+                    du_lbs_s_ft[class_offset] = dcap_df_lbs_s_ft2[class_offset] * wfu_ft;
+                }
+
+                let case3_segment = tcl_lbs_s_ft
+                    .iter()
+                    .zip(&potld_lbs_s_ft)
+                    .all(|(tcl, potld)| *tcl <= *potld);
+
+                if case3_segment {
+                    diagnostics.case3_segments = diagnostics.case3_segments.saturating_add(1);
+
+                    let mut xdbeg_ft = vec![x_upper_ft; class_count];
+                    let nz = du_lbs_s_ft
+                        .iter()
+                        .filter(|value| **value > WS10_ZERO_THRESHOLD)
+                        .count();
+                    let nk = gsu_lbs_s_ft
+                        .iter()
+                        .zip(&tcu_lbs_s_ft)
+                        .filter(|(gsu, tcu)| (**gsu - **tcu).abs() <= WS10_ZERO_THRESHOLD)
+                        .count();
+                    let all_detaching = nz == class_count && nk == class_count;
+
+                    for class_offset in 0..class_count {
+                        if tcl_lbs_s_ft[class_offset] < potld_lbs_s_ft[class_offset] {
+                            let denxdb = if all_detaching {
+                                (2.0 * dlat_lbs_s_ft[class_offset]) + du_lbs_s_ft[class_offset]
+                            } else {
+                                (du_lbs_s_ft[class_offset] / 2.0) + dlat_lbs_s_ft[class_offset]
+                                    - dtcdx_lbs_s_ft2[class_offset]
+                            };
+
+                            if denxdb.is_finite() && denxdb.abs() > WS10_ZERO_THRESHOLD {
+                                xdbeg_ft[class_offset] = if all_detaching {
+                                    ((dx_ft * du_lbs_s_ft[class_offset]) / denxdb) + x_upper_ft
+                                } else {
+                                    (((tcu_lbs_s_ft[class_offset] * wfu_ft)
+                                        - gstu_lbs_s[class_offset])
+                                        / denxdb)
+                                        + x_upper_ft
+                                };
+                            }
+                        }
+                    }
+
+                    let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+                    let mut segment_invalid = false;
+                    for class_offset in 0..class_count {
+                        let next_flux =
+                            if potld_lbs_s_ft[class_offset] <= tcl_lbs_s_ft[class_offset] {
+                                potld_lbs_s_ft[class_offset] * wfl_ft
+                            } else {
+                                let xrat = if x_lower_ft.abs() <= WS10_ZERO_THRESHOLD {
+                                    0.0
+                                } else {
+                                    xdbeg_ft[class_offset] / x_lower_ft
+                                };
+
+                                let dl_lbs_s_ft2 = if qlat_cfs_per_ft > WS10_ZERO_THRESHOLD {
+                                    let denphi = 1.0 + phi[class_offset];
+                                    if denphi.abs() <= WS10_ZERO_THRESHOLD || !denphi.is_finite() {
+                                        0.0
+                                    } else {
+                                        (phi[class_offset] / denphi)
+                                            * (dtcdx_lbs_s_ft2[class_offset]
+                                                - dlat_lbs_s_ft[class_offset])
+                                            * (1.0 - xrat.powf(1.0 + phi[class_offset]))
+                                    }
+                                } else {
+                                    dtcdx_lbs_s_ft2[class_offset]
+                                };
+
+                                let dengsl = phi[class_offset] * wfl_ft;
+                                let gsl_lbs_s_ft =
+                                    if dengsl.abs() <= WS10_ZERO_THRESHOLD || !dengsl.is_finite() {
+                                        tcl_lbs_s_ft[class_offset]
+                                    } else {
+                                        tcl_lbs_s_ft[class_offset]
+                                            - (dl_lbs_s_ft2 * x_lower_ft / dengsl)
+                                    };
+
+                                gsl_lbs_s_ft * wfl_ft
+                            };
+
+                        if !next_flux.is_finite() || next_flux < 0.0 {
+                            segment_invalid = true;
+                            break;
+                        }
+                        next_gstu_lbs_s[class_offset] = next_flux;
+                    }
+
+                    if segment_invalid {
+                        diagnostics.ws21_detach_unmigrated_segments = diagnostics
+                            .ws21_detach_unmigrated_segments
+                            .saturating_add(1);
+                        diagnostics.detachment_unmigrated_segments =
+                            diagnostics.detachment_unmigrated_segments.saturating_add(1);
+                        for class_offset in 0..class_count {
+                            gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
+                        }
+                        continue;
+                    }
+
+                    gstu_lbs_s = next_gstu_lbs_s;
+                    continue;
+                }
+
+                diagnostics.case4_segments = diagnostics.case4_segments.saturating_add(1);
+
+                let mut potld_case4_lbs_s_ft = vec![0.0_f64; class_count];
+                for class_offset in 0..class_count {
+                    potld_case4_lbs_s_ft[class_offset] = (gstu_lbs_s[class_offset]
+                        + (dlat_lbs_s_ft[class_offset] * dx_ft)
+                        + (du_lbs_s_ft[class_offset] * dx_ft / 2.0))
+                        / wfl_ft;
+                }
+
+                let mut tcl_case4_lbs_s_ft =
+                    Self::ws18_trncap(effshl, &potld_case4_lbs_s_ft, &crdia_ft, &crspg);
+                let nt_case4 = tcl_case4_lbs_s_ft
+                    .iter()
+                    .zip(&potld_case4_lbs_s_ft)
+                    .filter(|(tcl, potld)| **tcl <= **potld)
+                    .count();
+
+                if nt_case4 < class_count {
                     diagnostics.ws21_detach_unmigrated_segments = diagnostics
                         .ws21_detach_unmigrated_segments
                         .saturating_add(1);
+                    diagnostics.detachment_unmigrated_segments =
+                        diagnostics.detachment_unmigrated_segments.saturating_add(1);
+                    for class_offset in 0..class_count {
+                        gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
+                    }
+                    continue;
                 }
-                diagnostics.detachment_unmigrated_segments =
-                    diagnostics.detachment_unmigrated_segments.saturating_add(1);
+
+                diagnostics.enddet_segments = diagnostics.enddet_segments.saturating_add(1);
+                let mut xdsmal_ft = x_upper_ft;
+                let mut ndep = 0_u8;
+
+                loop {
+                    let mut xdbeg_ft = vec![x_lower_ft; class_count];
+                    for class_offset in 0..class_count {
+                        if potld_case4_lbs_s_ft[class_offset] > tcl_case4_lbs_s_ft[class_offset]
+                            && du_lbs_s_ft[class_offset].abs() > WS10_ZERO_THRESHOLD
+                        {
+                            xdbeg_ft[class_offset] = ((2.0
+                                * ((tcl_case4_lbs_s_ft[class_offset] * wfl_ft)
+                                    - gstu_lbs_s[class_offset]
+                                    - (dlat_lbs_s_ft[class_offset] * dx_ft)))
+                                / du_lbs_s_ft[class_offset])
+                                + x_upper_ft;
+                        }
+                    }
+
+                    let mut xdbmin_ft = xdbeg_ft.iter().copied().fold(x_lower_ft, f64::min);
+                    if xdbmin_ft <= xdsmal_ft {
+                        xdbmin_ft = xdsmal_ft;
+                    }
+
+                    for class_offset in 0..class_count {
+                        potld_case4_lbs_s_ft[class_offset] = (gstu_lbs_s[class_offset]
+                            + (dlat_lbs_s_ft[class_offset] * dx_ft)
+                            + (du_lbs_s_ft[class_offset] * (xdbmin_ft - x_upper_ft) / 2.0))
+                            / wfl_ft;
+                    }
+                    tcl_case4_lbs_s_ft =
+                        Self::ws18_trncap(effshl, &potld_case4_lbs_s_ft, &crdia_ft, &crspg);
+
+                    ndep = ndep.saturating_add(1);
+                    if ndep == 4 {
+                        break;
+                    }
+
+                    let mut nt = 0_usize;
+                    let mut sumtc = 0.0_f64;
+                    let mut sumpl = 0.0_f64;
+                    for class_offset in 0..class_count {
+                        sumtc += tcl_case4_lbs_s_ft[class_offset];
+                        sumpl += potld_case4_lbs_s_ft[class_offset];
+                        if tcl_case4_lbs_s_ft[class_offset] <= potld_case4_lbs_s_ft[class_offset] {
+                            nt += 1;
+                        }
+                    }
+
+                    if sumtc.abs() > WS10_ZERO_THRESHOLD && ((sumtc - sumpl) / sumtc).abs() < 0.01 {
+                        break;
+                    }
+
+                    if nt < class_count {
+                        xdsmal_ft = xdbmin_ft;
+                    }
+                }
+
+                let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+                let mut segment_invalid = false;
                 for class_offset in 0..class_count {
-                    gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
+                    let next_flux = tcl_case4_lbs_s_ft[class_offset] * wfl_ft;
+                    if !next_flux.is_finite() || next_flux < 0.0 {
+                        segment_invalid = true;
+                        break;
+                    }
+                    next_gstu_lbs_s[class_offset] = next_flux;
                 }
+
+                if segment_invalid {
+                    diagnostics.ws21_detach_unmigrated_segments = diagnostics
+                        .ws21_detach_unmigrated_segments
+                        .saturating_add(1);
+                    diagnostics.detachment_unmigrated_segments =
+                        diagnostics.detachment_unmigrated_segments.saturating_add(1);
+                    for class_offset in 0..class_count {
+                        gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
+                    }
+                    continue;
+                }
+
+                gstu_lbs_s = next_gstu_lbs_s;
                 continue;
             }
 
@@ -2645,11 +3141,12 @@ impl Ws10ChannelImpoundmentKernel {
 
         let mut outgoing_class_mass_kg = vec![0.0_f64; class_count];
         for class_offset in 0..class_count {
+            let class_number = class_numbers[class_offset];
             let mass_kg = gstu_lbs_s[class_offset] * event_duration / WS18_LBS_PER_KG;
             if !mass_kg.is_finite() || mass_kg < 0.0 {
                 return Err(Self::domain_violation(
                     node_class,
-                    BoundarySymbol::from(format!("ws20_outgoing_mass_kg_{:04}", class_offset + 1)),
+                    BoundarySymbol::from(format!("ws20_outgoing_mass_kg_{class_number:04}")),
                     mass_kg,
                 ));
             }
@@ -2810,6 +3307,7 @@ impl Ws10ChannelImpoundmentKernel {
         let mut active_top_class_mass_kg = Vec::new();
         let mut active_lateral_class_mass_kg = Vec::new();
         let mut active_particle_diameters_m = Vec::new();
+        let mut active_class_numbers = Vec::new();
         if class_mass_total > WS10_ZERO_THRESHOLD {
             for class_offset in 0..class_mass_kg.len() {
                 let class_mass = class_mass_kg[class_offset];
@@ -2834,6 +3332,7 @@ impl Ws10ChannelImpoundmentKernel {
                 active_lateral_class_mass_kg
                     .push(*lateral_class_mass_kg.get(class_offset).unwrap_or(&0.0));
                 active_particle_diameters_m.push(class_diameter_m);
+                active_class_numbers.push(class_offset + 1);
             }
         }
 
@@ -2862,6 +3361,7 @@ impl Ws10ChannelImpoundmentKernel {
                 &active_top_class_mass_kg,
                 &active_lateral_class_mass_kg,
                 &active_particle_diameters_m,
+                &active_class_numbers,
             )?;
             outgoing_class_mass_kg = routed_masses;
             ws20_diagnostics = diagnostics;
