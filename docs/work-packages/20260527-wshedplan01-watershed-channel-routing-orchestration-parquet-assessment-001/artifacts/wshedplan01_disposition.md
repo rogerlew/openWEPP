@@ -1,26 +1,36 @@
 # WSHEDPLAN01 Disposition
 
-Status: package-complete-with-go
-
+Status: package-complete
 Evidence mode: static+ran
-
-Date: 2026-05-26
+Date: 2026-05-27
+Decision: GO (package closure), HOLD (watershed process-parity readiness)
 
 ## Static
-- WSHEDPLAN01 objective completed for assessment scope:
-  - current watershed surface inventory documented,
-  - baseline routine-chain map documented,
-  - implementation gap assessment documented,
-  - dependency-ordered contract-first follow-on queue authored.
-- No production runtime changes were made in this package.
+
+Phase completion:
+- Phase A (intake and authority freeze): complete.
+- Phase B (current openWEPP surface inventory): complete.
+- Phase C (baseline routine map): complete.
+- Phase D (gap assessment and queue authoring): complete.
+- Phase E (governance closeout): complete.
+
+Objective closure:
+- WSHEDPLAN01 objective is complete for assessment/queue scope.
+- Deliverables `wshedplan01-current-surface-inventory.md`,
+  `wshedplan01-baseline-routine-map.md`, `wshedplan01-gap-assessment.md`, and
+  `watershed-channel-routing-orchestration-parquet-wp-queue.md` are published.
+
+Readiness verdict:
+- Watershed orchestration scaffolding exists.
+- Baseline-authoritative channel hydrology, channel sediment routing,
+  impoundment continuity lineage, and non-placeholder parquet publication remain
+  incomplete.
+- Production watershed parity signal remains `HOLD` pending `WSHED02+`.
 
 ## Ran
-- `cargo test --test ws10_watershed_kernel_contract --test ws11_channel_routing_physics_equivalence_contract --test ws12_impoundment_physics_equivalence_contract --test cli04_runner_wat_parquet_contract_derived_tests`
-- `cargo test -p openwepp-runner --test watershed_cli_behavior_contract`
-- `git status --short`
-
-Decision: GO
+- Static mapping/evidence extraction commands were executed (`rg`, `sed`, `nl`,
+  `git rev-parse`) to support all findings and queue dependencies.
 
 ## Final disposition
-- WSHEDPLAN01 is complete for planning/evidence scope.
-- Decision is `GO` for queue execution readiness.
+- Package closure: `GO`.
+- Watershed routing/orchestration/parquet implementation readiness: `HOLD`.

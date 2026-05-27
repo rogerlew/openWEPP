@@ -1,56 +1,50 @@
 # WSHEDPLAN01 Baseline Routine Map
 
 Status: complete
-
 Evidence mode: static+ran
-
-Date: 2026-05-26
+Date: 2026-05-27
 
 ## Static
-- Baseline authority anchor:
-  `/workdir/wepp-forest_260430_baseline@dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
-- HBP contract discovery source commit used for this package:
-  `/workdir/wepp-forest@924ab16d07edea8b904bcf64d3d7e276fc45d21e`.
-- Baseline watershed event flow in `wshdrv` (channel + impoundment loop):
-  - call `wshiqi` then `wshimp` for impoundment elements:
-    `wshdrv.for:906-915`
-  - call `wshcqi` and `wshirs` for channel inflow/runoff:
-    `wshdrv.for:930-943`
-  - call `wshrun` then `chnero` for runoff events:
-    `wshdrv.for:1098-1113`
-  - call `wshchr` for no-runoff branch when `ipeak>2`:
-    `wshdrv.for:1119-1128`.
 
-## Baseline-to-openWEPP mapping
-| Baseline routine | Baseline responsibility | openWEPP surface | Status |
+### Authority anchors used
+- Legacy migration comparator/authority baseline:
+  - `/workdir/wepp-forest_260430_baseline@dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
+- HBP reader/writer contract provenance source inspected:
+  - `/workdir/wepp-forest@924ab16d07edea8b904bcf64d3d7e276fc45d21e`
+
+### Baseline routine-to-openWEPP map
+
+| Legacy routine family | Legacy role | Current openWEPP surface | Migration state |
 |---|---|---|---|
-| `wshdrv.for` | master watershed orchestration chronology and per-element event loop | `openwepp-cli-watershed` intake + dispatch wrapper (`crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`) | partial |
-| `wshcqi.for` | computes channel inflow volumes/duration and baseflow composition | WS10 runtime symbols + CLI runtime seeding (`runtime_inputs.rs`, `openwepp-cli-watershed.rs`) | partial |
-| `wshirs.for` | channel runoff production under rainfall/runon chronology | no baseline-authoritative channel runoff routine migration yet | missing |
-| `wshrun.for` | channel/impoundment runoff routing entry; calls `wshpek` | WS10 channel kernel entry (`run_channel_node`) | partial |
-| `wshpek.for` | peak-flow logic for `ipeak` families; calls `wshchr` for routed branches | WS10 `ipeak` branch selection and scalar computations | partial |
-| `wshchr.for` | channel routing hydrograph transform (`KW`/`MC`) with `chrqin` inflow assembly | no baseline-authoritative segment/time-step routing migration | missing |
-| `chrqin.for` | builds channel inflow/lateral inflow hydrograph over `ntchr` | no direct migrated equivalent; only aggregate scalar contributor ingestion | missing |
-| `wshimp.for` | impoundment hydraulic+sediment routing and WEPP-state conversion | WS10 impoundment scalar continuity/stage-discharge scaffold | partial |
-| `chnero.for` + `chnrt.for` | channel hydraulics/erosion routine chain called after runoff routing | no migrated channel erosion runtime in openWEPP watershed kernel | missing |
-| `wshout.for` | watershed reporting/publication | output contract declared; writer path blocked by `OWSOUT-E-004` | missing |
+| `wshdrv.for` (`call` chain through `wshiqi`, `wshimp`, `wshcqi`, `wshirs`, `wshrun`, `chnero`, conditional `wshchr`) | Daily/event watershed execution controller and element loop | `openwepp-cli-watershed` run path + topology dispatch invocation | partial; deterministic dispatch exists but full daily/event process controller parity is not migrated |
+| `wshcqi.for` | Channel inflow/runon volume and duration assembly (`rvolat`, `rvotop`, duration max logic, baseflow/subsurface interactions) | contributor payload assembly in CLI + `assemble_incoming_peak_and_duration` in kernel | partial; top/lateral decomposition and full duration lineage are not migrated |
+| `wshirs.for` | Channel runoff generation/infiltration/transmission-loss cases | none in watershed orchestrator/kernel | missing |
+| `wshrun.for` + `wshpek.for` | Channel runoff/peak coupling, ipeak method selection, run-duration/output updates | `run_channel_node` | partial; branch selector exists, but baseline method equations/hydrograph assembly are not migrated |
+| `wshchr.for` + `chrqin.for` | `ipeak>2` wave routing (KW/MC), time-step arrays (`q1`, `qin`, `qlat`, segment coefficients) | no equivalent time-series routing state in runtime surfaces | missing |
+| `chnero.for` + `chnrt.for` + `detach.for` | Channel sediment erosion/deposition routing and per-class transport closure | no channel-sediment production path in watershed orchestrator | missing |
+| `wshiqi.for` | Impoundment inflow/peak assembly and source-mode logic (hillslope vs channel contributors) | contributor payload + dependency read path | partial |
+| `wshimp.for` + `impmai/impflo/imphnw` lineage | Impoundment hydraulic + sediment routing, continuity/stage-discharge integration, duration/output closure | `run_impoundment_node` | partial; simplified continuity/outflow only, no RK4/adaptive retry/regime-transition/sediment closure |
+| `wshout.for`, `monchn.for`, `annchn.for`, `endchn.for` | Watershed event/month/year output accumulation/publication | watershed-output crate schema scaffold only | missing output emission and reporting closure |
 
-## Dependency-path correction
-- `chndet.for` is not present in the pinned baseline source tree.
-- Channel erosion/routing closure evidence should reference `chnrt.for` (called
-  by `chnero.for`) instead:
-  `chnero.for:141`.
+### Baseline reference correction
+- The prepared package dependency list included
+  `/workdir/wepp-forest_260430_baseline/src/chndet.for`.
+- Static baseline inspection found no `chndet.for` file in the pinned baseline.
+- The channel-detachment authority routine used by channel sediment routing is
+  `/workdir/wepp-forest_260430_baseline/src/detach.for`, with orchestration
+  through `chnrt.for` and `chnero.for`.
 
 ## Ran
-- `git -C /workdir/wepp-forest rev-parse HEAD`
-- `ls /workdir/wepp-forest_260430_baseline/src | rg '^chn|^wsh|^chrq|^wshc|^wshi'`
-- `rg -n "call +wsh|call +chr|call +chn|ipeak|nqs" /workdir/wepp-forest_260430_baseline/src/wshdrv.for /workdir/wepp-forest_260430_baseline/src/wshrun.for /workdir/wepp-forest_260430_baseline/src/wshpek.for /workdir/wepp-forest_260430_baseline/src/wshchr.for /workdir/wepp-forest_260430_baseline/src/wshimp.for /workdir/wepp-forest_260430_baseline/src/chnero.for /workdir/wepp-forest_260430_baseline/src/chrqin.for /workdir/wepp-forest_260430_baseline/src/wshcqi.for /workdir/wepp-forest_260430_baseline/src/wshirs.for`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshdrv.for | sed -n '860,1160p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshrun.for | sed -n '1,260p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshpek.for | sed -n '1,260p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshchr.for | sed -n '1,260p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshimp.for | sed -n '1,260p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshcqi.for | sed -n '1,240p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/wshirs.for | sed -n '1,240p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/chrqin.for | sed -n '1,260p'`
-- `nl -ba /workdir/wepp-forest_260430_baseline/src/chnero.for | sed -n '1,260p'`
+- Baseline call-graph and definition extraction via `rg`, `sed`, and `nl` on:
+  - `/workdir/wepp-forest_260430_baseline/src/wshdrv.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshcqi.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshirs.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshrun.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshpek.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshchr.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshiqi.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshimp.for`
+  - `/workdir/wepp-forest_260430_baseline/src/chnero.for`
+  - `/workdir/wepp-forest_260430_baseline/src/chnrt.for`
+  - `/workdir/wepp-forest_260430_baseline/src/detach.for`
+  - `/workdir/wepp-forest_260430_baseline/src/chrqin.for`

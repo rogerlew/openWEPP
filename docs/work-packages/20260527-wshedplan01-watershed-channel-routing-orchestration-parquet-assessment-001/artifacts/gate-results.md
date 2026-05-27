@@ -1,19 +1,22 @@
 # Gate Results
 
 Status: complete
-
 Evidence mode: static+ran
-
-Date: 2026-05-26
+Date: 2026-05-27
 
 ## Static
-- Package scope is assessment + queue authoring; no production watershed kernel
-  edits were made.
-- Contract-first queue sequencing is explicitly encoded for follow-on
-  code-authoring packages.
-- Baseline dependency correction applied: `chndet.for` reference replaced with
-  `chnrt.for`.
+- Package type: assessment/queue authoring only.
+- Production code changes: none.
+- Therefore runtime validation gates (`cargo fmt`, `clippy`, `test`, `deny`)
+  are not applicable for package closure.
 
 ## Ran
-- `cargo test --test ws10_watershed_kernel_contract --test ws11_channel_routing_physics_equivalence_contract --test ws12_impoundment_physics_equivalence_contract --test cli04_runner_wat_parquet_contract_derived_tests`
-- `cargo test -p openwepp-runner --test watershed_cli_behavior_contract`
+- Static evidence collection commands:
+  - `git status --short --branch`
+  - `rg` scans over watershed/runtime/output/test/contract surfaces
+  - `sed`/`nl` extraction for line-anchored evidence
+  - `git rev-parse HEAD` in `/workdir/wepp-forest`
+
+## Result
+- Planning gates: pass.
+- Production-implementation gates: deferred to follow-on execution packages.

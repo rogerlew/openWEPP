@@ -1,45 +1,125 @@
 # Watershed Channel Routing, Orchestration, and Parquet Work-Package Queue
 
 Status: complete
-
-Evidence mode: static+ran
-
-Date: 2026-05-26
+Evidence mode: static
+Date: 2026-05-27
 
 ## Static
-- Queue objective: close watershed channel routing + orchestration + parquet
-  publication gaps so watershed execution can produce non-placeholder parquet
-  outputs under contract-first governance.
-- Baseline parity authority remains:
-  `/workdir/wepp-forest_260430_baseline@dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
-- Contract-first sequence is mandatory for all code-authoring packages:
-  1. canonical contract amendments,
-  2. contract-derived tests,
-  3. pre-implementation contract gate,
-  4. production code edits.
+Dependency-ordered follow-on queue to close watershed routing/orchestration and
+non-placeholder parquet publication gaps.
 
-## Proposed queue
-| order | wp_id | objective | depends_on | exit signal |
-|---|---|---|---|---|
-| 1 | `20260527-wshedimpl01-watershed-contract-authority-and-routine-map-001` | Amend canonical `SC-ROUTE-001`, `SC-IMPOUND-001`, `SC-SED-001`, and watershed dispatch/writeback contracts with explicit baseline routine-chain authority (`wshdrv/wshcqi/wshirs/wshrun/wshpek/wshchr/chrqin/wshimp/chnero/chnrt`) and symbol alias continuity tables. | `20260527-wshedplan01-watershed-channel-routing-orchestration-parquet-assessment-001` | Canonical `SC-*` files explicitly encode watershed routine authority and runtime symbol families. |
-| 2 | `20260527-wshedimpl02-watershed-contract-derived-tests-and-preimplementation-gate-001` | Add contract-derived vectors for watershed chronology, `ipeak` branch-family behavior, channel/impoundment boundary guards, writer-output expectations, and record pre-implementation gate evidence before production edits. | `20260527-wshedimpl01-watershed-contract-authority-and-routine-map-001` | Contract-derived tests exist with expected pre-migration failures and pre-implementation gate artifact is complete. |
-| 3 | `20260527-wshedimpl03-watershed-runtime-intake-and-state-topology-closure-001` | Close runtime intake/state topology seams for watershed node execution, including contributor payload surfaces, routing-state arrays/symbol families, and runner ingress consistency with typed errors only. | `20260527-wshedimpl02-watershed-contract-derived-tests-and-preimplementation-gate-001` | Watershed runtime surface contains all contract-required ingress symbols; no silent defaults/clamps. |
-| 4 | `20260527-wshedimpl04-channel-routing-hydrology-kernel-migration-001` | Migrate baseline channel-routing hydrology families (`wshcqi/wshirs/wshrun/wshpek/wshchr/chrqin`) into watershed kernel/runtime architecture with contract-derived test activation. | `20260527-wshedimpl03-watershed-runtime-intake-and-state-topology-closure-001` | Channel routing branch families execute with passing contract vectors and typed domain guards. |
-| 5 | `20260527-wshedimpl05-impoundment-and-channel-erosion-coupling-migration-001` | Migrate impoundment and channel-erosion coupling chains (`wshimp`, `chnero -> chnrt`) and enforce chronology with routed channel outputs and sediment publication surfaces. | `20260527-wshedimpl04-channel-routing-hydrology-kernel-migration-001` | Impoundment + channel erosion kernels are baseline-authoritative for declared scope; sequencing tests pass. |
-| 6 | `20260527-wshedimpl06-watershed-output-row-model-and-parquet-writer-activation-001` | Implement watershed output row-model builders and activate parquet emission for all required datasets; retire `OWSOUT-E-004` placeholder guard. | `20260527-wshedimpl05-impoundment-and-channel-erosion-coupling-migration-001` | Watershed CLI emits non-placeholder parquet files for all required outputs with schema metadata checks passing. |
-| 7 | `20260527-wshedimpl07-runner-python-watershed-orchestration-and-e2e-contract-closure-001` | Implement Python wrapper watershed runfile/execution surfaces and integrate end-to-end watershed orchestration with CLI parity behavior and typed error mapping. | `20260527-wshedimpl06-watershed-output-row-model-and-parquet-writer-activation-001` | Python `make_watershed_*`/`run_watershed` execute supported watershed fixtures and produce required parquet outputs. |
-| 8 | `20260527-wshedimpl08-watershed-parity-rerun-and-disposition-001` | Execute watershed-focused parity reruns (channel routing + impoundment + publication) and publish explicit GO/HOLD disposition with residual ownership. | `20260527-wshedimpl07-runner-python-watershed-orchestration-and-e2e-contract-closure-001` | Final package disposition provides admissible GO/HOLD decision for watershed closure scope. |
+## Queue
 
-## Sequencing constraints
-1. No production watershed kernel changes before WSHEDIMPL01 + WSHEDIMPL02
-   complete contract/test/gate prerequisites.
-2. Output writer activation (WSHEDIMPL06) must wait for routing and
-   impoundment migration packages, otherwise parquet outputs risk encoding
-   placeholder physics.
-3. Python wrapper closure (WSHEDIMPL07) must consume the same typed CLI
-   contract/error surfaces; no duplicate orchestration behavior.
-4. WSHEDIMPL08 is the only package authorized to issue final GO/HOLD watershed
-   closure disposition.
+### 1. WSHED02 - Watershed contract authority closure and gap normalization
+- Objective: align canonical contracts with baseline-authoritative watershed
+  routing/impoundment/sediment process scope and explicit unresolved gap rows.
+- Depends on: WSHEDPLAN01.
+- Primary write set:
+  - `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md`
+  - `docs/specifications/science-contracts/contracts/SC-IMPOUND-001.md`
+  - `docs/specifications/science-contracts/contracts/SC-SED-001.md`
+  - `docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md`
+  - `docs/specifications/science-contracts/index.md`
+- Exit criteria:
+  - WS11/WS12 authority language matches required baseline lineages,
+  - new watershed-channel-sediment migration gaps are explicit,
+  - provenance map references corrected `detach.for` lineage.
+
+### 2. WSHED03 - Watershed contract-derived tests and pre-implementation gate
+- Objective: add contract-derived vectors that fail under current partial
+  runtime, then record pre-implementation gate evidence.
+- Depends on: WSHED02.
+- Primary write set:
+  - `tests/integration/ws11_*`
+  - `tests/integration/ws12_*`
+  - new watershed CLI end-to-end fixture tests
+  - package artifacts for WSHED03 gate evidence
+- Exit criteria:
+  - vectors exist for KW/MC branch lineage, impoundment RK4/regime-transition,
+    channel sediment routing entry, and watershed parquet emission non-stub.
+
+### 3. WSHED04 - Runtime seam closure for channel/impoundment state families
+- Objective: project parser-authoritative channel/impoundment families into
+  runtime surfaces required by WS11/WS12 production physics.
+- Depends on: WSHED03.
+- Primary write set:
+  - `crates/openwepp-watershed-orchestrator/src/runtime_inputs.rs`
+  - `crates/openwepp-input-contract/src/parsers/watershed_channel.rs`
+  - `crates/openwepp-input-contract/src/parsers/watershed_impoundment.rs`
+  - `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- Exit criteria:
+  - no manual coefficient seeding in tests,
+  - typed guards for missing/non-finite/out-of-domain seam symbols,
+  - no silent defaults for required parity surfaces.
+
+### 4. WSHED05 - Channel hydrology routing migration (`wshcqi/wshirs/wshrun/wshpek/wshchr/chrqin`)
+- Objective: port baseline-authoritative channel hydrology routing branches,
+  including `ipeak` method families and `ipeak>2` wave routing arrays.
+- Depends on: WSHED04.
+- Primary write set:
+  - `crates/openwepp-watershed-orchestrator/src/lib.rs`
+  - supporting modules for wave-array state and branch helpers
+  - watershed routing comparator fixtures/harness artifacts
+- Exit criteria:
+  - WS11 branch lineage and closure invariants pass contract-derived vectors,
+  - no surrogate fallback replaces required wave-routing methods.
+
+### 5. WSHED06 - Channel sediment routing migration (`chnero/chnrt/detach`)
+- Objective: migrate baseline channel sediment routing and detachment/deposition
+  process families with per-class transport closure.
+- Depends on: WSHED05.
+- Primary write set:
+  - `crates/openwepp-watershed-orchestrator/src/lib.rs` (or extracted modules)
+  - potential new crate/module for channel sediment process kernels
+  - `docs/specifications/science-contracts/contracts/SC-SED-001.md` (if new canonical symbols required)
+- Exit criteria:
+  - watershed channel sediment process executes without heuristic proxy math,
+  - typed guard continuity retained,
+  - contract-derived sediment vectors pass.
+
+### 6. WSHED07 - Impoundment continuity migration (`wshiqi/wshimp` + `imphnw/impflo/impmai`)
+- Objective: port baseline-authoritative impoundment continuity integration,
+  outflow composition, adaptive timestep retry, and regime-transition logic.
+- Depends on: WSHED04 (can run in parallel with WSHED05/06 until integration point).
+- Primary write set:
+  - `crates/openwepp-watershed-orchestrator/src/lib.rs`
+  - optional extracted impoundment physics module(s)
+  - WS12 contract-derived test vectors
+- Exit criteria:
+  - WS12 authority replacement requirements are runtime-true,
+  - surrogate-deauthorization vector remains satisfied,
+  - typed guard family preserved.
+
+### 7. WSHED08 - Watershed output row model and parquet writer activation
+- Objective: replace `OWSOUT-E-004` placeholder with real row-model-to-parquet
+  emission for all required watershed outputs.
+- Depends on: WSHED05, WSHED06, WSHED07.
+- Primary write set:
+  - `crates/openwepp-watershed-output/src/writers.rs`
+  - supporting row-builder sources in runner/orchestrator
+  - watershed parquet integration tests
+- Exit criteria:
+  - all required parquet files emit non-empty schema-compatible outputs,
+  - writer no longer blocks with `OWSOUT-E-004` for valid execution paths,
+  - failure modes remain typed and fail-closed.
+
+### 8. WSHED09 - End-to-end validation, comparator rerun, and hold-lift disposition
+- Objective: run required validation lanes and baseline comparators, then issue
+  explicit GO/HOLD disposition for watershed routing/orchestration/parquet
+  closure.
+- Depends on: WSHED08.
+- Primary write set:
+  - package evidence artifacts and comparator outputs
+  - any residual contract/queue updates required by findings
+- Exit criteria:
+  - `cargo fmt --check`
+  - `cargo clippy --workspace --all-targets -- -D warnings`
+  - `cargo test --workspace`
+  - `cargo deny check`
+  - comparator evidence classified by confidence tier with explicit disposition.
+
+## Recommended execution order
+`WSHED02 -> WSHED03 -> WSHED04 -> (WSHED05 + WSHED07) -> WSHED06 -> WSHED08 -> WSHED09`
 
 ## Ran
-- `nl -ba docs/work-packages/20260527-wshedplan01-watershed-channel-routing-orchestration-parquet-assessment-001/artifacts/wshedplan01-gap-assessment.md | sed -n '1,260p'`
+- not run
