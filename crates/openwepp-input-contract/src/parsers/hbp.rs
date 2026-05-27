@@ -161,11 +161,12 @@ pub struct HbpLatestEventPayload {
     pub peak_runoff_m3_s: f64,
     pub total_detachment_kg: f64,
     pub total_deposition_kg: f64,
+    pub particle_diameter_m: Vec<f64>,
     pub sediment_concentration_kg_m3: Vec<f64>,
     pub particle_flow_fraction: Vec<f64>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct HbpParseResult {
     pub resolved_path: PathBuf,
     pub path_resolution: HbpPathResolution,
@@ -176,6 +177,7 @@ pub struct HbpParseResult {
     pub nyear: u32,
     pub begin_year: i32,
     pub npart: u16,
+    pub particle_diameter_m: Vec<f64>,
     pub nofe: u16,
     pub max_layers: u16,
     pub simulation_mode: u8,
@@ -355,6 +357,7 @@ struct Layout {
     nyear: u32,
     begin_year: i32,
     npart: u16,
+    particle_diameter_m: Vec<f64>,
     nofe: u16,
     max_layers: u16,
     simulation_mode: u8,
@@ -825,10 +828,18 @@ fn parse_layout(data: &[u8]) -> Result<Layout, HbpParseError> {
         .u32()
         .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "metadata", msg))?
         as usize;
+    let mut particle_diameter_m = Vec::with_capacity(particle_count);
     for _ in 0..particle_count {
-        let _ = cursor
+        let diameter_m = cursor
             .f64()
             .map_err(|msg| map_cursor_err(HbpFormatErrorCode::HbpE013, "metadata", msg))?;
+        if !diameter_m.is_finite() || diameter_m <= 0.0 {
+            return Err(format_violation(
+                HbpFormatErrorCode::HbpE006,
+                "particle_diameter_m must be finite and > 0",
+            ));
+        }
+        particle_diameter_m.push(diameter_m);
     }
     if particle_count != usize::from(npart) {
         return Err(format_violation(
@@ -1157,6 +1168,7 @@ fn parse_layout(data: &[u8]) -> Result<Layout, HbpParseError> {
                 nyear,
                 begin_year,
                 npart,
+                particle_diameter_m,
                 nofe,
                 max_layers,
                 simulation_mode,
@@ -1490,6 +1502,7 @@ fn parse_layout(data: &[u8]) -> Result<Layout, HbpParseError> {
                 nyear,
                 begin_year,
                 npart,
+                particle_diameter_m,
                 nofe,
                 max_layers,
                 simulation_mode,
@@ -1725,6 +1738,7 @@ fn validate_payload(
                     peak_runoff_m3_s,
                     total_detachment_kg: scaled_i64_to_f64(total_detachment_scaled)? * SCALE_I64,
                     total_deposition_kg: scaled_i64_to_f64(total_deposition_scaled)? * SCALE_I64,
+                    particle_diameter_m: layout.particle_diameter_m.clone(),
                     sediment_concentration_kg_m3,
                     particle_flow_fraction,
                 })
@@ -2057,6 +2071,7 @@ fn parse_hbp_from_bytes_internal(
             nyear: layout.nyear,
             begin_year: layout.begin_year,
             npart: layout.npart,
+            particle_diameter_m: layout.particle_diameter_m.clone(),
             nofe: layout.nofe,
             max_layers: layout.max_layers,
             simulation_mode: layout.simulation_mode,

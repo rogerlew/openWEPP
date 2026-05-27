@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 38
+contract_version: 39
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -56,7 +56,7 @@ Out of scope:
 | REF-SYSTEM-CH1-WATERSHED | `references/50201000/chap1.pdf` §1.1 and Fig. 1.1.1 | Watershed decomposition into hillslopes, channels, and impoundments plus linkage semantics. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH1-COMPONENTS | `chap1.pdf` §1.4 and §1.4.11 | Continuous simulation component coupling and watershed extension assumptions. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-PASSFILE | `references/50201000/chap13.pdf` intro paragraph before §13.2 | Required hillslope pass-file payload fields consumed by channel/impoundment components. | `[DIRECT][Static]` |
-| REF-SYSTEM-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical HBP payload field names and units for hillslope-to-watershed routing-boundary coupling. | `[DIRECT][Static]` |
+| REF-SYSTEM-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical HBP payload field names and units for hillslope-to-watershed routing-boundary coupling (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3[npart]`, `particle_diameter_m[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
 | REF-SYSTEM-HBP-READER | `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Read Contract`, `Required Invariants`) | Watershed reader fail-closed payload-completeness semantics and no-text-fallback posture. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SYSTEM-CH13-RUNON | `chap13.pdf` §13.2, Eq. [13.2.1]-[13.2.3] | Channel runon decomposition, depth conversion, and event-duration maximum rule. | `[DIRECT][Static]` |
 | REF-SYSTEM-CH13-TRANSLOSS | `chap13.pdf` §13.2, Eq. [13.2.4]-[13.2.6] | Case-partitioned transmission-loss and final-runoff assembly semantics. | `[DIRECT][Static]` |
@@ -92,6 +92,7 @@ Out of scope:
 | `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
 | `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
 | `sediment_concentration_kg_m3,k` | `kg m^-3` | Sediment concentration for particle class `k` at handoff. | hillslope/channel/impoundment element | downstream sediment-routing component |
+| `particle_diameter_m_k` | `m` | Representative particle diameter for class `k` at handoff. | hillslope/channel/impoundment element | downstream sediment-routing component |
 | `particle_flow_fraction_k` | `fraction` | Fraction of particle class `k` in eroded sediment payload. | hillslope/channel/impoundment element | downstream sediment-routing component |
 | `rov`, `rol`, `roi` | `m^3` | Total, lateral, and inlet runon volumes for channel inlet assembly. | channel integration routine | channel runoff assembly |
 | `rod` | `m` | Runon depth computed from runon volume and channel area. | channel integration routine | channel runoff case logic |
@@ -112,7 +113,7 @@ Out of scope:
 
 | Invariant ID | Statement | Severity | Authority | Evidence |
 |---|---|---|---|---|
-| INV-SYSTEM-001 | Pass-file completeness invariant: all required hillslope boundary fields listed in Chapter 13 intro (storm duration, overland `tc`, `alpha`, runoff depth/volume/peak, endpoint detachment/deposition, particle-class concentrations, and size fractions) are present with declared units before channel/impoundment consumption. | hard-fail | REF-SYSTEM-CH1-WATERSHED, REF-SYSTEM-CH13-PASSFILE | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-001 | Pass-file completeness invariant: all required hillslope boundary fields listed in Chapter 13 intro (storm duration, overland `tc`, `alpha`, runoff depth/volume/peak, endpoint detachment/deposition, particle-class concentrations, particle diameters, and size fractions) are present with declared units before channel/impoundment consumption. | hard-fail | REF-SYSTEM-CH1-WATERSHED, REF-SYSTEM-CH13-PASSFILE, REF-SYSTEM-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-002 | Channel runon decomposition invariant: runon identity and depth conversion hold (`rov = rol + roi`, `rod = rov/Ach`) with non-negative volumes/area and explicit contributor accounting. | hard-fail | REF-SYSTEM-CH13-RUNON, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-003 | Channel duration harmonization invariant: event duration uses the explicit max rule `durc = max(durrunon, durchan, durirrig)` and all duration terms share consistent event basis/units. | hard-fail | REF-SYSTEM-CH13-RUNON | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-004 | Channel runoff-case invariant: channel runoff must follow the four-case partition of §13.2, including transmission-loss equations (`tl`) for applicable cases and explicit zero branch for Case IV (`qci = 0`, `rod = 0` implies `qcf = 0`, `rof_f = 0`). | hard-fail | REF-SYSTEM-CH13-TRANSLOSS | `[DIRECT][Static]` |
@@ -184,7 +185,7 @@ explicit divergent names.
 | `durstorm`, `tc_h`, `alpha`, `qdepth`, `rof`, `qp` | identity names | hillslope pass-file payload | chapter-declared units preserved | `[DIRECT][Static]` |
 | `total_detachment_kg`, `total_deposition_kg` | identity names | hillslope sediment endpoint payload | `kg` preserved | `[DIRECT][Static]` |
 | `particle_class_count` | identity name | particle-class vector cardinality payload | count semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `sediment_concentration_kg_m3,k`, `particle_flow_fraction_k` | identity names | particle-class concentration/fraction vectors | `kg m^-3` and `fraction` preserved | `[DIRECT][Static]` |
+| `sediment_concentration_kg_m3,k`, `particle_diameter_m_k`, `particle_flow_fraction_k` | identity names | particle-class concentration/diameter/fraction vectors | `kg m^-3`, `m`, and `fraction` preserved | `[DIRECT][Static]` |
 | `rov`, `rol`, `roi`, `rod`, `Ach` | identity names | channel runon-runoff assembly | `m^3`/`m`/`m^2` preserved | `[DIRECT][Static]` |
 | `durc`, `durrunon`, `durchan`, `durirrig` | identity names | channel event-duration harmonization surfaces | `s` -> `s` | `[DIRECT][Static]` |
 | `qci`, `qcf`, `tl` | identity names | channel runoff-case and transmission-loss surfaces | `m` and `m^3` preserved | `[DIRECT][Static]` |
@@ -700,7 +701,7 @@ Minimum WS12 integration vectors:
 | GAP-SYSTEM-005 | WSHEDIMPL14 implemented a baseline-authoritative end-to-end `openwepp-cli-watershed` comparator lane in `watershed_cli_behavior_contract`, seeded from baseline `ebe_pw0` fixture authority and asserting dispatch/branch/publication continuity at emitted parquet boundaries. | System integration comparator-lane closure is now explicit and executable for baseline-authoritative watershed CLI end-to-end evidence scope. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-006 | WSHED08 activated watershed row-model-backed parquet publication for all required watershed outputs and removed valid-lane placeholder blocking on `OWSOUT-E-004`. | Required watershed publication surfaces now emit non-placeholder parquet outputs; residual system-level hold posture is governed by remaining non-WSHED08 gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-007 | WSHED10 exported active impoundment branch payload families, WSHED11 projected reduced coefficients, and WSHED13 completed WS12 runtime projection of full function families (`f01..f15`) with kernel 15-function min-controller composition at watershed runtime boundaries. | Active-lane structure-family parity closure is complete for WS12 runtime/kernel integration scope; residual watershed HOLD posture is governed by remaining out-of-scope blocker (`GAP-SYSTEM-008`). | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-SYSTEM-008 | Watershed channel sediment process integration (`chnero/chnrt/detach`) is not yet executable in production system paths even though boundary ownership/guards are defined. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`); WSHEDIMPL15 added WS15 runtime channel-control projection and baseline conversion scaffolds (`crsh/depmid/depsid`) with fail-closed kernel guard continuity, but full process parity remains unresolved. | End-to-end watershed sediment continuity and downstream publication claims remain blocked pending full `chnero/chnrt/detach` migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-008 | Watershed channel sediment process integration (`chnero/chnrt/detach`) is not yet executable in production system paths even though boundary ownership/guards are defined. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`); WSHEDIMPL15 added WS15 runtime channel-control projection and baseline conversion scaffolds (`crsh/depmid/depsid`) with fail-closed kernel guard continuity; WSHEDIMPL16 added fail-closed contributor `particle_diameter_m` payload projection for transport-capacity lineage ingress. Full process parity remains unresolved. | End-to-end watershed sediment continuity and downstream publication claims remain blocked pending full `chnero/chnrt/detach` migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -745,3 +746,4 @@ Minimum WS12 integration vectors:
 | `2026-05-27` | `36` | `Codex` | WSHEDIMPL13 amendment: ratified full active-lane WS12 function-family projection and 15-function min-controller composition closure at watershed runtime boundaries, dispositioning `GAP-SYSTEM-007` to `closed` while preserving out-of-scope blockers (`GAP-SYSTEM-005`, `GAP-SYSTEM-008`). |
 | `2026-05-27` | `37` | `Codex` | WSHEDIMPL14 amendment: ratified baseline-authoritative end-to-end watershed comparator lane closure in runner CLI contract tests (baseline `ebe_pw0` signature seeded vector with dispatch/branch/publication continuity assertions), dispositioning `GAP-SYSTEM-005` to `closed` while preserving residual blocker `GAP-SYSTEM-008`. |
 | `2026-05-27` | `38` | `Codex` | WSHEDIMPL15 amendment: ratified WS15 watershed channel-sediment scaffold closure (runtime projection of channel sediment controls plus fail-closed kernel publication of baseline conversion states `crsh/depmid/depsid`) while preserving non-promotable `GAP-SYSTEM-008` posture pending full `chnero/chnrt/detach` process-parity migration. |
+| `2026-05-27` | `39` | `Codex` | WSHEDIMPL16 amendment: ratified contributor `particle_diameter_m` payload ingress projection (`hs{ID}_particle_diameter_m_{class:04}`) with fail-closed WS10 guard continuity, and narrowed `GAP-SYSTEM-008` to remaining full `chnero/chnrt/detach` process-parity migration closure scope. |

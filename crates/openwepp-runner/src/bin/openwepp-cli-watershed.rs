@@ -348,10 +348,22 @@ fn run() -> Result<(), String> {
             || vec![0.0; class_count],
             |payload| payload.sediment_concentration_kg_m3.clone(),
         );
+        let particle_diameters = latest_event_payload.as_ref().map_or_else(
+            || hbp.particle_diameter_m.clone(),
+            |payload| payload.particle_diameter_m.clone(),
+        );
         let particle_flow_fractions = latest_event_payload.as_ref().map_or_else(
             || vec![0.0; class_count],
             |payload| payload.particle_flow_fraction.clone(),
         );
+        if particle_diameters.len() != class_count {
+            return Err(format!(
+                "CLIWAT-E-018 particle_diameter_m length {} does not match npart={} for hillslope {}",
+                particle_diameters.len(),
+                class_count,
+                hillslope_id
+            ));
+        }
 
         runtime_surface.state_surface.insert(
             BoundarySymbol::from(WatershedProductionStateSymbol::HillslopeContributorPeak {
@@ -397,6 +409,14 @@ fn run() -> Result<(), String> {
                 .get(class_index - 1)
                 .copied()
                 .unwrap_or(0.0);
+            let particle_diameter = particle_diameters
+                .get(class_index - 1)
+                .copied()
+                .ok_or_else(|| {
+                    format!(
+                        "CLIWAT-E-018 missing particle_diameter_m class={class_index} for hillslope {hillslope_id}"
+                    )
+                })?;
             let fraction = particle_flow_fractions
                 .get(class_index - 1)
                 .copied()
@@ -409,6 +429,15 @@ fn run() -> Result<(), String> {
                     },
                 ),
                 BoundaryValue::scalar(concentration),
+            );
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(
+                    WatershedProductionStateSymbol::HillslopeContributorParticleDiameterMeters {
+                        hillslope_id: *hillslope_id,
+                        class_index,
+                    },
+                ),
+                BoundaryValue::scalar(particle_diameter),
             );
             runtime_surface.state_surface.insert(
                 BoundarySymbol::from(

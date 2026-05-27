@@ -74,6 +74,10 @@ fn seed_erod15_hillslope_payload(
             BoundaryValue::scalar(0.25 + (class_index_scalar(class) * 0.1)),
         );
         surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_particle_diameter_m_{class:04}")),
+            BoundaryValue::scalar(0.000_01 * class_index_scalar(class)),
+        );
+        surface.state_surface.insert(
             BoundarySymbol::from(format!(
                 "hs{hillslope_id}_particle_flow_fraction_{class:04}"
             )),

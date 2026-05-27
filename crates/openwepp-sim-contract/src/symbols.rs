@@ -283,6 +283,8 @@ impl SymbolAliasRegistry {
                 "sediment_concentration_kg_m3",
                 "hs{ofe}_sediment_concentration_kg_m3_{idx4}",
             ),
+            SymbolAliasEntry::new("particle_diameter_m", "particle_diameter_m_{idx4}"),
+            SymbolAliasEntry::new("particle_diameter_m", "hs{ofe}_particle_diameter_m_{idx4}"),
             SymbolAliasEntry::new("particle_flow_fraction", "particle_flow_fraction_{idx4}"),
             SymbolAliasEntry::new(
                 "particle_flow_fraction",

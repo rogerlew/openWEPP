@@ -659,6 +659,10 @@ pub enum WatershedProductionStateSymbol {
         hillslope_id: u32,
         class_index: usize,
     },
+    HillslopeContributorParticleDiameterMeters {
+        hillslope_id: u32,
+        class_index: usize,
+    },
     HillslopeContributorParticleFlowFraction {
         hillslope_id: u32,
         class_index: usize,
@@ -697,6 +701,12 @@ impl From<WatershedProductionStateSymbol> for BoundarySymbol {
                 class_index,
             } => Self::from(format!(
                 "hs{hillslope_id}_sediment_concentration_kg_m3_{class_index:04}"
+            )),
+            WatershedProductionStateSymbol::HillslopeContributorParticleDiameterMeters {
+                hillslope_id,
+                class_index,
+            } => Self::from(format!(
+                "hs{hillslope_id}_particle_diameter_m_{class_index:04}"
             )),
             WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
                 hillslope_id,

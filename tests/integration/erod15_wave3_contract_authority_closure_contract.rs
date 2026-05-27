@@ -71,6 +71,17 @@ fn erod15_alias_registry_contains_hbp_payload_templates() {
                 .contains(&"hs{ofe}_particle_flow_fraction_{idx4}".to_string()),
         "particle_flow_fraction aliases must include direct and contributor-scoped forms"
     );
+    let particle_diameter_aliases = registry
+        .aliases_for_canonical("particle_diameter_m")
+        .expect("particle-diameter aliases should resolve");
+
+    assert_eq!(particle_diameter_aliases.len(), 2);
+    assert!(
+        particle_diameter_aliases.contains(&"particle_diameter_m_{idx4}".to_string())
+            && particle_diameter_aliases
+                .contains(&"hs{ofe}_particle_diameter_m_{idx4}".to_string()),
+        "particle_diameter_m aliases must include direct and contributor-scoped forms"
+    );
     assert_eq!(
         registry
             .canonical_for_boundary_alias("hs7_sediment_concentration_kg_m3_0003")

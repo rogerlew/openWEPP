@@ -74,6 +74,10 @@ fn seed_erod15_hillslope_payload(
             BoundaryValue::scalar(0.25 + (class_index_scalar(class) * 0.1)),
         );
         surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_particle_diameter_m_{class:04}")),
+            BoundaryValue::scalar(0.000_01 * class_index_scalar(class)),
+        );
+        surface.state_surface.insert(
             BoundarySymbol::from(format!(
                 "hs{hillslope_id}_particle_flow_fraction_{class:04}"
             )),
@@ -404,6 +408,11 @@ fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publicatio
     surface
         .state_surface
         .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    let dtchr = surface
+        .state_surface
+        .get(&BoundarySymbol::from("dtchr"))
+        .expect("ws11 seeded surface must include dtchr")
+        .as_f64();
 
     let report = run_ws11_surface(surface);
     assert!(report.dispatch_report.is_success());
@@ -414,6 +423,14 @@ fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publicatio
             "missing required channel sediment lineage symbol {symbol}"
         );
     }
+
+    let qsed = state_value(&report, "ws10_channel_1_qsed");
+    let tc = state_value(&report, "ws10_channel_1_tc");
+    let incoming_mass_kg = (2.0 * 300.0 * 0.01) - (2.0 * 300.0 * 0.0025);
+    let expected_qsed = incoming_mass_kg / dtchr.max(300.0);
+
+    assert!((qsed - expected_qsed).abs() <= 1.0e-12);
+    assert!((tc - qsed).abs() <= 1.0e-12);
 }
 
 #[test]
@@ -458,6 +475,28 @@ fn wshedimpl15_contract_channel_sediment_scaffold_requires_projected_controls() 
     surface
         .state_surface
         .remove(&BoundarySymbol::from("ws10_channel_1_chntcr"));
+
+    let report = run_ws11_surface(surface);
+    assert_eq!(report.step_reports.len(), 1);
+    assert_eq!(
+        report.step_reports[0].decision_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-001"
+    );
+    assert_eq!(
+        report.step_reports[0].decision_status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn wshedimpl16_contract_channel_sediment_requires_particle_diameter_payload() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("hs1_particle_diameter_m_0003"));
 
     let report = run_ws11_surface(surface);
     assert_eq!(report.step_reports.len(), 1);

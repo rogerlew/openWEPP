@@ -761,6 +761,14 @@ Authorized packages:
     scaffolds `crsh/depmid/depsid`) as required precursor for full
     `chnero/chnrt/detach` parity migration while preserving explicit non-
     promotable HOLD posture on remaining full process-parity blockers.
+- `20260527-wshedimpl16-channel-sediment-payload-seam-closure-and-vector-promotion-001/`
+  - Purpose: execute WSHEDIMPL16 immediate next actions from WSHEDIMPL15 by
+    projecting fail-closed contributor `particle_diameter_m` payload symbols
+    into WS10 runtime ingress, promoting WS11 channel sediment vectors from
+    publication checks to equation checks, and rerunning watershed
+    baseline-authoritative comparator-lane evidence while preserving explicit
+    non-promotable HOLD posture on remaining full `chnero/chnrt/detach`
+    process-parity migration blockers.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

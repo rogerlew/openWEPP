@@ -1203,6 +1203,11 @@ impl Ws10ChannelImpoundmentKernel {
                     hillslope_id,
                     class_index,
                 };
+            let particle_diameter_symbol =
+                WatershedProductionStateSymbol::HillslopeContributorParticleDiameterMeters {
+                    hillslope_id,
+                    class_index,
+                };
             let fraction_symbol =
                 WatershedProductionStateSymbol::HillslopeContributorParticleFlowFraction {
                     hillslope_id,
@@ -1211,6 +1216,8 @@ impl Ws10ChannelImpoundmentKernel {
 
             let concentration =
                 Self::require_state_scalar(request, node_class, concentration_symbol)?;
+            let particle_diameter =
+                Self::require_state_scalar(request, node_class, particle_diameter_symbol)?;
             let fraction = Self::require_state_scalar(request, node_class, fraction_symbol)?;
 
             Self::require_state_range(
@@ -1218,6 +1225,13 @@ impl Ws10ChannelImpoundmentKernel {
                 concentration_symbol,
                 concentration,
                 Some(0.0),
+                None,
+            )?;
+            Self::require_state_range(
+                node_class,
+                particle_diameter_symbol,
+                particle_diameter,
+                Some(WS10_ZERO_THRESHOLD),
                 None,
             )?;
             Self::require_state_range(node_class, fraction_symbol, fraction, Some(0.0), Some(1.0))?;

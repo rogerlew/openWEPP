@@ -4,7 +4,7 @@ title: Hillslope Erosion Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Hillslope sediment continuity, detachment/deposition, and transport-capacity surfaces
   - Event erosion boundary payloads consumed by routing/channel domains
@@ -63,7 +63,7 @@ Out of scope:
 | REF-SED-CH7-EROD | `references/50201000/chap7.pdf` §7.10-§7.11, Eq. [7.10.1]-[7.10.15], [7.11.1]-[7.11.18] | Adjusted interrill/rill erodibility and critical-shear parameters (`Kiadj`, `Kradj`, `τcadj`) consumed by Chapter-11 normalizations. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SED-CH4-RUNOFF | `references/50201000/chap4.pdf` §4.4.2-§4.4.4, Eq. [4.4.17]-[4.4.30] | Hydrology component authority for peak-runoff and effective-duration surfaces used by erosion equations. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SED-CH13-COUPLING | `references/50201000/chap13.pdf` §13.1 pass-file list | Downstream coupling semantics for hillslope erosion outputs (detachment, deposition, class concentrations, class fractions). | `[DIRECT][Static] + [INFERENCE][Static]` |
-| REF-SED-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical binary pass serialization field names and units for routing-boundary sediment payloads (`total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
+| REF-SED-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical binary pass serialization field names and units for routing-boundary sediment payloads (`total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3[npart]`, `particle_diameter_m[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
 | REF-SED-HBP-READER | `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Read Contract`, `Required Invariants`) | Watershed reader fail-closed semantics for missing/invalid hillslope payload fields and no-text-fallback posture. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SED-LEGACY-PARAM | `/workdir/wepp-forest_260430_baseline/src/param.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy normalized-parameter authority (`eata`, `tauc`, `theta`, `phi`) used for Wave-1 runtime parameter derivation provenance. | `[DIRECT][Static]` |
 | REF-SED-LEGACY-EROD | `/workdir/wepp-forest_260430_baseline/src/erod.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy detachment-capacity and branch-condition authority used for Wave-1 detachment/deposition runtime branch ordering. | `[DIRECT][Static]` |
@@ -96,7 +96,7 @@ Out of scope:
 | `σir`, `SDRRR`, `Fnozzle`, `Rs`, `w` | `m s^-1`, `fraction`, `fraction`, `m`, `m` | Interrill delivery and geometric/nozzle factors in Eq. [11.3.10]. | interrill/hydraulics/irrigation coupling | interrill parameter `θ` computation |
 | `η`, `τcn`, `θ`, `φ` | `fraction`, `fraction`, `fraction`, `fraction` | Normalized erosion parameters controlling detachment/deposition equation forms. | normalization pathway | normalized erosion ODE solver |
 | `total_detachment_kg`, `total_deposition_kg` | `kg` | Hillslope event detachment/deposition totals exported in watershed pass-file semantics. | hillslope erosion aggregator | channel/watershed routing consumers |
-| `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i` | `kg m^-3`, `fraction` | Particle-class concentration and class fraction at hillslope/OFE exits. | size-class routing/enrichment pathway | channel/watershed routing consumers |
+| `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i` | `kg m^-3`, `m`, `fraction` | Particle-class concentration, representative class diameter, and class fraction at hillslope/OFE exits. | size-class routing/enrichment pathway | channel/watershed routing consumers |
 | `particle_class_count` | `count` | Particle-class cardinality for serialized routing-boundary payload arrays. | hillslope erosion aggregator | watershed routing payload validator |
 | `ER` | `fraction` | Specific-surface-area enrichment ratio (`SSAsed/SSAsoil`). | enrichment pathway | sediment-quality interpretation consumers |
 
@@ -113,7 +113,7 @@ Out of scope:
 | INV-SED-007 | Normalization invariant: normalized parameters (`η`, `τcn`, `θ`, `φ`) are derived by Eq. [11.3.7]-[11.3.11] with finite denominators and consistent adjusted soil parameters from Chapter 7. | hard-fail | REF-SED-CH11-NORM, REF-SED-CH7-EROD, REF-SED-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SED-008 | Downslope-variability invariant: OFE-strip routing with runon uses Eq. [11.4.1]-[11.4.6] branch semantics and preserves explicit sediment/water boundary conditions between strips. | hard-fail | REF-SED-CH11-DOWNVAR | `[DIRECT][Static]` |
 | INV-SED-009 | Enrichment mass-conservation invariant: class-wise outgoing sediment from deposition transitions cannot exceed incoming-plus-local-contribution mass after correction steps. | hard-fail | REF-SED-CH11-ENRICH, REF-SED-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SED-010 | Coupling payload invariant: hillslope erosion event outputs (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`) are emitted with units/sign conventions required by watershed/channel consumers. | hard-fail | REF-SED-CH13-COUPLING, REF-SED-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SED-010 | Coupling payload invariant: hillslope erosion event outputs (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`) are emitted with units/sign conventions required by watershed/channel consumers. | hard-fail | REF-SED-CH13-COUPLING, REF-SED-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SED-011 | Governance-scope invariant: Chapter-11 simplifications (steady-state transposition, fitted transport-capacity adjustments, enrichment procedure caveats) must remain explicit; unlabeled scope over-claims block promotion. | governance-fail | REF-SED-CH11-INTRO, REF-SED-CH11-TC, REF-SED-CH11-ENRICH | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
@@ -153,6 +153,7 @@ for not-yet-implemented erosion internals.
 | `total_detachment_kg`, `total_deposition_kg` | identity names | hillslope sediment totals to routing pass-file boundary | `kg` preserved | `[DIRECT][Static]` |
 | `particle_class_count` | identity name | particle-class cardinality for serialized boundary vectors | count semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `sediment_concentration_kg_m3_i` | `sediment_concentration_kg_m3_{class:04}` | sediment class concentration boundary surfaces for pass serialization and routing intake | `kg m^-3` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `particle_diameter_m_i` | `particle_diameter_m_{class:04}` | sediment class particle-diameter boundary surfaces for pass serialization and routing intake | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `particle_flow_fraction_i` | `particle_flow_fraction_{class:04}` | sediment class flow-fraction boundary surfaces for pass serialization and routing intake | fraction semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ER` | identity name | enrichment-ratio boundary surface | fraction semantics preserved | `[DIRECT][Static]` |
 
@@ -162,7 +163,7 @@ for not-yet-implemented erosion internals.
 |---|---|---|---|---|---|
 | `EROD-BND-001` | `Q`, `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` | `HillslopeProductionFluxSymbol::Wb12RunoffQ`; `HillslopeProductionStateSymbol::{Wb16Peakro,Wb16Watdur,Wb16MethodBranch,Wb16Tstar,Wb16Qpstar,Wb16Vstar}` | `SC-RUNOFFPART-001` + `SC-WATBAL-001` via WB12/WB16 kernels | `SC-SED-001` (`INV-SED-004`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `EROD-BND-002` | `fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe` | canonical identity boundary symbols (runtime projection owner deferred under erosion-physics `HOLD`) | `SC-HYDRAULICS-001` | `SC-SED-001` (`INV-SED-005`, `INV-SED-006`, `INV-SED-007`) | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `EROD-BND-003` | `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i` | `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_{class:04}`, `particle_flow_fraction_{class:04}` (hillslope export), plus contributor-prefixed routing aliases `hs{ID}_*` | `SC-SED-001` | `SC-ROUTE-001` (`INV-ROUTE-011`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `EROD-BND-003` | `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i` | `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_{class:04}`, `particle_diameter_m_{class:04}`, `particle_flow_fraction_{class:04}` (hillslope export), plus contributor-prefixed routing aliases `hs{ID}_*` | `SC-SED-001` | `SC-ROUTE-001` (`INV-ROUTE-011`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## EROD12 Cross-Domain Ownership and Guard Closure Addendum
 
@@ -170,7 +171,7 @@ for not-yet-implemented erosion internals.
 |---|---|---|---|---|
 | Hydrology forcing intake (`Q`, `peakro`, `watdur`, `wb16_*`) | `SC-RUNOFFPART-001` (`INV-RUNOFFPART-009`, `INV-RUNOFFPART-011`) + `SC-WATBAL-001` (`INV-WATBAL-007`, `INV-WATBAL-016`) | `SC-SED-001` (`INV-SED-004`) | Canonical producer/consumer guard ownership is explicit for required Wave-0 forcing symbols. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Hydraulics shear/friction intake (`fr`, `fi/fe`, `w`, `fs`, `ft`, `τf/τfe`) | `SC-HYDRAULICS-001` (`INV-HYDRAULICS-009`..`011`) | `SC-SED-001` (`INV-SED-005`..`007`) | Guard ownership and failure posture are explicit with no remaining Wave-0 ownership ambiguity. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| Sediment payload export to routing (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`) | `SC-SED-001` (`INV-SED-010`) | `SC-ROUTE-001` (`INV-ROUTE-011`) | Cross-domain payload validation ownership is explicit for downstream routing intake. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Sediment payload export to routing (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`) | `SC-SED-001` (`INV-SED-010`) | `SC-ROUTE-001` (`INV-ROUTE-011`) | Cross-domain payload validation ownership is explicit for downstream routing intake. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -189,14 +190,14 @@ for not-yet-implemented erosion internals.
 - Rill-detachment branch executed when threshold conditions are not met (`τf <= τc`) without explicit zero-detachment handling. `[DIRECT][Static] + [INFERENCE][Static]`
 - Deposition branch executed with zero/negative `q` denominator semantics in Eq. [11.2.4]. `[DIRECT][Static] + [INFERENCE][Static]`
 - Particle-class enrichment update that violates class-wise mass conservation across deposition transition updates. `[DIRECT][Static] + [INFERENCE][Static]`
-- Missing or unit-inconsistent hillslope-to-routing sediment payload fields (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`). `[DIRECT][Static] + [INFERENCE][Static]`
+- Missing or unit-inconsistent hillslope-to-routing sediment payload fields (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`). `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
 - OBL-SED-P-001: Publish hillslope erosion continuity and branch surfaces using canonical Chapter-11 symbol semantics and declared units. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SED-P-002: Enforce explicit detachment/deposition branch predicates and threshold behavior before emitting event outputs. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SED-P-003: Propagate invariant violations as typed errors; do not silently clamp or default materially invalid erosion states. `[INFERENCE][Static]`
-- OBL-SED-P-004: Emit routing-boundary sediment payload completeness (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_flow_fraction_i`) with unit/sign integrity. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-SED-P-004: Emit routing-boundary sediment payload completeness (`total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`) with unit/sign integrity. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -539,7 +540,7 @@ canonical `SC-*` contracts before production migration packages.
 | GAP-SED-003 | EROD12 ratifies cross-domain ownership/guard closure for required erosion-lane companion boundaries (`SC-HYDRAULICS-001`, `SC-ROUTE-001`) using canonical `SC-*` addenda and row-scoped guard ownership mapping. | Required Wave-0 cross-domain ownership semantics are canonicalized; erosion production implementation remains separately gated by `EROD13+` and non-Wave-0 companion gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SED-004 | Chapter-11 enrichment caveats for mixed-soil, multi-OFE composition effects remain and are explicitly retained as a documented limitation with governance risk acceptance. | Mixed-soil enrichment interpretation may still require manual investigation; this is accepted as an explicit model-governance caveat. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SED-005 | Baseline `route.for` segment-level branch family (`mshear 1..5`, upper-end deposition/detachment trees, post-detachment deposition closure) was migrated into openWEPP runtime kernels by EROD19 and revalidated by EROD21 parity rerun/hold-lift disposition. | Hillslope sediment-routing process parity closure is now recorded; ongoing comparator monitoring continues under EROD21 evidence artifacts. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-SED-006 | Watershed channel sediment process closure (`chnero/chnrt/detach`) remains open in companion watershed runtime work even though hillslope boundary payload authority (`INV-SED-010`) is explicit and enforced. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`), and WSHEDIMPL15 added WS15 channel control projection plus baseline conversion scaffold publication/guards (`crsh/depmid/depsid`). | End-to-end watershed sediment-routing closure remains blocked pending full `chnero/chnrt/detach` process migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SED-006 | Watershed channel sediment process closure (`chnero/chnrt/detach`) remains open in companion watershed runtime work even though hillslope boundary payload authority (`INV-SED-010`) is explicit and enforced. WSHED06 closed WS11 channel sediment publication-family symbols (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`), WSHEDIMPL15 added WS15 channel control projection plus baseline conversion scaffold publication/guards (`crsh/depmid/depsid`), and WSHEDIMPL16 added fail-closed contributor `particle_diameter_m` payload projection for transport-capacity lineage ingress. | End-to-end watershed sediment-routing closure remains blocked pending full `chnero/chnrt/detach` process migration and validation closure. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
@@ -562,3 +563,4 @@ canonical `SC-*` contracts before production migration packages.
 | `2026-05-27` | `14` | `Codex` | WSHEDIMPL01 amendment: normalized unresolved cross-domain watershed sediment closure dependency (`GAP-SED-006`) so `SC-SED-001` boundary payload authority remains explicit while companion channel sediment migration (`chnero/chnrt/detach`) remains non-promotable until WSHED06 closure evidence lands. |
 | `2026-05-27` | `15` | `Codex` | WSHEDIMPL06 amendment: ratified WS11 channel sediment publication-family closure (`ws10_channel_{id}_qsed`, `ws10_channel_{id}_tc`) while preserving non-promotable `GAP-SED-006` posture for unresolved full `chnero/chnrt/detach` process-parity migration and validation closure. |
 | `2026-05-27` | `16` | `Codex` | WSHEDIMPL15 amendment: ratified WS15 channel-sediment control projection and baseline conversion scaffold publication (`ws10_channel_{id}_{crsh,depmid,depsid}` with fail-closed guards) while preserving non-promotable `GAP-SED-006` posture pending full companion `chnero/chnrt/detach` process migration closure. |
+| `2026-05-27` | `17` | `Codex` | WSHEDIMPL16 amendment: ratified contributor `particle_diameter_m` payload ingress projection (`hs{ID}_particle_diameter_m_{class:04}`) with fail-closed WS10 guard continuity, and narrowed `GAP-SED-006` to remaining full companion `chnero/chnrt/detach` process migration closure scope. |
