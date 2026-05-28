@@ -732,7 +732,6 @@ fn wshedimpl20_contract_case12_routing_is_opt_in_and_defaults_to_zero_diagnostic
         "ws10_channel_1_ws20_case1_segment_count",
         "ws10_channel_1_ws20_case2_segment_count",
         "ws10_channel_1_ws24_case2_detach_segment_count",
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
     ] {
         assert!(
             has_state_symbol(&report, symbol),
@@ -744,14 +743,6 @@ fn wshedimpl20_contract_case12_routing_is_opt_in_and_defaults_to_zero_diagnostic
     assert!((state_value(&report, "ws10_channel_1_ws20_case2_segment_count") - 0.0).abs() <= 1e-12);
     assert!(
         (state_value(&report, "ws10_channel_1_ws24_case2_detach_segment_count") - 0.0).abs()
-            <= 1e-12
-    );
-    assert!(
-        (state_value(
-            &report,
-            "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
-        ) - 0.0)
-            .abs()
             <= 1e-12
     );
 }
@@ -799,24 +790,19 @@ fn wshedimpl25_contract_ws20_only_opt_in_auto_activates_ws21_with_crfrac_project
 
     let case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
     let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
-    let ws20_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
-    );
-    let ws21_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
-    );
 
     assert!(
         (case3_segments + case4_segments) > 0.0,
         "expected ws21 case34 activity under ws20-only opt-in when crfrac is projected"
     );
-    assert!(
-        (ws20_unmigrated - 0.0).abs() <= 1e-12,
-        "expected ws20 unresolved-detachment fallback closure under ws20-only opt-in"
-    );
-    assert!(ws21_unmigrated >= 0.0);
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+    ));
 }
 
 #[test]
@@ -837,7 +823,6 @@ fn wshedimpl21_contract_case34_routing_is_opt_in_and_defaults_to_zero_diagnostic
         "ws10_channel_1_ws21_case3_segment_count",
         "ws10_channel_1_ws21_case4_segment_count",
         "ws10_channel_1_ws21_enddet_segment_count",
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
     ] {
         assert!(
             has_state_symbol(&report, symbol),
@@ -849,14 +834,6 @@ fn wshedimpl21_contract_case34_routing_is_opt_in_and_defaults_to_zero_diagnostic
     assert!((state_value(&report, "ws10_channel_1_ws21_case4_segment_count") - 0.0).abs() <= 1e-12);
     assert!(
         (state_value(&report, "ws10_channel_1_ws21_enddet_segment_count") - 0.0).abs() <= 1e-12
-    );
-    assert!(
-        (state_value(
-            &report,
-            "ws10_channel_1_ws21_detach_unmigrated_segment_count"
-        ) - 0.0)
-            .abs()
-            <= 1e-12
     );
 }
 
@@ -886,22 +863,20 @@ fn wshedimpl21_contract_case34_opt_in_tracks_case34_diagnostics() {
     let case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
     let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
     let enddet_segments = state_value(&report, "ws10_channel_1_ws21_enddet_segment_count");
-    let detach_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
-    );
-    let ws20_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
-    );
 
     assert!(
         (case3_segments + case4_segments) > 0.0,
         "expected ws21 case34 diagnostics to register at least one case3/case4 segment"
     );
     assert!(enddet_segments >= 0.0);
-    assert!(detach_unmigrated >= 0.0);
-    assert!(ws20_unmigrated >= detach_unmigrated);
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+    ));
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
 }
 
 #[test]
@@ -957,22 +932,21 @@ fn wshedimpl22_contract_ws21_opt_in_routes_with_crfrac_projection() {
     let case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
     let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
     let enddet_segments = state_value(&report, "ws10_channel_1_ws21_enddet_segment_count");
-    let ws21_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
-    );
-    let ws20_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
-    );
 
     assert!((case3_segments + case4_segments) > 0.0);
     assert!(enddet_segments >= 0.0);
-    assert!(ws20_unmigrated >= ws21_unmigrated);
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+    ));
 }
 
 #[test]
-fn wshedimpl23_contract_ws21_case4_detach_iterative_closure_clears_unmigrated_counter() {
+fn wshedimpl23_contract_ws21_case4_detach_iterative_closure_retires_unresolved_symbols() {
     let mut surface = seeded_ws11_surface();
     surface
         .state_surface
@@ -995,16 +969,15 @@ fn wshedimpl23_contract_ws21_case4_detach_iterative_closure_clears_unmigrated_co
     );
 
     let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
-    let ws21_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
-    );
-
     assert!(case4_segments > 0.0);
-    assert!(
-        (ws21_unmigrated - 0.0).abs() <= 1e-12,
-        "wshedimpl23 migrated case4->detach branch must not emit ws21 unresolved-detachment counts"
-    );
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+    ));
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
 }
 
 #[test]
@@ -1035,24 +1008,16 @@ fn wshedimpl26_contract_ws21_case4_iterative_closure_stress_vector_remains_resol
     );
 
     let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
-    let ws21_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
-    );
-    let ws20_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
-    );
 
     assert!(case4_segments > 0.0);
-    assert!(
-        (ws21_unmigrated - 0.0).abs() <= 1e-12,
-        "wshedimpl26 case4 iterative closure stress vector must not emit ws21 unresolved diagnostics"
-    );
-    assert!(
-        (ws20_unmigrated - 0.0).abs() <= 1e-12,
-        "wshedimpl26 stress vector must preserve ws20 unresolved-detachment closure"
-    );
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+    ));
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
 }
 
 #[test]
@@ -1084,25 +1049,17 @@ fn wshedimpl27_contract_ws21_case4_bracket_migration_vector_remains_resolved() {
 
     let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
     let enddet_segments = state_value(&report, "ws10_channel_1_ws21_enddet_segment_count");
-    let ws21_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
-    );
-    let ws20_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
-    );
 
     assert!(case4_segments > 0.0);
     assert!(enddet_segments >= 0.0);
-    assert!(
-        (ws21_unmigrated - 0.0).abs() <= 1e-12,
-        "wshedimpl27 enddet bracket closure vector must not emit ws21 unresolved diagnostics"
-    );
-    assert!(
-        (ws20_unmigrated - 0.0).abs() <= 1e-12,
-        "wshedimpl27 enddet bracket closure vector must preserve ws20 unresolved-detachment closure"
-    );
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count"
+    ));
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
 }
 
 #[test]
@@ -1607,22 +1564,21 @@ fn wshedimpl24_contract_case12_transition_routes_with_crfrac_projection() {
     let case1_segments = state_value(&report, "ws10_channel_1_ws20_case1_segment_count");
     let ws24_transition_segments =
         state_value(&report, "ws10_channel_1_ws24_case2_detach_segment_count");
-    let ws20_unmigrated = state_value(
-        &report,
-        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
-    );
     let ws21_case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
     let ws21_case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
 
     assert!(
         case2_segments > 0.0,
-        "expected case2 activity for ws24 transition forcing vector, got case2={case2_segments}, case1={case1_segments}, ws24={ws24_transition_segments}, ws21_case3={ws21_case3_segments}, ws21_case4={ws21_case4_segments}, ws20_unmigrated={ws20_unmigrated}"
+        "expected case2 activity for ws24 transition forcing vector, got case2={case2_segments}, case1={case1_segments}, ws24={ws24_transition_segments}, ws21_case3={ws21_case3_segments}, ws21_case4={ws21_case4_segments}"
     );
     assert!(
         ws24_transition_segments > 0.0,
         "expected ws24 transition diagnostics activity, got {ws24_transition_segments}"
     );
-    assert!(ws20_unmigrated >= 0.0);
+    assert!(!has_state_symbol(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count"
+    ));
 }
 
 #[test]

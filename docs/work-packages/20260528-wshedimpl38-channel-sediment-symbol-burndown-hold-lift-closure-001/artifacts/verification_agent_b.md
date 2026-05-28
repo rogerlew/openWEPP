@@ -1,8 +1,12 @@
 # WSHEDIMPL38 Verification Agent B
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: ran  
 Date: 2026-05-28
 
-## Verification
-- queued
+## Static
+- not-applicable
+
+## Ran
+- `cargo test --workspace` -> pass
+- `cargo deny check` -> pass (warnings-only output; no advisory/bans/license/source failures)

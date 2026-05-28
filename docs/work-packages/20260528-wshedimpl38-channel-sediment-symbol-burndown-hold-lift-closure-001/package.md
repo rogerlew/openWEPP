@@ -1,7 +1,7 @@
 # 20260528-wshedimpl38-channel-sediment-symbol-burndown-hold-lift-closure-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-05-28
 - timezone: UTC
 - decision: HOLD

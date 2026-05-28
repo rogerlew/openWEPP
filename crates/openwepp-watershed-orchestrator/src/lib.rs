@@ -325,11 +325,9 @@ struct Ws19ChannelSedimentPublication {
     ws20_case1_segments: u32,
     ws20_case2_segments: u32,
     ws24_case2_detach_segments: u32,
-    ws20_detachment_unmigrated_segments: u32,
     ws21_case3_segments: u32,
     ws21_case4_segments: u32,
     ws21_enddet_segments: u32,
-    ws21_detach_unmigrated_segments: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -348,11 +346,9 @@ struct Ws20SegmentRoutingDiagnostics {
     case1_segments: u32,
     case2_segments: u32,
     ws24_case2_detach_segments: u32,
-    detachment_unmigrated_segments: u32,
     case3_segments: u32,
     case4_segments: u32,
     enddet_segments: u32,
-    ws21_detach_unmigrated_segments: u32,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -3340,12 +3336,11 @@ impl Ws10ChannelImpoundmentKernel {
 
             if excess > 0.0 {
                 if !ws21_case34_enabled {
-                    diagnostics.detachment_unmigrated_segments =
-                        diagnostics.detachment_unmigrated_segments.saturating_add(1);
-                    for class_offset in 0..class_count {
-                        gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
-                    }
-                    continue;
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws21_case34_enabled"),
+                        0.0,
+                    ));
                 }
 
                 let crfrac = Self::ws22_require_crfrac_vector(request, node_class, class_numbers)?;
@@ -3429,7 +3424,6 @@ impl Ws10ChannelImpoundmentKernel {
                     }
 
                     let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
-                    let mut segment_invalid = false;
                     for class_offset in 0..class_count {
                         let next_flux =
                             if potld_lbs_s_ft[class_offset] <= tcl_lbs_s_ft[class_offset] {
@@ -3468,22 +3462,16 @@ impl Ws10ChannelImpoundmentKernel {
                             };
 
                         if !next_flux.is_finite() || next_flux < 0.0 {
-                            segment_invalid = true;
-                            break;
+                            return Err(Self::domain_violation(
+                                node_class,
+                                BoundarySymbol::from(format!(
+                                    "ws21_case3_next_flux_{:04}",
+                                    class_numbers[class_offset]
+                                )),
+                                next_flux,
+                            ));
                         }
                         next_gstu_lbs_s[class_offset] = next_flux;
-                    }
-
-                    if segment_invalid {
-                        diagnostics.ws21_detach_unmigrated_segments = diagnostics
-                            .ws21_detach_unmigrated_segments
-                            .saturating_add(1);
-                        diagnostics.detachment_unmigrated_segments =
-                            diagnostics.detachment_unmigrated_segments.saturating_add(1);
-                        for class_offset in 0..class_count {
-                            gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
-                        }
-                        continue;
                     }
 
                     gstu_lbs_s = next_gstu_lbs_s;
@@ -3555,26 +3543,19 @@ impl Ws10ChannelImpoundmentKernel {
                 );
 
                 let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
-                let mut segment_invalid = false;
                 for class_offset in 0..class_count {
                     let next_flux = tcl_case4_lbs_s_ft[class_offset] * wfl_ft;
                     if !next_flux.is_finite() || next_flux < 0.0 {
-                        segment_invalid = true;
-                        break;
+                        return Err(Self::domain_violation(
+                            node_class,
+                            BoundarySymbol::from(format!(
+                                "ws21_case4_next_flux_{:04}",
+                                class_numbers[class_offset]
+                            )),
+                            next_flux,
+                        ));
                     }
                     next_gstu_lbs_s[class_offset] = next_flux;
-                }
-
-                if segment_invalid {
-                    diagnostics.ws21_detach_unmigrated_segments = diagnostics
-                        .ws21_detach_unmigrated_segments
-                        .saturating_add(1);
-                    diagnostics.detachment_unmigrated_segments =
-                        diagnostics.detachment_unmigrated_segments.saturating_add(1);
-                    for class_offset in 0..class_count {
-                        gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
-                    }
-                    continue;
                 }
 
                 gstu_lbs_s = next_gstu_lbs_s;
@@ -3587,7 +3568,6 @@ impl Ws10ChannelImpoundmentKernel {
             let mut xde_ft = vec![x_lower_ft; class_count];
             let mut gstde_lbs_s = vec![0.0_f64; class_count];
             let mut case12_nz = 0_usize;
-            let mut segment_route_invalid = false;
             for class_offset in 0..class_count {
                 let xrat = if x_lower_ft > WS10_ZERO_THRESHOLD {
                     x_upper_ft / x_lower_ft
@@ -3679,19 +3659,16 @@ impl Ws10ChannelImpoundmentKernel {
                 };
 
                 if !next_flux.is_finite() || next_flux < 0.0 {
-                    segment_route_invalid = true;
-                    break;
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from(format!(
+                            "ws20_case12_next_flux_{:04}",
+                            class_numbers[class_offset]
+                        )),
+                        next_flux,
+                    ));
                 }
                 next_gstu_lbs_s[class_offset] = next_flux;
-            }
-
-            if segment_route_invalid {
-                diagnostics.detachment_unmigrated_segments =
-                    diagnostics.detachment_unmigrated_segments.saturating_add(1);
-                for class_offset in 0..class_count {
-                    gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
-                }
-                continue;
             }
 
             if ws21_case34_enabled && saw_case2 && case12_nz < class_count {
@@ -4043,12 +4020,9 @@ impl Ws10ChannelImpoundmentKernel {
                 ws20_case1_segments: ws20_diagnostics.case1_segments,
                 ws20_case2_segments: ws20_diagnostics.case2_segments,
                 ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
-                ws20_detachment_unmigrated_segments: ws20_diagnostics
-                    .detachment_unmigrated_segments,
                 ws21_case3_segments: ws20_diagnostics.case3_segments,
                 ws21_case4_segments: ws20_diagnostics.case4_segments,
                 ws21_enddet_segments: ws20_diagnostics.enddet_segments,
-                ws21_detach_unmigrated_segments: ws20_diagnostics.ws21_detach_unmigrated_segments,
             });
         }
 
@@ -4191,11 +4165,9 @@ impl Ws10ChannelImpoundmentKernel {
             ws20_case1_segments: ws20_diagnostics.case1_segments,
             ws20_case2_segments: ws20_diagnostics.case2_segments,
             ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
-            ws20_detachment_unmigrated_segments: ws20_diagnostics.detachment_unmigrated_segments,
             ws21_case3_segments: ws20_diagnostics.case3_segments,
             ws21_case4_segments: ws20_diagnostics.case4_segments,
             ws21_enddet_segments: ws20_diagnostics.enddet_segments,
-            ws21_detach_unmigrated_segments: ws20_diagnostics.ws21_detach_unmigrated_segments,
         })
     }
 
@@ -4888,15 +4860,6 @@ impl Ws10ChannelImpoundmentKernel {
                 None,
             ),
             WritebackField::bounded(
-                Self::channel_wave_state_symbol(
-                    request.node_id,
-                    "ws20_detachment_unmigrated_segment_count",
-                ),
-                f64::from(sediment_publication.ws20_detachment_unmigrated_segments),
-                Some(0.0),
-                None,
-            ),
-            WritebackField::bounded(
                 Self::channel_wave_state_symbol(request.node_id, "ws21_case3_segment_count"),
                 f64::from(sediment_publication.ws21_case3_segments),
                 Some(0.0),
@@ -4911,15 +4874,6 @@ impl Ws10ChannelImpoundmentKernel {
             WritebackField::bounded(
                 Self::channel_wave_state_symbol(request.node_id, "ws21_enddet_segment_count"),
                 f64::from(sediment_publication.ws21_enddet_segments),
-                Some(0.0),
-                None,
-            ),
-            WritebackField::bounded(
-                Self::channel_wave_state_symbol(
-                    request.node_id,
-                    "ws21_detach_unmigrated_segment_count",
-                ),
-                f64::from(sediment_publication.ws21_detach_unmigrated_segments),
                 Some(0.0),
                 None,
             ),
