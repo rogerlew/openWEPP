@@ -59,6 +59,19 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260528-hillstab05-slope-residual-family-closure-001/`
+  - Purpose: close residual slope parser/runtime failure families surfaced by
+    HILLSTAB02 (`line 7 col 3` slope token parse, endpoint tolerance,
+    cross-OFE boundary mismatch, `HS-RUNTIME-E-023`), then rerun broad
+    hillslope cohorts with delta and disposition reporting.
+- `20260528-hillstab04-erod14-wave2-domain-closure-001/`
+  - Purpose: close residual `HKERNEL-EROD14-WAVE2-E-003` runtime-domain
+    failures surfaced by HILLSTAB02 using contract-first sequencing and
+    cohort rerun/delta evidence.
+- `20260528-hillstab03-wb16-peak-domain-closure-001/`
+  - Purpose: close residual `HKERNEL-WB16-PEAK-E-003` runtime-domain failures
+    surfaced by HILLSTAB02 using contract-first sequencing and cohort
+    rerun/delta evidence.
 - `20260528-hillstab02-parser-failure-remediation-and-stability-rerun-001/`
   - Purpose: remediate dominant parser failure families identified in
     HILLSTAB01 (`SOL-E-006`, `MAN-E-009`), run full workspace validation gates,
