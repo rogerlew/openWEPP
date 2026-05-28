@@ -649,6 +649,9 @@ pub fn build_watershed_runtime_surface_from_chaninp(
 /// - `ws10_channel_{id}_chneds`
 /// - `ws10_channel_{id}_ctlz`
 /// - `ws10_channel_{id}_ctln`
+/// - `ws10_channel_{id}_rccoef` (`icntrl==4` only)
+/// - `ws10_channel_{id}_rcexp` (`icntrl==4` only)
+/// - `ws10_channel_{id}_rcoset` (`icntrl==4` only)
 ///
 /// # Errors
 ///
@@ -719,6 +722,39 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
                 BoundarySymbol::from(symbol.as_str()),
                 BoundaryValue::scalar(value),
             );
+        }
+
+        let rating_curve_symbol = format!("ws10_channel_{node_id}_rating_curve");
+        match (definition.icntrl == 4, definition.rating_curve.as_ref()) {
+            (true, Some(rating_curve)) => {
+                for (suffix, value, allow_zero) in [
+                    ("rccoef", rating_curve.rccoef, false),
+                    ("rcexp", rating_curve.rcexp, false),
+                    ("rcoset", rating_curve.rcoset, true),
+                ] {
+                    let symbol = format!("ws10_channel_{node_id}_{suffix}");
+                    validate_ws10_channel_value(symbol.as_str(), value, Some(0.0), allow_zero)?;
+                    runtime_surface.state_surface.insert(
+                        BoundarySymbol::from(symbol.as_str()),
+                        BoundaryValue::scalar(value),
+                    );
+                }
+            }
+            (true, None) => {
+                return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                    symbol: rating_curve_symbol,
+                    value: f64::from(definition.icntrl),
+                    rule: "icntrl==4 requires rating-curve payload (rccoef, rcexp, rcoset)",
+                });
+            }
+            (false, Some(_)) => {
+                return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                    symbol: rating_curve_symbol,
+                    value: f64::from(definition.icntrl),
+                    rule: "rating-curve payload is only valid when icntrl==4",
+                });
+            }
+            (false, None) => {}
         }
     }
 
@@ -3011,7 +3047,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::similar_names)]
+    #[allow(clippy::similar_names, clippy::too_many_lines)]
     fn watershed_channel_runtime_seed_projects_ws10_symbols() {
         let parsed = parse_watershed_channel_from_str(
             STRICT_VALID_WATERSHED_CHANNEL,
@@ -3088,6 +3124,21 @@ mod tests {
             .get(&BoundarySymbol::from("ws10_channel_1_ctln"))
             .expect("ws10_channel_1_ctln should be present")
             .as_f64();
+        let rccoef = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_rccoef"))
+            .expect("ws10_channel_1_rccoef should be present")
+            .as_f64();
+        let rcexp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_rcexp"))
+            .expect("ws10_channel_1_rcexp should be present")
+            .as_f64();
+        let rcoset = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_rcoset"))
+            .expect("ws10_channel_1_rcoset should be present")
+            .as_f64();
 
         assert!((chnn - 0.04).abs() < 1e-12);
         assert!((ctlslp - 0.02).abs() < 1e-12);
@@ -3102,6 +3153,9 @@ mod tests {
         assert!((chneds - 0.0001).abs() < 1e-12);
         assert!((ctlz - 4.0).abs() < 1e-12);
         assert!((ctln - 0.04).abs() < 1e-12);
+        assert!((rccoef - 1.25).abs() < 1e-12);
+        assert!((rcexp - 1.5).abs() < 1e-12);
+        assert!((rcoset - 0.1).abs() < 1e-12);
     }
 
     #[test]
@@ -3205,6 +3259,123 @@ mod tests {
             error,
             WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
             if symbol == "ws10_channel_1_flgout"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_missing_rating_curve_payload_for_icntrl4() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].rating_curve = None;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("missing rating curve payload for icntrl=4 must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_rating_curve"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_rating_curve_payload_when_icntrl_not4() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].icntrl = 3;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("rating curve payload with icntrl!=4 must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_rating_curve"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_rccoef() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        let rating_curve = parsed.channels[0]
+            .rating_curve
+            .as_mut()
+            .expect("strict valid fixture should have rating curve");
+        rating_curve.rccoef = 0.0;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("non-positive rccoef must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_rccoef"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_rcexp() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        let rating_curve = parsed.channels[0]
+            .rating_curve
+            .as_mut()
+            .expect("strict valid fixture should have rating curve");
+        rating_curve.rcexp = 0.0;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("non-positive rcexp must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_rcexp"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_rcoset() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        let rating_curve = parsed.channels[0]
+            .rating_curve
+            .as_mut()
+            .expect("strict valid fixture should have rating curve");
+        rating_curve.rcoset = -0.1;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("negative rcoset must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_rcoset"
         ));
     }
 

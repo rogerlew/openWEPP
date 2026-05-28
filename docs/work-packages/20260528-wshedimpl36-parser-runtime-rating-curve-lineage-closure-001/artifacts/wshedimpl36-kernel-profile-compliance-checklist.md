@@ -1,11 +1,10 @@
 # WSHEDIMPL36 Kernel Profile Compliance Checklist
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: static+ran  
 Date: 2026-05-28
 
-## Checklist
-- [ ] science-contract authoring procedure applied
-- [ ] kernel-process contract profile requirements satisfied
-- [ ] contract-first sequencing preserved
-- [ ] typed fail-closed guards retained
+- [x] Contract-first sequence intent documented and package scope constrained to canonical `SC-*` authority.
+- [ ] Isolated pre-implementation gate execution completed before runtime edits (not run in isolation for this package).
+- [x] Typed guards preserved (no silent defaults).
+- [x] Required validation gates run and recorded.

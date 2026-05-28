@@ -178,6 +178,30 @@ fn strict_mode_rejects_missing_rating_curve_line_for_icntrl4() {
 }
 
 #[test]
+fn strict_mode_rejects_rating_curve_rccoef_non_positive() {
+    let err = parse_watershed_channel_from_path(
+        fixture_path("strict_rating_curve_rccoef_non_positive.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect_err("non-positive rccoef should fail");
+
+    assert!(matches!(err, WatershedChannelParseError::FieldRange { .. }));
+    assert_eq!(err.contract_error_id(), "CHN-E-005");
+}
+
+#[test]
+fn strict_mode_rejects_rating_curve_rcoset_negative() {
+    let err = parse_watershed_channel_from_path(
+        fixture_path("strict_rating_curve_rcoset_negative.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect_err("negative rcoset should fail");
+
+    assert!(matches!(err, WatershedChannelParseError::FieldRange { .. }));
+    assert_eq!(err.contract_error_id(), "CHN-E-005");
+}
+
+#[test]
 fn strict_mode_requires_chan_inp_sidecar_when_ipeak_gt_2() {
     let err = parse_watershed_channel_from_path(
         fixture_path("strict_sidecar_required.chn"),

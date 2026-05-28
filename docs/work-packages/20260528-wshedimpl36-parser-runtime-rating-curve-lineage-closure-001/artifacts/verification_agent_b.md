@@ -1,8 +1,11 @@
 # WSHEDIMPL36 Verification Agent B
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: ran  
 Date: 2026-05-28
 
-## Verification
-- queued
+## Ran
+- `cargo fmt --check` -> pass
+- `cargo clippy --workspace --all-targets -- -D warnings` -> pass
+- `cargo test --workspace` -> pass
+- `cargo deny check` -> pass
