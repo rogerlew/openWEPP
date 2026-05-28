@@ -59,6 +59,12 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260528-hillbench01-hillslope-cli-release-benchmark-optimization-001/`
+  - Purpose: benchmark `openwepp-cli-hill` release performance for single-OFE
+    and multi-OFE lanes, compare runtime against
+    `wepp_260430_baseline/release/wepp_260430_hill`, and land scoped
+    hillslope-CLI/runtime hot-path optimizations with repeatable before/after
+    evidence.
 - `20260511-openwepp-runner-bootstrap/`
   - Purpose: establish runner boundary, release-sidecar contract, and release
     lint gates before kernel implementation.

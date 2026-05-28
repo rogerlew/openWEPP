@@ -493,12 +493,8 @@ pub fn execute_hillslope_run(
     };
 
     let soil_versions = vec![soil.datver.numeric(); soil.ofes.len().max(1)];
-    let output_file_names: Vec<String> = required_output_paths(&runfile.output_config)
-        .into_iter()
-        .chain(optional_output_paths(&runfile.output_config))
-        .map(|path| file_name_string(&path))
-        .filter(|name| !name.is_empty())
-        .collect();
+    let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
+    let optional_outputs = optional_output_paths(&runfile.output_config);
 
     let (snow, frost, wepp_ui_mode_selection) = if request.legacy_sidecar_discovery {
         let mut excluded_files = vec![
@@ -509,7 +505,12 @@ pub fn execute_hillslope_run(
             file_name_string(&climate_path),
             "openwepp_hillslope_run_manifest.json".to_string(),
         ];
-        excluded_files.extend(output_file_names.clone());
+        excluded_files.extend(
+            std::iter::once(file_name_string(&output_pass))
+                .chain(std::iter::once(file_name_string(&output_loss)))
+                .chain(optional_outputs.iter().map(|path| file_name_string(path)))
+                .filter(|name| !name.is_empty()),
+        );
 
         let discovered_sidecars = discover_sidecars(&request.run_dir, &excluded_files)?;
 
@@ -790,7 +791,8 @@ pub fn execute_hillslope_run(
             runtime_surface.state_surface.remove(symbol);
             runtime_surface.flux_surface.remove(symbol);
         }
-        previous_climate_symbols = climate_surface.state_surface.keys().cloned().collect();
+        previous_climate_symbols.clear();
+        previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
         runtime_surface = merge_runtime_surfaces(runtime_surface, climate_surface);
 
         let simulation_year =
@@ -851,9 +853,6 @@ pub fn execute_hillslope_run(
         &climate_span,
         executed_day_count,
     )?;
-
-    let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
-    let optional_outputs = optional_output_paths(&runfile.output_config);
 
     for path in std::iter::once(&output_pass)
         .chain(std::iter::once(&output_loss))
@@ -2610,7 +2609,11 @@ fn build_h5_wat_output(wb13_rows: &[SimulationOwnedWb13Row]) -> Result<String, H
 fn build_hillslope_wat_rows(
     wb13_rows: &[SimulationOwnedWb13Row],
 ) -> Result<Vec<HillslopeWatRow>, HillslopeCliError> {
-    wb13_rows.iter().map(build_hillslope_wat_row).collect()
+    let mut rows = Vec::with_capacity(wb13_rows.len());
+    for wb13_row in wb13_rows {
+        rows.push(build_hillslope_wat_row(wb13_row)?);
+    }
+    Ok(rows)
 }
 
 fn build_hillslope_wat_row(

@@ -181,8 +181,12 @@ pub fn write_release_sidecar_for_binary(
     role: BinaryRole,
 ) -> Result<PathBuf, ReleaseMetadataError> {
     let _io_guard = lock_release_sidecar_io();
-    let metadata = build_release_metadata_document(binary_path, role)?;
     let sidecar_path = sidecar_path_for_binary(binary_path);
+    if sidecar_is_fresh_for_binary_unlocked(&sidecar_path, binary_path, role) {
+        return Ok(sidecar_path);
+    }
+
+    let metadata = build_release_metadata_document(binary_path, role)?;
     let json = serde_json::to_string_pretty(&metadata)
         .map_err(|source| ReleaseMetadataError::JsonSerialize { source })?;
     fs::write(&sidecar_path, json).map_err(|source| ReleaseMetadataError::Io {
@@ -192,6 +196,51 @@ pub fn write_release_sidecar_for_binary(
 
     validate_release_sidecar_unlocked(&sidecar_path)?;
     Ok(sidecar_path)
+}
+
+fn sidecar_is_fresh_for_binary_unlocked(
+    sidecar_path: &Path,
+    binary_path: &Path,
+    role: BinaryRole,
+) -> bool {
+    if !sidecar_path.is_file() {
+        return false;
+    }
+
+    let Ok(metadata) = validate_release_sidecar_unlocked(sidecar_path) else {
+        return false;
+    };
+
+    let Ok(observed_role) = required_str(&metadata, "binary_role") else {
+        return false;
+    };
+    if BinaryRole::parse(observed_role) != Some(role) {
+        return false;
+    }
+
+    let Ok(observed_binary_name) = required_str(&metadata, "binary_name") else {
+        return false;
+    };
+    if observed_binary_name != file_name_string(binary_path) {
+        return false;
+    }
+
+    let binary_mtime = match fs::metadata(binary_path) {
+        Ok(meta) => match meta.modified() {
+            Ok(modified) => modified,
+            Err(_) => return false,
+        },
+        Err(_) => return false,
+    };
+    let sidecar_mtime = match fs::metadata(sidecar_path) {
+        Ok(meta) => match meta.modified() {
+            Ok(modified) => modified,
+            Err(_) => return false,
+        },
+        Err(_) => return false,
+    };
+
+    sidecar_mtime >= binary_mtime
 }
 
 pub fn validate_release_sidecar(sidecar_path: &Path) -> Result<Value, ReleaseMetadataError> {
@@ -404,6 +453,17 @@ fn sidecar_path_for_binary(binary_path: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+    fn unique_temp_dir(prefix: &str) -> PathBuf {
+        let token = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be after unix epoch")
+            .as_nanos();
+        let dir = std::env::temp_dir().join(format!("{prefix}_{token}"));
+        fs::create_dir_all(&dir).expect("temp directory should be creatable");
+        dir
+    }
 
     #[test]
     fn release_name_validator_accepts_expected_patterns() {
@@ -435,5 +495,69 @@ mod tests {
             "other_260511",
             BinaryRole::Watershed
         ));
+    }
+
+    #[test]
+    fn write_release_sidecar_reuses_fresh_sidecar_without_rewrite() {
+        let dir = unique_temp_dir("release_sidecar_reuse");
+        let binary_path = dir.join("openwepp_260528_hill");
+        fs::write(&binary_path, b"fixture-binary-v1").expect("binary fixture should be writable");
+
+        let sidecar_path = write_release_sidecar_for_binary(&binary_path, BinaryRole::Hillslope)
+            .expect("first sidecar write should succeed");
+        let first_payload =
+            fs::read_to_string(&sidecar_path).expect("first sidecar payload should be readable");
+        let first_mtime = fs::metadata(&sidecar_path)
+            .expect("first sidecar metadata should be readable")
+            .modified()
+            .expect("first sidecar mtime should be readable");
+
+        std::thread::sleep(Duration::from_millis(5));
+        let second_sidecar_path =
+            write_release_sidecar_for_binary(&binary_path, BinaryRole::Hillslope)
+                .expect("second sidecar write should succeed");
+        let second_payload = fs::read_to_string(&second_sidecar_path)
+            .expect("second sidecar payload should be readable");
+        let second_mtime = fs::metadata(&second_sidecar_path)
+            .expect("second sidecar metadata should be readable")
+            .modified()
+            .expect("second sidecar mtime should be readable");
+
+        assert_eq!(sidecar_path, second_sidecar_path);
+        assert_eq!(first_payload, second_payload);
+        assert_eq!(
+            first_mtime, second_mtime,
+            "fresh sidecar should be reused without rewrite"
+        );
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn write_release_sidecar_rewrites_when_binary_is_newer() {
+        let dir = unique_temp_dir("release_sidecar_refresh");
+        let binary_path = dir.join("openwepp_260528_hill");
+        fs::write(&binary_path, b"fixture-binary-v1").expect("binary fixture should be writable");
+
+        let sidecar_path = write_release_sidecar_for_binary(&binary_path, BinaryRole::Hillslope)
+            .expect("initial sidecar write should succeed");
+        let first_payload =
+            fs::read_to_string(&sidecar_path).expect("first sidecar payload should be readable");
+
+        std::thread::sleep(Duration::from_millis(5));
+        fs::write(&binary_path, b"fixture-binary-v2")
+            .expect("binary fixture update should be writable");
+        std::thread::sleep(Duration::from_millis(5));
+        let _ = write_release_sidecar_for_binary(&binary_path, BinaryRole::Hillslope)
+            .expect("refreshed sidecar write should succeed");
+        let second_payload =
+            fs::read_to_string(&sidecar_path).expect("second sidecar payload should be readable");
+
+        assert_ne!(
+            first_payload, second_payload,
+            "newer binary should force sidecar refresh"
+        );
+
+        fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
     }
 }
