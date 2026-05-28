@@ -250,6 +250,97 @@ fn wshedimpl14_baseline_authoritative_cli_lane_replays_baseline_ebe_signature() 
     );
 }
 
+#[test]
+fn watershed_cli_rejects_missing_applicability_selector_block() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_missing_applicability");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+
+    let runfile_path = run_dir.join("case.run");
+    let runfile_payload =
+        fs::read_to_string(&runfile_path).expect("runfile payload should be readable");
+    let mutated_payload = runfile_payload.replace(
+        r"
+[inputs.applicability]
+chapter13_small_watershed_intent = true
+allow_partial_area_response = false
+allow_headcutting = false
+allow_bank_sloughing = false
+allow_perennial_streams = false
+",
+        "\n",
+    );
+    fs::write(&runfile_path, mutated_payload).expect("runfile payload should be writable");
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, None, false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should reject runfiles missing applicability selectors"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-040"),
+        "expected CLIWAT-E-040 applicability validator failure; stderr={stderr}"
+    );
+}
+
+#[test]
+fn watershed_cli_rejects_disallowed_perennial_stream_selector() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("ws_cli_invalid_applicability");
+    write_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+
+    let runfile_path = run_dir.join("case.run");
+    let runfile_payload =
+        fs::read_to_string(&runfile_path).expect("runfile payload should be readable");
+    let mutated_payload = runfile_payload.replace(
+        "allow_perennial_streams = false",
+        "allow_perennial_streams = true",
+    );
+    fs::write(&runfile_path, mutated_payload).expect("runfile payload should be writable");
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, None, false);
+    assert!(
+        !output.status.success(),
+        "watershed CLI should reject disallowed perennial stream selector"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("CLIWAT-E-040"),
+        "expected CLIWAT-E-040 applicability validator failure; stderr={stderr}"
+    );
+}
+
 fn watershed_execution_lock() -> &'static Mutex<()> {
     static RUN_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
     RUN_LOCK.get_or_init(|| Mutex::new(()))
@@ -766,6 +857,13 @@ pw0_slp = "pw0.slp"
 pw0_cli = "pw0.cli"
 pw0_sol = "pw0.sol"
 chaninp = "chan.inp"
+
+[inputs.applicability]
+chapter13_small_watershed_intent = true
+allow_partial_area_response = false
+allow_headcutting = false
+allow_bank_sloughing = false
+allow_perennial_streams = false
 "#,
     );
 

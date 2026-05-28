@@ -4,7 +4,7 @@ title: Surface Impoundment Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Daily hydraulic routing state/flux surfaces for surface impoundments
   - Stage-discharge, stage-area, and evaporation/infiltration update surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Sediment-routing consumers receiving effluent concentration and sediment-mass terms
   - Comparator/replay consumers using contract confidence signals for watershed investigations
 evidence_level: Static
-last_reviewed: 2026-05-27
+last_reviewed: 2026-05-28
 supersedes: []
 superseded_by: []
 ---
@@ -358,7 +358,7 @@ Minimum WS12 impoundment conformance vectors:
 |---|---|---|---|---|
 | GAP-IMPOUND-001 | Chapter-14 calibration models for `Ct`/`cd` are legacy-derived from CSTRS-generated datasets and pilot-scale studies; openWEPP has not yet completed dedicated revalidation for its target scenarios. | Sediment-trapping confidence is provisional for full production claims. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-002 | Concrete openWEPP boundary/API names and conversion carriers for full mixed-unit Chapter-14 symbol families are not yet fixed. | WS10/WS12 production paths pin initial runtime aliases (`ws10_impoundment_*`) but complete mixed-unit alias/conversion closure remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-IMPOUND-003 | Coupled canonical contracts (`SC-ROUTE-001`, `SC-SED-001`, `SC-SYSTEM-001`) are not yet all at draft `in_review` maturity. | Cross-contract closure of routing/sediment ownership boundaries remains provisional. | non-promotable | `[DIRECT][Static]` |
+| GAP-IMPOUND-003 | WSHEDIMPL39 cross-contract maturity check confirms coupled canonical contracts (`SC-ROUTE-001`, `SC-SED-001`, `SC-SYSTEM-001`) are all maintained at draft `in_review` maturity with explicit routing/sediment ownership boundaries. | Cross-contract maturity ambiguity is removed for impoundment coupling governance; residual impoundment promotability risk remains governed by domain-local rows (`GAP-IMPOUND-001`, `GAP-IMPOUND-002`, `GAP-IMPOUND-004`). | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-004 | Filter-fence/straw-bale outflow behavior depends on slurry/clogging assumptions that Chapter 14 flags as user-sensitive and not fully captured by current coefficients. | High-flow performance interpretation for those structure types retains elevated uncertainty. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-IMPOUND-005 | WSHED07 migrated WS12 parity-authoritative continuity behavior (RK4 stage integration, adaptive retry, and regime-transition retry controls from `imphnw/impflo/impmai`) into production impoundment continuity execution for currently supported inactive-structure coefficient domains. | WS12 surrogate-deauthorization and timestep-stability vectors are now active and passing for the supported coefficient domain; residual active-structure projection limits remain governed by `GAP-IMPOUND-006`. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-IMPOUND-006 | WSHED10 exported active branch payloads, WSHED11 projected reduced-family coefficients, and WSHED13 completed runtime projection of full WS12 outflow function families (`f01..f15` over `a,b,c,d,e,ha`) plus production 15-function min-controller composition closure from legacy `impint/imphnw/impflo` lineage. | Active-lane projection-gap/parity blocker is closed for WS12 runtime/kernel execution scope; residual watershed HOLD posture is governed by out-of-scope system-level gaps. | closed | `[DIRECT][Static] + [Ran]` |
@@ -379,3 +379,4 @@ Minimum WS12 impoundment conformance vectors:
 | `2026-05-27` | `9` | `Codex` | WSHEDIMPL10 amendment: expanded parser export coverage for active-structure branch payload families with contract-derived parser test evidence, and re-anchored `GAP-IMPOUND-006` to remaining runtime active-coefficient projection implementation scope. |
 | `2026-05-27` | `10` | `Codex` | WSHEDIMPL11 amendment: ratified reduced-family runtime active-structure coefficient projection policy from exported branch payloads and re-anchored `GAP-IMPOUND-006` from projection-gap fail-closed behavior to residual full 15-function active-lane parity closure scope. |
 | `2026-05-27` | `11` | `Codex` | WSHEDIMPL13 amendment: ratified runtime full-function-family (`f01..f15`) active-lane projection plus 15-function min-controller kernel composition closure, dispositioning `GAP-IMPOUND-006` to `closed` for WS12 active-lane parity scope. |
+| `2026-05-28` | `12` | `Codex` | WSHEDIMPL39 amendment: closed cross-contract maturity ambiguity row `GAP-IMPOUND-003` after confirming coupled route/sediment/system contracts are maintained at draft `in_review` maturity with explicit ownership boundaries. |

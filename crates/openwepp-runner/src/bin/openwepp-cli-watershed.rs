@@ -580,8 +580,24 @@ struct WatershedRunfileInputs {
     pw0_sol: String,
     #[serde(default)]
     hillslopes_block: Vec<WatershedHillslopeBlock>,
+    #[serde(default)]
+    applicability: WatershedRunfileApplicability,
     chaninp: Option<String>,
     tcr: Option<String>,
+}
+
+#[derive(Debug, Deserialize, Default)]
+struct WatershedRunfileApplicability {
+    #[serde(default)]
+    chapter13_small_watershed_intent: Option<bool>,
+    #[serde(default)]
+    allow_partial_area_response: Option<bool>,
+    #[serde(default)]
+    allow_headcutting: Option<bool>,
+    #[serde(default)]
+    allow_bank_sloughing: Option<bool>,
+    #[serde(default)]
+    allow_perennial_streams: Option<bool>,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -681,6 +697,7 @@ fn parse_watershed_runfile(
                 .to_string(),
         );
     }
+    validate_watershed_runfile_applicability(&runfile.inputs.applicability)?;
 
     let watershed_structure_path =
         resolve_required_runfile_path(run_file_path, &runfile.inputs.pw0_str, "inputs.pw0_str")?;
@@ -957,6 +974,61 @@ fn parse_watershed_runfile(
         runfile_warnings,
         outputs,
     })
+}
+
+fn validate_watershed_runfile_applicability(
+    applicability: &WatershedRunfileApplicability,
+) -> Result<(), String> {
+    let Some(chapter13_small_watershed_intent) = applicability.chapter13_small_watershed_intent
+    else {
+        return Err(
+            "CLIWAT-E-040 missing required inputs.applicability.chapter13_small_watershed_intent"
+                .to_string(),
+        );
+    };
+    if !chapter13_small_watershed_intent {
+        return Err("CLIWAT-E-040 inputs.applicability.chapter13_small_watershed_intent must be true to enforce Chapter-13 small-watershed intent".to_string());
+    }
+
+    let Some(allow_partial_area_response) = applicability.allow_partial_area_response else {
+        return Err(
+            "CLIWAT-E-040 missing required inputs.applicability.allow_partial_area_response"
+                .to_string(),
+        );
+    };
+    if allow_partial_area_response {
+        return Err("CLIWAT-E-040 inputs.applicability.allow_partial_area_response must be false (Chapter-13 excludes partial-area response)".to_string());
+    }
+
+    let Some(allow_headcutting) = applicability.allow_headcutting else {
+        return Err(
+            "CLIWAT-E-040 missing required inputs.applicability.allow_headcutting".to_string(),
+        );
+    };
+    if allow_headcutting {
+        return Err("CLIWAT-E-040 inputs.applicability.allow_headcutting must be false (Chapter-13 excludes headcutting)".to_string());
+    }
+
+    let Some(allow_bank_sloughing) = applicability.allow_bank_sloughing else {
+        return Err(
+            "CLIWAT-E-040 missing required inputs.applicability.allow_bank_sloughing".to_string(),
+        );
+    };
+    if allow_bank_sloughing {
+        return Err("CLIWAT-E-040 inputs.applicability.allow_bank_sloughing must be false (Chapter-13 excludes bank sloughing)".to_string());
+    }
+
+    let Some(allow_perennial_streams) = applicability.allow_perennial_streams else {
+        return Err(
+            "CLIWAT-E-040 missing required inputs.applicability.allow_perennial_streams"
+                .to_string(),
+        );
+    };
+    if allow_perennial_streams {
+        return Err("CLIWAT-E-040 inputs.applicability.allow_perennial_streams must be false (Chapter-13 excludes perennial streams)".to_string());
+    }
+
+    Ok(())
 }
 
 fn logical_watershed_structure_line_count(path: &Path) -> Result<usize, std::io::Error> {

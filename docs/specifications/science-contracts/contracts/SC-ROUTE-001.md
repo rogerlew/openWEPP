@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 39
+contract_version: 41
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -73,6 +73,7 @@ Out of scope:
 | REF-ROUTE-CH13-CONT | `chap13.pdf` §13.5.5 Eq. [13.5.17]-[13.5.18] | Quasi-steady sediment continuity and inlet/lateral sediment load assembly semantics. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-DETDEP | `chap13.pdf` §13.5.6 Eq. [13.5.19]-[13.5.29] | Detachment-capacity, deposition, and transport-capacity branch logic for segment updates. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-LIMIT | `chap13.pdf` §13.6 summary limitations | Applicability bounds: intended small agricultural watersheds and explicit limitations (no partial-area response, no headcutting, no bank sloughing, no perennial streams). | `[DIRECT][Static]` |
+| REF-ROUTE-RUNFILE-APPLICABILITY | `docs/contracts/openwepp-watershed-runfile-contract.md` (`inputs.applicability` selectors) + `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` (`CLIWAT-E-040`) | Concrete input-validator binding for Chapter-13 applicability declarations (`chapter13_small_watershed_intent=true`, excluded-process selectors=false) with typed fail-closed runtime behavior. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-CH4-COUPLING | `references/50201000/chap4.pdf` Eq. [4.2.1]-[4.2.9], [4.3.1]-[4.3.5], [4.4.27]-[4.4.29], [4.5.4], [4.5.6] | Channel hydrology uses hillslope infiltration/rainfall-excess and recession-infiltration relationships by explicit Chapter-13 linkage. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1-§5.4 and `chap13.pdf` §13.3 | Channel water-balance/percolation routines are stated as identical to hillslope routines. | `[DIRECT][Static]` |
 | REF-ROUTE-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical binary pass serialization field names and units consumed at routing boundary (`total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3[npart]`, `particle_diameter_m[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
@@ -120,7 +121,7 @@ Out of scope:
 | INV-ROUTE-010 | Detachment/deposition branch invariant: detachment capacity Eq. [13.5.19]/[13.5.20], deposition Eq. [13.5.21]-[13.5.22], and transport-capacity branch iteration semantics from §13.5.6 must be explicit; silent branch collapse is invalid. | hard-fail | REF-ROUTE-CH13-DETDEP | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-011 | Coupling completeness invariant: required hillslope/impoundment/channel handoff payloads (runon volumes, durations, peak flow, and HBP sediment payload family `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`) must be present and parseable before routing calculations proceed. | hard-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-CONT, REF-ROUTE-CH4-COUPLING, REF-ROUTE-CH5-COUPLING, REF-ROUTE-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-012 | Governance invariant: channel-routing outputs are watershed-integrated Tier-B surfaces; unresolved major discrepancies must route to investigation/disposition and cannot be silently promoted as Tier-A-equivalent confidence. | governance-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-DETDEP, REF-ROUTE-PHYS-BOUNDS | `[INFERENCE][Static]` |
-| INV-ROUTE-013 | Applicability-bound invariant: authoritative scope is limited to small agricultural watersheds (Chapter-13 summary intent) with explicit exclusions (`no partial area response`, `no headcutting`, `no bank sloughing`, `no perennial streams`); use outside these limits requires explicit governance disposition. | governance-fail | REF-ROUTE-CH13-LIMIT | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-013 | Applicability-bound invariant: authoritative scope is limited to small agricultural watersheds (Chapter-13 summary intent) with explicit exclusions (`no partial area response`, `no headcutting`, `no bank sloughing`, `no perennial streams`); watershed runfile intake must declare these selectors explicitly and fail closed when declarations are absent or violated. | hard-fail | REF-ROUTE-CH13-LIMIT, REF-ROUTE-RUNFILE-APPLICABILITY | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -138,7 +139,7 @@ Out of scope:
 | `INV-ROUTE-010` | runtime | Detachment/deposition branch evaluator | Typed hard error on branch rule violation or unresolved Tc iteration failure | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-011` | runtime | Watershed handoff payload validator | Typed hard error on missing/unparseable boundary payload fields | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-012` | governance | Review/disposition/verification + comparator policy gate | Promotion `HOLD` when Tier-B discrepancies are undispositioned or misclassified | Governance gate | `[INFERENCE][Static]` |
-| `INV-ROUTE-013` | governance | Contract scope review + promotion checklist | Promotion `HOLD` for workloads outside §13.6 applicability limits unless explicit risk disposition exists | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-013` | runtime + governance | Watershed runfile applicability validator (`inputs.applicability.*`) + promotion checklist | Typed hard error (`CLIWAT-E-040`) on missing/invalid applicability declarations; governance `HOLD` still required for any intentional out-of-scope workload claims | Governance + runtime gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -230,7 +231,7 @@ channel erosion internals.
 | Spatially-varied flow and erosion physics (`INV-ROUTE-008/009/010`) | segment hydrodynamics + erosion solver | Hard error on invalid flow/shear/transport branch behavior | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Coupling completeness (`INV-ROUTE-011`) | watershed boundary payload validation | Hard error on missing/unparseable required handoff fields | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Comparator-confidence governance (`INV-ROUTE-012`) | review/disposition/verification gate | Governance `HOLD` until Tier-B discrepancies are explicitly dispositioned | Governance gate | `[INFERENCE][Static]` |
-| Applicability limits (`INV-ROUTE-013`) | scope review + promotion checklist | Governance `HOLD` for use beyond Chapter-13 stated applicability limits without explicit risk acceptance | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Applicability limits (`INV-ROUTE-013`) | watershed runfile applicability validation + scope review | Typed hard error on missing/violating applicability selectors; governance `HOLD` for intentional out-of-scope workloads without explicit risk acceptance | Governance + runtime gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -432,6 +433,23 @@ Minimum WS11 routing conformance vectors:
    hillslope `route.for` presence/absence as a WS10 branch-conformance signal;
    hillslope branch parity is governed by `SC-SED-001` migration gaps.
 
+## WSHEDIMPL39 Chapter-13 Applicability Validator Addendum
+
+1. Watershed runfile intake is the canonical runtime validator surface for
+   Chapter-13 applicability declarations under this contract.
+2. Runtime intake must require explicit selectors in
+   `inputs.applicability`:
+   - `chapter13_small_watershed_intent = true`,
+   - `allow_partial_area_response = false`,
+   - `allow_headcutting = false`,
+   - `allow_bank_sloughing = false`,
+   - `allow_perennial_streams = false`.
+3. Missing selectors or disallowed selector values are typed hard-fail routing
+   admission errors (`CLIWAT-E-040`); no silent defaults/coercion are allowed.
+4. Applicability selector closure does not authorize out-of-scope workloads; it
+   provides explicit runtime binding for declared constraints and retains
+   governance risk-disposition requirements for exceptional use.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -440,7 +458,7 @@ Minimum WS11 routing conformance vectors:
 | GAP-ROUTE-002 | Wave-0 erosion-lane alias-ownership ambiguity for required routing boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-003 | EROD12 ratifies cross-domain ownership and guard semantics for required erosion-lane routing boundaries across `SC-HYDRAULICS-001`, `SC-SED-001`, `SC-ROUTE-001`, and `SC-SYSTEM-001`; downstream WS10/impoundment ownership paths remain explicitly guarded by their companion contracts. | Required Wave-0 ownership ambiguity is closed for routing-coupled erosion boundaries; non-Wave-0 scope/applicability holds remain governed by other gap rows. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-004 | Chapter-13 mixed-unit and regression-derived formulation caveats remain and are explicitly retained as documented limitations with governance risk acceptance. | Unit-conversion and regression-lineage interpretation risk remains and requires explicit review in sensitive analyses; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-ROUTE-005 | Runtime workload guards for Chapter-13 applicability limits (small watershed intent and excluded process classes) are not yet bound to a concrete input-contract validator surface. | Applicability enforcement is governance-only until companion system/input contracts add explicit runtime selectors/guards. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-005 | WSHEDIMPL39 bound Chapter-13 applicability limits to concrete watershed runfile validator selectors (`inputs.applicability.*`) with typed fail-closed intake errors (`CLIWAT-E-040`) for missing/invalid declarations. | Runtime applicability admission is now explicit and fail-closed; intentional out-of-scope workload claims still require governance risk disposition. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-006 | WS11 wave-routing branch authority is anchored to pinned legacy static-code provenance (`wshcqi`, `wshdrv`, `wshpek`, `wshchr`) pending companion documentation that cross-indexes non-chapter method-lineage references in one canonical note. | Migration authority is executable and explicit, but review burden for non-chapter lineage remains elevated until companion documentation lands. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-007 | Legacy provenance confusion between watershed routing and hillslope `CONTIN -> ROUTE` branch logic required explicit scope partitioning; EROD16 closes the documentation ambiguity but downstream hillslope runtime parity remains governed by `SC-SED-001` queue stages. | Prevents false attribution of hillslope branch parity status to WS10 routing closure decisions. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-ROUTE-008 | WSHEDIMPL37 migrated baseline-authoritative WS11 runon/runoff routine-chain behavior (`wshcqi/wshirs/wshrun`) into production WS10 routing lanes, including runon-volume partition publication (`rvolat`, `rvotop`, `rvolon`), duration-max continuity (`durlat`, `durtop`, `durrunon`, `durchan`, `watdur`), runoff-case publication (`ws11_runoff_case`, `ws11_qci`, `ws11_qcf`, `ws11_runvol`, `tl`, `rofc`), and explicit `ipeak` threshold/wave-routing continuity vectors. Combined with WSHED05 `ipeak > 2` wave-state publication closure (`q1/qin/qlat/c0..c4`), WS11 route-chain parity for this gap scope is complete. | WS11 hydrology routine-chain parity closure is now explicit for watershed route-chain scope; residual routing HOLD posture is governed by remaining channel sediment process-parity blocker `GAP-ROUTE-009`. | closed | `[DIRECT][Static] + [Ran]` |
@@ -491,3 +509,4 @@ Minimum WS11 routing conformance vectors:
 | `2026-05-28` | `38` | `Codex` | WSHEDIMPL36 amendment: reconciled parser/runtime rating-curve control lineage by projecting `ws10_channel_{id}_{rccoef,rcexp,rcoset}` for `icntrl==4` lanes into WS10 runtime seed surfaces with explicit fail-closed payload-shape/domain semantics (`rccoef>0`, `rcexp>0`, `rcoset>=0`), while preserving non-promotable `GAP-ROUTE-009` posture for remaining full `chnero/chnrt` parity closure families. |
 | `2026-05-28` | `39` | `Codex` | WSHEDIMPL37 amendment: migrated baseline-authoritative WS11 runon/runoff route-chain behavior (`wshcqi/wshirs/wshrun`) into WS10 production runtime lanes with explicit runon partition, duration-max, runoff-case, and `ipeak` threshold/wave-routing continuity publication, dispositioning `GAP-ROUTE-008` to `closed` while preserving non-promotable `GAP-ROUTE-009` posture for remaining full `chnero/chnrt` parity closure families. |
 | `2026-05-28` | `40` | `Codex` | WSHEDIMPL38 amendment: closed `GAP-ROUTE-009` by retiring unresolved-detachment diagnostics symbols and replacing residual WS20/WS21 invalid-segment fallback continuation with typed fail-closed domain guards (`ws20_case12_next_flux_{class:04}`, `ws21_case3_next_flux_{class:04}`, `ws21_case4_next_flux_{class:04}`) under canonical `chnero/chnrt/detach` migration authority. |
+| `2026-05-28` | `41` | `Codex` | WSHEDIMPL39 amendment: bound Chapter-13 applicability limits to concrete watershed runfile selectors (`inputs.applicability.*`) with typed fail-closed intake error `CLIWAT-E-040`, added canonical runtime-validator authority anchor, and dispositioned `GAP-ROUTE-005` to `closed`. |

@@ -190,7 +190,7 @@ fn erod11_contract_addenda_and_gap_posture_are_present() {
     // EROD12 closed the Wave-0 cross-domain ownership blocker row.
     assert_gap_status(&route, "GAP-ROUTE-003", "closed");
     assert_gap_status(&route, "GAP-ROUTE-004", "closed");
-    assert_gap_status(&route, "GAP-ROUTE-005", "non-promotable");
+    assert_gap_status(&route, "GAP-ROUTE-005", "closed");
 
     let watbal = fs::read_to_string(format!(
         "{repo_root}/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md"

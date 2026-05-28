@@ -70,14 +70,14 @@ fn erod12_wave0_cross_domain_blockers_are_closed() {
 }
 
 #[test]
-fn erod12_non_wave0_holds_remain_explicit() {
+fn erod12_non_wave0_posture_remains_explicit() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
 
     let route = fs::read_to_string(format!(
         "{repo_root}/docs/specifications/science-contracts/contracts/SC-ROUTE-001.md"
     ))
     .expect("SC-ROUTE-001 must be readable");
-    assert_gap_status(&route, "GAP-ROUTE-005", "non-promotable");
+    assert_gap_status(&route, "GAP-ROUTE-005", "closed");
 
     let runoffpart = fs::read_to_string(format!(
         "{repo_root}/docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md"
@@ -95,5 +95,5 @@ fn erod12_non_wave0_holds_remain_explicit() {
         "{repo_root}/docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md"
     ))
     .expect("SC-SYSTEM-001 must be readable");
-    assert_gap_status(&system, "GAP-SYSTEM-001", "non-promotable");
+    assert_gap_status(&system, "GAP-SYSTEM-001", "promotable-with-risk");
 }

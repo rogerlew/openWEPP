@@ -64,6 +64,24 @@ Top-level required keys:
 - `pw0_cli` (`.cli` path)
 - `pw0_sol` (`.sol` path)
 - `hillslopes_block` (array of hillslope-pass bindings; must be non-empty)
+- `applicability` (Chapter-13 applicability selector table; fail-closed)
+
+`[inputs.applicability]` required keys:
+
+- `chapter13_small_watershed_intent` (`true` required)
+- `allow_partial_area_response` (`false` required)
+- `allow_headcutting` (`false` required)
+- `allow_bank_sloughing` (`false` required)
+- `allow_perennial_streams` (`false` required)
+
+Applicability selector guard semantics:
+
+- missing required applicability selectors are typed hard-fail errors
+  (`CLIWAT-E-040`),
+- any disallowed selector value (`allow_* = true` or
+  `chapter13_small_watershed_intent = false`) is a typed hard-fail error
+  (`CLIWAT-E-040`),
+- no implicit defaults/coercion are allowed for this table.
 
 `inputs.hillslopes_block[]` required keys:
 
@@ -180,6 +198,13 @@ pw0_cli = "runs/pw0.cli"
 pw0_sol = "runs/pw0.sol"
 chaninp = "runs/chan.inp"
 tcr = "runs/tcr.txt"
+
+[inputs.applicability]
+chapter13_small_watershed_intent = true
+allow_partial_area_response = false
+allow_headcutting = false
+allow_bank_sloughing = false
+allow_perennial_streams = false
 
 [[inputs.hillslopes_block]]
 hillslope_id = 7

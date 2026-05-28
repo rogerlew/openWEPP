@@ -924,6 +924,12 @@ Authorized packages:
     (`GAP-ROUTE-009`/`GAP-SED-006`/`GAP-SYSTEM-008`), run hold-lift evidence
     gates, and publish disposition-grade GO/HOLD outcome with explicit gap
     closure ownership.
+- `20260528-wshedimpl39-out-of-scope-gap-closure-001/`
+  - Purpose: execute WSHEDIMPL39 to close WSHEDIMPL38 out-of-scope hold
+    blockers by binding Chapter-13 applicability limits to concrete watershed
+    runfile validator selectors (`GAP-ROUTE-005`) and dispositioning residual
+    system-level governance/alias posture (`GAP-SYSTEM-001`,
+    `GAP-SYSTEM-002`) with contract-first evidence.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

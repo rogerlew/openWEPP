@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 60
+contract_version: 62
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -176,25 +176,26 @@ Out of scope:
 ## Symbol Alias Map
 
 Canonical symbols follow chapter authority notation. openWEPP boundary/API field
-names for system-integration surfaces are not finalized in this cycle; identity
-aliases remain mandatory placeholders until implementation contracts provide
-explicit divergent names.
+names for active watershed integration surfaces are now fixed to ARCH22 typed
+symbol families. Source-model identity aliases remain only where fields are
+consumed directly as parser payload terms instead of projected runtime symbols.
 
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
-| `durstorm`, `tc_h`, `alpha`, `qdepth`, `rof`, `qp` | identity names | hillslope pass-file payload | chapter-declared units preserved | `[DIRECT][Static]` |
-| `total_detachment_kg`, `total_deposition_kg` | identity names | hillslope sediment endpoint payload | `kg` preserved | `[DIRECT][Static]` |
-| `particle_class_count` | identity name | particle-class vector cardinality payload | count semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `sediment_concentration_kg_m3,k`, `particle_diameter_m_k`, `particle_flow_fraction_k` | identity names | particle-class concentration/diameter/fraction vectors | `kg m^-3`, `m`, and `fraction` preserved | `[DIRECT][Static]` |
-| `rov`, `rol`, `roi`, `rod`, `Ach` | identity names | channel runon-runoff assembly | `m^3`/`m`/`m^2` preserved | `[DIRECT][Static]` |
-| `durc`, `durrunon`, `durchan`, `durirrig` | identity names | channel event-duration harmonization surfaces | `s` -> `s` | `[DIRECT][Static]` |
-| `qci`, `qcf`, `tl` | identity names | channel runoff-case and transmission-loss surfaces | `m` and `m^3` preserved | `[DIRECT][Static]` |
-| `tb`, `tp`, `Aw`, `qa`, `qpi` | identity names | synthetic hydrograph merge surfaces | `min`, `m^2`, `m`, `m^3 s^-1` preserved | `[DIRECT][Static]` |
-| `qpo`, `tc`, `tcc`, `tcs`, `tci` | identity names | channel/watershed outlet peak-flow surface | `m^3 s^-1` and `h` preserved | `[DIRECT][Static]` |
+| `durstorm`, `tc_h`, `alpha`, `qdepth`, `rof` | identity names | hillslope pass-file payload (source-model intake) | chapter-declared units preserved | `[DIRECT][Static]` |
+| `qp`, `watdur` | `hs{ID}_peakro`, `hs{ID}_watdur` (`WatershedProductionStateSymbol::{HillslopeContributorPeak,HillslopeContributorDuration}`) | contributor peak/duration runtime ingress | `m^3 s^-1`, `s` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `total_detachment_kg`, `total_deposition_kg` | `hs{ID}_total_detachment_kg`, `hs{ID}_total_deposition_kg` (`WatershedProductionStateSymbol::{HillslopeContributorTotalDetachmentKg,HillslopeContributorTotalDepositionKg}`) | contributor sediment-total runtime ingress | `kg` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `particle_class_count` | `hs{ID}_particle_class_count` (`WatershedProductionStateSymbol::HillslopeContributorParticleClassCount`) | contributor class-cardinality runtime ingress | count semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `sediment_concentration_kg_m3,k`, `particle_diameter_m_k`, `particle_flow_fraction_k` | `hs{ID}_sediment_concentration_kg_m3_{class:04}`, `hs{ID}_particle_diameter_m_{class:04}`, `hs{ID}_particle_flow_fraction_{class:04}` (`WatershedProductionStateSymbol` class-index families) | contributor per-class runtime ingress | `kg m^-3`, `m`, and `fraction` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `rov`, `rol`, `roi`, `rod`, `Ach` | identity names | channel runon-runoff assembly internals | `m^3`/`m`/`m^2` preserved | `[DIRECT][Static]` |
+| `durc`, `durrunon`, `durchan`, `durirrig` | identity names | channel event-duration harmonization internals | `s` preserved | `[DIRECT][Static]` |
+| `qci`, `qcf`, `tl` | identity names | channel runoff-case and transmission-loss internals | `m` and `m^3` preserved | `[DIRECT][Static]` |
+| `tb`, `tp`, `Aw`, `qa`, `qpi` | identity names | synthetic hydrograph merge internals | `min`, `m^2`, `m`, `m^3 s^-1` preserved | `[DIRECT][Static]` |
+| `qpo`, `durrof`, `roff` | `ws10_channel_{id}_qpo`, `ws10_channel_{id}_durrof`, `ws10_channel_{id}_roff` (`WatershedProductionStateSymbol::ChannelNode`, `WatershedProductionFluxSymbol::ChannelNode`) | channel-node runtime publication/consumption boundaries | `m^3 s^-1`, `s`, `m^3` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `H`, `Hfull`, `deltat`, `Qinf`, `Qo`, `durout`, `Hnext`, `outflow_volume` | `ws10_impoundment_{id}_{h,hfull,deltat,qinf,qo,durout,hnext,outflow_volume}` (`WatershedProductionStateSymbol::ImpoundmentNode`, `WatershedProductionFluxSymbol::ImpoundmentNode`) | impoundment-node runtime publication/consumption boundaries | `ft`, `s`, `ft^3 s^-1`, and volume semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ep`, `Es`, `Er` | `Ep`, `Es`, `Er` (identity) | WB13 ET component publication surfaces | `mm` daily publication units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Total-Soil`, `SoilWaterTotal` | `Total-Soil`, `SoilWaterTotal` (identity; legacy semantic alias `Total-Soil Water` accepted in comparator tooling only) | WB13 aggregate soil-water publication surfaces | `mm` publication units preserved with WB11 lineage continuity | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `Qi`, `Qo`, `H`, `Aimp`, `Qtotal` | identity names | impoundment hydraulic routing surfaces | `ft^3 s^-1`, `ft`, `ft^2` preserved | `[DIRECT][Static]` |
-| `M`, `Ci`, `Co`, `Dep` | identity names | impoundment sediment-mass surfaces | `lb` and `lb ft^-3` preserved | `[DIRECT][Static]` |
+| `Qi`, `Aimp`, `Qtotal`, `M`, `Ci`, `Co`, `Dep` | identity names | impoundment hydraulic/sediment process internals | chapter-declared units preserved | `[DIRECT][Static]` |
 
 ## Allowed Degenerate States
 
@@ -695,8 +696,8 @@ Minimum WS12 integration vectors:
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
-| GAP-SYSTEM-001 | Companion contracts for channel hydraulics/erosion (`SC-HYDRAULICS-001`, `SC-SED-001`), watershed routing (`SC-ROUTE-001`), and impoundment internals (`SC-IMPOUND-001`) remain in-review with open non-Wave-0 promotability gaps and staged production-kernel completion. | Full system-boundary promotion remains provisional for watershed-wide release, while EROD12 Wave-0 ownership/guard closure for required erosion boundaries is explicit. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-SYSTEM-002 | Most system alias mappings remain identity-only because concrete openWEPP boundary field names are still being finalized outside WB13 ET/soil-water publication surfaces. | WB13 ET/soil-water alias obligations are explicit, but full system-boundary symbol continuity to implementation surfaces remains incomplete. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-001 | WSHEDIMPL39 re-baselined companion-contract dependency posture: required cross-domain ownership/guard closure for watershed assembly is explicit, while remaining companion non-promotable gaps are domain-local (for example impoundment calibration/alias refinement rows) rather than unresolved system-boundary ownership ambiguity. | System-boundary promotion is no longer blocked by generic companion-maturity ambiguity; residual companion domain risks remain tracked in owning contracts and require explicit review when claiming full production readiness. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-002 | WSHEDIMPL39 ratified concrete ARCH22 alias mappings for active watershed integration boundaries (hillslope contributor payload ingress plus channel/impoundment runtime publication families), replacing prior identity-placeholder posture for these surfaces. | System-boundary symbol continuity for active runtime integration surfaces is now explicit and contract-bound; identity aliases that remain are source-model/internal process terms, not unresolved boundary-name blockers. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-003 | Chapter 13 notes that separate climate files for hillslope and channel/impoundment components are possible but "not been tested" in cited text. | Cross-file forcing consistency risk remains for mixed-forcing configurations. | promotable-with-risk | `[DIRECT][Static]` |
 | GAP-SYSTEM-004 | CREAMS outlet peak-flow method is statistical and chapter-cited dataset support is for watersheds in the `70 ha` to `6200 ha` range. | Method-selection risk exists when applied outside referenced dataset conditions. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SYSTEM-005 | WSHEDIMPL14 implemented a baseline-authoritative end-to-end `openwepp-cli-watershed` comparator lane in `watershed_cli_behavior_contract`, seeded from baseline `ebe_pw0` fixture authority and asserting dispatch/branch/publication continuity at emitted parquet boundaries. | System integration comparator-lane closure is now explicit and executable for baseline-authoritative watershed CLI end-to-end evidence scope. | closed | `[DIRECT][Static] + [Ran]` |
@@ -770,3 +771,4 @@ Minimum WS12 integration vectors:
 | `2026-05-28` | `59` | `Codex` | WSHEDIMPL36 amendment: reconciled parser/runtime rating-curve control lineage by projecting `ws10_channel_{id}_{rccoef,rcexp,rcoset}` for `icntrl==4` lanes into WS10 runtime seed surfaces with explicit fail-closed payload-shape/domain semantics (`rccoef>0`, `rcexp>0`, `rcoset>=0`), while preserving non-promotable `GAP-SYSTEM-008` posture for remaining full `chnero/chnrt` parity closure families. |
 | `2026-05-28` | `60` | `Codex` | WSHEDIMPL37 amendment: added trace linkage for companion WS11 hydrology route-chain parity closure (`wshcqi/wshirs/wshrun`) and `GAP-ROUTE-008` disposition while preserving non-promotable `GAP-SYSTEM-008` posture for remaining full `chnero/chnrt` parity closure families. |
 | `2026-05-28` | `61` | `Codex` | WSHEDIMPL38 amendment: closed `GAP-SYSTEM-008` by retiring unresolved-detachment diagnostics symbols and replacing residual WS20/WS21 invalid-segment fallback continuation with typed fail-closed domain guard behavior under canonical channel sediment migration authority. |
+| `2026-05-28` | `62` | `Codex` | WSHEDIMPL39 amendment: dispositioned system out-of-scope follow-up blockers by re-baselining companion-dependency posture (`GAP-SYSTEM-001` -> promotable-with-risk) and ratifying concrete ARCH22 alias mappings for active watershed integration boundaries (`GAP-SYSTEM-002` -> closed). |
