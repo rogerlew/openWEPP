@@ -1,11 +1,13 @@
 # WSHEDIMPL37 Kernel Profile Compliance Checklist
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: static+ran  
 Date: 2026-05-28
 
 ## Checklist
-- [ ] science-contract authoring procedure applied
-- [ ] kernel-process contract profile requirements satisfied
-- [ ] contract-first sequencing preserved
-- [ ] typed fail-closed guards retained
+- [x] science-contract authoring procedure applied
+- [x] kernel-process contract profile requirements satisfied
+- [x] contract-first sequencing preserved for final WSHEDIMPL37 amendments/tests/runtime updates
+- [ ] Isolated pre-implementation gate execution completed before first runtime edits (resumed session state already contained runtime edits)
+- [x] typed fail-closed guards retained (no silent defaults/clamping)
+- [x] required validation gates run and recorded

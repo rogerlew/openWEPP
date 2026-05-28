@@ -1,7 +1,7 @@
 # 20260528-wshedimpl37-ws11-route-chain-wshcqi-wshirs-wshrun-closure-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-05-28
 - timezone: UTC
 - decision: HOLD

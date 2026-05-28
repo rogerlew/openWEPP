@@ -460,6 +460,98 @@ fn ws11_contract_conformance_distinguishes_ipeak_branches() {
 }
 
 #[test]
+fn wshedimpl37_contract_wshcqi_runon_lineage_publishes_partitioned_volumes_and_duration_max() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl37 runon-lineage vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let rvolat = state_value(&report, "ws10_channel_1_rvolat");
+    let rvotop = state_value(&report, "ws10_channel_1_rvotop");
+    let rvolon = state_value(&report, "ws10_channel_1_rvolon");
+    let durrunon = state_value(&report, "ws10_channel_1_durrunon");
+    let durlat = state_value(&report, "ws10_channel_1_durlat");
+    let durtop = state_value(&report, "ws10_channel_1_durtop");
+    let durchan = state_value(&report, "ws10_channel_1_durchan");
+    let watdur = state_value(&report, "ws10_channel_1_watdur");
+
+    assert!((rvolat - 600.0).abs() <= 1.0e-9);
+    assert!((rvotop - 0.0).abs() <= 1.0e-12);
+    assert!((rvolon - (rvolat + rvotop)).abs() <= 1.0e-9);
+    assert!((durlat - 300.0).abs() <= 1.0e-12);
+    assert!((durtop - 0.0).abs() <= 1.0e-12);
+    assert!((durrunon - durlat.max(durtop)).abs() <= 1.0e-12);
+    assert!((durchan - 600.0).abs() <= 1.0e-12);
+    assert!((watdur - durrunon.max(durchan)).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshedimpl37_contract_wshirs_threshold_branch_zeroes_ipeak1_outputs_for_tiny_runvol() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(1.0));
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("cbase"), BoundaryValue::scalar(0.0));
+    for hillslope_id in [1_u32, 2, 3] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_peakro")),
+            BoundaryValue::scalar(1.0e-9),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_watdur")),
+            BoundaryValue::scalar(1.0),
+        );
+    }
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl37 threshold vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    assert!((state_value(&report, "ws10_channel_1_ws11_runoff_case") - 4.0).abs() <= 1.0e-12);
+    assert!((state_value(&report, "ws10_channel_1_qpo") - 0.0).abs() <= 1.0e-12);
+    assert!((state_value(&report, "ws10_channel_1_durrof") - 0.0).abs() <= 1.0e-12);
+    assert!((flux_value(&report, "ws10_channel_1_roff") - 0.0).abs() <= 1.0e-12);
+}
+
+#[test]
+fn wshedimpl37_contract_wshrun_routes_incoming_hydrograph_when_local_runoff_absent_for_ipeak4() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("cbase"), BoundaryValue::scalar(0.0));
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl37 non-local-runoff wave-routing vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    assert!((state_value(&report, "ws10_channel_1_rofc") - 0.0).abs() <= 1.0e-12);
+    assert!((state_value(&report, "ws10_channel_1_ws11_runoff_case") - 3.0).abs() <= 1.0e-12);
+    assert!(state_value(&report, "ws10_channel_1_rvolon") > 0.001);
+    assert!(state_value(&report, "ws10_channel_1_qpo") > 0.0);
+    assert!(has_state_symbol(&report, "ws10_channel_1_q1"));
+    assert!(has_state_symbol(&report, "ws10_channel_1_qin"));
+    assert!(has_state_symbol(&report, "ws10_channel_1_qlat"));
+}
+
+#[test]
 fn wshed03_contract_kw_mc_vector_requires_wave_routing_state_family_publication() {
     for ipeak in [3.0, 4.0] {
         let mut surface = seeded_ws11_surface();

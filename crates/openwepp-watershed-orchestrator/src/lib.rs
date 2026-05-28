@@ -336,7 +336,10 @@ struct Ws19ChannelSedimentPublication {
 struct Ws20IncomingPeakPartition {
     hillslope_peak_cms: f64,
     dependency_peak_cms: f64,
-    duration_s: f64,
+    hillslope_volume_m3: f64,
+    dependency_volume_m3: f64,
+    hillslope_duration_s: f64,
+    dependency_duration_s: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -1715,14 +1718,32 @@ impl Ws10ChannelImpoundmentKernel {
     ) -> Result<Ws20IncomingPeakPartition, Ws10GuardError> {
         let mut hillslope_peak = 0.0_f64;
         let mut dependency_peak = 0.0_f64;
-        let mut incoming_duration = 0.0_f64;
-
+        let mut hillslope_volume_m3 = 0.0_f64;
+        let mut dependency_volume_m3 = 0.0_f64;
+        let mut hillslope_duration_s = 0.0_f64;
+        let mut dependency_duration_s = 0.0_f64;
         for &hillslope_id in request.contributor_hillslopes {
             let (peak, duration) =
                 Self::read_hillslope_peak_payload(request, node_class, hillslope_id)?;
             let _ = Self::read_hillslope_sediment_payload(request, node_class, hillslope_id)?;
+            let volume = peak * duration;
+            if !volume.is_finite() {
+                return Err(Self::non_finite(
+                    node_class,
+                    BoundarySymbol::from(format!("hs{hillslope_id}_runon_volume")),
+                    volume,
+                ));
+            }
+            if volume < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("hs{hillslope_id}_runon_volume")),
+                    volume,
+                ));
+            }
             hillslope_peak += peak;
-            incoming_duration = incoming_duration.max(duration);
+            hillslope_volume_m3 += volume;
+            hillslope_duration_s = hillslope_duration_s.max(duration);
         }
 
         for dependency in &request.dependency_nodes {
@@ -1733,8 +1754,24 @@ impl Ws10ChannelImpoundmentKernel {
                 dependency_class,
                 dependency_id,
             )?;
+            let volume = peak * duration;
+            if !volume.is_finite() {
+                return Err(Self::non_finite(
+                    node_class,
+                    BoundarySymbol::from(format!("dependency_{dependency}_runon_volume")),
+                    volume,
+                ));
+            }
+            if volume < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from(format!("dependency_{dependency}_runon_volume")),
+                    volume,
+                ));
+            }
             dependency_peak += peak;
-            incoming_duration = incoming_duration.max(duration);
+            dependency_volume_m3 += volume;
+            dependency_duration_s = dependency_duration_s.max(duration);
         }
 
         let incoming_peak = hillslope_peak + dependency_peak;
@@ -1753,6 +1790,7 @@ impl Ws10ChannelImpoundmentKernel {
                 incoming_peak,
             ));
         }
+        let incoming_duration = hillslope_duration_s.max(dependency_duration_s);
         if !incoming_duration.is_finite() {
             return Err(Self::non_finite(
                 node_class,
@@ -1771,7 +1809,10 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(Ws20IncomingPeakPartition {
             hillslope_peak_cms: hillslope_peak,
             dependency_peak_cms: dependency_peak,
-            duration_s: incoming_duration,
+            hillslope_volume_m3,
+            dependency_volume_m3,
+            hillslope_duration_s,
+            dependency_duration_s,
         })
     }
 
@@ -1780,9 +1821,12 @@ impl Ws10ChannelImpoundmentKernel {
         node_class: Ws10NodeClass,
     ) -> Result<(f64, f64), Ws10GuardError> {
         let partition = Self::assemble_incoming_peak_partition(request, node_class)?;
+        let incoming_duration = partition
+            .hillslope_duration_s
+            .max(partition.dependency_duration_s);
         Ok((
             partition.hillslope_peak_cms + partition.dependency_peak_cms,
-            partition.duration_s,
+            incoming_duration,
         ))
     }
 
@@ -4457,7 +4501,6 @@ impl Ws10ChannelImpoundmentKernel {
 
         let peak_partition = Self::assemble_incoming_peak_partition(request, node_class)?;
         let incoming_peak = peak_partition.hillslope_peak_cms + peak_partition.dependency_peak_cms;
-        let incoming_duration = peak_partition.duration_s;
 
         let routing_gain = (1.0 + control_slope) / (1.0 + roughness);
         if !routing_gain.is_finite() || routing_gain <= 0.0 {
@@ -4486,75 +4529,167 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let event_duration = incoming_duration.max(dtchr);
-        if !event_duration.is_finite() || event_duration <= 0.0 {
+        let rvolat = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("rvolat"),
+            peak_partition.hillslope_volume_m3,
+        )?;
+        let rvotop = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("rvotop"),
+            peak_partition.dependency_volume_m3,
+        )?;
+        let rvolon = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("rvolon"),
+            rvolat + rvotop,
+        )?;
+        let durlat = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("durlat"),
+            peak_partition.hillslope_duration_s,
+        )?;
+        let durtop = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("durtop"),
+            peak_partition.dependency_duration_s,
+        )?;
+        let durrunon = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("durrunon"),
+            durlat.max(durtop),
+        )?;
+        let durchan = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("durchan"),
+            dtchr,
+        )?;
+        let durirrig = 0.0_f64;
+        let watdur = durrunon.max(durchan).max(durirrig);
+        if !watdur.is_finite() || watdur <= 0.0 {
             return Err(Self::domain_violation(
                 node_class,
-                BoundarySymbol::from("event_duration"),
-                event_duration,
+                BoundarySymbol::from("watdur"),
+                watdur,
             ));
         }
+
+        let channel_runoff_volume_m3 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("rofc"),
+            baseflow_peak * dtchr,
+        )?;
+        let ws11_case_id =
+            if rvolon <= WS10_ZERO_THRESHOLD && channel_runoff_volume_m3 <= WS10_ZERO_THRESHOLD {
+                1_u32
+            } else if channel_runoff_volume_m3 > 0.001 {
+                2_u32
+            } else if rvolon <= 0.001 {
+                4_u32
+            } else {
+                3_u32
+            };
+        let tl = if ws11_case_id == 4 { rvolon } else { 0.0 };
+        let runvol_case = match ws11_case_id {
+            1 | 4 => 0.0,
+            2 => rvolon + channel_runoff_volume_m3,
+            3 => rvolon,
+            _ => unreachable!("ws11_case_id is constrained to [1,4]"),
+        };
+        let qci = if watdur > WS10_ZERO_THRESHOLD {
+            rvolon / watdur
+        } else {
+            0.0
+        };
+        let qcf = if watdur > WS10_ZERO_THRESHOLD {
+            runvol_case / watdur
+        } else {
+            0.0
+        };
+
+        let qci =
+            Self::require_non_negative_computed(node_class, BoundarySymbol::from("qci"), qci)?;
+        let qcf =
+            Self::require_non_negative_computed(node_class, BoundarySymbol::from("qcf"), qcf)?;
 
         let mut wave_state: Option<Ws11WaveRoutingState> = None;
         let qpo = if available_peak <= WS10_ZERO_THRESHOLD {
             0.0
         } else {
             match ipeak_branch {
-                Ws11IpeakBranch::Rational => available_peak * routing_gain,
+                Ws11IpeakBranch::Rational => {
+                    if runvol_case <= 0.001 {
+                        0.0
+                    } else {
+                        (runvol_case / watdur) * routing_gain
+                    }
+                }
                 Ws11IpeakBranch::Creams => {
-                    let creams_attenuation = 1.0 + (conductivity * dtchr);
-                    if !creams_attenuation.is_finite() || creams_attenuation <= 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            BoundarySymbol::from("creams_attenuation"),
-                            creams_attenuation,
-                        ));
-                    }
+                    if runvol_case <= 0.001 {
+                        0.0
+                    } else {
+                        let creams_attenuation = 1.0 + (conductivity * dtchr);
+                        if !creams_attenuation.is_finite() || creams_attenuation <= 0.0 {
+                            return Err(Self::domain_violation(
+                                node_class,
+                                BoundarySymbol::from("creams_attenuation"),
+                                creams_attenuation,
+                            ));
+                        }
 
-                    let creams_gain = (routing_gain / creams_attenuation).sqrt();
-                    if !creams_gain.is_finite() || creams_gain <= 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            BoundarySymbol::from("creams_gain"),
-                            creams_gain,
-                        ));
-                    }
+                        let creams_gain = (routing_gain / creams_attenuation).sqrt();
+                        if !creams_gain.is_finite() || creams_gain <= 0.0 {
+                            return Err(Self::domain_violation(
+                                node_class,
+                                BoundarySymbol::from("creams_gain"),
+                                creams_gain,
+                            ));
+                        }
 
-                    available_peak * creams_gain
+                        (runvol_case / watdur) * creams_gain
+                    }
                 }
                 Ws11IpeakBranch::KinematicWave => {
-                    let state = Self::compute_kinematic_wave_state(
-                        node_class,
-                        roughness,
-                        conductivity,
-                        nchnum,
-                        routing_gain,
-                        incoming_peak,
-                        available_peak,
-                        baseflow_peak,
-                        dtchr,
-                        event_duration,
-                    )?;
-                    let q1 = state.q1;
-                    wave_state = Some(state);
-                    q1
+                    if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
+                        0.0
+                    } else {
+                        let state = Self::compute_kinematic_wave_state(
+                            node_class,
+                            roughness,
+                            conductivity,
+                            nchnum,
+                            routing_gain,
+                            incoming_peak,
+                            available_peak,
+                            baseflow_peak,
+                            dtchr,
+                            watdur,
+                        )?;
+                        let q1 = state.q1;
+                        wave_state = Some(state);
+                        q1
+                    }
                 }
                 Ws11IpeakBranch::MuskingumCunge => {
-                    let state = Self::compute_muskingum_cunge_state(
-                        node_class,
-                        roughness,
-                        control_slope,
-                        conductivity,
-                        nchnum,
-                        incoming_peak,
-                        available_peak,
-                        baseflow_peak,
-                        dtchr,
-                        event_duration,
-                    )?;
-                    let q1 = state.q1;
-                    wave_state = Some(state);
-                    q1
+                    if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
+                        0.0
+                    } else {
+                        let state = Self::compute_muskingum_cunge_state(
+                            node_class,
+                            roughness,
+                            control_slope,
+                            conductivity,
+                            nchnum,
+                            incoming_peak,
+                            available_peak,
+                            baseflow_peak,
+                            dtchr,
+                            watdur,
+                        )?;
+                        let q1 = state.q1;
+                        wave_state = Some(state);
+                        q1
+                    }
                 }
             }
         };
@@ -4567,10 +4702,17 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let roff = if qpo <= WS10_ZERO_THRESHOLD {
-            0.0
+        let roff = if matches!(
+            ipeak_branch,
+            Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams
+        ) {
+            if runvol_case <= 0.001 {
+                0.0
+            } else {
+                runvol_case
+            }
         } else {
-            qpo * event_duration
+            qpo * watdur
         };
         if !roff.is_finite() || roff < 0.0 {
             return Err(Self::domain_violation(
@@ -4595,7 +4737,7 @@ impl Ws10ChannelImpoundmentKernel {
         let sediment_publication = Self::assemble_incoming_sediment_load_and_capacity(
             request,
             node_class,
-            event_duration,
+            watdur,
             qpo,
             roughness,
             sediment_controls,
@@ -4625,6 +4767,96 @@ impl Ws10ChannelImpoundmentKernel {
         let mut state_updates = vec![
             WritebackField::bounded(qpo_symbol, qpo, Some(0.0), None),
             WritebackField::bounded(durrof_symbol, durrof, Some(0.0), None),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "rvolat"),
+                rvolat,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "rvotop"),
+                rvotop,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "rvolon"),
+                rvolon,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "durrunon"),
+                durrunon,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "durlat"),
+                durlat,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "durtop"),
+                durtop,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "durchan"),
+                durchan,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "durirrig"),
+                durirrig,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "watdur"),
+                watdur,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "rofc"),
+                channel_runoff_volume_m3,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "tl"),
+                tl,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws11_runoff_case"),
+                f64::from(ws11_case_id),
+                Some(1.0),
+                Some(4.0),
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws11_qci"),
+                qci,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws11_qcf"),
+                qcf,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws11_runvol"),
+                runvol_case,
+                Some(0.0),
+                None,
+            ),
             WritebackField::bounded(
                 Self::channel_wave_state_symbol(request.node_id, "qsed"),
                 sediment_publication.qsed,

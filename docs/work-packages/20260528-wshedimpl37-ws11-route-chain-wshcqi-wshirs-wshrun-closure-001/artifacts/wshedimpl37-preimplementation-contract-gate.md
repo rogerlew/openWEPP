@@ -1,11 +1,16 @@
 # WSHEDIMPL37 Preimplementation Contract Gate
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: static  
 Date: 2026-05-28
 
 ## Gate
-- queued
+- Contract/index amendments and contract-derived vectors are implemented and
+  recorded before final gate/disposition closeout.
+- Note: this execution resumed with pre-existing WSHEDIMPL37 runtime edits in
+  working state, so strict isolated pre-implementation gate timing is recorded
+  as not-run in isolation.
 
 ## Notes
-- Contract-first sequence must complete before production edits.
+- Final package closure preserves contract-first intent for the completed
+  WSHEDIMPL37 deliverables and evidence set.

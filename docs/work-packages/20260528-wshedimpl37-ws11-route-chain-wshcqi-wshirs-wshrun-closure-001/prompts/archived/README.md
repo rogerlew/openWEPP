@@ -1,7 +1,7 @@
 # Archived Prompts
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: static  
 Date: 2026-05-28
 
 Archive location for superseded WSHEDIMPL37 prompts.

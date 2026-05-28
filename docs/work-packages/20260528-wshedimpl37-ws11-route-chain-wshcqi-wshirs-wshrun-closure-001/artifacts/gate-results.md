@@ -1,11 +1,11 @@
 # WSHEDIMPL37 Gate Results
 
-Status: queued  
-Evidence mode: not-run  
+Status: complete  
+Evidence mode: ran  
 Date: 2026-05-28
 
-## Required Gates
-- `cargo fmt --check`: not run
-- `cargo clippy --workspace --all-targets -- -D warnings`: not run
-- `cargo test --workspace`: not run
-- `cargo deny check`: not run
+## Ran
+- `cargo fmt --check` -> pass
+- `cargo clippy --workspace --all-targets -- -D warnings` -> pass
+- `cargo test --workspace` -> pass
+- `cargo deny check` -> pass (duplicate and license-not-encountered warnings only)
