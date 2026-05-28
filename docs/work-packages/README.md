@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260528-hillstab01-hillslope-cli-broad-stability-cohorts-001/`
+  - Purpose: execute broad release stability validation for `openwepp-cli-hill`
+    using the 1166-seed `wepp-forest` cohort and the single-hillslope
+    release-gate watchlist, with reproducible per-case evidence and
+    GO/HOLD disposition.
 - `20260528-hillbench01-hillslope-cli-release-benchmark-optimization-001/`
   - Purpose: benchmark `openwepp-cli-hill` release performance for single-OFE
     and multi-OFE lanes, compare runtime against
