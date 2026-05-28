@@ -2472,6 +2472,186 @@ impl Ws10ChannelImpoundmentKernel {
         clippy::too_many_lines,
         clippy::similar_names
     )]
+    fn ws23_detach_case4_iterative_closure(
+        node_class: Ws10NodeClass,
+        ql_cfs: f64,
+        sfl: f64,
+        c1: f64,
+        z: f64,
+        effshl: f64,
+        depsid_ft: f64,
+        depmid_ft: f64,
+        wfl_ft: f64,
+        roughness: f64,
+        crsh: f64,
+        tb_s: f64,
+        flagc: i32,
+        chnk: f64,
+        nbarch: f64,
+        crfrac: &[f64],
+        gstu_lbs_s: &[f64],
+        dlat_lbs_s_ft: &[f64],
+        du_lbs_s_ft: &[f64],
+        dx_ft: f64,
+        crdia_ft: &[f64],
+        crspg: &[f64],
+    ) -> Result<Vec<f64>, Ws10GuardError> {
+        let class_count = gstu_lbs_s.len();
+        if class_count == 0
+            || dlat_lbs_s_ft.len() != class_count
+            || du_lbs_s_ft.len() != class_count
+            || crdia_ft.len() != class_count
+            || crspg.len() != class_count
+            || crfrac.len() != class_count
+        {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws23_detach_class_cardinality"),
+                f64::from(u32::try_from(class_count).unwrap_or(u32::MAX)),
+            ));
+        }
+
+        if dx_ft <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws23_detach_dx_ft"),
+                dx_ft,
+            ));
+        }
+
+        let mut excess = 1.0_f64;
+        let mut df_lbs_s_ft2 = Self::ws22_dcap_flagm1(
+            node_class, ql_cfs, sfl, c1, z, effshl, depsid_ft, depmid_ft, wfl_ft, wfl_ft,
+            roughness, crsh, excess, tb_s, flagc, chnk, nbarch, crfrac,
+        )?;
+
+        let mut dl_lbs_s_ft = vec![0.0_f64; class_count];
+        let mut potld_lbs_s_ft = vec![0.0_f64; class_count];
+        let mut nt3 = 0_usize;
+        for class_offset in 0..class_count {
+            dl_lbs_s_ft[class_offset] = df_lbs_s_ft2[class_offset] * wfl_ft;
+            potld_lbs_s_ft[class_offset] = (gstu_lbs_s[class_offset]
+                + (dlat_lbs_s_ft[class_offset] * dx_ft)
+                + ((dl_lbs_s_ft[class_offset] + du_lbs_s_ft[class_offset]) * dx_ft / 2.0))
+                / wfl_ft;
+            if dl_lbs_s_ft[class_offset].abs() <= WS10_ZERO_THRESHOLD
+                && potld_lbs_s_ft[class_offset].abs() <= WS10_ZERO_THRESHOLD
+            {
+                nt3 += 1;
+            }
+        }
+
+        let mut tcl_lbs_s_ft = vec![0.0_f64; class_count];
+        if nt3 < class_count {
+            tcl_lbs_s_ft = Self::ws18_trncap(effshl, &potld_lbs_s_ft, crdia_ft, crspg);
+        }
+
+        let nt2 = tcl_lbs_s_ft
+            .iter()
+            .zip(&potld_lbs_s_ft)
+            .filter(|(tcl, potld)| **tcl >= **potld)
+            .count();
+        if nt2 == class_count || nt3 == class_count {
+            let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+            for class_offset in 0..class_count {
+                next_gstu_lbs_s[class_offset] = potld_lbs_s_ft[class_offset] * wfl_ft;
+            }
+            return Ok(next_gstu_lbs_s);
+        }
+
+        let mut sumtcl = tcl_lbs_s_ft.iter().sum::<f64>();
+        let mut sumpld = potld_lbs_s_ft.iter().sum::<f64>();
+        if !sumtcl.is_finite() || !sumpld.is_finite() || sumpld.abs() <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws23_detach_sumpld"),
+                sumpld,
+            ));
+        }
+        excess = sumtcl / sumpld;
+        let mut excold = excess;
+
+        for _ in 0..20 {
+            if excess < 0.0 {
+                excess = 0.0;
+            }
+
+            df_lbs_s_ft2 = Self::ws22_dcap_flagm1(
+                node_class, ql_cfs, sfl, c1, z, effshl, depsid_ft, depmid_ft, wfl_ft, wfl_ft,
+                roughness, crsh, excess, tb_s, flagc, chnk, nbarch, crfrac,
+            )?;
+
+            for class_offset in 0..class_count {
+                dl_lbs_s_ft[class_offset] = df_lbs_s_ft2[class_offset] * wfl_ft;
+                potld_lbs_s_ft[class_offset] = (gstu_lbs_s[class_offset]
+                    + (dlat_lbs_s_ft[class_offset] * dx_ft)
+                    + ((dl_lbs_s_ft[class_offset] + du_lbs_s_ft[class_offset]) * dx_ft / 2.0))
+                    / wfl_ft;
+            }
+            tcl_lbs_s_ft = Self::ws18_trncap(effshl, &potld_lbs_s_ft, crdia_ft, crspg);
+
+            let mut sumdf = 0.0_f64;
+            let mut sumexd = 0.0_f64;
+            sumtcl = 0.0;
+            sumpld = 0.0;
+            for class_offset in 0..class_count {
+                sumtcl += tcl_lbs_s_ft[class_offset];
+                sumpld += potld_lbs_s_ft[class_offset];
+                let exdet = (((tcl_lbs_s_ft[class_offset] * wfl_ft)
+                    - gstu_lbs_s[class_offset]
+                    - (dlat_lbs_s_ft[class_offset] * dx_ft))
+                    * (2.0 / dx_ft)
+                    - du_lbs_s_ft[class_offset])
+                    / wfl_ft;
+                sumexd += exdet;
+                sumdf += df_lbs_s_ft2[class_offset];
+            }
+
+            if !sumtcl.is_finite() || !sumpld.is_finite() {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws23_detach_sumtc_sumpl"),
+                    sumtcl,
+                ));
+            }
+
+            if sumtcl.abs() > WS10_ZERO_THRESHOLD && ((sumtcl - sumpld) / sumtcl).abs() < 0.01 {
+                break;
+            }
+
+            let mut ratex = if sumdf.abs() > 1.0e-8 {
+                sumexd / sumdf
+            } else {
+                sumtcl / sumpld
+            };
+            if !ratex.is_finite() || ratex <= 0.0 {
+                ratex = sumtcl / sumpld;
+            }
+            excess = excold * ratex;
+            excold = excess;
+        }
+
+        let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+        for class_offset in 0..class_count {
+            let next_flux = tcl_lbs_s_ft[class_offset] * wfl_ft;
+            if !next_flux.is_finite() || next_flux < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws23_detach_next_flux"),
+                    next_flux,
+                ));
+            }
+            next_gstu_lbs_s[class_offset] = next_flux;
+        }
+        Ok(next_gstu_lbs_s)
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        clippy::many_single_char_names,
+        clippy::too_many_lines,
+        clippy::similar_names
+    )]
     fn ws20_route_case12_segment_family(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
@@ -2930,14 +3110,30 @@ impl Ws10ChannelImpoundmentKernel {
                     .count();
 
                 if nt_case4 < class_count {
-                    diagnostics.ws21_detach_unmigrated_segments = diagnostics
-                        .ws21_detach_unmigrated_segments
-                        .saturating_add(1);
-                    diagnostics.detachment_unmigrated_segments =
-                        diagnostics.detachment_unmigrated_segments.saturating_add(1);
-                    for class_offset in 0..class_count {
-                        gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
-                    }
+                    gstu_lbs_s = Self::ws23_detach_case4_iterative_closure(
+                        node_class,
+                        ql_cfs,
+                        slopes[segment_index].max(WS22_DCAP_MIN_SLOPE),
+                        sediment_controls.ctlz,
+                        sediment_controls.chnz,
+                        effshl,
+                        depsid_ft,
+                        depmid_ft,
+                        wfl_ft,
+                        roughness,
+                        crsh,
+                        tb_s,
+                        flagc,
+                        chnk,
+                        sediment_controls.chnnbr,
+                        &crfrac,
+                        &gstu_lbs_s,
+                        &dlat_lbs_s_ft,
+                        &du_lbs_s_ft,
+                        dx_ft,
+                        &crdia_ft,
+                        &crspg,
+                    )?;
                     continue;
                 }
 

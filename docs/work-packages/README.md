@@ -816,6 +816,13 @@ Authorized packages:
     (`ws10_channel_{id}_crfrac_{class:04}`), and preserving explicit
     non-promotable HOLD posture for residual baseline-authoritative WS21
     `case4 -> detach` iterative closure (`nt < cnpart`).
+- `20260527-wshedimpl23-channel-detach-case4-iterative-closure-001/`
+  - Purpose: execute WSHEDIMPL23 immediate next actions from WSHEDIMPL22 by
+    migrating baseline-authoritative `detach.for` iterative closure behavior
+    for WS21 `case4` rows (`nt < cnpart`) in WS20+WS21 opt-in routing,
+    removing residual WS21 unresolved-detachment fallback diagnostics for that
+    branch, and preserving explicit non-promotable HOLD posture for remaining
+    full `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

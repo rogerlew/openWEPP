@@ -704,7 +704,7 @@ fn wshedimpl21_contract_case34_routing_is_opt_in_and_defaults_to_zero_diagnostic
 }
 
 #[test]
-fn wshedimpl21_contract_case34_opt_in_tracks_case34_and_unmigrated_diagnostics() {
+fn wshedimpl21_contract_case34_opt_in_tracks_case34_diagnostics() {
     let mut surface = seeded_ws11_surface();
     surface
         .state_surface
@@ -743,10 +743,7 @@ fn wshedimpl21_contract_case34_opt_in_tracks_case34_and_unmigrated_diagnostics()
         "expected ws21 case34 diagnostics to register at least one case3/case4 segment"
     );
     assert!(enddet_segments >= 0.0);
-    assert!(
-        detach_unmigrated > 0.0,
-        "expected ws21 detach/dcap unmigrated diagnostics to be tracked under ws21 opt-in"
-    );
+    assert!(detach_unmigrated >= 0.0);
     assert!(ws20_unmigrated >= detach_unmigrated);
 }
 
@@ -815,6 +812,42 @@ fn wshedimpl22_contract_ws21_opt_in_routes_with_crfrac_projection() {
     assert!((case3_segments + case4_segments) > 0.0);
     assert!(enddet_segments >= 0.0);
     assert!(ws20_unmigrated >= ws21_unmigrated);
+}
+
+#[test]
+fn wshedimpl23_contract_ws21_case4_detach_iterative_closure_clears_unmigrated_counter() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl23 opt-in vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
+    let ws21_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
+    );
+
+    assert!(case4_segments > 0.0);
+    assert!(
+        (ws21_unmigrated - 0.0).abs() <= 1e-12,
+        "wshedimpl23 migrated case4->detach branch must not emit ws21 unresolved-detachment counts"
+    );
 }
 
 #[test]
