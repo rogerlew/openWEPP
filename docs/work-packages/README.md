@@ -871,6 +871,13 @@ Authorized packages:
     into WS20/WS21 routing lanes, adding WS30 contract-derived vectors, and
     preserving explicit non-promotable HOLD posture for remaining full
     `chnero/chnrt/detach` parity closure families.
+- `20260528-wshedimpl31-detach-lower-boundary-width-mutation-closure-001/`
+  - Purpose: execute WSHEDIMPL31 immediate next actions from WSHEDIMPL30 by
+    migrating baseline-authoritative lower-boundary width-mutation continuity
+    (`flagc=2`, `wera>wfl`, `wida(i)=wera(i)`) through WS23/WS24 detach
+    closures and WS10 state writeback, adding WS31 contract-derived vectors,
+    and preserving explicit non-promotable HOLD posture for remaining full
+    `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

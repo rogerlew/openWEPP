@@ -321,6 +321,7 @@ struct Ws19ChannelSedimentPublication {
     particle_flow_fractions: Vec<f64>,
     particle_diameters_m: Vec<f64>,
     ws29_widb_points_ft: Option<Vec<f64>>,
+    ws31_wida_points_ft: Option<Vec<f64>>,
     ws20_case1_segments: u32,
     ws20_case2_segments: u32,
     ws24_case2_detach_segments: u32,
@@ -356,6 +357,7 @@ struct Ws20SegmentRoutingResult {
     routed_class_masses_kg: Vec<f64>,
     diagnostics: Ws20SegmentRoutingDiagnostics,
     widb_points_ft: Vec<f64>,
+    wida_points_ft: Vec<f64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -369,6 +371,12 @@ struct Ws27EnddetBracketProgress {
 struct Ws26DcapOutcome {
     df_lbs_s_ft2: Vec<f64>,
     depmid_ft: f64,
+    werod_ft: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws23DetachClosureOutcome {
+    next_gstu_lbs_s: Vec<f64>,
     werod_ft: f64,
 }
 
@@ -2577,7 +2585,7 @@ impl Ws10ChannelImpoundmentKernel {
         dx_ft: f64,
         crdia_ft: &[f64],
         crspg: &[f64],
-    ) -> Result<Vec<f64>, Ws10GuardError> {
+    ) -> Result<Ws23DetachClosureOutcome, Ws10GuardError> {
         let class_count = gstu_lbs_s.len();
         if class_count == 0
             || dlat_lbs_s_ft.len() != class_count
@@ -2657,7 +2665,10 @@ impl Ws10ChannelImpoundmentKernel {
             for class_offset in 0..class_count {
                 next_gstu_lbs_s[class_offset] = potld_lbs_s_ft[class_offset] * wfl_ft;
             }
-            return Ok(next_gstu_lbs_s);
+            return Ok(Ws23DetachClosureOutcome {
+                next_gstu_lbs_s,
+                werod_ft: dcap_outcome.werod_ft,
+            });
         }
 
         let mut sumtcl = tcl_lbs_s_ft.iter().sum::<f64>();
@@ -2763,7 +2774,10 @@ impl Ws10ChannelImpoundmentKernel {
             }
             next_gstu_lbs_s[class_offset] = next_flux;
         }
-        Ok(next_gstu_lbs_s)
+        Ok(Ws23DetachClosureOutcome {
+            next_gstu_lbs_s,
+            werod_ft: dcap_outcome.werod_ft,
+        })
     }
 
     #[allow(clippy::too_many_arguments, clippy::similar_names)]
@@ -2789,7 +2803,7 @@ impl Ws10ChannelImpoundmentKernel {
         dx_ft_remaining: f64,
         crdia_ft: &[f64],
         crspg: &[f64],
-    ) -> Result<Vec<f64>, Ws10GuardError> {
+    ) -> Result<Ws23DetachClosureOutcome, Ws10GuardError> {
         if dx_ft_remaining <= WS10_ZERO_THRESHOLD {
             return Err(Self::domain_violation(
                 node_class,
@@ -2942,6 +2956,7 @@ impl Ws10ChannelImpoundmentKernel {
                 routed_class_masses_kg: Vec::new(),
                 diagnostics: Ws20SegmentRoutingDiagnostics::default(),
                 widb_points_ft: Vec::new(),
+                wida_points_ft: Vec::new(),
             });
         }
 
@@ -3450,7 +3465,7 @@ impl Ws10ChannelImpoundmentKernel {
                     .count();
 
                 if nt_case4 < class_count {
-                    gstu_lbs_s = Self::ws23_detach_case4_iterative_closure(
+                    let ws23_outcome = Self::ws23_detach_case4_iterative_closure(
                         node_class,
                         ql_cfs,
                         slopes[segment_index].max(WS22_DCAP_MIN_SLOPE),
@@ -3474,6 +3489,10 @@ impl Ws10ChannelImpoundmentKernel {
                         &crdia_ft,
                         &crspg,
                     )?;
+                    if lower_flagc == 2 && ws23_outcome.werod_ft > wfl_ft {
+                        width_a_points_ft[segment_index] = ws23_outcome.werod_ft;
+                    }
+                    gstu_lbs_s = ws23_outcome.next_gstu_lbs_s;
                     continue;
                 }
 
@@ -3647,7 +3666,7 @@ impl Ws10ChannelImpoundmentKernel {
                     let depsid_ft = sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
                     let tb_s = 2.0 * event_duration;
 
-                    gstu_lbs_s = Self::ws24_case12_detach_transition_closure(
+                    let ws24_outcome = Self::ws24_case12_detach_transition_closure(
                         node_class,
                         ql_cfs,
                         slopes[segment_index].max(WS22_DCAP_MIN_SLOPE),
@@ -3670,6 +3689,10 @@ impl Ws10ChannelImpoundmentKernel {
                         &crdia_ft,
                         &crspg,
                     )?;
+                    if lower_flagc == 2 && ws24_outcome.werod_ft > wfl_ft {
+                        width_a_points_ft[segment_index] = ws24_outcome.werod_ft;
+                    }
+                    gstu_lbs_s = ws24_outcome.next_gstu_lbs_s;
                     diagnostics.ws24_case2_detach_segments =
                         diagnostics.ws24_case2_detach_segments.saturating_add(1);
                     if saw_case1 {
@@ -3709,6 +3732,7 @@ impl Ws10ChannelImpoundmentKernel {
             routed_class_masses_kg: outgoing_class_mass_kg,
             diagnostics,
             widb_points_ft: width_b_points_ft,
+            wida_points_ft: width_a_points_ft,
         })
     }
 
@@ -3895,6 +3919,7 @@ impl Ws10ChannelImpoundmentKernel {
         let mut outgoing_class_mass_kg = active_class_mass_kg.clone();
         let mut ws20_diagnostics = Ws20SegmentRoutingDiagnostics::default();
         let mut ws29_widb_points_ft: Option<Vec<f64>> = None;
+        let mut ws31_wida_points_ft: Option<Vec<f64>> = None;
         let ws20_case12_enabled =
             Self::read_channel_opt_in_toggle(request, node_class, "ws20_case12_enable")?;
         let ws21_case34_opt_in =
@@ -3924,6 +3949,7 @@ impl Ws10ChannelImpoundmentKernel {
             outgoing_class_mass_kg = routing_result.routed_class_masses_kg;
             ws20_diagnostics = routing_result.diagnostics;
             ws29_widb_points_ft = Some(routing_result.widb_points_ft);
+            ws31_wida_points_ft = Some(routing_result.wida_points_ft);
         }
 
         let qsed = outgoing_class_mass_kg.iter().copied().sum::<f64>() / event_duration;
@@ -3969,6 +3995,7 @@ impl Ws10ChannelImpoundmentKernel {
                 particle_flow_fractions,
                 particle_diameters_m,
                 ws29_widb_points_ft,
+                ws31_wida_points_ft,
                 ws20_case1_segments: ws20_diagnostics.case1_segments,
                 ws20_case2_segments: ws20_diagnostics.case2_segments,
                 ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
@@ -4116,6 +4143,7 @@ impl Ws10ChannelImpoundmentKernel {
             particle_flow_fractions,
             particle_diameters_m,
             ws29_widb_points_ft,
+            ws31_wida_points_ft,
             ws20_case1_segments: ws20_diagnostics.case1_segments,
             ws20_case2_segments: ws20_diagnostics.case2_segments,
             ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
@@ -4701,6 +4729,20 @@ impl Ws10ChannelImpoundmentKernel {
                     Self::channel_wave_state_symbol(
                         request.node_id,
                         &format!("widb_{point_number:04}"),
+                    ),
+                    width_ft,
+                    Some(WS10_ZERO_THRESHOLD),
+                    None,
+                ));
+            }
+        }
+        if let Some(wida_points_ft) = &sediment_publication.ws31_wida_points_ft {
+            for (point_index, width_ft) in wida_points_ft.iter().copied().enumerate() {
+                let point_number = point_index + 1;
+                state_updates.push(WritebackField::bounded(
+                    Self::channel_wave_state_symbol(
+                        request.node_id,
+                        &format!("wida_{point_number:04}"),
                     ),
                     width_ft,
                     Some(WS10_ZERO_THRESHOLD),

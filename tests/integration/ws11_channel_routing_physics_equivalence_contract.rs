@@ -1331,6 +1331,152 @@ NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
 }
 
 #[test]
+fn wshedimpl31_contract_ws24_rectangular_detach_wida_mutation_projects_to_state() {
+    let channel_only_topology = r"
+HILLSLOPES 1
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+";
+
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    seed_ws24_case12_transition_forcing(&mut surface);
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0002"),
+        BoundaryValue::scalar(0.01),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0003"),
+        BoundaryValue::scalar(0.01),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0003"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(1_000_000.0),
+    );
+    for hillslope_id in [1_u32, 2, 3] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_peakro")),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_watdur")),
+            BoundaryValue::scalar(300.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_detachment_kg")),
+            BoundaryValue::scalar(100.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_deposition_kg")),
+            BoundaryValue::scalar(0.0),
+        );
+    }
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface_with_topology(surface, channel_only_topology);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl31 lower-boundary width mutation vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let ws24_segments = state_value(&report, "ws10_channel_1_ws24_case2_detach_segment_count");
+    let updated_wida_0002 = state_value(&report, "ws10_channel_1_wida_0002");
+    let updated_wida_0003 = state_value(&report, "ws10_channel_1_wida_0003");
+
+    assert!(
+        ws24_segments > 0.0,
+        "expected WS24 transition activity for lower-boundary detach mutation vector"
+    );
+    assert!(
+        updated_wida_0002 > 0.01 + 1.0e-9 || updated_wida_0003 > 0.01 + 1.0e-9,
+        "expected ws31 lower-boundary detach semantics to widen at least one rectangular wida point; wida_0002={updated_wida_0002}, wida_0003={updated_wida_0003}"
+    );
+}
+
+#[test]
+fn wshedimpl31_contract_non_rectangular_lane_does_not_apply_wida_mutation() {
+    let channel_only_topology = r"
+HILLSLOPES 1
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+";
+
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    seed_ws24_case12_transition_forcing(&mut surface);
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0003"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(1_000_000.0),
+    );
+    for hillslope_id in [1_u32, 2, 3] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_peakro")),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_watdur")),
+            BoundaryValue::scalar(300.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_detachment_kg")),
+            BoundaryValue::scalar(100.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_deposition_kg")),
+            BoundaryValue::scalar(0.0),
+        );
+    }
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface_with_topology(surface, channel_only_topology);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl31 non-rectangular control vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let updated_wida_0002 = state_value(&report, "ws10_channel_1_wida_0002");
+    let updated_wida_0003 = state_value(&report, "ws10_channel_1_wida_0003");
+    assert!((updated_wida_0002 - 1.0).abs() <= 1.0e-9);
+    assert!((updated_wida_0003 - 1.0).abs() <= 1.0e-9);
+}
+
+#[test]
 fn wshedimpl24_contract_case12_transition_requires_crfrac_projection() {
     let mut surface = seeded_ws11_surface();
     surface
