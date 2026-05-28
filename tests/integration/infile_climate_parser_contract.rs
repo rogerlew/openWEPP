@@ -137,6 +137,23 @@ fn strict_mode_accepts_curated_wc1_breakpoint_fixture_with_42_points() {
 }
 
 #[test]
+fn strict_mode_accepts_curated_wc1_breakpoint_fixture_with_zero_points() {
+    let parsed = parse_climate_file(
+        fixture_path("wc1_unpalatable_rind_breakpoint_nbrkpt_0.cli"),
+        ParserMode::Strict,
+    )
+    .expect("curated wc1 zero-breakpoint fixture should parse in strict mode");
+    let record = parsed.daily_records.first().expect("one daily record");
+    match record {
+        ClimateDailyRecord::Breakpoint(day) => {
+            assert_eq!(day.nbrkpt, 0);
+            assert!(day.breakpoints.is_empty());
+        }
+        ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint daily record"),
+    }
+}
+
+#[test]
 fn strict_mode_accepts_breakpoint_cardinality_at_1500_boundary() {
     let parsed = parse_climate_from_str(&build_breakpoint_fixture(1_500), ParserMode::Strict)
         .expect("1500 breakpoint rows should parse in strict mode");

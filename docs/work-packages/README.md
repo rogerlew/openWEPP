@@ -941,6 +941,12 @@ Authorized packages:
     refresh routing behavior into WS11 production runtime lanes, adding
     contract-derived parity vectors, and dispositioning
     `GAP-ROUTE-011` / `GAP-SYSTEM-010` with contract-first evidence.
+- `20260528-clim17-breakpoint-climate-baseline-parity-burndown-001/`
+  - Purpose: execute CLIM17 to identify and close implementation gaps in
+    openWEPP breakpoint climate behavior versus
+    `wepp-forest_260430_baseline`, anchored to
+    `/wc1/runs/un/unpalatable-rind`, with contract-first sequencing and
+    dual-review/dual-verification gate evidence through disposition.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

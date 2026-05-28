@@ -37,6 +37,9 @@ mod tests {
     const WC1_BREAKPOINT_NBRKPT_42: &str = include_str!(
         "../../../../tests/fixtures/infile/climate/wc1_major_restlessness_breakpoint_nbrkpt_42.cli"
     );
+    const WC1_UNPALATABLE_RIND_BREAKPOINT_NBRKPT_0: &str = include_str!(
+        "../../../../tests/fixtures/infile/climate/wc1_unpalatable_rind_breakpoint_nbrkpt_0.cli"
+    );
     const WC1_CANOGA_DAY1: &str =
         include_str!("../../../../tests/fixtures/infile/climate/wc1_canoga_day1.cli");
     const WC1_CANOGA_STMDUR_CAP: &str =
@@ -995,6 +998,59 @@ mod tests {
         assert!(timem_first.abs() < 1e-12);
         assert!(timem_last > timem_first);
         assert!(intsty_last.abs() < 1e-12);
+    }
+
+    #[test]
+    fn breakpoint_runtime_surface_accepts_curated_wc1_zero_breakpoint_dry_day() {
+        let climate = parse_climate_from_str(
+            WC1_UNPALATABLE_RIND_BREAKPOINT_NBRKPT_0,
+            ClimateParserMode::Strict,
+        )
+        .expect("wc1 zero-breakpoint fixture should parse");
+        let surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+            .expect("zero-breakpoint dry day should project runtime surface");
+
+        let nbrkpt = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nbrkpt"))
+            .expect("nbrkpt should exist")
+            .as_f64();
+        let prcp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("prcp"))
+            .expect("prcp should exist")
+            .as_f64();
+        let stmdur = surface
+            .state_surface
+            .get(&BoundarySymbol::from("stmdur"))
+            .expect("stmdur should exist")
+            .as_f64();
+        let mxint = surface
+            .state_surface
+            .get(&BoundarySymbol::from("mxint"))
+            .expect("mxint should exist")
+            .as_f64();
+        let stmstr = surface
+            .state_surface
+            .get(&BoundarySymbol::from("stmstr"))
+            .expect("stmstr should exist")
+            .as_f64();
+
+        assert!(nbrkpt.abs() < 1e-12);
+        assert!(prcp.abs() < 1e-12);
+        assert!(stmdur.abs() < 1e-12);
+        assert!(mxint.abs() < 1e-12);
+        assert!(stmstr.abs() < 1e-12);
+        assert!(
+            !surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("timem_0001"))
+        );
+        assert!(
+            !surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("intsty_0001"))
+        );
     }
 
     #[test]

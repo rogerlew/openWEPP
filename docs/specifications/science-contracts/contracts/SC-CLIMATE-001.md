@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration forcing consumers
   - Water-balance and irrigation event-coupling consumers
 evidence_level: static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-28
 supersedes: []
 superseded_by: []
 ---
@@ -59,6 +59,7 @@ Out of scope:
 | REF-CLIMATE-CH4-COUPLING | `references/50201000/chap4.pdf` §4.2 and §4.4 validation note | Runoff partition/infiltration consumes breakpoint rainfall intensities. | `[DIRECT][Static]` |
 | REF-CLIMATE-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1-§5.2 | Water-balance/ET consumes generated precipitation/temperature/radiation/wind/dew-point forcing. | `[DIRECT][Static]` |
 | REF-CLIMATE-CH12-COUPLING | `references/50201000/chap12.pdf` §12.2.1 | Irrigation concurrent-event logic combines irrigation with Chapter-2 rainfall disaggregation. | `[DIRECT][Static]` |
+| REF-CLIMATE-WF-STMGET-BRKPT0 | `/workdir/wepp-forest_260430_baseline/src/stmget.for` (`ibrkpt=1` breakpoint branch dry-day handling) and `/workdir/wepp-forest_260430_baseline/src/brkpt.for` (positive-event breakpoint transform path). | Baseline-authoritative breakpoint dry-day semantics in breakpoint mode (`nbrkpt=0` accepted with zero precipitation/intensity forcing) and positive-event transform behavior for `nbrkpt>0`. | `[DIRECT][Static]` |
 | REF-CLIMATE-PHYS-BOUNDS | Physical/common-sense invariant class | Probability bounds and non-negative rainfall/intensity domains are required for physical validity. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -105,6 +106,7 @@ Out of scope:
 | INV-CLIMATE-007 | Coupling payload completeness: forcing payloads needed by Chapter-3 hourly winter processes, Chapter-4 runoff partition, Chapter-5 water-balance/ET, and Chapter-12 irrigation concurrent-event logic must be emitted in required units and sequence completeness. | hard-fail | REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-CH5-COUPLING, REF-CLIMATE-CH12-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-008 | Explicit model-limit governance invariant: depth-duration-frequency sensitivity limitations, tentative duration/peak equations, and unresolved multi-storm-per-day behavior must remain explicit and cannot be silently treated as closed science. | governance-fail | REF-CLIMATE-CH2-LIMIT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-009 | SIMIMPL18 replay-span precipitation continuity invariant: parity lanes claiming identical baseline/candidate forcing must publish explicit full-span precipitation-key comparability policy (`P` over declared keyed horizon). When legacy baseline execution clamps to one year, year-policy adaptation (for example span expansion/rekey policy) must be explicit and deterministic; overlap-only silent comparison is non-authoritative. | hard-fail | REF-CLIMATE-CH2-AMT, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-CLIMATE-010 | Breakpoint-mode dry-day invariant: when breakpoint mode is active and a daily climate record declares `nbrkpt=0`, runtime forcing remains valid and must publish deterministic dry-day breakpoint surfaces (`nbrkpt=0`, `prcp=0`, `stmdur=0`, `mxint=0`) with empty `timem_*` and `intsty_*` families; this state is not an empty-series hard-fail. | hard-fail | REF-CLIMATE-WF-STMGET-BRKPT0, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -119,6 +121,7 @@ Out of scope:
 | `INV-CLIMATE-007` | runtime | Forcing boundary payload validator | Typed hard error on missing/invalid forcing field | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-008` | governance | Review/disposition/verification + promotion checklist | Promotion `HOLD` until limitation scope/risk is explicitly dispositioned | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-009` | runtime + governance | Replay forcing-span provenance + precipitation-key parity policy validator | Typed hard error / explicit `HOLD` when full-span `P` comparability policy is absent, overlap-only by-default, or baseline-year adaptation is implicit/ambiguous | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-CLIMATE-010` | runtime | Breakpoint runtime adapter and forcing projection seams | Typed hard error only for malformed positive-cardinality breakpoint payloads; `nbrkpt=0` breakpoint dry-day records publish zero forcing payload without fallback mutation | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -151,6 +154,7 @@ introduce explicit aliases.
 | Degenerate state | Allowed condition | Rationale |
 |---|---|---|
 | Dry day | Generated day classified dry, no wet-day precipitation amount emitted (`P = 0` daily event equivalent). | Valid weather-sequence outcome under Markov occurrence. |
+| Breakpoint-mode dry day | `ibrkpt=1` day declares `nbrkpt=0`; runtime forcing publishes zero-valued breakpoint scalars and empty hyetograph series. | Baseline `stmget` breakpoint-mode dry-day branch preserves valid no-rain forcing without invoking positive-event breakpoint transform. |
 | Snow-only day | Precipitation present with `Tmax < 0 degC` and routed to snow pathway. | Explicitly described in climate/winter coupling rules. |
 | Boundary low radiation day | `RA` at lower clamp `0.05 * RAmax`. | Explicit lower bound in Chapter 2 radiation generation. |
 | No rainfall/irrigation concurrency day | Irrigation concurrent-event merge not invoked because no rainfall event exists. | Normal operating mode in Chapter 12 logic. |
@@ -161,6 +165,7 @@ introduce explicit aliases.
 - Broken complement closure for wet/dry transition probabilities. `[DIRECT][Static] + [INFERENCE][Static]`
 - Negative wet-day precipitation amount, negative storm duration, or negative peak intensity. `[DIRECT][Static] + [INFERENCE][Static]`
 - Breakpoint sequences with decreasing cumulative time/depth or missing required start/end intensity conventions. `[DIRECT][Static] + [INFERENCE][Static]`
+- Breakpoint-mode dry-day records (`ibrkpt=1`, `nbrkpt=0`) rejected as empty-series hard-fail instead of publishing deterministic zero forcing surfaces. `[DIRECT][Static] + [INFERENCE][Static]`
 - Disaggregation restoration that materially fails to preserve input `P` and `D`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Missing required forcing payload fields for downstream chapter consumers. `[DIRECT][Static] + [INFERENCE][Static]`
 - Replay forcing evidence that asserts parity without explicit full-span `P`
@@ -177,6 +182,11 @@ introduce explicit aliases.
   precipitation comparability metadata (`expected_row_count`, baseline-year
   adaptation policy, and row-key semantics) when baseline/candidate run spans
   differ; implicit overlap-only comparison is forbidden.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-CLIMATE-P-006: Breakpoint-mode dry-day records (`ibrkpt=1`, `nbrkpt=0`)
+  must project deterministic zero forcing payload (`prcp`, `stmdur`, `mxint`)
+  with empty `timem_*`/`intsty_*` series and must not be rejected as malformed
+  empty-series records.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -199,6 +209,7 @@ introduce explicit aliases.
 | Coupling completeness (`INV-CLIMATE-007`) | forcing boundary handoff | Hard error on missing/invalid field or sequence | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Model-limit governance (`INV-CLIMATE-008`) | review/verification/promotion check | Governance `HOLD` until explicit limitation disposition | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL18 forcing-span precipitation continuity (`INV-CLIMATE-009`) | replay forcing provenance and semantic parity policy publication boundary | Hard error / `HOLD` when full-span keyed `P` policy metadata is absent or overlap-only comparison is treated as authoritative | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| CLIM17 breakpoint-mode dry-day parity (`INV-CLIMATE-010`) | breakpoint runtime adapter and hillslope/watershed climate projection seams | Hard error for malformed positive-cardinality payloads; deterministic zero forcing projection for `nbrkpt=0` breakpoint-mode dry days | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -463,6 +474,29 @@ states and must hard-fail with typed hydrology guard posture.
 4. Missing required active-synthesis context symbols hard-fail with typed
    missing-input posture.
 
+## CLIM17 Breakpoint Dry-Day Parity Addendum
+
+### CLIM17 Deterministic Runtime Requirements
+
+1. For `ibrkpt=1` records with `nbrkpt=0`, runtime forcing must remain valid
+   and emit zero-valued breakpoint scalars (`prcp=0`, `stmdur=0`, `mxint=0`)
+   plus empty `timem_*`/`intsty_*` families.
+2. `CLIM-RUNTIME-E-008` remains reserved for malformed breakpoint payloads
+   where positive breakpoint cardinality is declared but breakpoint rows are
+   absent.
+3. Breakpoint-mode dry-day projection semantics must remain consistent across
+   hillslope and watershed climate assignment seams (`hs{id}_*`).
+
+### CLIM17 Contract-Test Vectors
+
+1. Curated breakpoint dry-day vector (`ibrkpt=1`, `nbrkpt=0`) from
+   `/wc1/runs/un/unpalatable-rind` parses and projects to runtime forcing
+   surfaces without empty-series failure.
+2. Hillslope and watershed runtime seams both publish deterministic zero dry-day
+   breakpoint scalars with empty hyetograph series.
+3. Malformed positive-cardinality vectors (`nbrkpt>0` with missing breakpoint
+   rows) remain typed hard-fail with `CLIM-RUNTIME-E-008`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -490,3 +524,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-25` | `10` | `Codex` | SIMIMPL14 amendment: clarified schedule-key continuity authority so climate day/year keys progress deterministically across full continuous-run spans used by replay publication and irrigation-coupled forcing consumers. |
 | `2026-05-25` | `11` | `Codex` | SIMIMPL18 amendment: added forcing-span precipitation continuity invariant (`INV-CLIMATE-009`) and explicit producer/consumer obligations requiring deterministic full-span `P` comparability policy publication when legacy baseline span clamps require adaptation. |
 | `2026-05-25` | `12` | `Codex` | SIMIMPL28 amendment: added baseline-authoritative hourly winter forcing synthesis authority (`sunmap`/`radcur`/`hr_tmp`/`stmtim` lineage), required hourly forcing symbol families, typed active-synthesis guard posture, and SIMIMPL28-specific contract-test vectors. |
+| `2026-05-28` | `13` | `Codex` | CLIM17 amendment: added baseline-authoritative breakpoint dry-day parity invariant (`INV-CLIMATE-010`) and seam obligations for `ibrkpt=1` records with `nbrkpt=0`, including deterministic zero forcing projection requirements and malformed positive-cardinality typed-fail retention. |

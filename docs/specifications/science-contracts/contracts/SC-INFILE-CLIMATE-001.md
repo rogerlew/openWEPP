@@ -4,9 +4,9 @@ title: Climate Input Parser Contract (.cli)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.6
+contract_version: 0.1.7
 evidence_mode: Static
-last_updated_utc: 2026-05-25T00:00:00Z
+last_updated_utc: 2026-05-28T00:00:00Z
 ---
 
 # SC-INFILE-CLIMATE-001 Climate Input Parser Contract
@@ -21,6 +21,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-SURVEY-CLI-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md:20-21` (`.cli` coverage and legacy parser provenance references).
 - `[DIRECT][E-WF-CLI-01]` `/home/workdir/wepp-forest/src/infile.for:1707-1827` (legacy climate header/state parse path references cited by survey).
 - `[DIRECT][E-WF-CLI-02]` `/home/workdir/wepp-forest/src/stmget.for:11-246` and `/home/workdir/wepp-forest/src/idat.for:1-60` (breakpoint/storm-path consumption references cited by survey).
+- `[DIRECT][E-WF-BASELINE-CLI-01]` `/workdir/wepp-forest_260430_baseline/src/stmget.for:142-210` and `/workdir/wepp-forest_260430_baseline/src/brkpt.for:1-160` (baseline-authoritative breakpoint-mode `nbrkpt=0` dry-day handling and positive-event breakpoint transform path).
 - `[DIRECT][E-WP-CLI-01]` `/workdir/wepppy/wepppy/climates/cligen/cligen.py` (`ClimateFile` parser surface cited by survey).
 - `[DIRECT][E-WP3-CLI-01]` `/workdir/wepppyo3/cli_revision/src/lib.rs` (Rust climate transform readers cited by survey).
 - `[DIRECT][E-WP-CLIM02-CLI-01]` `/home/workdir/openWEPP/docs/work-packages/20260522-clim02-climate-parser-to-runtime-seam-adapters-001/artifacts/climate-seam-adapter-ownership-contract.md` (authoritative parser-to-runtime seam ownership mapping and `datver` policy guard posture).
@@ -129,11 +130,13 @@ daily_records =
 | `D-CLI-001` | Derive expected day record count from `numyr` and parsed date span policy. | parse finalize | `C-CLI-001` |
 | `D-CLI-002` | For breakpoint mode, derive daily storm depth from final `pptcum` and compare to monotone accumulation constraints. | per day parse finalize | `C-CLI-002` |
 | `D-CLI-003` | Normalize wind/ET mode enum from `iwind` token. | header parse | `C-CLI-003` |
+| `D-CLI-004` | For breakpoint mode with `nbrkpt=0`, preserve an explicit zero-point day in parser output (no synthetic breakpoint rows inserted) so runtime seams can project deterministic dry-day forcing without malformed-empty fallback behavior. | per day parse finalize | `C-CLI-004` |
 
 Closure hooks:
 - `C-CLI-001`: record-count closure check (no silent truncation/overflow).
 - `C-CLI-002`: monotone/non-negative cumulative rainfall closure.
 - `C-CLI-003`: enum-domain closure for `itemp`, `ibrkpt`, `iwind`.
+- `C-CLI-004`: breakpoint dry-day closure (`ibrkpt=1`, `nbrkpt=0` keeps empty breakpoint row-set as a valid parsed day).
 
 ## 7. Validation and Error Taxonomy
 
@@ -155,7 +158,7 @@ No silent fallback/default masking is permitted for required invalid inputs. `[D
 ## 8. Cross-File Consistency Constraints
 
 1. `climate.meta.num_years` and parsed date coverage must be consistent with management/run schedule years (`nyears * nrots`) where coupled, and daily date rows must preserve deterministic ordered progression for continuous-run replay publication boundaries. `[INFERENCE][E-SPEC-CLI-01]`, `[INFERENCE][E-SURVEY-CLI-01]`
-2. For `ibrkpt=1`, each day must provide exactly `nbrkpt` breakpoint pairs. `[DIRECT][E-SPEC-CLI-01]`
+2. For `ibrkpt=1`, each day must provide exactly `nbrkpt` breakpoint pairs; `nbrkpt=0` is valid and denotes a breakpoint-mode dry day with zero breakpoint rows. `[DIRECT][E-SPEC-CLI-01]`, `[DIRECT][E-WF-BASELINE-CLI-01]`
 3. ET/wind mode compatibility branch from `iwind` must be preserved for downstream ET subsystem mode selection. `[DIRECT][E-SPEC-CLI-01]`
 4. Climate forcing fields needed by snow/freeze, watbal, evap, and runoff consumers must be complete for every parsed day. `[INFERENCE][E-SURVEY-CLI-01]`
 
@@ -175,12 +178,14 @@ No silent fallback/default masking is permitted for required invalid inputs. `[D
     any `5.3 <= datver < 5.4`;
   - canonicalize accepted `5.3x` values to `5.3` in parser output;
   - reject `itemp=2` legacy single-storm mode;
+  - accept `nbrkpt=0` as a valid breakpoint-mode dry day (no breakpoint pair rows);
   - reject `nbrkpt > 1500` (`CLI-POL-003`) for breakpoint days;
   - reject duplicate/decreasing breakpoint `timem` (`dtime<=0`) for all intervals;
   - reject malformed breakpoint days and invalid cumulative rainfall structure.
 - Compatibility mode:
   - `itemp=2` may be accepted only under explicit legacy flag;
   - shares strict `datver` domain/canonicalization (`5.3x -> 5.3`);
+  - accepts the same breakpoint-mode dry-day semantics for `nbrkpt=0`;
   - unrecognized but numerically parseable `datver` remains rejected by default pending explicit policy extension;
   - `nbrkpt > 1500` remains rejected unless explicit `allow_breakpoint_cardinality_override` is enabled for controlled investigations;
   - legacy zero-drain non-positive `dtime` acceptance is disabled by default and must be explicitly enabled with `allow_legacy_zero_drain_non_positive_dtime` for controlled investigations;
@@ -202,6 +207,7 @@ Unsupported forms are hard errors with typed taxonomy entries from Section 7.
 | `G-CLI-008` | breakpoint arity closure (`nbrkpt`) | breakpoint parse | `CLI-E-008` |
 | `G-CLI-009` | breakpoint cardinality policy (`nbrkpt <= 1500` unless compat override) | breakpoint parse policy gate | `CLI-E-010` |
 | `G-CLI-010` | met field completeness per day + monotone non-decreasing `pptcum` in breakpoint mode + strict breakpoint `timem` monotonicity (`dtime>0`) unless explicit legacy compat control is enabled | daily parse + breakpoint closure hook | `CLI-E-002`/`CLI-E-009` |
+| `G-CLI-011` | breakpoint dry-day preservation (`ibrkpt=1`, `nbrkpt=0`) | breakpoint parse + parser/runtime seam handoff | valid parsed day with zero breakpoint rows (no parse-time hard-fail) |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -224,10 +230,13 @@ Required vector obligations:
 2. Breakpoint (`ibrkpt=1`) parser output projects deterministic `nbrkpt`,
    `timem`, and `pptcum` lineage through runtime breakpoint symbols and
    preserves strict monotonicity guard posture.
-3. Invalid breakpoint mutation vectors (duplicate/decreasing `timem` or
+3. Breakpoint-mode dry-day vectors (`ibrkpt=1`, `nbrkpt=0`) remain valid across
+   parser and runtime seams and project deterministic zero forcing payloads
+   without empty-series hard-fail behavior.
+4. Invalid breakpoint mutation vectors (duplicate/decreasing `timem` or
    negative implied interval depth) remain typed hard-fail at runtime seams
    with no fallback repair.
-4. Watershed assignment seams preserve hillslope-scoped climate symbol
+5. Watershed assignment seams preserve hillslope-scoped climate symbol
    namespaces (`hs{id}_*`) and required field completeness.
 
 ## 14. HOLD Gap Register
@@ -242,6 +251,7 @@ Required vector obligations:
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-28` | `0.1.7` | CLIM17 amendment: codified breakpoint dry-day parser/runtime seam authority (`ibrkpt=1`, `nbrkpt=0`) with explicit closure hook/guard posture and baseline-authoritative provenance anchor (`stmget`/`brkpt` from pinned baseline). |
 | `2026-05-25` | `0.1.6` | MOFE08 amendment: accept CLIGEN `5.3x` datver family (`5.3 <= datver < 5.4`) and canonicalize parser output to `5.3`; add cross-reference evidence anchor to `jimf-cligen532` lineage guidance. |
 | `2026-05-23` | `0.1.4` | CLIM08 governance closeout: reclassified `CLI-GAP-002` as `RESOLVED-IN-OPENWEPP` using CLIM02 seam-ownership authority plus CLIM07 executed seam-vector closure evidence. |
 | `2026-05-25` | `0.1.5` | SIMIMPL14 amendment: clarified cross-file continuity expectation for deterministic ordered daily-date progression feeding continuous runner replay publication boundaries. |

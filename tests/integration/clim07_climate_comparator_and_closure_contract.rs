@@ -20,6 +20,8 @@ const STRICT_VALID_CLIMATE: &str = include_str!("../fixtures/infile/climate/stri
 const BREAKPOINT_STMSTR_CLIMATE: &str = include_str!(
     "../fixtures/infile/climate/wc1_major_restlessness_breakpoint_stmstr_nonzero.cli",
 );
+const BREAKPOINT_ZERO_CARDINALITY_CLIMATE: &str =
+    include_str!("../fixtures/infile/climate/wc1_unpalatable_rind_breakpoint_nbrkpt_0.cli",);
 
 fn state_value(surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol: &str) -> f64 {
     surface
@@ -273,6 +275,96 @@ fn clim07_breakpoint_vector_projects_expected_runtime_surface() {
         0.00735,
         1e-12,
         "breakpoint watershed closure",
+    );
+}
+
+#[test]
+fn clim07_breakpoint_zero_cardinality_vector_projects_dry_day_surface() {
+    let climate = parse_climate_from_str(
+        BREAKPOINT_ZERO_CARDINALITY_CLIMATE,
+        ClimateParserMode::Strict,
+    )
+    .expect("zero-cardinality breakpoint fixture should parse");
+
+    let hillslope_surface = build_hillslope_runtime_surface_from_climate(&climate, 0)
+        .expect("zero-cardinality breakpoint hillslope runtime surface should build");
+    let hs_state = &hillslope_surface.state_surface;
+
+    assert_close(state_value(hs_state, "ibrkpt"), 1.0, 1e-12, "ibrkpt");
+    assert_close(state_value(hs_state, "nbrkpt"), 0.0, 1e-12, "nbrkpt");
+    assert_close(state_value(hs_state, "stmstr"), 0.0, 1e-12, "stmstr_h");
+    assert_close(state_value(hs_state, "prcp"), 0.0, 1e-12, "prcp_m");
+    assert_close(state_value(hs_state, "stmdur"), 0.0, 1e-12, "stmdur_s");
+    assert_close(state_value(hs_state, "mxint"), 0.0, 1e-12, "mxint_m_per_s");
+    assert!(
+        !hs_state.contains_key(&BoundarySymbol::from("timem_0001")),
+        "zero-cardinality breakpoint dry day must not publish timem_0001"
+    );
+    assert!(
+        !hs_state.contains_key(&BoundarySymbol::from("intsty_0001")),
+        "zero-cardinality breakpoint dry day must not publish intsty_0001"
+    );
+
+    let hillslope_depth_m = hyetograph_depth_m(hs_state, "", "nbrkpt");
+    assert_close(hillslope_depth_m, 0.0, 1e-12, "breakpoint dry-day closure");
+
+    let assignments = BTreeMap::from([(24_u32, climate)]);
+    let watershed_surface =
+        build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+            .expect("zero-cardinality breakpoint watershed runtime surface should build");
+    let ws_state = &watershed_surface.state_surface;
+
+    assert_close(
+        state_value(ws_state, "hs24_ibrkpt"),
+        1.0,
+        1e-12,
+        "hs24_ibrkpt",
+    );
+    assert_close(
+        state_value(ws_state, "hs24_nbrkpt"),
+        0.0,
+        1e-12,
+        "hs24_nbrkpt",
+    );
+    assert_close(
+        state_value(ws_state, "hs24_stmstr"),
+        0.0,
+        1e-12,
+        "hs24_stmstr_h",
+    );
+    assert_close(
+        state_value(ws_state, "hs24_prcp"),
+        0.0,
+        1e-12,
+        "hs24_prcp_m",
+    );
+    assert_close(
+        state_value(ws_state, "hs24_stmdur"),
+        0.0,
+        1e-12,
+        "hs24_stmdur_s",
+    );
+    assert_close(
+        state_value(ws_state, "hs24_mxint"),
+        0.0,
+        1e-12,
+        "hs24_mxint",
+    );
+    assert!(
+        !ws_state.contains_key(&BoundarySymbol::from("hs24_timem_0001")),
+        "zero-cardinality breakpoint dry day must not publish hs24_timem_0001"
+    );
+    assert!(
+        !ws_state.contains_key(&BoundarySymbol::from("hs24_intsty_0001")),
+        "zero-cardinality breakpoint dry day must not publish hs24_intsty_0001"
+    );
+
+    let watershed_depth_m = hyetograph_depth_m(ws_state, "hs24", "nbrkpt");
+    assert_close(
+        watershed_depth_m,
+        0.0,
+        1e-12,
+        "breakpoint dry-day watershed closure",
     );
 }
 

@@ -457,6 +457,26 @@ fn adapt_breakpoint(
     require_finite("tdpt", day.tdpt)?;
 
     if day.breakpoints.is_empty() {
+        if day.nbrkpt == 0 {
+            return Ok(SharedBreakpointForcing {
+                day: day.day,
+                mon: day.mon,
+                year: day.year,
+                nbrkpt: day.nbrkpt,
+                stmstr: 0.0,
+                prcp: 0.0,
+                stmdur: 0.0,
+                mxint: 0.0,
+                timem: Vec::new(),
+                intsty: Vec::new(),
+                tmax: day.tmax,
+                tmin: day.tmin,
+                rad: day.rad,
+                vwind: day.vwind,
+                wind: day.wind,
+                tdpt: day.tdpt,
+            });
+        }
         return Err(SharedClimateRuntimeInputError::EmptyBreakpointSeries);
     }
     let effective_breakpoint_count = day.nbrkpt.max(day.breakpoints.len());
@@ -858,6 +878,33 @@ mod tests {
     }
 
     #[test]
+    fn runtime_request_accepts_breakpoint_zero_cardinality_dry_day() {
+        let climate =
+            parse_climate_from_str(&build_breakpoint_fixture(0), ClimateParserMode::Strict)
+                .expect("strict parser should accept zero-breakpoint dry-day fixtures");
+
+        let request = build_climate_runtime_request(&climate)
+            .expect("runtime seam should accept breakpoint-mode dry-day fixtures");
+
+        let forcing = request
+            .daily_forcing
+            .first()
+            .expect("one forcing day expected");
+        match forcing {
+            SharedClimateDailyForcing::Breakpoint(day) => {
+                assert_eq!(day.nbrkpt, 0);
+                assert!(day.timem.is_empty());
+                assert!(day.intsty.is_empty());
+                assert!(day.stmstr.abs() < 1e-12);
+                assert!(day.prcp.abs() < 1e-12);
+                assert!(day.stmdur.abs() < 1e-12);
+                assert!(day.mxint.abs() < 1e-12);
+            }
+            SharedClimateDailyForcing::NoBreakpoint(_) => panic!("expected breakpoint forcing"),
+        }
+    }
+
+    #[test]
     fn runtime_request_rejects_breakpoint_cardinality_over_1500_even_with_parser_override() {
         let climate = parse_climate_from_str(
             &build_breakpoint_fixture(1_501),
@@ -878,6 +925,28 @@ mod tests {
                 value: 1_501,
                 max: 1_500
             }
+        ));
+    }
+
+    #[test]
+    fn runtime_request_rejects_malformed_positive_cardinality_with_empty_series() {
+        let mut climate =
+            parse_climate_from_str(&build_breakpoint_fixture(2), ClimateParserMode::Strict)
+                .expect("strict parser should accept fixture");
+        let record = climate.daily_records.first_mut().expect("one forcing day");
+        match record {
+            ClimateDailyRecord::Breakpoint(day) => {
+                day.breakpoints.clear();
+            }
+            ClimateDailyRecord::NoBreakpoint(_) => panic!("expected breakpoint forcing"),
+        }
+
+        let error = build_climate_runtime_request(&climate)
+            .expect_err("positive-cardinality breakpoint day without rows must fail");
+        assert_eq!(error.code(), "CLIM-RUNTIME-E-008");
+        assert!(matches!(
+            error,
+            SharedClimateRuntimeInputError::EmptyBreakpointSeries
         ));
     }
 

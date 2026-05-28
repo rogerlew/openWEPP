@@ -1,0 +1,16 @@
+5.32100
+1 1 0
+Station: Daily Erosion Project 0.01deg Grid Cell HeaderRev: v20230605.1
+Latitude Longitude Elevation (m) Obs. Years Beginning year Years simulated
+47.10 -115.60 1458 4 2013 4
+Observed monthly ave max temperature (C)
+1.7 4.2 7.5 11.3 17.3 20.9 26.7 26.4 21.3 13.1 5.3 0.7
+Observed monthly ave min temperature (C)
+-7.5 -6.5 -4.9 -3.1 1.1 4.6 6.7 5.3 1.7 -2.2 -4.1 -6.9
+Observed monthly ave solar radiation (Langleys/day)
+115.3 194.7 304.8 434.8 532.6 588.6 650.5 556.6 411.8 257.9 134.2 94.9
+Observed monthly ave precipitation (mm)
+120.6 109.5 116.1 93.0 88.6 67.6 22.9 26.2 36.3 86.9 132.8 141.7
+da mo year nbrkpt tmax tmin rad w-vl w-dir tdew
+(mm) (C) (C) (l/day) (m/sec) (deg) (C)
+1 1 2013 0 -8.4 -14.1 92 0.6 0 -12.6
