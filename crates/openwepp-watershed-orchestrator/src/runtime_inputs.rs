@@ -75,6 +75,7 @@ const ACTIVE_PROJECTION_STAGE_DELTA_M: f64 = 0.01;
 const EMERGENCY_OPEN_CHANNEL_WEIR_COEFFICIENT: f64 = 3.087;
 const WS12_FUNCTION_COUNT: usize = 15;
 const WS17_METERS_TO_FEET: f64 = 3.281;
+const WS34_MANNING_RELATION_TOLERANCE: f64 = 1.0e-9;
 
 #[derive(Debug, Clone, Copy)]
 struct Ws12ActiveProjection {
@@ -670,6 +671,13 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
                 symbol: format!("ws10_channel_{node_id}_ienslp"),
                 value: f64::from(definition.ienslp),
                 rule: "ienslp must be within [1,2]",
+            });
+        }
+        if definition.chnn + WS34_MANNING_RELATION_TOLERANCE < definition.chnnbr {
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_chnn"),
+                value: definition.chnn,
+                rule: "chnn must be >= chnnbr",
             });
         }
 
@@ -3125,6 +3133,27 @@ mod tests {
             error,
             WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
             if symbol == "ws10_channel_1_ienslp"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_chnn_less_than_chnnbr() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].chnn = parsed.channels[0].chnnbr - 0.001;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("chnn below chnnbr must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_chnn"
         ));
     }
 

@@ -92,6 +92,18 @@ fn strict_mode_rejects_ienslp_out_of_domain() {
 }
 
 #[test]
+fn strict_mode_rejects_chnn_less_than_chnnbr() {
+    let err = parse_watershed_channel_from_path(
+        fixture_path("strict_chnn_less_than_chnnbr.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect_err("strict mode should reject chnn below chnnbr");
+
+    assert!(matches!(err, WatershedChannelParseError::FieldRange { .. }));
+    assert_eq!(err.contract_error_id(), "CHN-E-005");
+}
+
+#[test]
 fn compatibility_mode_normalizes_legacy_ishape() {
     let parsed = parse_watershed_channel_from_path(
         fixture_path("compat_ishape_normalized.chn"),

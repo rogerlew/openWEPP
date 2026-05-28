@@ -892,6 +892,13 @@ Authorized packages:
     `1..=2` fail-closed), adding contract-derived parser/runtime vectors, and
     preserving explicit non-promotable HOLD posture for remaining full
     `chnero/chnrt/detach` parity closure families.
+- `20260528-wshedimpl34-parser-runtime-chnn-chnnbr-lineage-closure-001/`
+  - Purpose: execute WSHEDIMPL34 immediate next actions from WSHEDIMPL33 by
+    reconciling parser/runtime watershed-channel Manning relation lineage
+    across watershed channel input parsing and WS10 runtime seed validation
+    (`chnn >= chnnbr` fail-closed), adding contract-derived parser/runtime
+    vectors, and preserving explicit non-promotable HOLD posture for remaining
+    full `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
