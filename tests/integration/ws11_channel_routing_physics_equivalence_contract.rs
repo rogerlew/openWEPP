@@ -1088,6 +1088,90 @@ fn wshedimpl28_contract_ws20_routing_responds_to_wida_lower_boundary_widths() {
 }
 
 #[test]
+fn wshedimpl29_contract_ws20_rectangular_widb_mutation_projects_to_state() {
+    let channel_only_topology = r"
+HILLSLOPES 1
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+";
+
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(2.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0003"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0003"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(100.0),
+    );
+    for hillslope_id in [1_u32, 2, 3] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_peakro")),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_watdur")),
+            BoundaryValue::scalar(300.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_detachment_kg")),
+            BoundaryValue::scalar(0.001),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_deposition_kg")),
+            BoundaryValue::scalar(0.0),
+        );
+    }
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface_with_topology(surface, channel_only_topology);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl29 rectangular widb mutation vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let updated_widb_0001 = state_value(&report, "ws10_channel_1_widb_0001");
+    let updated_widb_0002 = state_value(&report, "ws10_channel_1_widb_0002");
+    assert!(
+        updated_widb_0001 > 1.0 + 1.0e-9 || updated_widb_0002 > 1.0 + 1.0e-9,
+        "expected ws29 widb mutation to widen at least one rectangular upper-boundary width; widb_0001={updated_widb_0001}, widb_0002={updated_widb_0002}"
+    );
+}
+
+#[test]
 fn wshedimpl24_contract_case12_transition_requires_crfrac_projection() {
     let mut surface = seeded_ws11_surface();
     surface

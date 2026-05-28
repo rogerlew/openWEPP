@@ -857,6 +857,13 @@ Authorized packages:
     WS20/WS21 segment loops, adding WS28 contract-derived vectors, and
     preserving explicit non-promotable HOLD posture for remaining full
     `chnero/chnrt/detach` parity closure families.
+- `20260527-wshedimpl29-channel-rectangular-width-mutation-closure-001/`
+  - Purpose: execute WSHEDIMPL29 immediate next actions from WSHEDIMPL28 by
+    migrating baseline-authoritative rectangular-channel width mutation
+    semantics (`dcap` `werb` -> `widb(i-1)`) into WS20 routing/writeback
+    surfaces, adding WS29 contract-derived vectors, and preserving explicit
+    non-promotable HOLD posture for remaining full `chnero/chnrt/detach`
+    parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
