@@ -907,6 +907,23 @@ Authorized packages:
     fail-closed), adding contract-derived parser/runtime vectors, and
     preserving explicit non-promotable HOLD posture for remaining full
     `chnero/chnrt/detach` parity closure families.
+- `20260528-wshedimpl36-parser-runtime-rating-curve-lineage-closure-001/`
+  - Purpose: execute WSHEDIMPL36 immediate next actions from WSHEDIMPL35 by
+    reconciling parser/runtime rating-curve control lineage (`rccoef`,
+    `rcexp`, `rcoset`) for `icntrl==4` channel lanes across watershed channel
+    parsing and WS10 runtime seed projection/validation with explicit
+    fail-closed payload-presence and domain semantics.
+- `20260528-wshedimpl37-ws11-route-chain-wshcqi-wshirs-wshrun-closure-001/`
+  - Purpose: execute WSHEDIMPL37 by migrating baseline-authoritative WS11
+    hydrology routine-chain behavior (`wshcqi/wshirs/wshrun`) into production
+    watershed runtime lanes and closing/narrowing residual `GAP-ROUTE-008`
+    parity blockers with contract-derived route-chain vectors.
+- `20260528-wshedimpl38-channel-sediment-symbol-burndown-hold-lift-closure-001/`
+  - Purpose: execute WSHEDIMPL38 as final symbol/process burndown wave to
+    close residual channel sediment parity blockers
+    (`GAP-ROUTE-009`/`GAP-SED-006`/`GAP-SYSTEM-008`), run hold-lift evidence
+    gates, and publish disposition-grade GO/HOLD outcome with explicit gap
+    closure ownership.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
