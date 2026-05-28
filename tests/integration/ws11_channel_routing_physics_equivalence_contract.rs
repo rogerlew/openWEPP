@@ -136,6 +136,36 @@ fn seed_ws22_channel_crfrac(surface: &mut WatershedWritebackSurface, node_id: u3
     }
 }
 
+fn seed_ws24_case12_transition_forcing(surface: &mut WatershedWritebackSurface) {
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_slope_0002"),
+        BoundaryValue::scalar(0.0002),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_slope_0003"),
+        BoundaryValue::scalar(0.0002),
+    );
+
+    for hillslope_id in [1_u32, 2, 3] {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_detachment_kg")),
+            BoundaryValue::scalar(10.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("hs{hillslope_id}_total_deposition_kg")),
+            BoundaryValue::scalar(0.0),
+        );
+    }
+}
+
 fn seeded_ws11_surface() -> WatershedWritebackSurface {
     let valid_channel_element_ids = std::collections::BTreeSet::from([4, 5]);
     let chaninp = parse_chaninp_from_str(
@@ -609,6 +639,7 @@ fn wshedimpl20_contract_case12_routing_is_opt_in_and_defaults_to_zero_diagnostic
     for symbol in [
         "ws10_channel_1_ws20_case1_segment_count",
         "ws10_channel_1_ws20_case2_segment_count",
+        "ws10_channel_1_ws24_case2_detach_segment_count",
         "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
     ] {
         assert!(
@@ -619,6 +650,10 @@ fn wshedimpl20_contract_case12_routing_is_opt_in_and_defaults_to_zero_diagnostic
 
     assert!((state_value(&report, "ws10_channel_1_ws20_case1_segment_count") - 0.0).abs() <= 1e-12);
     assert!((state_value(&report, "ws10_channel_1_ws20_case2_segment_count") - 0.0).abs() <= 1e-12);
+    assert!(
+        (state_value(&report, "ws10_channel_1_ws24_case2_detach_segment_count") - 0.0).abs()
+            <= 1e-12
+    );
     assert!(
         (state_value(
             &report,
@@ -848,6 +883,63 @@ fn wshedimpl23_contract_ws21_case4_detach_iterative_closure_clears_unmigrated_co
         (ws21_unmigrated - 0.0).abs() <= 1e-12,
         "wshedimpl23 migrated case4->detach branch must not emit ws21 unresolved-detachment counts"
     );
+}
+
+#[test]
+fn wshedimpl24_contract_case12_transition_requires_crfrac_projection() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    seed_ws24_case12_transition_forcing(&mut surface);
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report
+            .step_reports
+            .iter()
+            .any(|step| step.decision_status.message_id() == "WKERNEL-WS10-CHANNEL-E-001"),
+        "expected missing crfrac projection failure; step_reports={:?}",
+        report.step_reports
+    );
+}
+
+#[test]
+fn wshedimpl24_contract_case12_transition_routes_with_crfrac_projection() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    seed_ws24_case12_transition_forcing(&mut surface);
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl24 transition vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let case2_segments = state_value(&report, "ws10_channel_1_ws20_case2_segment_count");
+    let case1_segments = state_value(&report, "ws10_channel_1_ws20_case1_segment_count");
+    let ws24_transition_segments =
+        state_value(&report, "ws10_channel_1_ws24_case2_detach_segment_count");
+    let ws20_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
+    );
+    let ws21_case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
+    let ws21_case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
+
+    assert!(
+        case2_segments > 0.0,
+        "expected case2 activity for ws24 transition forcing vector, got case2={case2_segments}, case1={case1_segments}, ws24={ws24_transition_segments}, ws21_case3={ws21_case3_segments}, ws21_case4={ws21_case4_segments}, ws20_unmigrated={ws20_unmigrated}"
+    );
+    assert!(
+        ws24_transition_segments > 0.0,
+        "expected ws24 transition diagnostics activity, got {ws24_transition_segments}"
+    );
+    assert!(ws20_unmigrated >= 0.0);
 }
 
 #[test]

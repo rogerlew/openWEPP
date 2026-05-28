@@ -320,6 +320,7 @@ struct Ws19ChannelSedimentPublication {
     particle_diameters_m: Vec<f64>,
     ws20_case1_segments: u32,
     ws20_case2_segments: u32,
+    ws24_case2_detach_segments: u32,
     ws20_detachment_unmigrated_segments: u32,
     ws21_case3_segments: u32,
     ws21_case4_segments: u32,
@@ -339,6 +340,7 @@ struct Ws20IncomingPeakPartition {
 struct Ws20SegmentRoutingDiagnostics {
     case1_segments: u32,
     case2_segments: u32,
+    ws24_case2_detach_segments: u32,
     detachment_unmigrated_segments: u32,
     case3_segments: u32,
     case4_segments: u32,
@@ -2646,6 +2648,65 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(next_gstu_lbs_s)
     }
 
+    #[allow(clippy::too_many_arguments, clippy::similar_names)]
+    fn ws24_case12_detach_transition_closure(
+        node_class: Ws10NodeClass,
+        ql_cfs: f64,
+        sfl: f64,
+        c1: f64,
+        z: f64,
+        effshl: f64,
+        depsid_ft: f64,
+        depmid_ft: f64,
+        wfl_ft: f64,
+        roughness: f64,
+        crsh: f64,
+        tb_s: f64,
+        flagc: i32,
+        chnk: f64,
+        nbarch: f64,
+        crfrac: &[f64],
+        gstde_lbs_s: &[f64],
+        dlat_lbs_s_ft: &[f64],
+        dx_ft_remaining: f64,
+        crdia_ft: &[f64],
+        crspg: &[f64],
+    ) -> Result<Vec<f64>, Ws10GuardError> {
+        if dx_ft_remaining <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws24_case12_dx_remaining"),
+                dx_ft_remaining,
+            ));
+        }
+
+        let zero_du_lbs_s_ft = vec![0.0_f64; gstde_lbs_s.len()];
+        Self::ws23_detach_case4_iterative_closure(
+            node_class,
+            ql_cfs,
+            sfl,
+            c1,
+            z,
+            effshl,
+            depsid_ft,
+            depmid_ft,
+            wfl_ft,
+            roughness,
+            crsh,
+            tb_s,
+            flagc,
+            chnk,
+            nbarch,
+            crfrac,
+            gstde_lbs_s,
+            dlat_lbs_s_ft,
+            &zero_du_lbs_s_ft,
+            dx_ft_remaining,
+            crdia_ft,
+            crspg,
+        )
+    }
+
     #[allow(
         clippy::too_many_arguments,
         clippy::many_single_char_names,
@@ -3225,6 +3286,9 @@ impl Ws10ChannelImpoundmentKernel {
             let mut saw_case1 = false;
             let mut saw_case2 = false;
             let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+            let mut xde_ft = vec![x_lower_ft; class_count];
+            let mut gstde_lbs_s = vec![0.0_f64; class_count];
+            let mut case12_nz = 0_usize;
             let mut segment_route_invalid = false;
             for class_offset in 0..class_count {
                 let xrat = if x_lower_ft > WS10_ZERO_THRESHOLD {
@@ -3264,16 +3328,19 @@ impl Ws10ChannelImpoundmentKernel {
 
                 let next_flux = if dl_lbs_s_ft2 <= 0.0 {
                     saw_case1 = true;
+                    case12_nz = case12_nz.saturating_add(1);
                     let phi_k = phi[class_offset];
                     let gsl = if phi_k > WS10_ZERO_THRESHOLD {
                         tcl_lbs_s_ft[class_offset] - ((dl_lbs_s_ft2 * x_lower_ft / phi_k) / wfl_ft)
                     } else {
                         0.0
                     };
+                    xde_ft[class_offset] = x_lower_ft;
+                    gstde_lbs_s[class_offset] = gsl * wfl_ft;
                     gsl * wfl_ft
                 } else {
                     saw_case2 = true;
-                    let xde_ft = if du_lbs_s_ft2.abs() <= WS10_ZERO_THRESHOLD {
+                    let xde_value_ft = if du_lbs_s_ft2.abs() <= WS10_ZERO_THRESHOLD {
                         x_upper_ft
                     } else if qlat_cfs_per_ft > WS10_ZERO_THRESHOLD {
                         let den = dtcdx_lbs_s_ft2[class_offset] - dlat_lbs_s_ft[class_offset];
@@ -3294,18 +3361,21 @@ impl Ws10ChannelImpoundmentKernel {
                         x_upper_ft * (1.0 - (du_lbs_s_ft2 / dtcdx_lbs_s_ft2[class_offset]))
                     };
 
-                    let gstde_lbs_s = if du_lbs_s_ft2.abs() <= WS10_ZERO_THRESHOLD {
+                    let gstde_value_lbs_s = if du_lbs_s_ft2.abs() <= WS10_ZERO_THRESHOLD {
                         gstu_lbs_s[class_offset]
                     } else {
-                        (dtcdx_lbs_s_ft2[class_offset] * (xde_ft - x_upper_ft))
+                        (dtcdx_lbs_s_ft2[class_offset] * (xde_value_ft - x_upper_ft))
                             + (tcu_lbs_s_ft[class_offset] * wfu_ft)
                     };
-                    let gsl_lbs_s_ft = if (xde_ft - x_lower_ft).abs() > WS10_ZERO_THRESHOLD {
-                        (gstde_lbs_s + (dlat_lbs_s_ft[class_offset] * (x_lower_ft - xde_ft)))
+                    let gsl_lbs_s_ft = if (xde_value_ft - x_lower_ft).abs() > WS10_ZERO_THRESHOLD {
+                        (gstde_value_lbs_s
+                            + (dlat_lbs_s_ft[class_offset] * (x_lower_ft - xde_value_ft)))
                             / wfl_ft
                     } else {
                         tcl_lbs_s_ft[class_offset]
                     };
+                    xde_ft[class_offset] = xde_value_ft;
+                    gstde_lbs_s[class_offset] = gstde_value_lbs_s;
 
                     gsl_lbs_s_ft * wfl_ft
                 };
@@ -3324,6 +3394,57 @@ impl Ws10ChannelImpoundmentKernel {
                     gstu_lbs_s[class_offset] += dlat_lbs_s_ft[class_offset] * dx_ft;
                 }
                 continue;
+            }
+
+            if ws21_case34_enabled && saw_case2 && case12_nz < class_count {
+                let xdemax_ft = xde_ft.iter().copied().fold(x_upper_ft, f64::max);
+                if xdemax_ft + WS10_ZERO_THRESHOLD < x_lower_ft {
+                    let dx_remaining_ft = x_lower_ft - xdemax_ft;
+                    let mut gstde_transition_lbs_s = gstde_lbs_s.clone();
+                    for class_offset in 0..class_count {
+                        gstde_transition_lbs_s[class_offset] +=
+                            dlat_lbs_s_ft[class_offset] * (xdemax_ft - xde_ft[class_offset]);
+                    }
+
+                    let crfrac =
+                        Self::ws22_require_crfrac_vector(request, node_class, class_numbers)?;
+                    let depmid_ft = sediment_controls.chnedm * WS15_DEPTH_FROM_METERS_TO_FEET;
+                    let depsid_ft = sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
+                    let tb_s = 2.0 * event_duration;
+
+                    gstu_lbs_s = Self::ws24_case12_detach_transition_closure(
+                        node_class,
+                        ql_cfs,
+                        slopes[segment_index].max(WS22_DCAP_MIN_SLOPE),
+                        sediment_controls.ctlz,
+                        sediment_controls.chnz,
+                        effshl,
+                        depsid_ft,
+                        depmid_ft,
+                        wfl_ft,
+                        roughness,
+                        crsh,
+                        tb_s,
+                        flagc,
+                        chnk,
+                        sediment_controls.chnnbr,
+                        &crfrac,
+                        &gstde_transition_lbs_s,
+                        &dlat_lbs_s_ft,
+                        dx_remaining_ft,
+                        &crdia_ft,
+                        &crspg,
+                    )?;
+                    diagnostics.ws24_case2_detach_segments =
+                        diagnostics.ws24_case2_detach_segments.saturating_add(1);
+                    if saw_case1 {
+                        diagnostics.case1_segments = diagnostics.case1_segments.saturating_add(1);
+                    }
+                    if saw_case2 {
+                        diagnostics.case2_segments = diagnostics.case2_segments.saturating_add(1);
+                    }
+                    continue;
+                }
             }
 
             if saw_case1 {
@@ -3607,6 +3728,7 @@ impl Ws10ChannelImpoundmentKernel {
                 particle_diameters_m,
                 ws20_case1_segments: ws20_diagnostics.case1_segments,
                 ws20_case2_segments: ws20_diagnostics.case2_segments,
+                ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
                 ws20_detachment_unmigrated_segments: ws20_diagnostics
                     .detachment_unmigrated_segments,
                 ws21_case3_segments: ws20_diagnostics.case3_segments,
@@ -3740,6 +3862,7 @@ impl Ws10ChannelImpoundmentKernel {
             particle_diameters_m,
             ws20_case1_segments: ws20_diagnostics.case1_segments,
             ws20_case2_segments: ws20_diagnostics.case2_segments,
+            ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
             ws20_detachment_unmigrated_segments: ws20_diagnostics.detachment_unmigrated_segments,
             ws21_case3_segments: ws20_diagnostics.case3_segments,
             ws21_case4_segments: ws20_diagnostics.case4_segments,
@@ -4239,6 +4362,12 @@ impl Ws10ChannelImpoundmentKernel {
             WritebackField::bounded(
                 Self::channel_wave_state_symbol(request.node_id, "ws20_case2_segment_count"),
                 f64::from(sediment_publication.ws20_case2_segments),
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                Self::channel_wave_state_symbol(request.node_id, "ws24_case2_detach_segment_count"),
+                f64::from(sediment_publication.ws24_case2_detach_segments),
                 Some(0.0),
                 None,
             ),
