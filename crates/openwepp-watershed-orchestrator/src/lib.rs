@@ -4216,6 +4216,35 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(value)
     }
 
+    fn require_finite_computed(
+        node_class: Ws10NodeClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let symbol = symbol.into();
+        if !value.is_finite() {
+            return Err(Self::non_finite(node_class, symbol, value));
+        }
+        Ok(value)
+    }
+
+    fn optional_channel_wave_state_scalar(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        node_id: u32,
+        suffix: &str,
+    ) -> Result<Option<f64>, Ws10GuardError> {
+        let symbol = Self::channel_wave_state_symbol(node_id, suffix);
+        let Some(value) = request.state_surface.get(&symbol) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Self::non_finite(node_class, symbol, scalar));
+        }
+        Ok(Some(scalar))
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn compute_kinematic_wave_state(
         node_class: Ws10NodeClass,
@@ -4297,11 +4326,12 @@ impl Ws10ChannelImpoundmentKernel {
         control_slope: f64,
         conductivity: f64,
         nchnum: f64,
-        incoming_peak: f64,
         available_peak: f64,
         baseflow_peak: f64,
         dtchr: f64,
         event_duration: f64,
+        prior_qin: Option<f64>,
+        prior_q1: Option<f64>,
     ) -> Result<Ws11WaveRoutingState, Ws10GuardError> {
         let qin = Self::require_non_negative_computed(
             node_class,
@@ -4311,12 +4341,12 @@ impl Ws10ChannelImpoundmentKernel {
         let qin_previous = Self::require_non_negative_computed(
             node_class,
             BoundarySymbol::from("qin_previous"),
-            incoming_peak,
+            prior_qin.unwrap_or(qin),
         )?;
         let q1_previous = Self::require_non_negative_computed(
             node_class,
             BoundarySymbol::from("q1_previous"),
-            incoming_peak,
+            prior_q1.unwrap_or(qin + (baseflow_peak / event_duration)),
         )?;
         let qlat = Self::require_non_negative_computed(
             node_class,
@@ -4368,22 +4398,23 @@ impl Ws10ChannelImpoundmentKernel {
             BoundarySymbol::from("c0"),
             1.0 / denominator,
         )?;
-        let c1 = Self::require_non_negative_computed(
+        let c1 = Self::require_finite_computed(
             node_class,
             BoundarySymbol::from("c1"),
             mc_translation * c0,
         )?;
-        let c2 = Self::require_non_negative_computed(
+        let c2 = Self::require_finite_computed(
             node_class,
             BoundarySymbol::from("c2"),
             0.5 * mc_storage * c0,
         )?;
-        let c3 = Self::require_non_negative_computed(
+        let c3 =
+            Self::require_finite_computed(node_class, BoundarySymbol::from("c3"), 1.0 - c1 - c2)?;
+        let c4 = Self::require_non_negative_computed(
             node_class,
-            BoundarySymbol::from("c3"),
-            1.0 - c1 - c2,
+            BoundarySymbol::from("c4"),
+            2.0 * qlat * dtchr * c0,
         )?;
-        let c4 = Self::require_non_negative_computed(node_class, BoundarySymbol::from("c4"), qlat)?;
         let q1 = Self::require_non_negative_computed(
             node_class,
             BoundarySymbol::from("q1"),
@@ -4646,17 +4677,30 @@ impl Ws10ChannelImpoundmentKernel {
                     if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
                         0.0
                     } else {
+                        let prior_qin = Self::optional_channel_wave_state_scalar(
+                            request,
+                            node_class,
+                            request.node_id,
+                            "qin",
+                        )?;
+                        let prior_q1 = Self::optional_channel_wave_state_scalar(
+                            request,
+                            node_class,
+                            request.node_id,
+                            "q1",
+                        )?;
                         let state = Self::compute_muskingum_cunge_state(
                             node_class,
                             roughness,
                             control_slope,
                             conductivity,
                             nchnum,
-                            incoming_peak,
                             available_peak,
                             baseflow_peak,
                             dtchr,
                             watdur,
+                            prior_qin,
+                            prior_q1,
                         )?;
                         let q1 = state.q1;
                         wave_state = Some(state);
@@ -5000,19 +5044,19 @@ impl Ws10ChannelImpoundmentKernel {
             state_updates.push(WritebackField::bounded(
                 Self::channel_wave_state_symbol(node_id, "c1"),
                 state.c1,
-                Some(0.0),
+                None,
                 None,
             ));
             state_updates.push(WritebackField::bounded(
                 Self::channel_wave_state_symbol(node_id, "c2"),
                 state.c2,
-                Some(0.0),
+                None,
                 None,
             ));
             state_updates.push(WritebackField::bounded(
                 Self::channel_wave_state_symbol(node_id, "c3"),
                 state.c3,
-                Some(0.0),
+                None,
                 None,
             ));
             state_updates.push(WritebackField::bounded(

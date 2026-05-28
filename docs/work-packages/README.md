@@ -930,6 +930,11 @@ Authorized packages:
     runfile validator selectors (`GAP-ROUTE-005`) and dispositioning residual
     system-level governance/alias posture (`GAP-SYSTEM-001`,
     `GAP-SYSTEM-002`) with contract-first evidence.
+- `20260528-wshedimpl40-muskingum-cunge-baseline-parity-closure-001/`
+  - Purpose: execute WSHEDIMPL40 to identify baseline-authoritative
+    Muskingum-Cunge implementation gaps (`wshchr` lineage, `ipeak >= 4`) in
+    openWEPP watershed routing, implement contract-first parity closure, and
+    publish dual-review/dual-verification disposition evidence.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

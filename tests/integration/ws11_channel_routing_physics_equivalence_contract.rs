@@ -584,6 +584,108 @@ fn wshed03_contract_kw_mc_vector_requires_wave_routing_state_family_publication(
 }
 
 #[test]
+fn wshedimpl40_contract_mc_lateral_term_matches_single_segment_baseline_scaling() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+
+    let dtchr = surface
+        .state_surface
+        .get(&BoundarySymbol::from("dtchr"))
+        .expect("ws11 seeded surface must include dtchr")
+        .as_f64();
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl40 mc lateral-term vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let qlat = state_value(&report, "ws10_channel_1_qlat");
+    let c0 = state_value(&report, "ws10_channel_1_c0");
+    let c4 = state_value(&report, "ws10_channel_1_c4");
+    let expected_c4 = 2.0 * qlat * dtchr * c0;
+
+    assert!(
+        (c4 - expected_c4).abs() <= 1.0e-9,
+        "wshedimpl40 expected c4=2*qlat*dtchr*c0; observed c4={c4}, expected={expected_c4}, qlat={qlat}, dtchr={dtchr}, c0={c0}"
+    );
+}
+
+#[test]
+fn wshedimpl40_contract_mc_prior_wave_state_memory_changes_branch_output() {
+    let mut baseline_surface = seeded_ws11_surface();
+    baseline_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    let baseline_report = run_ws11_surface(baseline_surface);
+    assert!(
+        baseline_report.dispatch_report.is_success(),
+        "wshedimpl40 baseline mc vector must succeed; step_reports={:?}",
+        baseline_report.step_reports
+    );
+
+    let baseline_qpo = state_value(&baseline_report, "ws10_channel_1_qpo");
+
+    let mut prior_seeded_surface = seeded_ws11_surface();
+    prior_seeded_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    prior_seeded_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_qin"),
+        BoundaryValue::scalar(0.05),
+    );
+    prior_seeded_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_q1"),
+        BoundaryValue::scalar(2.5),
+    );
+
+    let prior_seeded_report = run_ws11_surface(prior_seeded_surface);
+    assert!(
+        prior_seeded_report.dispatch_report.is_success(),
+        "wshedimpl40 prior-state mc vector must succeed; step_reports={:?}",
+        prior_seeded_report.step_reports
+    );
+
+    let prior_seeded_qpo = state_value(&prior_seeded_report, "ws10_channel_1_qpo");
+    assert!(
+        (prior_seeded_qpo - baseline_qpo).abs() > 1.0e-9,
+        "wshedimpl40 prior-wave-state memory must influence MC routing output; baseline_qpo={baseline_qpo}, prior_seeded_qpo={prior_seeded_qpo}"
+    );
+}
+
+#[test]
+fn wshedimpl40_contract_mc_coefficients_allow_signed_publication() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ctlslp"),
+        BoundaryValue::scalar(1.2),
+    );
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl40 signed-coefficient vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let c1 = state_value(&report, "ws10_channel_1_c1");
+    let c2 = state_value(&report, "ws10_channel_1_c2");
+    let c3 = state_value(&report, "ws10_channel_1_c3");
+
+    assert!(c1.is_finite() && c2.is_finite() && c3.is_finite());
+    assert!(
+        (c3 - (1.0 - c1 - c2)).abs() <= 1.0e-12,
+        "wshedimpl40 expected MC coefficient closure c3=1-c1-c2; c1={c1}, c2={c2}, c3={c3}"
+    );
+}
+
+#[test]
 fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publication_family() {
     let mut surface = seeded_ws11_surface();
     surface
