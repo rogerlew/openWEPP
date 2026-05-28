@@ -665,6 +665,13 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
                 rule: "ishape must be within [1,3] (1=rectangular, 2=triangular, 3=naturally eroded)",
             });
         }
+        if !(1..=2).contains(&definition.ienslp) {
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_ienslp"),
+                value: f64::from(definition.ienslp),
+                rule: "ienslp must be within [1,2]",
+            });
+        }
 
         for (suffix, value, min, allow_zero) in [
             ("ishape", f64::from(definition.ishape), Some(0.0), false),
@@ -3097,6 +3104,27 @@ mod tests {
             error,
             WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
             if symbol == "ws10_channel_1_ishape"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_ienslp() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].ienslp = 3;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("out-of-domain ienslp must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_ienslp"
         ));
     }
 

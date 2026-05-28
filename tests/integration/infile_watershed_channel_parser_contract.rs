@@ -80,6 +80,18 @@ fn strict_mode_rejects_ishape_out_of_domain() {
 }
 
 #[test]
+fn strict_mode_rejects_ienslp_out_of_domain() {
+    let err = parse_watershed_channel_from_path(
+        fixture_path("strict_ienslp_out_of_domain.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect_err("strict mode should reject unsupported ienslp");
+
+    assert!(matches!(err, WatershedChannelParseError::EnumDomain { .. }));
+    assert_eq!(err.contract_error_id(), "CHN-E-004");
+}
+
+#[test]
 fn compatibility_mode_normalizes_legacy_ishape() {
     let parsed = parse_watershed_channel_from_path(
         fixture_path("compat_ishape_normalized.chn"),
