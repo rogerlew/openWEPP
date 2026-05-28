@@ -92,6 +92,30 @@ fn strict_mode_rejects_ienslp_out_of_domain() {
 }
 
 #[test]
+fn strict_mode_rejects_icntrl_out_of_domain() {
+    let err = parse_watershed_channel_from_path(
+        fixture_path("strict_icntrl_out_of_domain.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect_err("strict mode should reject unsupported icntrl");
+
+    assert!(matches!(err, WatershedChannelParseError::EnumDomain { .. }));
+    assert_eq!(err.contract_error_id(), "CHN-E-004");
+}
+
+#[test]
+fn strict_mode_rejects_flgout_out_of_domain() {
+    let err = parse_watershed_channel_from_path(
+        fixture_path("strict_flgout_out_of_domain.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect_err("strict mode should reject unsupported flgout");
+
+    assert!(matches!(err, WatershedChannelParseError::EnumDomain { .. }));
+    assert_eq!(err.contract_error_id(), "CHN-E-004");
+}
+
+#[test]
 fn strict_mode_rejects_chnn_less_than_chnnbr() {
     let err = parse_watershed_channel_from_path(
         fixture_path("strict_chnn_less_than_chnnbr.chn"),

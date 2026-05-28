@@ -899,6 +899,14 @@ Authorized packages:
     (`chnn >= chnnbr` fail-closed), adding contract-derived parser/runtime
     vectors, and preserving explicit non-promotable HOLD posture for remaining
     full `chnero/chnrt/detach` parity closure families.
+- `20260528-wshedimpl35-parser-runtime-icntrl-flgout-lineage-closure-001/`
+  - Purpose: execute WSHEDIMPL35 immediate next actions from WSHEDIMPL34 by
+    reconciling parser/runtime watershed-channel control lineage for
+    `icntrl`/`flgout` across watershed channel input parsing and WS10 runtime
+    seed projection/validation (`icntrl in [0,4]`, `flgout in [0,1]`
+    fail-closed), adding contract-derived parser/runtime vectors, and
+    preserving explicit non-promotable HOLD posture for remaining full
+    `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

@@ -640,6 +640,8 @@ pub fn build_watershed_runtime_surface_from_chaninp(
 /// - `ws10_channel_{id}_chnk`
 /// - `ws10_channel_{id}_ishape`
 /// - `ws10_channel_{id}_ienslp`
+/// - `ws10_channel_{id}_icntrl`
+/// - `ws10_channel_{id}_flgout`
 /// - `ws10_channel_{id}_chnz`
 /// - `ws10_channel_{id}_chnnbr`
 /// - `ws10_channel_{id}_chntcr`
@@ -673,6 +675,20 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
                 rule: "ienslp must be within [1,2]",
             });
         }
+        if !(0..=4).contains(&definition.icntrl) {
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_icntrl"),
+                value: f64::from(definition.icntrl),
+                rule: "icntrl must be within [0,4]",
+            });
+        }
+        if !(0..=1).contains(&definition.flgout) {
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_flgout"),
+                value: f64::from(definition.flgout),
+                rule: "flgout must be within [0,1]",
+            });
+        }
         if definition.chnn + WS34_MANNING_RELATION_TOLERANCE < definition.chnnbr {
             return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
                 symbol: format!("ws10_channel_{node_id}_chnn"),
@@ -684,6 +700,8 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
         for (suffix, value, min, allow_zero) in [
             ("ishape", f64::from(definition.ishape), Some(0.0), false),
             ("ienslp", f64::from(definition.ienslp), Some(0.0), false),
+            ("icntrl", f64::from(definition.icntrl), Some(0.0), true),
+            ("flgout", f64::from(definition.flgout), Some(0.0), true),
             ("chnn", definition.chnn, Some(0.0), false),
             ("ctlslp", definition.ctlslp_effective, Some(0.0), true),
             ("chnk", definition.chnk, Some(0.0), true),
@@ -3025,6 +3043,16 @@ mod tests {
             .get(&BoundarySymbol::from("ws10_channel_1_ishape"))
             .expect("ws10_channel_1_ishape should be present")
             .as_f64();
+        let icntrl = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_icntrl"))
+            .expect("ws10_channel_1_icntrl should be present")
+            .as_f64();
+        let flgout = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_flgout"))
+            .expect("ws10_channel_1_flgout should be present")
+            .as_f64();
         let chnz = surface
             .state_surface
             .get(&BoundarySymbol::from("ws10_channel_1_chnz"))
@@ -3065,6 +3093,8 @@ mod tests {
         assert!((ctlslp - 0.02).abs() < 1e-12);
         assert!((conductivity - 0.000_001).abs() < 1e-12);
         assert!((ishape - 1.0).abs() < 1e-12);
+        assert!((icntrl - 4.0).abs() < 1e-12);
+        assert!((flgout - 0.0).abs() < 1e-12);
         assert!((chnz - 19.99).abs() < 1e-12);
         assert!((chnnbr - 0.03).abs() < 1e-12);
         assert!((chntcr - 19.0).abs() < 1e-12);
@@ -3133,6 +3163,48 @@ mod tests {
             error,
             WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
             if symbol == "ws10_channel_1_ienslp"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_icntrl() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].icntrl = 5;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("out-of-domain icntrl must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_icntrl"
+        ));
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_flgout() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].flgout = 2;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("out-of-domain flgout must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_flgout"
         ));
     }
 
