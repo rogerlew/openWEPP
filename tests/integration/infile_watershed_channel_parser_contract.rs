@@ -88,14 +88,29 @@ fn compatibility_mode_normalizes_legacy_ishape() {
             ..WatershedChannelParseOptions::default()
         },
     )
-    .expect("compat mode should normalize ishape>2");
+    .expect("compat mode should normalize ishape>3 to naturally eroded class");
 
-    assert_eq!(parsed.channels[0].ishape, 2);
+    assert_eq!(parsed.channels[0].ishape, 3);
     assert!(
         parsed
             .warnings
             .iter()
             .any(|warning| warning.code == ChannelWarningCode::ChnW003)
+    );
+}
+
+#[test]
+fn strict_mode_accepts_naturally_eroded_ishape_class() {
+    let parsed = parse_watershed_channel_from_path(
+        fixture_path("strict_ishape_naturally_eroded.chn"),
+        WatershedChannelParseOptions::default(),
+    )
+    .expect("strict mode should accept ishape=3");
+
+    assert_eq!(parsed.channels[0].ishape, 3);
+    assert!(
+        parsed.warnings.is_empty(),
+        "strict parse should not emit compatibility normalization warnings"
     );
 }
 

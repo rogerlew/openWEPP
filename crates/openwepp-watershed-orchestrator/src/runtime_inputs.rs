@@ -658,104 +658,35 @@ pub fn seed_watershed_runtime_surface_from_watershed_channel(
 ) -> Result<(), WatershedRuntimeInputError> {
     for definition in &channel.channels {
         let node_id = definition.channel_id;
-        let ishape_symbol = format!("ws10_channel_{node_id}_ishape");
-        let ienslp_symbol = format!("ws10_channel_{node_id}_ienslp");
-        let chnn_symbol = format!("ws10_channel_{node_id}_chnn");
-        let ctlslp_symbol = format!("ws10_channel_{node_id}_ctlslp");
-        let conductivity_symbol = format!("ws10_channel_{node_id}_chnk");
-        let chnz_symbol = format!("ws10_channel_{node_id}_chnz");
-        let chnnbr_symbol = format!("ws10_channel_{node_id}_chnnbr");
-        let chntcr_symbol = format!("ws10_channel_{node_id}_chntcr");
-        let chnedm_symbol = format!("ws10_channel_{node_id}_chnedm");
-        let chneds_symbol = format!("ws10_channel_{node_id}_chneds");
-        let ctlz_symbol = format!("ws10_channel_{node_id}_ctlz");
-        let ctln_symbol = format!("ws10_channel_{node_id}_ctln");
+        if !(1..=3).contains(&definition.ishape) {
+            return Err(WatershedRuntimeInputError::ChannelSymbolOutOfDomain {
+                symbol: format!("ws10_channel_{node_id}_ishape"),
+                value: f64::from(definition.ishape),
+                rule: "ishape must be within [1,3] (1=rectangular, 2=triangular, 3=naturally eroded)",
+            });
+        }
 
-        let ishape = f64::from(definition.ishape);
-        let ienslp = f64::from(definition.ienslp);
-
-        validate_ws10_channel_value(ishape_symbol.as_str(), ishape, Some(0.0), false)?;
-        validate_ws10_channel_value(ienslp_symbol.as_str(), ienslp, Some(0.0), false)?;
-        validate_ws10_channel_value(chnn_symbol.as_str(), definition.chnn, Some(0.0), false)?;
-        validate_ws10_channel_value(
-            ctlslp_symbol.as_str(),
-            definition.ctlslp_effective,
-            Some(0.0),
-            true,
-        )?;
-        validate_ws10_channel_value(
-            conductivity_symbol.as_str(),
-            definition.chnk,
-            Some(0.0),
-            true,
-        )?;
-        validate_ws10_channel_value(chnz_symbol.as_str(), definition.chnz, Some(0.0), false)?;
-        validate_ws10_channel_value(chnnbr_symbol.as_str(), definition.chnnbr, Some(0.0), false)?;
-        validate_ws10_channel_value(chntcr_symbol.as_str(), definition.chntcr, Some(0.0), true)?;
-        validate_ws10_channel_value(chnedm_symbol.as_str(), definition.chnedm, Some(0.0), true)?;
-        validate_ws10_channel_value(chneds_symbol.as_str(), definition.chneds, Some(0.0), true)?;
-        validate_ws10_channel_value(
-            ctlz_symbol.as_str(),
-            definition.ctlz_effective,
-            Some(0.0),
-            false,
-        )?;
-        validate_ws10_channel_value(
-            ctln_symbol.as_str(),
-            definition.ctln_effective,
-            Some(0.0),
-            false,
-        )?;
-
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(ishape_symbol.as_str()),
-            BoundaryValue::scalar(ishape),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(ienslp_symbol.as_str()),
-            BoundaryValue::scalar(ienslp),
-        );
-
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(chnn_symbol.as_str()),
-            BoundaryValue::scalar(definition.chnn),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(ctlslp_symbol.as_str()),
-            BoundaryValue::scalar(definition.ctlslp_effective),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(conductivity_symbol.as_str()),
-            BoundaryValue::scalar(definition.chnk),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(chnz_symbol.as_str()),
-            BoundaryValue::scalar(definition.chnz),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(chnnbr_symbol.as_str()),
-            BoundaryValue::scalar(definition.chnnbr),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(chntcr_symbol.as_str()),
-            BoundaryValue::scalar(definition.chntcr),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(chnedm_symbol.as_str()),
-            BoundaryValue::scalar(definition.chnedm),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(chneds_symbol.as_str()),
-            BoundaryValue::scalar(definition.chneds),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(ctlz_symbol.as_str()),
-            BoundaryValue::scalar(definition.ctlz_effective),
-        );
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from(ctln_symbol.as_str()),
-            BoundaryValue::scalar(definition.ctln_effective),
-        );
+        for (suffix, value, min, allow_zero) in [
+            ("ishape", f64::from(definition.ishape), Some(0.0), false),
+            ("ienslp", f64::from(definition.ienslp), Some(0.0), false),
+            ("chnn", definition.chnn, Some(0.0), false),
+            ("ctlslp", definition.ctlslp_effective, Some(0.0), true),
+            ("chnk", definition.chnk, Some(0.0), true),
+            ("chnz", definition.chnz, Some(0.0), false),
+            ("chnnbr", definition.chnnbr, Some(0.0), false),
+            ("chntcr", definition.chntcr, Some(0.0), true),
+            ("chnedm", definition.chnedm, Some(0.0), true),
+            ("chneds", definition.chneds, Some(0.0), true),
+            ("ctlz", definition.ctlz_effective, Some(0.0), false),
+            ("ctln", definition.ctln_effective, Some(0.0), false),
+        ] {
+            let symbol = format!("ws10_channel_{node_id}_{suffix}");
+            validate_ws10_channel_value(symbol.as_str(), value, min, allow_zero)?;
+            runtime_surface.state_surface.insert(
+                BoundarySymbol::from(symbol.as_str()),
+                BoundaryValue::scalar(value),
+            );
+        }
     }
 
     Ok(())
@@ -2956,6 +2887,9 @@ mod tests {
     const STRICT_VALID_WATERSHED_CHANNEL: &str = include_str!(
         "../../../tests/fixtures/infile/watershed_channel/strict_valid_single_channel.chn"
     );
+    const STRICT_ISHAPE_NATURALLY_ERODED_WATERSHED_CHANNEL: &str = include_str!(
+        "../../../tests/fixtures/infile/watershed_channel/strict_ishape_naturally_eroded.chn"
+    );
     const STRICT_VALID_SLOPE: &str =
         include_str!("../../../tests/fixtures/infile/slope/strict_valid_canonical.slp");
     const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str = include_str!(
@@ -3123,6 +3057,47 @@ mod tests {
         assert!((chneds - 0.0001).abs() < 1e-12);
         assert!((ctlz - 4.0).abs() < 1e-12);
         assert!((ctln - 0.04).abs() < 1e-12);
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_projects_naturally_eroded_ishape() {
+        let parsed = parse_watershed_channel_from_str(
+            STRICT_ISHAPE_NATURALLY_ERODED_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict naturally eroded watershed channel fixture should parse");
+
+        let mut surface = WatershedWritebackSurface::default();
+        seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect("ws10 channel runtime seed should project naturally eroded ishape");
+
+        let ishape = surface
+            .state_surface
+            .get(&BoundarySymbol::from("ws10_channel_1_ishape"))
+            .expect("ws10_channel_1_ishape should be present")
+            .as_f64();
+        assert!((ishape - 3.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn watershed_channel_runtime_seed_rejects_out_of_domain_ishape() {
+        let mut parsed = parse_watershed_channel_from_str(
+            STRICT_VALID_WATERSHED_CHANNEL,
+            WatershedChannelParseOptions::default(),
+        )
+        .expect("strict watershed channel fixture should parse");
+        parsed.channels[0].ishape = 4;
+
+        let mut surface = WatershedWritebackSurface::default();
+        let error = seed_watershed_runtime_surface_from_watershed_channel(&mut surface, &parsed)
+            .expect_err("out-of-domain ishape must fail");
+
+        assert_eq!(error.code(), "WS-RUNTIME-E-010");
+        assert!(matches!(
+            error,
+            WatershedRuntimeInputError::ChannelSymbolOutOfDomain { symbol, .. }
+            if symbol == "ws10_channel_1_ishape"
+        ));
     }
 
     #[test]

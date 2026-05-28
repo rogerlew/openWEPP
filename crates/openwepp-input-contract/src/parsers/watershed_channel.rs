@@ -370,7 +370,7 @@ pub fn parse_watershed_channel_from_str(
         let (ishape_line, mut ishape) = parse_single_i32(&lines, &mut cursor, "ishape")?;
         match options.mode {
             WatershedChannelParseMode::Strict => {
-                if !matches!(ishape, 1 | 2) {
+                if !matches!(ishape, 1..=3) {
                     return Err(WatershedChannelParseError::EnumDomain {
                         line: ishape_line,
                         field: "ishape",
@@ -386,12 +386,12 @@ pub fn parse_watershed_channel_from_str(
                         value: ishape,
                     });
                 }
-                if ishape > 2 {
-                    ishape = 2;
+                if ishape > 3 {
+                    ishape = 3;
                     warnings.push(ChannelWarning::new(
                         ChannelWarningCode::ChnW003,
                         Some(ishape_line),
-                        "compatibility normalized legacy ishape value to naturally eroded class",
+                        "compatibility normalized legacy ishape value to naturally eroded class (3)",
                     ));
                 }
             }
