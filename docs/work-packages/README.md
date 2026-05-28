@@ -935,6 +935,12 @@ Authorized packages:
     Muskingum-Cunge implementation gaps (`wshchr` lineage, `ipeak >= 4`) in
     openWEPP watershed routing, implement contract-first parity closure, and
     publish dual-review/dual-verification disposition evidence.
+- `20260528-wshedimpl41-ipeak5-mvpmc3-dynamic-coeff-refresh-parity-001/`
+  - Purpose: execute WSHEDIMPL41 immediate follow-on closure for WSHEDIMPL40
+    by migrating baseline-authoritative `ipeak = 5` MVPMC3 dynamic-coefficient
+    refresh routing behavior into WS11 production runtime lanes, adding
+    contract-derived parity vectors, and dispositioning
+    `GAP-ROUTE-011` / `GAP-SYSTEM-010` with contract-first evidence.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

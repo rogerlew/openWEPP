@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 63
+contract_version: 64
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -406,6 +406,10 @@ surfaces are:
    available (`ws10_channel_{id}_qin`, `ws10_channel_{id}_q1`), and must
    preserve finite signed MC coefficient publication semantics (`c1/c2/c3`)
    without non-physical non-negative clamp repair.
+8. WS11 `ipeak = 5` integration must execute variable-parameter
+   Muskingum-Cunge dynamic-coefficient refresh semantics for the current
+   single-segment lane, rather than reusing static `ipeak = 4` coefficient
+   families when dynamic refresh inputs are valid.
 
 ### WS11 Guard Families
 
@@ -431,6 +435,9 @@ Minimum WS11 integration vectors:
 7. `ipeak >= 4` vectors preserve finite MC coefficient-state publication
    (`c0..c4`) with signed-coefficient continuity for `c1/c2/c3` where branch
    physics yields negative values.
+8. `ipeak = 5` vectors demonstrate dynamic MC coefficient refresh continuity
+   (dynamic `c0..c4` recomputation) and branch-output divergence from static
+   `ipeak = 4` coefficient behavior under matched forcing/prior-state seeds.
 
 ## WS12 Impoundment Physics-Equivalence Integration Addendum
 
@@ -717,7 +724,7 @@ Minimum WS12 integration vectors:
 | GAP-SYSTEM-007 | WSHED10 exported active impoundment branch payload families, WSHED11 projected reduced coefficients, and WSHED13 completed WS12 runtime projection of full function families (`f01..f15`) with kernel 15-function min-controller composition at watershed runtime boundaries. | Active-lane structure-family parity closure is complete for WS12 runtime/kernel integration scope; residual watershed HOLD posture is governed by remaining out-of-scope blocker (`GAP-SYSTEM-008`). | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-008 | WSHEDIMPL38 closed the remaining system-level watershed channel sediment integration seam by retiring unresolved-detachment diagnostics publication (`ws20_detachment_unmigrated_segment_count`, `ws21_detach_unmigrated_segment_count`) and replacing residual WS20/WS21 invalid-segment fallback continuation with typed fail-closed guard behavior (`ws20_case12_next_flux_{class:04}`, `ws21_case3_next_flux_{class:04}`, `ws21_case4_next_flux_{class:04}`) under canonical `chnero/chnrt/detach` routing authority. | End-to-end watershed sediment continuity now executes without unresolved-detachment surrogate counters; numeric/domain violations in the migrated segment lanes surface as explicit typed guard failures. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-SYSTEM-009 | WSHEDIMPL40 identified residual WS11 system-integration drift for Muskingum-Cunge branch continuity: prior wave-state memory ingress and signed coefficient publication semantics were not explicitly preserved at node boundaries. | Without closure, multi-event WS11 integration vectors for `ipeak >= 4` can lose deterministic boundary memory continuity and misrepresent MC coefficient families at integration boundaries. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-SYSTEM-010 | WS11 `ipeak = 5` variable-parameter Muskingum-Cunge branch in pinned baseline recomputes coefficients during routing progression, while current WS10 system-integration pathway still executes single-step coefficients for the MC lane. | Remaining `ipeak = 5` dynamic-coefficient integration parity is unresolved and can affect branch-equivalence for variable-parameter MC workloads. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-SYSTEM-010 | WSHEDIMPL41 migrated WS11 `ipeak = 5` variable-parameter Muskingum-Cunge dynamic-coefficient refresh behavior into the current single-segment WS10 integration lane with explicit dynamic reference-flow lineage and per-step coefficient refresh publication semantics. | System-boundary `ipeak = 5` routing no longer collapses to static `ipeak = 4` coefficient handling when dynamic refresh inputs are valid; integration parity closure is explicit for the current WS10 lane. | closed | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
@@ -787,3 +794,4 @@ Minimum WS12 integration vectors:
 | `2026-05-28` | `61` | `Codex` | WSHEDIMPL38 amendment: closed `GAP-SYSTEM-008` by retiring unresolved-detachment diagnostics symbols and replacing residual WS20/WS21 invalid-segment fallback continuation with typed fail-closed domain guard behavior under canonical channel sediment migration authority. |
 | `2026-05-28` | `62` | `Codex` | WSHEDIMPL39 amendment: dispositioned system out-of-scope follow-up blockers by re-baselining companion-dependency posture (`GAP-SYSTEM-001` -> promotable-with-risk) and ratifying concrete ARCH22 alias mappings for active watershed integration boundaries (`GAP-SYSTEM-002` -> closed). |
 | `2026-05-28` | `63` | `Codex` | WSHEDIMPL40 amendment: ratified WS11 Muskingum-Cunge system-integration parity closure for prior wave-state memory ingress (`ws10_channel_{id}_{qin,q1}`), baseline-lineage single-segment lateral-term scaling continuity (`c4 = 2*qlat*dtchr*c0`), and signed MC coefficient publication semantics (`c1/c2/c3`) without non-physical non-negative clamp repair (`GAP-SYSTEM-009` closed); retained follow-on `ipeak=5` variable-parameter dynamic-coefficient integration gap (`GAP-SYSTEM-010`) as promotable-with-risk. |
+| `2026-05-28` | `64` | `Codex` | WSHEDIMPL41 amendment: migrated WS11 `ipeak=5` MVPMC3 dynamic-coefficient refresh integration into the current single-segment WS10 lane via reduced segment-state dynamic reference-flow lineage and per-step `c0..c4` refresh publication semantics, dispositioning `GAP-SYSTEM-010` to `closed`. |

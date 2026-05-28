@@ -686,6 +686,171 @@ fn wshedimpl40_contract_mc_coefficients_allow_signed_publication() {
 }
 
 #[test]
+fn wshedimpl41_contract_ipeak5_dynamic_refresh_diverges_from_ipeak4_coefficients() {
+    let mut ipeak4_surface = seeded_ws11_surface();
+    ipeak4_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    ipeak4_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_qin"),
+        BoundaryValue::scalar(0.2),
+    );
+    ipeak4_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_q1"),
+        BoundaryValue::scalar(1.2),
+    );
+
+    let ipeak4_report = run_ws11_surface(ipeak4_surface);
+    assert!(
+        ipeak4_report.dispatch_report.is_success(),
+        "wshedimpl41 ipeak=4 control vector must succeed; step_reports={:?}",
+        ipeak4_report.step_reports
+    );
+
+    let mut ipeak5_surface = seeded_ws11_surface();
+    ipeak5_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(5.0));
+    ipeak5_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_qin"),
+        BoundaryValue::scalar(0.2),
+    );
+    ipeak5_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_q1"),
+        BoundaryValue::scalar(1.2),
+    );
+
+    let ipeak5_report = run_ws11_surface(ipeak5_surface);
+    assert!(
+        ipeak5_report.dispatch_report.is_success(),
+        "wshedimpl41 ipeak=5 dynamic vector must succeed; step_reports={:?}",
+        ipeak5_report.step_reports
+    );
+
+    let c0_4 = state_value(&ipeak4_report, "ws10_channel_1_c0");
+    let c1_4 = state_value(&ipeak4_report, "ws10_channel_1_c1");
+    let c2_4 = state_value(&ipeak4_report, "ws10_channel_1_c2");
+    let c3_4 = state_value(&ipeak4_report, "ws10_channel_1_c3");
+    let c4_4 = state_value(&ipeak4_report, "ws10_channel_1_c4");
+    let c0_5 = state_value(&ipeak5_report, "ws10_channel_1_c0");
+    let c1_5 = state_value(&ipeak5_report, "ws10_channel_1_c1");
+    let c2_5 = state_value(&ipeak5_report, "ws10_channel_1_c2");
+    let c3_5 = state_value(&ipeak5_report, "ws10_channel_1_c3");
+    let c4_5 = state_value(&ipeak5_report, "ws10_channel_1_c4");
+
+    let coefficient_delta = (c0_5 - c0_4).abs()
+        + (c1_5 - c1_4).abs()
+        + (c2_5 - c2_4).abs()
+        + (c3_5 - c3_4).abs()
+        + (c4_5 - c4_4).abs();
+    assert!(
+        coefficient_delta > 1.0e-9,
+        "wshedimpl41 expected ipeak=5 dynamic refresh to diverge from ipeak=4 coefficients; delta={coefficient_delta}, ipeak4=[{c0_4},{c1_4},{c2_4},{c3_4},{c4_4}], ipeak5=[{c0_5},{c1_5},{c2_5},{c3_5},{c4_5}]"
+    );
+}
+
+#[test]
+fn wshedimpl41_contract_ipeak5_dynamic_coefficients_respond_to_prior_state_seed() {
+    let mut baseline_surface = seeded_ws11_surface();
+    baseline_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(5.0));
+    baseline_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_qin"),
+        BoundaryValue::scalar(0.2),
+    );
+    baseline_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_q1"),
+        BoundaryValue::scalar(1.2),
+    );
+    let baseline_report = run_ws11_surface(baseline_surface);
+    assert!(
+        baseline_report.dispatch_report.is_success(),
+        "wshedimpl41 baseline ipeak=5 vector must succeed; step_reports={:?}",
+        baseline_report.step_reports
+    );
+
+    let mut perturbed_surface = seeded_ws11_surface();
+    perturbed_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(5.0));
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_qin"),
+        BoundaryValue::scalar(4.8),
+    );
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_q1"),
+        BoundaryValue::scalar(0.05),
+    );
+    let perturbed_report = run_ws11_surface(perturbed_surface);
+    assert!(
+        perturbed_report.dispatch_report.is_success(),
+        "wshedimpl41 perturbed ipeak=5 vector must succeed; step_reports={:?}",
+        perturbed_report.step_reports
+    );
+
+    let baseline_c0 = state_value(&baseline_report, "ws10_channel_1_c0");
+    let baseline_c1 = state_value(&baseline_report, "ws10_channel_1_c1");
+    let baseline_c2 = state_value(&baseline_report, "ws10_channel_1_c2");
+    let baseline_c3 = state_value(&baseline_report, "ws10_channel_1_c3");
+    let baseline_c4 = state_value(&baseline_report, "ws10_channel_1_c4");
+    let perturbed_c0 = state_value(&perturbed_report, "ws10_channel_1_c0");
+    let perturbed_c1 = state_value(&perturbed_report, "ws10_channel_1_c1");
+    let perturbed_c2 = state_value(&perturbed_report, "ws10_channel_1_c2");
+    let perturbed_c3 = state_value(&perturbed_report, "ws10_channel_1_c3");
+    let perturbed_c4 = state_value(&perturbed_report, "ws10_channel_1_c4");
+
+    let coefficient_delta = (perturbed_c0 - baseline_c0).abs()
+        + (perturbed_c1 - baseline_c1).abs()
+        + (perturbed_c2 - baseline_c2).abs()
+        + (perturbed_c3 - baseline_c3).abs()
+        + (perturbed_c4 - baseline_c4).abs();
+    assert!(
+        coefficient_delta > 1.0e-9,
+        "wshedimpl41 expected ipeak=5 dynamic coefficients to respond to prior-state seed perturbation; delta={coefficient_delta}, baseline=[{baseline_c0},{baseline_c1},{baseline_c2},{baseline_c3},{baseline_c4}], perturbed=[{perturbed_c0},{perturbed_c1},{perturbed_c2},{perturbed_c3},{perturbed_c4}]"
+    );
+}
+
+#[test]
+fn wshedimpl41_contract_ipeak5_dynamic_lateral_term_preserves_single_segment_scaling() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(5.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_qin"),
+        BoundaryValue::scalar(1.1),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_q1"),
+        BoundaryValue::scalar(0.7),
+    );
+
+    let dtchr = surface
+        .state_surface
+        .get(&BoundarySymbol::from("dtchr"))
+        .expect("ws11 seeded surface must include dtchr")
+        .as_f64();
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl41 ipeak=5 lateral-term vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let qlat = state_value(&report, "ws10_channel_1_qlat");
+    let c0 = state_value(&report, "ws10_channel_1_c0");
+    let c4 = state_value(&report, "ws10_channel_1_c4");
+    let expected_c4 = 2.0 * qlat * dtchr * c0;
+
+    assert!(
+        (c4 - expected_c4).abs() <= 1.0e-9,
+        "wshedimpl41 expected ipeak=5 c4=2*qlat*dtchr*c0; observed c4={c4}, expected={expected_c4}, qlat={qlat}, dtchr={dtchr}, c0={c0}"
+    );
+}
+
+#[test]
 fn wshed03_contract_channel_sediment_vector_requires_channel_sediment_publication_family() {
     let mut surface = seeded_ws11_surface();
     surface

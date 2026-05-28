@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 42
+contract_version: 43
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -354,6 +354,11 @@ Minimum WS11 routing conformance vectors:
    surfaces without non-physical coefficient clamping (`c1/c2/c3` are allowed
    to be signed), and branch output responds to prior wave-state memory
    (`ws10_channel_{id}_q1`, `ws10_channel_{id}_qin`) when provided.
+7. `ipeak = 5` vectors execute variable-parameter Muskingum-Cunge
+   dynamic-coefficient refresh semantics for the single-segment WS10 lane by
+   recomputing `c0..c4` from dynamic reference-flow lineage each execution step
+   (`qref = (qin + qin_previous + q1_previous) / 3` in the reduced lane),
+   preserving routed closure and finite coefficient publication continuity.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -473,6 +478,25 @@ Minimum WS11 routing conformance vectors:
    outflow (`q1`) and routed closure publication (`qpo`, `roff`, `durrof`)
    under `INV-ROUTE-006/007`.
 
+## WSHEDIMPL41 MVPMC3 Dynamic-Coefficient Refresh Addendum
+
+1. WS11 `ipeak = 5` branch must execute variable-parameter
+   Muskingum-Cunge dynamic-coefficient refresh lineage from
+   `wshchr.for` (`MVPMC3`) rather than reusing static `ipeak = 4`
+   coefficients.
+2. In the current single-segment WS10 routing lane, dynamic reference flow
+   lineage is reduced from baseline segment-state terms as:
+   - `qs(is-1,it)` -> `qin`,
+   - `qs(is-1,it-1)` -> `qin_previous`,
+   - `qs(is,it-1)` -> `q1_previous`,
+   - `qref = (qin + qin_previous + q1_previous) / 3`.
+3. Dynamic `ipeak = 5` coefficient refresh must recompute `c0..c4` from
+   refreshed hydraulic terms each execution step and must not silently
+   substitute static `ipeak = 4` coefficients when dynamic refresh inputs are
+   valid.
+4. Dynamic refresh validity is finite/domain bounded input closure; domain
+   violations are typed hard-fail channel guard outcomes, not silent fallback.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -487,7 +511,7 @@ Minimum WS11 routing conformance vectors:
 | GAP-ROUTE-008 | WSHEDIMPL37 migrated baseline-authoritative WS11 runon/runoff routine-chain behavior (`wshcqi/wshirs/wshrun`) into production WS10 routing lanes, including runon-volume partition publication (`rvolat`, `rvotop`, `rvolon`), duration-max continuity (`durlat`, `durtop`, `durrunon`, `durchan`, `watdur`), runoff-case publication (`ws11_runoff_case`, `ws11_qci`, `ws11_qcf`, `ws11_runvol`, `tl`, `rofc`), and explicit `ipeak` threshold/wave-routing continuity vectors. Combined with WSHED05 `ipeak > 2` wave-state publication closure (`q1/qin/qlat/c0..c4`), WS11 route-chain parity for this gap scope is complete. | WS11 hydrology routine-chain parity closure is now explicit for watershed route-chain scope; residual routing HOLD posture is governed by remaining channel sediment process-parity blocker `GAP-ROUTE-009`. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-009 | WSHEDIMPL38 closed the residual watershed channel sediment parity seam by retiring unresolved fallback diagnostics (`ws20_detachment_unmigrated_segment_count`, `ws21_detach_unmigrated_segment_count`) and converting residual invalid-segment fallback branches in WS20/WS21 routing to typed fail-closed domain guards (`ws20_case12_next_flux_{class:04}`, `ws21_case3_next_flux_{class:04}`, `ws21_case4_next_flux_{class:04}`), while preserving baseline-authoritative `chnero/chnrt/detach` execution lineage and migrated width/shape/transition semantics from WSHEDIMPL20-37. | Watershed channel sediment routing now executes without unresolved-detachment surrogate counters; residual numeric/domain violations surface as explicit typed guard failures instead of fallback continuation. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-010 | WSHEDIMPL40 identified residual WS11 Muskingum-Cunge drift versus pinned baseline in prior-state memory ingestion and coefficient publication semantics (`c4` lateral term scaling and sign-permissive coefficient handling). | Without this closure, successive-event MC routing could ignore prior routed state and incorrectly force coefficient sign, reducing branch-equivalence confidence for `ipeak >= 4` vectors. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-ROUTE-011 | WS11 `ipeak = 5` variable-parameter Muskingum-Cunge branch recomputes routing coefficients per segment/time-step in pinned baseline (`wshchr.for` MVPMC3 block), while current WS10 MC runtime still uses a single coefficient set per execution step. | Remaining `ipeak = 5` dynamic-coefficient parity is unresolved; branch behavior can diverge from baseline under workloads that rely on variable-parameter MC updates. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-011 | WSHEDIMPL41 migrated WS11 `ipeak = 5` variable-parameter Muskingum-Cunge dynamic-coefficient refresh behavior into the current single-segment WS10 runtime lane by executing dynamic reference-flow lineage and per-step coefficient refresh semantics (`c0..c4`) under typed fail-closed guards. | `ipeak = 5` branch behavior no longer reuses static `ipeak = 4` coefficients when dynamic refresh inputs are valid; dynamic-coefficient parity closure is explicit for the current WS10 lane. | closed | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
@@ -536,3 +560,4 @@ Minimum WS11 routing conformance vectors:
 | `2026-05-28` | `40` | `Codex` | WSHEDIMPL38 amendment: closed `GAP-ROUTE-009` by retiring unresolved-detachment diagnostics symbols and replacing residual WS20/WS21 invalid-segment fallback continuation with typed fail-closed domain guards (`ws20_case12_next_flux_{class:04}`, `ws21_case3_next_flux_{class:04}`, `ws21_case4_next_flux_{class:04}`) under canonical `chnero/chnrt/detach` migration authority. |
 | `2026-05-28` | `41` | `Codex` | WSHEDIMPL39 amendment: bound Chapter-13 applicability limits to concrete watershed runfile selectors (`inputs.applicability.*`) with typed fail-closed intake error `CLIWAT-E-040`, added canonical runtime-validator authority anchor, and dispositioned `GAP-ROUTE-005` to `closed`. |
 | `2026-05-28` | `42` | `Codex` | WSHEDIMPL40 amendment: ratified WS11 Muskingum-Cunge parity closure for prior wave-state memory ingestion (`ws10_channel_{id}_{qin,q1}`), single-segment baseline-lineage lateral term scaling (`c4 = 2*qlat*dtchr*c0`), and finite signed MC coefficient publication semantics (`c1/c2/c3`) without non-physical non-negative clamps (`GAP-ROUTE-010` closed); retained follow-on `ipeak=5` variable-parameter dynamic-coefficient parity gap (`GAP-ROUTE-011`) as promotable-with-risk. |
+| `2026-05-28` | `43` | `Codex` | WSHEDIMPL41 amendment: migrated WS11 `ipeak=5` MVPMC3 dynamic-coefficient refresh lineage into the current single-segment WS10 routing lane by deriving dynamic reference-flow terms from reduced segment-state aliases and recomputing `c0..c4` per execution step under typed fail-closed guards, dispositioning `GAP-ROUTE-011` to `closed`. |

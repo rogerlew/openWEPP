@@ -269,6 +269,7 @@ enum Ws11IpeakBranch {
     Creams,
     KinematicWave,
     MuskingumCunge,
+    MuskingumCungeVariable,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -4190,6 +4191,8 @@ impl Ws10ChannelImpoundmentKernel {
             Ws11IpeakBranch::Creams
         } else if (rounded_ipeak - 3.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
             Ws11IpeakBranch::KinematicWave
+        } else if (rounded_ipeak - 5.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            Ws11IpeakBranch::MuskingumCungeVariable
         } else {
             Ws11IpeakBranch::MuskingumCunge
         };
@@ -4243,6 +4246,234 @@ impl Ws10ChannelImpoundmentKernel {
             return Err(Self::non_finite(node_class, symbol, scalar));
         }
         Ok(Some(scalar))
+    }
+
+    fn require_ws11_channel_length_from_scaffold(
+        request: &WatershedKernelRequest<'_>,
+        node_class: Ws10NodeClass,
+        nslpts: usize,
+    ) -> Result<f64, Ws10GuardError> {
+        let first_x_symbol = Self::channel_wave_state_symbol(request.node_id, "x_0001");
+        let last_x_symbol =
+            Self::channel_wave_state_symbol(request.node_id, &format!("x_{nslpts:04}"));
+
+        let first_x =
+            Self::require_channel_state_symbol_scalar(request, node_class, first_x_symbol.clone())?;
+        let last_x =
+            Self::require_channel_state_symbol_scalar(request, node_class, last_x_symbol.clone())?;
+        let channel_length = last_x - first_x;
+        if !channel_length.is_finite() || channel_length <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_channel_length"),
+                channel_length,
+            ));
+        }
+        Ok(channel_length)
+    }
+
+    fn ws11_muskingum_geometry_from_depth(
+        node_class: Ws10NodeClass,
+        ishape: u32,
+        channel_width: f64,
+        channel_shape: f64,
+        depth: f64,
+    ) -> Result<(f64, f64, f64, f64), Ws10GuardError> {
+        if !depth.is_finite() || depth <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_muskingum_depth"),
+                depth,
+            ));
+        }
+        if !channel_width.is_finite() || channel_width <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_muskingum_channel_width"),
+                channel_width,
+            ));
+        }
+        if !channel_shape.is_finite() || channel_shape <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_muskingum_channel_shape"),
+                channel_shape,
+            ));
+        }
+
+        match ishape {
+            1 => {
+                let top_width = 2.0 * depth * channel_shape;
+                let area = channel_shape * depth * depth;
+                let wetted_perimeter = 2.0 * depth * (1.0 + (channel_shape * channel_shape)).sqrt();
+                Ok((top_width, area, wetted_perimeter, channel_shape))
+            }
+            2 => {
+                let top_width = channel_width;
+                let area = channel_width * depth;
+                let wetted_perimeter = channel_width + (2.0 * depth);
+                Ok((top_width, area, wetted_perimeter, channel_width))
+            }
+            3 => {
+                let chnz0 = channel_width * channel_shape / 8.0;
+                if !chnz0.is_finite() || chnz0 <= WS10_ZERO_THRESHOLD {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws11_muskingum_chnz0"),
+                        chnz0,
+                    ));
+                }
+                let top_width = 4.0 * (chnz0 * depth).sqrt();
+                let area = (8.0 / 3.0) * depth * (depth * chnz0).sqrt();
+                let wetted_perimeter = (2.0 * (depth * (chnz0 + depth)).sqrt())
+                    + (2.0
+                        * chnz0
+                        * (((1.0 + (depth / chnz0)).sqrt()) + (depth / chnz0).sqrt()).ln());
+                Ok((top_width, area, wetted_perimeter, chnz0))
+            }
+            _ => Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_muskingum_ishape"),
+                f64::from(ishape),
+            )),
+        }
+    }
+
+    fn ws11_manning_discharge_for_depth(
+        node_class: Ws10NodeClass,
+        ishape: u32,
+        channel_width: f64,
+        channel_shape: f64,
+        roughness: f64,
+        slope: f64,
+        depth: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        if !roughness.is_finite() || roughness <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_manning_roughness"),
+                roughness,
+            ));
+        }
+        if !slope.is_finite() || slope <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_manning_slope"),
+                slope,
+            ));
+        }
+
+        let (_, area, wetted_perimeter, _) = Self::ws11_muskingum_geometry_from_depth(
+            node_class,
+            ishape,
+            channel_width,
+            channel_shape,
+            depth,
+        )?;
+        if !area.is_finite() || area <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_manning_area"),
+                area,
+            ));
+        }
+        if !wetted_perimeter.is_finite() || wetted_perimeter <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_manning_wetted_perimeter"),
+                wetted_perimeter,
+            ));
+        }
+
+        let hydraulic_radius = area / wetted_perimeter;
+        let discharge = (1.0 / roughness) * area * hydraulic_radius.powf(2.0 / 3.0) * slope.sqrt();
+        if !discharge.is_finite() || discharge < 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_manning_discharge"),
+                discharge,
+            ));
+        }
+        Ok(discharge)
+    }
+
+    fn ws11_solve_depth_for_discharge(
+        node_class: Ws10NodeClass,
+        ishape: u32,
+        channel_width: f64,
+        channel_shape: f64,
+        roughness: f64,
+        slope: f64,
+        discharge: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        if !discharge.is_finite() || discharge <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_reference_discharge"),
+                discharge,
+            ));
+        }
+
+        let mut lower = WS10_ZERO_THRESHOLD;
+        let mut upper = 1.0_f64;
+        let mut upper_discharge = Self::ws11_manning_discharge_for_depth(
+            node_class,
+            ishape,
+            channel_width,
+            channel_shape,
+            roughness,
+            slope,
+            upper,
+        )?;
+        let mut guard_iter = 0_u32;
+        while upper_discharge < discharge && guard_iter < 64 {
+            upper *= 2.0;
+            upper_discharge = Self::ws11_manning_discharge_for_depth(
+                node_class,
+                ishape,
+                channel_width,
+                channel_shape,
+                roughness,
+                slope,
+                upper,
+            )?;
+            guard_iter += 1;
+        }
+
+        if upper_discharge < discharge {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_depth_solver_bracket"),
+                upper_discharge,
+            ));
+        }
+
+        for _ in 0..80 {
+            let mid = 0.5 * (lower + upper);
+            let mid_discharge = Self::ws11_manning_discharge_for_depth(
+                node_class,
+                ishape,
+                channel_width,
+                channel_shape,
+                roughness,
+                slope,
+                mid,
+            )?;
+            if mid_discharge < discharge {
+                lower = mid;
+            } else {
+                upper = mid;
+            }
+        }
+
+        if !upper.is_finite() || upper <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ws11_depth_solver_output"),
+                upper,
+            ));
+        }
+        Ok(upper)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -4433,6 +4664,197 @@ impl Ws10ChannelImpoundmentKernel {
         })
     }
 
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn compute_variable_muskingum_cunge_state(
+        node_class: Ws10NodeClass,
+        roughness: f64,
+        control_slope: f64,
+        channel_width: f64,
+        channel_shape: f64,
+        ishape: u32,
+        channel_length: f64,
+        available_peak: f64,
+        baseflow_peak: f64,
+        dtchr: f64,
+        event_duration: f64,
+        prior_qin: Option<f64>,
+        prior_q1: Option<f64>,
+    ) -> Result<Ws11WaveRoutingState, Ws10GuardError> {
+        let qin = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qin"),
+            available_peak,
+        )?;
+        let qin_previous = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qin_previous"),
+            prior_qin.unwrap_or(qin),
+        )?;
+        let q1_previous = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("q1_previous"),
+            prior_q1.unwrap_or(qin + (baseflow_peak / event_duration)),
+        )?;
+        let qlat = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qlat"),
+            baseflow_peak / event_duration,
+        )?;
+        let channel_length = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("channel_length"),
+            channel_length,
+        )?;
+        if channel_length <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("channel_length"),
+                channel_length,
+            ));
+        }
+
+        let mut qref = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("qref_dynamic"),
+            (qin + qin_previous + q1_previous) / 3.0,
+        )?;
+        if qref < WS10_ZERO_THRESHOLD {
+            qref = WS10_ZERO_THRESHOLD;
+        }
+
+        let depth = Self::ws11_solve_depth_for_discharge(
+            node_class,
+            ishape,
+            channel_width,
+            channel_shape,
+            roughness,
+            control_slope,
+            qref,
+        )?;
+        let (bt, _, ap, chnz0) = Self::ws11_muskingum_geometry_from_depth(
+            node_class,
+            ishape,
+            channel_width,
+            channel_shape,
+            depth,
+        )?;
+
+        let ckref = match ishape {
+            1 => Self::require_non_negative_computed(
+                node_class,
+                BoundarySymbol::from("ckref"),
+                4.0 * qref / (3.0 * chnz0 * depth * depth),
+            )?,
+            2 => Self::require_non_negative_computed(
+                node_class,
+                BoundarySymbol::from("ckref"),
+                (qref / (channel_width * depth))
+                    * (1.0 + (2.0 * channel_width / (3.0 * (channel_width + (2.0 * depth))))),
+            )?,
+            3 => {
+                let dqdy = (2.5 / depth - (4.0 / (3.0 * ap) * (1.0 + (bt / depth)).sqrt())) * qref;
+                Self::require_non_negative_computed(
+                    node_class,
+                    BoundarySymbol::from("ckref"),
+                    dqdy / bt,
+                )?
+            }
+            _ => {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws11_muskingum_ishape"),
+                    f64::from(ishape),
+                ));
+            }
+        };
+        if ckref <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ckref"),
+                ckref,
+            ));
+        }
+
+        let tk = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("tk"),
+            channel_length / ckref,
+        )?;
+        let dencx = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("dencx"),
+            bt * ckref * control_slope * channel_length,
+        )?;
+        if dencx <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("dencx"),
+                dencx,
+            ));
+        }
+
+        let mut cx = Self::require_finite_computed(
+            node_class,
+            BoundarySymbol::from("cx"),
+            0.5 * (1.0 - (qref / dencx)),
+        )?;
+        if cx < -10.0 {
+            cx = -10.0;
+        }
+
+        let denominator = Self::require_finite_computed(
+            node_class,
+            BoundarySymbol::from("mc_denominator"),
+            (2.0 * tk * (1.0 - cx)) + dtchr,
+        )?;
+        if denominator.abs() <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("mc_denominator"),
+                denominator,
+            ));
+        }
+
+        let c0 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c0"),
+            1.0 / denominator,
+        )?;
+        let c1 = Self::require_finite_computed(
+            node_class,
+            BoundarySymbol::from("c1"),
+            (dtchr - (2.0 * tk * cx)) * c0,
+        )?;
+        let c2 = Self::require_finite_computed(
+            node_class,
+            BoundarySymbol::from("c2"),
+            (dtchr + (2.0 * tk * cx)) * c0,
+        )?;
+        let c3 =
+            Self::require_finite_computed(node_class, BoundarySymbol::from("c3"), 1.0 - c1 - c2)?;
+        let c4 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("c4"),
+            2.0 * qlat * dtchr * c0,
+        )?;
+        let q1 = Self::require_non_negative_computed(
+            node_class,
+            BoundarySymbol::from("q1"),
+            (c1 * qin) + (c2 * qin_previous) + (c3 * q1_previous) + c4,
+        )?;
+
+        Ok(Ws11WaveRoutingState {
+            q1,
+            qin,
+            qlat,
+            c0,
+            c1,
+            c2,
+            c3,
+            c4,
+        })
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_channel_node(
         request: &WatershedKernelRequest<'_>,
@@ -4496,11 +4918,21 @@ impl Ws10ChannelImpoundmentKernel {
         )?;
         let sediment_controls = Self::read_ws15_channel_sediment_controls(request, node_class)?;
         let nslpts = Self::require_ws17_channel_segment_scaffold(request, node_class)?;
+        let channel_length =
+            Self::require_ws11_channel_length_from_scaffold(request, node_class, nslpts)?;
         let sediment_scaffold = Self::derive_ws15_channel_sediment_scaffold(
             node_class,
             request.node_id,
             sediment_controls,
         )?;
+        let ishape_value = sediment_controls.ishape.round();
+        let ishape = format!("{ishape_value:.0}").parse::<u32>().map_err(|_| {
+            Self::domain_violation(
+                node_class,
+                Self::channel_wave_state_symbol(request.node_id, "ishape"),
+                sediment_controls.ishape,
+            )
+        })?;
 
         let peak_partition = Self::assemble_incoming_peak_partition(request, node_class)?;
         let incoming_peak = peak_partition.hillslope_peak_cms + peak_partition.dependency_peak_cms;
@@ -4695,6 +5127,42 @@ impl Ws10ChannelImpoundmentKernel {
                             control_slope,
                             conductivity,
                             nchnum,
+                            available_peak,
+                            baseflow_peak,
+                            dtchr,
+                            watdur,
+                            prior_qin,
+                            prior_q1,
+                        )?;
+                        let q1 = state.q1;
+                        wave_state = Some(state);
+                        q1
+                    }
+                }
+                Ws11IpeakBranch::MuskingumCungeVariable => {
+                    if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
+                        0.0
+                    } else {
+                        let prior_qin = Self::optional_channel_wave_state_scalar(
+                            request,
+                            node_class,
+                            request.node_id,
+                            "qin",
+                        )?;
+                        let prior_q1 = Self::optional_channel_wave_state_scalar(
+                            request,
+                            node_class,
+                            request.node_id,
+                            "q1",
+                        )?;
+                        let state = Self::compute_variable_muskingum_cunge_state(
+                            node_class,
+                            roughness,
+                            control_slope,
+                            sediment_controls.ctlz,
+                            sediment_controls.chnz,
+                            ishape,
+                            channel_length,
                             available_peak,
                             baseflow_peak,
                             dtchr,
