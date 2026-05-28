@@ -349,6 +349,13 @@ struct Ws20SegmentRoutingDiagnostics {
     ws21_detach_unmigrated_segments: u32,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+struct Ws27EnddetBracketProgress {
+    used_xdbig_rebracket: bool,
+    used_midpoint_rebracket: bool,
+    iteration_count: u8,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Ws15ChannelSedimentScaffold {
     chz: f64,
@@ -2761,6 +2768,97 @@ impl Ws10ChannelImpoundmentKernel {
     #[allow(
         clippy::too_many_arguments,
         clippy::many_single_char_names,
+        clippy::similar_names
+    )]
+    fn ws27_case4_enddet_bracket_closure(
+        x_upper_ft: f64,
+        x_lower_ft: f64,
+        wfl_ft: f64,
+        dx_ft: f64,
+        gstu_lbs_s: &[f64],
+        dlat_lbs_s_ft: &[f64],
+        du_lbs_s_ft: &[f64],
+        potld_case4_lbs_s_ft: &mut [f64],
+        tcl_case4_lbs_s_ft: &mut [f64],
+        mut trncap: impl FnMut(&[f64]) -> Vec<f64>,
+    ) -> Ws27EnddetBracketProgress {
+        let class_count = potld_case4_lbs_s_ft.len();
+        let mut progress = Ws27EnddetBracketProgress::default();
+        let mut xdsmal_ft = x_upper_ft;
+        let mut xdbig_ft = x_lower_ft;
+        let mut xdbmin_ft = x_lower_ft;
+        let mut ndep = 0_u8;
+        let mut recompute_xdbeg = true;
+
+        loop {
+            if recompute_xdbeg {
+                let mut xdbeg_ft = vec![x_lower_ft; class_count];
+                for class_offset in 0..class_count {
+                    if potld_case4_lbs_s_ft[class_offset] > tcl_case4_lbs_s_ft[class_offset]
+                        && du_lbs_s_ft[class_offset].abs() > WS10_ZERO_THRESHOLD
+                    {
+                        xdbeg_ft[class_offset] = ((2.0
+                            * ((tcl_case4_lbs_s_ft[class_offset] * wfl_ft)
+                                - gstu_lbs_s[class_offset]
+                                - (dlat_lbs_s_ft[class_offset] * dx_ft)))
+                            / du_lbs_s_ft[class_offset])
+                            + x_upper_ft;
+                    }
+                }
+
+                xdbmin_ft = xdbeg_ft.iter().copied().fold(x_lower_ft, f64::min);
+                if xdbmin_ft <= xdsmal_ft {
+                    xdbmin_ft = xdsmal_ft;
+                }
+            }
+
+            for class_offset in 0..class_count {
+                potld_case4_lbs_s_ft[class_offset] = (gstu_lbs_s[class_offset]
+                    + (dlat_lbs_s_ft[class_offset] * dx_ft)
+                    + (du_lbs_s_ft[class_offset] * (xdbmin_ft - x_upper_ft) / 2.0))
+                    / wfl_ft;
+            }
+            tcl_case4_lbs_s_ft.copy_from_slice(&trncap(potld_case4_lbs_s_ft));
+
+            ndep = ndep.saturating_add(1);
+            progress.iteration_count = ndep;
+            if ndep == 4 {
+                break;
+            }
+
+            let mut nt = 0_usize;
+            let mut sumtc = 0.0_f64;
+            let mut sumpl = 0.0_f64;
+            for class_offset in 0..class_count {
+                sumtc += tcl_case4_lbs_s_ft[class_offset];
+                sumpl += potld_case4_lbs_s_ft[class_offset];
+                if tcl_case4_lbs_s_ft[class_offset] <= potld_case4_lbs_s_ft[class_offset] {
+                    nt += 1;
+                }
+            }
+
+            if sumtc.abs() > WS10_ZERO_THRESHOLD && ((sumtc - sumpl) / sumtc).abs() < 0.01 {
+                break;
+            }
+
+            if nt < class_count {
+                xdsmal_ft = xdbmin_ft;
+                xdbmin_ft = 0.5 * (xdsmal_ft + xdbig_ft);
+                recompute_xdbeg = false;
+                progress.used_midpoint_rebracket = true;
+            } else {
+                xdbig_ft = xdbmin_ft;
+                recompute_xdbeg = true;
+                progress.used_xdbig_rebracket = true;
+            }
+        }
+
+        progress
+    }
+
+    #[allow(
+        clippy::too_many_arguments,
+        clippy::many_single_char_names,
         clippy::too_many_lines,
         clippy::similar_names
     )]
@@ -3252,62 +3350,18 @@ impl Ws10ChannelImpoundmentKernel {
                 }
 
                 diagnostics.enddet_segments = diagnostics.enddet_segments.saturating_add(1);
-                let mut xdsmal_ft = x_upper_ft;
-                let mut ndep = 0_u8;
-
-                loop {
-                    let mut xdbeg_ft = vec![x_lower_ft; class_count];
-                    for class_offset in 0..class_count {
-                        if potld_case4_lbs_s_ft[class_offset] > tcl_case4_lbs_s_ft[class_offset]
-                            && du_lbs_s_ft[class_offset].abs() > WS10_ZERO_THRESHOLD
-                        {
-                            xdbeg_ft[class_offset] = ((2.0
-                                * ((tcl_case4_lbs_s_ft[class_offset] * wfl_ft)
-                                    - gstu_lbs_s[class_offset]
-                                    - (dlat_lbs_s_ft[class_offset] * dx_ft)))
-                                / du_lbs_s_ft[class_offset])
-                                + x_upper_ft;
-                        }
-                    }
-
-                    let mut xdbmin_ft = xdbeg_ft.iter().copied().fold(x_lower_ft, f64::min);
-                    if xdbmin_ft <= xdsmal_ft {
-                        xdbmin_ft = xdsmal_ft;
-                    }
-
-                    for class_offset in 0..class_count {
-                        potld_case4_lbs_s_ft[class_offset] = (gstu_lbs_s[class_offset]
-                            + (dlat_lbs_s_ft[class_offset] * dx_ft)
-                            + (du_lbs_s_ft[class_offset] * (xdbmin_ft - x_upper_ft) / 2.0))
-                            / wfl_ft;
-                    }
-                    tcl_case4_lbs_s_ft =
-                        Self::ws18_trncap(effshl, &potld_case4_lbs_s_ft, &crdia_ft, &crspg);
-
-                    ndep = ndep.saturating_add(1);
-                    if ndep == 4 {
-                        break;
-                    }
-
-                    let mut nt = 0_usize;
-                    let mut sumtc = 0.0_f64;
-                    let mut sumpl = 0.0_f64;
-                    for class_offset in 0..class_count {
-                        sumtc += tcl_case4_lbs_s_ft[class_offset];
-                        sumpl += potld_case4_lbs_s_ft[class_offset];
-                        if tcl_case4_lbs_s_ft[class_offset] <= potld_case4_lbs_s_ft[class_offset] {
-                            nt += 1;
-                        }
-                    }
-
-                    if sumtc.abs() > WS10_ZERO_THRESHOLD && ((sumtc - sumpl) / sumtc).abs() < 0.01 {
-                        break;
-                    }
-
-                    if nt < class_count {
-                        xdsmal_ft = xdbmin_ft;
-                    }
-                }
+                let _ = Self::ws27_case4_enddet_bracket_closure(
+                    x_upper_ft,
+                    x_lower_ft,
+                    wfl_ft,
+                    dx_ft,
+                    &gstu_lbs_s,
+                    &dlat_lbs_s_ft,
+                    &du_lbs_s_ft,
+                    &mut potld_case4_lbs_s_ft,
+                    &mut tcl_case4_lbs_s_ft,
+                    |potld| Self::ws18_trncap(effshl, potld, &crdia_ft, &crspg),
+                );
 
                 let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
                 let mut segment_invalid = false;
@@ -5914,6 +5968,41 @@ mod tests {
         assert!(
             (sum_flagm2 - WS22_DCAP_MAXE).abs() <= 1e-9,
             "expected flagm2 detachment capped at maxe, got {sum_flagm2}"
+        );
+    }
+
+    #[test]
+    fn wshedimpl27_enddet_helper_exercises_xdbig_and_midpoint_rebracketing() {
+        let class_count = 2;
+        let mut potld_case4_lbs_s_ft = vec![1.0; class_count];
+        let mut tcl_case4_lbs_s_ft = vec![0.1; class_count];
+        let mut trncap_call = 0_u8;
+        let progress = Ws10ChannelImpoundmentKernel::ws27_case4_enddet_bracket_closure(
+            0.0,
+            10.0,
+            1.0,
+            10.0,
+            &[1.0, 1.0],
+            &[0.0, 0.0],
+            &[2.0, 2.0],
+            &mut potld_case4_lbs_s_ft,
+            &mut tcl_case4_lbs_s_ft,
+            |potld| {
+                trncap_call = trncap_call.saturating_add(1);
+                match trncap_call {
+                    1 => vec![0.1, 0.1],
+                    2 => vec![100.0, 100.0],
+                    _ => potld.to_vec(),
+                }
+            },
+        );
+
+        assert!(progress.used_xdbig_rebracket);
+        assert!(progress.used_midpoint_rebracket);
+        assert!(
+            progress.iteration_count >= 3,
+            "expected >=3 iterations to cover xdbig + midpoint branches, got {}",
+            progress.iteration_count
         );
     }
 

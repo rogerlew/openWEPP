@@ -844,6 +844,12 @@ Authorized packages:
     semantics for WS23 iterative detach closure lanes, adding WS26
     contract-derived vectors, and preserving explicit non-promotable HOLD
     posture for remaining full `chnero/chnrt/detach` parity closure families.
+- `20260527-wshedimpl27-enddet-bracket-closure-001/`
+  - Purpose: execute WSHEDIMPL27 immediate next actions from WSHEDIMPL26 by
+    migrating baseline-authoritative `enddet.for` bracket progression
+    semantics (`xdbig/xdsmal`) for WS21 case4 enddet closure lanes, adding
+    WS27 contract-derived vectors, and preserving explicit non-promotable HOLD
+    posture for remaining full `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
