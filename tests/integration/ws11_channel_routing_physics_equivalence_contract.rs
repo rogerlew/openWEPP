@@ -916,6 +916,54 @@ fn wshedimpl23_contract_ws21_case4_detach_iterative_closure_clears_unmigrated_co
 }
 
 #[test]
+fn wshedimpl26_contract_ws21_case4_iterative_closure_stress_vector_remains_resolved() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(0.01),
+    );
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface(surface);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl26 stress vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
+    let ws21_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
+    );
+    let ws20_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
+    );
+
+    assert!(case4_segments > 0.0);
+    assert!(
+        (ws21_unmigrated - 0.0).abs() <= 1e-12,
+        "wshedimpl26 case4 iterative closure stress vector must not emit ws21 unresolved diagnostics"
+    );
+    assert!(
+        (ws20_unmigrated - 0.0).abs() <= 1e-12,
+        "wshedimpl26 stress vector must preserve ws20 unresolved-detachment closure"
+    );
+}
+
+#[test]
 fn wshedimpl24_contract_case12_transition_requires_crfrac_projection() {
     let mut surface = seeded_ws11_surface();
     surface

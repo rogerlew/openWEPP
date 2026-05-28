@@ -208,6 +208,7 @@ const WS20_FALVEL_CDRE2: [f64; 9] = [
 ];
 const WS22_DCAP_WTDSOI: f64 = 96.0;
 const WS22_DCAP_MIN_SLOPE: f64 = 0.00001;
+const WS22_DCAP_MAXE: f64 = 1000.0;
 const WS22_DCAP_XXCF: [f64; 17] = [
     0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.22, 0.24, 0.26, 0.28, 0.30,
     0.32,
@@ -2301,8 +2302,9 @@ impl Ws10ChannelImpoundmentKernel {
         clippy::too_many_lines,
         clippy::similar_names
     )]
-    fn ws22_dcap_flagm1(
+    fn ws26_dcap(
         node_class: Ws10NodeClass,
+        flagm: i32,
         q_cfs: f64,
         sf: f64,
         c1: f64,
@@ -2319,6 +2321,7 @@ impl Ws10ChannelImpoundmentKernel {
         flagt: i32,
         chnk: f64,
         nbarch: f64,
+        maxe: f64,
         crfrac: &[f64],
     ) -> Result<Vec<f64>, Ws10GuardError> {
         let mut df = vec![0.0; crfrac.len()];
@@ -2363,7 +2366,11 @@ impl Ws10ChannelImpoundmentKernel {
 
             timpot = depmid * WS22_DCAP_WTDSOI / di;
             if timpot >= timsh {
-                let dct = di * timsh * werod / (tb * wflow);
+                let mut dct = di * timsh * werod / (tb * wflow);
+                if flagm != 1 && dct >= maxe {
+                    di *= maxe / dct;
+                    dct = maxe;
+                }
                 for class_offset in 0..crfrac.len() {
                     df[class_offset] = dct * crfrac[class_offset];
                 }
@@ -2418,7 +2425,10 @@ impl Ws10ChannelImpoundmentKernel {
             if di <= WS10_ZERO_THRESHOLD {
                 return Ok(df);
             }
-            let dct = di * timsh * werod / (tb * wflow);
+            let mut dct = di * timsh * werod / (tb * wflow);
+            if flagm != 1 && dct >= maxe {
+                dct = maxe;
+            }
             for class_offset in 0..crfrac.len() {
                 df[class_offset] = dct * crfrac[class_offset];
             }
@@ -2459,8 +2469,13 @@ impl Ws10ChannelImpoundmentKernel {
         let tstar = timex * dwdti / (wfin - werod);
         let wstar = (1.0 - (-1.0176 * tstar).exp()) / 1.0176;
         let we = wstar * (wfin - werod) + werod;
-        let eros = (we - werod) * depsid + depmid * werod;
-        let dct = eros * WS22_DCAP_WTDSOI / (tb * wflow);
+        let mut eros = (we - werod) * depsid + depmid * werod;
+        let mut dct = eros * WS22_DCAP_WTDSOI / (tb * wflow);
+        if flagm != 1 && dct >= maxe {
+            dct = maxe;
+            eros = dct * tb * wflow / WS22_DCAP_WTDSOI;
+            let _ = eros;
+        }
 
         for class_offset in 0..crfrac.len() {
             df[class_offset] = dct * crfrac[class_offset];
@@ -2522,9 +2537,27 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         let mut excess = 1.0_f64;
-        let mut df_lbs_s_ft2 = Self::ws22_dcap_flagm1(
-            node_class, ql_cfs, sfl, c1, z, effshl, depsid_ft, depmid_ft, wfl_ft, wfl_ft,
-            roughness, crsh, excess, tb_s, flagc, chnk, nbarch, crfrac,
+        let mut df_lbs_s_ft2 = Self::ws26_dcap(
+            node_class,
+            1,
+            ql_cfs,
+            sfl,
+            c1,
+            z,
+            effshl,
+            depsid_ft,
+            depmid_ft,
+            wfl_ft,
+            wfl_ft,
+            roughness,
+            crsh,
+            excess,
+            tb_s,
+            flagc,
+            chnk,
+            nbarch,
+            WS22_DCAP_MAXE,
+            crfrac,
         )?;
 
         let mut dl_lbs_s_ft = vec![0.0_f64; class_count];
@@ -2578,9 +2611,27 @@ impl Ws10ChannelImpoundmentKernel {
                 excess = 0.0;
             }
 
-            df_lbs_s_ft2 = Self::ws22_dcap_flagm1(
-                node_class, ql_cfs, sfl, c1, z, effshl, depsid_ft, depmid_ft, wfl_ft, wfl_ft,
-                roughness, crsh, excess, tb_s, flagc, chnk, nbarch, crfrac,
+            df_lbs_s_ft2 = Self::ws26_dcap(
+                node_class,
+                2,
+                ql_cfs,
+                sfl,
+                c1,
+                z,
+                effshl,
+                depsid_ft,
+                depmid_ft,
+                wfl_ft,
+                wfl_ft,
+                roughness,
+                crsh,
+                excess,
+                tb_s,
+                flagc,
+                chnk,
+                nbarch,
+                WS22_DCAP_MAXE,
+                crfrac,
             )?;
 
             for class_offset in 0..class_count {
@@ -3022,8 +3073,9 @@ impl Ws10ChannelImpoundmentKernel {
                 let depmid_ft = sediment_controls.chnedm * WS15_DEPTH_FROM_METERS_TO_FEET;
                 let depsid_ft = sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
                 let tb_s = 2.0 * event_duration;
-                let dcap_df_lbs_s_ft2 = Self::ws22_dcap_flagm1(
+                let dcap_df_lbs_s_ft2 = Self::ws26_dcap(
                     node_class,
+                    1,
                     qu_cfs,
                     slopes[segment_index - 1].max(WS22_DCAP_MIN_SLOPE),
                     sediment_controls.ctlz,
@@ -3040,6 +3092,7 @@ impl Ws10ChannelImpoundmentKernel {
                     flagc,
                     chnk,
                     sediment_controls.chnnbr,
+                    WS22_DCAP_MAXE,
                     &crfrac,
                 )?;
 
@@ -5812,6 +5865,55 @@ mod tests {
         assert_eq!(
             report.step_reports[0].decision_outcome,
             WritebackDecisionOutcome::Reject
+        );
+    }
+
+    #[test]
+    fn wshedimpl26_dcap_flagm2_caps_detachment_rate_at_maxe() {
+        let crfrac = vec![0.2, 0.3, 0.5];
+        let common = (
+            Ws10NodeClass::Channel,
+            10.0,
+            0.05,
+            0.03,
+            20.0,
+            120.0,
+            1.0,
+            20_000.0,
+            1.0,
+            1.0,
+            0.05,
+            0.0,
+            1.0,
+            100.0,
+            3,
+            100.0,
+            0.04,
+            WS22_DCAP_MAXE,
+        );
+
+        let df_flagm1 = Ws10ChannelImpoundmentKernel::ws26_dcap(
+            common.0, 1, common.1, common.2, common.3, common.4, common.5, common.6, common.7,
+            common.8, common.9, common.10, common.11, common.12, common.13, common.14, common.15,
+            common.16, common.17, &crfrac,
+        )
+        .expect("flagm1 detachment capacity should evaluate");
+        let df_flagm2 = Ws10ChannelImpoundmentKernel::ws26_dcap(
+            common.0, 2, common.1, common.2, common.3, common.4, common.5, common.6, common.7,
+            common.8, common.9, common.10, common.11, common.12, common.13, common.14, common.15,
+            common.16, common.17, &crfrac,
+        )
+        .expect("flagm2 detachment capacity should evaluate");
+
+        let sum_flagm1 = df_flagm1.iter().sum::<f64>();
+        let sum_flagm2 = df_flagm2.iter().sum::<f64>();
+        assert!(
+            sum_flagm1 > WS22_DCAP_MAXE,
+            "expected uncapped flagm1 detachment > maxe, got {sum_flagm1}"
+        );
+        assert!(
+            (sum_flagm2 - WS22_DCAP_MAXE).abs() <= 1e-9,
+            "expected flagm2 detachment capped at maxe, got {sum_flagm2}"
         );
     }
 

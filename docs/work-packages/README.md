@@ -838,6 +838,12 @@ Authorized packages:
     missing-`crfrac` fail-closed behavior in WS20-only opt-in lanes, and
     preserving explicit non-promotable HOLD posture for remaining full
     `chnero/chnrt/detach` parity closure families.
+- `20260527-wshedimpl26-detach-dcap-flagm2-iterative-closure-001/`
+  - Purpose: execute WSHEDIMPL26 immediate next actions from WSHEDIMPL25 by
+    migrating baseline-authoritative `dcap(flagm=2)` max-detachment limiter
+    semantics for WS23 iterative detach closure lanes, adding WS26
+    contract-derived vectors, and preserving explicit non-promotable HOLD
+    posture for remaining full `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
