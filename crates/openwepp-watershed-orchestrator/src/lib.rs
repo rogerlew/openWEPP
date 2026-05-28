@@ -2896,13 +2896,16 @@ impl Ws10ChannelImpoundmentKernel {
         let node_id = request.node_id;
         let mut x_points_ft = Vec::with_capacity(nslpts);
         let mut slopes = Vec::with_capacity(nslpts);
-        let mut widths_ft = Vec::with_capacity(nslpts);
+        let mut width_a_points_ft = Vec::with_capacity(nslpts);
+        let mut width_b_points_ft = Vec::with_capacity(nslpts);
         for point_number in 1..=nslpts {
             let x_symbol =
                 BoundarySymbol::from(format!("ws10_channel_{node_id}_x_{point_number:04}"));
             let slope_symbol =
                 BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{point_number:04}"));
-            let width_symbol =
+            let width_a_symbol =
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_wida_{point_number:04}"));
+            let width_b_symbol =
                 BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{point_number:04}"));
 
             let x_ft =
@@ -2912,25 +2915,38 @@ impl Ws10ChannelImpoundmentKernel {
                 node_class,
                 slope_symbol.clone(),
             )?;
-            let width_ft = Self::require_channel_state_symbol_scalar(
+            let width_a_ft = Self::require_channel_state_symbol_scalar(
                 request,
                 node_class,
-                width_symbol.clone(),
+                width_a_symbol.clone(),
+            )?;
+            let width_b_ft = Self::require_channel_state_symbol_scalar(
+                request,
+                node_class,
+                width_b_symbol.clone(),
             )?;
 
             Self::require_channel_control_range(node_class, x_symbol, x_ft, Some(0.0), None)?;
             Self::require_channel_control_range(node_class, slope_symbol, slope, Some(0.0), None)?;
             Self::require_channel_control_range(
                 node_class,
-                width_symbol,
-                width_ft,
+                width_a_symbol,
+                width_a_ft,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            )?;
+            Self::require_channel_control_range(
+                node_class,
+                width_b_symbol,
+                width_b_ft,
                 Some(WS10_ZERO_THRESHOLD),
                 None,
             )?;
 
             x_points_ft.push(x_ft);
             slopes.push(slope.max(WS18_MIN_CHANNEL_SLOPE));
-            widths_ft.push(width_ft);
+            width_a_points_ft.push(width_a_ft);
+            width_b_points_ft.push(width_b_ft);
         }
 
         let Some(&leff_ft) = x_points_ft.last() else {
@@ -3074,6 +3090,11 @@ impl Ws10ChannelImpoundmentKernel {
                 ));
             }
 
+            // Preserve baseline `chnrt.for` boundary-width semantics:
+            // upper boundary uses `widb(i-1)`, lower boundary uses `wida(i)`.
+            let upper_width_ft = width_b_points_ft[segment_index - 1];
+            let lower_width_ft = width_a_points_ft[segment_index];
+
             let (mut wfu_ft, mut effshu) = Self::ws18_hydchn(
                 node_class,
                 flagc,
@@ -3081,7 +3102,7 @@ impl Ws10ChannelImpoundmentKernel {
                 slopes[segment_index - 1],
                 sediment_controls.ctlz,
                 sediment_controls.chnz,
-                widths_ft[segment_index - 1],
+                upper_width_ft,
                 roughness,
                 crsh,
                 sediment_controls.chnnbr,
@@ -3093,18 +3114,18 @@ impl Ws10ChannelImpoundmentKernel {
                 slopes[segment_index],
                 sediment_controls.ctlz,
                 sediment_controls.chnz,
-                widths_ft[segment_index],
+                lower_width_ft,
                 roughness,
                 crsh,
                 sediment_controls.chnnbr,
             )?;
 
             if wfu_ft <= WS10_ZERO_THRESHOLD && qu_cfs <= WS10_ZERO_THRESHOLD {
-                wfu_ft = widths_ft[segment_index - 1];
+                wfu_ft = upper_width_ft;
                 effshu = 0.0;
             }
             if wfl_ft <= WS10_ZERO_THRESHOLD && ql_cfs <= WS10_ZERO_THRESHOLD {
-                wfl_ft = widths_ft[segment_index];
+                wfl_ft = lower_width_ft;
                 effshl = 0.0;
             }
             if wfu_ft <= WS10_ZERO_THRESHOLD || wfl_ft <= WS10_ZERO_THRESHOLD {

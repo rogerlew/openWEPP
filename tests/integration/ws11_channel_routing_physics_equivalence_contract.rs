@@ -1014,6 +1014,80 @@ fn wshedimpl27_contract_ws21_case4_bracket_migration_vector_remains_resolved() {
 }
 
 #[test]
+fn wshedimpl28_contract_ws20_routing_responds_to_wida_lower_boundary_widths() {
+    let mut baseline_surface = seeded_ws11_surface();
+    baseline_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    baseline_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    baseline_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    baseline_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(2.0),
+    );
+    seed_ws22_channel_crfrac(&mut baseline_surface, 1);
+
+    let baseline_report = run_ws11_surface(baseline_surface);
+    assert!(
+        baseline_report.dispatch_report.is_success(),
+        "wshedimpl28 baseline routing vector must succeed; step_reports={:?}",
+        baseline_report.step_reports
+    );
+
+    let baseline_qsed = state_value(&baseline_report, "ws10_channel_1_qsed");
+    let baseline_tc = state_value(&baseline_report, "ws10_channel_1_tc");
+
+    let mut perturbed_surface = seeded_ws11_surface();
+    perturbed_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(2.0),
+    );
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0002"),
+        BoundaryValue::scalar(5.0),
+    );
+    perturbed_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0003"),
+        BoundaryValue::scalar(5.0),
+    );
+    seed_ws22_channel_crfrac(&mut perturbed_surface, 1);
+
+    let perturbed_report = run_ws11_surface(perturbed_surface);
+    assert!(
+        perturbed_report.dispatch_report.is_success(),
+        "wshedimpl28 perturbed routing vector must succeed; step_reports={:?}",
+        perturbed_report.step_reports
+    );
+
+    let perturbed_qsed = state_value(&perturbed_report, "ws10_channel_1_qsed");
+    let perturbed_tc = state_value(&perturbed_report, "ws10_channel_1_tc");
+
+    let qsed_shift = (baseline_qsed - perturbed_qsed).abs();
+    let tc_shift = (baseline_tc - perturbed_tc).abs();
+    assert!(
+        qsed_shift > 1.0e-9 || tc_shift > 1.0e-9,
+        "expected lower-boundary wida perturbation to affect routing outputs; baseline_qsed={baseline_qsed}, perturbed_qsed={perturbed_qsed}, baseline_tc={baseline_tc}, perturbed_tc={perturbed_tc}"
+    );
+}
+
+#[test]
 fn wshedimpl24_contract_case12_transition_requires_crfrac_projection() {
     let mut surface = seeded_ws11_surface();
     surface

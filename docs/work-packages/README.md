@@ -850,6 +850,13 @@ Authorized packages:
     semantics (`xdbig/xdsmal`) for WS21 case4 enddet closure lanes, adding
     WS27 contract-derived vectors, and preserving explicit non-promotable HOLD
     posture for remaining full `chnero/chnrt/detach` parity closure families.
+- `20260527-wshedimpl28-channel-width-boundary-semantics-001/`
+  - Purpose: execute WSHEDIMPL28 immediate next actions from WSHEDIMPL27 by
+    migrating baseline-authoritative `chnrt.for` width-boundary routing
+    semantics (`widb(i-1)` upper boundary, `wida(i)` lower boundary) in
+    WS20/WS21 segment loops, adding WS28 contract-derived vectors, and
+    preserving explicit non-promotable HOLD posture for remaining full
+    `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
