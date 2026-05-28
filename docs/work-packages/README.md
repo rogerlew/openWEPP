@@ -864,6 +864,13 @@ Authorized packages:
     surfaces, adding WS29 contract-derived vectors, and preserving explicit
     non-promotable HOLD posture for remaining full `chnero/chnrt/detach`
     parity closure families.
+- `20260528-wshedimpl30-erodible-shape-transition-fallback-mapping-001/`
+  - Purpose: execute WSHEDIMPL30 immediate next actions from WSHEDIMPL29 by
+    migrating baseline-authoritative erodible-lane shape-transition continuity
+    (`ishape=3` pathways with `depa/depb`-driven rectangular fallback mapping)
+    into WS20/WS21 routing lanes, adding WS30 contract-derived vectors, and
+    preserving explicit non-promotable HOLD posture for remaining full
+    `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch

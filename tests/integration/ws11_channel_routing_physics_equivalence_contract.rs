@@ -1172,6 +1172,165 @@ NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
 }
 
 #[test]
+fn wshedimpl30_contract_ws20_ishape3_erodible_lane_vector_executes() {
+    let channel_only_topology = r"
+HILLSLOPES 1
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+";
+
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(3.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(100.0),
+    );
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface_with_topology(surface, channel_only_topology);
+    assert!(
+        report.dispatch_report.is_success(),
+        "wshedimpl30 erodible-lane vector must succeed; step_reports={:?}",
+        report.step_reports
+    );
+
+    let qsed = state_value(&report, "ws10_channel_1_qsed");
+    let tc = state_value(&report, "ws10_channel_1_tc");
+    assert!(qsed.is_finite() && qsed >= 0.0);
+    assert!(tc.is_finite() && tc >= 0.0);
+}
+
+#[test]
+#[allow(clippy::too_many_lines)]
+fn wshedimpl30_contract_ws20_ishape3_depa_depb_fallback_mapping_affects_outputs() {
+    let channel_only_topology = r"
+HILLSLOPES 1
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+";
+
+    let mut no_fallback_surface = seeded_ws11_surface();
+    no_fallback_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(3.0),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(100.0),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_depb_0001"),
+        BoundaryValue::scalar(0.00011),
+    );
+    no_fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_depa_0002"),
+        BoundaryValue::scalar(0.00011),
+    );
+    seed_ws22_channel_crfrac(&mut no_fallback_surface, 1);
+
+    let no_fallback_report =
+        run_ws11_surface_with_topology(no_fallback_surface, channel_only_topology);
+    assert!(
+        no_fallback_report.dispatch_report.is_success(),
+        "wshedimpl30 no-fallback vector must succeed; step_reports={:?}",
+        no_fallback_report.step_reports
+    );
+
+    let no_fallback_qsed = state_value(&no_fallback_report, "ws10_channel_1_qsed");
+    let no_fallback_tc = state_value(&no_fallback_report, "ws10_channel_1_tc");
+
+    let mut fallback_surface = seeded_ws11_surface();
+    fallback_surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws21_case34_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ishape"),
+        BoundaryValue::scalar(3.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_chnk"),
+        BoundaryValue::scalar(100.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_widb_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_wida_0002"),
+        BoundaryValue::scalar(1.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_depb_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    fallback_surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_depa_0002"),
+        BoundaryValue::scalar(0.0),
+    );
+    seed_ws22_channel_crfrac(&mut fallback_surface, 1);
+
+    let fallback_report = run_ws11_surface_with_topology(fallback_surface, channel_only_topology);
+    assert!(
+        fallback_report.dispatch_report.is_success(),
+        "wshedimpl30 fallback vector must succeed; step_reports={:?}",
+        fallback_report.step_reports
+    );
+
+    let fallback_qsed = state_value(&fallback_report, "ws10_channel_1_qsed");
+    let fallback_tc = state_value(&fallback_report, "ws10_channel_1_tc");
+
+    let qsed_shift = (no_fallback_qsed - fallback_qsed).abs();
+    let tc_shift = (no_fallback_tc - fallback_tc).abs();
+    assert!(
+        qsed_shift > 1.0e-9 || tc_shift > 1.0e-9,
+        "expected depa/depb-driven rectangular fallback mapping to alter erodible-lane outputs; no_fallback_qsed={no_fallback_qsed}, fallback_qsed={fallback_qsed}, no_fallback_tc={no_fallback_tc}, fallback_tc={fallback_tc}"
+    );
+}
+
+#[test]
 fn wshedimpl24_contract_case12_transition_requires_crfrac_projection() {
     let mut surface = seeded_ws11_surface();
     surface

@@ -180,6 +180,7 @@ const WS10_ZERO_THRESHOLD: f64 = 1.0e-12;
 const WS11_IPEAK_INTEGER_TOLERANCE: f64 = 1.0e-9;
 const WS12_IMPOUNDMENT_ERROR_SCALE: f64 = 1.0e-4;
 const WS12_IMPOUNDMENT_RETRY_LIMIT: usize = 64;
+const WS30_ERODIBLE_RECTANGULAR_DEPTH_THRESHOLD_FT: f64 = 1.0e-4;
 const WS15_CRSH_FROM_CHNTCR_SCALE: f64 = 0.021;
 const WS15_DEPTH_FROM_METERS_TO_FEET: f64 = 3.281;
 const WS18_LBS_PER_KG: f64 = 2.2064;
@@ -596,7 +597,7 @@ impl Ws10ChannelImpoundmentKernel {
             ishape_symbol,
             ishape,
             Some(1.0),
-            Some(2.0),
+            Some(3.0),
         )?;
         Self::require_channel_control_range(
             node_class,
@@ -2245,6 +2246,45 @@ impl Ws10ChannelImpoundmentKernel {
         (particle_diameter_ft.powi(2) * (specific_gravity - 1.0) * WS18_AGRAV) / (WS18_KNVIS * 18.0)
     }
 
+    fn ws30_shape_flag_from_ishape(
+        node_class: Ws10NodeClass,
+        node_id: u32,
+        ishape: f64,
+    ) -> Result<i32, Ws10GuardError> {
+        let ishape_rounded = ishape.round();
+        if (ishape - ishape_rounded).abs() > WS11_IPEAK_INTEGER_TOLERANCE {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_ishape")),
+                ishape,
+            ));
+        }
+
+        if !(1.0..=3.0).contains(&ishape_rounded) {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from(format!("ws10_channel_{node_id}_ishape")),
+                ishape,
+            ));
+        }
+
+        if (ishape_rounded - 1.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            Ok(1)
+        } else if (ishape_rounded - 2.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
+            Ok(2)
+        } else {
+            Ok(3)
+        }
+    }
+
+    fn ws30_apply_erodible_rectangular_fallback(flagct: i32, erodible_depth_ft: f64) -> i32 {
+        if flagct == 3 && erodible_depth_ft <= WS30_ERODIBLE_RECTANGULAR_DEPTH_THRESHOLD_FT {
+            2
+        } else {
+            flagct
+        }
+    }
+
     fn ws22_require_crfrac_vector(
         request: &WatershedKernelRequest<'_>,
         node_class: Ws10NodeClass,
@@ -2920,6 +2960,7 @@ impl Ws10ChannelImpoundmentKernel {
         let node_id = request.node_id;
         let mut x_points_ft = Vec::with_capacity(nslpts);
         let mut slopes = Vec::with_capacity(nslpts);
+        let mut depth_a_points_ft = Vec::with_capacity(nslpts);
         let mut depth_b_points_ft = Vec::with_capacity(nslpts);
         let mut width_a_points_ft = Vec::with_capacity(nslpts);
         let mut width_b_points_ft = Vec::with_capacity(nslpts);
@@ -2998,6 +3039,7 @@ impl Ws10ChannelImpoundmentKernel {
 
             x_points_ft.push(x_ft);
             slopes.push(slope.max(WS18_MIN_CHANNEL_SLOPE));
+            depth_a_points_ft.push(depth_a_ft);
             depth_b_points_ft.push(depth_b_ft);
             width_a_points_ft.push(width_a_ft);
             width_b_points_ft.push(width_b_ft);
@@ -3103,11 +3145,8 @@ impl Ws10ChannelImpoundmentKernel {
                 Self::ws20_fall_velocity_ft_s(specific_gravity, crdia_ft[class_offset]);
         }
 
-        let flagc = if (sediment_controls.ishape - 2.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
-            2
-        } else {
-            1
-        };
+        let flagct =
+            Self::ws30_shape_flag_from_ishape(node_class, node_id, sediment_controls.ishape)?;
         let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
         let chnk_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_chnk"));
         let chnk =
@@ -3148,10 +3187,18 @@ impl Ws10ChannelImpoundmentKernel {
             // upper boundary uses `widb(i-1)`, lower boundary uses `wida(i)`.
             let upper_width_ft = width_b_points_ft[segment_index - 1];
             let lower_width_ft = width_a_points_ft[segment_index];
+            let upper_flagc = Self::ws30_apply_erodible_rectangular_fallback(
+                flagct,
+                depth_b_points_ft[segment_index - 1],
+            );
+            let lower_flagc = Self::ws30_apply_erodible_rectangular_fallback(
+                flagct,
+                depth_a_points_ft[segment_index],
+            );
 
             let (mut wfu_ft, mut effshu) = Self::ws18_hydchn(
                 node_class,
-                flagc,
+                upper_flagc,
                 qu_cfs,
                 slopes[segment_index - 1],
                 sediment_controls.ctlz,
@@ -3163,7 +3210,7 @@ impl Ws10ChannelImpoundmentKernel {
             )?;
             let (mut wfl_ft, mut effshl) = Self::ws18_hydchn(
                 node_class,
-                flagc,
+                lower_flagc,
                 ql_cfs,
                 slopes[segment_index],
                 sediment_controls.ctlz,
@@ -3262,7 +3309,7 @@ impl Ws10ChannelImpoundmentKernel {
                     crsh,
                     excess,
                     tb_s,
-                    flagc,
+                    upper_flagc,
                     chnk,
                     sediment_controls.chnnbr,
                     WS22_DCAP_MAXE,
@@ -3271,7 +3318,7 @@ impl Ws10ChannelImpoundmentKernel {
                 let dcap_df_lbs_s_ft2 = dcap_outcome.df_lbs_s_ft2;
                 depmid_ft = dcap_outcome.depmid_ft;
                 depth_b_points_ft[segment_index - 1] = dcap_outcome.depmid_ft;
-                if flagc == 2 && dcap_outcome.werod_ft > wfu_ft {
+                if upper_flagc == 2 && dcap_outcome.werod_ft > wfu_ft {
                     width_b_points_ft[segment_index - 1] = dcap_outcome.werod_ft;
                 }
 
@@ -3416,7 +3463,7 @@ impl Ws10ChannelImpoundmentKernel {
                         roughness,
                         crsh,
                         tb_s,
-                        flagc,
+                        lower_flagc,
                         chnk,
                         sediment_controls.chnnbr,
                         &crfrac,
@@ -3613,7 +3660,7 @@ impl Ws10ChannelImpoundmentKernel {
                         roughness,
                         crsh,
                         tb_s,
-                        flagc,
+                        lower_flagc,
                         chnk,
                         sediment_controls.chnnbr,
                         &crfrac,
@@ -3938,11 +3985,18 @@ impl Ws10ChannelImpoundmentKernel {
         let slope_symbol =
             BoundarySymbol::from(format!("ws10_channel_{node_id}_slope_{nslpts:04}"));
         let width_symbol = BoundarySymbol::from(format!("ws10_channel_{node_id}_widb_{nslpts:04}"));
+        let terminal_depth_symbol =
+            BoundarySymbol::from(format!("ws10_channel_{node_id}_depb_{nslpts:04}"));
 
         let terminal_slope =
             Self::require_channel_state_symbol_scalar(request, node_class, slope_symbol.clone())?;
         let terminal_width_ft =
             Self::require_channel_state_symbol_scalar(request, node_class, width_symbol.clone())?;
+        let terminal_depth_ft = Self::require_channel_state_symbol_scalar(
+            request,
+            node_class,
+            terminal_depth_symbol.clone(),
+        )?;
         Self::require_channel_control_range(
             node_class,
             slope_symbol,
@@ -3957,6 +4011,13 @@ impl Ws10ChannelImpoundmentKernel {
             Some(WS10_ZERO_THRESHOLD),
             None,
         )?;
+        Self::require_channel_control_range(
+            node_class,
+            terminal_depth_symbol,
+            terminal_depth_ft,
+            Some(0.0),
+            None,
+        )?;
 
         let q_cfs = qpo * WS18_CFS_PER_CMS;
         if !q_cfs.is_finite() || q_cfs < 0.0 {
@@ -3967,11 +4028,9 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let flagc = if (sediment_controls.ishape - 2.0).abs() <= WS11_IPEAK_INTEGER_TOLERANCE {
-            2
-        } else {
-            1
-        };
+        let flagct =
+            Self::ws30_shape_flag_from_ishape(node_class, node_id, sediment_controls.ishape)?;
+        let flagc = Self::ws30_apply_erodible_rectangular_fallback(flagct, terminal_depth_ft);
         let c1 = sediment_controls.ctlz;
         let sf = terminal_slope;
         let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
