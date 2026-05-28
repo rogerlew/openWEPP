@@ -665,7 +665,7 @@ fn wshedimpl20_contract_case12_routing_is_opt_in_and_defaults_to_zero_diagnostic
 }
 
 #[test]
-fn wshedimpl20_contract_case12_opt_in_tracks_detachment_unmigrated_diagnostics() {
+fn wshedimpl25_contract_ws20_only_opt_in_requires_crfrac_projection() {
     let mut surface = seeded_ws11_surface();
     surface
         .state_surface
@@ -677,24 +677,54 @@ fn wshedimpl20_contract_case12_opt_in_tracks_detachment_unmigrated_diagnostics()
 
     let report = run_ws11_surface(surface);
     assert!(
+        report
+            .step_reports
+            .iter()
+            .any(|step| step.decision_status.message_id() == "WKERNEL-WS10-CHANNEL-E-001"),
+        "expected missing crfrac projection failure under ws20-only opt-in; step_reports={:?}",
+        report.step_reports
+    );
+}
+
+#[test]
+fn wshedimpl25_contract_ws20_only_opt_in_auto_activates_ws21_with_crfrac_projection() {
+    let mut surface = seeded_ws11_surface();
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ipeak"), BoundaryValue::scalar(4.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("ws10_channel_1_ws20_case12_enable"),
+        BoundaryValue::scalar(1.0),
+    );
+    seed_ws22_channel_crfrac(&mut surface, 1);
+
+    let report = run_ws11_surface(surface);
+    assert!(
         report.dispatch_report.is_success(),
-        "wshedimpl20 opt-in vector must succeed; step_reports={:?}",
+        "wshedimpl25 ws20-only opt-in vector must succeed with crfrac projection; step_reports={:?}",
         report.step_reports
     );
 
-    let case1_segments = state_value(&report, "ws10_channel_1_ws20_case1_segment_count");
-    let case2_segments = state_value(&report, "ws10_channel_1_ws20_case2_segment_count");
-    let detachment_unmigrated = state_value(
+    let case3_segments = state_value(&report, "ws10_channel_1_ws21_case3_segment_count");
+    let case4_segments = state_value(&report, "ws10_channel_1_ws21_case4_segment_count");
+    let ws20_unmigrated = state_value(
         &report,
         "ws10_channel_1_ws20_detachment_unmigrated_segment_count",
     );
-
-    assert!(case1_segments >= 0.0);
-    assert!(case2_segments >= 0.0);
-    assert!(
-        detachment_unmigrated > 0.0,
-        "expected detachment-unmigrated diagnostics to be tracked under ws20 opt-in"
+    let ws21_unmigrated = state_value(
+        &report,
+        "ws10_channel_1_ws21_detach_unmigrated_segment_count",
     );
+
+    assert!(
+        (case3_segments + case4_segments) > 0.0,
+        "expected ws21 case34 activity under ws20-only opt-in when crfrac is projected"
+    );
+    assert!(
+        (ws20_unmigrated - 0.0).abs() <= 1e-12,
+        "expected ws20 unresolved-detachment fallback closure under ws20-only opt-in"
+    );
+    assert!(ws21_unmigrated >= 0.0);
 }
 
 #[test]

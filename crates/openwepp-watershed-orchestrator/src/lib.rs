@@ -3657,8 +3657,9 @@ impl Ws10ChannelImpoundmentKernel {
         let mut ws20_diagnostics = Ws20SegmentRoutingDiagnostics::default();
         let ws20_case12_enabled =
             Self::read_channel_opt_in_toggle(request, node_class, "ws20_case12_enable")?;
-        let ws21_case34_enabled =
+        let ws21_case34_opt_in =
             Self::read_channel_opt_in_toggle(request, node_class, "ws21_case34_enable")?;
+        let ws21_case34_enabled = ws20_case12_enabled || ws21_case34_opt_in;
 
         if ws20_case12_enabled
             && qpo > WS10_ZERO_THRESHOLD

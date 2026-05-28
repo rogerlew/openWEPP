@@ -831,6 +831,13 @@ Authorized packages:
     (`ws24_case2_detach_segment_count`), and preserving explicit
     non-promotable HOLD posture for remaining full `chnero/chnrt/detach`
     parity closure families.
+- `20260527-wshedimpl25-ws20-opt-in-ws21-auto-activation-closure-001/`
+  - Purpose: execute WSHEDIMPL25 immediate next actions from WSHEDIMPL24 by
+    closing residual WS20 opt-in unresolved-detachment fallback behavior through
+    WS21 auto-activation under WS20 routing, adding contract-derived vectors for
+    missing-`crfrac` fail-closed behavior in WS20-only opt-in lanes, and
+    preserving explicit non-promotable HOLD posture for remaining full
+    `chnero/chnrt/detach` parity closure families.
 - `20260526-erod16-route-branch-contract-authority-and-routine-map-001/`
   - Purpose: execute EROD16 by amending canonical `SC-SED-001` and
     `SC-ROUTE-001` with baseline-authoritative `route.for` segment-branch
