@@ -210,6 +210,9 @@ No silent fallback masking for invalid required inputs. `[DIRECT][E-SPEC-SOL-01]
   - for legacy `7778` MOFE stacks, may accept restrictive-layer rows placed
     per OFE (immediately after each OFE layer block) when all per-OFE rows are
     identical; normalize to a single profile restrictive-layer row;
+  - for `9002/9003/9005` disturbed-policy rows, may accept quoted `luse` and
+    `stext` tokens containing embedded whitespace when quote-tokenization is
+    lossless and field arity/order remains canonical;
   - may allow explicitly configured legacy aliases only when row-shape mapping is lossless and documented.
 
 Unsupported forms must fail with typed errors from Section 7.
@@ -225,7 +228,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-005` | base parameter domains (`sat`, `ki`, `kr`, `shcrit`, `avke`) | OFE header parse | `SOL-E-005` |
 | `G-SOL-006` | layer record arity by datver | layer parse | `SOL-E-006` |
 | `G-SOL-007` | monotone positive `solthk`, bounded fractions | layer closure | `SOL-E-005`/`SOL-E-009` |
-| `G-SOL-008` | disturbed/reveg policy row validity | policy parse | `SOL-E-006`/`SOL-E-005` |
+| `G-SOL-008` | disturbed/reveg policy row validity, including compatibility quote-tokenization for whitespace-bearing `luse`/`stext` policy-row fields | policy parse | `SOL-E-006`/`SOL-E-005` |
 | `G-SOL-009` | restrictive-layer closure | footer parse | `SOL-E-009` |
 | `G-SOL-010` | compatibility-only quoted header parse (`7778/9002/9003/9005`) must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token legacy form (omits `avke`, normalized to `0.0`) | OFE header parse | `SOL-E-006` |
 | `G-SOL-011` | compatibility-only per-OFE restrictive-layer rows must either be absent or pairwise identical before profile-level normalization | OFE/footer compatibility parse | `SOL-E-006` |
@@ -250,6 +253,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-28` | `0.1.8` | HILLSTAB02 amendment: ratified compatibility acceptance of quoted disturbed-policy rows (`9002/9003/9005`) where `luse`/`stext` carry embedded whitespace and quote-tokenization is lossless. |
 | `2026-05-26` | `0.1.7` | SIMIMPL36 amendment: extended compatibility-only quoted OFE-header authority (`G-SOL-010`) to disturbed datver families (`9002/9003/9005`) with the same optional trailing `avke` normalization (`avke := 0.0`) already ratified for `7778`. |
 | `2026-05-25` | `0.1.6` | MOFE13 amendment: added deterministic parser-to-runtime export authority for `solwpv`/`ksatadj` regime metadata (`ksatfac`,`ksatrec`,`lkeff`) including primary + per-OFE aliases and fail-closed closure hook `C-SOL-005`. |
 | `2026-05-25` | `0.1.5` | MOFE09 amendment: ratified parser-to-runtime theta export precedence (`theta_r_rosetta -> wp_measured` fallback for `thetdr`; `fc_rosetta -> fc_measured` fallback for `thetfc`) with explicit fail-closed guard linkage (`D-SOL-004`, `G-SOL-012`). |

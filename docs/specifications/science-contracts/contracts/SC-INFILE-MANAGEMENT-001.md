@@ -288,7 +288,7 @@ management_section = final_management_schedule ;
 | `reduce` | `yearly[y].rangeland.reduce` | `management.yearly[y].rangeland.reduce` | fraction | real | subset(nscen, burn branch) | conditional | all | none | `yearly.rangeland.reduce` |
 | `mgtopt` | `yearly[*].mgtopt` | `management.yearly[*].mgmt_option` | enum | int | variable | conditional | all | none | `mgmt_option` |
 | `itype` | `yearly[*].itype` | `management.yearly[*].plant_scenario_ref` | index | int | variable | conditional | all | validates against `ncrop` | `plant_ref` |
-| `tilseq` | `yearly[*].tilseq` | `management.yearly[*].surface_effect_ref` | index | int | variable | conditional | all | validates scenario index | `surface_effect_ref` |
+| `tilseq` | `yearly[*].tilseq` | `management.yearly[*].surface_effect_ref` | index | int | variable | conditional | all | strict: validates against `nseq`; compatibility: `0` allowed as explicit no-surface-effect sentinel even when `nseq>0` | `surface_effect_ref` |
 | `drset` | `yearly[*].drset` | `management.yearly[*].drain_ref` | index | int | variable | conditional | all | `0` allowed when `ndrain=0` | `drain_ref` |
 | `ofeindx` | `management.ofe_loop[*]` | `management.schedule.ofe_initial_ref[*]` | index | int | nofe | yes | all | validates against `nini` | `ofe_initial_ref` |
 | `nrots` | `management.nrots` | `management.schedule.rotation_repeats` | count | int | 1 | yes | all | none | `rotation_repeats` |
@@ -350,7 +350,7 @@ No silent fallback masking for invalid required management structure.
 1. `nofe`/`nchan` must match topology expectations from paired slope/watershed and soil surfaces. `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-SURVEY-MAN-01]`
 2. `nyears*nrots` schedule must be compatible with climate forcing record horizon. `[INFERENCE][E-SURVEY-MAN-01]`, `[INFERENCE][E-PHYS-MAN-01]`
 3. OFE-level management references (`ofeindx`) must map to valid initial-condition scenarios and consistent OFE partitioning. `[DIRECT][E-SPEC-MAN-01]`
-4. Scenario indices (`itype`, `tilseq`, `drset`, `manindx`) must resolve against declared scenario counts. `[DIRECT][E-SPEC-MAN-01]`
+4. Scenario indices (`itype`, `tilseq`, `drset`, `manindx`) must resolve against declared scenario counts; compatibility mode additionally permits `tilseq=0` as an explicit no-surface-effect sentinel. `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-SURVEY-MAN-01]`
 5. Datver-specific fields (2016.3+ residue/understory/permanent-contour extensions) must only appear in compatible datver families. `[DIRECT][E-SPEC-MAN-01]`, `[DIRECT][E-WP-MAN-01]`
 6. Julian-day schedule fields must remain in valid day domains (`1..366`, with `0` only where explicitly allowed by the canonical spec). `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-PHYS-MAN-01]`
 
@@ -376,6 +376,8 @@ No silent fallback masking for invalid required management structure.
   - may accept select legacy forms where mapping is lossless and explicit;
   - accepts first-token parsing for single-token control records while preserving the same invariant/error checks;
   - may accept legacy date sentinels only where canonical spec already permits them (`0` for specific perennial fields such as `jdharv` and `jdplt`);
+  - may accept `tilseq=0` when `nseq>0` as a legacy no-surface-effect sentinel
+    (value is preserved as `0` and not remapped);
   - must still fail on broken index closure or invalid section counts.
 
 Downgrade/export behaviors (e.g., 2016.3 to 98.4) are external transformation workflows and not parser-side silent coercions.
@@ -388,7 +390,7 @@ Downgrade/export behaviors (e.g., 2016.3 to 98.4) are external transformation wo
 | `G-MAN-002` | topology count positive and coherent | info parse + cross-file gate | `MAN-E-005`/`MAN-E-007` |
 | `G-MAN-003` | section counts valid | section header parse | `MAN-E-005` |
 | `G-MAN-004` | section-order and per-section row arity closure | section parse | `MAN-E-002`/`MAN-E-006` |
-| `G-MAN-005` | scenario reference domains | yearly parse | `MAN-E-009` |
+| `G-MAN-005` | scenario reference domains (compatibility exception: `tilseq=0` sentinel allowed) | yearly parse | `MAN-E-009` |
 | `G-MAN-006` | schedule loop closure | schedule derivation | `MAN-E-009` |
 | `G-MAN-007` | total-year closure vs declared years | schedule derivation | `MAN-E-008` |
 | `G-MAN-008` | Julian-day/date-domain validity with explicit allowed sentinels | yearly/surface parse + closure hook | `MAN-E-010` |
@@ -411,6 +413,7 @@ openWEPP names are explicit aliases only (Section 3 table).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-28` | `0.2.1` | HILLSTAB02 amendment: compatibility-mode authority now permits `tilseq=0` as explicit no-surface-effect sentinel even when `nseq>0`, while strict mode keeps full positive index-domain enforcement. |
 | `2026-05-21` | `0.2.0` | Ratified executable INIMPL09 parser profile: canonical section-order non-zero parsing, typed registry/schedule output, explicit rangeland unsupported policy, and executable date-domain guard linkage. |
 | `2026-05-21` | `0.1.2` | Replaced grouped payload rows in Section 3 with explicit per-symbol field rows for all externally relevant management inputs across plant/operation/initial/surface/contour/drain/yearly branches. |
 | `2026-05-21` | `0.1.1` | Expanded management field-coverage matrix, added boundary export mapping, added explicit date-domain guards/taxonomy, and evidence-tagged cross-file constraints. |

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::management::{
-    ManagementParseError, ParseMode, parse_management_from_path,
+    ManagementParseError, ParseMode, YearlyScenarioData, parse_management_from_path,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -87,6 +87,41 @@ fn compatibility_mode_accepts_trailing_tokens_on_control_records() {
 
     assert_eq!(parsed.datver, "95.7");
     assert_eq!(parsed.declared_total_years, 1);
+}
+
+#[test]
+fn strict_mode_rejects_tilseq_zero_when_nseq_nonzero() {
+    let err = parse_management_from_path(
+        fixture_path("compat_tilseq_zero_nonzero_nseq_98_4.man"),
+        ParseMode::Strict,
+    )
+    .expect_err("strict mode must reject tilseq=0 when nseq>0");
+
+    match err {
+        ManagementParseError::DanglingScenarioReference {
+            field,
+            value,
+            max_allowed,
+        } => {
+            assert_eq!(field, "tilseq");
+            assert_eq!(value, 0);
+            assert_eq!(max_allowed, 1);
+            assert_eq!(err.contract_error_id(), "MAN-E-009");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn compatibility_mode_accepts_tilseq_zero_when_nseq_nonzero() {
+    let parsed = parse_management_from_path(
+        fixture_path("compat_tilseq_zero_nonzero_nseq_98_4.man"),
+        ParseMode::Compatibility,
+    )
+    .expect("compatibility mode should accept tilseq=0 sentinel");
+
+    let YearlyScenarioData::Cropland(cropland) = &parsed.registries.yearlies[0].data;
+    assert_eq!(cropland.tilseq, 0);
 }
 
 #[test]

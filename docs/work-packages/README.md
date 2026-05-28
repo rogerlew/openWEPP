@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260528-hillstab02-parser-failure-remediation-and-stability-rerun-001/`
+  - Purpose: remediate dominant parser failure families identified in
+    HILLSTAB01 (`SOL-E-006`, `MAN-E-009`), run full workspace validation gates,
+    and rerun broad hillslope stability cohorts with quantified delta reporting
+    and hold-lift disposition.
 - `20260528-hillstab01-hillslope-cli-broad-stability-cohorts-001/`
   - Purpose: execute broad release stability validation for `openwepp-cli-hill`
     using the 1166-seed `wepp-forest` cohort and the single-hillslope

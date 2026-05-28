@@ -18,6 +18,8 @@ const COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE: &str =
     include_str!("../fixtures/infile/soil/compat_quoted_header_7778_per_ofe_restrictive.sol");
 const COMPAT_QUOTED_HEADER_9002_POLICY_FIRST: &str =
     include_str!("../fixtures/infile/soil/compat_quoted_header_9002_policy_first.sol");
+const COMPAT_QUOTED_POLICY_ROW_9002: &str =
+    include_str!("../fixtures/infile/soil/compat_quoted_policy_row_9002.sol");
 
 fn strict() -> SoilParserOptions {
     SoilParserOptions::default()
@@ -214,5 +216,33 @@ fn compatibility_accepts_quoted_9002_policy_first_header_form() {
     assert_eq!(parsed.ofes[0].layers.len(), 2);
     assert_eq!(parsed.ofes[0].slid, "SOIL B with spaces");
     assert_eq!(parsed.ofes[0].texid, "CLAY LOAM");
+    assert!((parsed.ofes[0].avke - 0.0).abs() < 1e-12);
+}
+
+#[test]
+fn strict_rejects_quoted_9002_policy_row_with_whitespace_luse() {
+    let strict_err = parse_soil(COMPAT_QUOTED_POLICY_ROW_9002, strict())
+        .expect_err("strict should reject quoted policy-row compatibility form");
+    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+}
+
+#[test]
+fn compatibility_accepts_quoted_9002_policy_row_with_whitespace_luse() {
+    let compat_options = SoilParserOptions {
+        mode: ParserMode::Compatibility,
+        allow_legacy_aliases: true,
+        expected_topology_count: None,
+        topology_scope: None,
+    };
+    let parsed = parse_soil(COMPAT_QUOTED_POLICY_ROW_9002, compat_options)
+        .expect("compatibility mode should accept quoted 9002 policy rows");
+
+    assert_eq!(parsed.datver, SoilDatver::V9002);
+    assert_eq!(parsed.ofes.len(), 1);
+    assert_eq!(
+        parsed.ofes[0].slid,
+        "Andic Xerochrepts, 60 to 90 percent slopes"
+    );
+    assert_eq!(parsed.ofes[0].texid, "ASHY-L");
     assert!((parsed.ofes[0].avke - 0.0).abs() < 1e-12);
 }

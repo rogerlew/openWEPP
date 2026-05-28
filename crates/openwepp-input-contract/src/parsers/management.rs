@@ -582,6 +582,7 @@ pub fn parse_management_from_str(
         &initials,
         &surfaces,
         &yearlies,
+        mode,
     )?;
 
     if let Some(first_unconsumed_line) = cursor.first_unconsumed_line_number() {
@@ -1304,6 +1305,7 @@ fn validate_cross_section_references(
     initials: &[InitialScenario],
     surfaces: &[SurfaceScenario],
     yearlies: &[YearlyScenario],
+    mode: ParseMode,
 ) -> Result<(), ManagementParseError> {
     if plants.len() != counts.ncrop
         || operations.len() != counts.nop
@@ -1330,7 +1332,12 @@ fn validate_cross_section_references(
     for yearly in yearlies {
         let YearlyScenarioData::Cropland(data) = &yearly.data;
         validate_reference("itype", data.itype, counts.ncrop)?;
-        validate_reference("tilseq", data.tilseq, counts.nseq)?;
+        // Legacy 98.x payloads may use `tilseq=0` to indicate no surface-effect scenario.
+        let compat_tilseq_zero_sentinel =
+            mode == ParseMode::Compatibility && counts.nseq > 0 && data.tilseq == 0;
+        if !compat_tilseq_zero_sentinel {
+            validate_reference("tilseq", data.tilseq, counts.nseq)?;
+        }
         validate_reference("conset", data.conset, counts.ncnt)?;
         validate_reference("drset", data.drset, counts.ndrain)?;
     }

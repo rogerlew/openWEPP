@@ -477,7 +477,7 @@ fn parse_ofe_block(
     let mut policy = None;
     let (header_line_no, header_line) =
         if datver.requires_policy_row() && mode == ParserMode::Compatibility {
-            match parse_policy_row(datver, first_line, first_line_no) {
+            match parse_policy_row(datver, mode, first_line, first_line_no) {
                 Ok(policy_first) => {
                     policy = Some(policy_first);
                     let next_header = cursor.next_line();
@@ -546,7 +546,7 @@ fn parse_ofe_block(
                 ));
             }
         };
-        policy = Some(parse_policy_row(datver, policy_line, policy_line_no)?);
+        policy = Some(parse_policy_row(datver, mode, policy_line, policy_line_no)?);
     }
 
     let mut layers = Vec::with_capacity(nsl);
@@ -629,42 +629,83 @@ fn maybe_parse_compat_ofe_restrictive_row(
     Ok(Some(restrictive))
 }
 
+fn parse_policy_tokens(
+    policy_line: &str,
+    expected: usize,
+    line_no: usize,
+    field: &'static str,
+    datver: SoilDatver,
+    mode: ParserMode,
+) -> Result<Vec<String>, SoilParserError> {
+    if mode == ParserMode::Compatibility
+        && matches!(
+            datver,
+            SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005
+        )
+        && policy_line.contains('\'')
+    {
+        let tokens = tokenize_whitespace_and_single_quotes(policy_line, line_no, field)?;
+        if tokens.len() != expected {
+            return Err(SoilParserError::new(
+                SoilErrorCode::SolE006,
+                line_no,
+                field,
+                format!(
+                    "variant arity mismatch: expected {expected} token(s), found {}",
+                    tokens.len()
+                ),
+            ));
+        }
+        return Ok(tokens);
+    }
+
+    Ok(tokens_exact(policy_line, expected, line_no, field)?
+        .into_iter()
+        .map(ToString::to_string)
+        .collect())
+}
+
 fn parse_policy_row(
     datver: SoilDatver,
+    mode: ParserMode,
     policy_line: &str,
     line_no: usize,
 ) -> Result<DisturbedPolicy, SoilParserError> {
     match datver {
         SoilDatver::V9002 => {
-            let t = tokens_exact(
+            let t = parse_policy_tokens(
                 policy_line,
                 5,
                 line_no,
                 "ksatadj,luse,stext,ksatfac,ksatrec",
+                datver,
+                mode,
             )?;
-            let ksatadj = parse_binary_flag(t[0], line_no, "ksatadj")?;
-            let ksatfac = parse_f64(t[3], line_no, "ksatfac")?;
-            let ksatrec = parse_f64(t[4], line_no, "ksatrec")?;
+            let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
+            let ksatfac = parse_f64(&t[3], line_no, "ksatfac")?;
+            let ksatrec = parse_f64(&t[4], line_no, "ksatrec")?;
             validate_non_negative(ksatfac, line_no, "ksatfac")?;
             validate_non_negative(ksatrec, line_no, "ksatrec")?;
 
             Ok(DisturbedPolicy::V9002 {
                 ksatadj,
-                luse: t[1].to_string(),
-                stext: t[2].to_string(),
+                luse: t[1].clone(),
+                stext: t[2].clone(),
                 ksatfac_mm_h: ksatfac,
                 ksatrec_per_day: ksatrec,
             })
         }
         SoilDatver::V9003 => {
-            let t = tokens_exact(
+            let t = parse_policy_tokens(
                 policy_line,
                 5,
                 line_no,
                 "ksatadj,luse,burn_code,stext,lkeff",
+                datver,
+                mode,
             )?;
-            let ksatadj = parse_binary_flag(t[0], line_no, "ksatadj")?;
-            let burn_code = parse_i32(t[2], line_no, "burn_code")?;
+            let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
+            let burn_code = parse_i32(&t[2], line_no, "burn_code")?;
             if burn_code < 0 {
                 return Err(SoilParserError::new(
                     SoilErrorCode::SolE005,
@@ -674,28 +715,30 @@ fn parse_policy_row(
                 ));
             }
 
-            let lkeff = parse_f64(t[4], line_no, "lkeff")?;
+            let lkeff = parse_f64(&t[4], line_no, "lkeff")?;
             if lkeff != -9999.0 {
                 validate_non_negative(lkeff, line_no, "lkeff")?;
             }
 
             Ok(DisturbedPolicy::V9003 {
                 ksatadj,
-                luse: t[1].to_string(),
+                luse: t[1].clone(),
                 burn_code,
-                stext: t[3].to_string(),
+                stext: t[3].clone(),
                 lkeff_mm_h: lkeff,
             })
         }
         SoilDatver::V9005 => {
-            let t = tokens_exact(
+            let t = parse_policy_tokens(
                 policy_line,
                 7,
                 line_no,
                 "ksatadj,luse,burn_code,stext,texid_enum,uksat,lkeff",
+                datver,
+                mode,
             )?;
-            let ksatadj = parse_binary_flag(t[0], line_no, "ksatadj")?;
-            let burn_code = parse_i32(t[2], line_no, "burn_code")?;
+            let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
+            let burn_code = parse_i32(&t[2], line_no, "burn_code")?;
             if burn_code < 0 {
                 return Err(SoilParserError::new(
                     SoilErrorCode::SolE005,
@@ -705,7 +748,7 @@ fn parse_policy_row(
                 ));
             }
 
-            let texid_enum = parse_i32(t[4], line_no, "texid_enum")?;
+            let texid_enum = parse_i32(&t[4], line_no, "texid_enum")?;
             if texid_enum <= 0 {
                 return Err(SoilParserError::new(
                     SoilErrorCode::SolE005,
@@ -715,19 +758,19 @@ fn parse_policy_row(
                 ));
             }
 
-            let uksat = parse_f64(t[5], line_no, "uksat")?;
+            let uksat = parse_f64(&t[5], line_no, "uksat")?;
             validate_non_negative(uksat, line_no, "uksat")?;
 
-            let lkeff = parse_f64(t[6], line_no, "lkeff")?;
+            let lkeff = parse_f64(&t[6], line_no, "lkeff")?;
             if lkeff != -9999.0 {
                 validate_non_negative(lkeff, line_no, "lkeff")?;
             }
 
             Ok(DisturbedPolicy::V9005 {
                 ksatadj,
-                luse: t[1].to_string(),
+                luse: t[1].clone(),
                 burn_code,
-                stext: t[3].to_string(),
+                stext: t[3].clone(),
                 texid_enum,
                 uksat_mm_h: uksat,
                 lkeff_mm_h: lkeff,
