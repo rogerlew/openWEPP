@@ -1539,8 +1539,14 @@ fn seed_wb11_runtime_surface_inputs(
             detail: format!("{SIMPIPE_GUARD_ID} prcp must be >= 0.0, observed {prcp}"),
         });
     }
+    let breakpoint_mode =
+        runtime_surface_symbol_value(runtime_surface, "ibrkpt").is_some_and(|value| value >= 0.5);
     let hyetograph_point_symbol =
-        if runtime_surface_symbol_value(runtime_surface, "ninten").is_some() {
+        if breakpoint_mode && runtime_surface_symbol_value(runtime_surface, "nbrkpt").is_some() {
+            // Breakpoint climates are authoritative on `nbrkpt`; stale `ninten`
+            // from prior days must not truncate the current-day event shape.
+            "nbrkpt"
+        } else if runtime_surface_symbol_value(runtime_surface, "ninten").is_some() {
             "ninten"
         } else {
             "nbrkpt"
@@ -3568,6 +3574,113 @@ mod tests {
         assert_json_i64(&loss_json, "/executed_day_count", 2);
         assert_json_i64(&loss_json, "/first_day_julian", 1);
         assert_json_i64(&loss_json, "/last_day_julian", 2);
+    }
+
+    #[test]
+    fn wshedimpl42_breakpoint_seed_uses_current_nbrkpt_not_stale_ninten() {
+        let mut runtime_surface = HillslopeWritebackSurface::default();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("ibrkpt"), BoundaryValue::scalar(1.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("nelem"), BoundaryValue::scalar(1.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(50.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-3.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-6.9));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("rad"), BoundaryValue::scalar(43.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("salb"), BoundaryValue::scalar(0.3));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.003));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("nbrkpt"), BoundaryValue::scalar(3.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(2.0));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("timem_0001"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("timem_0002"),
+            BoundaryValue::scalar(36_479.88),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("timem_0003"),
+            BoundaryValue::scalar(38_279.88),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("intsty_0001"),
+            BoundaryValue::scalar(5.701_773_141_797_617e-8),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("intsty_0002"),
+            BoundaryValue::scalar(5.111_111_111_111_11e-7),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("intsty_0003"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.25));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("thetfc_0001"),
+            BoundaryValue::scalar(0.30),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("thetdr_0001"),
+            BoundaryValue::scalar(0.12),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("ssc_0001"),
+            BoundaryValue::scalar(2.0e-6),
+        );
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface)
+            .expect("seeding should accept current-day breakpoint cardinality");
+
+        let ninten = require_runtime_surface_scalar(&runtime_surface, "ninten")
+            .expect("ninten should be seeded");
+        let nbrkpt = require_runtime_surface_scalar(&runtime_surface, "nbrkpt")
+            .expect("nbrkpt should be seeded");
+        let rainfall_input =
+            require_runtime_surface_scalar(&runtime_surface, "wb12_rainfall_input")
+                .expect("wb12_rainfall_input should be seeded");
+
+        assert!(
+            (ninten - 3.0).abs() < 1.0e-12,
+            "ninten should track current-day breakpoint count"
+        );
+        assert!(
+            (nbrkpt - 3.0).abs() < 1.0e-12,
+            "nbrkpt should remain aligned with current-day breakpoint count"
+        );
+        assert!(
+            (rainfall_input - 0.003).abs() < 1.0e-12,
+            "rainfall seed should preserve full current-day breakpoint precipitation depth"
+        );
     }
 
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {

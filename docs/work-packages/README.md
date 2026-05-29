@@ -988,6 +988,12 @@ Authorized packages:
     refresh routing behavior into WS11 production runtime lanes, adding
     contract-derived parity vectors, and dispositioning
     `GAP-ROUTE-011` / `GAP-SYSTEM-010` with contract-first evidence.
+- `20260529-wshedimpl42-wb14-runoff-guard-unpalatable-rind-closure-001/`
+  - Purpose: execute WSHEDIMPL42 to close the active
+    `HKERNEL-WB14-RUNOFF-E-003` hillslope blocker on
+    `/wc1/runs/un/unpalatable-rind`, rerun full watershed orchestration, and
+    verify closure by successful watershed parquet emission under contract-first
+    sequencing.
 - `20260528-clim17-breakpoint-climate-baseline-parity-burndown-001/`
   - Purpose: execute CLIM17 to identify and close implementation gaps in
     openWEPP breakpoint climate behavior versus
