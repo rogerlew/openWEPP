@@ -3158,13 +3158,10 @@ impl Wb11HydrologyKernel {
                     break;
                 }
 
+                // Baseline enrich.for semantics: when clipping saturates every class
+                // (`ratbot == 0`), re-enter the clipping loop instead of failing.
                 if ratbot <= WB11_ZERO_THRESHOLD {
-                    return Err(Wb11HydrologyKernelGuardError::Erod14DomainViolation {
-                        symbol: BoundarySymbol::from(EROD14_SYMBOL_LDBOT),
-                        value: ratbot,
-                        minimum: Some(WB11_ZERO_THRESHOLD),
-                        maximum: None,
-                    });
+                    continue;
                 }
 
                 let gdeficit = ldbot - sumg;

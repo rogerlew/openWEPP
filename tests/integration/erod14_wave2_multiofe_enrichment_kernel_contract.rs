@@ -747,7 +747,7 @@ fn erod14_contract_vector_rejects_case_classification_mismatch() {
 }
 
 #[test]
-fn erod14_contract_vector_rejects_unreproportionable_mass_request() {
+fn erod14_contract_vector_accepts_all_class_sedmax_saturation() {
     let mut surface = seeded_surface();
     surface.state_surface.insert(
         BoundarySymbol::from("erod14_ldbot"),
@@ -755,18 +755,48 @@ fn erod14_contract_vector_rejects_unreproportionable_mass_request() {
     );
 
     let report = run_surface(surface);
-    assert_eq!(
-        report.scheduler_report.halted_phase,
-        Some(HillslopePhase::ClosureDiagnostics)
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
     );
-    let phase = closure_phase_report(&report);
-    assert_eq!(
-        phase.decision_status.message_id(),
-        "HKERNEL-EROD14-WAVE2-E-003"
-    );
-    assert_eq!(
-        phase.decision_status.boundary_class(),
-        BoundaryClass::DomainViolation
+
+    let mut sedmax_sum = 0.0_f64;
+    let mut gend_sum = 0.0_f64;
+    let mut any_capped = false;
+    for class in 1..=WAVE2_TEST_CLASSES {
+        let gend = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!("erod14_gend_{class:04}")))
+            .expect("class gend should be present")
+            .as_f64();
+        let sedmax = report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(format!("erod14_sedmax_{class:04}")))
+            .expect("class sedmax should be present")
+            .as_f64();
+        assert!(gend.is_finite() && gend >= 0.0, "gend[{class}]={gend}");
+        assert!(
+            sedmax.is_finite() && sedmax >= 0.0,
+            "sedmax[{class}]={sedmax}"
+        );
+        assert!(
+            gend <= sedmax + TEST_TOLERANCE,
+            "gend[{class}]={gend} exceeds sedmax={sedmax}"
+        );
+        if (gend - sedmax).abs() <= TEST_TOLERANCE {
+            any_capped = true;
+        }
+        sedmax_sum += sedmax;
+        gend_sum += gend;
+    }
+
+    assert!(any_capped, "expected at least one capped class");
+    assert!(
+        (gend_sum - sedmax_sum).abs() <= TEST_TOLERANCE,
+        "expected all-class sedmax saturation closure: gend_sum={gend_sum}, sedmax_sum={sedmax_sum}"
     );
 }
 

@@ -388,6 +388,11 @@ Minimum vectors required by EROD13 contract-derived tests:
    class-wise maximum mass constraints:
    - `sedmax_i = gu_i + ftheta_i*(xbot-xtop)`,
    - iterative reproportioning for classes below `sedmax_i` until closure.
+   - baseline `enrich.for` semantics are authoritative for the
+     reproportion loop: when at least one class is clipped to `sedmax_i` and no
+     class remains below `sedmax_i` (`ratbot = 0`), do not fail solely on
+     `ratbot = 0`; re-enter the clipping pass and accept all-class `sedmax_i`
+     saturation once no further clipping is required.
 4. Enforce `INV-SED-009` class-mass conservation:
    - `gend_i <= sedmax_i` for all classes at convergence,
    - `sum(gend_i)` must remain finite and non-negative,
@@ -416,7 +421,8 @@ Minimum vectors required by EROD14 contract-derived tests:
 5. Case-classification mismatch vector fails with
    `HKERNEL-EROD14-WAVE2-E-003`.
 6. Class-conservation violation vector (no feasible reproportion closure)
-   fails with `HKERNEL-EROD14-WAVE2-E-003`.
+   re-enters clipping when `ratbot = 0` under all-class `sedmax_i` saturation
+   and completes without typed domain failure.
 7. Class-fraction normalization violation vector fails with
    `HKERNEL-EROD14-WAVE2-E-003`.
 
@@ -586,3 +592,4 @@ canonical `SC-*` contracts before production migration packages.
 | `2026-05-28` | `37` | `Codex` | WSHEDIMPL36 amendment: reconciled parser/runtime rating-curve control lineage by projecting `ws10_channel_{id}_{rccoef,rcexp,rcoset}` for `icntrl==4` lanes into WS10 runtime seed surfaces with explicit fail-closed payload-shape/domain semantics (`rccoef>0`, `rcexp>0`, `rcoset>=0`), while retaining non-promotable `GAP-SED-006` posture for remaining full `chnero/chnrt` parity closure families. |
 | `2026-05-28` | `38` | `Codex` | WSHEDIMPL37 amendment: added trace linkage for companion WS11 hydrology route-chain parity closure (`wshcqi/wshirs/wshrun`) and `GAP-ROUTE-008` disposition while preserving non-promotable `GAP-SED-006` posture for remaining full `chnero/chnrt` parity closure families. |
 | `2026-05-28` | `39` | `Codex` | WSHEDIMPL38 amendment: closed `GAP-SED-006` by retiring unresolved-detachment diagnostics symbols and replacing residual WS20/WS21 invalid-segment fallback continuation with typed fail-closed domain guards in companion channel sediment process lanes. |
+| `2026-05-28` | `40` | `Codex` | HILLSTAB04 amendment: aligned EROD14 Wave-2 reproportion closure semantics to baseline `enrich.for` for all-class `sedmax` saturation (`ratbot=0` clipping pass re-entry) and updated contract-derived vector obligations to prohibit non-authoritative hard-fail behavior on that branch. |
