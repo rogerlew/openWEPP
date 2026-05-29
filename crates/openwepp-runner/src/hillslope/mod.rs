@@ -124,6 +124,7 @@ struct HillslopeAdapterBoundaryProvenance {
 }
 
 #[derive(Debug, Serialize)]
+#[allow(clippy::struct_excessive_bools)]
 struct HillslopeExecutionProvenance {
     scheduler_kernel_executed: bool,
     publication_source: String,
@@ -136,6 +137,8 @@ struct HillslopeExecutionProvenance {
     kernel_phase_message_ids: Vec<String>,
     erod14_wave2_enabled: bool,
     erod14_wave2_kernel_status_seen: bool,
+    wb16_ealpha_compatibility_seed_used: bool,
+    wb16_ealpha_seed_policy: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -231,6 +234,11 @@ struct DailyExecutionResult {
     kernel_phase_message_ids: Vec<String>,
     erod14_wave2_kernel_status_seen: bool,
 }
+
+const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibility_seed_used";
+const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
+const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
+const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ExecutionLane {
@@ -824,6 +832,21 @@ pub fn execute_hillslope_run(
             "{SIMPIPE_GUARD_ID} climate span contained no executable days after parser validation"
         ),
     })?;
+    let wb16_ealpha_compatibility_seed_used = parse_mofe03_binary_flag(
+        WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL,
+        runtime_surface_symbol_value(&runtime_surface, WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL)
+            .unwrap_or(0.0),
+    )?;
+    if wb16_ealpha_compatibility_seed_used {
+        sidecar_warnings.push(format!(
+            "{WB16_EALPHA_SEED_WARNING_ID} WB16 ealpha seeded with compatibility constant 1.0 because no runtime producer was present; full baseline-authoritative ealpha producer-chain migration remains open."
+        ));
+    }
+    let wb16_ealpha_seed_policy = if wb16_ealpha_compatibility_seed_used {
+        WB16_EALPHA_SEED_POLICY_COMPATIBILITY.to_string()
+    } else {
+        WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED.to_string()
+    };
 
     let execution_provenance = HillslopeExecutionProvenance {
         scheduler_kernel_executed: true,
@@ -841,6 +864,8 @@ pub fn execute_hillslope_run(
             runtime_surface_symbol_value(&runtime_surface, "erod14_wave2_enabled").unwrap_or(0.0),
         )?,
         erod14_wave2_kernel_status_seen,
+        wb16_ealpha_compatibility_seed_used,
+        wb16_ealpha_seed_policy,
     };
     let wb13_publication =
         build_wb13_publication_provenance(&wb13_rows, contributor_ofe_count, publication_area_m2)?;
@@ -1833,11 +1858,20 @@ fn seed_wb11_runtime_surface_inputs(
             BoundaryValue::scalar(slplen),
         );
     }
-    if runtime_surface_symbol_value(runtime_surface, "ealpha").is_none() {
+    let ealpha_seeded_this_day = runtime_surface_symbol_value(runtime_surface, "ealpha").is_none();
+    let ealpha_seeded_prior =
+        runtime_surface_symbol_value(runtime_surface, WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL)
+            .is_some_and(|value| value >= 0.5);
+    if ealpha_seeded_this_day {
         runtime_surface
             .state_surface
             .insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
     }
+    let ealpha_seeded_any_day = ealpha_seeded_this_day || ealpha_seeded_prior;
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL),
+        BoundaryValue::scalar(if ealpha_seeded_any_day { 1.0 } else { 0.0 }),
+    );
     if runtime_surface_symbol_value(runtime_surface, "m").is_none() {
         runtime_surface
             .state_surface

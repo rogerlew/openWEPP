@@ -1000,6 +1000,14 @@ Authorized packages:
     with binary HBP-only output, enforcing strict `.hbp` ingestion policy
     (no `.pass.dat` derivation/fallback), and rerunning
     `/wc1/runs/un/unpalatable-rind` to watershed parquet closure.
+- `20260529-hillstab07-wb16-peak-flow-input-provenance-parity-001/`
+  - Purpose: execute HILLSTAB07 to address WB16 peak-flow input provenance
+    parity gaps identified by `docs/audits/20260529_peak_flow_implementation_audit.md`
+    using contract-first sequencing: codify canonical `m`/`ealpha` authority,
+    eliminate silent parity drift by publishing explicit compatibility-seed
+    provenance, add contract-derived tests, and publish GO/HOLD disposition
+    with follow-on closure requirements for full baseline-authoritative
+    `ealpha` producer migration.
 - `20260528-clim17-breakpoint-climate-baseline-parity-burndown-001/`
   - Purpose: execute CLIM17 to identify and close implementation gaps in
     openWEPP breakpoint climate behavior versus

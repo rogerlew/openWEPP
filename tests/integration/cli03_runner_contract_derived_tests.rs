@@ -294,6 +294,50 @@ element = "output/H1.element.parquet"
 }
 
 #[test]
+fn cli03_fixture_run_publishes_wb16_ealpha_compatibility_seed_provenance() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-wb16-ealpha-provenance"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let (report, _temp_run_dir) =
+        execute_fixture_with_runfile_report(runfile, "cli03_wb16_ealpha_provenance")
+            .expect("fixture run should succeed");
+
+    assert!(
+        report
+            .sidecar_warnings
+            .iter()
+            .any(|warning| warning.contains("SIMPIPE-W-003")),
+        "expected WB16 ealpha compatibility warning in sidecar warnings: {:?}",
+        report.sidecar_warnings
+    );
+
+    let manifest_payload =
+        fs::read_to_string(&report.manifest_path).expect("manifest file should be readable");
+    assert!(
+        manifest_payload.contains("\"wb16_ealpha_compatibility_seed_used\": true"),
+        "expected wb16_ealpha_compatibility_seed_used=true in manifest execution provenance"
+    );
+    assert!(
+        manifest_payload.contains("\"wb16_ealpha_seed_policy\": \"compatibility_seed_1p0\""),
+        "expected wb16_ealpha_seed_policy=compatibility_seed_1p0 in manifest execution provenance"
+    );
+}
+
+#[test]
 fn cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"

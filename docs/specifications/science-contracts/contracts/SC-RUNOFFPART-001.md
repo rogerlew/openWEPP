@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 22
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -592,6 +592,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | Closure-diagnostics runoff inputs | `Q`, `timem_####`, `intsty_####`, `Irr`, `I` |
 | Peak-branch parameters | `efflen`, `ealpha`, `m` |
 | WB16 outputs | `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
+| WB16 provenance outputs | `wb16_ealpha_compatibility_seed_used`, `wb16_ealpha_seed_policy` |
 
 ### WB16 Deterministic Peak-Runoff Rule
 
@@ -628,6 +629,22 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    denominators (`effdrr <= 0`, `remax <= 0`, `vave <= 0`, `vstar <= 0`,
    `m <= 0`, `ealpha <= 0`, `efflen <= 0`); positive near-zero magnitudes are
    valid and must not hard-fail solely due epsilon thresholds.
+10. `m` producer authority is baseline-canonical and constant:
+    `/workdir/wepp-forest_260430_baseline/src/rdat.for` assigns `m = 1.5`
+    (Chezy depth-discharge exponent) and runtime producers must preserve that
+    canonical value unless a future canonical contract amendment supersedes it.
+11. `ealpha` producer authority is baseline-canonical as a chain:
+    `frcfac -> rdat(alpha) -> alphay -> eplane(optional multi-OFE projection)`
+    (`/workdir/wepp-forest_260430_baseline/src/frcfac.for`,
+    `rdat.for`, `irs.for`, `eplane.for`).
+12. Until full baseline-authoritative `ealpha` producer migration is landed,
+    compatibility seeding (`ealpha = 1.0`) is allowed only when runtime emits
+    explicit provenance:
+    - `wb16_ealpha_compatibility_seed_used = true`
+    - `wb16_ealpha_seed_policy = "compatibility_seed_1p0"`
+    - warning text containing `SIMPIPE-W-003`
+    Compatibility-seed runs are non-promotable for full WB16 input-provenance
+    parity closure.
 
 ### WB16 Typed Guard Codes
 
@@ -650,6 +667,11 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 6. Near-zero positive runoff vector (`0 < Q < 1.0e-8`) executes the
    baseline-authoritative branch, emits `peakro = 3.63e-8`, `watdur = 0`,
    and does not hard-fail.
+7. Compatibility-seed provenance vector: when `ealpha` is not runtime-produced
+   and compatibility seeding is invoked, runtime emits
+   `wb16_ealpha_compatibility_seed_used = true`,
+   `wb16_ealpha_seed_policy = "compatibility_seed_1p0"`, and warning id
+   `SIMPIPE-W-003`.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -710,11 +732,13 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | GAP-RUNOFFPART-002 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-RUNOFFPART-003 | Chapter-4 limitations explicitly note Hortonian-flow framing and reduced recession interaction outside partial-equilibrium correction; companion contracts for variable-source-area/return-flow behavior are not authored. | Scope caveat must remain explicit to avoid over-claiming runoff applicability. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-RUNOFFPART-004 | EROD12 ratifies cross-domain ownership and guard semantics for required erosion-lane runoff boundary surfaces using canonical companion-contract addenda and row-scoped invariant ownership. | Required Wave-0 cross-domain ownership ambiguity is closed for erosion-lane runoff boundaries; broader hydrology-scope limits remain governed by `GAP-RUNOFFPART-003`. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-RUNOFFPART-005 | WB16 full baseline-authoritative `ealpha` producer-chain migration (`frcfac -> rdat(alpha) -> alphay -> eplane`) is not yet complete in production runtime surfaces; compatibility seed provenance is explicit but remains non-authoritative for parity closure. | WB16 branch arithmetic is authoritative, but input-provenance parity remains partial until producer migration lands. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `22` | `Codex` | HILLSTAB07 amendment: added explicit WB16 input-provenance authority for canonical `m=1.5`, baseline `ealpha` producer-chain lineage, compatibility-seed provenance surfaces/warning obligations (`wb16_ealpha_compatibility_seed_used`, `wb16_ealpha_seed_policy`, `SIMPIPE-W-003`), and non-promotable gap row `GAP-RUNOFFPART-005` for full producer migration closure. |
 | `2026-05-29` | `21` | `Codex` | HILLSTAB06 amendment: aligned WB16 authority to baseline `appmth` near-zero runoff branch (`Q < 1.0e-8`) and explicit positivity-domain semantics so positive near-zero WB16 intermediates do not fail pre-floor. |
 | `2026-05-26` | `20` | `Codex` | SIMIMPL36 amendment: added explicit WB12/WB14 near-zero reconciled-runoff canonicalization authority (`TOL-RUNOFFPART-006`) requiring `Q`/`wb12_runoff_reconciled` normalization to zero only within `[-1e-12, 0)` before writeback/publication while preserving hard-fail posture for material negatives. |
 | `2026-05-25` | `19` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor) with explicit active-path guard posture and WB18 layer-state coupling inputs. |
