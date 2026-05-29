@@ -3,11 +3,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use openwepp_hillslope_orchestrator::runtime_inputs::{
-    build_hillslope_climate_runtime_request,
+    SlopeRuntimeSurfaceOptions, build_hillslope_climate_runtime_request,
     build_hillslope_runtime_surface_from_climate_request_with_context,
     build_hillslope_runtime_surface_from_frost, build_hillslope_runtime_surface_from_management,
-    build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_snow,
-    build_hillslope_runtime_surface_from_soil,
+    build_hillslope_runtime_surface_from_slope_with_options,
+    build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
 };
 use openwepp_hillslope_orchestrator::{
     HillslopePhaseScheduler, HillslopeWritebackSurface, SchedulerOutcomeClass, Wb11HydrologyKernel,
@@ -715,11 +715,13 @@ pub fn execute_hillslope_run(
             detail: error.to_string(),
         }
     })?;
-    let slope_surface = build_hillslope_runtime_surface_from_slope(&slope).map_err(|error| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "slope",
-            detail: error.to_string(),
-        }
+    let slope_surface = build_hillslope_runtime_surface_from_slope_with_options(
+        &slope,
+        SlopeRuntimeSurfaceOptions::compatibility(),
+    )
+    .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "slope",
+        detail: error.to_string(),
     })?;
     let management_surface =
         build_hillslope_runtime_surface_from_management(&management).map_err(|error| {

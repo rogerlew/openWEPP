@@ -342,6 +342,35 @@ pub fn build_hillslope_runtime_surface_from_soil(
     })
 }
 
+/// Runtime-surface options for slope parser projection.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SlopeRuntimeSurfaceOptions {
+    /// Optional floor to apply when derived average slope is non-positive.
+    pub non_positive_avgslp_floor: Option<f64>,
+}
+
+impl SlopeRuntimeSurfaceOptions {
+    #[must_use]
+    pub const fn strict() -> Self {
+        Self {
+            non_positive_avgslp_floor: None,
+        }
+    }
+
+    #[must_use]
+    pub const fn compatibility() -> Self {
+        Self {
+            non_positive_avgslp_floor: Some(0.000_001),
+        }
+    }
+}
+
+impl Default for SlopeRuntimeSurfaceOptions {
+    fn default() -> Self {
+        Self::strict()
+    }
+}
+
 /// Build an orchestrator-owned hillslope runtime surface from parsed slope
 /// input.
 ///
@@ -356,8 +385,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
 ///
 /// Returns `HillslopeRuntimeInputError` when required slope parser outputs are
 /// missing, inconsistent, non-finite, or violate runtime guard policy.
-pub fn build_hillslope_runtime_surface_from_slope(
+#[allow(clippy::too_many_lines)]
+pub fn build_hillslope_runtime_surface_from_slope_with_options(
     slope: &SlopeProfile,
+    options: SlopeRuntimeSurfaceOptions,
 ) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
     validate_slope_profile_shape(slope)?;
 
@@ -402,7 +433,8 @@ pub fn build_hillslope_runtime_surface_from_slope(
             });
         }
 
-        let avgslp = derive_avgslp(ofe_index, &ofe.points)?;
+        let (avgslp, avgslp_floor_applied) =
+            derive_avgslp(ofe_index, &ofe.points, options.non_positive_avgslp_floor)?;
         let azm = ofe.azm;
         state_surface.insert(
             slope_ofe_symbol("nslpts", ofe_index),
@@ -416,6 +448,12 @@ pub fn build_hillslope_runtime_surface_from_slope(
             slope_ofe_symbol("avgslp", ofe_index),
             BoundaryValue::scalar(avgslp),
         );
+        if avgslp_floor_applied {
+            state_surface.insert(
+                slope_ofe_symbol("avgslp_floor_applied", ofe_index),
+                BoundaryValue::scalar(1.0),
+            );
+        }
         state_surface.insert(
             slope_ofe_symbol("azm", ofe_index),
             BoundaryValue::scalar(azm),
@@ -446,6 +484,12 @@ pub fn build_hillslope_runtime_surface_from_slope(
                 BoundarySymbol::from("avgslp"),
                 BoundaryValue::scalar(avgslp),
             );
+            if avgslp_floor_applied {
+                state_surface.insert(
+                    BoundarySymbol::from("avgslp_floor_applied"),
+                    BoundaryValue::scalar(1.0),
+                );
+            }
             state_surface.insert(BoundarySymbol::from("azm"), BoundaryValue::scalar(azm));
 
             for (point_position, point) in ofe.points.iter().enumerate() {
@@ -468,3 +512,18 @@ pub fn build_hillslope_runtime_surface_from_slope(
     })
 }
 
+/// Build an orchestrator-owned hillslope runtime surface from parsed slope
+/// input using strict nonpositive-average-slope guard semantics.
+///
+/// # Errors
+///
+/// Returns `HillslopeRuntimeInputError` when required slope parser outputs are
+/// missing, inconsistent, non-finite, or violate runtime guard policy.
+pub fn build_hillslope_runtime_surface_from_slope(
+    slope: &SlopeProfile,
+) -> Result<HillslopeWritebackSurface, HillslopeRuntimeInputError> {
+    build_hillslope_runtime_surface_from_slope_with_options(
+        slope,
+        SlopeRuntimeSurfaceOptions::strict(),
+    )
+}

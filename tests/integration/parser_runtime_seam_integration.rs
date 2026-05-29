@@ -6,12 +6,13 @@ use std::{
 use openwepp_hillslope_orchestrator::{
     HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
     runtime_inputs::{
-        HillslopePlRuntimeSurfaces, HillslopeRuntimeInputError,
+        HillslopePlRuntimeSurfaces, HillslopeRuntimeInputError, SlopeRuntimeSurfaceOptions,
         build_hillslope_pl_runtime_surfaces_from_management,
         build_hillslope_runtime_surface_from_climate, build_hillslope_runtime_surface_from_frost,
         build_hillslope_runtime_surface_from_management,
-        build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_snow,
-        build_hillslope_runtime_surface_from_soil,
+        build_hillslope_runtime_surface_from_slope,
+        build_hillslope_runtime_surface_from_slope_with_options,
+        build_hillslope_runtime_surface_from_snow, build_hillslope_runtime_surface_from_soil,
     },
 };
 use openwepp_input_contract::parsers::{
@@ -395,6 +396,34 @@ fn slope_runtime_surface_rejects_non_positive_avgslp_projection() {
             value
         } if value.abs() < 1e-12
     ));
+}
+
+#[test]
+fn slope_runtime_surface_compatibility_floor_accepts_non_positive_avgslp_projection() {
+    let mut slope = parse_slope_str(SLOPE_STRICT_VALID_CANONICAL, SlopeParserOptions::strict())
+        .expect("slope fixture should parse");
+    for point in &mut slope.ofes[0].points {
+        point.slpinp = 0.0;
+    }
+
+    let surface = build_hillslope_runtime_surface_from_slope_with_options(
+        &slope,
+        SlopeRuntimeSurfaceOptions::compatibility(),
+    )
+    .expect("compatibility floor should avoid non-positive avgslp hard-fail");
+
+    let avgslp = surface
+        .state_surface
+        .get(&BoundarySymbol::from("avgslp"))
+        .expect("avgslp should be present")
+        .as_f64();
+    let floor_applied = surface
+        .state_surface
+        .get(&BoundarySymbol::from("avgslp_floor_applied"))
+        .expect("compatibility floor flag should be present for floored OFE")
+        .as_f64();
+    assert!((avgslp - 0.000_001).abs() < 1e-12);
+    assert!((floor_applied - 1.0).abs() < 1e-12);
 }
 
 #[test]

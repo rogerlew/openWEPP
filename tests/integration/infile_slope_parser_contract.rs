@@ -97,6 +97,28 @@ fn compatibility_mode_accepts_shared_geometry_multi_ofe_form() {
 }
 
 #[test]
+fn compatibility_mode_accepts_near_endpoint_terminal_distance() {
+    let src = "97.5\n2\n180.0 25.0\n2 60.0\n0.0000, 0.1200 0.9996, 0.1200\n2 60.0\n0.0000, 0.1200 1.0000, 0.1200\n";
+    let parsed = parse_slope_str(src, SlopeParserOptions::compatibility())
+        .expect("compatibility mode should accept near-endpoint terminal closure");
+
+    assert_eq!(parsed.ofe_count, 2);
+    assert_eq!(parsed.ofes[0].distance_mode, DistanceMode::Normalized);
+    assert_eq!(parsed.ofes[1].distance_mode, DistanceMode::Normalized);
+}
+
+#[test]
+fn compatibility_mode_accepts_cross_ofe_boundary_discontinuity() {
+    let src = "97.5\n2\n180.0 25.0\n2 60.0\n0.0000, 0.1200 1.0000, 0.4200\n2 60.0\n0.0000, 0.1100 1.0000, 0.2100\n";
+    let parsed = parse_slope_str(src, SlopeParserOptions::compatibility())
+        .expect("compatibility mode should not hard-fail cross-OFE boundary mismatch");
+
+    assert_eq!(parsed.ofe_count, 2);
+    assert!((parsed.ofes[0].points[1].slpinp - 0.4200).abs() < 1e-9);
+    assert!((parsed.ofes[1].points[0].slpinp - 0.1100).abs() < 1e-9);
+}
+
+#[test]
 fn strict_mode_rejects_non_canonical_datver() {
     let src = "96.9\n1\n180 20\n2 100\n0 0.05 1 0.05\n";
     let error = parse_slope_str(src, SlopeParserOptions::strict())

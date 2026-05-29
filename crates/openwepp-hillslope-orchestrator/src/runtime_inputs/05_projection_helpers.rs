@@ -154,7 +154,8 @@ fn validate_slope_points(
 fn derive_avgslp(
     ofe_index: usize,
     points: &[SlopePoint],
-) -> Result<f64, HillslopeRuntimeInputError> {
+    non_positive_floor: Option<f64>,
+) -> Result<(f64, bool), HillslopeRuntimeInputError> {
     let slen = points.last().map(|point| point.xinput).ok_or(
         HillslopeRuntimeInputError::InsufficientSlopePoints {
             ofe_index,
@@ -189,13 +190,16 @@ fn derive_avgslp(
         });
     }
     if avgslp <= 0.0 {
+        if let Some(floor) = non_positive_floor {
+            return Ok((floor, true));
+        }
         return Err(HillslopeRuntimeInputError::NonPositiveDerivedAverageSlope {
             ofe_index,
             value: avgslp,
         });
     }
 
-    Ok(avgslp)
+    Ok((avgslp, false))
 }
 
 fn usize_to_f64(field: &'static str, value: usize) -> Result<f64, HillslopeRuntimeInputError> {
@@ -933,4 +937,3 @@ fn irrigation_fixeddate_event_symbol(event_index: usize, field: &str) -> Boundar
         "irrigation.fixeddate.event_{event_index:04}.{field}"
     ))
 }
-

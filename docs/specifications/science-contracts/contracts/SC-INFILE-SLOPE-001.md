@@ -4,9 +4,9 @@ title: Slope Input Parser Contract (.slp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.3
+contract_version: 0.1.4
 evidence_mode: Static
-last_updated_utc: 2026-05-25T00:00:00Z
+last_updated_utc: 2026-05-29T00:00:00Z
 ---
 
 # SC-INFILE-SLOPE-001 Slope Input Parser Contract
@@ -113,8 +113,12 @@ slope_pairs = (xinput slpinp){nslpts} ;  (* whitespace and/or comma-delimited nu
 
 Closure hooks:
 - `C-SLP-001`: no mixed distance-mode tokens within one OFE.
-- `C-SLP-002`: minimum 2 points and endpoint presence, with endpoint equality tolerance `abs_tol=1e-6` (`x_end≈slplen` or `x_end≈1.0` by mode).
-- `C-SLP-003`: adjoining OFE boundary slope continuity with `abs_tol=1e-6` on border slopes.
+- `C-SLP-002`: minimum 2 points and endpoint presence. Strict mode endpoint
+  equality uses `abs_tol=1e-6`; compatibility mode endpoint equality uses
+  relaxed tolerance `abs_tol=1e-3` for normalized/absolute endpoint closure.
+- `C-SLP-003`: adjoining OFE boundary slope continuity with `abs_tol=1e-6` on
+  border slopes in strict mode; compatibility mode does not fail parsing on
+  cross-OFE border mismatch.
 - Numeric closure policy: unless otherwise specified, slope parser closure checks use absolute tolerance `1e-6` and `rel_tol=0` to keep mode behavior deterministic.
 
 ## 7. Validation and Error Taxonomy
@@ -168,6 +172,16 @@ No silent parser-side correction of malformed slope input is permitted.
     shared across all OFEs and only `nslpts/slplen/pairs` repeat per OFE;
     this branch is compatibility-only and must preserve original OFE shape
     records without parser-side slope-point repair;
+  - may accept near-boundary normalized/absolute terminal distances in OFE
+    shape closure using compatibility endpoint tolerance (`abs_tol=1e-3`) to
+    match legacy accepted input lanes where terminal values are close to, but
+    not exactly, canonical endpoints;
+  - does not hard-fail on cross-OFE boundary slope discontinuity in compatibility
+    parsing paths (strict mode continuity enforcement remains authoritative);
+  - parser-to-runtime slope adaptation in compatibility lanes applies baseline
+    `profil.for` nonpositive-average-slope floor behavior
+    (`avgslp <= 0 -> 0.000001`) instead of emitting
+    `HS-RUNTIME-E-023` hard-fail for this branch;
   - still rejects malformed cardinality/shape violations.
 
 wepppy/wepppyo3 utility-only variants are not canonical parser authority unless explicitly ratified.
@@ -181,8 +195,8 @@ wepppy/wepppyo3 utility-only variants are not canonical parser authority unless 
 | `G-SLP-003` | geometry domain (`fwidth > 0`) | OFE header parse | `SLP-E-004` |
 | `G-SLP-004` | `nslpts>=2`, `slplen>0` | OFE shape-header parse | `SLP-E-004` |
 | `G-SLP-005` | distance mode consistency | pair parse + hook | `SLP-E-005` |
-| `G-SLP-006` | endpoint closure and point monotonicity expectations with `abs_tol=1e-6` | closure hooks | `SLP-E-006`/`SLP-E-009` |
-| `G-SLP-007` | cross-OFE boundary continuity with `abs_tol=1e-6` | file finalize | `SLP-E-008` |
+| `G-SLP-006` | endpoint closure and point monotonicity expectations (strict `abs_tol=1e-6`, compatibility `abs_tol=1e-3`) | closure hooks | `SLP-E-006`/`SLP-E-009` |
+| `G-SLP-007` | cross-OFE boundary continuity with `abs_tol=1e-6` (strict-only hard-fail) | file finalize | `SLP-E-008` |
 | `G-SLP-008` | cross-file topology closure | cross-surface validator | `SLP-E-007` |
 | `G-SLP-009` | `2023.3` metadata row arity/domain (`azm fwidth elevation`, finite elevation) | datver-conditioned OFE header parse | `SLP-E-010` |
 | `G-SLP-010` | compatibility-only shared-geometry MOFE branch requires exactly one leading geometry row and exactly `nelem` subsequent OFE shape blocks (`nslpts/slplen/pairs`) | compatibility parse branch | `SLP-E-002`/`SLP-E-006` |
@@ -205,6 +219,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-29` | `0.1.4` | HILLSTAB05 amendment: codified compatibility endpoint closure tolerance (`1e-3`), strict-only cross-OFE boundary hard-fail posture, and compatibility parser-to-runtime `avgslp` floor authority (`avgslp<=0 -> 1e-6`) aligned to baseline `profil.for`. |
 | `2026-05-25` | `0.1.3` | MOFE07 addendum: compatibility-only authority for legacy shared-geometry `datver=97.5` multi-OFE slope form (`azm fwidth` once + repeated OFE shape blocks), plus guard linkage `G-SLP-010`. |
 | `2026-05-21` | `0.1.2` | Ratified strict-mode support for exact hillslope `datver=2023.3`; added per-OFE `elevation` metadata mapping, comma-delimited pair tolerance, and `G-SLP-009`/`SLP-E-010` coverage. |
 | `2026-05-21` | `0.1.1` | Added boundary export mapping, explicit compat datver threshold behavior, missing-file typed error class, and tolerance-aware closure policy. |

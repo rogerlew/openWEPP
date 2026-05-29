@@ -17,6 +17,8 @@ pub const SLOPE_PERIDOT_DATVER: f64 = 2023.3;
 pub const SLOPE_COMPAT_MIN_DATVER: f64 = 91.5;
 /// Absolute tolerance for closure checks.
 pub const SLOPE_ABS_TOLERANCE: f64 = 1e-6;
+/// Compatibility endpoint tolerance for near-boundary legacy MOFE terminals.
+pub const SLOPE_COMPAT_ENDPOINT_TOLERANCE: f64 = 1e-3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SlopeParserMode {
@@ -348,7 +350,9 @@ pub fn parse_slope_str(
         });
     }
 
-    verify_cross_ofe_boundary_continuity(&ofes, options.abs_tolerance)?;
+    if options.mode == SlopeParserMode::Strict {
+        verify_cross_ofe_boundary_continuity(&ofes, options.abs_tolerance)?;
+    }
 
     Ok(SlopeProfile {
         datver,
@@ -415,7 +419,13 @@ fn parse_ofes_per_ofe_geometry(
             None
         };
 
-        let shape = parse_ofe_shape(cursor, ofe_index, ofe_count, options.abs_tolerance)?;
+        let shape = parse_ofe_shape(
+            cursor,
+            ofe_index,
+            ofe_count,
+            options.mode,
+            options.abs_tolerance,
+        )?;
         ofes.push(SlopeOfe {
             index: ofe_index,
             azm,
@@ -450,7 +460,13 @@ fn parse_ofes_shared_geometry(
 
     let mut ofes = Vec::with_capacity(ofe_count);
     for ofe_index in 0..ofe_count {
-        let shape = parse_ofe_shape(cursor, ofe_index, ofe_count, options.abs_tolerance)?;
+        let shape = parse_ofe_shape(
+            cursor,
+            ofe_index,
+            ofe_count,
+            options.mode,
+            options.abs_tolerance,
+        )?;
         ofes.push(SlopeOfe {
             index: ofe_index,
             azm,
@@ -478,6 +494,7 @@ fn parse_ofe_shape(
     cursor: &mut TokenCursor,
     ofe_index: usize,
     ofe_count: usize,
+    mode: SlopeParserMode,
     abs_tolerance: f64,
 ) -> Result<ParsedSlopeShape, SlopeParserError> {
     let nslpts = parse_count(
@@ -535,7 +552,7 @@ fn parse_ofe_shape(
         points.push(SlopePoint { xinput, slpinp });
     }
 
-    let distance_mode = derive_distance_mode(ofe_index, slplen, &points, abs_tolerance)?;
+    let distance_mode = derive_distance_mode(ofe_index, slplen, &points, mode, abs_tolerance)?;
     Ok(ParsedSlopeShape {
         nslpts,
         slplen,
@@ -579,6 +596,7 @@ fn derive_distance_mode(
     ofe_index: usize,
     slplen: f64,
     points: &[SlopePoint],
+    mode: SlopeParserMode,
     abs_tolerance: f64,
 ) -> Result<DistanceMode, SlopeParserError> {
     if points.len() < 2 {
@@ -619,8 +637,14 @@ fn derive_distance_mode(
                 message: format!("OFE {} has no terminal point", ofe_index + 1),
             })?;
 
-    let ends_as_normalized = approx_eq(last_x, 1.0, abs_tolerance);
-    let ends_as_absolute = approx_eq(last_x, slplen, abs_tolerance);
+    let endpoint_tolerance = if mode == SlopeParserMode::Compatibility {
+        SLOPE_COMPAT_ENDPOINT_TOLERANCE
+    } else {
+        abs_tolerance
+    };
+
+    let ends_as_normalized = approx_eq(last_x, 1.0, endpoint_tolerance);
+    let ends_as_absolute = approx_eq(last_x, slplen, endpoint_tolerance);
 
     let mode = match (ends_as_normalized, ends_as_absolute) {
         (true, true | false) => DistanceMode::Normalized,
@@ -629,7 +653,7 @@ fn derive_distance_mode(
             return Err(SlopeParserError::EndpointConstraintError {
                 ofe_index,
                 message: format!(
-                    "terminal xinput must equal 1.0 (normalized) or slplen ({slplen}) within +/- {abs_tolerance}; got {last_x}"
+                    "terminal xinput must equal 1.0 (normalized) or slplen ({slplen}) within +/- {endpoint_tolerance}; got {last_x}"
                 ),
             });
         }
