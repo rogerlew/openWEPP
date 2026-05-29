@@ -1858,28 +1858,407 @@ fn seed_wb11_runtime_surface_inputs(
             BoundaryValue::scalar(slplen),
         );
     }
-    let ealpha_seeded_this_day = runtime_surface_symbol_value(runtime_surface, "ealpha").is_none();
-    let ealpha_seeded_prior =
-        runtime_surface_symbol_value(runtime_surface, WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL)
-            .is_some_and(|value| value >= 0.5);
-    if ealpha_seeded_this_day {
-        runtime_surface
-            .state_surface
-            .insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
-    }
-    let ealpha_seeded_any_day = ealpha_seeded_this_day || ealpha_seeded_prior;
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from(WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL),
-        BoundaryValue::scalar(if ealpha_seeded_any_day { 1.0 } else { 0.0 }),
-    );
     if runtime_surface_symbol_value(runtime_surface, "m").is_none() {
         runtime_surface
             .state_surface
             .insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
     }
+    let ealpha_seeded_prior =
+        runtime_surface_symbol_value(runtime_surface, WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL)
+            .is_some_and(|value| value >= 0.5);
+    let ealpha_runtime_produced_this_day =
+        produce_wb16_ealpha_from_runtime_surface(runtime_surface)?.is_some();
+    if !ealpha_runtime_produced_this_day {
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("ealpha"), BoundaryValue::scalar(1.0));
+    }
+    let ealpha_seeded_any_day = !ealpha_runtime_produced_this_day || ealpha_seeded_prior;
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL),
+        BoundaryValue::scalar(if ealpha_seeded_any_day { 1.0 } else { 0.0 }),
+    );
     seed_mofe03_wave2_runtime_surface_inputs(runtime_surface)?;
 
     Ok(())
+}
+
+const WB16_ACCGAV_M_S2: f64 = 9.807;
+const WB16_INRFSO_CROPLAND: f64 = 4.07;
+const WB16_FRCSOL_CROPLAND: f64 = 1.11;
+const WB16_RRINIT_MIN_M: f64 = 0.006;
+const WB16_RSPACE_DEFAULT_M: f64 = 1.0;
+const WB16_TEMPORARY_WIDTH_DEFAULT_M: f64 = 0.15;
+const WB16_COVER_CAP: f64 = 0.999;
+
+#[allow(clippy::too_many_lines, clippy::similar_names)]
+fn produce_wb16_ealpha_from_runtime_surface(
+    runtime_surface: &mut HillslopeWritebackSurface,
+) -> Result<Option<f64>, HillslopeCliError> {
+    let Some(nelem_raw) = runtime_surface_symbol_value(runtime_surface, "nelem") else {
+        return Ok(None);
+    };
+    let ofe_count = scalar_to_usize("nelem", nelem_raw)?;
+    if ofe_count == 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!("{SIMPIPE_GUARD_ID} nelem must be >= 1 for WB16 ealpha production"),
+        });
+    }
+
+    let m = require_runtime_surface_scalar(runtime_surface, "m")?;
+    if !m.is_finite() || m <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} m must be finite and > 0 for WB16 ealpha production, observed {m}"
+            ),
+        });
+    }
+    let power2 = 1.0 / m;
+    let power3 = power2 + 1.0;
+
+    let mut alpha_values = Vec::with_capacity(ofe_count);
+    let mut slplen_values = Vec::with_capacity(ofe_count);
+
+    for ofe_index in 1..=ofe_count {
+        let Some(avgslp_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "avgslp")
+        else {
+            return Ok(None);
+        };
+        let Some(slplen_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "slplen")
+        else {
+            return Ok(None);
+        };
+        if !avgslp_raw.is_finite() || avgslp_raw <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_avgslp must be finite and > 0, observed {avgslp_raw}"
+                ),
+            });
+        }
+        if !slplen_raw.is_finite() || slplen_raw <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_slplen must be finite and > 0, observed {slplen_raw}"
+                ),
+            });
+        }
+
+        let Some(inrcov_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "inrcov")
+        else {
+            return Ok(None);
+        };
+        let Some(rilcov_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rilcov")
+        else {
+            return Ok(None);
+        };
+        let Some(rrinit_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rrinit")
+        else {
+            return Ok(None);
+        };
+        let Some(rspace_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rspace")
+        else {
+            return Ok(None);
+        };
+        let Some(width_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "width")
+        else {
+            return Ok(None);
+        };
+        let Some(rtyp_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rtyp")
+        else {
+            return Ok(None);
+        };
+
+        let Some(cancov_raw) = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "cancov")
+            .or_else(|| wb16_optional_state_scalar(runtime_surface, "cancov"))
+        else {
+            return Ok(None);
+        };
+        let Some(bb_raw) = wb16_optional_state_scalar(
+            runtime_surface,
+            &format!("pl_growth_ofe{ofe_index}_bb_seed"),
+        )
+        .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "bb"))
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bb")) else {
+            return Ok(None);
+        };
+        let Some(bbb_raw) = wb16_optional_state_scalar(
+            runtime_surface,
+            &format!("pl_growth_ofe{ofe_index}_bbb_seed"),
+        )
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bbb_seed"))
+        .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "bbb"))
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "bbb")) else {
+            return Ok(None);
+        };
+        let Some(flivmx_raw) = wb16_optional_state_scalar(
+            runtime_surface,
+            &format!("pl_growth_ofe{ofe_index}_flivmx_seed"),
+        )
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "flivmx_seed"))
+        .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "flivmx"))
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "flivmx")) else {
+            return Ok(None);
+        };
+        let Some(hmax_raw) = wb16_optional_state_scalar(
+            runtime_surface,
+            &format!("pl_growth_ofe{ofe_index}_hmax_seed"),
+        )
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "hmax_seed"))
+        .or_else(|| wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "hmax"))
+        .or_else(|| wb16_optional_state_scalar(runtime_surface, "hmax")) else {
+            return Ok(None);
+        };
+
+        for (symbol, value) in [
+            ("inrcov", inrcov_raw),
+            ("rilcov", rilcov_raw),
+            ("rrinit", rrinit_raw),
+            ("rspace", rspace_raw),
+            ("width", width_raw),
+            ("rtyp", rtyp_raw),
+            ("cancov", cancov_raw),
+            ("bb", bb_raw),
+            ("bbb", bbb_raw),
+            ("flivmx", flivmx_raw),
+            ("hmax", hmax_raw),
+        ] {
+            if !value.is_finite() {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "wb16_ealpha_producer",
+                    detail: format!(
+                        "{SIMPIPE_GUARD_ID} ofe{ofe_index}_{symbol} must be finite for WB16 ealpha production, observed {value}"
+                    ),
+                });
+            }
+        }
+
+        if inrcov_raw < 0.0 || rilcov_raw < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_inrcov/rilcov must be >= 0.0, observed inrcov={inrcov_raw}, rilcov={rilcov_raw}"
+                ),
+            });
+        }
+        if rrinit_raw < 0.0 || rspace_raw < 0.0 || width_raw < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_rrinit/rspace/width must be >= 0.0, observed rrinit={rrinit_raw}, rspace={rspace_raw}, width={width_raw}"
+                ),
+            });
+        }
+        if cancov_raw < 0.0 || bb_raw < 0.0 || bbb_raw < 0.0 || flivmx_raw < 0.0 || hmax_raw < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index} canopy/friction controls must be >= 0.0 (cancov={cancov_raw}, bb={bb_raw}, bbb={bbb_raw}, flivmx={flivmx_raw}, hmax={hmax_raw})"
+                ),
+            });
+        }
+
+        let inrcov = inrcov_raw.min(WB16_COVER_CAP);
+        let rilcov = rilcov_raw.min(WB16_COVER_CAP);
+        let cancov = cancov_raw.min(WB16_COVER_CAP);
+        let rrinit = rrinit_raw.max(WB16_RRINIT_MIN_M);
+        let rspace = if rspace_raw <= 0.0 {
+            WB16_RSPACE_DEFAULT_M
+        } else {
+            rspace_raw
+        };
+        let mut width = width_raw;
+        let rtyp = if rtyp_raw >= 1.5 { 2 } else { 1 };
+        if rtyp == 1 && width <= 0.0 {
+            width = WB16_TEMPORARY_WIDTH_DEFAULT_M;
+        } else if rtyp == 2 && width <= 0.0 {
+            width = rspace;
+        }
+        if width > rspace {
+            width = rspace;
+        }
+
+        let rrc = wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "rrc")
+            .or_else(|| wb16_optional_state_scalar(runtime_surface, "rrc"))
+            .unwrap_or(rrinit);
+        if !rrc.is_finite() || rrc < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_rrc must be finite and >= 0.0, observed {rrc}"
+                ),
+            });
+        }
+
+        let mut rrrinr = rrc / rrinit;
+        if rrrinr > 1.0 {
+            rrrinr = 1.0;
+        }
+        let inrfo = (3.024 - 5.042 * (-161.0 * rrinit).exp()).exp();
+        let mut inrrou = 0.5 * inrfo.powf(1.128) * (-3.088 * (1.0 - rrrinr)).exp();
+        if inrrou < WB16_INRFSO_CROPLAND {
+            inrrou = WB16_INRFSO_CROPLAND;
+        }
+        let inrfro = inrrou - WB16_INRFSO_CROPLAND;
+        let inrfco = if inrcov > 0.0 {
+            14.5 * inrcov.powf(1.5544)
+        } else {
+            0.0
+        };
+
+        let canhgt = if let Some(canhgt_raw) =
+            wb16_ofe_optional_state_scalar(runtime_surface, ofe_index, "canhgt")
+                .or_else(|| wb16_optional_state_scalar(runtime_surface, "canhgt"))
+        {
+            if !canhgt_raw.is_finite() || canhgt_raw < 0.0 {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "wb16_ealpha_producer",
+                    detail: format!(
+                        "{SIMPIPE_GUARD_ID} ofe{ofe_index}_canhgt must be finite and >= 0.0, observed {canhgt_raw}"
+                    ),
+                });
+            }
+            canhgt_raw
+        } else if hmax_raw <= 0.0 || bb_raw <= 0.0 {
+            0.0
+        } else {
+            let mut vdmt = (1.0 - cancov).ln() / (-bb_raw);
+            if vdmt < 0.0 {
+                vdmt = 0.0;
+            }
+            (1.0 - (-bbb_raw * vdmt).exp()) * hmax_raw
+        };
+        let frlive = if hmax_raw > 0.0 {
+            (canhgt / hmax_raw) * flivmx_raw
+        } else {
+            0.0
+        };
+        if !frlive.is_finite() {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!("{SIMPIPE_GUARD_ID} ofe{ofe_index}_frlive is non-finite"),
+            });
+        }
+
+        let inrfto = inrfro + inrfco + WB16_INRFSO_CROPLAND + frlive;
+        let frccov = if rilcov > 0.0 {
+            4.5 * rilcov.powf(1.5544)
+        } else {
+            0.0
+        };
+        let frctrl = frccov + frlive + WB16_FRCSOL_CROPLAND;
+        let rillar = width / rspace;
+        let frcteq = if rillar < 1.0 {
+            inrfto + rillar * (frctrl - inrfto)
+        } else {
+            inrfto
+        };
+        if !frcteq.is_finite() || frcteq <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_frcteq must be finite and > 0.0, observed {frcteq}"
+                ),
+            });
+        }
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_frcteq")),
+            BoundaryValue::scalar(frcteq),
+        );
+
+        let alpha = ((avgslp_raw * 8.0 * WB16_ACCGAV_M_S2) / frcteq).sqrt();
+        if !alpha.is_finite() || alpha <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} ofe{ofe_index}_alpha must be finite and > 0.0, observed {alpha}"
+                ),
+            });
+        }
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_alpha")),
+            BoundaryValue::scalar(alpha),
+        );
+        if ofe_index == 1 {
+            runtime_surface
+                .state_surface
+                .insert(BoundarySymbol::from("alpha"), BoundaryValue::scalar(alpha));
+        }
+
+        alpha_values.push(alpha);
+        slplen_values.push(slplen_raw);
+    }
+
+    let ealpha = if ofe_count == 1 {
+        alpha_values[0]
+    } else {
+        let suml: f64 = slplen_values.iter().sum();
+        if !suml.is_finite() || suml <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} WB16 eplane sum length must be finite and > 0.0, observed {suml}"
+                ),
+            });
+        }
+        let mut cml = 0.0;
+        let mut sdst = 0.0;
+        let mut tmpvr2 = 0.0;
+        for (slplen, alpha) in slplen_values.iter().zip(alpha_values.iter()) {
+            cml += slplen;
+            let tmpvr1 = cml.powf(power3);
+            sdst += (tmpvr1 - tmpvr2) / alpha.powf(power2);
+            tmpvr2 = tmpvr1;
+        }
+        if !sdst.is_finite() || sdst <= 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb16_ealpha_producer",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} WB16 eplane storage integral must be finite and > 0.0, observed {sdst}"
+                ),
+            });
+        }
+        (suml / sdst).powf(m) * suml
+    };
+
+    if !ealpha.is_finite() || ealpha <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "wb16_ealpha_producer",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} WB16 produced ealpha must be finite and > 0.0, observed {ealpha}"
+            ),
+        });
+    }
+
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("ealpha"),
+        BoundaryValue::scalar(ealpha),
+    );
+    Ok(Some(ealpha))
+}
+
+fn wb16_optional_state_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Option<f64> {
+    runtime_surface_symbol_value(runtime_surface, symbol)
+}
+
+fn wb16_ofe_optional_state_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    ofe_index: usize,
+    root: &str,
+) -> Option<f64> {
+    runtime_surface_symbol_value(runtime_surface, &format!("ofe{ofe_index}_{root}")).or_else(|| {
+        if ofe_index == 1 {
+            runtime_surface_symbol_value(runtime_surface, root)
+        } else {
+            None
+        }
+    })
 }
 
 const MOFE03_WAVE2_ENABLE_TOLERANCE: f64 = 1.0e-9;
@@ -4217,6 +4596,280 @@ mod tests {
             (rainfall_input - 0.003).abs() < 1.0e-12,
             "rainfall seed should preserve full current-day breakpoint precipitation depth"
         );
+    }
+
+    #[test]
+    fn hillstab08_wb16_producer_single_ofe_projects_expected_alpha_lineage() {
+        let mut runtime_surface = HillslopeWritebackSurface::default();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("nelem"), BoundaryValue::scalar(1.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
+        insert_wb16_ofe_projection_symbols(
+            &mut runtime_surface,
+            1,
+            Wb16OfeSeedVector {
+                avgslp: 0.04,
+                slplen: 30.0,
+                inrcov: 0.45,
+                rilcov: 0.30,
+                rrinit: 0.02,
+                rspace: 1.20,
+                width: 0.40,
+                rtyp: 2.0,
+                cancov: 0.50,
+                canhgt: 1.00,
+                bb_seed: 0.10,
+                bbb_seed: 0.20,
+                flivmx_seed: 0.60,
+                hmax_seed: 2.00,
+            },
+        );
+
+        let produced = produce_wb16_ealpha_from_runtime_surface(&mut runtime_surface)
+            .expect("single-OFE WB16 producer should execute")
+            .expect("single-OFE WB16 producer should return ealpha");
+        let projected_primary_alpha =
+            require_runtime_surface_scalar(&runtime_surface, "ofe1_alpha")
+                .expect("producer should publish OFE alpha");
+        let projected_equivalent_alpha = require_runtime_surface_scalar(&runtime_surface, "ealpha")
+            .expect("producer should publish equivalent-plane alpha");
+        let projected_frcteq = require_runtime_surface_scalar(&runtime_surface, "ofe1_frcteq")
+            .expect("producer should publish OFE friction equivalent");
+
+        let expected_frcteq = wb16_expected_frcteq(0.45, 0.30, 0.02, 1.20, 0.40, 0.60, 1.00, 2.00);
+        let expected_alpha = ((0.04 * 8.0 * WB16_ACCGAV_M_S2) / expected_frcteq).sqrt();
+
+        assert!(
+            (projected_frcteq - expected_frcteq).abs() < 1.0e-12,
+            "frcteq lineage should match baseline-authoritative chain"
+        );
+        assert!(
+            (projected_primary_alpha - expected_alpha).abs() < 1.0e-12,
+            "single-OFE alpha should match baseline-authoritative chain"
+        );
+        assert!(
+            (projected_equivalent_alpha - expected_alpha).abs() < 1.0e-12,
+            "single-OFE ealpha should equal alpha"
+        );
+        assert!(
+            (produced - expected_alpha).abs() < 1.0e-12,
+            "producer return value should match expected single-OFE ealpha"
+        );
+    }
+
+    #[test]
+    fn hillstab08_wb16_producer_multiofe_projects_expected_equivalent_plane_alpha() {
+        let mut runtime_surface = HillslopeWritebackSurface::default();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("nelem"), BoundaryValue::scalar(2.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("m"), BoundaryValue::scalar(1.5));
+        insert_wb16_ofe_projection_symbols(
+            &mut runtime_surface,
+            1,
+            Wb16OfeSeedVector {
+                avgslp: 0.03,
+                slplen: 20.0,
+                inrcov: 0.50,
+                rilcov: 0.25,
+                rrinit: 0.02,
+                rspace: 1.10,
+                width: 0.30,
+                rtyp: 2.0,
+                cancov: 0.45,
+                canhgt: 0.80,
+                bb_seed: 0.10,
+                bbb_seed: 0.20,
+                flivmx_seed: 0.55,
+                hmax_seed: 1.80,
+            },
+        );
+        insert_wb16_ofe_projection_symbols(
+            &mut runtime_surface,
+            2,
+            Wb16OfeSeedVector {
+                avgslp: 0.06,
+                slplen: 35.0,
+                inrcov: 0.35,
+                rilcov: 0.20,
+                rrinit: 0.03,
+                rspace: 1.30,
+                width: 0.50,
+                rtyp: 2.0,
+                cancov: 0.40,
+                canhgt: 0.70,
+                bb_seed: 0.10,
+                bbb_seed: 0.20,
+                flivmx_seed: 0.50,
+                hmax_seed: 1.70,
+            },
+        );
+
+        let produced = produce_wb16_ealpha_from_runtime_surface(&mut runtime_surface)
+            .expect("multi-OFE WB16 producer should execute")
+            .expect("multi-OFE WB16 producer should return ealpha");
+        let ofe1_alpha = require_runtime_surface_scalar(&runtime_surface, "ofe1_alpha")
+            .expect("producer should publish first OFE alpha");
+        let ofe2_alpha = require_runtime_surface_scalar(&runtime_surface, "ofe2_alpha")
+            .expect("producer should publish second OFE alpha");
+        let projected_ealpha = require_runtime_surface_scalar(&runtime_surface, "ealpha")
+            .expect("producer should publish equivalent-plane alpha");
+
+        let expected_ealpha =
+            wb16_expected_multiofe_ealpha([20.0, 35.0], [ofe1_alpha, ofe2_alpha], 1.5);
+
+        assert!(
+            (projected_ealpha - expected_ealpha).abs() < 1.0e-12,
+            "multi-OFE ealpha should match baseline-authoritative eplane projection"
+        );
+        assert!(
+            (produced - expected_ealpha).abs() < 1.0e-12,
+            "producer return value should match expected multi-OFE ealpha"
+        );
+    }
+
+    #[derive(Clone, Copy)]
+    struct Wb16OfeSeedVector {
+        avgslp: f64,
+        slplen: f64,
+        inrcov: f64,
+        rilcov: f64,
+        rrinit: f64,
+        rspace: f64,
+        width: f64,
+        rtyp: f64,
+        cancov: f64,
+        canhgt: f64,
+        bb_seed: f64,
+        bbb_seed: f64,
+        flivmx_seed: f64,
+        hmax_seed: f64,
+    }
+
+    fn insert_wb16_ofe_projection_symbols(
+        runtime_surface: &mut HillslopeWritebackSurface,
+        ofe_index: usize,
+        seed: Wb16OfeSeedVector,
+    ) {
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_avgslp")),
+            BoundaryValue::scalar(seed.avgslp),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_slplen")),
+            BoundaryValue::scalar(seed.slplen),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_inrcov")),
+            BoundaryValue::scalar(seed.inrcov),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_rilcov")),
+            BoundaryValue::scalar(seed.rilcov),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_rrinit")),
+            BoundaryValue::scalar(seed.rrinit),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_rspace")),
+            BoundaryValue::scalar(seed.rspace),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_width")),
+            BoundaryValue::scalar(seed.width),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_rtyp")),
+            BoundaryValue::scalar(seed.rtyp),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_cancov")),
+            BoundaryValue::scalar(seed.cancov),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("ofe{ofe_index}_canhgt")),
+            BoundaryValue::scalar(seed.canhgt),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("pl_growth_ofe{ofe_index}_bb_seed")),
+            BoundaryValue::scalar(seed.bb_seed),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("pl_growth_ofe{ofe_index}_bbb_seed")),
+            BoundaryValue::scalar(seed.bbb_seed),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("pl_growth_ofe{ofe_index}_flivmx_seed")),
+            BoundaryValue::scalar(seed.flivmx_seed),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("pl_growth_ofe{ofe_index}_hmax_seed")),
+            BoundaryValue::scalar(seed.hmax_seed),
+        );
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::similar_names)]
+    fn wb16_expected_frcteq(
+        inrcov: f64,
+        rilcov: f64,
+        rrinit: f64,
+        rspace: f64,
+        width: f64,
+        flivmx_seed: f64,
+        canhgt: f64,
+        hmax_seed: f64,
+    ) -> f64 {
+        let inrfo = (3.024 - 5.042 * (-161.0 * rrinit).exp()).exp();
+        let mut inrrou = 0.5 * inrfo.powf(1.128);
+        if inrrou < WB16_INRFSO_CROPLAND {
+            inrrou = WB16_INRFSO_CROPLAND;
+        }
+        let inrfro = inrrou - WB16_INRFSO_CROPLAND;
+        let inrfco = if inrcov > 0.0 {
+            14.5 * inrcov.powf(1.5544)
+        } else {
+            0.0
+        };
+        let frlive = if hmax_seed > 0.0 {
+            (canhgt / hmax_seed) * flivmx_seed
+        } else {
+            0.0
+        };
+        let inrfto = inrfro + inrfco + WB16_INRFSO_CROPLAND + frlive;
+        let frccov = if rilcov > 0.0 {
+            4.5 * rilcov.powf(1.5544)
+        } else {
+            0.0
+        };
+        let frctrl = frccov + frlive + WB16_FRCSOL_CROPLAND;
+        let width_ratio = width / rspace;
+        if width_ratio < 1.0 {
+            inrfto + width_ratio * (frctrl - inrfto)
+        } else {
+            inrfto
+        }
+    }
+
+    fn wb16_expected_multiofe_ealpha(slplens: [f64; 2], alphas: [f64; 2], m: f64) -> f64 {
+        let power2 = 1.0 / m;
+        let power3 = power2 + 1.0;
+        let sum_length = slplens.iter().sum::<f64>();
+        let mut cumulative_length = 0.0;
+        let mut storage_integral = 0.0;
+        let mut last_power = 0.0;
+        for (slope_length, alpha_value) in slplens.into_iter().zip(alphas) {
+            cumulative_length += slope_length;
+            let current_power = cumulative_length.powf(power3);
+            storage_integral += (current_power - last_power) / alpha_value.powf(power2);
+            last_power = current_power;
+        }
+        (sum_length / storage_integral).powf(m) * sum_length
     }
 
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {

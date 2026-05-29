@@ -141,6 +141,55 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         }
         let InitialScenarioData::Cropland(initial_data) = &initial.data;
 
+        let cancov_seed =
+            validate_projection_fraction("cancov_seed", 0, 0, initial_data.base_line[1])?;
+        let inrcov_seed =
+            validate_projection_fraction("inrcov_seed", 0, 0, initial_data.base_line[5])?;
+        let rilcov_seed =
+            validate_projection_fraction("rilcov_seed", 0, 0, initial_data.residue_line[2])?;
+        let rrinit_seed =
+            validate_projection_non_negative("rrinit_seed", 0, 0, initial_data.residue_line[3])?;
+        let rspace_seed =
+            validate_projection_non_negative("rspace_seed", 0, 0, initial_data.residue_line[4])?;
+        let width_seed =
+            validate_projection_non_negative("width_seed", 0, 0, initial_data.thaw_line[4])?;
+
+        if initial_data.iresd == 0 || initial_data.iresd > management.registries.plants.len() {
+            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "iresd_seed",
+                slot_index: 0,
+                crop_slot_index: 0,
+                value: usize_to_f64("iresd_seed", initial_data.iresd)?,
+                allowed: "1..=plant_scenario_count",
+            });
+        }
+        let residue_plant = &management.registries.plants[initial_data.iresd - 1];
+        let PlantScenarioData::Cropland(residue_plant_cropland) = &residue_plant.data;
+        let canopy_cover_coeff_seed = validate_projection_non_negative(
+            "bb_seed",
+            0,
+            0,
+            residue_plant_cropland.canopy_line[0],
+        )?;
+        let canopy_height_curve_seed = validate_projection_non_negative(
+            "bbb_seed",
+            0,
+            0,
+            residue_plant_cropland.canopy_line[1],
+        )?;
+        let flivmx_seed = validate_projection_non_negative(
+            "flivmx_seed",
+            0,
+            0,
+            residue_plant_cropland.growth_line[4],
+        )?;
+        let hmax_seed = validate_projection_non_negative(
+            "hmax_seed",
+            0,
+            0,
+            residue_plant_cropland.growth_line[7],
+        )?;
+
         pl_schedule_surface.insert(
             pl_schedule_ofe_symbol("initial_ref", ofe_index),
             BoundaryValue::scalar(usize_to_f64("initial_ref", *initial_ref)?),
@@ -156,6 +205,50 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         );
         pl_growth_surface.insert(
             pl_growth_ofe_symbol("rtyp_seed", ofe_index),
+            BoundaryValue::scalar(usize_to_f64("rtyp_seed", initial_data.rtyp)?),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("cancov_seed", ofe_index),
+            BoundaryValue::scalar(cancov_seed),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("bb_seed", ofe_index),
+            BoundaryValue::scalar(canopy_cover_coeff_seed),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("bbb_seed", ofe_index),
+            BoundaryValue::scalar(canopy_height_curve_seed),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("flivmx_seed", ofe_index),
+            BoundaryValue::scalar(flivmx_seed),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("hmax_seed", ofe_index),
+            BoundaryValue::scalar(hmax_seed),
+        );
+        pl_growth_surface.insert(
+            slope_ofe_symbol("inrcov", ofe_index),
+            BoundaryValue::scalar(inrcov_seed),
+        );
+        pl_growth_surface.insert(
+            slope_ofe_symbol("rilcov", ofe_index),
+            BoundaryValue::scalar(rilcov_seed),
+        );
+        pl_growth_surface.insert(
+            slope_ofe_symbol("rrinit", ofe_index),
+            BoundaryValue::scalar(rrinit_seed),
+        );
+        pl_growth_surface.insert(
+            slope_ofe_symbol("rspace", ofe_index),
+            BoundaryValue::scalar(rspace_seed),
+        );
+        pl_growth_surface.insert(
+            slope_ofe_symbol("width", ofe_index),
+            BoundaryValue::scalar(width_seed),
+        );
+        pl_growth_surface.insert(
+            slope_ofe_symbol("rtyp", ofe_index),
             BoundaryValue::scalar(usize_to_f64("rtyp_seed", initial_data.rtyp)?),
         );
 
@@ -227,6 +320,50 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
             pl_growth_surface.insert(
                 BoundarySymbol::from("imngmt_seed"),
                 BoundaryValue::scalar(usize_to_f64("imngmt_seed", initial_data.imngmt)?),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("cancov"),
+                BoundaryValue::scalar(cancov_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("inrcov"),
+                BoundaryValue::scalar(inrcov_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("rilcov"),
+                BoundaryValue::scalar(rilcov_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("rrinit"),
+                BoundaryValue::scalar(rrinit_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("rspace"),
+                BoundaryValue::scalar(rspace_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("width"),
+                BoundaryValue::scalar(width_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("rtyp"),
+                BoundaryValue::scalar(usize_to_f64("rtyp_seed", initial_data.rtyp)?),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("bb_seed"),
+                BoundaryValue::scalar(canopy_cover_coeff_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("bbb_seed"),
+                BoundaryValue::scalar(canopy_height_curve_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("flivmx_seed"),
+                BoundaryValue::scalar(flivmx_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("hmax_seed"),
+                BoundaryValue::scalar(hmax_seed),
             );
             pl_decomp_surface.insert(
                 BoundarySymbol::from("iresd_seed"),
@@ -648,4 +785,3 @@ pub fn build_hillslope_runtime_surface_from_management(
         flux_surface: BTreeMap::new(),
     })
 }
-

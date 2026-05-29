@@ -270,13 +270,20 @@ fn project_primary_decomposition_equation_aliases(
     Ok(())
 }
 
+#[allow(clippy::too_many_lines)]
 fn growth_equation_parameter_values(
     slot_index: usize,
     crop_slot_index: usize,
     plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
-) -> Result<[(&'static str, f64); 15], HillslopeRuntimeInputError> {
+) -> Result<[(&'static str, f64); 18], HillslopeRuntimeInputError> {
     let bb =
         validate_projection_non_negative("bb", slot_index, crop_slot_index, plant.canopy_line[0])?;
+    let bbb = validate_projection_non_negative(
+        "bbb",
+        slot_index,
+        crop_slot_index,
+        plant.canopy_line[1],
+    )?;
     let beinp = validate_projection_non_negative(
         "beinp",
         slot_index,
@@ -307,11 +314,23 @@ fn growth_equation_parameter_values(
         crop_slot_index,
         plant.growth_line[2],
     )?;
+    let flivmx = validate_projection_non_negative(
+        "flivmx",
+        slot_index,
+        crop_slot_index,
+        plant.growth_line[4],
+    )?;
     let gddmax = validate_projection_non_negative(
         "gddmax",
         slot_index,
         crop_slot_index,
         plant.growth_line[5],
+    )?;
+    let hmax = validate_projection_non_negative(
+        "hmax",
+        slot_index,
+        crop_slot_index,
+        plant.growth_line[7],
     )?;
     let hi = validate_projection_fraction("hi", slot_index, crop_slot_index, plant.growth_line[6])?;
 
@@ -362,8 +381,11 @@ fn growth_equation_parameter_values(
         ("decfct", decfct),
         ("spriod", spriod),
         ("bb", bb),
+        ("bbb", bbb),
         ("beinp", beinp),
         ("extnct", extnct),
+        ("flivmx", flivmx),
+        ("hmax", hmax),
         ("hi", hi),
         ("xmxlai", xmxlai),
         ("rsr", rsr),

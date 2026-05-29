@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 41
+contract_version: 42
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -795,9 +795,13 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
     `frcfac -> rdat(alpha) -> alphay -> eplane(optional multi-OFE projection)`
     (`/workdir/wepp-forest_260430_baseline/src/frcfac.for`,
     `rdat.for`, `irs.for`, `eplane.for`).
-13. Until full baseline-authoritative `ealpha` producer migration is landed,
-    compatibility seeding (`ealpha = 1.0`) is allowed only with explicit
-    provenance publication and warning:
+13. Runtime lanes with complete producer inputs must publish baseline-lineage
+    `ealpha` from the authoritative producer chain with explicit provenance:
+    - `wb16_ealpha_compatibility_seed_used = false`
+    - `wb16_ealpha_seed_policy = "runtime_provided"`
+14. Compatibility seeding (`ealpha = 1.0`) is allowed only as a typed
+    degradation branch when required producer inputs are unavailable, and only
+    with explicit provenance publication and warning:
     - `wb16_ealpha_compatibility_seed_used = true`
     - `wb16_ealpha_seed_policy = "compatibility_seed_1p0"`
     - warning text containing `SIMPIPE-W-003`
@@ -827,7 +831,12 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 6. Near-zero positive runoff vector (`0 < Q < 1.0e-8`) executes the
    baseline-authoritative branch, emits `peakro = 3.63e-8`, `watdur = 0`,
    and does not hard-fail.
-7. Compatibility-seed provenance vector: when `ealpha` is not
+7. Runtime-producer provenance vector: when required producer symbols are
+   available, runtime emits
+   `wb16_ealpha_compatibility_seed_used = false`,
+   `wb16_ealpha_seed_policy = "runtime_provided"`, and no `SIMPIPE-W-003`
+   warning.
+8. Compatibility-seed provenance vector: when `ealpha` is not
    runtime-produced and compatibility seeding is invoked, runtime emits
    `wb16_ealpha_compatibility_seed_used = true`,
    `wb16_ealpha_seed_policy = "compatibility_seed_1p0"`, and warning id
@@ -1133,12 +1142,13 @@ canonical order:
 | GAP-WATBAL-002 | Companion contracts (`SC-RUNOFFPART-001`, `SC-EVAP-001`, `SC-PERC-001`, `SC-SUBHYD-001`) are authored but retain open implementation-promotability gaps for full WB11 ET/soil-water runtime closure. | Cross-contract ownership is explicit, but promotable runtime closure remains provisional pending SIMIMPL22/SIMIMPL23 execution. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-WATBAL-003 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-WATBAL-004 | Chapter-5 validation caveat (stronger near-surface than full-profile agreement) remains and is explicitly retained as a documented limitation with governance risk acceptance. | Deep-profile closure confidence remains lower than near-surface Tier-A signals and requires explicit interpretation in governance decisions; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-WATBAL-005 | WB16 full baseline-authoritative `ealpha` producer-chain migration (`frcfac -> rdat(alpha) -> alphay -> eplane`) is not yet complete in production runtime surfaces; compatibility seed provenance is explicit but remains non-authoritative for parity closure. | WB16 branch arithmetic is authoritative, but WB16 input-provenance parity remains partial until producer migration lands. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-WATBAL-005 | WB16 baseline-authoritative `ealpha` producer chain (`frcfac -> rdat(alpha) -> alphay -> eplane`) is now implemented in production runtime surfaces for runtime-projection-complete lanes, with explicit runtime/compatibility provenance policy. | Producer-chain migration closure is complete for scoped runtime lanes; compatibility branch remains explicitly non-promotable and warning-gated when required producer symbols are absent. | closed | `[DIRECT][Static] + [Ran]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `42` | `Codex` | HILLSTAB08 amendment: landed baseline-authoritative WB16 `ealpha` producer-chain runtime migration (`frcfac -> rdat(alpha) -> alphay -> eplane`), added runtime-producer provenance vector (`runtime_provided`), retained explicit compatibility degradation policy (`SIMPIPE-W-003`), and dispositioned `GAP-WATBAL-005` to `closed`. |
 | `2026-05-29` | `41` | `Codex` | HILLSTAB07 amendment: added explicit WB16 input-provenance authority for canonical `m=1.5`, baseline `ealpha` producer-chain lineage, compatibility-seed provenance surfaces/warning obligations (`wb16_ealpha_compatibility_seed_used`, `wb16_ealpha_seed_policy`, `SIMPIPE-W-003`), and non-promotable gap row `GAP-WATBAL-005` for full producer migration closure. |
 | `2026-05-29` | `40` | `Codex` | HILLSTAB06 amendment: aligned WB16 authority to baseline `appmth` near-zero runoff branch (`Q < 1.0e-8`) and explicit positivity-domain semantics so positive near-zero WB16 intermediates do not fail pre-floor. |
 | `2026-05-28` | `39` | `Codex` | HILLSTAB03 WB16 amendment: corrected baseline `appmth.for` branch authority by deriving `tc` from `vstar`, adding explicit `vstar>=1` constant-excess branch (`qpstar=1`), removing non-authoritative `timep` as required WB16 coupling input, and updating WB16 domain/test-vector obligations accordingly. |

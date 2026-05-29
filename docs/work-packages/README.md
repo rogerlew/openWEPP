@@ -1008,6 +1008,13 @@ Authorized packages:
     provenance, add contract-derived tests, and publish GO/HOLD disposition
     with follow-on closure requirements for full baseline-authoritative
     `ealpha` producer migration.
+- `20260529-hillstab08-wb16-ealpha-producer-chain-runtime-migration-001/`
+  - Purpose: execute HILLSTAB08 immediate next actions from HILLSTAB07 by
+    migrating WB16 runtime `ealpha` producer-chain surfaces
+    (`frcfac -> rdat(alpha) -> alphay -> eplane`) into production state
+    projection and kernel ingress lanes, adding contract-derived lineage/parity
+    vectors for single-OFE and multi-OFE fixtures, and publishing GO/HOLD
+    disposition for residual baseline-authoritative closure gaps.
 - `20260528-clim17-breakpoint-climate-baseline-parity-burndown-001/`
   - Purpose: execute CLIM17 to identify and close implementation gaps in
     openWEPP breakpoint climate behavior versus

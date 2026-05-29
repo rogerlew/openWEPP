@@ -424,6 +424,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn management_runtime_surfaces_project_required_pl_controls_and_seeds() {
         let management = parse_management_from_str(
             MANAGEMENT_CANONICAL_NONZERO_98_4,
@@ -487,6 +488,44 @@ mod tests {
         assert_eq!(
             merged_surface
                 .state_surface
+                .get(&BoundarySymbol::from("inrcov")),
+            Some(&BoundaryValue::scalar(0.9))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("rilcov")),
+            Some(&BoundaryValue::scalar(0.9))
+        );
+        assert_eq!(
+            merged_surface.state_surface.get(&BoundarySymbol::from("rrinit")),
+            Some(&BoundaryValue::scalar(0.02))
+        );
+        assert_eq!(
+            merged_surface.state_surface.get(&BoundarySymbol::from("rspace")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("width")),
+            Some(&BoundaryValue::scalar(0.0254))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("flivmx_seed")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("hmax_seed")),
+            Some(&BoundaryValue::scalar(2.60099))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
                 .get(&BoundarySymbol::from("sumsrm_seed")),
             Some(&BoundaryValue::scalar(0.19997))
         );
@@ -508,6 +547,24 @@ mod tests {
                 "pl_decomp_slot_0001_crop_0001_resmgt"
             )),
             Some(&BoundaryValue::scalar(6.0))
+        );
+        assert_eq!(
+            pl_surfaces
+                .pl_growth_surface
+                .get(&BoundarySymbol::from("ofe1_inrcov")),
+            Some(&BoundaryValue::scalar(0.9))
+        );
+        assert_eq!(
+            pl_surfaces
+                .pl_growth_surface
+                .get(&BoundarySymbol::from("ofe1_rspace")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            pl_surfaces
+                .pl_growth_surface
+                .get(&BoundarySymbol::from("pl_growth_ofe1_bbb_seed")),
+            Some(&BoundaryValue::scalar(3.0))
         );
     }
 
