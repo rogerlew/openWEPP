@@ -59,6 +59,29 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260529-hphys0204-disposition-and-diagnostics-001/`
+  - Purpose: execute integrated HPHYS follow-up disposition by combining
+    process-authority closure evidence, workspace gate results, and semantic
+    comparator diagnostics into a HOLD/GO decision where parity is
+    investigation signal, not primary gate.
+- `20260529-hphys0203-physics-robustness-test-suite-001/`
+  - Purpose: implement contract-derived robustness validation for hillslope
+    water-balance publication families (conservation-consistent behavior,
+    domain guards, perturbation stability, targeted regressions) with parity
+    retained as diagnostic evidence.
+- `20260529-hphys0202-profile-fc-wp-lineage-closure-001/`
+  - Purpose: close `ProfileFCStore`/`ProfileWPStore` follow-up work using
+    baseline-authoritative process lineage and contract-derived tests as the
+    promotability gate, with semantic parity reruns treated as diagnostics.
+- `20260529-hphys0201-physics-first-gate-reframe-001/`
+  - Purpose: reframe HPARITY02+ follow-up packages to a physics-first closure
+    posture where contract-authoritative process correctness is primary and
+    comparator parity is explicitly diagnostic.
+- Execution order for active hillslope follow-on is:
+  `hphys0201 -> hphys0202 -> hphys0203 -> hphys0204`.
+- Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
+  are retained for historical traceability and are not the default execution
+  path unless explicitly re-authorized.
 - `20260529-hparity05-unpalatable-rind-column-parity-closeout-001/`
   - Purpose: execute final always-fail-column closeout for `unpalatable-rind`
     by rerunning full 39-hillslope + watershed integration, verifying all 12
