@@ -1,0 +1,132 @@
+name: release-gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      run_stability:
+        description: "Run stability cohort gate (requires self-hosted data roots)"
+        required: true
+        default: false
+        type: boolean
+      cohort_seeds_csv:
+        description: "Path to defect_seeds.csv"
+        required: true
+        default: "/workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv"
+        type: string
+      watchlist_csv:
+        description: "Path to hillslope_watchlist.csv"
+        required: true
+        default: "/workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv"
+        type: string
+      wepp_forest_root:
+        description: "Root path for wepp-forest relative watchlist entries"
+        required: true
+        default: "/workdir/wepp-forest"
+        type: string
+      wc1_root:
+        description: "Root path for wc1 run trees"
+        required: true
+        default: "/wc1/runs"
+        type: string
+      hillstab_jobs:
+        description: "Parallel workers for stability harness"
+        required: true
+        default: "4"
+        type: string
+      hillstab_timeout_seconds:
+        description: "Per-case timeout in seconds"
+        required: true
+        default: "180"
+        type: string
+      expect_1166:
+        description: "Expected wb05b_1166 total"
+        required: true
+        default: "1166"
+        type: string
+      expect_watchlist:
+        description: "Expected release_gate_watchlist total"
+        required: true
+        default: "19"
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  workspace-and-release-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: Run workspace + release lint gates
+        id: release_gates
+        run: |
+          release_tag="$(date -u +%y%m%d)ci${GITHUB_RUN_NUMBER}"
+          release_dir="${RUNNER_TEMP}/openwepp_release_${release_tag}"
+          bash tools/release/run_release_candidate_gates.sh \
+            --release-tag "${release_tag}" \
+            --release-dir "${release_dir}" \
+            --skip-stability
+          echo "release_dir=${release_dir}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload staged release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwepp-release-candidate-${{ github.run_id }}
+          path: ${{ steps.release_gates.outputs.release_dir }}
+          if-no-files-found: error
+
+  stability-cohort:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_stability }}
+    needs: workspace-and-release-lint
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build hillslope release binary
+        run: cargo build --release -p openwepp-runner --bin openwepp-cli-hill
+
+      - name: Run stability cohort gate
+        id: hillstab_gate
+        run: |
+          results_json="${RUNNER_TEMP}/hillstab_results.json"
+          bash tools/release/run_hillstab_gate.sh \
+            --openwepp-binary "${GITHUB_WORKSPACE}/target/release/openwepp-cli-hill" \
+            --cohort-seeds-csv "${{ inputs.cohort_seeds_csv }}" \
+            --watchlist-csv "${{ inputs.watchlist_csv }}" \
+            --wepp-forest-root "${{ inputs.wepp_forest_root }}" \
+            --wc1-root "${{ inputs.wc1_root }}" \
+            --output-json "${results_json}" \
+            --jobs "${{ inputs.hillstab_jobs }}" \
+            --timeout-seconds "${{ inputs.hillstab_timeout_seconds }}" \
+            --expect-suite "wb05b_1166=${{ inputs.expect_1166 }}" \
+            --expect-suite "release_gate_watchlist=${{ inputs.expect_watchlist }}"
+          echo "results_json=${results_json}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload stability results
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwepp-hillstab-results-${{ github.run_id }}
+          path: ${{ steps.hillstab_gate.outputs.results_json }}
+          if-no-files-found: error

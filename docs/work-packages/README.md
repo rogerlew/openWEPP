@@ -59,6 +59,10 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260529-relproc03-release-gate-ci-automation-001/`
+  - Purpose: implement and disposition release-gate CI automation for runbook
+    gates (`fmt`, `clippy`, `test`, `deny`, release lint, stability cohort)
+    with repository-local scripts and workflow wiring.
 - `20260529-relproc02-runner-sidecar-emission-cli-001/`
   - Purpose: implement and disposition a dedicated
     `open_wepp_runner release sidecar` command surface for explicit binary

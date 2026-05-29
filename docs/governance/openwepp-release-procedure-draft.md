@@ -36,7 +36,8 @@ and post-HILLSTAB06 stability gate expectations.
 
 Out of scope:
 - Tag creation, changelog publication, and external distribution hosting.
-- CI workflow implementation details.
+- External CI provider settings (for example branch protection and required
+  check policy).
 
 ## Preconditions
 
@@ -60,6 +61,30 @@ cargo deny check
 ```
 
 If any command fails, candidate assembly stops.
+
+## Automation Entry Points
+
+Workspace + release-lint automation (no stability cohort):
+
+```bash
+bash tools/release/run_release_candidate_gates.sh --skip-stability
+```
+
+Full gate automation (includes stability cohort and expected suite counts):
+
+```bash
+bash tools/release/run_release_candidate_gates.sh \
+  --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \
+  --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv \
+  --expect-suite wb05b_1166=1166 \
+  --expect-suite release_gate_watchlist=19
+```
+
+CI workflow surface:
+- `.github/workflows/release-gates.yml`
+  - `push` / `pull_request`: workspace + release lint lane.
+  - `workflow_dispatch` + `run_stability=true`: self-hosted stability cohort
+    lane with suite assertions.
 
 ## Candidate Build and Assembly
 
@@ -127,12 +152,13 @@ Failure IDs:
 Run broad hillslope stability cohort before release signoff:
 
 ```bash
-python3 docs/work-packages/20260528-hillstab01-hillslope-cli-broad-stability-cohorts-001/artifacts/hillstab01_stability_cohort.py \
+bash tools/release/run_hillstab_gate.sh \
   --openwepp-binary /home/workdir/openWEPP/target/release/openwepp-cli-hill \
   --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \
   --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv \
-  --scratch-root /tmp/openwepp_release_gate_hillstab \
-  --output-json /tmp/openwepp_release_gate_hillstab_results.json
+  --output-json /tmp/openwepp_release_gate_hillstab_results.json \
+  --expect-suite wb05b_1166=1166 \
+  --expect-suite release_gate_watchlist=19
 ```
 
 Minimum expectation for pass:
@@ -153,5 +179,7 @@ A release candidate must archive:
 
 ## Known Gaps (Draft Follow-On)
 
-1. This document is runbook authority only; CI automation for these steps
-   remains a separate implementation task.
+1. Promote status from `planned` to `completed` after first full release
+   candidate run that archives all evidence-bundle artifacts.
+2. Stability lane requires runner environments with
+   `/workdir/wepp-forest` and `/wc1/runs` data roots available.
