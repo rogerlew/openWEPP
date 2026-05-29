@@ -1,6 +1,14 @@
 # Artifacts
 
-Status: queued  
-Evidence mode: not-run
+Status: completed  
+Evidence mode: Static + Ran
 
-Evidence artifacts for HPARITY02.
+HPARITY02 execution evidence bundle.
+
+## Evidence roots
+- Ran: `/tmp/hparity02_20260529T204555Z/gates`
+- Ran: `/tmp/hparity02_20260529T204555Z/parity`
+
+## Scope note
+- Package executed end-to-end and remains in `HOLD` because closure measures
+  `MEASURE-HP02-002` and `MEASURE-HP02-004` are not satisfied.

@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -252,6 +252,21 @@ bit-for-bit parity). `[DIRECT][Static]`
 4. This addendum closes contract-authority ambiguity for ET/soil-water alias
    lineage without asserting production implementation completion.
 
+## HPARITY02 WB13 Profile-Capacity Seed Projection Addendum
+
+1. Soil runtime adapters may publish WB13 profile-capacity seed symbols:
+   `wb13_profile_depth_mm`, `wb13_profile_porosity_cap_mm`,
+   `wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`.
+2. These symbols must be derived from baseline-authoritative preprocessing
+   lineage (input-layer depth normalization plus `scon.for` porosity/theta
+   correction families), not synthesized publication-time placeholder formulas.
+3. For `solwpv >= 7778` soils with measured field-capacity/wilting fields,
+   authoritative WB13 profile-capacity seeds consume measured
+   `fc`/`wp` lineage (`thetf2`/`thetd2`) with baseline correction/guard
+   posture.
+4. Missing/non-finite/domain-invalid seed derivations remain fail-closed and do
+   not authorize silent substitution from unrelated publication surfaces.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -270,3 +285,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, strengthened freeze-thaw anchor specificity/path consistency, added `τcadj` alias coverage, and evidence-tagged all degenerate-state claims. |
 | `2026-05-23` | `3` | `Codex` | CLIM06 amendment: added frozen-soil conductivity coupling authority from parsed frost controls, bounded `Dfrost/Dthaw/Nft/Ws_frz/InfCap_frz` runtime-state requirements, and typed active-coupling guard posture. |
 | `2026-05-25` | `4` | `Codex` | SIMIMPL21 amendment: added WB11 ET/soil-water alias-lineage authority (`INV-SOIL-013`) with explicit layer-storage to aggregate publication mapping and downstream SIMIMPL22 gating obligations. |
+| `2026-05-29` | `5` | `Codex` | HPARITY02 amendment: added WB13 profile-capacity seed-projection authority (`wb13_profile_*_mm`) anchored to baseline preprocessing/correction lineage and fail-closed derivation posture. |

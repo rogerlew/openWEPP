@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 42
+contract_version: 44
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -956,7 +956,7 @@ for follow-on closure packages.
 | `Ep` | `Ep -> Ep` (plant transpiration component) | `SC-EVAP-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("Ep")` -> `("Ep", ep)`) | `HKERNEL-WB11-ET-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Es` | `Es -> Es` (soil evaporation component) | `SC-EVAP-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("Es")` -> `("Es", es)`) | `HKERNEL-WB11-ET-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `ProfileDepth` | `solthk -> ProfileDepth` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("solthk")` -> `("ProfileDepth", profile_depth_mm)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `ProfilePorosityCap` | `sum(por_i * dg_i)` (canonical target) | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` currently emits synthesized placeholder `profile_fc_store_mm.max(profile_wp_store_mm) + 20.0` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `ProfilePorosityCap` | `sum(por_i * dg_i)` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants + HPARITY02 profile-lineage closure | `crates/openwepp-runner/src/hillslope/mod.rs` consumes `wb13_profile_porosity_cap_mm` (or complete per-layer `theta_s_####` fallback) for `("ProfilePorosityCap", profile_porosity_cap)` publication | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `ProfileFCStore` | `sum(thetfc_i * dg_i)` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` layer loop (`thetfc_####`, `dg_####`) -> `("ProfileFCStore", profile_fc_store_mm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `ProfileWPStore` | `sum(thetdr_i * dg_i)` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` layer loop (`thetdr_####`, `dg_####`) -> `("ProfileWPStore", profile_wp_store_mm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `RM` | `prcp + SWE_before - SWE_after + Irr` | `SC-SNOWFREEZE-001` day-key publication closure (`INV-SNOWFREEZE-011`); `SC-WATBAL-001` `INV-WATBAL-026` | `crates/openwepp-runner/src/hillslope/mod.rs` RM assembly branch -> `("RM", rm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
@@ -971,6 +971,34 @@ Alias continuity policy for this family is explicit:
    canonical `Total-Soil`.
 3. `SoilWaterTotal` remains a distinct aggregate column with closure
    `SoilWaterTotal = Total-Soil + frozwt`.
+
+### HPARITY02 Profile-Capacity Publication Lineage Closure
+
+HPARITY02 closes WB13 profile-capacity publication lineage for
+`ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and `ProfileWPStore`
+using baseline-authoritative soil preprocessing and profile aggregation
+semantics from `/workdir/wepp-forest_260430_baseline` (`input.for`,
+`scon.for`, `watbal.for`, `watbalprint.for`) at commit
+`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
+
+Required runtime publication symbols for WB13 profile columns:
+
+1. `wb13_profile_depth_mm`
+2. `wb13_profile_porosity_cap_mm`
+3. `wb13_profile_fc_store_mm`
+4. `wb13_profile_wp_store_mm`
+
+Deterministic publication rules:
+
+1. When `wb13_profile_*_mm` symbols are present, WB13 publication consumes
+   those symbols directly as producer-authoritative profile outputs.
+2. `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and
+   `ProfileWPStore` remain non-negative `mm` depth-equivalent publication
+   fields under WB13 schema/order authority.
+3. Synthesized placeholder formulas for `ProfilePorosityCap` are prohibited
+   (for example `max(ProfileFCStore, ProfileWPStore) + C`).
+4. Missing/non-finite/domain-invalid profile-lineage symbols hard-fail WB13
+   publication under existing WB13 guard-family continuity.
 
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
@@ -1178,6 +1206,7 @@ Alias continuity policy for this family is explicit:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `44` | `Codex` | HPARITY02 amendment: added profile-capacity publication-lineage closure authority (`wb13_profile_*_mm`) and explicit prohibition of synthesized `ProfilePorosityCap` placeholder formulas. |
 | `2026-05-29` | `43` | `Codex` | HPARITY01 amendment: added always-fail WB13 12-column lineage register with canonical symbol ownership, process-contract disambiguation (`Dp` deep-percolation vs climate time-to-peak), runtime writer surfaces, and explicit alias continuity policy for `Total-Soil`/`Total-Soil Water`/`SoilWaterTotal`. |
 | `2026-05-29` | `42` | `Codex` | HILLSTAB08 amendment: landed baseline-authoritative WB16 `ealpha` producer-chain runtime migration (`frcfac -> rdat(alpha) -> alphay -> eplane`), added runtime-producer provenance vector (`runtime_provided`), retained explicit compatibility degradation policy (`SIMPIPE-W-003`), and dispositioned `GAP-WATBAL-005` to `closed`. |
 | `2026-05-29` | `41` | `Codex` | HILLSTAB07 amendment: added explicit WB16 input-provenance authority for canonical `m=1.5`, baseline `ealpha` producer-chain lineage, compatibility-seed provenance surfaces/warning obligations (`wb16_ealpha_compatibility_seed_used`, `wb16_ealpha_seed_policy`, `SIMPIPE-W-003`), and non-promotable gap row `GAP-WATBAL-005` for full producer migration closure. |

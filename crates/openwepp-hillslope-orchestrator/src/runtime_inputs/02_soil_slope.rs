@@ -67,6 +67,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
             value: primary_thetfc,
         });
     }
+    let primary_wb13_profile_symbols = compute_wb13_profile_symbols(primary_ofe);
 
     if soil.ntemp != soil.ofes.len() {
         return Err(HillslopeRuntimeInputError::SoilOfeCountMismatch {
@@ -270,6 +271,12 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     soil_primary_layer_symbol("ssc", layer_index),
                     BoundaryValue::scalar(layer_ssc_m_s),
                 );
+                if let Some(theta_s) = layer.theta_s_rosetta {
+                    state_surface.insert(
+                        soil_primary_layer_symbol("theta_s", layer_index),
+                        BoundaryValue::scalar(theta_s),
+                    );
+                }
 
                 if layer_index == 1 {
                     state_surface.insert(
@@ -288,6 +295,12 @@ pub fn build_hillslope_runtime_surface_from_soil(
                         BoundarySymbol::from("ssc"),
                         BoundaryValue::scalar(layer_ssc_m_s),
                     );
+                    if let Some(theta_s) = layer.theta_s_rosetta {
+                        state_surface.insert(
+                            BoundarySymbol::from("theta_s"),
+                            BoundaryValue::scalar(theta_s),
+                        );
+                    }
                 }
             }
 
@@ -333,6 +346,24 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundarySymbol::from("salb"),
                 BoundaryValue::scalar(ofe.salb),
             );
+            if let Some(profile_symbols) = primary_wb13_profile_symbols {
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_depth_mm"),
+                    BoundaryValue::scalar(profile_symbols.depth),
+                );
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_porosity_cap_mm"),
+                    BoundaryValue::scalar(profile_symbols.porosity_cap),
+                );
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_fc_store_mm"),
+                    BoundaryValue::scalar(profile_symbols.fc_store),
+                );
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_wp_store_mm"),
+                    BoundaryValue::scalar(profile_symbols.wp_store),
+                );
+            }
         }
     }
 
@@ -340,6 +371,348 @@ pub fn build_hillslope_runtime_surface_from_soil(
         state_surface,
         flux_surface: BTreeMap::new(),
     })
+}
+
+#[derive(Clone, Copy, Debug)]
+struct Wb13ProfileSymbols {
+    depth: f64,
+    porosity_cap: f64,
+    fc_store: f64,
+    wp_store: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LegacySoilLayerSeed {
+    depth_mm: f64,
+    bulk_density_g_cm3: f64,
+    fc_measured: f64,
+    wp_measured: f64,
+    sand_pct: f64,
+    clay_pct: f64,
+    orgmat_pct: f64,
+    cec_meq_100g: f64,
+    rock_frag_pct: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LegacySoilLayerExpanded {
+    thickness_m: f64,
+    bulk_density_kg_m3: f64,
+    thetfc: f64,
+    thetdr: f64,
+    sand: f64,
+    clay: f64,
+    orgmat: f64,
+    cec: f64,
+    rfg: f64,
+}
+
+const WB13_PROFILE_LAYER_THICKNESS_M: f64 = 0.2;
+const LEGACY_INPUT_DELTA_EPS_M: f64 = 0.001;
+
+fn compute_wb13_profile_symbols(ofe: &openwepp_input_contract::parsers::soil::SoilOfe) -> Option<Wb13ProfileSymbols> {
+    let mut seeds = Vec::with_capacity(ofe.layers.len());
+    for layer in &ofe.layers {
+        let bulk_density = layer.bulk_density_g_cm3?;
+        let fc_measured = layer.fc_measured?;
+        let wp_measured = layer.wp_measured?;
+        let seed = LegacySoilLayerSeed {
+            depth_mm: layer.depth_mm,
+            bulk_density_g_cm3: bulk_density,
+            fc_measured,
+            wp_measured,
+            sand_pct: layer.sand_pct,
+            clay_pct: layer.clay_pct,
+            orgmat_pct: layer.orgmat_pct,
+            cec_meq_100g: layer.cec_meq_100g,
+            rock_frag_pct: layer.rock_frag_pct,
+        };
+        if !legacy_seed_is_finite(seed) {
+            return None;
+        }
+        seeds.push(seed);
+    }
+    compute_wb13_profile_symbols_from_legacy_seed(&seeds)
+}
+
+fn legacy_seed_is_finite(seed: LegacySoilLayerSeed) -> bool {
+    seed.depth_mm.is_finite()
+        && seed.bulk_density_g_cm3.is_finite()
+        && seed.fc_measured.is_finite()
+        && seed.wp_measured.is_finite()
+        && seed.sand_pct.is_finite()
+        && seed.clay_pct.is_finite()
+        && seed.orgmat_pct.is_finite()
+        && seed.cec_meq_100g.is_finite()
+        && seed.rock_frag_pct.is_finite()
+}
+
+fn compute_wb13_profile_symbols_from_legacy_seed(
+    seeds: &[LegacySoilLayerSeed],
+) -> Option<Wb13ProfileSymbols> {
+    let expanded_layers = legacy_expand_soil_layers_to_200mm(seeds)?;
+    if expanded_layers.is_empty() {
+        return None;
+    }
+
+    let mut profile_depth_mm = 0.0_f64;
+    let mut profile_porosity_cap_mm = 0.0_f64;
+    let mut profile_fc_store_mm = 0.0_f64;
+    let mut profile_wp_store_mm = 0.0_f64;
+
+    for layer in expanded_layers {
+        let dg = layer.thickness_m;
+        if !dg.is_finite() || dg <= 0.0 {
+            return None;
+        }
+        let solcon = legacy_solcon(layer.clay, layer.cec, layer.orgmat, dg);
+        let oca = 3.80
+            + 1.9 * layer.clay.powi(2)
+            - (3.365 * layer.sand)
+            + (12.6 * solcon * layer.clay)
+            + (100.0 * layer.orgmat * (layer.sand / 2.0).powi(2));
+        let coca = 1.0 - (oca / 100.0);
+        let cpm = 1.0
+            - ((layer.rfg * layer.bulk_density_kg_m3)
+                / ((layer.rfg * layer.bulk_density_kg_m3)
+                    + 2650.0 * (1.0 - layer.rfg)));
+
+        let mut por = (2650.0 - layer.bulk_density_kg_m3) / 2650.0;
+        por *= coca;
+        if !por.is_finite() || por <= 0.0 {
+            return None;
+        }
+
+        let mut thetfc = layer.thetfc.max(0.0) * cpm;
+        let mut thetdr = layer.thetdr.max(0.0) * cpm;
+        if !thetfc.is_finite() || !thetdr.is_finite() {
+            return None;
+        }
+        if thetfc <= 0.0 || thetdr <= 0.0 {
+            return None;
+        }
+
+        let log10 = 10_f64.ln();
+        let t33 = 333.3_f64.ln() / log10;
+        let t15 = 15_300.0_f64.ln() / log10;
+        let s33 = thetfc.ln() / log10;
+        let s15 = thetdr.ln() / log10;
+        let slope = ((s15 - s33) / (t15 - t33)).abs();
+        if !slope.is_finite() {
+            return None;
+        }
+        let mut sm20c = 10.0_f64.powf(slope * (t15 - (10.0_f64.ln() / log10)) + s15);
+        sm20c *= cpm;
+        if sm20c >= por {
+            sm20c = por * 0.95;
+        }
+        if thetfc >= sm20c {
+            let delta = thetfc - thetdr;
+            thetfc = sm20c * 0.99;
+            thetdr = (thetfc - delta).max(0.01);
+            thetfc = thetfc.max(0.01);
+        }
+        if (thetfc / por) > 0.83 {
+            let scale = thetfc / (por * 0.83);
+            thetfc = por * 0.83;
+            thetdr /= scale;
+        }
+        thetdr = thetdr.max(0.01);
+        thetfc = thetfc.max(0.01);
+
+        profile_depth_mm += dg * 1000.0;
+        profile_porosity_cap_mm += por * dg * 1000.0;
+        profile_fc_store_mm += thetfc * dg * 1000.0;
+        profile_wp_store_mm += thetdr * dg * 1000.0;
+    }
+
+    Some(Wb13ProfileSymbols {
+        depth: profile_depth_mm,
+        porosity_cap: profile_porosity_cap_mm,
+        fc_store: profile_fc_store_mm,
+        wp_store: profile_wp_store_mm,
+    })
+}
+
+fn legacy_solcon(clay: f64, cec: f64, orgmat: f64, dg: f64) -> f64 {
+    if clay <= 0.0 {
+        return 0.0;
+    }
+    let cecc = cec - orgmat * (142.0 + 170.0 * dg);
+    (cecc / (100.0 * clay)).clamp(0.15, 0.65)
+}
+
+fn legacy_expand_soil_layers_to_200mm(
+    seeds: &[LegacySoilLayerSeed],
+) -> Option<Vec<LegacySoilLayerExpanded>> {
+    let cumulative_depths_mm = legacy_cumulative_depths_mm(seeds)?;
+    let source_layers = legacy_source_layers_from_seed_depths(seeds, &cumulative_depths_mm)?;
+    let total_depth_m = source_layers.iter().map(|layer| layer.thickness_m).sum::<f64>();
+    let normalized_layer_count = legacy_normalized_layer_count(total_depth_m)?;
+    Some(legacy_normalize_layers_to_200mm(
+        &source_layers,
+        normalized_layer_count,
+    ))
+}
+
+fn legacy_cumulative_depths_mm(seeds: &[LegacySoilLayerSeed]) -> Option<Vec<f64>> {
+    if seeds.is_empty() {
+        return None;
+    }
+    let mut cumulative_depths_mm = seeds
+        .iter()
+        .map(|seed| seed.depth_mm)
+        .collect::<Vec<f64>>();
+    let total_thickness_mm = *cumulative_depths_mm.last()?;
+    if total_thickness_mm < 200.0 {
+        let deficit = 200.0 - total_thickness_mm;
+        if let Some(last_depth) = cumulative_depths_mm.last_mut() {
+            *last_depth += deficit;
+        }
+    }
+    if let Some(last_depth) = cumulative_depths_mm.last_mut() {
+        *last_depth += 200.0;
+    }
+    for depth in &mut cumulative_depths_mm {
+        if *depth > 1800.0 {
+            *depth = 1800.0;
+        }
+    }
+    Some(cumulative_depths_mm)
+}
+
+fn legacy_source_layers_from_seed_depths(
+    seeds: &[LegacySoilLayerSeed],
+    cumulative_depths_mm: &[f64],
+) -> Option<Vec<LegacySoilLayerExpanded>> {
+    let mut source_layers = Vec::with_capacity(seeds.len());
+    let mut previous_depth_m = 0.0_f64;
+    for (seed, depth_mm) in seeds.iter().zip(cumulative_depths_mm.iter().copied()) {
+        let mut bulk_density = seed.bulk_density_g_cm3;
+        if bulk_density > 0.0 && bulk_density < 0.8 {
+            bulk_density = 0.8;
+        }
+        if bulk_density > 2.0 {
+            bulk_density = 2.0;
+        }
+
+        let mut orgmat_pct = seed.orgmat_pct;
+        if orgmat_pct > 10.0 {
+            orgmat_pct = 10.0;
+        }
+        let mut rock_frag_pct = seed.rock_frag_pct;
+        if rock_frag_pct > 85.0 {
+            rock_frag_pct = 85.0;
+        }
+
+        let depth_m = depth_mm * 0.001;
+        let thickness_m = depth_m - previous_depth_m;
+        previous_depth_m = depth_m;
+        if thickness_m <= 0.0 {
+            continue;
+        }
+
+        source_layers.push(LegacySoilLayerExpanded {
+            thickness_m,
+            bulk_density_kg_m3: bulk_density * 1000.0,
+            thetfc: seed.fc_measured,
+            thetdr: seed.wp_measured,
+            sand: seed.sand_pct / 100.0,
+            clay: seed.clay_pct / 100.0,
+            orgmat: orgmat_pct / 100.0,
+            cec: seed.cec_meq_100g,
+            rfg: rock_frag_pct / 100.0,
+        });
+    }
+    if source_layers.is_empty() {
+        return None;
+    }
+    Some(source_layers)
+}
+
+fn legacy_normalized_layer_count(total_depth_m: f64) -> Option<usize> {
+    let rounded_total_mm = (total_depth_m * 1000.0).round();
+    if !rounded_total_mm.is_finite() || rounded_total_mm <= 0.0 {
+        return None;
+    }
+
+    let mut remaining_mm = rounded_total_mm;
+    let mut normalized_layer_count = 0usize;
+    while remaining_mm >= 200.0 {
+        normalized_layer_count = normalized_layer_count.checked_add(1)?;
+        remaining_mm -= 200.0;
+    }
+    if normalized_layer_count == 0 {
+        return None;
+    }
+    Some(normalized_layer_count)
+}
+
+fn legacy_normalize_layers_to_200mm(
+    source_layers: &[LegacySoilLayerExpanded],
+    normalized_layer_count: usize,
+) -> Vec<LegacySoilLayerExpanded> {
+    let mut remaining_thicknesses = source_layers
+        .iter()
+        .map(|layer| layer.thickness_m)
+        .collect::<Vec<f64>>();
+    let mut source_index = 0usize;
+    let mut normalized_layers = Vec::with_capacity(normalized_layer_count);
+    for _normalized_index in 0..normalized_layer_count {
+        let mut layer = LegacySoilLayerExpanded {
+            thickness_m: WB13_PROFILE_LAYER_THICKNESS_M,
+            bulk_density_kg_m3: 0.0,
+            thetfc: 0.0,
+            thetdr: 0.0,
+            sand: 0.0,
+            clay: 0.0,
+            orgmat: 0.0,
+            cec: 0.0,
+            rfg: 0.0,
+        };
+        let mut remaining = WB13_PROFILE_LAYER_THICKNESS_M;
+        while remaining > 0.0 && source_index < source_layers.len() {
+            let source_thickness = remaining_thicknesses[source_index];
+            if source_thickness <= 0.0 {
+                source_index += 1;
+                continue;
+            }
+            if source_thickness <= remaining {
+                let fraction = source_thickness / WB13_PROFILE_LAYER_THICKNESS_M;
+                legacy_accumulate_weighted_layer(&mut layer, source_layers[source_index], fraction);
+                remaining -= source_thickness;
+                source_index += 1;
+                if remaining.abs() <= LEGACY_INPUT_DELTA_EPS_M {
+                    remaining = 0.0;
+                }
+            } else {
+                let fraction = remaining / WB13_PROFILE_LAYER_THICKNESS_M;
+                legacy_accumulate_weighted_layer(&mut layer, source_layers[source_index], fraction);
+                remaining_thicknesses[source_index] -= remaining;
+                if remaining_thicknesses[source_index].abs() <= LEGACY_INPUT_DELTA_EPS_M {
+                    source_index += 1;
+                }
+                remaining = 0.0;
+            }
+        }
+        normalized_layers.push(layer);
+    }
+    normalized_layers
+}
+
+fn legacy_accumulate_weighted_layer(
+    target: &mut LegacySoilLayerExpanded,
+    source: LegacySoilLayerExpanded,
+    weight: f64,
+) {
+    target.bulk_density_kg_m3 += source.bulk_density_kg_m3 * weight;
+    target.thetfc += source.thetfc * weight;
+    target.thetdr += source.thetdr * weight;
+    target.sand += source.sand * weight;
+    target.clay += source.clay * weight;
+    target.orgmat += source.orgmat * weight;
+    target.cec += source.cec * weight;
+    target.rfg += source.rfg * weight;
 }
 
 /// Runtime-surface options for slope parser projection.

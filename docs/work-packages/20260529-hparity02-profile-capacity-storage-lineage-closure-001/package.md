@@ -1,7 +1,7 @@
 # 20260529-hparity02-profile-capacity-storage-lineage-closure-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-29
 - timezone: America/Los_Angeles
 - decision: HOLD

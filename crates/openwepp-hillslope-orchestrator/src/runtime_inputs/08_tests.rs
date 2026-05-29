@@ -168,6 +168,51 @@ mod tests {
     }
 
     #[test]
+    fn soil_runtime_surface_projects_wb13_profile_lineage_symbols() {
+        let soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from parsed soil");
+
+        let profile_depth_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_depth_mm"))
+            .expect("wb13_profile_depth_mm should be present")
+            .as_f64();
+        let profile_porosity_cap_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_porosity_cap_mm"))
+            .expect("wb13_profile_porosity_cap_mm should be present")
+            .as_f64();
+        let profile_fc_store_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_fc_store_mm"))
+            .expect("wb13_profile_fc_store_mm should be present")
+            .as_f64();
+        let profile_wp_store_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
+            .expect("wb13_profile_wp_store_mm should be present")
+            .as_f64();
+
+        assert!((profile_depth_mm - 400.0).abs() < 1e-9);
+        assert!((profile_porosity_cap_mm - 196.933_353_433_962_28).abs() < 1e-9);
+        assert!((profile_fc_store_mm - 110.277_729_478_603_25).abs() < 1e-9);
+        assert!((profile_wp_store_mm - 55.138_864_739_301_624).abs() < 1e-9);
+        assert!(profile_porosity_cap_mm >= profile_fc_store_mm);
+        assert!(profile_fc_store_mm >= profile_wp_store_mm);
+    }
+
+    #[test]
     fn soil_runtime_surface_projects_ksatadj_policy_symbols_for_9002() {
         let soil = parse_soil(
             VALID_9002,

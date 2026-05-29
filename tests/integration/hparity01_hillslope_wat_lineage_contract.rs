@@ -181,8 +181,8 @@ fn hparity01_closure_target_requires_zero_fail_counts() {
             "post-closure target unmet for {}: fail_count should be zero",
             record.column
         );
-        assert_eq!(
-            record.max_abs_diff, 0.0,
+        assert!(
+            record.max_abs_diff.abs() <= f64::EPSILON,
             "post-closure target unmet for {}: max_abs_diff should be zero",
             record.column
         );

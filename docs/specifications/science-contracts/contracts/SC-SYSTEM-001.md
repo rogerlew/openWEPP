@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 64
+contract_version: 65
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -88,6 +88,7 @@ Out of scope:
 | `qp` | `m^3 s^-1` | Peak runoff from contributing element. | hillslope/channel/impoundment element | downstream hydrograph merge |
 | `Ep`, `Es`, `Er` | `mm` (daily depth-equivalent publication units) | Daily ET component publications consumed by replay/comparator surfaces and downstream summaries. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `Total-Soil`, `SoilWaterTotal` | `mm` | Daily soil-water aggregate publications derived from runtime layer-state lineage plus frozen/snow components. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
+| `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `mm` | Daily full-profile depth/capacity/storage publications derived from baseline-authoritative soil preprocessing + WB13 profile aggregation lineage. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `total_detachment_kg` | `kg` | Total hillslope detachment payload at event endpoint. | hillslope erosion component | channel sediment-load assembly |
 | `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
 | `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
@@ -139,7 +140,7 @@ Out of scope:
 | INV-SYSTEM-024 | SIMIMPL15 semantic report structural-continuity invariant: parquet semantic reports must resolve required investigation alias continuity for `Total-Soil` and publish observed row-width diagnostics comparable to dat lanes; alias drift or placeholder width diagnostics is a hard-fail/HOLD evidence defect. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-025 | SIMIMPL16 replay contract-derived test-coverage invariant: system replay closeout claims must be backed by contract-derived tests covering `SIMIMPL13-TEST-001..005`, including span overlap closure, key-domain alignment, parquet alias continuity, strict-lane compensation when parquet strict is skipped, and conversion-derived dat provenance row-consistency checks. Missing/failed closure tests keep replay governance evidence non-authoritative. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-026 | SIMIMPL18 baseline-year policy and full-span precipitation parity invariant: replay comparability claims across legacy baseline and openWEPP candidate must publish explicit baseline-year policy that yields a declared common keyed horizon, preserve identical input/sidecar provenance references, and evaluate precipitation (`P`) parity across the full keyed span (not overlap-only subsets). Missing policy metadata or unmatched-span `P` claims are hard-fail/HOLD defects. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SYSTEM-027 | SIMIMPL21 WB13 ET/soil-water publication-lineage invariant: published `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal` surfaces must be simulation-owned outputs traceable to canonical WB11/WB13 lineage (`st(i)`/`soilw(i)` -> `watcon` -> WB13) with explicit alias continuity and no projection-side surrogate reconstruction. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-LEGACY-OUTFIL, REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-027 | SIMIMPL21/HPARITY02 WB13 ET/soil-water/profile publication-lineage invariant: published `Ep`, `Es`, `Er`, `Total-Soil`, `SoilWaterTotal`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and `ProfileWPStore` surfaces must be simulation-owned outputs traceable to canonical WB11/WB13 lineage with explicit alias continuity and no projection-side surrogate reconstruction. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-LEGACY-OUTFIL, REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -171,7 +172,7 @@ Out of scope:
 | `INV-SYSTEM-024` | runtime + governance | Semantic alias and row-width structural continuity gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when `Total-Soil` alias continuity is unresolved or semantic width diagnostics use placeholder sentinel classes | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-025` | governance | Replay contract-derived closure-test coverage gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required SIMIMPL13 blind-spot closure tests are missing/failing, including strict-lane compensation and conversion-derived dat row-consistency assertions | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-026` | runtime + governance | Baseline-year policy + full-span precipitation comparability gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when baseline-year expansion/rekey policy is missing, input-provenance parity is unproven, or full-span keyed `P` comparability is reduced to overlap-only subsets | SIMIMPL replay span-policy gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-SYSTEM-027` | runtime + governance | WB13 ET/soil-water publication-lineage validator for ET components and aggregate soil-water outputs | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal` are not traceable to simulation-owned WB11 lineage with declared aliases | SIMIMPL ET/soil-water publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-027` | runtime + governance | WB13 ET/soil-water/profile publication-lineage validator for ET components, aggregate soil-water outputs, and profile-capacity outputs | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required WB13 ET/soil-water/profile outputs are not traceable to simulation-owned WB11/WB13 lineage with declared aliases | SIMIMPL ET/soil-water/profile publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -235,9 +236,11 @@ consumed directly as parser payload terms instead of projected runtime symbols.
   baseline-year policy metadata or without full-span keyed precipitation (`P`)
   diagnostics under that policy (`INV-SYSTEM-026`).
   `[DIRECT][Static] + [INFERENCE][Static]`
-- WB13 ET/soil-water publication outputs (`Ep`, `Es`, `Er`, `Total-Soil`,
-  `SoilWaterTotal`) are emitted from projection-side surrogates or alias-only
-  reconstruction without traceable simulation-owned WB11 lineage
+- WB13 ET/soil-water/profile publication outputs (`Ep`, `Es`, `Er`,
+  `Total-Soil`, `SoilWaterTotal`, `ProfileDepth`, `ProfilePorosityCap`,
+  `ProfileFCStore`, `ProfileWPStore`) are emitted from projection-side
+  surrogates or alias-only reconstruction without traceable simulation-owned
+  WB11/WB13 lineage
   (`INV-SYSTEM-027`).
   `[DIRECT][Static] + [INFERENCE][Static]`
 
@@ -304,9 +307,10 @@ consumed directly as parser payload terms instead of projected runtime symbols.
   parity diagnostics (`P`) under that policy before promotable parity claims.
   `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-SYSTEM-P-015: WB13 publication producers must preserve simulation-owned
-  lineage for `Ep`/`Es`/`Er` and `Total-Soil`/`SoilWaterTotal`, including
-  explicit alias continuity to baseline WB13 semantics; projection-side
-  surrogate reconstruction is forbidden.
+  lineage for `Ep`/`Es`/`Er`, `Total-Soil`/`SoilWaterTotal`, and
+  `ProfileDepth`/`ProfilePorosityCap`/`ProfileFCStore`/`ProfileWPStore`,
+  including explicit alias continuity to baseline WB13 semantics;
+  projection-side surrogate reconstruction is forbidden.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -353,7 +357,7 @@ consumed directly as parser payload terms instead of projected runtime symbols.
 | SIMIMPL15 semantic alias/diagnostic structural closure (`INV-SYSTEM-024`) | semantic report publication boundary | Hard error / `HOLD` when `Total-Soil` alias continuity is unresolved or width diagnostics use placeholder sentinel classes instead of observed row widths | SIMIMPL replay tooling alignment gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL16 replay contract-derived test-coverage closure (`INV-SYSTEM-025`) | replay governance/test evidence boundary | Hard error / `HOLD` when closure tests for span/key overlap, strict-lane compensation, alias continuity, or conversion-derived dat row-consistency are missing/failing | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL18 baseline-year policy and precipitation full-span closure (`INV-SYSTEM-026`) | replay provenance + semantic parity publication boundary | Hard error / `HOLD` when baseline-year adaptation policy is absent/implicit or when keyed full-span precipitation comparability (`P`) is not demonstrated under the declared policy | SIMIMPL replay span-policy gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| SIMIMPL21 WB13 ET/soil-water publication lineage closure (`INV-SYSTEM-027`) | WB13/reporting publication boundary | Hard error / `HOLD` when `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal` are not simulation-owned outputs with traceable WB11 lineage and declared alias continuity | SIMIMPL ET/soil-water publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| SIMIMPL21/HPARITY02 WB13 ET/soil-water/profile publication lineage closure (`INV-SYSTEM-027`) | WB13/reporting publication boundary | Hard error / `HOLD` when required ET/soil-water/profile WB13 outputs are not simulation-owned outputs with traceable WB11/WB13 lineage and declared alias continuity | SIMIMPL ET/soil-water/profile publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -755,6 +759,7 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `22` | `Codex` | SIMIMPL16 amendment: added replay contract-derived test-coverage closure invariant (`INV-SYSTEM-025`) plus explicit producer/governance obligations requiring blind-spot closure tests for span/key overlap, strict-lane compensation, alias continuity, and conversion-derived dat row-consistency gating. |
 | `2026-05-25` | `23` | `Codex` | SIMIMPL18 amendment: added baseline-year policy and full-span precipitation comparability invariant (`INV-SYSTEM-026`), explicit replay-provenance obligations for declared span-policy metadata, and addendum authority requiring first-day and multi-day storage diagnostics for hydrology closure evidence. |
 | `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |
+| `2026-05-29` | `65` | `Codex` | HPARITY02 amendment: extended `INV-SYSTEM-027` lineage scope to include WB13 profile-capacity outputs (`ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) and updated producer/invalid-state/disposition authority accordingly. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |

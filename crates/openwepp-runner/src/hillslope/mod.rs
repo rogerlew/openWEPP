@@ -3727,10 +3727,12 @@ fn build_simulation_owned_wb13_row(
             "solthk must be > 0.0, observed {profile_depth_m}"
         )));
     }
-    let profile_depth_mm = profile_depth_m * 1_000.0;
+    let fallback_profile_depth_mm = profile_depth_m * 1_000.0;
 
-    let mut profile_fc_store_mm = 0.0_f64;
-    let mut profile_wp_store_mm = 0.0_f64;
+    let mut fallback_profile_fc_store_mm = 0.0_f64;
+    let mut fallback_profile_wp_store_mm = 0.0_f64;
+    let mut fallback_profile_porosity_cap_mm = 0.0_f64;
+    let mut fallback_theta_s_complete = true;
     for layer_index in 1..=nsl {
         let dg_symbol = wb13_primary_layer_symbol("dg", layer_index);
         let dg_m = require_runtime_surface_scalar(runtime_surface, dg_symbol.as_str())?;
@@ -3756,9 +3758,73 @@ fn build_simulation_owned_wb13_row(
             )));
         }
 
-        profile_fc_store_mm += thetfc * dg_m * 1_000.0;
-        profile_wp_store_mm += thetdr * dg_m * 1_000.0;
+        let theta_s_symbol = wb13_primary_layer_symbol("theta_s", layer_index);
+        match runtime_surface_symbol_value(runtime_surface, theta_s_symbol.as_str()) {
+            Some(theta_s) => {
+                if !theta_s.is_finite() || theta_s < 0.0 {
+                    return Err(wb13_simout_failure(format!(
+                        "{theta_s_symbol} must be finite and >= 0.0, observed {theta_s}"
+                    )));
+                }
+                fallback_profile_porosity_cap_mm += theta_s * dg_m * 1_000.0;
+            }
+            None => {
+                fallback_theta_s_complete = false;
+            }
+        }
+
+        fallback_profile_fc_store_mm += thetfc * dg_m * 1_000.0;
+        fallback_profile_wp_store_mm += thetdr * dg_m * 1_000.0;
     }
+    let profile_depth_mm = runtime_surface_symbol_value(runtime_surface, "wb13_profile_depth_mm")
+        .map_or(Ok(fallback_profile_depth_mm), |value| {
+        if !value.is_finite() || value <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "wb13_profile_depth_mm must be finite and > 0.0, observed {value}"
+            )));
+        }
+        Ok(value)
+    })?;
+    let profile_fc_store_mm = runtime_surface_symbol_value(
+        runtime_surface,
+        "wb13_profile_fc_store_mm",
+    )
+    .map_or(Ok(fallback_profile_fc_store_mm), |value| {
+        if !value.is_finite() || value < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "wb13_profile_fc_store_mm must be finite and >= 0.0, observed {value}"
+            )));
+        }
+        Ok(value)
+    })?;
+    let profile_wp_store_mm = runtime_surface_symbol_value(
+        runtime_surface,
+        "wb13_profile_wp_store_mm",
+    )
+    .map_or(Ok(fallback_profile_wp_store_mm), |value| {
+        if !value.is_finite() || value < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "wb13_profile_wp_store_mm must be finite and >= 0.0, observed {value}"
+            )));
+        }
+        Ok(value)
+    })?;
+    let profile_porosity_cap = if let Some(value) =
+        runtime_surface_symbol_value(runtime_surface, "wb13_profile_porosity_cap_mm")
+    {
+        if !value.is_finite() || value < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "wb13_profile_porosity_cap_mm must be finite and >= 0.0, observed {value}"
+            )));
+        }
+        value
+    } else if fallback_theta_s_complete {
+        fallback_profile_porosity_cap_mm
+    } else {
+        return Err(wb13_simout_failure(
+            "missing profile porosity lineage: require wb13_profile_porosity_cap_mm or complete theta_s_#### layer symbols",
+        ));
+    };
 
     // SIMIMPL24 publication authority: Total-Soil must be WB11 runtime
     // aggregate lineage only (`wb11_soil_water` -> `watcon` -> `Total-Soil`).
@@ -3845,7 +3911,6 @@ fn build_simulation_owned_wb13_row(
     let latqcc = latqcc_m * 1_000.0;
     let area = publication_area_m2;
     let soil_water_total = total_soil + frozwt;
-    let profile_porosity_cap = profile_fc_store_mm.max(profile_wp_store_mm) + 20.0;
 
     let row_surface = SummaryScalarSurface::from_pairs([
         ("P", precipitation_mm),

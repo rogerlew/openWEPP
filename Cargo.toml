@@ -332,6 +332,10 @@ path = "tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs"
 name = "hparity01_hillslope_wat_lineage_contract"
 path = "tests/integration/hparity01_hillslope_wat_lineage_contract.rs"
 
+[[test]]
+name = "hparity02_profile_capacity_parity_contract"
+path = "tests/integration/hparity02_profile_capacity_parity_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1
