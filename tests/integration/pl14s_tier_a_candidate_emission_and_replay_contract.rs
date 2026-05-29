@@ -1,5 +1,6 @@
 use std::env;
 use std::fs;
+use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Mutex, OnceLock};
@@ -10,6 +11,8 @@ use openwepp_comparator_metadata::{
     ComparatorSurfaceClass, ComparatorTierRoutingRequest, route_comparator_tier_metadata,
 };
 use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
+use parquet::file::reader::{FileReader, SerializedFileReader};
+use parquet::record::{Row, RowAccessor};
 
 const PL14S_SEMANTIC_COMPARATOR_SCRIPT: &str =
     include_str!("../../tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py");
@@ -371,29 +374,64 @@ wat = "output/H5.wat.parquet"
     )
     .expect("simimpl18 fixture run should execute");
 
-    report.output_pass
+    report
+        .optional_outputs
+        .into_iter()
+        .find(|path| path.file_name().and_then(|value| value.to_str()) == Some("H5.wat.parquet"))
+        .expect("simimpl18 fixture run should emit H5.wat.parquet output")
 }
 
-fn load_wb13_rows(pass_path: &Path) -> Vec<Wb13Snapshot> {
-    let pass_text = fs::read_to_string(pass_path).expect("pass output should be readable");
-    pass_text
-        .lines()
-        .filter_map(|line| {
-            let tokens: Vec<&str> = line.split_whitespace().collect();
-            if tokens.len() != 25 {
-                return None;
-            }
-            let parse = |index: usize| tokens[index].parse::<f64>().ok();
-            Some(Wb13Snapshot {
-                p: parse(3)?,
-                rm: parse(4)?,
-                total_soil: parse(13)?,
-                frozwt: parse(14)?,
-                snow_water: parse(15)?,
-                soil_water_total: parse(20)?,
-            })
-        })
-        .collect()
+fn load_wb13_rows(wat_path: &Path) -> Vec<Wb13Snapshot> {
+    let file = File::open(wat_path)
+        .unwrap_or_else(|error| panic!("wat parquet output should be readable: {error}"));
+    let reader = SerializedFileReader::new(file)
+        .unwrap_or_else(|error| panic!("wat parquet output should parse: {error}"));
+    let rows = reader
+        .get_row_iter(None)
+        .unwrap_or_else(|error| panic!("wat parquet row iterator should open: {error}"));
+
+    rows.map(|row| {
+        let row = row.unwrap_or_else(|error| panic!("wat parquet row should decode: {error}"));
+        Wb13Snapshot {
+            p: row_f64_value(&row, "P"),
+            rm: row_f64_value(&row, "RM"),
+            total_soil: row_f64_value(&row, "Total-Soil"),
+            frozwt: row_f64_value(&row, "frozwt"),
+            snow_water: row_f64_value(&row, "Snow-Water"),
+            soil_water_total: row_f64_value(&row, "SoilWaterTotal"),
+        }
+    })
+    .collect()
+}
+
+fn row_index(row: &Row, column_name: &str) -> usize {
+    row.get_column_iter()
+        .enumerate()
+        .find(|(_, (name, _))| name.as_str() == column_name)
+        .map_or_else(
+            || panic!("missing required wat parquet column '{column_name}'"),
+            |(index, _)| index,
+        )
+}
+
+fn row_f64_value(row: &Row, column_name: &str) -> f64 {
+    let index = row_index(row, column_name);
+    if let Ok(value) = row.get_double(index) {
+        return value;
+    }
+    if let Ok(value) = row.get_float(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_int(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_short(index) {
+        return f64::from(value);
+    }
+    if let Ok(value) = row.get_long(index) {
+        return value as f64;
+    }
+    panic!("column '{column_name}' does not decode as numeric");
 }
 
 fn runner_execution_lock() -> &'static Mutex<()> {

@@ -16,9 +16,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
 use openwepp_input_contract::parsers::hbp::{
-    HbpFormatErrorCode, HbpParseError, HbpParseMode, HbpParseOptions, HbpPathResolution,
-    HbpSchemaProfile, HbpWarningCode as ParserHbpWarningCode, parse_hbp_from_bytes,
-    parse_hbp_from_path,
+    HbpFormatErrorCode, HbpParseError, HbpParseOptions, HbpPathResolution, HbpSchemaProfile,
+    HbpWarningCode as ParserHbpWarningCode, parse_hbp_from_bytes, parse_hbp_from_path,
 };
 use openwepp_legacy_bridge::hbp::{
     HbpAdapterRequest, HbpHeaderContract, HbpMagicSource, HbpWarningCode as BridgeHbpWarningCode,
@@ -434,7 +433,6 @@ fn strict_schema1_parse_succeeds_with_expected_hillslope_id() {
         &bytes,
         Path::new("H24.hbp"),
         HbpParseOptions {
-            mode: HbpParseMode::Strict,
             expected_hillslope_id: Some(24),
         },
     )
@@ -460,7 +458,6 @@ fn strict_schema2_parse_succeeds() {
         &bytes,
         Path::new("H7.hbp"),
         HbpParseOptions {
-            mode: HbpParseMode::Strict,
             expected_hillslope_id: Some(7),
         },
     )
@@ -477,7 +474,7 @@ fn strict_schema2_parse_succeeds() {
 }
 
 #[test]
-fn compatibility_mode_derives_hbp_path_from_pass_dat() {
+fn legacy_pass_dat_input_is_rejected() {
     let fixture = build_schema1_fixture(9);
     let temp_hbp_path = unique_temp_path("H9.hbp");
     write_fixture(&temp_hbp_path, &fixture);
@@ -487,26 +484,15 @@ fn compatibility_mode_derives_hbp_path_from_pass_dat() {
         .to_string_lossy()
         .to_string();
 
-    let parsed = parse_hbp_from_path(
+    let error = parse_hbp_from_path(
         &legacy_path,
         HbpParseOptions {
-            mode: HbpParseMode::Compatibility,
-            expected_hillslope_id: Some(9),
+            expected_hillslope_id: None,
         },
     )
-    .expect("compatibility mode should derive .hbp from .pass.dat path");
-
-    assert_eq!(
-        parsed.path_resolution,
-        HbpPathResolution::DerivedFromLegacyPassDat
-    );
-    assert_eq!(parsed.resolved_path, temp_hbp_path);
-    assert!(
-        parsed
-            .warnings
-            .iter()
-            .any(|warning| warning.code == ParserHbpWarningCode::HbpW001)
-    );
+    .expect_err("legacy .pass.dat naming must be rejected");
+    assert!(matches!(error, HbpParseError::InvalidProcessHbpName { .. }));
+    assert_eq!(error.contract_error_id(), "HBP-E-001");
 }
 
 #[test]
@@ -523,7 +509,6 @@ fn strict_mode_rejects_pass_dat_input_name() {
     let error = parse_hbp_from_path(
         &legacy_path,
         HbpParseOptions {
-            mode: HbpParseMode::Strict,
             expected_hillslope_id: None,
         },
     )
@@ -554,7 +539,6 @@ fn non_enoent_open_error_is_typed_hbp_e_000() {
     let error = parse_hbp_from_path(
         &directory_path,
         HbpParseOptions {
-            mode: HbpParseMode::Strict,
             expected_hillslope_id: None,
         },
     )
@@ -626,7 +610,6 @@ fn expected_hillslope_id_mismatch_maps_to_hbp_e_014() {
         &bytes,
         Path::new("H15.hbp"),
         HbpParseOptions {
-            mode: HbpParseMode::Strict,
             expected_hillslope_id: Some(99),
         },
     )
@@ -662,7 +645,6 @@ fn strict_policy_rejects_legacy_forms_across_parser_and_bridge() {
     let parser_error = parse_hbp_from_path(
         &parser_legacy_path,
         HbpParseOptions {
-            mode: HbpParseMode::Strict,
             expected_hillslope_id: None,
         },
     )
@@ -679,7 +661,7 @@ fn strict_policy_rejects_legacy_forms_across_parser_and_bridge() {
 }
 
 #[test]
-fn compatibility_policy_accepts_legacy_forms_with_hbp_w_001() {
+fn parser_rejects_legacy_path_while_bridge_compatibility_warning_remains() {
     let parser_fixture = build_schema1_fixture(21);
     let parser_path = unique_temp_path("H21.hbp");
     write_fixture(&parser_path, &parser_fixture);
@@ -688,24 +670,14 @@ fn compatibility_policy_accepts_legacy_forms_with_hbp_w_001() {
         .to_string_lossy()
         .to_string();
 
-    let parser_parsed = parse_hbp_from_path(
+    let parser_error = parse_hbp_from_path(
         &parser_legacy_path,
         HbpParseOptions {
-            mode: HbpParseMode::Compatibility,
             expected_hillslope_id: Some(21),
         },
     )
-    .expect("compat parser mode should derive .hbp from .pass.dat");
-    assert_eq!(
-        parser_parsed.path_resolution,
-        HbpPathResolution::DerivedFromLegacyPassDat
-    );
-    assert!(
-        parser_parsed
-            .warnings
-            .iter()
-            .any(|warning| warning.code == ParserHbpWarningCode::HbpW001)
-    );
+    .expect_err("legacy parser path must fail even when bridge compat is allowed");
+    assert_eq!(parser_error.contract_error_id(), "HBP-E-001");
 
     let bridge_response = adapt_hbp_header(&HbpAdapterRequest {
         policy: CompatibilityPolicy::Compat,

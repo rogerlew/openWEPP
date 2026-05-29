@@ -7,7 +7,7 @@
 - `status`: `draft`
 - `owner`: `openWEPP`
 - `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-22T00:00:00Z`
+- `last_updated_utc`: `2026-05-29T00:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Evidence anchors
@@ -55,9 +55,10 @@ H<hillslope_id>.pass.hbp
 H<hillslope_id>.pass.dat.hbp
 ```
 
-Compatibility path-derivation policy:
-- A compatibility reader may derive `H<hillslope_id>.hbp` from legacy deck path `H<hillslope_id>.pass.dat`.
-- Missing/invalid derived `.hbp` remains fatal (no text fallback).
+Strict naming policy:
+- Legacy deck path `H<hillslope_id>.pass.dat` is invalid input.
+- No path derivation from `.pass.dat` to `.hbp` is permitted.
+- Missing/invalid direct `.hbp` remains fatal (no text fallback).
 
 [DIRECT] Naming and no-fallback policy are explicit.
 Evidence: `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`File Naming`), `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Pass Family Naming`, `HBP2-R08`).
@@ -151,12 +152,12 @@ Evidence: `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md`,
 
 ## 9. Defaulting and missing-file behavior
 
-| Condition | strict policy | compatibility policy |
-| --- | --- | --- |
-| invalid HBP name family | typed failure | typed failure |
-| direct `.hbp` missing | typed open failure | typed open failure |
-| legacy `.pass.dat` path provided | typed naming failure | derive `.hbp` path + warning; missing derived `.hbp` still typed open failure |
-| malformed/truncated file | typed format failure | typed format failure |
+| Condition | policy |
+| --- | --- |
+| invalid HBP name family | typed failure |
+| direct `.hbp` missing | typed open failure |
+| legacy `.pass.dat` path provided | typed naming failure |
+| malformed/truncated file | typed format failure |
 
 [DIRECT] No text fallback is permitted on missing/invalid HBP.
 Evidence: `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Explicit Non-Goals`, `HBP2-R08`).
@@ -179,7 +180,7 @@ Evidence: `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-c
 
 | Contract area | Source requirement | Parser-contract expectation |
 | --- | --- | --- |
-| Naming policy | Sections 2, 4 | enforce canonical naming, reject forbidden suffixes, compatibility derivation with explicit warning. |
+| Naming policy | Sections 2, 4 | enforce canonical naming and reject forbidden suffixes and legacy `.pass.dat` paths. |
 | Schema selection | Sections 3, 5, 7 | strict major/minor gating, deterministic schema branch selection. |
 | Structural invariants | Sections 5, 6, 7 | header/year-table/registry/directory/payload/footer closure via typed failures. |
 | Cross-file closure handoff | Section 8 | parser emits typed metadata for downstream shard-set orchestration checks. |

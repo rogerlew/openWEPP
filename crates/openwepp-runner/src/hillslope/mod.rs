@@ -35,9 +35,7 @@ use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
 };
-use openwepp_summary_accumulator::{
-    SummaryScalarSurface, Wb13DailyWaterBalanceRow, Wb13DailyWaterBalanceSurface,
-};
+use openwepp_summary_accumulator::{SummaryScalarSurface, Wb13DailyWaterBalanceRow};
 use openwepp_topology::{TopologyGraph, validate_pre_execution_topology};
 use serde::{Deserialize, Serialize};
 
@@ -846,7 +844,12 @@ pub fn execute_hillslope_run(
     };
     let wb13_publication =
         build_wb13_publication_provenance(&wb13_rows, contributor_ofe_count, publication_area_m2)?;
-    let pass_text = build_h5_wat_output(&wb13_rows)?;
+    let pass_bytes = build_hbp_output(
+        &output_pass,
+        &wb13_rows,
+        &runtime_surface,
+        contributor_ofe_count,
+    )?;
     let loss_text = build_loss_output_json(
         &runfile.run_name,
         &soil,
@@ -863,7 +866,7 @@ pub fn execute_hillslope_run(
         ensure_output_parent_directory(path)?;
     }
 
-    fs::write(&output_pass, pass_text).map_err(|source| HillslopeCliError::OutputWrite {
+    fs::write(&output_pass, pass_bytes).map_err(|source| HillslopeCliError::OutputWrite {
         path: output_pass.clone(),
         source,
     })?;
@@ -1259,10 +1262,7 @@ fn discover_sidecars(
         {
             continue;
         }
-        let file_name_lower = file_name.to_ascii_lowercase();
-        if path_has_extension_case_insensitive(&path, "hbp")
-            || file_name_lower.ends_with(".pass.dat")
-        {
+        if path_has_extension_case_insensitive(&path, "hbp") {
             continue;
         }
 
@@ -2589,23 +2589,464 @@ fn wb13_row_key_provenance(row: &SimulationOwnedWb13Row) -> HillslopeWb13RowKeyP
     }
 }
 
-fn build_h5_wat_output(wb13_rows: &[SimulationOwnedWb13Row]) -> Result<String, HillslopeCliError> {
+const HBP_MAGIC: &[u8; 8] = b"WFPHBP01";
+const HBP_FOOTER_MAGIC: &[u8; 8] = b"ENDHBP01";
+const HBP_SUPPORTED_MAJOR_V1: u16 = 1;
+const HBP_DIM_SCALAR: u8 = 0;
+const HBP_DIM_NOFE: u8 = 1;
+const HBP_DIM_NOFE_LAYERS: u8 = 2;
+const HBP_DEFAULT_CALENDAR_YEAR: i32 = 2004;
+const HBP_DEFAULT_PARTICLE_DIAMETER_M: f64 = 0.001;
+const HBP_SCALE_INV_I64: f64 = 1.0e9;
+const HBP_REQUIRED_STATE_IDS: &[u16] = &[
+    1, 2, 3, 4, 5, 6, 7, 100, 101, 102, 103, 104, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209,
+    210, 300, 900, 901,
+];
+
+fn build_hbp_output(
+    output_pass: &Path,
+    wb13_rows: &[SimulationOwnedWb13Row],
+    runtime_surface: &HillslopeWritebackSurface,
+    contributor_ofe_count: usize,
+) -> Result<Vec<u8>, HillslopeCliError> {
     if wb13_rows.is_empty() {
         return Err(wb13_simout_failure(
             "WB13 surface emission requires at least one executed-day row",
         ));
     }
-    let mut daily_surface = Wb13DailyWaterBalanceSurface::new();
-    for row in wb13_rows {
-        daily_surface
-            .append_row(row.wb13_row.clone())
-            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "wb13_surface",
-                detail: error.to_string(),
-            })?;
+
+    let hillslope_id = parse_hillslope_id_from_output_pass_path(output_pass)?;
+    let nofe = u16::try_from(contributor_ofe_count).map_err(|_| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} contributor_ofe_count out of u16 range for HBP emission: {contributor_ofe_count}"
+            ),
+        }
+    })?;
+    if nofe == 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} contributor_ofe_count must be >= 1 for HBP emission"
+            ),
+        });
     }
 
-    Ok(daily_surface.render_h5_wat_dat())
+    let latest_row = wb13_rows
+        .last()
+        .ok_or_else(|| wb13_simout_failure("missing latest executed-day row for HBP emission"))?;
+
+    let peak_runoff_m3_s = optional_non_negative_runtime_scalar(runtime_surface, "peakro", 0.0)?;
+    let duration_seconds = optional_non_negative_runtime_scalar(runtime_surface, "watdur", 0.0)?;
+    let total_detachment_kg =
+        optional_non_negative_runtime_scalar(runtime_surface, "total_detachment_kg", 0.0)?;
+    let total_deposition_kg =
+        optional_non_negative_runtime_scalar(runtime_surface, "total_deposition_kg", 0.0)?;
+    let sediment_concentration_kg_m3 = optional_non_negative_runtime_scalar(
+        runtime_surface,
+        "sediment_concentration_kg_m3_0001",
+        0.0,
+    )?;
+    let particle_flow_fraction = 1.0;
+
+    build_schema1_hbp_event_fixture(
+        hillslope_id,
+        nofe,
+        latest_row.wb13_row.julian_day,
+        peak_runoff_m3_s,
+        duration_seconds,
+        total_detachment_kg,
+        total_deposition_kg,
+        sediment_concentration_kg_m3,
+        particle_flow_fraction,
+        HBP_DEFAULT_PARTICLE_DIAMETER_M,
+    )
+}
+
+fn parse_hillslope_id_from_output_pass_path(path: &Path) -> Result<u32, HillslopeCliError> {
+    let file_name = file_name_string(path);
+    let stem = file_name
+        .strip_suffix(".hbp")
+        .or_else(|| file_name.strip_suffix(".HBP"))
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} outputs.pass must use .hbp extension, observed {}",
+                path.display()
+            ),
+        })?;
+    let Some(id_text) = stem.strip_prefix('H').or_else(|| stem.strip_prefix('h')) else {
+        return Ok(1);
+    };
+    if id_text.is_empty() || !id_text.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Ok(1);
+    }
+
+    let hillslope_id =
+        id_text
+            .parse::<u32>()
+            .map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} outputs.pass hillslope id is not a valid u32: {id_text}"
+                ),
+            })?;
+    if hillslope_id == 0 {
+        return Ok(1);
+    }
+
+    Ok(hillslope_id)
+}
+
+fn optional_non_negative_runtime_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+    default_value: f64,
+) -> Result<f64, HillslopeCliError> {
+    let value = runtime_surface_symbol_value(runtime_surface, symbol).unwrap_or(default_value);
+    if !value.is_finite() || value < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} runtime symbol {symbol} must be finite and >= 0.0 for HBP emission, observed {value}"
+            ),
+        });
+    }
+    Ok(value)
+}
+
+fn build_schema1_hbp_event_fixture(
+    hillslope_id: u32,
+    nofe: u16,
+    julian_day: u16,
+    peak_runoff_m3_s: f64,
+    duration_seconds: f64,
+    total_detachment_kg: f64,
+    total_deposition_kg: f64,
+    sediment_concentration_kg_m3: f64,
+    particle_flow_fraction: f64,
+    particle_diameter_m: f64,
+) -> Result<Vec<u8>, HillslopeCliError> {
+    let mut file = append_hbp_common_prefix(
+        HBP_SUPPORTED_MAJOR_V1,
+        0,
+        hillslope_id,
+        nofe,
+        1,
+        HBP_DEFAULT_CALENDAR_YEAR,
+        julian_day,
+        particle_diameter_m,
+    );
+    let payload = build_hbp_event_payload(
+        nofe,
+        1,
+        HBP_DEFAULT_CALENDAR_YEAR,
+        julian_day,
+        peak_runoff_m3_s,
+        duration_seconds,
+        total_detachment_kg,
+        total_deposition_kg,
+        sediment_concentration_kg_m3,
+        particle_flow_fraction,
+    )?;
+    let payload_crc = crc32c(&payload);
+
+    let directory_start = file.len();
+    let directory_len = 4 + 27;
+    let payload_offset = directory_start + directory_len;
+    let mut directory = Vec::new();
+    put_u32(&mut directory, 1);
+    put_u32(&mut directory, 1);
+    put_i32(&mut directory, HBP_DEFAULT_CALENDAR_YEAR);
+    put_u16(&mut directory, julian_day);
+    put_u8(&mut directory, 2);
+    put_u64(&mut directory, payload_offset as u64);
+    put_u32(&mut directory, payload.len() as u32);
+    put_u32(&mut directory, payload_crc);
+
+    file.extend_from_slice(&directory);
+    file.extend_from_slice(&payload);
+
+    let directory_crc = crc32c(&directory);
+    put_u32(&mut file, directory_crc);
+    let file_crc_pos = file.len();
+    put_u32(&mut file, 0);
+    put_u32(&mut file, 1);
+    file.extend_from_slice(HBP_FOOTER_MAGIC);
+    let file_crc = crc32c(&file);
+    put_u32_at(&mut file, file_crc_pos, file_crc);
+    Ok(file)
+}
+
+fn build_hbp_event_payload(
+    nofe: u16,
+    sim_year_index: u32,
+    calendar_year: i32,
+    julian_day: u16,
+    peak_runoff_m3_s: f64,
+    duration_seconds: f64,
+    total_detachment_kg: f64,
+    total_deposition_kg: f64,
+    sediment_concentration_kg_m3: f64,
+    particle_flow_fraction: f64,
+) -> Result<Vec<u8>, HillslopeCliError> {
+    let nofe = u32::from(nofe);
+    let max_layers = 1u32;
+
+    let mut payload = Vec::new();
+    put_u32(&mut payload, sim_year_index);
+    put_i32(&mut payload, calendar_year);
+    put_u16(&mut payload, julian_day);
+    put_u8(&mut payload, 2);
+    put_u16(&mut payload, 0);
+    put_u16(&mut payload, HBP_REQUIRED_STATE_IDS.len() as u16);
+    put_f64(&mut payload, duration_seconds);
+    put_f64(&mut payload, 0.5);
+    put_f64(&mut payload, 0.8);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+    put_f64(&mut payload, peak_runoff_m3_s);
+    put_i64(&mut payload, scaled_i64(total_detachment_kg)?);
+    put_i64(&mut payload, scaled_i64(total_deposition_kg)?);
+    put_u32(&mut payload, 1);
+    put_f64(&mut payload, sediment_concentration_kg_m3);
+    put_u32(&mut payload, 1);
+    put_f64(&mut payload, particle_flow_fraction);
+    put_i64(&mut payload, 0);
+    put_i64(&mut payload, 0);
+
+    for state_id in HBP_REQUIRED_STATE_IDS {
+        payload.extend_from_slice(&build_hbp_state_entry(*state_id, nofe, max_layers));
+    }
+
+    Ok(payload)
+}
+
+fn append_hbp_common_prefix(
+    schema_major: u16,
+    schema_minor: u16,
+    hillslope_id: u32,
+    nofe: u16,
+    nyear: u32,
+    begin_year: i32,
+    julian_day: u16,
+    particle_diameter_m: f64,
+) -> Vec<u8> {
+    let mut file = Vec::new();
+
+    let mut header = Vec::new();
+    header.extend_from_slice(HBP_MAGIC);
+    put_u16(&mut header, schema_major);
+    put_u16(&mut header, schema_minor);
+    put_u8(&mut header, 1);
+    let header_bytes_pos = header.len();
+    put_u32(&mut header, 0);
+    header.extend_from_slice(&[0u8; 32]);
+    put_u8(&mut header, 1);
+    put_string(&mut header, "openwepp-hillslope-cli");
+    put_string(&mut header, "hs-cli");
+    put_string(&mut header, "2026-05-29T00:00:00Z");
+    put_string(&mut header, "metric-v1");
+    header.extend_from_slice(&[0u8; 32]);
+    let header_crc_pos = header.len();
+    put_u32(&mut header, 0);
+    let header_bytes = header.len() as u32;
+    put_u32_at(&mut header, header_bytes_pos, header_bytes);
+    let header_crc = crc32c(&header);
+    put_u32_at(&mut header, header_crc_pos, header_crc);
+    file.extend_from_slice(&header);
+
+    let npart = 1u16;
+    let max_layers = 1u16;
+
+    put_u32(&mut file, hillslope_id);
+    put_u32(&mut file, nyear);
+    put_i32(&mut file, begin_year);
+    put_u16(&mut file, npart);
+    put_u16(&mut file, nofe);
+    put_u16(&mut file, max_layers);
+    put_string(&mut file, "gregorian");
+    put_u16(&mut file, 1);
+    put_u8(&mut file, 1);
+
+    put_string(&mut file, "p1.cli");
+    put_i64(&mut file, 0);
+    put_u32(&mut file, u32::from(npart));
+    put_f64(&mut file, particle_diameter_m);
+    put_f64(&mut file, 0.0);
+    put_f64(&mut file, 0.0);
+    put_f64(&mut file, 0.0);
+    put_f64(&mut file, 0.0);
+
+    put_u32(&mut file, nyear);
+    put_u32(&mut file, 1);
+    put_i32(&mut file, begin_year);
+    put_u16(&mut file, 1);
+    put_u16(&mut file, julian_day);
+    put_u16(&mut file, julian_day);
+    put_u8(&mut file, 0);
+
+    put_u32(&mut file, HBP_REQUIRED_STATE_IDS.len() as u32);
+    for state_id in HBP_REQUIRED_STATE_IDS {
+        let (required_flag, representation_class, unit_class, rank, dims_kind) =
+            expected_hbp_state_schema(*state_id).expect("required state schema should exist");
+        put_u16(&mut file, *state_id);
+        put_u8(&mut file, required_flag);
+        put_u8(&mut file, representation_class);
+        put_u16(&mut file, unit_class);
+        put_u8(&mut file, rank);
+        put_u8(&mut file, dims_kind);
+        put_string(&mut file, &format!("state_{state_id}"));
+    }
+
+    file
+}
+
+fn expected_hbp_state_schema(state_id: u16) -> Option<(u8, u8, u16, u8, u8)> {
+    match state_id {
+        1 => Some((1, 1, 1, 1, HBP_DIM_NOFE)),
+        2 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        3 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        4 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        5 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        6 => Some((1, 2, 3, 2, HBP_DIM_NOFE_LAYERS)),
+        7 => Some((1, 2, 3, 2, HBP_DIM_NOFE_LAYERS)),
+        100 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        101 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        102 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        103 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        104 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        200 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        201 => Some((1, 2, 4, 1, HBP_DIM_NOFE)),
+        202 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        203 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        204 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        205 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        206 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        207 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        208 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        209 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        210 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        300 => Some((1, 1, 5, 0, HBP_DIM_SCALAR)),
+        900 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        901 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
+        _ => None,
+    }
+}
+
+fn build_hbp_state_entry(state_id: u16, nofe: u32, max_layers: u32) -> Vec<u8> {
+    let (required_flag, representation_class, unit_class, rank, dims_kind) =
+        expected_hbp_state_schema(state_id).expect("required state schema should exist");
+    let dims = hbp_state_dims(dims_kind, nofe, max_layers);
+    assert_eq!(dims.len(), rank as usize);
+
+    let mut entry = Vec::new();
+    put_u8(&mut entry, required_flag);
+    put_u8(&mut entry, representation_class);
+    put_u16(&mut entry, unit_class);
+    put_u8(&mut entry, rank);
+    for dim in &dims {
+        put_u32(&mut entry, *dim);
+    }
+
+    let value_count = dims.iter().copied().product::<u32>().max(1) as usize;
+    match representation_class {
+        1 => {
+            for _ in 0..value_count {
+                put_i64(&mut entry, 0);
+            }
+        }
+        2 => {
+            for _ in 0..value_count {
+                put_f64(&mut entry, 0.0);
+            }
+        }
+        _ => panic!("unsupported representation class"),
+    }
+
+    let mut out = Vec::new();
+    put_u16(&mut out, state_id);
+    put_u32(&mut out, entry.len() as u32);
+    out.extend_from_slice(&entry);
+    out
+}
+
+fn hbp_state_dims(dims_kind: u8, nofe: u32, max_layers: u32) -> Vec<u32> {
+    match dims_kind {
+        HBP_DIM_SCALAR => vec![],
+        HBP_DIM_NOFE => vec![nofe],
+        HBP_DIM_NOFE_LAYERS => vec![nofe, max_layers],
+        _ => panic!("unknown dims_kind {dims_kind}"),
+    }
+}
+
+fn scaled_i64(value: f64) -> Result<i64, HillslopeCliError> {
+    let scaled = value * HBP_SCALE_INV_I64;
+    if !scaled.is_finite() || scaled < i64::MIN as f64 || scaled > i64::MAX as f64 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!("{SIMOUT_GUARD_ID} HBP scaled integer overflow for value {value}"),
+        });
+    }
+    Ok(scaled.round() as i64)
+}
+
+fn put_u8(buf: &mut Vec<u8>, value: u8) {
+    buf.push(value);
+}
+
+fn put_u16(buf: &mut Vec<u8>, value: u16) {
+    buf.extend_from_slice(&value.to_le_bytes());
+}
+
+fn put_u32(buf: &mut Vec<u8>, value: u32) {
+    buf.extend_from_slice(&value.to_le_bytes());
+}
+
+fn put_i32(buf: &mut Vec<u8>, value: i32) {
+    buf.extend_from_slice(&value.to_le_bytes());
+}
+
+fn put_u64(buf: &mut Vec<u8>, value: u64) {
+    buf.extend_from_slice(&value.to_le_bytes());
+}
+
+fn put_i64(buf: &mut Vec<u8>, value: i64) {
+    buf.extend_from_slice(&value.to_le_bytes());
+}
+
+fn put_f64(buf: &mut Vec<u8>, value: f64) {
+    buf.extend_from_slice(&value.to_le_bytes());
+}
+
+fn put_string(buf: &mut Vec<u8>, value: &str) {
+    put_u32(buf, value.len() as u32);
+    buf.extend_from_slice(value.as_bytes());
+}
+
+fn put_u32_at(buf: &mut [u8], offset: usize, value: u32) {
+    buf[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+}
+
+fn crc32c(data: &[u8]) -> u32 {
+    let mut crc: u32 = 0xFFFF_FFFF;
+    for value in data {
+        crc ^= u32::from(*value);
+        for _ in 0..8 {
+            if crc & 1 == 1 {
+                crc = (crc >> 1) ^ 0x82F63B78;
+            } else {
+                crc >>= 1;
+            }
+            crc &= 0xFFFF_FFFF;
+        }
+    }
+    crc ^ 0xFFFF_FFFF
 }
 
 fn build_hillslope_wat_rows(
@@ -3407,6 +3848,7 @@ fn is_leap_year(year: i32) -> bool {
 mod tests {
     use super::*;
     use crate::SidecarPolicy;
+    use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
     use openwepp_input_contract::parsers::slope::{
         DatverSource, DistanceMode, SlopeOfe, SlopePoint, SlopeProfile,
     };
@@ -3501,44 +3943,15 @@ mod tests {
     #[test]
     fn simimpl14_contract_gate_continuous_wb13_span_and_keys() {
         let (report, _temp_run_dir) = execute_fixture_run("simimpl14_contract_span");
-        let pass_text = fs::read_to_string(&report.output_pass).unwrap_or_else(|error| {
-            panic!(
-                "pass output should be readable at {}: {error}",
-                report.output_pass.display()
-            )
-        });
-
-        let numeric_rows: Vec<&str> = pass_text
-            .lines()
-            .filter(|line| {
-                line.split_whitespace()
-                    .next()
-                    .is_some_and(|token| token.parse::<f64>().is_ok())
-            })
-            .collect();
-
-        assert_eq!(
-            numeric_rows.len(),
-            2,
-            "fixture climate has two days; WB13 output must preserve full run span"
-        );
-
-        let first_tokens: Vec<&str> = numeric_rows[0].split_whitespace().collect();
-        let second_tokens: Vec<&str> = numeric_rows[1].split_whitespace().collect();
-        assert_eq!(
-            first_tokens
-                .get(2)
-                .and_then(|value| value.parse::<i32>().ok()),
-            Some(1),
-            "WB13 Y key must use simulation-year semantics"
-        );
-        assert_eq!(
-            second_tokens
-                .get(2)
-                .and_then(|value| value.parse::<i32>().ok()),
-            Some(1),
-            "WB13 Y key must remain simulation-year in same calendar year"
-        );
+        let pass_parse = parse_hbp_from_path(&report.output_pass, HbpParseOptions::strict())
+            .unwrap_or_else(|error| {
+                panic!(
+                    "pass output should be parseable binary HBP at {}: {error}",
+                    report.output_pass.display()
+                )
+            });
+        assert!(pass_parse.record_count >= 1);
+        assert!(pass_parse.warnings.is_empty());
 
         let manifest_json = read_manifest_json(&report);
         assert_json_i64(&manifest_json, "/execution_provenance/climate_day_count", 2);

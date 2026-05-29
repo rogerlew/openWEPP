@@ -1,7 +1,6 @@
 from .open_wepp_runner import (
     PASS_FAMILY_CHOICES,
     PASS_FAMILY_HBP,
-    PASS_FAMILY_LEGACY_ASCII,
     get_linux_wepp_bin_opts,
     infer_pass_family_for_wepp_bin,
     linux_wepp_bin_opts,
@@ -18,7 +17,6 @@ __all__ = [
     "linux_wepp_bin_opts",
     "get_linux_wepp_bin_opts",
     "infer_pass_family_for_wepp_bin",
-    "PASS_FAMILY_LEGACY_ASCII",
     "PASS_FAMILY_HBP",
     "PASS_FAMILY_CHOICES",
     "make_hillslope_run",

@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chaninp_from_path};
 use openwepp_input_contract::parsers::hbp::{
-    HbpParseMode, HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
+    HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
 };
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::watershed_channel::{
@@ -316,11 +316,8 @@ fn run() -> Result<(), String> {
         }
     }
 
-    let hbp_parse_mode = HbpParseMode::Compatibility;
-
     for (hillslope_id, block) in &runfile.hillslope_blocks_by_id {
         let hbp_options = HbpParseOptions {
-            mode: hbp_parse_mode,
             expected_hillslope_id: Some(*hillslope_id),
         };
         let (hbp, latest_event_payload) = parse_hbp_from_path_with_latest_event_payload(
@@ -1077,10 +1074,7 @@ fn discover_sidecars(
         {
             continue;
         }
-        let file_name_lower = file_name.to_ascii_lowercase();
-        if path_has_extension_case_insensitive(&path, "hbp")
-            || file_name_lower.ends_with(".pass.dat")
-        {
+        if path_has_extension_case_insensitive(&path, "hbp") {
             continue;
         }
 

@@ -36,15 +36,8 @@ const REQUIRED_STATE_IDS: &[u16] = &[
 ];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum HbpParseMode {
-    Strict,
-    Compatibility,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HbpPathResolution {
     Direct,
-    DerivedFromLegacyPassDat,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -55,7 +48,6 @@ pub enum HbpSchemaProfile {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct HbpParseOptions {
-    pub mode: HbpParseMode,
     pub expected_hillslope_id: Option<u32>,
 }
 
@@ -63,15 +55,6 @@ impl HbpParseOptions {
     #[must_use]
     pub const fn strict() -> Self {
         Self {
-            mode: HbpParseMode::Strict,
-            expected_hillslope_id: None,
-        }
-    }
-
-    #[must_use]
-    pub const fn compatibility() -> Self {
-        Self {
-            mode: HbpParseMode::Compatibility,
             expected_hillslope_id: None,
         }
     }
@@ -1911,7 +1894,6 @@ fn has_forbidden_pass_suffix(path_str: &str) -> bool {
 
 fn resolve_path(
     input_path: &Path,
-    mode: HbpParseMode,
 ) -> Result<(PathBuf, HbpPathResolution, Vec<HbpWarning>), HbpParseError> {
     let raw = input_path.to_string_lossy();
     let lower = raw.to_ascii_lowercase();
@@ -1932,30 +1914,15 @@ fn resolve_path(
     }
 
     if lower.ends_with(".pass.dat") {
-        if mode == HbpParseMode::Strict {
-            return Err(HbpParseError::InvalidProcessHbpName {
-                input_path: input_path.to_path_buf(),
-                reason: "strict mode requires direct H*.hbp naming".to_string(),
-            });
-        }
-
-        let stem = raw[..raw.len() - ".pass.dat".len()].to_string();
-        let out = PathBuf::from(format!("{stem}.hbp"));
-        return Ok((
-            out,
-            HbpPathResolution::DerivedFromLegacyPassDat,
-            vec![HbpWarning {
-                code: HbpWarningCode::HbpW001,
-                message: "compatibility mode derived .hbp path from legacy .pass.dat path"
-                    .to_string(),
-            }],
-        ));
+        return Err(HbpParseError::InvalidProcessHbpName {
+            input_path: input_path.to_path_buf(),
+            reason: "legacy .pass.dat naming is unsupported; use direct H*.hbp naming".to_string(),
+        });
     }
 
     Err(HbpParseError::InvalidProcessHbpName {
         input_path: input_path.to_path_buf(),
-        reason: "invalid process HBP name; use H*.hbp (or H*.pass.dat in compatibility mode only)"
-            .to_string(),
+        reason: "invalid process HBP name; use H*.hbp".to_string(),
     })
 }
 
@@ -1964,7 +1931,7 @@ fn parse_hbp_from_bytes_internal(
     source_path: &Path,
     options: HbpParseOptions,
 ) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
-    let (resolved_path, path_resolution, warnings) = resolve_path(source_path, options.mode)?;
+    let (resolved_path, path_resolution, warnings) = resolve_path(source_path)?;
 
     let layout = parse_layout(bytes)?;
 
@@ -2107,7 +2074,7 @@ pub fn parse_hbp_from_path(
     path: impl AsRef<Path>,
     options: HbpParseOptions,
 ) -> Result<HbpParseResult, HbpParseError> {
-    let (resolved_path, _path_resolution, _warnings) = resolve_path(path.as_ref(), options.mode)?;
+    let (resolved_path, _path_resolution, _warnings) = resolve_path(path.as_ref())?;
     let bytes = fs::read(&resolved_path).map_err(|source| HbpParseError::InputOpenError {
         path: resolved_path.clone(),
         source,
@@ -2119,7 +2086,7 @@ pub fn parse_hbp_from_path_with_latest_event_payload(
     path: impl AsRef<Path>,
     options: HbpParseOptions,
 ) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
-    let (resolved_path, _path_resolution, _warnings) = resolve_path(path.as_ref(), options.mode)?;
+    let (resolved_path, _path_resolution, _warnings) = resolve_path(path.as_ref())?;
     let bytes = fs::read(&resolved_path).map_err(|source| HbpParseError::InputOpenError {
         path: resolved_path.clone(),
         source,

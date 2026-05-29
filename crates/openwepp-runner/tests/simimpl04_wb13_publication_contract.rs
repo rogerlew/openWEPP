@@ -82,68 +82,6 @@ plot = "output/H5.plot.parquet"
 "#;
 
     let (report, _temp_run_dir) = execute_fixture_with_runfile_report(runfile, "simimpl14_span");
-    let pass_text = fs::read_to_string(&report.output_pass).unwrap_or_else(|error| {
-        panic!(
-            "pass output should be readable at {}: {error}",
-            report.output_pass.display()
-        )
-    });
-
-    let numeric_rows: Vec<&str> = pass_text
-        .lines()
-        .filter(|line| {
-            line.split_whitespace()
-                .next()
-                .is_some_and(|token| token.parse::<f64>().is_ok())
-        })
-        .collect();
-    assert_eq!(
-        numeric_rows.len(),
-        2,
-        "fixture climate includes two daily rows; WB13 publication must preserve full span"
-    );
-
-    let first_tokens: Vec<&str> = numeric_rows[0].split_whitespace().collect();
-    let second_tokens: Vec<&str> = numeric_rows[1].split_whitespace().collect();
-
-    assert_eq!(
-        first_tokens
-            .first()
-            .and_then(|value| value.parse::<i32>().ok()),
-        Some(1)
-    );
-    assert_eq!(
-        second_tokens
-            .first()
-            .and_then(|value| value.parse::<i32>().ok()),
-        Some(1)
-    );
-    assert_eq!(
-        first_tokens
-            .get(1)
-            .and_then(|value| value.parse::<i32>().ok()),
-        Some(1)
-    );
-    assert_eq!(
-        second_tokens
-            .get(1)
-            .and_then(|value| value.parse::<i32>().ok()),
-        Some(2)
-    );
-    assert_eq!(
-        first_tokens
-            .get(2)
-            .and_then(|value| value.parse::<i32>().ok()),
-        Some(1),
-        "WB13 Y key must use simulation-year semantics"
-    );
-    assert_eq!(
-        second_tokens
-            .get(2)
-            .and_then(|value| value.parse::<i32>().ok()),
-        Some(1),
-        "WB13 Y key must stay in simulation-year domain for same calendar year"
-    );
 
     let manifest_json = read_manifest_json(&report);
     assert_json_i64(&manifest_json, "/execution_provenance/climate_day_count", 2);

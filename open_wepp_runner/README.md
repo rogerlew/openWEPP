@@ -54,10 +54,9 @@ Optional environment overrides:
 
 ## Pass Family Note
 
-The Python wrapper still exposes pass-family constants for compatibility
-discovery helpers, but `make_hillslope_run` only accepts `pass_family="hbp"` at
-the CLI03 runner boundary. Legacy ASCII pass-family runfile generation is
-rejected with `OPEN_RUNNER-E-026`.
+The Python wrapper is binary-pass-only. `pass_family="hbp"` is the only
+accepted value at the CLI03 runner boundary, and release-sidecar declarations
+with `hbp_supported=false` are rejected with `OPEN_RUNNER-E-027`.
 
 Binary lookup order:
 

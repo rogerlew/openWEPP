@@ -6,7 +6,7 @@ maturity: draft
 owner: openWEPP
 contract_version: 0.1.0
 evidence_mode: Static
-last_updated_utc: 2026-05-22T00:00:00Z
+last_updated_utc: 2026-05-29T00:00:00Z
 ---
 
 # SC-INFILE-HBP-001 Hillslope Binary Pass Input Parser Contract
@@ -73,10 +73,10 @@ schema2_tail = payload_block_table payload_block_region footer_v2 ;
   - footer closures.
 - Simulation model normalizes into typed parser outputs:
   - `schema_profile`, `schema_major`, `schema_minor`,
-  - path-resolution mode,
+  - path-resolution mode (`direct` only),
   - dimensional metadata (`hillslope_id`, `nyear`, `npart`, `nofe`, `max_layers`),
   - directory and payload-block metadata arrays,
-  - typed strict/compat warning surfaces.
+  - warning surface (must remain empty for valid inputs).
 - Parser contract is file-local. Run-level shard-set checks remain downstream
   orchestration responsibility.
 
@@ -97,8 +97,8 @@ schema2_tail = payload_block_table payload_block_region footer_v2 ;
 | `state_registry[]` | `state_registry.entries[]` | `hbp.state_registry` | mixed | struct[] | >=1 | yes | all | required state IDs must be present exactly once | `state_registry` |
 | `day_directory[]` | `directory.entries[]` | `hbp.directory_entries[]` | mixed | struct[] | >=1 | yes | all | strict key ordering and year-table closure | `directory_entries` |
 | `payload_block_table[]` | `schema2.block_entries[]` | `hbp.payload_blocks[]` | mixed | struct[] | `nyear` when schema2 | conditional | schema2 | omitted for schema1 | `payload_blocks` |
-| derived `path_resolution` | naming/policy branch | `hbp.path_resolution` | enum | string | 1 | yes | all | direct or derived from legacy `.pass.dat` | `path_resolution` |
-| derived `warnings[]` | strict/compat policy branch | `hbp.warnings[]` | list | warning[] | 0..n | yes | all | `HBP-W-001` on compat path derivation | `warnings` |
+| derived `path_resolution` | naming/policy branch | `hbp.path_resolution` | enum | string | 1 | yes | all | direct canonical `.hbp` only | `path_resolution` |
+| derived `warnings[]` | naming/policy branch | `hbp.warnings[]` | list | warning[] | 0..n | yes | all | must be empty; no compatibility warnings allowed | `warnings` |
 
 ## 4. Propagation Map Table
 
@@ -113,8 +113,8 @@ schema2_tail = payload_block_table payload_block_region footer_v2 ;
 | `day_directory` | `directory.entries` | `hbp.directory_entries` | `input::hbp` | init,watershed,replay | immutable | payload locator dispatch and ordering closure | `G-HBP-007` |
 | `schema2.payload_block_table` | `schema2.payload_blocks` | `hbp.payload_blocks` | `input::hbp` | init,watershed,replay | immutable | decompression and raw-slice validation | `G-HBP-008` |
 | `footer fields` | `footer.*` | `hbp.footer_closure` | `input::hbp` | init | immutable | record-count and CRC closure | `G-HBP-009` |
-| derived `path_resolution` | `derived.path_resolution` | `hbp.path_resolution` | `input::hbp` | init | immutable | compatibility policy observability | `G-HBP-010` |
-| derived `warnings` | `derived.warnings` | `hbp.warnings` | `input::hbp` | init | immutable | strict/compat branch observability | `G-HBP-010` |
+| derived `path_resolution` | `derived.path_resolution` | `hbp.path_resolution` | `input::hbp` | init | immutable | naming-policy observability | `G-HBP-010` |
+| derived `warnings` | `derived.warnings` | `hbp.warnings` | `input::hbp` | init | immutable | reserved warning surface (must be empty) | `G-HBP-010` |
 
 ## 5. State Ownership and Mutability
 
@@ -129,7 +129,7 @@ schema2_tail = payload_block_table payload_block_region footer_v2 ;
 
 | Derivation ID | Rule | Timing | Closure hook |
 | --- | --- | --- | --- |
-| `D-HBP-001` | Derive strict/compat path-resolution branch from input path family. | parse preamble | `C-HBP-001` |
+| `D-HBP-001` | Derive canonical direct path-resolution branch from strict `.hbp` input naming. | parse preamble | `C-HBP-001` |
 | `D-HBP-002` | Derive schema profile (`schema1x`/`schema2x`) from validated major/minor. | parse header | `C-HBP-002` |
 | `D-HBP-003` | Derive record/block counts from validated directory/block tables. | parse finalize | `C-HBP-003` |
 
@@ -142,8 +142,8 @@ Closure hooks:
 
 | Error ID | Class | Trigger |
 | --- | --- | --- |
-| `HBP-E-000` | io | direct `.hbp` open/read failure (including derived-compat path missing/open failure) |
-| `HBP-E-001` | naming-policy | invalid process HBP name family or strict rejection of `.pass.dat` input path |
+| `HBP-E-000` | io | direct `.hbp` open/read failure |
+| `HBP-E-001` | naming-policy | invalid process HBP name family (must be canonical `H*.hbp`) |
 | `HBP-E-002` | syntax | bad file magic |
 | `HBP-E-003` | semantic | unsupported schema major or invalid schema-branch key ordering invariants |
 | `HBP-E-004` | semantic | unsupported schema minor for supported major |
@@ -157,8 +157,6 @@ Closure hooks:
 | `HBP-E-012` | checksum | footer/directory/table/file CRC closure mismatch |
 | `HBP-E-013` | syntax | truncated payload or malformed payload/state encoding |
 | `HBP-E-014` | cross-file | expected hillslope id mismatch |
-| `HBP-W-001` | compat-warning | compatibility mode derived `.hbp` path from legacy `.pass.dat` |
-
 No silent fallback to legacy text pass family is permitted.
 
 ## 8. Cross-File Consistency Constraints
@@ -181,20 +179,16 @@ No silent fallback to legacy text pass family is permitted.
 | `year_table[]` | `hbp.year_entries[]` | `openwepp.boundary.parser.hbp.v1.year_table` | canonical year-entry mapping | day iterator source of truth |
 | `day_directory[]` | `hbp.directory_entries[]` | `openwepp.boundary.parser.hbp.v1.directory` | schema-specific payload locator variants | payload lookup surface |
 | `payload_block_table[]` | `hbp.payload_blocks[]` | `openwepp.boundary.parser.hbp.v1.payload_blocks` | schema2 block metadata | absent for schema1 |
-| path/warning branch | `hbp.path_resolution`, `hbp.warnings` | `openwepp.boundary.observability.parser_warnings.v1` | deterministic warning IDs | strict/compat auditability |
+| path/warning branch | `hbp.path_resolution`, `hbp.warnings` | `openwepp.boundary.observability.parser_warnings.v1` | deterministic path observability; warning list must be empty | strict-mode auditability |
 
-## 10. Compatibility Policy
+## 10. Naming Policy
 
-- Strict mode:
+- Parser input naming is strict-only:
   - accepts only direct canonical `.hbp` naming,
   - rejects `.pass.dat` path inputs,
+  - rejects forbidden legacy suffix families (`.pass.hbp`, `.pass.dat.hbp`),
   - enforces full structural and invariant closure,
   - never falls back to text pass files.
-- Compatibility mode:
-  - may derive `.hbp` from `.pass.dat` path with `HBP-W-001`,
-  - still requires derived `.hbp` parse success,
-  - still fails closed on malformed or missing `.hbp` bytes,
-  - does not enable text-pass fallback.
 
 ## 11. Guard Map and Invariant Linkage
 
@@ -209,7 +203,7 @@ No silent fallback to legacy text pass family is permitted.
 | `G-HBP-007` | day-directory ordering/key/payload-reference closure | directory validator | `HBP-E-010` |
 | `G-HBP-008` | schema2 payload-block and day-slice closure | block-table + slice validators | `HBP-E-011`/`HBP-E-013` |
 | `G-HBP-009` | footer and file-level CRC closure | footer validator | `HBP-E-012` |
-| `G-HBP-010` | compatibility derivation observability closure | path resolver | `HBP-W-001` |
+| `G-HBP-010` | strict naming/path observability closure | path resolver | `HBP-E-001` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -229,4 +223,5 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-05-29` | `0.1.1` | WSHEDIMPL43 amendment: retired `.pass.dat` compatibility derivation and warning branch; parser naming policy is strict canonical `.hbp` only with no ASCII fallback support. |
 | `2026-05-22` | `0.1.0` | Initial HBP parser contract authored and aligned to openWEPP parser implementation surface. |

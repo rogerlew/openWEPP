@@ -91,12 +91,12 @@ def test_run_hillslope_executes_openwepp_runner_boundary(runner_env: None) -> No
 def test_make_hillslope_run_rejects_legacy_ascii_pass_family() -> None:
     tmp, runs = _prepare_runs_dir()
     try:
-        with pytest.raises(ValueError, match="OPEN_RUNNER-E-026"):
+        with pytest.raises(ValueError, match="OPEN_RUNNER-E-010"):
             owr.make_hillslope_run(
                 1,
                 1,
                 str(runs),
-                pass_family=owr.PASS_FAMILY_LEGACY_ASCII,
+                pass_family="legacy_ascii",
             )
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

@@ -85,7 +85,6 @@ Required feature fields:
 - `hbp_schema_major` (integer)
 - `hbp_schema_minor` (integer)
 - `hbp_pass_family` (string, expected `H*.hbp`)
-- `legacy_ascii_pass_family` (string, expected `H*.pass.dat`)
 - `mode2_master_pass_prompt_required` (boolean)
 
 Required validation fields:

@@ -34,7 +34,6 @@ __all__ = [
     "linux_wepp_bin_opts",
     "get_linux_wepp_bin_opts",
     "infer_pass_family_for_wepp_bin",
-    "PASS_FAMILY_LEGACY_ASCII",
     "PASS_FAMILY_HBP",
     "PASS_FAMILY_CHOICES",
     "make_hillslope_run",
@@ -44,9 +43,8 @@ __all__ = [
     "run_watershed",
 ]
 
-PASS_FAMILY_LEGACY_ASCII = "legacy_ascii"
 PASS_FAMILY_HBP = "hbp"
-PASS_FAMILY_CHOICES = {PASS_FAMILY_LEGACY_ASCII, PASS_FAMILY_HBP}
+PASS_FAMILY_CHOICES = {PASS_FAMILY_HBP}
 
 _thisdir = _dirname(__file__)
 wepp_bin_dir = _abspath(_join(_thisdir, "bin"))
@@ -90,12 +88,12 @@ def infer_pass_family_for_wepp_bin(wepp_bin: str | None = None) -> str:
     """
     Infer pass-family support from the selected hillslope binary sidecar.
 
-    Sidecar absence defaults to legacy-ascii for conservative compatibility.
+    Sidecar absence defaults to HBP under binary-only policy.
     """
     binary_path = _resolve_hillslope_binary(wepp_bin)
     metadata = _load_binary_release_metadata(binary_path)
     if metadata is None:
-        return PASS_FAMILY_LEGACY_ASCII
+        return PASS_FAMILY_HBP
 
     features = metadata.get("features")
     if not isinstance(features, dict):
@@ -107,25 +105,29 @@ def infer_pass_family_for_wepp_bin(wepp_bin: str | None = None) -> str:
         raise RuntimeError(
             f"OPEN_RUNNER-E-021 invalid features.hbp_supported for {binary_path}"
         )
-    return PASS_FAMILY_HBP if supported else PASS_FAMILY_LEGACY_ASCII
+    if not supported:
+        raise RuntimeError(
+            "OPEN_RUNNER-E-027 release sidecar declares hbp_supported=false; "
+            "legacy ASCII pass family is unsupported."
+        )
+    return PASS_FAMILY_HBP
 
 
 def _normalize_pass_family(pass_family: str | None) -> str:
     if pass_family is None:
-        return PASS_FAMILY_LEGACY_ASCII
+        return PASS_FAMILY_HBP
     normalized = str(pass_family).strip().lower()
     if normalized not in PASS_FAMILY_CHOICES:
-        options = ", ".join(sorted(PASS_FAMILY_CHOICES))
         raise ValueError(
             f"OPEN_RUNNER-E-010 unsupported pass_family '{pass_family}'. "
-            f"Expected one of: {options}"
+            "Expected: hbp"
         )
     return normalized
 
 
 def _pass_suffix(pass_family: str | None) -> str:
-    normalized = _normalize_pass_family(pass_family)
-    return ".hbp" if normalized == PASS_FAMILY_HBP else ".pass.dat"
+    _ = _normalize_pass_family(pass_family)
+    return ".hbp"
 
 
 def _binary_sidecar_path(binary_path: str) -> str:
@@ -473,12 +475,7 @@ def make_hillslope_run(
     _require_relpath_suffix("cli_relpath", cli_relpath)
     _require_relpath_suffix("slp_relpath", slp_relpath)
     _require_relpath_suffix("sol_relpath", sol_relpath)
-    normalized_pass_family = _normalize_pass_family(pass_family)
-    if normalized_pass_family != PASS_FAMILY_HBP:
-        raise ValueError(
-            "OPEN_RUNNER-E-026 pass_family 'legacy_ascii' is not supported for "
-            "openwepp-hillslope-runfile-v1; use pass_family='hbp'."
-        )
+    _ = _normalize_pass_family(pass_family)
 
     _ = reveg  # retained for API compatibility
     _ = wepp_bin  # retained for API compatibility
@@ -561,7 +558,7 @@ def make_watershed_omni_contrasts_run(
     runs_dir,
     *,
     output_options=None,
-    pass_family=PASS_FAMILY_LEGACY_ASCII,
+    pass_family=PASS_FAMILY_HBP,
     wepp_bin=None,
 ):  # noqa: ANN001, ARG001
     raise NotImplementedError(
@@ -574,7 +571,7 @@ def make_watershed_run(
     wepp_ids,
     runs_dir,
     *,
-    pass_family=PASS_FAMILY_LEGACY_ASCII,
+    pass_family=PASS_FAMILY_HBP,
     wepp_bin=None,
 ):  # noqa: ANN001, ARG001
     raise NotImplementedError(

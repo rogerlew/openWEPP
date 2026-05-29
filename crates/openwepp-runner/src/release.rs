@@ -23,7 +23,6 @@ struct BinaryReleaseFeatures {
     hbp_schema_major: u32,
     hbp_schema_minor: u32,
     hbp_pass_family: String,
-    legacy_ascii_pass_family: String,
     mode2_master_pass_prompt_required: bool,
 }
 
@@ -291,7 +290,6 @@ fn validate_release_sidecar_unlocked(sidecar_path: &Path) -> Result<Value, Relea
     let _ = required_u64(features, "hbp_schema_major")?;
     let _ = required_u64(features, "hbp_schema_minor")?;
     let _ = required_map_str(features, "hbp_pass_family")?;
-    let _ = required_map_str(features, "legacy_ascii_pass_family")?;
     let _ = required_bool(features, "mode2_master_pass_prompt_required")?;
 
     let validation = required_object(&json, "validation")?;
@@ -338,7 +336,6 @@ fn build_release_metadata_document(
             hbp_schema_major: 1,
             hbp_schema_minor: 0,
             hbp_pass_family: "H*.hbp".to_string(),
-            legacy_ascii_pass_family: "H*.pass.dat".to_string(),
             mode2_master_pass_prompt_required: true,
         },
         validation: BinaryReleaseValidation {

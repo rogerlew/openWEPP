@@ -994,6 +994,12 @@ Authorized packages:
     `/wc1/runs/un/unpalatable-rind`, rerun full watershed orchestration, and
     verify closure by successful watershed parquet emission under contract-first
     sequencing.
+- `20260529-wshedimpl43-hbp-binary-only-ascii-pass-removal-001/`
+  - Purpose: execute WSHEDIMPL43 as immediate follow-on to WSHEDIMPL42 by
+    removing ASCII pass support completely, replacing hillslope pass publication
+    with binary HBP-only output, enforcing strict `.hbp` ingestion policy
+    (no `.pass.dat` derivation/fallback), and rerunning
+    `/wc1/runs/un/unpalatable-rind` to watershed parquet closure.
 - `20260528-clim17-breakpoint-climate-baseline-parity-burndown-001/`
   - Purpose: execute CLIM17 to identify and close implementation gaps in
     openWEPP breakpoint climate behavior versus
