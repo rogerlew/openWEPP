@@ -32,7 +32,7 @@ Use when porting public-domain WEPP units without clean-room isolation.
 Required fields:
 
 ```rust
-//! SPDX-License-Identifier: CC0-1.0
+//! SPDX-License-Identifier: Apache-2.0
 //! Origin-Class: WEPP-Core-Public-Domain
 //! Migration-Method: direct-port-fixed-to-rust
 //! Replaces: src/<unit>.for
@@ -48,7 +48,7 @@ Use only for clean-room replacement routines.
 Required fields:
 
 ```rust
-//! SPDX-License-Identifier: CC0-1.0
+//! SPDX-License-Identifier: Apache-2.0
 //! Origin-Class: Numerical-Recipes-Replacement
 //! Migration-Method: clean-room-from-sanitized-spec
 //! Replaces: src/<unit>.for
@@ -88,7 +88,7 @@ Retain `Replaces`, `Contract-Spec`, `Original-Author(s)`, and `Contributors`.
 ## Worked example
 
 ```rust
-//! SPDX-License-Identifier: CC0-1.0
+//! SPDX-License-Identifier: Apache-2.0
 //! Origin-Class: WEPP-Core-Public-Domain
 //! Migration-Method: direct-port-fixed-to-rust
 //! Replaces: src/watbal.for

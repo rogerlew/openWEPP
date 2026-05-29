@@ -1,8 +1,13 @@
 # ADR-0001: License is CC0-1.0
 
-**Status:** Accepted
+**Status:** Superseded by [ADR-0015](0015-relicense-to-apache-2.md)
 **Date:** 2026-05-11
+**Superseded:** 2026-05-28
 **Deciders:** Roger Lew, Claude Code
+
+> **Superseded.** openWEPP is licensed Apache-2.0 retroactively from
+> inception per ADR-0015. This ADR is retained for historical record only.
+> Do not apply its decision text to current or future work.
 
 ## Context
 WEPP originated as USDA-ARS public-domain software. The wepp-palimpsest re-authoring program (LCR-01..LCR-07) standardized on CC0-1.0 for `.f90` kernels. openWEPP is a fresh Rust reimplementation and needs a license posture set before code lands.

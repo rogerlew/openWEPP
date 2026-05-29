@@ -1,6 +1,7 @@
 # cargo-deny configuration.
-# Enforces the openWEPP license posture: CC0-1.0 first-party, permissive deps only,
-# no viral copyleft (GPL / AGPL / LGPL).
+# Enforces the openWEPP license posture: Apache-2.0 first-party, permissive deps only,
+# no viral copyleft (GPL / AGPL / LGPL). CC0-1.0 is retained in the dependency
+# allow list for upstream compatibility (some crates ship CC0-1.0 data).
 
 [graph]
 all-features = false

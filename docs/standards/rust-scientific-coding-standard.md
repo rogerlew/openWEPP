@@ -125,7 +125,7 @@ authorship/contributor fields per:
 At minimum for non-clean-room ports:
 
 ```rust
-//! SPDX-License-Identifier: CC0-1.0
+//! SPDX-License-Identifier: Apache-2.0
 //! Origin-Class: WEPP-Core-Public-Domain
 //! Migration-Method: direct-port-fixed-to-rust
 //! Replaces: src/<unit>.for

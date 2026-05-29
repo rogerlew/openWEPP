@@ -1,0 +1,23 @@
+openWEPP
+Copyright 2026 Roger Lew
+
+This product includes software derived from the USDA Water Erosion
+Prediction Project (WEPP), a U.S. federal government work which is in the
+public domain under 17 USC §105 with respect to authorship by federal
+employees in the course of their official duties.
+
+Legacy provenance baseline is pinned to the wepp-forest_260430 hotfix
+snapshot at commit dac3c950d8b16cc73774bf5ce2e7e11f80baac70, per:
+
+    docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md
+
+Per-module original authorship and contributor attribution is recorded in
+file-level headers under the baseline anchor and (for ported Rust modules)
+per:
+
+    docs/governance/legacy-source-attribution-and-contributors-policy.md
+
+Non-clean-room ports retain the legacy `Original-Author(s)` field as
+captured from each source unit's header (e.g., for `chnrt.for`: Ascough II,
+R. van der Zweep, V. Lopes). Where a legacy header records no author, the
+field is set to `not-stated-in-source`.

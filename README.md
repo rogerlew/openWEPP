@@ -70,6 +70,7 @@ all roles (watershed, hillslope, replay). See:
 
 - [docs/contracts/openwepp-runner-contract.md](docs/contracts/openwepp-runner-contract.md)
 - [docs/contracts/openwepp-binary-release-contract.md](docs/contracts/openwepp-binary-release-contract.md)
+- [docs/governance/openwepp-release-procedure-draft.md](docs/governance/openwepp-release-procedure-draft.md)
 
 ## Relationship to other repos
 
@@ -87,7 +88,8 @@ all roles (watershed, hillslope, replay). See:
 ├── AGENTS.md              # Codex coding agent guide
 ├── CLAUDE.md              # Claude Code reviewer / debugger guide
 ├── README.md              # This file
-├── LICENSE                # CC0-1.0
+├── LICENSE                # Apache-2.0
+├── NOTICE                 # Apache-2.0 attribution (USDA WEPP provenance)
 ├── Cargo.toml             # Workspace root (members empty until first crate)
 ├── rust-toolchain.toml    # Pinned toolchain
 ├── deny.toml              # cargo-deny: license allowlist, no viral copyleft
@@ -125,7 +127,7 @@ Dependency sources:
 
 ## License
 
-CC0-1.0. See [LICENSE](LICENSE) and [docs/decisions/0001-license-cc0.md](docs/decisions/0001-license-cc0.md).
+Apache-2.0, retroactive from inception. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [docs/decisions/0015-relicense-to-apache-2.md](docs/decisions/0015-relicense-to-apache-2.md). The prior CC0-1.0 posture is recorded in [docs/decisions/0001-license-cc0.md](docs/decisions/0001-license-cc0.md) (superseded).
 
 Dependency license posture: no viral copyleft (GPL / AGPL / LGPL denied at the `cargo deny` gate). See [deny.toml](deny.toml).
 
