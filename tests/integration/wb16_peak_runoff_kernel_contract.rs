@@ -234,6 +234,11 @@ fn run_surface(
         .expect("wb16 execution should return typed report")
 }
 
+fn wb16_tc_from_vstar(vstar: f64) -> f64 {
+    let discriminant = 1.0 - (2.4 * (1.0 - vstar) * vstar);
+    (1.0 - discriminant.sqrt()) / (1.2 * (1.0 - vstar))
+}
+
 fn assert_branch(
     report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
     expected: f64,
@@ -282,26 +287,29 @@ fn assert_branch(
         .get(&BoundarySymbol::from("wb16_tstar"))
         .expect("wb16_tstar should be present")
         .as_f64();
+    let vstar = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb16_vstar"))
+        .expect("wb16_vstar should be present")
+        .as_f64();
     if (expected - 1.0).abs() <= f64::EPSILON {
         assert!(tstar >= 1.0 - WB16_TEST_TOLERANCE);
     } else if (expected - 2.0).abs() <= f64::EPSILON {
-        let tc = report
-            .writeback_surface
-            .state_surface
-            .get(&BoundarySymbol::from("timep"))
-            .expect("timep should be present")
-            .as_f64();
+        let tc = wb16_tc_from_vstar(vstar);
+        assert!(vstar < 1.0);
         assert!(tstar < 1.0 + WB16_TEST_TOLERANCE);
         assert!(tstar > tc - WB16_TEST_TOLERANCE);
-    } else {
-        let tc = report
-            .writeback_surface
-            .state_surface
-            .get(&BoundarySymbol::from("timep"))
-            .expect("timep should be present")
-            .as_f64();
+    } else if (expected - 3.0).abs() <= f64::EPSILON {
+        let tc = wb16_tc_from_vstar(vstar);
+        assert!(vstar < 1.0);
         assert!(tstar > 0.0);
         assert!(tstar <= tc + WB16_TEST_TOLERANCE);
+    } else if (expected - 4.0).abs() <= f64::EPSILON {
+        assert!(vstar >= 1.0 - WB16_TEST_TOLERANCE);
+        assert!(tstar < 1.0 + WB16_TEST_TOLERANCE);
+    } else {
+        panic!("unexpected WB16 branch id {expected}");
     }
 }
 
@@ -320,15 +328,46 @@ fn wb16_contract_conformance_emits_peak_runoff_outputs_with_branch_authority() {
     let mut branch3 = seeded_wb16_surface();
     branch3
         .state_surface
-        .insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(0.1));
+        .insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(0.01));
+
+    let mut branch4 = seeded_wb16_surface();
+    branch4.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(0.6),
+    );
+    branch4.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_closure_tolerance"),
+        BoundaryValue::scalar(10.0),
+    );
+    branch4.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(10.0),
+    );
+    branch4.state_surface.insert(
+        BoundarySymbol::from("intsty_0001"),
+        BoundaryValue::scalar(0.05),
+    );
+    branch4.state_surface.insert(
+        BoundarySymbol::from("intsty_0002"),
+        BoundaryValue::scalar(0.05),
+    );
+    branch4.state_surface.insert(
+        BoundarySymbol::from("intsty_0003"),
+        BoundaryValue::scalar(0.05),
+    );
+    branch4
+        .state_surface
+        .insert(BoundarySymbol::from("efflen"), BoundaryValue::scalar(0.6));
 
     let report1 = run_surface(branch1);
     let report2 = run_surface(branch2);
     let report3 = run_surface(branch3);
+    let report4 = run_surface(branch4);
 
     assert_branch(&report1, 1.0);
     assert_branch(&report2, 2.0);
     assert_branch(&report3, 3.0);
+    assert_branch(&report4, 4.0);
 }
 
 #[test]
@@ -392,7 +431,7 @@ fn wb16_contract_conformance_rejects_out_of_domain_peak_symbol() {
     let mut surface = seeded_wb16_surface();
     surface
         .state_surface
-        .insert(BoundarySymbol::from("timep"), BoundaryValue::scalar(1.5));
+        .insert(BoundarySymbol::from("m"), BoundaryValue::scalar(0.0));
 
     let report = run_surface(surface);
 
@@ -412,5 +451,18 @@ fn wb16_contract_conformance_rejects_out_of_domain_peak_symbol() {
     assert_eq!(
         phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn wb16_contract_conformance_executes_without_timep_symbol() {
+    let mut surface = seeded_wb16_surface();
+    surface.state_surface.remove(&BoundarySymbol::from("timep"));
+
+    let report = run_surface(surface);
+    assert!(
+        report.scheduler_report.is_success(),
+        "wb16 execution should not require timep; halted_phase={:?}",
+        report.scheduler_report.halted_phase
     );
 }

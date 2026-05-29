@@ -1,10 +1,10 @@
 # 20260528-hillstab03-wb16-peak-domain-closure-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-05-28
 - timezone: UTC
-- decision: pending
+- decision: HOLD
 
 ## Objective
 Eliminate `HKERNEL-WB16-PEAK-E-003` runtime-domain failures across the

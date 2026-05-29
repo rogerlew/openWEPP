@@ -3999,7 +3999,7 @@ impl Wb11HydrologyKernel {
                         Some(0.0),
                         Some(WB16_MAX_DURATION_S),
                     ),
-                    WritebackField::bounded(WB16_SYMBOL_METHOD_BRANCH, 1.0, Some(1.0), Some(3.0)),
+                    WritebackField::bounded(WB16_SYMBOL_METHOD_BRANCH, 1.0, Some(1.0), Some(4.0)),
                     WritebackField::bounded(
                         WB16_SYMBOL_TSTAR,
                         WB11_ZERO_THRESHOLD,
@@ -4091,9 +4091,6 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let timep = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_TIMEP)?;
-        Self::require_state_range(phase_class, WB16_SYMBOL_TIMEP, timep, Some(0.0), Some(1.0))?;
-
         let efflen = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_EFFLEN)?;
         if efflen <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -4117,12 +4114,12 @@ impl Wb11HydrologyKernel {
         }
 
         let exponent_m = Self::require_state_scalar(request, phase_class, WB16_SYMBOL_EXPONENT_M)?;
-        if exponent_m <= 1.0 + WB11_ZERO_THRESHOLD {
+        if exponent_m <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
                 symbol: BoundarySymbol::from(WB16_SYMBOL_EXPONENT_M),
                 value: exponent_m,
-                minimum: Some(1.0 + WB11_ZERO_THRESHOLD),
+                minimum: Some(WB11_ZERO_THRESHOLD),
                 maximum: None,
             });
         }
@@ -4176,7 +4173,7 @@ impl Wb11HydrologyKernel {
                         Some(0.0),
                         Some(WB16_MAX_DURATION_S),
                     ),
-                    WritebackField::bounded(WB16_SYMBOL_METHOD_BRANCH, 1.0, Some(1.0), Some(3.0)),
+                    WritebackField::bounded(WB16_SYMBOL_METHOD_BRANCH, 1.0, Some(1.0), Some(4.0)),
                     WritebackField::bounded(
                         WB16_SYMBOL_TSTAR,
                         WB11_ZERO_THRESHOLD,
@@ -4220,13 +4217,13 @@ impl Wb11HydrologyKernel {
         }
 
         let vstar = vave / remax;
-        if !vstar.is_finite() || vstar <= WB11_ZERO_THRESHOLD || vstar > 1.0 + WB11_ZERO_THRESHOLD {
+        if !vstar.is_finite() || vstar <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
                 symbol: BoundarySymbol::from(WB16_SYMBOL_VSTAR),
                 value: vstar,
                 minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: Some(1.0),
+                maximum: None,
             });
         }
 
@@ -4256,10 +4253,45 @@ impl Wb11HydrologyKernel {
 
         let (method_branch, qpstar) = if tstar >= 1.0 {
             (1.0, 1.0 / tstar.powf(exponent_m))
-        } else if tstar > timep {
-            (2.0, 1.0 / tstar)
+        } else if vstar < 1.0 {
+            let tc_discriminant = 1.0 - (2.4 * (1.0 - vstar) * vstar);
+            if !tc_discriminant.is_finite() || tc_discriminant < 0.0 {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB16_SYMBOL_VSTAR),
+                    value: tc_discriminant,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            let tc_denominator = 1.2 * (1.0 - vstar);
+            if !tc_denominator.is_finite() || tc_denominator <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB16_SYMBOL_VSTAR),
+                    value: tc_denominator,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            let tc = (1.0 - tc_discriminant.sqrt()) / tc_denominator;
+            if !tc.is_finite() || tc <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB16_SYMBOL_VSTAR),
+                    value: tc,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            if tstar > tc {
+                (2.0, 1.0 / tstar)
+            } else {
+                (3.0, (1.0 / vstar) - 0.6 * (((1.0 - vstar) / vstar) * tstar))
+            }
         } else {
-            (3.0, (1.0 / vstar) - 0.6 * (((1.0 - vstar) / vstar) * tstar))
+            (4.0, 1.0)
         };
         if !qpstar.is_finite() || qpstar <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -4348,7 +4380,7 @@ impl Wb11HydrologyKernel {
                 WB16_SYMBOL_METHOD_BRANCH,
                 method_branch,
                 Some(1.0),
-                Some(3.0),
+                Some(4.0),
             ),
             WritebackField::bounded(WB16_SYMBOL_TSTAR, tstar, Some(WB11_ZERO_THRESHOLD), None),
             WritebackField::bounded(WB16_SYMBOL_QPSTAR, qpstar, Some(WB11_ZERO_THRESHOLD), None),
@@ -4356,7 +4388,7 @@ impl Wb11HydrologyKernel {
                 WB16_SYMBOL_VSTAR,
                 vstar,
                 Some(WB11_ZERO_THRESHOLD),
-                Some(1.0),
+                None,
             ),
             WritebackField::bounded(
                 BoundarySymbol::from(WB13_STATE_SYMBOL_WATCON),

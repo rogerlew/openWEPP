@@ -742,7 +742,7 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 | Surface | Symbols |
 |---|---|
-| Closure-diagnostics required inputs | `Q`, `timem_####`, `intsty_####`, `timep`, `efflen`, `ealpha`, `m`, `I`, `irrigation.runtime_rate_m_per_s` |
+| Closure-diagnostics required inputs | `Q`, `timem_####`, `intsty_####`, `efflen`, `ealpha`, `m`, `I`, `irrigation.runtime_rate_m_per_s` |
 | Closure-diagnostics peak outputs | `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
 
 ### WB16 Deterministic Peak-Flow Rules
@@ -759,12 +759,14 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    lineage (`appmth.for`):
    - `te = (efflen / (ealpha * vave^(m-1)))^(1/m)`
    - `tstar = te / effdrr`
-   - `tc = timep`
+   - if `vstar < 1`, `tc = (1 - sqrt(1 - 2.4 * (1 - vstar) * vstar)) / (1.2 * (1 - vstar))`
 5. Peak-runoff nondimensional ratio `qpstar` is branch-authoritative:
    - partial-equilibrium branch (`tstar >= 1`): `qpstar = 1 / tstar^m`
-   - quasi-equilibrium branch A (`tc < tstar < 1`): `qpstar = 1 / tstar`
-   - quasi-equilibrium branch B (`0 < tstar <= tc`):
+   - quasi-equilibrium branch A (`vstar < 1` and `tc < tstar < 1`):
+     `qpstar = 1 / tstar`
+   - quasi-equilibrium branch B (`vstar < 1` and `0 < tstar <= tc`):
      `qpstar = 1/vstar - 0.6 * ((1 - vstar) / vstar) * tstar`
+   - constant-excess branch (`vstar >= 1` and `tstar < 1`): `qpstar = 1`
 6. Peak runoff and duration outputs are:
    - `peakro_raw = vave * qpstar`
    - `peakro = max(peakro_raw, 3.63e-8)` (legacy minimum-flow floor from
@@ -774,8 +776,8 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    - if `watdur > 86400`, set `watdur = 86400`.
 8. WB16 domain posture is hard-fail for missing/non-finite/out-of-domain
    symbols and non-physical intermediates (`effdrr <= 0`, `vave <= 0`,
-   `remax <= 0`, `vstar <= 0`, `vstar > 1`, `m <= 1`, `ealpha <= 0`,
-   `efflen <= 0`, `timep` outside `[0,1]`, or non-finite `peakro`/`watdur`).
+   `remax <= 0`, `vstar <= 0`, `m <= 0`, `ealpha <= 0`, `efflen <= 0`,
+   negative `tc` discriminant for `vstar < 1`, or non-finite `peakro`/`watdur`).
    No fallback/default branch is allowed.
 
 ### WB16 Guard Codes
@@ -790,8 +792,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    `watdur = Q/peakro` and one authoritative method branch id.
 2. Branch-selector vectors independently trigger:
    - `tstar >= 1`,
-   - `tc < tstar < 1`,
-   - `0 < tstar <= tc`.
+   - `vstar < 1` with `tc < tstar < 1`,
+   - `vstar < 1` with `0 < tstar <= tc`,
+   - `vstar >= 1` with `tstar < 1`.
 3. Missing required WB16 symbol hard-fails in closure diagnostics with
    `HKERNEL-WB16-PEAK-E-001`.
 4. Non-finite WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-002`.
@@ -1103,6 +1106,7 @@ canonical order:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-28` | `39` | `Codex` | HILLSTAB03 WB16 amendment: corrected baseline `appmth.for` branch authority by deriving `tc` from `vstar`, adding explicit `vstar>=1` constant-excess branch (`qpstar=1`), removing non-authoritative `timep` as required WB16 coupling input, and updating WB16 domain/test-vector obligations accordingly. |
 | `2026-05-26` | `38` | `Codex` | SIMIMPL36 amendment: added explicit WB12/WB14 near-zero reconciled-runoff canonicalization authority (`TOL-WATBAL-006`) requiring `Q`/`wb12_runoff_reconciled` normalization to zero only within `[-1e-12, 0)` before writeback/publication while preserving typed domain-fail posture for material negatives. |
 | `2026-05-25` | `37` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity selection authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor), including required regime symbols and typed active-path guard obligations. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-04 work-package prep. |
