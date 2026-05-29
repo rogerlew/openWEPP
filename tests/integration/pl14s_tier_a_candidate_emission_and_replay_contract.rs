@@ -429,7 +429,10 @@ fn row_f64_value(row: &Row, column_name: &str) -> f64 {
         return f64::from(value);
     }
     if let Ok(value) = row.get_long(index) {
-        return value as f64;
+        return value
+            .to_string()
+            .parse::<f64>()
+            .unwrap_or_else(|error| panic!("i64 column '{column_name}' parse failure: {error}"));
     }
     panic!("column '{column_name}' does not decode as numeric");
 }

@@ -2598,10 +2598,52 @@ const HBP_DIM_NOFE_LAYERS: u8 = 2;
 const HBP_DEFAULT_CALENDAR_YEAR: i32 = 2004;
 const HBP_DEFAULT_PARTICLE_DIAMETER_M: f64 = 0.001;
 const HBP_SCALE_INV_I64: f64 = 1.0e9;
+const HBP_I64_MIN_F64: f64 = -9_223_372_036_854_775_808.0;
+const HBP_I64_MAX_F64: f64 = 9_223_372_036_854_775_807.0;
 const HBP_REQUIRED_STATE_IDS: &[u16] = &[
     1, 2, 3, 4, 5, 6, 7, 100, 101, 102, 103, 104, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209,
     210, 300, 900, 901,
 ];
+
+#[derive(Clone, Copy)]
+struct HbpEventFixtureInput {
+    hillslope_id: u32,
+    nofe: u16,
+    julian_day: u16,
+    peak_runoff_m3_s: f64,
+    duration_seconds: f64,
+    total_detachment_kg: f64,
+    total_deposition_kg: f64,
+    sediment_concentration_kg_m3: f64,
+    particle_flow_fraction: f64,
+    particle_diameter_m: f64,
+}
+
+#[derive(Clone, Copy)]
+struct HbpEventPayloadInput {
+    nofe: u16,
+    sim_year_index: u32,
+    calendar_year: i32,
+    julian_day: u16,
+    peak_runoff_m3_s: f64,
+    duration_seconds: f64,
+    total_detachment_kg: f64,
+    total_deposition_kg: f64,
+    sediment_concentration_kg_m3: f64,
+    particle_flow_fraction: f64,
+}
+
+#[derive(Clone, Copy)]
+struct HbpHeaderInput {
+    schema_major: u16,
+    schema_minor: u16,
+    hillslope_id: u32,
+    nofe: u16,
+    nyear: u32,
+    begin_year: i32,
+    julian_day: u16,
+    particle_diameter_m: f64,
+}
 
 fn build_hbp_output(
     output_pass: &Path,
@@ -2650,18 +2692,18 @@ fn build_hbp_output(
     )?;
     let particle_flow_fraction = 1.0;
 
-    build_schema1_hbp_event_fixture(
+    build_schema1_hbp_event_fixture(HbpEventFixtureInput {
         hillslope_id,
         nofe,
-        latest_row.wb13_row.julian_day,
+        julian_day: latest_row.wb13_row.julian_day,
         peak_runoff_m3_s,
         duration_seconds,
         total_detachment_kg,
         total_deposition_kg,
         sediment_concentration_kg_m3,
         particle_flow_fraction,
-        HBP_DEFAULT_PARTICLE_DIAMETER_M,
-    )
+        particle_diameter_m: HBP_DEFAULT_PARTICLE_DIAMETER_M,
+    })
 }
 
 fn parse_hillslope_id_from_output_pass_path(path: &Path) -> Result<u32, HillslopeCliError> {
@@ -2717,52 +2759,56 @@ fn optional_non_negative_runtime_scalar(
 }
 
 fn build_schema1_hbp_event_fixture(
-    hillslope_id: u32,
-    nofe: u16,
-    julian_day: u16,
-    peak_runoff_m3_s: f64,
-    duration_seconds: f64,
-    total_detachment_kg: f64,
-    total_deposition_kg: f64,
-    sediment_concentration_kg_m3: f64,
-    particle_flow_fraction: f64,
-    particle_diameter_m: f64,
+    input: HbpEventFixtureInput,
 ) -> Result<Vec<u8>, HillslopeCliError> {
-    let mut file = append_hbp_common_prefix(
-        HBP_SUPPORTED_MAJOR_V1,
-        0,
-        hillslope_id,
-        nofe,
-        1,
-        HBP_DEFAULT_CALENDAR_YEAR,
-        julian_day,
-        particle_diameter_m,
-    );
-    let payload = build_hbp_event_payload(
-        nofe,
-        1,
-        HBP_DEFAULT_CALENDAR_YEAR,
-        julian_day,
-        peak_runoff_m3_s,
-        duration_seconds,
-        total_detachment_kg,
-        total_deposition_kg,
-        sediment_concentration_kg_m3,
-        particle_flow_fraction,
-    )?;
+    let mut file = append_hbp_common_prefix(HbpHeaderInput {
+        schema_major: HBP_SUPPORTED_MAJOR_V1,
+        schema_minor: 0,
+        hillslope_id: input.hillslope_id,
+        nofe: input.nofe,
+        nyear: 1,
+        begin_year: HBP_DEFAULT_CALENDAR_YEAR,
+        julian_day: input.julian_day,
+        particle_diameter_m: input.particle_diameter_m,
+    })?;
+    let payload = build_hbp_event_payload(HbpEventPayloadInput {
+        nofe: input.nofe,
+        sim_year_index: 1,
+        calendar_year: HBP_DEFAULT_CALENDAR_YEAR,
+        julian_day: input.julian_day,
+        peak_runoff_m3_s: input.peak_runoff_m3_s,
+        duration_seconds: input.duration_seconds,
+        total_detachment_kg: input.total_detachment_kg,
+        total_deposition_kg: input.total_deposition_kg,
+        sediment_concentration_kg_m3: input.sediment_concentration_kg_m3,
+        particle_flow_fraction: input.particle_flow_fraction,
+    })?;
     let payload_crc = crc32c(&payload);
 
     let directory_start = file.len();
     let directory_len = 4 + 27;
     let payload_offset = directory_start + directory_len;
+    let payload_offset_u64 =
+        u64::try_from(payload_offset).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!("{SIMOUT_GUARD_ID} HBP payload offset exceeds u64: {payload_offset}"),
+        })?;
+    let payload_len_u32 =
+        u32::try_from(payload.len()).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP payload length exceeds u32: {}",
+                payload.len()
+            ),
+        })?;
     let mut directory = Vec::new();
     put_u32(&mut directory, 1);
     put_u32(&mut directory, 1);
     put_i32(&mut directory, HBP_DEFAULT_CALENDAR_YEAR);
-    put_u16(&mut directory, julian_day);
+    put_u16(&mut directory, input.julian_day);
     put_u8(&mut directory, 2);
-    put_u64(&mut directory, payload_offset as u64);
-    put_u32(&mut directory, payload.len() as u32);
+    put_u64(&mut directory, payload_offset_u64);
+    put_u32(&mut directory, payload_len_u32);
     put_u32(&mut directory, payload_crc);
 
     file.extend_from_slice(&directory);
@@ -2779,29 +2825,29 @@ fn build_schema1_hbp_event_fixture(
     Ok(file)
 }
 
-fn build_hbp_event_payload(
-    nofe: u16,
-    sim_year_index: u32,
-    calendar_year: i32,
-    julian_day: u16,
-    peak_runoff_m3_s: f64,
-    duration_seconds: f64,
-    total_detachment_kg: f64,
-    total_deposition_kg: f64,
-    sediment_concentration_kg_m3: f64,
-    particle_flow_fraction: f64,
-) -> Result<Vec<u8>, HillslopeCliError> {
-    let nofe = u32::from(nofe);
+fn build_hbp_event_payload(input: HbpEventPayloadInput) -> Result<Vec<u8>, HillslopeCliError> {
+    let nofe = u32::from(input.nofe);
     let max_layers = 1u32;
 
     let mut payload = Vec::new();
-    put_u32(&mut payload, sim_year_index);
-    put_i32(&mut payload, calendar_year);
-    put_u16(&mut payload, julian_day);
+    put_u32(&mut payload, input.sim_year_index);
+    put_i32(&mut payload, input.calendar_year);
+    put_u16(&mut payload, input.julian_day);
     put_u8(&mut payload, 2);
     put_u16(&mut payload, 0);
-    put_u16(&mut payload, HBP_REQUIRED_STATE_IDS.len() as u16);
-    put_f64(&mut payload, duration_seconds);
+    put_u16(
+        &mut payload,
+        u16::try_from(HBP_REQUIRED_STATE_IDS.len()).map_err(|_| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} HBP state registry length exceeds u16: {}",
+                    HBP_REQUIRED_STATE_IDS.len()
+                ),
+            }
+        })?,
+    );
+    put_f64(&mut payload, input.duration_seconds);
     put_f64(&mut payload, 0.5);
     put_f64(&mut payload, 0.8);
     put_i64(&mut payload, 0);
@@ -2810,52 +2856,50 @@ fn build_hbp_event_payload(
     put_i64(&mut payload, 0);
     put_i64(&mut payload, 0);
     put_i64(&mut payload, 0);
-    put_f64(&mut payload, peak_runoff_m3_s);
-    put_i64(&mut payload, scaled_i64(total_detachment_kg)?);
-    put_i64(&mut payload, scaled_i64(total_deposition_kg)?);
+    put_f64(&mut payload, input.peak_runoff_m3_s);
+    put_i64(&mut payload, scaled_i64(input.total_detachment_kg)?);
+    put_i64(&mut payload, scaled_i64(input.total_deposition_kg)?);
     put_u32(&mut payload, 1);
-    put_f64(&mut payload, sediment_concentration_kg_m3);
+    put_f64(&mut payload, input.sediment_concentration_kg_m3);
     put_u32(&mut payload, 1);
-    put_f64(&mut payload, particle_flow_fraction);
+    put_f64(&mut payload, input.particle_flow_fraction);
     put_i64(&mut payload, 0);
     put_i64(&mut payload, 0);
 
     for state_id in HBP_REQUIRED_STATE_IDS {
-        payload.extend_from_slice(&build_hbp_state_entry(*state_id, nofe, max_layers));
+        payload.extend_from_slice(&build_hbp_state_entry(*state_id, nofe, max_layers)?);
     }
 
     Ok(payload)
 }
 
-fn append_hbp_common_prefix(
-    schema_major: u16,
-    schema_minor: u16,
-    hillslope_id: u32,
-    nofe: u16,
-    nyear: u32,
-    begin_year: i32,
-    julian_day: u16,
-    particle_diameter_m: f64,
-) -> Vec<u8> {
+fn append_hbp_common_prefix(input: HbpHeaderInput) -> Result<Vec<u8>, HillslopeCliError> {
     let mut file = Vec::new();
 
     let mut header = Vec::new();
     header.extend_from_slice(HBP_MAGIC);
-    put_u16(&mut header, schema_major);
-    put_u16(&mut header, schema_minor);
+    put_u16(&mut header, input.schema_major);
+    put_u16(&mut header, input.schema_minor);
     put_u8(&mut header, 1);
     let header_bytes_pos = header.len();
     put_u32(&mut header, 0);
     header.extend_from_slice(&[0u8; 32]);
     put_u8(&mut header, 1);
-    put_string(&mut header, "openwepp-hillslope-cli");
-    put_string(&mut header, "hs-cli");
-    put_string(&mut header, "2026-05-29T00:00:00Z");
-    put_string(&mut header, "metric-v1");
+    put_string(&mut header, "openwepp-hillslope-cli")?;
+    put_string(&mut header, "hs-cli")?;
+    put_string(&mut header, "2026-05-29T00:00:00Z")?;
+    put_string(&mut header, "metric-v1")?;
     header.extend_from_slice(&[0u8; 32]);
     let header_crc_pos = header.len();
     put_u32(&mut header, 0);
-    let header_bytes = header.len() as u32;
+    let header_bytes =
+        u32::try_from(header.len()).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP header byte count exceeds u32: {}",
+                header.len()
+            ),
+        })?;
     put_u32_at(&mut header, header_bytes_pos, header_bytes);
     let header_crc = crc32c(&header);
     put_u32_at(&mut header, header_crc_pos, header_crc);
@@ -2864,86 +2908,99 @@ fn append_hbp_common_prefix(
     let npart = 1u16;
     let max_layers = 1u16;
 
-    put_u32(&mut file, hillslope_id);
-    put_u32(&mut file, nyear);
-    put_i32(&mut file, begin_year);
+    put_u32(&mut file, input.hillslope_id);
+    put_u32(&mut file, input.nyear);
+    put_i32(&mut file, input.begin_year);
     put_u16(&mut file, npart);
-    put_u16(&mut file, nofe);
+    put_u16(&mut file, input.nofe);
     put_u16(&mut file, max_layers);
-    put_string(&mut file, "gregorian");
+    put_string(&mut file, "gregorian")?;
     put_u16(&mut file, 1);
     put_u8(&mut file, 1);
 
-    put_string(&mut file, "p1.cli");
+    put_string(&mut file, "p1.cli")?;
     put_i64(&mut file, 0);
     put_u32(&mut file, u32::from(npart));
-    put_f64(&mut file, particle_diameter_m);
+    put_f64(&mut file, input.particle_diameter_m);
     put_f64(&mut file, 0.0);
     put_f64(&mut file, 0.0);
     put_f64(&mut file, 0.0);
     put_f64(&mut file, 0.0);
 
-    put_u32(&mut file, nyear);
+    put_u32(&mut file, input.nyear);
     put_u32(&mut file, 1);
-    put_i32(&mut file, begin_year);
+    put_i32(&mut file, input.begin_year);
     put_u16(&mut file, 1);
-    put_u16(&mut file, julian_day);
-    put_u16(&mut file, julian_day);
+    put_u16(&mut file, input.julian_day);
+    put_u16(&mut file, input.julian_day);
     put_u8(&mut file, 0);
 
-    put_u32(&mut file, HBP_REQUIRED_STATE_IDS.len() as u32);
+    put_u32(
+        &mut file,
+        u32::try_from(HBP_REQUIRED_STATE_IDS.len()).map_err(|_| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} HBP state registry count exceeds u32: {}",
+                    HBP_REQUIRED_STATE_IDS.len()
+                ),
+            }
+        })?,
+    );
     for state_id in HBP_REQUIRED_STATE_IDS {
         let (required_flag, representation_class, unit_class, rank, dims_kind) =
-            expected_hbp_state_schema(*state_id).expect("required state schema should exist");
+            expected_hbp_state_schema(*state_id).ok_or_else(|| {
+                HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "outputs.pass",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} missing HBP state schema for required state {state_id}"
+                    ),
+                }
+            })?;
         put_u16(&mut file, *state_id);
         put_u8(&mut file, required_flag);
         put_u8(&mut file, representation_class);
         put_u16(&mut file, unit_class);
         put_u8(&mut file, rank);
         put_u8(&mut file, dims_kind);
-        put_string(&mut file, &format!("state_{state_id}"));
+        put_string(&mut file, &format!("state_{state_id}"))?;
     }
 
-    file
+    Ok(file)
 }
 
 fn expected_hbp_state_schema(state_id: u16) -> Option<(u8, u8, u16, u8, u8)> {
     match state_id {
         1 => Some((1, 1, 1, 1, HBP_DIM_NOFE)),
-        2 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        3 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        4 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        5 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        6 => Some((1, 2, 3, 2, HBP_DIM_NOFE_LAYERS)),
-        7 => Some((1, 2, 3, 2, HBP_DIM_NOFE_LAYERS)),
-        100 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        101 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        102 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        103 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        104 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        200 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
+        2 | 3 | 4 | 5 | 100 | 101 | 102 | 210 | 900 | 901 => {
+            Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS))
+        }
+        6 | 7 => Some((1, 2, 3, 2, HBP_DIM_NOFE_LAYERS)),
+        103 | 104 | 200 | 202 | 203 | 204 | 205 | 206 | 207 | 208 | 209 => {
+            Some((1, 1, 2, 1, HBP_DIM_NOFE))
+        }
         201 => Some((1, 2, 4, 1, HBP_DIM_NOFE)),
-        202 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        203 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        204 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        205 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        206 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        207 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        208 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        209 => Some((1, 1, 2, 1, HBP_DIM_NOFE)),
-        210 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
         300 => Some((1, 1, 5, 0, HBP_DIM_SCALAR)),
-        900 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
-        901 => Some((1, 1, 2, 2, HBP_DIM_NOFE_LAYERS)),
         _ => None,
     }
 }
 
-fn build_hbp_state_entry(state_id: u16, nofe: u32, max_layers: u32) -> Vec<u8> {
+fn build_hbp_state_entry(
+    state_id: u16,
+    nofe: u32,
+    max_layers: u32,
+) -> Result<Vec<u8>, HillslopeCliError> {
     let (required_flag, representation_class, unit_class, rank, dims_kind) =
-        expected_hbp_state_schema(state_id).expect("required state schema should exist");
+        expected_hbp_state_schema(state_id).ok_or_else(|| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "outputs.pass",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} missing HBP state schema for required state {state_id}"
+                ),
+            }
+        })?;
     let dims = hbp_state_dims(dims_kind, nofe, max_layers);
-    assert_eq!(dims.len(), rank as usize);
+    assert_eq!(dims.len(), usize::from(rank));
 
     let mut entry = Vec::new();
     put_u8(&mut entry, required_flag);
@@ -2971,9 +3028,18 @@ fn build_hbp_state_entry(state_id: u16, nofe: u32, max_layers: u32) -> Vec<u8> {
 
     let mut out = Vec::new();
     put_u16(&mut out, state_id);
-    put_u32(&mut out, entry.len() as u32);
+    put_u32(
+        &mut out,
+        u32::try_from(entry.len()).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP state entry byte count exceeds u32 for state {state_id}: {}",
+                entry.len()
+            ),
+        })?,
+    );
     out.extend_from_slice(&entry);
-    out
+    Ok(out)
 }
 
 fn hbp_state_dims(dims_kind: u8, nofe: u32, max_layers: u32) -> Vec<u32> {
@@ -2987,13 +3053,26 @@ fn hbp_state_dims(dims_kind: u8, nofe: u32, max_layers: u32) -> Vec<u32> {
 
 fn scaled_i64(value: f64) -> Result<i64, HillslopeCliError> {
     let scaled = value * HBP_SCALE_INV_I64;
-    if !scaled.is_finite() || scaled < i64::MIN as f64 || scaled > i64::MAX as f64 {
+    if !scaled.is_finite() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!("{SIMOUT_GUARD_ID} HBP scaled integer is not finite for value {value}"),
+        });
+    }
+    let rounded = scaled.round();
+    if !(HBP_I64_MIN_F64..=HBP_I64_MAX_F64).contains(&rounded) {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "outputs.pass",
             detail: format!("{SIMOUT_GUARD_ID} HBP scaled integer overflow for value {value}"),
         });
     }
-    Ok(scaled.round() as i64)
+    let rounded_text = format!("{rounded:.0}");
+    rounded_text
+        .parse::<i64>()
+        .map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!("{SIMOUT_GUARD_ID} HBP scaled integer parse failure for value {value}"),
+        })
 }
 
 fn put_u8(buf: &mut Vec<u8>, value: u8) {
@@ -3024,9 +3103,19 @@ fn put_f64(buf: &mut Vec<u8>, value: f64) {
     buf.extend_from_slice(&value.to_le_bytes());
 }
 
-fn put_string(buf: &mut Vec<u8>, value: &str) {
-    put_u32(buf, value.len() as u32);
+fn put_string(buf: &mut Vec<u8>, value: &str) -> Result<(), HillslopeCliError> {
+    put_u32(
+        buf,
+        u32::try_from(value.len()).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "outputs.pass",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} HBP string length exceeds u32: {}",
+                value.len()
+            ),
+        })?,
+    );
     buf.extend_from_slice(value.as_bytes());
+    Ok(())
 }
 
 fn put_u32_at(buf: &mut [u8], offset: usize, value: u32) {
@@ -3039,7 +3128,7 @@ fn crc32c(data: &[u8]) -> u32 {
         crc ^= u32::from(*value);
         for _ in 0..8 {
             if crc & 1 == 1 {
-                crc = (crc >> 1) ^ 0x82F63B78;
+                crc = (crc >> 1) ^ 0x82F6_3B78;
             } else {
                 crc >>= 1;
             }
