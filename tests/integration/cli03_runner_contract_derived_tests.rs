@@ -1006,7 +1006,6 @@ fn source_tree_contains_rs(root: &Path, needle: &str) -> bool {
             if path.extension().and_then(|ext| ext.to_str()) != Some("rs") {
                 return false;
             }
-            fs::read_to_string(path)
-                .is_ok_and(|contents| contents.contains(needle))
+            fs::read_to_string(path).is_ok_and(|contents| contents.contains(needle))
         })
 }
