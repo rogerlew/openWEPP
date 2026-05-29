@@ -827,7 +827,7 @@ fn day_count_to_f64_for_gdmax(
 }
 
 fn usize_to_f64_for_growth_error(value: usize) -> f64 {
-    u32::try_from(value).map(f64::from).unwrap_or(f64::NAN)
+    u32::try_from(value).map_or(f64::NAN, f64::from)
 }
 
 fn validate_growth_state_surface(
@@ -1112,4 +1112,3 @@ fn normalize_management_class(
         value,
     })
 }
-
