@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: queued  
-Evidence mode: not-run
+Status: completed  
+Evidence mode: Static + Ran
 
 Evidence artifacts for HPARITY01.

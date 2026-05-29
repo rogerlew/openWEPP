@@ -287,6 +287,9 @@ Minimum WB18 percolation production-kernel conformance vectors:
    `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 3. Missing/non-finite/out-of-domain WB13 percolation/profile symbols are
    invalid runtime states and must hard-fail with WB13 typed guard posture.
+4. WB13 column `Dp` in this addendum is the daily deep-percolation export
+   derived from percolation closure term `D` and is explicitly distinct from
+   climate time-to-peak descriptor `Dp` (`SC-CLIMATE-001`, units `h`).
 
 ## Gap Register
 
@@ -315,3 +318,4 @@ authority closure is completed.
 | `2026-05-23` | `4` | `Codex` | WB11 amendment: promoted percolation section from routing-only scaffolding to production-kernel authority with deterministic `D`/`Pe` updates, typed percolation guard codes (`HKERNEL-WB11-PERC-E-001..003`), and WB11 contract-derived vectors. |
 | `2026-05-23` | `5` | `Codex` | WB13 amendment: added percolation/profile coupling authority for canonical daily output columns (`Dp`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) with explicit malformed-output hard-fail posture. |
 | `2026-05-23` | `6` | `Codex` | WB18 amendment: replaced WB11 scalar percolation authority with WB18 per-layer physics authority (`wb18_perc_theta/fc/ul/ssc/pei_####`), bottom-up layer routing semantics, conductivity-domain constants (`Bi=1`, `fx_min=0.002`, `Δt=86400s`), and updated guard/test obligations. |
+| `2026-05-29` | `7` | `Codex` | HPARITY01 amendment: added explicit cross-contract `Dp` disambiguation note (WB13 deep-percolation export vs climate time-to-peak symbol) in WB13 coupling requirements. |

@@ -1,7 +1,7 @@
 # 20260529-hparity01-hillslope-wat-always-fail-gap-mapping-001
 
 ## Status
-- state: queued
+- state: hold
 - date: 2026-05-29
 - timezone: America/Los_Angeles
 - decision: HOLD

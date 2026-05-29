@@ -152,6 +152,11 @@ introduce explicit aliases.
 | `Tmax`, `Tmin`, `Tdp` | `Tmax`, `Tmin`, `Tdp` (identity) | daily thermodynamic forcing payload | `degC` -> `degC` | `[DIRECT][Static]` |
 | `W`, `u_w` | `W`, `u_w` (identity) | daily wind forcing payload | direction class + speed unchanged | `[DIRECT][Static]` |
 
+Disambiguation note: climate descriptor `Dp` in this contract is
+time-to-peak (`h`) for storm generation. It must not be conflated with WB13
+output-column `Dp` (deep percolation, `mm`) governed by `SC-PERC-001` and
+`SC-WATBAL-001`.
+
 ## Allowed Degenerate States
 
 | Degenerate state | Allowed condition | Rationale |
@@ -557,3 +562,4 @@ states and must hard-fail with typed hydrology guard posture.
 | `2026-05-25` | `11` | `Codex` | SIMIMPL18 amendment: added forcing-span precipitation continuity invariant (`INV-CLIMATE-009`) and explicit producer/consumer obligations requiring deterministic full-span `P` comparability policy publication when legacy baseline span clamps require adaptation. |
 | `2026-05-25` | `12` | `Codex` | SIMIMPL28 amendment: added baseline-authoritative hourly winter forcing synthesis authority (`sunmap`/`radcur`/`hr_tmp`/`stmtim` lineage), required hourly forcing symbol families, typed active-synthesis guard posture, and SIMIMPL28-specific contract-test vectors. |
 | `2026-05-28` | `13` | `Codex` | CLIM17 amendment: added baseline-authoritative breakpoint dry-day parity invariant (`INV-CLIMATE-010`) and seam obligations for `ibrkpt=1` records with `nbrkpt=0`, including deterministic zero forcing projection requirements and malformed positive-cardinality typed-fail retention. |
+| `2026-05-29` | `14` | `Codex` | HPARITY01 amendment: added explicit symbol disambiguation note separating climate time-to-peak `Dp` (`h`) from WB13 deep-percolation column `Dp` (`mm`) used by hydrology publication contracts. |
