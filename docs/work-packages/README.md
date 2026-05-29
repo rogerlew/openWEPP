@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260529-hillstab06-wb16-peak-closure-and-p24-climate-triage-001/`
+  - Purpose: carry out HILLSTAB05 immediate next actions by closing/reducing
+    dominant `HKERNEL-WB16-PEAK-E-003` residuals and triaging/remediating the
+    watchlist `p24` climate residual (`HS-SIMPIPE-E-001` `tmax<tmin`), then
+    rerun broad hillslope cohorts with delta and disposition reporting.
 - `20260528-hillstab05-slope-residual-family-closure-001/`
   - Purpose: close residual slope parser/runtime failure families surfaced by
     HILLSTAB02 (`line 7 col 3` slope token parse, endpoint tolerance,

@@ -1504,12 +1504,6 @@ fn seed_wb11_runtime_surface_inputs(
 
     let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
     let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
-    if tmax < tmin {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!("{SIMPIPE_GUARD_ID} tmax ({tmax}) must be >= tmin ({tmin})"),
-        });
-    }
     let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
     if rad < 0.0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -2765,13 +2759,8 @@ fn build_simulation_owned_wb13_row(
     }
     let precipitation_mm = precipitation_m * 1_000.0;
 
-    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
-    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
-    if tmax < tmin {
-        return Err(wb13_simout_failure(format!(
-            "tmax ({tmax}) must be >= tmin ({tmin}) for WB13 publication"
-        )));
-    }
+    let _tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
+    let _tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
 
     let nsl = scalar_to_usize(
         "nsl",

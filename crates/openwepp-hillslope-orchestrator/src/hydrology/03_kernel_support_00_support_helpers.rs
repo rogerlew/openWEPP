@@ -2080,15 +2080,6 @@ impl Wb11HydrologyKernel {
 
         let tmax = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
         let tmin = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
-        if tmax < tmin - WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_TMAX),
-                value: tmax,
-                minimum: Some(tmin),
-                maximum: None,
-            });
-        }
 
         let frost_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL);
         let prior_frdp_m = Self::optional_state_scalar_for_symbol(
@@ -2628,16 +2619,6 @@ impl Wb11HydrologyKernel {
                 value: newsnw,
                 minimum: Some(0.0),
                 maximum: Some(ssd),
-            });
-        }
-
-        if tmax < tmin - WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_TMAX),
-                value: tmax,
-                minimum: Some(tmin),
-                maximum: None,
             });
         }
 
@@ -3193,4 +3174,3 @@ impl Wb11HydrologyKernel {
         Ok(storage_reconciled)
     }
 }
-

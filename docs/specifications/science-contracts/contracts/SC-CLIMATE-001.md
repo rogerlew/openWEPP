@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration forcing consumers
   - Water-balance and irrigation event-coupling consumers
 evidence_level: static
-last_reviewed: 2026-05-28
+last_reviewed: 2026-05-29
 supersedes: []
 superseded_by: []
 ---
@@ -60,6 +60,7 @@ Out of scope:
 | REF-CLIMATE-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1-§5.2 | Water-balance/ET consumes generated precipitation/temperature/radiation/wind/dew-point forcing. | `[DIRECT][Static]` |
 | REF-CLIMATE-CH12-COUPLING | `references/50201000/chap12.pdf` §12.2.1 | Irrigation concurrent-event logic combines irrigation with Chapter-2 rainfall disaggregation. | `[DIRECT][Static]` |
 | REF-CLIMATE-WF-STMGET-BRKPT0 | `/workdir/wepp-forest_260430_baseline/src/stmget.for` (`ibrkpt=1` breakpoint branch dry-day handling) and `/workdir/wepp-forest_260430_baseline/src/brkpt.for` (positive-event breakpoint transform path). | Baseline-authoritative breakpoint dry-day semantics in breakpoint mode (`nbrkpt=0` accepted with zero precipitation/intensity forcing) and positive-event transform behavior for `nbrkpt>0`. | `[DIRECT][Static]` |
+| REF-CLIMATE-WF-HRTMP-ITFLAG | `/workdir/wepp-forest_260430_baseline/src/hr_tmp.for` (`itflag=1` branch) | Baseline-authoritative near-isothermal daily thermal forcing behavior: when `itflag=1` (`tmax-tmin <= 1`), hourly synthesis uses mean-air-temperature branch (`hrtemp = (tmax+tmin)/2`) and does not require strict `tmax >= tmin` ordering. | `[DIRECT][Static]` |
 | REF-CLIMATE-PHYS-BOUNDS | Physical/common-sense invariant class | Probability bounds and non-negative rainfall/intensity domains are required for physical validity. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -107,6 +108,7 @@ Out of scope:
 | INV-CLIMATE-008 | Explicit model-limit governance invariant: depth-duration-frequency sensitivity limitations, tentative duration/peak equations, and unresolved multi-storm-per-day behavior must remain explicit and cannot be silently treated as closed science. | governance-fail | REF-CLIMATE-CH2-LIMIT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-009 | SIMIMPL18 replay-span precipitation continuity invariant: parity lanes claiming identical baseline/candidate forcing must publish explicit full-span precipitation-key comparability policy (`P` over declared keyed horizon). When legacy baseline execution clamps to one year, year-policy adaptation (for example span expansion/rekey policy) must be explicit and deterministic; overlap-only silent comparison is non-authoritative. | hard-fail | REF-CLIMATE-CH2-AMT, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-010 | Breakpoint-mode dry-day invariant: when breakpoint mode is active and a daily climate record declares `nbrkpt=0`, runtime forcing remains valid and must publish deterministic dry-day breakpoint surfaces (`nbrkpt=0`, `prcp=0`, `stmdur=0`, `mxint=0`) with empty `timem_*` and `intsty_*` families; this state is not an empty-series hard-fail. | hard-fail | REF-CLIMATE-WF-STMGET-BRKPT0, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-CLIMATE-011 | Daily thermal-inversion compatibility invariant: climate forcing with finite `tmax`/`tmin` remains valid even when `tmax < tmin`; runtime consumers must not hard-fail on ordering alone and must preserve baseline mean-temperature lineage (`tave = (tmax+tmin)/2`) for near-isothermal hourly synthesis branches. | hard-fail | REF-CLIMATE-WF-HRTMP-ITFLAG, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -122,6 +124,7 @@ Out of scope:
 | `INV-CLIMATE-008` | governance | Review/disposition/verification + promotion checklist | Promotion `HOLD` until limitation scope/risk is explicitly dispositioned | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-009` | runtime + governance | Replay forcing-span provenance + precipitation-key parity policy validator | Typed hard error / explicit `HOLD` when full-span `P` comparability policy is absent, overlap-only by-default, or baseline-year adaptation is implicit/ambiguous | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-010` | runtime | Breakpoint runtime adapter and forcing projection seams | Typed hard error only for malformed positive-cardinality breakpoint payloads; `nbrkpt=0` breakpoint dry-day records publish zero forcing payload without fallback mutation | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-CLIMATE-011` | runtime | Runtime forcing projection and hydrology publication seams consuming `tmax`/`tmin` | Typed hard error only on missing/non-finite thermal symbols; finite inversion ordering (`tmax < tmin`) is compatibility-valid and must not hard-fail by ordering check alone | Tier-A climate/runtime compatibility gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -188,6 +191,10 @@ introduce explicit aliases.
   with empty `timem_*`/`intsty_*` series and must not be rejected as malformed
   empty-series records.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-CLIMATE-P-007: Runtime forcing projection must accept finite `tmax`/`tmin`
+  inversion records without ordering-only hard-fail and preserve mean-temperature
+  lineage (`(tmax+tmin)/2`) where hourly compatibility branches require it.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -197,6 +204,10 @@ introduce explicit aliases.
 - OBL-CLIMATE-C-004: Replay/comparator consumers must fail closed when
   precipitation parity claims omit explicit full-span key-policy handling for
   baseline/candidate span mismatch.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-CLIMATE-C-005: Hydrology and publication consumers must reject only
+  missing/non-finite thermal symbols; finite `tmax < tmin` records are
+  compatibility-valid and must not be rejected on ordering alone.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
@@ -210,6 +221,7 @@ introduce explicit aliases.
 | Model-limit governance (`INV-CLIMATE-008`) | review/verification/promotion check | Governance `HOLD` until explicit limitation disposition | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL18 forcing-span precipitation continuity (`INV-CLIMATE-009`) | replay forcing provenance and semantic parity policy publication boundary | Hard error / `HOLD` when full-span keyed `P` policy metadata is absent or overlap-only comparison is treated as authoritative | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | CLIM17 breakpoint-mode dry-day parity (`INV-CLIMATE-010`) | breakpoint runtime adapter and hillslope/watershed climate projection seams | Hard error for malformed positive-cardinality payloads; deterministic zero forcing projection for `nbrkpt=0` breakpoint-mode dry days | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| CLIM18 thermal inversion compatibility (`INV-CLIMATE-011`) | runtime forcing projection and WB11/WB13 climate-consumer seams | Hard error only for missing/non-finite thermal symbols; finite inversion ordering remains valid compatibility input | Tier-A climate/runtime compatibility gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -497,6 +509,25 @@ states and must hard-fail with typed hydrology guard posture.
 3. Malformed positive-cardinality vectors (`nbrkpt>0` with missing breakpoint
    rows) remain typed hard-fail with `CLIM-RUNTIME-E-008`.
 
+## CLIM18 Daily Thermal-Inversion Compatibility Addendum
+
+### CLIM18 Deterministic Runtime Requirements
+
+1. Finite daily thermal forcing pairs are compatibility-valid even when
+   `tmax < tmin`; ordering inversion alone is not a domain-fail condition.
+2. Runtime forcing consumers must preserve baseline mean-temperature lineage
+   for compatibility branches:
+   - `tave = (tmax + tmin) / 2`
+3. Thermal forcing still hard-fails on missing/non-finite symbols; CLIM18 does
+   not authorize silent defaults.
+
+### CLIM18 Contract-Test Vectors
+
+1. Finite inversion vector (`tmax < tmin`) executes hillslope runtime forcing
+   projection and scheduler/kernel lifecycle without ordering-only hard-fail.
+2. Missing `tmax` or `tmin` remains typed hard-fail via required-input guards.
+3. Non-finite `tmax` or `tmin` remains typed hard-fail via non-finite guards.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -511,6 +542,7 @@ states and must hard-fail with typed hydrology guard posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `14` | `Codex` | CLIM18 amendment: added baseline-authoritative daily thermal-inversion compatibility invariant (`INV-CLIMATE-011`) and runtime forcing obligations so finite `tmax < tmin` records are accepted without ordering-only hard-fail while preserving typed missing/non-finite guards. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-03 package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with climate invariants, guard map, symbol alias map, and dual-review workflow readiness for SCI-03. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: canonical symbol continuity fixes, added missing `Ak`/`Nk`/`N` and alias coverage, and scoped breakpoint invariant to storm events. |

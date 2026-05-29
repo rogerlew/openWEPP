@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 38
+contract_version: 40
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-05-26
+last_reviewed: 2026-05-29
 supersedes: []
 superseded_by: []
 ---
@@ -749,36 +749,43 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 1. WB16 executes at closure diagnostics and consumes reconciled runoff depth
    `Q` from WB14 plus coupled runtime forcing metadata from the accepted event.
-2. Event duration for WB16 is derived from hyetograph elapsed time:
+2. Baseline-authoritative near-zero runoff branch from
+   `/workdir/wepp-forest_260430_baseline/src/appmth.for` applies first:
+   - if `Q < 1.0e-8`, emit `peakro_raw = 0`, then canonicalize
+     `peakro = 3.63e-8` and `watdur = 0`.
+3. Event duration for WB16 is derived from hyetograph elapsed time:
    - `effdrr = timem_last - timem_first` (`s`)
-3. Mean runoff rate and runoff-maximum ratio terms are:
+4. Mean runoff rate and runoff-maximum ratio terms are:
    - `vave = Q / effdrr`
    - `remax = max(intsty_####) + irrigation.runtime_rate_m_per_s`
    - `vstar = vave / remax`
-4. Kinematic-wave time ratio and branch selector terms follow Chapter-4
+5. Kinematic-wave time ratio and branch selector terms follow Chapter-4
    lineage (`appmth.for`):
    - `te = (efflen / (ealpha * vave^(m-1)))^(1/m)`
    - `tstar = te / effdrr`
    - if `vstar < 1`, `tc = (1 - sqrt(1 - 2.4 * (1 - vstar) * vstar)) / (1.2 * (1 - vstar))`
-5. Peak-runoff nondimensional ratio `qpstar` is branch-authoritative:
+6. Peak-runoff nondimensional ratio `qpstar` is branch-authoritative:
    - partial-equilibrium branch (`tstar >= 1`): `qpstar = 1 / tstar^m`
    - quasi-equilibrium branch A (`vstar < 1` and `tc < tstar < 1`):
      `qpstar = 1 / tstar`
    - quasi-equilibrium branch B (`vstar < 1` and `0 < tstar <= tc`):
      `qpstar = 1/vstar - 0.6 * ((1 - vstar) / vstar) * tstar`
    - constant-excess branch (`vstar >= 1` and `tstar < 1`): `qpstar = 1`
-6. Peak runoff and duration outputs are:
+7. Peak runoff and duration outputs are:
    - `peakro_raw = vave * qpstar`
    - `peakro = max(peakro_raw, 3.63e-8)` (legacy minimum-flow floor from
      `conrun.for`)
    - `watdur = Q / peakro`
-7. Duration cap rule is explicit:
+8. Duration cap rule is explicit:
    - if `watdur > 86400`, set `watdur = 86400`.
-8. WB16 domain posture is hard-fail for missing/non-finite/out-of-domain
+9. WB16 domain posture is hard-fail for missing/non-finite/out-of-domain
    symbols and non-physical intermediates (`effdrr <= 0`, `vave <= 0`,
    `remax <= 0`, `vstar <= 0`, `m <= 0`, `ealpha <= 0`, `efflen <= 0`,
    negative `tc` discriminant for `vstar < 1`, or non-finite `peakro`/`watdur`).
    No fallback/default branch is allowed.
+10. Positive near-zero WB16 intermediates are valid and must not hard-fail
+    solely due epsilon-threshold comparisons prior to baseline floor
+    canonicalization.
 
 ### WB16 Guard Codes
 
@@ -800,6 +807,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 4. Non-finite WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-002`.
 5. Domain-invalid WB16 symbol/intermediate hard-fails with
    `HKERNEL-WB16-PEAK-E-003`.
+6. Near-zero positive runoff vector (`0 < Q < 1.0e-8`) executes the
+   baseline-authoritative branch, emits `peakro = 3.63e-8`, `watdur = 0`,
+   and does not hard-fail.
 
 ## WB13 Daily Output-Surface Authority Addendum
 
@@ -1106,6 +1116,7 @@ canonical order:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `40` | `Codex` | HILLSTAB06 amendment: aligned WB16 authority to baseline `appmth` near-zero runoff branch (`Q < 1.0e-8`) and explicit positivity-domain semantics so positive near-zero WB16 intermediates do not fail pre-floor. |
 | `2026-05-28` | `39` | `Codex` | HILLSTAB03 WB16 amendment: corrected baseline `appmth.for` branch authority by deriving `tc` from `vstar`, adding explicit `vstar>=1` constant-excess branch (`qpstar=1`), removing non-authoritative `timep` as required WB16 coupling input, and updating WB16 domain/test-vector obligations accordingly. |
 | `2026-05-26` | `38` | `Codex` | SIMIMPL36 amendment: added explicit WB12/WB14 near-zero reconciled-runoff canonicalization authority (`TOL-WATBAL-006`) requiring `Q`/`wb12_runoff_reconciled` normalization to zero only within `[-1e-12, 0)` before writeback/publication while preserving typed domain-fail posture for material negatives. |
 | `2026-05-25` | `37` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity selection authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor), including required regime symbols and typed active-path guard obligations. |

@@ -299,6 +299,7 @@ pub(crate) const WB16_SYMBOL_QPSTAR: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb16Qpstar;
 pub(crate) const WB16_SYMBOL_VSTAR: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb16Vstar;
+pub(crate) const WB16_RUNOFF_NEAR_ZERO_THRESHOLD: f64 = 1.0e-8;
 pub(crate) const WB16_PEAKRO_FLOOR: f64 = 3.63e-8;
 pub(crate) const WB16_MAX_DURATION_S: f64 = 86_400.0;
 pub(crate) const EROD13_SYMBOL_CORE_ENABLED: &str = "erod13_core_enabled";

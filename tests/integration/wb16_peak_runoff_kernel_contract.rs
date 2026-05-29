@@ -466,3 +466,46 @@ fn wb16_contract_conformance_executes_without_timep_symbol() {
         report.scheduler_report.halted_phase
     );
 }
+
+#[test]
+fn wb16_contract_conformance_accepts_near_zero_positive_runoff_with_floor_canonicalization() {
+    let mut surface = seeded_wb16_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(5.0e-9),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_closure_tolerance"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = run_surface(surface);
+
+    assert!(
+        report.scheduler_report.is_success(),
+        "near-zero runoff should remain compatibility-valid; halted_phase={:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let peakro = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("peakro"))
+        .expect("peakro should be present")
+        .as_f64();
+    let watdur = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("watdur"))
+        .expect("watdur should be present")
+        .as_f64();
+
+    assert!(peakro.is_finite());
+    assert!(peakro + WB16_TEST_TOLERANCE >= 3.63e-8);
+    assert!(watdur.is_finite());
+    assert!(watdur >= -WB16_TEST_TOLERANCE);
+}

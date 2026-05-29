@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 20
+contract_version: 21
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-05-26
+last_reviewed: 2026-05-29
 supersedes: []
 superseded_by: []
 ---
@@ -590,34 +590,44 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | Surface | Symbols |
 |---|---|
 | Closure-diagnostics runoff inputs | `Q`, `timem_####`, `intsty_####`, `Irr`, `I` |
-| Peak-branch parameters | `timep`, `efflen`, `ealpha`, `m` |
+| Peak-branch parameters | `efflen`, `ealpha`, `m` |
 | WB16 outputs | `peakro`, `watdur`, `wb16_peak_method_branch`, `wb16_tstar`, `wb16_qpstar`, `wb16_vstar` |
 
 ### WB16 Deterministic Peak-Runoff Rule
 
 1. WB16 peak runoff consumes accepted WB14/WB15/IRRIG10-coupled runoff depth
    `Q` at closure diagnostics.
-2. Event duration is derived from hyetograph elapsed time:
+2. Baseline-authoritative near-zero runoff branch from
+   `/workdir/wepp-forest_260430_baseline/src/appmth.for` applies first:
+   - if `Q < 1.0e-8`, emit `peakro_raw = 0`, then canonicalize
+     `peakro = 3.63e-8` and `watdur = 0`.
+3. Event duration is derived from hyetograph elapsed time:
    - `effdrr = timem_last - timem_first`.
-3. Mean runoff and maximum-rate terms are:
+4. Mean runoff and maximum-rate terms are:
    - `vave = Q / effdrr`
    - `remax = max(intsty_####) + irrigation.runtime_rate_m_per_s`
    - `vstar = vave / remax`
-4. Time-ratio branch terms use Chapter-4 lineage:
+5. Time-ratio branch terms use Chapter-4 lineage:
    - `te = (efflen / (ealpha * vave^(m-1)))^(1/m)`
    - `tstar = te / effdrr`
-   - `tc = timep`
-5. Branch authority is deterministic:
+   - if `vstar < 1`,
+     `tc = (1 - sqrt(1 - 2.4 * (1 - vstar) * vstar)) / (1.2 * (1 - vstar))`
+6. Branch authority is deterministic:
    - `tstar >= 1`: `qpstar = 1 / tstar^m`
-   - `tc < tstar < 1`: `qpstar = 1 / tstar`
-   - `0 < tstar <= tc`:
+   - `vstar < 1` and `tc < tstar < 1`: `qpstar = 1 / tstar`
+   - `vstar < 1` and `0 < tstar <= tc`:
      `qpstar = 1/vstar - 0.6 * ((1 - vstar) / vstar) * tstar`
-6. Peak/runoff-duration outputs are:
+   - `vstar >= 1` and `tstar < 1`: `qpstar = 1`
+7. Peak/runoff-duration outputs are:
    - `peakro_raw = vave * qpstar`
    - `peakro = max(peakro_raw, 3.63e-8)`
    - `watdur = min(Q / peakro, 86400)`
-7. Missing/non-finite/out-of-domain WB16 symbol/intermediate states are
+8. Missing/non-finite/out-of-domain WB16 symbol/intermediate states are
    hard-fail and must not silently default/branch-repair.
+9. Domain-invalid means non-finite values or non-positive required branch
+   denominators (`effdrr <= 0`, `remax <= 0`, `vave <= 0`, `vstar <= 0`,
+   `m <= 0`, `ealpha <= 0`, `efflen <= 0`); positive near-zero magnitudes are
+   valid and must not hard-fail solely due epsilon thresholds.
 
 ### WB16 Typed Guard Codes
 
@@ -637,6 +647,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Non-finite WB16 required symbol hard-fails with `HKERNEL-WB16-PEAK-E-002`.
 5. Domain-invalid WB16 symbol/intermediate hard-fails with
    `HKERNEL-WB16-PEAK-E-003`.
+6. Near-zero positive runoff vector (`0 < Q < 1.0e-8`) executes the
+   baseline-authoritative branch, emits `peakro = 3.63e-8`, `watdur = 0`,
+   and does not hard-fail.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -702,6 +715,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `21` | `Codex` | HILLSTAB06 amendment: aligned WB16 authority to baseline `appmth` near-zero runoff branch (`Q < 1.0e-8`) and explicit positivity-domain semantics so positive near-zero WB16 intermediates do not fail pre-floor. |
 | `2026-05-26` | `20` | `Codex` | SIMIMPL36 amendment: added explicit WB12/WB14 near-zero reconciled-runoff canonicalization authority (`TOL-RUNOFFPART-006`) requiring `Q`/`wb12_runoff_reconciled` normalization to zero only within `[-1e-12, 0)` before writeback/publication while preserving hard-fail posture for material negatives. |
 | `2026-05-25` | `19` | `Codex` | MOFE13 amendment: added baseline-authoritative WB14 `ksatadj` three-regime conductivity authority (`9001` exponential recovery, `9002` Saxton-Rawls Brooks-Corey, `9003` burn-severity floor) with explicit active-path guard posture and WB18 layer-state coupling inputs. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-06 work-package prep. |

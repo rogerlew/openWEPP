@@ -685,6 +685,40 @@ loss = "output/H1.loss.json"
     );
 }
 
+#[test]
+fn cli03_runtime_accepts_finite_daily_temperature_inversion_records() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-temperature-inversion-compatibility"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+wat = "output/H1.wat.parquet"
+"#;
+
+    let (report, _temp_run_dir) = execute_fixture_with_runfile_report_with_mode_and_customizer(
+        runfile,
+        "cli03_temperature_inversion_compatibility",
+        false,
+        |run_dir| {
+            write_temperature_inversion_climate(&run_dir.join("case.cli"));
+        },
+    )
+    .expect("finite tmax<tmin climate records should remain compatibility-valid");
+
+    assert!(report.output_pass.is_file());
+    assert!(report.output_loss.is_file());
+}
+
 fn execute_fixture_with_runfile(
     runfile_payload: &str,
     prefix: &str,
@@ -843,6 +877,29 @@ DAILY UNITS
 2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0
 ";
     fs::write(path, payload).expect("high-runoff climate fixture should be writable");
+}
+
+fn write_temperature_inversion_climate(path: &Path) {
+    let payload = "\
+5.30
+1 0 0
+TEST STATION 0001
+DAY MON YEAR PRCP STMDUR TIMEP IP TMAX TMIN RAD VWIND WIND TDPT
+45.0 -120.0 1000.0 30 2000 1 CLIGEN 5.30 --seed 123
+MONTHLY MAX TEMP HEADER
+1 2 3 4 5 6 7 8 9 10 11 12
+MONTHLY MIN TEMP HEADER
+-5 -4 -3 -2 -1 0 1 2 3 4 5 6
+MONTHLY RAD HEADER
+100 101 102 103 104 105 106 107 108 109 110 111
+MONTHLY RAIN HEADER
+10 11 12 13 14 15 16 17 18 19 20 21
+DAILY HEADER
+DAILY UNITS
+1 1 2000 10.0 2.0 0.25 3.0 11.3 11.4 200.0 3.0 180.0 -1.0
+2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0
+";
+    fs::write(path, payload).expect("temperature-inversion climate fixture should be writable");
 }
 
 fn write_three_ofe_management(path: &Path) {
