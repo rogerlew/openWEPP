@@ -34,6 +34,22 @@ Each binary must ship with a JSON sidecar at:
 
 Missing sidecar is a hard error.
 
+## Sidecar emission command surface
+
+Canonical operator automation surface:
+
+```text
+open_wepp_runner release sidecar --binary <path> --role <watershed|hillslope|replay>
+```
+
+Requirements:
+
+1. `--binary` and `--role` are required.
+2. Role must be one of `watershed`, `hillslope`, `replay`.
+3. Command writes/refreshes `<binary_path>.json`.
+4. Emitted sidecar must validate against required schema/field set before
+   success return.
+
 ## Sidecar schema
 
 Schema ID:

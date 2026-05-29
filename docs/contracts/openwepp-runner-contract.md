@@ -36,6 +36,7 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
 
 - `open_wepp_runner run-hillslope ...`
 - `open_wepp_runner release lint --release-dir <path>`
+- `open_wepp_runner release sidecar --binary <path> --role <role>`
 
 `run-hillslope` requirements:
 
@@ -84,6 +85,16 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
    `openwepp-binary-release-contract.md`.
 4. Reject mixed/invalid watershed-hillslope pairing claims.
 
+`release sidecar` requirements:
+
+1. Require explicit `--binary <path>` and
+   `--role <watershed|hillslope|replay>`.
+2. Write `<binary_path>.json` sidecar using
+   `openwepp-binary-release-metadata-v1` required fields.
+3. Validate emitted sidecar before command success return.
+4. Reject unsupported roles and missing required flags as hard errors.
+5. Surface metadata IO/validation failures as typed errors; no silent fallback.
+
 ## Typed Runner Failure IDs
 
 Runner boundary failures use stable IDs:
@@ -94,6 +105,14 @@ Runner boundary failures use stable IDs:
 - `RUNNER-E-004`: launched process exited non-zero
 - `RUNNER-E-005`: release sidecar missing/invalid
 - `RUNNER-E-006`: release binary naming contract violation
+
+Release metadata emission failures use stable IDs:
+
+- `RELMD-E-001`: sidecar/binary path IO failure
+- `RELMD-E-002`: sidecar JSON serialization failure
+- `RELMD-E-003`: emitted sidecar JSON parse failure
+- `RELMD-E-004`: required sidecar field missing
+- `RELMD-E-005`: sidecar field invalid
 
 ## CLI03/CLI04 Output Guard IDs
 

@@ -7,6 +7,8 @@ but are not model-physics contracts.
 
 - `repository-transition-plan-2026-05-11.md` — planned repository transition
   sequence; documentation-only in this change, no execution.
+- `openwepp-release-procedure-draft.md` — canonical draft release runbook for
+  candidate assembly, release linting, and evidence expectations.
 - `legacy-source-attribution-and-contributors-policy.md` — required attribution
   and contributor-governance metadata for Rust files that port legacy WEPP
   source units.

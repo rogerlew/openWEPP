@@ -59,6 +59,15 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260529-relproc02-runner-sidecar-emission-cli-001/`
+  - Purpose: implement and disposition a dedicated
+    `open_wepp_runner release sidecar` command surface for explicit binary
+    path/role sidecar emission, and align release contracts/runbook to that
+    automation.
+- `20260529-relproc01-openwepp-release-procedure-draft-001/`
+  - Purpose: draft and disposition a canonical openWEPP release procedure
+    documenting candidate assembly, required validation gates, sidecar/lint
+    checks, and stability-regression evidence expectations.
 - `20260529-hillstab06-wb16-peak-closure-and-p24-climate-triage-001/`
   - Purpose: carry out HILLSTAB05 immediate next actions by closing/reducing
     dominant `HKERNEL-WB16-PEAK-E-003` residuals and triaging/remediating the

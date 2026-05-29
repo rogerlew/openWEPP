@@ -224,6 +224,7 @@ pub enum RunnerError {
     LaunchFailure { source: io::Error },
     NonZeroExit { status: ExitStatus },
     ReleaseLint { source: ReleaseLintError },
+    ReleaseMetadata { source: ReleaseMetadataError },
 }
 
 impl RunnerError {
@@ -235,6 +236,7 @@ impl RunnerError {
             Self::LaunchFailure { .. } => "RUNNER-E-003",
             Self::NonZeroExit { .. } => "RUNNER-E-004",
             Self::ReleaseLint { source } => source.code(),
+            Self::ReleaseMetadata { source } => source.code(),
         }
     }
 }
@@ -262,6 +264,7 @@ impl fmt::Display for RunnerError {
                 write!(f, "{} child process exited non-zero: {status}", self.code())
             }
             Self::ReleaseLint { source } => write!(f, "{source}"),
+            Self::ReleaseMetadata { source } => write!(f, "{source}"),
         }
     }
 }
@@ -271,6 +274,7 @@ impl Error for RunnerError {
         match self {
             Self::LaunchFailure { source } => Some(source),
             Self::ReleaseLint { source } => Some(source),
+            Self::ReleaseMetadata { source } => Some(source),
             Self::MissingArgument { .. }
             | Self::HillslopeBinaryMissing { .. }
             | Self::NonZeroExit { .. } => None,
