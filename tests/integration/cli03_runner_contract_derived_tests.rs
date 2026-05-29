@@ -1007,7 +1007,6 @@ fn source_tree_contains_rs(root: &Path, needle: &str) -> bool {
                 return false;
             }
             fs::read_to_string(path)
-                .map(|contents| contents.contains(needle))
-                .unwrap_or(false)
+                .is_ok_and(|contents| contents.contains(needle))
         })
 }
