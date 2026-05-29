@@ -59,6 +59,26 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260529-hparity05-unpalatable-rind-column-parity-closeout-001/`
+  - Purpose: execute final always-fail-column closeout for `unpalatable-rind`
+    by rerunning full 39-hillslope + watershed integration, verifying all 12
+    prior always-fail `H.wat` columns are closed, and publishing hold-lift
+    disposition evidence.
+- `20260529-hparity04-percolation-lateralflow-soilwater-closure-001/`
+  - Purpose: close `Dp`, `latqcc`, `SoilWaterTotal`, and `Total-Soil`
+    semantic parity deviations using contract-first percolation/subsurface
+    lineage closure and cohort rerun evidence.
+- `20260529-hparity03-rainmelt-energy-snow-column-closure-001/`
+  - Purpose: close `RM`, `Ep`, `Es`, and `Snow-Water` semantic parity
+    deviations using baseline-authoritative climate/ET/snow process lineage.
+- `20260529-hparity02-profile-capacity-storage-lineage-closure-001/`
+  - Purpose: close profile-capacity semantic parity deviations
+    (`ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`)
+    before downstream flux-family closure.
+- `20260529-hparity01-hillslope-wat-always-fail-gap-mapping-001/`
+  - Purpose: establish canonical contract provenance, gap matrix mapping, and
+    closure-measure scaffolding for the 12 hillslope `H.wat` always-fail
+    columns observed in `unpalatable-rind`.
 - `20260529-relproc03-release-gate-ci-automation-001/`
   - Purpose: implement and disposition release-gate CI automation for runbook
     gates (`fmt`, `clippy`, `test`, `deny`, release lint, stability cohort)
