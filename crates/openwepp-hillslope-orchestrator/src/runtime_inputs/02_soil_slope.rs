@@ -156,8 +156,6 @@ pub fn build_hillslope_runtime_surface_from_soil(
         }
 
         let mut previous_depth_mm = 0.0_f64;
-        let mut ofe_corrected_fc_store_mm = 0.0_f64;
-        let mut ofe_corrected_wp_store_mm = 0.0_f64;
         for (layer_position, layer) in ofe.layers.iter().enumerate() {
             let layer_index = layer_position + 1;
             let layer_depth_mm = layer.depth_mm;
@@ -327,9 +325,6 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     }
                 }
             }
-            ofe_corrected_fc_store_mm += layer_thetfc * layer_dg_m * 1_000.0;
-            ofe_corrected_wp_store_mm += layer_thetdr * layer_dg_m * 1_000.0;
-
             previous_depth_mm = layer_depth_mm;
         }
 
@@ -381,14 +376,14 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     BoundarySymbol::from("wb13_profile_porosity_cap_mm"),
                     BoundaryValue::scalar(profile_symbols.porosity_cap),
                 );
-                    state_surface.insert(
-                        BoundarySymbol::from("wb13_profile_fc_store_mm"),
-                        BoundaryValue::scalar(ofe_corrected_fc_store_mm),
-                    );
-                    state_surface.insert(
-                        BoundarySymbol::from("wb13_profile_wp_store_mm"),
-                        BoundaryValue::scalar(ofe_corrected_wp_store_mm),
-                    );
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_fc_store_mm"),
+                    BoundaryValue::scalar(profile_symbols.fc_store),
+                );
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_wp_store_mm"),
+                    BoundaryValue::scalar(profile_symbols.wp_store),
+                );
                 }
             }
         }
@@ -403,6 +398,8 @@ pub fn build_hillslope_runtime_surface_from_soil(
 struct Wb13ProfileSymbols {
     depth: f64,
     porosity_cap: f64,
+    fc_store: f64,
+    wp_store: f64,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -487,16 +484,23 @@ fn compute_wb13_profile_symbols_from_legacy_seed(
 
     let mut profile_depth_mm = 0.0_f64;
     let mut profile_porosity_cap_mm = 0.0_f64;
+    let mut profile_fc_store_mm = 0.0_f64;
+    let mut profile_wp_store_mm = 0.0_f64;
 
     for layer in expanded_layers {
         let corrected = legacy_correct_layer_moisture(layer)?;
-        profile_depth_mm += corrected.thickness_m * 1000.0;
-        profile_porosity_cap_mm += corrected.porosity * corrected.thickness_m * 1000.0;
+        let thickness_mm = corrected.thickness_m * 1000.0;
+        profile_depth_mm += thickness_mm;
+        profile_porosity_cap_mm += corrected.porosity * thickness_mm;
+        profile_fc_store_mm += corrected.thetfc * thickness_mm;
+        profile_wp_store_mm += corrected.thetdr * thickness_mm;
     }
 
     Some(Wb13ProfileSymbols {
         depth: profile_depth_mm,
         porosity_cap: profile_porosity_cap_mm,
+        fc_store: profile_fc_store_mm,
+        wp_store: profile_wp_store_mm,
     })
 }
 
@@ -727,6 +731,15 @@ fn legacy_correct_layer_moisture(
     }
     thetdr = thetdr.max(0.01);
     thetfc = thetfc.max(0.01);
+    if !thetfc.is_finite() || !thetdr.is_finite() {
+        return None;
+    }
+    if thetdr > thetfc {
+        return None;
+    }
+    if thetfc > por {
+        return None;
+    }
 
     Some(LegacyCorrectedLayerMoisture {
         thickness_m: dg,

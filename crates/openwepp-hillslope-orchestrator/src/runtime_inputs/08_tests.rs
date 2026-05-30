@@ -95,6 +95,122 @@ mod tests {
         context
     }
 
+    #[derive(Clone, Copy, Debug)]
+    struct Wb13NormalizedProfileExpectation {
+        depth: f64,
+        porosity_cap: f64,
+        fc_store: f64,
+        wp_store: f64,
+    }
+
+    fn normalized_corrected_layers_from_ofe(
+        ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    ) -> Vec<(f64, f64, f64, f64)> {
+        let seeds = ofe
+            .layers
+            .iter()
+            .enumerate()
+            .map(|(layer_position, layer)| LegacySoilLayerSeed {
+                depth_mm: layer.depth_mm,
+                bulk_density_g_cm3: layer.bulk_density_g_cm3.unwrap_or_else(|| {
+                    panic!(
+                        "fixture layer {} must include bulk_density_g_cm3 for normalization test",
+                        layer_position + 1
+                    )
+                }),
+                fc_measured: layer.fc_measured.unwrap_or_else(|| {
+                    panic!(
+                        "fixture layer {} must include fc_measured for normalization test",
+                        layer_position + 1
+                    )
+                }),
+                wp_measured: layer.wp_measured.unwrap_or_else(|| {
+                    panic!(
+                        "fixture layer {} must include wp_measured for normalization test",
+                        layer_position + 1
+                    )
+                }),
+                sand_pct: layer.sand_pct,
+                clay_pct: layer.clay_pct,
+                orgmat_pct: layer.orgmat_pct,
+                cec_meq_100g: layer.cec_meq_100g,
+                rock_frag_pct: layer.rock_frag_pct,
+            })
+            .collect::<Vec<_>>();
+
+        legacy_expand_soil_layers_to_200mm(&seeds)
+            .expect("fixture should produce normalized correction layers")
+            .into_iter()
+            .map(|layer| {
+                let corrected = legacy_correct_layer_moisture(layer)
+                    .expect("fixture normalized layers should yield corrected moisture");
+                (
+                    corrected.thickness_m,
+                    corrected.porosity,
+                    corrected.thetfc,
+                    corrected.thetdr,
+                )
+            })
+            .collect::<Vec<_>>()
+    }
+
+    fn expected_wb13_profile_symbols_from_normalized_correction(
+        ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    ) -> Wb13NormalizedProfileExpectation {
+        let mut expectation = Wb13NormalizedProfileExpectation {
+            depth: 0.0,
+            porosity_cap: 0.0,
+            fc_store: 0.0,
+            wp_store: 0.0,
+        };
+        for (thickness_m, porosity, thetfc, thetdr) in normalized_corrected_layers_from_ofe(ofe) {
+            let thickness_mm = thickness_m * 1_000.0;
+            expectation.depth += thickness_mm;
+            expectation.porosity_cap += porosity * thickness_mm;
+            expectation.fc_store += thetfc * thickness_mm;
+            expectation.wp_store += thetdr * thickness_mm;
+        }
+        expectation
+    }
+
+    fn aggregated_profile_storage_from_layer_symbols(
+        surface: &crate::HillslopeWritebackSurface,
+    ) -> (f64, f64) {
+        let nsl_raw = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nsl"))
+            .expect("nsl should be present")
+            .as_f64();
+        let nsl = format!("{nsl_raw:.0}")
+            .parse::<usize>()
+            .expect("nsl should round-trip into usize");
+        assert!(nsl >= 1, "nsl must be >= 1");
+
+        let mut aggregated_fc_store_mm = 0.0_f64;
+        let mut aggregated_wp_store_mm = 0.0_f64;
+        for layer_index in 1..=nsl {
+            let dg = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("dg_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("dg_{layer_index:04} should be present"))
+                .as_f64();
+            let thetfc = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
+                .as_f64();
+            let thetdr = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
+                .as_f64();
+            aggregated_fc_store_mm += thetfc * dg * 1_000.0;
+            aggregated_wp_store_mm += thetdr * dg * 1_000.0;
+        }
+
+        (aggregated_fc_store_mm, aggregated_wp_store_mm)
+    }
+
     fn expected_authoritative_theta_from_normalized_overlap_mapping(
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ) -> Vec<(f64, f64)> {
@@ -299,6 +415,12 @@ mod tests {
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from parsed soil");
+        let ofe = soil
+            .ofes
+            .first()
+            .expect("9002 fixture should include a primary OFE");
+        let expected_profile =
+            expected_wb13_profile_symbols_from_normalized_correction(ofe);
 
         let profile_depth_mm = surface
             .state_surface
@@ -320,48 +442,27 @@ mod tests {
             .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
             .expect("wb13_profile_wp_store_mm should be present")
             .as_f64();
-        let nsl_raw = surface
-            .state_surface
-            .get(&BoundarySymbol::from("nsl"))
-            .expect("nsl should be present")
-            .as_f64();
-        let nsl = format!("{nsl_raw:.0}")
-            .parse::<usize>()
-            .expect("nsl should round-trip into usize");
-        assert!(nsl >= 1, "nsl must be >= 1");
+        let (layer_fc_store_mm, layer_wp_store_mm) =
+            aggregated_profile_storage_from_layer_symbols(&surface);
 
-        let mut aggregated_fc_store_mm = 0.0_f64;
-        let mut aggregated_wp_store_mm = 0.0_f64;
-        for layer_index in 1..=nsl {
-            let dg = surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!("dg_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("dg_{layer_index:04} should be present"))
-                .as_f64();
-            let thetfc = surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
-                .as_f64();
-            let thetdr = surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
-                .as_f64();
-            aggregated_fc_store_mm += thetfc * dg * 1_000.0;
-            aggregated_wp_store_mm += thetdr * dg * 1_000.0;
-        }
-
-        assert!((profile_depth_mm - 400.0).abs() < 1e-9);
-        assert!((profile_porosity_cap_mm - 196.933_353_433_962_28).abs() < 1e-9);
-        assert!((profile_fc_store_mm - aggregated_fc_store_mm).abs() < 1e-9);
-        assert!((profile_wp_store_mm - aggregated_wp_store_mm).abs() < 1e-9);
+        assert!((profile_depth_mm - expected_profile.depth).abs() < 1e-9);
+        assert!((profile_porosity_cap_mm - expected_profile.porosity_cap).abs() < 1e-9);
+        assert!((profile_fc_store_mm - expected_profile.fc_store).abs() < 1e-9);
+        assert!((profile_wp_store_mm - expected_profile.wp_store).abs() < 1e-9);
+        assert!(
+            (profile_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
+            "profile FC storage must preserve normalized-profile depth authority (no parser-depth truncation)"
+        );
+        assert!(
+            (profile_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,
+            "profile WP storage must preserve normalized-profile depth authority (no parser-depth truncation)"
+        );
         assert!(profile_porosity_cap_mm >= profile_fc_store_mm);
         assert!(profile_fc_store_mm >= profile_wp_store_mm);
     }
 
     #[test]
-    fn hphys0205_corrected_layer_fc_wp_aggregate_matches_projected_profile_seeds() {
+    fn hphys0207_profile_fc_wp_projection_preserves_normalized_depth_authority() {
         let soil = parse_soil(
             VALID_9002,
             SoilParserOptions {
@@ -372,41 +473,17 @@ mod tests {
             },
         )
         .expect("9002 soil fixture should parse");
+        let ofe = soil
+            .ofes
+            .first()
+            .expect("9002 fixture should include a primary OFE");
+        let expected_profile =
+            expected_wb13_profile_symbols_from_normalized_correction(ofe);
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from parsed soil");
-
-        let nsl_raw = surface
-            .state_surface
-            .get(&BoundarySymbol::from("nsl"))
-            .expect("nsl should be present")
-            .as_f64();
-        let nsl = format!("{nsl_raw:.0}")
-            .parse::<usize>()
-            .expect("nsl should round-trip into usize");
-        assert!(nsl >= 1, "nsl must be >= 1");
-
-        let mut aggregated_fc_store_mm = 0.0_f64;
-        let mut aggregated_wp_store_mm = 0.0_f64;
-        for layer_index in 1..=nsl {
-            let dg = surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!("dg_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("dg_{layer_index:04} should be present"))
-                .as_f64();
-            let thetfc = surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
-                .as_f64();
-            let thetdr = surface
-                .state_surface
-                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
-                .as_f64();
-            aggregated_fc_store_mm += thetfc * dg * 1_000.0;
-            aggregated_wp_store_mm += thetdr * dg * 1_000.0;
-        }
+        let (layer_fc_store_mm, layer_wp_store_mm) =
+            aggregated_profile_storage_from_layer_symbols(&surface);
 
         let projected_fc_store_mm = surface
             .state_surface
@@ -420,13 +497,69 @@ mod tests {
             .as_f64();
 
         assert!(
-            (aggregated_fc_store_mm - projected_fc_store_mm).abs() < 1e-9,
-            "authoritative layer FC aggregate must match projected profile FC seed lineage"
+            (projected_fc_store_mm - expected_profile.fc_store).abs() < 1e-9,
+            "projected FC storage must match normalized-profile corrected aggregate"
         );
         assert!(
-            (aggregated_wp_store_mm - projected_wp_store_mm).abs() < 1e-9,
-            "authoritative layer WP aggregate must match projected profile WP seed lineage"
+            (projected_wp_store_mm - expected_profile.wp_store).abs() < 1e-9,
+            "projected WP storage must match normalized-profile corrected aggregate"
         );
+        assert!(
+            (projected_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
+            "projected FC storage must not silently truncate normalized-profile tail depth"
+        );
+        assert!(
+            (projected_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,
+            "projected WP storage must not silently truncate normalized-profile tail depth"
+        );
+    }
+
+    #[test]
+    fn hphys0207_corrected_layer_moisture_preserves_per_layer_storage_ordering() {
+        let soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+        let ofe = soil
+            .ofes
+            .first()
+            .expect("9002 fixture should include a primary OFE");
+
+        let corrected_layers = normalized_corrected_layers_from_ofe(ofe);
+        assert!(
+            !corrected_layers.is_empty(),
+            "normalized corrected layer set must be non-empty"
+        );
+        for (layer_position, (_thickness_m, porosity, thetfc, thetdr)) in
+            corrected_layers.into_iter().enumerate()
+        {
+            assert!(
+                porosity >= thetfc,
+                "corrected layer {} must satisfy porosity >= thetfc (observed porosity={}, thetfc={})",
+                layer_position + 1,
+                porosity,
+                thetfc
+            );
+            assert!(
+                thetfc >= thetdr,
+                "corrected layer {} must satisfy thetfc >= thetdr (observed thetfc={}, thetdr={})",
+                layer_position + 1,
+                thetfc,
+                thetdr
+            );
+            assert!(
+                thetdr > 0.0,
+                "corrected layer {} must satisfy thetdr > 0 (observed {})",
+                layer_position + 1,
+                thetdr
+            );
+        }
     }
 
     #[test]

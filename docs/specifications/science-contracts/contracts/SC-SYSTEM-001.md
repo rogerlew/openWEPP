@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 65
+contract_version: 69
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -88,7 +88,7 @@ Out of scope:
 | `qp` | `m^3 s^-1` | Peak runoff from contributing element. | hillslope/channel/impoundment element | downstream hydrograph merge |
 | `Ep`, `Es`, `Er` | `mm` (daily depth-equivalent publication units) | Daily ET component publications consumed by replay/comparator surfaces and downstream summaries. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `Total-Soil`, `SoilWaterTotal` | `mm` | Daily soil-water aggregate publications derived from runtime layer-state lineage plus frozen/snow components. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
-| `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `mm` | Daily full-profile publications where `ProfileDepth`/`ProfilePorosityCap` derive from baseline-authoritative soil preprocessing + aggregation lineage and `ProfileFCStore`/`ProfileWPStore` derive from simulation-owned WB13 layer aggregation (`thetfc/thetdr` with `dg`). | hillslope daily hydrology closure | WB13/reporting/replay consumers |
+| `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `mm` | Daily full-profile publications where `ProfileDepth`/`ProfilePorosityCap` derive from baseline-authoritative soil preprocessing + aggregation lineage and `ProfileFCStore`/`ProfileWPStore` derive from simulation-owned normalized-profile storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) under HPHYS0207 depth-authority closure. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `total_detachment_kg` | `kg` | Total hillslope detachment payload at event endpoint. | hillslope erosion component | channel sediment-load assembly |
 | `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
 | `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
@@ -609,7 +609,7 @@ Minimum WS12 integration vectors:
    that fail closed on missing alias continuity or projection-side
    reconstruction.
 
-## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum
+## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum (Historical)
 
 1. System publication authority for `ProfileFCStore` and `ProfileWPStore` is
    simulation-owned layer aggregation from runtime WB13 symbols:
@@ -617,31 +617,34 @@ Minimum WS12 integration vectors:
    `ProfileWPStore = Σ(thetdr_i * dg_i) * 1000` (`mm`).
 2. Adapter-projected seed symbols `wb13_profile_fc_store_mm` and
    `wb13_profile_wp_store_mm` may be carried for diagnostics, but system
-   publication must not consume them as authoritative WB13 values.
+   publication must not consume them as authoritative WB13 values. This
+   historical rule is superseded by HPHYS0207 depth-authority closure below.
 3. Missing/non-finite/domain-invalid layer aggregation symbols are typed
    WB13 publication failures and must not be replaced by projection-side
    synthetic reconstruction.
 
-## HPHYS0205 Corrected-Layer Projection Addendum
+## HPHYS0205 Corrected-Layer Projection Addendum (Historical)
 
 1. System-boundary authority for WB13 profile storage requires
    `thetfc_####`/`thetdr_####` publication-consumer symbols to be sourced from
    baseline-corrected moisture lineage when correction lineage is available at
    the runtime projection boundary.
-2. Adapter-projected FC/WP seed symbols remain diagnostic-only carry surfaces;
-   they do not supersede authoritative layer publication symbols.
+2. Adapter-projected FC/WP seed symbols remain diagnostic-only carry surfaces
+   in this historical amendment; this rule is superseded by HPHYS0207
+   depth-authority closure below.
 3. When both corrected-layer aggregates and diagnostic FC/WP seed surfaces are
    present, they must be reconciliation-consistent; disagreement is a typed
    boundary violation for HPHYS0205 closure governance.
 4. Missing/non-finite/domain-invalid corrected-layer symbol projections remain
    fail-closed and are not eligible for projection-side surrogate replacement.
 
-## HPHYS0206 Normalized-Layer Mapping and Fail-Closed Addendum
+## HPHYS0206 Normalized-Layer Mapping and Fail-Closed Addendum (Historical)
 
 1. System-boundary publication authority for `ProfileFCStore`/`ProfileWPStore`
-   requires authoritative `thetfc_####`/`thetdr_####` symbols to originate from
-   baseline-normalized corrected-layer lineage consistent with
-   `ProfileDepth`/`ProfilePorosityCap` authority surfaces.
+   in this historical amendment requires authoritative
+   `thetfc_####`/`thetdr_####` symbols to originate from baseline-normalized
+   corrected-layer lineage consistent with `ProfileDepth`/`ProfilePorosityCap`
+   authority surfaces.
 2. Mapping from normalized corrected layers into emitted OFE authoritative
    layer symbols must be deterministic and depth-domain complete.
 3. Raw parser-theta substitution for authoritative FC/WP publication symbols is
@@ -649,6 +652,21 @@ Minimum WS12 integration vectors:
 4. Missing normalized corrected-lineage inputs, mapping incompleteness, or
    non-finite/domain-invalid mapped authoritative symbols are typed fail-closed
    system-boundary violations.
+
+## HPHYS0207 Normalized-Profile FC/WP Depth-Authority Addendum
+
+1. System-boundary publication authority for WB13 `ProfileFCStore` and
+   `ProfileWPStore` is normalized-profile runtime storage symbols
+   `wb13_profile_fc_store_mm` and `wb13_profile_wp_store_mm`.
+2. These FC/WP storage symbols must be runtime-owned, baseline-corrected,
+   normalized-profile aggregates sharing depth authority with
+   `wb13_profile_depth_mm` and `wb13_profile_porosity_cap_mm`.
+3. Residual normalized-tail depth beyond OFE parser-layer publication depth is
+   consumed by normalized-profile storage projection authority; silent
+   normalized-tail truncation and parser-domain fallback publication are
+   prohibited.
+4. Required WB13 profile ordering continuity remains:
+   `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 
 ## MOFE04 Multi-OFE WB13/WAT Publication Boundary-Carry Addendum
 
@@ -804,6 +822,7 @@ Minimum WS12 integration vectors:
 | `2026-05-29` | `66` | `Codex` | HPHYS0202 amendment: made system publication authority explicit that `ProfileFCStore`/`ProfileWPStore` are simulation-owned layer aggregates (`thetfc/thetdr` with `dg`) and that FC/WP adapter seeds remain non-authoritative diagnostics. |
 | `2026-05-29` | `67` | `Codex` | HPHYS0205 amendment: required corrected-layer projection authority for WB13 FC/WP publication symbols (`thetfc_####`/`thetdr_####`) with reconciliation obligations against diagnostic FC/WP seed surfaces. |
 | `2026-05-30` | `68` | `Codex` | HPHYS0206 amendment: required deterministic normalized-layer mapping closure for authoritative FC/WP publication symbols and explicit fail-closed/no-raw-fallback boundary posture. |
+| `2026-05-30` | `69` | `Codex` | HPHYS0207 amendment: promoted WB13 FC/WP publication authority to normalized-profile storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |

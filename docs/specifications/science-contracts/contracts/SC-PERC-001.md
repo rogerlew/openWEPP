@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 6
+contract_version: 11
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -291,15 +291,17 @@ Minimum WB18 percolation production-kernel conformance vectors:
    derived from percolation closure term `D` and is explicitly distinct from
    climate time-to-peak descriptor `Dp` (`SC-CLIMATE-001`, units `h`).
 5. `ProfileFCStore` and `ProfileWPStore` publication semantics are
-   layer-authoritative WB13 aggregates over runtime surfaces:
-   `Σ(thetfc_i * dg_i)` and `Σ(thetdr_i * dg_i)` (depth-equivalent `mm`).
-6. HPHYS0205 requires the authoritative layer symbols in requirement (5) to
-   carry baseline-corrected moisture lineage (not raw parser theta lineage)
-   when correction lineage is available at runtime projection boundaries.
-7. HPHYS0206 requires authoritative FC/WP layer symbols in requirement (5) to
-   be mapped deterministically from the same baseline-normalized corrected-layer
-   family used by profile-capacity lineage authorities; raw parser-theta
-   fallback is prohibited for these authoritative publication symbols.
+   normalized-profile storage aggregates (`mm`) from baseline-corrected
+   corrected-layer lineage emitted through runtime symbols
+   `wb13_profile_fc_store_mm` and `wb13_profile_wp_store_mm`.
+6. Authoritative layer symbols `thetfc_####`/`thetdr_####` remain required
+   process-consumer surfaces for kernel continuity, but HPHYS0207 closes
+   WB13 profile-storage publication authority on normalized-profile storage
+   symbols in requirement (5).
+7. HPHYS0207 requires depth-domain closure between normalized corrected-layer
+   profile storage/capacity authorities and emitted WB13 profile outputs;
+   normalized-tail depth must be consumed in profile-storage projection
+   authority (no silent truncation, no parser-domain override).
 
 ## Gap Register
 
@@ -332,3 +334,4 @@ authority closure is completed.
 | `2026-05-29` | `8` | `Codex` | HPHYS0202 amendment: made WB13 `ProfileFCStore`/`ProfileWPStore` coupling semantics explicit as layer-authoritative runtime aggregates (`thetfc/thetdr` with `dg`) in `mm`. |
 | `2026-05-29` | `9` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer-theta symbols used by profile storage coupling to carry baseline-corrected moisture lineage when available. |
 | `2026-05-30` | `10` | `Codex` | HPHYS0206 amendment: required deterministic normalized-layer mapping closure for authoritative FC/WP publication symbols and prohibited raw-theta fallback for that publication path. |
+| `2026-05-30` | `11` | `Codex` | HPHYS0207 amendment: ratified normalized-profile storage publication authority for WB13 FC/WP outputs via `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` and added explicit normalized-tail consumption policy authority. |

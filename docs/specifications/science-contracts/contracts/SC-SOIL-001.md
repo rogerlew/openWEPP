@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 5
+contract_version: 9
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -266,10 +266,8 @@ bit-for-bit parity). `[DIRECT][Static]`
    posture.
 4. Missing/non-finite/domain-invalid seed derivations remain fail-closed and do
    not authorize silent substitution from unrelated publication surfaces.
-5. HPHYS0202 narrows publication authority so `wb13_profile_fc_store_mm` and
-   `wb13_profile_wp_store_mm` are adapter diagnostics only; canonical WB13
-   publication for `ProfileFCStore`/`ProfileWPStore` is layer-authoritative
-   aggregation from runtime `thetfc_####`/`thetdr_####` with `dg_####`.
+5. HPHYS0202 narrows publication authority so WB13 profile-storage publication
+   is runtime-owned and must not be synthesized from placeholder formulas.
 6. HPHYS0205 requires authoritative runtime `thetfc_####`/`thetdr_####`
    symbols to carry the same baseline-corrected lineage family used by
    profile-capacity correction (`scon`-equivalent moisture corrections), not
@@ -282,6 +280,15 @@ bit-for-bit parity). `[DIRECT][Static]`
    publication when normalized corrected-lineage projection is required; missing
    normalized lineage or mapping closure is a typed fail-closed runtime
    boundary condition.
+9. HPHYS0207 closes depth-authority mismatch by making
+   `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` runtime-owned,
+   baseline-corrected, normalized-profile storage authorities aligned with
+   `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm` for WB13 publication.
+10. HPHYS0207 requires explicit normalized-tail handling policy: FC/WP
+   publication authority is normalized-profile storage projection, so residual
+   normalized depth beyond OFE layer publication depth must be consumed into
+   `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` (no silent tail
+   truncation and no parser-theta fallback authority repair).
 
 ## Gap Register
 
@@ -305,3 +312,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-29` | `6` | `Codex` | HPHYS0202 amendment: clarified WB13 publication authority split where FC/WP adapter seeds remain diagnostic carry surfaces and canonical `ProfileFCStore`/`ProfileWPStore` publication must use layer-authoritative runtime aggregation. |
 | `2026-05-29` | `7` | `Codex` | HPHYS0205 amendment: bound authoritative runtime `thetfc_####`/`thetdr_####` symbols to baseline-corrected moisture lineage (no raw-theta authority when corrected lineage is available). |
 | `2026-05-30` | `8` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer symbols to originate from baseline-normalized corrected-layer lineage with deterministic publication mapping and typed fail-closed posture when normalized correction lineage is unavailable. |
+| `2026-05-30` | `9` | `Codex` | HPHYS0207 amendment: ratified WB13 FC/WP depth-authority alignment to normalized-profile runtime storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |

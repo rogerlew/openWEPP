@@ -3711,114 +3711,44 @@ fn build_simulation_owned_wb13_row(
     let _tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
     let _tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
 
-    let nsl = scalar_to_usize(
-        "nsl",
-        require_runtime_surface_scalar(runtime_surface, "nsl")?,
-    )?;
-    if nsl == 0 {
-        return Err(wb13_simout_failure(
-            "nsl must be >= 1 for WB13 publication surface assembly",
-        ));
-    }
-
-    let profile_depth_m = require_runtime_surface_scalar(runtime_surface, "solthk")?;
-    if profile_depth_m <= 0.0 {
+    let profile_depth_mm =
+        require_runtime_surface_scalar(runtime_surface, "wb13_profile_depth_mm")?;
+    if profile_depth_mm <= 0.0 {
         return Err(wb13_simout_failure(format!(
-            "solthk must be > 0.0, observed {profile_depth_m}"
+            "wb13_profile_depth_mm must be > 0.0, observed {profile_depth_mm}"
         )));
     }
-    let fallback_profile_depth_mm = profile_depth_m * 1_000.0;
-
-    let mut fallback_profile_fc_store_mm = 0.0_f64;
-    let mut fallback_profile_wp_store_mm = 0.0_f64;
-    let mut fallback_profile_porosity_cap_mm = 0.0_f64;
-    let mut fallback_theta_s_complete = true;
-    for layer_index in 1..=nsl {
-        let dg_symbol = wb13_primary_layer_symbol("dg", layer_index);
-        let dg_m = require_runtime_surface_scalar(runtime_surface, dg_symbol.as_str())?;
-        if dg_m <= 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "{dg_symbol} must be > 0.0, observed {dg_m}"
-            )));
-        }
-
-        let fc_symbol = wb13_primary_layer_symbol("thetfc", layer_index);
-        let thetfc = require_runtime_surface_scalar(runtime_surface, fc_symbol.as_str())?;
-        if thetfc < 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "{fc_symbol} must be >= 0.0, observed {thetfc}"
-            )));
-        }
-
-        let wp_symbol = wb13_primary_layer_symbol("thetdr", layer_index);
-        let thetdr = require_runtime_surface_scalar(runtime_surface, wp_symbol.as_str())?;
-        if thetdr < 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "{wp_symbol} must be >= 0.0, observed {thetdr}"
-            )));
-        }
-
-        let theta_s_symbol = wb13_primary_layer_symbol("theta_s", layer_index);
-        match runtime_surface_symbol_value(runtime_surface, theta_s_symbol.as_str()) {
-            Some(theta_s) => {
-                if !theta_s.is_finite() || theta_s < 0.0 {
-                    return Err(wb13_simout_failure(format!(
-                        "{theta_s_symbol} must be finite and >= 0.0, observed {theta_s}"
-                    )));
-                }
-                fallback_profile_porosity_cap_mm += theta_s * dg_m * 1_000.0;
-            }
-            None => {
-                fallback_theta_s_complete = false;
-            }
-        }
-
-        fallback_profile_fc_store_mm += thetfc * dg_m * 1_000.0;
-        fallback_profile_wp_store_mm += thetdr * dg_m * 1_000.0;
+    let profile_porosity_cap =
+        require_runtime_surface_scalar(runtime_surface, "wb13_profile_porosity_cap_mm")?;
+    if profile_porosity_cap < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "wb13_profile_porosity_cap_mm must be >= 0.0, observed {profile_porosity_cap}"
+        )));
     }
-    let profile_depth_mm = runtime_surface_symbol_value(runtime_surface, "wb13_profile_depth_mm")
-        .map_or(Ok(fallback_profile_depth_mm), |value| {
-        if !value.is_finite() || value <= 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "wb13_profile_depth_mm must be finite and > 0.0, observed {value}"
-            )));
-        }
-        Ok(value)
-    })?;
-    // HPHYS0202: FC/WP publication is layer-authoritative (`thetfc/thetdr` + `dg`)
-    // and does not consume projected seed symbols as authoritative outputs.
-    if let Some(value) = runtime_surface_symbol_value(runtime_surface, "wb13_profile_fc_store_mm") {
-        if !value.is_finite() || value < 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "wb13_profile_fc_store_mm must be finite and >= 0.0, observed {value}"
-            )));
-        }
+    let profile_fc_store_mm =
+        require_runtime_surface_scalar(runtime_surface, "wb13_profile_fc_store_mm")?;
+    if profile_fc_store_mm < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "wb13_profile_fc_store_mm must be >= 0.0, observed {profile_fc_store_mm}"
+        )));
     }
-    if let Some(value) = runtime_surface_symbol_value(runtime_surface, "wb13_profile_wp_store_mm") {
-        if !value.is_finite() || value < 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "wb13_profile_wp_store_mm must be finite and >= 0.0, observed {value}"
-            )));
-        }
+    let profile_wp_store_mm =
+        require_runtime_surface_scalar(runtime_surface, "wb13_profile_wp_store_mm")?;
+    if profile_wp_store_mm < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "wb13_profile_wp_store_mm must be >= 0.0, observed {profile_wp_store_mm}"
+        )));
     }
-    let profile_fc_store_mm = fallback_profile_fc_store_mm;
-    let profile_wp_store_mm = fallback_profile_wp_store_mm;
-    let profile_porosity_cap = if let Some(value) =
-        runtime_surface_symbol_value(runtime_surface, "wb13_profile_porosity_cap_mm")
-    {
-        if !value.is_finite() || value < 0.0 {
-            return Err(wb13_simout_failure(format!(
-                "wb13_profile_porosity_cap_mm must be finite and >= 0.0, observed {value}"
-            )));
-        }
-        value
-    } else if fallback_theta_s_complete {
-        fallback_profile_porosity_cap_mm
-    } else {
-        return Err(wb13_simout_failure(
-            "missing profile porosity lineage: require wb13_profile_porosity_cap_mm or complete theta_s_#### layer symbols",
-        ));
-    };
+    if profile_porosity_cap < profile_fc_store_mm {
+        return Err(wb13_simout_failure(format!(
+            "profile storage ordering invalid: wb13_profile_porosity_cap_mm ({profile_porosity_cap}) must be >= wb13_profile_fc_store_mm ({profile_fc_store_mm})"
+        )));
+    }
+    if profile_fc_store_mm < profile_wp_store_mm {
+        return Err(wb13_simout_failure(format!(
+            "profile storage ordering invalid: wb13_profile_fc_store_mm ({profile_fc_store_mm}) must be >= wb13_profile_wp_store_mm ({profile_wp_store_mm})"
+        )));
+    }
 
     // SIMIMPL24 publication authority: Total-Soil must be WB11 runtime
     // aggregate lineage only (`wb11_soil_water` -> `watcon` -> `Total-Soil`).
@@ -4551,7 +4481,7 @@ mod tests {
     }
 
     #[test]
-    fn hphys0202_wb13_fc_seed_guard_is_exercised_by_direct_row_builder_probe() {
+    fn hphys0207_wb13_fc_storage_guard_is_exercised_by_direct_row_builder_probe() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_fc_store_mm"),
@@ -4577,7 +4507,7 @@ mod tests {
                     "expected SIMOUT-E-001 guard id, observed: {detail}"
                 );
                 assert!(
-                    detail.contains("wb13_profile_fc_store_mm must be finite and >= 0.0"),
+                    detail.contains("runtime symbol wb13_profile_fc_store_mm is non-finite"),
                     "expected wb13_profile_fc_store_mm typed guard detail, observed: {detail}"
                 );
             }
@@ -4586,7 +4516,7 @@ mod tests {
     }
 
     #[test]
-    fn hphys0202_wb13_wp_seed_guard_is_exercised_by_direct_row_builder_probe() {
+    fn hphys0207_wb13_wp_storage_guard_is_exercised_by_direct_row_builder_probe() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_wp_store_mm"),
@@ -4612,7 +4542,7 @@ mod tests {
                     "expected SIMOUT-E-001 guard id, observed: {detail}"
                 );
                 assert!(
-                    detail.contains("wb13_profile_wp_store_mm must be finite and >= 0.0"),
+                    detail.contains("wb13_profile_wp_store_mm must be >= 0.0"),
                     "expected wb13_profile_wp_store_mm typed guard detail, observed: {detail}"
                 );
             }
@@ -4621,15 +4551,15 @@ mod tests {
     }
 
     #[test]
-    fn hphys0202_wb13_profile_fc_wp_publication_ignores_seed_values_when_valid() {
+    fn hphys0207_wb13_profile_fc_wp_publication_uses_storage_symbols_when_valid() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_fc_store_mm"),
-            BoundaryValue::scalar(999.0),
+            BoundaryValue::scalar(100.0),
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_wp_store_mm"),
-            BoundaryValue::scalar(555.0),
+            BoundaryValue::scalar(55.0),
         );
 
         let row = build_simulation_owned_wb13_row(
@@ -4642,15 +4572,13 @@ mod tests {
         )
         .expect("valid WB13 probe surface should publish row");
 
-        let expected_fc_store_mm = 0.30 * 0.25 * 1_000.0;
-        let expected_wp_store_mm = 0.12 * 0.25 * 1_000.0;
         assert!(
-            (row.wb13_row.profile_fc_store - expected_fc_store_mm).abs() < 1.0e-12,
-            "ProfileFCStore must follow layer aggregation, not wb13_profile_fc_store_mm seed"
+            (row.wb13_row.profile_fc_store - 100.0).abs() < 1.0e-12,
+            "ProfileFCStore must follow wb13_profile_fc_store_mm storage authority"
         );
         assert!(
-            (row.wb13_row.profile_wp_store - expected_wp_store_mm).abs() < 1.0e-12,
-            "ProfileWPStore must follow layer aggregation, not wb13_profile_wp_store_mm seed"
+            (row.wb13_row.profile_wp_store - 55.0).abs() < 1.0e-12,
+            "ProfileWPStore must follow wb13_profile_wp_store_mm storage authority"
         );
     }
 
@@ -5065,8 +4993,20 @@ mod tests {
         );
 
         runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_depth_mm"),
+            BoundaryValue::scalar(250.0),
+        );
+        runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_porosity_cap_mm"),
             BoundaryValue::scalar(120.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_fc_store_mm"),
+            BoundaryValue::scalar(75.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_wp_store_mm"),
+            BoundaryValue::scalar(30.0),
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb11_soil_water"),

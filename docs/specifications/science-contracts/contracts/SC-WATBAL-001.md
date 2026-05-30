@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 44
+contract_version: 48
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -957,8 +957,8 @@ for follow-on closure packages.
 | `Es` | `Es -> Es` (soil evaporation component) | `SC-EVAP-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("Es")` -> `("Es", es)`) | `HKERNEL-WB11-ET-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `ProfileDepth` | `solthk -> ProfileDepth` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("solthk")` -> `("ProfileDepth", profile_depth_mm)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `ProfilePorosityCap` | `sum(por_i * dg_i)` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants + HPARITY02 profile-lineage closure | `crates/openwepp-runner/src/hillslope/mod.rs` consumes `wb13_profile_porosity_cap_mm` (or complete per-layer `theta_s_####` fallback) for `("ProfilePorosityCap", profile_porosity_cap)` publication | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `ProfileFCStore` | `sum(thetfc_i * dg_i)` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` layer loop (`thetfc_####`, `dg_####`) -> `("ProfileFCStore", profile_fc_store_mm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `ProfileWPStore` | `sum(thetdr_i * dg_i)` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` layer loop (`thetdr_####`, `dg_####`) -> `("ProfileWPStore", profile_wp_store_mm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `ProfileFCStore` | `wb13_profile_fc_store_mm -> ProfileFCStore` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants + HPHYS0207 depth-authority closure | `crates/openwepp-runner/src/hillslope/mod.rs` (`runtime_surface_symbol_value("wb13_profile_fc_store_mm")` -> `("ProfileFCStore", profile_fc_store_mm)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `ProfileWPStore` | `wb13_profile_wp_store_mm -> ProfileWPStore` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants + HPHYS0207 depth-authority closure | `crates/openwepp-runner/src/hillslope/mod.rs` (`runtime_surface_symbol_value("wb13_profile_wp_store_mm")` -> `("ProfileWPStore", profile_wp_store_mm)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `RM` | `prcp + SWE_before - SWE_after + Irr` | `SC-SNOWFREEZE-001` day-key publication closure (`INV-SNOWFREEZE-011`); `SC-WATBAL-001` `INV-WATBAL-026` | `crates/openwepp-runner/src/hillslope/mod.rs` RM assembly branch -> `("RM", rm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Snow-Water` | `snow.runtime_swe -> Snow-Water` | `SC-SNOWFREEZE-001` runtime-SWE publication authority; `SC-WATBAL-001` `INV-WATBAL-026/027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("snow.runtime_swe")` -> `("Snow-Water", snow_water)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `latqcc` | `q -> latqcc` (lateral contribution) | `SC-SUBHYD-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB19 lateral coupling | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("q")` -> `("latqcc", latqcc)`) | `HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
@@ -985,10 +985,10 @@ Required runtime publication symbols for WB13 profile columns:
 
 1. `wb13_profile_depth_mm`
 2. `wb13_profile_porosity_cap_mm`
-3. `wb13_profile_fc_store_mm` (adapter seed; non-authoritative for publication
-   after HPHYS0202)
-4. `wb13_profile_wp_store_mm` (adapter seed; non-authoritative for publication
-   after HPHYS0202)
+3. `wb13_profile_fc_store_mm` (runtime-owned normalized-profile storage
+   authority for WB13 profile FC publication after HPHYS0207)
+4. `wb13_profile_wp_store_mm` (runtime-owned normalized-profile storage
+   authority for WB13 profile WP publication after HPHYS0207)
 
 Deterministic publication rules:
 
@@ -1002,7 +1002,7 @@ Deterministic publication rules:
 4. Missing/non-finite/domain-invalid profile-lineage symbols hard-fail WB13
    publication under existing WB13 guard-family continuity.
 
-### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure
+### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure (Historical)
 
 HPHYS0202 amends WB13 profile-storage publication authority so
 `ProfileFCStore` and `ProfileWPStore` are simulation-owned layer aggregates
@@ -1014,11 +1014,12 @@ from canonical WB11/WB13 state lineage (`watbal.for`/`watbalprint.for`):
    and `dg_####` runtime surfaces for `i in [1..nsl]`.
 4. Optional adapter seed symbols `wb13_profile_fc_store_mm` and
    `wb13_profile_wp_store_mm` are diagnostic carry surfaces only and must not
-   override WB13 publication values.
+   override WB13 publication values. This historical rule is superseded by
+   HPHYS0207 depth-authority closure below.
 5. Missing/non-finite/domain-invalid layer aggregation symbols hard-fail WB13
    publication under existing guard-family continuity.
 
-### HPHYS0205 Corrected-Layer Authority Closure
+### HPHYS0205 Corrected-Layer Authority Closure (Historical)
 
 HPHYS0205 closes the layer-source ambiguity identified in HPHYS0202 by
 requiring the authoritative layer symbols consumed by WB13 publication to carry
@@ -1028,18 +1029,18 @@ baseline-corrected moisture lineage, not raw parser theta inputs:
    profile storage publication must be projected from baseline-authoritative
    soil-correction lineage (`scon` family: rock/entrapped-air adjustment and
    moisture-curve domain corrections), when that lineage is available.
-2. WB13 `ProfileFCStore`/`ProfileWPStore` publication remains
-   layer-authoritative and continues to consume only
-   `Σ(thetfc_i*dg_i)*1000` / `Σ(thetdr_i*dg_i)*1000`.
+2. WB13 `ProfileFCStore`/`ProfileWPStore` publication remains runtime-owned,
+   and this historical layer-aggregation authority is superseded by HPHYS0207
+   normalized-profile storage authority below.
 3. Optional adapter profile-storage diagnostics
    (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) remain
-   non-authoritative for publication but must not disagree with corrected-layer
-   aggregates when both are present and finite.
+   non-authoritative for publication in this historical amendment and must not
+   disagree with corrected-layer aggregates when both are present and finite.
 4. Missing/non-finite/domain-invalid corrected-layer symbols are typed
    publication-domain violations and hard-fail under existing WB13 guard
    continuity.
 
-### HPHYS0206 Corrected-Layer Normalization and Mapping Closure
+### HPHYS0206 Corrected-Layer Normalization and Mapping Closure (Historical)
 
 HPHYS0206 closes residual authoritative-layer mapping ambiguity by requiring
 the corrected FC/WP publication lineage to use the same normalized layer set
@@ -1053,12 +1054,35 @@ as profile-capacity lineage and deterministic OFE-layer mapping semantics:
    (`thetfc_####`/`thetdr_####`) must be deterministic and depth-domain
    complete for each emitted layer interval.
 3. Profile-storage diagnostics (`wb13_profile_fc_store_mm`,
-   `wb13_profile_wp_store_mm`) remain non-authoritative for WB13 publication
-   and must not override layer-authoritative publication values.
+   `wb13_profile_wp_store_mm`) remain non-authoritative for WB13 publication in
+   this historical amendment and must not override layer-authoritative
+   publication values.
 4. Missing normalized corrected-lineage inputs, incomplete normalized-layer
    coverage, or non-finite/domain-invalid mapped authoritative layer symbols are
    typed fail-closed boundary violations; raw parser-theta fallback for
    authoritative FC/WP publication symbols is prohibited.
+
+### HPHYS0207 FC/WP Depth-Authority and Normalized-Tail Closure
+
+HPHYS0207 closes the normalized-profile versus parser-layer depth mismatch by
+aligning WB13 FC/WP publication authority to normalized-profile storage symbols
+that share domain authority with profile depth/capacity surfaces:
+
+1. `ProfileFCStore` publication authority is `wb13_profile_fc_store_mm` when
+   present and valid.
+2. `ProfileWPStore` publication authority is `wb13_profile_wp_store_mm` when
+   present and valid.
+3. `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` must be runtime-owned
+   normalized-profile aggregates from baseline-corrected layer lineage and must
+   share depth-domain authority with `wb13_profile_depth_mm` and
+   `wb13_profile_porosity_cap_mm`.
+4. Residual normalized-tail depth beyond OFE parser-layer publication depth is
+   consumed by normalized-profile storage projection authority
+   (`wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm`); normalized-tail
+   truncation is forbidden and no fallback may silently republish
+   parser-domain aggregates as WB13 profile storage authority.
+5. Required WB13 profile ordering remains:
+   `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
@@ -1267,6 +1291,7 @@ as profile-capacity lineage and deterministic OFE-layer mapping semantics:
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 | `2026-05-30` | `47` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer publication symbols to be mapped deterministically from the same baseline-normalized corrected-layer set used by profile-capacity lineage, with explicit no-raw-fallback typed fail-closed posture. |
+| `2026-05-30` | `48` | `Codex` | HPHYS0207 amendment: aligned WB13 FC/WP publication authority to normalized-profile runtime storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
 | `2026-05-29` | `46` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer symbols (`thetfc_####`/`thetdr_####`) to carry baseline-corrected moisture lineage while retaining layer-authoritative publication and non-authoritative FC/WP adapter diagnostics. |
 | `2026-05-29` | `45` | `Codex` | HPHYS0202 amendment: made `ProfileFCStore`/`ProfileWPStore` publication authority explicitly layer-aggregated (`Σ(thetfc_i*dg_i)`, `Σ(thetdr_i*dg_i)`), and restricted `wb13_profile_fc/wp_store_mm` to non-authoritative adapter diagnostics. |
 | `2026-05-29` | `44` | `Codex` | HPARITY02 amendment: added profile-capacity publication-lineage closure authority (`wb13_profile_*_mm`) and explicit prohibition of synthesized `ProfilePorosityCap` placeholder formulas. |

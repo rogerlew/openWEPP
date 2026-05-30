@@ -11,9 +11,7 @@ use openwepp_input_contract::parsers::soil::{
     SoilParserOptions, SoilProfile, TopologyScope, parse_soil,
 };
 use openwepp_kernel_contract::BoundarySymbol;
-use openwepp_runner::{
-    HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
-};
+use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 
@@ -41,6 +39,9 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     let package_hphys0206 = repo_file(
         "docs/work-packages/20260530-hphys0206-fcwp-layer-normalization-mapping-closure-001/package.md",
     );
+    let package_hphys0207 = repo_file(
+        "docs/work-packages/20260530-hphys0207-fcwp-depth-authority-tail-closure-001/package.md",
+    );
     let watbal = repo_file("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
     let soil = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
     let perc = repo_file("docs/specifications/science-contracts/contracts/SC-PERC-001.md");
@@ -59,12 +60,26 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "HPHYS0206 package must preserve closure measures and contract-first sequencing"
     );
     assert!(
+        package_hphys0207.contains("MEASURE-HP207-001")
+            && package_hphys0207.contains("MEASURE-HP207-004")
+            && package_hphys0207.contains("Mandatory Contract-First Sequence"),
+        "HPHYS0207 package must preserve closure measures and contract-first sequencing"
+    );
+    assert!(
         watbal.contains("### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure"),
         "SC-WATBAL-001 must include HPHYS0202 FC/WP layer-aggregation authority"
     );
     assert!(
         watbal.contains("### HPHYS0206 Corrected-Layer Normalization and Mapping Closure"),
         "SC-WATBAL-001 must include HPHYS0206 normalized corrected-layer mapping authority"
+    );
+    assert!(
+        watbal.contains("### HPHYS0207 FC/WP Depth-Authority and Normalized-Tail Closure"),
+        "SC-WATBAL-001 must include HPHYS0207 FC/WP depth-authority closure section"
+    );
+    assert!(
+        watbal.contains("superseded by HPHYS0207"),
+        "SC-WATBAL-001 historical FC/WP authority sections must be explicitly marked superseded by HPHYS0207"
     );
     assert!(
         soil.contains("HPHYS0202 narrows publication authority"),
@@ -75,8 +90,12 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-SOIL-001 must include HPHYS0206 normalized corrected-layer projection authority"
     );
     assert!(
-        perc.contains("HPHYS0206 requires authoritative FC/WP layer symbols"),
+        perc.contains("HPHYS0206"),
         "SC-PERC-001 must include HPHYS0206 normalized mapping/no-fallback authority"
+    );
+    assert!(
+        perc.contains("HPHYS0207"),
+        "SC-PERC-001 must include HPHYS0207 normalized-profile storage authority"
     );
     assert!(
         system.contains("## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum"),
@@ -86,10 +105,18 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         system.contains("## HPHYS0206 Normalized-Layer Mapping and Fail-Closed Addendum"),
         "SC-SYSTEM-001 must include HPHYS0206 fail-closed normalized-layer boundary authority"
     );
+    assert!(
+        system.contains("## HPHYS0207 Normalized-Profile FC/WP Depth-Authority Addendum"),
+        "SC-SYSTEM-001 must include HPHYS0207 normalized-profile storage authority"
+    );
+    assert!(
+        system.contains("superseded by HPHYS0207"),
+        "SC-SYSTEM-001 historical FC/WP authority notes must be explicitly superseded by HPHYS0207"
+    );
 }
 
 #[test]
-fn hphys0202_profile_fc_wp_publication_uses_layer_aggregation_not_seed_override() {
+fn hphys0207_profile_fc_wp_publication_uses_projected_storage_symbols() {
     let _execution_guard = runner_execution_lock()
         .lock()
         .expect("runner execution lock should be acquirable");
@@ -103,7 +130,9 @@ fn hphys0202_profile_fc_wp_publication_uses_layer_aggregation_not_seed_override(
         .expect("soil fixture should parse");
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil_profile)
         .expect("soil fixture should project runtime state");
-    let expected = expected_profile_aggregation_from_layers(&soil_surface);
+    let expected_layer = expected_profile_aggregation_from_layers(&soil_surface);
+    let expected_projected_fc = required_surface_scalar(&soil_surface, "wb13_profile_fc_store_mm");
+    let expected_projected_wp = required_surface_scalar(&soil_surface, "wb13_profile_wp_store_mm");
 
     let report = execute_hillslope_run(
         &HillslopeRunRequest {
@@ -129,13 +158,21 @@ fn hphys0202_profile_fc_wp_publication_uses_layer_aggregation_not_seed_override(
 
     assert_close(
         observed_fc,
-        expected.fc_store_mm,
-        "ProfileFCStore must follow layer aggregation (thetfc_#### * dg_####)",
+        expected_projected_fc,
+        "ProfileFCStore must follow wb13_profile_fc_store_mm projected storage authority",
     );
     assert_close(
         observed_wp,
-        expected.wp_store_mm,
-        "ProfileWPStore must follow layer aggregation (thetdr_#### * dg_####)",
+        expected_projected_wp,
+        "ProfileWPStore must follow wb13_profile_wp_store_mm projected storage authority",
+    );
+    assert!(
+        (observed_fc - expected_layer.fc_store_mm).abs() > 1.0e-6,
+        "ProfileFCStore must not silently truncate to parser-layer depth aggregation"
+    );
+    assert!(
+        (observed_wp - expected_layer.wp_store_mm).abs() > 1.0e-6,
+        "ProfileWPStore must not silently truncate to parser-layer depth aggregation"
     );
 }
 
@@ -159,36 +196,30 @@ fn hphys0202_invalid_layer_storage_state_hard_fails_runtime_surface() {
 }
 
 #[test]
-fn hphys0205_layer_authority_projects_corrected_fc_wp_lineage_not_raw_parser_theta() {
+fn hphys0207_profile_storage_projection_differs_from_parser_layer_depth_aggregation() {
     let soil_profile = parse_soil(VALID_9002, soil_parser_options_for_fixture())
         .expect("9002 fixture should parse");
     let raw_parser_aggregation = raw_profile_aggregation_from_parser_layers(&soil_profile);
 
     let runtime_surface = build_hillslope_runtime_surface_from_soil(&soil_profile)
         .expect("runtime surface should build from parsed soil");
-    let authoritative_layer_aggregation =
-        expected_profile_aggregation_from_layers(&runtime_surface);
+    let parser_layer_aggregation = expected_profile_aggregation_from_layers(&runtime_surface);
+    let projected_fc_seed = required_surface_scalar(&runtime_surface, "wb13_profile_fc_store_mm");
+    let projected_wp_seed = required_surface_scalar(&runtime_surface, "wb13_profile_wp_store_mm");
 
     assert!(
-        (authoritative_layer_aggregation.fc_store_mm - raw_parser_aggregation.fc_store_mm).abs()
-            > 1.0e-6
-            || (authoritative_layer_aggregation.wp_store_mm - raw_parser_aggregation.wp_store_mm)
-                .abs()
+        (parser_layer_aggregation.fc_store_mm - raw_parser_aggregation.fc_store_mm).abs() > 1.0e-6
+            || (parser_layer_aggregation.wp_store_mm - raw_parser_aggregation.wp_store_mm).abs()
                 > 1.0e-6,
         "authoritative layer FC/WP symbols must not remain raw parser theta lineage"
     );
-
-    let projected_fc_seed = required_surface_scalar(&runtime_surface, "wb13_profile_fc_store_mm");
-    let projected_wp_seed = required_surface_scalar(&runtime_surface, "wb13_profile_wp_store_mm");
-    assert_close(
-        authoritative_layer_aggregation.fc_store_mm,
-        projected_fc_seed,
-        "corrected authoritative layer FC aggregation must reconcile with projected FC seed lineage",
+    assert!(
+        (projected_fc_seed - parser_layer_aggregation.fc_store_mm).abs() > 1.0e-6,
+        "projected FC storage must preserve normalized-profile depth authority"
     );
-    assert_close(
-        authoritative_layer_aggregation.wp_store_mm,
-        projected_wp_seed,
-        "corrected authoritative layer WP aggregation must reconcile with projected WP seed lineage",
+    assert!(
+        (projected_wp_seed - parser_layer_aggregation.wp_store_mm).abs() > 1.0e-6,
+        "projected WP storage must preserve normalized-profile depth authority"
     );
 }
 

@@ -104,8 +104,8 @@ tolerance on 38/39.
 ## I-7 — Gates; working tree uncommitted
 
 Ran (reviewer, from `/home/workdir/openWEPP`, HPHYS0206 working tree):
-`cargo fmt --check` → exit 0; `cargo deny check` → exit 0.
-`cargo clippy --workspace --all-targets -- -D warnings` and
-`cargo test --workspace` were executed; results pending at time of writing and
-to be reflected here. Static: HPHYS0206 changes are unstaged; `git log` HEAD is
-`130c384` (HPHYS0206 scaffold); no HPHYS0206 implementation commit exists.
+`cargo fmt --check` → exit 0; `cargo deny check` → exit 0;
+`cargo clippy --workspace --all-targets -- -D warnings` → exit 0;
+`cargo test --workspace` → exit 0. Static: HPHYS0206 changes are unstaged;
+`git log` HEAD is `130c384` (HPHYS0206 scaffold); no HPHYS0206 implementation
+commit exists.

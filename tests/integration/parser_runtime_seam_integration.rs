@@ -93,6 +93,38 @@ impl HillslopeKernel for HillslopeSeedProbeKernel {
         assert_state_value(request.state_surface, "dg_0002", 0.15);
         assert_state_value(request.state_surface, "solthk_0002", 0.25);
         assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
+        let profile_fc_store_mm = request
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_fc_store_mm"))
+            .expect("wb13_profile_fc_store_mm should be present")
+            .as_f64();
+        let profile_wp_store_mm = request
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
+            .expect("wb13_profile_wp_store_mm should be present")
+            .as_f64();
+        let layer_fc_store_mm = request.state_surface[&BoundarySymbol::from("thetfc_0001")]
+            .as_f64()
+            * request.state_surface[&BoundarySymbol::from("dg_0001")].as_f64()
+            * 1_000.0
+            + request.state_surface[&BoundarySymbol::from("thetfc_0002")].as_f64()
+                * request.state_surface[&BoundarySymbol::from("dg_0002")].as_f64()
+                * 1_000.0;
+        let layer_wp_store_mm = request.state_surface[&BoundarySymbol::from("thetdr_0001")]
+            .as_f64()
+            * request.state_surface[&BoundarySymbol::from("dg_0001")].as_f64()
+            * 1_000.0
+            + request.state_surface[&BoundarySymbol::from("thetdr_0002")].as_f64()
+                * request.state_surface[&BoundarySymbol::from("dg_0002")].as_f64()
+                * 1_000.0;
+        assert!(
+            (profile_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
+            "HPHYS0207 seam: FC storage projection must preserve normalized-profile depth authority"
+        );
+        assert!(
+            (profile_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,
+            "HPHYS0207 seam: WP storage projection must preserve normalized-profile depth authority"
+        );
 
         self.invocation_count += 1;
         KernelRunResponse::new(
@@ -195,6 +227,17 @@ impl HillslopeKernel for HillslopeSlopeSoilProbeKernel {
         assert_state_value(request.state_surface, "slpinp_0002", 0.08);
         assert_state_value(request.state_surface, "ofe2_avgslp", 0.0425);
         assert_state_value(request.state_surface, "ofe2_xinput_0003", 1.0);
+        let profile_fc_store_mm = request
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_fc_store_mm"))
+            .expect("wb13_profile_fc_store_mm should be present")
+            .as_f64();
+        let profile_wp_store_mm = request
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
+            .expect("wb13_profile_wp_store_mm should be present")
+            .as_f64();
+        assert!(profile_fc_store_mm.is_finite() && profile_fc_store_mm >= profile_wp_store_mm);
 
         self.invocation_count += 1;
         KernelRunResponse::new(
