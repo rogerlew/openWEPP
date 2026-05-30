@@ -1,8 +1,8 @@
 # 20260529-hphys0204-disposition-and-diagnostics-001
 
 ## Status
-- state: queued
-- date: 2026-05-29
+- state: completed
+- date: 2026-05-30
 - timezone: America/Los_Angeles
 - decision: HOLD
 
