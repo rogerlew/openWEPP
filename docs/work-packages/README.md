@@ -59,6 +59,19 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260530-hphys0210-integrated-hold-lift-adjudication-001/`
+  - Purpose: execute integrated post-closure hold-lift adjudication by
+    combining HPHYS0208/0209 evidence, workspace gate results, and
+    confidence-tier diagnostics into a final process-authority-first
+    `HOLD`/`GO` decision with explicit ownership for any remaining residuals.
+- `20260530-hphys0209-profilewp-near-closed-adjudication-001/`
+  - Purpose: isolate and adjudicate the near-closed `ProfileWPStore` residual
+    (`1/39`) to determine whether it is unresolved migration defect lineage or
+    an expected process-correct delta with authority-backed acceptance.
+- `20260530-hphys0208-fc-threshold-coupled-residual-closure-001/`
+  - Purpose: close coupled FC-threshold residual families by migrating and
+    verifying shared threshold lineage for `ProfileFCStore`, `Dp`, `latqcc`,
+    `Total-Soil`, and `SoilWaterTotal` under contract-first sequencing.
 - `20260530-hphys0207-fcwp-depth-authority-tail-closure-001/`
   - Purpose: resolve FC/WP depth-authority mismatch after HPHYS0206 by making
     normalized-profile vs parser-layer aggregation depth authority explicit,
@@ -93,7 +106,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.
