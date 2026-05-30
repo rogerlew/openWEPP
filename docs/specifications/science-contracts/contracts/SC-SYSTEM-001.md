@@ -88,7 +88,7 @@ Out of scope:
 | `qp` | `m^3 s^-1` | Peak runoff from contributing element. | hillslope/channel/impoundment element | downstream hydrograph merge |
 | `Ep`, `Es`, `Er` | `mm` (daily depth-equivalent publication units) | Daily ET component publications consumed by replay/comparator surfaces and downstream summaries. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `Total-Soil`, `SoilWaterTotal` | `mm` | Daily soil-water aggregate publications derived from runtime layer-state lineage plus frozen/snow components. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
-| `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `mm` | Daily full-profile depth/capacity/storage publications derived from baseline-authoritative soil preprocessing + WB13 profile aggregation lineage. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
+| `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `mm` | Daily full-profile publications where `ProfileDepth`/`ProfilePorosityCap` derive from baseline-authoritative soil preprocessing + aggregation lineage and `ProfileFCStore`/`ProfileWPStore` derive from simulation-owned WB13 layer aggregation (`thetfc/thetdr` with `dg`). | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `total_detachment_kg` | `kg` | Total hillslope detachment payload at event endpoint. | hillslope erosion component | channel sediment-load assembly |
 | `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
 | `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
@@ -609,6 +609,19 @@ Minimum WS12 integration vectors:
    that fail closed on missing alias continuity or projection-side
    reconstruction.
 
+## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum
+
+1. System publication authority for `ProfileFCStore` and `ProfileWPStore` is
+   simulation-owned layer aggregation from runtime WB13 symbols:
+   `ProfileFCStore = Σ(thetfc_i * dg_i) * 1000` and
+   `ProfileWPStore = Σ(thetdr_i * dg_i) * 1000` (`mm`).
+2. Adapter-projected seed symbols `wb13_profile_fc_store_mm` and
+   `wb13_profile_wp_store_mm` may be carried for diagnostics, but system
+   publication must not consume them as authoritative WB13 values.
+3. Missing/non-finite/domain-invalid layer aggregation symbols are typed
+   WB13 publication failures and must not be replaced by projection-side
+   synthetic reconstruction.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Boundary-Carry Addendum
 
 1. System-boundary publication authority for hillslope WB13/H.wat outputs must
@@ -760,6 +773,7 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `23` | `Codex` | SIMIMPL18 amendment: added baseline-year policy and full-span precipitation comparability invariant (`INV-SYSTEM-026`), explicit replay-provenance obligations for declared span-policy metadata, and addendum authority requiring first-day and multi-day storage diagnostics for hydrology closure evidence. |
 | `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |
 | `2026-05-29` | `65` | `Codex` | HPARITY02 amendment: extended `INV-SYSTEM-027` lineage scope to include WB13 profile-capacity outputs (`ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) and updated producer/invalid-state/disposition authority accordingly. |
+| `2026-05-29` | `66` | `Codex` | HPHYS0202 amendment: made system publication authority explicit that `ProfileFCStore`/`ProfileWPStore` are simulation-owned layer aggregates (`thetfc/thetdr` with `dg`) and that FC/WP adapter seeds remain non-authoritative diagnostics. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |

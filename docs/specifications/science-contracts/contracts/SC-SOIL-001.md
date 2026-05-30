@@ -266,6 +266,10 @@ bit-for-bit parity). `[DIRECT][Static]`
    posture.
 4. Missing/non-finite/domain-invalid seed derivations remain fail-closed and do
    not authorize silent substitution from unrelated publication surfaces.
+5. HPHYS0202 narrows publication authority so `wb13_profile_fc_store_mm` and
+   `wb13_profile_wp_store_mm` are adapter diagnostics only; canonical WB13
+   publication for `ProfileFCStore`/`ProfileWPStore` is layer-authoritative
+   aggregation from runtime `thetfc_####`/`thetdr_####` with `dg_####`.
 
 ## Gap Register
 
@@ -286,3 +290,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-23` | `3` | `Codex` | CLIM06 amendment: added frozen-soil conductivity coupling authority from parsed frost controls, bounded `Dfrost/Dthaw/Nft/Ws_frz/InfCap_frz` runtime-state requirements, and typed active-coupling guard posture. |
 | `2026-05-25` | `4` | `Codex` | SIMIMPL21 amendment: added WB11 ET/soil-water alias-lineage authority (`INV-SOIL-013`) with explicit layer-storage to aggregate publication mapping and downstream SIMIMPL22 gating obligations. |
 | `2026-05-29` | `5` | `Codex` | HPARITY02 amendment: added WB13 profile-capacity seed-projection authority (`wb13_profile_*_mm`) anchored to baseline preprocessing/correction lineage and fail-closed derivation posture. |
+| `2026-05-29` | `6` | `Codex` | HPHYS0202 amendment: clarified WB13 publication authority split where FC/WP adapter seeds remain diagnostic carry surfaces and canonical `ProfileFCStore`/`ProfileWPStore` publication must use layer-authoritative runtime aggregation. |

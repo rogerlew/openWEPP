@@ -985,13 +985,15 @@ Required runtime publication symbols for WB13 profile columns:
 
 1. `wb13_profile_depth_mm`
 2. `wb13_profile_porosity_cap_mm`
-3. `wb13_profile_fc_store_mm`
-4. `wb13_profile_wp_store_mm`
+3. `wb13_profile_fc_store_mm` (adapter seed; non-authoritative for publication
+   after HPHYS0202)
+4. `wb13_profile_wp_store_mm` (adapter seed; non-authoritative for publication
+   after HPHYS0202)
 
 Deterministic publication rules:
 
-1. When `wb13_profile_*_mm` symbols are present, WB13 publication consumes
-   those symbols directly as producer-authoritative profile outputs.
+1. `wb13_profile_depth_mm` and `wb13_profile_porosity_cap_mm` remain
+   producer-authoritative profile publication symbols when present.
 2. `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and
    `ProfileWPStore` remain non-negative `mm` depth-equivalent publication
    fields under WB13 schema/order authority.
@@ -999,6 +1001,22 @@ Deterministic publication rules:
    (for example `max(ProfileFCStore, ProfileWPStore) + C`).
 4. Missing/non-finite/domain-invalid profile-lineage symbols hard-fail WB13
    publication under existing WB13 guard-family continuity.
+
+### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure
+
+HPHYS0202 amends WB13 profile-storage publication authority so
+`ProfileFCStore` and `ProfileWPStore` are simulation-owned layer aggregates
+from canonical WB11/WB13 state lineage (`watbal.for`/`watbalprint.for`):
+
+1. `ProfileFCStore = Σ(thetfc_i * dg_i) * 1000` in `mm`.
+2. `ProfileWPStore = Σ(thetdr_i * dg_i) * 1000` in `mm`.
+3. Required aggregation symbols are per-layer `thetfc_####`, `thetdr_####`,
+   and `dg_####` runtime surfaces for `i in [1..nsl]`.
+4. Optional adapter seed symbols `wb13_profile_fc_store_mm` and
+   `wb13_profile_wp_store_mm` are diagnostic carry surfaces only and must not
+   override WB13 publication values.
+5. Missing/non-finite/domain-invalid layer aggregation symbols hard-fail WB13
+   publication under existing guard-family continuity.
 
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
@@ -1206,6 +1224,7 @@ Deterministic publication rules:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `45` | `Codex` | HPHYS0202 amendment: made `ProfileFCStore`/`ProfileWPStore` publication authority explicitly layer-aggregated (`Σ(thetfc_i*dg_i)`, `Σ(thetdr_i*dg_i)`), and restricted `wb13_profile_fc/wp_store_mm` to non-authoritative adapter diagnostics. |
 | `2026-05-29` | `44` | `Codex` | HPARITY02 amendment: added profile-capacity publication-lineage closure authority (`wb13_profile_*_mm`) and explicit prohibition of synthesized `ProfilePorosityCap` placeholder formulas. |
 | `2026-05-29` | `43` | `Codex` | HPARITY01 amendment: added always-fail WB13 12-column lineage register with canonical symbol ownership, process-contract disambiguation (`Dp` deep-percolation vs climate time-to-peak), runtime writer surfaces, and explicit alias continuity policy for `Total-Soil`/`Total-Soil Water`/`SoilWaterTotal`. |
 | `2026-05-29` | `42` | `Codex` | HILLSTAB08 amendment: landed baseline-authoritative WB16 `ealpha` producer-chain runtime migration (`frcfac -> rdat(alpha) -> alphay -> eplane`), added runtime-producer provenance vector (`runtime_provided`), retained explicit compatibility degradation policy (`SIMPIPE-W-003`), and dispositioned `GAP-WATBAL-005` to `closed`. |

@@ -1,7 +1,7 @@
 # 20260529-hphys0202-profile-fc-wp-lineage-closure-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-29
 - timezone: America/Los_Angeles
 - decision: HOLD

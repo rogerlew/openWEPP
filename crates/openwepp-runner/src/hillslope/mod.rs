@@ -3785,30 +3785,24 @@ fn build_simulation_owned_wb13_row(
         }
         Ok(value)
     })?;
-    let profile_fc_store_mm = runtime_surface_symbol_value(
-        runtime_surface,
-        "wb13_profile_fc_store_mm",
-    )
-    .map_or(Ok(fallback_profile_fc_store_mm), |value| {
+    // HPHYS0202: FC/WP publication is layer-authoritative (`thetfc/thetdr` + `dg`)
+    // and does not consume projected seed symbols as authoritative outputs.
+    if let Some(value) = runtime_surface_symbol_value(runtime_surface, "wb13_profile_fc_store_mm") {
         if !value.is_finite() || value < 0.0 {
             return Err(wb13_simout_failure(format!(
                 "wb13_profile_fc_store_mm must be finite and >= 0.0, observed {value}"
             )));
         }
-        Ok(value)
-    })?;
-    let profile_wp_store_mm = runtime_surface_symbol_value(
-        runtime_surface,
-        "wb13_profile_wp_store_mm",
-    )
-    .map_or(Ok(fallback_profile_wp_store_mm), |value| {
+    }
+    if let Some(value) = runtime_surface_symbol_value(runtime_surface, "wb13_profile_wp_store_mm") {
         if !value.is_finite() || value < 0.0 {
             return Err(wb13_simout_failure(format!(
                 "wb13_profile_wp_store_mm must be finite and >= 0.0, observed {value}"
             )));
         }
-        Ok(value)
-    })?;
+    }
+    let profile_fc_store_mm = fallback_profile_fc_store_mm;
+    let profile_wp_store_mm = fallback_profile_wp_store_mm;
     let profile_porosity_cap = if let Some(value) =
         runtime_surface_symbol_value(runtime_surface, "wb13_profile_porosity_cap_mm")
     {
@@ -4557,6 +4551,110 @@ mod tests {
     }
 
     #[test]
+    fn hphys0202_wb13_fc_seed_guard_is_exercised_by_direct_row_builder_probe() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_fc_store_mm"),
+            BoundaryValue::scalar(f64::NAN),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("non-finite wb13_profile_fc_store_mm must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("wb13_profile_fc_store_mm must be finite and >= 0.0"),
+                    "expected wb13_profile_fc_store_mm typed guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0202_wb13_wp_seed_guard_is_exercised_by_direct_row_builder_probe() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_wp_store_mm"),
+            BoundaryValue::scalar(-1.0),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("negative wb13_profile_wp_store_mm must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("wb13_profile_wp_store_mm must be finite and >= 0.0"),
+                    "expected wb13_profile_wp_store_mm typed guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0202_wb13_profile_fc_wp_publication_ignores_seed_values_when_valid() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_fc_store_mm"),
+            BoundaryValue::scalar(999.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_wp_store_mm"),
+            BoundaryValue::scalar(555.0),
+        );
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("valid WB13 probe surface should publish row");
+
+        let expected_fc_store_mm = 0.30 * 0.25 * 1_000.0;
+        let expected_wp_store_mm = 0.12 * 0.25 * 1_000.0;
+        assert!(
+            (row.wb13_row.profile_fc_store - expected_fc_store_mm).abs() < 1.0e-12,
+            "ProfileFCStore must follow layer aggregation, not wb13_profile_fc_store_mm seed"
+        );
+        assert!(
+            (row.wb13_row.profile_wp_store - expected_wp_store_mm).abs() < 1.0e-12,
+            "ProfileWPStore must follow layer aggregation, not wb13_profile_wp_store_mm seed"
+        );
+    }
+
+    #[test]
     fn wshedimpl42_breakpoint_seed_uses_current_nbrkpt_not_stale_ninten() {
         let mut runtime_surface = HillslopeWritebackSurface::default();
         runtime_surface
@@ -4935,6 +5033,85 @@ mod tests {
             last_power = current_power;
         }
         (sum_length / storage_integral).powf(m) * sum_length
+    }
+
+    fn seeded_wb13_runtime_surface_probe() -> HillslopeWritebackSurface {
+        let mut runtime_surface = HillslopeWritebackSurface::default();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.004));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(12.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(2.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.25));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.25));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("thetfc_0001"),
+            BoundaryValue::scalar(0.30),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("thetdr_0001"),
+            BoundaryValue::scalar(0.12),
+        );
+
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_porosity_cap_mm"),
+            BoundaryValue::scalar(120.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb11_soil_water"),
+            BoundaryValue::scalar(0.075),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_ws_frz"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Q"), BoundaryValue::scalar(0.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.000_20));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Es"), BoundaryValue::scalar(0.000_10));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Er"), BoundaryValue::scalar(0.000_05));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.000_10));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("q"), BoundaryValue::scalar(0.0));
+        runtime_surface
+    }
+
+    fn canonical_calendar_day_probe() -> ClimateDayProjection {
+        ClimateDayProjection {
+            year: 2000,
+            month: 1,
+            day_of_month: 1,
+            julian_day: 1,
+            precipitation_mm: 4.0,
+        }
     }
 
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {
