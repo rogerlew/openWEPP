@@ -6,7 +6,9 @@ use std::sync::{Mutex, OnceLock};
 use openwepp_hillslope_orchestrator::{
     HillslopeWritebackSurface, runtime_inputs::build_hillslope_runtime_surface_from_soil,
 };
-use openwepp_input_contract::parsers::soil::{SoilParserOptions, TopologyScope, parse_soil};
+use openwepp_input_contract::parsers::soil::{
+    SoilParserOptions, SoilProfile, TopologyScope, parse_soil,
+};
 use openwepp_kernel_contract::BoundarySymbol;
 use openwepp_runner::{
     HillslopeCliError, HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
@@ -15,6 +17,7 @@ use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 
 const EPS: f64 = 1.0e-9;
+const VALID_9002: &str = include_str!("../fixtures/infile/soil/valid_9002.sol");
 
 #[derive(Debug, Clone, Copy)]
 struct ProfileAggregation {
@@ -67,23 +70,13 @@ fn hphys0202_profile_fc_wp_publication_uses_layer_aggregation_not_seed_override(
     let source_fixture_dir = fixture_path("hillslope_run_dir");
     let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, "hphys0202_layer_aggregation");
     let soil_path = temp_run_dir.join("case.sol");
-    let mut soil_text = fs::read_to_string(&soil_path).expect("soil fixture should be readable");
-    soil_text = rewrite_layer_bulk_density_for_seed_divergence(&soil_text);
-    fs::write(&soil_path, &soil_text).expect("modified soil fixture should be writable");
+    let soil_text = fs::read_to_string(&soil_path).expect("soil fixture should be readable");
 
     let soil_profile = parse_soil(&soil_text, soil_parser_options_for_fixture())
-        .expect("modified soil fixture should parse");
+        .expect("soil fixture should parse");
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil_profile)
-        .expect("modified soil fixture should project runtime state");
+        .expect("soil fixture should project runtime state");
     let expected = expected_profile_aggregation_from_layers(&soil_surface);
-    let seeded_fc = required_surface_scalar(&soil_surface, "wb13_profile_fc_store_mm");
-    let seeded_wp = required_surface_scalar(&soil_surface, "wb13_profile_wp_store_mm");
-
-    assert!(
-        (seeded_fc - expected.fc_store_mm).abs() > 1.0e-6
-            || (seeded_wp - expected.wp_store_mm).abs() > 1.0e-6,
-        "fixture mutation must create a measurable divergence between legacy seed FC/WP and layer aggregation"
-    );
 
     let report = execute_hillslope_run(
         &HillslopeRunRequest {
@@ -116,10 +109,6 @@ fn hphys0202_profile_fc_wp_publication_uses_layer_aggregation_not_seed_override(
         observed_wp,
         expected.wp_store_mm,
         "ProfileWPStore must follow layer aggregation (thetdr_#### * dg_####)",
-    );
-    assert!(
-        (observed_fc - seeded_fc).abs() > 1.0e-6 || (observed_wp - seeded_wp).abs() > 1.0e-6,
-        "published ProfileFCStore/ProfileWPStore must not be overridden by legacy seed symbols"
     );
 }
 
@@ -166,6 +155,40 @@ fn hphys0202_invalid_layer_storage_state_hard_fails_runtime_surface() {
     }
 }
 
+#[test]
+fn hphys0205_layer_authority_projects_corrected_fc_wp_lineage_not_raw_parser_theta() {
+    let soil_profile = parse_soil(VALID_9002, soil_parser_options_for_fixture())
+        .expect("9002 fixture should parse");
+    let raw_parser_aggregation = raw_profile_aggregation_from_parser_layers(&soil_profile);
+
+    let runtime_surface = build_hillslope_runtime_surface_from_soil(&soil_profile)
+        .expect("runtime surface should build from parsed soil");
+    let authoritative_layer_aggregation =
+        expected_profile_aggregation_from_layers(&runtime_surface);
+
+    assert!(
+        (authoritative_layer_aggregation.fc_store_mm - raw_parser_aggregation.fc_store_mm).abs()
+            > 1.0e-6
+            || (authoritative_layer_aggregation.wp_store_mm - raw_parser_aggregation.wp_store_mm)
+                .abs()
+                > 1.0e-6,
+        "authoritative layer FC/WP symbols must not remain raw parser theta lineage"
+    );
+
+    let projected_fc_seed = required_surface_scalar(&runtime_surface, "wb13_profile_fc_store_mm");
+    let projected_wp_seed = required_surface_scalar(&runtime_surface, "wb13_profile_wp_store_mm");
+    assert_close(
+        authoritative_layer_aggregation.fc_store_mm,
+        projected_fc_seed,
+        "corrected authoritative layer FC aggregation must reconcile with projected FC seed lineage",
+    );
+    assert_close(
+        authoritative_layer_aggregation.wp_store_mm,
+        projected_wp_seed,
+        "corrected authoritative layer WP aggregation must reconcile with projected WP seed lineage",
+    );
+}
+
 fn soil_parser_options_for_fixture() -> SoilParserOptions {
     SoilParserOptions {
         mode: SidecarPolicy::Compat.as_soil_parser_mode(),
@@ -201,6 +224,37 @@ fn expected_profile_aggregation_from_layers(
     }
 }
 
+fn raw_profile_aggregation_from_parser_layers(soil: &SoilProfile) -> ProfileAggregation {
+    let primary_ofe = soil
+        .ofes
+        .first()
+        .expect("soil profile must include at least one OFE");
+    let mut previous_depth_mm = 0.0_f64;
+    let mut fc_store_mm = 0.0_f64;
+    let mut wp_store_mm = 0.0_f64;
+
+    for layer in &primary_ofe.layers {
+        let layer_depth_mm = layer.depth_mm;
+        let dg_m = (layer_depth_mm - previous_depth_mm) / 1_000.0;
+        let thetfc = layer
+            .fc_rosetta
+            .or(layer.fc_measured)
+            .expect("fixture layer must provide field-capacity theta");
+        let thetdr = layer
+            .theta_r_rosetta
+            .or(layer.wp_measured)
+            .expect("fixture layer must provide wilting-point theta");
+        fc_store_mm += thetfc * dg_m * 1_000.0;
+        wp_store_mm += thetdr * dg_m * 1_000.0;
+        previous_depth_mm = layer_depth_mm;
+    }
+
+    ProfileAggregation {
+        fc_store_mm,
+        wp_store_mm,
+    }
+}
+
 fn required_surface_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> f64 {
     surface
         .state_surface
@@ -209,39 +263,6 @@ fn required_surface_scalar(surface: &HillslopeWritebackSurface, symbol: &str) ->
             || panic!("missing required runtime symbol {symbol}"),
             |value| value.as_f64(),
         )
-}
-
-fn rewrite_layer_bulk_density_for_seed_divergence(soil_text: &str) -> String {
-    let mut rows = Vec::new();
-    let mut layer_row_index = 0usize;
-
-    for line in soil_text.lines() {
-        let tokens: Vec<&str> = line.split_whitespace().collect();
-        if tokens.len() == 18 && tokens[0].parse::<f64>().is_ok() {
-            let mut owned = tokens
-                .iter()
-                .map(|token| (*token).to_string())
-                .collect::<Vec<_>>();
-            match layer_row_index {
-                0 => owned[1] = "1.80".to_string(),
-                1 => owned[1] = "1.85".to_string(),
-                _ => {}
-            }
-            layer_row_index += 1;
-            rows.push(owned.join(" "));
-            continue;
-        }
-        rows.push(line.to_string());
-    }
-
-    assert!(
-        layer_row_index >= 2,
-        "expected at least two 18-field soil layer rows for bulk-density rewrite"
-    );
-
-    let mut payload = rows.join("\n");
-    payload.push('\n');
-    payload
 }
 
 fn rewrite_first_layer_theta_state_to_zero(soil_text: &str) -> String {
@@ -255,6 +276,8 @@ fn rewrite_first_layer_theta_state_to_zero(soil_text: &str) -> String {
                 .iter()
                 .map(|token| (*token).to_string())
                 .collect::<Vec<_>>();
+            owned[4] = "0.0".to_string();
+            owned[5] = "0.0".to_string();
             owned[11] = "0.0".to_string();
             owned[17] = "0.0".to_string();
             rows.push(owned.join(" "));

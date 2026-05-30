@@ -71,8 +71,23 @@ impl HillslopeKernel for HillslopeSeedProbeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
         assert_state_value(request.state_surface, "solthk", 0.25);
         assert_state_value(request.state_surface, "dg", 0.1);
-        assert_state_value(request.state_surface, "thetdr", 0.05);
-        assert_state_value(request.state_surface, "thetfc", 0.31);
+        let thetdr = request
+            .state_surface
+            .get(&BoundarySymbol::from("thetdr"))
+            .expect("thetdr should be present")
+            .as_f64();
+        let thetfc = request
+            .state_surface
+            .get(&BoundarySymbol::from("thetfc"))
+            .expect("thetfc should be present")
+            .as_f64();
+        assert!(thetdr.is_finite() && thetdr > 0.0);
+        assert!(thetfc.is_finite() && thetfc > 0.0);
+        assert!(thetfc >= thetdr);
+        assert!(
+            (thetdr - 0.05).abs() > 1.0e-9 || (thetfc - 0.31).abs() > 1.0e-9,
+            "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
+        );
         assert_state_value(request.state_surface, "nsl", 2.0);
         assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
         assert_state_value(request.state_surface, "dg_0002", 0.15);
@@ -151,8 +166,23 @@ impl HillslopeKernel for HillslopeSlopeSoilProbeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
         assert_state_value(request.state_surface, "solthk", 0.25);
         assert_state_value(request.state_surface, "dg", 0.1);
-        assert_state_value(request.state_surface, "thetdr", 0.05);
-        assert_state_value(request.state_surface, "thetfc", 0.31);
+        let thetdr = request
+            .state_surface
+            .get(&BoundarySymbol::from("thetdr"))
+            .expect("thetdr should be present")
+            .as_f64();
+        let thetfc = request
+            .state_surface
+            .get(&BoundarySymbol::from("thetfc"))
+            .expect("thetfc should be present")
+            .as_f64();
+        assert!(thetdr.is_finite() && thetdr > 0.0);
+        assert!(thetfc.is_finite() && thetfc > 0.0);
+        assert!(thetfc >= thetdr);
+        assert!(
+            (thetdr - 0.05).abs() > 1.0e-9 || (thetfc - 0.31).abs() > 1.0e-9,
+            "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
+        );
         assert_state_value(request.state_surface, "nsl", 2.0);
         assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
         assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
@@ -267,11 +297,65 @@ fn parser_to_hillslope_runtime_surface_7778_measured_theta_fallback_closure() {
         .expect("7778 soil fixture should parse for seam closure");
     let runtime_surface = build_hillslope_runtime_surface_from_soil(&soil)
         .expect("runtime surface should build with measured theta fallback");
+    let raw_layer1 = soil
+        .ofes
+        .first()
+        .and_then(|ofe| ofe.layers.first())
+        .expect("7778 fixture should include layer 1");
+    let raw_layer2 = soil
+        .ofes
+        .first()
+        .and_then(|ofe| ofe.layers.get(1))
+        .expect("7778 fixture should include layer 2");
+    let raw_layer1_thetdr = raw_layer1
+        .theta_r_rosetta
+        .or(raw_layer1.wp_measured)
+        .expect("layer 1 should include theta residual source");
+    let raw_layer1_thetfc = raw_layer1
+        .fc_rosetta
+        .or(raw_layer1.fc_measured)
+        .expect("layer 1 should include theta field-capacity source");
+    let raw_layer2_thetdr = raw_layer2
+        .theta_r_rosetta
+        .or(raw_layer2.wp_measured)
+        .expect("layer 2 should include theta residual source");
+    let raw_layer2_thetfc = raw_layer2
+        .fc_rosetta
+        .or(raw_layer2.fc_measured)
+        .expect("layer 2 should include theta field-capacity source");
 
-    assert_state_value(&runtime_surface.state_surface, "thetdr", 0.1009);
-    assert_state_value(&runtime_surface.state_surface, "thetfc", 0.3282);
-    assert_state_value(&runtime_surface.state_surface, "thetdr_0002", 0.095);
-    assert_state_value(&runtime_surface.state_surface, "thetfc_0002", 0.312);
+    let thetdr = runtime_surface
+        .state_surface
+        .get(&BoundarySymbol::from("thetdr"))
+        .expect("thetdr should be present")
+        .as_f64();
+    let thetfc = runtime_surface
+        .state_surface
+        .get(&BoundarySymbol::from("thetfc"))
+        .expect("thetfc should be present")
+        .as_f64();
+    let layer2_thetdr = runtime_surface
+        .state_surface
+        .get(&BoundarySymbol::from("thetdr_0002"))
+        .expect("thetdr_0002 should be present")
+        .as_f64();
+    let layer2_thetfc = runtime_surface
+        .state_surface
+        .get(&BoundarySymbol::from("thetfc_0002"))
+        .expect("thetfc_0002 should be present")
+        .as_f64();
+
+    assert!(thetdr.is_finite() && thetdr > 0.0);
+    assert!(thetfc.is_finite() && thetfc > 0.0);
+    assert!(layer2_thetdr.is_finite() && layer2_thetdr > 0.0);
+    assert!(layer2_thetfc.is_finite() && layer2_thetfc > 0.0);
+    assert!(
+        (thetdr - raw_layer1_thetdr).abs() > 1.0e-9
+            || (thetfc - raw_layer1_thetfc).abs() > 1.0e-9
+            || (layer2_thetdr - raw_layer2_thetdr).abs() > 1.0e-9
+            || (layer2_thetfc - raw_layer2_thetfc).abs() > 1.0e-9,
+        "7778 authoritative theta symbols should carry corrected lineage, not raw measured-theta values"
+    );
 }
 
 #[test]

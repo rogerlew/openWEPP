@@ -622,6 +622,20 @@ Minimum WS12 integration vectors:
    WB13 publication failures and must not be replaced by projection-side
    synthetic reconstruction.
 
+## HPHYS0205 Corrected-Layer Projection Addendum
+
+1. System-boundary authority for WB13 profile storage requires
+   `thetfc_####`/`thetdr_####` publication-consumer symbols to be sourced from
+   baseline-corrected moisture lineage when correction lineage is available at
+   the runtime projection boundary.
+2. Adapter-projected FC/WP seed symbols remain diagnostic-only carry surfaces;
+   they do not supersede authoritative layer publication symbols.
+3. When both corrected-layer aggregates and diagnostic FC/WP seed surfaces are
+   present, they must be reconciliation-consistent; disagreement is a typed
+   boundary violation for HPHYS0205 closure governance.
+4. Missing/non-finite/domain-invalid corrected-layer symbol projections remain
+   fail-closed and are not eligible for projection-side surrogate replacement.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Boundary-Carry Addendum
 
 1. System-boundary publication authority for hillslope WB13/H.wat outputs must
@@ -774,6 +788,7 @@ Minimum WS12 integration vectors:
 | `2026-05-25` | `24` | `Codex` | SIMIMPL21 amendment: added WB13 ET/soil-water publication-lineage invariant (`INV-SYSTEM-027`), explicit producer/consumer alias-lineage obligations for `Ep`/`Es`/`Er`/`Total-Soil`/`SoilWaterTotal`, and addendum authority prohibiting projection-side surrogate publication reconstruction. |
 | `2026-05-29` | `65` | `Codex` | HPARITY02 amendment: extended `INV-SYSTEM-027` lineage scope to include WB13 profile-capacity outputs (`ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) and updated producer/invalid-state/disposition authority accordingly. |
 | `2026-05-29` | `66` | `Codex` | HPHYS0202 amendment: made system publication authority explicit that `ProfileFCStore`/`ProfileWPStore` are simulation-owned layer aggregates (`thetfc/thetdr` with `dg`) and that FC/WP adapter seeds remain non-authoritative diagnostics. |
+| `2026-05-29` | `67` | `Codex` | HPHYS0205 amendment: required corrected-layer projection authority for WB13 FC/WP publication symbols (`thetfc_####`/`thetdr_####`) with reconciliation obligations against diagnostic FC/WP seed surfaces. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |

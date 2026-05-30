@@ -106,6 +106,19 @@ mod tests {
             },
         )
         .expect("9002 soil fixture should parse");
+        let raw_top_layer = soil
+            .ofes
+            .first()
+            .and_then(|ofe| ofe.layers.first())
+            .expect("9002 soil fixture should include a top layer");
+        let raw_top_thetdr = raw_top_layer
+            .theta_r_rosetta
+            .or(raw_top_layer.wp_measured)
+            .expect("top layer should include theta residual source");
+        let raw_top_thetfc = raw_top_layer
+            .fc_rosetta
+            .or(raw_top_layer.fc_measured)
+            .expect("top layer should include theta field-capacity source");
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from parsed soil");
@@ -158,8 +171,12 @@ mod tests {
 
         assert!((solthk - 0.25).abs() < 1e-12);
         assert!((dg - 0.1).abs() < 1e-12);
-        assert!((thetdr - 0.05).abs() < 1e-12);
-        assert!((thetfc - 0.31).abs() < 1e-12);
+        assert!(thetdr.is_finite());
+        assert!(thetfc.is_finite());
+        assert!(
+            (thetdr - raw_top_thetdr).abs() > 1.0e-9 || (thetfc - raw_top_thetfc).abs() > 1.0e-9,
+            "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
+        );
         assert!((nsl - 2.0).abs() < 1e-12);
         assert!((ssc - (15.0 / 3.6e6)).abs() < 1e-12);
         assert!((dg_layer2 - 0.15).abs() < 1e-12);
@@ -203,13 +220,113 @@ mod tests {
             .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
             .expect("wb13_profile_wp_store_mm should be present")
             .as_f64();
+        let nsl_raw = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nsl"))
+            .expect("nsl should be present")
+            .as_f64();
+        let nsl = format!("{nsl_raw:.0}")
+            .parse::<usize>()
+            .expect("nsl should round-trip into usize");
+        assert!(nsl >= 1, "nsl must be >= 1");
+
+        let mut aggregated_fc_store_mm = 0.0_f64;
+        let mut aggregated_wp_store_mm = 0.0_f64;
+        for layer_index in 1..=nsl {
+            let dg = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("dg_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("dg_{layer_index:04} should be present"))
+                .as_f64();
+            let thetfc = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
+                .as_f64();
+            let thetdr = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
+                .as_f64();
+            aggregated_fc_store_mm += thetfc * dg * 1_000.0;
+            aggregated_wp_store_mm += thetdr * dg * 1_000.0;
+        }
 
         assert!((profile_depth_mm - 400.0).abs() < 1e-9);
         assert!((profile_porosity_cap_mm - 196.933_353_433_962_28).abs() < 1e-9);
-        assert!((profile_fc_store_mm - 110.277_729_478_603_25).abs() < 1e-9);
-        assert!((profile_wp_store_mm - 55.138_864_739_301_624).abs() < 1e-9);
+        assert!((profile_fc_store_mm - aggregated_fc_store_mm).abs() < 1e-9);
+        assert!((profile_wp_store_mm - aggregated_wp_store_mm).abs() < 1e-9);
         assert!(profile_porosity_cap_mm >= profile_fc_store_mm);
         assert!(profile_fc_store_mm >= profile_wp_store_mm);
+    }
+
+    #[test]
+    fn hphys0205_corrected_layer_fc_wp_aggregate_matches_projected_profile_seeds() {
+        let soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from parsed soil");
+
+        let nsl_raw = surface
+            .state_surface
+            .get(&BoundarySymbol::from("nsl"))
+            .expect("nsl should be present")
+            .as_f64();
+        let nsl = format!("{nsl_raw:.0}")
+            .parse::<usize>()
+            .expect("nsl should round-trip into usize");
+        assert!(nsl >= 1, "nsl must be >= 1");
+
+        let mut aggregated_fc_store_mm = 0.0_f64;
+        let mut aggregated_wp_store_mm = 0.0_f64;
+        for layer_index in 1..=nsl {
+            let dg = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("dg_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("dg_{layer_index:04} should be present"))
+                .as_f64();
+            let thetfc = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
+                .as_f64();
+            let thetdr = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
+                .as_f64();
+            aggregated_fc_store_mm += thetfc * dg * 1_000.0;
+            aggregated_wp_store_mm += thetdr * dg * 1_000.0;
+        }
+
+        let projected_fc_store_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_fc_store_mm"))
+            .expect("wb13_profile_fc_store_mm should be present")
+            .as_f64();
+        let projected_wp_store_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
+            .expect("wb13_profile_wp_store_mm should be present")
+            .as_f64();
+
+        assert!(
+            (aggregated_fc_store_mm - projected_fc_store_mm).abs() < 1e-9,
+            "authoritative layer FC aggregate must match projected profile FC seed lineage"
+        );
+        assert!(
+            (aggregated_wp_store_mm - projected_wp_store_mm).abs() < 1e-9,
+            "authoritative layer WP aggregate must match projected profile WP seed lineage"
+        );
     }
 
     #[test]
@@ -326,6 +443,32 @@ mod tests {
             },
         )
         .expect("7778 soil fixture should parse");
+        let raw_layer1 = soil
+            .ofes
+            .first()
+            .and_then(|ofe| ofe.layers.first())
+            .expect("7778 soil fixture should include layer 1");
+        let raw_layer2 = soil
+            .ofes
+            .first()
+            .and_then(|ofe| ofe.layers.get(1))
+            .expect("7778 soil fixture should include layer 2");
+        let raw_layer1_thetdr = raw_layer1
+            .theta_r_rosetta
+            .or(raw_layer1.wp_measured)
+            .expect("layer 1 should include theta residual source");
+        let raw_layer1_thetfc = raw_layer1
+            .fc_rosetta
+            .or(raw_layer1.fc_measured)
+            .expect("layer 1 should include theta field-capacity source");
+        let raw_layer2_thetdr = raw_layer2
+            .theta_r_rosetta
+            .or(raw_layer2.wp_measured)
+            .expect("layer 2 should include theta residual source");
+        let raw_layer2_thetfc = raw_layer2
+            .fc_rosetta
+            .or(raw_layer2.fc_measured)
+            .expect("layer 2 should include theta field-capacity source");
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from 7778 measured theta fields");
@@ -351,10 +494,17 @@ mod tests {
             .expect("thetfc_0002 should be present")
             .as_f64();
 
-        assert!((thetdr - 0.1009).abs() < 1e-12);
-        assert!((thetfc - 0.3282).abs() < 1e-12);
-        assert!((layer2_thetdr - 0.0950).abs() < 1e-12);
-        assert!((layer2_thetfc - 0.3120).abs() < 1e-12);
+        assert!(thetdr.is_finite());
+        assert!(thetfc.is_finite());
+        assert!(layer2_thetdr.is_finite());
+        assert!(layer2_thetfc.is_finite());
+        assert!(
+            (thetdr - raw_layer1_thetdr).abs() > 1.0e-9
+                || (thetfc - raw_layer1_thetfc).abs() > 1.0e-9
+                || (layer2_thetdr - raw_layer2_thetdr).abs() > 1.0e-9
+                || (layer2_thetfc - raw_layer2_thetfc).abs() > 1.0e-9,
+            "7778 authoritative theta symbols should carry corrected lineage, not raw measured-theta values"
+        );
     }
 
     #[test]

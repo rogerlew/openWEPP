@@ -1018,6 +1018,27 @@ from canonical WB11/WB13 state lineage (`watbal.for`/`watbalprint.for`):
 5. Missing/non-finite/domain-invalid layer aggregation symbols hard-fail WB13
    publication under existing guard-family continuity.
 
+### HPHYS0205 Corrected-Layer Authority Closure
+
+HPHYS0205 closes the layer-source ambiguity identified in HPHYS0202 by
+requiring the authoritative layer symbols consumed by WB13 publication to carry
+baseline-corrected moisture lineage, not raw parser theta inputs:
+
+1. Authoritative `thetfc_####`/`thetdr_####` runtime symbols used for WB13
+   profile storage publication must be projected from baseline-authoritative
+   soil-correction lineage (`scon` family: rock/entrapped-air adjustment and
+   moisture-curve domain corrections), when that lineage is available.
+2. WB13 `ProfileFCStore`/`ProfileWPStore` publication remains
+   layer-authoritative and continues to consume only
+   `Σ(thetfc_i*dg_i)*1000` / `Σ(thetdr_i*dg_i)*1000`.
+3. Optional adapter profile-storage diagnostics
+   (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) remain
+   non-authoritative for publication but must not disagree with corrected-layer
+   aggregates when both are present and finite.
+4. Missing/non-finite/domain-invalid corrected-layer symbols are typed
+   publication-domain violations and hard-fail under existing WB13 guard
+   continuity.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
 1. WB13/H.wat publication policy for hillslope MOFE contexts is explicit and
@@ -1224,6 +1245,7 @@ from canonical WB11/WB13 state lineage (`watbal.for`/`watbalprint.for`):
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-29` | `46` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer symbols (`thetfc_####`/`thetdr_####`) to carry baseline-corrected moisture lineage while retaining layer-authoritative publication and non-authoritative FC/WP adapter diagnostics. |
 | `2026-05-29` | `45` | `Codex` | HPHYS0202 amendment: made `ProfileFCStore`/`ProfileWPStore` publication authority explicitly layer-aggregated (`Σ(thetfc_i*dg_i)`, `Σ(thetdr_i*dg_i)`), and restricted `wb13_profile_fc/wp_store_mm` to non-authoritative adapter diagnostics. |
 | `2026-05-29` | `44` | `Codex` | HPARITY02 amendment: added profile-capacity publication-lineage closure authority (`wb13_profile_*_mm`) and explicit prohibition of synthesized `ProfilePorosityCap` placeholder formulas. |
 | `2026-05-29` | `43` | `Codex` | HPARITY01 amendment: added always-fail WB13 12-column lineage register with canonical symbol ownership, process-contract disambiguation (`Dp` deep-percolation vs climate time-to-peak), runtime writer surfaces, and explicit alias continuity policy for `Total-Soil`/`Total-Soil Water`/`SoilWaterTotal`. |

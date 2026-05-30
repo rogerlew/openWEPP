@@ -293,6 +293,9 @@ Minimum WB18 percolation production-kernel conformance vectors:
 5. `ProfileFCStore` and `ProfileWPStore` publication semantics are
    layer-authoritative WB13 aggregates over runtime surfaces:
    `Σ(thetfc_i * dg_i)` and `Σ(thetdr_i * dg_i)` (depth-equivalent `mm`).
+6. HPHYS0205 requires the authoritative layer symbols in requirement (5) to
+   carry baseline-corrected moisture lineage (not raw parser theta lineage)
+   when correction lineage is available at runtime projection boundaries.
 
 ## Gap Register
 
@@ -323,3 +326,4 @@ authority closure is completed.
 | `2026-05-23` | `6` | `Codex` | WB18 amendment: replaced WB11 scalar percolation authority with WB18 per-layer physics authority (`wb18_perc_theta/fc/ul/ssc/pei_####`), bottom-up layer routing semantics, conductivity-domain constants (`Bi=1`, `fx_min=0.002`, `Δt=86400s`), and updated guard/test obligations. |
 | `2026-05-29` | `7` | `Codex` | HPARITY01 amendment: added explicit cross-contract `Dp` disambiguation note (WB13 deep-percolation export vs climate time-to-peak symbol) in WB13 coupling requirements. |
 | `2026-05-29` | `8` | `Codex` | HPHYS0202 amendment: made WB13 `ProfileFCStore`/`ProfileWPStore` coupling semantics explicit as layer-authoritative runtime aggregates (`thetfc/thetdr` with `dg`) in `mm`. |
+| `2026-05-29` | `9` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer-theta symbols used by profile storage coupling to carry baseline-corrected moisture lineage when available. |

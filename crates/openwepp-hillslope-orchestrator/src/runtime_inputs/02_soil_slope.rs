@@ -90,6 +90,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
     for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;
+        let corrected_layer_theta_symbols = compute_corrected_layer_theta_symbols(ofe);
         if ofe.nsl != ofe.layers.len() {
             return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
                 ofe_index,
@@ -155,6 +156,8 @@ pub fn build_hillslope_runtime_surface_from_soil(
         }
 
         let mut previous_depth_mm = 0.0_f64;
+        let mut ofe_corrected_fc_store_mm = 0.0_f64;
+        let mut ofe_corrected_wp_store_mm = 0.0_f64;
         for (layer_position, layer) in ofe.layers.iter().enumerate() {
             let layer_index = layer_position + 1;
             let layer_depth_mm = layer.depth_mm;
@@ -185,23 +188,39 @@ pub fn build_hillslope_runtime_surface_from_soil(
             let layer_dg_m = (layer_depth_mm - previous_depth_mm) / 1_000.0;
             let layer_solthk_m = layer_depth_mm / 1_000.0;
 
-            let layer_thetdr = layer
+            let raw_layer_thetdr = layer
                 .theta_r_rosetta
                 .or(layer.wp_measured)
                 .ok_or(HillslopeRuntimeInputError::MissingThetaResidual)?;
-            if !layer_thetdr.is_finite() {
+            if !raw_layer_thetdr.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual {
-                    value: layer_thetdr,
+                    value: raw_layer_thetdr,
                 });
             }
 
-            let layer_thetfc = layer
+            let raw_layer_thetfc = layer
                 .fc_rosetta
                 .or(layer.fc_measured)
                 .ok_or(HillslopeRuntimeInputError::MissingThetaFieldCapacity)?;
+            if !raw_layer_thetfc.is_finite() {
+                return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
+                    value: raw_layer_thetfc,
+                });
+            }
+            let (layer_thetfc, layer_thetdr) = corrected_layer_theta_symbols
+                .as_ref()
+                .and_then(|layers| layers.get(layer_position))
+                .map_or((raw_layer_thetfc, raw_layer_thetdr), |layer| {
+                    (layer.thetfc, layer.thetdr)
+                });
             if !layer_thetfc.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
                     value: layer_thetfc,
+                });
+            }
+            if !layer_thetdr.is_finite() {
+                return Err(HillslopeRuntimeInputError::NonFiniteThetaResidual {
+                    value: layer_thetdr,
                 });
             }
 
@@ -303,6 +322,8 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     }
                 }
             }
+            ofe_corrected_fc_store_mm += layer_thetfc * layer_dg_m * 1_000.0;
+            ofe_corrected_wp_store_mm += layer_thetdr * layer_dg_m * 1_000.0;
 
             previous_depth_mm = layer_depth_mm;
         }
@@ -346,26 +367,26 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundarySymbol::from("salb"),
                 BoundaryValue::scalar(ofe.salb),
             );
-            if let Some(profile_symbols) = primary_wb13_profile_symbols {
-                state_surface.insert(
-                    BoundarySymbol::from("wb13_profile_depth_mm"),
+                if let Some(profile_symbols) = primary_wb13_profile_symbols {
+                    state_surface.insert(
+                        BoundarySymbol::from("wb13_profile_depth_mm"),
                     BoundaryValue::scalar(profile_symbols.depth),
                 );
                 state_surface.insert(
                     BoundarySymbol::from("wb13_profile_porosity_cap_mm"),
                     BoundaryValue::scalar(profile_symbols.porosity_cap),
                 );
-                state_surface.insert(
-                    BoundarySymbol::from("wb13_profile_fc_store_mm"),
-                    BoundaryValue::scalar(profile_symbols.fc_store),
-                );
-                state_surface.insert(
-                    BoundarySymbol::from("wb13_profile_wp_store_mm"),
-                    BoundaryValue::scalar(profile_symbols.wp_store),
-                );
+                    state_surface.insert(
+                        BoundarySymbol::from("wb13_profile_fc_store_mm"),
+                        BoundaryValue::scalar(ofe_corrected_fc_store_mm),
+                    );
+                    state_surface.insert(
+                        BoundarySymbol::from("wb13_profile_wp_store_mm"),
+                        BoundaryValue::scalar(ofe_corrected_wp_store_mm),
+                    );
+                }
             }
         }
-    }
 
     Ok(HillslopeWritebackSurface {
         state_surface,
@@ -377,8 +398,12 @@ pub fn build_hillslope_runtime_surface_from_soil(
 struct Wb13ProfileSymbols {
     depth: f64,
     porosity_cap: f64,
-    fc_store: f64,
-    wp_store: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct CorrectedLayerThetaSymbols {
+    thetfc: f64,
+    thetdr: f64,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -457,80 +482,130 @@ fn compute_wb13_profile_symbols_from_legacy_seed(
 
     let mut profile_depth_mm = 0.0_f64;
     let mut profile_porosity_cap_mm = 0.0_f64;
-    let mut profile_fc_store_mm = 0.0_f64;
-    let mut profile_wp_store_mm = 0.0_f64;
 
     for layer in expanded_layers {
-        let dg = layer.thickness_m;
-        if !dg.is_finite() || dg <= 0.0 {
-            return None;
-        }
-        let solcon = legacy_solcon(layer.clay, layer.cec, layer.orgmat, dg);
-        let oca = 3.80
-            + 1.9 * layer.clay.powi(2)
-            - (3.365 * layer.sand)
-            + (12.6 * solcon * layer.clay)
-            + (100.0 * layer.orgmat * (layer.sand / 2.0).powi(2));
-        let coca = 1.0 - (oca / 100.0);
-        let cpm = 1.0
-            - ((layer.rfg * layer.bulk_density_kg_m3)
-                / ((layer.rfg * layer.bulk_density_kg_m3)
-                    + 2650.0 * (1.0 - layer.rfg)));
-
-        let mut por = (2650.0 - layer.bulk_density_kg_m3) / 2650.0;
-        por *= coca;
-        if !por.is_finite() || por <= 0.0 {
-            return None;
-        }
-
-        let mut thetfc = layer.thetfc.max(0.0) * cpm;
-        let mut thetdr = layer.thetdr.max(0.0) * cpm;
-        if !thetfc.is_finite() || !thetdr.is_finite() {
-            return None;
-        }
-        if thetfc <= 0.0 || thetdr <= 0.0 {
-            return None;
-        }
-
-        let log10 = 10_f64.ln();
-        let t33 = 333.3_f64.ln() / log10;
-        let t15 = 15_300.0_f64.ln() / log10;
-        let s33 = thetfc.ln() / log10;
-        let s15 = thetdr.ln() / log10;
-        let slope = ((s15 - s33) / (t15 - t33)).abs();
-        if !slope.is_finite() {
-            return None;
-        }
-        let mut sm20c = 10.0_f64.powf(slope * (t15 - (10.0_f64.ln() / log10)) + s15);
-        sm20c *= cpm;
-        if sm20c >= por {
-            sm20c = por * 0.95;
-        }
-        if thetfc >= sm20c {
-            let delta = thetfc - thetdr;
-            thetfc = sm20c * 0.99;
-            thetdr = (thetfc - delta).max(0.01);
-            thetfc = thetfc.max(0.01);
-        }
-        if (thetfc / por) > 0.83 {
-            let scale = thetfc / (por * 0.83);
-            thetfc = por * 0.83;
-            thetdr /= scale;
-        }
-        thetdr = thetdr.max(0.01);
-        thetfc = thetfc.max(0.01);
-
-        profile_depth_mm += dg * 1000.0;
-        profile_porosity_cap_mm += por * dg * 1000.0;
-        profile_fc_store_mm += thetfc * dg * 1000.0;
-        profile_wp_store_mm += thetdr * dg * 1000.0;
+        let corrected = legacy_correct_layer_moisture(layer)?;
+        profile_depth_mm += corrected.thickness_m * 1000.0;
+        profile_porosity_cap_mm += corrected.porosity * corrected.thickness_m * 1000.0;
     }
 
     Some(Wb13ProfileSymbols {
         depth: profile_depth_mm,
         porosity_cap: profile_porosity_cap_mm,
-        fc_store: profile_fc_store_mm,
-        wp_store: profile_wp_store_mm,
+    })
+}
+
+fn compute_corrected_layer_theta_symbols(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+) -> Option<Vec<CorrectedLayerThetaSymbols>> {
+    let mut seeds = Vec::with_capacity(ofe.layers.len());
+    for layer in &ofe.layers {
+        let bulk_density = layer.bulk_density_g_cm3?;
+        let fc_measured = layer.fc_measured?;
+        let wp_measured = layer.wp_measured?;
+        let seed = LegacySoilLayerSeed {
+            depth_mm: layer.depth_mm,
+            bulk_density_g_cm3: bulk_density,
+            fc_measured,
+            wp_measured,
+            sand_pct: layer.sand_pct,
+            clay_pct: layer.clay_pct,
+            orgmat_pct: layer.orgmat_pct,
+            cec_meq_100g: layer.cec_meq_100g,
+            rock_frag_pct: layer.rock_frag_pct,
+        };
+        if !legacy_seed_is_finite(seed) {
+            return None;
+        }
+        seeds.push(seed);
+    }
+    let cumulative_depths_mm = legacy_cumulative_depths_mm(&seeds)?;
+    let source_layers = legacy_source_layers_from_seed_depths(&seeds, &cumulative_depths_mm)?;
+    let mut corrected_layers = Vec::with_capacity(source_layers.len());
+    for layer in source_layers {
+        let corrected = legacy_correct_layer_moisture(layer)?;
+        corrected_layers.push(CorrectedLayerThetaSymbols {
+            thetfc: corrected.thetfc,
+            thetdr: corrected.thetdr,
+        });
+    }
+    Some(corrected_layers)
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LegacyCorrectedLayerMoisture {
+    thickness_m: f64,
+    porosity: f64,
+    thetfc: f64,
+    thetdr: f64,
+}
+
+fn legacy_correct_layer_moisture(
+    layer: LegacySoilLayerExpanded,
+) -> Option<LegacyCorrectedLayerMoisture> {
+    let dg = layer.thickness_m;
+    if !dg.is_finite() || dg <= 0.0 {
+        return None;
+    }
+    let solcon = legacy_solcon(layer.clay, layer.cec, layer.orgmat, dg);
+    let oca = 3.80
+        + 1.9 * layer.clay.powi(2)
+        - (3.365 * layer.sand)
+        + (12.6 * solcon * layer.clay)
+        + (100.0 * layer.orgmat * (layer.sand / 2.0).powi(2));
+    let coca = 1.0 - (oca / 100.0);
+    let cpm = 1.0
+        - ((layer.rfg * layer.bulk_density_kg_m3)
+            / ((layer.rfg * layer.bulk_density_kg_m3) + 2650.0 * (1.0 - layer.rfg)));
+
+    let mut por = (2650.0 - layer.bulk_density_kg_m3) / 2650.0;
+    por *= coca;
+    if !por.is_finite() || por <= 0.0 {
+        return None;
+    }
+
+    let mut thetfc = layer.thetfc.max(0.0) * cpm;
+    let mut thetdr = layer.thetdr.max(0.0) * cpm;
+    if !thetfc.is_finite() || !thetdr.is_finite() {
+        return None;
+    }
+    if thetfc <= 0.0 || thetdr <= 0.0 {
+        return None;
+    }
+
+    let log10 = 10_f64.ln();
+    let t33 = 333.3_f64.ln() / log10;
+    let t15 = 15_300.0_f64.ln() / log10;
+    let s33 = thetfc.ln() / log10;
+    let s15 = thetdr.ln() / log10;
+    let slope = ((s15 - s33) / (t15 - t33)).abs();
+    if !slope.is_finite() {
+        return None;
+    }
+    let mut sm20c = 10.0_f64.powf(slope * (t15 - (10.0_f64.ln() / log10)) + s15);
+    sm20c *= cpm;
+    if sm20c >= por {
+        sm20c = por * 0.95;
+    }
+    if thetfc >= sm20c {
+        let delta = thetfc - thetdr;
+        thetfc = sm20c * 0.99;
+        thetdr = (thetfc - delta).max(0.01);
+        thetfc = thetfc.max(0.01);
+    }
+    if (thetfc / por) > 0.83 {
+        let scale = thetfc / (por * 0.83);
+        thetfc = por * 0.83;
+        thetdr /= scale;
+    }
+    thetdr = thetdr.max(0.01);
+    thetfc = thetfc.max(0.01);
+
+    Some(LegacyCorrectedLayerMoisture {
+        thickness_m: dg,
+        porosity: por,
+        thetfc,
+        thetdr,
     })
 }
 
