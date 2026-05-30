@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 7
+contract_version: 8
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -357,6 +357,18 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 3. Missing/non-finite/out-of-domain subsurface/drainage WB13 symbols are
    invalid runtime states and must hard-fail with WB13 typed guard posture.
 
+## HPHYS0203 Subsurface WB13 Robustness Validation Addendum
+
+1. Contract-derived robustness vectors must include deterministic WB13
+   publication checks for `latqcc` and `Dp` domain continuity:
+   - finite publication values,
+   - non-negative publication magnitudes,
+   - no projection-side surrogate substitution on missing or invalid inputs.
+2. Robustness vectors must include targeted guard probes for negative/non-finite
+   lateral/percolation source symbols consumed by WB13 publication assembly.
+3. Deterministic regression fixtures must preserve `latqcc`/`Dp` column
+   availability and domain validity under canonical publication authority.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -378,3 +390,4 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 | `2026-05-23` | `5` | `Codex` | WB12 amendment: added explicit storage-reconciliation coupling authority for `Qd` consumption and typed WB12 closure-diagnostic failure posture. |
 | `2026-05-23` | `6` | `Codex` | WB13 amendment: added canonical daily output coupling authority for subsurface/drainage symbols (`latqcc`, `Tile`, `SubRIn`) and deterministic `Qd` relation posture with malformed-output hard-fail requirements. |
 | `2026-05-23` | `7` | `Codex` | WB19 amendment: replaced WB11 fraction-split lateral/drain surrogate authority with layer-aware Eq. [6.2.4]/[6.2.10]-[6.2.11] production-kernel authority, explicit WB18/WB19 symbol aliases, and legacy-ID typed guard continuity requirements. |
+| `2026-05-30` | `8` | `Codex` | HPHYS0203 amendment: added subsurface WB13 robustness validation obligations for `latqcc`/`Dp` domain guards, non-finite protections, and deterministic regression-fixture coverage. |

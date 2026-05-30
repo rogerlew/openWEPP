@@ -4583,6 +4583,154 @@ mod tests {
     }
 
     #[test]
+    fn hphys0203_wb13_dp_guard_rejects_negative_deep_percolation_source() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(-1.0e-6));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("negative D must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("D must be >= 0.0"),
+                    "expected D domain guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0203_wb13_latqcc_guard_rejects_negative_lateral_source() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("q"), BoundaryValue::scalar(-1.0e-6));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("negative q must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("q must be >= 0.0"),
+                    "expected q domain guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0203_wb13_soil_water_total_closure_is_conservation_consistent() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb11_soil_water"),
+            BoundaryValue::scalar(0.081),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_ws_frz"),
+            BoundaryValue::scalar(0.003),
+        );
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("valid WB13 probe surface should publish row");
+
+        let closure_delta =
+            row.wb13_row.soil_water_total - (row.wb13_row.total_soil + row.wb13_row.frozwt);
+        assert!(
+            closure_delta.abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
+            "SoilWaterTotal closure must remain conservation-consistent, observed delta={closure_delta}"
+        );
+    }
+
+    #[test]
+    fn hphys0203_wb13_profile_storage_perturbation_is_stable() {
+        let baseline_surface = seeded_wb13_runtime_surface_probe();
+        let baseline_row = build_simulation_owned_wb13_row(
+            &baseline_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("baseline probe row should publish");
+
+        let mut perturbed_surface = seeded_wb13_runtime_surface_probe();
+        let baseline_fc =
+            require_runtime_surface_scalar(&perturbed_surface, "wb13_profile_fc_store_mm")
+                .expect("seeded surface should include wb13_profile_fc_store_mm");
+        perturbed_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_fc_store_mm"),
+            BoundaryValue::scalar(baseline_fc + 1.0e-4),
+        );
+        let perturbed_row = build_simulation_owned_wb13_row(
+            &perturbed_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("perturbed probe row should publish");
+
+        assert!(
+            perturbed_row.wb13_row.profile_porosity_cap >= perturbed_row.wb13_row.profile_fc_store
+                && perturbed_row.wb13_row.profile_fc_store
+                    >= perturbed_row.wb13_row.profile_wp_store,
+            "bounded profile perturbation must preserve profile storage ordering"
+        );
+        assert!(
+            perturbed_row.wb13_row.profile_fc_store >= baseline_row.wb13_row.profile_fc_store,
+            "positive bounded FC perturbation should not decrease published ProfileFCStore"
+        );
+        assert!(
+            (perturbed_row.wb13_row.profile_fc_store - baseline_row.wb13_row.profile_fc_store)
+                <= 5.0,
+            "bounded FC perturbation produced unstable ProfileFCStore response: baseline={}, perturbed={}",
+            baseline_row.wb13_row.profile_fc_store,
+            perturbed_row.wb13_row.profile_fc_store
+        );
+    }
+
+    #[test]
     fn wshedimpl42_breakpoint_seed_uses_current_nbrkpt_not_stale_ninten() {
         let mut runtime_surface = HillslopeWritebackSurface::default();
         runtime_surface

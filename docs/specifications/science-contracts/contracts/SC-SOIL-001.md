@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -290,6 +290,21 @@ bit-for-bit parity). `[DIRECT][Static]`
    `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` (no silent tail
    truncation and no parser-theta fallback authority repair).
 
+## HPHYS0203 Soil-Water Robustness Validation Addendum
+
+1. Contract-derived robustness vectors for soil-water publication lineage must
+   include deterministic checks for:
+   - `Total-Soil` publication from runtime-owned `wb11_soil_water` lineage,
+   - aggregate closure `SoilWaterTotal = Total-Soil + frozwt`,
+   - non-negative and finite publication-domain behavior for
+     `Total-Soil`/`SoilWaterTotal`.
+2. Robustness vectors must include deterministic perturbation checks that
+   preserve aggregate closure and ordering continuity when bounded
+   storage-domain inputs are perturbed.
+3. Missing/non-finite/domain-invalid storage lineage symbols remain typed
+   fail-closed boundary states and are not eligible for projection-side
+   surrogate reconstruction.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -313,3 +328,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-29` | `7` | `Codex` | HPHYS0205 amendment: bound authoritative runtime `thetfc_####`/`thetdr_####` symbols to baseline-corrected moisture lineage (no raw-theta authority when corrected lineage is available). |
 | `2026-05-30` | `8` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer symbols to originate from baseline-normalized corrected-layer lineage with deterministic publication mapping and typed fail-closed posture when normalized correction lineage is unavailable. |
 | `2026-05-30` | `9` | `Codex` | HPHYS0207 amendment: ratified WB13 FC/WP depth-authority alignment to normalized-profile runtime storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
+| `2026-05-30` | `10` | `Codex` | HPHYS0203 amendment: added soil-water robustness validation obligations for `Total-Soil`/`SoilWaterTotal` lineage, deterministic closure-preserving perturbation vectors, and explicit fail-closed non-finite/domain posture requirements. |

@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 48
+contract_version: 49
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -1084,6 +1084,30 @@ that share domain authority with profile depth/capacity surfaces:
 5. Required WB13 profile ordering remains:
    `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 
+### HPHYS0203 Physics-Robustness Validation Addendum
+
+1. Contract-derived robustness vectors for WB13 publication must explicitly
+   cover targeted hydrology families:
+   - profile family (`ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`,
+     `ProfileWPStore`),
+   - soil-water aggregate family (`Total-Soil`, `SoilWaterTotal`),
+   - subsurface-loss family (`latqcc`, `Dp`).
+2. Robustness vectors must include all of:
+   - conservation-consistent closure checks
+     (`SoilWaterTotal = Total-Soil + frozwt`),
+   - ordering/monotonic expectations
+     (`ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`),
+   - unit/domain guards for non-negative depth/flux publication magnitudes,
+   - non-finite protections for required runtime publication symbols.
+3. Robustness vectors must include deterministic perturbation checks at WB13
+   publication assembly so small bounded input perturbations do not violate
+   ordering/closure invariants and remain fail-closed on invalid domains.
+4. At least one deterministic regression fixture per targeted family must be
+   encoded in contract-derived tests and remain passing under canonical
+   publication authority.
+5. Semantic parity reruns remain diagnostic evidence and are not authority
+   overrides for process-correctness closure decisions.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
 1. WB13/H.wat publication policy for hillslope MOFE contexts is explicit and
@@ -1290,6 +1314,7 @@ that share domain authority with profile depth/capacity surfaces:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-30` | `49` | `Codex` | HPHYS0203 amendment: added WB13 physics-robustness validation obligations for profile, soil-water aggregate, and subsurface-loss publication families, including conservation/order/domain/non-finite vectors, deterministic perturbation checks, and per-family deterministic regression fixture requirements. |
 | `2026-05-30` | `47` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer publication symbols to be mapped deterministically from the same baseline-normalized corrected-layer set used by profile-capacity lineage, with explicit no-raw-fallback typed fail-closed posture. |
 | `2026-05-30` | `48` | `Codex` | HPHYS0207 amendment: aligned WB13 FC/WP publication authority to normalized-profile runtime storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
 | `2026-05-29` | `46` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer symbols (`thetfc_####`/`thetdr_####`) to carry baseline-corrected moisture lineage while retaining layer-authoritative publication and non-authoritative FC/WP adapter diagnostics. |

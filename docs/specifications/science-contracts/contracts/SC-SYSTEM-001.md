@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 69
+contract_version: 70
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -668,6 +668,21 @@ Minimum WS12 integration vectors:
 4. Required WB13 profile ordering continuity remains:
    `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 
+## HPHYS0203 WB13 Robustness Governance Addendum
+
+1. System-level closure evidence for WB13 hydrology publication families must
+   include contract-derived robustness vectors for:
+   - profile publications (`ProfileDepth`, `ProfilePorosityCap`,
+     `ProfileFCStore`, `ProfileWPStore`),
+   - soil-water aggregates (`Total-Soil`, `SoilWaterTotal`),
+   - subsurface-loss publications (`latqcc`, `Dp`).
+2. Robustness evidence must show conservation/order/domain continuity and typed
+   hard-fail posture for missing/non-finite/domain-invalid publication inputs.
+3. Deterministic regression fixtures used for robustness evidence must remain
+   reproducible and explicitly scoped to the targeted publication families.
+4. Semantic comparator outputs remain diagnostic signals and must not override
+   process-authoritative robustness gate outcomes.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Boundary-Carry Addendum
 
 1. System-boundary publication authority for hillslope WB13/H.wat outputs must
@@ -823,6 +838,7 @@ Minimum WS12 integration vectors:
 | `2026-05-29` | `67` | `Codex` | HPHYS0205 amendment: required corrected-layer projection authority for WB13 FC/WP publication symbols (`thetfc_####`/`thetdr_####`) with reconciliation obligations against diagnostic FC/WP seed surfaces. |
 | `2026-05-30` | `68` | `Codex` | HPHYS0206 amendment: required deterministic normalized-layer mapping closure for authoritative FC/WP publication symbols and explicit fail-closed/no-raw-fallback boundary posture. |
 | `2026-05-30` | `69` | `Codex` | HPHYS0207 amendment: promoted WB13 FC/WP publication authority to normalized-profile storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
+| `2026-05-30` | `70` | `Codex` | HPHYS0203 amendment: added system-level WB13 robustness governance obligations for profile/soil-water/subsurface publication families, requiring conservation/order/domain/non-finite vectors plus deterministic regression-fixture evidence with parity treated as diagnostic-only. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |
