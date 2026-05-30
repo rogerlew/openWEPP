@@ -90,7 +90,8 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
     for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;
-        let corrected_layer_theta_symbols = compute_corrected_layer_theta_symbols(ofe, ofe_index)?;
+        let corrected_layer_runtime_symbols =
+            compute_corrected_layer_runtime_symbols(ofe, ofe_index)?;
         if ofe.nsl != ofe.layers.len() {
             return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
                 ofe_index,
@@ -107,6 +108,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
         state_surface.insert(
             soil_ofe_symbol("nsl", ofe_index),
             BoundaryValue::scalar(f64::from(nsl)),
+        );
+        state_surface.insert(
+            soil_ofe_symbol("sat", ofe_index),
+            BoundaryValue::scalar(ofe.sat),
         );
 
         let (ofe_ksatadj, ofe_ksatfac, ofe_ksatrec, ofe_lkeff) = match &ofe.policy {
@@ -205,7 +210,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     value: raw_layer_thetfc,
                 });
             }
-            let corrected_layer = corrected_layer_theta_symbols.get(layer_position).ok_or(
+            let corrected_layer = corrected_layer_runtime_symbols.get(layer_position).ok_or(
                 HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
                     ofe_index,
                     layer_index,
@@ -216,6 +221,8 @@ pub fn build_hillslope_runtime_surface_from_soil(
             )?;
             let layer_thetfc = corrected_layer.thetfc;
             let layer_thetdr = corrected_layer.thetdr;
+            let layer_porosity = corrected_layer.porosity;
+            let layer_cpm = corrected_layer.cpm;
             if !layer_thetfc.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
                     value: layer_thetfc,
@@ -271,6 +278,14 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 soil_ofe_layer_symbol("ssc", ofe_index, layer_index),
                 BoundaryValue::scalar(layer_ssc_m_s),
             );
+            state_surface.insert(
+                soil_ofe_layer_symbol("por", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_porosity),
+            );
+            state_surface.insert(
+                soil_ofe_layer_symbol("cpm", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_cpm),
+            );
 
             if ofe_index == 1 {
                 state_surface.insert(
@@ -292,6 +307,14 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 state_surface.insert(
                     soil_primary_layer_symbol("ssc", layer_index),
                     BoundaryValue::scalar(layer_ssc_m_s),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("por", layer_index),
+                    BoundaryValue::scalar(layer_porosity),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("cpm", layer_index),
+                    BoundaryValue::scalar(layer_cpm),
                 );
                 if let Some(theta_s) = layer.theta_s_rosetta {
                     state_surface.insert(
@@ -317,6 +340,14 @@ pub fn build_hillslope_runtime_surface_from_soil(
                         BoundarySymbol::from("ssc"),
                         BoundaryValue::scalar(layer_ssc_m_s),
                     );
+                    state_surface.insert(
+                        BoundarySymbol::from("por"),
+                        BoundaryValue::scalar(layer_porosity),
+                    );
+                    state_surface.insert(
+                        BoundarySymbol::from("cpm"),
+                        BoundaryValue::scalar(layer_cpm),
+                    );
                     if let Some(theta_s) = layer.theta_s_rosetta {
                         state_surface.insert(
                             BoundarySymbol::from("theta_s"),
@@ -340,6 +371,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundarySymbol::from("nsl"),
                 BoundaryValue::scalar(f64::from(nsl)),
             );
+            state_surface.insert(BoundarySymbol::from("sat"), BoundaryValue::scalar(ofe.sat));
             state_surface.insert(
                 BoundarySymbol::from("ksatadj"),
                 BoundaryValue::scalar(ofe_ksatadj_value),
@@ -403,7 +435,9 @@ struct Wb13ProfileSymbols {
 }
 
 #[derive(Clone, Copy, Debug)]
-struct CorrectedLayerThetaSymbols {
+struct CorrectedLayerRuntimeSymbols {
+    porosity: f64,
+    cpm: f64,
     thetfc: f64,
     thetdr: f64,
 }
@@ -504,16 +538,15 @@ fn compute_wb13_profile_symbols_from_legacy_seed(
     })
 }
 
-fn compute_corrected_layer_theta_symbols(
+fn compute_corrected_layer_runtime_symbols(
     ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ofe_index: usize,
-) -> Result<Vec<CorrectedLayerThetaSymbols>, HillslopeRuntimeInputError> {
+) -> Result<Vec<CorrectedLayerRuntimeSymbols>, HillslopeRuntimeInputError> {
     let seeds = collect_legacy_soil_layer_seeds(ofe, ofe_index)?;
-    let normalized_corrected_layers =
-        compute_normalized_corrected_layer_theta_symbols_from_legacy_seed(&seeds).ok_or(
-            HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
-        )?;
-    map_corrected_layer_theta_symbols_to_parser_layers(
+    let normalized_corrected_layers = compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(&seeds).ok_or(
+        HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
+    )?;
+    map_corrected_layer_runtime_symbols_to_parser_layers(
         ofe,
         &normalized_corrected_layers,
         ofe_index,
@@ -572,9 +605,9 @@ fn collect_legacy_soil_layer_seeds(
     Ok(seeds)
 }
 
-fn compute_normalized_corrected_layer_theta_symbols_from_legacy_seed(
+fn compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(
     seeds: &[LegacySoilLayerSeed],
-) -> Option<Vec<CorrectedLayerThetaSymbols>> {
+) -> Option<Vec<CorrectedLayerRuntimeSymbols>> {
     let expanded_layers = legacy_expand_soil_layers_to_200mm(seeds)?;
     if expanded_layers.is_empty() {
         return None;
@@ -582,7 +615,9 @@ fn compute_normalized_corrected_layer_theta_symbols_from_legacy_seed(
     let mut corrected_layers = Vec::with_capacity(expanded_layers.len());
     for layer in expanded_layers {
         let corrected = legacy_correct_layer_moisture(layer)?;
-        corrected_layers.push(CorrectedLayerThetaSymbols {
+        corrected_layers.push(CorrectedLayerRuntimeSymbols {
+            porosity: corrected.porosity,
+            cpm: corrected.cpm,
             thetfc: corrected.thetfc,
             thetdr: corrected.thetdr,
         });
@@ -593,11 +628,11 @@ fn compute_normalized_corrected_layer_theta_symbols_from_legacy_seed(
     Some(corrected_layers)
 }
 
-fn map_corrected_layer_theta_symbols_to_parser_layers(
+fn map_corrected_layer_runtime_symbols_to_parser_layers(
     ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    normalized_corrected_layers: &[CorrectedLayerThetaSymbols],
+    normalized_corrected_layers: &[CorrectedLayerRuntimeSymbols],
     ofe_index: usize,
-) -> Result<Vec<CorrectedLayerThetaSymbols>, HillslopeRuntimeInputError> {
+) -> Result<Vec<CorrectedLayerRuntimeSymbols>, HillslopeRuntimeInputError> {
     if normalized_corrected_layers.is_empty() {
         return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
             ofe_index,
@@ -630,6 +665,8 @@ fn map_corrected_layer_theta_symbols_to_parser_layers(
 
         let mut weighted_thetfc = 0.0_f64;
         let mut weighted_thetdr = 0.0_f64;
+        let mut weighted_porosity = 0.0_f64;
+        let mut weighted_cpm = 0.0_f64;
         let mut covered_depth_mm = 0.0_f64;
 
         for (normalized_top_mm, normalized_bottom_mm, corrected_layer) in &normalized_intervals {
@@ -641,6 +678,8 @@ fn map_corrected_layer_theta_symbols_to_parser_layers(
             }
             weighted_thetfc += corrected_layer.thetfc * overlap_depth_mm;
             weighted_thetdr += corrected_layer.thetdr * overlap_depth_mm;
+            weighted_porosity += corrected_layer.porosity * overlap_depth_mm;
+            weighted_cpm += corrected_layer.cpm * overlap_depth_mm;
             covered_depth_mm += overlap_depth_mm;
         }
 
@@ -654,7 +693,9 @@ fn map_corrected_layer_theta_symbols_to_parser_layers(
             });
         }
 
-        mapped_layers.push(CorrectedLayerThetaSymbols {
+        mapped_layers.push(CorrectedLayerRuntimeSymbols {
+            porosity: weighted_porosity / covered_depth_mm,
+            cpm: weighted_cpm / covered_depth_mm,
             thetfc: weighted_thetfc / covered_depth_mm,
             thetdr: weighted_thetdr / covered_depth_mm,
         });
@@ -667,6 +708,7 @@ fn map_corrected_layer_theta_symbols_to_parser_layers(
 struct LegacyCorrectedLayerMoisture {
     thickness_m: f64,
     porosity: f64,
+    cpm: f64,
     thetfc: f64,
     thetdr: f64,
 }
@@ -688,6 +730,9 @@ fn legacy_correct_layer_moisture(
     let cpm = 1.0
         - ((layer.rfg * layer.bulk_density_kg_m3)
             / ((layer.rfg * layer.bulk_density_kg_m3) + 2650.0 * (1.0 - layer.rfg)));
+    if !cpm.is_finite() || cpm <= 0.0 || cpm > 1.0 {
+        return None;
+    }
 
     let mut por = (2650.0 - layer.bulk_density_kg_m3) / 2650.0;
     por *= coca;
@@ -744,6 +789,7 @@ fn legacy_correct_layer_moisture(
     Some(LegacyCorrectedLayerMoisture {
         thickness_m: dg,
         porosity: por,
+        cpm,
         thetfc,
         thetdr,
     })

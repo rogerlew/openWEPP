@@ -1418,18 +1418,24 @@ impl Wb11HydrologyKernel {
         let mut theta_sum = 0.0_f64;
         let mut ul_sum = 0.0_f64;
         let mut fc_sum = 0.0_f64;
+        let mut thetfc_sum = 0.0_f64;
+        let mut thetdr_sum = 0.0_f64;
         let mut dg_sum = 0.0_f64;
+        let mut use_legacy_ksatadj_theta_derivation = false;
 
         for layer_index in 1..=2 {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
             let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let thetdr_symbol = BoundarySymbol::from(format!("thetdr_{layer_index:04}"));
 
             let theta = Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
             let fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
             let ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
             let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            let thetdr_optional =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &thetdr_symbol)?;
 
             if theta < -WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -1485,11 +1491,51 @@ impl Wb11HydrologyKernel {
                     maximum: Some(ul),
                 });
             }
-
+            let legacy_wp_store = ul - fc;
             theta_sum += theta.max(0.0);
             ul_sum += ul;
             fc_sum += fc.max(0.0);
             dg_sum += dg;
+
+            match thetdr_optional {
+                Some(thetdr_raw) if !use_legacy_ksatadj_theta_derivation => {
+                    if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&thetdr_raw) {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: thetdr_symbol,
+                            value: thetdr_raw,
+                            minimum: Some(0.0),
+                            maximum: Some(1.0),
+                        });
+                    }
+                    let thetdr = thetdr_raw.max(0.0);
+                    let expected_wp_store = thetdr * dg;
+                    let uses_legacy_fcwp_layout = (legacy_wp_store - expected_wp_store).abs() <= 1.0e-9;
+                    let layer_thetfc = if uses_legacy_fcwp_layout {
+                        fc / dg
+                    } else {
+                        (fc / dg) + thetdr
+                    };
+                    if !layer_thetfc.is_finite()
+                        || layer_thetfc < thetdr - WB11_ZERO_THRESHOLD
+                        || layer_thetfc > 1.0 + WB11_ZERO_THRESHOLD
+                    {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: fc_symbol,
+                            value: layer_thetfc,
+                            minimum: Some(thetdr),
+                            maximum: Some(1.0),
+                        });
+                    }
+                    thetdr_sum += thetdr * dg;
+                    thetfc_sum += layer_thetfc.max(0.0) * dg;
+                }
+                None => {
+                    use_legacy_ksatadj_theta_derivation = true;
+                }
+                Some(_) => {}
+            }
         }
 
         if ul_sum <= WB11_ZERO_THRESHOLD {
@@ -1532,8 +1578,11 @@ impl Wb11HydrologyKernel {
         }
         sat_frac = sat_frac.clamp(0.0, 1.0);
 
-        let avthetafc = fc_sum / dg_sum;
-        let avthetadr = (ul_sum - fc_sum) / dg_sum;
+        let (avthetafc, avthetadr) = if use_legacy_ksatadj_theta_derivation {
+            (fc_sum / dg_sum, (ul_sum - fc_sum) / dg_sum)
+        } else {
+            (thetfc_sum / dg_sum, thetdr_sum / dg_sum)
+        };
 
         if avthetafc <= WB11_ZERO_THRESHOLD || avthetadr <= WB11_ZERO_THRESHOLD {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {

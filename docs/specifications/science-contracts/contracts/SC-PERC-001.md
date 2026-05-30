@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 12
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -303,6 +303,20 @@ Minimum WB18 percolation production-kernel conformance vectors:
    normalized-tail depth must be consumed in profile-storage projection
    authority (no silent truncation, no parser-domain override).
 
+## HPHYS0208 FC-Threshold Consumer-Lineage Closure Addendum
+
+1. WB18 percolation-consumer seed symbols must be initialized from
+   baseline-authoritative threshold lineage:
+   - `wb18_perc_theta_#### = st(i)` where
+     `st(i) = (((sat * por_i) * cpm_i) - thetdr_i) * dg_i`,
+   - `wb18_perc_fc_#### = FCi = dg_i * (thetfc_i - thetdr_i)`,
+   - `wb18_perc_ul_#### = ULi = (por_i - thetdr_i) * dg_i`.
+2. Required threshold-lineage inputs are `sat`, `por_####`, `cpm_####`,
+   `thetfc_####`, `thetdr_####`, and `dg_####`.
+3. Missing/non-finite/domain-invalid threshold-lineage inputs are typed
+   hard-fail percolation-consumer states; FC/WP surrogate seed substitution is
+   prohibited.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -335,3 +349,4 @@ authority closure is completed.
 | `2026-05-29` | `9` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer-theta symbols used by profile storage coupling to carry baseline-corrected moisture lineage when available. |
 | `2026-05-30` | `10` | `Codex` | HPHYS0206 amendment: required deterministic normalized-layer mapping closure for authoritative FC/WP publication symbols and prohibited raw-theta fallback for that publication path. |
 | `2026-05-30` | `11` | `Codex` | HPHYS0207 amendment: ratified normalized-profile storage publication authority for WB13 FC/WP outputs via `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` and added explicit normalized-tail consumption policy authority. |
+| `2026-05-30` | `12` | `Codex` | HPHYS0208 amendment: required WB18 percolation seed-consumer initialization from baseline WB11 threshold lineage (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) and prohibited surrogate FC/WP seed substitution. |

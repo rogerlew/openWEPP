@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-30
 supersedes: []
 superseded_by: []
 ---
@@ -369,6 +369,18 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 3. Deterministic regression fixtures must preserve `latqcc`/`Dp` column
    availability and domain validity under canonical publication authority.
 
+## HPHYS0208 Coupled Subsurface Residual Closure Addendum
+
+1. WB13 `latqcc` and `Dp` closure evidence is coupled to WB11/WB18 threshold
+   seed lineage because lateral/drainage and percolation consumers operate on
+   seeded layer storage surfaces (`wb18_perc_theta/fc/ul_####`).
+2. Coupled threshold-lineage seed requirements are explicit:
+   `sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, and `dg_####`
+   must be valid for the same layer domain used by WB19/WB18 consumers.
+3. Missing/non-finite/domain-invalid coupled threshold-lineage inputs are
+   typed hard-fail subsurface/percolation publication states; surrogate
+   fallback is prohibited for WB13 `latqcc`/`Dp` closure claims.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -391,3 +403,4 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 | `2026-05-23` | `6` | `Codex` | WB13 amendment: added canonical daily output coupling authority for subsurface/drainage symbols (`latqcc`, `Tile`, `SubRIn`) and deterministic `Qd` relation posture with malformed-output hard-fail requirements. |
 | `2026-05-23` | `7` | `Codex` | WB19 amendment: replaced WB11 fraction-split lateral/drain surrogate authority with layer-aware Eq. [6.2.4]/[6.2.10]-[6.2.11] production-kernel authority, explicit WB18/WB19 symbol aliases, and legacy-ID typed guard continuity requirements. |
 | `2026-05-30` | `8` | `Codex` | HPHYS0203 amendment: added subsurface WB13 robustness validation obligations for `latqcc`/`Dp` domain guards, non-finite protections, and deterministic regression-fixture coverage. |
+| `2026-05-30` | `9` | `Codex` | HPHYS0208 amendment: added coupled threshold-lineage closure authority linking WB13 `latqcc`/`Dp` residual adjudication to WB11/WB18 seed symbols (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) with explicit fail-closed/no-fallback posture. |

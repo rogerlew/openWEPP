@@ -344,6 +344,10 @@ path = "tests/integration/hphys0202_profile_fc_wp_lineage_contract.rs"
 name = "hphys0203_physics_robustness_contract"
 path = "tests/integration/hphys0203_physics_robustness_contract.rs"
 
+[[test]]
+name = "hphys0208_fc_threshold_coupled_residual_contract"
+path = "tests/integration/hphys0208_fc_threshold_coupled_residual_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

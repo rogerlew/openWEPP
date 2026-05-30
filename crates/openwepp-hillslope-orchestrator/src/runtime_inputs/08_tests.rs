@@ -105,7 +105,7 @@ mod tests {
 
     fn normalized_corrected_layers_from_ofe(
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    ) -> Vec<(f64, f64, f64, f64)> {
+    ) -> Vec<(f64, f64, f64, f64, f64)> {
         let seeds = ofe
             .layers
             .iter()
@@ -147,6 +147,7 @@ mod tests {
                 (
                     corrected.thickness_m,
                     corrected.porosity,
+                    corrected.cpm,
                     corrected.thetfc,
                     corrected.thetdr,
                 )
@@ -163,7 +164,9 @@ mod tests {
             fc_store: 0.0,
             wp_store: 0.0,
         };
-        for (thickness_m, porosity, thetfc, thetdr) in normalized_corrected_layers_from_ofe(ofe) {
+        for (thickness_m, porosity, _cpm, thetfc, thetdr) in
+            normalized_corrected_layers_from_ofe(ofe)
+        {
             let thickness_mm = thickness_m * 1_000.0;
             expectation.depth += thickness_mm;
             expectation.porosity_cap += porosity * thickness_mm;
@@ -211,103 +214,106 @@ mod tests {
         (aggregated_fc_store_mm, aggregated_wp_store_mm)
     }
 
-    fn expected_authoritative_theta_from_normalized_overlap_mapping(
+    type NormalizedCorrectedInterval = (f64, f64, f64, f64, f64, f64);
+
+    fn corrected_normalized_intervals_from_ofe(
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    ) -> Vec<(f64, f64)> {
-        let seeds = ofe
-            .layers
-            .iter()
-            .enumerate()
-            .map(|(layer_position, layer)| LegacySoilLayerSeed {
-                depth_mm: layer.depth_mm,
-                bulk_density_g_cm3: layer.bulk_density_g_cm3.unwrap_or_else(|| {
-                    panic!(
-                        "fixture layer {} must include bulk_density_g_cm3 for normalization test",
-                        layer_position + 1
-                    )
-                }),
-                fc_measured: layer.fc_measured.unwrap_or_else(|| {
-                    panic!(
-                        "fixture layer {} must include fc_measured for normalization test",
-                        layer_position + 1
-                    )
-                }),
-                wp_measured: layer.wp_measured.unwrap_or_else(|| {
-                    panic!(
-                        "fixture layer {} must include wp_measured for normalization test",
-                        layer_position + 1
-                    )
-                }),
-                sand_pct: layer.sand_pct,
-                clay_pct: layer.clay_pct,
-                orgmat_pct: layer.orgmat_pct,
-                cec_meq_100g: layer.cec_meq_100g,
-                rock_frag_pct: layer.rock_frag_pct,
-            })
-            .collect::<Vec<_>>();
-
-        let normalized_layers = legacy_expand_soil_layers_to_200mm(&seeds)
-            .expect("fixture should produce normalized correction layers");
-        let corrected_normalized = normalized_layers
-            .into_iter()
-            .map(|layer| {
-                legacy_correct_layer_moisture(layer)
-                    .expect("fixture normalized layers should yield corrected moisture")
-            })
-            .collect::<Vec<_>>();
-
-        let mut normalized_intervals = Vec::with_capacity(corrected_normalized.len());
+    ) -> Vec<NormalizedCorrectedInterval> {
+        let mut normalized_intervals = Vec::with_capacity(ofe.layers.len());
         let mut normalized_top_mm = 0.0_f64;
-        for corrected in corrected_normalized {
-            let normalized_bottom_mm = normalized_top_mm + corrected.thickness_m * 1_000.0;
+        for (thickness_m, porosity, cpm, thetfc, thetdr) in normalized_corrected_layers_from_ofe(ofe)
+        {
+            let normalized_bottom_mm = normalized_top_mm + (thickness_m * 1_000.0);
             normalized_intervals.push((
                 normalized_top_mm,
                 normalized_bottom_mm,
-                corrected.thetfc,
-                corrected.thetdr,
+                porosity,
+                cpm,
+                thetfc,
+                thetdr,
             ));
             normalized_top_mm = normalized_bottom_mm;
         }
+        normalized_intervals
+    }
+
+    fn mapped_authoritative_symbols_for_parser_layer(
+        parser_top_mm: f64,
+        parser_bottom_mm: f64,
+        layer_position: usize,
+        normalized_intervals: &[NormalizedCorrectedInterval],
+    ) -> (f64, f64, f64, f64) {
+        let layer_thickness_mm = parser_bottom_mm - parser_top_mm;
+        assert!(
+            layer_thickness_mm > 0.0,
+            "fixture parser layer {} must have positive thickness",
+            layer_position + 1
+        );
+        let mut weighted_porosity = 0.0_f64;
+        let mut weighted_cpm = 0.0_f64;
+        let mut weighted_thetfc = 0.0_f64;
+        let mut weighted_thetdr = 0.0_f64;
+        let mut covered_mm = 0.0_f64;
+
+        for (normalized_top_mm, normalized_bottom_mm, porosity, cpm, thetfc, thetdr) in
+            normalized_intervals
+        {
+            let overlap_top_mm = parser_top_mm.max(*normalized_top_mm);
+            let overlap_bottom_mm = parser_bottom_mm.min(*normalized_bottom_mm);
+            let overlap_mm = (overlap_bottom_mm - overlap_top_mm).max(0.0);
+            if overlap_mm <= 0.0 {
+                continue;
+            }
+            weighted_porosity += *porosity * overlap_mm;
+            weighted_cpm += *cpm * overlap_mm;
+            weighted_thetfc += *thetfc * overlap_mm;
+            weighted_thetdr += *thetdr * overlap_mm;
+            covered_mm += overlap_mm;
+        }
+
+        assert!(
+            (covered_mm - layer_thickness_mm).abs() <= 1.0e-9,
+            "expected full normalized overlap coverage for parser layer {} (covered {} mm of {} mm)",
+            layer_position + 1,
+            covered_mm,
+            layer_thickness_mm
+        );
+
+        (
+            weighted_porosity / covered_mm,
+            weighted_cpm / covered_mm,
+            weighted_thetfc / covered_mm,
+            weighted_thetdr / covered_mm,
+        )
+    }
+
+    fn expected_authoritative_theta_from_normalized_overlap_mapping(
+        ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    ) -> Vec<(f64, f64, f64, f64)> {
+        let normalized_intervals = corrected_normalized_intervals_from_ofe(ofe);
 
         let mut mapped = Vec::with_capacity(ofe.layers.len());
         let mut parser_top_mm = 0.0_f64;
         for (layer_position, layer) in ofe.layers.iter().enumerate() {
             let parser_bottom_mm = layer.depth_mm;
-            let layer_thickness_mm = parser_bottom_mm - parser_top_mm;
-            assert!(
-                layer_thickness_mm > 0.0,
-                "fixture parser layer {} must have positive thickness",
-                layer_position + 1
-            );
-            let mut weighted_thetfc = 0.0_f64;
-            let mut weighted_thetdr = 0.0_f64;
-            let mut covered_mm = 0.0_f64;
-
-            for (normalized_top_mm, normalized_bottom_mm, thetfc, thetdr) in &normalized_intervals {
-                let overlap_top_mm = parser_top_mm.max(*normalized_top_mm);
-                let overlap_bottom_mm = parser_bottom_mm.min(*normalized_bottom_mm);
-                let overlap_mm = (overlap_bottom_mm - overlap_top_mm).max(0.0);
-                if overlap_mm <= 0.0 {
-                    continue;
-                }
-                weighted_thetfc += *thetfc * overlap_mm;
-                weighted_thetdr += *thetdr * overlap_mm;
-                covered_mm += overlap_mm;
-            }
-
-            assert!(
-                (covered_mm - layer_thickness_mm).abs() <= 1.0e-9,
-                "expected full normalized overlap coverage for parser layer {} (covered {} mm of {} mm)",
-                layer_position + 1,
-                covered_mm,
-                layer_thickness_mm
-            );
-
-            mapped.push((weighted_thetfc / covered_mm, weighted_thetdr / covered_mm));
+            mapped.push(mapped_authoritative_symbols_for_parser_layer(
+                parser_top_mm,
+                parser_bottom_mm,
+                layer_position,
+                &normalized_intervals,
+            ));
             parser_top_mm = parser_bottom_mm;
         }
 
         mapped
+    }
+
+    fn soil_runtime_scalar(surface: &crate::HillslopeWritebackSurface, symbol: &str) -> f64 {
+        surface
+            .state_surface
+            .get(&BoundarySymbol::from(symbol))
+            .unwrap_or_else(|| panic!("{symbol} should be present"))
+            .as_f64()
     }
 
     #[test]
@@ -339,65 +345,38 @@ mod tests {
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from parsed soil");
 
-        let solthk = surface
-            .state_surface
-            .get(&BoundarySymbol::from("solthk"))
-            .expect("solthk should be present")
-            .as_f64();
-        let dg = surface
-            .state_surface
-            .get(&BoundarySymbol::from("dg"))
-            .expect("dg should be present")
-            .as_f64();
-        let thetdr = surface
-            .state_surface
-            .get(&BoundarySymbol::from("thetdr"))
-            .expect("thetdr should be present")
-            .as_f64();
-        let thetfc = surface
-            .state_surface
-            .get(&BoundarySymbol::from("thetfc"))
-            .expect("thetfc should be present")
-            .as_f64();
-        let nsl = surface
-            .state_surface
-            .get(&BoundarySymbol::from("nsl"))
-            .expect("nsl should be present")
-            .as_f64();
-        let ssc = surface
-            .state_surface
-            .get(&BoundarySymbol::from("ssc"))
-            .expect("ssc should be present")
-            .as_f64();
-        let dg_layer2 = surface
-            .state_surface
-            .get(&BoundarySymbol::from("dg_0002"))
-            .expect("dg_0002 should be present")
-            .as_f64();
-        let solthk_layer2 = surface
-            .state_surface
-            .get(&BoundarySymbol::from("solthk_0002"))
-            .expect("solthk_0002 should be present")
-            .as_f64();
-        let ssc_layer2 = surface
-            .state_surface
-            .get(&BoundarySymbol::from("ssc_0002"))
-            .expect("ssc_0002 should be present")
-            .as_f64();
+        let solthk = soil_runtime_scalar(&surface, "solthk");
+        let dg = soil_runtime_scalar(&surface, "dg");
+        let thetdr = soil_runtime_scalar(&surface, "thetdr");
+        let thetfc = soil_runtime_scalar(&surface, "thetfc");
 
-        assert!((solthk - 0.25).abs() < 1e-12);
-        assert!((dg - 0.1).abs() < 1e-12);
+        assert!((solthk - 0.25).abs() < 1.0e-12);
+        assert!((dg - 0.1).abs() < 1.0e-12);
         assert!(thetdr.is_finite());
         assert!(thetfc.is_finite());
         assert!(
             (thetdr - raw_top_thetdr).abs() > 1.0e-9 || (thetfc - raw_top_thetfc).abs() > 1.0e-9,
             "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
         );
-        assert!((nsl - 2.0).abs() < 1e-12);
-        assert!((ssc - (15.0 / 3.6e6)).abs() < 1e-12);
-        assert!((dg_layer2 - 0.15).abs() < 1e-12);
-        assert!((solthk_layer2 - 0.25).abs() < 1e-12);
-        assert!((ssc_layer2 - (8.0 / 3.6e6)).abs() < 1e-12);
+
+        let exact_checks = [
+            ("nsl", 2.0),
+            ("ssc", 15.0 / 3.6e6),
+            ("dg_0002", 0.15),
+            ("solthk_0002", 0.25),
+            ("ssc_0002", 8.0 / 3.6e6),
+        ];
+        for (symbol, expected) in exact_checks {
+            assert!((soil_runtime_scalar(&surface, symbol) - expected).abs() < 1.0e-12);
+        }
+
+        for symbol in ["por", "cpm", "por_0002", "cpm_0002"] {
+            let value = soil_runtime_scalar(&surface, symbol);
+            assert!(
+                value.is_finite() && value > 0.0 && value <= 1.0,
+                "{symbol} should be finite and inside (0,1]"
+            );
+        }
     }
 
     #[test]
@@ -536,7 +515,7 @@ mod tests {
             !corrected_layers.is_empty(),
             "normalized corrected layer set must be non-empty"
         );
-        for (layer_position, (_thickness_m, porosity, thetfc, thetdr)) in
+        for (layer_position, (_thickness_m, porosity, cpm, thetfc, thetdr)) in
             corrected_layers.into_iter().enumerate()
         {
             assert!(
@@ -558,6 +537,12 @@ mod tests {
                 "corrected layer {} must satisfy thetdr > 0 (observed {})",
                 layer_position + 1,
                 thetdr
+            );
+            assert!(
+                cpm > 0.0 && cpm <= 1.0,
+                "corrected layer {} must satisfy cpm in (0,1] (observed {})",
+                layer_position + 1,
+                cpm
             );
         }
     }
@@ -586,8 +571,22 @@ mod tests {
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from parsed soil");
-        for (layer_position, (expected_thetfc, expected_thetdr)) in expected.iter().enumerate() {
+        for (
+            layer_position,
+            (expected_porosity, expected_cpm, expected_thetfc, expected_thetdr),
+        ) in expected.iter().enumerate()
+        {
             let layer_index = layer_position + 1;
+            let observed_porosity = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("por_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("por_{layer_index:04} should be present"))
+                .as_f64();
+            let observed_cpm = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("cpm_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("cpm_{layer_index:04} should be present"))
+                .as_f64();
             let observed_thetfc = surface
                 .state_surface
                 .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
@@ -600,6 +599,14 @@ mod tests {
                 .as_f64();
 
             assert!(
+                (observed_porosity - expected_porosity).abs() < 1.0e-9,
+                "layer {layer_index} authoritative porosity must follow normalized overlap mapping"
+            );
+            assert!(
+                (observed_cpm - expected_cpm).abs() < 1.0e-9,
+                "layer {layer_index} authoritative cpm must follow normalized overlap mapping"
+            );
+            assert!(
                 (observed_thetfc - expected_thetfc).abs() < 1.0e-9,
                 "layer {layer_index} authoritative thetfc must follow normalized overlap mapping"
             );
@@ -608,6 +615,17 @@ mod tests {
                 "layer {layer_index} authoritative thetdr must follow normalized overlap mapping"
             );
         }
+
+        let projected_sat = surface
+            .state_surface
+            .get(&BoundarySymbol::from("sat"))
+            .expect("sat should be present")
+            .as_f64();
+        let expected_sat = ofe.sat;
+        assert!(
+            (projected_sat - expected_sat).abs() < 1.0e-12,
+            "projected sat must preserve authoritative parser saturation fraction"
+        );
     }
 
     #[test]

@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -305,6 +305,23 @@ bit-for-bit parity). `[DIRECT][Static]`
    fail-closed boundary states and are not eligible for projection-side
    surrogate reconstruction.
 
+## HPHYS0208 WB11 Seed Threshold-Lineage Projection Addendum
+
+1. Soil runtime projection must publish canonical WB11 seed threshold-lineage
+   symbols for each emitted layer:
+   - `por_####` from normalized corrected-layer porosity authority,
+   - `cpm_####` from normalized corrected-layer coarse-fragment correction
+     authority,
+   - `thetfc_####`, `thetdr_####`, and `dg_####` from the same
+     normalized corrected-layer mapping authority,
+   - profile saturation control `sat`.
+2. `por_####`/`cpm_####` authority must share deterministic normalized-layer
+   overlap mapping with `thetfc_####`/`thetdr_####`; mixed raw/corrected source
+   publication is invalid.
+3. Missing/non-finite/domain-invalid threshold-lineage projection symbols are
+   fail-closed runtime-boundary states and must not be repaired by surrogate
+   FC/WP seed reconstruction.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -329,3 +346,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-30` | `8` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer symbols to originate from baseline-normalized corrected-layer lineage with deterministic publication mapping and typed fail-closed posture when normalized correction lineage is unavailable. |
 | `2026-05-30` | `9` | `Codex` | HPHYS0207 amendment: ratified WB13 FC/WP depth-authority alignment to normalized-profile runtime storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
 | `2026-05-30` | `10` | `Codex` | HPHYS0203 amendment: added soil-water robustness validation obligations for `Total-Soil`/`SoilWaterTotal` lineage, deterministic closure-preserving perturbation vectors, and explicit fail-closed non-finite/domain posture requirements. |
+| `2026-05-30` | `11` | `Codex` | HPHYS0208 amendment: required soil runtime projection to publish coupled WB11 threshold-lineage symbols (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) from shared normalized corrected-layer authority with explicit fail-closed posture. |
