@@ -4668,6 +4668,40 @@ mod tests {
     }
 
     #[test]
+    fn hphys0209_wb13_wp_storage_guard_rejects_missing_authoritative_symbol() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("wb13_profile_wp_store_mm"));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("missing wb13_profile_wp_store_mm must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("missing required runtime symbol wb13_profile_wp_store_mm"),
+                    "expected missing wb13_profile_wp_store_mm guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
     fn hphys0207_wb13_profile_fc_wp_publication_uses_storage_symbols_when_valid() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(

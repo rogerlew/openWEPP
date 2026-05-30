@@ -1138,6 +1138,26 @@ baseline-authoritative WB11 seed symbols for per-layer storage initialization.
    are typed hard-fail WB11 seed states; FC/WP surrogate reconstruction is
    prohibited.
 
+### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
+
+HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
+its adjudication posture without changing publication authority.
+
+1. `ProfileWPStore` publication authority remains
+   `wb13_profile_wp_store_mm` under HPHYS0207; no surrogate
+   reconstruction/reprojection formula is authorized for adjudication closure.
+2. WB13 publication must continue direct runtime projection from
+   `wb13_profile_wp_store_mm` with existing typed fail-closed guards for
+   missing/non-finite/domain-invalid symbols.
+3. A residual lane limited to isolated hillslope cases with stable sign and
+   magnitude may be classified as expected process-correct diagnostic evidence
+   only when:
+   - `ProfileDepth` and `ProfilePorosityCap` remain non-regressing, and
+   - no new WB13 profile-ordering violations are introduced.
+4. Residual spread beyond the isolated lane, profile-ordering regressions, or
+   profile-depth/capacity regressions must be treated as unresolved defect
+   lineage and retain `HOLD` posture.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
 1. WB13/H.wat publication policy for hillslope MOFE contexts is explicit and
@@ -1344,6 +1364,7 @@ baseline-authoritative WB11 seed symbols for per-layer storage initialization.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-30` | `51` | `Codex` | HPHYS0209 amendment: codified near-closed `ProfileWPStore` adjudication governance, preserving HPHYS0207 `wb13_profile_wp_store_mm` publication authority and allowing isolated stable residuals as diagnostic expected process-correct evidence only under non-regressing profile depth/capacity/order conditions. |
 | `2026-05-30` | `50` | `Codex` | HPHYS0208 amendment: required baseline-authoritative WB11 seed threshold lineage (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) for `st(i)`/`FCi`/`ULi` initialization and coupled WB11/WB18 publication continuity to WB13 `Dp`/`latqcc`/`Total-Soil`/`SoilWaterTotal`. |
 | `2026-05-30` | `49` | `Codex` | HPHYS0203 amendment: added WB13 physics-robustness validation obligations for profile, soil-water aggregate, and subsurface-loss publication families, including conservation/order/domain/non-finite vectors, deterministic perturbation checks, and per-family deterministic regression fixture requirements. |
 | `2026-05-30` | `47` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer publication symbols to be mapped deterministically from the same baseline-normalized corrected-layer set used by profile-capacity lineage, with explicit no-raw-fallback typed fail-closed posture. |

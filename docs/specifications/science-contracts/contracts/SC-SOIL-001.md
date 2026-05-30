@@ -322,6 +322,19 @@ bit-for-bit parity). `[DIRECT][Static]`
    fail-closed runtime-boundary states and must not be repaired by surrogate
    FC/WP seed reconstruction.
 
+## HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
+
+1. Soil authority for `ProfileWPStore` publication lineage remains the
+   normalized corrected-layer family consumed by
+   `wb13_profile_wp_store_mm` under HPHYS0207.
+2. Near-closed adjudication does not authorize any alternate raw-theta or
+   parser-depth surrogate for `ProfileWPStore`; canonical authority remains
+   baseline-corrected normalized-profile storage projection.
+3. Isolated stable `ProfileWPStore` comparator residuals may be treated as
+   diagnostic expected process-correct evidence only when `ProfileDepth` and
+   `ProfilePorosityCap` remain non-regressing and runtime guard posture remains
+   fail-closed.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -347,3 +360,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-30` | `9` | `Codex` | HPHYS0207 amendment: ratified WB13 FC/WP depth-authority alignment to normalized-profile runtime storage symbols (`wb13_profile_fc_store_mm`, `wb13_profile_wp_store_mm`) and added explicit normalized-tail consumption policy authority. |
 | `2026-05-30` | `10` | `Codex` | HPHYS0203 amendment: added soil-water robustness validation obligations for `Total-Soil`/`SoilWaterTotal` lineage, deterministic closure-preserving perturbation vectors, and explicit fail-closed non-finite/domain posture requirements. |
 | `2026-05-30` | `11` | `Codex` | HPHYS0208 amendment: required soil runtime projection to publish coupled WB11 threshold-lineage symbols (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) from shared normalized corrected-layer authority with explicit fail-closed posture. |
+| `2026-05-30` | `12` | `Codex` | HPHYS0209 amendment: codified near-closed `ProfileWPStore` adjudication posture as diagnostic-only expected process-correct evidence when isolated and stable, while preserving normalized corrected-layer authority and fail-closed guard posture. |
