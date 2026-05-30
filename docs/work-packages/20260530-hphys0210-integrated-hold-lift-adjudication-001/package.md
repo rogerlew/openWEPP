@@ -1,7 +1,7 @@
 # 20260530-hphys0210-integrated-hold-lift-adjudication-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-30
 - timezone: America/Los_Angeles
 - decision: HOLD
