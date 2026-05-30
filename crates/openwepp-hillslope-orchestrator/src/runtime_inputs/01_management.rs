@@ -508,6 +508,89 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
                     &mut pl_decomp_surface,
                     plant_cropland,
                 )?;
+                pl_schedule_surface.insert(
+                    BoundarySymbol::from("drset"),
+                    BoundaryValue::scalar(usize_to_f64("drset", cropland.drset)?),
+                );
+                if cropland.drset == 0 {
+                    pl_schedule_surface.insert(
+                        BoundarySymbol::from("wb19_drain_enabled"),
+                        BoundaryValue::scalar(0.0),
+                    );
+                } else {
+                    let max_drain_ref = management.registries.drains.len();
+                    if cropland.drset > max_drain_ref {
+                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                            field: "drset",
+                            slot_index,
+                            crop_slot_index,
+                            value: usize_to_f64("drset", cropland.drset)?,
+                            allowed: "1..=drain_scenario_count",
+                        });
+                    }
+                    let drain = &management.registries.drains[cropland.drset - 1];
+                    let drain_depth = validate_projection_non_negative(
+                        "wb19_drain_depth",
+                        slot_index,
+                        crop_slot_index,
+                        drain.ddrain,
+                    )?;
+                    let drain_spacing = validate_projection_non_negative(
+                        "wb19_drain_spacing",
+                        slot_index,
+                        crop_slot_index,
+                        drain.sdrain,
+                    )?;
+                    let drain_diameter = validate_projection_non_negative(
+                        "wb19_drain_diameter",
+                        slot_index,
+                        crop_slot_index,
+                        drain.drdiam,
+                    )?;
+                    if drain_depth <= 0.0 {
+                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                            field: "wb19_drain_depth",
+                            slot_index,
+                            crop_slot_index,
+                            value: drain_depth,
+                            allowed: "> 0.0 when wb19_drain_enabled=1",
+                        });
+                    }
+                    if drain_spacing <= 0.0 {
+                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                            field: "wb19_drain_spacing",
+                            slot_index,
+                            crop_slot_index,
+                            value: drain_spacing,
+                            allowed: "> 0.0 when wb19_drain_enabled=1",
+                        });
+                    }
+                    if drain_diameter <= 0.0 {
+                        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                            field: "wb19_drain_diameter",
+                            slot_index,
+                            crop_slot_index,
+                            value: drain_diameter,
+                            allowed: "> 0.0 when wb19_drain_enabled=1",
+                        });
+                    }
+                    pl_schedule_surface.insert(
+                        BoundarySymbol::from("wb19_drain_enabled"),
+                        BoundaryValue::scalar(1.0),
+                    );
+                    pl_schedule_surface.insert(
+                        BoundarySymbol::from("wb19_drain_depth"),
+                        BoundaryValue::scalar(drain_depth),
+                    );
+                    pl_schedule_surface.insert(
+                        BoundarySymbol::from("wb19_drain_spacing"),
+                        BoundaryValue::scalar(drain_spacing),
+                    );
+                    pl_schedule_surface.insert(
+                        BoundarySymbol::from("wb19_drain_diameter"),
+                        BoundaryValue::scalar(drain_diameter),
+                    );
+                }
             }
 
             match &cropland.branch {

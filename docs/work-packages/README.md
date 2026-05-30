@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260530-hphys0212-wb11-wb19-lifecycle-coupling-closure-001/`
+  - Purpose: remediate HPHYS0211-rooted WB11/WB18 lifecycle reseed defects and
+    WB19 control-source defects, restore WB13 `latqcc`/`Tile`/`Qd` coupling
+    visibility, and rerun gates + targeted parity diagnostics for `Dp`/`latqcc`
+    closure progression.
 - `20260530-hphys0211-coupled-threshold-root-cause-ledger-001/`
   - Purpose: execute coupled-threshold residual root-cause decomposition for
     `ProfileFCStore`, `Dp`, `latqcc`, `Total-Soil`, and `SoilWaterTotal`,

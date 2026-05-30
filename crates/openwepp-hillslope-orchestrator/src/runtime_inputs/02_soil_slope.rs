@@ -373,6 +373,13 @@ pub fn build_hillslope_runtime_surface_from_soil(
             );
             state_surface.insert(BoundarySymbol::from("sat"), BoundaryValue::scalar(ofe.sat));
             state_surface.insert(
+                BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+                // Baseline continuity: when no explicit anisotropy surface is
+                // available for this datver family, lateral anisotropy defaults
+                // to unity.
+                BoundaryValue::scalar(primary_top_layer.anisotropy_ratio.unwrap_or(1.0)),
+            );
+            state_surface.insert(
                 BoundarySymbol::from("ksatadj"),
                 BoundaryValue::scalar(ofe_ksatadj_value),
             );

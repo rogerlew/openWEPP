@@ -1115,57 +1115,6 @@ impl Wb11HydrologyKernel {
             });
         };
 
-        let drain_depth_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_DEPTH);
-        let drain_depth =
-            Self::require_state_scalar_for_symbol(request, phase_class, &drain_depth_symbol)?;
-        if drain_depth <= WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: drain_depth_symbol,
-                value: drain_depth,
-                minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: None,
-            });
-        }
-
-        let drain_spacing_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_SPACING);
-        let drain_spacing =
-            Self::require_state_scalar_for_symbol(request, phase_class, &drain_spacing_symbol)?;
-        if drain_spacing <= WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: drain_spacing_symbol,
-                value: drain_spacing,
-                minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: None,
-            });
-        }
-
-        let drain_diameter_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_DIAMETER);
-        let drain_diameter =
-            Self::require_state_scalar_for_symbol(request, phase_class, &drain_diameter_symbol)?;
-        if drain_diameter <= WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: drain_diameter_symbol,
-                value: drain_diameter,
-                minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: None,
-            });
-        }
-
-        let soldep_symbol = BoundarySymbol::from("solthk");
-        let soldep = Self::require_state_scalar_for_symbol(request, phase_class, &soldep_symbol)?;
-        if soldep <= WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: soldep_symbol,
-                value: soldep,
-                minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: None,
-            });
-        }
-
         let (mut theta, field_capacity, conductivity, thickness) =
             Self::wb19_load_layer_state(request, phase_class)?;
         let layer_pool = Self::wb19_drainable_storage(&theta, &field_capacity);
@@ -1175,6 +1124,61 @@ impl Wb11HydrologyKernel {
         let mut tile_layer_index = theta.len().saturating_sub(1);
 
         if drain_enabled {
+            let drain_depth_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_DEPTH);
+            let drain_depth =
+                Self::require_state_scalar_for_symbol(request, phase_class, &drain_depth_symbol)?;
+            if drain_depth <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: drain_depth_symbol,
+                    value: drain_depth,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let drain_spacing_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_SPACING);
+            let drain_spacing =
+                Self::require_state_scalar_for_symbol(request, phase_class, &drain_spacing_symbol)?;
+            if drain_spacing <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: drain_spacing_symbol,
+                    value: drain_spacing,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let drain_diameter_symbol = BoundarySymbol::from(WB19_SYMBOL_DRAIN_DIAMETER);
+            let drain_diameter = Self::require_state_scalar_for_symbol(
+                request,
+                phase_class,
+                &drain_diameter_symbol,
+            )?;
+            if drain_diameter <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: drain_diameter_symbol,
+                    value: drain_diameter,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let soldep_symbol = BoundarySymbol::from("solthk");
+            let soldep =
+                Self::require_state_scalar_for_symbol(request, phase_class, &soldep_symbol)?;
+            if soldep <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: soldep_symbol,
+                    value: soldep,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
             let mut watbl = 0.0_f64;
             let mut hit_unsat_zone = false;
             for idx in (0..theta.len()).rev() {

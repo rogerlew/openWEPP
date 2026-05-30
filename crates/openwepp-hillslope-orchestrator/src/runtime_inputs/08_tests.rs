@@ -6,8 +6,9 @@ mod tests {
     use openwepp_input_contract::parsers::{
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
         management::{
-            ParseMode as ManagementParseMode, PlantScenarioData, YearlyCroplandBranch,
-            YearlyPerennialData, YearlyScenarioData, parse_management_from_str,
+            DrainScenario, ParseMode as ManagementParseMode, PlantScenarioData, ScenarioMeta,
+            YearlyCroplandBranch, YearlyPerennialData, YearlyScenarioData,
+            parse_management_from_str,
         },
         slope::{SlopeParserOptions, parse_slope_str},
         soil::{ParserMode, SoilParserOptions, parse_soil},
@@ -349,11 +350,18 @@ mod tests {
         let dg = soil_runtime_scalar(&surface, "dg");
         let thetdr = soil_runtime_scalar(&surface, "thetdr");
         let thetfc = soil_runtime_scalar(&surface, "thetfc");
+        let wb19_lateral_anisotropy_ratio =
+            soil_runtime_scalar(&surface, "wb19_lateral_anisotropy_ratio");
 
         assert!((solthk - 0.25).abs() < 1.0e-12);
         assert!((dg - 0.1).abs() < 1.0e-12);
         assert!(thetdr.is_finite());
         assert!(thetfc.is_finite());
+        assert!(
+            (wb19_lateral_anisotropy_ratio - raw_top_layer.anisotropy_ratio.unwrap_or(1.0)).abs()
+                < 1.0e-12,
+            "wb19_lateral_anisotropy_ratio must follow top-layer authoritative anisotropy lineage"
+        );
         assert!(
             (thetdr - raw_top_thetdr).abs() > 1.0e-9 || (thetfc - raw_top_thetfc).abs() > 1.0e-9,
             "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
@@ -1050,6 +1058,34 @@ mod tests {
                 .get(&BoundarySymbol::from("sumsrm_seed")),
             Some(&BoundaryValue::scalar(0.19997))
         );
+        assert_eq!(
+            merged_surface.state_surface.get(&BoundarySymbol::from("drset")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("wb19_drain_enabled")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert!(
+            !merged_surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("wb19_drain_depth")),
+            "wb19_drain_depth should not be projected when drain is disabled"
+        );
+        assert!(
+            !merged_surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("wb19_drain_spacing")),
+            "wb19_drain_spacing should not be projected when drain is disabled"
+        );
+        assert!(
+            !merged_surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("wb19_drain_diameter")),
+            "wb19_drain_diameter should not be projected when drain is disabled"
+        );
 
         assert_eq!(
             pl_surfaces.pl_schedule_surface.get(&BoundarySymbol::from(
@@ -1129,6 +1165,123 @@ mod tests {
                 section: "initial",
                 value: 2
             }
+        ));
+    }
+
+    #[test]
+    fn management_runtime_projection_projects_wb19_drain_controls_from_primary_slot() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+
+        management.registries.drains.push(DrainScenario {
+            meta: ScenarioMeta {
+                name: "test-drain".to_string(),
+                description: [String::new(), String::new(), String::new()],
+                landuse: 1,
+            },
+            ddrain: 0.65,
+            drainc: 0.0,
+            drdiam: 0.08,
+            sdrain: 15.0,
+        });
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.drset = 1;
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("valid drain scenario should project WB19 drain controls");
+
+        assert_eq!(
+            merged_surface.state_surface.get(&BoundarySymbol::from("drset")),
+            Some(&BoundaryValue::scalar(1.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("wb19_drain_enabled")),
+            Some(&BoundaryValue::scalar(1.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("wb19_drain_depth")),
+            Some(&BoundaryValue::scalar(0.65))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("wb19_drain_spacing")),
+            Some(&BoundaryValue::scalar(15.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("wb19_drain_diameter")),
+            Some(&BoundaryValue::scalar(0.08))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_projects_wb19_controls_for_primary_perennial_slot() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.imngmt = 2;
+        cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+            jdharv: 288,
+            jdplt: 130,
+            jdstop: 0,
+            rw: 0.762,
+            mgtopt: 3,
+            cut_days: Vec::new(),
+            grazing_cycles: Vec::new(),
+        });
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("primary perennial slot should still project WB19 controls");
+
+        assert_eq!(
+            merged_surface.state_surface.get(&BoundarySymbol::from("drset")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+        assert_eq!(
+            merged_surface
+                .state_surface
+                .get(&BoundarySymbol::from("wb19_drain_enabled")),
+            Some(&BoundaryValue::scalar(0.0))
+        );
+    }
+
+    #[test]
+    fn management_runtime_projection_rejects_drain_reference_without_registered_drain() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.drset = 1;
+
+        let error = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect_err("drset reference beyond registered drains must fail runtime seam");
+        assert_eq!(error.code(), "HS-RUNTIME-E-050");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "drset",
+                slot_index: 1,
+                crop_slot_index: 1,
+                value,
+                ..
+            } if (value - 1.0).abs() < 1e-12
         ));
     }
 
