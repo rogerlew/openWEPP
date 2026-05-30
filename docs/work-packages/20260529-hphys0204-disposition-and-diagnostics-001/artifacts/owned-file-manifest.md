@@ -20,3 +20,4 @@ Evidence mode: Static
 - `docs/work-packages/20260529-hphys0204-disposition-and-diagnostics-001/artifacts/verification_agent_a.md`
 - `docs/work-packages/20260529-hphys0204-disposition-and-diagnostics-001/artifacts/verification_agent_b.md`
 - `docs/work-packages/20260529-hphys0204-disposition-and-diagnostics-001/artifacts/worker-handoff.md`
+- `docs/work-packages/20260529-hphys0204-disposition-and-diagnostics-001/artifacts/claude-code-review-findings.md`

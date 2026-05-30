@@ -33,3 +33,9 @@ Mean-abs-diff averages:
 - Tier posture (per ADR/AGENTS): **higher-confidence acceptance signal** for
   passes; non-zero residuals remain **investigation signals** and do not
   override process-authoritative closure by themselves.
+- Additional interpretation:
+  - `ProfileDepth` and `ProfilePorosityCap` are independently corroborated as
+    closed in the higher-confidence lane (`0/39` fail hillslopes).
+  - `ProfileFCStore` residual is also reproducible in-process from openWEPP's
+    own normalized-profile aggregation lineage and is therefore treated as an
+    internal reproducible residual, not a comparator-only artifact.

@@ -4,21 +4,23 @@ Status: completed
 Evidence mode: Static + Ran
 
 ## Immediate next actions (scoped follow-on packages)
-1. `HPHYS0208` (proposed): residual-family closure for
-   `Total-Soil`/`SoilWaterTotal` process-lineage migration.
+1. `HPHYS0208` (proposed): coupled threshold-lineage closure for open FC and
+   subsurface/soil-water families:
+   `ProfileFCStore`, `Dp`, `latqcc`, `Total-Soil`, `SoilWaterTotal`.
    - Closure condition:
-     contract-authoritative lineage proof and targeted guard vectors,
-     with comparator residual direction tracked as diagnostic.
-2. `HPHYS0209` (proposed): residual-family closure for `Dp`/`latqcc`
-   percolation-lateral lineage and WB13 publication coupling.
+     contract-authoritative kernel threshold-lineage closure
+     (`thetfc_####`/`thetdr_####` authority and downstream consumers), targeted
+     guard vectors, and residual-direction diagnostics.
+2. `HPHYS0209` (proposed): near-closed WP adjudication lane for
+   `ProfileWPStore` (`1/39`).
    - Closure condition:
-     baseline-authoritative process migration evidence and typed domain guard
-     continuity.
-3. `HPHYS0210` (proposed): FC/WP residual hold-lift adjudication for the
-   remaining `27/39` and `1/39` set after HPHYS0207 stabilization.
+     determine whether the remaining WP residual is an expected
+     process-correct delta or unresolved migration defect.
+3. `HPHYS0210` (proposed): integrated hold-lift adjudication after HPHYS0208
+   and HPHYS0209.
    - Closure condition:
-     explicit classification of expected process-correct deltas vs unresolved
-     migration defects, then final hold-lift recommendation.
+     explicit classification of remaining deltas vs unresolved migration
+     defects, then final hold-lift recommendation.
 
 ## Guardrails for next packages
 - Maintain contract-first sequencing for any kernel-affecting changes.
