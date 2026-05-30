@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260530-hphys0206-fcwp-layer-normalization-mapping-closure-001/`
+  - Purpose: close remaining FC/WP semantic residual after HPHYS0205 by
+    aligning authoritative corrected-layer publication symbols with
+    baseline-authoritative layer normalization and deterministic layer mapping
+    semantics, with typed fail-closed authority behavior and rerun deltas.
 - `20260529-hphys0205-layer-authoritative-fcwp-correction-closure-001/`
   - Purpose: resolve HPHYS0202 residual FC/WP deviations by preserving
     layer-authoritative WB13 publication (`thetfc_####`/`thetdr_####`) while
@@ -83,7 +88,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0203 -> hphys0204`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0203 -> hphys0204`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.
