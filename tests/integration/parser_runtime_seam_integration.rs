@@ -377,6 +377,25 @@ fn soil_runtime_surface_rejects_missing_saturated_conductivity_projection() {
 }
 
 #[test]
+fn soil_runtime_surface_rejects_missing_normalized_corrected_lineage_input() {
+    let mut soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
+        .expect("soil fixture should parse");
+    soil.ofes[0].layers[0].bulk_density_g_cm3 = None;
+
+    let error = build_hillslope_runtime_surface_from_soil(&soil)
+        .expect_err("missing normalized corrected-lineage input must fail with typed seam guard");
+    assert_eq!(error.code(), "HS-RUNTIME-E-060");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+            ofe_index: 1,
+            layer_index: 1,
+            field: "bulk_density_g_cm3"
+        }
+    ));
+}
+
+#[test]
 fn slope_and_soil_parser_outputs_propagate_to_hillslope_runtime_surface_closure() {
     let soil = parse_soil(SOIL_VALID_9002, SoilParserOptions::default())
         .expect("soil fixture should parse for seam closure");

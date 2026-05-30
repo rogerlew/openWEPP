@@ -21,6 +21,7 @@ mod tests {
         build_hillslope_runtime_surface_from_climate_with_context,
         build_hillslope_runtime_surface_from_management,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
+        legacy_correct_layer_moisture, legacy_expand_soil_layers_to_200mm, LegacySoilLayerSeed,
     };
 
     const VALID_CLIMATE: &str =
@@ -92,6 +93,105 @@ mod tests {
         context.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(0.058));
         context.insert(BoundarySymbol::from("azm"), BoundaryValue::scalar(0.0));
         context
+    }
+
+    fn expected_authoritative_theta_from_normalized_overlap_mapping(
+        ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    ) -> Vec<(f64, f64)> {
+        let seeds = ofe
+            .layers
+            .iter()
+            .enumerate()
+            .map(|(layer_position, layer)| LegacySoilLayerSeed {
+                depth_mm: layer.depth_mm,
+                bulk_density_g_cm3: layer.bulk_density_g_cm3.unwrap_or_else(|| {
+                    panic!(
+                        "fixture layer {} must include bulk_density_g_cm3 for normalization test",
+                        layer_position + 1
+                    )
+                }),
+                fc_measured: layer.fc_measured.unwrap_or_else(|| {
+                    panic!(
+                        "fixture layer {} must include fc_measured for normalization test",
+                        layer_position + 1
+                    )
+                }),
+                wp_measured: layer.wp_measured.unwrap_or_else(|| {
+                    panic!(
+                        "fixture layer {} must include wp_measured for normalization test",
+                        layer_position + 1
+                    )
+                }),
+                sand_pct: layer.sand_pct,
+                clay_pct: layer.clay_pct,
+                orgmat_pct: layer.orgmat_pct,
+                cec_meq_100g: layer.cec_meq_100g,
+                rock_frag_pct: layer.rock_frag_pct,
+            })
+            .collect::<Vec<_>>();
+
+        let normalized_layers = legacy_expand_soil_layers_to_200mm(&seeds)
+            .expect("fixture should produce normalized correction layers");
+        let corrected_normalized = normalized_layers
+            .into_iter()
+            .map(|layer| {
+                legacy_correct_layer_moisture(layer)
+                    .expect("fixture normalized layers should yield corrected moisture")
+            })
+            .collect::<Vec<_>>();
+
+        let mut normalized_intervals = Vec::with_capacity(corrected_normalized.len());
+        let mut normalized_top_mm = 0.0_f64;
+        for corrected in corrected_normalized {
+            let normalized_bottom_mm = normalized_top_mm + corrected.thickness_m * 1_000.0;
+            normalized_intervals.push((
+                normalized_top_mm,
+                normalized_bottom_mm,
+                corrected.thetfc,
+                corrected.thetdr,
+            ));
+            normalized_top_mm = normalized_bottom_mm;
+        }
+
+        let mut mapped = Vec::with_capacity(ofe.layers.len());
+        let mut parser_top_mm = 0.0_f64;
+        for (layer_position, layer) in ofe.layers.iter().enumerate() {
+            let parser_bottom_mm = layer.depth_mm;
+            let layer_thickness_mm = parser_bottom_mm - parser_top_mm;
+            assert!(
+                layer_thickness_mm > 0.0,
+                "fixture parser layer {} must have positive thickness",
+                layer_position + 1
+            );
+            let mut weighted_thetfc = 0.0_f64;
+            let mut weighted_thetdr = 0.0_f64;
+            let mut covered_mm = 0.0_f64;
+
+            for (normalized_top_mm, normalized_bottom_mm, thetfc, thetdr) in &normalized_intervals {
+                let overlap_top_mm = parser_top_mm.max(*normalized_top_mm);
+                let overlap_bottom_mm = parser_bottom_mm.min(*normalized_bottom_mm);
+                let overlap_mm = (overlap_bottom_mm - overlap_top_mm).max(0.0);
+                if overlap_mm <= 0.0 {
+                    continue;
+                }
+                weighted_thetfc += *thetfc * overlap_mm;
+                weighted_thetdr += *thetdr * overlap_mm;
+                covered_mm += overlap_mm;
+            }
+
+            assert!(
+                (covered_mm - layer_thickness_mm).abs() <= 1.0e-9,
+                "expected full normalized overlap coverage for parser layer {} (covered {} mm of {} mm)",
+                layer_position + 1,
+                covered_mm,
+                layer_thickness_mm
+            );
+
+            mapped.push((weighted_thetfc / covered_mm, weighted_thetdr / covered_mm));
+            parser_top_mm = parser_bottom_mm;
+        }
+
+        mapped
     }
 
     #[test]
@@ -327,6 +427,81 @@ mod tests {
             (aggregated_wp_store_mm - projected_wp_store_mm).abs() < 1e-9,
             "authoritative layer WP aggregate must match projected profile WP seed lineage"
         );
+    }
+
+    #[test]
+    fn hphys0206_authoritative_theta_uses_normalized_overlap_mapping() {
+        let soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+        let ofe = soil
+            .ofes
+            .first()
+            .expect("9002 fixture should include a primary OFE");
+        let expected = expected_authoritative_theta_from_normalized_overlap_mapping(ofe);
+        assert!(
+            expected.len() >= 2,
+            "expected at least two mapped layers for 9002 fixture"
+        );
+
+        let surface = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect("runtime surface should build from parsed soil");
+        for (layer_position, (expected_thetfc, expected_thetdr)) in expected.iter().enumerate() {
+            let layer_index = layer_position + 1;
+            let observed_thetfc = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
+                .as_f64();
+            let observed_thetdr = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
+                .as_f64();
+
+            assert!(
+                (observed_thetfc - expected_thetfc).abs() < 1.0e-9,
+                "layer {layer_index} authoritative thetfc must follow normalized overlap mapping"
+            );
+            assert!(
+                (observed_thetdr - expected_thetdr).abs() < 1.0e-9,
+                "layer {layer_index} authoritative thetdr must follow normalized overlap mapping"
+            );
+        }
+    }
+
+    #[test]
+    fn hphys0206_soil_runtime_surface_fail_closed_when_normalized_correction_input_missing() {
+        let mut soil = parse_soil(
+            VALID_9002,
+            SoilParserOptions {
+                mode: ParserMode::Strict,
+                allow_legacy_aliases: false,
+                expected_topology_count: None,
+                topology_scope: None,
+            },
+        )
+        .expect("9002 soil fixture should parse");
+        soil.ofes[0].layers[0].bulk_density_g_cm3 = None;
+
+        let error = build_hillslope_runtime_surface_from_soil(&soil)
+            .expect_err("missing normalized corrected-lineage input must hard-fail");
+        assert_eq!(error.code(), "HS-RUNTIME-E-060");
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+                ofe_index: 1,
+                layer_index: 1,
+                field: "bulk_density_g_cm3"
+            }
+        ));
     }
 
     #[test]

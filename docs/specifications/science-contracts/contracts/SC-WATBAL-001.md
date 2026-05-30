@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-05-29
+last_reviewed: 2026-05-30
 supersedes: []
 superseded_by: []
 ---
@@ -1039,6 +1039,27 @@ baseline-corrected moisture lineage, not raw parser theta inputs:
    publication-domain violations and hard-fail under existing WB13 guard
    continuity.
 
+### HPHYS0206 Corrected-Layer Normalization and Mapping Closure
+
+HPHYS0206 closes residual authoritative-layer mapping ambiguity by requiring
+the corrected FC/WP publication lineage to use the same normalized layer set
+as profile-capacity lineage and deterministic OFE-layer mapping semantics:
+
+1. Authoritative `thetfc_####`/`thetdr_####` publication-consumer symbols must
+   be derived from corrected layers computed on the same baseline-normalized
+   profile layer set that governs `wb13_profile_depth_mm` and
+   `wb13_profile_porosity_cap_mm`.
+2. Mapping from normalized corrected layers to emitted OFE layer symbols
+   (`thetfc_####`/`thetdr_####`) must be deterministic and depth-domain
+   complete for each emitted layer interval.
+3. Profile-storage diagnostics (`wb13_profile_fc_store_mm`,
+   `wb13_profile_wp_store_mm`) remain non-authoritative for WB13 publication
+   and must not override layer-authoritative publication values.
+4. Missing normalized corrected-lineage inputs, incomplete normalized-layer
+   coverage, or non-finite/domain-invalid mapped authoritative layer symbols are
+   typed fail-closed boundary violations; raw parser-theta fallback for
+   authoritative FC/WP publication symbols is prohibited.
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
 1. WB13/H.wat publication policy for hillslope MOFE contexts is explicit and
@@ -1245,6 +1266,7 @@ baseline-corrected moisture lineage, not raw parser theta inputs:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-30` | `47` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer publication symbols to be mapped deterministically from the same baseline-normalized corrected-layer set used by profile-capacity lineage, with explicit no-raw-fallback typed fail-closed posture. |
 | `2026-05-29` | `46` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer symbols (`thetfc_####`/`thetdr_####`) to carry baseline-corrected moisture lineage while retaining layer-authoritative publication and non-authoritative FC/WP adapter diagnostics. |
 | `2026-05-29` | `45` | `Codex` | HPHYS0202 amendment: made `ProfileFCStore`/`ProfileWPStore` publication authority explicitly layer-aggregated (`Σ(thetfc_i*dg_i)`, `Σ(thetdr_i*dg_i)`), and restricted `wb13_profile_fc/wp_store_mm` to non-authoritative adapter diagnostics. |
 | `2026-05-29` | `44` | `Codex` | HPARITY02 amendment: added profile-capacity publication-lineage closure authority (`wb13_profile_*_mm`) and explicit prohibition of synthesized `ProfilePorosityCap` placeholder formulas. |

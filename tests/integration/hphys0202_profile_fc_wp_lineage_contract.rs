@@ -4,14 +4,15 @@ use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
 use openwepp_hillslope_orchestrator::{
-    HillslopeWritebackSurface, runtime_inputs::build_hillslope_runtime_surface_from_soil,
+    HillslopeWritebackSurface,
+    runtime_inputs::{HillslopeRuntimeInputError, build_hillslope_runtime_surface_from_soil},
 };
 use openwepp_input_contract::parsers::soil::{
     SoilParserOptions, SoilProfile, TopologyScope, parse_soil,
 };
 use openwepp_kernel_contract::BoundarySymbol;
 use openwepp_runner::{
-    HillslopeCliError, HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
+    HillslopeRunRequest, SidecarPolicy, execute_hillslope_run,
 };
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
@@ -37,8 +38,12 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     let package = repo_file(
         "docs/work-packages/20260529-hphys0202-profile-fc-wp-lineage-closure-001/package.md",
     );
+    let package_hphys0206 = repo_file(
+        "docs/work-packages/20260530-hphys0206-fcwp-layer-normalization-mapping-closure-001/package.md",
+    );
     let watbal = repo_file("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
     let soil = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
+    let perc = repo_file("docs/specifications/science-contracts/contracts/SC-PERC-001.md");
     let system = repo_file("docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md");
 
     assert!(
@@ -48,16 +53,38 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "HPHYS0202 package must preserve closure measures and contract-first sequencing"
     );
     assert!(
+        package_hphys0206.contains("MEASURE-HP206-001")
+            && package_hphys0206.contains("MEASURE-HP206-004")
+            && package_hphys0206.contains("Mandatory Contract-First Sequence"),
+        "HPHYS0206 package must preserve closure measures and contract-first sequencing"
+    );
+    assert!(
         watbal.contains("### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure"),
         "SC-WATBAL-001 must include HPHYS0202 FC/WP layer-aggregation authority"
+    );
+    assert!(
+        watbal.contains("### HPHYS0206 Corrected-Layer Normalization and Mapping Closure"),
+        "SC-WATBAL-001 must include HPHYS0206 normalized corrected-layer mapping authority"
     );
     assert!(
         soil.contains("HPHYS0202 narrows publication authority"),
         "SC-SOIL-001 must mark FC/WP seeds as non-authoritative publication sources"
     );
     assert!(
+        soil.contains("HPHYS0206 requires those authoritative `thetfc_####`/`thetdr_####` symbols"),
+        "SC-SOIL-001 must include HPHYS0206 normalized corrected-layer projection authority"
+    );
+    assert!(
+        perc.contains("HPHYS0206 requires authoritative FC/WP layer symbols"),
+        "SC-PERC-001 must include HPHYS0206 normalized mapping/no-fallback authority"
+    );
+    assert!(
         system.contains("## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum"),
         "SC-SYSTEM-001 must include HPHYS0202 system-boundary publication authority"
+    );
+    assert!(
+        system.contains("## HPHYS0206 Normalized-Layer Mapping and Fail-Closed Addendum"),
+        "SC-SYSTEM-001 must include HPHYS0206 fail-closed normalized-layer boundary authority"
     );
 }
 
@@ -114,45 +141,21 @@ fn hphys0202_profile_fc_wp_publication_uses_layer_aggregation_not_seed_override(
 
 #[test]
 fn hphys0202_invalid_layer_storage_state_hard_fails_runtime_surface() {
-    let _execution_guard = runner_execution_lock()
-        .lock()
-        .expect("runner execution lock should be acquirable");
+    let mut soil_profile = parse_soil(VALID_9002, soil_parser_options_for_fixture())
+        .expect("9002 fixture should parse");
+    soil_profile.ofes[0].layers[0].bulk_density_g_cm3 = None;
 
-    let source_fixture_dir = fixture_path("hillslope_run_dir");
-    let temp_run_dir = copy_fixture_to_temp(&source_fixture_dir, "hphys0202_invalid_layer_state");
-    let soil_path = temp_run_dir.join("case.sol");
-    let soil_text = fs::read_to_string(&soil_path).expect("soil fixture should be readable");
-    let invalid_soil_text = rewrite_first_layer_theta_state_to_zero(&soil_text);
-    fs::write(&soil_path, invalid_soil_text).expect("modified soil fixture should be writable");
-
-    let error = execute_hillslope_run(
-        &HillslopeRunRequest {
-            run_dir: temp_run_dir.clone(),
-            run_file: PathBuf::from("case.run"),
-            output_dir: temp_run_dir.join("output"),
-            sidecar_policy: SidecarPolicy::Compat,
-            legacy_sidecar_discovery: false,
-            manifest_path: None,
-        },
-        &["openwepp-cli-hill".to_string()],
-    )
-    .expect_err("invalid zero-storage layer state must hard-fail runner execution");
-
-    assert_eq!(error.code(), "CLIHILL-E-011");
-    match error {
-        HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
-            assert_eq!(surface, "wb11_seed");
-            assert!(
-                detail.contains("SIMPIPE-E-001"),
-                "expected SIMPIPE-E-001 guard id in failure detail, observed: {detail}"
-            );
-            assert!(
-                detail.contains("derived WB18 upper-limit store must be > 0.0 for layer 1"),
-                "expected typed upper-limit storage guard failure detail, observed: {detail}"
-            );
+    let error = build_hillslope_runtime_surface_from_soil(&soil_profile)
+        .expect_err("missing normalized corrected-lineage input must hard-fail runtime surface");
+    assert_eq!(error.code(), "HS-RUNTIME-E-060");
+    assert!(matches!(
+        error,
+        HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+            ofe_index: 1,
+            layer_index: 1,
+            field: "bulk_density_g_cm3"
         }
-        other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
-    }
+    ));
 }
 
 #[test]
@@ -263,38 +266,6 @@ fn required_surface_scalar(surface: &HillslopeWritebackSurface, symbol: &str) ->
             || panic!("missing required runtime symbol {symbol}"),
             |value| value.as_f64(),
         )
-}
-
-fn rewrite_first_layer_theta_state_to_zero(soil_text: &str) -> String {
-    let mut rows = Vec::new();
-    let mut rewrote_layer = false;
-
-    for line in soil_text.lines() {
-        let tokens: Vec<&str> = line.split_whitespace().collect();
-        if !rewrote_layer && tokens.len() == 18 && tokens[0].parse::<f64>().is_ok() {
-            let mut owned = tokens
-                .iter()
-                .map(|token| (*token).to_string())
-                .collect::<Vec<_>>();
-            owned[4] = "0.0".to_string();
-            owned[5] = "0.0".to_string();
-            owned[11] = "0.0".to_string();
-            owned[17] = "0.0".to_string();
-            rows.push(owned.join(" "));
-            rewrote_layer = true;
-            continue;
-        }
-        rows.push(line.to_string());
-    }
-
-    assert!(
-        rewrote_layer,
-        "expected to rewrite first 18-field soil layer row"
-    );
-
-    let mut payload = rows.join("\n");
-    payload.push('\n');
-    payload
 }
 
 fn load_first_wat_row(wat_path: &Path) -> Row {

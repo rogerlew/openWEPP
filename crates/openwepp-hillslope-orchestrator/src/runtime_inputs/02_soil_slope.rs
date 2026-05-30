@@ -90,7 +90,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
 
     for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;
-        let corrected_layer_theta_symbols = compute_corrected_layer_theta_symbols(ofe);
+        let corrected_layer_theta_symbols = compute_corrected_layer_theta_symbols(ofe, ofe_index)?;
         if ofe.nsl != ofe.layers.len() {
             return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
                 ofe_index,
@@ -207,12 +207,17 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     value: raw_layer_thetfc,
                 });
             }
-            let (layer_thetfc, layer_thetdr) = corrected_layer_theta_symbols
-                .as_ref()
-                .and_then(|layers| layers.get(layer_position))
-                .map_or((raw_layer_thetfc, raw_layer_thetdr), |layer| {
-                    (layer.thetfc, layer.thetdr)
-                });
+            let corrected_layer = corrected_layer_theta_symbols.get(layer_position).ok_or(
+                HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+                    ofe_index,
+                    layer_index,
+                    layer_top_depth_mm: previous_depth_mm,
+                    layer_bottom_depth_mm: layer_depth_mm,
+                    covered_depth_mm: 0.0,
+                },
+            )?;
+            let layer_thetfc = corrected_layer.thetfc;
+            let layer_thetdr = corrected_layer.thetdr;
             if !layer_thetfc.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
                     value: layer_thetfc,
@@ -497,12 +502,51 @@ fn compute_wb13_profile_symbols_from_legacy_seed(
 
 fn compute_corrected_layer_theta_symbols(
     ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-) -> Option<Vec<CorrectedLayerThetaSymbols>> {
+    ofe_index: usize,
+) -> Result<Vec<CorrectedLayerThetaSymbols>, HillslopeRuntimeInputError> {
+    let seeds = collect_legacy_soil_layer_seeds(ofe, ofe_index)?;
+    let normalized_corrected_layers =
+        compute_normalized_corrected_layer_theta_symbols_from_legacy_seed(&seeds).ok_or(
+            HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
+        )?;
+    map_corrected_layer_theta_symbols_to_parser_layers(
+        ofe,
+        &normalized_corrected_layers,
+        ofe_index,
+    )
+}
+
+fn collect_legacy_soil_layer_seeds(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    ofe_index: usize,
+) -> Result<Vec<LegacySoilLayerSeed>, HillslopeRuntimeInputError> {
     let mut seeds = Vec::with_capacity(ofe.layers.len());
-    for layer in &ofe.layers {
-        let bulk_density = layer.bulk_density_g_cm3?;
-        let fc_measured = layer.fc_measured?;
-        let wp_measured = layer.wp_measured?;
+    for (layer_position, layer) in ofe.layers.iter().enumerate() {
+        let layer_index = layer_position + 1;
+        let bulk_density =
+            layer
+                .bulk_density_g_cm3
+                .ok_or(HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+                    ofe_index,
+                    layer_index,
+                    field: "bulk_density_g_cm3",
+                })?;
+        let fc_measured =
+            layer
+                .fc_measured
+                .ok_or(HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+                    ofe_index,
+                    layer_index,
+                    field: "fc_measured",
+                })?;
+        let wp_measured =
+            layer
+                .wp_measured
+                .ok_or(HillslopeRuntimeInputError::MissingCorrectedLayerNormalizationInput {
+                    ofe_index,
+                    layer_index,
+                    field: "wp_measured",
+                })?;
         let seed = LegacySoilLayerSeed {
             depth_mm: layer.depth_mm,
             bulk_density_g_cm3: bulk_density,
@@ -515,21 +559,104 @@ fn compute_corrected_layer_theta_symbols(
             rock_frag_pct: layer.rock_frag_pct,
         };
         if !legacy_seed_is_finite(seed) {
-            return None;
+            return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+                ofe_index,
+            });
         }
         seeds.push(seed);
     }
-    let cumulative_depths_mm = legacy_cumulative_depths_mm(&seeds)?;
-    let source_layers = legacy_source_layers_from_seed_depths(&seeds, &cumulative_depths_mm)?;
-    let mut corrected_layers = Vec::with_capacity(source_layers.len());
-    for layer in source_layers {
+    Ok(seeds)
+}
+
+fn compute_normalized_corrected_layer_theta_symbols_from_legacy_seed(
+    seeds: &[LegacySoilLayerSeed],
+) -> Option<Vec<CorrectedLayerThetaSymbols>> {
+    let expanded_layers = legacy_expand_soil_layers_to_200mm(seeds)?;
+    if expanded_layers.is_empty() {
+        return None;
+    }
+    let mut corrected_layers = Vec::with_capacity(expanded_layers.len());
+    for layer in expanded_layers {
         let corrected = legacy_correct_layer_moisture(layer)?;
         corrected_layers.push(CorrectedLayerThetaSymbols {
             thetfc: corrected.thetfc,
             thetdr: corrected.thetdr,
         });
     }
+    if corrected_layers.is_empty() {
+        return None;
+    }
     Some(corrected_layers)
+}
+
+fn map_corrected_layer_theta_symbols_to_parser_layers(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    normalized_corrected_layers: &[CorrectedLayerThetaSymbols],
+    ofe_index: usize,
+) -> Result<Vec<CorrectedLayerThetaSymbols>, HillslopeRuntimeInputError> {
+    if normalized_corrected_layers.is_empty() {
+        return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+            ofe_index,
+        });
+    }
+
+    let mut normalized_intervals = Vec::with_capacity(normalized_corrected_layers.len());
+    let mut normalized_top_mm = 0.0_f64;
+    for corrected_layer in normalized_corrected_layers {
+        let normalized_bottom_mm = normalized_top_mm + WB13_PROFILE_LAYER_THICKNESS_M * 1_000.0;
+        normalized_intervals.push((normalized_top_mm, normalized_bottom_mm, *corrected_layer));
+        normalized_top_mm = normalized_bottom_mm;
+    }
+
+    let mut mapped_layers = Vec::with_capacity(ofe.layers.len());
+    let mut layer_top_depth_mm = 0.0_f64;
+    for (layer_position, layer) in ofe.layers.iter().enumerate() {
+        let layer_index = layer_position + 1;
+        let layer_bottom_depth_mm = layer.depth_mm;
+        let layer_thickness_mm = layer_bottom_depth_mm - layer_top_depth_mm;
+        if !layer_thickness_mm.is_finite() || layer_thickness_mm <= 0.0 {
+            return Err(HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+                ofe_index,
+                layer_index,
+                layer_top_depth_mm,
+                layer_bottom_depth_mm,
+                covered_depth_mm: 0.0,
+            });
+        }
+
+        let mut weighted_thetfc = 0.0_f64;
+        let mut weighted_thetdr = 0.0_f64;
+        let mut covered_depth_mm = 0.0_f64;
+
+        for (normalized_top_mm, normalized_bottom_mm, corrected_layer) in &normalized_intervals {
+            let overlap_top_mm = layer_top_depth_mm.max(*normalized_top_mm);
+            let overlap_bottom_mm = layer_bottom_depth_mm.min(*normalized_bottom_mm);
+            let overlap_depth_mm = (overlap_bottom_mm - overlap_top_mm).max(0.0);
+            if overlap_depth_mm <= 0.0 {
+                continue;
+            }
+            weighted_thetfc += corrected_layer.thetfc * overlap_depth_mm;
+            weighted_thetdr += corrected_layer.thetdr * overlap_depth_mm;
+            covered_depth_mm += overlap_depth_mm;
+        }
+
+        if covered_depth_mm <= 0.0 || (covered_depth_mm - layer_thickness_mm).abs() > 1.0e-9 {
+            return Err(HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+                ofe_index,
+                layer_index,
+                layer_top_depth_mm,
+                layer_bottom_depth_mm,
+                covered_depth_mm,
+            });
+        }
+
+        mapped_layers.push(CorrectedLayerThetaSymbols {
+            thetfc: weighted_thetfc / covered_depth_mm,
+            thetdr: weighted_thetdr / covered_depth_mm,
+        });
+        layer_top_depth_mm = layer_bottom_depth_mm;
+    }
+    Ok(mapped_layers)
 }
 
 #[derive(Clone, Copy, Debug)]

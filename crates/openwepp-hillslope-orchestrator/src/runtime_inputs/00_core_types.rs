@@ -99,6 +99,21 @@ pub enum HillslopeRuntimeInputError {
         layer_index: usize,
         value_mm_h: f64,
     },
+    MissingCorrectedLayerNormalizationInput {
+        ofe_index: usize,
+        layer_index: usize,
+        field: &'static str,
+    },
+    CorrectedLayerNormalizationUnavailable {
+        ofe_index: usize,
+    },
+    CorrectedLayerMappingIncomplete {
+        ofe_index: usize,
+        layer_index: usize,
+        layer_top_depth_mm: f64,
+        layer_bottom_depth_mm: f64,
+        covered_depth_mm: f64,
+    },
     MissingSlopeOfe,
     SlopeOfeCountMismatch {
         declared_ofe_count: usize,
@@ -325,6 +340,9 @@ impl HillslopeRuntimeInputError {
             Self::MissingSaturatedConductivity { .. } => "HS-RUNTIME-E-033",
             Self::NonFiniteSaturatedConductivity { .. } => "HS-RUNTIME-E-034",
             Self::NonPositiveSaturatedConductivity { .. } => "HS-RUNTIME-E-035",
+            Self::MissingCorrectedLayerNormalizationInput { .. } => "HS-RUNTIME-E-060",
+            Self::CorrectedLayerNormalizationUnavailable { .. } => "HS-RUNTIME-E-061",
+            Self::CorrectedLayerMappingIncomplete { .. } => "HS-RUNTIME-E-062",
             Self::ManagementTopologyCountMismatch { .. } => "HS-RUNTIME-E-036",
             Self::ManagementScheduleSlotCountMismatch { .. } => "HS-RUNTIME-E-037",
             Self::ManagementScheduleSlotArityMismatch { .. } => "HS-RUNTIME-E-038",
@@ -511,6 +529,40 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 ofe_index,
                 layer_index,
                 value_mm_h
+            ),
+            Self::MissingCorrectedLayerNormalizationInput {
+                ofe_index,
+                layer_index,
+                field,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} missing corrected-lineage normalization input field {}",
+                self.code(),
+                ofe_index,
+                layer_index,
+                field
+            ),
+            Self::CorrectedLayerNormalizationUnavailable { ofe_index } => write!(
+                f,
+                "{}: soil OFE {} cannot derive normalized corrected-layer lineage for authoritative FC/WP projection",
+                self.code(),
+                ofe_index
+            ),
+            Self::CorrectedLayerMappingIncomplete {
+                ofe_index,
+                layer_index,
+                layer_top_depth_mm,
+                layer_bottom_depth_mm,
+                covered_depth_mm,
+            } => write!(
+                f,
+                "{}: soil OFE {} layer {} corrected-lineage mapping coverage incomplete ({}..{} mm, covered {} mm)",
+                self.code(),
+                ofe_index,
+                layer_index,
+                layer_top_depth_mm,
+                layer_bottom_depth_mm,
+                covered_depth_mm
             ),
             Self::MissingSlopeOfe => {
                 write!(f, "{}: slope profile contains no OFE blocks", self.code())

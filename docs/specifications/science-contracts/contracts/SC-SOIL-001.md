@@ -14,7 +14,7 @@ consumer_scope:
   - Percolation and water-balance consumers requiring conductivity and storage-domain consistency
   - Erosion/hydraulics consumers requiring valid interrill/rill erodibility and shear-threshold surfaces
 evidence_level: Static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-05-30
 supersedes: []
 superseded_by: []
 ---
@@ -274,6 +274,14 @@ bit-for-bit parity). `[DIRECT][Static]`
    symbols to carry the same baseline-corrected lineage family used by
    profile-capacity correction (`scon`-equivalent moisture corrections), not
    raw parser theta values when corrected lineage is available.
+7. HPHYS0206 requires those authoritative `thetfc_####`/`thetdr_####` symbols
+   to be projected from the same baseline-normalized corrected-layer set used
+   by profile-capacity lineage (`wb13_profile_depth_mm`,
+   `wb13_profile_porosity_cap_mm`) before OFE layer publication mapping.
+8. HPHYS0206 prohibits raw-theta fallback for authoritative FC/WP layer
+   publication when normalized corrected-lineage projection is required; missing
+   normalized lineage or mapping closure is a typed fail-closed runtime
+   boundary condition.
 
 ## Gap Register
 
@@ -296,3 +304,4 @@ bit-for-bit parity). `[DIRECT][Static]`
 | `2026-05-29` | `5` | `Codex` | HPARITY02 amendment: added WB13 profile-capacity seed-projection authority (`wb13_profile_*_mm`) anchored to baseline preprocessing/correction lineage and fail-closed derivation posture. |
 | `2026-05-29` | `6` | `Codex` | HPHYS0202 amendment: clarified WB13 publication authority split where FC/WP adapter seeds remain diagnostic carry surfaces and canonical `ProfileFCStore`/`ProfileWPStore` publication must use layer-authoritative runtime aggregation. |
 | `2026-05-29` | `7` | `Codex` | HPHYS0205 amendment: bound authoritative runtime `thetfc_####`/`thetdr_####` symbols to baseline-corrected moisture lineage (no raw-theta authority when corrected lineage is available). |
+| `2026-05-30` | `8` | `Codex` | HPHYS0206 amendment: required authoritative FC/WP layer symbols to originate from baseline-normalized corrected-layer lineage with deterministic publication mapping and typed fail-closed posture when normalized correction lineage is unavailable. |

@@ -14,7 +14,7 @@ consumer_scope:
   - Subsurface/drainage consumers that ingest percolation recharge terms
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-05-23
+last_reviewed: 2026-05-30
 supersedes: []
 superseded_by: []
 ---
@@ -296,6 +296,10 @@ Minimum WB18 percolation production-kernel conformance vectors:
 6. HPHYS0205 requires the authoritative layer symbols in requirement (5) to
    carry baseline-corrected moisture lineage (not raw parser theta lineage)
    when correction lineage is available at runtime projection boundaries.
+7. HPHYS0206 requires authoritative FC/WP layer symbols in requirement (5) to
+   be mapped deterministically from the same baseline-normalized corrected-layer
+   family used by profile-capacity lineage authorities; raw parser-theta
+   fallback is prohibited for these authoritative publication symbols.
 
 ## Gap Register
 
@@ -327,3 +331,4 @@ authority closure is completed.
 | `2026-05-29` | `7` | `Codex` | HPARITY01 amendment: added explicit cross-contract `Dp` disambiguation note (WB13 deep-percolation export vs climate time-to-peak symbol) in WB13 coupling requirements. |
 | `2026-05-29` | `8` | `Codex` | HPHYS0202 amendment: made WB13 `ProfileFCStore`/`ProfileWPStore` coupling semantics explicit as layer-authoritative runtime aggregates (`thetfc/thetdr` with `dg`) in `mm`. |
 | `2026-05-29` | `9` | `Codex` | HPHYS0205 amendment: required authoritative WB13 layer-theta symbols used by profile storage coupling to carry baseline-corrected moisture lineage when available. |
+| `2026-05-30` | `10` | `Codex` | HPHYS0206 amendment: required deterministic normalized-layer mapping closure for authoritative FC/WP publication symbols and prohibited raw-theta fallback for that publication path. |
