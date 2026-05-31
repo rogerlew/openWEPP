@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260530-hphys0215-coupled-family-remediation-planning-001/`
+  - Purpose: decompose integrated HPHYS0214 hold blockers
+    (`ProfileFCStore`, `Dp`, `latqcc`, `Total-Soil`, `SoilWaterTotal`) into
+    contract-first, implementation-bounded remediation streams with explicit
+    ownership, closure measures, and evidence gates for HPHYS0216+ execution.
 - `20260530-hphys0214-integrated-hold-lift-readjudication-001/`
   - Purpose: execute integrated post-HPHYS0211/0212/0213 hold-lift
     readjudication by combining process-authority closure evidence, workspace
@@ -127,7 +132,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216+`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.
