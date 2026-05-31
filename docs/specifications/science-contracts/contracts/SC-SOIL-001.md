@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 11
+contract_version: 15
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -98,6 +98,7 @@ Out of scope:
 | INV-SOIL-011 | Update-order invariant: daily soil-state updates must retain explicit ordering across disturbance, consolidation/weathering, and freeze-thaw adjustments; no silent reordering is permitted. | hard-fail | REF-SOIL-CH7-INTRO, REF-SOIL-CH7-BD, REF-SOIL-CH7-KI, REF-SOIL-CH7-KRTAU | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-012 | Governance-range invariant: when empirical equations are used outside cited calibration ranges or suggested limits, outputs are non-promotable unless explicitly labeled and dispositioned with risk rationale. | governance-fail | REF-SOIL-CH7-KI, REF-SOIL-CH7-KRTAU, REF-SOIL-CH7-KE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-013 | SIMIMPL21 soil-water alias-lineage invariant: ET/soil-water closure surfaces must preserve deterministic alias continuity from layer storage (`st(i)` / `Θi`) to aggregate publication lineage (`watcon`, `Total-Soil`, `SoilWaterTotal`) without projection-side surrogate reconstruction. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH5-PERC, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SOIL-014 | AUTH03 constitutive FC/WP invariant: authoritative layer constitutive symbols must satisfy `por_i >= thetfc_i(-33kPa) >= thetdr_i(-1500kPa) >= 0` for every emitted layer interval, and profile aggregates (`Σ thetfc_i*dg_i`, `Σ thetdr_i*dg_i`) must remain finite and non-negative. | hard-fail | REF-SOIL-CH7-POR, REF-SOIL-CH7-INTRO, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -116,6 +117,7 @@ Out of scope:
 | `INV-SOIL-011` | runtime | Cross-driver soil update-order validator | Typed hard error on silent branch reordering across daily update drivers | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-012` | governance | Review/disposition/promotion checklist | Promotion `HOLD` when range-exceedance labels/rationale are missing | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-013` | runtime + governance | Soil layer-to-aggregate alias-lineage validator for ET/soil-water publication surfaces | Typed hard error / explicit `HOLD` when layer storage aliases and aggregate lineage cannot be traced from runtime-owned state | SIMIMPL soil-water lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SOIL-014` | runtime + governance | Constitutive layer-domain validator for FC/WP symbols and profile aggregates | Typed hard error / explicit `HOLD` when `por_i >= thetfc_i >= thetdr_i >= 0` or aggregate finite/non-negative closure is violated | AUTH03 Level-4 constitutive gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -187,6 +189,7 @@ required until implementation surfaces diverge.
 | Cross-domain payload completeness (`INV-SOIL-009/010/011`) | soil boundary publish stage | Hard error on malformed or incomplete coupling payloads | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Empirical-range governance labeling (`INV-SOIL-012`) | review/verification/promotion | Governance `HOLD` until range-exceedance handling is explicit | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL21 soil-water alias-lineage closure (`INV-SOIL-013`) | ET/soil-water boundary publication stage | Hard error / `HOLD` when `st(i)`/`Θi` to aggregate publication lineage is incomplete or synthetic | SIMIMPL soil-water lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| AUTH03 FC/WP constitutive closure (`INV-SOIL-014`) | constitutive suite boundary and layer-profile publication stage | Hard error / `HOLD` when authoritative FC/WP/porosity ordering or aggregate finite/non-negative closure is violated | Level-4 constitutive gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -359,6 +362,26 @@ bit-for-bit parity). `[DIRECT][Static]`
 4. This addendum preserves corrected-layer normalization/mapping authority and
    does not authorize raw-theta fallback publication.
 
+## AUTH03 Level-4 FC/WP Constitutive Authority Addendum
+
+AUTH03 introduces the first blocking external-authority constitutive suites for
+FC/WP process-law adjudication independent of legacy parity signatures.
+
+1. Level-4 required suites are:
+   - `cas_l4_soil_fc_minus33_001`
+   - `cas_l4_soil_wp_minus1500_001`
+2. Canonical invariant linkage for these suites is mandatory:
+   - `SC-SOIL-001#INV-SOIL-014`
+   - `SC-SOIL-001#INV-SOIL-004`
+3. Constitutive gate semantics are blocking (`gate_lane=required`,
+   `failure_class=hard-fail`); suite failures are acceptance blockers.
+4. Missing/non-finite/domain-invalid constitutive symbols (`thetfc_####`,
+   `thetdr_####`, `por_####`, `dg_####`) are fail-closed states and must not
+   be repaired with silent defaults, clamping, or surrogate projection.
+5. Suite fixture authority and metadata registry are canonicalized in:
+   - `docs/specifications/external-authority/registry.yaml`
+   - `docs/specifications/external-authority/suites/`
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -372,6 +395,7 @@ bit-for-bit parity). `[DIRECT][Static]`
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `15` | `Codex` | AUTH03 amendment: added Level-4 FC/WP constitutive gate authority (`INV-SOIL-014`), linked required external-authority suites (`cas_l4_soil_fc_minus33_001`, `cas_l4_soil_wp_minus1500_001`), and codified blocking fail-closed gate posture. |
 | `2026-05-31` | `14` | `Codex` | HPHYS0216D amendment: added explicit `wb13_profile_fc_tail_mm` runtime projection authority for normalized-tail FC closure, required finite/non-negative fail-closed guard posture, and required reconciliation with `wb13_profile_fc_store_mm`. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned `ProfileFCStore` publication authority to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic seed/projection surface, and preserved corrected-layer lineage + fail-closed guard requirements. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-10 work-package prep. |

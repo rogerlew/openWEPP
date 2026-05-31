@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 56
+contract_version: 57
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -1252,6 +1252,29 @@ its adjudication posture without changing publication authority.
    profile-depth/capacity regressions must be treated as unresolved defect
    lineage and retain `HOLD` posture.
 
+### AUTH03 Level-4 Constitutive Gate Bootstrap Addendum
+
+AUTH03 introduces blocking external-authority constitutive suites for FC/WP
+and near-FC percolation threshold adjudication independent of legacy parity
+signals.
+
+1. Level-4 required suites for this contract family are:
+   - `cas_l4_watbal_relax_to_fc_001`
+   - `cas_l4_soil_fc_minus33_001`
+   - `cas_l4_soil_wp_minus1500_001`
+2. Canonical invariant linkage for `cas_l4_watbal_relax_to_fc_001` is:
+   - `SC-WATBAL-001#INV-WATBAL-006`
+3. `theta <= fc` branches must fail-open to zero percolation flux
+   (`pei = 0`, `D >= 0`) and `theta > fc` branches must remain positive-only.
+4. Missing/non-finite/domain-invalid constitutive symbols used by WB18
+   percolation (`wb18_perc_theta_####`, `wb18_perc_fc_####`,
+   `wb18_perc_ul_####`, `wb18_perc_ssc_####`) are typed fail-closed states.
+5. AUTH03 suite failures are blocking (`gate_lane=required`,
+   `failure_class=hard-fail`) and keep disposition in `HOLD` until resolved.
+6. Suite registry/metadata authority is canonicalized in:
+   - `docs/specifications/external-authority/registry.yaml`
+   - `docs/specifications/external-authority/suites/`
+
 ## MOFE04 Multi-OFE WB13/WAT Publication Policy Addendum
 
 1. WB13/H.wat publication policy for hillslope MOFE contexts is explicit and
@@ -1458,6 +1481,7 @@ its adjudication posture without changing publication authority.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `57` | `Codex` | AUTH03 amendment: added Level-4 constitutive gate bootstrap authority for FC/WP and relax-to-FC percolation threshold closure, including blocking suite linkage and fail-closed symbol posture. |
 | `2026-05-31` | `56` | `Codex` | HPHYS0221 amendment: added WB19 `solwpv` branch semantics and coupled water-yield/saturated-depth authority (`avpora`, `avfca`, `avcoca`, `watyld`, `fcdep`, `unsdep`) with required runtime publications (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`) and fail-closed domain posture. |
 | `2026-05-31` | `55` | `Codex` | HPHYS0219 amendment: corrected WB19 `drfc` coefficient-family authority from `cpm_####` to baseline-authoritative `coca_####` and retained typed hard-fail domain guards for `coca` surfaces. |
 | `2026-05-31` | `54` | `Codex` | HPHYS0218 amendment: required WB19 `drfc`-equivalent threshold lineage (`wb18_perc_fc_#### + (1-coca_####)*dg_####`) for saturated-zone classification and lateral/drainage withdrawals with fail-closed `coca_####` guard posture. |

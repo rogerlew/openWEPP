@@ -1,0 +1,9 @@
+{
+  "case_id": "relax_invalid_missing_theta",
+  "fc_m": 0.35,
+  "ul_m": 0.70,
+  "ssc_m_s": 0.00001,
+  "expected": {
+    "typed_error": "HKERNEL-WB11-PERC-E-001"
+  }
+}

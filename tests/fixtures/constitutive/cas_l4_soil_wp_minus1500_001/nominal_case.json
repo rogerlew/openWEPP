@@ -1,0 +1,13 @@
+{
+  "case_id": "wp_minus1500_nominal",
+  "pressure_head_kpa": 1500.0,
+  "units_basis": "m3_m3",
+  "layers": [
+    { "layer_id": "0001", "theta_fc": 0.30, "theta_wp": 0.11, "porosity": 0.42, "dg_m": 0.20 },
+    { "layer_id": "0002", "theta_fc": 0.27, "theta_wp": 0.10, "porosity": 0.40, "dg_m": 0.30 }
+  ],
+  "expected": {
+    "profile_fc_store_mm": 141.0,
+    "profile_wp_store_mm": 52.0
+  }
+}

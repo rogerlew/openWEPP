@@ -1,0 +1,11 @@
+{
+  "case_id": "relax_above_fc_positive",
+  "theta_m": 0.50,
+  "fc_m": 0.35,
+  "ul_m": 0.70,
+  "ssc_m_s": 0.00001,
+  "expected": {
+    "pei_positive": true,
+    "d_non_negative": true
+  }
+}

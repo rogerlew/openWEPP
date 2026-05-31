@@ -1,10 +1,10 @@
 # 20260531-auth03-level4-constitutive-gate-bootstrap-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-31
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Implement the first external-authority Level-4 constitutive suites and

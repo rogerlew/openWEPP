@@ -1,0 +1,11 @@
+{
+  "case_id": "relax_near_fc_cutoff",
+  "theta_m": 0.35,
+  "fc_m": 0.35,
+  "ul_m": 0.70,
+  "ssc_m_s": 0.00001,
+  "expected": {
+    "pei_m": 0.0,
+    "d_m": 0.0
+  }
+}

@@ -1,0 +1,67 @@
+schema_version: 1
+registry_status: active
+last_updated_utc: 2026-05-31
+owner: openWEPP maintainers
+
+suites:
+  - suite_id: cas_l4_soil_fc_minus33_001
+    title: Soil Field Capacity Constitutive Suite (-33 kPa)
+    status: active
+    authority_level: 4
+    domain: soil
+    process_family: fc_wp
+    sc_invariant_refs:
+      - SC-SOIL-001#INV-SOIL-014
+      - SC-SOIL-001#INV-SOIL-004
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: component
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_fc_minus33_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001
+    integration_test: tests/integration/auth03_level4_constitutive_gate_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-05-31
+      last_updated_utc: 2026-05-31
+    notes: "Level-4 constitutive gate for authoritative theta_fc family."
+
+  - suite_id: cas_l4_soil_wp_minus1500_001
+    title: Soil Wilting Point Constitutive Suite (-1500 kPa)
+    status: active
+    authority_level: 4
+    domain: soil
+    process_family: fc_wp
+    sc_invariant_refs:
+      - SC-SOIL-001#INV-SOIL-014
+      - SC-SOIL-001#INV-SOIL-004
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: component
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_wp_minus1500_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001
+    integration_test: tests/integration/auth03_level4_constitutive_gate_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-05-31
+      last_updated_utc: 2026-05-31
+    notes: "Level-4 constitutive gate for authoritative theta_wp family."
+
+  - suite_id: cas_l4_watbal_relax_to_fc_001
+    title: WB18 Relax-to-FC and Near-FC Dp Cutoff Suite
+    status: active
+    authority_level: 4
+    domain: watbal
+    process_family: percolation
+    sc_invariant_refs:
+      - SC-WATBAL-001#INV-WATBAL-006
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: component
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_watbal_relax_to_fc_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001
+    integration_test: tests/integration/auth03_level4_constitutive_gate_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-05-31
+      last_updated_utc: 2026-05-31
+    notes: "Level-4 constitutive gate for per-layer FC threshold behavior and Dp cutoff."
