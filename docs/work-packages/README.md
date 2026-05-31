@@ -59,6 +59,24 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260531-auth01-correctness-authority-model-formalization-001/`
+  - Purpose: formalize canonical correctness authority ranking and adjudication
+    policy, including external-authority constitutive suite authority and
+    explicit legacy-parity demotion to investigation-only signal.
+- `20260531-auth02-external-authority-constitutive-suite-framework-001/`
+  - Purpose: scaffold normative external-authority constitutive suite structure
+    (layout, schema, naming, fixture conventions, citation requirements, and
+    contract linkage templates) for deterministic implementation.
+- `20260531-auth03-level4-constitutive-gate-bootstrap-001/`
+  - Purpose: implement first Level-4 constitutive suites and contract-derived
+    gates for FC/WP and relax-to-FC behavior as primary correctness adjudicators
+    independent of legacy parity matching.
+- `20260531-auth04-release-gate-authority-stack-integration-001/`
+  - Purpose: integrate authority-stack suite classes into CI/release gates with
+    explicit lane and fail-class policy (`required`, `periodic`, `manual`;
+    `hard-fail`, `investigation`) and updated release runbook governance.
+- Execution order for correctness-authority stream is:
+  `auth01 -> auth02 -> auth03 -> auth04`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
   - Purpose: execute immediate HPHYS0216 follow-up diagnostics to explain the
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated
