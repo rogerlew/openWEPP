@@ -80,8 +80,13 @@ Authorized packages:
     model-to-authority FC/WP checks on real soil fixtures, removing
     legacy-as-authority citation posture, and making relax-to-FC branch
     assertions non-optional.
+- `20260531-auth06-fixture-provenance-hash-enforcement-001/`
+  - Purpose: enforce deterministic fixture reproducibility by requiring
+    per-suite fixture lockfiles/provenance sidecars, wiring blocking
+    release-gate fixture integrity checks, and backfilling active Level-4 suite
+    fixture provenance hashes.
 - Execution order for correctness-authority stream is:
-  `auth01 -> auth02 -> auth03 -> auth04 -> auth05`.
+  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
   - Purpose: execute immediate HPHYS0216 follow-up diagnostics to explain the
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated

@@ -1,1 +1,4 @@
 references/**/*.pdf filter=lfs diff=lfs merge=lfs -text
+tests/fixtures/constitutive/**/*.json text eol=lf
+tests/fixtures/constitutive/**/fixtures.sha256 text eol=lf
+tests/fixtures/constitutive/**/fixtures.provenance.yaml text eol=lf

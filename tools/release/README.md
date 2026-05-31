@@ -12,6 +12,9 @@ Required authority lane runs by default.
     `open_wepp_runner release lint`.
   - Evaluates external-authority suite lanes from
     `docs/specifications/external-authority/registry.yaml`:
+    - verifies fixture integrity for all active suites before lane execution:
+      - `fixtures.sha256` (`sha256sum --check --strict`)
+      - `fixtures.provenance.yaml` (required per-fixture provenance keys)
     - `required` lane runs by default (blocking on `hard-fail`).
     - `periodic` lane runs when `--run-authority-periodic` is set.
     - `manual` lane runs when `--run-authority-manual` is set.

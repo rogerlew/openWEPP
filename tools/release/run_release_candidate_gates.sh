@@ -215,6 +215,205 @@ authority_lane_rows() {
   ' "${AUTHORITY_REGISTRY}"
 }
 
+active_suite_fixture_roots() {
+  awk '
+    function flush_suite() {
+      if (suite_id != "" && suite_status == "active" && fixture_root != "") {
+        print suite_id "|" fixture_root
+      }
+      suite_id = ""
+      suite_status = ""
+      fixture_root = ""
+    }
+    $1 == "-" && $2 == "suite_id:" {
+      flush_suite()
+      suite_id = $3
+      next
+    }
+    $1 == "status:" {
+      suite_status = $2
+      next
+    }
+    $1 == "fixture_root:" {
+      fixture_root = $2
+      next
+    }
+    END {
+      flush_suite()
+    }
+  ' "${AUTHORITY_REGISTRY}"
+}
+
+verify_fixture_provenance_entry() {
+  local provenance_file="$1"
+  local suite_id="$2"
+  local fixture_path="$3"
+  local expected_sha="$4"
+
+  awk \
+    -v provenance_file_path="${provenance_file}" \
+    -v expected_suite_id="${suite_id}" \
+    -v target_path="${fixture_path}" \
+    -v expected_sha="${expected_sha}" \
+    '
+      function trim(value) {
+        sub(/^[[:space:]]+/, "", value)
+        sub(/[[:space:]]+$/, "", value)
+        return value
+      }
+      function parse_value(line) {
+        return trim(substr(line, index(line, ":") + 1))
+      }
+      function flush_item() {
+        if (!in_item) {
+          return
+        }
+        if (path == target_path) {
+          found = 1
+          if (sha256 != expected_sha) {
+            printf("ERROR: suite %s fixture %s sha mismatch in %s (expected %s observed %s)\n", expected_suite_id, target_path, provenance_file_path, expected_sha, sha256) > "/dev/stderr"
+            bad = 1
+          }
+          if (source_repo == "" || source_commit == "" || source_path == "" || source_sha256 == "" || transform_note == "") {
+            printf("ERROR: suite %s fixture %s missing required provenance keys in %s\n", expected_suite_id, target_path, provenance_file_path) > "/dev/stderr"
+            bad = 1
+          }
+          if (source_sha256 !~ /^[0-9a-f]{64}$/) {
+            printf("ERROR: suite %s fixture %s source_sha256 is not 64-char lowercase hex in %s\n", expected_suite_id, target_path, provenance_file_path) > "/dev/stderr"
+            bad = 1
+          }
+        }
+        in_item = 0
+        path = ""
+        sha256 = ""
+        source_repo = ""
+        source_commit = ""
+        source_path = ""
+        source_sha256 = ""
+        transform_note = ""
+      }
+      BEGIN {
+        in_item = 0
+        found = 0
+        bad = 0
+        schema_seen = 0
+        suite_seen = 0
+        listed_suite = ""
+      }
+      /^schema_version:[[:space:]]*/ {
+        schema_seen = 1
+        next
+      }
+      /^suite_id:[[:space:]]*/ {
+        suite_seen = 1
+        listed_suite = $2
+        next
+      }
+      /^[[:space:]]*-[[:space:]]path:[[:space:]]*/ {
+        flush_item()
+        in_item = 1
+        path = parse_value($0)
+        next
+      }
+      in_item && /^[[:space:]]*sha256:[[:space:]]*/ {
+        sha256 = parse_value($0)
+        next
+      }
+      in_item && /^[[:space:]]*source_repo:[[:space:]]*/ {
+        source_repo = parse_value($0)
+        next
+      }
+      in_item && /^[[:space:]]*source_commit:[[:space:]]*/ {
+        source_commit = parse_value($0)
+        next
+      }
+      in_item && /^[[:space:]]*source_path:[[:space:]]*/ {
+        source_path = parse_value($0)
+        next
+      }
+      in_item && /^[[:space:]]*source_sha256:[[:space:]]*/ {
+        source_sha256 = parse_value($0)
+        next
+      }
+      in_item && /^[[:space:]]*transform_note:[[:space:]]*/ {
+        transform_note = parse_value($0)
+        next
+      }
+      END {
+        flush_item()
+        if (!schema_seen) {
+          printf("ERROR: fixture provenance file missing schema_version: %s\n", provenance_file_path) > "/dev/stderr"
+          exit 1
+        }
+        if (!suite_seen || listed_suite != expected_suite_id) {
+          printf("ERROR: fixture provenance suite_id mismatch in %s (expected %s observed %s)\n", provenance_file_path, expected_suite_id, listed_suite) > "/dev/stderr"
+          exit 1
+        }
+        if (!found) {
+          printf("ERROR: fixture provenance missing entry for suite %s fixture %s in %s\n", expected_suite_id, target_path, provenance_file_path) > "/dev/stderr"
+          exit 1
+        }
+        if (bad) {
+          exit 1
+        }
+      }
+    ' "${provenance_file}"
+}
+
+run_authority_fixture_integrity_gate() {
+  local rows=()
+  local row suite_id fixture_root_abs fixture_root_rel lock_file provenance_file digest fixture_path
+
+  mapfile -t rows < <(active_suite_fixture_roots)
+  if [[ "${#rows[@]}" -eq 0 ]]; then
+    echo "ERROR: no active suites discovered in authority registry: ${AUTHORITY_REGISTRY}" >&2
+    exit 1
+  fi
+
+  for row in "${rows[@]}"; do
+    suite_id="${row%%|*}"
+    fixture_root_rel="${row#*|}"
+    fixture_root_abs="${ROOT_DIR}/${fixture_root_rel}"
+    lock_file="${fixture_root_abs}/fixtures.sha256"
+    provenance_file="${fixture_root_abs}/fixtures.provenance.yaml"
+
+    if [[ ! -d "${fixture_root_abs}" ]]; then
+      echo "ERROR: fixture root for suite ${suite_id} does not exist: ${fixture_root_abs}" >&2
+      exit 1
+    fi
+    if [[ ! -f "${lock_file}" ]]; then
+      echo "ERROR: fixture hash lock missing for suite ${suite_id}: ${lock_file}" >&2
+      exit 1
+    fi
+    if [[ ! -f "${provenance_file}" ]]; then
+      echo "ERROR: fixture provenance file missing for suite ${suite_id}: ${provenance_file}" >&2
+      exit 1
+    fi
+
+    (
+      cd "${fixture_root_abs}"
+      sha256sum --check --strict fixtures.sha256 > /dev/null
+    )
+
+    while read -r digest fixture_path; do
+      [[ -z "${digest}" ]] && continue
+      if [[ ! "${digest}" =~ ^[0-9a-f]{64}$ ]]; then
+        echo "ERROR: malformed fixture sha256 digest in ${lock_file}: ${digest}" >&2
+        exit 1
+      fi
+      if [[ ! -f "${fixture_root_abs}/${fixture_path}" ]]; then
+        echo "ERROR: fixture listed in lock file is missing: ${fixture_root_abs}/${fixture_path}" >&2
+        exit 1
+      fi
+      verify_fixture_provenance_entry "${provenance_file}" "${suite_id}" "${fixture_path}" "${digest}"
+    done < "${lock_file}"
+
+    {
+      echo "- fixture_integrity suite=${suite_id} fixture_root=${fixture_root_rel} status=pass"
+    } >> "${AUTHORITY_REPORT}"
+  done
+}
+
 integration_path_to_target() {
   local integration_path="$1"
   local integration_file
@@ -290,12 +489,15 @@ cargo deny check
   echo
   echo "- generated_utc: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
   echo "- registry: ${AUTHORITY_REGISTRY}"
+  echo "- fixture_integrity_enforced: true"
   echo "- required_lane_enabled: $((1 - SKIP_AUTHORITY_REQUIRED))"
   echo "- periodic_lane_enabled: ${RUN_AUTHORITY_PERIODIC}"
   echo "- manual_lane_enabled: ${RUN_AUTHORITY_MANUAL}"
 } > "${AUTHORITY_REPORT}"
 
 echo "INFO: evaluating authority-suite lanes"
+echo "INFO: verifying authority fixture hash locks and provenance"
+run_authority_fixture_integrity_gate
 if [[ "${SKIP_AUTHORITY_REQUIRED}" -eq 0 ]]; then
   run_authority_lane "required" "hard-fail"
   run_authority_lane "required" "investigation"

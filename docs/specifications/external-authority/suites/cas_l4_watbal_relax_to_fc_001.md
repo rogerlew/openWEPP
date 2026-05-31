@@ -20,16 +20,34 @@ fixtures:
     path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/near_fc_cutoff.json
     fixture_class: component
     units_basis: SI
+    hash: 435555aab26fff337834c2da17383a4717a5378b0cfd18a511305f1f02ad0eee
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/near_fc_cutoff.json
+    source_sha256: 435555aab26fff337834c2da17383a4717a5378b0cfd18a511305f1f02ad0eee
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-WATBAL-001 and cited chapter references."
     seed_or_case: relax_near_fc_cutoff
   - fixture_id: FX-RELAX-ABOVEFC-001
     path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/above_fc_positive.json
     fixture_class: component
     units_basis: SI
+    hash: 6b88bc3538234c7a20e4a5db2144c84ef545c9a9a43d23a2a9944f7be68e5942
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/above_fc_positive.json
+    source_sha256: 6b88bc3538234c7a20e4a5db2144c84ef545c9a9a43d23a2a9944f7be68e5942
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-WATBAL-001 and cited chapter references."
     seed_or_case: relax_above_fc_positive
   - fixture_id: FX-RELAX-INVALID-001
     path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/invalid_missing_theta.json
     fixture_class: component
     units_basis: SI
+    hash: 733b5261e76dbc2e4bc4b0e9dfbfdf659e3a2bb088ddb3f2f06a11a225b54aa2
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/invalid_missing_theta.json
+    source_sha256: 733b5261e76dbc2e4bc4b0e9dfbfdf659e3a2bb088ddb3f2f06a11a225b54aa2
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-WATBAL-001 and cited chapter references."
     seed_or_case: relax_invalid_missing_theta
 tolerances:
   mode: abs

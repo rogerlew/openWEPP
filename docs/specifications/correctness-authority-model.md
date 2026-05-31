@@ -87,10 +87,17 @@ Every external-authority constitutive suite must define, at minimum:
 5. `external_citations` (source + version/edition + commit/date where
    applicable).
 6. `fixtures` (path(s), units basis, and fixture class).
-7. `tolerances` (absolute/relative/mixed with explicit units).
-8. `gate_lane` (`required`, `periodic`, `manual`).
-9. `failure_class` (`hard-fail` or `investigation`).
-10. `provenance` (author/date/update lineage).
+7. Fixture integrity metadata per fixture:
+   - `hash` (`sha256`),
+   - `source_repo`,
+   - `source_commit`,
+   - `source_path`,
+   - `source_sha256`,
+   - `transform_note`.
+8. `tolerances` (absolute/relative/mixed with explicit units).
+9. `gate_lane` (`required`, `periodic`, `manual`).
+10. `failure_class` (`hard-fail` or `investigation`).
+11. `provenance` (author/date/update lineage).
 
 ## Legacy Comparator Demotion and Retirement Policy (Normative)
 

@@ -280,7 +280,7 @@ fn independent_authority_from_soil(
         .unwrap_or_else(|| panic!("{fixture_id}: normalized layer expansion failed"));
     let corrected = expanded
         .into_iter()
-        .map(|layer| independent_correct_layer_moisture(layer))
+        .map(independent_correct_layer_moisture)
         .collect::<Option<Vec<_>>>()
         .unwrap_or_else(|| panic!("{fixture_id}: independent moisture correction failed"));
 

@@ -67,6 +67,14 @@ If any command fails, candidate assembly stops.
 Release candidate execution must include authority-suite lane outcomes derived
 from `docs/specifications/external-authority/registry.yaml`.
 
+Before lane execution, release-gate automation must verify fixture integrity for
+all active suites:
+
+1. `fixtures.sha256` exists and passes `sha256sum --check --strict`.
+2. `fixtures.provenance.yaml` exists and contains required per-fixture source
+   provenance keys.
+3. Missing lock/provenance files or hash/provenance mismatches are blocking.
+
 Default and optional lanes:
 
 1. Required lane (`gate_lane=required`)
@@ -225,7 +233,8 @@ A release candidate must archive:
    baseline package (currently HILLSTAB06),
 5. commit SHA and selected release tag.
 6. authority lane report (`authority_suite_results.md`) with explicit lane and
-   failure-class outcomes.
+   failure-class outcomes, including fixture-integrity results for active
+   suites.
 
 ## Known Gaps (Draft Follow-On)
 

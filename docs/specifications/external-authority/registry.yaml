@@ -18,6 +18,8 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_fc_minus33_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001
+    fixture_lock: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/fixtures.provenance.yaml
     integration_test: tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs
     provenance:
       authored_by: Codex
@@ -39,6 +41,8 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_wp_minus1500_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001
+    fixture_lock: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/fixtures.provenance.yaml
     integration_test: tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs
     provenance:
       authored_by: Codex
@@ -59,6 +63,8 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_watbal_relax_to_fc_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001
+    fixture_lock: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/fixtures.provenance.yaml
     integration_test: tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs
     provenance:
       authored_by: Codex

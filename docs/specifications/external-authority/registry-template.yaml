@@ -17,6 +17,8 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_example_domain_example_law_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_example_domain_example_law_001
+    fixture_lock: tests/fixtures/constitutive/cas_l4_example_domain_example_law_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l4_example_domain_example_law_001/fixtures.provenance.yaml
     integration_test: tests/integration/cas_l4_example_domain_example_law_001_contract.rs
     provenance:
       authored_by: Codex

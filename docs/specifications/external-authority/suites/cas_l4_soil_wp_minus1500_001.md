@@ -21,16 +21,34 @@ fixtures:
     path: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/nominal_case.json
     fixture_class: component
     units_basis: SI
+    hash: e5c313d4d4ddd68d0fb329e7d7b280e55528f44f3d689862b2d4aea0359280a1
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/nominal_case.json
+    source_sha256: e5c313d4d4ddd68d0fb329e7d7b280e55528f44f3d689862b2d4aea0359280a1
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-SOIL-001 and cited chapter references."
     seed_or_case: wp_minus1500_nominal
   - fixture_id: FX-WP-BOUNDARY-001
     path: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/boundary_case.json
     fixture_class: component
     units_basis: SI
+    hash: 08f00a67acfb526e6ffda5b26a97040e1b0e91f720be80bd6802e874b4d89d9b
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/boundary_case.json
+    source_sha256: 08f00a67acfb526e6ffda5b26a97040e1b0e91f720be80bd6802e874b4d89d9b
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-SOIL-001 and cited chapter references."
     seed_or_case: wp_minus1500_boundary
   - fixture_id: FX-WP-INVALID-001
     path: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/invalid_wp_gt_fc.json
     fixture_class: component
     units_basis: SI
+    hash: 8c5d37ecf7efde27f36cdb3111d7db7d39c0ddcc8330643fc0cdcffaeaa41706
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001/invalid_wp_gt_fc.json
+    source_sha256: 8c5d37ecf7efde27f36cdb3111d7db7d39c0ddcc8330643fc0cdcffaeaa41706
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-SOIL-001 and cited chapter references."
     seed_or_case: wp_minus1500_invalid_wp_gt_fc
 tolerances:
   mode: mixed

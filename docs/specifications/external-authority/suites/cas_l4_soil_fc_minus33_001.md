@@ -21,16 +21,34 @@ fixtures:
     path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/nominal_case.json
     fixture_class: component
     units_basis: SI
+    hash: 981dbb10a1c136e76c415a587a2fe93076195e9c5847b214fa8bb6a935227439
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/nominal_case.json
+    source_sha256: 981dbb10a1c136e76c415a587a2fe93076195e9c5847b214fa8bb6a935227439
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-SOIL-001 and cited chapter references."
     seed_or_case: fc_minus33_nominal
   - fixture_id: FX-FC-BOUNDARY-001
     path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/boundary_case.json
     fixture_class: component
     units_basis: SI
+    hash: 69058501cc426080c4c636989a3ffcbac7ca3f88b0fe9608ae2ed0cc8570637e
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/boundary_case.json
+    source_sha256: 69058501cc426080c4c636989a3ffcbac7ca3f88b0fe9608ae2ed0cc8570637e
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-SOIL-001 and cited chapter references."
     seed_or_case: fc_minus33_boundary
   - fixture_id: FX-FC-INVALID-001
     path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/invalid_missing_theta_fc.json
     fixture_class: component
     units_basis: SI
+    hash: 8696da2a52fe719cdff34274d723f206a3953daf78d95a003573705031fd2672
+    source_repo: /workdir/openWEPP
+    source_commit: 6530baae39fdb81f6558ab0ea9a2f1d7eb01ff08
+    source_path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/invalid_missing_theta_fc.json
+    source_sha256: 8696da2a52fe719cdff34274d723f206a3953daf78d95a003573705031fd2672
+    transform_note: "Repository-authored constitutive fixture; law authority in SC-SOIL-001 and cited chapter references."
     seed_or_case: fc_minus33_invalid_missing_theta_fc
 tolerances:
   mode: mixed

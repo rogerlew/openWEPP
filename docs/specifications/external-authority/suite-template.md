@@ -28,6 +28,12 @@ fixtures:
     path: tests/fixtures/constitutive/cas_l4_example_domain_example_law_001/case_a.json
     fixture_class: component
     units_basis: SI
+    hash: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    source_repo: /workdir/openWEPP
+    source_commit: <commit-sha>
+    source_path: tests/fixtures/constitutive/cas_l4_example_domain_example_law_001/case_a.json
+    source_sha256: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+    transform_note: "Repository-authored fixture; law authority captured in SC/external citations."
 tolerances:
   mode: mixed
   abs:
@@ -87,4 +93,3 @@ Restate tolerance mode and thresholds with units context.
 ## Implementation Notes
 
 Optional links to package artifacts or follow-on queues.
-

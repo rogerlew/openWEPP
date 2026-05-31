@@ -70,7 +70,12 @@ Each `fixtures[]` item must include:
 | `fixture_class` | enum (`unit`, `component`, `integration`) | yes |
 | `units_basis` | string | yes |
 | `seed_or_case` | string | no |
-| `hash` | string | no |
+| `hash` | string (`sha256`) | yes |
+| `source_repo` | string | yes |
+| `source_commit` | string | yes |
+| `source_path` | string | yes |
+| `source_sha256` | string (`sha256`) | yes |
+| `transform_note` | string | yes |
 
 ## Tolerance Object Schema (Normative)
 
@@ -106,3 +111,21 @@ Examples:
 - Contract-derived integration harness:
   `tests/integration/<suite_id>_contract.rs`
 
+## Fixture Lock And Provenance Files (Normative)
+
+Each active suite fixture root must include:
+
+1. `fixtures.sha256`:
+   - `sha256sum --check --strict` compatible manifest for all fixture payload
+     files used by the suite.
+2. `fixtures.provenance.yaml`:
+   - per-fixture provenance entries keyed by `path` that include:
+     - `sha256`,
+     - `source_repo`,
+     - `source_commit`,
+     - `source_path`,
+     - `source_sha256`,
+     - `transform_note`.
+
+Release-gate automation treats missing lock/provenance files, checksum
+mismatches, or missing required provenance keys as blocking failures.

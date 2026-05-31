@@ -66,8 +66,11 @@ See:
 2. Keep units explicit at all boundaries.
 3. Treat missing citation or missing invariant linkage as non-compliant.
 4. Fail closed on invalid/missing required suite inputs.
-5. Preserve deterministic fixture provenance (versioned source, transform
-   notes, and hash where practical).
+5. Preserve deterministic fixture provenance:
+   - require per-fixture `sha256`,
+   - require lockfile `fixtures.sha256`,
+   - require provenance sidecar `fixtures.provenance.yaml` with source commit
+     and source hash.
 6. Keep legacy comparator references out of constitutive acceptance criteria.
 
 ## Package Sequencing
