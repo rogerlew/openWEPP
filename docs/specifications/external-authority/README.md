@@ -27,6 +27,9 @@ model in:
 
 - `docs/specifications/external-authority/`
   - `README.md` (this file)
+  - `suite-schema.md` (normative required-field schema)
+  - `suite-template.md` (suite-authoring template)
+  - `registry-template.yaml` (registry structure template)
   - `suites/` (suite definitions; one file per suite ID)
   - `registry.*` (suite registry index, introduced/maintained by follow-on
     packages)
@@ -36,6 +39,9 @@ model in:
 - `tests/fixtures/constitutive/<suite_id>/...`
 - `tests/integration/<suite_id>_contract.rs` (or equivalent contract-derived
   harness naming)
+
+Fixture root guidance:
+- `tests/fixtures/constitutive/README.md`
 
 ## Minimum Suite Shape (Normative)
 
@@ -49,6 +55,10 @@ Each suite definition must include:
 6. Gate lane class (`required`, `periodic`, `manual`).
 7. Failure class (`hard-fail`, `investigation`).
 8. Runtime cost class (`unit`, `component`, `integration`).
+
+See:
+- `docs/specifications/external-authority/suite-schema.md`
+- `docs/specifications/external-authority/suite-template.md`
 
 ## Standard Practices (Normative)
 
@@ -68,4 +78,3 @@ When constitutive suite work affects kernel/runtime acceptance:
 2. add or amend contract-derived suite tests,
 3. record pre-implementation gate evidence, then
 4. modify production code if required.
-

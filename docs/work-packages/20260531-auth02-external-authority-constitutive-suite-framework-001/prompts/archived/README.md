@@ -1,6 +1,5 @@
 # Archived Prompts
 
-Status: queued  
-Evidence mode: not-run
+Status: completed
 
 Archive superseded AUTH02 prompts here with rationale.

@@ -53,6 +53,8 @@ Minimum alignment obligations:
    families where suites are defined.
 4. Legacy comparator outcomes are investigation signals only and cannot be sole
    acceptance authority.
+5. Suite metadata and lane/failure semantics must conform to:
+   - `docs/specifications/external-authority/suite-schema.md`
 
 ## Required Section Schema (Normative)
 

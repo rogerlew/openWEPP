@@ -1,10 +1,10 @@
 # 20260531-auth02-external-authority-constitutive-suite-framework-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-31
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Define and scaffold the normative structure for external-authority constitutive

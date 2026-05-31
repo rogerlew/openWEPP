@@ -13,6 +13,7 @@ Kernel-process contract governance is mandatory and integrated through:
 2. `docs/specifications/science-contracts/kernel-process-contract-profile.md`
 3. `docs/specifications/correctness-authority-model.md`
 4. `docs/specifications/external-authority/README.md`
+5. `docs/specifications/external-authority/suite-schema.md`
 
 For kernel-affecting changes, missing profile/procedure compliance keeps
 disposition in `HOLD`.

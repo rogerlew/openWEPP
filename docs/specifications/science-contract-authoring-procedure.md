@@ -142,6 +142,8 @@ constitutive suites:
    - units and tolerance declaration,
    - lane class (`required`, `periodic`, `manual`),
    - failure class (`hard-fail`, `investigation`).
+   Reference schema:
+   - `docs/specifications/external-authority/suite-schema.md`
 4. Legacy parity comparators may be included as investigation evidence, but may
    not replace constitutive suite obligations for acceptance.
 

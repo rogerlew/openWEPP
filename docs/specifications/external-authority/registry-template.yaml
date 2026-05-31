@@ -1,0 +1,25 @@
+schema_version: 1
+registry_status: draft
+last_updated_utc: 2026-05-31
+owner: openWEPP maintainers
+
+suites:
+  - suite_id: cas_l4_example_domain_example_law_001
+    title: Example Constitutive Law Suite
+    status: draft
+    authority_level: 4
+    domain: example_domain
+    process_family: example_family
+    sc_invariant_refs:
+      - SC-EXAMPLE-001#INV-EXAMPLE-001
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: component
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_example_domain_example_law_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l4_example_domain_example_law_001
+    integration_test: tests/integration/cas_l4_example_domain_example_law_001_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-05-31
+      last_updated_utc: 2026-05-31
+    notes: ""
