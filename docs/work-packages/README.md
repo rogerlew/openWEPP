@@ -59,6 +59,11 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260530-hphys0214-integrated-hold-lift-readjudication-001/`
+  - Purpose: execute integrated post-HPHYS0211/0212/0213 hold-lift
+    readjudication by combining process-authority closure evidence, workspace
+    gates, and full 39-hillslope semantic diagnostics into a final `HOLD`/`GO`
+    decision with explicit ownership for any remaining residual families.
 - `20260530-hphys0213-wb12-storage-and-aggregate-reconciliation-closure-001/`
   - Purpose: remediate HPHYS0212 follow-on WB12 storage reconciliation domain
     violations and WB11 aggregate-soil-water continuity defects by enforcing
