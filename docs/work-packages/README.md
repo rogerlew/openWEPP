@@ -99,8 +99,13 @@ Authorized packages:
     tier, re-tier the WB19 `solwpv` branch-conformance suite into that tier,
     and align authority schema/model/registry/contracts/tests so suite ID,
     authority level, and gate posture are coherent.
+- `20260531-auth10-fc-authority-gate-and-suite-consistency-001/`
+  - Purpose: close AUTH09 review follow-on gaps by (a) completing Level-3
+    rename/provenance consistency for the WB19 branch suite, and (b) enforcing
+    non-inverted FC direct-theta authority behavior by strengthening Level-4 FC
+    gate coverage and demoting discrepancy pinning to non-blocking monitoring.
 - Execution order for correctness-authority stream is:
-  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a -> auth09`.
+  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a -> auth09 -> auth10`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
   - Purpose: execute immediate HPHYS0216 follow-up diagnostics to explain the
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated

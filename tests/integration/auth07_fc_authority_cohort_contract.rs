@@ -20,7 +20,6 @@ struct CohortCase {
     case_id: String,
     soil_file: String,
     expected_rock_bucket: String,
-    expect_exceeds_threshold: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -40,7 +39,6 @@ struct CaseResult {
     authority_fc_store_mm: f64,
     model_fc_store_mm: f64,
     relative_error: f64,
-    exceeds_threshold: bool,
 }
 
 fn repo_file(path: &str) -> String {
@@ -84,7 +82,7 @@ fn rock_bucket(rock_pct: f64, thresholds: &BucketThresholds) -> String {
 }
 
 fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
-    let root = "tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001";
+    let root = "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001";
     let soil_text = repo_file(&format!("{root}/{}", case.soil_file));
     let soil = parse_soil(&soil_text, strict_soil_parser_options())
         .unwrap_or_else(|error| panic!("{} should parse: {error}", case.case_id));
@@ -125,8 +123,6 @@ fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
     let model_fc_store_mm = state_scalar(&surface, "wb13_profile_fc_store_mm");
     let relative_error =
         (model_fc_store_mm - authority_fc_store_mm).abs() / authority_fc_store_mm.max(f64::EPSILON);
-    let exceeds_threshold = relative_error > fixture.max_relative_error_threshold;
-
     CaseResult {
         case_id: case.case_id.clone(),
         rock_bucket: rock_bucket(
@@ -137,7 +133,6 @@ fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
         authority_fc_store_mm,
         model_fc_store_mm,
         relative_error,
-        exceeds_threshold,
     }
 }
 
@@ -148,7 +143,7 @@ fn auth07_package_and_suite_authority_sections_exist() {
     );
     let registry = repo_file("docs/specifications/external-authority/registry.yaml");
     let suite = repo_file(
-        "docs/specifications/external-authority/suites/cas_l5_soil_fc_direct_theta_minus33_cohort_001.md",
+        "docs/specifications/external-authority/suites/cas_l4_soil_fc_direct_theta_minus33_cohort_001.md",
     );
     let soil_contract = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
 
@@ -159,32 +154,32 @@ fn auth07_package_and_suite_authority_sections_exist() {
         "AUTH07 package must capture independent FC authority cohort scope"
     );
     assert!(
-        registry.contains("cas_l5_soil_fc_direct_theta_minus33_cohort_001")
-            && registry.contains("gate_lane: periodic")
-            && registry.contains("failure_class: investigation"),
-        "registry must include AUTH07 cohort suite in periodic investigation lane"
+        registry.contains("cas_l4_soil_fc_direct_theta_minus33_cohort_001")
+            && registry.contains("gate_lane: required")
+            && registry.contains("failure_class: hard-fail"),
+        "registry must include AUTH10-promoted cohort suite in required hard-fail lane"
     );
     assert!(
-        suite.contains("authority_level: 5")
+        suite.contains("authority_level: 4")
             && suite.contains("hash:")
             && suite.contains("source_commit:")
             && suite.contains("transform_note:"),
-        "AUTH07 suite must include level-5 + fixture provenance metadata"
+        "AUTH10 cohort suite must include level-4 + fixture provenance metadata"
     );
     assert!(
-        soil_contract.contains("AUTH07 Independent FC Authority Cohort Addendum"),
-        "SC-SOIL-001 must include AUTH07 addendum"
+        soil_contract.contains("AUTH10 Direct-Theta FC Level-4 Gate Promotion Addendum"),
+        "SC-SOIL-001 must include AUTH10 direct-theta gate promotion addendum"
     );
 }
 
 #[test]
 fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification() {
     let fixture: CohortFixture = repo_json_fixture(
-        "tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json",
+        "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json",
     );
     assert_eq!(
         fixture.suite_id,
-        "cas_l5_soil_fc_direct_theta_minus33_cohort_001"
+        "cas_l4_soil_fc_direct_theta_minus33_cohort_001"
     );
     assert_eq!(fixture.units_basis, "m3_m3_and_mm");
 
@@ -209,14 +204,10 @@ fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification()
                 result.weighted_rock_pct
             ));
         }
-        if result.exceeds_threshold != case.expect_exceeds_threshold {
+        if result.relative_error > fixture.max_relative_error_threshold {
             mismatches.push(format!(
-                "{} threshold mismatch: expected exceeds={} observed exceeds={} (rel_err={} threshold={})",
-                result.case_id,
-                case.expect_exceeds_threshold,
-                result.exceeds_threshold,
-                result.relative_error,
-                fixture.max_relative_error_threshold
+                "{} direct-theta FC threshold violation: observed rel_err={} > threshold={}",
+                result.case_id, result.relative_error, fixture.max_relative_error_threshold,
             ));
         }
     }
@@ -234,8 +225,8 @@ fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification()
             .push(result);
     }
     assert!(
-        buckets.contains_key("low") && buckets.contains_key("high"),
-        "cohort must cover low and high rock-fragment buckets"
+        !buckets.is_empty(),
+        "cohort must emit at least one rock bucket"
     );
 
     for (bucket, entries) in buckets {

@@ -31,9 +31,9 @@ fixtures:
     hash: 6efea65c268cd8cd632340666528d1a207165c3c84bf25f15bc435cc45ae7175
     source_repo: /workdir/openWEPP
     source_commit: a2358ab1709adb6f78b1b4ed1b4e31c3f1c52b20
-    source_path: tests/fixtures/constitutive/cas_l4_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json
-    source_sha256: f8f868dedcfb17c5e8862689ee21c920b151f02029bd26ad307e8c11be248163
-    transform_note: "AUTH09 metadata retiering: suite moved from Level-4 naming to Level-3 legacy/sanity taxonomy; branch-law payload values unchanged."
+    source_path: tests/fixtures/constitutive/cas_l3_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json
+    source_sha256: 6efea65c268cd8cd632340666528d1a207165c3c84bf25f15bc435cc45ae7175
+    transform_note: "AUTH10 provenance normalization: active suite metadata now references Level-3 canonical fixture root/hash directly."
     seed_or_case: solwpv_fcdep_branch_matrix
 tolerances:
   mode: abs
