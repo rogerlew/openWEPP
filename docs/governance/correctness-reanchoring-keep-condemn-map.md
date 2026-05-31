@@ -16,7 +16,7 @@ follows per surface.
 HPHYS0221 is the clean confirmation: its disposition records *"latqcc and
 total-soil means improved, Dp mean regressed, always-fail columns remain
 39/39,"* and it auto-spawns HPHYS0222 to "isolate the Dp regression while
-preserving latqcc gains." The big-4 water-balance columns
+preserving latqcc gains." The big-four water-balance columns
 (`Dp`/`latqcc`/`Total-Soil`/`SoilWaterTotal`) have not moved off `39/39` across
 the entire 0207→0221 span; threshold tuning on a coupled flux partition can move
 means but cannot cross tolerance, because there is **no physics target — only a
@@ -28,8 +28,8 @@ drains to ~6% of porosity-store rather than ~59%), not the daily-reseed defect
 the 0211 ledger named dominant (that was real, was fixed in 0212 — soil now
 evolves day-to-day — and did not move the residual). Conservation + bounds pass;
 the missing authority is the **constitutive** physics (how much water is
-retained, where percolation cuts off). That is why packages "close their
-measures" yet HOLD persists.
+retained, where percolation cuts off). This is why packages can "close their
+measures" while release disposition remains HOLD.
 
 ## 2. Correctness authority model being adopted
 
@@ -51,7 +51,8 @@ measures" yet HOLD persists.
 
 Design rules: **test a law, not a number**; each constitutive test traces to an
 `INV-<DOMAIN>` in `SC-*` that states the principle, the external authority, and
-the tolerance. **Level 4 outranks Level 5 for kernel adjudication** — WEPP was
+the tolerance. Each gate must define units and pass/fail thresholds explicitly.
+**Level 4 outranks Level 5 for kernel adjudication** — WEPP was
 calibrated to plots (effective Ksat is a fit parameter), so measured-match can
 certify a broken kernel via compensating errors.
 
@@ -70,6 +71,21 @@ certify a broken kernel via compensating errors.
   on a coverage milestone, not a date.** Any remaining `_legacy`-named code or
   parity clause is debt to be removed (§4).
 
+### 3.1 Legacy retirement milestone (coverage-based, explicit)
+
+Legacy comparison is removed from acceptance gates when all criteria below are
+met for a sustained window:
+
+1. Hard-gate coverage runs daily/per-layer/per-OFE on CI for all kernel PRs.
+2. Level-4 constitutive suite exists for FC/WP, storage fractions, and
+   lateral/drain constitutive behavior with explicit tolerances.
+3. Level-4 behavioral suite exists for relax-to-FC, Dp cutoff near FC, ET
+   bounds, and monotone inter-storm recession.
+4. Analytic/manufactured suite exists for at least one infiltration and one
+   recession primitive.
+5. The new gate stack passes in CI for 30 consecutive days without a legacy-only
+   blocker.
+
 ## 4. The map
 
 Legend: **KEEP** = load-bearing physics, survives the reset · **CONDEMN** =
@@ -81,7 +97,7 @@ against the gate.
 
 | Surface | Location | Why keep |
 |---|---|---|
-| scon retention corrections | `02_soil_slope.rs:843 legacy_correct_layer_moisture` | Real soil physics (cpm/coca/sm20c/0.83 cap/floors). *Caveat:* the `cpm` term is the prime suspect for FC-too-low — kept, but gated by FC=θ(−33 kPa) (see RE-DERIVE). |
+| Soil retention corrections (`scon` path) | `02_soil_slope.rs:843 legacy_correct_layer_moisture` | Real soil physics (cpm/coca/sm20c/0.83 cap/floors). *Caveat:* the `cpm` term is the prime suspect for FC-too-low — kept, but gated by FC=θ(−33 kPa) (see RE-DERIVE). |
 | Normalized-grid profile aggregation | `02_soil_slope.rs:633 compute_wb13_profile_symbols_from_legacy_seed` | Single correct grid; ProfileDepth/PorosityCap match legacy to 7 digits and pass on physics. This is the grid everything should use. |
 | WB11 daily state-carry | `mod.rs` `ExecutionLane::Daily` (preserves mutable WB18/WB11 state) | Correct time-stepping; verified live (soil evolves day-to-day). |
 | WB12 conservation/closure | `mod.rs` WB12 reconciliation | Budget must close — a hard gate, already objective. |
@@ -97,6 +113,17 @@ against the gate.
 | FC/WP authority flip-flop residue | `SC-WATBAL-001` (~21 authority-language lines; HPHYS0202 "layer-authoritative / non-authoritative" vs HPHYS0207 "storage-symbol authoritative" marked "historical") | Re-state as one physics-derived publication authority; delete superseded/parity-derived clauses. |
 | Parity-tuned WB19 threshold knobs | `kernel_phases.rs` WB19 region (fcdep/coca/cpm tuning added 0218–0221) | To the extent these were tuned to move parity columns rather than derived — condemned by the behavioral gates (relax-to-FC, Dp-cutoff). See RE-DERIVE for the physical core. |
 | Adjudication/diagnostic process scaffold | WP packages 0204, 0210, 0211, 0214, 0217, 0220 (docs) | ≥6 of 28 packages assessed the residual without moving it; the assessment cadence is replaced by gate-driven adjudication. |
+
+### 4.1 Condemnation exit triggers (required before deletion)
+
+- **Dual-grid remap:** remove after `field_capacity_equals_retention_theta_at_minus_33kpa`
+  passes on the unified grid and no parser-grid fallback is required.
+- **Legacy-pool `max()`:** remove after `lateral_flow_responds_to_saturated_thickness`
+  and profile/layer closure gates pass without the reconciliation term.
+- **FC/WP authority residue:** remove after one canonical FC/WP publication
+  authority is asserted in `SC-WATBAL-001` and covered by contract tests.
+- **WB19 parity knobs:** remove or re-derive each knob once a constitutive or
+  behavioral gate proves the physical replacement path.
 
 ### RE-DERIVE — genuine principle, parity-tuned application
 
@@ -129,6 +156,16 @@ Build these before/with removal so condemnation is evidence-based:
 live over-drainage and condemn the dual-grid / `cpm` path; they are the first to
 stand up.
 
+### 5.1 Gate specification minimums
+
+Each gate above must include:
+
+1. Explicit authority citation (`SC-*` invariant + external reference).
+2. Explicit units and tolerance (`abs`, `rel`, or mixed).
+3. Fixture class (`unit`, `component`, `integration`) and expected runtime cost.
+4. CI lane (`required` vs `periodic`) and failure class (`hard-fail` vs
+   investigation).
+
 ## 6. Sequence
 
 1. Stand up the dense hard gates (legacy-free coverage floor).
@@ -141,6 +178,11 @@ stand up.
    clauses.
 5. Demote legacy to change-detector; retire on the coverage milestone (§3).
 
+Execution checkpoint after each step:
+- record gate outcomes,
+- record changed surfaces,
+- record whether any CONDEMN surface is now eligible for deletion.
+
 ## 7. Recommendation on rollback
 
 Do **not** wholesale-roll-back the code: the KEEP surfaces are genuine physics a
@@ -149,5 +191,5 @@ leaving the authority gap (the actual cause) unsolved. The debt is concentrated
 in the contracts (parity-derived authority) and three code surfaces (dual grid,
 legacy-pool `max()`, WB19 parity knobs) — all localized and listed above. Reset
 the **contracts**, build the **gates**, let them **condemn** the scaffold for
-surgical removal. If any targeted rollback is taken, scope it to the FC/WP
-authority churn and the WB19 threshold knobs, not the kernel foundation.
+surgical removal. If targeted rollback is taken, scope it to FC/WP authority
+churn and WB19 threshold knobs only, not the kernel foundation.
