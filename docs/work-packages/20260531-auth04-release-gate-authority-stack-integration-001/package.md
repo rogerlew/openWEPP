@@ -1,10 +1,10 @@
 # 20260531-auth04-release-gate-authority-stack-integration-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-31
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Integrate the correctness authority stack into release/CI workflows by wiring

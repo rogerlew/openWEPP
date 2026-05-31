@@ -2,7 +2,7 @@
 
 Status: `planned`  
 Document type: `draft-runbook`  
-Last reviewed: `2026-05-29`
+Last reviewed: `2026-05-31`
 
 Execution note:
 - This runbook is a draft release procedure synthesized from in-repo
@@ -62,12 +62,54 @@ cargo deny check
 
 If any command fails, candidate assembly stops.
 
+## Authority-Stack Gate Policy
+
+Release candidate execution must include authority-suite lane outcomes derived
+from `docs/specifications/external-authority/registry.yaml`.
+
+Default and optional lanes:
+
+1. Required lane (`gate_lane=required`)
+   - always runs in release-gate automation.
+   - any `failure_class=hard-fail` failure blocks candidate acceptance.
+2. Periodic lane (`gate_lane=periodic`)
+   - runs on scheduled release-gate workflows or when explicitly requested.
+3. Manual lane (`gate_lane=manual`)
+   - runs only when explicitly requested.
+
+Failure-class handling:
+
+1. `hard-fail`: workflow exits non-zero and candidate remains blocked.
+2. `investigation`: workflow records non-blocking failure in
+   `authority_suite_results.md`; operator disposition follow-through is still
+   required.
+
 ## Automation Entry Points
 
 Workspace + release-lint automation (no stability cohort):
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh --skip-stability
+```
+
+Run workspace/release gates plus required + periodic authority lanes:
+
+```bash
+bash tools/release/run_release_candidate_gates.sh \
+  --skip-stability \
+  --run-authority-periodic
+```
+
+Run full automation including manual lane and stability cohort:
+
+```bash
+bash tools/release/run_release_candidate_gates.sh \
+  --run-authority-periodic \
+  --run-authority-manual \
+  --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \
+  --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv \
+  --expect-suite wb05b_1166=1166 \
+  --expect-suite release_gate_watchlist=19
 ```
 
 Full gate automation (includes stability cohort and expected suite counts):
@@ -82,9 +124,15 @@ bash tools/release/run_release_candidate_gates.sh \
 
 CI workflow surface:
 - `.github/workflows/release-gates.yml`
-  - `push` / `pull_request`: workspace + release lint lane.
+  - `push` / `pull_request`: workspace + release lint + required authority
+    lane.
+  - `schedule`: workspace + release lint + required + periodic authority
+    lanes.
   - `workflow_dispatch` + `run_stability=true`: self-hosted stability cohort
     lane with suite assertions.
+  - `workflow_dispatch` inputs:
+    - `run_authority_periodic=true` enables periodic authority lane.
+    - `run_authority_manual=true` enables manual authority lane.
 
 ## Candidate Build and Assembly
 
@@ -176,6 +224,8 @@ A release candidate must archive:
 4. hillslope stability JSON report and a delta summary against the latest
    baseline package (currently HILLSTAB06),
 5. commit SHA and selected release tag.
+6. authority lane report (`authority_suite_results.md`) with explicit lane and
+   failure-class outcomes.
 
 ## Known Gaps (Draft Follow-On)
 

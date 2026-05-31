@@ -14,6 +14,8 @@ Kernel-process contract governance is mandatory and integrated through:
 3. `docs/specifications/correctness-authority-model.md`
 4. `docs/specifications/external-authority/README.md`
 5. `docs/specifications/external-authority/suite-schema.md`
+6. `docs/governance/openwepp-release-procedure-draft.md`
+7. `.github/workflows/release-gates.yml`
 
 For kernel-affecting changes, missing profile/procedure compliance keeps
 disposition in `HOLD`.

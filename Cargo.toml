@@ -366,6 +366,10 @@ path = "tests/integration/hphys0221_wb19_water_yield_fcdep_coupling_contract.rs"
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 
+[[test]]
+name = "auth04_release_gate_authority_stack_contract"
+path = "tests/integration/auth04_release_gate_authority_stack_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 9 * * 1"
   workflow_dispatch:
     inputs:
       run_stability:
@@ -52,6 +54,16 @@ on:
         required: true
         default: "19"
         type: string
+      run_authority_periodic:
+        description: "Run periodic authority-suite lane"
+        required: true
+        default: false
+        type: boolean
+      run_authority_manual:
+        description: "Run manual authority-suite lane"
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -77,10 +89,22 @@ jobs:
         run: |
           release_tag="$(date -u +%y%m%d)ci${GITHUB_RUN_NUMBER}"
           release_dir="${RUNNER_TEMP}/openwepp_release_${release_tag}"
-          bash tools/release/run_release_candidate_gates.sh \
-            --release-tag "${release_tag}" \
-            --release-dir "${release_dir}" \
+          gate_cmd=(
+            bash tools/release/run_release_candidate_gates.sh
+            --release-tag "${release_tag}"
+            --release-dir "${release_dir}"
             --skip-stability
+          )
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            gate_cmd+=(--run-authority-periodic)
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.run_authority_periodic }}" == "true" ]]; then
+            gate_cmd+=(--run-authority-periodic)
+          fi
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.run_authority_manual }}" == "true" ]]; then
+            gate_cmd+=(--run-authority-manual)
+          fi
+          "${gate_cmd[@]}"
           echo "release_dir=${release_dir}" >> "${GITHUB_OUTPUT}"
 
       - name: Upload staged release artifacts

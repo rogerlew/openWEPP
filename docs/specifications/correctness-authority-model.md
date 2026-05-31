@@ -43,6 +43,39 @@ Work-package artifacts remain evidence only and do not replace either plane.
 5. Legacy-only deviations route to investigation/disposition; they do not
    override passing `A0-A2` outcomes.
 
+## Release/CI Lane Enforcement (Normative)
+
+Authority-suite lane execution for release decisions is wired through:
+
+- `.github/workflows/release-gates.yml`
+- `tools/release/run_release_candidate_gates.sh`
+
+Lane trigger policy:
+
+1. `required` lane:
+   - runs on release-gate `push`/`pull_request`,
+   - runs on `workflow_dispatch`,
+   - blocks on any `hard-fail` suite failure.
+2. `periodic` lane:
+   - runs on scheduled release-gate workflows,
+   - may be invoked on demand with `--run-authority-periodic`,
+   - blocks only for `hard-fail` suite failures.
+3. `manual` lane:
+   - runs only when explicitly requested (`--run-authority-manual` or workflow
+     dispatch input),
+   - blocks only for `hard-fail` suite failures.
+
+Failure-class policy:
+
+1. `hard-fail`:
+   - gate exits non-zero,
+   - release disposition remains `HOLD` until resolved or explicitly
+     risk-accepted by governance.
+2. `investigation`:
+   - gate records failure in authority-lane report output,
+   - does not fail the workflow by default,
+   - requires explicit investigation/disposition artifact follow-through.
+
 ## External-Authority Constitutive Suite Minimum Schema (Normative)
 
 Every external-authority constitutive suite must define, at minimum:
@@ -79,4 +112,3 @@ Minimum retirement readiness criteria:
   `docs/specifications/external-authority/README.md`.
 - Canonical contract registry:
   `docs/specifications/science-contracts/index.md`.
-
