@@ -232,6 +232,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
             let layer_thetdr = corrected_layer.thetdr;
             let layer_porosity = corrected_layer.porosity;
             let layer_cpm = corrected_layer.cpm;
+            let layer_coca = corrected_layer.coca;
             if !layer_thetfc.is_finite() {
                 return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity {
                     value: layer_thetfc,
@@ -295,6 +296,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 soil_ofe_layer_symbol("cpm", ofe_index, layer_index),
                 BoundaryValue::scalar(layer_cpm),
             );
+            state_surface.insert(
+                soil_ofe_layer_symbol("coca", ofe_index, layer_index),
+                BoundaryValue::scalar(layer_coca),
+            );
 
             if ofe_index == 1 {
                 state_surface.insert(
@@ -324,6 +329,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 state_surface.insert(
                     soil_primary_layer_symbol("cpm", layer_index),
                     BoundaryValue::scalar(layer_cpm),
+                );
+                state_surface.insert(
+                    soil_primary_layer_symbol("coca", layer_index),
+                    BoundaryValue::scalar(layer_coca),
                 );
                 if let Some(theta_s) = layer.theta_s_rosetta {
                     state_surface.insert(
@@ -356,6 +365,10 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     state_surface.insert(
                         BoundarySymbol::from("cpm"),
                         BoundaryValue::scalar(layer_cpm),
+                    );
+                    state_surface.insert(
+                        BoundarySymbol::from("coca"),
+                        BoundaryValue::scalar(layer_coca),
                     );
                     if let Some(theta_s) = layer.theta_s_rosetta {
                         state_surface.insert(
@@ -545,6 +558,7 @@ struct Wb13ProfileSymbols {
 struct CorrectedLayerRuntimeSymbols {
     porosity: f64,
     cpm: f64,
+    coca: f64,
     thetfc: f64,
     thetdr: f64,
 }
@@ -726,6 +740,7 @@ fn compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(
         corrected_layers.push(CorrectedLayerRuntimeSymbols {
             porosity: corrected.porosity,
             cpm: corrected.cpm,
+            coca: corrected.coca,
             thetfc: corrected.thetfc,
             thetdr: corrected.thetdr,
         });
@@ -775,6 +790,7 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
         let mut weighted_thetdr = 0.0_f64;
         let mut weighted_porosity = 0.0_f64;
         let mut weighted_cpm = 0.0_f64;
+        let mut weighted_coca = 0.0_f64;
         let mut covered_depth_mm = 0.0_f64;
 
         for (normalized_top_mm, normalized_bottom_mm, corrected_layer) in &normalized_intervals {
@@ -788,6 +804,7 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
             weighted_thetdr += corrected_layer.thetdr * overlap_depth_mm;
             weighted_porosity += corrected_layer.porosity * overlap_depth_mm;
             weighted_cpm += corrected_layer.cpm * overlap_depth_mm;
+            weighted_coca += corrected_layer.coca * overlap_depth_mm;
             covered_depth_mm += overlap_depth_mm;
         }
 
@@ -804,6 +821,7 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
         mapped_layers.push(CorrectedLayerRuntimeSymbols {
             porosity: weighted_porosity / covered_depth_mm,
             cpm: weighted_cpm / covered_depth_mm,
+            coca: weighted_coca / covered_depth_mm,
             thetfc: weighted_thetfc / covered_depth_mm,
             thetdr: weighted_thetdr / covered_depth_mm,
         });
@@ -817,6 +835,7 @@ struct LegacyCorrectedLayerMoisture {
     thickness_m: f64,
     porosity: f64,
     cpm: f64,
+    coca: f64,
     thetfc: f64,
     thetdr: f64,
 }
@@ -835,6 +854,9 @@ fn legacy_correct_layer_moisture(
         + (12.6 * solcon * layer.clay)
         + (100.0 * layer.orgmat * (layer.sand / 2.0).powi(2));
     let coca = 1.0 - (oca / 100.0);
+    if !coca.is_finite() || coca <= 0.0 || coca > 1.0 {
+        return None;
+    }
     let cpm = 1.0
         - ((layer.rfg * layer.bulk_density_kg_m3)
             / ((layer.rfg * layer.bulk_density_kg_m3) + 2650.0 * (1.0 - layer.rfg)));
@@ -898,6 +920,7 @@ fn legacy_correct_layer_moisture(
         thickness_m: dg,
         porosity: por,
         cpm,
+        coca,
         thetfc,
         thetdr,
     })

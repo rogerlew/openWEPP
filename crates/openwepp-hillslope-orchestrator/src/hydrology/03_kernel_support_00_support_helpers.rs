@@ -757,8 +757,8 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("dg_{layer_index:04}"))
     }
 
-    fn wb19_cpm_symbol(layer_index: usize) -> BoundarySymbol {
-        BoundarySymbol::from(format!("cpm_{layer_index:04}"))
+    fn wb19_coca_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("coca_{layer_index:04}"))
     }
 
     fn frost_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
@@ -869,7 +869,7 @@ impl Wb11HydrologyKernel {
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
             let dg_symbol = Self::wb19_dg_symbol(layer_index);
-            let cpm_symbol = Self::wb19_cpm_symbol(layer_index);
+            let coca_symbol = Self::wb19_coca_symbol(layer_index);
 
             let layer_theta =
                 Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
@@ -913,18 +913,19 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let cpm = Self::require_state_scalar_for_symbol(request, phase_class, &cpm_symbol)?;
-            if cpm <= WB11_ZERO_THRESHOLD || cpm > 1.0 + WB11_ZERO_THRESHOLD {
+            let coca =
+                Self::require_state_scalar_for_symbol(request, phase_class, &coca_symbol)?;
+            if coca <= WB11_ZERO_THRESHOLD || coca > 1.0 + WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
-                    symbol: cpm_symbol,
-                    value: cpm,
+                    symbol: coca_symbol,
+                    value: coca,
                     minimum: Some(WB11_ZERO_THRESHOLD),
                     maximum: Some(1.0),
                 });
             }
 
-            let layer_drain_threshold = layer_fc + ((1.0 - cpm) * layer_dg);
+            let layer_drain_threshold = layer_fc + ((1.0 - coca) * layer_dg);
             Self::require_state_range_for_symbol(
                 phase_class,
                 &fc_symbol,

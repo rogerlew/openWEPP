@@ -716,12 +716,12 @@ Minimum WS12 integration vectors:
 
 1. Coupled WB13 subsurface-loss closure claims (`latqcc`, `Dp`) must remain
    traceable through WB19 threshold authority:
-   `drfc_i = wb18_perc_fc_i + (1-cpm_i)*dg_i`.
+   `drfc_i = wb18_perc_fc_i + (1-coca_i)*dg_i`.
 2. System-boundary evidence for WB19 subsurface publication must include
-   fail-closed enforcement of required `cpm_####` domains (`0 < cpm <= 1`)
+   fail-closed enforcement of required `coca_####` domains (`0 < coca <= 1`)
    with no FC-only fallback threshold execution path.
 3. WB19-layer mutation lineage for coupled claims must remain:
-   `st(i)` seed -> `wb18_perc_theta/fc_####` + `cpm_####` -> WB19
+   `st(i)` seed -> `wb18_perc_theta/fc_####` + `coca_####` -> WB19
    `drfc_i` threshold execution -> WB13 `latqcc`/`Dp` publication.
 
 ## HPHYS0209 ProfileWP Near-Closed Publication Adjudication Addendum
@@ -897,7 +897,8 @@ Minimum WS12 integration vectors:
 | `2026-05-30` | `71` | `Codex` | HPHYS0208 amendment: added coupled WB13 publication-lineage governance requiring threshold-seed ownership (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) across WB11/WB18/WB19 pathways for `ProfileFCStore`/`Dp`/`latqcc`/`Total-Soil`/`SoilWaterTotal` closure claims. |
 | `2026-05-30` | `72` | `Codex` | HPHYS0209 amendment: codified near-closed `ProfileWPStore` publication adjudication governance as diagnostic-only expected process-correct evidence when isolated/stable, with explicit non-regression and fail-closed guard continuity requirements. |
 | `2026-05-31` | `73` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` system-boundary authority to layer aggregation plus explicit normalized-tail carry (`wb13_profile_fc_tail_mm`), retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and required fail-closed missing/non-finite/negative tail guard posture. |
-| `2026-05-31` | `74` | `Codex` | HPHYS0218 amendment: added coupled WB19 `drfc` threshold governance requiring `wb18_perc_fc_#### + (1-cpm_####)*dg_####` execution authority and fail-closed `cpm_####` domain enforcement for `latqcc`/`Dp` closure claims. |
+| `2026-05-31` | `75` | `Codex` | HPHYS0219 amendment: corrected coupled WB19 `drfc` threshold governance to baseline-authoritative `wb18_perc_fc_#### + (1-coca_####)*dg_####` lineage with fail-closed `coca_####` domain enforcement for `latqcc`/`Dp` closure claims. |
+| `2026-05-31` | `74` | `Codex` | HPHYS0218 amendment: added coupled WB19 `drfc` threshold governance requiring `wb18_perc_fc_#### + (1-coca_####)*dg_####` execution authority and fail-closed `coca_####` domain enforcement for `latqcc`/`Dp` closure claims. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |
 | `2026-05-25` | `26` | `Codex` | MOFE04 amendment: added system-boundary carry authority for explicit multi-OFE WB13/H.wat canonicalized publication policy provenance (`publication_ofe_policy`, `contributor_ofe_count`, `area_policy`, `publication_area_m2`) and fail-closed dimensional interpretation requirements for canonicalized `OFE=1` output rows. |
 | `2026-05-25` | `27` | `Codex` | MOFE05 amendment: added watershed contributor MOFE metadata intake authority requiring typed fail-closed validation for missing/malformed publication metadata and explicit `contributor_ofe_count == hbp.nofe` consistency gating before watershed routing dispatch. |

@@ -18,7 +18,15 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
     state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
     state.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
     state.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
+    state.insert(
+        BoundarySymbol::from("coca_0001"),
+        BoundaryValue::scalar(1.0),
+    );
     state.insert(BoundarySymbol::from("cpm_0002"), BoundaryValue::scalar(1.0));
+    state.insert(
+        BoundarySymbol::from("coca_0002"),
+        BoundaryValue::scalar(1.0),
+    );
 
     state.insert(
         BoundarySymbol::from("wb18_perc_theta_0001"),

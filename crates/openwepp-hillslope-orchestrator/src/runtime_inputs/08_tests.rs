@@ -106,7 +106,7 @@ mod tests {
 
     fn normalized_corrected_layers_from_ofe(
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    ) -> Vec<(f64, f64, f64, f64, f64)> {
+    ) -> Vec<(f64, f64, f64, f64, f64, f64)> {
         let seeds = ofe
             .layers
             .iter()
@@ -149,6 +149,7 @@ mod tests {
                     corrected.thickness_m,
                     corrected.porosity,
                     corrected.cpm,
+                    corrected.coca,
                     corrected.thetfc,
                     corrected.thetdr,
                 )
@@ -165,7 +166,7 @@ mod tests {
             fc_store: 0.0,
             wp_store: 0.0,
         };
-        for (thickness_m, porosity, _cpm, thetfc, thetdr) in
+        for (thickness_m, porosity, _cpm, _coca, thetfc, thetdr) in
             normalized_corrected_layers_from_ofe(ofe)
         {
             let thickness_mm = thickness_m * 1_000.0;
@@ -215,14 +216,15 @@ mod tests {
         (aggregated_fc_store_mm, aggregated_wp_store_mm)
     }
 
-    type NormalizedCorrectedInterval = (f64, f64, f64, f64, f64, f64);
+    type NormalizedCorrectedInterval = (f64, f64, f64, f64, f64, f64, f64);
 
     fn corrected_normalized_intervals_from_ofe(
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ) -> Vec<NormalizedCorrectedInterval> {
         let mut normalized_intervals = Vec::with_capacity(ofe.layers.len());
         let mut normalized_top_mm = 0.0_f64;
-        for (thickness_m, porosity, cpm, thetfc, thetdr) in normalized_corrected_layers_from_ofe(ofe)
+        for (thickness_m, porosity, cpm, coca, thetfc, thetdr) in
+            normalized_corrected_layers_from_ofe(ofe)
         {
             let normalized_bottom_mm = normalized_top_mm + (thickness_m * 1_000.0);
             normalized_intervals.push((
@@ -230,6 +232,7 @@ mod tests {
                 normalized_bottom_mm,
                 porosity,
                 cpm,
+                coca,
                 thetfc,
                 thetdr,
             ));
@@ -243,7 +246,7 @@ mod tests {
         parser_bottom_mm: f64,
         layer_position: usize,
         normalized_intervals: &[NormalizedCorrectedInterval],
-    ) -> (f64, f64, f64, f64) {
+    ) -> (f64, f64, f64, f64, f64) {
         let layer_thickness_mm = parser_bottom_mm - parser_top_mm;
         assert!(
             layer_thickness_mm > 0.0,
@@ -252,11 +255,12 @@ mod tests {
         );
         let mut weighted_porosity = 0.0_f64;
         let mut weighted_cpm = 0.0_f64;
+        let mut weighted_coca = 0.0_f64;
         let mut weighted_thetfc = 0.0_f64;
         let mut weighted_thetdr = 0.0_f64;
         let mut covered_mm = 0.0_f64;
 
-        for (normalized_top_mm, normalized_bottom_mm, porosity, cpm, thetfc, thetdr) in
+        for (normalized_top_mm, normalized_bottom_mm, porosity, cpm, coca, thetfc, thetdr) in
             normalized_intervals
         {
             let overlap_top_mm = parser_top_mm.max(*normalized_top_mm);
@@ -267,6 +271,7 @@ mod tests {
             }
             weighted_porosity += *porosity * overlap_mm;
             weighted_cpm += *cpm * overlap_mm;
+            weighted_coca += *coca * overlap_mm;
             weighted_thetfc += *thetfc * overlap_mm;
             weighted_thetdr += *thetdr * overlap_mm;
             covered_mm += overlap_mm;
@@ -283,6 +288,7 @@ mod tests {
         (
             weighted_porosity / covered_mm,
             weighted_cpm / covered_mm,
+            weighted_coca / covered_mm,
             weighted_thetfc / covered_mm,
             weighted_thetdr / covered_mm,
         )
@@ -290,7 +296,7 @@ mod tests {
 
     fn expected_authoritative_theta_from_normalized_overlap_mapping(
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    ) -> Vec<(f64, f64, f64, f64)> {
+    ) -> Vec<(f64, f64, f64, f64, f64)> {
         let normalized_intervals = corrected_normalized_intervals_from_ofe(ofe);
 
         let mut mapped = Vec::with_capacity(ofe.layers.len());
@@ -378,7 +384,7 @@ mod tests {
             assert!((soil_runtime_scalar(&surface, symbol) - expected).abs() < 1.0e-12);
         }
 
-        for symbol in ["por", "cpm", "por_0002", "cpm_0002"] {
+        for symbol in ["por", "cpm", "coca", "por_0002", "cpm_0002", "coca_0002"] {
             let value = soil_runtime_scalar(&surface, symbol);
             assert!(
                 value.is_finite() && value > 0.0 && value <= 1.0,
@@ -538,7 +544,7 @@ mod tests {
             !corrected_layers.is_empty(),
             "normalized corrected layer set must be non-empty"
         );
-        for (layer_position, (_thickness_m, porosity, cpm, thetfc, thetdr)) in
+        for (layer_position, (_thickness_m, porosity, cpm, coca, thetfc, thetdr)) in
             corrected_layers.into_iter().enumerate()
         {
             assert!(
@@ -566,6 +572,12 @@ mod tests {
                 "corrected layer {} must satisfy cpm in (0,1] (observed {})",
                 layer_position + 1,
                 cpm
+            );
+            assert!(
+                coca > 0.0 && coca <= 1.0,
+                "corrected layer {} must satisfy coca in (0,1] (observed {})",
+                layer_position + 1,
+                coca
             );
         }
     }
@@ -596,7 +608,13 @@ mod tests {
             .expect("runtime surface should build from parsed soil");
         for (
             layer_position,
-            (expected_porosity, expected_cpm, expected_thetfc, expected_thetdr),
+            (
+                expected_porosity,
+                expected_cpm,
+                expected_coca,
+                expected_thetfc,
+                expected_thetdr,
+            ),
         ) in expected.iter().enumerate()
         {
             let layer_index = layer_position + 1;
@@ -609,6 +627,11 @@ mod tests {
                 .state_surface
                 .get(&BoundarySymbol::from(format!("cpm_{layer_index:04}")))
                 .unwrap_or_else(|| panic!("cpm_{layer_index:04} should be present"))
+                .as_f64();
+            let observed_coca = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("coca_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("coca_{layer_index:04} should be present"))
                 .as_f64();
             let observed_thetfc = surface
                 .state_surface
@@ -628,6 +651,10 @@ mod tests {
             assert!(
                 (observed_cpm - expected_cpm).abs() < 1.0e-9,
                 "layer {layer_index} authoritative cpm must follow normalized overlap mapping"
+            );
+            assert!(
+                (observed_coca - expected_coca).abs() < 1.0e-9,
+                "layer {layer_index} authoritative coca must follow normalized overlap mapping"
             );
             assert!(
                 (observed_thetfc - expected_thetfc).abs() < 1.0e-9,

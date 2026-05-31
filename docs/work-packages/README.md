@@ -82,6 +82,12 @@ Authorized packages:
     (`wb18_perc_fc_#### + (1-cpm_####)*dg_####`) in lateral/drain
     saturated-zone and withdrawal paths, then rerun `unpalatable-rind`
     39-hillslope diagnostics focused on `latqcc` and coupled `Dp`.
+- `20260531-hphys0219-wb19-coca-threshold-authority-correction-001/`
+  - Purpose: execute contract-first WB19 threshold-authority correction by
+    restoring baseline `drfc` coefficient lineage to `coca_####`
+    (`wb18_perc_fc_#### + (1-coca_####)*dg_####`), then rerun
+    `unpalatable-rind` 39-hillslope diagnostics to re-adjudicate coupled
+    `Dp`/`latqcc` residual posture.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

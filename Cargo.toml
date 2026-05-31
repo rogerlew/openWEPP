@@ -353,8 +353,8 @@ name = "hphys0209_profilewp_adjudication_contract"
 path = "tests/integration/hphys0209_profilewp_adjudication_contract.rs"
 
 [[test]]
-name = "hphys0218_wb19_cpm_threshold_contract"
-path = "tests/integration/hphys0218_wb19_cpm_threshold_contract.rs"
+name = "hphys0219_wb19_coca_threshold_contract"
+path = "tests/integration/hphys0219_wb19_coca_threshold_contract.rs"
 
 [profile.release]
 lto = "thin"

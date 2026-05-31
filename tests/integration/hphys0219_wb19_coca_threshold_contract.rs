@@ -9,7 +9,7 @@ use openwepp_sim_contract::status::BoundaryClass;
 
 const TOL: f64 = 1.0e-12;
 
-fn seeded_lateral_state(cpm: f64) -> BTreeMap<BoundarySymbol, BoundaryValue> {
+fn seeded_lateral_state(coca: f64, cpm: f64) -> BTreeMap<BoundarySymbol, BoundaryValue> {
     let mut state = BTreeMap::new();
     state.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
     state.insert(
@@ -39,6 +39,10 @@ fn seeded_lateral_state(cpm: f64) -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundaryValue::scalar(1.0e-5),
     );
     state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
+    state.insert(
+        BoundarySymbol::from("coca_0001"),
+        BoundaryValue::scalar(coca),
+    );
     state.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(cpm));
     state
 }
@@ -72,8 +76,8 @@ fn writeback_scalar(response: &openwepp_kernel_contract::KernelRunResponse, symb
 }
 
 #[test]
-fn hphys0218_wb19_lateral_withdrawal_uses_cpm_adjusted_threshold() {
-    let state = seeded_lateral_state(0.5);
+fn hphys0219_wb19_lateral_withdrawal_uses_coca_adjusted_threshold() {
+    let state = seeded_lateral_state(0.5, 1.0);
     let mut kernel = Wb11HydrologyKernel;
 
     let response = kernel.run_hillslope_phase(&lateral_request(&state));
@@ -84,7 +88,7 @@ fn hphys0218_wb19_lateral_withdrawal_uses_cpm_adjusted_threshold() {
     let soil_water_after = writeback_scalar(&response, "wb11_soil_water");
     let drainable_after = writeback_scalar(&response, "wb11_drainable_storage");
 
-    // drfc-equivalent threshold: fc + (1-cpm)*dg = 0.2 + 0.5*1.0 = 0.7
+    // drfc-equivalent threshold: fc + (1-coca)*dg = 0.2 + 0.5*1.0 = 0.7
     // available above threshold: 1.0 - 0.7 = 0.3 (not legacy 0.8 from fc-only threshold)
     assert!((q_lateral - 0.3).abs() <= TOL, "q={q_lateral}");
     assert!(
@@ -102,8 +106,8 @@ fn hphys0218_wb19_lateral_withdrawal_uses_cpm_adjusted_threshold() {
 }
 
 #[test]
-fn hphys0218_wb19_lateral_rejects_domain_invalid_cpm() {
-    let state = seeded_lateral_state(1.2);
+fn hphys0219_wb19_lateral_rejects_domain_invalid_coca() {
+    let state = seeded_lateral_state(1.2, 1.0);
     let mut kernel = Wb11HydrologyKernel;
 
     let response = kernel.run_hillslope_phase(&lateral_request(&state));
@@ -111,5 +115,22 @@ fn hphys0218_wb19_lateral_rejects_domain_invalid_cpm() {
     assert_eq!(
         response.status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn hphys0219_wb19_threshold_is_independent_of_cpm_when_coca_is_fixed() {
+    let mut kernel = Wb11HydrologyKernel;
+    let response_cpm_low =
+        kernel.run_hillslope_phase(&lateral_request(&seeded_lateral_state(0.5, 0.5)));
+    let q_low = writeback_scalar(&response_cpm_low, "q");
+
+    let response_cpm_high =
+        kernel.run_hillslope_phase(&lateral_request(&seeded_lateral_state(0.5, 1.0)));
+    let q_high = writeback_scalar(&response_cpm_high, "q");
+
+    assert!(
+        (q_low - q_high).abs() <= TOL,
+        "q should follow coca-threshold lineage, not cpm lineage (q_low={q_low}, q_high={q_high})"
     );
 }
