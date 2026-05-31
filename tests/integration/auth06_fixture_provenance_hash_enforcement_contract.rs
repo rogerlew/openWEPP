@@ -102,19 +102,19 @@ fn auth06_schema_requires_fixture_hash_and_source_provenance_fields() {
 }
 
 #[test]
-fn auth06_active_level4_suites_publish_fixture_hashes_and_provenance_sidecars() {
+fn auth06_active_level4_and_level3_suites_publish_fixture_hashes_and_provenance_sidecars() {
     let registry = repo_file("docs/specifications/external-authority/registry.yaml");
     let suite_docs = [
         "docs/specifications/external-authority/suites/cas_l4_soil_fc_minus33_001.md",
         "docs/specifications/external-authority/suites/cas_l4_soil_wp_minus1500_001.md",
         "docs/specifications/external-authority/suites/cas_l4_watbal_relax_to_fc_001.md",
-        "docs/specifications/external-authority/suites/cas_l4_subhyd_solwpv_fcdep_branch_001.md",
+        "docs/specifications/external-authority/suites/cas_l3_subhyd_solwpv_fcdep_branch_001.md",
     ];
     let fixture_roots = [
         "tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001",
         "tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001",
         "tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001",
-        "tests/fixtures/constitutive/cas_l4_subhyd_solwpv_fcdep_branch_001",
+        "tests/fixtures/constitutive/cas_l3_subhyd_solwpv_fcdep_branch_001",
     ];
 
     for fixture_root in fixture_roots {

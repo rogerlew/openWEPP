@@ -2,7 +2,7 @@
 
 Status: Active
 Last updated: 2026-05-31
-Scope: normative schema for external-authority constitutive suites
+Scope: normative schema for external-authority suites
 
 ## Purpose
 
@@ -18,7 +18,7 @@ Each suite definition must provide the fields below.
 | `suite_id` | string | yes | Stable identifier: `cas_l<level>_<domain>_<law>_<nnn>`. |
 | `title` | string | yes | Human-readable suite name. |
 | `status` | enum | yes | `draft`, `active`, or `deprecated`. |
-| `authority_level` | enum | yes | `4`, `5`, or `6`. |
+| `authority_level` | enum | yes | `3`, `4`, `5`, or `6`. |
 | `domain` | string | yes | Primary domain (`soil`, `watbal`, `subhyd`, etc.). |
 | `process_family` | string | yes | Family under adjudication (`fc_wp`, `lateral_drain`, etc.). |
 | `sc_invariant_refs` | list[string] | yes | One or more `SC-*#INV-*` links. |
@@ -36,6 +36,8 @@ Each suite definition must provide the fields below.
 
 1. `suite_id` is immutable once suite status is `active`.
 2. `authority_level` controls default gate treatment:
+   - `3`: legacy/sanity branch-conformance evidence; default
+     periodic/manual + investigation, non-blocking.
    - `4`: constitutive correctness authority; blocking when in required lane.
    - `5`: measured/system validation; default non-blocking unless promoted.
    - `6`: independent-solver cross-check; default non-blocking unless promoted.
@@ -100,6 +102,7 @@ Suite IDs follow:
 
 Examples:
 
+- `cas_l3_subhyd_solwpv_fcdep_branch_001`
 - `cas_l4_soil_fc_minus33_001`
 - `cas_l4_soil_wp_minus1500_001`
 - `cas_l4_watbal_relax_to_fc_001`

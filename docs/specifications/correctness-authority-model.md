@@ -7,7 +7,7 @@ Scope: openWEPP kernel/process correctness adjudication and gate authority
 ## Purpose
 
 Define the normative ranking and adjudication rules for correctness acceptance
-in openWEPP, including how canonical `SC-*` contracts, external constitutive
+in openWEPP, including how canonical `SC-*` contracts, external-authority
 suites, and legacy comparators are used.
 
 ## Canonical Authority Planes
@@ -17,7 +17,7 @@ suites, and legacy comparators are used.
      `docs/specifications/science-contracts/contracts/`.
 2. **Executable authority plane (normative gates):**
    - Runtime acceptance is adjudicated by gate outcomes tied to `SC-*`
-     invariants and external constitutive suites.
+     invariants and external-authority suites.
 
 Work-package artifacts remain evidence only and do not replace either plane.
 
@@ -27,21 +27,24 @@ Work-package artifacts remain evidence only and do not replace either plane.
 |---|---|---|---|
 | A0 | `SC-*` canonical contract authority | Defines invariant truth and required guard posture. | Required. Missing/ambiguous authority is `HOLD`. |
 | A1 | Hard invariant gates (closure/bounds/domain) | Validates conservation, bounds, and typed fail-closed behavior. | Required. Failure is blocking. |
-| A2 | External-authority constitutive suites (Level-4) | Validates constitutive physics laws not adjudicable by conservation alone. | Required for touched process families. Failure is blocking. |
-| A3 | External validation suites (Level-5 measured data) | Validates system-level behavior versus empirical observations. | Non-blocking unless package/release explicitly upgrades scope. |
-| A4 | Independent solver suites (Level-6) | Cross-checks selected canonical scenarios with independent solvers. | Non-blocking unless package/release explicitly upgrades scope. |
-| A5 | Legacy comparator suites | Detects change and regression signatures versus legacy baselines. | Investigation signal only; not acceptance authority. |
+| A2 | External-authority legacy/sanity suites (Level-3) | Validates legacy-anchored branch/conformance laws as structured investigation evidence. | Non-blocking investigation signal; not acceptance authority. |
+| A3 | External-authority constitutive suites (Level-4) | Validates constitutive physics laws not adjudicable by conservation alone. | Required for touched process families. Failure is blocking. |
+| A4 | External validation suites (Level-5 measured data) | Validates system-level behavior versus empirical observations. | Non-blocking unless package/release explicitly upgrades scope. |
+| A5 | Independent solver suites (Level-6) | Cross-checks selected canonical scenarios with independent solvers. | Non-blocking unless package/release explicitly upgrades scope. |
+| A6 | Legacy comparator suites | Detects change and regression signatures versus legacy baselines. | Investigation signal only; not acceptance authority. |
 
 ## Adjudication Rules (Normative)
 
 1. `A0` and `A1` are mandatory for all kernel-affecting packages.
 2. If a package touches a process family with defined Level-4 suites, the
-   relevant `A2` suites are mandatory and blocking.
-3. `A3` and `A4` default to periodic/manual validation unless a release gate
+   relevant `A3` suites are mandatory and blocking.
+3. Level-3 legacy/sanity suites (`A2`) must remain non-blocking investigation
+   evidence and cannot be the sole acceptance oracle.
+4. `A4` and `A5` default to periodic/manual validation unless a release gate
    explicitly promotes them to required.
-4. `A5` (legacy comparator) cannot be used as a sole acceptance oracle.
-5. Legacy-only deviations route to investigation/disposition; they do not
-   override passing `A0-A2` outcomes.
+5. `A6` (legacy comparator) cannot be used as a sole acceptance oracle.
+6. Legacy-only deviations (`A2`/`A6`) route to investigation/disposition; they
+   do not override passing `A0/A1/A3` outcomes.
 
 ## Release/CI Lane Enforcement (Normative)
 
@@ -76,12 +79,12 @@ Failure-class policy:
    - does not fail the workflow by default,
    - requires explicit investigation/disposition artifact follow-through.
 
-## External-Authority Constitutive Suite Minimum Schema (Normative)
+## External-Authority Suite Minimum Schema (Normative)
 
-Every external-authority constitutive suite must define, at minimum:
+Every external-authority suite must define, at minimum:
 
 1. `suite_id` (stable identifier).
-2. `authority_level` (`4`, `5`, or `6`).
+2. `authority_level` (`3`, `4`, `5`, or `6`).
 3. `domain` and `process_family`.
 4. `sc_invariant_refs` (one or more `SC-*#INV-*` references).
 5. `external_citations` (source + version/edition + commit/date where
@@ -108,7 +111,7 @@ Every external-authority constitutive suite must define, at minimum:
 Minimum retirement readiness criteria:
 
 1. Hard-gate (`A1`) coverage runs on CI for kernel PRs.
-2. Level-4 constitutive suites (`A2`) exist for active release-critical
+2. Level-4 constitutive suites (`A3`) exist for active release-critical
    process families.
 3. Required authority-stack lanes pass for a sustained release window.
 

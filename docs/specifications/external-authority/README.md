@@ -1,14 +1,14 @@
-# External-Authority Constitutive Suites
+# External-Authority Suites
 
 Status: Active
 Last updated: 2026-05-31
-Scope: suite structure and authoring standards for external constitutive
-authority used by openWEPP correctness gates
+Scope: suite structure and authoring standards for external-authority suites
+used by openWEPP correctness gates
 
 ## Purpose
 
-Define where external-authority constitutive suites live, their minimum shape,
-and standard practices for linking them to canonical `SC-*` invariants.
+Define where external-authority suites live, their minimum shape, and standard
+practices for linking them to canonical `SC-*` invariants.
 
 This document is a framework entrypoint. AUTH02 expands it with concrete schema
 templates and registry files.
@@ -71,11 +71,13 @@ See:
    - require lockfile `fixtures.sha256`,
    - require provenance sidecar `fixtures.provenance.yaml` with source commit
      and source hash.
-6. Keep legacy comparator references out of constitutive acceptance criteria.
+6. Level-3 legacy/sanity suites may encode legacy-anchored branch laws, but
+   they must remain non-blocking investigation evidence; Level-4+ constitutive
+   acceptance criteria must not depend on legacy parity matching.
 
 ## Package Sequencing
 
-When constitutive suite work affects kernel/runtime acceptance:
+When external-authority suite work affects kernel/runtime acceptance:
 
 1. amend canonical contract authority (`SC-*`),
 2. add or amend contract-derived suite tests,

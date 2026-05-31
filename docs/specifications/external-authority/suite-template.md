@@ -54,6 +54,9 @@ provenance:
 notes: ""
 ---
 
+`authority_level` may be `3` (legacy/sanity), `4` (constitutive), `5`
+(measured/system), or `6` (independent solver).
+
 # <suite_id> <title>
 
 ## Purpose

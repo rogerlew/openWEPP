@@ -1,8 +1,8 @@
 ---
-suite_id: cas_l4_subhyd_solwpv_fcdep_branch_001
-title: WB19 `solwpv` FCDEP Branch Legacy-Conformance Suite
+suite_id: cas_l3_subhyd_solwpv_fcdep_branch_001
+title: WB19 `solwpv` FCDEP Branch Legacy/Sanity Conformance Suite
 status: active
-authority_level: 5
+authority_level: 3
 domain: subhyd
 process_family: lateral_drain
 sc_invariant_refs:
@@ -25,15 +25,15 @@ external_citations:
     notes: "Static provenance: fcdep mutation is guarded by solwpv < 2006."
 fixtures:
   - fixture_id: FX-SOLWPV-FCDEP-BRANCH-001
-    path: tests/fixtures/constitutive/cas_l4_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json
+    path: tests/fixtures/constitutive/cas_l3_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json
     fixture_class: component
     units_basis: m_and_dimensionless
-    hash: f8f868dedcfb17c5e8862689ee21c920b151f02029bd26ad307e8c11be248163
+    hash: 6efea65c268cd8cd632340666528d1a207165c3c84bf25f15bc435cc45ae7175
     source_repo: /workdir/openWEPP
     source_commit: a2358ab1709adb6f78b1b4ed1b4e31c3f1c52b20
     source_path: tests/fixtures/constitutive/cas_l4_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json
     source_sha256: f8f868dedcfb17c5e8862689ee21c920b151f02029bd26ad307e8c11be248163
-    transform_note: "Repository-authored constitutive fixture for WB19 branch authority."
+    transform_note: "AUTH09 metadata retiering: suite moved from Level-4 naming to Level-3 legacy/sanity taxonomy; branch-law payload values unchanged."
     seed_or_case: solwpv_fcdep_branch_matrix
 tolerances:
   mode: abs
@@ -50,10 +50,10 @@ provenance:
   authored_by: Codex
   authored_utc: 2026-05-31
   last_updated_utc: 2026-05-31
-notes: "Legacy-anchored branch-conformance suite; non-blocking investigation lane pending independent constitutive authority."
+notes: "Level-3 legacy/sanity branch-conformance suite; non-blocking investigation lane pending independent constitutive authority."
 ---
 
-# cas_l4_subhyd_solwpv_fcdep_branch_001 WB19 `solwpv` FCDEP Branch Legacy-Conformance Suite
+# cas_l3_subhyd_solwpv_fcdep_branch_001 WB19 `solwpv` FCDEP Branch Legacy/Sanity Conformance Suite
 
 ## Purpose
 
@@ -70,7 +70,7 @@ mutation:
 - baseline static provenance:
   `/workdir/wepp-forest_260430_baseline/src/watbal.for`
 
-This suite is intentionally classified as legacy-conformance evidence
+This suite is intentionally classified as Level-3 legacy/sanity evidence
 (`periodic`/`investigation`) and is not a constitutive physics authority gate.
 
 ## Expected Behavior

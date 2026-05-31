@@ -94,8 +94,13 @@ Authorized packages:
   - Purpose: re-tier WB19 `solwpv` branch-law suite governance from
     constitutive required/hard-fail posture to periodic/investigation
     legacy-conformance posture, aligned with correctness re-anchoring policy.
+- `20260531-auth09-legacy-sanity-tier-normalization-001/`
+  - Purpose: establish a canonical Level-3 legacy/sanity external-authority
+    tier, re-tier the WB19 `solwpv` branch-conformance suite into that tier,
+    and align authority schema/model/registry/contracts/tests so suite ID,
+    authority level, and gate posture are coherent.
 - Execution order for correctness-authority stream is:
-  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a`.
+  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a -> auth09`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
   - Purpose: execute immediate HPHYS0216 follow-up diagnostics to explain the
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated

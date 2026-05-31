@@ -1245,7 +1245,7 @@ baseline `watbal.for` by tightening `fcdep` mutation scope.
 3. For `solwpv >= 2006` (including disturbed-soil modes `9001+`), WB19 must
    not apply `fcdep = fcdep - q/watyld`; `fcdep` remains the saturated-depth
    thickness implied by the selected saturated block for that step.
-4. External-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001` is
+4. External-authority suite `cas_l3_subhyd_solwpv_fcdep_branch_001` is
    periodic/investigation legacy-conformance evidence for this branch law under
    `INV-WATBAL-009` and `SC-SUBHYD-001#INV-SUBHYD-015`; it is non-blocking
    pending independent constitutive authority.
@@ -1499,6 +1499,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `60` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `58` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only (no `fcdep` mutation for `solwpv >= 2006`, including `9001+`) and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `59` | `Codex` | AUTH08A governance re-tiering: reclassified `cas_l4_subhyd_solwpv_fcdep_branch_001` as periodic/investigation legacy-conformance evidence (non-blocking) pending independent constitutive authority. |
 | `2026-05-31` | `57` | `Codex` | AUTH03 amendment: added Level-4 constitutive gate bootstrap authority for FC/WP and relax-to-FC percolation threshold closure, including blocking suite linkage and fail-closed symbol posture. |

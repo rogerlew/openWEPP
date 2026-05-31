@@ -127,29 +127,29 @@ fn writeback_scalar(response: &openwepp_kernel_contract::KernelRunResponse, symb
 fn auth08_suite_registry_and_contract_addendum_are_present() {
     let registry = repo_file("docs/specifications/external-authority/registry.yaml");
     let suite = repo_file(
-        "docs/specifications/external-authority/suites/cas_l4_subhyd_solwpv_fcdep_branch_001.md",
+        "docs/specifications/external-authority/suites/cas_l3_subhyd_solwpv_fcdep_branch_001.md",
     );
     let subhyd = repo_file("docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md");
     let watbal = repo_file("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
 
     assert!(
-        registry.contains("cas_l4_subhyd_solwpv_fcdep_branch_001")
-            && registry.contains("authority_level: 5")
+        registry.contains("cas_l3_subhyd_solwpv_fcdep_branch_001")
+            && registry.contains("authority_level: 3")
             && registry.contains("gate_lane: periodic")
             && registry.contains("failure_class: investigation")
             && registry.contains(
                 "tests/integration/auth08_wb19_solwpv_fcdep_branch_constitutive_contract.rs"
             ),
-        "external-authority registry must include AUTH08A periodic investigation legacy-conformance suite"
+        "external-authority registry must include AUTH09 Level-3 periodic investigation legacy/sanity suite"
     );
     assert!(
         suite.contains("SC-SUBHYD-001#INV-SUBHYD-015")
             && suite.contains("SC-WATBAL-001#INV-WATBAL-009")
-            && suite.contains("legacy-conformance evidence")
+            && suite.contains("Level-3 legacy/sanity evidence")
             && suite.contains("hash:")
             && suite.contains("source_commit:")
             && suite.contains("transform_note:"),
-        "AUTH08A suite must link SC invariants, legacy-conformance posture, and fixture provenance metadata"
+        "AUTH09 suite must link SC invariants, legacy/sanity posture, and fixture provenance metadata"
     );
     assert!(
         subhyd.contains("HPHYS0222 WB19 `solwpv` Branch-Authority Correction Addendum")
@@ -172,9 +172,9 @@ fn auth08_suite_registry_and_contract_addendum_are_present() {
 #[test]
 fn auth08_solwpv_branch_fixture_cases_enforce_fcdep_mutation_scope() {
     let fixture: BranchFixture = repo_json_fixture(
-        "tests/fixtures/constitutive/cas_l4_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json",
+        "tests/fixtures/constitutive/cas_l3_subhyd_solwpv_fcdep_branch_001/solwpv_fcdep_branch_cases.json",
     );
-    assert_eq!(fixture.suite_id, "cas_l4_subhyd_solwpv_fcdep_branch_001");
+    assert_eq!(fixture.suite_id, "cas_l3_subhyd_solwpv_fcdep_branch_001");
     assert_eq!(fixture.units_basis, "m_and_dimensionless");
 
     let mut kernel = Wb11HydrologyKernel;

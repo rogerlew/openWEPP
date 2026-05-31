@@ -442,7 +442,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 4. Disturbed-soil modes (`solwpv >= 9001`) remain valid for conductivity
    selection but are not authorized to trigger WB19 `fcdep` mutation.
 5. External-authority legacy-conformance suite:
-   `cas_l4_subhyd_solwpv_fcdep_branch_001` (`periodic`,
+   `cas_l3_subhyd_solwpv_fcdep_branch_001` (`periodic`,
    `investigation`), linked to `INV-SUBHYD-015` as non-blocking governance
    evidence pending independent constitutive authority.
 
@@ -459,6 +459,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `15` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only; clarified disturbed-soil mode interaction and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `14` | `Codex` | AUTH08A governance re-tiering: reclassified `cas_l4_subhyd_solwpv_fcdep_branch_001` as periodic/investigation legacy-conformance evidence (non-blocking) pending independent constitutive authority. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-09 work-package prep. |

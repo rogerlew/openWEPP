@@ -1,5 +1,5 @@
 {
-  "suite_id": "cas_l4_subhyd_solwpv_fcdep_branch_001",
+  "suite_id": "cas_l3_subhyd_solwpv_fcdep_branch_001",
   "units_basis": "m_and_dimensionless",
   "tolerance_abs": 1.0e-12,
   "cases": [
