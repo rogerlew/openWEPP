@@ -70,6 +70,12 @@ Authorized packages:
     consuming it in WB13 `ProfileFCStore` publication
     (`Σ(thetfc_i*dg_i)*1000 + tail`) with fail-closed guards and workspace
     gate evidence.
+- `20260531-hphys0217-post-0216d-coupled-family-rerun-readjudication-001/`
+  - Purpose: execute post-HPHYS0216D integrated rerun/adjudication by running a
+    fresh `unpalatable-rind` 39-hillslope lane, recomputing residual-family
+    diagnostics (`Dp`, `latqcc`, `Total-Soil`, `SoilWaterTotal`, control
+    `ProfileFCStore`), and publishing the next hold-lift disposition plus
+    follow-on implementation queue.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation
@@ -148,7 +154,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217+`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218+`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.
