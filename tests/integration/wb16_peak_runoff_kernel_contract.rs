@@ -85,6 +85,8 @@ fn seeded_wb16_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("cpm_0002"), BoundaryValue::scalar(1.0));
     state_surface.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(1.0));
     state_surface.insert(BoundarySymbol::from("nslpts"), BoundaryValue::scalar(2.0));

@@ -757,6 +757,10 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("dg_{layer_index:04}"))
     }
 
+    fn wb19_cpm_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("cpm_{layer_index:04}"))
+    }
+
     fn frost_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{layer_index:04}"))
     }
@@ -856,7 +860,7 @@ impl Wb11HydrologyKernel {
         }
 
         let mut theta = Vec::with_capacity(layer_count);
-        let mut field_capacity = Vec::with_capacity(layer_count);
+        let mut drain_threshold = Vec::with_capacity(layer_count);
         let mut conductivity = Vec::with_capacity(layer_count);
         let mut thickness = Vec::with_capacity(layer_count);
 
@@ -865,6 +869,7 @@ impl Wb11HydrologyKernel {
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
             let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let cpm_symbol = Self::wb19_cpm_symbol(layer_index);
 
             let layer_theta =
                 Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
@@ -908,30 +913,50 @@ impl Wb11HydrologyKernel {
                 });
             }
 
+            let cpm = Self::require_state_scalar_for_symbol(request, phase_class, &cpm_symbol)?;
+            if cpm <= WB11_ZERO_THRESHOLD || cpm > 1.0 + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: cpm_symbol,
+                    value: cpm,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: Some(1.0),
+                });
+            }
+
+            let layer_drain_threshold = layer_fc + ((1.0 - cpm) * layer_dg);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &fc_symbol,
+                layer_drain_threshold,
+                Some(0.0),
+                None,
+            )?;
+
             theta.push(layer_theta);
-            field_capacity.push(layer_fc);
+            drain_threshold.push(layer_drain_threshold);
             conductivity.push(layer_ssc);
             thickness.push(layer_dg);
         }
 
-        Ok((theta, field_capacity, conductivity, thickness))
+        Ok((theta, drain_threshold, conductivity, thickness))
     }
 
-    fn wb19_drainable_storage(theta: &[f64], field_capacity: &[f64]) -> f64 {
+    fn wb19_drainable_storage(theta: &[f64], drain_threshold: &[f64]) -> f64 {
         theta
             .iter()
-            .zip(field_capacity.iter())
-            .map(|(theta_i, fc_i)| (theta_i - fc_i).max(0.0))
+            .zip(drain_threshold.iter())
+            .map(|(theta_i, threshold_i)| (theta_i - threshold_i).max(0.0))
             .sum()
     }
 
-    fn wb19_withdraw_top_down(theta: &mut [f64], field_capacity: &[f64], amount: f64) -> f64 {
+    fn wb19_withdraw_top_down(theta: &mut [f64], drain_threshold: &[f64], amount: f64) -> f64 {
         let mut remaining = amount.max(0.0);
-        for (theta_i, fc_i) in theta.iter_mut().zip(field_capacity.iter()) {
+        for (theta_i, threshold_i) in theta.iter_mut().zip(drain_threshold.iter()) {
             if remaining <= WB11_ZERO_THRESHOLD {
                 break;
             }
-            let available = (*theta_i - *fc_i).max(0.0);
+            let available = (*theta_i - *threshold_i).max(0.0);
             if available <= WB11_ZERO_THRESHOLD {
                 continue;
             }
@@ -944,7 +969,7 @@ impl Wb11HydrologyKernel {
 
     fn wb19_withdraw_tile_to_surface(
         theta: &mut [f64],
-        field_capacity: &[f64],
+        drain_threshold: &[f64],
         tile_layer_index: usize,
         amount: f64,
     ) -> f64 {
@@ -957,7 +982,7 @@ impl Wb11HydrologyKernel {
             if remaining <= WB11_ZERO_THRESHOLD {
                 break;
             }
-            let available = (theta[layer] - field_capacity[layer]).max(0.0);
+            let available = (theta[layer] - drain_threshold[layer]).max(0.0);
             if available > WB11_ZERO_THRESHOLD {
                 let withdrawn = available.min(remaining);
                 theta[layer] -= withdrawn;

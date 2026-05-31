@@ -352,6 +352,10 @@ path = "tests/integration/hphys0208_fc_threshold_coupled_residual_contract.rs"
 name = "hphys0209_profilewp_adjudication_contract"
 path = "tests/integration/hphys0209_profilewp_adjudication_contract.rs"
 
+[[test]]
+name = "hphys0218_wb19_cpm_threshold_contract"
+path = "tests/integration/hphys0218_wb19_cpm_threshold_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

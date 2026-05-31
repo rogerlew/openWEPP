@@ -109,7 +109,7 @@ Out of scope:
 | Coupled PL ordering preconditions | `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` (validated at growth dispatch before hydrology lane entry) |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
+| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `cpm_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
@@ -149,7 +149,7 @@ lateral/drainage).
 |---|---|---|---|---|
 | `BR-WATBAL-WB17-ET` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` | runtime | deterministic WB17 ET partition/writeback execution with typed guards (`HKERNEL-WB11-ET-E-001..003`) |
 | `BR-WATBAL-WB18-PERC` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` | runtime | deterministic WB18 per-layer percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
-| `BR-WATBAL-WB19-LAT` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic WB19 layer-aware lateral execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
+| `BR-WATBAL-WB19-LAT` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `cpm_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic WB19 layer-aware lateral execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-WATBAL-WB19-DRAIN` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic WB19 layer-aware drainage execution with typed guards (`HKERNEL-WB11-DRAIN-E-001..003`) |
 | `BR-WATBAL-WB11-UNSUPPORTED` | unsupported hydrology phase-class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
 
@@ -253,6 +253,8 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `watcon` publication lineage | `Total-Soil`, `SoilWaterTotal` | WB13/hydout-equivalent aggregate publication alias family | `mm` publication units preserve declared depth-conversion semantics | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | WB18 per-layer conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `cpm_i` | `cpm_####` | WB11/WB19 entrapped-air control surfaces consumed by WB19 drain-threshold lineage | dimensionless preserved (`0 < cpm <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `drfc_i` | `wb18_perc_fc_#### + (1-cpm_####)*dg_####` | WB19 layer drain-threshold authority (legacy `drfc`) for saturation checks and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `pei` | `wb18_perc_pei_####` | WB18 per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ti`, `Δt`, `Ksai`, `Bi` | WB18 derived runtime intermediates | per-layer percolation routing diagnostics/intermediate terms | chapter-declared units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `anisrt`, `ddrain`, `sdrain`, `drdiam` | `wb19_lateral_anisotropy_ratio`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter` | WB19 lateral/drainage geometry + anisotropy control surfaces | declared units preserved (`-`, `m`, `m`, `m`) | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1185,6 +1187,22 @@ baseline-authoritative WB11 seed symbols for per-layer storage initialization.
    are typed hard-fail WB11 seed states; FC/WP surrogate reconstruction is
    prohibited.
 
+### HPHYS0218 WB19 `drfc`-Equivalent Threshold Closure Addendum
+
+HPHYS0218 closes WB19 threshold-lineage drift by requiring the legacy
+drain-threshold relation inside lateral/drainage kernels.
+
+1. For each layer `i`, WB19 must derive:
+   `drfc_i = wb18_perc_fc_i + (1-cpm_i)*dg_i`.
+2. WB19 lateral/drainage saturated-zone checks and top-down/tile withdrawals
+   must use `drfc_i` (not `wb18_perc_fc_i` alone) for:
+   - saturated-thickness classification,
+   - drainable-pool calculations,
+   - lateral (`q`) and drainage (`Qdd`) realized withdrawal updates.
+3. Required domain for `cpm_i` via `cpm_####` is `0 < cpm_i <= 1`.
+4. Missing/non-finite/domain-invalid `cpm_####` is a typed hard-fail WB19
+   execution state; no fallback to FC-only thresholds is permitted.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1411,6 +1429,7 @@ its adjudication posture without changing publication authority.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `54` | `Codex` | HPHYS0218 amendment: required WB19 `drfc`-equivalent threshold lineage (`wb18_perc_fc_#### + (1-cpm_####)*dg_####`) for saturated-zone classification and lateral/drainage withdrawals with fail-closed `cpm_####` guard posture. |
 | `2026-05-31` | `53` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` authority to layer aggregation plus explicit normalized-tail contribution (`wb13_profile_fc_tail_mm`), retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and added typed fail-closed guard posture for missing/non-finite/negative tail symbols. |
 | `2026-05-31` | `52` | `Codex` | HPHYS0216 amendment: realigned `ProfileFCStore` publication authority to baseline-authoritative layer aggregation (`Σ(thetfc_i*dg_i)*1000`), demoted `wb13_profile_fc_store_mm` to diagnostic carry surface, and preserved typed fail-closed guard obligations for missing/non-finite layer symbols. |
 | `2026-05-30` | `51` | `Codex` | HPHYS0209 amendment: codified near-closed `ProfileWPStore` adjudication governance, preserving HPHYS0207 `wb13_profile_wp_store_mm` publication authority and allowing isolated stable residuals as diagnostic expected process-correct evidence only under non-regressing profile depth/capacity/order conditions. |

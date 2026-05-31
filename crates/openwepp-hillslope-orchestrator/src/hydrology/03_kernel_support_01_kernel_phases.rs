@@ -961,19 +961,19 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let (mut theta, field_capacity, conductivity, thickness) =
+        let (mut theta, drain_threshold, conductivity, thickness) =
             Self::wb19_load_layer_state(request, phase_class)?;
 
         let mut saturated_thickness = 0.0_f64;
         let mut conductivity_depth_sum = 0.0_f64;
         let mut saturated_depth_sum = 0.0_f64;
-        for (((theta_i, fc_i), ssc_i), dg_i) in theta
+        for (((theta_i, threshold_i), ssc_i), dg_i) in theta
             .iter()
-            .zip(field_capacity.iter())
+            .zip(drain_threshold.iter())
             .zip(conductivity.iter())
             .zip(thickness.iter())
         {
-            if *theta_i + WB11_ZERO_THRESHOLD >= *fc_i {
+            if *theta_i + WB11_ZERO_THRESHOLD >= *threshold_i {
                 saturated_thickness += *dg_i;
                 saturated_depth_sum += *dg_i;
                 conductivity_depth_sum += *ssc_i * *dg_i;
@@ -1019,11 +1019,12 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let layer_pool = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
         let available_pool = layer_pool.max(drainable_storage_legacy + recharge_pe);
         let q_lateral_target = q_lateral_potential.min(available_pool);
-        let q_lateral = Self::wb19_withdraw_top_down(&mut theta, &field_capacity, q_lateral_target);
-        let drainable_after = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let q_lateral =
+            Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
+        let drainable_after = Self::wb19_drainable_storage(&theta, &drain_threshold);
         let soil_water_after = (soil_water_before - q_lateral).max(0.0);
 
         Self::require_state_range(
@@ -1146,9 +1147,9 @@ impl Wb11HydrologyKernel {
             });
         };
 
-        let (mut theta, field_capacity, conductivity, thickness) =
+        let (mut theta, drain_threshold, conductivity, thickness) =
             Self::wb19_load_layer_state(request, phase_class)?;
-        let layer_pool = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
         let available_pool = layer_pool.max(drainable_storage_legacy);
 
         let mut q_drainage_potential = 0.0_f64;
@@ -1213,7 +1214,7 @@ impl Wb11HydrologyKernel {
             let mut watbl = 0.0_f64;
             let mut hit_unsat_zone = false;
             for idx in (0..theta.len()).rev() {
-                if theta[idx] + WB11_ZERO_THRESHOLD >= field_capacity[idx] {
+                if theta[idx] + WB11_ZERO_THRESHOLD >= drain_threshold[idx] {
                     if !hit_unsat_zone {
                         watbl += thickness[idx];
                     }
@@ -1355,11 +1356,11 @@ impl Wb11HydrologyKernel {
             .min(available_pool);
         let q_drainage = Self::wb19_withdraw_tile_to_surface(
             &mut theta,
-            &field_capacity,
+            &drain_threshold,
             tile_layer_index,
             q_drainage_target,
         );
-        let drainable_after = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let drainable_after = Self::wb19_drainable_storage(&theta, &drain_threshold);
         let soil_water_after = (soil_water_before - q_drainage).max(0.0);
         Self::require_state_range(
             phase_class,

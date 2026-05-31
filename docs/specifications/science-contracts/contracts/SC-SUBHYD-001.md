@@ -117,7 +117,7 @@ replace the governing Chapter-6 process equations.
 | Surface | Symbols |
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
-| Layer hydrology state family | `nsl`, `solthk`, `dg_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####` |
+| Layer hydrology state family | `nsl`, `solthk`, `dg_####`, `cpm_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####` |
 | Lateral geometry + conductivity family | `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio` |
 | Drainage geometry + capacity family | `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 | Coupling carry-forward surface | `Pe` |
@@ -144,13 +144,14 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 
 ## Algorithm Specification (WB19 Lateral/Drainage Production Execution)
 
-1. Lateral phase loads WB18 per-layer states (`theta`, `fc`, `ssc`, `dg`) and
+1. Lateral phase loads WB18 per-layer states (`theta`, `fc`, `ssc`, `dg`, `cpm`) and
    computes saturated-zone metrics and effective conductivity over saturated
    thickness:
+   - `drfc_i = fc_i + (1-cpm_i)*dg_i`
    - `Ke = 86400 * (Σ(ssc_i * dg_i) / Σ(dg_i))`
    - `alpha = atan(avgslp)`
    - `q_potential = (Ho * wb19_lateral_anisotropy_ratio * Ke * sin(alpha)) / slplen`
-2. Lateral phase withdraws `q` from layer excess water (`theta_i - fc_i`) in
+2. Lateral phase withdraws `q` from layer excess water (`theta_i - drfc_i`) in
    top-to-bottom sequence and emits actual `q` after residual withdrawal
    reduction.
 3. Drainage phase (when `wb19_drain_enabled = 1`) computes Eq. [6.2.10]-[6.2.11]
@@ -167,7 +168,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
+| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `cpm_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
 | `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic layer-aware drainage execution/writeback |
 | `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
@@ -187,8 +188,8 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-011 | Drainage-capacity invariant: emitted tile/ditch drainage flux cannot exceed declared drainage coefficient (`Qdd <= D.C.`); when Eq. [6.2.10] exceeds capacity, output is explicitly capped. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-009 | Cross-domain coupling invariant: daily subsurface/drain loss term exported as `Qd` is unit/sign-consistent with Chapter-5 daily closure and preserves subsurface-contribution semantics for watershed/channel runon accounting. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-010 | Governance scope invariant: contract claims remain within Chapter-6 subsurface/drainage scope; unsupported extrapolation to alternate groundwater/baseflow physics without companion authority is non-promotable. | governance-fail | REF-SUBHYD-CH6-INTRO, REF-SUBHYD-CH13-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-012 | WB19 lateral execution invariant: lateral phase computes Eq. [6.2.4]-style deterministic `q` from layer-aware conductivity/geometry symbols and updates `wb18_perc_theta_####` + `wb11_drainable_storage` through top-to-bottom excess-water withdrawal. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-013 | WB19 drainage execution invariant: drainage phase computes Eq. [6.2.10]-[6.2.11] deterministic `Qdd`, applies explicit capacity cap (`wb11_drainage_coefficient`), emits `Qd = q + Qdd`, and updates `wb18_perc_theta_####` + `wb11_drainable_storage` without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-012 | WB19 lateral execution invariant: lateral phase computes Eq. [6.2.4]-style deterministic `q` from layer-aware conductivity/geometry symbols and updates `wb18_perc_theta_####` + `wb11_drainable_storage` through top-to-bottom excess-water withdrawal above `drfc_i = fc_i + (1-cpm_i)*dg_i`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-013 | WB19 drainage execution invariant: drainage phase computes Eq. [6.2.10]-[6.2.11] deterministic `Qdd`, applies explicit capacity cap (`wb11_drainage_coefficient`), emits `Qd = q + Qdd`, and updates `wb18_perc_theta_####` + `wb11_drainable_storage` using `drfc_i` threshold lineage without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-014 | WB19 lateral/drainage guard invariant: missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Invariant Guard Map
@@ -221,6 +222,8 @@ alias continuity for production kernels.
 | `θFC_i` | `wb18_perc_fc_####` | WB19 per-layer field-capacity surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `K_i` | `wb18_perc_ssc_####` | WB19 per-layer saturated conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `cpm_i` | `cpm_####` | WB19 entrapped-air control surfaces used by drain-threshold lineage | dimensionless preserved (`0 < cpm <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `drfc_i` | `wb18_perc_fc_#### + (1-cpm_####)*dg_####` | WB19 drain-threshold lineage used for saturated-zone classification and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `L` | `slplen` | hillslope length for lateral flux denominator | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `α` | `atan(avgslp)` | slope angle reconstructed from runtime slope ratio | `rad` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `anisrt` | `wb19_lateral_anisotropy_ratio` | lateral anisotropy multiplier | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -381,6 +384,16 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    typed hard-fail subsurface/percolation publication states; surrogate
    fallback is prohibited for WB13 `latqcc`/`Dp` closure claims.
 
+## HPHYS0218 WB19 `drfc` Threshold-Lineage Addendum
+
+1. WB19 layer drain threshold authority is:
+   `drfc_i = wb18_perc_fc_i + (1-cpm_i)*dg_i`.
+2. WB19 saturated-zone classification and realized lateral/drainage
+   withdrawals (`q`, `Qdd`) must use `drfc_i` as the layer threshold.
+3. `cpm_####` is required and must satisfy `0 < cpm <= 1`; missing/non-finite/
+   domain-invalid values are typed hard-fail WB19 execution states.
+4. FC-only fallback threshold behavior is prohibited for WB19 closure claims.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -404,3 +417,4 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 | `2026-05-23` | `7` | `Codex` | WB19 amendment: replaced WB11 fraction-split lateral/drain surrogate authority with layer-aware Eq. [6.2.4]/[6.2.10]-[6.2.11] production-kernel authority, explicit WB18/WB19 symbol aliases, and legacy-ID typed guard continuity requirements. |
 | `2026-05-30` | `8` | `Codex` | HPHYS0203 amendment: added subsurface WB13 robustness validation obligations for `latqcc`/`Dp` domain guards, non-finite protections, and deterministic regression-fixture coverage. |
 | `2026-05-30` | `9` | `Codex` | HPHYS0208 amendment: added coupled threshold-lineage closure authority linking WB13 `latqcc`/`Dp` residual adjudication to WB11/WB18 seed symbols (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) with explicit fail-closed/no-fallback posture. |
+| `2026-05-31` | `10` | `Codex` | HPHYS0218 amendment: required WB19 `drfc` threshold lineage (`wb18_perc_fc_#### + (1-cpm_####)*dg_####`) for saturated-zone checks and withdrawals, with fail-closed `cpm_####` guard continuity. |
