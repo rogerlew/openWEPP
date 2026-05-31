@@ -1,7 +1,7 @@
 # Kernel Process Contract Profile
 
 Status: Active
-Last updated: 2026-05-23
+Last updated: 2026-05-31
 Scope: openWEPP kernel-authority contracts and kernel-adjacent runtime projection
 contracts (`SC-*` files that define executable process behavior)
 
@@ -14,6 +14,8 @@ This profile complements, and does not replace:
 
 - `docs/specifications/science-contract-authoring-procedure.md`
 - `docs/specifications/science-contracts/README.md`
+- `docs/specifications/correctness-authority-model.md`
+- `docs/specifications/external-authority/README.md`
 - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
 
 ## Applicability (Normative)
@@ -34,6 +36,23 @@ Kernel process authority must live in canonical science-contract files:
 
 Work-package artifacts may summarize or disposition changes, but are not the
 authority location.
+
+## Correctness Authority Alignment (Normative)
+
+Kernel process contracts and their tests must align to the repository-level
+correctness authority model:
+
+- `docs/specifications/correctness-authority-model.md`
+
+Minimum alignment obligations:
+
+1. Contract invariants (`SC-*`) remain canonical truth definitions.
+2. Hard invariant gates (closure, bounds, domain guards) are mandatory and
+   blocking for touched behavior.
+3. External constitutive suites (Level-4) are mandatory for touched process
+   families where suites are defined.
+4. Legacy comparator outcomes are investigation signals only and cannot be sole
+   acceptance authority.
 
 ## Required Section Schema (Normative)
 

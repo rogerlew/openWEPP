@@ -1,6 +1,6 @@
 # Prompts
 
-Status: queued  
-Evidence mode: not-run
+Status: completed
 
-This directory holds AUTH01 execution prompts.
+- `active/` contains kickoff prompts used for AUTH01 execution.
+- `archived/` stores superseded prompt revisions.

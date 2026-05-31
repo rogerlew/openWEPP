@@ -1,7 +1,7 @@
 # Science Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-05-20
+Last updated: 2026-05-31
 Scope: openWEPP process-based science contracts (`SC-<DOMAIN>-<NNN>`)
 
 ## Purpose
@@ -25,6 +25,8 @@ This procedure is normative for contract promotion readiness and complements:
 - `docs/work-packages/README.md`
 - `docs/specifications/science-contracts/README.md`
 - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+- `docs/specifications/correctness-authority-model.md`
+- `docs/specifications/external-authority/README.md`
 
 ## Canonical Contract Location (Normative)
 
@@ -125,6 +127,23 @@ that control kernel branch execution, the contract revision must also satisfy:
 
 The kernel profile is an additional mandatory gate. Missing profile compliance
 keeps disposition in `HOLD`.
+
+## External Constitutive Suite Requirement (Normative)
+
+For kernel-affecting packages that touch process families with external
+constitutive suites:
+
+1. Contract revisions must reference the applicable suite IDs and linked
+   invariant IDs (`SC-*#INV-*`).
+2. Contract-derived tests must include the suite-required fixture/tolerance
+   assertions before production code changes.
+3. Each referenced suite must include explicit:
+   - external citation provenance,
+   - units and tolerance declaration,
+   - lane class (`required`, `periodic`, `manual`),
+   - failure class (`hard-fail`, `investigation`).
+4. Legacy parity comparators may be included as investigation evidence, but may
+   not replace constitutive suite obligations for acceptance.
 
 ## Required Dual-Agent Review Gate
 

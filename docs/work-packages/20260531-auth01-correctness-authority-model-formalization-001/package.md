@@ -1,10 +1,10 @@
 # 20260531-auth01-correctness-authority-model-formalization-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-05-31
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Formalize repository-level correctness authority ranking and adjudication rules

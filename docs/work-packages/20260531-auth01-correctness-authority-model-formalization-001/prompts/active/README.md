@@ -1,6 +1,5 @@
 # Active Prompts
 
-Status: queued  
-Evidence mode: not-run
+Status: completed
 
-Run `auth01_kickoff_agent_prompt.md` for the canonical AUTH01 execution flow.
+Contains the kickoff prompt used for AUTH01 execution.
