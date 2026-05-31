@@ -164,7 +164,7 @@ fn seeded_wb16_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(9.959_931_093_255_933),
+        BoundaryValue::scalar(11.709_931_093_255_933),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),

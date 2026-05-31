@@ -195,7 +195,7 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(10.75),
+        BoundaryValue::scalar(12.5),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
@@ -269,7 +269,7 @@ fn wb12_contract_conformance_reconciles_runoff_and_storage_surfaces() {
             .state_surface
             .get(&BoundarySymbol::from("wb12_storage_reconciled"))
             .copied(),
-        Some(BoundaryValue::scalar(10.75))
+        Some(BoundaryValue::scalar(12.5))
     );
     assert_eq!(
         report

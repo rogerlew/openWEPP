@@ -912,6 +912,15 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        let soil_water_before =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_before,
+            Some(0.0),
+            None,
+        )?;
 
         let recharge_pe =
             Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_PERC_RECHARGE_PE)?;
@@ -1012,11 +1021,18 @@ impl Wb11HydrologyKernel {
 
         let layer_pool = Self::wb19_drainable_storage(&theta, &field_capacity);
         let available_pool = layer_pool.max(drainable_storage_legacy + recharge_pe);
-        let q_lateral = q_lateral_potential.min(available_pool);
+        let q_lateral_target = q_lateral_potential.min(available_pool);
+        let q_lateral = Self::wb19_withdraw_top_down(&mut theta, &field_capacity, q_lateral_target);
+        let drainable_after = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let soil_water_after = (soil_water_before - q_lateral).max(0.0);
 
-        let _withdrawn = Self::wb19_withdraw_top_down(&mut theta, &field_capacity, q_lateral);
-
-        let drainable_after = (available_pool - q_lateral).max(0.0);
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
@@ -1029,7 +1045,7 @@ impl Wb11HydrologyKernel {
             WB11_SYMBOL_LATERAL_Q,
             q_lateral,
             Some(0.0),
-            Some(available_pool),
+            Some(q_lateral_target),
         )?;
 
         let Ok(status) =
@@ -1041,6 +1057,12 @@ impl Wb11HydrologyKernel {
         state_updates.push(WritebackField::bounded(
             WB11_SYMBOL_DRAINABLE_STORAGE,
             drainable_after,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
             Some(0.0),
             None,
         ));
@@ -1075,6 +1097,15 @@ impl Wb11HydrologyKernel {
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
             drainable_storage_legacy,
+            Some(0.0),
+            None,
+        )?;
+        let soil_water_before =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_before,
             Some(0.0),
             None,
         )?;
@@ -1319,17 +1350,24 @@ impl Wb11HydrologyKernel {
             }
         }
 
-        let q_drainage = q_drainage_potential
+        let q_drainage_target = q_drainage_potential
             .min(drainage_capacity)
             .min(available_pool);
-        let _withdrawn = Self::wb19_withdraw_tile_to_surface(
+        let q_drainage = Self::wb19_withdraw_tile_to_surface(
             &mut theta,
             &field_capacity,
             tile_layer_index,
-            q_drainage,
+            q_drainage_target,
         );
-
-        let drainable_after = (available_pool - q_drainage).max(0.0);
+        let drainable_after = Self::wb19_drainable_storage(&theta, &field_capacity);
+        let soil_water_after = (soil_water_before - q_drainage).max(0.0);
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
@@ -1342,7 +1380,7 @@ impl Wb11HydrologyKernel {
             WB11_SYMBOL_DRAINAGE_QDD,
             q_drainage,
             Some(0.0),
-            Some(drainage_capacity),
+            Some(q_drainage_target),
         )?;
 
         let q_subhyd = q_lateral + q_drainage;
@@ -1364,6 +1402,12 @@ impl Wb11HydrologyKernel {
         state_updates.push(WritebackField::bounded(
             WB11_SYMBOL_DRAINABLE_STORAGE,
             drainable_after,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
             Some(0.0),
             None,
         ));

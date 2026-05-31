@@ -59,6 +59,12 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 Authorized packages:
 
+- `20260530-hphys0213-wb12-storage-and-aggregate-reconciliation-closure-001/`
+  - Purpose: remediate HPHYS0212 follow-on WB12 storage reconciliation domain
+    violations and WB11 aggregate-soil-water continuity defects by enforcing
+    physically realizable WB19 withdrawals/flux publication and restoring
+    deterministic aggregate updates for `Total-Soil` / `SoilWaterTotal`
+    lineage, then rerun gates + unpalatable-rind 39-hillslope diagnostics.
 - `20260530-hphys0212-wb11-wb19-lifecycle-coupling-closure-001/`
   - Purpose: remediate HPHYS0211-rooted WB11/WB18 lifecycle reseed defects and
     WB19 control-source defects, restore WB13 `latqcc`/`Tile`/`Qd` coupling

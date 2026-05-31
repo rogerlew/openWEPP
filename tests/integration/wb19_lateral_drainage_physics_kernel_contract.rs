@@ -73,6 +73,10 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundaryValue::scalar(2.5),
     );
     state.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(10.5),
+    );
+    state.insert(
         BoundarySymbol::from("wb11_drainage_coefficient"),
         BoundaryValue::scalar(0.1),
     );
