@@ -1,0 +1,40 @@
+{
+  "suite_id": "cas_l4_subhyd_solwpv_fcdep_branch_001",
+  "units_basis": "m_and_dimensionless",
+  "tolerance_abs": 1.0e-12,
+  "cases": [
+    {
+      "case_id": "solwpv_2005_updates_fcdep",
+      "solwpv": 2005,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "q_m": 0.3,
+        "watyld": 0.1,
+        "fcdep_m": 0.0,
+        "unsdep_m": 1.0
+      }
+    },
+    {
+      "case_id": "solwpv_2006_does_not_update_fcdep",
+      "solwpv": 2006,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "q_m": 0.3,
+        "watyld": 0.1,
+        "fcdep_m": 1.0,
+        "unsdep_m": 0.0
+      }
+    },
+    {
+      "case_id": "solwpv_9002_does_not_update_fcdep",
+      "solwpv": 9002,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "q_m": 0.3,
+        "watyld": 0.1,
+        "fcdep_m": 1.0,
+        "unsdep_m": 0.0
+      }
+    }
+  ]
+}

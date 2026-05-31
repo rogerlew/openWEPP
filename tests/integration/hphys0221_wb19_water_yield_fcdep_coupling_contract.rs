@@ -135,7 +135,7 @@ fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
 }
 
 #[test]
-fn hphys0221_wb19_non_2006_updates_fcdep_unsdep_from_watyld() {
+fn hphys0221_wb19_solwpv_lt_2006_updates_fcdep_unsdep_from_watyld() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));
@@ -204,7 +204,76 @@ fn hphys0221_wb19_non_2006_updates_fcdep_unsdep_from_watyld() {
 }
 
 #[test]
-fn hphys0221_wb19_non_2006_rejects_non_positive_watyld() {
+fn hphys0221_wb19_solwpv_ge_2006_does_not_update_fcdep_unsdep_from_watyld() {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9002.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(0.3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(10.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+        BoundaryValue::scalar(1.0e6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(1.0e-5),
+    );
+    state_surface.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.8));
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("coca_0001"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&lateral_request(&state_surface));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
+
+    let watyld = writeback_scalar(&response, "wb19_watyld");
+    let fcdep_after = writeback_scalar(&response, "wb19_fcdep");
+    let unsdep_after = writeback_scalar(&response, "wb19_unsdep");
+
+    assert!(
+        (watyld - 0.1).abs() <= TOL,
+        "watyld should follow avpora/avfca/avcoca"
+    );
+    assert!(
+        (fcdep_after - 1.0).abs() <= TOL,
+        "solwpv>=2006 branch must preserve fcdep under equivalent forcing"
+    );
+    assert!(
+        unsdep_after.abs() <= TOL,
+        "solwpv>=2006 branch must preserve unsdep under equivalent forcing"
+    );
+}
+
+#[test]
+fn hphys0221_wb19_solwpv_lt_2006_rejects_non_positive_watyld() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));

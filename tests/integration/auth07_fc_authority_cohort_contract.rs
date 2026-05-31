@@ -239,11 +239,13 @@ fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification()
     );
 
     for (bucket, entries) in buckets {
+        let entry_count_u32 = u32::try_from(entries.len())
+            .unwrap_or_else(|_| panic!("bucket {bucket} entry count overflow"));
         let mean_rel_err = entries
             .iter()
             .map(|entry| entry.relative_error)
             .sum::<f64>()
-            / entries.len() as f64;
+            / f64::from(entry_count_u32);
         assert!(
             mean_rel_err.is_finite(),
             "bucket {bucket} mean relative error must be finite"

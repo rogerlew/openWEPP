@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 57
+contract_version: 58
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -256,7 +256,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `por_i` | `por_####` | WB19 per-layer porosity surfaces consumed by water-yield coupling (`watyld`) | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces consumed by WB19 drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `drfc_i` | `wb18_perc_fc_#### + (1-coca_####)*dg_####` | WB19 layer drain-threshold authority (legacy `drfc`) for saturation checks and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `watyld` | `wb19_watyld` | WB19 water-yield coupling state used in non-2006 saturated-depth updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watyld` | `wb19_watyld` | WB19 water-yield coupling state used in `solwpv < 2006` saturated-depth updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `fcdep`, `unsdep` | `wb19_fcdep`, `wb19_unsdep` | WB19 saturated/unsaturated depth coupling states after lateral mutation | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `pei` | `wb18_perc_pei_####` | WB18 per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ti`, `Δt`, `Ksai`, `Bi` | WB18 derived runtime intermediates | per-layer percolation routing diagnostics/intermediate terms | chapter-declared units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1232,6 +1232,24 @@ HPHYS0221 closes missing WB19 branch/coupling surfaces from baseline
    `watyld` when required) are typed hard-fail WB19 states; no silent fallback
    branch is permitted.
 
+### HPHYS0222 WB19 `solwpv` Branch-Authority Correction Addendum
+
+HPHYS0222 resolves the WB19 saturated-depth branch-authority mismatch against
+baseline `watbal.for` by tightening `fcdep` mutation scope.
+
+1. WB19 lateral saturated-layer classification remains:
+   - `solwpv = 2006`: include all saturated layers.
+   - `solwpv != 2006`: include contiguous near-surface saturated block.
+2. WB19 saturated-depth mutation (`fcdep`, `unsdep`) is authorized only for
+   `solwpv < 2006`.
+3. For `solwpv >= 2006` (including disturbed-soil modes `9001+`), WB19 must
+   not apply `fcdep = fcdep - q/watyld`; `fcdep` remains the saturated-depth
+   thickness implied by the selected saturated block for that step.
+4. External-authority suite
+   `cas_l4_subhyd_solwpv_fcdep_branch_001` is a required hard-fail constitutive
+   gate for this branch law under `INV-WATBAL-009` and
+   `SC-SUBHYD-001#INV-SUBHYD-015`.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1481,6 +1499,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `58` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only (no `fcdep` mutation for `solwpv >= 2006`, including `9001+`) and linked required external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `57` | `Codex` | AUTH03 amendment: added Level-4 constitutive gate bootstrap authority for FC/WP and relax-to-FC percolation threshold closure, including blocking suite linkage and fail-closed symbol posture. |
 | `2026-05-31` | `56` | `Codex` | HPHYS0221 amendment: added WB19 `solwpv` branch semantics and coupled water-yield/saturated-depth authority (`avpora`, `avfca`, `avcoca`, `watyld`, `fcdep`, `unsdep`) with required runtime publications (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`) and fail-closed domain posture. |
 | `2026-05-31` | `55` | `Codex` | HPHYS0219 amendment: corrected WB19 `drfc` coefficient-family authority from `cpm_####` to baseline-authoritative `coca_####` and retained typed hard-fail domain guards for `coca` surfaces. |

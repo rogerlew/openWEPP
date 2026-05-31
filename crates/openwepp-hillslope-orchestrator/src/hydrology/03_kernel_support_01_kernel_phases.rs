@@ -975,6 +975,7 @@ impl Wb11HydrologyKernel {
 
         let solwpv_mode = Self::wb19_solwpv_mode(request, phase_class)?;
         let solwpv_mode_is_2006 = solwpv_mode == 2006;
+        let solwpv_mode_lt_2006 = solwpv_mode < 2006;
 
         let (mut theta, drain_threshold, conductivity, thickness, _upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
@@ -1105,7 +1106,7 @@ impl Wb11HydrologyKernel {
         }
 
         let mut fcdep_after = fcdep_before;
-        if !solwpv_mode_is_2006 && fcdep_before > WB11_ZERO_THRESHOLD {
+        if solwpv_mode_lt_2006 && fcdep_before > WB11_ZERO_THRESHOLD {
             if watyld <= WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,

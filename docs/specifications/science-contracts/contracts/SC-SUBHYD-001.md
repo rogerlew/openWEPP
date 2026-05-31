@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 12
+contract_version: 13
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -238,7 +238,7 @@ alias continuity for production kernels.
 | `por_i` | `por_####` | WB19 per-layer porosity surfaces used in water-yield coupling | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces used by drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `drfc_i` | `wb18_perc_fc_#### + (1-coca_####)*dg_####` | WB19 drain-threshold lineage used for saturated-zone classification and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `watyld` | `wb19_watyld` | WB19 water-yield coupling state for non-2006 `fcdep` updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watyld` | `wb19_watyld` | WB19 water-yield coupling state for `solwpv < 2006` `fcdep` updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `fcdep`, `unsdep` | `wb19_fcdep`, `wb19_unsdep` | WB19 saturated/unsaturated depth states after lateral update | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `L` | `slplen` | hillslope length for lateral flux denominator | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `α` | `atan(avgslp)` | slope angle reconstructed from runtime slope ratio | `rad` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -431,6 +431,20 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `por_####`, `wb19_watyld` when required) are typed hard-fail states; no
    fallback path is allowed.
 
+## HPHYS0222 WB19 `solwpv` Branch-Authority Correction Addendum
+
+1. WB19 lateral saturated-layer selection remains:
+   - `solwpv = 2006`: all saturated layers.
+   - `solwpv != 2006`: contiguous near-surface saturated block.
+2. WB19 coupled saturated-depth mutation (`fcdep`, `unsdep`) is authorized
+   only for `solwpv < 2006`.
+3. For `solwpv >= 2006`, WB19 must not apply `fcdep = fcdep - q/watyld`.
+4. Disturbed-soil modes (`solwpv >= 9001`) remain valid for conductivity
+   selection but are not authorized to trigger WB19 `fcdep` mutation.
+5. Required external-authority constitutive gate:
+   `cas_l4_subhyd_solwpv_fcdep_branch_001` (`required`, `hard-fail`), linked
+   to `INV-SUBHYD-015`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -444,6 +458,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `13` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only; clarified disturbed-soil mode interaction and linked required external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-09 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-09 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit Eq. [6.2.1] closure identity, added drainage-coefficient (`D.C.`) variable and capacity-cap invariant/guard/tolerance, and expanded producer obligations for hydraulic-capacity enforcement. |
