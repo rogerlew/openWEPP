@@ -15,13 +15,6 @@ external_citations:
     version_or_edition: NSERL Report No. 11 (August 1995)
     retrieved_utc: 2026-05-31
     notes: "Percolation eligibility and FC-threshold behavior."
-  - citation_id: EXT-WATBAL-PERC-LEGACY-001
-    source_type: solver_doc
-    title: Legacy WEPP baseline percolation behavior
-    locator: /workdir/wepp-forest_260430_baseline/src/watbal.for
-    version_or_edition: dac3c950d8b16cc73774bf5ce2e7e11f80baac70
-    retrieved_utc: 2026-05-31
-    notes: "FC-threshold cutoff and positive-only deep percolation lineage."
 fixtures:
   - fixture_id: FX-RELAX-NOMINAL-001
     path: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001/near_fc_cutoff.json
@@ -69,7 +62,6 @@ deep-percolation behavior above field capacity as a blocking Level-4 gate.
   - `SC-WATBAL-001#INV-WATBAL-006`
 - External citations:
   - `EXT-WATBAL-PERC-CH5-001`
-  - `EXT-WATBAL-PERC-LEGACY-001`
 
 ## Expected Behavior
 
@@ -98,4 +90,5 @@ deep-percolation behavior above field capacity as a blocking Level-4 gate.
 
 ## Implementation Notes
 
-- Executed by `tests/integration/auth03_level4_constitutive_gate_contract.rs`.
+- Executed by
+  `tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs`.

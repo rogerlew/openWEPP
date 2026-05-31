@@ -16,13 +16,6 @@ external_citations:
     version_or_edition: NSERL Report No. 11 (August 1995)
     retrieved_utc: 2026-05-31
     notes: "Constitutive FC/WP lineage and layer water-content bounds."
-  - citation_id: EXT-SOIL-FC-LEGACY-001
-    source_type: solver_doc
-    title: Legacy WEPP baseline constitutive lineage
-    locator: /workdir/wepp-forest_260430_baseline/src/watbal.for
-    version_or_edition: dac3c950d8b16cc73774bf5ce2e7e11f80baac70
-    retrieved_utc: 2026-05-31
-    notes: "Baseline FC threshold usage in percolation/state publication lineage."
 fixtures:
   - fixture_id: FX-FC-NOMINAL-001
     path: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001/nominal_case.json
@@ -74,7 +67,6 @@ Level-4 physics gate for FC/WP publication lineage.
   - `SC-SOIL-001#INV-SOIL-004`
 - External citations:
   - `EXT-SOIL-FC-CH7-001`
-  - `EXT-SOIL-FC-LEGACY-001`
 
 ## Expected Behavior
 
@@ -106,4 +98,5 @@ Level-4 physics gate for FC/WP publication lineage.
 
 ## Implementation Notes
 
-- Executed by `tests/integration/auth03_level4_constitutive_gate_contract.rs`.
+- Executed by
+  `tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs`.

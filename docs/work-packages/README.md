@@ -75,8 +75,13 @@ Authorized packages:
   - Purpose: integrate authority-stack suite classes into CI/release gates with
     explicit lane and fail-class policy (`required`, `periodic`, `manual`;
     `hard-fail`, `investigation`) and updated release runbook governance.
+- `20260531-auth05-level4-constitutive-authority-hardening-001/`
+  - Purpose: harden AUTH03 Level-4 constitutive gates by adding runtime
+    model-to-authority FC/WP checks on real soil fixtures, removing
+    legacy-as-authority citation posture, and making relax-to-FC branch
+    assertions non-optional.
 - Execution order for correctness-authority stream is:
-  `auth01 -> auth02 -> auth03 -> auth04`.
+  `auth01 -> auth02 -> auth03 -> auth04 -> auth05`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
   - Purpose: execute immediate HPHYS0216 follow-up diagnostics to explain the
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated

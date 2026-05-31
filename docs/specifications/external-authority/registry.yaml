@@ -18,7 +18,7 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_fc_minus33_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001
-    integration_test: tests/integration/auth03_level4_constitutive_gate_contract.rs
+    integration_test: tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs
     provenance:
       authored_by: Codex
       authored_utc: 2026-05-31
@@ -39,7 +39,7 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_wp_minus1500_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001
-    integration_test: tests/integration/auth03_level4_constitutive_gate_contract.rs
+    integration_test: tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs
     provenance:
       authored_by: Codex
       authored_utc: 2026-05-31
@@ -59,7 +59,7 @@ suites:
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_watbal_relax_to_fc_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001
-    integration_test: tests/integration/auth03_level4_constitutive_gate_contract.rs
+    integration_test: tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs
     provenance:
       authored_by: Codex
       authored_utc: 2026-05-31
