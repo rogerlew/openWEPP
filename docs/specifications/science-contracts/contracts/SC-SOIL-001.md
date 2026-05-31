@@ -345,6 +345,20 @@ bit-for-bit parity). `[DIRECT][Static]`
 3. Realignment does not relax corrected-layer lineage requirements for
    authoritative `thetfc_####` symbols or fail-closed domain guards.
 
+## HPHYS0216D ProfileFC Normalized-Tail Contribution Addendum
+
+1. Soil runtime projection must publish `wb13_profile_fc_tail_mm` as the
+   normalized-profile residual FC storage depth not represented by emitted
+   parser-layer aggregation (`Σ(thetfc_i * dg_i) * 1000`).
+2. `wb13_profile_fc_tail_mm` must be finite and non-negative. Missing,
+   non-finite, or negative tail contribution symbols are typed fail-closed
+   runtime-boundary violations.
+3. `wb13_profile_fc_store_mm` remains a diagnostic/reconciliation profile
+   surface and must reconcile to:
+   `Σ(thetfc_i * dg_i) * 1000 + wb13_profile_fc_tail_mm`.
+4. This addendum preserves corrected-layer normalization/mapping authority and
+   does not authorize raw-theta fallback publication.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -358,6 +372,7 @@ bit-for-bit parity). `[DIRECT][Static]`
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `14` | `Codex` | HPHYS0216D amendment: added explicit `wb13_profile_fc_tail_mm` runtime projection authority for normalized-tail FC closure, required finite/non-negative fail-closed guard posture, and required reconciliation with `wb13_profile_fc_store_mm`. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned `ProfileFCStore` publication authority to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic seed/projection surface, and preserved corrected-layer lineage + fail-closed guard requirements. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-10 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-7 soil authority anchors, coupling invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-10 review cycle. |

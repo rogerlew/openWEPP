@@ -64,6 +64,12 @@ Authorized packages:
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated
     publication deltas versus normalized-profile seed lineage and publishing a
     concrete remediation handoff package.
+- `20260531-hphys0216d-profilefc-normalized-tail-authority-reconciliation-001/`
+  - Purpose: execute contract-first FC authority reconciliation by publishing
+    explicit normalized-tail contribution (`wb13_profile_fc_tail_mm`) and
+    consuming it in WB13 `ProfileFCStore` publication
+    (`Σ(thetfc_i*dg_i)*1000 + tail`) with fail-closed guards and workspace
+    gate evidence.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation
@@ -142,7 +148,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0217+`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217+`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.

@@ -92,6 +92,15 @@ pub fn build_hillslope_runtime_surface_from_soil(
         let ofe_index = ofe_position + 1;
         let corrected_layer_runtime_symbols =
             compute_corrected_layer_runtime_symbols(ofe, ofe_index)?;
+        let primary_layer_fc_store_mm = if ofe_index == 1 {
+            Some(aggregate_profile_fc_store_mm_from_mapped_layers(
+                ofe,
+                &corrected_layer_runtime_symbols,
+                ofe_index,
+            )?)
+        } else {
+            None
+        };
         if ofe.nsl != ofe.layers.len() {
             return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
                 ofe_index,
@@ -406,9 +415,36 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundarySymbol::from("salb"),
                 BoundaryValue::scalar(ofe.salb),
             );
-                if let Some(profile_symbols) = primary_wb13_profile_symbols {
+
+            if let Some(profile_symbols) = primary_wb13_profile_symbols {
+                if let Some(layer_fc_store_mm) = primary_layer_fc_store_mm {
+                    let mut profile_fc_tail_mm = profile_symbols.fc_store - layer_fc_store_mm;
+                    if !profile_fc_tail_mm.is_finite() {
+                        return Err(HillslopeRuntimeInputError::NonFiniteProfileFcTailContribution {
+                            ofe_index,
+                            value_mm: profile_fc_tail_mm,
+                        });
+                    }
+                    if profile_fc_tail_mm < 0.0 {
+                        if profile_fc_tail_mm >= -PROFILE_FC_TAIL_TOLERANCE_MM {
+                            profile_fc_tail_mm = 0.0;
+                        } else {
+                            return Err(
+                                HillslopeRuntimeInputError::NegativeProfileFcTailContribution {
+                                    ofe_index,
+                                    value_mm: profile_fc_tail_mm,
+                                },
+                            );
+                        }
+                    }
                     state_surface.insert(
-                        BoundarySymbol::from("wb13_profile_depth_mm"),
+                        BoundarySymbol::from("wb13_profile_fc_tail_mm"),
+                        BoundaryValue::scalar(profile_fc_tail_mm),
+                    );
+                }
+
+                state_surface.insert(
+                    BoundarySymbol::from("wb13_profile_depth_mm"),
                     BoundaryValue::scalar(profile_symbols.depth),
                 );
                 state_surface.insert(
@@ -423,14 +459,78 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     BoundarySymbol::from("wb13_profile_wp_store_mm"),
                     BoundaryValue::scalar(profile_symbols.wp_store),
                 );
-                }
             }
         }
+    }
 
     Ok(HillslopeWritebackSurface {
         state_surface,
         flux_surface: BTreeMap::new(),
     })
+}
+
+fn aggregate_profile_fc_store_mm_from_mapped_layers(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    mapped_layers: &[CorrectedLayerRuntimeSymbols],
+    ofe_index: usize,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    if mapped_layers.len() != ofe.layers.len() {
+        let layer_index = mapped_layers.len().saturating_add(1);
+        let layer_top_depth_mm = if layer_index > 1 {
+            ofe.layers[layer_index - 2].depth_mm
+        } else {
+            0.0
+        };
+        let layer_bottom_depth_mm = ofe
+            .layers
+            .get(layer_index - 1)
+            .map_or(layer_top_depth_mm, |layer| layer.depth_mm);
+        return Err(HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+            ofe_index,
+            layer_index,
+            layer_top_depth_mm,
+            layer_bottom_depth_mm,
+            covered_depth_mm: 0.0,
+        });
+    }
+
+    let mut previous_depth_mm = 0.0_f64;
+    let mut layer_fc_store_mm = 0.0_f64;
+    for (layer_position, layer) in ofe.layers.iter().enumerate() {
+        let layer_index = layer_position + 1;
+        let layer_depth_mm = layer.depth_mm;
+        let layer_thickness_mm = layer_depth_mm - previous_depth_mm;
+        if !layer_thickness_mm.is_finite() || layer_thickness_mm <= 0.0 {
+            return Err(HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+                ofe_index,
+                layer_index,
+                layer_top_depth_mm: previous_depth_mm,
+                layer_bottom_depth_mm: layer_depth_mm,
+                covered_depth_mm: 0.0,
+            });
+        }
+
+        let thetfc = mapped_layers[layer_position].thetfc;
+        if !thetfc.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity { value: thetfc });
+        }
+        if thetfc < 0.0 {
+            return Err(HillslopeRuntimeInputError::NegativeProfileFcTailContribution {
+                ofe_index,
+                value_mm: thetfc,
+            });
+        }
+        layer_fc_store_mm += thetfc * layer_thickness_mm;
+        previous_depth_mm = layer_depth_mm;
+    }
+
+    if !layer_fc_store_mm.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFiniteProfileFcTailContribution {
+            ofe_index,
+            value_mm: layer_fc_store_mm,
+        });
+    }
+    Ok(layer_fc_store_mm)
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -477,6 +577,7 @@ struct LegacySoilLayerExpanded {
 
 const WB13_PROFILE_LAYER_THICKNESS_M: f64 = 0.2;
 const LEGACY_INPUT_DELTA_EPS_M: f64 = 0.001;
+const PROFILE_FC_TAIL_TOLERANCE_MM: f64 = 1.0e-9;
 
 fn compute_wb13_profile_symbols(ofe: &openwepp_input_contract::parsers::soil::SoilOfe) -> Option<Wb13ProfileSymbols> {
     let mut seeds = Vec::with_capacity(ofe.layers.len());

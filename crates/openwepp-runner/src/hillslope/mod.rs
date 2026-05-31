@@ -3983,8 +3983,27 @@ fn derive_profile_fc_store_from_authoritative_layers(
             "ProfileFCStore layer aggregation must be finite and >= 0.0, observed {profile_fc_store_m}"
         )));
     }
+    let profile_fc_tail_mm =
+        require_runtime_surface_scalar(runtime_surface, "wb13_profile_fc_tail_mm")?;
+    if !profile_fc_tail_mm.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "wb13_profile_fc_tail_mm must be finite, observed {profile_fc_tail_mm}"
+        )));
+    }
+    if profile_fc_tail_mm < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "wb13_profile_fc_tail_mm must be >= 0.0, observed {profile_fc_tail_mm}"
+        )));
+    }
 
-    Ok(profile_fc_store_m * 1_000.0)
+    let profile_fc_store_mm = profile_fc_store_m * 1_000.0 + profile_fc_tail_mm;
+    if !profile_fc_store_mm.is_finite() || profile_fc_store_mm < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "ProfileFCStore combined layer+tail storage must be finite and >= 0.0, observed {profile_fc_store_mm}"
+        )));
+    }
+
+    Ok(profile_fc_store_mm)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -4853,6 +4872,40 @@ mod tests {
     }
 
     #[test]
+    fn hphys0216d_wb13_fc_storage_guard_rejects_missing_tail_symbol() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("wb13_profile_fc_tail_mm"));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("missing wb13_profile_fc_tail_mm must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("missing required runtime symbol wb13_profile_fc_tail_mm"),
+                    "expected missing wb13_profile_fc_tail_mm typed guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
     fn hphys0207_wb13_wp_storage_guard_is_exercised_by_direct_row_builder_probe() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
@@ -4922,11 +4975,15 @@ mod tests {
     }
 
     #[test]
-    fn hphys0216_wb13_profile_fc_publication_uses_layer_aggregation_authority() {
+    fn hphys0216d_wb13_profile_fc_publication_uses_layer_plus_tail_authority() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_fc_store_mm"),
             BoundaryValue::scalar(100.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_fc_tail_mm"),
+            BoundaryValue::scalar(5.0),
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_wp_store_mm"),
@@ -4944,8 +5001,8 @@ mod tests {
         .expect("valid WB13 probe surface should publish row");
 
         assert!(
-            (row.wb13_row.profile_fc_store - 75.0).abs() < 1.0e-12,
-            "ProfileFCStore must follow authoritative layer aggregation (`thetfc_#### * dg_####`), not wb13_profile_fc_store_mm"
+            (row.wb13_row.profile_fc_store - 80.0).abs() < 1.0e-12,
+            "ProfileFCStore must follow authoritative layer aggregation plus explicit normalized-tail contribution"
         );
         assert!(
             (row.wb13_row.profile_wp_store - 55.0).abs() < 1.0e-12,
@@ -6031,6 +6088,10 @@ mod tests {
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_fc_store_mm"),
             BoundaryValue::scalar(75.0),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb13_profile_fc_tail_mm"),
+            BoundaryValue::scalar(0.0),
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_wp_store_mm"),

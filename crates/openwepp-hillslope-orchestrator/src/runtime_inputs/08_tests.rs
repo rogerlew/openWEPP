@@ -424,6 +424,11 @@ mod tests {
             .get(&BoundarySymbol::from("wb13_profile_fc_store_mm"))
             .expect("wb13_profile_fc_store_mm should be present")
             .as_f64();
+        let profile_fc_tail_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_fc_tail_mm"))
+            .expect("wb13_profile_fc_tail_mm should be present")
+            .as_f64();
         let profile_wp_store_mm = surface
             .state_surface
             .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
@@ -436,6 +441,7 @@ mod tests {
         assert!((profile_porosity_cap_mm - expected_profile.porosity_cap).abs() < 1e-9);
         assert!((profile_fc_store_mm - expected_profile.fc_store).abs() < 1e-9);
         assert!((profile_wp_store_mm - expected_profile.wp_store).abs() < 1e-9);
+        assert!((profile_fc_tail_mm - (profile_fc_store_mm - layer_fc_store_mm)).abs() < 1e-9);
         assert!(
             (profile_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
             "profile FC storage must preserve normalized-profile depth authority (no parser-depth truncation)"
@@ -477,6 +483,11 @@ mod tests {
             .get(&BoundarySymbol::from("wb13_profile_fc_store_mm"))
             .expect("wb13_profile_fc_store_mm should be present")
             .as_f64();
+        let projected_fc_tail_mm = surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb13_profile_fc_tail_mm"))
+            .expect("wb13_profile_fc_tail_mm should be present")
+            .as_f64();
         let projected_wp_store_mm = surface
             .state_surface
             .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
@@ -494,6 +505,10 @@ mod tests {
         assert!(
             (projected_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
             "projected FC storage must not silently truncate normalized-profile tail depth"
+        );
+        assert!(
+            (projected_fc_tail_mm - (projected_fc_store_mm - layer_fc_store_mm)).abs() < 1.0e-9,
+            "projected FC tail storage must equal normalized-profile minus parser-layer aggregation"
         );
         assert!(
             (projected_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,

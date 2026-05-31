@@ -32,6 +32,7 @@ fn repo_file(path: &str) -> String {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn hphys0202_package_and_contract_authority_sections_exist() {
     let package = repo_file(
         "docs/work-packages/20260529-hphys0202-profile-fc-wp-lineage-closure-001/package.md",
@@ -44,6 +45,9 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     );
     let package_hphys0216 = repo_file(
         "docs/work-packages/20260531-hphys0216-profilefc-layer-authority-realignment-001/package.md",
+    );
+    let package_hphys0216d = repo_file(
+        "docs/work-packages/20260531-hphys0216d-profilefc-normalized-tail-authority-reconciliation-001/package.md",
     );
     let watbal = repo_file("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
     let soil = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
@@ -75,6 +79,12 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "HPHYS0216 package must preserve closure measures and contract-first sequencing"
     );
     assert!(
+        package_hphys0216d.contains("MEASURE-HP216D-001")
+            && package_hphys0216d.contains("MEASURE-HP216D-004")
+            && package_hphys0216d.contains("Mandatory Contract-First Sequence"),
+        "HPHYS0216D package must preserve closure measures and contract-first sequencing"
+    );
+    assert!(
         watbal.contains("### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure"),
         "SC-WATBAL-001 must include HPHYS0202 FC/WP layer-aggregation authority"
     );
@@ -89,6 +99,10 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     assert!(
         watbal.contains("### HPHYS0216 ProfileFC Layer-Authority Realignment"),
         "SC-WATBAL-001 must include HPHYS0216 FC publication authority realignment section"
+    );
+    assert!(
+        watbal.contains("### HPHYS0216D ProfileFC Layer+Tail Authority Reconciliation"),
+        "SC-WATBAL-001 must include HPHYS0216D FC layer+tail authority reconciliation section"
     );
     assert!(
         watbal.contains("superseded by HPHYS0207"),
@@ -107,6 +121,10 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-SOIL-001 must include HPHYS0216 FC layer-authority addendum"
     );
     assert!(
+        soil.contains("## HPHYS0216D ProfileFC Normalized-Tail Contribution Addendum"),
+        "SC-SOIL-001 must include HPHYS0216D FC normalized-tail contribution addendum"
+    );
+    assert!(
         perc.contains("HPHYS0206"),
         "SC-PERC-001 must include HPHYS0206 normalized mapping/no-fallback authority"
     );
@@ -117,6 +135,10 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     assert!(
         perc.contains("HPHYS0216"),
         "SC-PERC-001 must include HPHYS0216 FC layer-authority realignment"
+    );
+    assert!(
+        perc.contains("HPHYS0216D"),
+        "SC-PERC-001 must include HPHYS0216D FC layer+tail authority reconciliation"
     );
     assert!(
         system.contains("## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum"),
@@ -131,13 +153,17 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-SYSTEM-001 must include HPHYS0207 normalized-profile storage authority"
     );
     assert!(
+        system.contains("## HPHYS0216D ProfileFC Layer+Tail Boundary Authority Addendum"),
+        "SC-SYSTEM-001 must include HPHYS0216D system-boundary FC layer+tail authority addendum"
+    );
+    assert!(
         system.contains("superseded by HPHYS0207"),
         "SC-SYSTEM-001 historical FC/WP authority notes must be explicitly superseded by HPHYS0207"
     );
 }
 
 #[test]
-fn hphys0216_profile_fc_layer_aggregation_and_wp_projected_storage_authority() {
+fn hphys0216d_profile_fc_layer_plus_tail_and_wp_projected_storage_authority() {
     let _execution_guard = runner_execution_lock()
         .lock()
         .expect("runner execution lock should be acquirable");
@@ -152,6 +178,7 @@ fn hphys0216_profile_fc_layer_aggregation_and_wp_projected_storage_authority() {
     let soil_surface = build_hillslope_runtime_surface_from_soil(&soil_profile)
         .expect("soil fixture should project runtime state");
     let expected_layer = expected_profile_aggregation_from_layers(&soil_surface);
+    let expected_fc_tail = required_surface_scalar(&soil_surface, "wb13_profile_fc_tail_mm");
     let expected_projected_fc = required_surface_scalar(&soil_surface, "wb13_profile_fc_store_mm");
     let expected_projected_wp = required_surface_scalar(&soil_surface, "wb13_profile_wp_store_mm");
 
@@ -179,8 +206,13 @@ fn hphys0216_profile_fc_layer_aggregation_and_wp_projected_storage_authority() {
 
     assert_close(
         observed_fc,
-        expected_layer.fc_store_mm,
-        "ProfileFCStore must follow layer-authoritative aggregation (`thetfc_#### * dg_####`)",
+        expected_layer.fc_store_mm + expected_fc_tail,
+        "ProfileFCStore must follow layer-authoritative aggregation plus normalized-tail contribution",
+    );
+    assert_close(
+        observed_fc,
+        expected_projected_fc,
+        "ProfileFCStore combined layer+tail authority must reconcile to normalized-profile projected storage",
     );
     assert_close(
         observed_wp,
@@ -188,8 +220,8 @@ fn hphys0216_profile_fc_layer_aggregation_and_wp_projected_storage_authority() {
         "ProfileWPStore must follow wb13_profile_wp_store_mm projected storage authority",
     );
     assert!(
-        (observed_fc - expected_projected_fc).abs() > 1.0e-6,
-        "ProfileFCStore must not be sourced from wb13_profile_fc_store_mm projected storage seed"
+        expected_fc_tail > 0.0 && (observed_fc - expected_layer.fc_store_mm).abs() > 1.0e-6,
+        "ProfileFCStore must not truncate normalized-profile tail to parser-layer depth aggregation"
     );
     assert!(
         (observed_wp - expected_layer.wp_store_mm).abs() > 1.0e-6,

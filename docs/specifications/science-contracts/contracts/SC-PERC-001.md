@@ -291,15 +291,17 @@ Minimum WB18 percolation production-kernel conformance vectors:
    derived from percolation closure term `D` and is explicitly distinct from
    climate time-to-peak descriptor `Dp` (`SC-CLIMATE-001`, units `h`).
 5. `ProfileFCStore` publication semantics are layer-authoritative WB13
-   aggregates from emitted runtime symbols
-   `Σ(thetfc_i * dg_i) * 1000` (`mm`) under HPHYS0216 baseline-authority
-   realignment.
+   aggregates plus explicit normalized-tail contribution:
+   `Σ(thetfc_i * dg_i) * 1000 + wb13_profile_fc_tail_mm` (`mm`) under
+   HPHYS0216D reconciliation authority.
 6. `ProfileWPStore` publication semantics remain normalized-profile storage
    projection from baseline-corrected corrected-layer lineage via
    `wb13_profile_wp_store_mm` under HPHYS0209.
-7. `wb13_profile_fc_store_mm` remains diagnostic carry/projection lineage and
-   is not publication authority for `ProfileFCStore`.
-8. Normalized corrected-layer depth-domain closure requirements remain
+7. `wb13_profile_fc_store_mm` remains diagnostic/reconciliation carry lineage
+   and is not direct publication authority for `ProfileFCStore`.
+8. `wb13_profile_fc_tail_mm` must be finite and non-negative; missing or
+   invalid tail symbols are typed WB13 publication failures.
+9. Normalized corrected-layer depth-domain closure requirements remain
    authoritative for profile-capacity/projection seed families; no silent
    truncation or parser-domain surrogate override.
 
@@ -337,6 +339,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `14` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` authority to `Σ(thetfc_i*dg_i)*1000 + wb13_profile_fc_tail_mm`, retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and required finite non-negative tail-symbol guard posture. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned WB13 `ProfileFCStore` publication coupling to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic carry lineage, and kept normalized corrected-layer seed/projection depth-domain obligations explicit. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-08 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-08 review cycle. |

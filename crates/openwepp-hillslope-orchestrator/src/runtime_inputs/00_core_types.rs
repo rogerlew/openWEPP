@@ -114,6 +114,14 @@ pub enum HillslopeRuntimeInputError {
         layer_bottom_depth_mm: f64,
         covered_depth_mm: f64,
     },
+    NonFiniteProfileFcTailContribution {
+        ofe_index: usize,
+        value_mm: f64,
+    },
+    NegativeProfileFcTailContribution {
+        ofe_index: usize,
+        value_mm: f64,
+    },
     MissingSlopeOfe,
     SlopeOfeCountMismatch {
         declared_ofe_count: usize,
@@ -343,6 +351,8 @@ impl HillslopeRuntimeInputError {
             Self::MissingCorrectedLayerNormalizationInput { .. } => "HS-RUNTIME-E-060",
             Self::CorrectedLayerNormalizationUnavailable { .. } => "HS-RUNTIME-E-061",
             Self::CorrectedLayerMappingIncomplete { .. } => "HS-RUNTIME-E-062",
+            Self::NonFiniteProfileFcTailContribution { .. } => "HS-RUNTIME-E-063",
+            Self::NegativeProfileFcTailContribution { .. } => "HS-RUNTIME-E-064",
             Self::ManagementTopologyCountMismatch { .. } => "HS-RUNTIME-E-036",
             Self::ManagementScheduleSlotCountMismatch { .. } => "HS-RUNTIME-E-037",
             Self::ManagementScheduleSlotArityMismatch { .. } => "HS-RUNTIME-E-038",
@@ -563,6 +573,20 @@ impl fmt::Display for HillslopeRuntimeInputError {
                 layer_top_depth_mm,
                 layer_bottom_depth_mm,
                 covered_depth_mm
+            ),
+            Self::NonFiniteProfileFcTailContribution { ofe_index, value_mm } => write!(
+                f,
+                "{}: soil OFE {} produced non-finite ProfileFC tail contribution {} mm",
+                self.code(),
+                ofe_index,
+                value_mm
+            ),
+            Self::NegativeProfileFcTailContribution { ofe_index, value_mm } => write!(
+                f,
+                "{}: soil OFE {} produced negative ProfileFC tail contribution {} mm",
+                self.code(),
+                ofe_index,
+                value_mm
             ),
             Self::MissingSlopeOfe => {
                 write!(f, "{}: slope profile contains no OFE blocks", self.code())
