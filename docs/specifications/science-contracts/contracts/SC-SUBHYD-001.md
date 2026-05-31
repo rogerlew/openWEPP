@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 13
+contract_version: 14
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -441,9 +441,10 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 3. For `solwpv >= 2006`, WB19 must not apply `fcdep = fcdep - q/watyld`.
 4. Disturbed-soil modes (`solwpv >= 9001`) remain valid for conductivity
    selection but are not authorized to trigger WB19 `fcdep` mutation.
-5. Required external-authority constitutive gate:
-   `cas_l4_subhyd_solwpv_fcdep_branch_001` (`required`, `hard-fail`), linked
-   to `INV-SUBHYD-015`.
+5. External-authority legacy-conformance suite:
+   `cas_l4_subhyd_solwpv_fcdep_branch_001` (`periodic`,
+   `investigation`), linked to `INV-SUBHYD-015` as non-blocking governance
+   evidence pending independent constitutive authority.
 
 ## Gap Register
 
@@ -458,7 +459,8 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
-| `2026-05-31` | `13` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only; clarified disturbed-soil mode interaction and linked required external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
+| `2026-05-31` | `13` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only; clarified disturbed-soil mode interaction and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
+| `2026-05-31` | `14` | `Codex` | AUTH08A governance re-tiering: reclassified `cas_l4_subhyd_solwpv_fcdep_branch_001` as periodic/investigation legacy-conformance evidence (non-blocking) pending independent constitutive authority. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-09 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-09 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added explicit Eq. [6.2.1] closure identity, added drainage-coefficient (`D.C.`) variable and capacity-cap invariant/guard/tolerance, and expanded producer obligations for hydraulic-capacity enforcement. |

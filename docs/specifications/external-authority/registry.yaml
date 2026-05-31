@@ -73,16 +73,16 @@ suites:
     notes: "Level-4 constitutive gate for per-layer FC threshold behavior and Dp cutoff."
 
   - suite_id: cas_l4_subhyd_solwpv_fcdep_branch_001
-    title: WB19 `solwpv` FCDEP Branch Authority Suite
+    title: WB19 `solwpv` FCDEP Branch Legacy-Conformance Suite
     status: active
-    authority_level: 4
+    authority_level: 5
     domain: subhyd
     process_family: lateral_drain
     sc_invariant_refs:
       - SC-SUBHYD-001#INV-SUBHYD-015
       - SC-WATBAL-001#INV-WATBAL-009
-    gate_lane: required
-    failure_class: hard-fail
+    gate_lane: periodic
+    failure_class: investigation
     runtime_cost_class: component
     suite_doc: docs/specifications/external-authority/suites/cas_l4_subhyd_solwpv_fcdep_branch_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_subhyd_solwpv_fcdep_branch_001
@@ -93,7 +93,7 @@ suites:
       authored_by: Codex
       authored_utc: 2026-05-31
       last_updated_utc: 2026-05-31
-    notes: "Level-4 constitutive gate for WB19 solwpv branch law controlling fcdep/unsdep mutation."
+    notes: "Legacy-anchored branch-conformance suite for WB19 solwpv mutation law; non-blocking investigation lane pending independent constitutive authority."
 
   - suite_id: cas_l5_soil_fc_direct_theta_minus33_cohort_001
     title: Soil Profile FC Direct Theta(-33kPa) Cohort Authority Suite

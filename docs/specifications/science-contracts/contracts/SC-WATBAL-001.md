@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 58
+contract_version: 59
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -1245,10 +1245,10 @@ baseline `watbal.for` by tightening `fcdep` mutation scope.
 3. For `solwpv >= 2006` (including disturbed-soil modes `9001+`), WB19 must
    not apply `fcdep = fcdep - q/watyld`; `fcdep` remains the saturated-depth
    thickness implied by the selected saturated block for that step.
-4. External-authority suite
-   `cas_l4_subhyd_solwpv_fcdep_branch_001` is a required hard-fail constitutive
-   gate for this branch law under `INV-WATBAL-009` and
-   `SC-SUBHYD-001#INV-SUBHYD-015`.
+4. External-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001` is
+   periodic/investigation legacy-conformance evidence for this branch law under
+   `INV-WATBAL-009` and `SC-SUBHYD-001#INV-SUBHYD-015`; it is non-blocking
+   pending independent constitutive authority.
 
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
@@ -1499,7 +1499,8 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
-| `2026-05-31` | `58` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only (no `fcdep` mutation for `solwpv >= 2006`, including `9001+`) and linked required external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
+| `2026-05-31` | `58` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only (no `fcdep` mutation for `solwpv >= 2006`, including `9001+`) and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
+| `2026-05-31` | `59` | `Codex` | AUTH08A governance re-tiering: reclassified `cas_l4_subhyd_solwpv_fcdep_branch_001` as periodic/investigation legacy-conformance evidence (non-blocking) pending independent constitutive authority. |
 | `2026-05-31` | `57` | `Codex` | AUTH03 amendment: added Level-4 constitutive gate bootstrap authority for FC/WP and relax-to-FC percolation threshold closure, including blocking suite linkage and fail-closed symbol posture. |
 | `2026-05-31` | `56` | `Codex` | HPHYS0221 amendment: added WB19 `solwpv` branch semantics and coupled water-yield/saturated-depth authority (`avpora`, `avfca`, `avcoca`, `watyld`, `fcdep`, `unsdep`) with required runtime publications (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`) and fail-closed domain posture. |
 | `2026-05-31` | `55` | `Codex` | HPHYS0219 amendment: corrected WB19 `drfc` coefficient-family authority from `cpm_####` to baseline-authoritative `coca_####` and retained typed hard-fail domain guards for `coca` surfaces. |

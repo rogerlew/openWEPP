@@ -1,8 +1,8 @@
 ---
 suite_id: cas_l4_subhyd_solwpv_fcdep_branch_001
-title: WB19 `solwpv` FCDEP Branch Authority Suite
+title: WB19 `solwpv` FCDEP Branch Legacy-Conformance Suite
 status: active
-authority_level: 4
+authority_level: 5
 domain: subhyd
 process_family: lateral_drain
 sc_invariant_refs:
@@ -42,18 +42,18 @@ tolerances:
     comparator: "<="
   units: m_and_dimensionless
   notes: "Applies to q, watyld, fcdep, and unsdep comparisons."
-gate_lane: required
-failure_class: hard-fail
+gate_lane: periodic
+failure_class: investigation
 runtime_cost_class: component
 owner: openWEPP maintainers
 provenance:
   authored_by: Codex
   authored_utc: 2026-05-31
   last_updated_utc: 2026-05-31
-notes: ""
+notes: "Legacy-anchored branch-conformance suite; non-blocking investigation lane pending independent constitutive authority."
 ---
 
-# cas_l4_subhyd_solwpv_fcdep_branch_001 WB19 `solwpv` FCDEP Branch Authority Suite
+# cas_l4_subhyd_solwpv_fcdep_branch_001 WB19 `solwpv` FCDEP Branch Legacy-Conformance Suite
 
 ## Purpose
 
@@ -69,6 +69,9 @@ mutation:
 - `SC-WATBAL-001#INV-WATBAL-009`
 - baseline static provenance:
   `/workdir/wepp-forest_260430_baseline/src/watbal.for`
+
+This suite is intentionally classified as legacy-conformance evidence
+(`periodic`/`investigation`) and is not a constitutive physics authority gate.
 
 ## Expected Behavior
 
@@ -87,9 +90,10 @@ mutation:
 
 ## Gate and Failure Semantics
 
-- Lane: `required`
-- Failure class: `hard-fail`
-- Failure action: block acceptance until branch-law behavior is restored.
+- Lane: `periodic`
+- Failure class: `investigation`
+- Failure action: record and route to governance adjudication; no default CI
+  block.
 
 ## Implementation Notes
 

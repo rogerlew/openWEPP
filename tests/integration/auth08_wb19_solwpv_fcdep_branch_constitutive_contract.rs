@@ -134,33 +134,38 @@ fn auth08_suite_registry_and_contract_addendum_are_present() {
 
     assert!(
         registry.contains("cas_l4_subhyd_solwpv_fcdep_branch_001")
-            && registry.contains("gate_lane: required")
-            && registry.contains("failure_class: hard-fail")
+            && registry.contains("authority_level: 5")
+            && registry.contains("gate_lane: periodic")
+            && registry.contains("failure_class: investigation")
             && registry.contains(
                 "tests/integration/auth08_wb19_solwpv_fcdep_branch_constitutive_contract.rs"
             ),
-        "external-authority registry must include AUTH08 required hard-fail suite"
+        "external-authority registry must include AUTH08A periodic investigation legacy-conformance suite"
     );
     assert!(
         suite.contains("SC-SUBHYD-001#INV-SUBHYD-015")
             && suite.contains("SC-WATBAL-001#INV-WATBAL-009")
+            && suite.contains("legacy-conformance evidence")
             && suite.contains("hash:")
             && suite.contains("source_commit:")
             && suite.contains("transform_note:"),
-        "AUTH08 suite must link SC invariants and fixture provenance metadata"
+        "AUTH08A suite must link SC invariants, legacy-conformance posture, and fixture provenance metadata"
     );
     assert!(
         subhyd.contains("HPHYS0222 WB19 `solwpv` Branch-Authority Correction Addendum")
             && subhyd.contains("solwpv >= 2006")
-            && subhyd.contains("must not apply `fcdep = fcdep - q/watyld`"),
+            && subhyd.contains("must not apply `fcdep = fcdep - q/watyld`")
+            && subhyd.contains("periodic")
+            && subhyd.contains("investigation"),
         "SC-SUBHYD-001 must encode HPHYS0222 branch authority closure"
     );
     assert!(
         watbal.contains("HPHYS0222 WB19 `solwpv` Branch-Authority Correction Addendum")
             && watbal.contains("solwpv >= 2006")
             && watbal.contains("must")
-            && watbal.contains("`fcdep = fcdep - q/watyld`"),
-        "SC-WATBAL-001 must encode HPHYS0222 branch authority closure"
+            && watbal.contains("`fcdep = fcdep - q/watyld`")
+            && watbal.contains("periodic/investigation"),
+        "SC-WATBAL-001 must encode HPHYS0222 branch authority closure and AUTH08A re-tiering posture"
     );
 }
 
