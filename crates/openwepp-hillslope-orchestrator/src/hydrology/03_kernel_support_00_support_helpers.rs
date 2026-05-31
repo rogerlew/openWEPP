@@ -761,6 +761,10 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("coca_{layer_index:04}"))
     }
 
+    fn wb19_por_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("por_{layer_index:04}"))
+    }
+
     fn frost_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{layer_index:04}"))
     }
@@ -838,11 +842,13 @@ impl Wb11HydrologyKernel {
         Ok(air_temp_c)
     }
 
+    #[allow(clippy::too_many_lines)]
     #[allow(clippy::type_complexity)]
     fn wb19_load_layer_state(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
-    ) -> Result<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>), Wb11HydrologyKernelGuardError> {
+    ) -> Result<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>), Wb11HydrologyKernelGuardError>
+    {
         let nsl_symbol = BoundarySymbol::from("nsl");
         let layer_count = Self::require_state_non_negative_integral_for_symbol(
             request,
@@ -863,10 +869,12 @@ impl Wb11HydrologyKernel {
         let mut drain_threshold = Vec::with_capacity(layer_count);
         let mut conductivity = Vec::with_capacity(layer_count);
         let mut thickness = Vec::with_capacity(layer_count);
+        let mut upper_limit = Vec::with_capacity(layer_count);
 
         for layer_index in 1..=layer_count {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
+            let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
             let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
             let dg_symbol = Self::wb19_dg_symbol(layer_index);
             let coca_symbol = Self::wb19_coca_symbol(layer_index);
@@ -889,6 +897,24 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 None,
             )?;
+
+            let layer_ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &ul_symbol,
+                layer_ul,
+                Some(0.0),
+                None,
+            )?;
+            if layer_ul < layer_fc - WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ul_symbol,
+                    value: layer_ul,
+                    minimum: Some(layer_fc),
+                    maximum: None,
+                });
+            }
 
             let layer_ssc =
                 Self::require_state_scalar_for_symbol(request, phase_class, &ssc_symbol)?;
@@ -938,9 +964,49 @@ impl Wb11HydrologyKernel {
             drain_threshold.push(layer_drain_threshold);
             conductivity.push(layer_ssc);
             thickness.push(layer_dg);
+            upper_limit.push(layer_ul);
         }
 
-        Ok((theta, drain_threshold, conductivity, thickness))
+        Ok((theta, drain_threshold, conductivity, thickness, upper_limit))
+    }
+
+    fn wb19_solwpv_mode(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<i32, Wb11HydrologyKernelGuardError> {
+        let symbol = BoundarySymbol::from("solwpv");
+        let solwpv = Self::require_state_scalar_for_symbol(request, phase_class, &symbol)?;
+        if solwpv < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol,
+                value: solwpv,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let rounded = solwpv.round();
+        if (solwpv - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("solwpv"),
+                value: solwpv,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let mode_text = format!("{rounded:.0}");
+        let mode =
+            mode_text
+                .parse::<i32>()
+                .map_err(|_| Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("solwpv"),
+                    value: solwpv,
+                    minimum: Some(0.0),
+                    maximum: None,
+                })?;
+        Ok(mode)
     }
 
     fn wb19_drainable_storage(theta: &[f64], drain_threshold: &[f64]) -> f64 {

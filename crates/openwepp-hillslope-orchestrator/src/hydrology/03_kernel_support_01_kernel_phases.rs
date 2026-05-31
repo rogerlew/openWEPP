@@ -961,55 +961,118 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let (mut theta, drain_threshold, conductivity, thickness) =
-            Self::wb19_load_layer_state(request, phase_class)?;
-
-        let mut saturated_thickness = 0.0_f64;
-        let mut conductivity_depth_sum = 0.0_f64;
-        let mut saturated_depth_sum = 0.0_f64;
-        for (((theta_i, threshold_i), ssc_i), dg_i) in theta
-            .iter()
-            .zip(drain_threshold.iter())
-            .zip(conductivity.iter())
-            .zip(thickness.iter())
-        {
-            if *theta_i + WB11_ZERO_THRESHOLD >= *threshold_i {
-                saturated_thickness += *dg_i;
-                saturated_depth_sum += *dg_i;
-                conductivity_depth_sum += *ssc_i * *dg_i;
-            }
+        let soldep_symbol = BoundarySymbol::from("solthk");
+        let soldep = Self::require_state_scalar_for_symbol(request, phase_class, &soldep_symbol)?;
+        if soldep <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: soldep_symbol,
+                value: soldep,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
         }
 
-        let q_lateral_potential = if saturated_thickness <= WB11_ZERO_THRESHOLD
-            || saturated_depth_sum <= WB11_ZERO_THRESHOLD
-        {
-            0.0
-        } else {
-            let ke = 86_400.0 * (conductivity_depth_sum / saturated_depth_sum);
-            if !ke.is_finite() || ke < 0.0 {
-                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                    phase_class,
-                    symbol: avgslp_symbol.clone(),
-                    value: ke,
-                    minimum: Some(0.0),
-                    maximum: None,
-                });
-            }
+        let solwpv_mode = Self::wb19_solwpv_mode(request, phase_class)?;
+        let solwpv_mode_is_2006 = solwpv_mode == 2006;
 
-            let slope_angle = avgslp.atan();
-            let slope_factor = slope_angle.sin();
-            if !slope_factor.is_finite() || slope_factor < -WB11_ZERO_THRESHOLD {
+        let (mut theta, drain_threshold, conductivity, thickness, _upper_limit) =
+            Self::wb19_load_layer_state(request, phase_class)?;
+        let mut porosity = Vec::with_capacity(theta.len());
+        let mut field_capacity = Vec::with_capacity(theta.len());
+        let mut coca = Vec::with_capacity(theta.len());
+        for layer_index in 1..=theta.len() {
+            let por_symbol = Self::wb19_por_symbol(layer_index);
+            let por = Self::require_state_scalar_for_symbol(request, phase_class, &por_symbol)?;
+            if por <= WB11_ZERO_THRESHOLD || por > 1.0 + WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
-                    symbol: avgslp_symbol.clone(),
-                    value: slope_factor,
-                    minimum: Some(0.0),
+                    symbol: por_symbol,
+                    value: por,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
                     maximum: Some(1.0),
                 });
             }
+            porosity.push(por);
 
-            (saturated_thickness * anisotropy * ke * slope_factor.max(0.0)) / slplen
-        };
+            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
+            let layer_fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
+            field_capacity.push(layer_fc);
+
+            let coca_symbol = Self::wb19_coca_symbol(layer_index);
+            let layer_coca =
+                Self::require_state_scalar_for_symbol(request, phase_class, &coca_symbol)?;
+            coca.push(layer_coca);
+        }
+
+        let mut saturated_layer = vec![false; theta.len()];
+        let mut encountered_unsaturated = false;
+        for (index, (theta_i, threshold_i)) in theta.iter().zip(drain_threshold.iter()).enumerate() {
+            let saturated = *theta_i + WB11_ZERO_THRESHOLD >= *threshold_i;
+            if solwpv_mode_is_2006 {
+                saturated_layer[index] = saturated;
+            } else if !encountered_unsaturated && saturated {
+                saturated_layer[index] = true;
+            } else {
+                encountered_unsaturated = true;
+            }
+        }
+
+        let mut fcdep_before = 0.0_f64;
+        for (is_saturated, dg_i) in saturated_layer.iter().zip(thickness.iter()) {
+            if *is_saturated {
+                fcdep_before += *dg_i;
+            }
+        }
+
+        let mut conductivity_depth_sum = 0.0_f64;
+        let mut saturated_depth_sum = 0.0_f64;
+        let mut avpora = 0.0_f64;
+        let mut avfca = 0.0_f64;
+        let mut avcoca = 0.0_f64;
+        if fcdep_before > WB11_ZERO_THRESHOLD {
+            for layer_index in 0..theta.len() {
+                if !saturated_layer[layer_index] {
+                    continue;
+                }
+                let layer_weight = thickness[layer_index] / fcdep_before;
+                saturated_depth_sum += thickness[layer_index];
+                conductivity_depth_sum += conductivity[layer_index] * thickness[layer_index];
+                avpora += porosity[layer_index] * layer_weight;
+                avfca += (field_capacity[layer_index] / thickness[layer_index]) * layer_weight;
+                avcoca += coca[layer_index] * layer_weight;
+            }
+        }
+
+        let q_lateral_potential =
+            if fcdep_before <= WB11_ZERO_THRESHOLD || saturated_depth_sum <= WB11_ZERO_THRESHOLD {
+                0.0
+            } else {
+                let ke = 86_400.0 * (conductivity_depth_sum / saturated_depth_sum);
+                if !ke.is_finite() || ke < 0.0 {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: avgslp_symbol.clone(),
+                        value: ke,
+                        minimum: Some(0.0),
+                        maximum: None,
+                    });
+                }
+
+                let slope_angle = avgslp.atan();
+                let slope_factor = slope_angle.sin();
+                if !slope_factor.is_finite() || slope_factor < -WB11_ZERO_THRESHOLD {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: avgslp_symbol.clone(),
+                        value: slope_factor,
+                        minimum: Some(0.0),
+                        maximum: Some(1.0),
+                    });
+                }
+
+                (fcdep_before * anisotropy * ke * slope_factor.max(0.0)) / slplen
+            };
 
         Self::require_flux_range(
             phase_class,
@@ -1026,6 +1089,35 @@ impl Wb11HydrologyKernel {
             Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
         let drainable_after = Self::wb19_drainable_storage(&theta, &drain_threshold);
         let soil_water_after = (soil_water_before - q_lateral).max(0.0);
+
+        let mut watyld = 0.0_f64;
+        if fcdep_before > WB11_ZERO_THRESHOLD {
+            watyld = avpora - (avfca + (1.0 - avcoca));
+            if !watyld.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB19_SYMBOL_WATER_YIELD_WATYLD),
+                    value: watyld,
+                    minimum: None,
+                    maximum: None,
+                });
+            }
+        }
+
+        let mut fcdep_after = fcdep_before;
+        if !solwpv_mode_is_2006 && fcdep_before > WB11_ZERO_THRESHOLD {
+            if watyld <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB19_SYMBOL_WATER_YIELD_WATYLD),
+                    value: watyld,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            fcdep_after = (fcdep_before - (q_lateral / watyld)).max(0.0);
+        }
+        let unsdep_after = (soldep - fcdep_after).max(0.0);
 
         Self::require_state_range(
             phase_class,
@@ -1054,7 +1146,7 @@ impl Wb11HydrologyKernel {
         else {
             unreachable!("status message ids are non-empty WB11 constants")
         };
-        let mut state_updates = Vec::with_capacity(theta.len() + 1);
+        let mut state_updates = Vec::with_capacity(theta.len() + 5);
         state_updates.push(WritebackField::bounded(
             WB11_SYMBOL_DRAINABLE_STORAGE,
             drainable_after,
@@ -1065,6 +1157,24 @@ impl Wb11HydrologyKernel {
             WB11_SYMBOL_SOIL_WATER,
             soil_water_after,
             Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_SATURATED_DEPTH_FCDEP,
+            fcdep_after,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_UNSATURATED_DEPTH_UNSDEP,
+            unsdep_after,
+            Some(0.0),
+            Some(soldep),
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_WATER_YIELD_WATYLD,
+            watyld,
+            None,
             None,
         ));
         for (index, value) in theta.iter().enumerate() {
@@ -1147,7 +1257,7 @@ impl Wb11HydrologyKernel {
             });
         };
 
-        let (mut theta, drain_threshold, conductivity, thickness) =
+        let (mut theta, drain_threshold, conductivity, thickness, _upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
         let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
         let available_pool = layer_pool.max(drainable_storage_legacy);

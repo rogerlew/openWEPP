@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 50
+contract_version: 56
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-05-30
+last_reviewed: 2026-05-31
 supersedes: []
 superseded_by: []
 ---
@@ -109,7 +109,7 @@ Out of scope:
 | Coupled PL ordering preconditions | `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` (validated at growth dispatch before hydrology lane entry) |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `coca_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
+| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
@@ -117,7 +117,7 @@ Out of scope:
 |---|---|
 | WB17 ET + WB18 perc flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe` |
 | WB19 lateral/drainage outputs | `q`, `Qdd`, `Qd` |
-| WB19 state updates | `wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage` |
+| WB19 state updates | `wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range WB17/WB18/WB19 hydrology domains |
 
 ### Mutated State Surfaces
@@ -149,7 +149,7 @@ lateral/drainage).
 |---|---|---|---|---|
 | `BR-WATBAL-WB17-ET` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` | runtime | deterministic WB17 ET partition/writeback execution with typed guards (`HKERNEL-WB11-ET-E-001..003`) |
 | `BR-WATBAL-WB18-PERC` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` | runtime | deterministic WB18 per-layer percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
-| `BR-WATBAL-WB19-LAT` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic WB19 layer-aware lateral execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
+| `BR-WATBAL-WB19-LAT` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic WB19 layer-aware lateral execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-WATBAL-WB19-DRAIN` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic WB19 layer-aware drainage execution with typed guards (`HKERNEL-WB11-DRAIN-E-001..003`) |
 | `BR-WATBAL-WB11-UNSUPPORTED` | unsupported hydrology phase-class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
 
@@ -165,7 +165,7 @@ lateral/drainage).
 | INV-WATBAL-006 | Percolation eligibility invariant: per-layer percolation obeys Eq. [5.4.1] (`pei = 0` when `Θi <= FCi`; otherwise `pei >= 0`), and adjusted conductivity/percolation semantics follow Eq. [5.4.2]-[5.4.5]. | hard-fail | REF-WATBAL-CH5-PERC | `[DIRECT][Static]` |
 | INV-WATBAL-007 | Coupling invariant: daily runoff/infiltration (`Q`, antecedent near-surface moisture), snow contribution (`S`), subsurface/drain loss (`Qd`), and plant forcing inputs (`LAI`, root depth, biomass/residue context for ET partition) must be present with declared units before closure is accepted. | hard-fail | REF-WATBAL-CH3-COUPLING, REF-WATBAL-CH4-COUPLING, REF-WATBAL-CH5-LINK, REF-WATBAL-CH6-COUPLING, REF-WATBAL-CH8-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-008 | Governance invariant: water moving below root zone (`D`) is treated as loss from this component and cannot be silently reintroduced into root-zone closure without explicit cross-contract authority. | governance-fail | REF-WATBAL-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-009 | WB17/WB18/WB19 production execution invariant: ET/percolation/lateral/drainage kernels must emit deterministic state/flux updates (`ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe`, `q`, `Qdd`, `Qd`) and update owned state surfaces (`wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage`). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST, REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-009 | WB17/WB18/WB19 production execution invariant: ET/percolation/lateral/drainage kernels must emit deterministic state/flux updates (`ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe`, `q`, `Qdd`, `Qd`) and update owned state surfaces (`wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld`) with explicit WB19 branch semantics by `solwpv`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST, REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-010 | WB19 guard + routing invariant: unsupported hydrology phase classes and missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HS-HYDRO-E-001`, `HKERNEL-WB11-*-E-*`) without silent reassignment/clamping/defaulting. | hard-fail | REF-WATBAL-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-WATBAL-011 | INT10 coupled lane-entry invariant: watbal/hydrology phases execute only after successful plant-lane decomposition/growth transition completion with valid ordering preconditions (`pl_order_growth_after_decomp = 1`, `pl_order_watbal_after_growth = 1`); ordering-symbol violations must hard-fail before watbal-lane completion. | hard-fail | REF-WATBAL-CH5-LINK, REF-WATBAL-CH8-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-012 | PL14 replay-candidate emission invariant: WB13 candidate rows staged for strict Tier-A replay must preserve canonical 25-column schema and deterministic `(Y, J, OFE)` ordering; missing required symbols/artifacts or schema/arity violations must hard-fail replay staging without truncation, padding, or legacy-surface substitution. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -253,8 +253,11 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `watcon` publication lineage | `Total-Soil`, `SoilWaterTotal` | WB13/hydout-equivalent aggregate publication alias family | `mm` publication units preserve declared depth-conversion semantics | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | WB18 per-layer conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `por_i` | `por_####` | WB19 per-layer porosity surfaces consumed by water-yield coupling (`watyld`) | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces consumed by WB19 drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `drfc_i` | `wb18_perc_fc_#### + (1-coca_####)*dg_####` | WB19 layer drain-threshold authority (legacy `drfc`) for saturation checks and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watyld` | `wb19_watyld` | WB19 water-yield coupling state used in non-2006 saturated-depth updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `fcdep`, `unsdep` | `wb19_fcdep`, `wb19_unsdep` | WB19 saturated/unsaturated depth coupling states after lateral mutation | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `pei` | `wb18_perc_pei_####` | WB18 per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ti`, `Δt`, `Ksai`, `Bi` | WB18 derived runtime intermediates | per-layer percolation routing diagnostics/intermediate terms | chapter-declared units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `anisrt`, `ddrain`, `sdrain`, `drdiam` | `wb19_lateral_anisotropy_ratio`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter` | WB19 lateral/drainage geometry + anisotropy control surfaces | declared units preserved (`-`, `m`, `m`, `m`) | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1203,6 +1206,32 @@ drain-threshold relation inside lateral/drainage kernels.
 4. Missing/non-finite/domain-invalid `coca_####` is a typed hard-fail WB19
    execution state; no fallback to FC-only thresholds is permitted.
 
+### HPHYS0221 WB19 Water-Yield + Saturated-Depth Coupling Addendum
+
+HPHYS0221 closes missing WB19 branch/coupling surfaces from baseline
+`watbal.for` for lateral partition and saturated-depth evolution.
+
+1. WB19 lateral saturated-zone classification must preserve `solwpv` branch
+   semantics:
+   - `solwpv = 2006`: include all layers where `wb18_perc_theta_i >= drfc_i`.
+   - `solwpv != 2006`: include only the contiguous near-surface saturated block
+     until first unsaturated layer.
+2. WB19 must compute coupled water-yield terms over the active saturated block:
+   - `avpora = Σ(por_i * dg_i / fcdep)`
+   - `avfca = Σ((wb18_perc_fc_i/dg_i) * dg_i / fcdep)`
+   - `avcoca = Σ(coca_i * dg_i / fcdep)`
+   - `watyld = avpora - (avfca + (1-avcoca))`
+3. For `solwpv < 2006` and `fcdep > 0`, WB19 must update saturated depth:
+   - `fcdep = max(fcdep - (q / watyld), 0)`
+   - `unsdep = soldep - fcdep`
+4. WB19 lateral phase must publish coupled state surfaces:
+   - `wb19_fcdep`
+   - `wb19_unsdep`
+   - `wb19_watyld`
+5. Missing/non-finite/domain-invalid coupling domains (`solwpv`, `por_####`,
+   `watyld` when required) are typed hard-fail WB19 states; no silent fallback
+   branch is permitted.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1429,6 +1458,7 @@ its adjudication posture without changing publication authority.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `56` | `Codex` | HPHYS0221 amendment: added WB19 `solwpv` branch semantics and coupled water-yield/saturated-depth authority (`avpora`, `avfca`, `avcoca`, `watyld`, `fcdep`, `unsdep`) with required runtime publications (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`) and fail-closed domain posture. |
 | `2026-05-31` | `55` | `Codex` | HPHYS0219 amendment: corrected WB19 `drfc` coefficient-family authority from `cpm_####` to baseline-authoritative `coca_####` and retained typed hard-fail domain guards for `coca` surfaces. |
 | `2026-05-31` | `54` | `Codex` | HPHYS0218 amendment: required WB19 `drfc`-equivalent threshold lineage (`wb18_perc_fc_#### + (1-coca_####)*dg_####`) for saturated-zone classification and lateral/drainage withdrawals with fail-closed `coca_####` guard posture. |
 | `2026-05-31` | `53` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` authority to layer aggregation plus explicit normalized-tail contribution (`wb13_profile_fc_tail_mm`), retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and added typed fail-closed guard posture for missing/non-finite/negative tail symbols. |

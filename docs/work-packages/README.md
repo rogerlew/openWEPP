@@ -93,6 +93,11 @@ Authorized packages:
     deterministic cross-family tradeoffs (`Dp` vs `latqcc`/total-soil), audit
     missing baseline WB19 coupling lineage, and hand off contract-first
     remediation scope.
+- `20260531-hphys0221-wb19-water-yield-fcdep-coupling-implementation-001/`
+  - Purpose: implement baseline-authoritative WB19 water-yield and
+    saturated-depth coupling (`solwpv` branch semantics,
+    `avpora/avfca/avcoca`, `watyld`, `fcdep`, `unsdep`) with contract-first
+    sequencing and 39-hillslope rerun adjudication.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation
@@ -171,7 +176,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218 -> hphys0219 -> hphys0220+`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218 -> hphys0219 -> hphys0220 -> hphys0221+`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.

@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 71
+contract_version: 76
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed outlet hydrograph/sediment-yield accounting consumers
   - Comparator/replay and governance-gate consumers
 evidence_level: Static
-last_reviewed: 2026-05-30
+last_reviewed: 2026-05-31
 supersedes: []
 superseded_by: []
 ---
@@ -724,6 +724,24 @@ Minimum WS12 integration vectors:
    `st(i)` seed -> `wb18_perc_theta/fc_####` + `coca_####` -> WB19
    `drfc_i` threshold execution -> WB13 `latqcc`/`Dp` publication.
 
+## HPHYS0221 WB19 Coupled Saturated-Depth Governance Addendum
+
+1. Coupled WB13 subsurface-loss closure claims must include WB19 `solwpv`
+   branch authority in system lineage evidence:
+   - `solwpv = 2006`: all saturated layers eligible for lateral partition.
+   - `solwpv != 2006`: contiguous near-surface saturated block only.
+2. WB19 system-coupled state lineage for lateral partition/saturated-depth
+   evolution is explicit:
+   - `por_####`, `coca_####`, `wb18_perc_fc_####`, `dg_####`
+     -> `wb19_watyld`
+   - `q` + `wb19_watyld` + pre-update `fcdep`
+     -> `wb19_fcdep`, `wb19_unsdep`.
+3. WB19 lateral writeback publications (`wb19_watyld`, `wb19_fcdep`,
+   `wb19_unsdep`) are required system-boundary evidence surfaces for
+   adjudicating coupled `latqcc`/`Dp`/soil-water residual families.
+4. Missing/non-finite/domain-invalid branch/coupling symbols are typed
+   hard-fail boundary states with no fallback substitution.
+
 ## HPHYS0209 ProfileWP Near-Closed Publication Adjudication Addendum
 
 1. System-boundary authority for `ProfileWPStore` remains direct publication
@@ -897,6 +915,7 @@ Minimum WS12 integration vectors:
 | `2026-05-30` | `71` | `Codex` | HPHYS0208 amendment: added coupled WB13 publication-lineage governance requiring threshold-seed ownership (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) across WB11/WB18/WB19 pathways for `ProfileFCStore`/`Dp`/`latqcc`/`Total-Soil`/`SoilWaterTotal` closure claims. |
 | `2026-05-30` | `72` | `Codex` | HPHYS0209 amendment: codified near-closed `ProfileWPStore` publication adjudication governance as diagnostic-only expected process-correct evidence when isolated/stable, with explicit non-regression and fail-closed guard continuity requirements. |
 | `2026-05-31` | `73` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` system-boundary authority to layer aggregation plus explicit normalized-tail carry (`wb13_profile_fc_tail_mm`), retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and required fail-closed missing/non-finite/negative tail guard posture. |
+| `2026-05-31` | `76` | `Codex` | HPHYS0221 amendment: added WB19 `solwpv` branch governance and coupled saturated-depth lineage authority (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`) as required system-boundary evidence for `latqcc`/`Dp` residual adjudication. |
 | `2026-05-31` | `75` | `Codex` | HPHYS0219 amendment: corrected coupled WB19 `drfc` threshold governance to baseline-authoritative `wb18_perc_fc_#### + (1-coca_####)*dg_####` lineage with fail-closed `coca_####` domain enforcement for `latqcc`/`Dp` closure claims. |
 | `2026-05-31` | `74` | `Codex` | HPHYS0218 amendment: added coupled WB19 `drfc` threshold governance requiring `wb18_perc_fc_#### + (1-coca_####)*dg_####` execution authority and fail-closed `coca_####` domain enforcement for `latqcc`/`Dp` closure claims. |
 | `2026-05-25` | `25` | `Codex` | MOFE03 amendment: added system-boundary authority requiring deterministic runner carry of Wave-2 activation/ingress seed surfaces into scheduler execution under canonical `SC-SED-001` policy with hard-fail posture on missing derivation inputs. |

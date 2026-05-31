@@ -5509,6 +5509,11 @@ mod tests {
     fn hphys0213_wb19_lateral_withdrawal_publishes_realized_flux_and_updates_wb11_soil_water() {
         let mut state_surface = BTreeMap::new();
         state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+        state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));
+        state_surface.insert(
+            BoundarySymbol::from("solwpv"),
+            BoundaryValue::scalar(2006.0),
+        );
         state_surface.insert(
             BoundarySymbol::from("wb11_drainable_storage"),
             BoundaryValue::scalar(0.4),
@@ -5532,9 +5537,14 @@ mod tests {
             BoundaryValue::scalar(0.2),
         );
         state_surface.insert(
+            BoundarySymbol::from("wb18_perc_ul_0001"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
             BoundarySymbol::from("wb18_perc_ssc_0001"),
             BoundaryValue::scalar(1.0e-5),
         );
+        state_surface.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.8));
         state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
         state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
         state_surface.insert(
@@ -5586,9 +5596,14 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn hphys0213_wb19_drainage_withdrawal_publishes_realized_qdd_and_qd() {
         let mut state_surface = BTreeMap::new();
         state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+        state_surface.insert(
+            BoundarySymbol::from("solwpv"),
+            BoundaryValue::scalar(2006.0),
+        );
         state_surface.insert(
             BoundarySymbol::from("wb11_drainable_storage"),
             BoundaryValue::scalar(0.4),
@@ -5627,9 +5642,14 @@ mod tests {
             BoundaryValue::scalar(0.2),
         );
         state_surface.insert(
+            BoundarySymbol::from("wb18_perc_ul_0001"),
+            BoundaryValue::scalar(1.0),
+        );
+        state_surface.insert(
             BoundarySymbol::from("wb18_perc_ssc_0001"),
             BoundaryValue::scalar(0.01),
         );
+        state_surface.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.8));
         state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
         state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
         state_surface.insert(

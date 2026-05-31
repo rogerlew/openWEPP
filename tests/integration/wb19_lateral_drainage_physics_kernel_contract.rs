@@ -14,9 +14,21 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
 
     state.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.2));
+    state.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(2006.0),
+    );
 
     state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
     state.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state.insert(
+        BoundarySymbol::from("por_0001"),
+        BoundaryValue::scalar(0.95),
+    );
+    state.insert(
+        BoundarySymbol::from("por_0002"),
+        BoundaryValue::scalar(0.95),
+    );
     state.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
     state.insert(
         BoundarySymbol::from("coca_0001"),
@@ -43,6 +55,14 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
     state.insert(
         BoundarySymbol::from("wb18_perc_fc_0002"),
         BoundaryValue::scalar(4.0),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(8.0),
     );
     state.insert(
         BoundarySymbol::from("wb18_perc_ssc_0001"),

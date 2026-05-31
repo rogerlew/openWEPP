@@ -27,6 +27,10 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
 
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.3));
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(2006.0),
+    );
     state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(1.0));
@@ -90,6 +94,8 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
     );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.8));
+    state_surface.insert(BoundarySymbol::from("por_0002"), BoundaryValue::scalar(0.8));
     state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
     state_surface.insert(
         BoundarySymbol::from("coca_0001"),

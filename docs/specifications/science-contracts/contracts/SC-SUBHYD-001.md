@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 12
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-05-30
+last_reviewed: 2026-05-31
 supersedes: []
 superseded_by: []
 ---
@@ -117,7 +117,7 @@ replace the governing Chapter-6 process equations.
 | Surface | Symbols |
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
-| Layer hydrology state family | `nsl`, `solthk`, `dg_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####` |
+| Layer hydrology state family | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` |
 | Lateral geometry + conductivity family | `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio` |
 | Drainage geometry + capacity family | `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 | Coupling carry-forward surface | `Pe` |
@@ -128,15 +128,16 @@ replace the governing Chapter-6 process equations.
 |---|---|
 | Lateral flux output | `q` |
 | Drainage outputs | `Qdd`, `Qd` |
-| Lateral/drainage state updates | `wb11_drainable_storage`, `wb18_perc_theta_####` |
+| Lateral/drainage state updates | `wb11_drainable_storage`, `wb18_perc_theta_####`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range lateral/drainage domains |
 
 ### Mutated State Surfaces
 
 WB19 mutates lateral/drainage boundary surfaces deterministically:
 - lateral phase computes Eq. [6.2.4]-derived `q`, withdraws layer water above
-  field capacity from top to bottom, updates `wb18_perc_theta_####`, and
-  updates `wb11_drainable_storage`.
+  field capacity from top to bottom, updates `wb18_perc_theta_####`, updates
+  `wb11_drainable_storage`, and publishes coupled saturated-depth surfaces
+  (`wb19_fcdep`, `wb19_unsdep`, `wb19_watyld`).
 - drainage phase computes Eq. [6.2.10]-[6.2.11]-derived `Qdd` with explicit
   equivalent-depth branch + capacity cap, performs tile-layer-to-surface
   withdrawal, updates `wb18_perc_theta_####`, updates
@@ -144,16 +145,25 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 
 ## Algorithm Specification (WB19 Lateral/Drainage Production Execution)
 
-1. Lateral phase loads WB18 per-layer states (`theta`, `fc`, `ssc`, `dg`, `coca`) and
-   computes saturated-zone metrics and effective conductivity over saturated
-   thickness:
+1. Lateral phase loads WB18 per-layer states (`theta`, `fc`, `ul`, `ssc`,
+   `dg`, `por`, `coca`) and computes saturated-zone metrics and effective
+   conductivity over saturated thickness:
    - `drfc_i = fc_i + (1-coca_i)*dg_i`
+   - `solwpv = 2006`: saturated block includes all layers where
+     `theta_i >= drfc_i`
+   - `solwpv != 2006`: saturated block is contiguous from surface until first
+     unsaturated layer
+   - `avpora = Σ(por_i * dg_i / fcdep)`,
+     `avfca = Σ((fc_i/dg_i) * dg_i / fcdep)`,
+     `avcoca = Σ(coca_i * dg_i / fcdep)`
+   - `watyld = avpora - (avfca + (1-avcoca))`
    - `Ke = 86400 * (Σ(ssc_i * dg_i) / Σ(dg_i))`
    - `alpha = atan(avgslp)`
    - `q_potential = (Ho * wb19_lateral_anisotropy_ratio * Ke * sin(alpha)) / slplen`
 2. Lateral phase withdraws `q` from layer excess water (`theta_i - drfc_i`) in
    top-to-bottom sequence and emits actual `q` after residual withdrawal
-   reduction.
+   reduction; for `solwpv < 2006`, update `fcdep = max(fcdep - q/watyld, 0)`
+   and `unsdep = soldep - fcdep`.
 3. Drainage phase (when `wb19_drain_enabled = 1`) computes Eq. [6.2.10]-[6.2.11]
    branch values using `wb19_drain_depth`, `wb19_drain_spacing`,
    `wb19_drain_diameter`, water-table depth from saturated-layer state, and
@@ -168,7 +178,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `dg_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
+| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
 | `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic layer-aware drainage execution/writeback |
 | `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
@@ -191,6 +201,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-012 | WB19 lateral execution invariant: lateral phase computes Eq. [6.2.4]-style deterministic `q` from layer-aware conductivity/geometry symbols and updates `wb18_perc_theta_####` + `wb11_drainable_storage` through top-to-bottom excess-water withdrawal above `drfc_i = fc_i + (1-coca_i)*dg_i`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-013 | WB19 drainage execution invariant: drainage phase computes Eq. [6.2.10]-[6.2.11] deterministic `Qdd`, applies explicit capacity cap (`wb11_drainage_coefficient`), emits `Qd = q + Qdd`, and updates `wb18_perc_theta_####` + `wb11_drainable_storage` using `drfc_i` threshold lineage without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-014 | WB19 lateral/drainage guard invariant: missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-SUBHYD-015 | WB19 water-yield/saturated-depth invariant: lateral phase must apply `solwpv` branch semantics and publish finite coupled states (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`); for `solwpv < 2006` with active saturated block, `watyld` must be positive and `fcdep/unsdep` update must follow `fcdep = max(fcdep - q/watyld, 0)` and `unsdep = soldep - fcdep`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -210,6 +221,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-012` | runtime | WB19 lateral production kernel execution path | Typed hard error on malformed/non-deterministic layer-aware lateral writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-013` | runtime | WB19 drainage production kernel execution path | Typed hard error on malformed/non-deterministic layer-aware drainage writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-014` | runtime | WB19 lateral/drainage guard tables | Typed hard error on missing/non-finite/domain-invalid WB19 lateral/drainage inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-SUBHYD-015` | runtime | WB19 lateral water-yield + saturated-depth branch/coupling validator | Typed hard error on malformed `solwpv` branch behavior or invalid `wb19_watyld`/`wb19_fcdep`/`wb19_unsdep` coupling outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -220,10 +232,14 @@ alias continuity for production kernels.
 |---|---|---|---|---|
 | `θ_i` | `wb18_perc_theta_####` | WB19 per-layer moisture state surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `θFC_i` | `wb18_perc_fc_####` | WB19 per-layer field-capacity surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `θUL_i` | `wb18_perc_ul_####` | WB19 per-layer upper-limit surfaces used in branch coupling checks | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `K_i` | `wb18_perc_ssc_####` | WB19 per-layer saturated conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `por_i` | `por_####` | WB19 per-layer porosity surfaces used in water-yield coupling | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces used by drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `drfc_i` | `wb18_perc_fc_#### + (1-coca_####)*dg_####` | WB19 drain-threshold lineage used for saturated-zone classification and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `watyld` | `wb19_watyld` | WB19 water-yield coupling state for non-2006 `fcdep` updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `fcdep`, `unsdep` | `wb19_fcdep`, `wb19_unsdep` | WB19 saturated/unsaturated depth states after lateral update | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `L` | `slplen` | hillslope length for lateral flux denominator | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `α` | `atan(avgslp)` | slope angle reconstructed from runtime slope ratio | `rad` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `anisrt` | `wb19_lateral_anisotropy_ratio` | lateral anisotropy multiplier | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -394,6 +410,27 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    domain-invalid values are typed hard-fail WB19 execution states.
 4. FC-only fallback threshold behavior is prohibited for WB19 closure claims.
 
+## HPHYS0221 WB19 Water-Yield and Saturated-Depth Coupling Addendum
+
+1. WB19 lateral execution must preserve baseline `solwpv` branch semantics:
+   - `solwpv = 2006`: include all saturated layers (`theta_i >= drfc_i`).
+   - `solwpv != 2006`: include only contiguous near-surface saturated layers
+     until first unsaturated layer.
+2. WB19 lateral coupling must compute:
+   - `avpora = Σ(por_i * dg_i / fcdep)`,
+   - `avfca = Σ((fc_i/dg_i) * dg_i / fcdep)`,
+   - `avcoca = Σ(coca_i * dg_i / fcdep)`,
+   - `watyld = avpora - (avfca + (1-avcoca))`.
+3. For `solwpv < 2006` with active saturated block, update saturated-depth
+   states using:
+   - `fcdep = max(fcdep - q/watyld, 0)`,
+   - `unsdep = soldep - fcdep`.
+4. Lateral writeback must publish `wb19_watyld`, `wb19_fcdep`, and
+   `wb19_unsdep`.
+5. Missing/non-finite/domain-invalid branch/coupling symbols (`solwpv`,
+   `por_####`, `wb19_watyld` when required) are typed hard-fail states; no
+   fallback path is allowed.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -419,3 +456,4 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 | `2026-05-30` | `9` | `Codex` | HPHYS0208 amendment: added coupled threshold-lineage closure authority linking WB13 `latqcc`/`Dp` residual adjudication to WB11/WB18 seed symbols (`sat`, `por_####`, `cpm_####`, `thetfc_####`, `thetdr_####`, `dg_####`) with explicit fail-closed/no-fallback posture. |
 | `2026-05-31` | `10` | `Codex` | HPHYS0218 amendment: required WB19 `drfc` threshold lineage (`wb18_perc_fc_#### + (1-coca_####)*dg_####`) for saturated-zone checks and withdrawals, with fail-closed `coca_####` guard continuity. |
 | `2026-05-31` | `11` | `Codex` | HPHYS0219 amendment: corrected WB19 `drfc` coefficient-family authority from `cpm_####` to baseline-authoritative `coca_####` and retained fail-closed guard posture for `coca` domain violations. |
+| `2026-05-31` | `12` | `Codex` | HPHYS0221 amendment: added WB19 `solwpv` branch semantics and water-yield/saturated-depth coupling authority (`avpora`, `avfca`, `avcoca`, `watyld`, `fcdep`, `unsdep`) with required WB19 coupling writebacks and fail-closed domain posture. |

@@ -12,6 +12,11 @@ const TOL: f64 = 1.0e-12;
 fn seeded_lateral_state(coca: f64, cpm: f64) -> BTreeMap<BoundarySymbol, BoundaryValue> {
     let mut state = BTreeMap::new();
     state.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));
+    state.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(2006.0),
+    );
     state.insert(
         BoundarySymbol::from("wb11_drainable_storage"),
         BoundaryValue::scalar(0.8),
@@ -35,9 +40,14 @@ fn seeded_lateral_state(coca: f64, cpm: f64) -> BTreeMap<BoundarySymbol, Boundar
         BoundaryValue::scalar(0.2),
     );
     state.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state.insert(
         BoundarySymbol::from("wb18_perc_ssc_0001"),
         BoundaryValue::scalar(1.0e-5),
     );
+    state.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.8));
     state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
     state.insert(
         BoundarySymbol::from("coca_0001"),
