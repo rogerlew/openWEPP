@@ -27,6 +27,17 @@ fn state_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> f64 {
         .as_f64()
 }
 
+fn force_unsaturated_layers(surface: &mut HillslopeWritebackSurface) {
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(4.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(4.0),
+    );
+}
+
 fn run_wb14_reconciliation_outputs(surface: HillslopeWritebackSurface) -> (f64, f64) {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
@@ -153,6 +164,7 @@ fn seeded_wb14_surface() -> HillslopeWritebackSurface {
 
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("solwpv"), BoundaryValue::scalar(2006.0));
     state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(1.0));
@@ -216,6 +228,8 @@ fn seeded_wb14_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state_surface.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.55));
+    state_surface.insert(BoundarySymbol::from("por_0002"), BoundaryValue::scalar(0.55));
     state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
     state_surface.insert(
         BoundarySymbol::from("coca_0001"),
@@ -545,6 +559,7 @@ fn wb14_contract_conformance_rejects_non_monotone_hyetograph_time() {
 #[test]
 fn wb14_contract_conformance_applies_ksatadj_9001_regime() {
     let mut ksatadj_surface = seeded_wb14_surface();
+    force_unsaturated_layers(&mut ksatadj_surface);
     ksatadj_surface.state_surface.insert(
         BoundarySymbol::from("solwpv"),
         BoundaryValue::scalar(9001.0),
@@ -597,6 +612,7 @@ fn wb14_contract_conformance_applies_ksatadj_9001_regime() {
 #[test]
 fn wb14_contract_conformance_applies_ksatadj_9002_regime() {
     let mut ksatadj_surface = seeded_wb14_surface();
+    force_unsaturated_layers(&mut ksatadj_surface);
     ksatadj_surface.state_surface.insert(
         BoundarySymbol::from("solwpv"),
         BoundaryValue::scalar(9002.0),
@@ -643,6 +659,7 @@ fn wb14_contract_conformance_applies_ksatadj_9002_regime() {
 #[test]
 fn wb14_contract_conformance_applies_ksatadj_9003_burn_floor() {
     let mut ksatadj_surface = seeded_wb14_surface();
+    force_unsaturated_layers(&mut ksatadj_surface);
     ksatadj_surface.state_surface.insert(
         BoundarySymbol::from("solwpv"),
         BoundaryValue::scalar(9003.0),
@@ -699,6 +716,7 @@ fn wb14_contract_conformance_rejects_active_9001_zero_ksatrec() {
     let mut kernel = Wb11HydrologyKernel;
 
     let mut surface = seeded_wb14_surface();
+    force_unsaturated_layers(&mut surface);
     surface.state_surface.insert(
         BoundarySymbol::from("solwpv"),
         BoundaryValue::scalar(9001.0),
