@@ -280,15 +280,14 @@ bit-for-bit parity). `[DIRECT][Static]`
    publication when normalized corrected-lineage projection is required; missing
    normalized lineage or mapping closure is a typed fail-closed runtime
    boundary condition.
-9. HPHYS0207 closes depth-authority mismatch by making
-   `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` runtime-owned,
-   baseline-corrected, normalized-profile storage authorities aligned with
-   `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm` for WB13 publication.
-10. HPHYS0207 requires explicit normalized-tail handling policy: FC/WP
-   publication authority is normalized-profile storage projection, so residual
-   normalized depth beyond OFE layer publication depth must be consumed into
-   `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` (no silent tail
-   truncation and no parser-theta fallback authority repair).
+9. HPHYS0207 closes depth-authority mismatch for profile-storage seed lineage
+   by making `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm`
+   runtime-owned, baseline-corrected, normalized-profile storage symbols
+   aligned with `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm`.
+10. HPHYS0207 normalized-tail handling remains authoritative for seed lineage:
+    residual normalized depth beyond OFE layer publication depth must be
+    consumed into `wb13_profile_fc_store_mm`/`wb13_profile_wp_store_mm` as
+    diagnostic/projection surfaces (no silent tail truncation).
 
 ## HPHYS0203 Soil-Water Robustness Validation Addendum
 
@@ -335,6 +334,17 @@ bit-for-bit parity). `[DIRECT][Static]`
    `ProfilePorosityCap` remain non-regressing and runtime guard posture remains
    fail-closed.
 
+## HPHYS0216 ProfileFC Layer-Authority Realignment Addendum
+
+1. `ProfileFCStore` publication authority is baseline-authoritative
+   layer aggregation from emitted runtime symbols
+   `Σ(thetfc_i * dg_i) * 1000`, not `wb13_profile_fc_store_mm`.
+2. `wb13_profile_fc_store_mm` remains a diagnostic carry/projection symbol and
+   may diverge from published `ProfileFCStore` when normalized-tail depth is
+   present.
+3. Realignment does not relax corrected-layer lineage requirements for
+   authoritative `thetfc_####` symbols or fail-closed domain guards.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -348,6 +358,7 @@ bit-for-bit parity). `[DIRECT][Static]`
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned `ProfileFCStore` publication authority to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic seed/projection surface, and preserved corrected-layer lineage + fail-closed guard requirements. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-10 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-7 soil authority anchors, coupling invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-10 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence-mode token casing, strengthened freeze-thaw anchor specificity/path consistency, added `τcadj` alias coverage, and evidence-tagged all degenerate-state claims. |

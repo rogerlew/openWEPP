@@ -3946,6 +3946,47 @@ fn derive_mofe04_publication_area_from_slope(
     Ok(area)
 }
 
+fn derive_profile_fc_store_from_authoritative_layers(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<f64, HillslopeCliError> {
+    let nsl = scalar_to_usize(
+        "nsl",
+        require_runtime_surface_scalar(runtime_surface, "nsl")?,
+    )?;
+    if nsl == 0 {
+        return Err(wb13_simout_failure(
+            "nsl must be >= 1 for ProfileFCStore layer aggregation",
+        ));
+    }
+
+    let mut profile_fc_store_m = 0.0_f64;
+    for layer_index in 1..=nsl {
+        let thetfc_symbol = format!("thetfc_{layer_index:04}");
+        let dg_symbol = format!("dg_{layer_index:04}");
+        let thetfc = require_runtime_surface_scalar(runtime_surface, &thetfc_symbol)?;
+        let dg = require_runtime_surface_scalar(runtime_surface, &dg_symbol)?;
+        if thetfc < 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "{thetfc_symbol} must be >= 0.0, observed {thetfc}"
+            )));
+        }
+        if dg <= 0.0 {
+            return Err(wb13_simout_failure(format!(
+                "{dg_symbol} must be > 0.0, observed {dg}"
+            )));
+        }
+        profile_fc_store_m += thetfc * dg;
+    }
+
+    if !profile_fc_store_m.is_finite() || profile_fc_store_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "ProfileFCStore layer aggregation must be finite and >= 0.0, observed {profile_fc_store_m}"
+        )));
+    }
+
+    Ok(profile_fc_store_m * 1_000.0)
+}
+
 #[allow(clippy::too_many_lines)]
 fn build_simulation_owned_wb13_row(
     runtime_surface: &HillslopeWritebackSurface,
@@ -3997,13 +4038,7 @@ fn build_simulation_owned_wb13_row(
             "wb13_profile_porosity_cap_mm must be >= 0.0, observed {profile_porosity_cap}"
         )));
     }
-    let profile_fc_store_mm =
-        require_runtime_surface_scalar(runtime_surface, "wb13_profile_fc_store_mm")?;
-    if profile_fc_store_mm < 0.0 {
-        return Err(wb13_simout_failure(format!(
-            "wb13_profile_fc_store_mm must be >= 0.0, observed {profile_fc_store_mm}"
-        )));
-    }
+    let profile_fc_store_mm = derive_profile_fc_store_from_authoritative_layers(runtime_surface)?;
     let profile_wp_store_mm =
         require_runtime_surface_scalar(runtime_surface, "wb13_profile_wp_store_mm")?;
     if profile_wp_store_mm < 0.0 {
@@ -4013,12 +4048,12 @@ fn build_simulation_owned_wb13_row(
     }
     if profile_porosity_cap < profile_fc_store_mm {
         return Err(wb13_simout_failure(format!(
-            "profile storage ordering invalid: wb13_profile_porosity_cap_mm ({profile_porosity_cap}) must be >= wb13_profile_fc_store_mm ({profile_fc_store_mm})"
+            "profile storage ordering invalid: ProfilePorosityCap ({profile_porosity_cap}) must be >= ProfileFCStore ({profile_fc_store_mm})"
         )));
     }
     if profile_fc_store_mm < profile_wp_store_mm {
         return Err(wb13_simout_failure(format!(
-            "profile storage ordering invalid: wb13_profile_fc_store_mm ({profile_fc_store_mm}) must be >= wb13_profile_wp_store_mm ({profile_wp_store_mm})"
+            "profile storage ordering invalid: ProfileFCStore ({profile_fc_store_mm}) must be >= ProfileWPStore ({profile_wp_store_mm})"
         )));
     }
 
@@ -4784,12 +4819,11 @@ mod tests {
     }
 
     #[test]
-    fn hphys0207_wb13_fc_storage_guard_is_exercised_by_direct_row_builder_probe() {
+    fn hphys0216_wb13_fc_storage_guard_rejects_missing_layer_authority_symbol() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from("wb13_profile_fc_store_mm"),
-            BoundaryValue::scalar(f64::NAN),
-        );
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("thetfc_0001"));
 
         let error = build_simulation_owned_wb13_row(
             &runtime_surface,
@@ -4799,7 +4833,7 @@ mod tests {
             &canonical_calendar_day_probe(),
             0.0,
         )
-        .expect_err("non-finite wb13_profile_fc_store_mm must fail WB13 publication guard");
+        .expect_err("missing thetfc_0001 must fail WB13 publication guard");
 
         assert_eq!(error.code(), "CLIHILL-E-011");
         match error {
@@ -4810,8 +4844,8 @@ mod tests {
                     "expected SIMOUT-E-001 guard id, observed: {detail}"
                 );
                 assert!(
-                    detail.contains("runtime symbol wb13_profile_fc_store_mm is non-finite"),
-                    "expected wb13_profile_fc_store_mm typed guard detail, observed: {detail}"
+                    detail.contains("missing required runtime symbol thetfc_0001"),
+                    "expected missing thetfc_0001 typed guard detail, observed: {detail}"
                 );
             }
             other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
@@ -4888,7 +4922,7 @@ mod tests {
     }
 
     #[test]
-    fn hphys0207_wb13_profile_fc_wp_publication_uses_storage_symbols_when_valid() {
+    fn hphys0216_wb13_profile_fc_publication_uses_layer_aggregation_authority() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb13_profile_fc_store_mm"),
@@ -4910,8 +4944,8 @@ mod tests {
         .expect("valid WB13 probe surface should publish row");
 
         assert!(
-            (row.wb13_row.profile_fc_store - 100.0).abs() < 1.0e-12,
-            "ProfileFCStore must follow wb13_profile_fc_store_mm storage authority"
+            (row.wb13_row.profile_fc_store - 75.0).abs() < 1.0e-12,
+            "ProfileFCStore must follow authoritative layer aggregation (`thetfc_#### * dg_####`), not wb13_profile_fc_store_mm"
         );
         assert!(
             (row.wb13_row.profile_wp_store - 55.0).abs() < 1.0e-12,
@@ -5108,12 +5142,11 @@ mod tests {
         .expect("baseline probe row should publish");
 
         let mut perturbed_surface = seeded_wb13_runtime_surface_probe();
-        let baseline_fc =
-            require_runtime_surface_scalar(&perturbed_surface, "wb13_profile_fc_store_mm")
-                .expect("seeded surface should include wb13_profile_fc_store_mm");
+        let baseline_thetfc = require_runtime_surface_scalar(&perturbed_surface, "thetfc_0001")
+            .expect("seeded surface should include thetfc_0001");
         perturbed_surface.state_surface.insert(
-            BoundarySymbol::from("wb13_profile_fc_store_mm"),
-            BoundaryValue::scalar(baseline_fc + 1.0e-4),
+            BoundarySymbol::from("thetfc_0001"),
+            BoundaryValue::scalar(baseline_thetfc + 1.0e-4),
         );
         let perturbed_row = build_simulation_owned_wb13_row(
             &perturbed_surface,

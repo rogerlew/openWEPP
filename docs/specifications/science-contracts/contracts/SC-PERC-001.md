@@ -290,18 +290,18 @@ Minimum WB18 percolation production-kernel conformance vectors:
 4. WB13 column `Dp` in this addendum is the daily deep-percolation export
    derived from percolation closure term `D` and is explicitly distinct from
    climate time-to-peak descriptor `Dp` (`SC-CLIMATE-001`, units `h`).
-5. `ProfileFCStore` and `ProfileWPStore` publication semantics are
-   normalized-profile storage aggregates (`mm`) from baseline-corrected
-   corrected-layer lineage emitted through runtime symbols
-   `wb13_profile_fc_store_mm` and `wb13_profile_wp_store_mm`.
-6. Authoritative layer symbols `thetfc_####`/`thetdr_####` remain required
-   process-consumer surfaces for kernel continuity, but HPHYS0207 closes
-   WB13 profile-storage publication authority on normalized-profile storage
-   symbols in requirement (5).
-7. HPHYS0207 requires depth-domain closure between normalized corrected-layer
-   profile storage/capacity authorities and emitted WB13 profile outputs;
-   normalized-tail depth must be consumed in profile-storage projection
-   authority (no silent truncation, no parser-domain override).
+5. `ProfileFCStore` publication semantics are layer-authoritative WB13
+   aggregates from emitted runtime symbols
+   `Σ(thetfc_i * dg_i) * 1000` (`mm`) under HPHYS0216 baseline-authority
+   realignment.
+6. `ProfileWPStore` publication semantics remain normalized-profile storage
+   projection from baseline-corrected corrected-layer lineage via
+   `wb13_profile_wp_store_mm` under HPHYS0209.
+7. `wb13_profile_fc_store_mm` remains diagnostic carry/projection lineage and
+   is not publication authority for `ProfileFCStore`.
+8. Normalized corrected-layer depth-domain closure requirements remain
+   authoritative for profile-capacity/projection seed families; no silent
+   truncation or parser-domain surrogate override.
 
 ## HPHYS0208 FC-Threshold Consumer-Lineage Closure Addendum
 
@@ -337,6 +337,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned WB13 `ProfileFCStore` publication coupling to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic carry lineage, and kept normalized corrected-layer seed/projection depth-domain obligations explicit. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-08 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/6 authority anchors, invariants, guard map, alias map, obligations, boundary disposition, tolerances, and gap register for SCI-08 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added direct Chapter-7 anchors for conductivity modifiers, normalized evidence-mode tokens, clarified lower-layer restriction tolerance vs runtime hard-fail semantics, added evidence tags to degenerate-state/tolerance rows, and made non-promotable `HOLD` state explicit. |

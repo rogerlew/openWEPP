@@ -42,6 +42,9 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     let package_hphys0207 = repo_file(
         "docs/work-packages/20260530-hphys0207-fcwp-depth-authority-tail-closure-001/package.md",
     );
+    let package_hphys0216 = repo_file(
+        "docs/work-packages/20260531-hphys0216-profilefc-layer-authority-realignment-001/package.md",
+    );
     let watbal = repo_file("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
     let soil = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
     let perc = repo_file("docs/specifications/science-contracts/contracts/SC-PERC-001.md");
@@ -66,6 +69,12 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "HPHYS0207 package must preserve closure measures and contract-first sequencing"
     );
     assert!(
+        package_hphys0216.contains("MEASURE-HP216-001")
+            && package_hphys0216.contains("MEASURE-HP216-004")
+            && package_hphys0216.contains("Mandatory Contract-First Sequence"),
+        "HPHYS0216 package must preserve closure measures and contract-first sequencing"
+    );
+    assert!(
         watbal.contains("### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure"),
         "SC-WATBAL-001 must include HPHYS0202 FC/WP layer-aggregation authority"
     );
@@ -76,6 +85,10 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     assert!(
         watbal.contains("### HPHYS0207 FC/WP Depth-Authority and Normalized-Tail Closure"),
         "SC-WATBAL-001 must include HPHYS0207 FC/WP depth-authority closure section"
+    );
+    assert!(
+        watbal.contains("### HPHYS0216 ProfileFC Layer-Authority Realignment"),
+        "SC-WATBAL-001 must include HPHYS0216 FC publication authority realignment section"
     );
     assert!(
         watbal.contains("superseded by HPHYS0207"),
@@ -90,12 +103,20 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-SOIL-001 must include HPHYS0206 normalized corrected-layer projection authority"
     );
     assert!(
+        soil.contains("## HPHYS0216 ProfileFC Layer-Authority Realignment Addendum"),
+        "SC-SOIL-001 must include HPHYS0216 FC layer-authority addendum"
+    );
+    assert!(
         perc.contains("HPHYS0206"),
         "SC-PERC-001 must include HPHYS0206 normalized mapping/no-fallback authority"
     );
     assert!(
         perc.contains("HPHYS0207"),
         "SC-PERC-001 must include HPHYS0207 normalized-profile storage authority"
+    );
+    assert!(
+        perc.contains("HPHYS0216"),
+        "SC-PERC-001 must include HPHYS0216 FC layer-authority realignment"
     );
     assert!(
         system.contains("## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum"),
@@ -116,7 +137,7 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
 }
 
 #[test]
-fn hphys0207_profile_fc_wp_publication_uses_projected_storage_symbols() {
+fn hphys0216_profile_fc_layer_aggregation_and_wp_projected_storage_authority() {
     let _execution_guard = runner_execution_lock()
         .lock()
         .expect("runner execution lock should be acquirable");
@@ -158,8 +179,8 @@ fn hphys0207_profile_fc_wp_publication_uses_projected_storage_symbols() {
 
     assert_close(
         observed_fc,
-        expected_projected_fc,
-        "ProfileFCStore must follow wb13_profile_fc_store_mm projected storage authority",
+        expected_layer.fc_store_mm,
+        "ProfileFCStore must follow layer-authoritative aggregation (`thetfc_#### * dg_####`)",
     );
     assert_close(
         observed_wp,
@@ -167,8 +188,8 @@ fn hphys0207_profile_fc_wp_publication_uses_projected_storage_symbols() {
         "ProfileWPStore must follow wb13_profile_wp_store_mm projected storage authority",
     );
     assert!(
-        (observed_fc - expected_layer.fc_store_mm).abs() > 1.0e-6,
-        "ProfileFCStore must not silently truncate to parser-layer depth aggregation"
+        (observed_fc - expected_projected_fc).abs() > 1.0e-6,
+        "ProfileFCStore must not be sourced from wb13_profile_fc_store_mm projected storage seed"
     );
     assert!(
         (observed_wp - expected_layer.wp_store_mm).abs() > 1.0e-6,
