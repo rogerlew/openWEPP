@@ -378,6 +378,10 @@ path = "tests/integration/auth05_level4_constitutive_authority_hardening_contrac
 name = "auth06_fixture_provenance_hash_enforcement_contract"
 path = "tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs"
 
+[[test]]
+name = "auth07_fc_authority_cohort_contract"
+path = "tests/integration/auth07_fc_authority_cohort_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

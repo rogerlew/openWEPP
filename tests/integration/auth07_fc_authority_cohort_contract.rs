@@ -1,0 +1,261 @@
+use std::collections::BTreeMap;
+use std::fs;
+use std::path::Path;
+
+use openwepp_hillslope_orchestrator::{
+    HillslopeWritebackSurface, runtime_inputs::build_hillslope_runtime_surface_from_soil,
+};
+use openwepp_input_contract::parsers::soil::{ParserMode, SoilParserOptions, parse_soil};
+use openwepp_kernel_contract::BoundarySymbol;
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct BucketThresholds {
+    low_max: f64,
+    medium_max: f64,
+}
+
+#[derive(Debug, Deserialize)]
+struct CohortCase {
+    case_id: String,
+    soil_file: String,
+    expected_rock_bucket: String,
+    expect_exceeds_threshold: bool,
+}
+
+#[derive(Debug, Deserialize)]
+struct CohortFixture {
+    suite_id: String,
+    units_basis: String,
+    max_relative_error_threshold: f64,
+    rock_fragment_bucket_thresholds_pct: BucketThresholds,
+    cases: Vec<CohortCase>,
+}
+
+#[derive(Debug, Clone)]
+struct CaseResult {
+    case_id: String,
+    rock_bucket: String,
+    weighted_rock_pct: f64,
+    authority_fc_store_mm: f64,
+    model_fc_store_mm: f64,
+    relative_error: f64,
+    exceeds_threshold: bool,
+}
+
+fn repo_file(path: &str) -> String {
+    let repo_root = env!("CARGO_MANIFEST_DIR");
+    let full_path = Path::new(repo_root).join(path);
+    fs::read_to_string(&full_path)
+        .unwrap_or_else(|error| panic!("expected readable file {}: {error}", full_path.display()))
+}
+
+fn repo_json_fixture<T: for<'de> Deserialize<'de>>(path: &str) -> T {
+    let text = repo_file(path);
+    serde_json::from_str::<T>(&text)
+        .unwrap_or_else(|error| panic!("failed to parse fixture {path} as JSON: {error}"))
+}
+
+fn strict_soil_parser_options() -> SoilParserOptions {
+    SoilParserOptions {
+        mode: ParserMode::Strict,
+        allow_legacy_aliases: false,
+        expected_topology_count: None,
+        topology_scope: None,
+    }
+}
+
+fn state_scalar(surface: &HillslopeWritebackSurface, symbol: &str) -> f64 {
+    surface
+        .state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing state symbol {symbol}"))
+        .as_f64()
+}
+
+fn rock_bucket(rock_pct: f64, thresholds: &BucketThresholds) -> String {
+    if rock_pct <= thresholds.low_max {
+        "low".to_string()
+    } else if rock_pct <= thresholds.medium_max {
+        "medium".to_string()
+    } else {
+        "high".to_string()
+    }
+}
+
+fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
+    let root = "tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001";
+    let soil_text = repo_file(&format!("{root}/{}", case.soil_file));
+    let soil = parse_soil(&soil_text, strict_soil_parser_options())
+        .unwrap_or_else(|error| panic!("{} should parse: {error}", case.case_id));
+    let surface = build_hillslope_runtime_surface_from_soil(&soil)
+        .unwrap_or_else(|error| panic!("{} runtime surface should build: {error}", case.case_id));
+
+    let ofe = soil
+        .ofes
+        .first()
+        .unwrap_or_else(|| panic!("{} missing first OFE", case.case_id));
+    let mut previous_depth_mm = 0.0_f64;
+    let mut authority_fc_store_mm = 0.0_f64;
+    let mut weighted_rock_sum = 0.0_f64;
+    let mut total_thickness_mm = 0.0_f64;
+    for (layer_position, layer) in ofe.layers.iter().enumerate() {
+        let layer_index = layer_position + 1;
+        let thickness_mm = layer.depth_mm - previous_depth_mm;
+        previous_depth_mm = layer.depth_mm;
+        assert!(
+            thickness_mm > 0.0,
+            "{} layer {} non-positive thickness",
+            case.case_id,
+            layer_index
+        );
+        let theta_fc = layer.fc_measured.unwrap_or_else(|| {
+            panic!("{} layer {} missing fc_measured", case.case_id, layer_index)
+        });
+        authority_fc_store_mm += theta_fc * thickness_mm;
+        weighted_rock_sum += layer.rock_frag_pct * thickness_mm;
+        total_thickness_mm += thickness_mm;
+    }
+
+    let weighted_rock_pct = if total_thickness_mm > 0.0 {
+        weighted_rock_sum / total_thickness_mm
+    } else {
+        0.0
+    };
+    let model_fc_store_mm = state_scalar(&surface, "wb13_profile_fc_store_mm");
+    let relative_error =
+        (model_fc_store_mm - authority_fc_store_mm).abs() / authority_fc_store_mm.max(f64::EPSILON);
+    let exceeds_threshold = relative_error > fixture.max_relative_error_threshold;
+
+    CaseResult {
+        case_id: case.case_id.clone(),
+        rock_bucket: rock_bucket(
+            weighted_rock_pct,
+            &fixture.rock_fragment_bucket_thresholds_pct,
+        ),
+        weighted_rock_pct,
+        authority_fc_store_mm,
+        model_fc_store_mm,
+        relative_error,
+        exceeds_threshold,
+    }
+}
+
+#[test]
+fn auth07_package_and_suite_authority_sections_exist() {
+    let package = repo_file(
+        "docs/work-packages/20260531-auth07-fc-authority-cohort-suite-bootstrap-001/package.md",
+    );
+    let registry = repo_file("docs/specifications/external-authority/registry.yaml");
+    let suite = repo_file(
+        "docs/specifications/external-authority/suites/cas_l5_soil_fc_direct_theta_minus33_cohort_001.md",
+    );
+    let soil_contract = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
+
+    assert!(
+        package.contains("Objective")
+            && package.contains("independent")
+            && package.contains("rock-fragment stratified reporting"),
+        "AUTH07 package must capture independent FC authority cohort scope"
+    );
+    assert!(
+        registry.contains("cas_l5_soil_fc_direct_theta_minus33_cohort_001")
+            && registry.contains("gate_lane: periodic")
+            && registry.contains("failure_class: investigation"),
+        "registry must include AUTH07 cohort suite in periodic investigation lane"
+    );
+    assert!(
+        suite.contains("authority_level: 5")
+            && suite.contains("hash:")
+            && suite.contains("source_commit:")
+            && suite.contains("transform_note:"),
+        "AUTH07 suite must include level-5 + fixture provenance metadata"
+    );
+    assert!(
+        soil_contract.contains("AUTH07 Independent FC Authority Cohort Addendum"),
+        "SC-SOIL-001 must include AUTH07 addendum"
+    );
+}
+
+#[test]
+fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification() {
+    let fixture: CohortFixture = repo_json_fixture(
+        "tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json",
+    );
+    assert_eq!(
+        fixture.suite_id,
+        "cas_l5_soil_fc_direct_theta_minus33_cohort_001"
+    );
+    assert_eq!(fixture.units_basis, "m3_m3_and_mm");
+
+    let mut results = Vec::new();
+    for case in &fixture.cases {
+        let result = evaluate_case(case, &fixture);
+        results.push(result);
+    }
+
+    let mut mismatches = Vec::new();
+    for case in &fixture.cases {
+        let result = results
+            .iter()
+            .find(|result| result.case_id == case.case_id)
+            .unwrap_or_else(|| panic!("missing evaluated result for {}", case.case_id));
+        if result.rock_bucket != case.expected_rock_bucket {
+            mismatches.push(format!(
+                "{} bucket mismatch: expected={} observed={} (weighted rock={}%)",
+                result.case_id,
+                case.expected_rock_bucket,
+                result.rock_bucket,
+                result.weighted_rock_pct
+            ));
+        }
+        if result.exceeds_threshold != case.expect_exceeds_threshold {
+            mismatches.push(format!(
+                "{} threshold mismatch: expected exceeds={} observed exceeds={} (rel_err={} threshold={})",
+                result.case_id,
+                case.expect_exceeds_threshold,
+                result.exceeds_threshold,
+                result.relative_error,
+                fixture.max_relative_error_threshold
+            ));
+        }
+    }
+    assert!(
+        mismatches.is_empty(),
+        "AUTH07 cohort expectations mismatched:\n{}",
+        mismatches.join("\n")
+    );
+
+    let mut buckets: BTreeMap<String, Vec<CaseResult>> = BTreeMap::new();
+    for result in results {
+        buckets
+            .entry(result.rock_bucket.clone())
+            .or_default()
+            .push(result);
+    }
+    assert!(
+        buckets.contains_key("low") && buckets.contains_key("high"),
+        "cohort must cover low and high rock-fragment buckets"
+    );
+
+    for (bucket, entries) in buckets {
+        let mean_rel_err = entries
+            .iter()
+            .map(|entry| entry.relative_error)
+            .sum::<f64>()
+            / entries.len() as f64;
+        assert!(
+            mean_rel_err.is_finite(),
+            "bucket {bucket} mean relative error must be finite"
+        );
+        for entry in entries {
+            assert!(
+                entry.model_fc_store_mm.is_finite()
+                    && entry.authority_fc_store_mm.is_finite()
+                    && entry.weighted_rock_pct.is_finite(),
+                "case {} must publish finite FC authority/model/rock metrics",
+                entry.case_id
+            );
+        }
+    }
+}

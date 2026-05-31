@@ -71,3 +71,25 @@ suites:
       authored_utc: 2026-05-31
       last_updated_utc: 2026-05-31
     notes: "Level-4 constitutive gate for per-layer FC threshold behavior and Dp cutoff."
+
+  - suite_id: cas_l5_soil_fc_direct_theta_minus33_cohort_001
+    title: Soil Profile FC Direct Theta(-33kPa) Cohort Authority Suite
+    status: active
+    authority_level: 5
+    domain: soil
+    process_family: fc_wp
+    sc_invariant_refs:
+      - SC-SOIL-001#INV-SOIL-014
+    gate_lane: periodic
+    failure_class: investigation
+    runtime_cost_class: integration
+    suite_doc: docs/specifications/external-authority/suites/cas_l5_soil_fc_direct_theta_minus33_cohort_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001
+    fixture_lock: tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l5_soil_fc_direct_theta_minus33_cohort_001/fixtures.provenance.yaml
+    integration_test: tests/integration/auth07_fc_authority_cohort_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-05-31
+      last_updated_utc: 2026-05-31
+    notes: "Independent profile FC authority comparator with rock-fragment-stratified residual classification."

@@ -382,6 +382,23 @@ FC/WP process-law adjudication independent of legacy parity signatures.
    - `docs/specifications/external-authority/registry.yaml`
    - `docs/specifications/external-authority/suites/`
 
+## AUTH07 Independent FC Authority Cohort Addendum
+
+AUTH07 adds an independent profile field-capacity comparison suite that
+contrasts runtime `ProfileFCStore` publication against direct
+`Σ(theta_fc(-33kPa)_i * dg_i)` authority from strict soil inputs.
+
+1. External cohort suite:
+   - `cas_l5_soil_fc_direct_theta_minus33_cohort_001`
+2. Lane/failure posture:
+   - `gate_lane=periodic`
+   - `failure_class=investigation`
+3. Cohort diagnostics must classify residuals by explicit relative threshold
+   and weighted rock-fragment buckets (`low`, `medium`, `high`).
+4. Fixture provenance for this suite is mandatory via:
+   - `fixtures.sha256`
+   - `fixtures.provenance.yaml`
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -395,6 +412,7 @@ FC/WP process-law adjudication independent of legacy parity signatures.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `16` | `Codex` | AUTH07 amendment: added independent FC authority cohort addendum (`cas_l5_soil_fc_direct_theta_minus33_cohort_001`) with periodic/investigation lane posture, explicit thresholded model-vs-direct FC residual classification, and mandatory fixture lock/provenance sidecars. |
 | `2026-05-31` | `15` | `Codex` | AUTH03 amendment: added Level-4 FC/WP constitutive gate authority (`INV-SOIL-014`), linked required external-authority suites (`cas_l4_soil_fc_minus33_001`, `cas_l4_soil_wp_minus1500_001`), and codified blocking fail-closed gate posture. |
 | `2026-05-31` | `14` | `Codex` | HPHYS0216D amendment: added explicit `wb13_profile_fc_tail_mm` runtime projection authority for normalized-tail FC closure, required finite/non-negative fail-closed guard posture, and required reconciliation with `wb13_profile_fc_store_mm`. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned `ProfileFCStore` publication authority to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic seed/projection surface, and preserved corrected-layer lineage + fail-closed guard requirements. |
