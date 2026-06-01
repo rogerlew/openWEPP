@@ -1,10 +1,10 @@
 # 20260601-soilauth01-soil-producer-contract-conformance-audit-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-06-01
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Execute SOILAUTH01 to produce an authoritative `.sol` producer-contract

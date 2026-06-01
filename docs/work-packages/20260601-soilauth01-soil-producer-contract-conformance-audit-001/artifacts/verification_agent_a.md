@@ -1,8 +1,13 @@
 # SOILAUTH01 Verification Agent A
 
-Status: queued  
-Evidence mode: not-run
+Status: complete  
+Evidence mode: Static + Ran
 
 ## Scope
-Queued placeholder.
+Verification A checks:
+- `MEASURE-SA01-001`: satisfied.
+- `MEASURE-SA01-002`: satisfied.
+- `MEASURE-SA01-003`: satisfied.
 
+Executed check:
+- `cargo test --test infile_soil_parser_contract` -> pass.

@@ -112,6 +112,17 @@ All evidence artifacts must explicitly label `Static:` and/or `Ran:`.
 - `/workdir/wepppy/wepppy/soils/ssurgo/ssurgo.py` (if producer-owned mismatch closure is required)
 - `/workdir/wepppy/wepppy/nodb/mods/disturbed/disturbed.py` (if producer-owned mismatch closure is required)
 
+## SOILAUTH01 Handoff Queue (Authoritative Input)
+- `SA01-M001` (P0): reconcile `9002/9003/9005` policy-row ordering divergence
+  (canonical producer policy-first vs strict contract header-first).
+- `SA01-M002` (P0): reconcile missing explicit `avke` emission for
+  `7778/9002/9003/9005` canonical producer headers.
+- `SA01-M003` (P1): reconcile restrictive-row placement/cardinality authority
+  drift (profile footer vs per-OFE row behavior across datver families).
+- `SA01-M004` (P1): reconcile quote-style tokenization gap
+  (producer double-quote fallback for apostrophe-bearing text vs parser
+  single-quote-only compatibility tokenization).
+
 ## Phase Plan
 ### Phase A - Intake and scope freeze
 - Import and freeze SOILAUTH01 mismatch ledger and ownership classification.

@@ -1,6 +1,8 @@
 # Artifacts
 
-Status: queued  
-Evidence mode: not-run
+Status: complete  
+Evidence mode: Static + Ran
 
 Evidence artifacts for SOILAUTH01.
+
+Package closure status: complete (`GO`).
