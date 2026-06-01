@@ -265,3 +265,51 @@ fn wb18_contract_conformance_saturated_branch_bypasses_fc_ul_ratio_guard() {
         "saturated-branch bypass must not raise ratio-domain hard-fail; pei={pei}"
     );
 }
+
+#[test]
+fn wb18_contract_conformance_hourly_lane_substeps_attenuate_per_layer_flux() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut daily_state_surface = seeded_perc_state_surface();
+    daily_state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+
+    let daily_response = kernel.run_hillslope_phase(&build_perc_request(&daily_state_surface));
+    assert_eq!(
+        daily_response.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+    let pei_daily = writeback_flux_value(&daily_response, "wb18_perc_pei_0001");
+
+    let mut hourly_state_surface = daily_state_surface.clone();
+    hourly_state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    let hourly_response = kernel.run_hillslope_phase(&build_perc_request(&hourly_state_surface));
+    assert_eq!(
+        hourly_response.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+    let pei_hourly = writeback_flux_value(&hourly_response, "wb18_perc_pei_0001");
+
+    assert!(
+        (pei_hourly - (pei_daily / 24.0)).abs() <= TOL,
+        "hourly lane attenuation must divide per-layer seepage by 24 (daily={pei_daily}, hourly={pei_hourly})"
+    );
+}
+
+#[test]
+fn wb18_contract_conformance_rejects_non_positive_lane_substeps() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-003");
+    assert_eq!(
+        response.status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}

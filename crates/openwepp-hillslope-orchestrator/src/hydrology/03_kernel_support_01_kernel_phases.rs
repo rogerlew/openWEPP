@@ -738,6 +738,30 @@ impl Wb11HydrologyKernel {
             conductivity.push(layer_ssc);
         }
 
+        let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
+        let lane_substeps_raw =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &lane_substeps_symbol)?
+                .unwrap_or(1.0);
+        if lane_substeps_raw < 1.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: lane_substeps_symbol.clone(),
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        let lane_substeps = lane_substeps_raw.round();
+        if (lane_substeps_raw - lane_substeps).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: lane_substeps_symbol,
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
         let mut per_layer_flux = vec![0.0_f64; layer_count];
         let mut percolation_loss = 0.0_f64;
 
@@ -812,7 +836,7 @@ impl Wb11HydrologyKernel {
 
             let ks_adjusted = layer_ssc * fx;
             let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
-            let pei = if layer_index < layer_count - 1 {
+            let pei_unscaled = if layer_index < layer_count - 1 {
                 let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
                 let lower_radicand = 1.0 - lower_ratio;
                 if lower_radicand < -WB11_ZERO_THRESHOLD {
@@ -834,6 +858,7 @@ impl Wb11HydrologyKernel {
             } else {
                 pei_pre
             };
+            let pei = pei_unscaled / lane_substeps;
 
             let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
             Self::require_flux_range_for_symbol(

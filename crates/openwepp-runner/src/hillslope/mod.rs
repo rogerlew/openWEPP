@@ -1533,6 +1533,7 @@ fn seed_wb11_runtime_surface_inputs(
     execution_lane: ExecutionLane,
 ) -> Result<(), HillslopeCliError> {
     const WB11_STATE_SEED_COMPLETED_SYMBOL: &str = "wb11_state_seed_completed";
+    const WB18_PERC_LANE_SUBSTEPS_SYMBOL: &str = "wb18_perc_lane_substeps";
 
     let nsl = scalar_to_usize(
         "nsl",
@@ -1544,6 +1545,15 @@ fn seed_wb11_runtime_surface_inputs(
             detail: format!("{SIMPIPE_GUARD_ID} nsl must be >= 1 for WB11 seeding"),
         });
     }
+
+    let wb18_perc_lane_substeps = match execution_lane {
+        ExecutionLane::Daily => 1.0,
+        ExecutionLane::Hourly => 24.0,
+    };
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(WB18_PERC_LANE_SUBSTEPS_SYMBOL),
+        BoundaryValue::scalar(wb18_perc_lane_substeps),
+    );
 
     let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
     let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
@@ -5442,6 +5452,70 @@ mod tests {
         assert!(
             (rainfall_input - 0.003).abs() < 1.0e-12,
             "rainfall seed should preserve full current-day breakpoint precipitation depth"
+        );
+    }
+
+    #[test]
+    fn hphys0232_wb11_seed_daily_lane_sets_wb18_perc_lane_substeps_to_one() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("daily WB11 seed should succeed");
+
+        let lane_substeps =
+            require_runtime_surface_scalar(&runtime_surface, "wb18_perc_lane_substeps")
+                .expect("daily WB11 seed should publish wb18_perc_lane_substeps");
+        assert!(
+            (lane_substeps - 1.0).abs() < 1.0e-12,
+            "daily lane must seed wb18_perc_lane_substeps=1"
+        );
+    }
+
+    #[test]
+    fn hphys0232_wb11_seed_hourly_lane_sets_wb18_perc_lane_substeps_to_twenty_four() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Hourly)
+            .expect("hourly WB11 seed should succeed");
+
+        let lane_substeps =
+            require_runtime_surface_scalar(&runtime_surface, "wb18_perc_lane_substeps")
+                .expect("hourly WB11 seed should publish wb18_perc_lane_substeps");
+        assert!(
+            (lane_substeps - 24.0).abs() < 1.0e-12,
+            "hourly lane must seed wb18_perc_lane_substeps=24"
         );
     }
 

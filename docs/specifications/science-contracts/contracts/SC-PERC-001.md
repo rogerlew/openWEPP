@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -88,7 +88,7 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Percolation consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
-| WB18 percolation state inputs | `wb11_soil_water`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` |
+| WB18 percolation state inputs | `wb11_soil_water`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ optional `wb18_perc_lane_substeps`) |
 
 ### Required Outputs
 
@@ -131,16 +131,26 @@ WB18 mutates percolation boundary surfaces deterministically:
    - travel-capacity-limited layer flux `pei_pre = min(Θi - FCi, Δt * Ksi * fx)`
    - lower-layer restriction `pei = pei_pre * sqrt(1 - (Θi+1 / ULi+1))` for
      non-bottom layers (bottom layer exports `D` directly).
-4. Emit deterministic `D`/`Pe`, per-layer state updates, and aggregate
+4. Resolve lane attenuation divisor `wb18_perc_lane_substeps`:
+   - when symbol is absent, default to daily divisor `1`,
+   - when symbol is present, require finite positive integral domain (`>= 1`).
+5. Apply lane attenuation to routed per-layer seepage using legacy
+   `purk.for` semantics:
+   - compute `pei_unscaled` from Chapter-5 routing expression,
+   - publish `pei = pei_unscaled / wb18_perc_lane_substeps`,
+   - for daily lane use `wb18_perc_lane_substeps = 1`,
+   - for hourly lane use baseline-authoritative `wb18_perc_lane_substeps = 24`
+     (`watbal_hourly.for` assigns `ui_LFtstp = 24`).
+6. Emit deterministic `D`/`Pe`, per-layer state updates, and aggregate
    `wb11_soil_water = ΣΘi`.
-5. Reject missing, non-finite, or out-of-range percolation domains with typed
+7. Reject missing, non-finite, or out-of-range percolation domains with typed
    hard-fail status; no silent fallback/clamping paths are permitted.
 
 ## Branch and Guard Table (WB18 Percolation Kernel)
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-PERC-WB18-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` | runtime | deterministic per-layer percolation/writeback execution |
+| `BR-PERC-WB18-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ optional `wb18_perc_lane_substeps`) | runtime | deterministic per-layer percolation/writeback execution |
 | `BR-PERC-WB11-MISSING` | required percolation symbol absent | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-001`) |
 | `BR-PERC-WB11-NONFINITE` | percolation symbol is NaN/Inf | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-002`) |
 | `BR-PERC-WB11-DOMAIN` | percolation symbol/derived flux outside domain bounds | percolation required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-003`) |
@@ -158,7 +168,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | INV-PERC-007 | Subsurface coupling invariant: daily percolation recharge term `Pe` used by subsurface continuity equations is emitted with unit/sign consistency and complete boundary payload semantics. | hard-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-008 | Coupled root-zone update invariant: percolation processing remains explicitly coupled with infiltration/ET daily accounting paths described in §5.5 and does not permit silent omission of percolation updates from layer-water bookkeeping. | hard-fail | REF-PERC-CH5-LINK, REF-PERC-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-009 | Governance scope invariant: claims about subsurface lateral-flow/drainage mechanics beyond declared percolation boundary are non-promotable unless backed by `SC-SUBHYD-001` authority. | governance-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-010 | WB18 percolation execution invariant: percolation phase computes deterministic per-layer `pei`, aggregates `D`/`Pe`, and updates both layer moisture (`wb18_perc_theta_####`) and aggregate soil-water state (`wb11_soil_water`) under explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-010 | WB18 percolation execution invariant: percolation phase computes deterministic per-layer `pei`, applies explicit lane attenuation (`pei_unscaled / wb18_perc_lane_substeps`), aggregates `D`/`Pe`, and updates both layer moisture (`wb18_perc_theta_####`) and aggregate soil-water state (`wb11_soil_water`) under explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS + legacy `/workdir/wepp-forest_260430_baseline/src/purk.for` + `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-011 | WB18 percolation guard invariant: missing/non-finite/out-of-range per-layer percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted; explicit legacy-degenerate `Bi=0` branch for non-positive `FC/UL` is authoritative behavior, not silent fallback. | hard-fail | REF-PERC-PHYS-BOUNDS + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` | `[INFERENCE][Static] + [DIRECT][Static]` |
 
 ## Invariant Guard Map
@@ -189,6 +199,7 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 | `ULi` | `wb18_perc_ul_####` | per-layer upper-limit storage surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | per-layer saturated hydraulic conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `pei` | `wb18_perc_pei_####` | per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ui_LFtstp` | `wb18_perc_lane_substeps` | per-lane seepage attenuation divisor from legacy hourly routing semantics | unitless positive integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Pe`, `D` | `Pe`, `D` | aggregate recharge/loss coupling surfaces | `m` preserved | `[DIRECT][Static]` |
 | `Δt`, `ti` | identity names | percolation routing-time surfaces | `s` preserved | `[DIRECT][Static]` |
 | `Ksi`, `Ksai`, `Bi` | identity names | percolation conductivity parameter/state surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
@@ -251,6 +262,8 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 | `WB18_PERC_BI_COEFFICIENT` | coefficient | `2.655` | Legacy-authoritative coefficient in dynamic per-layer conductivity-shape derivation `Bi = -2.655/log10(FC/UL)` | REF-PERC-CH5-PERC + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` |
 | `WB18_PERC_MIN_FX` | fraction | `0.002` | Minimum conductivity adjustment factor in active branch | legacy baseline `/workdir/wepp-forest_260430_baseline/src/perc.for` |
 | `WB18_PERC_TIMESTEP_S` | `s` | `86400` | Daily percolation timestep used by WB18 layer travel-capacity term | REF-PERC-CH5-PERC + legacy baseline `/workdir/wepp-forest_260430_baseline/src/perc.for` |
+| `WB18_PERC_LANE_SUBSTEPS_DAILY` | unitless | `1` | Daily-lane seepage attenuation divisor | legacy baseline daily branch semantics |
+| `WB18_PERC_LANE_SUBSTEPS_HOURLY` | unitless | `24` | Hourly-lane seepage attenuation divisor (`ui_LFtstp`) | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` + `/workdir/wepp-forest_260430_baseline/src/purk.for` |
 
 ## Tolerance and Numeric Notes
 
@@ -280,6 +293,10 @@ Minimum WB18 percolation production-kernel conformance vectors:
    - active-branch non-positive-ratio legacy-degenerate derivation (`Bi = 0`),
    - saturated-branch bypass (`stz >= 0.95 -> fx = 1`) without false
      ratio-domain hard-fail.
+5. Lane-attenuation vectors must exercise:
+   - daily divisor `wb18_perc_lane_substeps = 1`,
+   - hourly divisor `wb18_perc_lane_substeps = 24`,
+   - typed hard-fail for non-finite or non-positive lane divisors.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -351,6 +368,19 @@ Minimum WB18 percolation production-kernel conformance vectors:
 3. Constant exponent substitutions (for example `Bi = 1`) are non-authoritative
    and non-promotable for WB18 process-physics closure.
 
+## HPHYS0232 WB18 Hourly-Lane Seepage Attenuation Addendum
+
+1. WB18 per-layer seepage publication must encode lane attenuation lineage from
+   legacy `purk.for` updates:
+   - compute per-layer routed seepage `pei_unscaled` per Chapter-5 authority,
+   - publish `pei = pei_unscaled / wb18_perc_lane_substeps`.
+2. `wb18_perc_lane_substeps` domain is strict: finite, positive, integral,
+   and `>= 1`.
+3. Runtime seed authority for `wb18_perc_lane_substeps`:
+   - daily lane: `1`,
+   - hourly lane: `24` (legacy `ui_LFtstp` assignment from
+     `watbal_hourly.for`).
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -371,6 +401,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `17` | `Codex` | HPHYS0232 amendment: added WB18 hourly-lane seepage attenuation authority (`wb18_perc_lane_substeps`) mapped to legacy `ui_LFtstp` lineage (`daily=1`, `hourly=24`), with required test-vector and guard obligations. |
 | `2026-06-01` | `16` | `Codex` | HPHYS0231 amendment: reanchored WB18 dynamic-`Bi` guard placement to baseline branch semantics by codifying explicit non-positive `FC/UL` legacy-degenerate `Bi=0` handling in active branch and saturated-branch ratio-bypass behavior (`stz >= 0.95 -> fx=1`). |
 | `2026-06-01` | `15` | `Codex` | HPHYS0230 amendment: replaced constant WB18 conductivity-shape exponent authority with legacy-authoritative dynamic per-layer derivation `Bi = -2.655/log10(FC/UL)`, added strict ratio-domain guard obligations, and recorded over-drainage closure addendum for WB18 `Dp` transient behavior. |
 | `2026-05-31` | `14` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` authority to `Σ(thetfc_i*dg_i)*1000 + wb13_profile_fc_tail_mm`, retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and required finite non-negative tail-symbol guard posture. |
