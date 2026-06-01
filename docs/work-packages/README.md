@@ -114,6 +114,22 @@ Authorized packages:
     contract-first kernel remediation and promote the Level-4 cohort from
     `periodic`/`investigation` back to `required`/`hard-fail` only after
     red/fix/green closure evidence is complete.
+- `20260601-soilauth01-soil-producer-contract-conformance-audit-001/`
+  - Purpose: execute datver-complete (`7778/9002/9003/9005`) `.sol`
+    producer-contract conformance audit across openWEPP spec/contract surfaces,
+    openWEPP parser/runtime seams, and canonical `wepppy` producer behavior,
+    then publish a prioritized closure queue.
+- `20260601-soilauth02-soil-producer-contract-correctness-reconciliation-001/`
+  - Purpose: reconcile SOILAUTH01 P0/P1 mismatches by applying
+    contract-first corrections to openWEPP contract/parser surfaces and
+    producer-owned corrections in `wepppy` where required, with fixture hash
+    regeneration and provenance evidence.
+- `20260601-soilauth03-soil-producer-contract-anti-drift-guards-001/`
+  - Purpose: implement machine-checkable anti-drift guards for required `.sol`
+    symbol/arity/order obligations and fixture provenance/hash integrity, with
+    explicit hard-fail release-lane posture for required checks.
+- Execution order for soil producer-contract closure stream is:
+  `soilauth01 -> soilauth02 -> soilauth03`.
 - Execution order for correctness-authority stream is:
   `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a -> auth09 -> auth10 -> auth11 -> auth12`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
