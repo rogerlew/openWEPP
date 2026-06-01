@@ -8,7 +8,8 @@ openWEPP owns these specifications.
 
 - `docs/specifications/wepp-input-files/specs/` is the canonical source of truth.
 - Specs may be revised directly in this repository as architecture and contracts mature.
-- Upstream docs (including `wepppy`) are references, not authority, once content is imported.
+- For producer behavior, the `wepppy` stack is the canonical implementation reference and must be examined/cited when validating or amending input-file contracts.
+- When a contract and `wepppy` producer behavior diverge, resolve the mismatch explicitly by correcting `wepppy`, this repo contract text, or both, with provenance recorded.
 
 ## Canonical Specs
 
@@ -61,6 +62,6 @@ This provenance is historical context only and does not restrict openWEPP edits.
 
 ## Update Policy
 
-- openWEPP edits are first-class and do not require upstream synchronization.
-- If importing upstream changes later, treat them as proposed diffs and review before merge.
+- openWEPP edits are first-class, but producer-contract edits must be cross-checked against the canonical `wepppy` producer stack.
+- If importing upstream changes later, treat them as proposed diffs and review before merge; if correctness gaps are found, patch upstream producer code and/or openWEPP contract text explicitly.
 - Keep variable naming continuity with legacy WEPP/wepp-forest symbols when practical, with explicit alias mapping where openWEPP boundary names differ.

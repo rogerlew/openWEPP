@@ -5,15 +5,21 @@
 - `surface_id`: `infile-soil-sol`
 - `status`: `draft-HOLD`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `spec_version`: `0.1.1`
+- `last_updated_utc`: `2026-06-01T00:00:00Z`
 - `evidence_mode`: `Static`
 
-## Parser-Contract Authority Note
-- Canonical parser-contract authority for this surface is:
+## Producer-Contract Authority Note
+- This document is the authoritative producer contract for `infile-soil-sol` (`.sol`) in the openWEPP ecosystem.
+- `wepppy` is the canonical producer implementation stack and must be used as the first reference for producer correctness:
+  - `/workdir/wepppy/wepppy/weppcloud/routes/usersum/input-file-specifications/soil-file.spec.md`
+  - `/workdir/wepppy/wepppy/wepp/soils/utils/wepp_soil_util.py`
+  - `/workdir/wepppy/wepppy/soils/ssurgo/ssurgo.py`
+  - `/workdir/wepppy/wepppy/nodb/mods/disturbed/disturbed.py`
+- When this contract and producer behavior diverge, engineers must explicitly examine `wepppy`, reference exact source/provenance, and correct `wepppy` and/or this contract to restore correctness (no silent drift, no undocumented fallback semantics).
+- Canonical parser-contract authority for parse/runtime acceptance remains:
   - `docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md`
-- This specification is the source-grammar and symbol authority for `.sol` datver branches.
-- Legacy canonical symbols (`datver`, `ntemp`, `ksflag`, `slid`, `texid`, `nsl`, `salb`, `sat`, `ki`, `kr`, `shcrit`, `avke`, `solthk`, `ksat`, `slflag`, `kslast`) remain normative unless parser-contract alias mapping explicitly states otherwise.
+- Canonical symbols for this producer contract include base, disturbed/revegetation, and appended Rosetta fields: `datver`, `solcom`, `ntemp`, `ksflag`, `slid`, `texid`, `nsl`, `salb`, `sat`, `ki`, `kr`, `shcrit`, `avke`, `solthk`, `bd`, `ksat`, `anisotropy`, `fc`, `wp`, `sand`, `clay`, `orgmat`, `cec`, `rfg`, `theta_r`, `theta_s`, `alpha`, `npar`, `ks`, `ksatadj`, `luse`, `stext`, `ksatfac`, `ksatrec`, `burn_code`, `lkeff`, `texid_enum`, `uksat`, `slflag`, `ui_bdrkth`, `kslast`.
 
 Information on soil properties to a maximum depth of 1.8 meters are input to the WEPP model through the soil input file. The user may input information on up to 8 different soil layers. WEPP internally creates a new set of soil layers based on the original set parameter values. If the entire 1.8 meters is parameterized, the new soil layers represent depths of 0-100 mm, 100-200 mm, 200-400 mm, 400-600 mm, 600-800 mm, 800-1000 mm, 1000-1200 mm, 1200-1400 mm, 1400-1600 mm, 1600-1800 mm.
 
@@ -69,6 +75,8 @@ Accurate estimation of soil physical and hydrological parameters is essential wh
   h) baseline critical shear parameter (N/m²) - real (`shcrit`)
 
   i) effective hydraulic conductivity of surface soil (mm/h) - real (`avke`)
+
+  _Producer conformance target: emit `avke` explicitly. Compatibility note: some legacy/canonical `wepppy` producer paths for `7778/9002/9003/9005` serialize quoted OFE headers without trailing `avke`; parser compatibility normalizes omitted `avke` to `0.0` per `SC-INFILE-SOIL-001`._
 
 - Line 5: _Version 97.5 and 2006.2 (repeated for the number of soil layers indicated on
 Line 4c.)_
@@ -129,6 +137,8 @@ Line 4c.)_
 
   j) cation exchange capacity in the layer (meq/100 g of soil) - real (`cec`)
 
+  k) percentage of rock fragments by volume (%) - real (`rfg`)
+
 Line 5: _Version 9002 (disturbed land soils; repeated for each OFE before the layer data)_
 
   a) saturated hydraulic conductivity adjustment flag - integer (`ksatadj`)
@@ -139,7 +149,7 @@ Line 5: _Version 9002 (disturbed land soils; repeated for each OFE before the la
   d) lower bound on effective hydraulic conductivity (mm/h) - real (`ksatfac`)
   e) exponential recovery coefficient for hydraulic conductivity (1/day) - real (`ksatrec`)
 
-  _Additional guidance on `ksatadj`, `ksatfac`, and `ksatrec` is provided in `wepppy/weppcloud/routes/usersum/weppcloud/disturbed-land-soil-lookup.md`._
+  _Additional guidance on `ksatadj`, `ksatfac`, and `ksatrec` is provided in `/workdir/wepppy/wepppy/weppcloud/routes/usersum/weppcloud/disturbed-land-soil-lookup.md`._
 
 Line 5: _Version 9002 layer data (repeated for the number of soil layers indicated on Line 4c.)_
 
@@ -219,7 +229,7 @@ Line 5: _Version 9005 layer data (repeated for the number of soil layers indicat
 
   Identical to Version 9002 layer data, including the appended van Genuchten parameters (`theta_r` through the Rosetta-derived `fc`).
 
-  _Additional guidance on disturbed land parameters such as `ksatadj`, `lkeff`, and `uksat` is available in `wepppy/weppcloud/routes/usersum/weppcloud/disturbed-land-soil-lookup.md`. The interpretation of `uksat` as an upper limit on effective hydraulic conductivity follows current WEPPcloud usage; consult future documentation for confirmation._
+  _Additional guidance on disturbed land parameters such as `ksatadj`, `lkeff`, and `uksat` is available in `/workdir/wepppy/wepppy/weppcloud/routes/usersum/weppcloud/disturbed-land-soil-lookup.md`. The interpretation of `uksat` as an upper limit on effective hydraulic conductivity follows current WEPPcloud usage; consult future documentation for confirmation._
 
 Line 6: Applies to versions 2006.2, 7777, 7778, 9002, 9003, 9005 format soil files
 
