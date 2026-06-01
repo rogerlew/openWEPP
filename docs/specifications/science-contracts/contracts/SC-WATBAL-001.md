@@ -1282,6 +1282,19 @@ authority on active per-layer state.
    `cas_l4_subhyd_layer_pool_withdrawal_cap_001` linked to
    `SC-SUBHYD-001#INV-SUBHYD-017`.
 
+### HPHYS0226 WB19 Lateral Saturated-Thickness Response Addendum
+
+HPHYS0226 starts constitutive re-derivation closure for remaining coupled
+residual families by enforcing a behavioral WB19 lateral law.
+
+1. Under fixed geometry/conductivity/forcing and fixed `solwpv` branch, an
+   increase in saturated thickness (and corresponding layer-derived available
+   pool) must not decrease realized lateral flux.
+2. This behavior is evaluated by required paired component vectors under
+   `cas_l4_subhyd_lateral_saturated_thickness_response_001`.
+3. This law is linked to `SC-SUBHYD-001#INV-SUBHYD-018` and is
+   required/hard-fail in release lanes.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1531,6 +1544,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `63` | `Codex` | HPHYS0226 amendment: added WB19 saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001` to `SC-SUBHYD-001#INV-SUBHYD-018`. |
 | `2026-06-01` | `62` | `Codex` | HPHYS0225 amendment: added WB19 layer-pool available-cap authority, prohibited legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001` to `SC-SUBHYD-001#INV-SUBHYD-017`. |
 | `2026-06-01` | `61` | `Codex` | HPHYS0224 amendment: added WB19 realized-withdrawal soil-water cap authority (non-clamping subtraction and typed over-withdrawal hard-fail) with required Level-4 suite linkage to `SC-SUBHYD-001#INV-SUBHYD-016`. |
 | `2026-05-31` | `60` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |

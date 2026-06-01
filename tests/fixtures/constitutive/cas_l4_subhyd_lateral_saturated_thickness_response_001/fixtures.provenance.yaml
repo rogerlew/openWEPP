@@ -1,0 +1,11 @@
+schema_version: 1
+suite_id: cas_l4_subhyd_lateral_saturated_thickness_response_001
+last_updated_utc: 2026-06-01
+fixtures:
+  - path: lateral_saturated_thickness_response_cases.json
+    sha256: 66cf8af26c2d0f93f048bfee2abffc02a152f56767546463064a794351b793dc
+    source_repo: /workdir/openWEPP
+    source_commit: f01c94e86fda7829cf488c1943036210843f10b8
+    source_path: tests/fixtures/constitutive/cas_l4_subhyd_lateral_saturated_thickness_response_001/lateral_saturated_thickness_response_cases.json
+    source_sha256: 66cf8af26c2d0f93f048bfee2abffc02a152f56767546463064a794351b793dc
+    transform_note: "Repository-authored behavioral fixture for WB19 lateral saturated-thickness response authority."
