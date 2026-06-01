@@ -5,8 +5,8 @@
 - `surface_id`: `infile-soil-sol`
 - `status`: `draft-HOLD`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.1`
-- `last_updated_utc`: `2026-06-01T00:00:00Z`
+- `spec_version`: `0.1.2`
+- `last_updated_utc`: `2026-06-01T18:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Producer-Contract Authority Note
@@ -76,7 +76,11 @@ Accurate estimation of soil physical and hydrological parameters is essential wh
 
   i) effective hydraulic conductivity of surface soil (mm/h) - real (`avke`)
 
-  _Producer conformance target: emit `avke` explicitly. Compatibility note: some legacy/canonical `wepppy` producer paths for `7778/9002/9003/9005` serialize quoted OFE headers without trailing `avke`; parser compatibility normalizes omitted `avke` to `0.0` per `SC-INFILE-SOIL-001`._
+  _Canonical producer note (`wepppy`): `7778/9002/9003/9005` OFE headers are
+  quoted and may omit trailing `avke`; parser acceptance normalizes omitted
+  `avke` to `0.0` per `SC-INFILE-SOIL-001`. Both single-quoted and
+  double-quoted text tokens are producer-legal when quote-tokenization is
+  lossless._
 
 - Line 5: _Version 97.5 and 2006.2 (repeated for the number of soil layers indicated on
 Line 4c.)_
@@ -150,6 +154,8 @@ Line 5: _Version 9002 (disturbed land soils; repeated for each OFE before the la
   e) exponential recovery coefficient for hydraulic conductivity (1/day) - real (`ksatrec`)
 
   _Additional guidance on `ksatadj`, `ksatfac`, and `ksatrec` is provided in `/workdir/wepppy/wepppy/weppcloud/routes/usersum/weppcloud/disturbed-land-soil-lookup.md`._
+  _Canonical producer row ordering note: `wepppy` emits this policy row before
+  the OFE header row for the same OFE._
 
 Line 5: _Version 9002 layer data (repeated for the number of soil layers indicated on Line 4c.)_
 
@@ -204,6 +210,8 @@ Line 5: _Version 9003 (disturbed land soils with burn severity; repeated for eac
   d) simplified soil texture class - character (`stext`)
 
   e) lower limit on effective hydraulic conductivity (mm/h; `-9999` disables the cap) - real (`lkeff`)
+  _Canonical producer row ordering note: `wepppy` emits this policy row before
+  the OFE header row for the same OFE._
 
 Line 5: _Version 9003 layer data (repeated for the number of soil layers indicated on Line 4c.)_
 
@@ -224,6 +232,8 @@ Line 5: _Version 9005 (revegetation soils; repeated for each OFE before the laye
   f) upper limit on effective hydraulic conductivity for revegetation scenarios (mm/h) - real (`uksat`)
 
   g) lower limit on effective hydraulic conductivity (mm/h; `-9999` disables the cap) - real (`lkeff`)
+  _Canonical producer row ordering note: `wepppy` emits this policy row before
+  the OFE header row for the same OFE._
 
 Line 5: _Version 9005 layer data (repeated for the number of soil layers indicated on Line 4c.)_
 
@@ -238,6 +248,11 @@ Line 6: Applies to versions 2006.2, 7777, 7778, 9002, 9003, 9005 format soil fil
   b) thickness of restricting layer (mm) - real (`ui_bdrkth`)
 
   c) hydraulic conductivity of restricting layer (mm/h) - real (`kslast`)
+
+  _Canonical producer placement note: `wepppy` emits restrictive-layer rows per
+  OFE block (immediately after each OFE layer block). Parser normalization
+  requires all per-OFE restrictive rows to be identical and lifts them to one
+  profile-level restrictive-layer state._
 
 ## Parser-Contract Handoff Map
 - Target parser contract ID: `SC-INFILE-SOIL-001`.

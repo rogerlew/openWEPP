@@ -75,6 +75,10 @@ name = "infile_soil_parser_contract"
 path = "tests/integration/infile_soil_parser_contract.rs"
 
 [[test]]
+name = "soilauth02_soil_producer_reconciliation_contract"
+path = "tests/integration/soilauth02_soil_producer_reconciliation_contract.rs"
+
+[[test]]
 name = "infile_climate_parser_contract"
 path = "tests/integration/infile_climate_parser_contract.rs"
 

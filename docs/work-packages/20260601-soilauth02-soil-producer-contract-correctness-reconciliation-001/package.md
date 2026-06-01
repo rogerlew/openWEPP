@@ -1,10 +1,10 @@
 # 20260601-soilauth02-soil-producer-contract-correctness-reconciliation-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-06-01
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Execute SOILAUTH02 to reconcile producer-contract mismatches identified by

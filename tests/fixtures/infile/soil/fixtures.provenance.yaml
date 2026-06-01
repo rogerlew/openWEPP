@@ -1,0 +1,12 @@
+package_id: 20260601-soilauth02-soil-producer-contract-correctness-reconciliation-001
+generated_utc: "2026-06-01T18:30:00Z"
+evidence_mode: Static
+canonical_references:
+  - /workdir/wepppy/wepppy/wepp/soils/utils/wepp_soil_util.py
+fixtures:
+  - path: compat_quoted_header_9002_policy_first.sol
+    purpose: Canonical policy-first 9002 ordering with omitted avke.
+  - path: compat_quoted_header_7778_per_ofe_restrictive.sol
+    purpose: Canonical per-OFE restrictive-row normalization envelope.
+  - path: canonical_9002_double_quoted_policy.sol
+    purpose: Canonical double-quoted policy-token envelope for apostrophe-bearing text.

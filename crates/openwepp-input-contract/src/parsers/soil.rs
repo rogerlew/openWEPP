@@ -363,59 +363,43 @@ pub fn parse_soil(input: &str, options: SoilParserOptions) -> Result<SoilProfile
     };
 
     let mut ofes = Vec::with_capacity(ntemp);
-    let mut compat_per_ofe_restrictive: Option<RestrictiveLayer> = None;
+    let mut per_ofe_restrictive: Option<RestrictiveLayer> = None;
     for _ in 0..ntemp {
         let (ofe, ofe_restrictive) = parse_ofe_block(&mut cursor, datver, options.mode)?;
         if let Some(ofe_restrictive) = ofe_restrictive {
-            if let Some(existing) = &compat_per_ofe_restrictive {
+            if let Some(existing) = &per_ofe_restrictive {
                 if existing != &ofe_restrictive {
                     return Err(SoilParserError::new(
                         SoilErrorCode::SolE006,
                         cursor.current_line_number(),
                         "slflag,ui_bdrkth,kslast",
-                        "compatibility per-OFE restrictive rows must be identical",
+                        "per-OFE restrictive rows must be identical",
                     ));
                 }
             } else {
-                compat_per_ofe_restrictive = Some(ofe_restrictive);
+                per_ofe_restrictive = Some(ofe_restrictive);
             }
         }
         ofes.push(ofe);
     }
 
     let restrictive_layer = if datver.requires_restrictive_footer() {
-        if options.mode == ParserMode::Compatibility {
-            if let Some(per_ofe_restrictive) = compat_per_ofe_restrictive {
-                if let Some((line_no, line)) = cursor.peek_line() {
-                    if line.split_whitespace().count() == 3 {
-                        let trailing_restrictive = parse_restrictive_layer(line, line_no)?;
-                        if trailing_restrictive != per_ofe_restrictive {
-                            return Err(SoilParserError::new(
-                                SoilErrorCode::SolE006,
-                                line_no,
-                                "slflag,ui_bdrkth,kslast",
-                                "compatibility trailing restrictive row conflicts with per-OFE restrictive rows",
-                            ));
-                        }
-                        cursor.next_line();
-                    }
+        if let Some(per_ofe_restrictive) = per_ofe_restrictive {
+            if let Some((line_no, line)) = cursor.peek_line()
+                && line.split_whitespace().count() == 3
+            {
+                let trailing_restrictive = parse_restrictive_layer(line, line_no)?;
+                if trailing_restrictive != per_ofe_restrictive {
+                    return Err(SoilParserError::new(
+                        SoilErrorCode::SolE006,
+                        line_no,
+                        "slflag,ui_bdrkth,kslast",
+                        "trailing restrictive row conflicts with per-OFE restrictive rows",
+                    ));
                 }
-                Some(per_ofe_restrictive)
-            } else {
-                let next = cursor.next_line();
-                let (footer_line_no, footer_line) = match next {
-                    Some(v) => v,
-                    None => {
-                        return Err(SoilParserError::new(
-                            SoilErrorCode::SolE002,
-                            cursor.current_line_number(),
-                            "slflag,ui_bdrkth,kslast",
-                            "missing restrictive-layer footer",
-                        ));
-                    }
-                };
-                Some(parse_restrictive_layer(footer_line, footer_line_no)?)
+                cursor.next_line();
             }
+            Some(per_ofe_restrictive)
         } else {
             let next = cursor.next_line();
             let (footer_line_no, footer_line) = match next {
@@ -475,29 +459,28 @@ fn parse_ofe_block(
     };
 
     let mut policy = None;
-    let (header_line_no, header_line) =
-        if datver.requires_policy_row() && mode == ParserMode::Compatibility {
-            match parse_policy_row(datver, mode, first_line, first_line_no) {
-                Ok(policy_first) => {
-                    policy = Some(policy_first);
-                    let next_header = cursor.next_line();
-                    match next_header {
-                        Some(v) => v,
-                        None => {
-                            return Err(SoilParserError::new(
-                                SoilErrorCode::SolE002,
-                                cursor.current_line_number(),
-                                "slid,texid,nsl,salb,sat,ki,kr,shcrit,avke",
-                                "missing OFE header line after policy row",
-                            ));
-                        }
+    let (header_line_no, header_line) = if datver.requires_policy_row() {
+        match parse_policy_row(datver, mode, first_line, first_line_no) {
+            Ok(policy_first) => {
+                policy = Some(policy_first);
+                let next_header = cursor.next_line();
+                match next_header {
+                    Some(v) => v,
+                    None => {
+                        return Err(SoilParserError::new(
+                            SoilErrorCode::SolE002,
+                            cursor.current_line_number(),
+                            "slid,texid,nsl,salb,sat,ki,kr,shcrit,avke",
+                            "missing OFE header line after policy row",
+                        ));
                     }
                 }
-                Err(_) => (first_line_no, first_line),
             }
-        } else {
-            (first_line_no, first_line)
-        };
+            Err(_) => (first_line_no, first_line),
+        }
+    } else {
+        (first_line_no, first_line)
+    };
 
     let t = parse_ofe_header_tokens(
         header_line,
@@ -587,7 +570,7 @@ fn parse_ofe_block(
         layers.push(layer);
     }
 
-    let compat_restrictive = maybe_parse_compat_ofe_restrictive_row(cursor, datver, mode)?;
+    let per_ofe_restrictive = maybe_parse_ofe_restrictive_row(cursor, datver, mode)?;
 
     Ok((
         SoilOfe {
@@ -603,16 +586,16 @@ fn parse_ofe_block(
             policy,
             layers,
         },
-        compat_restrictive,
+        per_ofe_restrictive,
     ))
 }
 
-fn maybe_parse_compat_ofe_restrictive_row(
+fn maybe_parse_ofe_restrictive_row(
     cursor: &mut LineCursor,
     datver: SoilDatver,
-    mode: ParserMode,
+    _mode: ParserMode,
 ) -> Result<Option<RestrictiveLayer>, SoilParserError> {
-    if mode != ParserMode::Compatibility || !datver.requires_restrictive_footer() {
+    if !datver.requires_restrictive_footer() {
         return Ok(None);
     }
 
@@ -635,16 +618,13 @@ fn parse_policy_tokens(
     line_no: usize,
     field: &'static str,
     datver: SoilDatver,
-    mode: ParserMode,
 ) -> Result<Vec<String>, SoilParserError> {
-    if mode == ParserMode::Compatibility
-        && matches!(
-            datver,
-            SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005
-        )
-        && policy_line.contains('\'')
+    if matches!(
+        datver,
+        SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005
+    ) && (policy_line.contains('\'') || policy_line.contains('"'))
     {
-        let tokens = tokenize_whitespace_and_single_quotes(policy_line, line_no, field)?;
+        let tokens = tokenize_whitespace_and_quotes(policy_line, line_no, field)?;
         if tokens.len() != expected {
             return Err(SoilParserError::new(
                 SoilErrorCode::SolE006,
@@ -667,7 +647,7 @@ fn parse_policy_tokens(
 
 fn parse_policy_row(
     datver: SoilDatver,
-    mode: ParserMode,
+    _mode: ParserMode,
     policy_line: &str,
     line_no: usize,
 ) -> Result<DisturbedPolicy, SoilParserError> {
@@ -679,7 +659,6 @@ fn parse_policy_row(
                 line_no,
                 "ksatadj,luse,stext,ksatfac,ksatrec",
                 datver,
-                mode,
             )?;
             let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
             let ksatfac = parse_f64(&t[3], line_no, "ksatfac")?;
@@ -702,7 +681,6 @@ fn parse_policy_row(
                 line_no,
                 "ksatadj,luse,burn_code,stext,lkeff",
                 datver,
-                mode,
             )?;
             let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
             let burn_code = parse_i32(&t[2], line_no, "burn_code")?;
@@ -735,7 +713,6 @@ fn parse_policy_row(
                 line_no,
                 "ksatadj,luse,burn_code,stext,texid_enum,uksat,lkeff",
                 datver,
-                mode,
             )?;
             let ksatadj = parse_binary_flag(&t[0], line_no, "ksatadj")?;
             let burn_code = parse_i32(&t[2], line_no, "burn_code")?;
@@ -1184,19 +1161,17 @@ fn parse_ofe_header_tokens(
     line: &str,
     line_no: usize,
     datver: SoilDatver,
-    mode: ParserMode,
+    _mode: ParserMode,
     field: &'static str,
 ) -> Result<Vec<String>, SoilParserError> {
-    if mode == ParserMode::Compatibility
-        && matches!(
-            datver,
-            SoilDatver::V7778 | SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005
-        )
-        && line.contains('\'')
+    if matches!(
+        datver,
+        SoilDatver::V7778 | SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005
+    ) && (line.contains('\'') || line.contains('"'))
     {
-        let mut tokens = tokenize_whitespace_and_single_quotes(line, line_no, field)?;
+        let mut tokens = tokenize_whitespace_and_quotes(line, line_no, field)?;
         if tokens.len() == 8 {
-            // Legacy quoted compatibility rows can omit `avke`; normalize to explicit 0.0.
+            // Canonical quoted header rows may omit `avke`; normalize to explicit 0.0.
             tokens.push("0.0".to_string());
         }
         if tokens.len() != 9 {
@@ -1219,7 +1194,7 @@ fn parse_ofe_header_tokens(
         .collect())
 }
 
-fn tokenize_whitespace_and_single_quotes(
+fn tokenize_whitespace_and_quotes(
     line: &str,
     line_no: usize,
     field: &'static str,
@@ -1233,27 +1208,52 @@ fn tokenize_whitespace_and_single_quotes(
             continue;
         }
 
-        if ch == '\'' {
+        if ch == '\'' || ch == '"' {
+            let quote_char = ch;
             iter.next();
-            let quoted_start = idx + ch.len_utf8();
-            let mut end = None;
+            let mut token = String::new();
+            let mut closed = false;
+            let mut escaped = false;
 
-            for (quote_idx, quote_ch) in iter.by_ref() {
-                if quote_ch == '\'' {
-                    end = Some(quote_idx);
+            for (_, quote_ch) in iter.by_ref() {
+                if quote_char == '"' && escaped {
+                    token.push(quote_ch);
+                    escaped = false;
+                    continue;
+                }
+
+                if quote_char == '"' && quote_ch == '\\' {
+                    escaped = true;
+                    continue;
+                }
+
+                if quote_ch == quote_char {
+                    closed = true;
                     break;
                 }
+
+                token.push(quote_ch);
             }
 
-            let quoted_end = end.ok_or_else(|| {
-                SoilParserError::new(
+            if !closed {
+                return Err(SoilParserError::new(
                     SoilErrorCode::SolE006,
                     line_no,
                     field,
-                    "unterminated quoted header token",
-                )
-            })?;
-            tokens.push(line[quoted_start..quoted_end].to_string());
+                    "unterminated quoted token",
+                ));
+            }
+
+            if quote_char == '"' && escaped {
+                return Err(SoilParserError::new(
+                    SoilErrorCode::SolE006,
+                    line_no,
+                    field,
+                    "unterminated escape in double-quoted token",
+                ));
+            }
+
+            tokens.push(token);
             continue;
         }
 

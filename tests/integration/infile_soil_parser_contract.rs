@@ -57,9 +57,12 @@ fn strict_parses_9002_profile_with_policy_and_restrictive_footer() {
 
 #[test]
 fn compatibility_parses_9002_policy_first_variant() {
-    let strict_err = parse_soil(VALID_9002_POLICY_FIRST_COMPAT, strict())
-        .expect_err("strict should reject policy-first variant");
-    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+    let strict_parsed = parse_soil(VALID_9002_POLICY_FIRST_COMPAT, strict())
+        .expect("strict should accept canonical policy-first variant");
+    assert_eq!(strict_parsed.datver, SoilDatver::V9002);
+    assert_eq!(strict_parsed.ofes.len(), 1);
+    assert_eq!(strict_parsed.ofes[0].layers.len(), 2);
+    assert!(strict_parsed.ofes[0].policy.is_some());
 
     let compat_options = SoilParserOptions {
         mode: ParserMode::Compatibility,
@@ -140,9 +143,12 @@ fn returns_sol_e_007_on_cross_file_topology_count_mismatch() {
 
 #[test]
 fn compatibility_accepts_quoted_7778_soil_header_form() {
-    let strict_err = parse_soil(COMPAT_QUOTED_HEADER_7778, strict())
-        .expect_err("strict should reject quoted 7778 compatibility header");
-    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+    let strict_parsed = parse_soil(COMPAT_QUOTED_HEADER_7778, strict())
+        .expect("strict should accept quoted 7778 header");
+    assert_eq!(strict_parsed.datver, SoilDatver::V7778);
+    assert_eq!(strict_parsed.ofes.len(), 1);
+    assert_eq!(strict_parsed.ofes[0].layers.len(), 2);
+    assert!((strict_parsed.ofes[0].avke - 0.0).abs() < 1e-12);
 
     let compat_options = SoilParserOptions {
         mode: ParserMode::Compatibility,
@@ -165,10 +171,19 @@ fn compatibility_accepts_quoted_7778_soil_header_form() {
 }
 
 #[test]
-fn strict_rejects_quoted_7778_with_per_ofe_restrictive_rows() {
-    let strict_err = parse_soil(COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE, strict())
-        .expect_err("strict should reject per-OFE restrictive-row compatibility form");
-    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+fn strict_accepts_quoted_7778_with_per_ofe_restrictive_rows() {
+    let parsed = parse_soil(COMPAT_QUOTED_HEADER_7778_PER_OFE_RESTRICTIVE, strict())
+        .expect("strict should accept per-OFE restrictive-row form");
+
+    assert_eq!(parsed.datver, SoilDatver::V7778);
+    assert_eq!(parsed.ofes.len(), 2);
+    let restrictive = parsed
+        .restrictive_layer
+        .as_ref()
+        .expect("strict normalization should produce restrictive layer");
+    assert!(restrictive.slflag);
+    assert!((restrictive.ui_bdrkth_mm - 10000.0).abs() < 1e-9);
+    assert!((restrictive.kslast_mm_h - 0.001).abs() < 1e-9);
 }
 
 #[test]
@@ -198,9 +213,14 @@ fn compatibility_accepts_quoted_7778_with_per_ofe_restrictive_rows() {
 
 #[test]
 fn compatibility_accepts_quoted_9002_policy_first_header_form() {
-    let strict_err = parse_soil(COMPAT_QUOTED_HEADER_9002_POLICY_FIRST, strict())
-        .expect_err("strict should reject quoted 9002 policy-first compatibility form");
-    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+    let strict_parsed = parse_soil(COMPAT_QUOTED_HEADER_9002_POLICY_FIRST, strict())
+        .expect("strict should accept quoted 9002 policy-first header");
+    assert_eq!(strict_parsed.datver, SoilDatver::V9002);
+    assert_eq!(strict_parsed.ofes.len(), 1);
+    assert_eq!(strict_parsed.ofes[0].layers.len(), 2);
+    assert_eq!(strict_parsed.ofes[0].slid, "SOIL B with spaces");
+    assert_eq!(strict_parsed.ofes[0].texid, "CLAY LOAM");
+    assert!((strict_parsed.ofes[0].avke - 0.0).abs() < 1e-12);
 
     let compat_options = SoilParserOptions {
         mode: ParserMode::Compatibility,
@@ -220,10 +240,18 @@ fn compatibility_accepts_quoted_9002_policy_first_header_form() {
 }
 
 #[test]
-fn strict_rejects_quoted_9002_policy_row_with_whitespace_luse() {
-    let strict_err = parse_soil(COMPAT_QUOTED_POLICY_ROW_9002, strict())
-        .expect_err("strict should reject quoted policy-row compatibility form");
-    assert_eq!(strict_err.code, SoilErrorCode::SolE006);
+fn strict_accepts_quoted_9002_policy_row_with_whitespace_luse() {
+    let parsed = parse_soil(COMPAT_QUOTED_POLICY_ROW_9002, strict())
+        .expect("strict should accept quoted 9002 policy rows");
+
+    assert_eq!(parsed.datver, SoilDatver::V9002);
+    assert_eq!(parsed.ofes.len(), 1);
+    assert_eq!(
+        parsed.ofes[0].slid,
+        "Andic Xerochrepts, 60 to 90 percent slopes"
+    );
+    assert_eq!(parsed.ofes[0].texid, "ASHY-L");
+    assert!((parsed.ofes[0].avke - 0.0).abs() < 1e-12);
 }
 
 #[test]
