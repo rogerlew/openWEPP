@@ -1,10 +1,10 @@
 # 20260531-auth12-fc-rocky-soil-closure-and-promotion-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-05-31
 - timezone: America/Los_Angeles
-- decision: pending
+- decision: GO
 
 ## Objective
 Close the Level-4 direct-theta rocky-soil FC discrepancy by implementing

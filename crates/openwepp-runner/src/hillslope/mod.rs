@@ -1783,16 +1783,16 @@ fn seed_wb11_runtime_surface_inputs(
                 });
             }
 
-            let por_times_cpm = por * cpm;
-            if !por_times_cpm.is_finite() || por_times_cpm <= 0.0 {
+            let saturation_capacity = por * cpm;
+            if !saturation_capacity.is_finite() || saturation_capacity <= 0.0 {
                 return Err(HillslopeCliError::RuntimeSurfaceFailure {
                     surface: "wb11_seed",
                     detail: format!(
-                        "{SIMPIPE_GUARD_ID} {por_symbol}*{cpm_symbol} must be finite and > 0.0, observed {por_times_cpm}"
+                        "{SIMPIPE_GUARD_ID} por*cpm must be finite and > 0.0, observed {saturation_capacity}"
                     ),
                 });
             }
-            let sat_floor = thetdr / por_times_cpm;
+            let sat_floor = thetdr / saturation_capacity;
             if !sat_floor.is_finite() || !(0.0..=1.0).contains(&sat_floor) {
                 return Err(HillslopeCliError::RuntimeSurfaceFailure {
                     surface: "wb11_seed",
@@ -1825,7 +1825,8 @@ fn seed_wb11_runtime_surface_inputs(
                 });
             }
 
-            let mut st_store = (((sat * por) * cpm) - thetdr) * dg;
+            let saturation_theta = (sat * por) * cpm;
+            let mut st_store = (saturation_theta - thetdr) * dg;
             if !st_store.is_finite() {
                 return Err(HillslopeCliError::RuntimeSurfaceFailure {
                     surface: "wb11_seed",
@@ -5410,6 +5411,100 @@ mod tests {
         assert!(
             wb11_drainable_storage.abs() < 1.0e-12,
             "wb11_drainable_storage must follow Σmax(st-fc,0)"
+        );
+    }
+
+    #[test]
+    fn auth12_wb11_seed_applies_cpm_for_disturbed_measured_fcwp_lineage() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+            ("solwpv", 9002.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("WB11 seeding should succeed for disturbed measured FC/WP lineage");
+
+        let theta = require_runtime_surface_scalar(&runtime_surface, "wb18_perc_theta_0001")
+            .expect("wb18_perc_theta_0001 should be seeded");
+        let wb11_soil_water = require_runtime_surface_scalar(&runtime_surface, "wb11_soil_water")
+            .expect("wb11_soil_water should be seeded");
+
+        let expected_theta_without_cpm = ((0.50 * 0.45) - 0.12) * 0.25;
+        let expected_theta_with_cpm = (((0.50 * 0.45) * 0.90) - 0.12) * 0.25;
+        let expected_soilw = expected_theta_with_cpm + (0.12 * 0.25);
+
+        assert!(
+            (theta - expected_theta_with_cpm).abs() < 1.0e-12,
+            "disturbed measured FC/WP lineage must apply sat*por*cpm scaling"
+        );
+        assert!(
+            theta < expected_theta_without_cpm - 1.0e-12,
+            "disturbed measured FC/WP lineage must not bypass cpm scaling"
+        );
+        assert!(
+            (wb11_soil_water - expected_soilw).abs() < 1.0e-12,
+            "wb11_soil_water must remain consistent with the disturbed measured FC/WP cpm-scaled saturation lineage"
+        );
+    }
+
+    #[test]
+    fn auth12_wb11_seed_applies_cpm_for_legacy_measured_theta_fcwp_lineage() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+            ("solwpv", 7778.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("WB11 seeding should succeed for legacy measured-theta FC/WP lineage");
+
+        let theta = require_runtime_surface_scalar(&runtime_surface, "wb18_perc_theta_0001")
+            .expect("wb18_perc_theta_0001 should be seeded");
+        let wb11_soil_water = require_runtime_surface_scalar(&runtime_surface, "wb11_soil_water")
+            .expect("wb11_soil_water should be seeded");
+
+        let expected_theta_without_cpm = ((0.50 * 0.45) - 0.12) * 0.25;
+        let expected_theta_with_cpm = (((0.50 * 0.45) * 0.90) - 0.12) * 0.25;
+        let expected_soilw = expected_theta_with_cpm + (0.12 * 0.25);
+
+        assert!(
+            (theta - expected_theta_with_cpm).abs() < 1.0e-12,
+            "legacy measured-theta FC/WP lineage must apply sat*por*cpm scaling"
+        );
+        assert!(
+            theta < expected_theta_without_cpm - 1.0e-12,
+            "legacy measured-theta FC/WP lineage must not bypass cpm scaling"
+        );
+        assert!(
+            (wb11_soil_water - expected_soilw).abs() < 1.0e-12,
+            "wb11_soil_water must remain consistent with the measured-theta cpm-scaled saturation lineage"
         );
     }
 

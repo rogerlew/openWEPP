@@ -12,18 +12,19 @@
       "required_fixture_files": [
         "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/valid_9002.sol",
         "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/valid_7778.sol",
-        "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_high_rock_fc_authority.sol"
+        "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_high_rock_fc_authority.sol",
+        "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_real_rocky_p1_authority.sol"
       ],
       "closure_follow_on_package_id": "20260531-auth12-fc-rocky-soil-closure-and-promotion-001",
       "closure_follow_on_package_path": "docs/work-packages/20260531-auth12-fc-rocky-soil-closure-and-promotion-001/package.md",
       "closure_follow_on_queue_path": "docs/work-packages/README.md",
       "max_relative_error_threshold_upper_bound": 0.35,
-      "min_case_count": 3,
+      "min_case_count": 4,
       "required_case_bindings": [
         {
           "case_id": "valid_9002_reference",
           "soil_file": "valid_9002.sol",
-          "expected_threshold_status": "exceeds"
+          "expected_threshold_status": "within"
         },
         {
           "case_id": "valid_7778_reference",
@@ -33,6 +34,11 @@
         {
           "case_id": "h1_synthetic_low_rock_authority",
           "soil_file": "h1_high_rock_fc_authority.sol",
+          "expected_threshold_status": "within"
+        },
+        {
+          "case_id": "h1_real_rocky_authority",
+          "soil_file": "h1_real_rocky_p1_authority.sol",
           "expected_threshold_status": "within"
         }
       ],

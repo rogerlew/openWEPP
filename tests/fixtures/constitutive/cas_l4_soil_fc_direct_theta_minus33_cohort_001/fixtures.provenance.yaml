@@ -3,12 +3,12 @@ suite_id: cas_l4_soil_fc_direct_theta_minus33_cohort_001
 generated_utc: 2026-05-31T00:00:00Z
 fixtures:
   - path: cohort_case.json
-    sha256: 75601f65afe7f7952b5ac7f207a4ece0c2ced85eb9b117a14c9f9bdd32a643db
+    sha256: 7a88e9dc481e87910a5d1fe4b9a16abde602fd1ffc56cf4cf0414cab245b4b41
     source_repo: /workdir/openWEPP
     source_commit: f9be6a294083c17044a5b822470710f3bb017e98
     source_path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json
-    source_sha256: 75601f65afe7f7952b5ac7f207a4ece0c2ced85eb9b117a14c9f9bdd32a643db
-    transform_note: AUTH11 anchored-case fixture for direct theta(-33kPa) threshold-status classification.
+    source_sha256: 7a88e9dc481e87910a5d1fe4b9a16abde602fd1ffc56cf4cf0414cab245b4b41
+    transform_note: AUTH12 cohort fixture updates expected threshold status and adds real-rocky anchor coverage for direct theta(-33kPa) closure classification.
   - path: h1_high_rock_fc_authority.sol
     sha256: 2202b14c684fefb19787375180f756e1f0deb06a41387a6111d65c42a263b1aa
     source_repo: /workdir/openWEPP
@@ -37,3 +37,10 @@ fixtures:
     source_path: tests/fixtures/infile/soil/valid_9002.sol
     source_sha256: df115a020475e21082c6d3ce9a1e0fc8ac4a7bdab31911c5d7ffdbc40df0f54e
     transform_note: Direct copy of strict soil parser fixture preserving rocky-soil discrepancy anchor coverage.
+  - path: h1_real_rocky_p1_authority.sol
+    sha256: 81c43e8185f0caa98d78c52ddfbeec2dafafe75140296db387ff93a22c7479da
+    source_repo: /workdir/openWEPP
+    source_commit: f9be6a294083c17044a5b822470710f3bb017e98
+    source_path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_real_rocky_p1_authority.sol
+    source_sha256: 81c43e8185f0caa98d78c52ddfbeec2dafafe75140296db387ff93a22c7479da
+    transform_note: Real rocky H1-derived fixture with measured FC/WP payloads to anchor AUTH12 disturbed-policy closure.

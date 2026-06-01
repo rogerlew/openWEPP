@@ -80,6 +80,38 @@ fn parse_package_state(package_md: &str) -> Option<String> {
     None
 }
 
+fn parse_registry_suite_fields(
+    registry_yaml: &str,
+    suite_id: &str,
+) -> Option<BTreeMap<String, String>> {
+    let mut in_suite_block = false;
+    let mut fields = BTreeMap::new();
+    for line in registry_yaml.lines() {
+        let stripped = line.trim();
+        if let Some(observed_suite_id) = stripped.strip_prefix("- suite_id:") {
+            if in_suite_block {
+                break;
+            }
+            in_suite_block = observed_suite_id.trim() == suite_id;
+            if in_suite_block {
+                fields.insert("suite_id".to_string(), observed_suite_id.trim().to_string());
+            }
+            continue;
+        }
+        if !in_suite_block {
+            continue;
+        }
+        if let Some((key, value)) = stripped.split_once(':') {
+            fields.insert(key.trim().to_string(), value.trim().to_string());
+        }
+    }
+    if fields.is_empty() {
+        None
+    } else {
+        Some(fields)
+    }
+}
+
 #[test]
 fn auth11_obligations_schema_and_anchor_bindings_are_enforced() {
     let obligations: RequiredSuiteObligations =
@@ -148,12 +180,38 @@ fn auth11_obligations_schema_and_anchor_bindings_are_enforced() {
         }
     }
 
+    let registry = read_repo_file("docs/specifications/external-authority/registry.yaml");
+    let suite_registry_fields =
+        parse_registry_suite_fields(&registry, "cas_l4_soil_fc_direct_theta_minus33_cohort_001")
+            .unwrap_or_else(|| panic!("registry must include direct-theta FC suite block"));
+    let gate_lane = suite_registry_fields
+        .get("gate_lane")
+        .map_or("", std::string::String::as_str);
+    let failure_class = suite_registry_fields
+        .get("failure_class")
+        .map_or("", std::string::String::as_str);
+
     let package_md = read_repo_file(&suite.closure_follow_on_package_path);
     let package_state = parse_package_state(&package_md).unwrap_or_default();
-    assert!(
-        package_state == "queued" || package_state == "in_progress",
-        "closure follow-on package must stay queued or in_progress while suite is non-blocking"
-    );
+    match (gate_lane, failure_class) {
+        ("periodic", "investigation") => {
+            assert!(
+                package_state == "queued" || package_state == "in_progress",
+                "closure follow-on package must stay queued or in_progress while suite is non-blocking"
+            );
+        }
+        ("required", "hard-fail") => {
+            assert_eq!(
+                package_state, "complete",
+                "closure follow-on package must be complete after direct-theta suite promotion"
+            );
+        }
+        _ => {
+            panic!(
+                "unexpected direct-theta suite posture in registry: gate_lane={gate_lane}, failure_class={failure_class}"
+            );
+        }
+    }
 
     let queue_index = read_repo_file(&suite.closure_follow_on_queue_path);
     assert!(
@@ -165,14 +223,22 @@ fn auth11_obligations_schema_and_anchor_bindings_are_enforced() {
 #[test]
 fn auth11_registry_posture_and_protocol_guard_paths_exist() {
     let registry = read_repo_file("docs/specifications/external-authority/registry.yaml");
-    assert!(
-        registry.contains("cas_l4_soil_fc_direct_theta_minus33_cohort_001"),
-        "registry must contain direct-theta FC suite"
+    let suite_registry_fields =
+        parse_registry_suite_fields(&registry, "cas_l4_soil_fc_direct_theta_minus33_cohort_001")
+            .unwrap_or_else(|| panic!("registry must contain direct-theta FC suite"));
+    let gate_lane = suite_registry_fields
+        .get("gate_lane")
+        .map_or("", std::string::String::as_str);
+    let failure_class = suite_registry_fields
+        .get("failure_class")
+        .map_or("", std::string::String::as_str);
+    let recognized_posture = matches!(
+        (gate_lane, failure_class),
+        ("periodic", "investigation") | ("required", "hard-fail")
     );
     assert!(
-        registry.contains("gate_lane: periodic")
-            && registry.contains("failure_class: investigation"),
-        "direct-theta FC suite must remain non-blocking until promotion protocol closure"
+        recognized_posture,
+        "direct-theta FC suite posture must be either periodic/investigation (pre-closure) or required/hard-fail (post-closure); observed {gate_lane}/{failure_class}"
     );
 
     let protocol = read_repo_file("docs/specifications/external-authority/promotion-protocol.md");

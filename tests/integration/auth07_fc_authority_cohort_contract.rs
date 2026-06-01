@@ -121,7 +121,15 @@ fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
     } else {
         0.0
     };
-    let model_fc_store_mm = state_scalar(&surface, "wb13_profile_fc_store_mm");
+    let nsl = format!("{:.0}", state_scalar(&surface, "nsl"))
+        .parse::<usize>()
+        .unwrap_or_else(|error| panic!("{} invalid nsl projection: {error}", case.case_id));
+    let mut model_fc_store_mm = 0.0_f64;
+    for layer_index in 1..=nsl {
+        let dg = state_scalar(&surface, &format!("dg_{layer_index:04}"));
+        let thetfc = state_scalar(&surface, &format!("thetfc_{layer_index:04}"));
+        model_fc_store_mm += thetfc * dg * 1_000.0;
+    }
     let relative_error =
         (model_fc_store_mm - authority_fc_store_mm).abs() / authority_fc_store_mm.max(f64::EPSILON);
     CaseResult {
@@ -156,6 +164,13 @@ fn assert_auth11_anchor_bindings(fixture: &CohortFixture) {
                 && case.soil_file == "h1_high_rock_fc_authority.sol"
         }),
         "AUTH11 anchor guard: synthetic H1 fixture binding must remain present"
+    );
+    assert!(
+        fixture.cases.iter().any(|case| {
+            case.case_id == "h1_real_rocky_authority"
+                && case.soil_file == "h1_real_rocky_p1_authority.sol"
+        }),
+        "AUTH12 anchor guard: rocky H1 fixture binding must remain present"
     );
 }
 
@@ -259,9 +274,9 @@ fn auth07_package_and_suite_authority_sections_exist() {
     );
     assert!(
         registry.contains("cas_l4_soil_fc_direct_theta_minus33_cohort_001")
-            && registry.contains("gate_lane: periodic")
-            && registry.contains("failure_class: investigation"),
-        "registry must include AUTH11 cohort suite in periodic investigation lane"
+            && registry.contains("gate_lane: required")
+            && registry.contains("failure_class: hard-fail"),
+        "registry must include AUTH12 cohort suite in required hard-fail lane"
     );
     assert!(
         suite.contains("authority_level: 4")
@@ -271,8 +286,8 @@ fn auth07_package_and_suite_authority_sections_exist() {
         "AUTH11 cohort suite must include level-4 + fixture provenance metadata"
     );
     assert!(
-        soil_contract.contains("AUTH11 FC Direct-Theta Promotion Guard Addendum"),
-        "SC-SOIL-001 must include AUTH11 direct-theta promotion guard addendum"
+        soil_contract.contains("AUTH12 FC Rocky-Soil Closure and Promotion Addendum"),
+        "SC-SOIL-001 must include AUTH12 rocky-soil FC closure addendum"
     );
 }
 

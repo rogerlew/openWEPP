@@ -53,3 +53,9 @@ linkage fields:
 - `closure_follow_on_package_id`
 - `closure_follow_on_package_path`
 - `closure_follow_on_queue_path`
+
+## Posture Change Log
+
+- 2026-05-31 (`AUTH12`): `cas_l4_soil_fc_direct_theta_minus33_cohort_001`
+  promoted from `periodic`/`investigation` to `required`/`hard-fail` after
+  anchored rocky-soil red/fix/green closure evidence.

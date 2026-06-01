@@ -19,7 +19,7 @@ use openwepp_input_contract::parsers::{
     },
     slope::{SlopePoint, SlopeProfile},
     snow::SnowParseOutput,
-    soil::{DisturbedPolicy, SoilProfile},
+    soil::{DisturbedPolicy, SoilDatver, SoilProfile},
 };
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,

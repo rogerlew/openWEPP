@@ -20,12 +20,12 @@ fixtures:
     path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json
     fixture_class: integration
     units_basis: m3_m3_and_mm
-    hash: 75601f65afe7f7952b5ac7f207a4ece0c2ced85eb9b117a14c9f9bdd32a643db
+    hash: 7a88e9dc481e87910a5d1fe4b9a16abde602fd1ffc56cf4cf0414cab245b4b41
     source_repo: /workdir/openWEPP
     source_commit: f9be6a294083c17044a5b822470710f3bb017e98
     source_path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json
-    source_sha256: 75601f65afe7f7952b5ac7f207a4ece0c2ced85eb9b117a14c9f9bdd32a643db
-    transform_note: "AUTH11 anchored cohort configuration with explicit threshold-status classification per required case."
+    source_sha256: 7a88e9dc481e87910a5d1fe4b9a16abde602fd1ffc56cf4cf0414cab245b4b41
+    transform_note: "AUTH12 cohort configuration with explicit closure-status classification for all required anchor cases."
   - fixture_id: FX-FC-COHORT-SOIL-9002-001
     path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/valid_9002.sol
     fixture_class: integration
@@ -66,6 +66,16 @@ fixtures:
     source_path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_worked_example_source.md
     source_sha256: cf8ca3c22124c279fefc8896dcaddb32b506afec6deaf0c0da32e8fa12e3c521
     transform_note: "Tracked source note for H1 worked-example provenance."
+  - fixture_id: FX-FC-COHORT-SOIL-H1-REAL-001
+    path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_real_rocky_p1_authority.sol
+    fixture_class: integration
+    units_basis: infile_soil
+    hash: 81c43e8185f0caa98d78c52ddfbeec2dafafe75140296db387ff93a22c7479da
+    source_repo: /workdir/openWEPP
+    source_commit: f9be6a294083c17044a5b822470710f3bb017e98
+    source_path: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/h1_real_rocky_p1_authority.sol
+    source_sha256: 81c43e8185f0caa98d78c52ddfbeec2dafafe75140296db387ff93a22c7479da
+    transform_note: "Real rocky H1-derived fixture with measured FC/WP payloads for disturbed-policy closure anchoring."
 tolerances:
   mode: rel
   rel:
@@ -73,15 +83,15 @@ tolerances:
     comparator: "<="
   units: relative_ratio
   notes: "Cohort classifies model-vs-direct authority residuals by explicit relative threshold and preserves anchor-case status labels."
-gate_lane: periodic
-failure_class: investigation
+gate_lane: required
+failure_class: hard-fail
 runtime_cost_class: integration
 owner: openWEPP maintainers
 provenance:
   authored_by: Codex
   authored_utc: 2026-05-31
   last_updated_utc: 2026-05-31
-notes: "AUTH11 re-anchoring: Level-4 direct-theta cohort remains active in periodic/investigation lane until AUTH12 promotion-protocol closure over anchored rocky-soil discrepancy fixtures."
+notes: "AUTH12 closure: rocky-soil discrepancy anchors classify within threshold and suite posture is restored to Level-4 required/hard-fail."
 ---
 
 # cas_l4_soil_fc_direct_theta_minus33_cohort_001 Soil Profile FC Direct Theta(-33kPa) Constitutive Cohort Guard Suite
@@ -103,8 +113,9 @@ direct `Σ(theta_fc(-33kPa)_i * dg_i)` authority from soil inputs.
 
 1. Parse each cohort soil in strict mode.
 2. Compute direct profile FC authority from layer theta_fc and depth intervals.
-3. Compare runtime `wb13_profile_fc_store_mm` to direct authority and classify
-   each case as `within` or `exceeds` for relative threshold `0.35`.
+3. Compare runtime layer-authoritative `ProfileFCStore` lineage
+   (`Σ(thetfc_i * dg_i) * 1000`) to direct authority and classify each case as
+   `within` or `exceeds` for relative threshold `0.35`.
 4. Report and classify residuals by rock-fragment bucket (`low`, `medium`,
    `high`) using weighted profile rock percentage.
 
@@ -113,7 +124,8 @@ direct `Σ(theta_fc(-33kPa)_i * dg_i)` authority from soil inputs.
 1. 9002 rocky-soil anchor case (`valid_9002_reference`).
 2. 7778 measured-theta reference soil.
 3. Synthetic low-rock worked-example soil from documented layer table.
-4. Cohort configuration + source worked-example note for provenance continuity.
+4. Real rocky H1-derived anchor (`h1_real_rocky_authority`).
+5. Cohort configuration + source worked-example note for provenance continuity.
 
 ## Tolerance Policy
 
@@ -123,16 +135,18 @@ direct `Σ(theta_fc(-33kPa)_i * dg_i)` authority from soil inputs.
 
 ## Gate and Failure Semantics
 
-- Lane: `periodic`
-- Failure class: `investigation`
-- Failure action: preserve red-state discrepancy evidence while promotion guard
-  protocol remains open.
-- Required closure package while non-blocking:
-  - `20260531-auth12-fc-rocky-soil-closure-and-promotion-001`.
+- Lane: `required`
+- Failure class: `hard-fail`
+- Failure action: block release-gate promotion when direct-theta authority
+  anchors regress beyond the declared threshold.
 
 ## Implementation Notes
 
 - Executed by `tests/integration/auth07_fc_authority_cohort_contract.rs`.
+- Measured-theta FC/WP ingest authority follows producer-corrected payload
+  contract from `/workdir/wepppy/wepppy/soils/ssurgo/ssurgo.py` with paired
+  runtime `cpm` application (legacy `scon.for` basis) for measured-theta
+  datvers.
 - Fixture lock/provenance sidecars:
   - `tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/fixtures.sha256`
   - `tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/fixtures.provenance.yaml`

@@ -6,7 +6,9 @@ use openwepp_hillslope_orchestrator::{
     HillslopeWritebackSurface, Wb11HydrologyKernel,
     runtime_inputs::build_hillslope_runtime_surface_from_soil,
 };
-use openwepp_input_contract::parsers::soil::{ParserMode, SoilParserOptions, parse_soil};
+use openwepp_input_contract::parsers::soil::{
+    DisturbedPolicy, ParserMode, SoilParserOptions, parse_soil,
+};
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
     HillslopeKernelPhaseClass, HillslopeKernelRequest,
@@ -48,6 +50,7 @@ struct IndependentLegacySeed {
     orgmat_pct: f64,
     cec_meq_100g: f64,
     rock_frag_pct: f64,
+    fc_wp_rock_multiplier_policy: IndependentFcWpRockMultiplierPolicy,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -61,6 +64,13 @@ struct IndependentLegacyLayerExpanded {
     orgmat: f64,
     cec: f64,
     rfg: f64,
+    fc_wp_rock_multiplier_policy: IndependentFcWpRockMultiplierPolicy,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum IndependentFcWpRockMultiplierPolicy {
+    ApplyToMeasuredFcWp,
+    SkipForMeasuredFcWp,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -241,6 +251,19 @@ fn strict_soil_parser_options() -> SoilParserOptions {
     }
 }
 
+fn independent_fc_wp_rock_multiplier_policy(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+) -> IndependentFcWpRockMultiplierPolicy {
+    match ofe.policy {
+        Some(
+            DisturbedPolicy::V9002 { .. }
+            | DisturbedPolicy::V9003 { .. }
+            | DisturbedPolicy::V9005 { .. },
+        ) => IndependentFcWpRockMultiplierPolicy::SkipForMeasuredFcWp,
+        None => IndependentFcWpRockMultiplierPolicy::ApplyToMeasuredFcWp,
+    }
+}
+
 fn independent_authority_from_soil(
     soil: &openwepp_input_contract::parsers::soil::SoilProfile,
     fixture_id: &str,
@@ -249,6 +272,7 @@ fn independent_authority_from_soil(
         .ofes
         .first()
         .unwrap_or_else(|| panic!("{fixture_id}: expected at least one OFE"));
+    let fc_wp_policy = independent_fc_wp_rock_multiplier_policy(ofe);
 
     let mut seeds = Vec::with_capacity(ofe.layers.len());
     for (layer_position, layer) in ofe.layers.iter().enumerate() {
@@ -269,6 +293,7 @@ fn independent_authority_from_soil(
             orgmat_pct: layer.orgmat_pct,
             cec_meq_100g: layer.cec_meq_100g,
             rock_frag_pct: layer.rock_frag_pct,
+            fc_wp_rock_multiplier_policy: fc_wp_policy,
         };
         assert!(
             independent_seed_is_finite(seed),
@@ -500,6 +525,7 @@ fn independent_source_layers_from_seed_depths(
             orgmat: orgmat_pct / 100.0,
             cec: seed.cec_meq_100g,
             rfg: rock_frag_pct / 100.0,
+            fc_wp_rock_multiplier_policy: seed.fc_wp_rock_multiplier_policy,
         });
     }
     if source_layers.is_empty() {
@@ -546,6 +572,10 @@ fn independent_normalize_layers_to_200mm(
             orgmat: 0.0,
             cec: 0.0,
             rfg: 0.0,
+            fc_wp_rock_multiplier_policy: source_layers.first().map_or(
+                IndependentFcWpRockMultiplierPolicy::ApplyToMeasuredFcWp,
+                |source| source.fc_wp_rock_multiplier_policy,
+            ),
         };
         let mut remaining = 0.2;
         while remaining > 0.0 && source_index < source_layers.len() {
@@ -626,8 +656,16 @@ fn independent_correct_layer_moisture(
     if !por.is_finite() || por <= 0.0 {
         return None;
     }
-    let mut thetfc = layer.thetfc.max(0.0) * cpm;
-    let mut thetdr = layer.thetdr.max(0.0) * cpm;
+    let apply_fc_wp_rock_multiplier = matches!(
+        layer.fc_wp_rock_multiplier_policy,
+        IndependentFcWpRockMultiplierPolicy::ApplyToMeasuredFcWp
+    );
+    let mut thetfc = layer.thetfc.max(0.0);
+    let mut thetdr = layer.thetdr.max(0.0);
+    if apply_fc_wp_rock_multiplier {
+        thetfc *= cpm;
+        thetdr *= cpm;
+    }
     if !thetfc.is_finite() || !thetdr.is_finite() {
         return None;
     }
@@ -644,7 +682,9 @@ fn independent_correct_layer_moisture(
         return None;
     }
     let mut sm20c = 10.0_f64.powf(slope * (t15 - (10.0_f64.ln() / log10)) + s15);
-    sm20c *= cpm;
+    if apply_fc_wp_rock_multiplier {
+        sm20c *= cpm;
+    }
     if sm20c >= por {
         sm20c = por * 0.95;
     }

@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 19
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -14,7 +14,7 @@ consumer_scope:
   - Percolation and water-balance consumers requiring conductivity and storage-domain consistency
   - Erosion/hydraulics consumers requiring valid interrill/rill erodibility and shear-threshold surfaces
 evidence_level: Static
-last_reviewed: 2026-05-30
+last_reviewed: 2026-05-31
 supersedes: []
 superseded_by: []
 ---
@@ -405,6 +405,37 @@ promotion protocol closure over rocky-soil discrepancy anchors.
    - `docs/specifications/external-authority/promotion-protocol.md`
    - `docs/specifications/external-authority/required-suite-obligations.json`
 
+## AUTH12 FC Rocky-Soil Closure and Promotion Addendum
+
+AUTH12 closes the direct-theta FC discrepancy for rocky-soil anchors and
+promotes direct-theta cohort governance back to blocking Level-4 posture.
+
+1. External suite:
+   - `cas_l4_soil_fc_direct_theta_minus33_cohort_001`
+2. Lane/failure posture after closure:
+   - `gate_lane=required`
+   - `failure_class=hard-fail`
+3. Measured-theta datver families with explicit measured FC/WP payloads
+   (`7777`, `7778`, `9002`, `9003`, `9005`) must treat measured
+   `fc_measured`/`wp_measured` as authoritative whole-soil layer water-content
+   inputs for FC/WP publication lineage. Production runtime correction must
+   apply the baseline `cpm` multiplier family to those measured FC/WP values.
+4. This rule is grounded by the WEPPpy SSURGO producer contract in
+   `/workdir/wepppy/wepppy/soils/ssurgo/ssurgo.py`, where measured FC/WP are
+   published in a pre-`cpm` corrected basis:
+   `field_cap = (0.01*wthirdbar_r)/(1-min(50,rock)/100)` and
+   `wilt_pt = (0.01*wfifteenbar_r)/(1-min(50,rock)/100)`. openWEPP must
+   preserve the paired producer/runtime contract by applying runtime `cpm`
+   (legacy `scon.for` basis) rather than bypassing it.
+5. For these families, FC/WP publication lineage remains fail-closed and must
+   continue to satisfy `porosity >= theta_fc >= theta_wp >= 0` and finite
+   aggregate storage invariants (`INV-SOIL-014`).
+6. Direct-theta cohort anchors (`valid_9002_reference` and rocky H1 anchor)
+   must classify `within` threshold (`0.35`) before posture promotion.
+7. Promotion retains AUTH11 anti-evasion controls:
+   fixture obligations, threshold/cardinality controls, and promotion protocol
+   evidence must remain mandatory.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -418,6 +449,8 @@ promotion protocol closure over rocky-soil discrepancy anchors.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `20` | `Codex` | AUTH12 follow-up amendment: expanded measured-FC/WP contract scope to all measured-theta datvers (`7777/7778/9002/9003/9005`) and grounded producer/runtime pairing authority to WEPPpy SSURGO producer equations plus runtime `cpm` application (legacy `scon.for` basis). |
+| `2026-05-31` | `19` | `Codex` | AUTH12 amendment: ratified rocky-soil FC closure posture, set direct-theta cohort back to Level-4 required/hard-fail after closure criteria, and codified measured FC/WP authority for disturbed-policy (`9002/9003/9005`) families without additional FC/WP `cpm` multiplier application. |
 | `2026-05-31` | `18` | `Codex` | AUTH11 amendment: added direct-theta FC anti-evasion/promotion guards, restored anchored discrepancy-case requirements, and re-anchored suite posture to periodic/investigation pending promotion-protocol closure. |
 | `2026-05-31` | `17` | `Codex` | AUTH10 amendment: promoted direct-theta FC cohort suite to Level-4 required/hard-fail constitutive gate (`cas_l4_soil_fc_direct_theta_minus33_cohort_001`), removed inversion-prone discrepancy pinning, and retained explicit fixture lock/provenance requirements. |
 | `2026-05-31` | `16` | `Codex` | AUTH07 amendment: added independent FC authority cohort addendum (`cas_l5_soil_fc_direct_theta_minus33_cohort_001`) with periodic/investigation lane posture, explicit thresholded model-vs-direct FC residual classification, and mandatory fixture lock/provenance sidecars. |

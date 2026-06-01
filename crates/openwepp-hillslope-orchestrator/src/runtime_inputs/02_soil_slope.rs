@@ -67,7 +67,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
             value: primary_thetfc,
         });
     }
-    let primary_wb13_profile_symbols = compute_wb13_profile_symbols(primary_ofe);
+    let primary_wb13_profile_symbols = compute_wb13_profile_symbols(primary_ofe, soil.datver);
 
     if soil.ntemp != soil.ofes.len() {
         return Err(HillslopeRuntimeInputError::SoilOfeCountMismatch {
@@ -91,7 +91,7 @@ pub fn build_hillslope_runtime_surface_from_soil(
     for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;
         let corrected_layer_runtime_symbols =
-            compute_corrected_layer_runtime_symbols(ofe, ofe_index)?;
+            compute_corrected_layer_runtime_symbols(ofe, ofe_index, soil.datver)?;
         let primary_layer_fc_store_mm = if ofe_index == 1 {
             Some(aggregate_profile_fc_store_mm_from_mapped_layers(
                 ofe,
@@ -574,6 +574,7 @@ struct LegacySoilLayerSeed {
     orgmat_pct: f64,
     cec_meq_100g: f64,
     rock_frag_pct: f64,
+    fc_wp_rock_multiplier_policy: FcWpRockMultiplierPolicy,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -587,13 +588,35 @@ struct LegacySoilLayerExpanded {
     orgmat: f64,
     cec: f64,
     rfg: f64,
+    fc_wp_rock_multiplier_policy: FcWpRockMultiplierPolicy,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum FcWpRockMultiplierPolicy {
+    ApplyToMeasuredFcWp,
+    SkipForMeasuredFcWp,
 }
 
 const WB13_PROFILE_LAYER_THICKNESS_M: f64 = 0.2;
 const LEGACY_INPUT_DELTA_EPS_M: f64 = 0.001;
 const PROFILE_FC_TAIL_TOLERANCE_MM: f64 = 1.0e-9;
 
-fn compute_wb13_profile_symbols(ofe: &openwepp_input_contract::parsers::soil::SoilOfe) -> Option<Wb13ProfileSymbols> {
+fn fc_wp_rock_multiplier_policy(soil_datver: SoilDatver) -> FcWpRockMultiplierPolicy {
+    match soil_datver {
+        SoilDatver::V7777
+        | SoilDatver::V7778
+        | SoilDatver::V9002
+        | SoilDatver::V9003
+        | SoilDatver::V9005 => FcWpRockMultiplierPolicy::ApplyToMeasuredFcWp,
+        SoilDatver::V97_5 | SoilDatver::V2006_2 => FcWpRockMultiplierPolicy::SkipForMeasuredFcWp,
+    }
+}
+
+fn compute_wb13_profile_symbols(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    soil_datver: SoilDatver,
+) -> Option<Wb13ProfileSymbols> {
+    let fc_wp_policy = fc_wp_rock_multiplier_policy(soil_datver);
     let mut seeds = Vec::with_capacity(ofe.layers.len());
     for layer in &ofe.layers {
         let bulk_density = layer.bulk_density_g_cm3?;
@@ -609,6 +632,7 @@ fn compute_wb13_profile_symbols(ofe: &openwepp_input_contract::parsers::soil::So
             orgmat_pct: layer.orgmat_pct,
             cec_meq_100g: layer.cec_meq_100g,
             rock_frag_pct: layer.rock_frag_pct,
+            fc_wp_rock_multiplier_policy: fc_wp_policy,
         };
         if !legacy_seed_is_finite(seed) {
             return None;
@@ -663,8 +687,9 @@ fn compute_wb13_profile_symbols_from_legacy_seed(
 fn compute_corrected_layer_runtime_symbols(
     ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ofe_index: usize,
+    soil_datver: SoilDatver,
 ) -> Result<Vec<CorrectedLayerRuntimeSymbols>, HillslopeRuntimeInputError> {
-    let seeds = collect_legacy_soil_layer_seeds(ofe, ofe_index)?;
+    let seeds = collect_legacy_soil_layer_seeds(ofe, ofe_index, soil_datver)?;
     let normalized_corrected_layers = compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(&seeds).ok_or(
         HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
     )?;
@@ -678,7 +703,9 @@ fn compute_corrected_layer_runtime_symbols(
 fn collect_legacy_soil_layer_seeds(
     ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ofe_index: usize,
+    soil_datver: SoilDatver,
 ) -> Result<Vec<LegacySoilLayerSeed>, HillslopeRuntimeInputError> {
+    let fc_wp_policy = fc_wp_rock_multiplier_policy(soil_datver);
     let mut seeds = Vec::with_capacity(ofe.layers.len());
     for (layer_position, layer) in ofe.layers.iter().enumerate() {
         let layer_index = layer_position + 1;
@@ -716,6 +743,7 @@ fn collect_legacy_soil_layer_seeds(
             orgmat_pct: layer.orgmat_pct,
             cec_meq_100g: layer.cec_meq_100g,
             rock_frag_pct: layer.rock_frag_pct,
+            fc_wp_rock_multiplier_policy: fc_wp_policy,
         };
         if !legacy_seed_is_finite(seed) {
             return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
@@ -870,8 +898,16 @@ fn legacy_correct_layer_moisture(
         return None;
     }
 
-    let mut thetfc = layer.thetfc.max(0.0) * cpm;
-    let mut thetdr = layer.thetdr.max(0.0) * cpm;
+    let apply_fc_wp_rock_multiplier = matches!(
+        layer.fc_wp_rock_multiplier_policy,
+        FcWpRockMultiplierPolicy::ApplyToMeasuredFcWp
+    );
+    let mut thetfc = layer.thetfc.max(0.0);
+    let mut thetdr = layer.thetdr.max(0.0);
+    if apply_fc_wp_rock_multiplier {
+        thetfc *= cpm;
+        thetdr *= cpm;
+    }
     if !thetfc.is_finite() || !thetdr.is_finite() {
         return None;
     }
@@ -889,7 +925,9 @@ fn legacy_correct_layer_moisture(
         return None;
     }
     let mut sm20c = 10.0_f64.powf(slope * (t15 - (10.0_f64.ln() / log10)) + s15);
-    sm20c *= cpm;
+    if apply_fc_wp_rock_multiplier {
+        sm20c *= cpm;
+    }
     if sm20c >= por {
         sm20c = por * 0.95;
     }
@@ -1014,6 +1052,7 @@ fn legacy_source_layers_from_seed_depths(
             orgmat: orgmat_pct / 100.0,
             cec: seed.cec_meq_100g,
             rfg: rock_frag_pct / 100.0,
+            fc_wp_rock_multiplier_policy: seed.fc_wp_rock_multiplier_policy,
         });
     }
     if source_layers.is_empty() {
@@ -1061,6 +1100,11 @@ fn legacy_normalize_layers_to_200mm(
             orgmat: 0.0,
             cec: 0.0,
             rfg: 0.0,
+            fc_wp_rock_multiplier_policy: source_layers
+                .first()
+                .map_or(FcWpRockMultiplierPolicy::ApplyToMeasuredFcWp, |source| {
+                    source.fc_wp_rock_multiplier_policy
+                }),
         };
         let mut remaining = WB13_PROFILE_LAYER_THICKNESS_M;
         while remaining > 0.0 && source_index < source_layers.len() {

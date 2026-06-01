@@ -103,8 +103,8 @@ suites:
     process_family: fc_wp
     sc_invariant_refs:
       - SC-SOIL-001#INV-SOIL-014
-    gate_lane: periodic
-    failure_class: investigation
+    gate_lane: required
+    failure_class: hard-fail
     runtime_cost_class: integration
     suite_doc: docs/specifications/external-authority/suites/cas_l4_soil_fc_direct_theta_minus33_cohort_001.md
     fixture_root: tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001
@@ -116,4 +116,4 @@ suites:
       authored_by: Codex
       authored_utc: 2026-05-31
       last_updated_utc: 2026-05-31
-    notes: "AUTH11 re-anchored Level-4 direct-theta FC suite to periodic/investigation pending queued AUTH12 rocky-soil FC physics-closure and promotion readiness."
+    notes: "AUTH12 closure restored Level-4 direct-theta FC suite to required/hard-fail after rocky-soil anchor red/fix/green completion."

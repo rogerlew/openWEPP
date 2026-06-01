@@ -2,8 +2,19 @@
 
 Author: Claude Code
 Date (UTC): 2026-05-31
-Status: analysis — demonstrates an external (legacy-free) constitutive authority
-with teeth, contrasted with the AUTH03/AUTH05 gate behavior.
+Status: **SUPERSEDED / CORRECTED (2026-05-31).** The central conclusion below —
+that the model FC is "~2× too low" against a "−33 kPa physics authority" — is
+**withdrawn**. The "authority" used here (`Σ fc_measured·dg = 223 mm`) is the
+wepppy SSURGO producer's *declared* `field_cap`, which is `(wthirdbar_r) /
+(1−rock)` — a rock-INFLATED pipeline intermediate (`ssurgo.py` `ERIN_ADJUST_FCWP`),
+NOT an independent whole-soil field capacity. That intermediate is designed to be
+reduced by WEPP's `cpm` (`scon.for`); legacy WEPP consumes the same wepppy files
+and applies `cpm`, so the model's `cpm`-corrected value (~107 mm, matching legacy
+~114 mm) is the contract-correct value, not an error. openWEPP must apply `cpm`
+to honor the wepppy-producer↔WEPP contract. See SC-SOIL-001 (FC/WP producer
+contract) and the AUTH12 review (`claude-code-review-findings.md`). The numbers
+below are retained for the audit trail; do not cite this artifact as evidence of
+an FC defect.
 Scope: single hillslope (H1 / `p1.sol`), field capacity (`ProfileFCStore`).
 
 Evidence: **Ran** unless marked Static. Reproduction commands in §7.

@@ -11,7 +11,7 @@ mod tests {
             parse_management_from_str,
         },
         slope::{SlopeParserOptions, parse_slope_str},
-        soil::{ParserMode, SoilParserOptions, parse_soil},
+        soil::{ParserMode, SoilDatver, SoilParserOptions, parse_soil},
     };
     use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 
@@ -105,8 +105,10 @@ mod tests {
     }
 
     fn normalized_corrected_layers_from_ofe(
+        soil_datver: SoilDatver,
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ) -> Vec<(f64, f64, f64, f64, f64, f64)> {
+        let fc_wp_policy = super::fc_wp_rock_multiplier_policy(soil_datver);
         let seeds = ofe
             .layers
             .iter()
@@ -136,6 +138,7 @@ mod tests {
                 orgmat_pct: layer.orgmat_pct,
                 cec_meq_100g: layer.cec_meq_100g,
                 rock_frag_pct: layer.rock_frag_pct,
+                fc_wp_rock_multiplier_policy: fc_wp_policy,
             })
             .collect::<Vec<_>>();
 
@@ -158,6 +161,7 @@ mod tests {
     }
 
     fn expected_wb13_profile_symbols_from_normalized_correction(
+        soil_datver: SoilDatver,
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ) -> Wb13NormalizedProfileExpectation {
         let mut expectation = Wb13NormalizedProfileExpectation {
@@ -167,7 +171,7 @@ mod tests {
             wp_store: 0.0,
         };
         for (thickness_m, porosity, _cpm, _coca, thetfc, thetdr) in
-            normalized_corrected_layers_from_ofe(ofe)
+            normalized_corrected_layers_from_ofe(soil_datver, ofe)
         {
             let thickness_mm = thickness_m * 1_000.0;
             expectation.depth += thickness_mm;
@@ -219,12 +223,13 @@ mod tests {
     type NormalizedCorrectedInterval = (f64, f64, f64, f64, f64, f64, f64);
 
     fn corrected_normalized_intervals_from_ofe(
+        soil_datver: SoilDatver,
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ) -> Vec<NormalizedCorrectedInterval> {
         let mut normalized_intervals = Vec::with_capacity(ofe.layers.len());
         let mut normalized_top_mm = 0.0_f64;
         for (thickness_m, porosity, cpm, coca, thetfc, thetdr) in
-            normalized_corrected_layers_from_ofe(ofe)
+            normalized_corrected_layers_from_ofe(soil_datver, ofe)
         {
             let normalized_bottom_mm = normalized_top_mm + (thickness_m * 1_000.0);
             normalized_intervals.push((
@@ -295,9 +300,10 @@ mod tests {
     }
 
     fn expected_authoritative_theta_from_normalized_overlap_mapping(
+        soil_datver: SoilDatver,
         ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     ) -> Vec<(f64, f64, f64, f64, f64)> {
-        let normalized_intervals = corrected_normalized_intervals_from_ofe(ofe);
+        let normalized_intervals = corrected_normalized_intervals_from_ofe(soil_datver, ofe);
 
         let mut mapped = Vec::with_capacity(ofe.layers.len());
         let mut parser_top_mm = 0.0_f64;
@@ -321,6 +327,35 @@ mod tests {
             .get(&BoundarySymbol::from(symbol))
             .unwrap_or_else(|| panic!("{symbol} should be present"))
             .as_f64()
+    }
+
+    #[test]
+    fn auth12_fc_wp_policy_matches_producer_corrected_measured_theta_contract() {
+        for datver in [
+            SoilDatver::V7777,
+            SoilDatver::V7778,
+            SoilDatver::V9002,
+            SoilDatver::V9003,
+            SoilDatver::V9005,
+        ] {
+            assert!(
+                matches!(
+                    super::fc_wp_rock_multiplier_policy(datver),
+                    super::FcWpRockMultiplierPolicy::ApplyToMeasuredFcWp
+                ),
+                "measured-theta datver {datver:?} must apply FC/WP cpm multiplier (producer pre-adjust contract)"
+            );
+        }
+
+        for datver in [SoilDatver::V97_5, SoilDatver::V2006_2] {
+            assert!(
+                matches!(
+                    super::fc_wp_rock_multiplier_policy(datver),
+                    super::FcWpRockMultiplierPolicy::SkipForMeasuredFcWp
+                ),
+                "legacy datver {datver:?} remains outside measured-theta policy families"
+            );
+        }
     }
 
     #[test]
@@ -413,7 +448,7 @@ mod tests {
             .first()
             .expect("9002 fixture should include a primary OFE");
         let expected_profile =
-            expected_wb13_profile_symbols_from_normalized_correction(ofe);
+            expected_wb13_profile_symbols_from_normalized_correction(soil.datver, ofe);
 
         let profile_depth_mm = surface
             .state_surface
@@ -477,7 +512,7 @@ mod tests {
             .first()
             .expect("9002 fixture should include a primary OFE");
         let expected_profile =
-            expected_wb13_profile_symbols_from_normalized_correction(ofe);
+            expected_wb13_profile_symbols_from_normalized_correction(soil.datver, ofe);
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
             .expect("runtime surface should build from parsed soil");
@@ -539,7 +574,7 @@ mod tests {
             .first()
             .expect("9002 fixture should include a primary OFE");
 
-        let corrected_layers = normalized_corrected_layers_from_ofe(ofe);
+        let corrected_layers = normalized_corrected_layers_from_ofe(soil.datver, ofe);
         assert!(
             !corrected_layers.is_empty(),
             "normalized corrected layer set must be non-empty"
@@ -598,7 +633,8 @@ mod tests {
             .ofes
             .first()
             .expect("9002 fixture should include a primary OFE");
-        let expected = expected_authoritative_theta_from_normalized_overlap_mapping(ofe);
+        let expected =
+            expected_authoritative_theta_from_normalized_overlap_mapping(soil.datver, ofe);
         assert!(
             expected.len() >= 2,
             "expected at least two mapped layers for 9002 fixture"
@@ -869,7 +905,6 @@ mod tests {
             .get(&BoundarySymbol::from("thetfc_0002"))
             .expect("thetfc_0002 should be present")
             .as_f64();
-
         assert!(thetdr.is_finite());
         assert!(thetfc.is_finite());
         assert!(layer2_thetdr.is_finite());
