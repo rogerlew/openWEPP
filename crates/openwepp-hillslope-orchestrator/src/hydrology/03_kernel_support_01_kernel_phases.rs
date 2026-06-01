@@ -809,156 +809,162 @@ impl Wb11HydrologyKernel {
         let mut percolation_loss = 0.0_f64;
 
         // Bottom-up routing mirrors legacy WEPP percolation ordering in PURK.
-        for layer_index in (0..layer_count).rev() {
-            let layer_theta = theta[layer_index];
-            let layer_fc = field_capacity[layer_index];
-            let layer_ul = upper_limit[layer_index];
-            let layer_ssc = conductivity[layer_index];
+        let mut lane_substep_index = 0.0_f64;
+        while lane_substep_index < lane_substeps {
+            let mut substep_percolation_loss = 0.0_f64;
+            for layer_index in (0..layer_count).rev() {
+                let layer_theta = theta[layer_index];
+                let layer_fc = field_capacity[layer_index];
+                let layer_ul = upper_limit[layer_index];
+                let layer_ssc = conductivity[layer_index];
 
-            let excess = layer_theta - layer_fc;
-            if excess <= WB11_ZERO_THRESHOLD {
-                per_layer_flux[layer_index] = 0.0;
-                continue;
-            }
+                let excess = layer_theta - layer_fc;
+                if excess <= WB11_ZERO_THRESHOLD {
+                    continue;
+                }
 
-            let stz = layer_theta / layer_ul;
-            if !stz.is_finite() || stz < 0.0 {
-                let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
-                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                    phase_class,
-                    symbol: theta_symbol,
-                    value: stz,
-                    minimum: Some(0.0),
-                    maximum: None,
-                });
-            }
-
-            let fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
-                let fc_ul_ratio = layer_fc / layer_ul;
-                if !fc_ul_ratio.is_finite() || fc_ul_ratio >= 1.0 {
-                    let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
+                let stz = layer_theta / layer_ul;
+                if !stz.is_finite() || stz < 0.0 {
+                    let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
                     return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                         phase_class,
-                        symbol: fc_symbol,
-                        value: fc_ul_ratio,
+                        symbol: theta_symbol,
+                        value: stz,
                         minimum: Some(0.0),
-                        maximum: Some(1.0),
+                        maximum: None,
                     });
                 }
-                // Legacy-authoritative fallback: watbal.for sets hk=0 when FC/UL <= 0.
-                let bi = if fc_ul_ratio <= 0.0 {
-                    0.0
-                } else {
-                    let derived = -WB18_PERC_BI_COEFFICIENT / fc_ul_ratio.log10();
-                    if !derived.is_finite() || derived < 0.0 {
+
+                let fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
+                    let fc_ul_ratio = layer_fc / layer_ul;
+                    if !fc_ul_ratio.is_finite() || fc_ul_ratio >= 1.0 {
                         let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
                         return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                             phase_class,
                             symbol: fc_symbol,
-                            value: derived,
+                            value: fc_ul_ratio,
                             minimum: Some(0.0),
-                            maximum: None,
+                            maximum: Some(1.0),
                         });
                     }
-                    derived
-                };
-                stz.powf(bi).max(WB18_PERC_MIN_FX)
-            } else {
-                1.0
-            };
-            if !fx.is_finite() || fx <= 0.0 {
-                let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index + 1);
-                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                    phase_class,
-                    symbol: ssc_symbol,
-                    value: fx,
-                    minimum: Some(WB11_ZERO_THRESHOLD),
-                    maximum: None,
-                });
-            }
-
-            let layer_ssc_effective =
-                if daily_lane && restrictive_layer_enabled && layer_index == layer_count - 1 {
-                    let restrictive_layer_conductivity =
-                        restrictive_layer_conductivity.unwrap_or(layer_ssc);
-                    let denominator = layer_ssc + restrictive_layer_conductivity;
-                    if denominator <= WB11_ZERO_THRESHOLD {
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: restrictive_layer_conductivity_symbol.clone(),
-                            value: denominator,
-                            minimum: Some(WB11_ZERO_THRESHOLD),
-                            maximum: None,
-                        });
-                    }
-                    let harmonic_mean =
-                        (2.0 * layer_ssc * restrictive_layer_conductivity) / denominator;
-                    if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: restrictive_layer_conductivity_symbol.clone(),
-                            value: harmonic_mean,
-                            minimum: Some(WB11_ZERO_THRESHOLD),
-                            maximum: None,
-                        });
-                    }
-                    harmonic_mean
+                    // Legacy-authoritative fallback: watbal.for sets hk=0 when FC/UL <= 0.
+                    let bi = if fc_ul_ratio <= 0.0 {
+                        0.0
+                    } else {
+                        let derived = -WB18_PERC_BI_COEFFICIENT / fc_ul_ratio.log10();
+                        if !derived.is_finite() || derived < 0.0 {
+                            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: fc_symbol,
+                                value: derived,
+                                minimum: Some(0.0),
+                                maximum: None,
+                            });
+                        }
+                        derived
+                    };
+                    stz.powf(bi).max(WB18_PERC_MIN_FX)
                 } else {
-                    layer_ssc
+                    1.0
                 };
-
-            let ks_adjusted = layer_ssc_effective * fx;
-            let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
-            let pei_unscaled = if layer_index < layer_count - 1 {
-                let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
-                let lower_radicand = 1.0 - lower_ratio;
-                if lower_radicand < -WB11_ZERO_THRESHOLD {
-                    let lower_theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 2);
+                if !fx.is_finite() || fx <= 0.0 {
+                    let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index + 1);
                     return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                         phase_class,
-                        symbol: lower_theta_symbol,
-                        value: lower_ratio,
-                        minimum: Some(0.0),
-                        maximum: Some(1.0),
+                        symbol: ssc_symbol,
+                        value: fx,
+                        minimum: Some(WB11_ZERO_THRESHOLD),
+                        maximum: None,
                     });
                 }
-                let lower_factor = if lower_radicand <= 0.0 {
-                    0.0
+
+                let layer_ssc_effective =
+                    if daily_lane && restrictive_layer_enabled && layer_index == layer_count - 1 {
+                        let restrictive_layer_conductivity =
+                            restrictive_layer_conductivity.unwrap_or(layer_ssc);
+                        let denominator = layer_ssc + restrictive_layer_conductivity;
+                        if denominator <= WB11_ZERO_THRESHOLD {
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: restrictive_layer_conductivity_symbol.clone(),
+                                value: denominator,
+                                minimum: Some(WB11_ZERO_THRESHOLD),
+                                maximum: None,
+                            });
+                        }
+                        let harmonic_mean =
+                            (2.0 * layer_ssc * restrictive_layer_conductivity) / denominator;
+                        if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: restrictive_layer_conductivity_symbol.clone(),
+                                value: harmonic_mean,
+                                minimum: Some(WB11_ZERO_THRESHOLD),
+                                maximum: None,
+                            });
+                        }
+                        harmonic_mean
+                    } else {
+                        layer_ssc
+                    };
+
+                let ks_adjusted = layer_ssc_effective * fx;
+                let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
+                let pei_unscaled = if layer_index < layer_count - 1 {
+                    let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
+                    let lower_radicand = 1.0 - lower_ratio;
+                    if lower_radicand < -WB11_ZERO_THRESHOLD {
+                        let lower_theta_symbol =
+                            Self::wb18_perc_state_symbol("theta", layer_index + 2);
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: lower_theta_symbol,
+                            value: lower_ratio,
+                            minimum: Some(0.0),
+                            maximum: Some(1.0),
+                        });
+                    }
+                    let lower_factor = if lower_radicand <= 0.0 {
+                        0.0
+                    } else {
+                        lower_radicand.sqrt()
+                    };
+                    pei_pre * lower_factor
                 } else {
-                    lower_radicand.sqrt()
+                    pei_pre
                 };
-                pei_pre * lower_factor
-            } else {
-                pei_pre
-            };
-            let pei = pei_unscaled / lane_substeps;
+                let pei = pei_unscaled / lane_substeps;
 
-            let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
-            Self::require_flux_range_for_symbol(
-                phase_class,
-                &pei_symbol,
-                pei,
-                Some(0.0),
-                Some(excess),
-            )?;
+                let pei_symbol = Self::wb18_perc_flux_symbol(layer_index + 1);
+                Self::require_flux_range_for_symbol(
+                    phase_class,
+                    &pei_symbol,
+                    pei,
+                    Some(0.0),
+                    Some(excess),
+                )?;
 
-            theta[layer_index] -= pei;
-            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
-            Self::require_state_range_for_symbol(
-                phase_class,
-                &theta_symbol,
-                theta[layer_index],
-                Some(0.0),
-                None,
-            )?;
+                theta[layer_index] -= pei;
+                let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index + 1);
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &theta_symbol,
+                    theta[layer_index],
+                    Some(0.0),
+                    None,
+                )?;
 
-            if layer_index < layer_count - 1 {
-                theta[layer_index + 1] += pei;
-            } else {
-                percolation_loss = pei;
+                if layer_index < layer_count - 1 {
+                    theta[layer_index + 1] += pei;
+                } else {
+                    substep_percolation_loss = pei;
+                }
+
+                per_layer_flux[layer_index] += pei;
             }
-
-            per_layer_flux[layer_index] = pei;
+            percolation_loss += substep_percolation_loss;
+            lane_substep_index += 1.0;
         }
 
         let soil_water_after: f64 = theta.iter().sum();

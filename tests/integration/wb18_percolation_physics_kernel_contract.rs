@@ -109,6 +109,108 @@ fn writeback_flux_value(
         .as_f64()
 }
 
+fn state_scalar(state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol: &str) -> f64 {
+    state_surface
+        .get(&BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing state symbol {symbol}"))
+        .as_f64()
+}
+
+fn project_hourly_iterative_percolation_surface(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    lane_substeps: f64,
+) -> (Vec<f64>, f64, Vec<f64>) {
+    let nsl_raw = state_scalar(state_surface, "nsl");
+    let nsl_integral = nsl_raw.round();
+    assert!(
+        nsl_integral >= 1.0 && (nsl_raw - nsl_integral).abs() <= 1.0e-12,
+        "projected percolation surface requires integral nsl>=1, observed {nsl_raw}"
+    );
+    let mut nsl = 0_usize;
+    let mut layer_counter = 1.0_f64;
+    while layer_counter <= nsl_integral {
+        nsl += 1;
+        layer_counter += 1.0;
+    }
+    let mut theta = Vec::with_capacity(nsl);
+    let mut field_capacity = Vec::with_capacity(nsl);
+    let mut upper_limit = Vec::with_capacity(nsl);
+    let mut conductivity = Vec::with_capacity(nsl);
+
+    for layer in 1..=nsl {
+        theta.push(state_scalar(
+            state_surface,
+            &format!("wb18_perc_theta_{layer:04}"),
+        ));
+        field_capacity.push(state_scalar(
+            state_surface,
+            &format!("wb18_perc_fc_{layer:04}"),
+        ));
+        upper_limit.push(state_scalar(
+            state_surface,
+            &format!("wb18_perc_ul_{layer:04}"),
+        ));
+        conductivity.push(state_scalar(
+            state_surface,
+            &format!("wb18_perc_ssc_{layer:04}"),
+        ));
+    }
+
+    let mut per_layer_flux = vec![0.0_f64; nsl];
+    let mut bottom_loss = 0.0_f64;
+    let mut lane_substep_index = 0.0_f64;
+    while lane_substep_index < lane_substeps {
+        let mut substep_bottom_loss = 0.0_f64;
+        for layer_index in (0..nsl).rev() {
+            let excess = theta[layer_index] - field_capacity[layer_index];
+            if excess <= 1.0e-12 {
+                continue;
+            }
+
+            let stz = theta[layer_index] / upper_limit[layer_index];
+            let fx = if stz < 0.95 {
+                let fc_ul_ratio = field_capacity[layer_index] / upper_limit[layer_index];
+                let bi = if fc_ul_ratio <= 0.0 {
+                    0.0
+                } else {
+                    -2.655 / fc_ul_ratio.log10()
+                };
+                stz.powf(bi).max(0.002)
+            } else {
+                1.0
+            };
+
+            let pei_pre = (86_400.0 * conductivity[layer_index] * fx).min(excess);
+            let pei_unscaled = if layer_index < nsl - 1 {
+                let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
+                let lower_radicand = 1.0 - lower_ratio;
+                let lower_factor = if lower_radicand <= 0.0 {
+                    0.0
+                } else {
+                    lower_radicand.sqrt()
+                };
+                pei_pre * lower_factor
+            } else {
+                pei_pre
+            };
+            let pei_step = pei_unscaled / lane_substeps;
+            theta[layer_index] -= pei_step;
+
+            if layer_index < nsl - 1 {
+                theta[layer_index + 1] += pei_step;
+            } else {
+                substep_bottom_loss = pei_step;
+            }
+
+            per_layer_flux[layer_index] += pei_step;
+        }
+        bottom_loss += substep_bottom_loss;
+        lane_substep_index += 1.0;
+    }
+
+    (per_layer_flux, bottom_loss, theta)
+}
+
 #[test]
 fn wb18_contract_conformance_emits_layerwise_percolation_fluxes() {
     let mut kernel = Wb11HydrologyKernel;
@@ -267,7 +369,7 @@ fn wb18_contract_conformance_saturated_branch_bypasses_fc_ul_ratio_guard() {
 }
 
 #[test]
-fn wb18_contract_conformance_hourly_lane_substeps_attenuate_per_layer_flux() {
+fn wb18_contract_conformance_hourly_lane_substeps_execute_iterative_recompute() {
     let mut kernel = Wb11HydrologyKernel;
     let mut daily_state_surface = seeded_perc_state_surface();
     daily_state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
@@ -284,16 +386,29 @@ fn wb18_contract_conformance_hourly_lane_substeps_attenuate_per_layer_flux() {
         BoundarySymbol::from("wb18_perc_lane_substeps"),
         BoundaryValue::scalar(24.0),
     );
+    let (_expected_layer_flux, expected_bottom_loss, expected_theta) =
+        project_hourly_iterative_percolation_surface(&hourly_state_surface, 24.0);
+
     let hourly_response = kernel.run_hillslope_phase(&build_perc_request(&hourly_state_surface));
     assert_eq!(
         hourly_response.status.message_id(),
         "HKERNEL-WB11-PERC-OK-001"
     );
     let pei_hourly = writeback_flux_value(&hourly_response, "wb18_perc_pei_0001");
+    let theta_hourly = writeback_state_value(&hourly_response, "wb18_perc_theta_0001");
 
     assert!(
-        (pei_hourly - (pei_daily / 24.0)).abs() <= TOL,
-        "hourly lane attenuation must divide per-layer seepage by 24 (daily={pei_daily}, hourly={pei_hourly})"
+        (pei_hourly - expected_bottom_loss).abs() <= TOL,
+        "hourly lane must match iterative 24-substep projection (expected={expected_bottom_loss}, observed={pei_hourly})"
+    );
+    assert!(
+        (theta_hourly - expected_theta[0]).abs() <= TOL,
+        "hourly lane must update layer state with iterative projection (expected_theta={:.12}, observed_theta={theta_hourly})",
+        expected_theta[0]
+    );
+    assert!(
+        (pei_hourly - (pei_daily / 24.0)).abs() > 1.0e-8,
+        "hourly lane must not regress to divisor-only single-pass attenuation (daily={pei_daily}, hourly={pei_hourly})"
     );
 }
 
