@@ -766,8 +766,31 @@ impl Wb11HydrologyKernel {
                 });
             }
 
+            let fc_ul_ratio = layer_fc / layer_ul;
+            if !fc_ul_ratio.is_finite() || fc_ul_ratio <= 0.0 || fc_ul_ratio >= 1.0 {
+                let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_symbol,
+                    value: fc_ul_ratio,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+            let bi = -WB18_PERC_BI_COEFFICIENT / fc_ul_ratio.log10();
+            if !bi.is_finite() || bi <= WB11_ZERO_THRESHOLD {
+                let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_symbol,
+                    value: bi,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
             let fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
-                stz.powf(WB18_PERC_SHAPE_EXPONENT).max(WB18_PERC_MIN_FX)
+                stz.powf(bi).max(WB18_PERC_MIN_FX)
             } else {
                 1.0
             };

@@ -212,6 +212,11 @@ Authorized packages:
     readjudication deltas (`Dp`, `latqcc`, `Total-Soil`, `SoilWaterTotal`,
     `ProfileFCStore`) versus HPHYS0224 baseline before selecting the next
     production remediation slice.
+- `20260601-hphys0230-wb18-overdrainage-authority-closure-001/`
+  - Purpose: execute immediate follow-on from HPHYS0229 by closing WB18
+    percolation over-drainage authority (`Dp` early-transient burst) through
+    contract-first migration of baseline-authoritative dynamic `Bi` damping
+    and post-change cohort readjudication evidence.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation
@@ -290,7 +295,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218 -> hphys0219 -> hphys0220 -> hphys0221 -> hphys0222 -> hphys0223 -> hphys0224 -> hphys0225 -> hphys0226 -> hphys0227 -> hphys0228 -> hphys0229`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218 -> hphys0219 -> hphys0220 -> hphys0221 -> hphys0222 -> hphys0223 -> hphys0224 -> hphys0225 -> hphys0226 -> hphys0227 -> hphys0228 -> hphys0229 -> hphys0230`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.

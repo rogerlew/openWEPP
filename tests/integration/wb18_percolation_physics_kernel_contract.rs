@@ -127,22 +127,31 @@ fn wb18_contract_conformance_emits_layerwise_percolation_fluxes() {
     let pe_recharge = writeback_flux_value(&response, "Pe");
 
     assert!(
-        (theta_1_after - 4.928_157_672_643_49).abs() <= TOL,
+        (theta_1_after - 4.998_320_164_567_006).abs() <= TOL,
         "theta_1_after={theta_1_after}"
     );
     assert!(
-        (theta_2_after - 4.531_842_327_356_51).abs() <= TOL,
+        (theta_2_after - 4.987_995_212_529_218).abs() <= TOL,
         "theta_2_after={theta_2_after}"
     );
-    assert!((soil_after - 9.46).abs() <= TOL, "soil_after={soil_after}");
     assert!(
-        (pei_1 - 0.071_842_327_356_510_37).abs() <= TOL,
+        (soil_after - 9.986_315_377_096_224).abs() <= TOL,
+        "soil_after={soil_after}"
+    );
+    assert!(
+        (pei_1 - 0.001_679_835_432_994_461_2).abs() <= TOL,
         "pei_1={pei_1}"
     );
-    assert!((pei_2 - 0.54).abs() <= TOL, "pei_2={pei_2}");
-    assert!((d_loss - 0.54).abs() <= TOL, "d_loss={d_loss}");
     assert!(
-        (pe_recharge - 0.54).abs() <= TOL,
+        (pei_2 - 0.013_684_622_903_775_864).abs() <= TOL,
+        "pei_2={pei_2}"
+    );
+    assert!(
+        (d_loss - 0.013_684_622_903_775_864).abs() <= TOL,
+        "d_loss={d_loss}"
+    );
+    assert!(
+        (pe_recharge - 0.013_684_622_903_775_864).abs() <= TOL,
         "pe_recharge={pe_recharge}"
     );
 }
@@ -184,6 +193,32 @@ fn wb18_contract_conformance_rejects_domain_invalid_layer_upper_limit() {
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0002"),
         BoundaryValue::scalar(0.0),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-003");
+    assert_eq!(
+        response.status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn wb18_contract_conformance_rejects_domain_invalid_fc_ul_ratio_for_dynamic_bi() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(9.0),
     );
 
     let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));

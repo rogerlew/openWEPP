@@ -428,5 +428,5 @@ pub(crate) const EROD19_TAUC_FALLBACK_SCALE: f64 = 0.2;
 pub(crate) const WB17_LAI_PARTITION_COEFFICIENT: f64 = 0.4;
 pub(crate) const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
 pub(crate) const WB18_PERC_MIN_FX: f64 = 0.002;
-pub(crate) const WB18_PERC_SHAPE_EXPONENT: f64 = 1.0;
+pub(crate) const WB18_PERC_BI_COEFFICIENT: f64 = 2.655;
 pub(crate) const WB18_PERC_TIMESTEP_S: f64 = 86_400.0;

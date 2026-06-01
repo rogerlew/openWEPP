@@ -268,13 +268,15 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
         report.scheduler_report.halted_phase,
     );
 
-    assert_eq!(
-        report
-            .writeback_surface
-            .state_surface
-            .get(&BoundarySymbol::from("wb11_soil_water"))
-            .copied(),
-        Some(BoundaryValue::scalar(7.0))
+    let wb11_soil_water = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb11_soil_water"))
+        .expect("wb11_soil_water should be present")
+        .as_f64();
+    assert!(
+        (wb11_soil_water - 7.0).abs() <= 1.0e-12,
+        "wb11_soil_water must remain at 7.0 within tolerance, observed {wb11_soil_water}"
     );
     let drainable_storage = report
         .writeback_surface
@@ -303,21 +305,25 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
             .copied(),
         Some(BoundaryValue::scalar(1.0))
     );
-    assert_eq!(
-        report
-            .writeback_surface
-            .flux_surface
-            .get(&BoundarySymbol::from("D"))
-            .copied(),
-        Some(BoundaryValue::scalar(1.0))
+    let d_loss = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("D"))
+        .expect("D should be present")
+        .as_f64();
+    assert!(
+        (d_loss - 0.027_369_245_807_551_727).abs() <= 1.0e-12,
+        "D must reflect WB18 dynamic-Bi routing output, observed {d_loss}"
     );
-    assert_eq!(
-        report
-            .writeback_surface
-            .flux_surface
-            .get(&BoundarySymbol::from("Pe"))
-            .copied(),
-        Some(BoundaryValue::scalar(1.0))
+    let pe_recharge = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Pe"))
+        .expect("Pe should be present")
+        .as_f64();
+    assert!(
+        (pe_recharge - 0.027_369_245_807_551_727).abs() <= 1.0e-12,
+        "Pe must match WB18 deep-percolation loss, observed {pe_recharge}"
     );
     let q_lateral = report
         .writeback_surface
