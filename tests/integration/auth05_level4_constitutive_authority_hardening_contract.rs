@@ -6,9 +6,7 @@ use openwepp_hillslope_orchestrator::{
     HillslopeWritebackSurface, Wb11HydrologyKernel,
     runtime_inputs::build_hillslope_runtime_surface_from_soil,
 };
-use openwepp_input_contract::parsers::soil::{
-    DisturbedPolicy, ParserMode, SoilParserOptions, parse_soil,
-};
+use openwepp_input_contract::parsers::soil::{ParserMode, SoilParserOptions, parse_soil};
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
     HillslopeKernelPhaseClass, HillslopeKernelRequest,
@@ -70,7 +68,6 @@ struct IndependentLegacyLayerExpanded {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum IndependentFcWpRockMultiplierPolicy {
     ApplyToMeasuredFcWp,
-    SkipForMeasuredFcWp,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -252,16 +249,12 @@ fn strict_soil_parser_options() -> SoilParserOptions {
 }
 
 fn independent_fc_wp_rock_multiplier_policy(
-    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    _ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
 ) -> IndependentFcWpRockMultiplierPolicy {
-    match ofe.policy {
-        Some(
-            DisturbedPolicy::V9002 { .. }
-            | DisturbedPolicy::V9003 { .. }
-            | DisturbedPolicy::V9005 { .. },
-        ) => IndependentFcWpRockMultiplierPolicy::SkipForMeasuredFcWp,
-        None => IndependentFcWpRockMultiplierPolicy::ApplyToMeasuredFcWp,
-    }
+    // AUTH12 promotes measured-theta FC/WP ingest authority with paired runtime
+    // cpm correction for disturbed-policy datvers (9002/9003/9005). The
+    // independent comparator must mirror that closure posture.
+    IndependentFcWpRockMultiplierPolicy::ApplyToMeasuredFcWp
 }
 
 fn independent_authority_from_soil(
