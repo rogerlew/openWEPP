@@ -761,6 +761,49 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
+        let daily_lane = (lane_substeps - 1.0).abs() <= WB11_ZERO_THRESHOLD;
+
+        let restrictive_layer_flag_symbol = BoundarySymbol::from("slflag");
+        let restrictive_layer_flag_raw = Self::optional_state_scalar_for_symbol(
+            request,
+            phase_class,
+            &restrictive_layer_flag_symbol,
+        )?
+        .unwrap_or(0.0);
+        let restrictive_layer_enabled =
+            if restrictive_layer_flag_raw.abs() <= WB11_ZERO_THRESHOLD {
+                false
+            } else if (restrictive_layer_flag_raw - 1.0).abs() <= WB11_ZERO_THRESHOLD {
+                true
+            } else {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: restrictive_layer_flag_symbol,
+                    value: restrictive_layer_flag_raw,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            };
+        let restrictive_layer_conductivity_symbol = BoundarySymbol::from("kslast");
+        let restrictive_layer_conductivity = if restrictive_layer_enabled {
+            let observed = Self::require_state_scalar_for_symbol(
+                request,
+                phase_class,
+                &restrictive_layer_conductivity_symbol,
+            )?;
+            if observed <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: restrictive_layer_conductivity_symbol.clone(),
+                    value: observed,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            Some(observed)
+        } else {
+            None
+        };
 
         let mut per_layer_flux = vec![0.0_f64; layer_count];
         let mut percolation_loss = 0.0_f64;
@@ -834,7 +877,37 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let ks_adjusted = layer_ssc * fx;
+            let layer_ssc_effective =
+                if daily_lane && restrictive_layer_enabled && layer_index == layer_count - 1 {
+                    let restrictive_layer_conductivity =
+                        restrictive_layer_conductivity.unwrap_or(layer_ssc);
+                    let denominator = layer_ssc + restrictive_layer_conductivity;
+                    if denominator <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: restrictive_layer_conductivity_symbol.clone(),
+                            value: denominator,
+                            minimum: Some(WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    let harmonic_mean =
+                        (2.0 * layer_ssc * restrictive_layer_conductivity) / denominator;
+                    if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: restrictive_layer_conductivity_symbol.clone(),
+                            value: harmonic_mean,
+                            minimum: Some(WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    harmonic_mean
+                } else {
+                    layer_ssc
+                };
+
+            let ks_adjusted = layer_ssc_effective * fx;
             let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
             let pei_unscaled = if layer_index < layer_count - 1 {
                 let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];

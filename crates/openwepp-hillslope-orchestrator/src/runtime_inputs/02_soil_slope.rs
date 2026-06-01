@@ -87,6 +87,20 @@ pub fn build_hillslope_runtime_surface_from_soil(
         BoundarySymbol::from("solwpv"),
         BoundaryValue::scalar(soil.datver_raw),
     );
+    if let Some(restrictive_layer) = soil.restrictive_layer.as_ref() {
+        state_surface.insert(
+            BoundarySymbol::from("slflag"),
+            BoundaryValue::scalar(if restrictive_layer.slflag { 1.0 } else { 0.0 }),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("ui_bdrkth"),
+            BoundaryValue::scalar(restrictive_layer.ui_bdrkth_mm / 1_000.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("kslast"),
+            BoundaryValue::scalar(restrictive_layer.kslast_mm_h / 3.6e6),
+        );
+    }
 
     for (ofe_position, ofe) in soil.ofes.iter().enumerate() {
         let ofe_index = ofe_position + 1;

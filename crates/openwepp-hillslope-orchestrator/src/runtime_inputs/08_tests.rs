@@ -426,6 +426,25 @@ mod tests {
                 "{symbol} should be finite and inside (0,1]"
             );
         }
+        if let Some(restrictive_layer) = soil.restrictive_layer.as_ref() {
+            assert!(
+                (soil_runtime_scalar(&surface, "slflag")
+                    - if restrictive_layer.slflag { 1.0 } else { 0.0 })
+                    .abs()
+                    < 1.0e-12
+            );
+            assert!(
+                (soil_runtime_scalar(&surface, "kslast") - (restrictive_layer.kslast_mm_h / 3.6e6))
+                    .abs()
+                    < 1.0e-12
+            );
+            assert!(
+                (soil_runtime_scalar(&surface, "ui_bdrkth")
+                    - (restrictive_layer.ui_bdrkth_mm / 1_000.0))
+                    .abs()
+                    < 1.0e-12
+            );
+        }
     }
 
     #[test]

@@ -4245,7 +4245,7 @@ fn build_simulation_owned_wb13_row(
             "Er must be >= 0.0, observed {residue_evap_er_m}"
         )));
     }
-    let dp_m = require_runtime_surface_scalar(runtime_surface, "D")?;
+    let dp_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "D")?;
     if dp_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "D must be >= 0.0, observed {dp_m}"
@@ -4377,6 +4377,23 @@ fn runtime_surface_symbol_value(
         })
 }
 
+fn runtime_surface_symbol_value_prefer_flux(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Option<f64> {
+    let key = BoundarySymbol::from(symbol);
+    runtime_surface
+        .flux_surface
+        .get(&key)
+        .map(|value| value.as_f64())
+        .or_else(|| {
+            runtime_surface
+                .state_surface
+                .get(&key)
+                .map(|value| value.as_f64())
+        })
+}
+
 fn parse_mofe03_binary_flag(symbol: &str, value: f64) -> Result<bool, HillslopeCliError> {
     if !value.is_finite() {
         return Err(mofe03_wave2_seed_failure(format!(
@@ -4406,6 +4423,20 @@ fn require_mofe03_runtime_surface_scalar(
     if !value.is_finite() {
         return Err(mofe03_wave2_seed_failure(format!(
             "runtime symbol {symbol} is non-finite ({value})"
+        )));
+    }
+    Ok(value)
+}
+
+fn require_runtime_surface_scalar_prefer_flux(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    let value = runtime_surface_symbol_value_prefer_flux(runtime_surface, symbol)
+        .ok_or_else(|| wb13_simout_failure(format!("missing required runtime symbol {symbol}")))?;
+    if !value.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "runtime symbol {symbol} must be finite, observed {value}"
         )));
     }
     Ok(value)
@@ -5146,6 +5177,32 @@ mod tests {
             }
             other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
         }
+    }
+
+    #[test]
+    fn hphys0233_wb13_dp_publication_prefers_flux_surface_over_stale_state_surface() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.030_000));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.000_200));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should use flux-authoritative D");
+
+        assert!(
+            (row.wb13_row.dp - 0.2).abs() < 1.0e-12,
+            "Dp must follow flux-surface D when both state and flux values are present"
+        );
     }
 
     #[test]

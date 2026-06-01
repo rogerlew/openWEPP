@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 17
+contract_version: 18
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -73,6 +73,7 @@ Out of scope:
 | `Δt` | `s` | Percolation travel interval. | percolation timestep control | Eq. [5.4.1] exponential response |
 | `ti` | `s` | Travel time through layer `i`. | percolation routine | Eq. [5.4.1] and Eq. [5.4.2] linkage |
 | `Ksi` | `m s^-1` | Saturated hydraulic conductivity for layer `i`. | soil hydraulic parameterization | adjusted conductivity computation |
+| `Ksbot` | `m s^-1` | Restrictive-layer saturated hydraulic conductivity used for bottom-layer daily seepage damping when restrictive layer is active (`slflag=1`). | soil restrictive-layer producer contract | bottom-layer effective conductivity branch (`perc.for`) |
 | `Ksai` | `m s^-1` | Adjusted hydraulic conductivity for layer `i`. | percolation routine | Eq. [5.4.2]-[5.4.3] routing |
 | `Bi` | `fraction` | Conductivity-shape parameter controlling approach of `Ksai` toward near-zero at field capacity; legacy-authoritative runtime derivation in the active WB18 branch uses `Bi = -2.655/log10(FCi/ULi)` for `FCi/ULi > 0`, with explicit legacy-degenerate fallback `Bi = 0` for non-positive `FCi/ULi`. | percolation routine | Eq. [5.4.3]-[5.4.4] + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` |
 | `Θi+1`, `ULi+1` | `m`, `m` | Lower-layer water-content state and upper limit used for percolation restriction term. | lower-layer state/parameters | Eq. [5.4.5] reduction factor |
@@ -88,7 +89,7 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Percolation consumer-boundary state family | `nsl`, `thetdr`, `thetfc`, `ssc` |
-| WB18 percolation state inputs | `wb11_soil_water`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ optional `wb18_perc_lane_substeps`) |
+| WB18 percolation state inputs | `wb11_soil_water`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ optional `wb18_perc_lane_substeps`, optional `slflag`, optional `kslast`) |
 
 ### Required Outputs
 
@@ -116,7 +117,8 @@ WB18 mutates percolation boundary surfaces deterministically:
    `1..nsl` and enforce declared domains.
 2. Execute explicit per-layer field-capacity branch (`pei = 0` when
    `Θi <= FCi`; otherwise `pei > 0`), routing layers from bottom to top.
-3. Compute conductivity-domain per-layer flow using Chapter-5 lineage:
+3. Compute conductivity-domain per-layer flow using Chapter-5 lineage plus
+   baseline daily restrictive-layer branch authority:
    - saturation fraction `stz = Θi / ULi`
    - if `stz < 0.95`, derive per-layer conductivity-shape parameter from
      legacy-authoritative WB18 lineage:
@@ -128,7 +130,13 @@ WB18 mutates percolation boundary surfaces deterministically:
      - adjusted conductivity factor `fx = max(stz^Bi, 0.002)`
    - if `stz >= 0.95`, saturated branch bypasses dynamic-`Bi` derivation and
      sets `fx = 1`
-   - travel-capacity-limited layer flux `pei_pre = min(Θi - FCi, Δt * Ksi * fx)`
+   - per-layer effective conductivity:
+     - default `Ksi_eff = Ksi`,
+     - for daily lane (`wb18_perc_lane_substeps = 1`), bottom layer
+       (`i = nsl`), and restrictive layer enabled (`slflag=1`), set
+       `Ksi_eff = 2*Ksi*Ksbot/(Ksi+Ksbot)` using `Ksbot = kslast`.
+   - travel-capacity-limited layer flux
+     `pei_pre = min(Θi - FCi, Δt * Ksi_eff * fx)`
    - lower-layer restriction `pei = pei_pre * sqrt(1 - (Θi+1 / ULi+1))` for
      non-bottom layers (bottom layer exports `D` directly).
 4. Resolve lane attenuation divisor `wb18_perc_lane_substeps`:
@@ -150,7 +158,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-PERC-WB18-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ optional `wb18_perc_lane_substeps`) | runtime | deterministic per-layer percolation/writeback execution |
+| `BR-PERC-WB18-EXECUTE` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ optional `wb18_perc_lane_substeps`, optional `slflag`, optional `kslast`) | runtime | deterministic per-layer percolation/writeback execution |
 | `BR-PERC-WB11-MISSING` | required percolation symbol absent | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-001`) |
 | `BR-PERC-WB11-NONFINITE` | percolation symbol is NaN/Inf | percolation required symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-002`) |
 | `BR-PERC-WB11-DOMAIN` | percolation symbol/derived flux outside domain bounds | percolation required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-PERC-E-003`) |
@@ -198,6 +206,7 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 | `FCi` | `wb18_perc_fc_####` | per-layer field-capacity threshold surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ULi` | `wb18_perc_ul_####` | per-layer upper-limit storage surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | per-layer saturated hydraulic conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Ksbot` | `kslast` | restrictive-layer conductivity used by daily bottom-layer branch when `slflag=1` | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `pei` | `wb18_perc_pei_####` | per-layer percolation flux outputs | `m` per step preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_LFtstp` | `wb18_perc_lane_substeps` | per-lane seepage attenuation divisor from legacy hourly routing semantics | unitless positive integer | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Pe`, `D` | `Pe`, `D` | aggregate recharge/loss coupling surfaces | `m` preserved | `[DIRECT][Static]` |
@@ -297,6 +306,10 @@ Minimum WB18 percolation production-kernel conformance vectors:
    - daily divisor `wb18_perc_lane_substeps = 1`,
    - hourly divisor `wb18_perc_lane_substeps = 24`,
    - typed hard-fail for non-finite or non-positive lane divisors.
+6. Daily restrictive-layer vectors must exercise:
+   - `slflag=1` and finite positive `kslast` branch reducing bottom-layer
+     percolation via harmonic effective conductivity,
+   - typed hard-fail on non-finite or non-positive `kslast` when `slflag=1`.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -335,6 +348,9 @@ Minimum WB18 percolation production-kernel conformance vectors:
 9. Normalized corrected-layer depth-domain closure requirements remain
    authoritative for profile-capacity/projection seed families; no silent
    truncation or parser-domain surrogate override.
+10. WB13 `Dp` publication must consume flux-authoritative `D` on the runtime
+    writeback surface and must not be shadowed by stale state-surface `D` when
+    both are present.
 
 ## HPHYS0208 FC-Threshold Consumer-Lineage Closure Addendum
 
@@ -381,6 +397,18 @@ Minimum WB18 percolation production-kernel conformance vectors:
    - hourly lane: `24` (legacy `ui_LFtstp` assignment from
      `watbal_hourly.for`).
 
+## HPHYS0233 WB18 Daily Restrictive-Conductivity and WB13 D-Lineage Addendum
+
+1. For daily lane (`wb18_perc_lane_substeps=1`) bottom-layer percolation
+   (`i=nsl`) with restrictive layer enabled (`slflag=1`), WB18 must apply
+   baseline-authoritative effective conductivity branch:
+   - `Ksbot = kslast`,
+   - `Ksi_eff = 2*Ksi*Ksbot/(Ksi+Ksbot)`.
+2. `kslast` domain is strict when `slflag=1`: finite and `> 0`.
+3. WB13 deep-percolation publication (`Dp`) must be sourced from
+   flux-authoritative percolation closure surface `D` and must not be shadowed
+   by stale state-surface `D`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -401,6 +429,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `18` | `Codex` | HPHYS0233 amendment: added daily restrictive-layer bottom-conductivity branch authority (`slflag`/`kslast` harmonic `Ksi_eff`) and WB13 deep-percolation publication anti-shadow requirement (flux-authoritative `D`). |
 | `2026-06-01` | `17` | `Codex` | HPHYS0232 amendment: added WB18 hourly-lane seepage attenuation authority (`wb18_perc_lane_substeps`) mapped to legacy `ui_LFtstp` lineage (`daily=1`, `hourly=24`), with required test-vector and guard obligations. |
 | `2026-06-01` | `16` | `Codex` | HPHYS0231 amendment: reanchored WB18 dynamic-`Bi` guard placement to baseline branch semantics by codifying explicit non-positive `FC/UL` legacy-degenerate `Bi=0` handling in active branch and saturated-branch ratio-bypass behavior (`stz >= 0.95 -> fx=1`). |
 | `2026-06-01` | `15` | `Codex` | HPHYS0230 amendment: replaced constant WB18 conductivity-shape exponent authority with legacy-authoritative dynamic per-layer derivation `Bi = -2.655/log10(FC/UL)`, added strict ratio-domain guard obligations, and recorded over-drainage closure addendum for WB18 `Dp` transient behavior. |

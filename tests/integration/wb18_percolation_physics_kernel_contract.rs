@@ -313,3 +313,64 @@ fn wb18_contract_conformance_rejects_non_positive_lane_substeps() {
         BoundaryClass::DomainViolation
     );
 }
+
+#[test]
+fn wb18_contract_conformance_daily_restrictive_layer_harmonic_conductivity_reduces_bottom_flux() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut unrestricted_state = seeded_perc_state_surface();
+    unrestricted_state.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+
+    let unrestricted_response =
+        kernel.run_hillslope_phase(&build_perc_request(&unrestricted_state));
+    assert_eq!(
+        unrestricted_response.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+    let pei_unrestricted = writeback_flux_value(&unrestricted_response, "wb18_perc_pei_0001");
+
+    let mut restrictive_state = unrestricted_state.clone();
+    restrictive_state.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+    restrictive_state.insert(
+        BoundarySymbol::from("kslast"),
+        BoundaryValue::scalar(1.0e-8),
+    );
+
+    let restrictive_response = kernel.run_hillslope_phase(&build_perc_request(&restrictive_state));
+    assert_eq!(
+        restrictive_response.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001"
+    );
+    let pei_restrictive = writeback_flux_value(&restrictive_response, "wb18_perc_pei_0001");
+
+    let stz = 5.0_f64 / 8.0_f64;
+    let ratio = 4.0_f64 / 8.0_f64;
+    let bi = -2.655_f64 / ratio.log10();
+    let fx = stz.powf(bi).max(0.002);
+    let k_eff = (2.0 * 1.0e-5 * 1.0e-8) / (1.0e-5 + 1.0e-8);
+    let expected_restrictive = 86_400.0 * k_eff * fx;
+
+    assert!(
+        (pei_restrictive - expected_restrictive).abs() <= 1.0e-6,
+        "restrictive bottom-layer branch must use harmonic Ksi_eff (expected={expected_restrictive}, observed={pei_restrictive})"
+    );
+    assert!(
+        pei_restrictive < pei_unrestricted,
+        "restrictive bottom-layer conductivity must reduce daily seepage (restricted={pei_restrictive}, unrestricted={pei_unrestricted})"
+    );
+}
+
+#[test]
+fn wb18_contract_conformance_rejects_non_positive_kslast_when_slflag_enabled() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("kslast"), BoundaryValue::scalar(0.0));
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-003");
+    assert_eq!(
+        response.status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
