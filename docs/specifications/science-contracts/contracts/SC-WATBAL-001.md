@@ -1267,6 +1267,21 @@ be silently floored after lateral/drainage withdrawal.
    `cas_l4_subhyd_withdrawal_soilwater_cap_001` linked to
    `SC-SUBHYD-001#INV-SUBHYD-016`.
 
+### HPHYS0225 WB19 Layer-Pool Available-Cap Authority Addendum
+
+HPHYS0225 removes WB19 legacy available-pool reconciliation and re-anchors
+authority on active per-layer state.
+
+1. WB19 lateral/drainage available-pool cap authority is
+   `layer_pool = Σ max(theta_i - drfc_i, 0)`.
+2. `wb11_drainable_storage` is a compatibility seam symbol and must not expand
+   available-pool caps for `q` or `Qdd`.
+3. Runtime expressions of the form
+   `available_pool = max(layer_pool, legacy_term)` are prohibited.
+4. This law is governed by required Level-4 constitutive suite
+   `cas_l4_subhyd_layer_pool_withdrawal_cap_001` linked to
+   `SC-SUBHYD-001#INV-SUBHYD-017`.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1516,6 +1531,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `62` | `Codex` | HPHYS0225 amendment: added WB19 layer-pool available-cap authority, prohibited legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001` to `SC-SUBHYD-001#INV-SUBHYD-017`. |
 | `2026-06-01` | `61` | `Codex` | HPHYS0224 amendment: added WB19 realized-withdrawal soil-water cap authority (non-clamping subtraction and typed over-withdrawal hard-fail) with required Level-4 suite linkage to `SC-SUBHYD-001#INV-SUBHYD-016`. |
 | `2026-05-31` | `60` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `58` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only (no `fcdep` mutation for `solwpv >= 2006`, including `9001+`) and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |

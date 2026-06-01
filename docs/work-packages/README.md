@@ -185,6 +185,11 @@ Authorized packages:
     residual families (`Dp`, `latqcc`, `Total-Soil`, `SoilWaterTotal`,
     `ProfileFCStore`) with contract-first sequencing and post-change cohort
     readjudication.
+- `20260601-hphys0225-wb19-available-pool-authority-closure-001/`
+  - Purpose: execute follow-on Correctness Authority remediation by removing
+    WB19 legacy available-pool max-reconciliation (`max(layer_pool, legacy_term)`),
+    codifying layer-derived available-cap authority in canonical contracts, and
+    adding required Level-4 external-authority guard coverage for this surface.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

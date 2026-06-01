@@ -1,0 +1,11 @@
+schema_version: 1
+suite_id: cas_l4_subhyd_layer_pool_withdrawal_cap_001
+last_updated_utc: 2026-06-01
+fixtures:
+  - path: layer_pool_withdrawal_cap_cases.json
+    sha256: 7d7ef77f779e6dfdb84dfce7a45bd2138821b797ddd55daff1969e11ce811bd6
+    source_repo: /workdir/openWEPP
+    source_commit: 7833b6bf2b3412c763c0b900839c97b24897bb60
+    source_path: tests/fixtures/constitutive/cas_l4_subhyd_layer_pool_withdrawal_cap_001/layer_pool_withdrawal_cap_cases.json
+    source_sha256: 7d7ef77f779e6dfdb84dfce7a45bd2138821b797ddd55daff1969e11ce811bd6
+    transform_note: "Repository-authored constitutive fixture for WB19 layer-pool available-cap authority."

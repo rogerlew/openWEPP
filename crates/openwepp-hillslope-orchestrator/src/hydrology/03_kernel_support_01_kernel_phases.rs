@@ -1084,7 +1084,7 @@ impl Wb11HydrologyKernel {
         )?;
 
         let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
-        let available_pool = layer_pool.max(drainable_storage_legacy + recharge_pe);
+        let available_pool = layer_pool;
         let q_lateral_target = q_lateral_potential.min(available_pool);
         let q_lateral =
             Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
@@ -1259,7 +1259,7 @@ impl Wb11HydrologyKernel {
         let (mut theta, drain_threshold, conductivity, thickness, _upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
         let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
-        let available_pool = layer_pool.max(drainable_storage_legacy);
+        let available_pool = layer_pool;
 
         let mut q_drainage_potential = 0.0_f64;
         let mut tile_layer_index = theta.len().saturating_sub(1);

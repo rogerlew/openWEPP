@@ -1,0 +1,53 @@
+{
+  "suite_id": "cas_l4_subhyd_layer_pool_withdrawal_cap_001",
+  "units_basis": "m",
+  "tolerance_abs": 1.0e-12,
+  "cases": [
+    {
+      "case_id": "lateral_low_legacy_pool",
+      "phase": "lateral",
+      "legacy_drainable_storage_before_m": 2.5,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "withdrawal_symbol": "q",
+        "withdrawal_m": 0.1221880517890351,
+        "soil_water_after_m": 10.377811948210964
+      }
+    },
+    {
+      "case_id": "lateral_high_legacy_pool",
+      "phase": "lateral",
+      "legacy_drainable_storage_before_m": 50.0,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "withdrawal_symbol": "q",
+        "withdrawal_m": 0.1221880517890351,
+        "soil_water_after_m": 10.377811948210964
+      }
+    },
+    {
+      "case_id": "drainage_low_legacy_pool",
+      "phase": "drainage",
+      "legacy_drainable_storage_before_m": 2.5,
+      "q_lateral_input_m": 0.0,
+      "expected": {
+        "status_code": "HKERNEL-WB11-DRAIN-OK-001",
+        "withdrawal_symbol": "Qdd",
+        "withdrawal_m": 0.1,
+        "soil_water_after_m": 10.4
+      }
+    },
+    {
+      "case_id": "drainage_high_legacy_pool",
+      "phase": "drainage",
+      "legacy_drainable_storage_before_m": 50.0,
+      "q_lateral_input_m": 0.0,
+      "expected": {
+        "status_code": "HKERNEL-WB11-DRAIN-OK-001",
+        "withdrawal_symbol": "Qdd",
+        "withdrawal_m": 0.1,
+        "soil_water_after_m": 10.4
+      }
+    }
+  ]
+}

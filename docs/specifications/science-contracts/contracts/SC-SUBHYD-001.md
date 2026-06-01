@@ -203,6 +203,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-014 | WB19 lateral/drainage guard invariant: missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-SUBHYD-015 | WB19 water-yield/saturated-depth invariant: lateral phase must apply `solwpv` branch semantics and publish finite coupled states (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`); for `solwpv < 2006` with active saturated block, `watyld` must be positive and `fcdep/unsdep` update must follow `fcdep = max(fcdep - q/watyld, 0)` and `unsdep = soldep - fcdep`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-016 | WB19 realized-withdrawal soil-water cap invariant: lateral (`q`) and drainage (`Qdd`) realized withdrawals must not exceed pre-phase `wb11_soil_water`; over-withdrawal is a typed hard-fail domain condition and must not be silently clamped by post-subtraction flooring. | hard-fail | REF-SUBHYD-CH6-LATCONT, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-017 | WB19 layer-pool available-cap invariant: lateral/drainage available-pool caps are derived from active per-layer drainable storage (`Σ max(theta_i - drfc_i, 0)`) and must not be expanded by legacy compatibility scalar reconciliation (`max(layer_pool, legacy_term)`). | hard-fail | REF-SUBHYD-CH6-LATSTOR, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -224,6 +225,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-014` | runtime | WB19 lateral/drainage guard tables | Typed hard error on missing/non-finite/domain-invalid WB19 lateral/drainage inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-SUBHYD-015` | runtime | WB19 lateral water-yield + saturated-depth branch/coupling validator | Typed hard error on malformed `solwpv` branch behavior or invalid `wb19_watyld`/`wb19_fcdep`/`wb19_unsdep` coupling outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-016` | runtime + external-authority | WB19 realized-withdrawal cap validator plus Level-4 constitutive suite checks | Typed hard error on `q`/`Qdd` over-withdrawal relative to pre-phase `wb11_soil_water`; no silent flooring/default behavior allowed | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-017` | runtime + external-authority | WB19 available-pool authority validator plus Level-4 constitutive suite checks | Hard-fail when available-pool authority is expanded via legacy max-reconciliation instead of layer-derived `Σ max(theta_i-drfc_i,0)` cap | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -464,6 +466,20 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `cas_l4_subhyd_withdrawal_soilwater_cap_001` is required/hard-fail and
    linked to `INV-SUBHYD-016`.
 
+## HPHYS0225 WB19 Layer-Pool Available-Cap Authority Addendum
+
+1. WB19 available-pool caps for both lateral (`q`) and drainage (`Qdd`) are
+   derived from active per-layer state only:
+   - `layer_pool = Σ max(theta_i - drfc_i, 0)`.
+2. Legacy compatibility scalar `wb11_drainable_storage` may remain in phase
+   input schema for seam continuity but is non-authoritative for expanding WB19
+   available-pool caps.
+3. Runtime reconciliation patterns of the form
+   `available_pool = max(layer_pool, legacy_term)` are prohibited.
+4. External-authority constitutive suite
+   `cas_l4_subhyd_layer_pool_withdrawal_cap_001` is required/hard-fail and
+   linked to `INV-SUBHYD-017`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -477,6 +493,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `17` | `Codex` | HPHYS0225 amendment: added `INV-SUBHYD-017` layer-pool available-cap authority, prohibited WB19 legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001`. |
 | `2026-06-01` | `16` | `Codex` | HPHYS0224 amendment: added `INV-SUBHYD-016` realized-withdrawal soil-water cap authority, explicit non-clamping subtraction requirements for WB19 lateral/drainage phases, and required Level-4 suite linkage (`cas_l4_subhyd_withdrawal_soilwater_cap_001`). |
 | `2026-05-31` | `15` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only; clarified disturbed-soil mode interaction and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
