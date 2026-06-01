@@ -386,6 +386,10 @@ path = "tests/integration/auth07_fc_authority_cohort_contract.rs"
 name = "auth08_wb19_solwpv_fcdep_branch_constitutive_contract"
 path = "tests/integration/auth08_wb19_solwpv_fcdep_branch_constitutive_contract.rs"
 
+[[test]]
+name = "auth11_required_suite_obligation_guards_contract"
+path = "tests/integration/auth11_required_suite_obligation_guards_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

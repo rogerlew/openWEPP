@@ -29,6 +29,8 @@ model in:
   - `README.md` (this file)
   - `suite-schema.md` (normative required-field schema)
   - `suite-template.md` (suite-authoring template)
+  - `required-suite-obligations.json` (machine-checked anchor obligations)
+  - `promotion-protocol.md` (lane/failure posture change protocol)
   - `registry-template.yaml` (registry structure template)
   - `suites/` (suite definitions; one file per suite ID)
   - `registry.*` (suite registry index, introduced/maintained by follow-on
@@ -74,6 +76,13 @@ See:
 6. Level-3 legacy/sanity suites may encode legacy-anchored branch laws, but
    they must remain non-blocking investigation evidence; Level-4+ constitutive
    acceptance criteria must not depend on legacy parity matching.
+7. Required-case anchor obligations for guarded suites must be encoded in
+   `required-suite-obligations.json` and enforced by contract-derived tests.
+8. Lane/failure posture changes must follow `promotion-protocol.md` and must
+   not remove anchor cases, loosen thresholds, or shrink case cardinality.
+9. Any Level-4 suite running non-blocking (`periodic`/`investigation`) must
+   carry an explicit queued/in-progress closure follow-on package reference in
+   `required-suite-obligations.json` and `docs/work-packages/README.md`.
 
 ## Package Sequencing
 

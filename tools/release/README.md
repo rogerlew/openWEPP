@@ -24,11 +24,25 @@ Required authority lane runs by default.
   - Executes the HILLSTAB01 cohort harness and applies pass/fail assertions.
 - `assert_hillstab_success.py`
   - Validates HILLSTAB01 JSON suite summaries and exits non-zero on failures.
+- `check_authority_suite_antievasion.sh`
+  - Runs diff-based anti-evasion checks for suites declared in
+    `docs/specifications/external-authority/required-suite-obligations.json`.
+  - Guards against:
+    - required-case anchor removal,
+    - cohort cardinality shrinkage,
+    - threshold loosening,
+    - lane/failure posture changes without control-path updates,
+    - non-blocking Level-4 suites without queued/in-progress closure package
+      linkage in `docs/work-packages/README.md`.
 
 ## Typical Usage
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh --skip-stability
+```
+
+```bash
+bash tools/release/check_authority_suite_antievasion.sh --base-ref HEAD~1 --head-ref HEAD
 ```
 
 ```bash

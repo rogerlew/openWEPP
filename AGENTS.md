@@ -45,6 +45,11 @@
   2. implement contract-derived tests,
   3. record pre-implementation contract-gate evidence, then
   4. modify production code.
+- For edits touching external-authority suite posture, cohort fixtures, or
+  required-case bindings, run source-level anti-evasion guards before
+  disposition:
+  - `bash tools/release/check_authority_suite_antievasion.sh`
+  - `cargo test --test auth11_required_suite_obligation_guards_contract`
 
 ## Kernel Work-Package Preparation Procedure (Required)
 Use this procedure when preparing any kernel-affecting work package (including

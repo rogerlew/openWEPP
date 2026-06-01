@@ -20,6 +20,7 @@ struct CohortCase {
     case_id: String,
     soil_file: String,
     expected_rock_bucket: String,
+    expected_threshold_status: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -136,59 +137,37 @@ fn evaluate_case(case: &CohortCase, fixture: &CohortFixture) -> CaseResult {
     }
 }
 
-#[test]
-fn auth07_package_and_suite_authority_sections_exist() {
-    let package = repo_file(
-        "docs/work-packages/20260531-auth07-fc-authority-cohort-suite-bootstrap-001/package.md",
-    );
-    let registry = repo_file("docs/specifications/external-authority/registry.yaml");
-    let suite = repo_file(
-        "docs/specifications/external-authority/suites/cas_l4_soil_fc_direct_theta_minus33_cohort_001.md",
-    );
-    let soil_contract = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
-
+fn assert_auth11_anchor_bindings(fixture: &CohortFixture) {
     assert!(
-        package.contains("Objective")
-            && package.contains("independent")
-            && package.contains("rock-fragment stratified reporting"),
-        "AUTH07 package must capture independent FC authority cohort scope"
+        fixture.cases.iter().any(
+            |case| case.case_id == "valid_9002_reference" && case.soil_file == "valid_9002.sol"
+        ),
+        "AUTH11 anchor guard: valid_9002_reference fixture binding must remain present"
     );
     assert!(
-        registry.contains("cas_l4_soil_fc_direct_theta_minus33_cohort_001")
-            && registry.contains("gate_lane: required")
-            && registry.contains("failure_class: hard-fail"),
-        "registry must include AUTH10-promoted cohort suite in required hard-fail lane"
+        fixture.cases.iter().any(
+            |case| case.case_id == "valid_7778_reference" && case.soil_file == "valid_7778.sol"
+        ),
+        "AUTH11 anchor guard: valid_7778_reference fixture binding must remain present"
     );
     assert!(
-        suite.contains("authority_level: 4")
-            && suite.contains("hash:")
-            && suite.contains("source_commit:")
-            && suite.contains("transform_note:"),
-        "AUTH10 cohort suite must include level-4 + fixture provenance metadata"
-    );
-    assert!(
-        soil_contract.contains("AUTH10 Direct-Theta FC Level-4 Gate Promotion Addendum"),
-        "SC-SOIL-001 must include AUTH10 direct-theta gate promotion addendum"
+        fixture.cases.iter().any(|case| {
+            case.case_id == "h1_synthetic_low_rock_authority"
+                && case.soil_file == "h1_high_rock_fc_authority.sol"
+        }),
+        "AUTH11 anchor guard: synthetic H1 fixture binding must remain present"
     );
 }
 
-#[test]
-fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification() {
-    let fixture: CohortFixture = repo_json_fixture(
-        "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json",
-    );
-    assert_eq!(
-        fixture.suite_id,
-        "cas_l4_soil_fc_direct_theta_minus33_cohort_001"
-    );
-    assert_eq!(fixture.units_basis, "m3_m3_and_mm");
+fn collect_case_results(fixture: &CohortFixture) -> Vec<CaseResult> {
+    fixture
+        .cases
+        .iter()
+        .map(|case| evaluate_case(case, fixture))
+        .collect()
+}
 
-    let mut results = Vec::new();
-    for case in &fixture.cases {
-        let result = evaluate_case(case, &fixture);
-        results.push(result);
-    }
-
+fn collect_case_mismatches(fixture: &CohortFixture, results: &[CaseResult]) -> Vec<String> {
     let mut mismatches = Vec::new();
     for case in &fixture.cases {
         let result = results
@@ -204,19 +183,27 @@ fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification()
                 result.weighted_rock_pct
             ));
         }
-        if result.relative_error > fixture.max_relative_error_threshold {
+        let observed_threshold_status =
+            if result.relative_error > fixture.max_relative_error_threshold {
+                "exceeds"
+            } else {
+                "within"
+            };
+        if observed_threshold_status != case.expected_threshold_status {
             mismatches.push(format!(
-                "{} direct-theta FC threshold violation: observed rel_err={} > threshold={}",
-                result.case_id, result.relative_error, fixture.max_relative_error_threshold,
+                "{} threshold status mismatch: expected={} observed={} (rel_err={} threshold={})",
+                result.case_id,
+                case.expected_threshold_status,
+                observed_threshold_status,
+                result.relative_error,
+                fixture.max_relative_error_threshold,
             ));
         }
     }
-    assert!(
-        mismatches.is_empty(),
-        "AUTH07 cohort expectations mismatched:\n{}",
-        mismatches.join("\n")
-    );
+    mismatches
+}
 
+fn assert_bucket_metrics(results: Vec<CaseResult>) {
     let mut buckets: BTreeMap<String, Vec<CaseResult>> = BTreeMap::new();
     for result in results {
         buckets
@@ -251,4 +238,62 @@ fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification()
             );
         }
     }
+}
+
+#[test]
+fn auth07_package_and_suite_authority_sections_exist() {
+    let package = repo_file(
+        "docs/work-packages/20260531-auth07-fc-authority-cohort-suite-bootstrap-001/package.md",
+    );
+    let registry = repo_file("docs/specifications/external-authority/registry.yaml");
+    let suite = repo_file(
+        "docs/specifications/external-authority/suites/cas_l4_soil_fc_direct_theta_minus33_cohort_001.md",
+    );
+    let soil_contract = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
+
+    assert!(
+        package.contains("Objective")
+            && package.contains("independent")
+            && package.contains("rock-fragment stratified reporting"),
+        "AUTH07 package must capture independent FC authority cohort scope"
+    );
+    assert!(
+        registry.contains("cas_l4_soil_fc_direct_theta_minus33_cohort_001")
+            && registry.contains("gate_lane: periodic")
+            && registry.contains("failure_class: investigation"),
+        "registry must include AUTH11 cohort suite in periodic investigation lane"
+    );
+    assert!(
+        suite.contains("authority_level: 4")
+            && suite.contains("hash:")
+            && suite.contains("source_commit:")
+            && suite.contains("transform_note:"),
+        "AUTH11 cohort suite must include level-4 + fixture provenance metadata"
+    );
+    assert!(
+        soil_contract.contains("AUTH11 FC Direct-Theta Promotion Guard Addendum"),
+        "SC-SOIL-001 must include AUTH11 direct-theta promotion guard addendum"
+    );
+}
+
+#[test]
+fn auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification() {
+    let fixture: CohortFixture = repo_json_fixture(
+        "tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001/cohort_case.json",
+    );
+    assert_eq!(
+        fixture.suite_id,
+        "cas_l4_soil_fc_direct_theta_minus33_cohort_001"
+    );
+    assert_eq!(fixture.units_basis, "m3_m3_and_mm");
+    assert_auth11_anchor_bindings(&fixture);
+
+    let results = collect_case_results(&fixture);
+    let mismatches = collect_case_mismatches(&fixture, &results);
+    assert!(
+        mismatches.is_empty(),
+        "AUTH07 cohort expectations mismatched:\n{}",
+        mismatches.join("\n")
+    );
+    assert_bucket_metrics(results);
 }

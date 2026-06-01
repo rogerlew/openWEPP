@@ -132,3 +132,24 @@ Each active suite fixture root must include:
 
 Release-gate automation treats missing lock/provenance files, checksum
 mismatches, or missing required provenance keys as blocking failures.
+
+## Required-Suite Obligation Guards (Normative)
+
+Suites covered by machine-checked obligation guards must be declared in:
+
+- `docs/specifications/external-authority/required-suite-obligations.json`
+
+For each declared suite, the obligations file must define:
+
+1. required case bindings (`case_id -> soil_file`),
+2. minimum cohort cardinality,
+3. threshold upper bound (no tolerance loosening),
+4. lane/failure posture control path reference,
+5. for non-blocking Level-4 suites (`periodic`/`investigation`), explicit
+   closure follow-on package linkage (`closure_follow_on_package_id`,
+   `closure_follow_on_package_path`, `closure_follow_on_queue_path`) so a
+   queued/in-progress closure package is mandatory until promotion.
+
+Review/implementation anti-evasion checks must run:
+
+- `tools/release/check_authority_suite_antievasion.sh`

@@ -382,22 +382,28 @@ FC/WP process-law adjudication independent of legacy parity signatures.
    - `docs/specifications/external-authority/registry.yaml`
    - `docs/specifications/external-authority/suites/`
 
-## AUTH10 Direct-Theta FC Level-4 Gate Promotion Addendum
+## AUTH11 FC Direct-Theta Promotion Guard Addendum
 
-AUTH10 promotes independent direct-theta FC comparison from periodic cohort
-monitoring to a Level-4 required constitutive gate over required-case fixtures.
+AUTH11 introduces explicit anti-evasion guard posture for direct-theta FC
+cohort governance and re-anchors this suite to periodic investigation until
+promotion protocol closure over rocky-soil discrepancy anchors.
 
 1. External suite:
    - `cas_l4_soil_fc_direct_theta_minus33_cohort_001`
 2. Lane/failure posture:
-   - `gate_lane=required`
-   - `failure_class=hard-fail`
-3. Gate diagnostics must enforce per-case relative residual threshold
-   (`|model-authority| / authority <= 0.35`) and validate weighted
-   rock-fragment bucket classification.
-4. Fixture provenance for this suite is mandatory via:
+   - `gate_lane=periodic`
+   - `failure_class=investigation`
+3. Required anchor fixtures/cases must remain present in cohort obligations,
+   including `valid_9002_reference`.
+4. Cohort diagnostics must classify per-case threshold status (`within` or
+   `exceeds`) using the declared relative threshold (`0.35`) and validate
+   weighted rock-fragment bucket classification.
+5. Fixture provenance for this suite is mandatory via:
    - `fixtures.sha256`
    - `fixtures.provenance.yaml`
+6. Promotion/demotion posture changes must satisfy:
+   - `docs/specifications/external-authority/promotion-protocol.md`
+   - `docs/specifications/external-authority/required-suite-obligations.json`
 
 ## Gap Register
 
@@ -412,6 +418,7 @@ monitoring to a Level-4 required constitutive gate over required-case fixtures.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-05-31` | `18` | `Codex` | AUTH11 amendment: added direct-theta FC anti-evasion/promotion guards, restored anchored discrepancy-case requirements, and re-anchored suite posture to periodic/investigation pending promotion-protocol closure. |
 | `2026-05-31` | `17` | `Codex` | AUTH10 amendment: promoted direct-theta FC cohort suite to Level-4 required/hard-fail constitutive gate (`cas_l4_soil_fc_direct_theta_minus33_cohort_001`), removed inversion-prone discrepancy pinning, and retained explicit fixture lock/provenance requirements. |
 | `2026-05-31` | `16` | `Codex` | AUTH07 amendment: added independent FC authority cohort addendum (`cas_l5_soil_fc_direct_theta_minus33_cohort_001`) with periodic/investigation lane posture, explicit thresholded model-vs-direct FC residual classification, and mandatory fixture lock/provenance sidecars. |
 | `2026-05-31` | `15` | `Codex` | AUTH03 amendment: added Level-4 FC/WP constitutive gate authority (`INV-SOIL-014`), linked required external-authority suites (`cas_l4_soil_fc_minus33_001`, `cas_l4_soil_wp_minus1500_001`), and codified blocking fail-closed gate posture. |

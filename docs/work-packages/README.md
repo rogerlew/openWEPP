@@ -104,8 +104,18 @@ Authorized packages:
     rename/provenance consistency for the WB19 branch suite, and (b) enforcing
     non-inverted FC direct-theta authority behavior by strengthening Level-4 FC
     gate coverage and demoting discrepancy pinning to non-blocking monitoring.
+- `20260531-auth11-required-suite-obligation-and-antievasion-guards-001/`
+  - Purpose: add source-level anti-evasion guardrails for suite posture
+    changes by enforcing machine-checked required-case anchor obligations,
+    diff-based review guards, red/fix/green promotion protocol controls, and
+    in-test anchor binding assertions.
+- `20260531-auth12-fc-rocky-soil-closure-and-promotion-001/`
+  - Purpose: close the direct-theta rocky-soil FC physics discrepancy with
+    contract-first kernel remediation and promote the Level-4 cohort from
+    `periodic`/`investigation` back to `required`/`hard-fail` only after
+    red/fix/green closure evidence is complete.
 - Execution order for correctness-authority stream is:
-  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a -> auth09 -> auth10`.
+  `auth01 -> auth02 -> auth03 -> auth04 -> auth05 -> auth06 -> auth07 -> auth08a -> auth09 -> auth10 -> auth11 -> auth12`.
 - `20260531-hphys0216c-profilefc-normalized-tail-delta-analysis-001/`
   - Purpose: execute immediate HPHYS0216 follow-up diagnostics to explain the
     `ProfileFCStore` regression (`27/39 -> 39/39`) by isolating layer-aggregated

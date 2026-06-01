@@ -8,14 +8,22 @@
   },
   "cases": [
     {
-      "case_id": "valid_7778_reference",
-      "soil_file": "valid_7778.sol",
-      "expected_rock_bucket": "high"
+      "case_id": "valid_9002_reference",
+      "soil_file": "valid_9002.sol",
+      "expected_rock_bucket": "low",
+      "expected_threshold_status": "exceeds"
     },
     {
-      "case_id": "h1_low_rock_authority",
+      "case_id": "valid_7778_reference",
+      "soil_file": "valid_7778.sol",
+      "expected_rock_bucket": "high",
+      "expected_threshold_status": "within"
+    },
+    {
+      "case_id": "h1_synthetic_low_rock_authority",
       "soil_file": "h1_high_rock_fc_authority.sol",
-      "expected_rock_bucket": "low"
+      "expected_rock_bucket": "low",
+      "expected_threshold_status": "within"
     }
   ]
 }
