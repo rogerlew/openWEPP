@@ -4251,19 +4251,19 @@ fn build_simulation_owned_wb13_row(
             "D must be >= 0.0, observed {dp_m}"
         )));
     }
-    let latqcc_m = require_runtime_surface_scalar(runtime_surface, "q")?;
+    let latqcc_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "q")?;
     if latqcc_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "q must be >= 0.0, observed {latqcc_m}"
         )));
     }
-    let tile_m = require_runtime_surface_scalar(runtime_surface, "Qdd")?;
+    let tile_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Qdd")?;
     if tile_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Qdd must be >= 0.0, observed {tile_m}"
         )));
     }
-    let qd_source_m = require_runtime_surface_scalar(runtime_surface, "Qd")?;
+    let qd_source_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Qd")?;
     if qd_source_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Qd must be >= 0.0, observed {qd_source_m}"
@@ -5202,6 +5202,50 @@ mod tests {
         assert!(
             (row.wb13_row.dp - 0.2).abs() < 1.0e-12,
             "Dp must follow flux-surface D when both state and flux values are present"
+        );
+    }
+
+    #[test]
+    fn hphys0234_wb13_subhyd_publication_prefers_flux_surface_over_stale_state_surface() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("q"), BoundaryValue::scalar(0.030_000));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("Qdd"),
+            BoundaryValue::scalar(0.020_000),
+        );
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Qd"), BoundaryValue::scalar(0.050_000));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("q"), BoundaryValue::scalar(0.000_700));
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("Qdd"),
+            BoundaryValue::scalar(0.000_200),
+        );
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Qd"), BoundaryValue::scalar(0.000_900));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should use flux-authoritative q/Qdd/Qd");
+
+        assert!(
+            (row.wb13_row.latqcc - 0.7).abs() < 1.0e-12,
+            "latqcc must follow flux-surface q when both state and flux values are present"
+        );
+        assert!(
+            (row.wb13_row.tile - 0.2).abs() < 1.0e-12,
+            "Tile must follow flux-surface Qdd when both state and flux values are present"
         );
     }
 

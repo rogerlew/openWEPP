@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 59
+contract_version: 65
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-05-31
+last_reviewed: 2026-06-01
 supersedes: []
 superseded_by: []
 ---
@@ -898,7 +898,10 @@ canonical order:
 3. `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 4. Required depth-like and storage-like columns in this WB13 surface are
    non-negative.
-5. Missing required symbols, non-finite values, and schema/order violations
+5. WB13 subsurface-loss publication and coupling checks are flux-authoritative
+   for `D`, `q`, `Qdd`, and `Qd` when both state and flux surfaces expose the
+   same symbol name.
+6. Missing required symbols, non-finite values, and schema/order violations
    are hard-fail invalid states.
 
 ### WB13 Typed Guard Codes
@@ -959,7 +962,7 @@ for follow-on closure packages.
 
 | WB13 column | Canonical lineage symbol | Cross-contract authority anchors | Runtime writer surface | Guard families |
 |---|---|---|---|---|
-| `Dp` | `D -> Dp` (deep percolation loss) | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("D")` -> `("Dp", dp)`) | `HKERNEL-WB11-PERC-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `Dp` | `D -> Dp` (deep percolation loss) | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar_prefer_flux("D")` -> `("Dp", dp)`) | `HKERNEL-WB11-PERC-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Ep` | `Ep -> Ep` (plant transpiration component) | `SC-EVAP-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("Ep")` -> `("Ep", ep)`) | `HKERNEL-WB11-ET-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Es` | `Es -> Es` (soil evaporation component) | `SC-EVAP-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 schema/guard addendum | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("Es")` -> `("Es", es)`) | `HKERNEL-WB11-ET-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `ProfileDepth` | `solthk -> ProfileDepth` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("solthk")` -> `("ProfileDepth", profile_depth_mm)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
@@ -968,7 +971,7 @@ for follow-on closure packages.
 | `ProfileWPStore` | `wb13_profile_wp_store_mm -> ProfileWPStore` | `SC-PERC-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB13 output invariants + HPHYS0207 depth-authority closure | `crates/openwepp-runner/src/hillslope/mod.rs` (`runtime_surface_symbol_value("wb13_profile_wp_store_mm")` -> `("ProfileWPStore", profile_wp_store_mm)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `RM` | `prcp + SWE_before - SWE_after + Irr` | `SC-SNOWFREEZE-001` day-key publication closure (`INV-SNOWFREEZE-011`); `SC-WATBAL-001` `INV-WATBAL-026` | `crates/openwepp-runner/src/hillslope/mod.rs` RM assembly branch -> `("RM", rm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Snow-Water` | `snow.runtime_swe -> Snow-Water` | `SC-SNOWFREEZE-001` runtime-SWE publication authority; `SC-WATBAL-001` `INV-WATBAL-026/027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("snow.runtime_swe")` -> `("Snow-Water", snow_water)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `latqcc` | `q -> latqcc` (lateral contribution) | `SC-SUBHYD-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB19 lateral coupling | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("q")` -> `("latqcc", latqcc)`) | `HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `latqcc` | `q -> latqcc` (lateral contribution) | `SC-SUBHYD-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB19 lateral coupling | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar_prefer_flux("q")` -> `("latqcc", latqcc)`) | `HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Total-Soil` | `wb11_soil_water -> Total-Soil` | `SC-SOIL-001` `INV-SOIL-013`; `SC-WATBAL-001` `INV-WATBAL-029`; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("wb11_soil_water")` -> `("Total-Soil", total_soil)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `SoilWaterTotal` | `Total-Soil + frozwt -> SoilWaterTotal` | `SC-WATBAL-001` WB13 output invariants; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`soil_water_total = total_soil + frozwt` -> `("SoilWaterTotal", soil_water_total)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 
@@ -1314,6 +1317,22 @@ per-layer FC/WP consistency for `watyld`/`fcdep` mutation.
    required Level-4 constitutive suite
    `cas_l4_subhyd_watyld_fcwp_consistency_001`.
 
+### HPHYS0234 WB13 Subsurface Flux-Authority Anti-Shadow Addendum
+
+HPHYS0234 closes a WB13 subsurface publication lineage gap where stale
+state-surface symbols could shadow same-name WB19 flux outputs.
+
+1. WB13 `latqcc`, `Tile`, and `Qd` coupling evaluations must consume
+   flux-authoritative `q`, `Qdd`, and `Qd` symbols when both state and flux
+   surfaces are present.
+2. State-surface duplicates of `q`, `Qdd`, and `Qd` may remain for seam
+   continuity but are non-authoritative for WB13 daily-row subsurface
+   publication when same-name flux values exist.
+3. WB13 `Qd = latqcc + Tile` coupling validation must be evaluated from the
+   same flux-authoritative symbol family in requirement (1).
+4. Contract-derived vectors must include stale-state vs flux-conflict probes
+   showing flux precedence for subsurface publication symbols.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1563,6 +1582,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `65` | `Codex` | HPHYS0234 amendment: required flux-authoritative WB13 subsurface publication lineage for `q`/`Qdd`/`Qd` (anti-shadow posture), updated WB13 invariants and lineage register writer surfaces to `*_prefer_flux`, and added conflict-probe vector obligations. |
 | `2026-06-01` | `64` | `Codex` | HPHYS0227 amendment: corrected WB19 `avfca` authority to `thetfc_####` theta lineage, added per-layer FC/WP consistency requirement (`wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`), and linked required Level-4 suite `cas_l4_subhyd_watyld_fcwp_consistency_001` to `SC-SUBHYD-001#INV-SUBHYD-019`. |
 | `2026-06-01` | `63` | `Codex` | HPHYS0226 amendment: added WB19 saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001` to `SC-SUBHYD-001#INV-SUBHYD-018`. |
 | `2026-06-01` | `62` | `Codex` | HPHYS0225 amendment: added WB19 layer-pool available-cap authority, prohibited legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001` to `SC-SUBHYD-001#INV-SUBHYD-017`. |

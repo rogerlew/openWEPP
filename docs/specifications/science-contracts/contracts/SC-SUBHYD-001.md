@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 14
+contract_version: 20
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-05-31
+last_reviewed: 2026-06-01
 supersedes: []
 superseded_by: []
 ---
@@ -383,7 +383,9 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    symbols.
 2. Where `Qd` is exported concurrently, WB13 coupling remains deterministic
    under `Qd = latqcc + Tile`.
-3. Missing/non-finite/out-of-domain subsurface/drainage WB13 symbols are
+3. WB13 subsurface publication must consume flux-authoritative `q`, `Qdd`, and
+   `Qd` symbols when both state and flux surfaces publish the same symbol.
+4. Missing/non-finite/out-of-domain subsurface/drainage WB13 symbols are
    invalid runtime states and must hard-fail with WB13 typed guard posture.
 
 ## HPHYS0203 Subsurface WB13 Robustness Validation Addendum
@@ -397,6 +399,20 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    lateral/percolation source symbols consumed by WB13 publication assembly.
 3. Deterministic regression fixtures must preserve `latqcc`/`Dp` column
    availability and domain validity under canonical publication authority.
+
+## HPHYS0234 WB13 Subsurface Flux-Authority Anti-Shadow Addendum
+
+1. WB13 `latqcc`, `Tile`, and `Qd` publication-coupling symbols are
+   flux-authoritative under symbol conflicts:
+   - `q` over state duplicate,
+   - `Qdd` over state duplicate,
+   - `Qd` over state duplicate.
+2. WB13 `Qd = latqcc + Tile` coupling checks must be evaluated from the same
+   flux-authoritative symbol family.
+3. State duplicate symbols may remain for seam continuity but are
+   non-authoritative for WB13 subsurface publication under conflict.
+4. Contract-derived vectors must include stale-state/flux-conflict probes and
+   verify flux-preferred publication outcomes.
 
 ## HPHYS0208 Coupled Subsurface Residual Closure Addendum
 
@@ -527,6 +543,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `20` | `Codex` | HPHYS0234 amendment: added WB13 subsurface anti-shadow authority requiring flux-preferred publication/coupling for `q`, `Qdd`, and `Qd` under state/flux symbol conflicts, with explicit conflict-probe vector obligations. |
 | `2026-06-01` | `19` | `Codex` | HPHYS0227 amendment: added `INV-SUBHYD-019` FC/WP + COCA water-yield coupling authority, required FC-store/theta consistency guard, and Level-4 suite linkage `cas_l4_subhyd_watyld_fcwp_consistency_001`. |
 | `2026-06-01` | `18` | `Codex` | HPHYS0226 amendment: added `INV-SUBHYD-018` saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001`. |
 | `2026-06-01` | `17` | `Codex` | HPHYS0225 amendment: added `INV-SUBHYD-017` layer-pool available-cap authority, prohibited WB19 legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001`. |
