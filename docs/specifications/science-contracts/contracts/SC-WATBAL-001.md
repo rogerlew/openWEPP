@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 65
+contract_version: 66
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -1333,6 +1333,19 @@ state-surface symbols could shadow same-name WB19 flux outputs.
 4. Contract-derived vectors must include stale-state vs flux-conflict probes
    showing flux precedence for subsurface publication symbols.
 
+### HPHYS0235 WB18 Hourly Iterative-Lane Reanchoring Addendum
+
+HPHYS0235 reanchors `ui_run=1` water-balance/percolation authority to
+legacy `watbal_hourly.for` execution shape.
+
+1. Hourly lane is not divisor-only attenuation; it is a `24`-substep daily
+   loop (`ui_LFtstp=24`) where percolation is re-evaluated on substep-updated
+   layer water states.
+2. WB18 hourly `Dp` publication must reflect accumulated bottom-layer seepage
+   across the hourly substeps.
+3. Single-pass daily percolation with only `pei/24` attenuation is
+   non-authoritative for `ui_run=1` and cannot close HPHYS `Dp` parity gaps.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1582,6 +1595,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `66` | `Codex` | HPHYS0235 amendment: reanchored `ui_run=1` WB18/WB11 authority to legacy `watbal_hourly` 24-substep iterative percolation semantics, requiring accumulated hourly seepage lineage for `Dp` and prohibiting divisor-only single-pass hourly treatment for closure claims. |
 | `2026-06-01` | `65` | `Codex` | HPHYS0234 amendment: required flux-authoritative WB13 subsurface publication lineage for `q`/`Qdd`/`Qd` (anti-shadow posture), updated WB13 invariants and lineage register writer surfaces to `*_prefer_flux`, and added conflict-probe vector obligations. |
 | `2026-06-01` | `64` | `Codex` | HPHYS0227 amendment: corrected WB19 `avfca` authority to `thetfc_####` theta lineage, added per-layer FC/WP consistency requirement (`wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`), and linked required Level-4 suite `cas_l4_subhyd_watyld_fcwp_consistency_001` to `SC-SUBHYD-001#INV-SUBHYD-019`. |
 | `2026-06-01` | `63` | `Codex` | HPHYS0226 amendment: added WB19 saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001` to `SC-SUBHYD-001#INV-SUBHYD-018`. |
