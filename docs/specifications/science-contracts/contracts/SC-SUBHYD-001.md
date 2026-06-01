@@ -202,6 +202,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-013 | WB19 drainage execution invariant: drainage phase computes Eq. [6.2.10]-[6.2.11] deterministic `Qdd`, applies explicit capacity cap (`wb11_drainage_coefficient`), emits `Qd = q + Qdd`, and updates `wb18_perc_theta_####` + `wb11_drainable_storage` using `drfc_i` threshold lineage without implicit fallback branches. | hard-fail | REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-014 | WB19 lateral/drainage guard invariant: missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB11-DRAIN-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-SUBHYD-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-SUBHYD-015 | WB19 water-yield/saturated-depth invariant: lateral phase must apply `solwpv` branch semantics and publish finite coupled states (`wb19_watyld`, `wb19_fcdep`, `wb19_unsdep`); for `solwpv < 2006` with active saturated block, `watyld` must be positive and `fcdep/unsdep` update must follow `fcdep = max(fcdep - q/watyld, 0)` and `unsdep = soldep - fcdep`. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-016 | WB19 realized-withdrawal soil-water cap invariant: lateral (`q`) and drainage (`Qdd`) realized withdrawals must not exceed pre-phase `wb11_soil_water`; over-withdrawal is a typed hard-fail domain condition and must not be silently clamped by post-subtraction flooring. | hard-fail | REF-SUBHYD-CH6-LATCONT, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -222,6 +223,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-013` | runtime | WB19 drainage production kernel execution path | Typed hard error on malformed/non-deterministic layer-aware drainage writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-014` | runtime | WB19 lateral/drainage guard tables | Typed hard error on missing/non-finite/domain-invalid WB19 lateral/drainage inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-SUBHYD-015` | runtime | WB19 lateral water-yield + saturated-depth branch/coupling validator | Typed hard error on malformed `solwpv` branch behavior or invalid `wb19_watyld`/`wb19_fcdep`/`wb19_unsdep` coupling outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-016` | runtime + external-authority | WB19 realized-withdrawal cap validator plus Level-4 constitutive suite checks | Typed hard error on `q`/`Qdd` over-withdrawal relative to pre-phase `wb11_soil_water`; no silent flooring/default behavior allowed | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -446,6 +448,22 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `investigation`), linked to `INV-SUBHYD-015` as non-blocking governance
    evidence pending independent constitutive authority.
 
+## HPHYS0224 WB19 Realized-Withdrawal Soil-Water Cap Addendum
+
+1. WB19 realized lateral/drainage withdrawals (`q`, `Qdd`) must satisfy:
+   - `0 <= q <= wb11_soil_water_before_phase`,
+   - `0 <= Qdd <= wb11_soil_water_before_phase`.
+2. Production subtraction for `wb11_soil_water_after` must be explicit and
+   non-clamping:
+   - lateral phase: `wb11_soil_water_after = wb11_soil_water_before - q`,
+   - drainage phase: `wb11_soil_water_after = wb11_soil_water_before - Qdd`.
+3. Any attempted over-withdrawal relative to pre-phase
+   `wb11_soil_water_before` is a typed WB19 domain violation and must not be
+   repaired by silent floor logic.
+4. External-authority constitutive suite
+   `cas_l4_subhyd_withdrawal_soilwater_cap_001` is required/hard-fail and
+   linked to `INV-SUBHYD-016`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -459,6 +477,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `16` | `Codex` | HPHYS0224 amendment: added `INV-SUBHYD-016` realized-withdrawal soil-water cap authority, explicit non-clamping subtraction requirements for WB19 lateral/drainage phases, and required Level-4 suite linkage (`cas_l4_subhyd_withdrawal_soilwater_cap_001`). |
 | `2026-05-31` | `15` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only; clarified disturbed-soil mode interaction and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `14` | `Codex` | AUTH08A governance re-tiering: reclassified `cas_l4_subhyd_solwpv_fcdep_branch_001` as periodic/investigation legacy-conformance evidence (non-blocking) pending independent constitutive authority. |

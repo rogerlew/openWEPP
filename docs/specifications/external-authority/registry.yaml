@@ -1,6 +1,6 @@
 schema_version: 1
 registry_status: active
-last_updated_utc: 2026-05-31
+last_updated_utc: 2026-06-01
 owner: openWEPP maintainers
 
 suites:
@@ -94,6 +94,29 @@ suites:
       authored_utc: 2026-05-31
       last_updated_utc: 2026-05-31
     notes: "Level-3 legacy/sanity branch-conformance suite for WB19 solwpv mutation law; non-blocking investigation lane pending independent constitutive authority."
+
+  - suite_id: cas_l4_subhyd_withdrawal_soilwater_cap_001
+    title: WB19 Realized-Withdrawal Soil-Water Cap Suite
+    status: active
+    authority_level: 4
+    domain: subhyd
+    process_family: lateral_drain
+    sc_invariant_refs:
+      - SC-SUBHYD-001#INV-SUBHYD-016
+      - SC-WATBAL-001#INV-WATBAL-009
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: component
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_subhyd_withdrawal_soilwater_cap_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001
+    fixture_lock: tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001/fixtures.provenance.yaml
+    integration_test: tests/integration/hphys0224_wb19_withdrawal_soilwater_cap_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-06-01
+      last_updated_utc: 2026-06-01
+    notes: "Level-4 constitutive hard-fail suite for WB19 realized-withdrawal cap authority (`q`/`Qdd` bounded by pre-phase `wb11_soil_water` without silent clamping)."
 
   - suite_id: cas_l4_soil_fc_direct_theta_minus33_cohort_001
     title: Soil Profile FC Direct Theta(-33kPa) Constitutive Cohort Guard Suite

@@ -1,0 +1,49 @@
+{
+  "suite_id": "cas_l4_subhyd_withdrawal_soilwater_cap_001",
+  "units_basis": "m",
+  "tolerance_abs": 1.0e-12,
+  "cases": [
+    {
+      "case_id": "lateral_within_soilwater_cap",
+      "phase": "lateral",
+      "soil_water_before_m": 10.5,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "withdrawal_symbol": "q",
+        "withdrawal_m": 0.1221880517890351,
+        "soil_water_after_m": 10.377811948210964
+      }
+    },
+    {
+      "case_id": "lateral_overdraw_rejected",
+      "phase": "lateral",
+      "soil_water_before_m": 0.05,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-E-003",
+        "boundary_class": "DomainViolation"
+      }
+    },
+    {
+      "case_id": "drainage_within_soilwater_cap",
+      "phase": "drainage",
+      "soil_water_before_m": 10.5,
+      "q_lateral_input_m": 0.0,
+      "expected": {
+        "status_code": "HKERNEL-WB11-DRAIN-OK-001",
+        "withdrawal_symbol": "Qdd",
+        "withdrawal_m": 0.1,
+        "soil_water_after_m": 10.4
+      }
+    },
+    {
+      "case_id": "drainage_overdraw_rejected",
+      "phase": "drainage",
+      "soil_water_before_m": 0.05,
+      "q_lateral_input_m": 0.0,
+      "expected": {
+        "status_code": "HKERNEL-WB11-DRAIN-E-003",
+        "boundary_class": "DomainViolation"
+      }
+    }
+  ]
+}

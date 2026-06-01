@@ -1250,6 +1250,23 @@ baseline `watbal.for` by tightening `fcdep` mutation scope.
    `INV-WATBAL-009` and `SC-SUBHYD-001#INV-SUBHYD-015`; it is non-blocking
    pending independent constitutive authority.
 
+### HPHYS0224 WB19 Realized-Withdrawal Soil-Water Cap Addendum
+
+HPHYS0224 closes a WB19 process-authority gap where soil-water subtraction could
+be silently floored after lateral/drainage withdrawal.
+
+1. WB19 lateral (`q`) and drainage (`Qdd`) realized withdrawals are bounded by
+   pre-phase `wb11_soil_water`.
+2. WB19 soil-water updates must use explicit subtraction without clamp fallback:
+   - lateral: `soil_water_after = soil_water_before - q`,
+   - drainage: `soil_water_after = soil_water_before - Qdd`.
+3. If `q` or `Qdd` exceeds pre-phase `wb11_soil_water`, execution must emit a
+   typed hard-fail domain violation (`HKERNEL-WB11-LAT-E-003` or
+   `HKERNEL-WB11-DRAIN-E-003`), not silent floor-to-zero behavior.
+4. This law is governed by required Level-4 constitutive suite
+   `cas_l4_subhyd_withdrawal_soilwater_cap_001` linked to
+   `SC-SUBHYD-001#INV-SUBHYD-016`.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1499,6 +1516,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `61` | `Codex` | HPHYS0224 amendment: added WB19 realized-withdrawal soil-water cap authority (non-clamping subtraction and typed over-withdrawal hard-fail) with required Level-4 suite linkage to `SC-SUBHYD-001#INV-SUBHYD-016`. |
 | `2026-05-31` | `60` | `Codex` | AUTH09 taxonomy normalization: introduced Level-3 legacy/sanity tier usage for WB19 branch governance and renamed suite reference to `cas_l3_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `58` | `Codex` | HPHYS0222 amendment: corrected WB19 `fcdep/unsdep` mutation authority to `solwpv < 2006` only (no `fcdep` mutation for `solwpv >= 2006`, including `9001+`) and linked external-authority suite `cas_l4_subhyd_solwpv_fcdep_branch_001`. |
 | `2026-05-31` | `59` | `Codex` | AUTH08A governance re-tiering: reclassified `cas_l4_subhyd_solwpv_fcdep_branch_001` as periodic/investigation legacy-conformance evidence (non-blocking) pending independent constitutive authority. |

@@ -1089,7 +1089,19 @@ impl Wb11HydrologyKernel {
         let q_lateral =
             Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
         let drainable_after = Self::wb19_drainable_storage(&theta, &drain_threshold);
-        let soil_water_after = (soil_water_before - q_lateral).max(0.0);
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_LATERAL_Q,
+            q_lateral,
+            Some(0.0),
+            Some(q_lateral_target),
+        )?;
+        let soil_water_after = Self::wb19_apply_soil_water_withdrawal(
+            phase_class,
+            WB11_SYMBOL_LATERAL_Q,
+            soil_water_before,
+            q_lateral,
+        )?;
 
         let mut watyld = 0.0_f64;
         if fcdep_before > WB11_ZERO_THRESHOLD {
@@ -1122,24 +1134,10 @@ impl Wb11HydrologyKernel {
 
         Self::require_state_range(
             phase_class,
-            WB11_SYMBOL_SOIL_WATER,
-            soil_water_after,
-            Some(0.0),
-            None,
-        )?;
-        Self::require_state_range(
-            phase_class,
             WB11_SYMBOL_DRAINABLE_STORAGE,
             drainable_after,
             Some(0.0),
             None,
-        )?;
-        Self::require_flux_range(
-            phase_class,
-            WB11_SYMBOL_LATERAL_Q,
-            q_lateral,
-            Some(0.0),
-            Some(q_lateral_target),
         )?;
 
         let Ok(status) =
@@ -1472,13 +1470,18 @@ impl Wb11HydrologyKernel {
             q_drainage_target,
         );
         let drainable_after = Self::wb19_drainable_storage(&theta, &drain_threshold);
-        let soil_water_after = (soil_water_before - q_drainage).max(0.0);
-        Self::require_state_range(
+        Self::require_flux_range(
             phase_class,
-            WB11_SYMBOL_SOIL_WATER,
-            soil_water_after,
+            WB11_SYMBOL_DRAINAGE_QDD,
+            q_drainage,
             Some(0.0),
-            None,
+            Some(q_drainage_target),
+        )?;
+        let soil_water_after = Self::wb19_apply_soil_water_withdrawal(
+            phase_class,
+            WB11_SYMBOL_DRAINAGE_QDD,
+            soil_water_before,
+            q_drainage,
         )?;
         Self::require_state_range(
             phase_class,
@@ -1486,13 +1489,6 @@ impl Wb11HydrologyKernel {
             drainable_after,
             Some(0.0),
             None,
-        )?;
-        Self::require_flux_range(
-            phase_class,
-            WB11_SYMBOL_DRAINAGE_QDD,
-            q_drainage,
-            Some(0.0),
-            Some(q_drainage_target),
         )?;
 
         let q_subhyd = q_lateral + q_drainage;

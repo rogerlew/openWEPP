@@ -1,0 +1,11 @@
+schema_version: 1
+suite_id: cas_l4_subhyd_withdrawal_soilwater_cap_001
+generated_utc: 2026-06-01T00:00:00Z
+fixtures:
+  - path: withdrawal_soilwater_cap_cases.json
+    sha256: db56774abf6a274677e02654fb6c02523f589fb5f30335533ab707040d7ba8ed
+    source_repo: /workdir/openWEPP
+    source_commit: 2c480a547d9021654ca85da1698593fca6b2768c
+    source_path: tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001/withdrawal_soilwater_cap_cases.json
+    source_sha256: db56774abf6a274677e02654fb6c02523f589fb5f30335533ab707040d7ba8ed
+    transform_note: Repository-authored constitutive fixture; law authority is defined in SC-SUBHYD-001 and SC-WATBAL-001.

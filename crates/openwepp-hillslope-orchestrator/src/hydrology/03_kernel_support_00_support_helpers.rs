@@ -1059,6 +1059,30 @@ impl Wb11HydrologyKernel {
         amount.max(0.0) - remaining.max(0.0)
     }
 
+    fn wb19_apply_soil_water_withdrawal(
+        phase_class: HillslopeKernelPhaseClass,
+        withdrawal_symbol: HillslopeProductionFluxSymbol,
+        soil_water_before: f64,
+        realized_withdrawal: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        Self::require_flux_range(
+            phase_class,
+            withdrawal_symbol,
+            realized_withdrawal,
+            Some(0.0),
+            Some(soil_water_before),
+        )?;
+        let soil_water_after = soil_water_before - realized_withdrawal;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
+        Ok(soil_water_after)
+    }
+
     fn diagnostic_count_to_f64(value: usize) -> f64 {
         value.to_string().parse::<f64>().unwrap_or(f64::INFINITY)
     }
