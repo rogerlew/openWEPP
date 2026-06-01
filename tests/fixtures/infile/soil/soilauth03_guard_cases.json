@@ -1,0 +1,40 @@
+{
+  "suite_id": "cas_l4_infile_soil_producer_contract_001",
+  "units_basis": "token_count_and_symbol_order",
+  "max_relative_error_threshold": 0.0,
+  "cases": [
+    {
+      "case_id": "canonical_9002_policy_first",
+      "soil_file": "compat_quoted_header_9002_policy_first.sol",
+      "expected_threshold_status": "within",
+      "expected_datver": "9002",
+      "expected_policy_row_tokens": 5,
+      "expected_header_arity": 8,
+      "expected_layer_arity": 18,
+      "expected_policy_luse": "forest",
+      "expected_policy_stext": "silt_loam",
+      "expected_restrictive_rows": 1
+    },
+    {
+      "case_id": "canonical_7778_per_ofe_restrictive",
+      "soil_file": "compat_quoted_header_7778_per_ofe_restrictive.sol",
+      "expected_threshold_status": "within",
+      "expected_datver": "7778",
+      "expected_header_arity": 8,
+      "expected_layer_arity": 11,
+      "expected_restrictive_rows": 2
+    },
+    {
+      "case_id": "canonical_9002_double_quoted_policy",
+      "soil_file": "canonical_9002_double_quoted_policy.sol",
+      "expected_threshold_status": "within",
+      "expected_datver": "9002",
+      "expected_policy_row_tokens": 5,
+      "expected_header_arity": 8,
+      "expected_layer_arity": 18,
+      "expected_policy_luse": "farmer's field",
+      "expected_policy_stext": "silt loam",
+      "expected_restrictive_rows": 1
+    }
+  ]
+}

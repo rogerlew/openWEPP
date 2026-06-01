@@ -5,8 +5,8 @@
 - `surface_id`: `infile-soil-sol`
 - `status`: `draft-HOLD`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.2`
-- `last_updated_utc`: `2026-06-01T18:00:00Z`
+- `spec_version`: `0.1.3`
+- `last_updated_utc`: `2026-06-01T23:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Producer-Contract Authority Note
@@ -19,6 +19,10 @@
 - When this contract and producer behavior diverge, engineers must explicitly examine `wepppy`, reference exact source/provenance, and correct `wepppy` and/or this contract to restore correctness (no silent drift, no undocumented fallback semantics).
 - Canonical parser-contract authority for parse/runtime acceptance remains:
   - `docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md`
+- Required machine anti-drift obligations for canonical symbols and row
+  envelopes are release-gated via:
+  - `docs/specifications/external-authority/required-suite-obligations.json`
+  - suite `cas_l4_infile_soil_producer_contract_001`
 - Canonical symbols for this producer contract include base, disturbed/revegetation, and appended Rosetta fields: `datver`, `solcom`, `ntemp`, `ksflag`, `slid`, `texid`, `nsl`, `salb`, `sat`, `ki`, `kr`, `shcrit`, `avke`, `solthk`, `bd`, `ksat`, `anisotropy`, `fc`, `wp`, `sand`, `clay`, `orgmat`, `cec`, `rfg`, `theta_r`, `theta_s`, `alpha`, `npar`, `ks`, `ksatadj`, `luse`, `stext`, `ksatfac`, `ksatrec`, `burn_code`, `lkeff`, `texid_enum`, `uksat`, `slflag`, `ui_bdrkth`, `kslast`.
 
 Information on soil properties to a maximum depth of 1.8 meters are input to the WEPP model through the soil input file. The user may input information on up to 8 different soil layers. WEPP internally creates a new set of soil layers based on the original set parameter values. If the entire 1.8 meters is parameterized, the new soil layers represent depths of 0-100 mm, 100-200 mm, 200-400 mm, 400-600 mm, 600-800 mm, 800-1000 mm, 1000-1200 mm, 1200-1400 mm, 1400-1600 mm, 1600-1800 mm.

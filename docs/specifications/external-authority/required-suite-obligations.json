@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "policy_id": "required-suite-obligations-v1",
-  "last_updated_utc": "2026-05-31",
+  "last_updated_utc": "2026-06-01",
   "suites": [
     {
       "suite_id": "cas_l4_soil_fc_direct_theta_minus33_cohort_001",
@@ -43,6 +43,150 @@
         }
       ],
       "lane_change_control_path": "docs/specifications/external-authority/promotion-protocol.md"
+    },
+    {
+      "suite_id": "cas_l4_infile_soil_producer_contract_001",
+      "registry_path": "docs/specifications/external-authority/registry.yaml",
+      "suite_doc": "docs/specifications/external-authority/suites/cas_l4_infile_soil_producer_contract_001.md",
+      "integration_test": "tests/integration/soilauth03_soil_producer_contract_drift_guards_contract.rs",
+      "cohort_fixture": "tests/fixtures/infile/soil/soilauth03_guard_cases.json",
+      "required_fixture_files": [
+        "tests/fixtures/infile/soil/compat_quoted_header_9002_policy_first.sol",
+        "tests/fixtures/infile/soil/compat_quoted_header_7778_per_ofe_restrictive.sol",
+        "tests/fixtures/infile/soil/canonical_9002_double_quoted_policy.sol",
+        "tests/fixtures/infile/soil/fixtures.sha256",
+        "tests/fixtures/infile/soil/fixtures.provenance.yaml"
+      ],
+      "closure_follow_on_package_id": "20260601-soilauth03-soil-producer-contract-anti-drift-guards-001",
+      "closure_follow_on_package_path": "docs/work-packages/20260601-soilauth03-soil-producer-contract-anti-drift-guards-001/package.md",
+      "closure_follow_on_queue_path": "docs/work-packages/README.md",
+      "max_relative_error_threshold_upper_bound": 0.0,
+      "min_case_count": 3,
+      "required_case_bindings": [
+        {
+          "case_id": "canonical_9002_policy_first",
+          "soil_file": "compat_quoted_header_9002_policy_first.sol",
+          "expected_threshold_status": "within"
+        },
+        {
+          "case_id": "canonical_7778_per_ofe_restrictive",
+          "soil_file": "compat_quoted_header_7778_per_ofe_restrictive.sol",
+          "expected_threshold_status": "within"
+        },
+        {
+          "case_id": "canonical_9002_double_quoted_policy",
+          "soil_file": "canonical_9002_double_quoted_policy.sol",
+          "expected_threshold_status": "within"
+        }
+      ],
+      "lane_change_control_path": "docs/specifications/external-authority/promotion-protocol.md",
+      "soil_contract_obligations": {
+        "spec_path": "docs/specifications/wepp-input-files/specs/soil-file.spec.md",
+        "parser_contract_path": "docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md",
+        "required_symbols": [
+          "datver",
+          "solcom",
+          "ntemp",
+          "ksflag",
+          "slid",
+          "texid",
+          "nsl",
+          "salb",
+          "sat",
+          "ki",
+          "kr",
+          "shcrit",
+          "avke",
+          "solthk",
+          "bd",
+          "ksat",
+          "anisotropy",
+          "fc",
+          "wp",
+          "sand",
+          "clay",
+          "orgmat",
+          "cec",
+          "rfg",
+          "theta_r",
+          "theta_s",
+          "alpha",
+          "npar",
+          "ks",
+          "ksatadj",
+          "luse",
+          "stext",
+          "ksatfac",
+          "ksatrec",
+          "burn_code",
+          "lkeff",
+          "texid_enum",
+          "uksat",
+          "slflag",
+          "ui_bdrkth",
+          "kslast"
+        ],
+        "header_order_symbols": [
+          "slid",
+          "texid",
+          "nsl",
+          "salb",
+          "sat",
+          "ki",
+          "kr",
+          "shcrit",
+          "avke"
+        ],
+        "header_arity_by_datver": {
+          "7778": [
+            8,
+            9
+          ],
+          "9002": [
+            8,
+            9
+          ],
+          "9003": [
+            8,
+            9
+          ],
+          "9005": [
+            8,
+            9
+          ]
+        },
+        "policy_row_order_by_datver": {
+          "9002": [
+            "ksatadj",
+            "luse",
+            "stext",
+            "ksatfac",
+            "ksatrec"
+          ],
+          "9003": [
+            "ksatadj",
+            "luse",
+            "burn_code",
+            "stext",
+            "lkeff"
+          ],
+          "9005": [
+            "ksatadj",
+            "luse",
+            "burn_code",
+            "stext",
+            "texid_enum",
+            "uksat",
+            "lkeff"
+          ]
+        },
+        "layer_arity_by_datver": {
+          "7778": 11,
+          "9002": 18,
+          "9003": 18,
+          "9005": 18
+        }
+      }
     }
   ]
 }

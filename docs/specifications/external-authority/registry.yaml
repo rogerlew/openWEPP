@@ -117,3 +117,27 @@ suites:
       authored_utc: 2026-05-31
       last_updated_utc: 2026-05-31
     notes: "AUTH12 closure restored Level-4 direct-theta FC suite to required/hard-fail after rocky-soil anchor red/fix/green completion."
+
+  - suite_id: cas_l4_infile_soil_producer_contract_001
+    title: Soil Input Producer-Contract Anti-Drift Guard Suite
+    status: active
+    authority_level: 4
+    domain: infile
+    process_family: soil_producer_contract
+    sc_invariant_refs:
+      - SC-INFILE-SOIL-001#G-SOL-006
+      - SC-INFILE-SOIL-001#G-SOL-010
+      - SC-INFILE-SOIL-001#G-SOL-011
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: integration
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_infile_soil_producer_contract_001.md
+    fixture_root: tests/fixtures/infile/soil
+    fixture_lock: tests/fixtures/infile/soil/fixtures.sha256
+    fixture_provenance: tests/fixtures/infile/soil/fixtures.provenance.yaml
+    integration_test: tests/integration/soilauth03_soil_producer_contract_drift_guards_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-06-01
+      last_updated_utc: 2026-06-01
+    notes: "SOILAUTH03 required hard-fail lane for producer-contract symbol/order/arity and fixture-integrity anti-drift obligations."

@@ -15,6 +15,9 @@ Required authority lane runs by default.
     - verifies fixture integrity for all active suites before lane execution:
       - `fixtures.sha256` (`sha256sum --check --strict`)
       - `fixtures.provenance.yaml` (required per-fixture provenance keys)
+    - includes required/hard-fail suite
+      `cas_l4_infile_soil_producer_contract_001` to block `.sol`
+      producer-contract symbol/order/arity or fixture-integrity drift.
     - `required` lane runs by default (blocking on `hard-fail`).
     - `periodic` lane runs when `--run-authority-periodic` is set.
     - `manual` lane runs when `--run-authority-manual` is set.

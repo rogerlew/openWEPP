@@ -4,9 +4,9 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.9
+contract_version: 0.1.10
 evidence_mode: Static
-last_updated_utc: 2026-06-01T18:00:00Z
+last_updated_utc: 2026-06-01T23:00:00Z
 ---
 
 # SC-INFILE-SOIL-001 Soil Input Parser Contract
@@ -23,6 +23,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-WF-SOL-02]` `/workdir/wepp-forest_260430_baseline/src/input.for:475-482` (legacy parser branch for `solwpv >= 7777` reads 8 OFE-header fields through `shcrit`, omitting `avke`).
 - `[DIRECT][E-WP-SOL-01]` `/workdir/wepppy/wepp/soils/utils/wepp_soil_util.py` (`_parse_sol` parser surface cited by survey).
 - `[DIRECT][E-OW-SOIL-SEAM-01]` `/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/runtime_inputs.rs` (soil parser-to-runtime projection seam for canonical `thetdr`/`thetfc` symbols).
+- `[DIRECT][E-AUTH-SOL-01]` `/home/workdir/openWEPP/docs/specifications/external-authority/required-suite-obligations.json` (`cas_l4_infile_soil_producer_contract_001` machine obligations for required symbol/order/arity and fixture-integrity guards).
 - `[INFERENCE][E-PHYS-SOL-01]` Physical/common-sense invariants: positive layer depths, bounded volumetric fractions, non-negative conductivity and erodibility parameters.
 
 ## 1. Scope and Version Applicability
@@ -239,6 +240,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-011` | per-OFE restrictive-layer rows (`7778/9002/9003/9005`) must either be absent or pairwise identical before profile-level normalization | OFE/footer parse | `SOL-E-006` |
 | `G-SOL-012` | runtime theta export closure requires at least one valid source per required layer for each canonical symbol (`thetdr`: `theta_r_rosetta` or `wp_measured`; `thetfc`: `fc_rosetta` or `fc_measured`) with no silent defaulting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
 | `G-SOL-013` | runtime `ksatadj` regime metadata export closure requires finite `solwpv` and binary `ksatadj` aliases; active-regime fields (`ksatfac`, `ksatrec`, `lkeff`) must only be exported from datver-applicable policy records | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
+| `G-SOL-014` | required producer-contract anti-drift obligations for canonical symbols and datver row envelopes must pass via suite `cas_l4_infile_soil_producer_contract_001` (required/hard-fail) including fixture lock/provenance integrity | release-gate authority lane (`required`) | release gate hard-fail |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -258,6 +260,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-06-01` | `0.1.10` | SOILAUTH03 amendment: added required producer-contract anti-drift authority linkage (`G-SOL-014`) to `cas_l4_infile_soil_producer_contract_001` machine obligations in `required-suite-obligations.json` with release-gated hard-fail fixture-integrity posture. |
 | `2026-06-01` | `0.1.9` | SOILAUTH02 amendment: reconciled canonical producer envelopes into strict+compat parser authority by accepting `9002/9003/9005` policy-first ordering, quoted header parsing with optional missing `avke` normalization, per-OFE restrictive-row normalization for `7778/9002/9003/9005`, and single/double quote tokenization where parsing is lossless. |
 | `2026-05-28` | `0.1.8` | HILLSTAB02 amendment: ratified compatibility acceptance of quoted disturbed-policy rows (`9002/9003/9005`) where `luse`/`stext` carry embedded whitespace and quote-tokenization is lossless. |
 | `2026-05-26` | `0.1.7` | SIMIMPL36 amendment: extended compatibility-only quoted OFE-header authority (`G-SOL-010`) to disturbed datver families (`9002/9003/9005`) with the same optional trailing `avke` normalization (`avke := 0.0`) already ratified for `7778`. |

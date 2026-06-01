@@ -74,6 +74,9 @@ all active suites:
 2. `fixtures.provenance.yaml` exists and contains required per-fixture source
    provenance keys.
 3. Missing lock/provenance files or hash/provenance mismatches are blocking.
+4. `.sol` producer-contract anti-drift suite
+   `cas_l4_infile_soil_producer_contract_001` is a required/hard-fail lane and
+   blocks release on symbol/order/arity or fixture-integrity regressions.
 
 Default and optional lanes:
 

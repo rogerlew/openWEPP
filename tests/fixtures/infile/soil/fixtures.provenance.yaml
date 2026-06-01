@@ -1,12 +1,32 @@
-package_id: 20260601-soilauth02-soil-producer-contract-correctness-reconciliation-001
-generated_utc: "2026-06-01T18:30:00Z"
-evidence_mode: Static
-canonical_references:
-  - /workdir/wepppy/wepppy/wepp/soils/utils/wepp_soil_util.py
+schema_version: 1
+suite_id: cas_l4_infile_soil_producer_contract_001
+generated_utc: 2026-06-01T00:00:00Z
 fixtures:
   - path: compat_quoted_header_9002_policy_first.sol
-    purpose: Canonical policy-first 9002 ordering with omitted avke.
+    sha256: deed1e62319fdd7381fe14482aff56c406a3a3049e3cea87011ad631b79dd5c5
+    source_repo: /workdir/openWEPP
+    source_commit: 42dcd326d326fef29c5141a3f41927e31a63adec
+    source_path: tests/fixtures/infile/soil/compat_quoted_header_9002_policy_first.sol
+    source_sha256: deed1e62319fdd7381fe14482aff56c406a3a3049e3cea87011ad631b79dd5c5
+    transform_note: SOILAUTH02 canonical producer-envelope fixture reused as SOILAUTH03 anti-drift anchor.
   - path: compat_quoted_header_7778_per_ofe_restrictive.sol
-    purpose: Canonical per-OFE restrictive-row normalization envelope.
+    sha256: 99127d0d9ad418b01bb01bc76f020a18151c801b8c19c9111457a9dfb1580e56
+    source_repo: /workdir/openWEPP
+    source_commit: 42dcd326d326fef29c5141a3f41927e31a63adec
+    source_path: tests/fixtures/infile/soil/compat_quoted_header_7778_per_ofe_restrictive.sol
+    source_sha256: 99127d0d9ad418b01bb01bc76f020a18151c801b8c19c9111457a9dfb1580e56
+    transform_note: SOILAUTH02 canonical producer-envelope fixture reused as SOILAUTH03 anti-drift anchor.
   - path: canonical_9002_double_quoted_policy.sol
-    purpose: Canonical double-quoted policy-token envelope for apostrophe-bearing text.
+    sha256: 78f15f645f87ee856fb3e99426b316c6a568a9368004060eb8f3b1766972cbd7
+    source_repo: /workdir/openWEPP
+    source_commit: 42dcd326d326fef29c5141a3f41927e31a63adec
+    source_path: tests/fixtures/infile/soil/canonical_9002_double_quoted_policy.sol
+    source_sha256: 78f15f645f87ee856fb3e99426b316c6a568a9368004060eb8f3b1766972cbd7
+    transform_note: SOILAUTH02 canonical apostrophe-bearing policy-token fixture reused as SOILAUTH03 anti-drift anchor.
+  - path: soilauth03_guard_cases.json
+    sha256: d0fefdc0b33e0385532e51feeaa2369c062730f247f600731aed815505298d70
+    source_repo: /workdir/openWEPP
+    source_commit: 42dcd326d326fef29c5141a3f41927e31a63adec
+    source_path: tests/fixtures/infile/soil/soilauth03_guard_cases.json
+    source_sha256: d0fefdc0b33e0385532e51feeaa2369c062730f247f600731aed815505298d70
+    transform_note: SOILAUTH03 machine-readable case obligations for datver/symbol/order/arity anti-drift checks.

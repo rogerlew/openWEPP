@@ -1,10 +1,10 @@
 # 20260601-soilauth03-soil-producer-contract-anti-drift-guards-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-06-01
 - timezone: America/Los_Angeles
-- decision: HOLD
+- decision: GO
 
 ## Objective
 Execute SOILAUTH03 to implement machine-checkable anti-drift guards that block
