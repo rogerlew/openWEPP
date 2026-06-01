@@ -1,0 +1,44 @@
+{
+  "suite_id": "cas_l4_subhyd_watyld_fcwp_consistency_001",
+  "units_basis": "m_and_dimensionless",
+  "tolerance_abs": 1.0e-12,
+  "q_consistency_abs_m": 1.0e-12,
+  "solwpv": 2005,
+  "theta_0001_m": 0.8,
+  "dg_0001_m": 1.0,
+  "por_0001": 0.8,
+  "coca_0001": 0.5,
+  "cpm_0001": 1.0,
+  "ssc_0001_m_per_s": 1.0e-5,
+  "avgslp": 0.1,
+  "slplen_m": 10.0,
+  "anisotropy": 2.0,
+  "cases": [
+    {
+      "case_id": "low_fc_theta",
+      "phase": "lateral",
+      "thetfc_0001": 0.2,
+      "thetdr_0001": 0.05,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "q_m": 0.017194242646828613,
+        "watyld": 0.10000000000000009,
+        "fcdep_m": 0.8280575735317137,
+        "unsdep_m": 0.1719424264682863
+      }
+    },
+    {
+      "case_id": "high_fc_theta",
+      "phase": "lateral",
+      "thetfc_0001": 0.25,
+      "thetdr_0001": 0.1,
+      "expected": {
+        "status_code": "HKERNEL-WB11-LAT-OK-001",
+        "q_m": 0.017194242646828613,
+        "watyld": 0.050000000000000044,
+        "fcdep_m": 0.6561151470634275,
+        "unsdep_m": 0.3438848529365725
+      }
+    }
+  ]
+}

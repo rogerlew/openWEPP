@@ -980,7 +980,7 @@ impl Wb11HydrologyKernel {
         let (mut theta, drain_threshold, conductivity, thickness, _upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
         let mut porosity = Vec::with_capacity(theta.len());
-        let mut field_capacity = Vec::with_capacity(theta.len());
+        let mut field_capacity_theta = Vec::with_capacity(theta.len());
         let mut coca = Vec::with_capacity(theta.len());
         for layer_index in 1..=theta.len() {
             let por_symbol = Self::wb19_por_symbol(layer_index);
@@ -996,9 +996,55 @@ impl Wb11HydrologyKernel {
             }
             porosity.push(por);
 
-            let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
-            let layer_fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
-            field_capacity.push(layer_fc);
+            let fc_store_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
+            let layer_fc_store =
+                Self::require_state_scalar_for_symbol(request, phase_class, &fc_store_symbol)?;
+
+            let thetfc_symbol = Self::wb19_thetfc_symbol(layer_index);
+            let layer_thetfc =
+                Self::require_state_scalar_for_symbol(request, phase_class, &thetfc_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &thetfc_symbol,
+                layer_thetfc,
+                Some(0.0),
+                None,
+            )?;
+
+            let thetdr_symbol = Self::wb19_thetdr_symbol(layer_index);
+            let layer_thetdr =
+                Self::require_state_scalar_for_symbol(request, phase_class, &thetdr_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &thetdr_symbol,
+                layer_thetdr,
+                Some(0.0),
+                None,
+            )?;
+            if layer_thetdr > layer_thetfc + WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: thetdr_symbol,
+                    value: layer_thetdr,
+                    minimum: None,
+                    maximum: Some(layer_thetfc),
+                });
+            }
+
+            let layer_dg = thickness[layer_index - 1];
+            let expected_fc_store = (layer_thetfc - layer_thetdr) * layer_dg;
+            if !expected_fc_store.is_finite()
+                || (layer_fc_store - expected_fc_store).abs() > WB11_ZERO_THRESHOLD
+            {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fc_store_symbol,
+                    value: layer_fc_store,
+                    minimum: Some(expected_fc_store),
+                    maximum: Some(expected_fc_store),
+                });
+            }
+            field_capacity_theta.push(layer_thetfc);
 
             let coca_symbol = Self::wb19_coca_symbol(layer_index);
             let layer_coca =
@@ -1040,7 +1086,7 @@ impl Wb11HydrologyKernel {
                 saturated_depth_sum += thickness[layer_index];
                 conductivity_depth_sum += conductivity[layer_index] * thickness[layer_index];
                 avpora += porosity[layer_index] * layer_weight;
-                avfca += (field_capacity[layer_index] / thickness[layer_index]) * layer_weight;
+                avfca += field_capacity_theta[layer_index] * layer_weight;
                 avcoca += coca[layer_index] * layer_weight;
             }
         }

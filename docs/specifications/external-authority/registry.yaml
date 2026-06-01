@@ -164,6 +164,29 @@ suites:
       last_updated_utc: 2026-06-01
     notes: "Level-4 behavioral hard-fail suite for WB19 law requiring monotonic lateral-flux response to increased saturated thickness under fixed drivers."
 
+  - suite_id: cas_l4_subhyd_watyld_fcwp_consistency_001
+    title: WB19 FC/WP + COCA Water-Yield Consistency Suite
+    status: active
+    authority_level: 4
+    domain: subhyd
+    process_family: lateral_drain
+    sc_invariant_refs:
+      - SC-SUBHYD-001#INV-SUBHYD-019
+      - SC-WATBAL-001#INV-WATBAL-009
+    gate_lane: required
+    failure_class: hard-fail
+    runtime_cost_class: component
+    suite_doc: docs/specifications/external-authority/suites/cas_l4_subhyd_watyld_fcwp_consistency_001.md
+    fixture_root: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001
+    fixture_lock: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/fixtures.sha256
+    fixture_provenance: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/fixtures.provenance.yaml
+    integration_test: tests/integration/hphys0227_wb19_fcwp_coca_watyld_authority_contract.rs
+    provenance:
+      authored_by: Codex
+      authored_utc: 2026-06-01
+      last_updated_utc: 2026-06-01
+    notes: "Level-4 constitutive hard-fail suite for WB19 avfca/watyld coupling authority using FC/WP theta lineage with fixed COCA threshold forcing."
+
   - suite_id: cas_l4_soil_fc_direct_theta_minus33_cohort_001
     title: Soil Profile FC Direct Theta(-33kPa) Constitutive Cohort Guard Suite
     status: active

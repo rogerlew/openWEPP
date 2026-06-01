@@ -95,6 +95,14 @@ fn seeded_state(solwpv: i32) -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(1.0),
     );

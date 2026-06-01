@@ -154,7 +154,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
    - `solwpv != 2006`: saturated block is contiguous from surface until first
      unsaturated layer
    - `avpora = Σ(por_i * dg_i / fcdep)`,
-     `avfca = Σ((fc_i/dg_i) * dg_i / fcdep)`,
+     `avfca = Σ(thetfc_i * dg_i / fcdep)`,
      `avcoca = Σ(coca_i * dg_i / fcdep)`
    - `watyld = avpora - (avfca + (1-avcoca))`
    - `Ke = 86400 * (Σ(ssc_i * dg_i) / Σ(dg_i))`
@@ -178,7 +178,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
+| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
 | `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic layer-aware drainage execution/writeback |
 | `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
@@ -205,6 +205,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-016 | WB19 realized-withdrawal soil-water cap invariant: lateral (`q`) and drainage (`Qdd`) realized withdrawals must not exceed pre-phase `wb11_soil_water`; over-withdrawal is a typed hard-fail domain condition and must not be silently clamped by post-subtraction flooring. | hard-fail | REF-SUBHYD-CH6-LATCONT, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-017 | WB19 layer-pool available-cap invariant: lateral/drainage available-pool caps are derived from active per-layer drainable storage (`Σ max(theta_i - drfc_i, 0)`) and must not be expanded by legacy compatibility scalar reconciliation (`max(layer_pool, legacy_term)`). | hard-fail | REF-SUBHYD-CH6-LATSTOR, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-018 | WB19 saturated-thickness response invariant: under fixed conductivity/geometry/forcing domains, increasing saturated thickness (and corresponding layer-derived available pool) must not decrease realized lateral flux (`q_high >= q_low`) and should increase it when neither case is constrained by non-saturated zero-flow branches. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-019 | WB19 FC/WP + COCA coupling invariant: water-yield coupling must compute `avfca` from `thetfc_####` theta lineage (not `wb18_perc_fc_####/dg_####` surrogate), enforce per-layer consistency `wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`, and apply `solwpv < 2006` `fcdep` mutation using this authoritative `watyld` branch. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -228,6 +229,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-016` | runtime + external-authority | WB19 realized-withdrawal cap validator plus Level-4 constitutive suite checks | Typed hard error on `q`/`Qdd` over-withdrawal relative to pre-phase `wb11_soil_water`; no silent flooring/default behavior allowed | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-017` | runtime + external-authority | WB19 available-pool authority validator plus Level-4 constitutive suite checks | Hard-fail when available-pool authority is expanded via legacy max-reconciliation instead of layer-derived `Σ max(theta_i-drfc_i,0)` cap | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-018` | runtime + external-authority | WB19 saturated-thickness response behavioral validator plus Level-4 constitutive suite checks | Hard-fail when increased saturated thickness under fixed drivers fails to produce non-decreasing lateral flux response | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-019` | runtime + external-authority | WB19 FC/WP theta-lineage coupling validator plus Level-4 constitutive suite checks | Hard-fail when `avfca`/`watyld` uses FC-store surrogate lineage or FC-store/theta lineage is inconsistent | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -237,7 +239,9 @@ alias continuity for production kernels.
 | Canonical symbol | Boundary/API name | Scope | Units check | Evidence |
 |---|---|---|---|---|
 | `θ_i` | `wb18_perc_theta_####` | WB19 per-layer moisture state surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `θFC_i` | `wb18_perc_fc_####` | WB19 per-layer field-capacity surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `FCi` | `wb18_perc_fc_####` | WB19 per-layer FC storage-above-residual surfaces used by `drfc_i` threshold lineage | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `θFC_i` | `thetfc_####` | WB19 per-layer field-capacity theta lineage used in `avfca` water-yield coupling | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `θDR_i` | `thetdr_####` | WB19 per-layer residual theta lineage used for FC/WP consistency checks against `wb18_perc_fc_####` | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `θUL_i` | `wb18_perc_ul_####` | WB19 per-layer upper-limit surfaces used in branch coupling checks | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `K_i` | `wb18_perc_ssc_####` | WB19 per-layer saturated conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -424,7 +428,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
      until first unsaturated layer.
 2. WB19 lateral coupling must compute:
    - `avpora = Σ(por_i * dg_i / fcdep)`,
-   - `avfca = Σ((fc_i/dg_i) * dg_i / fcdep)`,
+   - `avfca = Σ(thetfc_i * dg_i / fcdep)`,
    - `avcoca = Σ(coca_i * dg_i / fcdep)`,
    - `watyld = avpora - (avfca + (1-avcoca))`.
 3. For `solwpv < 2006` with active saturated block, update saturated-depth
@@ -493,6 +497,23 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `cas_l4_subhyd_lateral_saturated_thickness_response_001` is
    required/hard-fail and linked to `INV-SUBHYD-018`.
 
+## HPHYS0227 WB19 FC/WP + COCA Water-Yield Coupling Addendum
+
+1. WB19 coupling must compute:
+   - `avpora = Σ(por_i * dg_i / fcdep)`,
+   - `avfca = Σ(thetfc_i * dg_i / fcdep)`,
+   - `avcoca = Σ(coca_i * dg_i / fcdep)`,
+   - `watyld = avpora - (avfca + (1-avcoca))`.
+2. WB19 lateral kernels must require and validate per-layer FC/WP consistency:
+   - `wb18_perc_fc_i = (thetfc_i - thetdr_i) * dg_i`
+   with typed hard-fail posture when violated.
+3. This coupling authority binds `coca_####` threshold lineage and FC/WP theta
+   lineage into a single constitutive branch for `solwpv < 2006` `fcdep`
+   mutation.
+4. External-authority constitutive suite
+   `cas_l4_subhyd_watyld_fcwp_consistency_001` is required/hard-fail and
+   linked to `INV-SUBHYD-019`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -506,6 +527,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `19` | `Codex` | HPHYS0227 amendment: added `INV-SUBHYD-019` FC/WP + COCA water-yield coupling authority, required FC-store/theta consistency guard, and Level-4 suite linkage `cas_l4_subhyd_watyld_fcwp_consistency_001`. |
 | `2026-06-01` | `18` | `Codex` | HPHYS0226 amendment: added `INV-SUBHYD-018` saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001`. |
 | `2026-06-01` | `17` | `Codex` | HPHYS0225 amendment: added `INV-SUBHYD-017` layer-pool available-cap authority, prohibited WB19 legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001`. |
 | `2026-06-01` | `16` | `Codex` | HPHYS0224 amendment: added `INV-SUBHYD-016` realized-withdrawal soil-water cap authority, explicit non-clamping subtraction requirements for WB19 lateral/drainage phases, and required Level-4 suite linkage (`cas_l4_subhyd_withdrawal_soilwater_cap_001`). |

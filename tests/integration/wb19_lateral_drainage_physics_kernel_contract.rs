@@ -9,6 +9,7 @@ use openwepp_sim_contract::status::BoundaryClass;
 
 const TOL: f64 = 1.0e-9;
 
+#[allow(clippy::too_many_lines)]
 fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
     let mut state = BTreeMap::new();
 
@@ -53,8 +54,24 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundaryValue::scalar(4.0),
     );
     state.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(40.0),
+    );
+    state.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
         BoundarySymbol::from("wb18_perc_fc_0002"),
         BoundaryValue::scalar(4.0),
+    );
+    state.insert(
+        BoundarySymbol::from("thetfc_0002"),
+        BoundaryValue::scalar(40.0),
+    );
+    state.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.0),
     );
     state.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),

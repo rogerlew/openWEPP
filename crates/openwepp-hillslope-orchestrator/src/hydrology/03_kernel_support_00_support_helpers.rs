@@ -765,6 +765,14 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("por_{layer_index:04}"))
     }
 
+    fn wb19_thetfc_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("thetfc_{layer_index:04}"))
+    }
+
+    fn wb19_thetdr_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("thetdr_{layer_index:04}"))
+    }
+
     fn frost_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{layer_index:04}"))
     }

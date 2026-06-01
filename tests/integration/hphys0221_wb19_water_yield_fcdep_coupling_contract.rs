@@ -40,6 +40,7 @@ fn writeback_scalar(response: &openwepp_kernel_contract::KernelRunResponse, symb
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
@@ -68,6 +69,14 @@ fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
         BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(1.0),
     );
@@ -90,6 +99,14 @@ fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_fc_0002"),
         BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetfc_0002"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0002"),
@@ -166,6 +183,14 @@ fn hphys0221_wb19_solwpv_lt_2006_updates_fcdep_unsdep_from_watyld() {
         BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(1.0),
     );
@@ -235,6 +260,14 @@ fn hphys0221_wb19_solwpv_ge_2006_does_not_update_fcdep_unsdep_from_watyld() {
         BoundaryValue::scalar(0.2),
     );
     state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(1.0),
     );
@@ -302,6 +335,14 @@ fn hphys0221_wb19_solwpv_lt_2006_rejects_non_positive_watyld() {
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_fc_0001"),
         BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
     );
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),

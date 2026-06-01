@@ -109,7 +109,7 @@ Out of scope:
 | Coupled PL ordering preconditions | `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` (validated at growth dispatch before hydrology lane entry) |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
+| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
@@ -255,6 +255,8 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `por_i` | `por_####` | WB19 per-layer porosity surfaces consumed by water-yield coupling (`watyld`) | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces consumed by WB19 drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `thetfc_i` | `thetfc_####` | WB19 per-layer FC theta surfaces consumed by `avfca` water-yield coupling | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `thetdr_i` | `thetdr_####` | WB19 per-layer WP theta surfaces used for FC/WP consistency checks against `wb18_perc_fc_####` | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `drfc_i` | `wb18_perc_fc_#### + (1-coca_####)*dg_####` | WB19 layer drain-threshold authority (legacy `drfc`) for saturation checks and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `watyld` | `wb19_watyld` | WB19 water-yield coupling state used in `solwpv < 2006` saturated-depth updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `fcdep`, `unsdep` | `wb19_fcdep`, `wb19_unsdep` | WB19 saturated/unsaturated depth coupling states after lateral mutation | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1218,7 +1220,7 @@ HPHYS0221 closes missing WB19 branch/coupling surfaces from baseline
      until first unsaturated layer.
 2. WB19 must compute coupled water-yield terms over the active saturated block:
    - `avpora = Σ(por_i * dg_i / fcdep)`
-   - `avfca = Σ((wb18_perc_fc_i/dg_i) * dg_i / fcdep)`
+   - `avfca = Σ(thetfc_i * dg_i / fcdep)`
    - `avcoca = Σ(coca_i * dg_i / fcdep)`
    - `watyld = avpora - (avfca + (1-avcoca))`
 3. For `solwpv < 2006` and `fcdep > 0`, WB19 must update saturated depth:
@@ -1294,6 +1296,23 @@ residual families by enforcing a behavioral WB19 lateral law.
    `cas_l4_subhyd_lateral_saturated_thickness_response_001`.
 3. This law is linked to `SC-SUBHYD-001#INV-SUBHYD-018` and is
    required/hard-fail in release lanes.
+
+### HPHYS0227 WB19 FC/WP + COCA Water-Yield Coupling Addendum
+
+HPHYS0227 closes the FC/WP theta-lineage gap in WB19 coupling and hardens
+per-layer FC/WP consistency for `watyld`/`fcdep` mutation.
+
+1. WB19 water-yield coupling must compute:
+   - `avpora = Σ(por_i * dg_i / fcdep)`
+   - `avfca = Σ(thetfc_i * dg_i / fcdep)`
+   - `avcoca = Σ(coca_i * dg_i / fcdep)`
+   - `watyld = avpora - (avfca + (1-avcoca))`
+2. WB19 lateral execution must enforce per-layer FC/WP consistency:
+   - `wb18_perc_fc_i = (thetfc_i - thetdr_i) * dg_i`
+   with typed hard-fail posture on mismatch.
+3. This law is linked to `SC-SUBHYD-001#INV-SUBHYD-019` and is governed by
+   required Level-4 constitutive suite
+   `cas_l4_subhyd_watyld_fcwp_consistency_001`.
 
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
@@ -1544,6 +1563,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `64` | `Codex` | HPHYS0227 amendment: corrected WB19 `avfca` authority to `thetfc_####` theta lineage, added per-layer FC/WP consistency requirement (`wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`), and linked required Level-4 suite `cas_l4_subhyd_watyld_fcwp_consistency_001` to `SC-SUBHYD-001#INV-SUBHYD-019`. |
 | `2026-06-01` | `63` | `Codex` | HPHYS0226 amendment: added WB19 saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001` to `SC-SUBHYD-001#INV-SUBHYD-018`. |
 | `2026-06-01` | `62` | `Codex` | HPHYS0225 amendment: added WB19 layer-pool available-cap authority, prohibited legacy max-reconciliation expansion (`max(layer_pool, legacy_term)`), and linked required Level-4 suite `cas_l4_subhyd_layer_pool_withdrawal_cap_001` to `SC-SUBHYD-001#INV-SUBHYD-017`. |
 | `2026-06-01` | `61` | `Codex` | HPHYS0224 amendment: added WB19 realized-withdrawal soil-water cap authority (non-clamping subtraction and typed over-withdrawal hard-fail) with required Level-4 suite linkage to `SC-SUBHYD-001#INV-SUBHYD-016`. |

@@ -112,6 +112,7 @@ fn auth06_active_level4_and_level3_suites_publish_fixture_hashes_and_provenance_
         "docs/specifications/external-authority/suites/cas_l4_subhyd_withdrawal_soilwater_cap_001.md",
         "docs/specifications/external-authority/suites/cas_l4_subhyd_layer_pool_withdrawal_cap_001.md",
         "docs/specifications/external-authority/suites/cas_l4_subhyd_lateral_saturated_thickness_response_001.md",
+        "docs/specifications/external-authority/suites/cas_l4_subhyd_watyld_fcwp_consistency_001.md",
         "docs/specifications/external-authority/suites/cas_l3_subhyd_solwpv_fcdep_branch_001.md",
     ];
     let fixture_roots = [
@@ -122,6 +123,7 @@ fn auth06_active_level4_and_level3_suites_publish_fixture_hashes_and_provenance_
         "tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001",
         "tests/fixtures/constitutive/cas_l4_subhyd_layer_pool_withdrawal_cap_001",
         "tests/fixtures/constitutive/cas_l4_subhyd_lateral_saturated_thickness_response_001",
+        "tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001",
         "tests/fixtures/constitutive/cas_l3_subhyd_solwpv_fcdep_branch_001",
     ];
 

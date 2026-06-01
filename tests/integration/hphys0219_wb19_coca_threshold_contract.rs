@@ -40,6 +40,14 @@ fn seeded_lateral_state(coca: f64, cpm: f64) -> BTreeMap<BoundarySymbol, Boundar
         BoundaryValue::scalar(0.2),
     );
     state.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(1.0),
     );

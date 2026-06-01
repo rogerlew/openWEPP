@@ -383,6 +383,10 @@ name = "hphys0226_wb19_lateral_saturated_thickness_response_contract"
 path = "tests/integration/hphys0226_wb19_lateral_saturated_thickness_response_contract.rs"
 
 [[test]]
+name = "hphys0227_wb19_fcwp_coca_watyld_authority_contract"
+path = "tests/integration/hphys0227_wb19_fcwp_coca_watyld_authority_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

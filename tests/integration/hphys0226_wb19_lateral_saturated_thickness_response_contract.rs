@@ -84,6 +84,14 @@ fn seeded_state(theta: f64, fc: f64) -> BTreeMap<BoundarySymbol, BoundaryValue> 
         BoundaryValue::scalar(fc),
     );
     state.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(fc),
+    );
+    state.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(
         BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(1.0),
     );
