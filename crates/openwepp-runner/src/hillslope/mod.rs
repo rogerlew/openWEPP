@@ -813,7 +813,21 @@ pub fn execute_hillslope_run(
             day_index + 1,
             day_projection,
             runtime_swe_publication_state_m,
-        )?;
+        )
+        .map_err(|error| match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                HillslopeCliError::RuntimeSurfaceFailure {
+                    surface,
+                    detail: format!(
+                        "{detail} [sim_day_index={}, calendar_year={}, julian_day={}]",
+                        day_index + 1,
+                        day_projection.year,
+                        day_projection.julian_day
+                    ),
+                }
+            }
+            other => other,
+        })?;
         runtime_surface = execution_result.runtime_surface;
         runtime_swe_publication_state_m = execution_result.wb13_row.wb13_row.snow_water / 1_000.0;
         scheduler_outcome_class = execution_result.scheduler_outcome_class;
@@ -2939,6 +2953,14 @@ fn execute_scheduler_kernel_lifecycle(
                         &execution_report.writeback_surface,
                     ));
                 }
+                if phase_report.phase.as_str() == "percolation_deep_seepage"
+                    && phase_report.kernel_status.message_id() == "HKERNEL-WB11-PERC-E-003"
+                {
+                    context.push_str(", wb18_guard_terms=");
+                    context.push_str(&format_wb18_perc_guard_terms(
+                        &execution_report.writeback_surface,
+                    ));
+                }
 
                 context
             })
@@ -3053,6 +3075,77 @@ fn format_wb12_storage_terms(runtime_surface: &HillslopeWritebackSurface) -> Str
         get(runtime_surface, "D"),
         get(runtime_surface, "Qd"),
         reconciled_est
+    )
+}
+
+fn format_wb18_perc_guard_terms(runtime_surface: &HillslopeWritebackSurface) -> String {
+    let mut layer_suffixes = runtime_surface
+        .state_surface
+        .keys()
+        .filter_map(|symbol| symbol.as_str().strip_prefix("wb18_perc_fc_"))
+        .filter(|suffix| suffix.len() == 4 && suffix.chars().all(|ch| ch.is_ascii_digit()))
+        .map(ToOwned::to_owned)
+        .collect::<Vec<_>>();
+    layer_suffixes.sort_unstable();
+    layer_suffixes.dedup();
+
+    if layer_suffixes.is_empty() {
+        return "{layers=none}".to_string();
+    }
+
+    let invalid_layers = layer_suffixes
+        .iter()
+        .filter_map(|suffix| {
+            let fc = runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_fc_{suffix}"))?;
+            let ul = runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_ul_{suffix}"))?;
+            let theta =
+                runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_theta_{suffix}"))?;
+            let thetfc = runtime_surface_symbol_value(runtime_surface, &format!("thetfc_{suffix}"));
+            let thetdr = runtime_surface_symbol_value(runtime_surface, &format!("thetdr_{suffix}"));
+            let dg = runtime_surface_symbol_value(runtime_surface, &format!("dg_{suffix}"));
+            let por = runtime_surface_symbol_value(runtime_surface, &format!("por_{suffix}"));
+            let cpm = runtime_surface_symbol_value(runtime_surface, &format!("cpm_{suffix}"));
+            let ratio = fc / ul;
+            let stz = theta / ul;
+            let dynamic_branch_active = stz.is_finite() && stz < 0.95;
+            let ratio_domain_invalid = !ratio.is_finite() || ratio >= 1.0;
+            let legacy_bi_zero_candidate = ratio.is_finite() && ratio <= 0.0;
+            if !ratio_domain_invalid && !legacy_bi_zero_candidate {
+                return None;
+            }
+            let fmt_opt = |value: Option<f64>| {
+                value.map_or_else(|| "NA".to_string(), |observed| format!("{observed:.10}"))
+            };
+            Some(format!(
+                "L{}(fc={:.10},ul={:.10},theta={:.10},ratio={:.10},stz={:.10},dynamic_branch_active={},ratio_domain_invalid={},legacy_bi_zero_candidate={},thetfc={},thetdr={},dg={},por={},cpm={})",
+                suffix,
+                fc,
+                ul,
+                theta,
+                ratio,
+                stz,
+                dynamic_branch_active,
+                ratio_domain_invalid,
+                legacy_bi_zero_candidate,
+                fmt_opt(thetfc),
+                fmt_opt(thetdr),
+                fmt_opt(dg),
+                fmt_opt(por),
+                fmt_opt(cpm),
+            ))
+        })
+        .collect::<Vec<_>>();
+
+    let invalid_summary = if invalid_layers.is_empty() {
+        "none".to_string()
+    } else {
+        invalid_layers.join("|")
+    };
+
+    format!(
+        "{{layer_count={},invalid_ratio_layers={}}}",
+        layer_suffixes.len(),
+        invalid_summary
     )
 }
 

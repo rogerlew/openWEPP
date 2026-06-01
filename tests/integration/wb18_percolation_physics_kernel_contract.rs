@@ -205,27 +205,63 @@ fn wb18_contract_conformance_rejects_domain_invalid_layer_upper_limit() {
 }
 
 #[test]
-fn wb18_contract_conformance_rejects_domain_invalid_fc_ul_ratio_for_dynamic_bi() {
+fn wb18_contract_conformance_allows_non_positive_fc_ul_ratio_with_legacy_bi_zero_branch() {
     let mut kernel = Wb11HydrologyKernel;
     let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
     state_surface.insert(
-        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
         BoundaryValue::scalar(8.0),
     );
     state_surface.insert(
-        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+
+    let pei = writeback_flux_value(&response, "wb18_perc_pei_0001");
+    let theta_after = writeback_state_value(&response, "wb18_perc_theta_0001");
+    assert!(
+        (pei - 0.1728).abs() <= TOL,
+        "legacy Bi=0 branch should yield fx=1 and pei=0.1728, observed {pei}"
+    );
+    assert!(
+        (theta_after - 4.8272).abs() <= TOL,
+        "theta_after={theta_after}"
+    );
+}
+
+#[test]
+fn wb18_contract_conformance_saturated_branch_bypasses_fc_ul_ratio_guard() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
         BoundaryValue::scalar(8.0),
     );
     state_surface.insert(
-        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
         BoundaryValue::scalar(9.0),
     );
 
     let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
 
-    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-003");
-    assert_eq!(
-        response.status.boundary_class(),
-        BoundaryClass::DomainViolation
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+    let pei = writeback_flux_value(&response, "wb18_perc_pei_0001");
+    assert!(
+        pei > 0.0,
+        "saturated-branch bypass must not raise ratio-domain hard-fail; pei={pei}"
     );
 }

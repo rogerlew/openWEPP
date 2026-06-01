@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -74,7 +74,7 @@ Out of scope:
 | `ti` | `s` | Travel time through layer `i`. | percolation routine | Eq. [5.4.1] and Eq. [5.4.2] linkage |
 | `Ksi` | `m s^-1` | Saturated hydraulic conductivity for layer `i`. | soil hydraulic parameterization | adjusted conductivity computation |
 | `Ksai` | `m s^-1` | Adjusted hydraulic conductivity for layer `i`. | percolation routine | Eq. [5.4.2]-[5.4.3] routing |
-| `Bi` | `fraction` | Conductivity-shape parameter controlling approach of `Ksai` toward near-zero at field capacity; legacy-authoritative runtime derivation is `Bi = -2.655/log10(FCi/ULi)` with strict `0 < FCi/ULi < 1` domain. | percolation routine | Eq. [5.4.3]-[5.4.4] |
+| `Bi` | `fraction` | Conductivity-shape parameter controlling approach of `Ksai` toward near-zero at field capacity; legacy-authoritative runtime derivation in the active WB18 branch uses `Bi = -2.655/log10(FCi/ULi)` for `FCi/ULi > 0`, with explicit legacy-degenerate fallback `Bi = 0` for non-positive `FCi/ULi`. | percolation routine | Eq. [5.4.3]-[5.4.4] + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` |
 | `Θi+1`, `ULi+1` | `m`, `m` | Lower-layer water-content state and upper limit used for percolation restriction term. | lower-layer state/parameters | Eq. [5.4.5] reduction factor |
 | `D` | `m` | Cumulative percolation loss below root zone in daily water balance. | percolation-water-balance coupling | daily closure Eq. [5.1.1] |
 | `Pe` | `m d^-1` | Percolated water into subsurface drainable layer. | percolation routine | subsurface continuity Eq. [6.2.1], [6.2.5] |
@@ -118,13 +118,16 @@ WB18 mutates percolation boundary surfaces deterministically:
    `Θi <= FCi`; otherwise `pei > 0`), routing layers from bottom to top.
 3. Compute conductivity-domain per-layer flow using Chapter-5 lineage:
    - saturation fraction `stz = Θi / ULi`
-   - derive per-layer conductivity-shape parameter from legacy-authoritative
-     WB18 lineage:
+   - if `stz < 0.95`, derive per-layer conductivity-shape parameter from
+     legacy-authoritative WB18 lineage:
      - `ratio_i = FCi / ULi`
-     - guard: `ratio_i` must satisfy `0 < ratio_i < 1`
-     - `Bi = -2.655 / log10(ratio_i)`
-   - adjusted conductivity factor `fx = max(stz^Bi, 0.002)` for
-     `stz < 0.95`, else `fx = 1`
+     - if `ratio_i <= 0`, apply explicit legacy-degenerate branch `Bi = 0`
+       (matching baseline `hk=0` fallback from `watbal.for`)
+     - if `ratio_i > 0`, derive `Bi = -2.655 / log10(ratio_i)` and hard-fail
+       non-finite/non-physical denominator domains
+     - adjusted conductivity factor `fx = max(stz^Bi, 0.002)`
+   - if `stz >= 0.95`, saturated branch bypasses dynamic-`Bi` derivation and
+     sets `fx = 1`
    - travel-capacity-limited layer flux `pei_pre = min(Θi - FCi, Δt * Ksi * fx)`
    - lower-layer restriction `pei = pei_pre * sqrt(1 - (Θi+1 / ULi+1))` for
      non-bottom layers (bottom layer exports `D` directly).
@@ -149,14 +152,14 @@ WB18 mutates percolation boundary surfaces deterministically:
 | INV-PERC-001 | Field-capacity eligibility invariant: per layer, Eq. [5.4.1] branch semantics are explicit (`pei = 0` when `Θi <= FCi`; routing expression only when `Θi > FCi`). | hard-fail | REF-PERC-CH5-PERC | `[DIRECT][Static]` |
 | INV-PERC-002 | Per-layer excess-water bound invariant: when `Θi > FCi`, emitted `pei` must be non-negative and not exceed the available excess-water term implied by Eq. [5.4.1]. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-003 | Travel-time/conductivity-domain invariant: Eq. [5.4.2] and Eq. [5.4.3] usage requires finite positive routing domains (no undefined `ti`, `Ksai`, or layer-moisture terms in active percolation branch). | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-004 | Adjusted-conductivity formulation invariant: adjusted conductivity follows Eq. [5.4.3]-[5.4.4] semantics and preserves near-field-capacity damping behavior, with Chapter-7 state/condition adjustments applied explicitly where active. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-CH7-PARAM, REF-PERC-CH7-FROZEN | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-004 | Adjusted-conductivity formulation invariant: adjusted conductivity follows Eq. [5.4.3]-[5.4.4] semantics and preserves near-field-capacity damping behavior, including branch-conditioned WB18 authority (`stz >= 0.95 -> fx=1`; `stz < 0.95 -> dynamic Bi` with explicit non-positive-ratio `Bi=0` legacy-degenerate path). | hard-fail | REF-PERC-CH5-PERC, REF-PERC-CH7-PARAM, REF-PERC-CH7-FROZEN + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-005 | Lower-layer restriction invariant: when Eq. [5.4.5] is applied, lower-layer saturation reduction must remain in real-number domain and cannot amplify `pei` above its pre-restriction value. Comparator interpretation may classify near-zero negative radicand jitter as threshold-adjacent, but runtime behavior remains explicit hard-fail for negative-domain evaluations. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-006 | Below-root loss accounting invariant: percolation routed below the root zone is treated as loss in Chapter-5 daily closure (`D`) and cannot be silently recycled into root-zone storage within this contract boundary. | hard-fail | REF-PERC-CH5-BAL, REF-PERC-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-007 | Subsurface coupling invariant: daily percolation recharge term `Pe` used by subsurface continuity equations is emitted with unit/sign consistency and complete boundary payload semantics. | hard-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-008 | Coupled root-zone update invariant: percolation processing remains explicitly coupled with infiltration/ET daily accounting paths described in §5.5 and does not permit silent omission of percolation updates from layer-water bookkeeping. | hard-fail | REF-PERC-CH5-LINK, REF-PERC-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-009 | Governance scope invariant: claims about subsurface lateral-flow/drainage mechanics beyond declared percolation boundary are non-promotable unless backed by `SC-SUBHYD-001` authority. | governance-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-010 | WB18 percolation execution invariant: percolation phase computes deterministic per-layer `pei`, aggregates `D`/`Pe`, and updates both layer moisture (`wb18_perc_theta_####`) and aggregate soil-water state (`wb11_soil_water`) under explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-011 | WB18 percolation guard invariant: missing/non-finite/out-of-range per-layer percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-PERC-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-PERC-011 | WB18 percolation guard invariant: missing/non-finite/out-of-range per-layer percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted; explicit legacy-degenerate `Bi=0` branch for non-positive `FC/UL` is authoritative behavior, not silent fallback. | hard-fail | REF-PERC-PHYS-BOUNDS + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` | `[INFERENCE][Static] + [DIRECT][Static]` |
 
 ## Invariant Guard Map
 
@@ -199,6 +202,7 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 | Field-capacity-or-drier layer | `Θi <= FCi` and per-layer `pei = 0`. | Explicit Eq. [5.4.1] branch behavior. `[DIRECT][Static]` |
 | Near-field-capacity slow drainage | `Θi` only slightly above `FCi`, producing very small positive `pei`. | Consistent with storage-routing response as excess approaches zero. `[DIRECT][Static] + [INFERENCE][Static]` |
 | Lower-layer near saturation throttling | `Θi+1` near `ULi+1`, causing Eq. [5.4.5] restriction factor to approach zero. | Explicit lower-layer restriction behavior. `[DIRECT][Static]` |
+| Non-positive `FC/UL` ratio in active branch | `stz < 0.95` and `FCi/ULi <= 0`, with explicit authoritative mapping `Bi = 0` before `fx = max(stz^Bi, 0.002)`. | Baseline WEPP `watbal.for` sets `hk=0` for non-positive ratio and continues percolation execution. `[DIRECT][Static]` |
 | Frozen/restrictive attenuation regime | Effective conductivity is strongly reduced by frozen/restrictive conditions but remains in valid domain. | Chapter-5 and Chapter-7 conductivity-adjustment semantics. `[DIRECT][Static] + [INFERENCE][Static]` |
 | No below-root export day | Per-layer routing occurs within root zone but aggregate below-root `D` is zero for the step. | Valid daily state when no percolation crosses the root-zone boundary. `[INFERENCE][Static]` |
 
@@ -271,8 +275,11 @@ Minimum WB18 percolation production-kernel conformance vectors:
    `HKERNEL-WB11-PERC-E-002`.
 3. Domain-invalid per-layer percolation inputs hard-fail with typed status
    `HKERNEL-WB11-PERC-E-003` and do not mutate orchestrator writeback surfaces.
-4. `Bi` derivation domain is enforced (`0 < FCi/ULi < 1`) and dynamic-`Bi`
-   damping is exercised in contract vectors.
+4. Dynamic-`Bi` vectors must exercise branch-conditioned authority:
+   - active-branch positive-ratio derivation (`Bi = -2.655/log10(FC/UL)`),
+   - active-branch non-positive-ratio legacy-degenerate derivation (`Bi = 0`),
+   - saturated-branch bypass (`stz >= 0.95 -> fx = 1`) without false
+     ratio-domain hard-fail.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -333,9 +340,14 @@ Minimum WB18 percolation production-kernel conformance vectors:
    - `Bi = -2.655 / log10(FCi/ULi)`,
    - `FCi = wb18_perc_fc_####`,
    - `ULi = wb18_perc_ul_####`.
-2. Domain guard for dynamic `Bi` derivation is hard-fail:
-   `0 < FCi/ULi < 1` is required; invalid ratio states are typed domain
-   violations and are not silently clamped/defaulted.
+2. Domain handling for dynamic `Bi` derivation is branch-conditioned:
+   - active branch (`stz < 0.95`) and `FCi/ULi <= 0` maps explicitly to
+     authoritative legacy-degenerate `Bi = 0`,
+   - active branch (`stz < 0.95`) and `FCi/ULi > 0` uses
+     `Bi = -2.655/log10(FCi/ULi)` with typed hard-fail for non-finite or
+     non-physical denominator domains,
+   - saturated branch (`stz >= 0.95`) bypasses dynamic-`Bi` ratio evaluation
+     (`fx = 1`) and must not raise false ratio-domain hard-fail.
 3. Constant exponent substitutions (for example `Bi = 1`) are non-authoritative
    and non-promotable for WB18 process-physics closure.
 
@@ -359,6 +371,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `16` | `Codex` | HPHYS0231 amendment: reanchored WB18 dynamic-`Bi` guard placement to baseline branch semantics by codifying explicit non-positive `FC/UL` legacy-degenerate `Bi=0` handling in active branch and saturated-branch ratio-bypass behavior (`stz >= 0.95 -> fx=1`). |
 | `2026-06-01` | `15` | `Codex` | HPHYS0230 amendment: replaced constant WB18 conductivity-shape exponent authority with legacy-authoritative dynamic per-layer derivation `Bi = -2.655/log10(FC/UL)`, added strict ratio-domain guard obligations, and recorded over-drainage closure addendum for WB18 `Dp` transient behavior. |
 | `2026-05-31` | `14` | `Codex` | HPHYS0216D amendment: reconciled WB13 `ProfileFCStore` authority to `Σ(thetfc_i*dg_i)*1000 + wb13_profile_fc_tail_mm`, retained `wb13_profile_fc_store_mm` as diagnostic/reconciliation lineage, and required finite non-negative tail-symbol guard posture. |
 | `2026-05-31` | `13` | `Codex` | HPHYS0216 amendment: realigned WB13 `ProfileFCStore` publication coupling to baseline layer aggregation (`Σ(thetfc_i*dg_i)*1000`), retained `wb13_profile_fc_store_mm` as diagnostic carry lineage, and kept normalized corrected-layer seed/projection depth-domain obligations explicit. |
