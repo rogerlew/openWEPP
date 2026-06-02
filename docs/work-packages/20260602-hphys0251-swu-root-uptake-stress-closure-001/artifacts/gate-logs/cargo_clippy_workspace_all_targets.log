@@ -1,0 +1,71 @@
+## cargo clippy workspace all targets
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs:1246:9
+     |
+1246 |         assert_eq!(plant.canopy_line[2], 35.00196);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: `-D clippy::float-cmp` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs:1247:9
+     |
+1247 |         assert_eq!(plant.growth_line[5], 1700.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs:1248:9
+     |
+1248 |         assert_eq!(plant.growth_line[7], 2.60099);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs:1249:9
+     |
+1249 |         assert_eq!(plant.residue_line[5], 1.51995);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs:1250:9
+     |
+1250 |         assert_eq!(plant.terminal_line[1], 3.5);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: clamp-like pattern without using clamp function
+   --> crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs:959:16
+    |
+959 |           } else if raw_plant_tolerance > WB17_PLTOL_MAX {
+    |  ________________^
+960 | |             WB17_PLTOL_MAX
+961 | |         } else if raw_plant_tolerance < WB17_PLTOL_MIN {
+962 | |             WB17_PLTOL_MIN
+963 | |         } else {
+964 | |             raw_plant_tolerance
+965 | |         }
+    | |_________^ help: replace with clamp: `raw_plant_tolerance.clamp(WB17_PLTOL_MIN, WB17_PLTOL_MAX)`
+    |
+    = note: clamp will panic if max < min, min.is_nan(), or max.is_nan()
+    = note: clamp returns NaN if the input is NaN
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_clamp
+    = note: `-D clippy::manual-clamp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_clamp)]`
+
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 6 previous errors

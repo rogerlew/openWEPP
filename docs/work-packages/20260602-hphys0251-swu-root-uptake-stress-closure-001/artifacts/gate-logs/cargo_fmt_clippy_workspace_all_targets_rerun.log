@@ -1,0 +1,26 @@
+## cargo fmt check
+## cargo clippy workspace all targets
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: clamp-like pattern without using clamp function
+   --> tests/integration/wb17_et_physics_kernel_contract.rs:341:12
+    |
+341 |       } else if raw_pltol > 0.4 {
+    |  ____________^
+342 | |         0.4
+343 | |     } else if raw_pltol < 0.1 {
+344 | |         0.1
+345 | |     } else {
+346 | |         raw_pltol
+347 | |     }
+    | |_____^ help: replace with clamp: `raw_pltol.clamp(0.1, 0.4)`
+    |
+    = note: clamp will panic if max < min, min.is_nan(), or max.is_nan()
+    = note: clamp returns NaN if the input is NaN
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#manual_clamp
+    = note: `-D clippy::manual-clamp` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::manual_clamp)]`
+
+error: could not compile `openwepp` (test "wb17_et_physics_kernel_contract") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

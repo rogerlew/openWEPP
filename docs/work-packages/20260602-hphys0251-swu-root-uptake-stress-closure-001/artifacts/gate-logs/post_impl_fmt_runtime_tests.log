@@ -1,0 +1,19 @@
+## cargo fmt
+## cargo fmt check
+## runtime crop pltol test
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_hillslope_orchestrator-43648fcef710094f)
+
+running 1 test
+test runtime_inputs::tests::hphys0251_management_projection_preserves_crop_pltol ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 84 filtered out; finished in 0.00s
+
+## runtime growth coefficients regression
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_hillslope_orchestrator-43648fcef710094f)
+
+running 1 test
+test runtime_inputs::tests::management_runtime_projection_preserves_wepppy_corn_no_till_growth_coefficients ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 84 filtered out; finished in 0.00s

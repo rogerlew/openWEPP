@@ -1,0 +1,58 @@
+## cargo fmt check
+Diff in /home/workdir/openWEPP/tests/integration/wb17_et_physics_kernel_contract.rs:308:
+     surface
+         .state_surface
+         .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.20));
+[31m-    surface
+[m[31m-        .state_surface
+[m[31m-        .insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(raw_pltol));
+[m[32m+    surface.state_surface.insert(
+[m[32m+        BoundarySymbol::from("pltol"),
+[m[32m+        BoundaryValue::scalar(raw_pltol),
+[m[32m+    );
+[m     for layer in 1..=2 {
+         surface.state_surface.insert(
+             BoundarySymbol::from(format!("wb18_perc_theta_{layer:04}")),
+Diff in /home/workdir/openWEPP/tests/integration/wb17_et_physics_kernel_contract.rs:713:
+             .unwrap_or_else(|| panic!("WB17 must publish effective pltol for raw {raw_pltol}"));
+         let layer_1_after =
+             state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+[31m-                .unwrap_or_else(|| {
+[m[31m-                    panic!("WB17 must publish layer 1 storage for raw {raw_pltol}")
+[m[31m-                });
+[m[32m+                .unwrap_or_else(|| panic!("WB17 must publish layer 1 storage for raw {raw_pltol}"));
+[m         let layer_2_after =
+             state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+[31m-                .unwrap_or_else(|| {
+[m[31m-                    panic!("WB17 must publish layer 2 storage for raw {raw_pltol}")
+[m[31m-                });
+[m[32m+                .unwrap_or_else(|| panic!("WB17 must publish layer 2 storage for raw {raw_pltol}"));
+[m         let ep = flux_update_scalar(&response.writeback.flux_updates, "Ep")
+             .unwrap_or_else(|| panic!("WB17 must publish Ep for raw {raw_pltol}"));
+         let ws = flux_update_scalar(&response.writeback.flux_updates, "Ws")
+## WB17 integration contract suite
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/wb17_et_physics_kernel_contract.rs (target/debug/deps/wb17_et_physics_kernel_contract-5e0e62f218fcd099)
+
+running 12 tests
+test hphys0242_contract_wb17_et_executes_after_same_pass_percolation_before_wb19_tail ... ok
+test hphys0249_wb17_soil_evaporation_aggregate_includes_residual_and_frozen_depth_terms ... ok
+test hphys0249_wb17_residue_remainder_adds_back_to_top_layer_and_clears_interception ... ok
+test hphys0249_wb17_root_uptake_mutates_layer_storage_and_stress_from_swu_lineage ... ok
+test hphys0249_wb17_soil_evaporation_depth_rationing_cap_limits_partial_layer_withdrawal ... ok
+test hphys0249_wb17_soil_evaporation_mutates_layer_storage_before_aggregate_writeback ... ok
+test hphys0251_wb17_root_uptake_publishes_layer_upi_ui_trace ... ok
+test wb17_contract_conformance_emits_partitioned_et_components ... ok
+test hphys0251_wb17_root_uptake_normalizes_pltol_like_swu_for ... ok
+test wb17_contract_conformance_rejects_missing_residue_interception_symbol ... ok
+test wb17_contract_conformance_rejects_domain_invalid_residue_interception ... ok
+test wb17_contract_conformance_rejects_non_finite_lai ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+## runtime-input management focused tests
+error: unexpected argument 'hphys0251_management_projection_preserves_crop_pltol' found
+
+Usage: cargo test [OPTIONS] [TESTNAME] [-- [ARGS]...]
+
+For more information, try '--help'.

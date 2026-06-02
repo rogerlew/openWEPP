@@ -1,0 +1,29 @@
+## WB17 root uptake contract tests
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.59s
+     Running tests/integration/wb17_et_physics_kernel_contract.rs (target/debug/deps/wb17_et_physics_kernel_contract-5e0e62f218fcd099)
+
+running 2 tests
+
+thread 'hphys0251_wb17_root_uptake_normalizes_pltol_like_swu_for' (2305963) panicked at tests/integration/wb17_et_physics_kernel_contract.rs:708:9:
+assertion `left == right` failed
+  left: "HKERNEL-WB17-SWU-E-003"
+ right: "HKERNEL-WB17-SWU-OK-001"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'hphys0251_wb17_root_uptake_publishes_layer_upi_ui_trace' (2305964) panicked at tests/integration/wb17_et_physics_kernel_contract.rs:760:36:
+WB17 must publish UPi_0001
+test hphys0251_wb17_root_uptake_publishes_layer_upi_ui_trace ... FAILED
+test hphys0251_wb17_root_uptake_normalizes_pltol_like_swu_for ... FAILED
+
+failures:
+
+failures:
+    hphys0251_wb17_root_uptake_normalizes_pltol_like_swu_for
+    hphys0251_wb17_root_uptake_publishes_layer_upi_ui_trace
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test wb17_et_physics_kernel_contract`

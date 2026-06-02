@@ -299,6 +299,89 @@ fn flux_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
     state_update_scalar(fields, symbol)
 }
 
+fn hphys0251_root_uptake_surface(raw_pltol: f64) -> HillslopeWritebackSurface {
+    let mut surface = seeded_wb17_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.008),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.20));
+    surface.state_surface.insert(
+        BoundarySymbol::from("pltol"),
+        BoundaryValue::scalar(raw_pltol),
+    );
+    for layer in 1..=2 {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_theta_{layer:04}")),
+            BoundaryValue::scalar(0.004),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_ul_{layer:04}")),
+            BoundaryValue::scalar(0.02),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("dg_{layer:04}")),
+            BoundaryValue::scalar(0.10),
+        );
+    }
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("ET"), BoundaryValue::scalar(0.0));
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("Etp"), BoundaryValue::scalar(0.006));
+    surface
+}
+
+fn hphys0251_effective_pltol(raw_pltol: f64) -> f64 {
+    if raw_pltol <= 0.0 {
+        0.25
+    } else {
+        raw_pltol.clamp(0.1, 0.4)
+    }
+}
+
+fn hphys0251_expected_swu_vectors(raw_pltol: f64) -> ([f64; 2], [f64; 2]) {
+    let effective_pltol = hphys0251_effective_pltol(raw_pltol);
+    let layer_depths = [0.10_f64, 0.10_f64];
+    let layer_storage = [0.004_f64, 0.004_f64];
+    let layer_upper_limit = [0.02_f64, 0.02_f64];
+    let root_depth = 0.20_f64;
+    let transpiration_demand = 0.006_f64;
+    let ub = 3.065_f64;
+    let uob = 0.953_346_f64;
+
+    let mut potential = [0.0_f64; 2];
+    let mut actual = [0.0_f64; 2];
+    let mut cumulative_depth = 0.0_f64;
+    let mut previous_cumulative_uptake = 0.0_f64;
+    for (index, layer_depth) in layer_depths.iter().copied().enumerate() {
+        cumulative_depth += layer_depth;
+        let rooted_depth = cumulative_depth.min(root_depth);
+        let relative_root_depth = rooted_depth / root_depth;
+        let cumulative_uptake =
+            transpiration_demand * (1.0 - (-ub * relative_root_depth).exp()) / uob;
+        potential[index] = (cumulative_uptake - previous_cumulative_uptake).max(0.0);
+        previous_cumulative_uptake = cumulative_uptake;
+
+        let stress_threshold = effective_pltol * layer_upper_limit[index];
+        actual[index] = potential[index];
+        if stress_threshold > 0.0 && layer_storage[index] < stress_threshold {
+            actual[index] *= layer_storage[index] / stress_threshold;
+        }
+        if actual[index] > layer_storage[index] {
+            actual[index] = layer_storage[index];
+        }
+        if actual[index] < 1.0e-10 {
+            actual[index] = 0.0;
+        }
+    }
+
+    (potential, actual)
+}
+
 #[test]
 fn wb17_contract_conformance_emits_partitioned_et_components() {
     let surface = seeded_wb17_surface();
@@ -583,37 +666,7 @@ fn hphys0249_wb17_residue_remainder_adds_back_to_top_layer_and_clears_intercepti
 
 #[test]
 fn hphys0249_wb17_root_uptake_mutates_layer_storage_and_stress_from_swu_lineage() {
-    let mut surface = seeded_wb17_surface();
-    surface.state_surface.insert(
-        BoundarySymbol::from("wb11_soil_water"),
-        BoundaryValue::scalar(0.008),
-    );
-    surface
-        .state_surface
-        .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.20));
-    surface
-        .state_surface
-        .insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
-    for layer in 1..=2 {
-        surface.state_surface.insert(
-            BoundarySymbol::from(format!("wb18_perc_theta_{layer:04}")),
-            BoundaryValue::scalar(0.004),
-        );
-        surface.state_surface.insert(
-            BoundarySymbol::from(format!("wb18_perc_ul_{layer:04}")),
-            BoundaryValue::scalar(0.02),
-        );
-        surface.state_surface.insert(
-            BoundarySymbol::from(format!("dg_{layer:04}")),
-            BoundaryValue::scalar(0.10),
-        );
-    }
-    surface
-        .flux_surface
-        .insert(BoundarySymbol::from("ET"), BoundaryValue::scalar(0.0));
-    surface
-        .flux_surface
-        .insert(BoundarySymbol::from("Etp"), BoundaryValue::scalar(0.006));
+    let surface = hphys0251_root_uptake_surface(0.25);
 
     let response = run_wb17_root_uptake_phase(&surface);
 
@@ -641,6 +694,76 @@ fn hphys0249_wb17_root_uptake_mutates_layer_storage_and_stress_from_swu_lineage(
     assert!((soil_water_after - (0.008 - expected_ep)).abs() <= TOL);
     assert!((ep - expected_ep).abs() <= TOL);
     assert!((ws - expected_ws).abs() <= TOL);
+}
+
+#[test]
+fn hphys0251_wb17_root_uptake_normalizes_pltol_like_swu_for() {
+    for (raw_pltol, effective_pltol) in [(0.0, 0.25), (0.05, 0.1), (0.45, 0.4)] {
+        let surface = hphys0251_root_uptake_surface(raw_pltol);
+        let response = run_wb17_root_uptake_phase(&surface);
+
+        assert_eq!(response.status.message_id(), "HKERNEL-WB17-SWU-OK-001");
+        let (_, actual) = hphys0251_expected_swu_vectors(raw_pltol);
+        let expected_ep: f64 = actual.iter().sum();
+        let expected_ws = expected_ep / 0.006;
+        let effective_state = state_update_scalar(&response.writeback.state_updates, "pltol")
+            .unwrap_or_else(|| panic!("WB17 must publish effective pltol for raw {raw_pltol}"));
+        let layer_1_after =
+            state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+                .unwrap_or_else(|| panic!("WB17 must publish layer 1 storage for raw {raw_pltol}"));
+        let layer_2_after =
+            state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+                .unwrap_or_else(|| panic!("WB17 must publish layer 2 storage for raw {raw_pltol}"));
+        let ep = flux_update_scalar(&response.writeback.flux_updates, "Ep")
+            .unwrap_or_else(|| panic!("WB17 must publish Ep for raw {raw_pltol}"));
+        let ws = flux_update_scalar(&response.writeback.flux_updates, "Ws")
+            .unwrap_or_else(|| panic!("WB17 must publish Ws for raw {raw_pltol}"));
+
+        assert!((effective_state - effective_pltol).abs() <= TOL);
+        assert!((layer_1_after - (0.004 - actual[0])).abs() <= TOL);
+        assert!((layer_2_after - (0.004 - actual[1])).abs() <= TOL);
+        assert!((ep - expected_ep).abs() <= TOL);
+        assert!((ws - expected_ws).abs() <= TOL);
+    }
+}
+
+#[test]
+fn hphys0251_wb17_root_uptake_publishes_layer_upi_ui_trace() {
+    let surface = hphys0251_root_uptake_surface(0.25);
+    let response = run_wb17_root_uptake_phase(&surface);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB17-SWU-OK-001");
+    let (potential, actual) = hphys0251_expected_swu_vectors(0.25);
+    let upi = flux_update_scalar(&response.writeback.flux_updates, "UPi")
+        .expect("WB17 must publish aggregate potential uptake");
+    let ui = flux_update_scalar(&response.writeback.flux_updates, "Ui")
+        .expect("WB17 must publish aggregate actual uptake");
+    let ep = flux_update_scalar(&response.writeback.flux_updates, "Ep")
+        .expect("WB17 must publish final Ep from actual uptake");
+    let ws = flux_update_scalar(&response.writeback.flux_updates, "Ws")
+        .expect("WB17 must publish final Ws from actual uptake");
+
+    let mut layer_potential_sum = 0.0_f64;
+    let mut layer_actual_sum = 0.0_f64;
+    for layer in 1..=2 {
+        let potential_symbol = format!("UPi_{layer:04}");
+        let actual_symbol = format!("Ui_{layer:04}");
+        let layer_potential =
+            flux_update_scalar(&response.writeback.flux_updates, &potential_symbol)
+                .unwrap_or_else(|| panic!("WB17 must publish {potential_symbol}"));
+        let layer_actual = flux_update_scalar(&response.writeback.flux_updates, &actual_symbol)
+            .unwrap_or_else(|| panic!("WB17 must publish {actual_symbol}"));
+        assert!((layer_potential - potential[layer - 1]).abs() <= TOL);
+        assert!((layer_actual - actual[layer - 1]).abs() <= TOL);
+        assert!(layer_actual <= layer_potential + TOL);
+        layer_potential_sum += layer_potential;
+        layer_actual_sum += layer_actual;
+    }
+
+    assert!((upi - layer_potential_sum).abs() <= TOL);
+    assert!((ui - layer_actual_sum).abs() <= TOL);
+    assert!((ep - layer_actual_sum).abs() <= TOL);
+    assert!((ws - (layer_actual_sum / 0.006)).abs() <= TOL);
 }
 
 #[test]

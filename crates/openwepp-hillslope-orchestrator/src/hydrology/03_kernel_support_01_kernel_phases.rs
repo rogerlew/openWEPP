@@ -953,6 +953,14 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    fn effective_swu_plant_tolerance(raw_plant_tolerance: f64) -> f64 {
+        if raw_plant_tolerance <= 0.0 {
+            0.25
+        } else {
+            raw_plant_tolerance.clamp(WB17_PLTOL_MIN, WB17_PLTOL_MAX)
+        }
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_plant_root_uptake(
         request: &HillslopeKernelRequest<'_>,
@@ -1036,8 +1044,9 @@ impl Wb11HydrologyKernel {
         )?;
 
         let plant_tolerance_symbol = BoundarySymbol::from("pltol");
-        let plant_tolerance =
+        let raw_plant_tolerance =
             Self::require_state_scalar_for_symbol(request, phase_class, &plant_tolerance_symbol)?;
+        let plant_tolerance = Self::effective_swu_plant_tolerance(raw_plant_tolerance);
         Self::require_state_range_for_symbol(
             phase_class,
             &plant_tolerance_symbol,
@@ -1048,6 +1057,8 @@ impl Wb11HydrologyKernel {
 
         let profile_depth: f64 = layer_depth.iter().sum();
         let effective_root_depth = root_depth.min(profile_depth);
+        let mut layer_potential_uptake = vec![0.0_f64; layer_count];
+        let mut layer_actual_uptake = vec![0.0_f64; layer_count];
         let mut transpiration_actual = 0.0;
         if etp > WB11_ZERO_THRESHOLD && effective_root_depth > WB11_ZERO_THRESHOLD {
             let mut rooted_layer_count = layer_count;
@@ -1074,19 +1085,21 @@ impl Wb11HydrologyKernel {
                     - (-WB17_SWU_UB * gx / effective_root_depth).exp())
                     * etp
                     / WB17_SWU_UOB;
-                let mut layer_uptake = cumulative_potential - previous_cumulative_potential;
-                if layer_uptake < 0.0 && layer_uptake.abs() <= WB11_ZERO_THRESHOLD {
-                    layer_uptake = 0.0;
+                let mut potential_uptake = cumulative_potential - previous_cumulative_potential;
+                if potential_uptake < 0.0 && potential_uptake.abs() <= WB11_ZERO_THRESHOLD {
+                    potential_uptake = 0.0;
                 }
+                layer_potential_uptake[index] = potential_uptake;
                 Self::require_flux_range_for_symbol(
                     phase_class,
                     &uptake_potential_symbol,
-                    layer_uptake,
+                    potential_uptake,
                     Some(0.0),
                     None,
                 )?;
 
                 let stress_threshold = plant_tolerance * layer_upper_limit[index];
+                let mut layer_uptake = potential_uptake;
                 if layer_storage[index] < stress_threshold {
                     layer_uptake *= layer_storage[index] / stress_threshold;
                 }
@@ -1100,6 +1113,7 @@ impl Wb11HydrologyKernel {
                 if layer_uptake < 1.0e-10 {
                     layer_uptake = 0.0;
                 }
+                layer_actual_uptake[index] = layer_uptake;
                 layer_storage[index] -= layer_uptake;
                 if layer_storage[index] < 1.0e-10 {
                     layer_storage[index] = 0.0;
@@ -1109,13 +1123,9 @@ impl Wb11HydrologyKernel {
             }
         }
 
-        Self::require_flux_range(
-            phase_class,
-            WB17_SYMBOL_EP,
-            transpiration_actual,
-            Some(0.0),
-            Some(etp),
-        )?;
+        let upi: f64 = layer_potential_uptake.iter().sum();
+        let ui: f64 = layer_actual_uptake.iter().sum();
+        Self::require_flux_range(phase_class, WB17_SYMBOL_EP, ui, Some(0.0), Some(etp))?;
 
         let soil_water_after =
             Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
@@ -1127,7 +1137,7 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let actual_et = base_et + transpiration_actual;
+        let actual_et = base_et + ui;
         Self::require_flux_range(
             phase_class,
             WB11_SYMBOL_ET,
@@ -1138,8 +1148,6 @@ impl Wb11HydrologyKernel {
 
         let uptake_potential_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UPI);
         let uptake_actual_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UI);
-        let upi = etp;
-        let ui = transpiration_actual;
         Self::require_flux_range_for_symbol(
             phase_class,
             &uptake_potential_symbol,
@@ -1154,6 +1162,25 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        for index in 0..layer_count {
+            let potential_symbol =
+                Self::wb17_layer_flux_symbol(WB17_FLUX_SYMBOL_UPI, index + 1);
+            let actual_symbol = Self::wb17_layer_flux_symbol(WB17_FLUX_SYMBOL_UI, index + 1);
+            Self::require_flux_range_for_symbol(
+                phase_class,
+                &potential_symbol,
+                layer_potential_uptake[index],
+                Some(0.0),
+                None,
+            )?;
+            Self::require_flux_range_for_symbol(
+                phase_class,
+                &actual_symbol,
+                layer_actual_uptake[index],
+                Some(0.0),
+                Some(layer_potential_uptake[index]),
+            )?;
+        }
 
         let ws = if etp <= WB11_ZERO_THRESHOLD || effective_root_depth <= WB11_ZERO_THRESHOLD {
             1.0
@@ -1167,12 +1194,22 @@ impl Wb11HydrologyKernel {
         else {
             unreachable!("status message ids are non-empty WB17 constants")
         };
-        let mut state_updates = vec![WritebackField::bounded(
-            WB11_SYMBOL_SOIL_WATER,
-            soil_water_after,
-            Some(0.0),
-            None,
-        )];
+        let effective_plant_tolerance_symbol = BoundarySymbol::from("swu_effective_pltol");
+        let mut state_updates = vec![
+            WritebackField::bounded(WB11_SYMBOL_SOIL_WATER, soil_water_after, Some(0.0), None),
+            WritebackField::bounded(
+                plant_tolerance_symbol,
+                plant_tolerance,
+                Some(WB17_PLTOL_MIN),
+                Some(WB17_PLTOL_MAX),
+            ),
+            WritebackField::bounded(
+                effective_plant_tolerance_symbol,
+                plant_tolerance,
+                Some(WB17_PLTOL_MIN),
+                Some(WB17_PLTOL_MAX),
+            ),
+        ];
         for (index, value) in layer_storage.iter().enumerate() {
             state_updates.push(WritebackField::bounded(
                 Self::wb18_perc_state_symbol("theta", index + 1),
@@ -1182,17 +1219,30 @@ impl Wb11HydrologyKernel {
             ));
         }
 
-        let writeback = KernelWritebackPayload::with_updates(
-            state_updates,
-            vec![
-                WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
-                WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
-                WritebackField::bounded(WB17_SYMBOL_EP, transpiration_actual, Some(0.0), None),
-                WritebackField::bounded(etp_symbol, etp, Some(0.0), None),
-                WritebackField::bounded(uptake_potential_symbol, upi, Some(0.0), None),
-                WritebackField::bounded(uptake_actual_symbol, ui, Some(0.0), None),
-            ],
-        );
+        let mut flux_updates = vec![
+            WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
+            WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
+            WritebackField::bounded(WB17_SYMBOL_EP, ui, Some(0.0), None),
+            WritebackField::bounded(etp_symbol, etp, Some(0.0), None),
+            WritebackField::bounded(uptake_potential_symbol, upi, Some(0.0), None),
+            WritebackField::bounded(uptake_actual_symbol, ui, Some(0.0), None),
+        ];
+        for index in 0..layer_count {
+            flux_updates.push(WritebackField::bounded(
+                Self::wb17_layer_flux_symbol(WB17_FLUX_SYMBOL_UPI, index + 1),
+                layer_potential_uptake[index],
+                Some(0.0),
+                None,
+            ));
+            flux_updates.push(WritebackField::bounded(
+                Self::wb17_layer_flux_symbol(WB17_FLUX_SYMBOL_UI, index + 1),
+                layer_actual_uptake[index],
+                Some(0.0),
+                Some(layer_potential_uptake[index]),
+            ));
+        }
+
+        let writeback = KernelWritebackPayload::with_updates(state_updates, flux_updates);
         Ok(KernelRunResponse::new(status, writeback))
     }
 

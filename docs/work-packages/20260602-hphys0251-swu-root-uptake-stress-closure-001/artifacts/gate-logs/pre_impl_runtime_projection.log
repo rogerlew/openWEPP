@@ -1,0 +1,22 @@
+## Runtime projection contract tests
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.77s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_hillslope_orchestrator-43648fcef710094f)
+
+running 1 test
+
+thread 'runtime_inputs::tests::hphys0251_management_projection_preserves_crop_pltol' (2305385) panicked at crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs:1313:9:
+assertion `left == right` failed
+  left: None
+ right: Some(Scalar(0.37))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test runtime_inputs::tests::hphys0251_management_projection_preserves_crop_pltol ... FAILED
+
+failures:
+
+failures:
+    runtime_inputs::tests::hphys0251_management_projection_preserves_crop_pltol
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 84 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p openwepp-hillslope-orchestrator --lib`

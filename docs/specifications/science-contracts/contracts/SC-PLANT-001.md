@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-06-02
 supersedes: []
 superseded_by: []
 ---
@@ -287,6 +287,10 @@ algorithm.
     - annual LAI uses vegetative biomass (`vdmt*(1-hia)`) with chapter-form
       denominator constants;
     - perennial LAI uses total biomass formulation.
+    Initial live-canopy assimilation may cap an input `cancov >= 0.999` to
+    `CANCOV_MAX=0.999` before evaluating `vdmt = log(1-cancov)/-bb`; this is an
+    openWEPP finite-domain guard because baseline `initgr.for` does not guard
+    the `cancov=1.0` logarithm singularity.
 12. Update roots:
     `rtmass_next = clamp(rtmass_prev + (vdmt_next - vdmt_prev) * rsr, 0, rtmmax)`,
     with non-decreasing active-growth behavior unless explicit reset occurs.
@@ -512,7 +516,7 @@ states required deterministic alias mapping for transition-control projections.
 | `PERENNIAL_LAI_B` | scalar | `13.6` | Perennial LAI exponential decay coefficient | REF-PLANT-LEGACY-GROW |
 | `ROOT_DEPTH_CURVE_A` | scalar | `3.03` | Annual root-depth sinusoid coefficient | REF-PLANT-LEGACY-GROW |
 | `ROOT_DEPTH_CURVE_B` | scalar | `1.47` | Annual root-depth sinusoid phase offset | REF-PLANT-LEGACY-GROW |
-| `CANCOV_MAX` | fraction | `0.999` | Upper bound applied to canopy-cover equation output | REF-PLANT-LEGACY-GROW |
+| `CANCOV_MAX` | fraction | `0.999` | OpenWEPP finite-domain guard for canopy-cover equation output and initial `cancov` assimilation before logarithm evaluation; numeric deviation from unguarded baseline singularity handling | REF-PLANT-LEGACY-INITGR, REF-PLANT-LEGACY-GROW, REF-PLANT-PHYS-BOUNDS |
 
 ## Tolerance and Numeric Notes
 
@@ -700,3 +704,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-25` | `14` | `Codex` | MOFE10 amendment: added legacy `gddmax<=0` sentinel authority from `yldopt/gdmax` (`INV-PLANT-024`), monthly climate input aliasing (`obmaxt`/`obmint`), PL16 resolution algorithm step, and required typed-fail vectors for unresolved sentinel branches. |
 | `2026-05-25` | `15` | `Codex` | MOFE11 amendment: added legacy `oratea/orater` domain authority (`infile.for` direct read + `decomp.for` exponential usage), revised PL17 decomposition-rate domain from positive to non-negative (`zero` as explicit no-decay), and updated guards/test vectors to reject negative constants while preserving typed fail-closed posture. |
 | `2026-06-02` | `16` | `Codex` | HPHYS0250 amendment: added initial live-canopy assimilation authority from baseline `init1/initgr`, introduced `INV-PLANT-025`, and tied established-perennial initial state to WB17 Ep lineage closure. |
+| `2026-06-02` | `17` | `Codex` | HPHYS0250 review disposition: disclosed `CANCOV_MAX=0.999` as an openWEPP finite-domain guard for initial live-canopy assimilation and named the corresponding production constants at the code site. |

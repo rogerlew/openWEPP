@@ -25,6 +25,10 @@ use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
 };
 
+use crate::constants::{
+    PL_GROWTH_ANNUAL_LAI_A, PL_GROWTH_ANNUAL_LAI_B, PL_GROWTH_CANCOV_MAX,
+    PL_GROWTH_PERENNIAL_LAI_A, PL_GROWTH_PERENNIAL_LAI_B,
+};
 use crate::HillslopeWritebackSurface;
 
 /// Typed errors for parser-to-hillslope runtime surface adaptation.

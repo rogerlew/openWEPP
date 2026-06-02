@@ -1243,11 +1243,11 @@ mod tests {
         .expect("WEPPpy corn-no till management fixture should parse");
         let PlantScenarioData::Cropland(plant) = &management.registries.plants[0].data;
 
-        assert_eq!(plant.canopy_line[2], 35.00196);
-        assert_eq!(plant.growth_line[5], 1700.0);
-        assert_eq!(plant.growth_line[7], 2.60099);
-        assert_eq!(plant.residue_line[5], 1.51995);
-        assert_eq!(plant.terminal_line[1], 3.5);
+        assert!((plant.canopy_line[2] - 35.00196).abs() <= 1.0e-12);
+        assert!((plant.growth_line[5] - 1700.0).abs() <= 1.0e-12);
+        assert!((plant.growth_line[7] - 2.60099).abs() <= 1.0e-12);
+        assert!((plant.residue_line[5] - 1.51995).abs() <= 1.0e-12);
+        assert!((plant.terminal_line[1] - 3.5).abs() <= 1.0e-12);
 
         let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
             .expect("WEPPpy corn-no till growth coefficients should project");
@@ -1292,6 +1292,33 @@ mod tests {
         assert_eq!(
             growth.get(&BoundarySymbol::from("rdmax")),
             Some(&BoundaryValue::scalar(1.51995))
+        );
+    }
+
+    #[test]
+    fn hphys0251_management_projection_preserves_crop_pltol() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("WEPPpy corn-no till management fixture should parse");
+        let plant = &mut management.registries.plants[0];
+        let PlantScenarioData::Cropland(plant_data) = &mut plant.data;
+        plant_data.residue_line[3] = 0.37;
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("crop-specific pltol should project into runtime state");
+        let state = &merged_surface.state_surface;
+
+        assert_eq!(
+            state.get(&BoundarySymbol::from(
+                "pl_growth_slot_0001_crop_0001_pltol"
+            )),
+            Some(&BoundaryValue::scalar(0.37))
+        );
+        assert_eq!(
+            state.get(&BoundarySymbol::from("pltol")),
+            Some(&BoundaryValue::scalar(0.37))
         );
     }
 

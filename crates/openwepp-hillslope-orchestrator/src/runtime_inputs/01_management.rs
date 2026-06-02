@@ -895,8 +895,8 @@ fn apply_primary_initial_live_canopy_assimilation(
     if imngmt == 3 || (imngmt == 1 && jdplt < jdharv) || (imngmt == 2 && jdplt > 0) {
         cancov = 0.0;
     }
-    if cancov >= 0.999 {
-        cancov = 0.999;
+    if cancov >= PL_GROWTH_CANCOV_MAX {
+        cancov = PL_GROWTH_CANCOV_MAX;
     }
     surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(cancov));
 
@@ -982,9 +982,13 @@ fn apply_primary_initial_live_canopy_assimilation(
         vdmt = ((1.0 - cancov).ln() / -bb).max(0.0);
         canhgt = (1.0 - (-bbb * vdmt).exp()) * hmax;
         lai = if imngmt == 1 {
-            xmxlai * vdmt / (vdmt + 0.5512 * (-6.8 * vdmt).exp())
+            xmxlai * vdmt
+                / (vdmt + PL_GROWTH_ANNUAL_LAI_A * (-PL_GROWTH_ANNUAL_LAI_B * vdmt).exp())
         } else {
-            xmxlai * vdmt / (vdmt + 0.2756 * (-13.6 * vdmt).exp())
+            xmxlai * vdmt
+                / (vdmt
+                    + PL_GROWTH_PERENNIAL_LAI_A
+                        * (-PL_GROWTH_PERENNIAL_LAI_B * vdmt).exp())
         };
         if !lai.is_finite() || lai < 0.0 {
             return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {

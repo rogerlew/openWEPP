@@ -275,7 +275,7 @@ fn growth_equation_parameter_values(
     slot_index: usize,
     crop_slot_index: usize,
     plant: &openwepp_input_contract::parsers::management::PlantCroplandData,
-) -> Result<[(&'static str, f64); 18], HillslopeRuntimeInputError> {
+) -> Result<[(&'static str, f64); 19], HillslopeRuntimeInputError> {
     let bb =
         validate_projection_non_negative("bb", slot_index, crop_slot_index, plant.canopy_line[0])?;
     let bbb = validate_projection_non_negative(
@@ -345,6 +345,8 @@ fn growth_equation_parameter_values(
             allowed: "> btemp",
         });
     }
+    let pltol =
+        validate_projection_finite("pltol", slot_index, crop_slot_index, plant.residue_line[3])?;
     let rdmax =
         validate_projection_positive("rdmax", slot_index, crop_slot_index, plant.residue_line[5])?;
     let rsr = validate_projection_non_negative(
@@ -387,6 +389,7 @@ fn growth_equation_parameter_values(
         ("flivmx", flivmx),
         ("hmax", hmax),
         ("hi", hi),
+        ("pltol", pltol),
         ("xmxlai", xmxlai),
         ("rsr", rsr),
         ("rtmmax", rtmmax),

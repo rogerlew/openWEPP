@@ -1066,6 +1066,10 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("thetdr_{layer_index:04}"))
     }
 
+    fn wb17_layer_flux_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("{root}_{layer_index:04}"))
+    }
+
     fn frost_layer_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{layer_index:04}"))
     }
