@@ -141,7 +141,15 @@ fn compute_equation_growth_state_surface(
 
     let tave = f64::midpoint(inputs.tmax, inputs.tmin);
     let gdd = (tave - inputs.btemp).max(0.0);
-    let sumgdd_next = (state_before.sumgdd + gdd).min(inputs.gddmax);
+    let sumgdd_before = if state_before.sumgdd <= 0.0
+        && state_before.lai > 0.0
+        && inputs.xmxlai > 0.0
+    {
+        (inputs.gddmax * state_before.lai / inputs.xmxlai).min(inputs.gddmax)
+    } else {
+        state_before.sumgdd
+    };
+    let sumgdd_next = (sumgdd_before + gdd).min(inputs.gddmax);
     let fphu = (sumgdd_next / inputs.gddmax).clamp(0.0, 1.0);
 
     let temp_ratio = (gdd / (inputs.otemp - inputs.btemp)).min(1.0);

@@ -1,7 +1,7 @@
 # Management Fixture Provenance
 
 Primary seed corpus:
-`/home/workdir/wepppy/wepppy/wepp/management/data`
+`/workdir/wepppy/wepppy/wepp/management/data`
 
 Curated canonical fixtures:
 - `canonical_cropland_nonzero_98_4.man`

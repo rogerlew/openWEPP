@@ -6,8 +6,9 @@ mod tests {
     use openwepp_input_contract::parsers::{
         climate::{CompatibilityOptions, ParserMode as ClimateParserMode, parse_climate_from_str},
         management::{
-            DrainScenario, ParseMode as ManagementParseMode, PlantScenarioData, ScenarioMeta,
-            YearlyCroplandBranch, YearlyPerennialData, YearlyScenarioData,
+            DrainScenario, InitialScenarioData, ParseMode as ManagementParseMode,
+            PlantScenarioData, ScenarioMeta, YearlyCroplandBranch, YearlyPerennialData,
+            YearlyScenarioData,
             parse_management_from_str,
         },
         slope::{SlopeParserOptions, parse_slope_str},
@@ -1234,6 +1235,67 @@ mod tests {
     }
 
     #[test]
+    fn management_runtime_projection_preserves_wepppy_corn_no_till_growth_coefficients() {
+        let management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("WEPPpy corn-no till management fixture should parse");
+        let PlantScenarioData::Cropland(plant) = &management.registries.plants[0].data;
+
+        assert_eq!(plant.canopy_line[2], 35.00196);
+        assert_eq!(plant.growth_line[5], 1700.0);
+        assert_eq!(plant.growth_line[7], 2.60099);
+        assert_eq!(plant.residue_line[5], 1.51995);
+        assert_eq!(plant.terminal_line[1], 3.5);
+
+        let pl_surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("WEPPpy corn-no till growth coefficients should project");
+        let growth = &pl_surfaces.pl_growth_surface;
+
+        assert_eq!(
+            growth.get(&BoundarySymbol::from(
+                "pl_growth_slot_0001_crop_0001_beinp"
+            )),
+            Some(&BoundaryValue::scalar(35.00196))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from(
+                "pl_growth_slot_0001_crop_0001_gddmax"
+            )),
+            Some(&BoundaryValue::scalar(1700.0))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from(
+                "pl_growth_slot_0001_crop_0001_xmxlai"
+            )),
+            Some(&BoundaryValue::scalar(3.5))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from(
+                "pl_growth_slot_0001_crop_0001_rdmax"
+            )),
+            Some(&BoundaryValue::scalar(1.51995))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from("beinp")),
+            Some(&BoundaryValue::scalar(35.00196))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from("gddmax")),
+            Some(&BoundaryValue::scalar(1700.0))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from("xmxlai")),
+            Some(&BoundaryValue::scalar(3.5))
+        );
+        assert_eq!(
+            growth.get(&BoundarySymbol::from("rdmax")),
+            Some(&BoundaryValue::scalar(1.51995))
+        );
+    }
+
+    #[test]
     fn management_runtime_projection_rejects_out_of_range_initial_reference() {
         let mut management = parse_management_from_str(
             MANAGEMENT_CANONICAL_NONZERO_98_4,
@@ -1365,6 +1427,73 @@ mod tests {
                 .get(&BoundarySymbol::from("wb19_drain_enabled")),
             Some(&BoundaryValue::scalar(0.0))
         );
+    }
+
+    #[test]
+    fn management_runtime_projection_assimilates_initial_perennial_live_canopy() {
+        let mut management = parse_management_from_str(
+            MANAGEMENT_CANONICAL_NONZERO_98_4,
+            ManagementParseMode::Strict,
+        )
+        .expect("management fixture should parse");
+
+        let initial = &mut management.registries.initials[0];
+        let InitialScenarioData::Cropland(initial_data) = &mut initial.data;
+        initial_data.base_line[1] = 0.9;
+        initial_data.imngmt = 2;
+
+        let plant = &mut management.registries.plants[0];
+        let PlantScenarioData::Cropland(plant_data) = &mut plant.data;
+        plant_data.canopy_line[0] = 14.0;
+        plant_data.canopy_line[1] = 3.0;
+        plant_data.growth_line[7] = 2.6;
+        plant_data.residue_line[5] = 1.6;
+        plant_data.residue_line[7] = 2.0;
+        plant_data.terminal_line[1] = 5.0;
+
+        let yearly = &mut management.registries.yearlies[0];
+        let YearlyScenarioData::Cropland(cropland) = &mut yearly.data;
+        cropland.imngmt = 2;
+        cropland.branch = YearlyCroplandBranch::Perennial(YearlyPerennialData {
+            jdharv: 0,
+            jdplt: 0,
+            jdstop: 0,
+            rw: 0.0,
+            mgtopt: 3,
+            cut_days: Vec::new(),
+            grazing_cycles: Vec::new(),
+        });
+
+        let merged_surface = build_hillslope_runtime_surface_from_management(&management)
+            .expect("established perennial initial canopy should project");
+
+        let state = &merged_surface.state_surface;
+        let cancov = state
+            .get(&BoundarySymbol::from("cancov"))
+            .expect("cancov should be published")
+            .as_f64();
+        let vdmt = state
+            .get(&BoundarySymbol::from("vdmt"))
+            .expect("vdmt should be published")
+            .as_f64();
+        let lai = state
+            .get(&BoundarySymbol::from("lai"))
+            .expect("lai should be published")
+            .as_f64();
+        let rtd = state
+            .get(&BoundarySymbol::from("rtd"))
+            .expect("rtd should be published")
+            .as_f64();
+        let rtmass = state
+            .get(&BoundarySymbol::from("rtmass"))
+            .expect("rtmass should be published")
+            .as_f64();
+
+        assert!((cancov - 0.9).abs() < 1e-12);
+        assert!(vdmt > 0.0, "initial cancov must seed live biomass");
+        assert!(lai > 0.0, "initial cancov must seed live LAI");
+        assert!((rtd - 1.6).abs() < 1e-12);
+        assert!((rtmass - 2.0).abs() < 1e-12);
     }
 
     #[test]

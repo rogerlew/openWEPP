@@ -4,9 +4,11 @@ use std::collections::BTreeMap;
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeAnnualDecompositionAction,
     HillslopeAnnualDecompositionControl, HillslopeAnnualGrowthAction, HillslopeAnnualGrowthControl,
-    HillslopeConsumerAdapter, HillslopeDecompositionManagementClass,
-    HillslopeDecompositionTransitionControl, HillslopeGrowthManagementClass,
-    HillslopeGrowthTransitionControl, HillslopeKernel, HillslopeKernelPhaseClass,
+    HillslopeConsumerAdapter, HillslopeDecompositionKernelContext,
+    HillslopeDecompositionManagementClass, HillslopeDecompositionTransitionControl,
+    HillslopeDecompositionTransitionPayload, HillslopeGrowthKernelContext,
+    HillslopeGrowthManagementClass, HillslopeGrowthStateSurface, HillslopeGrowthTransitionControl,
+    HillslopeGrowthTransitionPayload, HillslopeKernel, HillslopeKernelPhaseClass,
     HillslopeKernelRequest, HillslopePerennialDecompositionAction,
     HillslopePerennialDecompositionControl, HillslopePerennialGrowthAction,
     HillslopePerennialGrowthControl, KernelRunResponse, KernelWritebackPayload,
@@ -410,6 +412,151 @@ fn hphys0246_wb18_percolation_requires_residual_storage_symbols_for_aggregate_wr
     assert!(
         response.writeback.state_updates.is_empty(),
         "failed WB18 guard must not publish partial state updates"
+    );
+}
+
+#[test]
+fn hphys0250_wb11_growth_transition_publishes_state_after_for_ep_lineage() {
+    let state_surface = BTreeMap::new();
+    let flux_surface = BTreeMap::new();
+    let state_after = HillslopeGrowthStateSurface {
+        sumgdd: 42.0,
+        vdmt: 1.25,
+        cancov: 0.45,
+        lai: 1.8,
+        rtmass: 0.75,
+        rtd: 0.62,
+        hia: 0.2,
+    };
+    let context =
+        HillslopeGrowthKernelContext::new(HillslopeGrowthManagementClass::Perennial, 1.0, 1.0)
+            .with_transition_payload(HillslopeGrowthTransitionPayload {
+                active_slot_index: 1,
+                active_crop_slot_index: 1,
+                runtime_day_of_year: 150,
+                state_before: HillslopeGrowthStateSurface {
+                    sumgdd: 40.0,
+                    vdmt: 1.0,
+                    cancov: 0.3,
+                    lai: 1.0,
+                    rtmass: 0.5,
+                    rtd: 0.25,
+                    hia: 0.1,
+                },
+                state_after,
+                control: HillslopeGrowthTransitionControl::Perennial(
+                    HillslopePerennialGrowthControl {
+                        jdharv: 0,
+                        jdplt: 0,
+                        jdstop: 0,
+                        mgtopt: 3,
+                        rw: 1.0,
+                        active_action: HillslopePerennialGrowthAction::None,
+                    },
+                ),
+            });
+    let request = HillslopeKernelRequest::with_phase_context(
+        "perennial_growth_transition",
+        HillslopeKernelPhaseClass::GrowthPerennialTransition,
+        HillslopeConsumerAdapter::Growth,
+        Some(context),
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-GROWTH-OK-001");
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "sumgdd"),
+        Some(state_after.sumgdd)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "vdmt"),
+        Some(state_after.vdmt)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "cancov"),
+        Some(state_after.cancov)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "lai"),
+        Some(state_after.lai)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "rtmass"),
+        Some(state_after.rtmass)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "rtd"),
+        Some(state_after.rtd)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "hia"),
+        Some(state_after.hia)
+    );
+    assert!(
+        !response.writeback.state_updates.is_empty(),
+        "growth transition must not NOP after scheduler computes state_after"
+    );
+}
+
+#[test]
+fn hphys0250_wb11_decomposition_transition_publishes_seed_surface() {
+    let state_surface = BTreeMap::new();
+    let flux_surface = BTreeMap::new();
+    let context = HillslopeDecompositionKernelContext::new(
+        HillslopeDecompositionManagementClass::Perennial,
+        1.0,
+        1.0,
+    )
+    .with_transition_payload(HillslopeDecompositionTransitionPayload {
+        active_slot_index: 1,
+        active_crop_slot_index: 1,
+        runtime_day_of_year: 150,
+        iresd_seed: 3.0,
+        sumrtm_seed: 2.25,
+        sumsrm_seed: 1.75,
+        control: HillslopeDecompositionTransitionControl::Perennial(
+            HillslopePerennialDecompositionControl {
+                mgtopt: 3,
+                ncut: 0,
+                ncycle: 0,
+                active_action: HillslopePerennialDecompositionAction::None,
+                active_grazing_cycle: None,
+            },
+        ),
+    });
+    let request = HillslopeKernelRequest::with_transition_context(
+        "decomposition_transition",
+        HillslopeKernelPhaseClass::DecompositionTransition,
+        HillslopeConsumerAdapter::Decomposition,
+        Some(context),
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-DECOMP-OK-001");
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "iresd_seed"),
+        Some(3.0)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "sumrtm_seed"),
+        Some(2.25)
+    );
+    assert_eq!(
+        state_update_scalar(&response.writeback.state_updates, "sumsrm_seed"),
+        Some(1.75)
+    );
+    assert!(
+        !response.writeback.state_updates.is_empty(),
+        "decomposition transition must not NOP after scheduler computes seed surface"
     );
 }
 
@@ -1925,6 +2072,53 @@ fn active_slot_resolution_rejects_missing_active_crop_for_day() {
     assert_eq!(
         report.phase_reports[2].decision_status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn hphys0250_zero_date_perennial_slot_remains_active_for_growth_dispatch() {
+    #[derive(Default)]
+    struct NoopKernel;
+
+    impl HillslopeKernel for NoopKernel {
+        fn run_hillslope_phase(
+            &mut self,
+            _request: &HillslopeKernelRequest<'_>,
+        ) -> KernelRunResponse {
+            let status = openwepp_sim_contract::status::SimulationStatus::ok(
+                SimulationPhase::HillslopeKernel,
+                "HSCHED-TEST-ZERO-DATE-PERENNIAL",
+            )
+            .expect("status should construct");
+            KernelRunResponse::new(status, KernelWritebackPayload::empty())
+        }
+    }
+
+    let topology_report = valid_topology_report();
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = NoopKernel;
+    let mut surface = seeded_growth_runtime_surface_for_day_year(2.0, 1.0, 1.0);
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdplt"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdharv"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pl_growth_slot_0001_crop_0001_jdstop"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("zero-date perennial slot should dispatch under baseline ptgrp semantics");
+
+    assert!(
+        report.scheduler_report.is_success(),
+        "zero-date perennial dispatch should not fail active crop resolution: {:?}",
+        report.scheduler_report.scheduler_status
     );
 }
 

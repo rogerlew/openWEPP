@@ -14,6 +14,26 @@ struct SnowHourlyState {
     melt_m: f64,
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn hphys0250_wb15_interception_scale_canonicalizes_near_zero_liquid_roundoff() {
+        let (liquid_after_interception, rainfall_scale) =
+            Wb11HydrologyKernel::resolve_interception_rainfall_scale(
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                0.001_08,
+                0.0,
+                2.168_404_344_971_009e-19,
+            )
+            .expect("within-tolerance liquid roundoff should canonicalize");
+
+        assert!(liquid_after_interception.abs() < f64::EPSILON);
+        assert!(rainfall_scale.abs() < f64::EPSILON);
+    }
+}
+
 #[derive(Debug, Clone)]
 struct SnowCouplingOutcome {
     signed_s: f64,
@@ -3433,7 +3453,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let interception = potential_interception.min(hyetograph_rainfall);
+        let interception =
+            Self::normalize_non_negative_within_tolerance(potential_interception.min(hyetograph_rainfall));
         Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
@@ -3533,14 +3554,16 @@ impl Wb11HydrologyKernel {
         interception_rainfall_input: f64,
         interception: f64,
     ) -> Result<(f64, f64), Wb11HydrologyKernelGuardError> {
-        let liquid_after_interception = interception_rainfall_input - interception;
+        let liquid_after_interception_raw = interception_rainfall_input - interception;
         Self::require_flux_range(
             phase_class,
             WB15_SYMBOL_INTERCEPTION_I,
-            liquid_after_interception,
+            liquid_after_interception_raw,
             Some(0.0),
             Some(interception_rainfall_input),
         )?;
+        let liquid_after_interception =
+            Self::normalize_non_negative_within_tolerance(liquid_after_interception_raw);
 
         if hyetograph_rainfall <= WB11_ZERO_THRESHOLD {
             return Ok((liquid_after_interception, 0.0));

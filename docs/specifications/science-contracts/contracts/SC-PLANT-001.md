@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 15
+contract_version: 16
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -74,6 +74,8 @@ Out of scope:
 | REF-PLANT-LEGACY-PTGRP | `/workdir/wepp-forest_260430_baseline/src/ptgrp.for:351-375` | Grazing day-window and `ncycle`-bounded cycle progression semantics. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRA | `/workdir/wepp-forest_260430_baseline/src/ptgra.for:188-291` | Annual event-day trigger precedence and event-day reset behavior for growth state. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-GROW | `/workdir/wepp-forest_260430_baseline/src/grow.for:280-930` | Canonical equation authority for daily GDD accumulation, stress-regulated biomass, canopy/LAI development, root growth/depth, and senescence decline dynamics. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-INIT1 | `/workdir/wepp-forest_260430_baseline/src/init1.for:147-244,334-356` | Initial-condition assimilation authority for established perennial (`jdplt=0`) live canopy, root-depth/root-mass initialization, and `initgr`-derived `vdmt`/`lai`/`sumgdd` state. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-INITGR | `/workdir/wepp-forest_260430_baseline/src/initgr.for:63-105` | Initial live biomass, canopy-height, LAI, and cumulative-GDD derivation from initial canopy cover and crop parameters. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-DECOMP | `/workdir/wepp-forest_260430_baseline/src/decomp.for:666-714` | Residue/decomposition event handling for annual extension controls (`jdburn`, `jdcut`, `jdmove`). | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-ORATE-DOMAIN | `/workdir/wepp-forest_260430_baseline/src/infile.for:539-541`, `/workdir/wepp-forest_260430_baseline/src/decomp.for:575-633` | Legacy decomposition-rate domain authority: `oratea/orater` are read directly from management payloads and used in exponential decay equations; zero-valued constants produce no-decay factors (`exp(0)=1`). | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INIDAT | `/workdir/wepp-forest_260430_baseline/src/inidat.for:613-647` | Zero-sentinel initialization and default domains for management schedule arrays. | `[DIRECT][Static]` |
@@ -343,6 +345,7 @@ algorithm.
 | INV-PLANT-022 | PL17 decomposition-kinetics parameter projection invariant: transition-control runtime projection must emit slot/crop decomposition-rate symbols (`oratea`, `orater`) on decomposition surfaces for active crops, preserving finite non-negative domains; zero-valued constants are valid no-decay controls and negative values are typed hard-fail projection input violations. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-LEGACY-ORATE-DOMAIN, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-023 | SIMIMPL21 root-uptake stress-lineage invariant: plant growth stress coupling must consume ET stress (`Ws`) and root-depth/uptake lineage (`Rd`/`rtd`, `UPi`, `Ui`) derived from canonical WB11 `swu` semantics; synthetic stress substitution detached from layer-uptake lineage is invalid. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-SWU, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-024 | Legacy `gddmax` sentinel closure: projected `gddmax<=0` must resolve through `yldopt/gdmax`-authoritative monthly-climate integration (`obmaxt`, `obmint`, `btemp`, management day controls) to a finite strictly positive `gddmax_eff` before phenology equations execute. | hard-fail | REF-PLANT-LEGACY-YLDOPT, REF-PLANT-LEGACY-GDMAX, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-025 | Initial live-canopy assimilation: cropland initial-condition `cancov` must initialize primary live plant state before daily growth/ET. For established perennial crops (`imngmt=2`, `jdplt=0`), projection must seed `rtd` from the `rdmax` envelope, `rtmass=rtmmax`, and `vdmt`/`lai` through legacy `initgr` equations when `cancov>0`; `sumgdd` must be initialized through `initgr` when `gddmax` is already resolved or at the first growth update after `gddmax_eff` sentinel resolution. It must not leave live-canopy state at unconditional zero when initial canopy cover is present. | hard-fail | REF-PLANT-LEGACY-INIT1, REF-PLANT-LEGACY-INITGR, REF-PLANT-LEGACY-INFILE, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -369,6 +372,7 @@ algorithm.
 - Transition-control projection domain violations handled through silent default or clamp. `[INFERENCE][Static]`
 - `gddmax<=0` branch without valid monthly climate vectors (`obmaxt`, `obmint`) or with non-positive resolved `gddmax_eff`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Negative decomposition-rate constants (`oratea`, `orater`) in projected transition payloads. `[DIRECT][Static] + [INFERENCE][Static]`
+- Established perennial initial condition (`imngmt=2`, `jdplt=0`) with positive `cancov` but zero/absent initialized `vdmt`, `lai`, `rtmass`, or `rtd`. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -382,6 +386,7 @@ algorithm.
 - OBL-PLANT-P-008: Preserve coupled ET stress/root-uptake lineage surfaces (`WS`/`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) and expose typed failures when lineage inputs are missing/non-finite/out-of-domain. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-009: Publish monthly climate vectors (`obmaxt[1..12]`, `obmint[1..12]`) to growth runtime surfaces and resolve projected `gddmax<=0` via legacy `yldopt/gdmax` semantics before phenology updates; unresolved or non-positive outcomes are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-010: Project decomposition-rate constants (`oratea`, `orater`) as finite non-negative values; zero is an explicit no-decay control and negative values are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-P-011: Assimilate initial-condition live canopy into primary plant state before first daily scheduler execution, using baseline `init1/initgr` semantics for established perennial cover and typed failures for impossible domains. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -402,6 +407,7 @@ algorithm.
 | Coupling completeness (`INV-PLANT-007`) | plant->consumer handoff | Hard error on missing/invalid field; no fallback payload synthesis | Tier-A/B gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | SIMIMPL21 ET stress/root-uptake lineage closure (`INV-PLANT-023`) | plant growth stress coupling boundary (`Ws`, `Rd`/`rtd`, `UPi`, `Ui`) | Hard error / `HOLD` when stress lineage is detached from WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Legacy `gddmax` sentinel closure (`INV-PLANT-024`) | growth input resolution boundary prior to PL16 equations | Hard error when `gddmax<=0` cannot resolve to finite positive `gddmax_eff` via monthly-climate integration | Tier-A gate for PL16 growth-physics execution | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Initial live-canopy assimilation (`INV-PLANT-025`) | management initial-condition projection before first daily scheduler execution | Hard error when required crop parameters are missing/non-finite/out-of-domain; initialized live state must be present for established perennial cover | Tier-A gate for WB17 Ep lineage and PL initial-state parity | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Transition-control projection closure (`INV-PLANT-011/012/013/014/015`) | parser->runtime projection boundary and scheduler pre-dispatch | Hard error on missing/incoherent/index-invalid/out-of-domain control surface | Tier-A gate for PL transition execution; Tier-B investigation otherwise | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Model-limit governance (`INV-PLANT-009`) | review/verification and runtime config audit | Governance failure; requires explicit contract amendment before promotion | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
@@ -433,6 +439,7 @@ algorithm.
 | `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/negative decomposition-rate projection symbols; zero is accepted as no-decay | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-023` | runtime + governance | ET stress/root-uptake lineage validator for coupled growth regulation | Typed hard error / explicit `HOLD` when `Ws` and root-uptake lineage are not traceable to WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-024` | runtime | Legacy `gddmax` sentinel resolver (`yldopt/gdmax` branch) | Typed hard error on missing/non-finite monthly climate vectors or non-positive resolved `gddmax_eff` | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-025` | runtime | Initial-condition projection for primary live plant state (`cancov`, `vdmt`, `lai`, `sumgdd`, `rtmass`, `rtd`) | Typed hard error on missing/non-finite/out-of-domain assimilation inputs; zero live-state publication is invalid when established perennial initial cover is present | Tier-A gate for WB17 Ep lineage closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -692,3 +699,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-25` | `13` | `Codex` | SIMIMPL21 amendment: added WB11 ET stress/root-uptake lineage authority (`INV-PLANT-023`) with coupled boundary disposition, explicit WB11 lineage obligations (`Ws`, `UPi`, `Ui`, `Rd`/`rtd`), and downstream SIMIMPL22/SIMIMPL23 gating posture. |
 | `2026-05-25` | `14` | `Codex` | MOFE10 amendment: added legacy `gddmax<=0` sentinel authority from `yldopt/gdmax` (`INV-PLANT-024`), monthly climate input aliasing (`obmaxt`/`obmint`), PL16 resolution algorithm step, and required typed-fail vectors for unresolved sentinel branches. |
 | `2026-05-25` | `15` | `Codex` | MOFE11 amendment: added legacy `oratea/orater` domain authority (`infile.for` direct read + `decomp.for` exponential usage), revised PL17 decomposition-rate domain from positive to non-negative (`zero` as explicit no-decay), and updated guards/test vectors to reject negative constants while preserving typed fail-closed posture. |
+| `2026-06-02` | `16` | `Codex` | HPHYS0250 amendment: added initial live-canopy assimilation authority from baseline `init1/initgr`, introduced `INV-PLANT-025`, and tied established-perennial initial state to WB17 Ep lineage closure. |

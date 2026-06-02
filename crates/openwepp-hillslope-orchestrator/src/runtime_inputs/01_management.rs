@@ -847,10 +847,243 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         }
     }
 
+    apply_primary_initial_live_canopy_assimilation(&mut pl_growth_surface)?;
+
     Ok(HillslopePlRuntimeSurfaces {
         pl_schedule_surface,
         pl_growth_surface,
         pl_decomp_surface,
+    })
+}
+
+#[allow(clippy::too_many_lines)]
+fn apply_primary_initial_live_canopy_assimilation(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> Result<(), HillslopeRuntimeInputError> {
+    let slot_index = 1;
+    let crop_slot_index = 1;
+    let imngmt = projection_usize_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
+        "imngmt",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let jdharv = projection_usize_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
+        "jdharv",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let jdplt = projection_usize_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
+        "jdplt",
+        slot_index,
+        crop_slot_index,
+    )?;
+
+    let mut cancov = projection_f64_from_surface(
+        surface,
+        &BoundarySymbol::from("cancov"),
+        "cancov",
+        slot_index,
+        crop_slot_index,
+    )?;
+
+    if imngmt == 3 || (imngmt == 1 && jdplt < jdharv) || (imngmt == 2 && jdplt > 0) {
+        cancov = 0.0;
+    }
+    if cancov >= 0.999 {
+        cancov = 0.999;
+    }
+    surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(cancov));
+
+    let bb = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("bb", slot_index, crop_slot_index),
+        "bb",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let bbb = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("bbb", slot_index, crop_slot_index),
+        "bbb",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let hmax = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("hmax", slot_index, crop_slot_index),
+        "hmax",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let xmxlai = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("xmxlai", slot_index, crop_slot_index),
+        "xmxlai",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let gddmax = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("gddmax", slot_index, crop_slot_index),
+        "gddmax",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let rsr = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("rsr", slot_index, crop_slot_index),
+        "rsr",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let rdmax = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("rdmax", slot_index, crop_slot_index),
+        "rdmax",
+        slot_index,
+        crop_slot_index,
+    )?;
+    let rtmmax = projection_f64_from_surface(
+        surface,
+        &pl_growth_slot_crop_symbol("rtmmax", slot_index, crop_slot_index),
+        "rtmmax",
+        slot_index,
+        crop_slot_index,
+    )?;
+
+    let mut vdmt = 0.0;
+    let mut lai = 0.0;
+    let mut canhgt = 0.0;
+    if cancov > 0.0 {
+        if bb <= 0.0 {
+            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "bb",
+                slot_index,
+                crop_slot_index,
+                value: bb,
+                allowed: ">0.0 when initial cancov > 0.0",
+            });
+        }
+        if xmxlai <= 0.0 {
+            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "xmxlai",
+                slot_index,
+                crop_slot_index,
+                value: xmxlai,
+                allowed: ">0.0 when initial cancov > 0.0",
+            });
+        }
+        vdmt = ((1.0 - cancov).ln() / -bb).max(0.0);
+        canhgt = (1.0 - (-bbb * vdmt).exp()) * hmax;
+        lai = if imngmt == 1 {
+            xmxlai * vdmt / (vdmt + 0.5512 * (-6.8 * vdmt).exp())
+        } else {
+            xmxlai * vdmt / (vdmt + 0.2756 * (-13.6 * vdmt).exp())
+        };
+        if !lai.is_finite() || lai < 0.0 {
+            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: "lai",
+                slot_index,
+                crop_slot_index,
+                value: lai,
+                allowed: "finite and >=0.0 after initial cancov assimilation",
+            });
+        }
+    }
+
+    let (rtd, rtmass) = if imngmt == 2 && jdplt == 0 {
+        (rdmax, rtmmax)
+    } else if imngmt == 1 && cancov > 0.0 {
+        (rsr * canhgt, rsr * vdmt)
+    } else {
+        (0.0, 0.0)
+    };
+
+    let sumgdd = if lai > 0.0 && xmxlai > 0.0 && gddmax > 0.0 {
+        gddmax * lai / xmxlai
+    } else {
+        0.0
+    };
+
+    for (symbol, value) in [
+        ("sumgdd", sumgdd),
+        ("vdmt", vdmt),
+        ("lai", lai),
+        ("rtmass", rtmass),
+        ("rtd", rtd),
+    ] {
+        if !value.is_finite() || value < 0.0 {
+            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: symbol,
+                slot_index,
+                crop_slot_index,
+                value,
+                allowed: "finite and >=0.0 after initial live-canopy assimilation",
+            });
+        }
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
+
+    Ok(())
+}
+
+fn projection_f64_from_surface(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &BoundarySymbol,
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let Some(value) = surface.get(symbol).map(|value| (*value).as_f64()) else {
+        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field,
+            slot_index,
+            crop_slot_index,
+            value: f64::NAN,
+        });
+    };
+    if !value.is_finite() {
+        return Err(HillslopeRuntimeInputError::NonFinitePlProjectionField {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+        });
+    }
+    Ok(value)
+}
+
+fn projection_usize_from_surface(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    symbol: &BoundarySymbol,
+    field: &'static str,
+    slot_index: usize,
+    crop_slot_index: usize,
+) -> Result<usize, HillslopeRuntimeInputError> {
+    let value = projection_f64_from_surface(surface, symbol, field, slot_index, crop_slot_index)?;
+    if value < 0.0 || (value.fract()).abs() > f64::EPSILON {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: "non-negative integer scalar",
+        });
+    }
+    format!("{value:.0}").parse::<usize>().map_err(|_| {
+        HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field,
+            slot_index,
+            crop_slot_index,
+            value,
+            allowed: "non-negative integer scalar representable as usize",
+        }
     })
 }
 

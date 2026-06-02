@@ -1,0 +1,11 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.54s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_hillslope_orchestrator-43648fcef710094f)
+
+running 4 tests
+test hydrology::tests::hphys0250_wb15_interception_scale_canonicalizes_near_zero_liquid_roundoff ... ok
+test tests::hphys0250_wb11_growth_transition_publishes_state_after_for_ep_lineage ... ok
+test tests::hphys0250_wb11_decomposition_transition_publishes_seed_surface ... ok
+test tests::hphys0250_zero_date_perennial_slot_remains_active_for_growth_dispatch ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 79 filtered out; finished in 0.00s

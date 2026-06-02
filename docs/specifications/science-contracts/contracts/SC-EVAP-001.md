@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 10
+contract_version: 11
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -86,6 +86,7 @@ Out of scope:
 | `dx`, `ds` | `m` | Maximum and realized soil-evaporation depth (Eq. [5.3.1]-[5.3.2]). | ET root-zone pathway | soil-layer water updates |
 | `UPi`, `Ui` | `m d^-1` | Potential and actual layer `i` plant water-use rates (Eq. [5.3.3]-[5.3.4]). | ET root-zone pathway | stress-factor and layer-water updates |
 | `Θ`, `Θi`, `Θr`, `Θc`, `ULi` | `m`, `m`, `m^3 m^-3`, `fraction`, `m` | Root-zone/layer water states and thresholds used for ET extraction constraints. | soil/water state pathway | ET distribution logic |
+| `Rd`, `rtd`, `pltol` | `m`, `m`, `fraction` | Active root depth and plant-tolerance domain required by baseline `swu` uptake distribution and deficit scaling. | plant-growth/runtime management pathway | post-WB19 root-uptake pathway |
 | `Ws` | `fraction` | Plant-growth water-stress factor (`0..1`) from supply-demand ratio (Eq. [5.5.1], Eq. [8.2.15]). | ET coupling pathway | plant-growth regulation |
 | `ET` | `m` | Daily cumulative evapotranspiration withdrawal term in water-balance closure Eq. [5.1.1]. | ET integration pathway | daily water-balance closure consumer |
 | `RA`, `Tmax`, `Tmin`, `Tdp`, `u_z` | `Ly`, `degC`, `degC`, `degC`, `m s^-1` | Climate forcing surfaces required by potential ET formulations. | climate forcing pathway | ET potential pathway |
@@ -185,6 +186,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-013 | SIMIMPL21 baseline-authority invariant: ET contract authority must preserve baseline stage-memory transitions (`s1`, `s2`, `tu`, `tv`), depth-aware soil evaporation extraction from `st(i)`, and root-zone uptake semantics (`UPi`, `Ui`, `Ws = ΣUi/Etp`) with explicit branch lineage to legacy `evap` + `swu` routines. | hard-fail | REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-014 | HPHYS0242 hourly ET/infiltration ordering invariant: hourly-lane ET must execute only after the same-day WB14 infiltration and WB18 percolation lineage has mutated layer state, and stage-memory/soil-extraction logic must consume same-pass infiltration lineage rather than stale `wb12_infiltration` compatibility state. Missing or conflicting same-pass infiltration lineage is a typed hard failure, not a zero/default substitution. | hard-fail | REF-EVAP-LEGACY-HOURLY-ORDER, REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-CH5-DIST, SC-WATBAL-001#INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-015 | HPHYS0249 WB17 layer-storage invariant: promoted WB17 `Ep`/`Es` evidence must mutate runtime layer storage (`wb18_perc_theta_####` as the openWEPP alias for baseline `st(i)`) for upper-zone soil evaporation (`evap.for:618-668`) before WB19 and for root uptake (`swu.for:122-187`) after WB19 drainage/lateral mutation before recomputing final `wb11_soil_water`. Scalar-only subtraction from `wb11_soil_water`, LAI-only `exp(-0.4*lai)` soil partitioning, root uptake ahead of WB19, or root uptake that bypasses `rtd`/`wb18_perc_ul_####` is non-authoritative. | hard-fail | REF-EVAP-LEGACY-SOILX, REF-EVAP-LEGACY-SWU, REF-EVAP-LEGACY-HOURLY-ORDER, SC-WATBAL-001#INV-WATBAL-037 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-016 | HPHYS0250 final `Ep` lineage invariant: promoted WB17 `Ep` evidence must preserve plant-management/growth runtime activation through scheduler execution so `rtd` can be produced before water-balance phases, post-WB19 `PlantRootUptake` consumes active `rtd`/`pltol`/`Etp` lineage, and WB13 publication consumes the final root-uptake flux `Ep = ΣUi`, not the pre-`swu` ET-phase seed or stale state-surface aliases. Stripping PL runtime sentinel surfaces, suppressing growth phases, leaving `rtd=0` by scheduler construction when management data are present, or allowing same-name state `Ep` to shadow final flux `Ep` is invalid closure evidence. | hard-fail | REF-EVAP-LEGACY-ETP, REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK, SC-WATBAL-001#INV-WATBAL-038 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -205,6 +207,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-013` | runtime + governance | Stage-memory/root-uptake lineage validator for legacy `evap` + `swu` authority closure | Typed hard error / explicit `HOLD` when stage-memory, depth extraction, or `UPi`/`Ui` lineage semantics are missing or contradicted | SIMIMPL ET migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-014` | runtime + governance | WB17 scheduler-order validator plus same-pass infiltration-lineage resolver | Typed hard error / explicit `HOLD` when hourly ET runs before WB14/WB18 lineage, consumes stale compatibility infiltration, or silently defaults missing infiltration lineage to zero | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-015` | runtime + governance | WB17 layer-storage ET lineage validator across soil evaporation, `swu` uptake, and aggregate writeback | Typed hard error / explicit `HOLD` when WB17 emits `Ep`/`Es` from scalar-only storage, bypasses `wb18_perc_theta_####`, or fails to recompute aggregate storage after layer mutation | HPHYS0249 WB17/storage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-016` | runtime + governance | Final `Ep` lineage validator spanning PL scheduler activation, post-WB19 `PlantRootUptake`, and WB13 flux-authoritative publication | Typed hard error / explicit `HOLD` when growth/runtime sentinel stripping suppresses `rtd`, when `PlantRootUptake` does not publish final `Ep`, or when WB13 consumes stale pre-`swu` aliases | HPHYS0250 `Ep` lineage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -330,6 +333,9 @@ Minimum WB17 ET production-kernel conformance vectors:
 8. HPHYS0249 root-uptake vector proves `Ep` extraction uses `rtd`,
    `wb18_perc_ul_####`, and `wb18_perc_theta_####` rather than scalar aggregate
    subtraction.
+9. HPHYS0250 final-lineage vector proves scheduler execution retains PL
+   runtime activation surfaces so growth can produce nonzero `rtd` before
+   WB17/WB19 phases, and WB13 consumes final post-root-uptake flux `Ep`.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -349,6 +355,8 @@ Minimum WB17 ET production-kernel conformance vectors:
    output states and must hard-fail via WB13 typed guards.
 3. ET-component boundaries emitted to WB13 remain unit-consistent with
    Chapter-5 daily water-balance closure expectations.
+4. When WB17 publishes both a pre-root-uptake `Ep` seed and a post-root-uptake
+   `Ep` flux, WB13 must consume the post-root-uptake flux-authoritative value.
 
 ## WB15 Canopy-Interception Coupling Addendum
 
@@ -433,6 +441,35 @@ Minimum WB17 ET production-kernel conformance vectors:
    case and a root-uptake layer-mutation case before production code edits are
    promotable.
 
+## HPHYS0250 Final Ep Lineage Addendum
+
+1. Management-derived PL runtime activation surfaces must remain present through
+   canonical scheduler execution on active-crop days. Removing
+   `pl_schedule_slot_count` or an equivalent activation sentinel before
+   scheduling suppresses growth phases and is invalid for promoted `Ep` lineage
+   claims unless runner-side scheduling first proves that the current
+   simulation-year/day has no active crop under the same PL slot-window rules.
+   Baseline perennial slots with `jdplt=0` remain active under `ptgrp` semantics
+   (`sdate > jdplt` and `jdstop=0` means all simulation days are eligible);
+   they are not inactive placeholders.
+   Because decomposition runs before same-day ET/root uptake, initial runtime
+   publication must provide neutral prior stress (`Ws=1.0`) when no same-day
+   stress has yet been computed.
+2. Growth-produced `rtd` is the active root-depth boundary for `swu` root uptake.
+   If management data are present, `rtd=0` is valid only as a produced plant
+   state, not as a scheduler construction artifact caused by disabled growth or
+   calendar-year values supplied where PL dispatch requires simulation-year
+   indices.
+3. Post-WB19 `PlantRootUptake` owns final `Ep`: `Ep = ΣUi`, with `UPi`, `Ui`,
+   and `Ws` lineage preserved from `swu.for`. The ET-phase seed `Ep=0` is not a
+   daily publication authority after root uptake runs.
+4. WB13 daily output must consume flux-authoritative final `Ep` when same-name
+   state and flux aliases exist. State-surface `Ep` aliases cannot shadow final
+   root-uptake flux in semantic comparator surfaces.
+5. HPHYS0250 contract-derived tests must include a runner-side PL sentinel
+   preservation guard and a WB13 final-flux publication vector before
+   production code edits are promotable.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -448,6 +485,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `11` | `Codex` | HPHYS0250 amendment: added `INV-EVAP-016` requiring PL runtime activation preservation, post-WB19 final `Ep = ΣUi` lineage, and WB13 flux-authoritative final `Ep` publication. |
 | `2026-06-02` | `10` | `Codex` | HPHYS0249 amendment: added `INV-EVAP-015` requiring WB17 `Ep`/`Es` production to mutate `wb18_perc_theta_####` layer storage using baseline `evap.for` and `swu.for` lineage before aggregate `wb11_soil_water` writeback. |
 | `2026-06-02` | `10a` | `Codex` | HPHYS0249 review follow-up: corrected `WB17_TRANSPIRATION_LAI_FULL_COVER` citation to `evap.for` authority and recorded the per-crop `pltol` runtime projection gap. |
 | `2026-06-01` | `9` | `Codex` | HPHYS0242 amendment: added `INV-EVAP-014`, baseline hourly final-hour ET ordering authority, same-pass WB14 infiltration lineage requirements, and stale/default infiltration rejection posture for hourly ET lanes. |

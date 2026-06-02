@@ -13,6 +13,11 @@
 - Instruction precedence is nearest-to-workdir: global defaults -> repo root -> nested directories.
 - When a nested AGENTS.md exists for files you are editing, treat it as the primary local playbook.
 
+## Local Python Environment
+- Repo-local Python tooling should use `.venv/bin/python`.
+- `.venv` is an untracked local environment; do not commit it.
+- If pip is missing, run `.venv/bin/python -m ensurepip --upgrade` before installing packages.
+
 ## Core Directives
 - `??` in a prompt means provide critical analysis only; do not implement code.
 - Ask for clarification when requirements or debug context are ambiguous.

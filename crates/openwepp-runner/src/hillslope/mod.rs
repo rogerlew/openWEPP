@@ -298,6 +298,18 @@ struct Hphys0245TraceRow {
     wb13_total_soil_mm: Option<f64>,
     wb13_soil_water_total_mm: Option<f64>,
     wb11_minus_theta_sum_m: Option<f64>,
+    pl_sumgdd: Option<f64>,
+    pl_vdmt: Option<f64>,
+    pl_cancov: Option<f64>,
+    pl_lai: Option<f64>,
+    pl_rtmass: Option<f64>,
+    pl_rtd: Option<f64>,
+    pl_hia: Option<f64>,
+    etp_m: Option<f64>,
+    upi_m: Option<f64>,
+    ui_m: Option<f64>,
+    ep_m: Option<f64>,
+    ws: Option<f64>,
 }
 
 struct Hphys0245TelemetryKernel<'a> {
@@ -357,7 +369,7 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
-const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-trace-v1";
+const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-trace-v2";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -2115,6 +2127,11 @@ fn seed_wb11_runtime_surface_inputs(
             BoundaryValue::scalar(0.0),
         );
     }
+    if runtime_surface_symbol_value(runtime_surface, "Ws").is_none() {
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Ws"), BoundaryValue::scalar(1.0));
+    }
     if runtime_surface_symbol_value(runtime_surface, "wb19_lateral_anisotropy_ratio").is_none() {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "wb11_seed",
@@ -3065,9 +3082,11 @@ fn execute_scheduler_kernel_lifecycle(
 ) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
     seed_wb11_runtime_surface_inputs(&mut runtime_surface, context.execution_lane)?;
-    runtime_surface
-        .state_surface
-        .retain(|symbol, _| symbol.as_str() != "pl_schedule_slot_count");
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("year"),
+        BoundaryValue::scalar(f64::from(context.simulation_year)),
+    );
+    prepare_pl_runtime_activation_for_scheduler(&mut runtime_surface)?;
     let trace_day = context
         .hphys0245_trace_config
         .is_some_and(|config| config.includes_day(context.sim_day_index));
@@ -3249,6 +3268,234 @@ fn execute_scheduler_kernel_lifecycle(
     })
 }
 
+fn prepare_pl_runtime_activation_for_scheduler(
+    runtime_surface: &mut HillslopeWritebackSurface,
+) -> Result<(), HillslopeCliError> {
+    const PL_SCHEDULE_SLOT_COUNT_SYMBOL: &str = "pl_schedule_slot_count";
+
+    if runtime_surface_symbol_value(runtime_surface, PL_SCHEDULE_SLOT_COUNT_SYMBOL).is_none() {
+        return Ok(());
+    }
+
+    if pl_runtime_has_active_crop_for_scheduler_day(runtime_surface)? {
+        return Ok(());
+    }
+
+    runtime_surface
+        .state_surface
+        .remove(&BoundarySymbol::from(PL_SCHEDULE_SLOT_COUNT_SYMBOL));
+    Ok(())
+}
+
+fn pl_runtime_has_active_crop_for_scheduler_day(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<bool, HillslopeCliError> {
+    let slot_count = require_runtime_usize_in_range(runtime_surface, "pl_schedule_slot_count", 1)?;
+    let rotation_years =
+        require_runtime_usize_in_range(runtime_surface, "pl_schedule_rotation_years", 1)?;
+    let rotation_repeats =
+        require_runtime_usize_in_range(runtime_surface, "pl_schedule_rotation_repeats", 1)?;
+    let runtime_year = require_runtime_usize_in_range(runtime_surface, "year", 1)?;
+    let day_of_year = require_runtime_usize_in_range(runtime_surface, "day", 1)?;
+    if day_of_year > 366 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!("day must be in 1..=366 for PL activation, observed {day_of_year}"),
+        });
+    }
+
+    let max_runtime_year = rotation_repeats
+        .checked_mul(rotation_years)
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: "rotation_repeats * rotation_years overflowed".to_string(),
+        })?;
+    if runtime_year > max_runtime_year {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!(
+                "year must be in 1..={max_runtime_year} for PL activation, observed {runtime_year}"
+            ),
+        });
+    }
+
+    let rotation_index = ((runtime_year - 1) / rotation_years) + 1;
+    let year_in_rotation = ((runtime_year - 1) % rotation_years) + 1;
+    let mut slot_candidates = Vec::new();
+    for slot_index in 1..=slot_count {
+        let ofe_index = require_runtime_usize_in_range(
+            runtime_surface,
+            &pl_schedule_slot_symbol("ofe_index", slot_index),
+            1,
+        )?;
+        if ofe_index != 1 {
+            continue;
+        }
+        let slot_year_in_rotation = require_runtime_usize_in_range(
+            runtime_surface,
+            &pl_schedule_slot_symbol("year_in_rotation", slot_index),
+            1,
+        )?;
+        let slot_rotation_index = require_runtime_usize_in_range(
+            runtime_surface,
+            &pl_schedule_slot_symbol("rotation_index", slot_index),
+            1,
+        )?;
+        if slot_year_in_rotation == year_in_rotation && slot_rotation_index == rotation_index {
+            slot_candidates.push(slot_index);
+        }
+    }
+
+    let [slot_index] = slot_candidates.as_slice() else {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!(
+                "expected exactly one active PL slot for ofe=1 year_in_rotation={year_in_rotation} rotation_index={rotation_index}, observed {slot_candidates:?}"
+            ),
+        });
+    };
+
+    let crop_slots = require_runtime_usize_in_range(
+        runtime_surface,
+        &pl_schedule_slot_symbol("crop_slots", *slot_index),
+        1,
+    )?;
+    let mut active_crop_count = 0usize;
+    for crop_slot_index in 1..=crop_slots {
+        if pl_crop_slot_is_active_for_day(
+            runtime_surface,
+            *slot_index,
+            crop_slot_index,
+            day_of_year,
+        )? {
+            active_crop_count += 1;
+        }
+    }
+
+    match active_crop_count {
+        0 => Ok(false),
+        1 => Ok(true),
+        _ => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!(
+                "expected at most one active PL crop for slot {slot_index} day {day_of_year}, observed {active_crop_count}"
+            ),
+        }),
+    }
+}
+
+fn pl_crop_slot_is_active_for_day(
+    runtime_surface: &HillslopeWritebackSurface,
+    slot_index: usize,
+    crop_slot_index: usize,
+    day_of_year: usize,
+) -> Result<bool, HillslopeCliError> {
+    let imngmt = require_runtime_usize_in_range(
+        runtime_surface,
+        &pl_schedule_slot_crop_symbol("imngmt", slot_index, crop_slot_index),
+        1,
+    )?;
+    if imngmt > 3 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!("imngmt must be in 1..=3 for PL activation, observed {imngmt}"),
+        });
+    }
+
+    let jdplt = require_runtime_usize_in_range(
+        runtime_surface,
+        &pl_growth_slot_crop_symbol("jdplt", slot_index, crop_slot_index),
+        0,
+    )?;
+    if jdplt > 366 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!("jdplt must be in 0..=366 for PL activation, observed {jdplt}"),
+        });
+    }
+    let jdharv = require_runtime_usize_in_range(
+        runtime_surface,
+        &pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index),
+        0,
+    )?;
+    if jdharv > 366 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!("jdharv must be in 0..=366 for PL activation, observed {jdharv}"),
+        });
+    }
+
+    let (active_end, jdstop) = if imngmt == 2 {
+        let jdstop = require_runtime_usize_in_range(
+            runtime_surface,
+            &pl_growth_slot_crop_symbol("jdstop", slot_index, crop_slot_index),
+            0,
+        )?;
+        if jdstop > 366 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "pl_runtime_activation",
+                detail: format!("jdstop must be in 0..=366 for PL activation, observed {jdstop}"),
+            });
+        }
+        if jdplt == 0 {
+            return Ok(jdstop == 0 || day_of_year <= jdstop);
+        }
+        let active_end = if jdstop == 0 { jdharv.max(1) } else { jdstop };
+        (active_end, jdstop)
+    } else {
+        (jdharv.max(1), 0)
+    };
+
+    if jdplt == 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!(
+                "jdplt must be in 1..=366 for non-perennial PL activation, observed jdplt={jdplt} jdharv={jdharv} jdstop={jdstop}"
+            ),
+        });
+    }
+
+    Ok(day_is_within_julian_window(day_of_year, jdplt, active_end))
+}
+
+fn require_runtime_usize_in_range(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+    min_allowed: usize,
+) -> Result<usize, HillslopeCliError> {
+    let value = require_runtime_surface_scalar(runtime_surface, symbol)?;
+    let value = scalar_to_usize(symbol, value)?;
+    if value < min_allowed {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pl_runtime_activation",
+            detail: format!(
+                "{symbol} must be >= {min_allowed} for PL activation, observed {value}"
+            ),
+        });
+    }
+    Ok(value)
+}
+
+fn day_is_within_julian_window(day_of_year: usize, start_day: usize, end_day: usize) -> bool {
+    if start_day <= end_day {
+        day_of_year >= start_day && day_of_year <= end_day
+    } else {
+        day_of_year >= start_day || day_of_year <= end_day
+    }
+}
+
+fn pl_schedule_slot_symbol(root: &str, slot_index: usize) -> String {
+    format!("pl_schedule_slot_{slot_index:04}_{root}")
+}
+
+fn pl_schedule_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: usize) -> String {
+    format!("pl_schedule_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
+fn pl_growth_slot_crop_symbol(root: &str, slot_index: usize, crop_slot_index: usize) -> String {
+    format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
+}
+
 fn hphys0245_trace_config_from_env() -> Result<Option<Hphys0245TraceConfig>, HillslopeCliError> {
     let Some(path_value) = std::env::var_os(HPHYS0245_TRACE_PATH_ENV) else {
         return Ok(None);
@@ -3387,6 +3634,18 @@ fn build_hphys0245_trace_row(
         wb13_total_soil_mm: wb13_wat.map(|row| row.total_soil),
         wb13_soil_water_total_mm: wb13_wat.map(|row| row.soil_water_total),
         wb11_minus_theta_sum_m,
+        pl_sumgdd: runtime_surface_symbol_value(runtime_surface, "sumgdd"),
+        pl_vdmt: runtime_surface_symbol_value(runtime_surface, "vdmt"),
+        pl_cancov: runtime_surface_symbol_value(runtime_surface, "cancov"),
+        pl_lai: runtime_surface_symbol_value(runtime_surface, "lai"),
+        pl_rtmass: runtime_surface_symbol_value(runtime_surface, "rtmass"),
+        pl_rtd: runtime_surface_symbol_value(runtime_surface, "rtd"),
+        pl_hia: runtime_surface_symbol_value(runtime_surface, "hia"),
+        etp_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Etp"),
+        upi_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "UPi"),
+        ui_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ui"),
+        ep_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ep"),
+        ws: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ws"),
     }
 }
 
@@ -5843,6 +6102,81 @@ mod tests {
     }
 
     #[test]
+    fn hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage() {
+        let source = include_str!("mod.rs");
+        let sentinel = "pl_schedule_slot_count";
+        let forbidden_fragment = ["symbol.as_str() != ", "\"", sentinel, "\""].concat();
+
+        assert!(
+            !source.contains(&forbidden_fragment),
+            "runner scheduler lifecycle must not strip {sentinel}; PL growth must remain active so rtd can feed final Ep lineage"
+        );
+    }
+
+    #[test]
+    fn hphys0250_pl_activation_keeps_zero_date_perennial_slots_active() {
+        let mut runtime_surface = HillslopeWritebackSurface {
+            state_surface: BTreeMap::new(),
+            flux_surface: BTreeMap::new(),
+        };
+        for (symbol, value) in [
+            ("pl_schedule_slot_count", 1.0),
+            ("pl_schedule_rotation_years", 4.0),
+            ("pl_schedule_rotation_repeats", 1.0),
+            ("year", 1.0),
+            ("day", 1.0),
+            ("pl_schedule_slot_0001_ofe_index", 1.0),
+            ("pl_schedule_slot_0001_year_in_rotation", 1.0),
+            ("pl_schedule_slot_0001_rotation_index", 1.0),
+            ("pl_schedule_slot_0001_crop_slots", 1.0),
+            ("pl_schedule_slot_0001_crop_0001_imngmt", 2.0),
+            ("pl_growth_slot_0001_crop_0001_jdplt", 0.0),
+            ("pl_growth_slot_0001_crop_0001_jdharv", 0.0),
+            ("pl_growth_slot_0001_crop_0001_jdstop", 0.0),
+        ] {
+            runtime_surface
+                .state_surface
+                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        }
+
+        prepare_pl_runtime_activation_for_scheduler(&mut runtime_surface)
+            .expect("zero-date perennial PL slot should remain scheduler-active");
+
+        assert!(
+            runtime_surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("pl_schedule_slot_count")),
+            "zero-date perennial windows must keep PL activation sentinel for scheduler dispatch"
+        );
+    }
+
+    #[test]
+    fn hphys0250_wb13_ep_publication_consumes_final_root_uptake_flux() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.0));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.004_2));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should consume final root-uptake flux Ep");
+
+        assert!(
+            (row.wb13_row.ep - 4.2).abs() < 1.0e-12,
+            "WB13 Ep must use final post-root-uptake flux even when stale state Ep is present"
+        );
+    }
+
+    #[test]
     fn hphys0203_wb13_latqcc_guard_rejects_negative_lateral_source() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface
@@ -6146,6 +6480,37 @@ mod tests {
         assert!(
             (rainfall_input - 0.003).abs() < 1.0e-12,
             "rainfall seed should preserve full current-day breakpoint precipitation depth"
+        );
+    }
+
+    #[test]
+    fn hphys0250_wb11_seed_initializes_neutral_water_stress_for_decomposition() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 12.0),
+            ("tmin", 2.0),
+            ("rad", 43.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 0.0),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.50, true);
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("WB11 seed should publish neutral initial water stress");
+
+        let water_stress = require_runtime_surface_scalar(&runtime_surface, "Ws")
+            .expect("WB11 seed should publish Ws for pre-ET decomposition consumers");
+        assert!(
+            (water_stress - 1.0).abs() < 1.0e-12,
+            "initial decomposition stress carryover must be neutral before ET computes same-day Ws"
         );
     }
 
@@ -7334,6 +7699,18 @@ mod tests {
             wb13_total_soil_mm: None,
             wb13_soil_water_total_mm: None,
             wb11_minus_theta_sum_m: Some(0.02),
+            pl_sumgdd: Some(42.0),
+            pl_vdmt: Some(1.5),
+            pl_cancov: Some(0.4),
+            pl_lai: Some(1.2),
+            pl_rtmass: Some(0.7),
+            pl_rtd: Some(0.6),
+            pl_hia: Some(0.2),
+            etp_m: Some(0.003),
+            upi_m: Some(0.003),
+            ui_m: Some(0.002),
+            ep_m: Some(0.002),
+            ws: Some(0.8),
         };
 
         write_hphys0245_trace_jsonl(&config, &[row]).expect("trace writer should succeed");
@@ -7346,6 +7723,8 @@ mod tests {
         assert_eq!(document["schema"], HPHYS0245_TRACE_SCHEMA);
         assert_eq!(document["boundary"], "post_seed");
         assert_eq!(document["wb18_theta_layers_m"]["0001"], 0.08);
+        assert_eq!(document["pl_rtd"], 0.6);
+        assert_eq!(document["ep_m"], 0.002);
 
         fs::remove_dir_all(temp_dir).expect("temp trace directory should be removable");
     }

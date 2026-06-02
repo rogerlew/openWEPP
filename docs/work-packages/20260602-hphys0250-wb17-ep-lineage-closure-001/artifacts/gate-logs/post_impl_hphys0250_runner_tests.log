@@ -1,0 +1,54 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.31s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_runner-7f1df94647949c36)
+
+running 4 tests
+test hillslope::tests::hphys0250_pl_activation_keeps_zero_date_perennial_slots_active ... ok
+test hillslope::tests::hphys0250_wb13_ep_publication_consumes_final_root_uptake_flux ... ok
+test hillslope::tests::hphys0250_wb11_seed_initializes_neutral_water_stress_for_decomposition ... ok
+test hillslope::tests::hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 41 filtered out; finished in 0.00s
+
+     Running unittests src/bin/open_wepp_runner.rs (target/debug/deps/open_wepp_runner-1a1a4787a48a0f60)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running unittests src/bin/openwepp-cli-hill.rs (target/debug/deps/openwepp_cli_hill-e2d9aa4799cd28a5)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/openwepp-cli-watershed.rs (target/debug/deps/openwepp_cli_watershed-19a9e96568996a7d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/simimpl04_runner_kernel_execution_contract.rs (target/debug/deps/simimpl04_runner_kernel_execution_contract-98c8b1f176366073)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/simimpl04_wb13_publication_contract.rs (target/debug/deps/simimpl04_wb13_publication_contract-c9ada1b544cc565a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/simimpl04_wepp_ui_mode_closure_contract.rs (target/debug/deps/simimpl04_wepp_ui_mode_closure_contract-13f762b2b1289e5c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/watershed_cli_behavior_contract.rs (target/debug/deps/watershed_cli_behavior_contract-64e30319d5bf8f26)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.00s

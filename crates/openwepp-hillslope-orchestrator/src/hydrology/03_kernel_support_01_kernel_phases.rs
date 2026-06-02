@@ -416,14 +416,16 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
-        let hyetograph_liquid_input = hyetograph_rainfall - snow_coupling.accumulation;
+        let hyetograph_liquid_input_raw = hyetograph_rainfall - snow_coupling.accumulation;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_RAINFALL_INPUT,
-            hyetograph_liquid_input,
+            hyetograph_liquid_input_raw,
             Some(0.0),
             None,
         )?;
+        let hyetograph_liquid_input =
+            Self::normalize_non_negative_within_tolerance(hyetograph_liquid_input_raw);
 
         let interception =
             Self::compute_canopy_interception_depth(request, phase_class, hyetograph_liquid_input)?;
@@ -3222,14 +3224,16 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
-        let hyetograph_liquid_input = hyetograph_rainfall - snow_coupling.accumulation;
+        let hyetograph_liquid_input_raw = hyetograph_rainfall - snow_coupling.accumulation;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_RAINFALL_INPUT,
-            hyetograph_liquid_input,
+            hyetograph_liquid_input_raw,
             Some(0.0),
             None,
         )?;
+        let hyetograph_liquid_input =
+            Self::normalize_non_negative_within_tolerance(hyetograph_liquid_input_raw);
 
         let interception =
             Self::compute_canopy_interception_depth(request, phase_class, hyetograph_liquid_input)?;

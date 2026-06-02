@@ -135,7 +135,7 @@ fn select_active_crop_slot_for_day(
         let jdplt = require_integral_pl_dispatch_symbol_in_range(
             state_surface,
             jdplt_symbol.as_str(),
-            1,
+            usize::from(imngmt != 2),
             366,
         )?;
         let jdharv_symbol = pl_growth_slot_crop_symbol("jdharv", slot_index, crop_slot_index);
@@ -156,7 +156,9 @@ fn select_active_crop_slot_for_day(
                 0,
                 366,
             )?;
-            if jdstop == 0 {
+            if jdplt == 0 {
+                jdstop == 0 || day_of_year <= jdstop
+            } else if jdstop == 0 {
                 day_is_within_julian_window(day_of_year, jdplt, jdharv.max(1))
             } else {
                 day_is_within_julian_window(day_of_year, jdplt, jdstop)
@@ -308,4 +310,3 @@ fn resolve_active_pl_slot_selection(
         crop_slot_index,
     })
 }
-

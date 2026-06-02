@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/auth11_required_suite_obligation_guards_contract.rs (target/debug/deps/auth11_required_suite_obligation_guards_contract-64ccebae88f99075)
+
+running 2 tests
+test auth11_registry_posture_and_protocol_guard_paths_exist ... ok
+test auth11_obligations_schema_and_anchor_bindings_are_enforced ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

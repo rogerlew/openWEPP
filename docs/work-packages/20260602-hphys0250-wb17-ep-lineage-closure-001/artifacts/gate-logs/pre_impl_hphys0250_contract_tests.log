@@ -1,0 +1,20 @@
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.79s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_runner-7f1df94647949c36)
+
+running 2 tests
+
+thread 'hillslope::tests::hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage' (1981934) panicked at crates/openwepp-runner/src/hillslope/mod.rs:5857:9:
+runner scheduler lifecycle must not strip pl_schedule_slot_count; PL growth must remain active so rtd can feed final Ep lineage
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test hillslope::tests::hphys0250_wb13_ep_publication_consumes_final_root_uptake_flux ... ok
+test hillslope::tests::hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage ... FAILED
+
+failures:
+
+failures:
+    hillslope::tests::hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 41 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p openwepp-runner --lib`
