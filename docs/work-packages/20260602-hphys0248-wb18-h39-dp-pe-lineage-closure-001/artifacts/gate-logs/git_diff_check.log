@@ -1,0 +1,6 @@
+cwd=/workdir/openWEPP
+timestamp_utc=2026-06-02T12:13:46Z
+git_head=1d169f1227bb3452f339d15c0ac8ba39ec0e0fd0
+command=git diff --check
+--- output ---
+exit_code=0

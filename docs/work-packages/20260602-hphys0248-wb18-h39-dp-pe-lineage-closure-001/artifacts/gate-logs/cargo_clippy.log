@@ -1,0 +1,10 @@
+cwd=/workdir/openWEPP
+timestamp_utc=2026-06-02T12:08:11Z
+git_head=1d169f1227bb3452f339d15c0ac8ba39ec0e0fd0
+command=cargo clippy --workspace --all-targets -- -D warnings
+--- output ---
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.32s
+exit_code=0

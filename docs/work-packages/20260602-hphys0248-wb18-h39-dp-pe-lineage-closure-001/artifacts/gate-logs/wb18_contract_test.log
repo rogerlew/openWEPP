@@ -1,0 +1,28 @@
+cwd=/workdir/openWEPP
+timestamp_utc=2026-06-02T12:08:11Z
+git_head=1d169f1227bb3452f339d15c0ac8ba39ec0e0fd0
+command=cargo test --test wb18_percolation_physics_kernel_contract -- --nocapture
+--- output ---
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/wb18_percolation_physics_kernel_contract.rs (target/debug/deps/wb18_percolation_physics_kernel_contract-6d0e7dc9ae7ab8f4)
+
+running 15 tests
+test hphys0242_contract_wb18_hourly_percolation_precedes_final_hour_et ... ok
+test wb18_contract_conformance_allows_non_positive_fc_ul_ratio_with_legacy_bi_zero_branch ... ok
+test wb18_contract_conformance_emits_layerwise_percolation_fluxes ... ok
+test wb18_contract_conformance_hourly_lane_substeps_execute_iterative_recompute ... ok
+test wb18_contract_conformance_daily_restrictive_layer_harmonic_conductivity_reduces_bottom_flux ... ok
+test wb18_contract_conformance_hourly_restrictive_bottom_rejects_non_finite_ui_bdrkth ... ok
+test wb18_contract_conformance_hourly_restrictive_bottom_rejects_non_positive_ui_bdrkth ... ok
+test wb18_contract_conformance_hourly_restrictive_bottom_requires_ui_bdrkth ... ok
+test wb18_contract_conformance_rejects_domain_invalid_layer_upper_limit ... ok
+test wb18_contract_conformance_hourly_restrictive_bottom_uses_bedrock_thickness_weighting ... ok
+test wb18_contract_conformance_rejects_missing_layer_symbol ... ok
+test wb18_contract_conformance_rejects_non_finite_layer_conductivity ... ok
+test wb18_contract_conformance_rejects_non_positive_kslast_when_slflag_enabled ... ok
+test wb18_contract_conformance_rejects_non_positive_lane_substeps ... ok
+test wb18_contract_conformance_saturated_branch_bypasses_fc_ul_ratio_guard ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+exit_code=0

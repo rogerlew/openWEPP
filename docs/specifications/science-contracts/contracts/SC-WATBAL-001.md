@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 73
+contract_version: 74
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -66,6 +66,7 @@ Out of scope:
 | REF-WATBAL-LEGACY-HOURLY-CARRY | `/workdir/wepp-forest_260430_baseline/src/wathour.inc:26-44` and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:438-471,776-885` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly MOFE carry-array authority for `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, `ui_LfCrf`, `ui_LFtstp=24`, upstream-current OFE copy-forward, and hourly runon/lateral/saturation carry use. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline aggregate root-zone water lineage from layer storage (`st`) through `soilw(i)` into `watcon`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WB13 | `/workdir/wepp-forest_260430_baseline/src/outfil.for:623-643` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB13 publication semantics for `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal`. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly bottom-layer restrictive conductivity lineage for `Dp`/`Pe`: hourly bottom `meblfc` forces `fx=1`, bottom restrictive `kslast` plus `ui_bdrkth` thickness-weighted `sscz`, `sep/ui_LFtstp` state mutation, and `deepSeep` accumulation. | `[DIRECT][Static]` |
 | REF-WATBAL-INFILE-WEPPUI | `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md` §4, §8, §11 | Cross-contract requested/effective `wepp_ui` mode propagation authority from parser boundary to runtime lane selection. | `[DIRECT][Static]` |
 | REF-WATBAL-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes and bounded stress factors required for physically valid accounting. | `[INFERENCE][Static]` |
 
@@ -100,6 +101,7 @@ Out of scope:
 | `pei` | `m d^-1` | Percolation rate through layer `i`. | percolation routine | lower-layer routing and `D` term assembly |
 | `ti`, `Δt` | `s` | Travel time through layer `i` and travel interval. | percolation routine | percolation step update |
 | `Ksi`, `Ksai`, `Bi` | `m s^-1`, `m s^-1`, `fraction` | Saturated and adjusted hydraulic conductivity with conductivity-shape parameter. | soil/percolation routine | percolation routing |
+| `Ksbot`, `Bbot` | `m s^-1`, `m` | Restrictive-layer conductivity (`kslast`) and thickness (`ui_bdrkth`) used by hourly bottom-layer percolation seepage lineage. | soil/percolation routine | WB18 `D`/`Pe` assembly |
 | `Ws` | `fraction` | Plant growth water-stress factor (`0..1`) from supply/demand ratio. | water-balance/ET coupling | plant growth regulation |
 
 ## Algorithm State Surfaces (WB18/WB17 Hydrology Production Kernels)
@@ -112,7 +114,7 @@ Out of scope:
 | Coupled PL ordering preconditions | `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` (validated at growth dispatch before hydrology lane entry) |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_lateral_drain_lane_substeps`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
+| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_lateral_drain_lane_substeps`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `slflag`, `kslast`, `ui_bdrkth` |
 
 ### Required Outputs
 
@@ -152,7 +154,7 @@ lateral/drainage).
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
 | `BR-WATBAL-WB17-ET` | phase class `hydrology_evapotranspiration` | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` | runtime | deterministic WB17 ET partition/writeback execution with typed guards (`HKERNEL-WB11-ET-E-001..003`) |
-| `BR-WATBAL-WB18-PERC` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` | runtime | deterministic WB18 per-layer percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
+| `BR-WATBAL-WB18-PERC` | phase class `hydrology_percolation_deep_seepage` | `nsl`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####` (+ `slflag`, `kslast`, `ui_bdrkth` for restrictive bottom-layer closure) | runtime | deterministic WB18 per-layer percolation/writeback execution with typed guards (`HKERNEL-WB11-PERC-E-001..003`) |
 | `BR-WATBAL-WB19-LAT` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic WB19 layer-aware lateral execution with typed guards (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-WATBAL-WB19-DRAIN` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic WB19 layer-aware drainage execution with typed guards (`HKERNEL-WB11-DRAIN-E-001..003`) |
 | `BR-WATBAL-WB11-UNSUPPORTED` | unsupported hydrology phase-class state | scheduler phase + phase class metadata | runtime | typed hard-fail (`HS-HYDRO-E-001`) and scheduler halt |
@@ -196,6 +198,7 @@ lateral/drainage).
 | INV-WATBAL-033 | HPHYS0241 MOFE hourly carry-array invariant: multi-OFE hourly lanes must expose all 24 entries of `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`, consume upstream `ui_SUrunf + ui_LfUrf` arrays as the hourly runon carry source, publish current `ui_SCrunf`/`ui_LfCrf` arrays, and copy current arrays to upstream arrays for the next OFE/day boundary. Missing, non-finite, negative, wrong-cardinality, or aggregate-only carry payloads hard-fail; daily `wb12_runoff_carryover` may only summarize the explicit arrays. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-034 | HPHYS0242 hourly cadence/ordering invariant: hourly-lane water-balance closure must preserve baseline `watbal_hourly` ordering for the WB14/WB12 tail: percolation precedes final-hour ET, drainage precedes lateral flow in the hourly tail, surface saturation excess (`ui_SCrunf(ii)`) is clipped from top-layer storage before runoff publication, `Q` includes `Σui_SCrunf(ii)` plus partition runoff, and storage reconciliation consumes same-pass `Q`, `ET`, `D`, and `Qd` rather than stale compatibility state. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS, SC-RUNOFFPART-001#INV-RUNOFFPART-014, SC-EVAP-001#INV-EVAP-014, SC-PERC-001#INV-PERC-012, SC-SUBHYD-001#INV-SUBHYD-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-035 | HPHYS0247 H39 hourly water-balance lateral/snow gate invariant: closure claims for H39 single-OFE hourly water balance must use runtime winter activation triggers from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-009` and WB19 lateral capacity lineage from `SC-SUBHYD-001#INV-SUBHYD-024`; sidecar-presence-only winter bypasses and lateral withdrawals from non-`meblfc` layers are invalid evidence. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH6-COUPLING, SC-SNOWFREEZE-001#INV-SNOWFREEZE-009, SC-SUBHYD-001#INV-SUBHYD-024 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-036 | HPHYS0248 H39 hourly `Dp`/`Pe` restrictive-bottom invariant: promoted H39 hourly water-balance evidence must derive WB18 bottom-layer `D`/`Pe` from `SC-PERC-001#INV-PERC-014` baseline hourly restrictive conductivity lineage (`fx=1`, `kslast`, `ui_bdrkth`, thickness-weighted `sscz`, `sep/ui_LFtstp`, accumulated `deepSeep`). H39 closure claims that use unrestricted bottom `Ksi`, daily-only harmonic conductivity, unsaturated `fx` damping, or omit the restrictive-layer thickness branch must remain in `HOLD`. | hard-fail | REF-WATBAL-LEGACY-HOURLY-BOTK, REF-WATBAL-CH5-BAL, SC-PERC-001#INV-PERC-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -236,6 +239,7 @@ lateral/drainage).
 | `INV-WATBAL-033` | runtime + governance | MOFE hourly carry-array validator, WB19/WB12 array producer/consumer path, and manifest/publication evidence gate | Typed hard error / explicit `HOLD` when hourly MOFE lanes use aggregate carry substitution, omit any 24-slot carry array, publish malformed array entries, or fail copy-forward provenance | HPHYS MOFE hourly carry-array closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-034` | runtime + governance | HPHYS0242 scheduler order, WB19 surface-saturation array producer, WB14 runoff assembler, and WB12 storage consumer | Typed hard error / explicit `HOLD` when hourly lane uses stale runoff/storage surfaces, omits positive `ui_SCrunf(ii)` addback, or violates same-pass `Q`/`ET`/`D`/`Qd` storage lineage | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-035` | runtime + governance | H39 hourly closure gate spanning snow activation and WB19 lateral capacity lineage | Typed hard error / explicit `HOLD` when winter triggers are bypassed by sidecar-presence-only logic or WB19 emits lateral flux from non-`meblfc` active layers | HPHYS0247 H39 closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-036` | runtime + governance | H39 hourly `Dp`/`Pe` restrictive-bottom gate spanning WB18 percolation, WB12 storage, and WB13 publication evidence | Typed hard error / explicit `HOLD` when H39 hourly `D`/`Pe` lineage bypasses baseline `ui_bdrkth`/`kslast` bottom-layer effective conductivity | HPHYS0248 H39 `Dp`/`Pe` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -273,6 +277,8 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `ui_LfUrf(ii)` | `ui_LfUrf_{hour:04}` state symbol | MOFE hourly upstream lateral-flow carry consumed at WB12/WB14 runoff reconciliation | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_LfCrf(ii)` | `ui_LfCrf_{hour:04}` state symbol | MOFE hourly current-OFE lateral-flow carry published from WB19 substeps for copy-forward | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | WB18 per-layer conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Ksbot` | `kslast` | restrictive-layer conductivity consumed by WB18 bottom-layer seepage when `slflag=1` | `m s^-1` preserved | `[DIRECT][Static]` |
+| `Bbot` | `ui_bdrkth` | restrictive-layer thickness consumed by hourly WB18 bottom-layer seepage when `slflag=1` | `m` preserved | `[DIRECT][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `por_i` | `por_####` | WB19 per-layer porosity surfaces consumed by water-yield coupling (`watyld`) | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces consumed by WB19 drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -396,6 +402,11 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   percolation, using `wb18_perc_theta_####`, `thetdr_####`, `dg_####`, and
   declared frozen-depth lineage when present; `Σtheta`-only WB18 aggregate
   publication is non-authoritative.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-017: WB18 hourly restrictive-bottom producers must consume
+  `slflag`, `kslast`, and `ui_bdrkth` for bottom-layer hourly `D`/`Pe` lineage
+  when restrictive-layer metadata is present, and must fail closed on malformed
+  restrictive domains rather than silently reverting to unrestricted `Ksi`.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -1381,6 +1392,24 @@ legacy `watbal_hourly.for` execution shape.
 3. Single-pass daily percolation with only `pei/24` attenuation is
    non-authoritative for `ui_run=1` and cannot close HPHYS `Dp` parity gaps.
 
+### HPHYS0248 WB18 Hourly Restrictive-Bottom Addendum
+
+HPHYS0248 closes the H39 early-season `Dp`/`Pe` lineage defect left after
+HPHYS0247 by making the bottom restrictive-layer branch explicit for hourly
+percolation.
+
+1. When `ui_run=1`/hourly WB18 executes at the bottom layer, baseline
+   `perc.for` sets `meblfc=1`, forcing `fx=1` before bottom seepage.
+2. When `ui_run=1`/hourly WB18 executes with `slflag=1`, bottom-layer seepage
+   must use pinned baseline `perc.for` thickness-weighted conductivity:
+   `sscz = (dg_i + ui_bdrkth) / (dg_i / ssc_i + ui_bdrkth / kslast)`.
+3. The resulting bottom-layer `sep` is attenuated by `ui_LFtstp` in `purk`
+   before mutating `st`, and `watbal_hourly` accumulates `deepSeep` from the
+   remembered bottom `sep`.
+4. H39 early-season semantic evidence must report `Dp`/`Pe` residuals before
+   and after this branch is active; full H39 closure remains non-promotable
+   while WB17/snowmelt residual families remain materially unresolved.
+
 ### HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 HPHYS0209 isolates the near-closed `ProfileWPStore` residual lane and codifies
@@ -1731,6 +1760,7 @@ percolation boundary:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `74` | `Codex` | HPHYS0248 amendment: added `INV-WATBAL-036` requiring H39 hourly `Dp`/`Pe` evidence to use `SC-PERC-001#INV-PERC-014` baseline hourly restrictive-bottom `ui_bdrkth`/`kslast` conductivity lineage. |
 | `2026-06-02` | `73` | `Codex` | HPHYS0247 amendment: added `INV-WATBAL-035` tying H39 hourly closure evidence to runtime winter activation triggers and `SC-SUBHYD-001#INV-SUBHYD-024` WB19 lateral capacity lineage. |
 | `2026-06-02` | `72` | `Codex` | HPHYS0246 amendment: added WB18 aggregate soil-water writeback authority requiring `wb11_soil_water`/WB13 `Total-Soil` lineage to follow `SC-PERC-001#INV-PERC-013` baseline `watcon = Σsoilw(i)` semantics instead of `Σtheta`-only percolation writeback. |
 | `2026-06-01` | `71` | `Codex` | HPHYS0242 amendment: added `INV-WATBAL-034`, hourly WB14/WB12 cadence authority, surface-saturation `ui_SCrunf` clipping/addback, same-pass runoff/storage lineage, and refined HPHYS0239 ordering language so HPHYS0242 controls hourly WB19 drainage/lateral sequencing. |

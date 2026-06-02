@@ -956,12 +956,14 @@ impl Wb11HydrologyKernel {
         let mut field_capacity = Vec::with_capacity(layer_count);
         let mut upper_limit = Vec::with_capacity(layer_count);
         let mut conductivity = Vec::with_capacity(layer_count);
+        let mut layer_depth = Vec::with_capacity(layer_count);
 
         for layer_index in 1..=layer_count {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
             let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
 
             let layer_theta =
                 Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
@@ -1014,10 +1016,20 @@ impl Wb11HydrologyKernel {
                 });
             }
 
+            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &dg_symbol,
+                dg,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+
             theta.push(layer_theta);
             field_capacity.push(layer_fc);
             upper_limit.push(layer_ul);
             conductivity.push(layer_ssc);
+            layer_depth.push(dg);
         }
 
         let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
@@ -1082,9 +1094,29 @@ impl Wb11HydrologyKernel {
                     maximum: None,
                 });
             }
-            Some(observed)
+            observed
         } else {
-            None
+            0.0
+        };
+        let restrictive_layer_thickness_symbol = BoundarySymbol::from("ui_bdrkth");
+        let restrictive_layer_thickness = if restrictive_layer_enabled && !daily_lane {
+            let observed = Self::require_state_scalar_for_symbol(
+                request,
+                phase_class,
+                &restrictive_layer_thickness_symbol,
+            )?;
+            if observed <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: restrictive_layer_thickness_symbol.clone(),
+                    value: observed,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            observed
+        } else {
+            0.0
         };
 
         let mut per_layer_flux = vec![0.0_f64; layer_count];
@@ -1117,7 +1149,7 @@ impl Wb11HydrologyKernel {
                     });
                 }
 
-                let fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
+                let mut fx = if stz < WB18_PERC_SATURATION_THRESHOLD {
                     let fc_ul_ratio = layer_fc / layer_ul;
                     if !fc_ul_ratio.is_finite() || fc_ul_ratio >= 1.0 {
                         let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index + 1);
@@ -1150,6 +1182,9 @@ impl Wb11HydrologyKernel {
                 } else {
                     1.0
                 };
+                if !daily_lane && layer_index == layer_count - 1 {
+                    fx = 1.0;
+                }
                 if !fx.is_finite() || fx <= 0.0 {
                     let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index + 1);
                     return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -1162,31 +1197,58 @@ impl Wb11HydrologyKernel {
                 }
 
                 let layer_ssc_effective =
-                    if daily_lane && restrictive_layer_enabled && layer_index == layer_count - 1 {
-                        let restrictive_layer_conductivity =
-                            restrictive_layer_conductivity.unwrap_or(layer_ssc);
-                        let denominator = layer_ssc + restrictive_layer_conductivity;
-                        if denominator <= WB11_ZERO_THRESHOLD {
-                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                phase_class,
-                                symbol: restrictive_layer_conductivity_symbol.clone(),
-                                value: denominator,
-                                minimum: Some(WB11_ZERO_THRESHOLD),
-                                maximum: None,
-                            });
+                    if restrictive_layer_enabled && layer_index == layer_count - 1 {
+                        if daily_lane {
+                            let denominator = layer_ssc + restrictive_layer_conductivity;
+                            if denominator <= WB11_ZERO_THRESHOLD {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: restrictive_layer_conductivity_symbol.clone(),
+                                    value: denominator,
+                                    minimum: Some(WB11_ZERO_THRESHOLD),
+                                    maximum: None,
+                                });
+                            }
+                            let harmonic_mean =
+                                (2.0 * layer_ssc * restrictive_layer_conductivity) / denominator;
+                            if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: restrictive_layer_conductivity_symbol.clone(),
+                                    value: harmonic_mean,
+                                    minimum: Some(WB11_ZERO_THRESHOLD),
+                                    maximum: None,
+                                });
+                            }
+                            harmonic_mean
+                        } else {
+                            let denominator = (layer_depth[layer_index] / layer_ssc)
+                                + (restrictive_layer_thickness / restrictive_layer_conductivity);
+                            if denominator <= WB11_ZERO_THRESHOLD {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: restrictive_layer_thickness_symbol.clone(),
+                                    value: denominator,
+                                    minimum: Some(WB11_ZERO_THRESHOLD),
+                                    maximum: None,
+                                });
+                            }
+                            let thickness_weighted = (layer_depth[layer_index]
+                                + restrictive_layer_thickness)
+                                / denominator;
+                            if !thickness_weighted.is_finite()
+                                || thickness_weighted <= WB11_ZERO_THRESHOLD
+                            {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: restrictive_layer_thickness_symbol.clone(),
+                                    value: thickness_weighted,
+                                    minimum: Some(WB11_ZERO_THRESHOLD),
+                                    maximum: None,
+                                });
+                            }
+                            thickness_weighted
                         }
-                        let harmonic_mean =
-                            (2.0 * layer_ssc * restrictive_layer_conductivity) / denominator;
-                        if !harmonic_mean.is_finite() || harmonic_mean <= WB11_ZERO_THRESHOLD {
-                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                                phase_class,
-                                symbol: restrictive_layer_conductivity_symbol.clone(),
-                                value: harmonic_mean,
-                                minimum: Some(WB11_ZERO_THRESHOLD),
-                                maximum: None,
-                            });
-                        }
-                        harmonic_mean
                     } else {
                         layer_ssc
                     };

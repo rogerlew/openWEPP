@@ -1,0 +1,6 @@
+cargo_fmt_check	0	docs/work-packages/20260602-hphys0248-wb18-h39-dp-pe-lineage-closure-001/artifacts/gate-logs/cargo_fmt_check.log
+wb18_contract_test	0	docs/work-packages/20260602-hphys0248-wb18-h39-dp-pe-lineage-closure-001/artifacts/gate-logs/wb18_contract_test.log
+cargo_clippy	0	docs/work-packages/20260602-hphys0248-wb18-h39-dp-pe-lineage-closure-001/artifacts/gate-logs/cargo_clippy.log
+cargo_test_workspace	0	docs/work-packages/20260602-hphys0248-wb18-h39-dp-pe-lineage-closure-001/artifacts/gate-logs/cargo_test_workspace.log
+cargo_deny_check	0	docs/work-packages/20260602-hphys0248-wb18-h39-dp-pe-lineage-closure-001/artifacts/gate-logs/cargo_deny_check.log
+git_diff_check	0	docs/work-packages/20260602-hphys0248-wb18-h39-dp-pe-lineage-closure-001/artifacts/gate-logs/git_diff_check.log

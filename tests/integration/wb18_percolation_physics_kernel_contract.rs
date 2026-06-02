@@ -126,101 +126,6 @@ fn state_scalar(state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>, symbol:
         .as_f64()
 }
 
-fn project_hourly_iterative_percolation_surface(
-    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
-    lane_substeps: f64,
-) -> (Vec<f64>, f64, Vec<f64>) {
-    let nsl_raw = state_scalar(state_surface, "nsl");
-    let nsl_integral = nsl_raw.round();
-    assert!(
-        nsl_integral >= 1.0 && (nsl_raw - nsl_integral).abs() <= 1.0e-12,
-        "projected percolation surface requires integral nsl>=1, observed {nsl_raw}"
-    );
-    let mut nsl = 0_usize;
-    let mut layer_counter = 1.0_f64;
-    while layer_counter <= nsl_integral {
-        nsl += 1;
-        layer_counter += 1.0;
-    }
-    let mut theta = Vec::with_capacity(nsl);
-    let mut field_capacity = Vec::with_capacity(nsl);
-    let mut upper_limit = Vec::with_capacity(nsl);
-    let mut conductivity = Vec::with_capacity(nsl);
-
-    for layer in 1..=nsl {
-        theta.push(state_scalar(
-            state_surface,
-            &format!("wb18_perc_theta_{layer:04}"),
-        ));
-        field_capacity.push(state_scalar(
-            state_surface,
-            &format!("wb18_perc_fc_{layer:04}"),
-        ));
-        upper_limit.push(state_scalar(
-            state_surface,
-            &format!("wb18_perc_ul_{layer:04}"),
-        ));
-        conductivity.push(state_scalar(
-            state_surface,
-            &format!("wb18_perc_ssc_{layer:04}"),
-        ));
-    }
-
-    let mut per_layer_flux = vec![0.0_f64; nsl];
-    let mut bottom_loss = 0.0_f64;
-    let mut lane_substep_index = 0.0_f64;
-    while lane_substep_index < lane_substeps {
-        let mut substep_bottom_loss = 0.0_f64;
-        for layer_index in (0..nsl).rev() {
-            let excess = theta[layer_index] - field_capacity[layer_index];
-            if excess <= 1.0e-12 {
-                continue;
-            }
-
-            let stz = theta[layer_index] / upper_limit[layer_index];
-            let fx = if stz < 0.95 {
-                let fc_ul_ratio = field_capacity[layer_index] / upper_limit[layer_index];
-                let bi = if fc_ul_ratio <= 0.0 {
-                    0.0
-                } else {
-                    -2.655 / fc_ul_ratio.log10()
-                };
-                stz.powf(bi).max(0.002)
-            } else {
-                1.0
-            };
-
-            let pei_pre = (86_400.0 * conductivity[layer_index] * fx).min(excess);
-            let pei_unscaled = if layer_index < nsl - 1 {
-                let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
-                let lower_radicand = 1.0 - lower_ratio;
-                let lower_factor = if lower_radicand <= 0.0 {
-                    0.0
-                } else {
-                    lower_radicand.sqrt()
-                };
-                pei_pre * lower_factor
-            } else {
-                pei_pre
-            };
-            let pei_step = pei_unscaled / lane_substeps;
-            theta[layer_index] -= pei_step;
-
-            if layer_index < nsl - 1 {
-                theta[layer_index + 1] += pei_step;
-            } else {
-                substep_bottom_loss = pei_step;
-            }
-
-            per_layer_flux[layer_index] += pei_step;
-        }
-        bottom_loss += substep_bottom_loss;
-        lane_substep_index += 1.0;
-    }
-
-    (per_layer_flux, bottom_loss, theta)
-}
-
 #[test]
 fn wb18_contract_conformance_emits_layerwise_percolation_fluxes() {
     let mut kernel = Wb11HydrologyKernel;
@@ -396,8 +301,6 @@ fn wb18_contract_conformance_hourly_lane_substeps_execute_iterative_recompute() 
         BoundarySymbol::from("wb18_perc_lane_substeps"),
         BoundaryValue::scalar(24.0),
     );
-    let (_expected_layer_flux, expected_bottom_loss, expected_theta) =
-        project_hourly_iterative_percolation_surface(&hourly_state_surface, 24.0);
 
     let hourly_response = kernel.run_hillslope_phase(&build_perc_request(&hourly_state_surface));
     assert_eq!(
@@ -408,18 +311,170 @@ fn wb18_contract_conformance_hourly_lane_substeps_execute_iterative_recompute() 
     let theta_hourly = writeback_state_value(&hourly_response, "wb18_perc_theta_0001");
 
     assert!(
-        (pei_hourly - expected_bottom_loss).abs() <= TOL,
-        "hourly lane must match iterative 24-substep projection (expected={expected_bottom_loss}, observed={pei_hourly})"
+        (pei_hourly - 0.172_800_000_000_000_06).abs() <= TOL,
+        "hourly lane must force baseline bottom-layer fx=1 and accumulate 24 attenuated bottom seepage steps (observed={pei_hourly})"
     );
     assert!(
-        (theta_hourly - expected_theta[0]).abs() <= TOL,
-        "hourly lane must update layer state with iterative projection (expected_theta={:.12}, observed_theta={theta_hourly})",
-        expected_theta[0]
+        (theta_hourly - 4.827_2).abs() <= TOL,
+        "hourly lane must mutate bottom layer by accumulated sep/ui_LFtstp (observed_theta={theta_hourly})"
     );
     assert!(
         (pei_hourly - (pei_daily / 24.0)).abs() > 1.0e-8,
         "hourly lane must not regress to divisor-only single-pass attenuation (daily={pei_daily}, hourly={pei_hourly})"
     );
+}
+
+#[test]
+fn wb18_contract_conformance_hourly_restrictive_bottom_uses_bedrock_thickness_weighting() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(5.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(4.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    state_surface.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("ui_bdrkth"),
+        BoundaryValue::scalar(10.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("kslast"),
+        BoundaryValue::scalar(0.01 / 3.6e6),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+
+    let layer_conductivity = state_scalar(&state_surface, "wb18_perc_ssc_0001");
+    let layer_depth = state_scalar(&state_surface, "dg_0001");
+    let restrictive_thickness = state_scalar(&state_surface, "ui_bdrkth");
+    let restrictive_conductivity = state_scalar(&state_surface, "kslast");
+    let expected_effective_conductivity = (layer_depth + restrictive_thickness)
+        / ((layer_depth / layer_conductivity) + (restrictive_thickness / restrictive_conductivity));
+    let expected_loss = 86_400.0 * expected_effective_conductivity;
+    let unrestricted_loss = 86_400.0 * layer_conductivity;
+
+    let d_loss = writeback_flux_value(&response, "D");
+    let pe_recharge = writeback_flux_value(&response, "Pe");
+    let pei_1 = writeback_flux_value(&response, "wb18_perc_pei_0001");
+    let theta_after = writeback_state_value(&response, "wb18_perc_theta_0001");
+    let soil_after = writeback_state_value(&response, "wb11_soil_water");
+
+    assert!(
+        (d_loss - expected_loss).abs() <= TOL,
+        "hourly bottom restrictive branch must force fx=1 and use ui_bdrkth/kslast thickness-weighted K (expected={expected_loss}, observed={d_loss})"
+    );
+    assert!(
+        (pe_recharge - expected_loss).abs() <= TOL,
+        "Pe must publish the same accumulated bottom seepage as D (expected={expected_loss}, observed={pe_recharge})"
+    );
+    assert!(
+        (pei_1 - expected_loss).abs() <= TOL,
+        "bottom-layer pei must equal accumulated bottom seepage (expected={expected_loss}, observed={pei_1})"
+    );
+    assert!(
+        (theta_after - (5.0 - expected_loss)).abs() <= TOL,
+        "bottom layer state must mutate by accumulated sep/ui_LFtstp (expected={}, observed={theta_after})",
+        5.0 - expected_loss
+    );
+    assert!(
+        (soil_after - (5.0 - expected_loss)).abs() <= TOL,
+        "aggregate soil water must track single-layer post-percolation state (expected={}, observed={soil_after})",
+        5.0 - expected_loss
+    );
+    assert!(
+        d_loss < unrestricted_loss / 100.0,
+        "restrictive layer should strongly attenuate hourly bottom seepage (restricted={d_loss}, unrestricted={unrestricted_loss})"
+    );
+}
+
+#[test]
+fn wb18_contract_conformance_hourly_restrictive_bottom_requires_ui_bdrkth() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("kslast"),
+        BoundaryValue::scalar(0.01 / 3.6e6),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-001");
+    assert_eq!(
+        response.status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+}
+
+#[test]
+fn wb18_contract_conformance_hourly_restrictive_bottom_rejects_non_finite_ui_bdrkth() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("kslast"),
+        BoundaryValue::scalar(0.01 / 3.6e6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("ui_bdrkth"),
+        BoundaryValue::scalar(f64::NAN),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-002");
+    assert_eq!(response.status.boundary_class(), BoundaryClass::NonFinite);
+}
+
+#[test]
+fn wb18_contract_conformance_hourly_restrictive_bottom_rejects_non_positive_ui_bdrkth() {
+    let mut kernel = Wb11HydrologyKernel;
+    for invalid_thickness in [0.0, -1.0] {
+        let mut state_surface = seeded_perc_state_surface();
+        state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+        state_surface.insert(
+            BoundarySymbol::from("wb18_perc_lane_substeps"),
+            BoundaryValue::scalar(24.0),
+        );
+        state_surface.insert(BoundarySymbol::from("slflag"), BoundaryValue::scalar(1.0));
+        state_surface.insert(
+            BoundarySymbol::from("kslast"),
+            BoundaryValue::scalar(0.01 / 3.6e6),
+        );
+        state_surface.insert(
+            BoundarySymbol::from("ui_bdrkth"),
+            BoundaryValue::scalar(invalid_thickness),
+        );
+
+        let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+        assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-E-003");
+        assert_eq!(
+            response.status.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+    }
 }
 
 #[test]
