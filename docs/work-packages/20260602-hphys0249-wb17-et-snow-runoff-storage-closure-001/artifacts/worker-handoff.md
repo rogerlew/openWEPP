@@ -23,6 +23,9 @@ Recommended next focus:
 
 1. `Ep` lineage: root-depth/growth activation and crop/runtime `rtd`/`pltol`
    projection, because full-suite `Ep` is unchanged after `swu` support.
+   First verify that `PlantRootUptake` writes the `Ep` surface consumed by the
+   39-suite semantic comparator before assuming the residual is purely
+   upstream.
 2. Snow/runoff timing: `Snow-Water`, `RM`, and `Q` are unchanged and remain
    high-leverage residuals.
 3. Aggregate storage: reassess after `Ep` and snow/runoff timing corrections;
@@ -30,3 +33,6 @@ Recommended next focus:
    scalar `Es` over-withdrawal.
 4. WB19 lateral magnitude: still open but not materially changed by this
    package.
+5. `pltol` fidelity: runtime currently seeds the baseline default `0.25`;
+   per-crop `pltol(itype)` projection remains open under
+   `SC-EVAP-001#GAP-EVAP-006`.

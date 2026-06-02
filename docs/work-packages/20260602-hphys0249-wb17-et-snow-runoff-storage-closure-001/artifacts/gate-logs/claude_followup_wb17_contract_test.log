@@ -1,0 +1,18 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.95s
+     Running tests/integration/wb17_et_physics_kernel_contract.rs (target/debug/deps/wb17_et_physics_kernel_contract-5e0e62f218fcd099)
+
+running 10 tests
+test hphys0242_contract_wb17_et_executes_after_same_pass_percolation_before_wb19_tail ... ok
+test hphys0249_wb17_residue_remainder_adds_back_to_top_layer_and_clears_interception ... ok
+test hphys0249_wb17_soil_evaporation_aggregate_includes_residual_and_frozen_depth_terms ... ok
+test hphys0249_wb17_root_uptake_mutates_layer_storage_and_stress_from_swu_lineage ... ok
+test hphys0249_wb17_soil_evaporation_mutates_layer_storage_before_aggregate_writeback ... ok
+test hphys0249_wb17_soil_evaporation_depth_rationing_cap_limits_partial_layer_withdrawal ... ok
+test wb17_contract_conformance_emits_partitioned_et_components ... ok
+test wb17_contract_conformance_rejects_missing_residue_interception_symbol ... ok
+test wb17_contract_conformance_rejects_non_finite_lai ... ok
+test wb17_contract_conformance_rejects_domain_invalid_residue_interception ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

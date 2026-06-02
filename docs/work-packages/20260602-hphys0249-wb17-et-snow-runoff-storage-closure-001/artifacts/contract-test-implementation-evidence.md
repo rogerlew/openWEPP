@@ -14,11 +14,14 @@ Static:
   in `tests/integration/wb17_et_physics_kernel_contract.rs`.
 - Added `hphys0249_wb17_soil_evaporation_aggregate_includes_residual_and_frozen_depth_terms`
   in `tests/integration/wb17_et_physics_kernel_contract.rs`.
+- Added `hphys0249_wb17_soil_evaporation_depth_rationing_cap_limits_partial_layer_withdrawal`
+  in `tests/integration/wb17_et_physics_kernel_contract.rs` after Claude Code
+  review.
 - The tests assert the HPHYS0249 contract obligation directly: WB17 must
   publish mutated `wb18_perc_theta_####` layer storage before aggregate
   `wb11_soil_water` writeback.
 
 Ran:
 
-- Final `cargo test --test wb17_et_physics_kernel_contract -- --nocapture`
-  passed `9/9`.
+- Final post-review `cargo test --test wb17_et_physics_kernel_contract -- --nocapture`
+  passed `10/10`.

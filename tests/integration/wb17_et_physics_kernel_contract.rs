@@ -393,6 +393,73 @@ fn hphys0249_wb17_soil_evaporation_mutates_layer_storage_before_aggregate_writeb
 }
 
 #[test]
+fn hphys0249_wb17_soil_evaporation_depth_rationing_cap_limits_partial_layer_withdrawal() {
+    let mut surface = seeded_wb17_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.11),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.20),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.03),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.08),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+
+    let response = run_wb17_phase(&surface);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let potential_soil_evaporation = 0.20 * (-0.5_f64 * 0.1).exp();
+    let expected_layer_1 = 0.0;
+    let expected_layer_2 = 0.06;
+    let expected_soil_evaporation = 0.05;
+    let expected_soil_water = expected_layer_1 + expected_layer_2;
+
+    let layer_1_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB17 must publish layer 1 storage after depth-capped evaporation");
+    let layer_2_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+            .expect("WB17 must publish layer 2 storage after depth-capped evaporation");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB17 must publish aggregate soil water after depth-capped evaporation");
+    let es = flux_update_scalar(&response.writeback.flux_updates, "Es")
+        .expect("WB17 must publish depth-capped soil evaporation");
+
+    assert!(potential_soil_evaporation > expected_soil_evaporation);
+    assert!((layer_1_after - expected_layer_1).abs() <= TOL);
+    assert!((layer_2_after - expected_layer_2).abs() <= TOL);
+    assert!((soil_water_after - expected_soil_water).abs() <= TOL);
+    assert!((es - expected_soil_evaporation).abs() <= TOL);
+}
+
+#[test]
 fn hphys0249_wb17_soil_evaporation_aggregate_includes_residual_and_frozen_depth_terms() {
     let mut surface = seeded_wb17_surface();
     surface.state_surface.insert(

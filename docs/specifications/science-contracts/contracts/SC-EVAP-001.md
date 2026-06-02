@@ -64,6 +64,7 @@ Out of scope:
 | REF-EVAP-CH2-FORCING | `references/50201000/chap2.pdf` §2.1.6-§2.1.8 Eq. [2.1.12]-[2.1.14] | Climate generator provides daily solar radiation, dew point, and wind inputs used by ET potential pathways. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-EVAP-CH5-SNOW | `references/50201000/chap5.pdf` §5.1 and §5.3 text | Soil evaporation can be satisfied from snowpack first, then soil water. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-EVAP-LEGACY-STAGE | `/workdir/wepp-forest_260430_baseline/src/evap.for:458-564` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline stage-memory authority for `s1`, `s2`, `tu`, `tv` branch transitions and deficit-coupled `Es` evolution. | `[DIRECT][Static]` |
+| REF-EVAP-LEGACY-ETP | `/workdir/wepp-forest_260430_baseline/src/evap.for:583-586` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline LAI full-cover cap authority for potential transpiration partition (`Ep`/`Etp`). | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-SOILX | `/workdir/wepp-forest_260430_baseline/src/evap.for:609-668` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layerwise soil-water extraction authority for soil evaporation from `st(i)` with depth-aware allocation. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-SWU | `/workdir/wepp-forest_260430_baseline/src/swu.for:122-191` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline root-zone transpiration uptake authority (`UPi`, `Ui`) and water-stress ratio lineage (`watstr = ΣUi/ep`). | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-HOURLY-ORDER | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:471-560` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly water-balance ordering: hourly infiltration/percolation mutate `st(i)` before ET is invoked only on the final hourly pass. | `[DIRECT][Static]` |
@@ -288,7 +289,7 @@ equation vectors.
 | `WB17_CANOPY_BARE_SOIL_OFFSET` | coefficient | `0.1` | Baseline uncovered-soil branch offset in `eaj = exp(-0.5*(cv+0.1))` | REF-EVAP-LEGACY-SOILX |
 | `WB17_CANOPY_EAJ_COEFF` | coefficient | `0.5` | Baseline uncovered-soil exponential coefficient in `eaj` | REF-EVAP-LEGACY-SOILX |
 | `WB17_SOIL_EVAP_DEPTH_M` | `m` | `0.10` | Baseline upper-zone soil evaporation depth limit for layer extraction | REF-EVAP-LEGACY-SOILX |
-| `WB17_TRANSPIRATION_LAI_FULL_COVER` | `m^2 m^-2` | `3.0` | Baseline LAI cap for potential transpiration branch | REF-EVAP-LEGACY-SWU |
+| `WB17_TRANSPIRATION_LAI_FULL_COVER` | `m^2 m^-2` | `3.0` | Baseline LAI cap for potential transpiration branch | REF-EVAP-LEGACY-ETP |
 | `WB17_SWU_UB` | coefficient | `3.065` | Baseline root-uptake exponential distribution coefficient | REF-EVAP-LEGACY-SWU |
 | `WB17_SWU_UOB` | coefficient | `0.953346` | Baseline root-uptake normalization coefficient | REF-EVAP-LEGACY-SWU |
 
@@ -441,12 +442,14 @@ Minimum WB17 ET production-kernel conformance vectors:
 | GAP-EVAP-003 | Companion contracts (`SC-PERC-001`, `SC-SUBHYD-001`, `SC-RESIDUE-001`) are not fully authored, so coupled ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-EVAP-004 | Chapter-5 validation emphasizes total ET and water-balance behavior; component-level partition validation (`Esp` vs `Etp` vs stage transitions) is not fully separated in available cited evidence. | Partition-subcomponent confidence is lower than aggregate ET confidence until dedicated evidence is added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-EVAP-005 | Canonical authority now explicitly defines legacy stage-memory/state-transition, layer `st(i)` extraction, and `swu` uptake lineage (`s1`, `s2`, `tu`, `tv`, `UPi`, `Ui`), but full production WB17 runtime parity remains pending until HPHYS0249 implementation/test evidence closes layer-storage extraction and remaining snow/runtime coupling residuals are dispositioned. | Contract authority is closed for WB17 layer-first migration; implementation promotability remains blocked until HPHYS0249 evidence lands and residual families are not in known violation. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-EVAP-006 | HPHYS0249 hard-guards `pltol` to the baseline `swu.for` domain and seeds the default `0.25`, but management parsing does not yet project per-crop `pltol(itype)` values into runtime surfaces. | Root-uptake deficit scaling is process-authoritative but currently driven by the baseline default instead of crop-specific management data, limiting `Ep` parity confidence. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 | `2026-06-02` | `10` | `Codex` | HPHYS0249 amendment: added `INV-EVAP-015` requiring WB17 `Ep`/`Es` production to mutate `wb18_perc_theta_####` layer storage using baseline `evap.for` and `swu.for` lineage before aggregate `wb11_soil_water` writeback. |
+| `2026-06-02` | `10a` | `Codex` | HPHYS0249 review follow-up: corrected `WB17_TRANSPIRATION_LAI_FULL_COVER` citation to `evap.for` authority and recorded the per-crop `pltol` runtime projection gap. |
 | `2026-06-01` | `9` | `Codex` | HPHYS0242 amendment: added `INV-EVAP-014`, baseline hourly final-hour ET ordering authority, same-pass WB14 infiltration lineage requirements, and stale/default infiltration rejection posture for hourly ET lanes. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-07 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/8 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-07 review cycle. |
