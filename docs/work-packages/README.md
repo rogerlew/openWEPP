@@ -268,6 +268,21 @@ Authorized packages:
     canonical ordering contract amendments, contract-derived ordering/anti-shadow
     vectors, and flux-authoritative WB13 publication closure for remaining
     hydrology families (`Q`, `Ep`, `Es`, `Er`).
+- `20260601-hphys0240-hourly-runoff-carryover-authority-closure-001/`
+  - Purpose: close the HPHYS0239 Dispatch-Group-B residual by implementing
+    baseline-authoritative hourly runoff carryover authority and required
+    scheduler dependency reconciliation for WB19 -> WB14/WB12 same-pass
+    carryover surfaces.
+  - Status: completed; Dispatch Group B carryover residual closed, HPHYS stream
+    remains in `HOLD` for Dispatch Groups C/D (`hphys0241`, `hphys0242`).
+- `20260601-hphys0241-mofe-hourly-carry-arrays-routing-continuity-001/`
+  - Purpose: close Dispatch Group C by implementing explicit MOFE hourly
+    upstream/runon/lateral carry-array runtime surfaces and routing-continuity
+    handoffs for hourly lane mode.
+- `20260601-hphys0242-wb14-wb12-cadence-ordering-closure-001/`
+  - Purpose: close Dispatch Group D by reconciling WB14/WB12 cadence and
+    infiltration/ET/runoff/storage observation ordering under hourly lane mode,
+    then publishing final HPHYS0239 follow-up HOLD/GO posture.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation
@@ -346,7 +361,7 @@ Authorized packages:
     posture where contract-authoritative process correctness is primary and
     comparator parity is explicitly diagnostic.
 - Execution order for active hillslope follow-on is:
-  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218 -> hphys0219 -> hphys0220 -> hphys0221 -> hphys0222 -> hphys0223 -> hphys0224 -> hphys0225 -> hphys0226 -> hphys0227 -> hphys0228 -> hphys0229 -> hphys0230 -> hphys0231 -> hphys0232 -> hphys0233 -> hphys0234 -> hphys0235 -> hphys0236 -> hphys0237 -> hphys0238 -> hphys0239`.
+  `hphys0201 -> hphys0202 -> hphys0205 -> hphys0206 -> hphys0207 -> hphys0203 -> hphys0204 -> hphys0208 -> hphys0209 -> hphys0210 -> hphys0211 -> hphys0212 -> hphys0213 -> hphys0214 -> hphys0215 -> hphys0216 -> hphys0216c -> hphys0216d -> hphys0217 -> hphys0218 -> hphys0219 -> hphys0220 -> hphys0221 -> hphys0222 -> hphys0223 -> hphys0224 -> hphys0225 -> hphys0226 -> hphys0227 -> hphys0228 -> hphys0229 -> hphys0230 -> hphys0231 -> hphys0232 -> hphys0233 -> hphys0234 -> hphys0235 -> hphys0236 -> hphys0237 -> hphys0238 -> hphys0239 -> hphys0240 -> hphys0241 -> hphys0242`.
 - Legacy parity-centric follow-on packages (`hparity03`/`hparity04`/`hparity05`)
   are retained for historical traceability and are not the default execution
   path unless explicitly re-authorized.

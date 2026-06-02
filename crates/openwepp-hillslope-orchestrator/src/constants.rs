@@ -156,6 +156,7 @@ pub(crate) const WB12_SYMBOL_RAINFALL_INPUT: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb12RainfallInput;
 pub(crate) const WB12_SYMBOL_RUNON_INPUT: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb12RunonInput;
+pub(crate) const WB12_SYMBOL_RUNOFF_CARRYOVER: &str = "wb12_runoff_carryover";
 pub(crate) const WB12_SYMBOL_INFILTRATION: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb12Infiltration;
 pub(crate) const WB12_SYMBOL_DEPRESSION_STORAGE_DELTA: HillslopeProductionStateSymbol =

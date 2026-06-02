@@ -2412,15 +2412,7 @@ impl Wb11HydrologyKernel {
             liquid_after_interception,
         )?;
 
-        let runon_input =
-            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNON_INPUT)?;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_RUNON_INPUT,
-            runon_input,
-            Some(0.0),
-            None,
-        )?;
+        let runon_input = Self::resolve_runoff_carryover_input(request, phase_class)?;
 
         let depression_storage_delta =
             Self::require_state_scalar(request, phase_class, WB12_SYMBOL_DEPRESSION_STORAGE_DELTA)?;
@@ -2760,6 +2752,12 @@ impl Wb11HydrologyKernel {
                 None,
             ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
+            WritebackField::bounded(
+                BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER),
+                runon_input,
+                Some(0.0),
+                None,
+            ),
             WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
             WritebackField::unbounded(WB12_SYMBOL_SNOW_COUPLING_S, snow_coupling.signed_s),
         ];

@@ -634,6 +634,23 @@ fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconcil
 }
 
 #[test]
+fn hphys0240_contract_wb11_carryover_tail_requires_storage_after_runoff() {
+    let graph = HillslopePhaseGraph::canonical();
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::RunoffReconciliation)
+            .contains(&HillslopePhase::Drainage),
+        "carryover-producing tail must complete drainage before runoff reconciliation"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::StorageReconciliation)
+            .contains(&HillslopePhase::RunoffReconciliation),
+        "storage reconciliation must consume Q after runoff carryover resolution"
+    );
+}
+
+#[test]
 fn simimpl22_contract_wb13_publication_vector_requires_watcon_alias_lineage() {
     const TOL: f64 = 1.0e-12;
 

@@ -227,6 +227,25 @@ impl Wb11HydrologyKernel {
         Ok(Some(scalar))
     }
 
+    fn optional_flux_scalar_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.flux_surface.get(symbol) else {
+            return Ok(None);
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+            });
+        }
+        Ok(Some(scalar))
+    }
+
     fn optional_state_scalar_for_symbol(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -336,6 +355,36 @@ impl Wb11HydrologyKernel {
             minimum: Some(0.0),
             maximum: Some(1.0),
         })
+    }
+
+    fn resolve_runoff_carryover_input(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let carryover_symbol = BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER);
+        if let Some(carryover) =
+            Self::optional_flux_scalar_for_symbol(request, phase_class, &carryover_symbol)?
+        {
+            Self::require_flux_range_for_symbol(
+                phase_class,
+                &carryover_symbol,
+                carryover,
+                Some(0.0),
+                None,
+            )?;
+            return Ok(Self::normalize_non_negative_within_tolerance(carryover));
+        }
+
+        let runon_input =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_RUNON_INPUT)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RUNON_INPUT,
+            runon_input,
+            Some(0.0),
+            None,
+        )?;
+        Ok(Self::normalize_non_negative_within_tolerance(runon_input))
     }
 
     fn require_state_non_negative_integral_for_symbol(

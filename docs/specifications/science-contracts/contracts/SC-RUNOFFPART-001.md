@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -124,6 +124,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-009 | Coupling invariant: runoff depth `Q` exported to daily water balance and runoff surfaces exported to erosion consumers (`Qv`, `qp`, `De`) must be unit-consistent and sign-consistent with downstream contract assumptions. | hard-fail | REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-CH11-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-010 | Governance limitation invariant: model outputs must remain labeled as Hortonian-flow-scope surfaces; scenarios needing explicit variable-source-area or return-flow physics are out of contract scope and block promotion if unlabeled. | governance-fail | REF-RUNOFFPART-CH4-LIMITS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-011 | WB20 forward-solver lane invariant: when `wb20_forward_solver_lane_enabled = 1`, WB12 runoff closure-delta acceptance must be solver-residual-derived and must not consume `wb12_runoff_observed` as an acceptance-driving target. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-012 | HPHYS0240 runoff-carryover authority invariant: WB12/WB14 runoff partitioning must use same-pass `wb12_runoff_carryover` flux when present, use `wb12_runon_input` only as finite non-negative compatibility input when the flux is absent, and publish the resolved carryover flux into the runoff closure/output boundary. Malformed present carryover fluxes hard-fail and cannot be silently replaced by stale state. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -140,6 +141,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-009` | runtime | Boundary payload validator for water-balance/erosion consumers | Typed hard error on missing required surfaces or units/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-010` | governance | Contract review + promotion checklist | Promotion `HOLD` if Hortonian-only scope is not explicitly carried into downstream interpretation | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-011` | runtime | WB12 runoff closure-delta lane selector and assembler | Typed hard error when forward lane consumes observed target in acceptance logic or emits non-residual closure delta | Tier-A parity lane gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-012` | runtime + governance | WB12/WB14 runoff-carryover resolver and output-boundary validator | Typed hard error / explicit `HOLD` when same-pass `wb12_runoff_carryover` is ignored, malformed, or replaced by stale `wb12_runon_input` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -255,20 +257,25 @@ bit-for-bit parity). Contract-level tolerance declarations:
 
 | Surface | Symbols |
 |---|---|
-| WB12 runoff reconciliation required inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance` |
+| WB12 runoff reconciliation required/carryover inputs | `wb12_rainfall_input`, `wb12_runon_input`, same-pass flux `wb12_runoff_carryover` when published, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance` |
 | WB20 lane selector | `wb20_forward_solver_lane_enabled` (`1` forward-solver lane, `0` or absent compatibility lane) |
 | Compatibility-lane observed target | `wb12_runoff_observed` |
-| WB12 runoff reconciliation outputs | `Q`, `wb12_runoff_reconciled`, `wb12_runoff_closure_delta` |
+| WB12 runoff reconciliation outputs | `Q`, `wb12_runoff_carryover`, `wb12_runoff_reconciled`, `wb12_runoff_closure_delta` |
 
 ### WB12 Reconciliation Rule
 
 Runoff reconciliation publishes:
-- `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+- `runoff_carryover = wb12_runoff_carryover` when the same-pass flux is
+  present and finite/non-negative; otherwise `runoff_carryover =
+  wb12_runon_input` when the state surface is finite/non-negative.
+- `Q = wb12_rainfall_input + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
 - apply explicit near-zero canonicalization before writeback/closure-delta
   publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
   `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
+- publish resolved `runoff_carryover` as same-pass flux
+  `wb12_runoff_carryover`.
 - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
-  - `wb12_runoff_closure_delta = (wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+  - `wb12_runoff_closure_delta = (wb12_rainfall_input + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta) - Q`
   - observed targets are excluded from acceptance-driving inputs.
 - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
   - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
@@ -318,9 +325,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 | Hyetograph forcing inputs | `ninten` or `nbrkpt`; `timem_####`; `intsty_####` |
 | Soil-derived infiltration inputs | `ssc`, `dg`, `thetdr`, `thetfc` |
 | Disturbed-soil conductivity-adjustment inputs | `solwpv`, `ksatadj`, `ksatfac`, `ksatrec`, `lkeff`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `dg_####` |
-| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`1` forward-solver lane, `0` or absent compatibility lane) |
+| Runoff reconciliation inputs | `wb12_rainfall_input`, `wb12_runon_input`, same-pass flux `wb12_runoff_carryover` when published, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`1` forward-solver lane, `0` or absent compatibility lane) |
 | Compatibility-lane observed target input | `wb12_runoff_observed` |
-| Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+| Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_carryover`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 
 ### WB14 Deterministic Infiltration and Runoff Rules
 
@@ -370,12 +377,17 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 8. `wb14_hyetograph_rainfall` and `wb12_rainfall_input` must agree within
    `wb12_runoff_closure_tolerance`; mismatch is an invalid state.
 9. Reconciled runoff is:
-   - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `runoff_carryover = wb12_runoff_carryover` when the same-pass flux is
+     present and finite/non-negative; otherwise `runoff_carryover =
+     wb12_runon_input` when the state surface is finite/non-negative.
+   - `Q = wb14_hyetograph_rainfall + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
    - apply explicit near-zero canonicalization before writeback/closure-delta
      publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
      `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
+   - publish resolved `runoff_carryover` as same-pass flux
+     `wb12_runoff_carryover`.
    - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
-     - `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+     - `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta) - Q`
    - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
      - `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
 10. Missing/non-finite/out-of-domain symbols and closure violations hard-fail;
@@ -406,6 +418,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 6. Within-tolerance negative reconciled runoff (`-1e-12 <= Q < 0`) is
    canonicalized to zero at writeback/publication boundary; values below
    tolerance remain typed domain failures.
+7. Same-pass `wb12_runoff_carryover` flux overrides stale
+   `wb12_runon_input` in WB14 reconciliation and malformed present carryover
+   fluxes hard-fail with typed non-finite/domain posture.
 
 ## WB15 Canopy Interception Runtime Coupling Addendum
 
@@ -429,7 +444,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    - `I = 0` for `lai <= 0` or `cancov <= 0`
 4. Reconcile with intercepted liquid depth:
    - `wb14_hyetograph_liquid_after_interception = wb14_hyetograph_rainfall - I`
-   - `Q = wb14_hyetograph_liquid_after_interception + S + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `Q = wb14_hyetograph_liquid_after_interception + S + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
 5. Canopy-state domain policy is hard-fail:
    - `0 <= cancov <= 0.999`
    - `lai >= 0`
@@ -473,7 +488,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 2. Irrigation forcing is applied through explicit schedule-source resolution
    (fixed-date priority, then depletion) and emitted as `Irr`.
 3. Coupled runoff equation remains explicit under irrigation:
-   - `Q = wb14_hyetograph_liquid_after_interception + S + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `Q = wb14_hyetograph_liquid_after_interception + S + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
 4. Missing/non-finite/out-of-domain irrigation scheduling payloads are invalid
    runoff states; no fallback/default branch is allowed.
 
@@ -514,7 +529,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 2. Snow-coupled liquid input depth is:
    - `wb14_liquid_input = wb14_hyetograph_rainfall + S`
 3. Reconciled runoff becomes:
-   - `Q = wb14_liquid_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `Q = wb14_liquid_input + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
 4. Active-coupling missing/non-finite/domain-invalid `snow.options.*` controls,
    `S`, or `snow.runtime_swe` are hard-fail runoff states; no fallback/default
    branch is allowed.
@@ -733,6 +748,19 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 4. Wave-2 activation does not weaken existing Wave-1 producer-coupling guard
    obligations.
 
+## HPHYS0240 Hourly Runoff Carryover Addendum
+
+1. WB12/WB14 runoff reconciliation resolves incoming carryover from same-pass
+   `wb12_runoff_carryover` flux when present and uses `wb12_runon_input` only
+   as a finite non-negative compatibility surface when the flux is absent.
+2. The resolved carryover participates in `Q` and closure-delta equations and
+   must be republished as `wb12_runoff_carryover`.
+3. Present carryover flux values are authoritative over stale state copies;
+   malformed present fluxes are typed hard-fail states and must not be masked by
+   compatibility fallback.
+4. Contract-derived vectors must probe flux-over-state anti-shadow behavior and
+   non-finite/out-of-domain carryover rejection.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -747,6 +775,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `24` | `Codex` | HPHYS0240 amendment: added `INV-RUNOFFPART-012` and addendum codifying same-pass `wb12_runoff_carryover` authority, compatibility-only `wb12_runon_input` fallback, carryover flux publication, and malformed-flux hard-fail vectors. |
 | `2026-05-29` | `23` | `Codex` | HILLSTAB08 amendment: landed baseline-authoritative WB16 `ealpha` producer-chain runtime migration (`frcfac -> rdat(alpha) -> alphay -> eplane`), added runtime-producer provenance vector (`runtime_provided`), retained explicit compatibility degradation policy (`SIMPIPE-W-003`), and dispositioned `GAP-RUNOFFPART-005` to `closed`. |
 | `2026-05-29` | `22` | `Codex` | HILLSTAB07 amendment: added explicit WB16 input-provenance authority for canonical `m=1.5`, baseline `ealpha` producer-chain lineage, compatibility-seed provenance surfaces/warning obligations (`wb16_ealpha_compatibility_seed_used`, `wb16_ealpha_seed_policy`, `SIMPIPE-W-003`), and non-promotable gap row `GAP-RUNOFFPART-005` for full producer migration closure. |
 | `2026-05-29` | `21` | `Codex` | HILLSTAB06 amendment: aligned WB16 authority to baseline `appmth` near-zero runoff branch (`Q < 1.0e-8`) and explicit positivity-domain semantics so positive near-zero WB16 intermediates do not fail pre-floor. |

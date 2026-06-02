@@ -832,3 +832,106 @@ fn wb14_contract_conformance_rejects_active_9001_zero_ksatrec() {
         BoundaryClass::DomainViolation
     );
 }
+
+#[test]
+fn hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb14_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(0.2),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.flux_surface.insert(
+        BoundarySymbol::from("wb12_runoff_carryover"),
+        BoundaryValue::scalar(0.4),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("HPHYS0240 carryover vector should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let q_runoff = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("Q"))
+        .expect("Q should be present")
+        .as_f64();
+    assert!(
+        (q_runoff - EXPECTED_WB14_Q).abs() <= WB14_TEST_TOLERANCE,
+        "Q must derive from same-pass carryover flux, observed {q_runoff}"
+    );
+
+    let carryover = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("wb12_runoff_carryover"))
+        .expect("resolved carryover flux should be published")
+        .as_f64();
+    assert!(
+        (carryover - 0.4).abs() <= WB14_TEST_TOLERANCE,
+        "resolved carryover flux should preserve same-pass value, observed {carryover}"
+    );
+
+    let storage = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("wb12_storage_reconciled"))
+        .expect("wb12_storage_reconciled should be present")
+        .as_f64();
+    assert!(
+        (storage - 11.709_931_093_255_933).abs() <= WB14_TEST_TOLERANCE,
+        "storage closure must consume Q derived from carryover flux, observed {storage}"
+    );
+}
+
+#[test]
+fn hphys0240_contract_wb14_rejects_non_finite_runoff_carryover_flux() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb14_surface();
+    surface.flux_surface.insert(
+        BoundarySymbol::from("wb12_runoff_carryover"),
+        BoundaryValue::scalar(f64::NAN),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("HPHYS0240 malformed carryover vector should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
+
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-002"
+    );
+    assert_eq!(
+        runoff_phase.decision_status.boundary_class(),
+        BoundaryClass::NonFinite
+    );
+}

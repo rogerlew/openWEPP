@@ -2037,6 +2037,10 @@ fn seed_wb11_runtime_surface_inputs(
         BoundarySymbol::from("wb12_runon_input"),
         BoundaryValue::scalar(0.0),
     );
+    runtime_surface.flux_surface.insert(
+        BoundarySymbol::from("wb12_runoff_carryover"),
+        BoundaryValue::scalar(0.0),
+    );
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("wb12_infiltration"),
         BoundaryValue::scalar(0.0),

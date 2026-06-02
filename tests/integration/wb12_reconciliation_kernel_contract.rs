@@ -398,3 +398,60 @@ fn wb12_contract_conformance_rejects_storage_closure_delta_over_tolerance() {
         BoundaryClass::DomainViolation
     );
 }
+
+#[test]
+fn hphys0240_contract_wb12_storage_tail_uses_q_from_same_pass_carryover_flux() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb12_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(0.8),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.flux_surface.insert(
+        BoundarySymbol::from("wb12_runoff_carryover"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("HPHYS0240 WB12 carryover vector should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    assert_eq!(
+        report
+            .writeback_surface
+            .flux_surface
+            .get(&BoundarySymbol::from("Q"))
+            .copied(),
+        Some(BoundaryValue::scalar(0.5))
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .flux_surface
+            .get(&BoundarySymbol::from("wb12_runoff_carryover"))
+            .copied(),
+        Some(BoundaryValue::scalar(1.0))
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from("wb12_storage_reconciled"))
+            .copied(),
+        Some(BoundaryValue::scalar(12.5))
+    );
+}

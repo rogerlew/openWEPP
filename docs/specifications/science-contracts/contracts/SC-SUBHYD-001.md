@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 22
+contract_version: 23
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -208,6 +208,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-019 | WB19 FC/WP + COCA coupling invariant: water-yield coupling must compute `avfca` from `thetfc_####` theta lineage (not `wb18_perc_fc_####/dg_####` surrogate), enforce per-layer consistency `wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`, and apply `solwpv < 2006` `fcdep` mutation using this authoritative `watyld` branch. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-020 | WB19 hourly iterative lane invariant: when hourly lane is active (`wb19_lateral_drain_lane_substeps = 24`), WB19 lateral/drainage execution must iterate substeps with state recomputation each substep and accumulate realized daily `q` and `Qdd`; divisor-only single-pass substitution is invalid. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-021 | HPHYS0239 WB19->WB12/WB13 handoff invariant: WB19 lateral/drainage handoff must remain deterministic (`q` then `Qdd` then `Qd=q+Qdd`) and downstream WB12/WB13 consumers must consume post-WB19 same-pass flux symbols with anti-shadow precedence for `q`/`Qdd`/`Qd` under state/flux conflicts. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-022 | HPHYS0240 runoff-carryover handoff invariant: downstream WB12/WB14 reconciliation in the post-WB19 hydrology tail must consume same-pass `wb12_runoff_carryover` flux for incoming runoff/runon carryover when present, preserving flux-authoritative anti-shadow semantics and finite non-negative boundary validation before storage reconciliation consumes derived `Q`. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -234,6 +235,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-019` | runtime + external-authority | WB19 FC/WP theta-lineage coupling validator plus Level-4 constitutive suite checks | Hard-fail when `avfca`/`watyld` uses FC-store surrogate lineage or FC-store/theta lineage is inconsistent | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-020` | runtime | WB19 hourly lane iterative execution validator across lateral/drainage phases | Hard-fail when hourly lane behavior collapses to single-pass divisor-only execution without per-substep state recomputation and accumulated daily flux publication | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-021` | runtime + governance | WB19-to-WB12/WB13 handoff validator for deterministic `q`/`Qdd`/`Qd` sequencing and anti-shadow consumption | Typed hard error / explicit `HOLD` when downstream reconciliation/publication consumes stale pre-WB19 surfaces or state-shadowed subsurface symbols | HPHYS hourly handoff closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-022` | runtime + governance | WB12/WB14 runoff-carryover handoff validator at post-WB19 tail boundary | Typed hard error / explicit `HOLD` when carryover uses stale `wb12_runon_input` despite present same-pass `wb12_runoff_carryover`, or when malformed carryover reaches storage-derived `Q` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -357,6 +359,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 |---|---|
 | Subhyd export into storage reconciliation | `Qd` |
 | Drainage/lateral diagnostics available to reconciliation checks | `q`, `Qdd`, `Qd` |
+| Runoff carryover available to runoff/storage tail checks | `wb12_runoff_carryover` |
 | WB12 storage reconciliation outputs | `wb12_storage_reconciled`, `wb12_storage_closure_delta` |
 
 ### WB12 Coupling Requirements
@@ -364,6 +367,10 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 1. `Qd` exported from WB19 lateral/drainage phases remains the required subsurface-loss term consumed by WB12 storage reconciliation.
 2. WB12 storage reconciliation must treat `Qd` as a non-negative loss magnitude in closure diagnostics.
 3. Missing/non-finite `Qd` at storage reconciliation boundaries is an invalid runtime state and must hard-fail with typed WB12 storage guard codes.
+4. When same-pass `wb12_runoff_carryover` is present, WB12/WB14 runoff
+   reconciliation must use it before storage reconciliation consumes derived
+   `Q`; stale `wb12_runon_input` state may only serve compatibility mode when
+   the carryover flux is absent.
 
 ### WB12 Coupling Test Vectors
 
@@ -569,6 +576,18 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    stale-state/flux-conflict anti-shadow behavior for WB19->WB12/WB13
    interfaces.
 
+## HPHYS0240 Hourly Runoff Carryover Handoff Addendum
+
+1. The post-WB19 hydrology tail must preserve same-pass runoff carryover via
+   flux `wb12_runoff_carryover` when that boundary is present.
+2. WB12/WB14 runoff reconciliation is flux-authoritative for carryover under
+   state/flux conflicts; `wb12_runon_input` is a compatibility input only when
+   the same-pass carryover flux is absent.
+3. Storage reconciliation consumes `Q` derived from the resolved carryover, so
+   malformed carryover must hard-fail before storage closure writeback.
+4. Contract-derived vectors must include carryover flux-over-state and
+   malformed-carryover rejection probes across the runoff/storage tail.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -582,6 +601,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `23` | `Codex` | HPHYS0240 amendment: added `INV-SUBHYD-022` and carryover handoff addendum requiring post-WB19 WB12/WB14 reconciliation to consume same-pass `wb12_runoff_carryover` before compatibility `wb12_runon_input`, with malformed-carryover hard-fail posture before storage closure. |
 | `2026-06-01` | `22` | `Codex` | HPHYS0239 amendment: added `INV-SUBHYD-021` and handoff-ordering addendum codifying deterministic WB19 `q`/`Qdd`/`Qd` sequencing plus WB12/WB13 anti-shadow consumption requirements for same-pass handoff symbols. |
 | `2026-06-01` | `21` | `Codex` | HPHYS0238 amendment: added `INV-SUBHYD-020` and hourly iterative WB19 lateral/drainage addendum requiring per-substep state-recompute accumulation (`wb19_lateral_drain_lane_substeps`) and prohibiting divisor-only single-pass substitutions. |
 | `2026-06-01` | `20` | `Codex` | HPHYS0234 amendment: added WB13 subsurface anti-shadow authority requiring flux-preferred publication/coupling for `q`, `Qdd`, and `Qd` under state/flux symbol conflicts, with explicit conflict-probe vector obligations. |

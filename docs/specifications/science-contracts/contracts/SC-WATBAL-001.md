@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 68
+contract_version: 69
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -188,6 +188,7 @@ lateral/drainage).
 | INV-WATBAL-029 | SIMIMPL21 aggregate-lineage invariant: root-zone aggregate publication lineage must remain layer-authoritative such that `watcon = Σ soilw(i)` with `soilw(i)` derived from layer storage state and unfrozen-depth adjustment; WB13 `Total-Soil`/`SoilWaterTotal` values must trace to this lineage plus declared frozen/snow components. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-030 | HPHYS0238 WB19 hourly iterative execution invariant: hourly lane execution must run WB19 lateral/drainage with explicit iterative substeps (`wb19_lateral_drain_lane_substeps=24`) and accumulated daily `q`/`Qdd`; divisor-only single-pass substitutions are non-authoritative for hourly closure claims. | hard-fail | REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-031 | HPHYS0239 WB19->WB12->WB13 handoff ordering invariant: promoted hydrology-tail execution must preserve canonical ordering `PercolationDeepSeepage -> Evapotranspiration -> LateralTransfer -> Drainage -> RunoffReconciliation -> StorageReconciliation`, and WB13 `Q`/`Ep`/`Es`/`Er` publication must consume flux-authoritative symbols under state/flux conflicts. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-032 | HPHYS0240 hourly runoff-carryover invariant: WB12/WB14 runoff reconciliation must resolve incoming runoff carryover from same-pass `wb12_runoff_carryover` flux when present, publish the resolved carryover as a flux, and use `wb12_runon_input` only as a finite non-negative compatibility surface when the same-pass flux is absent. Malformed carryover fluxes are typed hard failures and cannot be silently replaced by stale state. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -224,6 +225,7 @@ lateral/drainage).
 | `INV-WATBAL-029` | runtime + governance | Layer-to-aggregate water-lineage validator for WB13 publication surfaces | Typed hard error / explicit `HOLD` when aggregate/publication values are not traceable to declared `st(i)` -> `soilw(i)` -> `watcon` lineage | SIMIMPL hydrology publication-lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-030` | runtime | WB19 lateral/drainage hourly lane validator | Typed hard error / explicit `HOLD` when hourly lane claims do not execute WB19 iterative substeps and accumulated daily flux publication semantics | HPHYS hourly migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-031` | runtime + governance | Hydrology-tail order validator plus WB13 flux-authority anti-shadow checks for `Q`/`Ep`/`Es`/`Er` | Typed hard error / explicit `HOLD` when canonical WB19->WB12 ordering is broken or stale state duplicates shadow same-name flux symbols at WB13 publication | HPHYS hourly handoff closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-032` | runtime + governance | WB12/WB14 runoff-carryover resolver and publication validator | Typed hard error / explicit `HOLD` when same-pass `wb12_runoff_carryover` is ignored, malformed, or replaced by stale `wb12_runon_input` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -477,25 +479,30 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 | Surface | Symbols |
 |---|---|
-| Runoff reconciliation required inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance` |
+| Runoff reconciliation required/carryover inputs | `wb12_rainfall_input`, `wb12_runon_input`, same-pass flux `wb12_runoff_carryover` when published, `wb12_infiltration`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance` |
 | Storage reconciliation required inputs | `wb12_storage_initial`, `wb12_storage_closure_tolerance`, `wb12_precip_input`, `S`, `Q`, `ET`, `D`, `Qd` |
 | WB20 lane selector | `wb20_forward_solver_lane_enabled` (`0` compatibility lane, `1` forward-solver lane); symbol absence is compatibility lane |
 | Compatibility-lane observed targets (optional outside forward lane) | `wb12_runoff_observed`, `wb12_storage_observed` |
-| Runoff reconciliation outputs | `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+| Runoff reconciliation outputs | `Q`, `wb12_runoff_carryover`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 | Storage reconciliation outputs | `wb12_storage_closure_delta`, `wb12_storage_reconciled` |
 
 ### WB12 Deterministic Reconciliation Rules
 
 1. Runoff reconciliation emits:
-   - `Q = wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `runoff_carryover = wb12_runoff_carryover` when the same-pass flux is
+     present and finite/non-negative; otherwise `runoff_carryover =
+     wb12_runon_input` when the state surface is finite/non-negative.
+   - `Q = wb12_rainfall_input + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
    - apply explicit near-zero canonicalization before writeback/closure-delta
      publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
      `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
+   - publish resolved `runoff_carryover` as same-pass flux
+     `wb12_runoff_carryover`.
 2. Storage reconciliation emits:
    - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd`
 3. Closure-delta semantics are lane-scoped:
    - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
-     - `wb12_runoff_closure_delta = (wb12_rainfall_input + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+     - `wb12_runoff_closure_delta = (wb12_rainfall_input + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta) - Q`
      - `wb12_storage_closure_delta = (wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd) - wb12_storage_reconciled`
      - observed targets are excluded from acceptance-driving inputs.
    - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
@@ -595,9 +602,9 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 |---|---|
 | Runoff reconciliation forcing | `ninten` or `nbrkpt`; `timem_####`; `intsty_####`; `ssc`; `dg`; `thetdr`; `thetfc` |
 | Disturbed-soil conductivity-adjustment forcing | `solwpv`, `ksatadj`, `ksatfac`, `ksatrec`, `lkeff`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `dg_####` |
-| Runoff reconciliation state inputs | `wb12_rainfall_input`, `wb12_runon_input`, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`0`/absent compatibility, `1` forward-solver) |
+| Runoff reconciliation state/carryover inputs | `wb12_rainfall_input`, `wb12_runon_input`, same-pass flux `wb12_runoff_carryover` when published, `wb12_depression_storage_delta`, `wb12_runoff_closure_tolerance`, `wb20_forward_solver_lane_enabled` (`0`/absent compatibility, `1` forward-solver) |
 | Compatibility-lane observed target input | `wb12_runoff_observed` (required only when compatibility-lane closure semantics are active) |
-| Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
+| Runoff reconciliation outputs | `wb12_infiltration`, `Q`, `wb12_runoff_carryover`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled` |
 
 ### WB14 Deterministic Coupling Rules
 
@@ -618,16 +625,21 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    - active-path domain violations are typed hard-fail states; no silent
      defaults/clamping.
 3. Reconciliation uses computed infiltration and hyetograph rainfall depth in:
-   - `Q = wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `runoff_carryover = wb12_runoff_carryover` when the same-pass flux is
+     present and finite/non-negative; otherwise `runoff_carryover =
+     wb12_runon_input` when the state surface is finite/non-negative.
+   - `Q = wb14_hyetograph_rainfall + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
    - apply explicit near-zero canonicalization before writeback/closure-delta
      publication: if `Q` is in `[-1e-12, 0)`, set `Q = 0` and
      `wb12_runoff_reconciled = 0`; `Q < -1e-12` is a domain violation.
+   - publish resolved `runoff_carryover` as same-pass flux
+     `wb12_runoff_carryover`.
 4. `wb12_rainfall_input` remains a required closure-consistency surface and must
    match hyetograph-integrated rainfall depth within
    `wb12_runoff_closure_tolerance`.
 5. WB20 lane branch semantics apply to runoff closure delta:
    - forward-solver lane (`wb20_forward_solver_lane_enabled = 1`):
-     `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta) - Q`
+    `wb12_runoff_closure_delta = (wb14_hyetograph_rainfall + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta) - Q`
    - compatibility lane (`wb20_forward_solver_lane_enabled = 0` or symbol absent):
      `wb12_runoff_closure_delta = Q - wb12_runoff_observed`
 6. Reconciliation and downstream storage closure (`wb12_storage_reconciled`)
@@ -684,7 +696,7 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    - `0 <= vdmt <= 0.8` (`kg m^-2`) so `0 <= VE <= 8000` (`kg ha^-1`)
 6. Runoff/infiltration reconciliation consumes interception explicitly:
    - `wb14_hyetograph_liquid_after_interception = wb14_hyetograph_rainfall - I`
-   - `Q = wb14_hyetograph_liquid_after_interception + S + wb12_runon_input - wb12_infiltration - wb12_depression_storage_delta`
+   - `Q = wb14_hyetograph_liquid_after_interception + S + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
 7. Daily storage closure consumes interception as an explicit Chapter-5 term:
    - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - I - Q - ET - D - Qd`
 8. Missing/non-finite/out-of-domain canopy interception symbols are hard-fail
@@ -1613,6 +1625,18 @@ signals.
 4. Contract-derived vectors must include stale-state/flux-conflict probes for
    `Q`/`Ep`/`Es`/`Er` plus canonical-order checks for the full WB19->WB12 tail.
 
+## HPHYS0240 Hourly Runoff Carryover Addendum
+
+1. WB12/WB14 runoff reconciliation must resolve incoming runoff carryover from
+   `wb12_runoff_carryover` when that same-pass flux is present.
+2. `wb12_runon_input` remains a compatibility state surface only when the
+   same-pass carryover flux is absent; it is non-authoritative under carryover
+   flux/state conflicts.
+3. The resolved carryover value must be finite, non-negative, used in the `Q`
+   and closure-delta equations, and republished as `wb12_runoff_carryover`.
+4. Missing/malformed present carryover fluxes are typed hard-fail states; they
+   must not be silently defaulted or replaced by stale state.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1627,6 +1651,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `69` | `Codex` | HPHYS0240 amendment: added `INV-WATBAL-032` and addendum codifying same-pass `wb12_runoff_carryover` authority for WB12/WB14 runoff reconciliation, compatibility-only `wb12_runon_input` fallback, and flux publication/guard obligations. |
 | `2026-06-01` | `68` | `Codex` | HPHYS0239 amendment: added `INV-WATBAL-031` and addendum codifying canonical WB19->WB12->WB13 hydrology-tail ordering plus flux-authoritative WB13 anti-shadow posture for `Q`/`Ep`/`Es`/`Er`; updated WB13 lineage register writer surfaces accordingly. |
 | `2026-06-01` | `67` | `Codex` | HPHYS0238 amendment: added `INV-WATBAL-030` plus WB19 hourly iterative lateral/drainage addendum requiring seeded `wb19_lateral_drain_lane_substeps`, per-substep state recomputation, accumulated daily `q/Qdd`, and prohibition of divisor-only single-pass substitutions. |
 | `2026-06-01` | `66` | `Codex` | HPHYS0235 amendment: reanchored `ui_run=1` WB18/WB11 authority to legacy `watbal_hourly` 24-substep iterative percolation semantics, requiring accumulated hourly seepage lineage for `Dp` and prohibiting divisor-only single-pass hourly treatment for closure claims. |
