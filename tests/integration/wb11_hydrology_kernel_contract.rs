@@ -563,6 +563,77 @@ fn simimpl22_contract_wb11_ordering_vector_requires_purk_before_evap() {
 }
 
 #[test]
+fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconciliation() {
+    let ordered = HillslopePhaseGraph::canonical_order();
+
+    let percolation_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::PercolationDeepSeepage)
+        .expect("percolation phase must exist");
+    let evap_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase must exist");
+    let lateral_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::LateralTransfer)
+        .expect("lateral transfer phase must exist");
+    let drainage_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::Drainage)
+        .expect("drainage phase must exist");
+    let runoff_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff reconciliation phase must exist");
+    let storage_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::StorageReconciliation)
+        .expect("storage reconciliation phase must exist");
+
+    assert!(
+        percolation_index < evap_index
+            && evap_index < lateral_index
+            && lateral_index < drainage_index
+            && drainage_index < runoff_index
+            && runoff_index < storage_index,
+        "canonical hydrology-tail ordering must remain Percolation -> ET -> Lateral -> Drainage -> RunoffReconciliation -> StorageReconciliation"
+    );
+
+    let graph = HillslopePhaseGraph::canonical();
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::Evapotranspiration)
+            .contains(&HillslopePhase::PercolationDeepSeepage),
+        "evapotranspiration must depend on percolation"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::LateralTransfer)
+            .contains(&HillslopePhase::Evapotranspiration),
+        "lateral transfer must depend on evapotranspiration"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::Drainage)
+            .contains(&HillslopePhase::LateralTransfer),
+        "drainage must depend on lateral transfer"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::RunoffReconciliation)
+            .contains(&HillslopePhase::Drainage),
+        "runoff reconciliation must depend on drainage"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::StorageReconciliation)
+            .contains(&HillslopePhase::RunoffReconciliation),
+        "storage reconciliation must depend on runoff reconciliation"
+    );
+}
+
+#[test]
 fn simimpl22_contract_wb13_publication_vector_requires_watcon_alias_lineage() {
     const TOL: f64 = 1.0e-12;
 

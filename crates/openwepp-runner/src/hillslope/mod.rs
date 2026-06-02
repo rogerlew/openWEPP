@@ -4226,25 +4226,25 @@ fn build_simulation_owned_wb13_row(
     let rm = rm_m.max(0.0) * 1_000.0;
     let irrigation_mm = irrigation_m * 1_000.0;
 
-    let q_m = require_runtime_surface_scalar(runtime_surface, "Q")?;
+    let q_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Q")?;
     if q_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Q must be >= 0.0, observed {q_m}"
         )));
     }
-    let transpiration_ep_m = require_runtime_surface_scalar(runtime_surface, "Ep")?;
+    let transpiration_ep_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Ep")?;
     if transpiration_ep_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Ep must be >= 0.0, observed {transpiration_ep_m}"
         )));
     }
-    let soil_evap_es_m = require_runtime_surface_scalar(runtime_surface, "Es")?;
+    let soil_evap_es_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Es")?;
     if soil_evap_es_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Es must be >= 0.0, observed {soil_evap_es_m}"
         )));
     }
-    let residue_evap_er_m = require_runtime_surface_scalar(runtime_surface, "Er")?;
+    let residue_evap_er_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Er")?;
     if residue_evap_er_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "Er must be >= 0.0, observed {residue_evap_er_m}"
@@ -5251,6 +5251,62 @@ mod tests {
         assert!(
             (row.wb13_row.tile - 0.2).abs() < 1.0e-12,
             "Tile must follow flux-surface Qdd when both state and flux values are present"
+        );
+    }
+
+    #[test]
+    fn hphys0239_wb13_hydrology_publication_prefers_flux_surface_over_stale_state_surface() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Q"), BoundaryValue::scalar(0.050_000));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.003_000));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Es"), BoundaryValue::scalar(0.002_000));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Er"), BoundaryValue::scalar(0.001_000));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Q"), BoundaryValue::scalar(0.000_800));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.000_300));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Es"), BoundaryValue::scalar(0.000_150));
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Er"), BoundaryValue::scalar(0.000_070));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should use flux-authoritative Q/Ep/Es/Er");
+
+        assert!(
+            (row.wb13_row.q - 0.8).abs() < 1.0e-12,
+            "Q must follow flux-surface value when both state and flux are present"
+        );
+        assert!(
+            (row.wb13_row.ep - 0.3).abs() < 1.0e-12,
+            "Ep must follow flux-surface value when both state and flux are present"
+        );
+        assert!(
+            (row.wb13_row.es - 0.15).abs() < 1.0e-12,
+            "Es must follow flux-surface value when both state and flux are present"
+        );
+        assert!(
+            (row.wb13_row.er - 0.07).abs() < 1.0e-12,
+            "Er must follow flux-surface value when both state and flux are present"
         );
     }
 
