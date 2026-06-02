@@ -19,6 +19,10 @@ Ran:
 - Apples-to-apples HPHYS0251 semantic rerun vs HPHYS0252 shows no selected
   residual movement for `Ep`, `Total-Soil`, `SoilWaterTotal`, `Dp`, `Es`, `Q`,
   `RM`, `Snow-Water`, or `latqcc`.
+- Claude Code post-commit review confirms the implementation but identifies a
+  strategic gap: the non-frozen "dominant lateral withdrawal" premise remains
+  untested, and targeted `latqcc` is below baseline rather than an obvious
+  over-drainage signature.
 
 Disposition:
 
@@ -27,7 +31,11 @@ Disposition:
 Continuation:
 
 - Do not continue tuning WB19 `fzdrfc` for the current 39-suite residuals.
-- Next focus should move upstream to WB11 seed/runtime storage scale and
-  `st(i)`/`watcon` lineage, while keeping snow/runoff timing in view because
-  targeted H1/H13/H39 diagnostics still show large `Q`, `RM`, and
-  `Snow-Water` residuals alongside severely low aggregate storage.
+- Treat HPHYS0246's "dominant WB19 withdrawal" premise as open, not closed.
+- Next package should be diagnostic-only localization: compare H1 baseline vs
+  openWEPP t=0/day-1 `Total-Soil`/layer `st(i)`/`watcon` and compute
+  `inputs - (ET + Dp + latqcc + Q + delta-storage)` before any further
+  loss-surface correction.
+- Keep WB11 seed/runtime storage scale and snow/runoff timing in view, but do
+  not re-chase the withdrawn producer-intermediate `ProfileFCStore` lead
+  without direct t=0 state authority.

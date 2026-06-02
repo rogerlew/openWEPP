@@ -192,6 +192,14 @@ credentials, user data, or production service state are accessed or modified.
   `/tmp/hphys0252_20260602T195147Z/reports/targeted_h1_h13_h39_diagnostics.md`
   and
   `/tmp/hphys0252_20260602T195147Z/reports/hphys0252_apples_to_apples_delta_from_hphys0251.md`.
+- Observation: the post-commit Claude review correctly challenges the
+  remaining over-drainage framing: targeted `latqcc` is below baseline while
+  `Total-Soil` and `Ep` are also far below baseline, so the stronger signature
+  is input/initialization starvation until a t=0/day-1 conservation audit says
+  otherwise.
+  Evidence:
+  `artifacts/review_claude_code.md` and
+  `artifacts/review_claude_code_disposition.md`.
 
 ## Decision Log
 
@@ -207,6 +215,14 @@ credentials, user data, or production service state are accessed or modified.
   `Snow-Water`; remaining residuals require upstream storage/forcing lineage
   work rather than lateral frozen-threshold tuning.
   Date/Author: 2026-06-02 / Codex.
+- Decision: Treat the original "dominant WB19 withdrawal" premise as open, not
+  closed, and require a diagnostic-only localization gate before another
+  physics-surface correction.
+  Rationale: HPHYS0252 corrected the frozen lateral sub-path but did not test
+  or refute non-frozen lateral withdrawal magnitude. The strongest next
+  discriminator is H1 t=0/day-1 openWEPP-vs-baseline storage plus conservation
+  accounting: inputs versus `ET + Dp + latqcc + Q + delta-storage`.
+  Date/Author: 2026-06-02 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -221,6 +237,9 @@ credentials, user data, or production service state are accessed or modified.
 - Outcome: disposition is `HOLD`; next work should target WB11 seed/runtime
   storage scale, `watcon`/`st(i)` lineage, and the snow/runoff timing surfaces
   that dominate storage availability into WB17.
+- Outcome: post-review disposition narrows the next step further: first run a
+  diagnostic-only localization package for H1 t=0/day-1 storage and
+  conservation accounting before authorizing additional loss-surface fixes.
 
 ## Idempotence and Recovery
 

@@ -25,7 +25,14 @@ Handoff:
   the current 39-suite selected outputs do not move when the fix is present.
 - This indicates the dominant H39/H1/H13 storage residuals are upstream or
   orthogonal to WB19 `frzw` thresholding in the current run surfaces.
-- Recommended next package: diagnose WB11 seed/runtime `st(i)` and `watcon`
-  scale continuity from runfile projection through WB18/WB19/WB17, with
-  explicit checks for whether layer frozen-water `frzw(i)` is ever projected
-  into WB19 for hourly frost-active days.
+- Post-commit Claude review adds an important strategy correction: the
+  non-frozen "dominant WB19 withdrawal" premise is still unverified, and
+  targeted `latqcc` is below baseline, so over-drainage should be demoted until
+  a conservation audit localizes the deficit.
+- Recommended next package: diagnostic-only H1 t=0/day-1 localization. Compare
+  baseline and openWEPP initial/final `Total-Soil`, layer `st(i)`, and
+  `watcon`, then compute water-balance conservation from inputs through
+  `ET + Dp + latqcc + Q + delta-storage` before any further process-surface
+  correction.
+- Guardrail: do not revive the withdrawn `ProfileFCStore` producer-intermediate
+  lead without direct t=0 state-surface authority.
