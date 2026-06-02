@@ -25,7 +25,8 @@ Ran:
 - `cargo test --test clim05_snow_runtime_kernel_contract -- --nocapture`:
   passed `6` tests.
 - `cargo test --test wb19_lateral_drainage_physics_kernel_contract -- --nocapture`:
-  passed `10` tests.
+  passed `11` tests after adding the post-review `solwpv < 2006` second
+  `fffx` multiplier assertion.
 - `cargo test --test hphys0227_wb19_fcwp_coca_watyld_authority_contract -- --nocapture`:
   passed `2` tests after fixture refresh.
 - `cargo test -p openwepp-runner --test simimpl04_wepp_ui_mode_closure_contract -- --nocapture`:
@@ -34,3 +35,7 @@ Ran:
   `tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py` ran and
   produced `/tmp/hphys0247_20260602T070132Z_final/reports/H39.semantic.json`
   with `semantic_pass=false`.
+- Post-review broad gates reran after resolving Review Agent A/B findings:
+  `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test
+  --workspace`, `cargo deny check`, anti-evasion guards, and `auth11` all
+  passed.

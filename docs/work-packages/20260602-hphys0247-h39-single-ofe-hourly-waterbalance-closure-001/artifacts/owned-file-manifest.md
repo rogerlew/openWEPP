@@ -11,6 +11,7 @@ Static:
   `meblfc`/`tdvv`/`fffx` authority.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`: H39
   closure cross-contract invariant.
+- `docs/work-packages/README.md`: HPHYS0247 package index entry.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs`:
   winter hourly forcing trigger predicate.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`:

@@ -274,8 +274,11 @@ parity). Contract-specific interpretation tolerances:
 
 ### CLIM05 Deterministic Rules
 
-1. Active coupling is explicit when `snow.options.snow_file_present` is present
-   on runtime state surface.
+1. Active coupling is explicit when `snow.runtime_swe > 0` or when the day is
+   thermally snow-active and projected snow controls/defaults are present on
+   the runtime state surface. `snow.options.snow_file_present` is validated as
+   binary sidecar discoverability/override provenance only and must not
+   activate coupling by itself.
 2. Partition logic uses `rst` threshold:
    - `Tmax <= rst`: all precipitation accumulates as snow;
    - `Tmin >= rst`: precipitation is rain pathway;

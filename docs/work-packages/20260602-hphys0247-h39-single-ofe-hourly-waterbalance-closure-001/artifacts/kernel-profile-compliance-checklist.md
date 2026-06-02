@@ -29,5 +29,5 @@ Checklist:
 - [x] Typed guards reject missing, non-finite, or out-of-domain required
   surfaces for touched trigger/capacity paths.
 - [x] No heuristic/proxy process-physics substitutions are introduced.
-- [x] Disposition remains `HOLD` because semantic parity, dual review, and
-  dual verification are incomplete.
+- [x] Disposition remains `HOLD` because semantic parity and dual verification
+  are incomplete.

@@ -70,8 +70,9 @@ observable H39 closure as the final technical acceptance signal.
   water-balance closure.
 - [x] Run H39 telemetry, internal residual ledger, semantic comparator, and
   workspace gates through disposition.
-- [ ] Complete dual review, dual verification, worker handoff, and disposition
-  artifacts.
+- [x] Complete worker handoff and disposition artifacts.
+- [x] Complete dual review artifacts.
+- [ ] Complete dual verification artifacts.
 
 
 ## Surprises & Discoveries
@@ -120,6 +121,14 @@ observable H39 closure as the final technical acceptance signal.
   initially expected `winter.active=true` solely from `[inputs.snow]`.
   HPHYS0247 updated those expectations to the amended `fffx` and sidecar
   discoverability contracts.
+- Observation: Independent review found two post-disposition contract evidence
+  gaps.
+  Evidence: Review Agent A found the `solwpv < 2006` post-aggregation `fffx`
+  multiplier was implemented and fixture-backed but under-specified in
+  `SC-SUBHYD-001`; Review Agent B found stale CLIM05 deterministic wording
+  that still made `snow.options.snow_file_present` sound activation-bearing.
+  Follow-up edits amended both contracts and added
+  `wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier`.
 
 
 ## Decision Log

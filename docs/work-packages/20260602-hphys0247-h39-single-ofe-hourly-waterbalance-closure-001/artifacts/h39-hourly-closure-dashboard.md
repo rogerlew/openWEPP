@@ -21,6 +21,6 @@ Ran:
 - Targeted tests: pass.
 - Workspace gates: pass; `fmt`, `clippy`, workspace tests, anti-evasion,
   `auth11`, diff check, and `cargo deny check` all ran.
-- Review/verification: not performed; dual review and dual verification remain
-  queued.
+- Review/verification: dual review performed and findings resolved; dual
+  verification remains queued.
 - Final disposition: `HOLD_PENDING_WB18_WB17_SNOWMELT_MIGRATION`.

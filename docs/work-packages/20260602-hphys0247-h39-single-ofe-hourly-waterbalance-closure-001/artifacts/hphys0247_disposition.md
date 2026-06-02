@@ -23,7 +23,7 @@ Ran:
 - Tests passed:
   `runtime_inputs::tests::climate_runtime_surface_with_context` (`4`),
   `clim05_snow_runtime_kernel_contract` (`6`), and
-  `wb19_lateral_drainage_physics_kernel_contract` (`10`).
+  `wb19_lateral_drainage_physics_kernel_contract` (`11`).
 - Broad gates passed: `cargo fmt --check`,
   `cargo clippy --workspace --all-targets -- -D warnings`,
   `cargo test --workspace`, `cargo deny check`, anti-evasion guards,
@@ -38,6 +38,7 @@ Reasons this is not `GO`:
   `1460/1461` rows and `Es` fails `1461/1461` rows.
 - Snow execution is now active, but snowmelt/runoff timing remains
   non-authoritative: `Snow-Water`, `RM`, and `Q` still fail semantic parity.
-- Dual review and dual verification were not performed.
+- Dual review was performed and findings were resolved; dual verification was
+  not performed.
 - Strict contract-first sequencing was not perfectly preserved for all tests;
   this is recorded in `pre-implementation-contract-gate.md`.

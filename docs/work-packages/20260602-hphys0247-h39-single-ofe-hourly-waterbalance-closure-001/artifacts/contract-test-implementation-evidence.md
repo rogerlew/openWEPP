@@ -13,6 +13,9 @@ Static:
   in `tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs`.
 - Added `wb19_contract_conformance_applies_fffx_saturation_fraction_to_lateral_conductivity`
   in `tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs`.
+- Added post-review
+  `wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier` in
+  `tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs`.
 
 Ran:
 - `cargo test -p openwepp-hillslope-orchestrator runtime_inputs::tests::climate_runtime_surface_with_context -- --nocapture`
@@ -20,4 +23,5 @@ Ran:
 - `cargo test --test clim05_snow_runtime_kernel_contract -- --nocapture`
   passed `6` tests.
 - `cargo test --test wb19_lateral_drainage_physics_kernel_contract -- --nocapture`
-  passed `10` tests after correcting the full-saturation expected value.
+  passed `11` tests after correcting the full-saturation expected value and
+  adding the post-review `solwpv < 2006` multiplier assertion.
