@@ -835,6 +835,72 @@ impl Wb11HydrologyKernel {
         Ok(KernelRunResponse::new(status, writeback))
     }
 
+    fn wb18_aggregate_soil_water_after_percolation(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        theta: &[f64],
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let mut soil_water_after = 0.0;
+        for (index, layer_theta) in theta.iter().enumerate() {
+            let layer_index = index + 1;
+            let thetdr_symbol = Self::wb19_thetdr_symbol(layer_index);
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let frozen_depth_symbol = Self::wb18_perc_state_symbol("frozen_depth", layer_index);
+
+            let thetdr =
+                Self::require_state_scalar_for_symbol(request, phase_class, &thetdr_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &thetdr_symbol,
+                thetdr,
+                Some(0.0),
+                Some(1.0),
+            )?;
+
+            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &dg_symbol,
+                dg,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            let frozen_depth = Self::optional_state_scalar_for_symbol(
+                request,
+                phase_class,
+                &frozen_depth_symbol,
+            )?
+            .unwrap_or(0.0);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &frozen_depth_symbol,
+                frozen_depth,
+                Some(0.0),
+                Some(dg),
+            )?;
+
+            let layer_soil_water = *layer_theta + thetdr * (dg - frozen_depth);
+            if !layer_soil_water.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB11_SYMBOL_SOIL_WATER),
+                    value: layer_soil_water,
+                });
+            }
+            soil_water_after += layer_soil_water;
+        }
+
+        if !soil_water_after.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB11_SYMBOL_SOIL_WATER),
+                value: soil_water_after,
+            });
+        }
+        Ok(soil_water_after)
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_percolation(
         request: &HillslopeKernelRequest<'_>,
@@ -1183,7 +1249,8 @@ impl Wb11HydrologyKernel {
             lane_substep_index += 1.0;
         }
 
-        let soil_water_after: f64 = theta.iter().sum();
+        let soil_water_after =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &theta)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,

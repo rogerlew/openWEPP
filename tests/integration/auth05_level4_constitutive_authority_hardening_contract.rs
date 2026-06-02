@@ -751,6 +751,11 @@ fn seeded_perc_state(
         BoundaryValue::scalar(ssc_m_s),
     );
     state.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
+    state.insert(
         BoundarySymbol::from("wb11_field_capacity"),
         BoundaryValue::scalar(fc_m),
     );

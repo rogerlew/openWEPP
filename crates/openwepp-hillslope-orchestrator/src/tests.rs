@@ -17,7 +17,7 @@ use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topol
 
 use super::{
     HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
-    SchedulerOutcomeClass, hillslope_consumer_adapter_for_phase,
+    SchedulerOutcomeClass, Wb11HydrologyKernel, hillslope_consumer_adapter_for_phase,
     required_hillslope_consumer_state_symbols, validate_hillslope_consumer_boundary,
 };
 
@@ -42,6 +42,77 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 fn valid_topology_report() -> openwepp_topology::TopologyValidationReport {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     validate_pre_execution_topology(&graph).expect("topology report should build")
+}
+
+fn state_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
+    let target = BoundarySymbol::from(symbol);
+    fields.iter().find_map(|field| {
+        if field.symbol == target {
+            Some(field.value.as_f64())
+        } else {
+            None
+        }
+    })
+}
+
+fn hphys0246_wb18_aggregate_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.343),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_field_capacity"),
+        BoundaryValue::scalar(0.40),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_perc_fraction"),
+        BoundaryValue::scalar(0.50),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.10),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.15),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(0.40),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(1.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.05),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.30));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.20),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0002"),
+        BoundaryValue::scalar(0.25),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(0.50),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(1.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.07),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.40));
+    state_surface
 }
 
 #[allow(clippy::too_many_lines)]
@@ -275,6 +346,71 @@ fn seeded_growth_runtime_surface_for_day_year(
 
 fn seeded_growth_runtime_surface(imngmt: f64) -> HillslopeWritebackSurface {
     seeded_growth_runtime_surface_for_day_year(imngmt, 200.0, 1.0)
+}
+
+#[test]
+fn hphys0246_wb18_percolation_preserves_residual_storage_in_aggregate_soil_water() {
+    let state_surface = hphys0246_wb18_aggregate_state_surface();
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB18 should publish wb11_soil_water");
+    let theta_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB18 should publish layer 1 theta")
+            + state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+                .expect("WB18 should publish layer 2 theta");
+    let expected_soilw = theta_after + (0.05 * 0.30) + (0.07 * 0.40);
+
+    assert!(
+        (soil_water_after - expected_soilw).abs() < 1.0e-12,
+        "WB18 aggregate soil water must follow baseline soilw=sum(st+thetdr*dg), observed {soil_water_after} expected {expected_soilw}"
+    );
+    assert!(
+        (soil_water_after - theta_after).abs() > 1.0e-6,
+        "test vector must detect the old sigma-theta-only writeback"
+    );
+}
+
+#[test]
+fn hphys0246_wb18_percolation_requires_residual_storage_symbols_for_aggregate_writeback() {
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.remove(&BoundarySymbol::from("thetdr_0002"));
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(
+        response.status.message_id(),
+        "HKERNEL-WB11-PERC-E-001",
+        "WB18 must fail closed instead of silently defaulting missing residual storage"
+    );
+    assert!(
+        response.writeback.state_updates.is_empty(),
+        "failed WB18 guard must not publish partial state updates"
+    );
 }
 
 fn seed_legacy_monthly_temperature_vectors(surface: &mut HillslopeWritebackSurface) {

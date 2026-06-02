@@ -44,6 +44,11 @@ fn seeded_perc_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundarySymbol::from("wb18_perc_ssc_0001"),
         BoundaryValue::scalar(2.0e-6),
     );
+    state.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
 
     state.insert(
         BoundarySymbol::from("wb18_perc_theta_0002"),
@@ -61,6 +66,11 @@ fn seeded_perc_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundarySymbol::from("wb18_perc_ssc_0002"),
         BoundaryValue::scalar(1.0e-5),
     );
+    state.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.0),
+    );
+    state.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(1.0));
 
     state
 }

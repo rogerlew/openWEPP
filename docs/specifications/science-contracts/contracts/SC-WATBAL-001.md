@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 71
+contract_version: 72
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-01
+last_reviewed: 2026-06-02
 supersedes: []
 superseded_by: []
 ---
@@ -388,6 +388,12 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   baseline ordering and lineage authority (`purk -> evap/evappm -> drain/lateral -> swu -> watcon`)
   and must publish explicit lineage diagnostics proving `st(i)`/`soilw(i)` to
   `Total-Soil`/`SoilWaterTotal` continuity.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-016: WB18 aggregate storage producers must publish
+  `wb11_soil_water` from baseline `watcon = Σsoilw(i)` semantics after
+  percolation, using `wb18_perc_theta_####`, `thetdr_####`, `dg_####`, and
+  declared frozen-depth lineage when present; `Σtheta`-only WB18 aggregate
+  publication is non-authoritative.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -1698,6 +1704,20 @@ signals.
    addback, ET/infiltration lineage freshness, and stale-state anti-shadow
    behavior before production edits are promotable.
 
+### HPHYS0246 WB18 Aggregate Soil-Water Writeback Addendum
+
+HPHYS0246 closes the WB18 aggregate writeback half of `INV-WATBAL-029` for the
+percolation boundary:
+
+1. WB18 `percolation_deep_seepage` must not publish `Total-Soil` lineage from
+   `Σwb18_perc_theta_####` alone.
+2. The WB18 producer obligation is to publish `wb11_soil_water` from
+   `SC-PERC-001#INV-PERC-013`, which maps baseline `watcon = Σsoilw(i)` to
+   runtime symbols.
+3. WB13 `Total-Soil` and `SoilWaterTotal` publication must continue to consume
+   `wb11_soil_water`; after HPHYS0246, WB13 remains a downstream reflection of
+   WB18/WB19 aggregate state rather than a compensating publication layer.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1712,6 +1732,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `72` | `Codex` | HPHYS0246 amendment: added WB18 aggregate soil-water writeback authority requiring `wb11_soil_water`/WB13 `Total-Soil` lineage to follow `SC-PERC-001#INV-PERC-013` baseline `watcon = Σsoilw(i)` semantics instead of `Σtheta`-only percolation writeback. |
 | `2026-06-01` | `71` | `Codex` | HPHYS0242 amendment: added `INV-WATBAL-034`, hourly WB14/WB12 cadence authority, surface-saturation `ui_SCrunf` clipping/addback, same-pass runoff/storage lineage, and refined HPHYS0239 ordering language so HPHYS0242 controls hourly WB19 drainage/lateral sequencing. |
 | `2026-06-01` | `70` | `Codex` | HPHYS0241 amendment: added `INV-WATBAL-033` and baseline `wathour.inc`/`watbal_hourly.for` authority for 24-slot MOFE hourly carry arrays (`ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, `ui_LfCrf`), explicit upstream/current copy-forward, aggregate-only substitution prohibition, and fail-closed malformed-array guard posture. |
 | `2026-06-01` | `69` | `Codex` | HPHYS0240 amendment: added `INV-WATBAL-032` and addendum codifying same-pass `wb12_runoff_carryover` authority for WB12/WB14 runoff reconciliation, compatibility-only `wb12_runon_input` fallback, and flux publication/guard obligations. |
