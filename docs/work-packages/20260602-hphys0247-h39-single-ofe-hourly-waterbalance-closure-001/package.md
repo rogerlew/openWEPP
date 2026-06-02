@@ -8,10 +8,10 @@ revise this file whenever implementation evidence changes the plan.
 
 ## Status
 
-- state: queued
+- state: hold
 - date: 2026-06-02
 - timezone: America/Los_Angeles
-- decision: QUEUED_FOR_PACKAGE_END_TO_END_EXECUTION
+- decision: HOLD_PENDING_WB18_WB17_SNOWMELT_MIGRATION
 
 
 ## Purpose / Big Picture
@@ -58,17 +58,17 @@ observable H39 closure as the final technical acceptance signal.
 
 - [x] (2026-06-02) Scaffolded HPHYS0247 as a queued autonomous ExecPlan-style
   work package.
-- [ ] Read all required orientation, contract, prior-package, and baseline
+- [x] Read all required orientation, contract, prior-package, and baseline
   files listed in this package.
-- [ ] Reproduce the current H39 hourly residual with manifest evidence proving
+- [x] Reproduce the current H39 hourly residual with manifest evidence proving
   hourly lane selection.
-- [ ] Amend canonical `SC-*` contract authority for every water-balance surface
+- [x] Amend canonical `SC-*` contract authority for every water-balance surface
   that this package changes.
 - [ ] Add contract-derived tests before production edits.
-- [ ] Record pre-implementation contract-gate evidence.
-- [ ] Implement baseline-authoritative production fixes for H39 hourly
+- [x] Record pre-implementation contract-gate evidence.
+- [x] Implement baseline-authoritative production fixes for H39 hourly
   water-balance closure.
-- [ ] Run H39 telemetry, internal residual ledger, semantic comparator, and
+- [x] Run H39 telemetry, internal residual ledger, semantic comparator, and
   workspace gates through disposition.
 - [ ] Complete dual review, dual verification, worker handoff, and disposition
   artifacts.
@@ -95,6 +95,31 @@ observable H39 closure as the final technical acceptance signal.
   `/tmp/unpalatable_parity_20260529T192707Z/reports/hillslope/baseline_partitions/baseline_H39.parquet`
   and `/tmp/hphys0243_20260602T042747Z/parity/hillslope_output/H39.wat.parquet`
   showed `ofe_id = [1]`, `OFE = [1]`, and `1461` rows in each file.
+- Observation: H39 winter processing was incorrectly gated by
+  `snow.options.snow_file_present`.
+  Evidence: pre-patch H39 manifest reported `winter.active=false` and
+  `snow_file_present=false`, while baseline showed snow accumulation starting
+  day 2. HPHYS0247 patched runtime triggers so patched manifest reports
+  `winter.active=true` with `snow_file_present=false`.
+- Observation: WB19 lateral transfer used non-baseline saturated-zone lineage.
+  Evidence: baseline `watbal_hourly.for` uses bottom-contiguous `meblfc`,
+  `tdvv`, and `fffx`; HPHYS0247 added `SC-SUBHYD-001#INV-SUBHYD-024`,
+  contract-derived tests, and production changes. Patched day-1 H39 lateral
+  delta is `6.112889 mm`, down from the prior `79.515092 mm`.
+- Observation: H39 remains dominated by WB18, WB17, and snowmelt/runoff
+  residual families after targeted HPHYS0247 fixes.
+  Evidence: final comparator
+  `/tmp/hphys0247_20260602T070132Z_final/reports/H39.semantic.json` reports
+  `semantic_pass=false`; `Dp`, `Ep`, `Es`, `RM`, `Q`, `Snow-Water`,
+  `Total-Soil`, `SoilWaterTotal`, and `latqcc` still fail.
+- Observation: Workspace gates exposed stale authority fixtures and a stale
+  runner manifest expectation that still treated snow override presence as
+  execution activation.
+  Evidence: `hphys0227_wb19_fcwp_coca_watyld_authority_contract` initially
+  expected pre-HPHYS0247 `q`; `simimpl04_wepp_ui_mode_closure_contract`
+  initially expected `winter.active=true` solely from `[inputs.snow]`.
+  HPHYS0247 updated those expectations to the amended `fffx` and sidecar
+  discoverability contracts.
 
 
 ## Decision Log
@@ -129,11 +154,15 @@ observable H39 closure as the final technical acceptance signal.
 
 ## Outcomes & Retrospective
 
-Queued. No implementation has run under this package yet. At disposition, this
-section must state whether H39 hourly water-balance closure is `GO`, `HOLD`, or
-`BLOCKED`, summarize the residual families closed, list any remaining residuals
-with exact magnitudes and evidence paths, and explain what the next package
-should do only if closure remains incomplete.
+Disposition is `HOLD_PENDING_WB18_WB17_SNOWMELT_MIGRATION`. HPHYS0247 closed
+two root defects: sidecar-presence-only winter gating and WB19 non-baseline
+`meblfc`/`tdvv`/`fffx` lateral capacity. H39 semantic parity remains incomplete:
+final evidence at `/tmp/hphys0247_20260602T070132Z_final` reports
+`semantic_pass=false`, with dominant residuals in WB18 `Dp`, WB17 `Ep`/`Es`,
+snowmelt/runoff `RM`/`Q`/`Snow-Water`, and storage
+`Total-Soil`/`SoilWaterTotal`. The next package should prioritize
+baseline-authoritative WB18 early-season percolation/deep-seepage migration,
+then WB17 ET partition, then snowmelt/runoff timing.
 
 
 ## Context and Orientation

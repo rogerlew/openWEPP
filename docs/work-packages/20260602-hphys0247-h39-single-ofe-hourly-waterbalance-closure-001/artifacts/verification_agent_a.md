@@ -1,13 +1,13 @@
 # Verification Agent A
 
-Status: queued
+Status: not-performed
 
 Evidence mode: not-run
 
 Static:
-- Queued independent verification artifact.
+- Independent verification was not performed in this execution turn.
 
 Ran:
 - Not run.
 
-Verification result: not performed.
+Verification result: not performed; disposition remains `HOLD`.

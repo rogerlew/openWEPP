@@ -10,14 +10,14 @@
       "expected": {
         "status_code": "HKERNEL-WB11-LAT-OK-001",
         "withdrawal_symbol": "q",
-        "withdrawal_m": 0.1221880517890351,
-        "soil_water_after_m": 10.377811948210964
+        "withdrawal_m": 0.030547012947258853,
+        "soil_water_after_m": 10.469452987052741
       }
     },
     {
       "case_id": "lateral_overdraw_rejected",
       "phase": "lateral",
-      "soil_water_before_m": 0.05,
+      "soil_water_before_m": 0.01,
       "expected": {
         "status_code": "HKERNEL-WB11-LAT-E-003",
         "boundary_class": "DomainViolation"

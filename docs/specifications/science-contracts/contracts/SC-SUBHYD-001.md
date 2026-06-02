@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 24
+contract_version: 25
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-06-01
+last_reviewed: 2026-06-02
 supersedes: []
 superseded_by: []
 ---
@@ -153,15 +153,14 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
    `dg`, `por`, `coca`) and computes saturated-zone metrics and effective
    conductivity over saturated thickness:
    - `drfc_i = fc_i + (1-coca_i)*dg_i`
-   - `solwpv = 2006`: saturated block includes all layers where
-     `theta_i >= drfc_i`
-   - `solwpv != 2006`: saturated block is contiguous from surface until first
-     unsaturated layer
+   - HPHYS0247 supersedes earlier `solwpv` selector wording: lateral-active
+     layers follow `INV-SUBHYD-024` baseline `meblfc` bottom-contiguous
+     selection for all `solwpv` modes.
    - `avpora = Σ(por_i * dg_i / fcdep)`,
      `avfca = Σ(thetfc_i * dg_i / fcdep)`,
      `avcoca = Σ(coca_i * dg_i / fcdep)`
    - `watyld = avpora - (avfca + (1-avcoca))`
-   - `Ke = 86400 * (Σ(ssc_i * dg_i) / Σ(dg_i))`
+   - `Ke = 86400 * (Σ(ssc_i * fffx_i * dg_i) / Σ(dg_i))`
    - `alpha = atan(avgslp)`
    - `q_potential = (Ho * wb19_lateral_anisotropy_ratio * Ke * sin(alpha)) / slplen`
 2. Lateral phase withdraws `q` from layer excess water (`theta_i - drfc_i`) in
@@ -219,6 +218,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-021 | HPHYS0239 WB19->WB12/WB13 handoff invariant: WB19 lateral/drainage handoff must remain deterministic and downstream WB12/WB13 consumers must consume post-WB19 same-pass flux symbols with anti-shadow precedence for `q`/`Qdd`/`Qd` under state/flux conflicts. HPHYS0242 `INV-SUBHYD-023` is the controlling authority for hourly-lane drainage/lateral order. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-PHYS-BOUNDS, INV-SUBHYD-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-022 | HPHYS0240 runoff-carryover handoff invariant: downstream WB12/WB14 reconciliation in the post-WB19 hydrology tail must consume same-pass `wb12_runoff_carryover` flux for incoming runoff/runon carryover when present, preserving flux-authoritative anti-shadow semantics and finite non-negative boundary validation before storage reconciliation consumes derived `Q`. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-023 | HPHYS0242 hourly WB19 tail invariant: hourly-lane WB19 execution must follow baseline tail ordering `Drainage -> LateralTransfer`, accumulate same-pass `Qdd`, `q`, and final `Qd = Qdd + q`, publish 24-slot `ui_LfCrf` from realized lateral flow, clip positive top-layer saturation excess into 24-slot `ui_SCrunf`, and leave no material post-clipping top-layer excess. Missing/malformed carry arrays, stale `Qd`, or omitted positive `ui_SCrunf` hard-fail. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034, SC-RUNOFFPART-001#INV-RUNOFFPART-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-024 | HPHYS0247 WB19 lateral saturated-zone lineage invariant: WB19 lateral execution must follow baseline `watbal_hourly` layer selection and capacity lineage for hourly closure claims: a layer is lateral-active only when `st(i) >= drfc(i)` and either it is the bottom layer or the layer below is saturated to `ul(i+1)` (`meblfc`), lateral capacity is capped by `tdvv = Σ active max(st(i)-drfc(i),0)`, and conductivity averaging uses `fffx = clamp((st(i)-drfc(i))/(ul(i)-drfc(i)),0,1)` as the per-layer saturation fraction. Top-contiguous-only selection, FC-only thresholds, omitted `fffx`, or lateral withdrawals beyond `tdvv` are invalid. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -247,6 +247,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-021` | runtime + governance | WB19-to-WB12/WB13 handoff validator for deterministic `q`/`Qdd`/`Qd` sequencing and anti-shadow consumption | Typed hard error / explicit `HOLD` when downstream reconciliation/publication consumes stale pre-WB19 surfaces or state-shadowed subsurface symbols | HPHYS hourly handoff closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-022` | runtime + governance | WB12/WB14 runoff-carryover handoff validator at post-WB19 tail boundary | Typed hard error / explicit `HOLD` when carryover uses stale `wb12_runon_input` despite present same-pass `wb12_runoff_carryover`, or when malformed carryover reaches storage-derived `Q` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-023` | runtime + governance | HPHYS0242 scheduler-order gate, drainage/lateral same-pass `Qd` assembler, and MOFE current carry-array producer | Typed hard error / explicit `HOLD` when hourly tail runs lateral before drainage, publishes stale `Qd`, omits `ui_LfCrf`/`ui_SCrunf`, or leaves unclipped material top-layer saturation excess | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-024` | runtime + governance | WB19 lateral saturated-zone selector, `tdvv` capacity cap, and `fffx` conductivity weighting | Typed hard error / explicit `HOLD` when lateral flow is produced from non-`meblfc` layers, omits saturation-fraction weighting, or withdraws beyond active-layer `tdvv` | HPHYS0247 H39 lateral residual closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -327,6 +328,7 @@ alias continuity for production kernels.
 | Cross-domain coupling payload (`INV-SUBHYD-009`) | subsurface boundary handoff | Hard error on missing malformed field or unit/sign mismatch | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | Governance scope boundary (`INV-SUBHYD-010`) | review/verification/promotion | Governance `HOLD` until scope claims match declared authority | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | WB19 lateral/drainage production execution and guards (`INV-SUBHYD-012/013/014`) | lateral/drainage kernel execution and guard validation | Hard error on malformed WB19 lateral/drainage domains or invalid deterministic updates | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB19 baseline saturated-zone capacity (`INV-SUBHYD-024`) | lateral-flow layer selection and capacity assembly | Hard error on top-contiguous-only saturated selection, omitted `fffx` weighting, or withdrawal beyond active-layer `tdvv` | HPHYS0247 hourly closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -464,10 +466,9 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 ## HPHYS0221 WB19 Water-Yield and Saturated-Depth Coupling Addendum
 
-1. WB19 lateral execution must preserve baseline `solwpv` branch semantics:
-   - `solwpv = 2006`: include all saturated layers (`theta_i >= drfc_i`).
-   - `solwpv != 2006`: include only contiguous near-surface saturated layers
-     until first unsaturated layer.
+1. WB19 lateral execution originally carried provisional `solwpv` selector
+   wording, but HPHYS0247 supersedes lateral-active layer selection with
+   baseline `meblfc` bottom-contiguous authority from `INV-SUBHYD-024`.
 2. WB19 lateral coupling must compute:
    - `avpora = Σ(por_i * dg_i / fcdep)`,
    - `avfca = Σ(thetfc_i * dg_i / fcdep)`,
@@ -485,9 +486,8 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 ## HPHYS0222 WB19 `solwpv` Branch-Authority Correction Addendum
 
-1. WB19 lateral saturated-layer selection remains:
-   - `solwpv = 2006`: all saturated layers.
-   - `solwpv != 2006`: contiguous near-surface saturated block.
+1. WB19 lateral saturated-layer selection is superseded by HPHYS0247
+   `INV-SUBHYD-024` baseline `meblfc` authority.
 2. WB19 coupled saturated-depth mutation (`fcdep`, `unsdep`) is authorized
    only for `solwpv < 2006`.
 3. For `solwpv >= 2006`, WB19 must not apply `fcdep = fcdep - q/watyld`.
@@ -619,6 +619,28 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    positive `ui_SCrunf` clipping, malformed carry-array rejection, and stale
    state/flux anti-shadow behavior.
 
+## HPHYS0247 WB19 Baseline Saturated-Zone Capacity Addendum
+
+1. WB19 lateral saturated-zone selection for hourly closure claims follows
+   baseline `watbal_hourly` `meblfc` lineage:
+   - `drfc(i) = fc(i) + (1-coca(i))*dg(i)`,
+   - `meblfc(i) = 1` only for the bottom layer or when the layer below is
+     saturated to `ul(i+1)`,
+   - lateral-active layer `i` requires both `st(i) >= drfc(i)` and
+     `meblfc(i) = 1`.
+2. Active-layer capacity cap is `tdvv = Σ max(st(i)-drfc(i),0)` over
+   lateral-active layers only; the broader layer-pool cap remains
+   non-authoritative for expanding lateral withdrawal beyond `tdvv`.
+3. Lateral effective conductivity averaging uses
+   `fffx(i) = clamp((st(i)-drfc(i))/(ul(i)-drfc(i)),0,1)` and accumulates
+   `Σ Ksat(i)*fffx(i)*dg(i)` over lateral-active layers.
+4. `ul(i)-drfc(i) <= 0`, non-finite `fffx`, or any attempted lateral
+   withdrawal beyond `tdvv` is a typed WB19 domain violation, not a silently
+   repaired state.
+5. Contract-derived vectors must prove non-bottom-contiguous top saturation
+   does not emit lateral flow and partially saturated active layers are damped
+   by `fffx`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -632,6 +654,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `25` | `Codex` | HPHYS0247 amendment: added `INV-SUBHYD-024` and baseline `watbal_hourly` WB19 saturated-zone capacity authority (`meblfc`, active-layer `tdvv`, and `fffx` conductivity weighting) for H39 hourly lateral closure. |
 | `2026-06-01` | `24` | `Codex` | HPHYS0242 amendment: added `INV-SUBHYD-023`, baseline hourly `Drainage -> LateralTransfer` tail authority, final same-pass `Qd = Qdd + q` publication, and required `ui_LfCrf`/`ui_SCrunf` MOFE current carry production with top-layer saturation clipping. |
 | `2026-06-01` | `23` | `Codex` | HPHYS0240 amendment: added `INV-SUBHYD-022` and carryover handoff addendum requiring post-WB19 WB12/WB14 reconciliation to consume same-pass `wb12_runoff_carryover` before compatibility `wb12_runon_input`, with malformed-carryover hard-fail posture before storage closure. |
 | `2026-06-01` | `22` | `Codex` | HPHYS0239 amendment: added `INV-SUBHYD-021` and handoff-ordering addendum codifying deterministic WB19 `q`/`Qdd`/`Qd` sequencing plus WB12/WB13 anti-shadow consumption requirements for same-pass handoff symbols. |

@@ -1399,7 +1399,6 @@ impl Wb11HydrologyKernel {
         }
 
         let solwpv_mode = Self::wb19_solwpv_mode(request, phase_class)?;
-        let solwpv_mode_is_2006 = solwpv_mode == 2006;
         let solwpv_mode_lt_2006 = solwpv_mode < 2006;
         let mofe_hourly_carry_arrays_enabled =
             Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?;
@@ -1540,18 +1539,26 @@ impl Wb11HydrologyKernel {
         };
         for substep_index in 0..lane_substeps {
             let mut saturated_layer = vec![false; theta.len()];
-            let mut encountered_unsaturated = false;
             for (index, (theta_i, threshold_i)) in
                 theta.iter().zip(drain_threshold.iter()).enumerate()
             {
-                let saturated = *theta_i + WB11_ZERO_THRESHOLD >= *threshold_i;
-                if solwpv_mode_is_2006 {
-                    saturated_layer[index] = saturated;
-                } else if !encountered_unsaturated && saturated {
-                    saturated_layer[index] = true;
+                let meblfc = if index + 1 == theta.len() {
+                    true
                 } else {
-                    encountered_unsaturated = true;
-                }
+                    let lower_upper_limit = upper_limit[index + 1];
+                    if lower_upper_limit <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: Self::wb18_perc_state_symbol("ul", index + 2),
+                            value: lower_upper_limit,
+                            minimum: Some(WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    theta[index + 1] / lower_upper_limit >= 1.0 - WB11_ZERO_THRESHOLD
+                };
+                let saturated = *theta_i + WB11_ZERO_THRESHOLD >= *threshold_i;
+                saturated_layer[index] = saturated && meblfc;
             }
 
             let mut fcdep_before = 0.0_f64;
@@ -1566,14 +1573,43 @@ impl Wb11HydrologyKernel {
             let mut avpora = 0.0_f64;
             let mut avfca = 0.0_f64;
             let mut avcoca = 0.0_f64;
+            let mut lateral_capacity_tdv = 0.0_f64;
+            let mut legacy_saturation_fraction = 1.0_f64;
             if fcdep_before > WB11_ZERO_THRESHOLD {
                 for layer_index in 0..theta.len() {
                     if !saturated_layer[layer_index] {
                         continue;
                     }
+                    let storage_excess =
+                        (theta[layer_index] - drain_threshold[layer_index]).max(0.0);
+                    lateral_capacity_tdv += storage_excess;
+                    let saturation_denominator =
+                        upper_limit[layer_index] - drain_threshold[layer_index];
+                    if saturation_denominator <= WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: Self::wb18_perc_state_symbol("ul", layer_index + 1),
+                            value: upper_limit[layer_index],
+                            minimum: Some(drain_threshold[layer_index] + WB11_ZERO_THRESHOLD),
+                            maximum: None,
+                        });
+                    }
+                    let saturation_fraction =
+                        (storage_excess / saturation_denominator).clamp(0.0, 1.0);
+                    if !saturation_fraction.is_finite() {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: Self::wb18_perc_state_symbol("theta", layer_index + 1),
+                            value: saturation_fraction,
+                            minimum: Some(0.0),
+                            maximum: Some(1.0),
+                        });
+                    }
+                    legacy_saturation_fraction = saturation_fraction;
                     let layer_weight = thickness[layer_index] / fcdep_before;
                     saturated_depth_sum += thickness[layer_index];
-                    conductivity_depth_sum += conductivity[layer_index] * thickness[layer_index];
+                    conductivity_depth_sum +=
+                        conductivity[layer_index] * saturation_fraction * thickness[layer_index];
                     avpora += porosity[layer_index] * layer_weight;
                     avfca += field_capacity_theta[layer_index] * layer_weight;
                     avcoca += coca[layer_index] * layer_weight;
@@ -1585,7 +1621,11 @@ impl Wb11HydrologyKernel {
             {
                 0.0
             } else {
-                let ke = (86_400.0 / lane_substeps_f64) * (conductivity_depth_sum / saturated_depth_sum);
+                let mut ke = (86_400.0 / lane_substeps_f64)
+                    * (conductivity_depth_sum / saturated_depth_sum);
+                if solwpv_mode_lt_2006 {
+                    ke *= legacy_saturation_fraction;
+                }
                 if !ke.is_finite() || ke < 0.0 {
                     return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                         phase_class,
@@ -1621,7 +1661,9 @@ impl Wb11HydrologyKernel {
 
             let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
             let available_pool = layer_pool;
-            let q_lateral_target = q_lateral_potential.min(available_pool);
+            let q_lateral_target = q_lateral_potential
+                .min(available_pool)
+                .min(lateral_capacity_tdv);
             let q_lateral_substep =
                 Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
             q_lateral_target_total += q_lateral_target;

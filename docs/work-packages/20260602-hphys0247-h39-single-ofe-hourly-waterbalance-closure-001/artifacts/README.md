@@ -1,11 +1,13 @@
 # HPHYS0247 Artifacts
 
-Status: queued
+Status: hold
 
-Evidence mode: not-run
+Evidence mode: static + ran
 
 Artifacts for HPHYS0247 package-end-to-end execution. Each artifact must be
 updated with `Static:` and/or `Ran:` labels as evidence is collected.
+
+Current disposition: `HOLD_PENDING_WB18_WB17_SNOWMELT_MIGRATION`.
 
 Required artifacts:
 

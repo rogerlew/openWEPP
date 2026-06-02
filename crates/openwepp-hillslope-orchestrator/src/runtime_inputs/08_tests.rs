@@ -91,6 +91,18 @@ mod tests {
             BoundarySymbol::from("snow.options.rst"),
             BoundaryValue::scalar(rst),
         );
+        context.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.01),
+        );
+        context.insert(
+            BoundarySymbol::from("frost.runtime_dfrost"),
+            BoundaryValue::scalar(0.0),
+        );
+        context.insert(
+            BoundarySymbol::from("frost.runtime_ws_frz"),
+            BoundaryValue::scalar(0.0),
+        );
         context.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(0.058));
         context.insert(BoundarySymbol::from("azm"), BoundaryValue::scalar(0.0));
         context
@@ -1710,6 +1722,39 @@ mod tests {
         assert!(warm_snow.abs() < 1e-12);
         assert!(cold_snow > 0.0);
         assert!(cold_rain.abs() < 1e-12);
+    }
+
+    #[test]
+    fn climate_runtime_surface_with_context_uses_cold_trigger_without_snow_sidecar() {
+        let cold_climate = VALID_CLIMATE.replace("12.0 2.0 200.0", "-1.0 -3.0 200.0");
+        let climate = parse_climate_from_str(&cold_climate, ClimateParserMode::Strict)
+            .expect("strict cold climate fixture should parse");
+        let mut context = simimpl28_winter_context(0.0);
+        context.insert(
+            BoundarySymbol::from("snow.options.snow_file_present"),
+            BoundaryValue::scalar(0.0),
+        );
+        context.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.0),
+        );
+
+        let surface =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect("cold-trigger winter surface should build without snow sidecar");
+        let snow_total = (1..=24)
+            .map(|hour| {
+                surface
+                    .state_surface
+                    .get(&BoundarySymbol::from(format!(
+                        "snow.hourly.snowfall_m_{hour:04}"
+                    )))
+                    .expect("hourly snowfall symbol should exist")
+                    .as_f64()
+            })
+            .sum::<f64>();
+
+        assert!(snow_total > 0.0);
     }
 
     #[test]

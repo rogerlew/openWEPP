@@ -1,11 +1,11 @@
 schema_version: 1
 suite_id: cas_l4_subhyd_withdrawal_soilwater_cap_001
-generated_utc: 2026-06-01T00:00:00Z
+generated_utc: 2026-06-02T00:00:00Z
 fixtures:
   - path: withdrawal_soilwater_cap_cases.json
-    sha256: db56774abf6a274677e02654fb6c02523f589fb5f30335533ab707040d7ba8ed
+    sha256: 8212115af691ec7bc8c6a06872e6576b4280fb3f61b7d4f66d5455711bbe3997
     source_repo: /workdir/openWEPP
-    source_commit: 2c480a547d9021654ca85da1698593fca6b2768c
+    source_commit: a56a0918cd57241277fd7b9492b2168e271051fb
     source_path: tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001/withdrawal_soilwater_cap_cases.json
-    source_sha256: db56774abf6a274677e02654fb6c02523f589fb5f30335533ab707040d7ba8ed
-    transform_note: Repository-authored constitutive fixture; law authority is defined in SC-SUBHYD-001 and SC-WATBAL-001.
+    source_sha256: 8212115af691ec7bc8c6a06872e6576b4280fb3f61b7d4f66d5455711bbe3997
+    transform_note: Repository-authored constitutive fixture updated by HPHYS0247 for SC-SUBHYD-001#INV-SUBHYD-024 lateral capacity authority.

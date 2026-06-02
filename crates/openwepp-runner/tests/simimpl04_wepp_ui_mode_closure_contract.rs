@@ -113,7 +113,7 @@ wat = "output/H5.wat.parquet"
         "/coupling_vectors/guard_id",
         "HS-SIMCOUP-E-001",
     );
-    assert_json_bool(&manifest_json, "/coupling_vectors/winter/active", true);
+    assert_json_bool(&manifest_json, "/coupling_vectors/winter/active", false);
     assert_json_bool(
         &manifest_json,
         "/coupling_vectors/winter/snow_file_present",

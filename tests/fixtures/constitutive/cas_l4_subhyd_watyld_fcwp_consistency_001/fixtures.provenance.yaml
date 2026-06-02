@@ -1,14 +1,14 @@
 suite_id: cas_l4_subhyd_watyld_fcwp_consistency_001
 generated_utc: 2026-06-01T00:00:00Z
 source_repo: /workdir/openWEPP
-source_commit: 236ecee254b7c1672cade901a39cce4352c907b1
+source_commit: a56a0918cd57241277fd7b9492b2168e271051fb
 notes: |
   Repository-authored constitutive fixtures for WB19 FC/WP + COCA water-yield
-  coupling authority. Cases hold drfc and q constant while varying FC/WP theta
-  lineage to enforce avfca/watyld/fcdep authority.
+  coupling authority. HPHYS0247 preserves FC/WP watyld/fcdep lineage
+  while applying baseline fffx conductivity weighting to q.
 fixtures:
   - path: wb19_fcwp_coca_watyld_cases.json
-    sha256: 42dbffae3d690c680bda3124935cc25e511266bb42511cbe97649b7144a68948
+    sha256: 3ede42d42a060be99a70051cff2c1339615d2fd8669b0545451d83033d38515c
     source_path: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/wb19_fcwp_coca_watyld_cases.json
-    source_sha256: 42dbffae3d690c680bda3124935cc25e511266bb42511cbe97649b7144a68948
-    transform_note: "Repository-authored constitutive fixture for WB19 avfca/watyld branch authority."
+    source_sha256: 3ede42d42a060be99a70051cff2c1339615d2fd8669b0545451d83033d38515c
+    transform_note: "Repository-authored constitutive fixture for WB19 avfca/watyld branch authority with HPHYS0247 fffx q authority."

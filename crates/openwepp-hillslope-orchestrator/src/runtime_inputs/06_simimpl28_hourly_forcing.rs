@@ -21,6 +21,7 @@ struct Simimpl28SunmapResult {
     cloud_fraction: f64,
 }
 
+#[allow(clippy::too_many_lines)]
 fn build_simimpl28_hourly_winter_forcing_symbols(
     forcing: &HillslopeClimateDailyForcing,
     metadata: &ClimateMetadata,
@@ -45,21 +46,6 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
         });
     }
 
-    if snow_file_present < 0.5 && frost_file_present < 0.5 {
-        return Ok(BTreeMap::new());
-    }
-
-    let avgslp = require_runtime_context_scalar(winter_context_state_surface, "avgslp")?;
-    if avgslp <= 0.0 {
-        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "avgslp".to_string(),
-            value: avgslp,
-            allowed: "> 0",
-        });
-    }
-    let azm = require_runtime_context_scalar(winter_context_state_surface, "azm")?;
-    let rst = require_runtime_context_scalar(winter_context_state_surface, "snow.options.rst")?;
-
     let (day, mon, year, rain_m, stmdur_s, tmax, tmin, radmj, wnttim) = match forcing {
         HillslopeClimateDailyForcing::NoBreakpoint(day) => (
             day.day,
@@ -77,6 +63,61 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
             day.stmstr,
         ),
     };
+    let runtime_swe = optional_runtime_context_scalar(
+        winter_context_state_surface,
+        "snow.runtime_swe",
+    )?
+    .unwrap_or(0.0);
+    if runtime_swe < 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "snow.runtime_swe".to_string(),
+            value: runtime_swe,
+            allowed: ">= 0",
+        });
+    }
+    let frost_depth = optional_runtime_context_scalar(
+        winter_context_state_surface,
+        "frost.runtime_dfrost",
+    )?
+    .unwrap_or(0.0);
+    if frost_depth < 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "frost.runtime_dfrost".to_string(),
+            value: frost_depth,
+            allowed: ">= 0",
+        });
+    }
+    let frozen_water = optional_runtime_context_scalar(
+        winter_context_state_surface,
+        "frost.runtime_ws_frz",
+    )?
+    .unwrap_or(0.0);
+    if frozen_water < 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "frost.runtime_ws_frz".to_string(),
+            value: frozen_water,
+            allowed: ">= 0",
+        });
+    }
+    let winter_trigger_active = runtime_swe > SIMIMPL28_DOMAIN_EPS
+        || frost_depth > SIMIMPL28_DOMAIN_EPS
+        || frozen_water > SIMIMPL28_DOMAIN_EPS
+        || f64::midpoint(tmax, tmin) < 0.0;
+
+    if !winter_trigger_active {
+        return Ok(BTreeMap::new());
+    }
+
+    let avgslp = require_runtime_context_scalar(winter_context_state_surface, "avgslp")?;
+    if avgslp <= 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "avgslp".to_string(),
+            value: avgslp,
+            allowed: "> 0",
+        });
+    }
+    let azm = require_runtime_context_scalar(winter_context_state_surface, "azm")?;
+    let rst = require_runtime_context_scalar(winter_context_state_surface, "snow.options.rst")?;
 
     let sdate = simimpl28_day_of_year(day, mon, year)?;
     let geometry = simimpl28_aspect_geometry(metadata.deglat, avgslp, azm)?;
@@ -583,4 +624,3 @@ fn simimpl28_winter_random_start_hour(sdate: i32) -> f64 {
     }
     wnttim
 }
-

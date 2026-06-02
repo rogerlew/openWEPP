@@ -41,7 +41,7 @@ fn writeback_scalar(response: &openwepp_kernel_contract::KernelRunResponse, symb
 
 #[test]
 #[allow(clippy::too_many_lines)]
-fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
+fn hphys0221_wb19_solwpv_branch_uses_hphys0247_bottom_contiguous_saturation_selection() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(2.0));
@@ -133,9 +133,14 @@ fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
     let response_2005 = kernel.run_hillslope_phase(&lateral_request(&state_surface));
     assert_eq!(response_2005.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
     let q_2005 = writeback_scalar(&response_2005, "q");
+    let fcdep_2005 = writeback_scalar(&response_2005, "wb19_fcdep");
     assert!(
-        q_2005.abs() <= TOL,
-        "solwpv!=2006 should suppress non-contiguous flow"
+        (q_2005 - 0.3).abs() <= TOL,
+        "HPHYS0247 bottom-contiguous selection should allow bottom-layer flow independent of solwpv selector mode"
+    );
+    assert!(
+        fcdep_2005.abs() <= TOL,
+        "solwpv<2006 still owns fcdep mutation after realized lateral flow"
     );
 
     state_surface.insert(
@@ -145,9 +150,14 @@ fn hphys0221_wb19_solwpv_2006_mode_includes_non_contiguous_saturated_layers() {
     let response_2006 = kernel.run_hillslope_phase(&lateral_request(&state_surface));
     assert_eq!(response_2006.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
     let q_2006 = writeback_scalar(&response_2006, "q");
+    let fcdep_2006 = writeback_scalar(&response_2006, "wb19_fcdep");
     assert!(
         (q_2006 - 0.3).abs() <= TOL,
-        "solwpv=2006 should include non-contiguous saturated layer withdrawal"
+        "HPHYS0247 bottom-contiguous selection should allow bottom-layer flow for solwpv=2006"
+    );
+    assert!(
+        (fcdep_2006 - 1.0).abs() <= TOL,
+        "solwpv>=2006 must preserve fcdep under equivalent forcing"
     );
 }
 

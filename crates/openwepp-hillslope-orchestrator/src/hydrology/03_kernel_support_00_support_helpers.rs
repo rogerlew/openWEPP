@@ -2178,40 +2178,68 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<bool, Wb11HydrologyKernelGuardError> {
         let key = BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT);
-        let Some(value) = request.state_surface.get(&key) else {
-            return Ok(false);
+        if let Some(value) = request.state_surface.get(&key) {
+            let scalar = value.as_f64();
+            if !scalar.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: key,
+                    value: scalar,
+                });
+            }
+            if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&scalar) {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
+                    value: scalar,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+
+            let rounded = scalar.round();
+            if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
+                    value: scalar,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+        }
+
+        let runtime_swe = Self::optional_state_scalar(
+            request,
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+        )?
+        .unwrap_or(0.0);
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+            runtime_swe,
+            Some(0.0),
+            None,
+        )?;
+
+        let tmax = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
+        let tmin = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
+        let cold_day_active = match (tmax, tmin) {
+            (Some(tmax), Some(tmin)) => f64::midpoint(tmax, tmin) < 0.0,
+            _ => false,
         };
+        let snow_controls_projected = request
+            .state_surface
+            .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_RST))
+            && request
+                .state_surface
+                .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW))
+            && request
+                .state_surface
+                .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD));
 
-        let scalar = value.as_f64();
-        if !scalar.is_finite() {
-            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
-                phase_class,
-                symbol: key,
-                value: scalar,
-            });
-        }
-        if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&scalar) {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
-                value: scalar,
-                minimum: Some(0.0),
-                maximum: Some(1.0),
-            });
-        }
-
-        let rounded = scalar.round();
-        if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
-                value: scalar,
-                minimum: Some(0.0),
-                maximum: Some(1.0),
-            });
-        }
-
-        Ok(rounded >= 1.0 - WB11_ZERO_THRESHOLD)
+        Ok(runtime_swe > WB11_ZERO_THRESHOLD || (cold_day_active && snow_controls_projected))
     }
 
     fn resolve_active_frost_coupling(

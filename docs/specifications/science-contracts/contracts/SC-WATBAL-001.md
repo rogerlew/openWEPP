@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 72
+contract_version: 73
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -195,6 +195,7 @@ lateral/drainage).
 | INV-WATBAL-032 | HPHYS0240 hourly runoff-carryover invariant: WB12/WB14 runoff reconciliation must resolve incoming runoff carryover from same-pass `wb12_runoff_carryover` flux when present, publish the resolved carryover as a flux, and use `wb12_runon_input` only as a finite non-negative compatibility surface when the same-pass flux is absent. Malformed carryover fluxes are typed hard failures and cannot be silently replaced by stale state. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-033 | HPHYS0241 MOFE hourly carry-array invariant: multi-OFE hourly lanes must expose all 24 entries of `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`, consume upstream `ui_SUrunf + ui_LfUrf` arrays as the hourly runon carry source, publish current `ui_SCrunf`/`ui_LfCrf` arrays, and copy current arrays to upstream arrays for the next OFE/day boundary. Missing, non-finite, negative, wrong-cardinality, or aggregate-only carry payloads hard-fail; daily `wb12_runoff_carryover` may only summarize the explicit arrays. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-034 | HPHYS0242 hourly cadence/ordering invariant: hourly-lane water-balance closure must preserve baseline `watbal_hourly` ordering for the WB14/WB12 tail: percolation precedes final-hour ET, drainage precedes lateral flow in the hourly tail, surface saturation excess (`ui_SCrunf(ii)`) is clipped from top-layer storage before runoff publication, `Q` includes `Σui_SCrunf(ii)` plus partition runoff, and storage reconciliation consumes same-pass `Q`, `ET`, `D`, and `Qd` rather than stale compatibility state. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS, SC-RUNOFFPART-001#INV-RUNOFFPART-014, SC-EVAP-001#INV-EVAP-014, SC-PERC-001#INV-PERC-012, SC-SUBHYD-001#INV-SUBHYD-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-035 | HPHYS0247 H39 hourly water-balance lateral/snow gate invariant: closure claims for H39 single-OFE hourly water balance must use runtime winter activation triggers from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-009` and WB19 lateral capacity lineage from `SC-SUBHYD-001#INV-SUBHYD-024`; sidecar-presence-only winter bypasses and lateral withdrawals from non-`meblfc` layers are invalid evidence. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH6-COUPLING, SC-SNOWFREEZE-001#INV-SNOWFREEZE-009, SC-SUBHYD-001#INV-SUBHYD-024 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -234,6 +235,7 @@ lateral/drainage).
 | `INV-WATBAL-032` | runtime + governance | WB12/WB14 runoff-carryover resolver and publication validator | Typed hard error / explicit `HOLD` when same-pass `wb12_runoff_carryover` is ignored, malformed, or replaced by stale `wb12_runon_input` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-033` | runtime + governance | MOFE hourly carry-array validator, WB19/WB12 array producer/consumer path, and manifest/publication evidence gate | Typed hard error / explicit `HOLD` when hourly MOFE lanes use aggregate carry substitution, omit any 24-slot carry array, publish malformed array entries, or fail copy-forward provenance | HPHYS MOFE hourly carry-array closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-034` | runtime + governance | HPHYS0242 scheduler order, WB19 surface-saturation array producer, WB14 runoff assembler, and WB12 storage consumer | Typed hard error / explicit `HOLD` when hourly lane uses stale runoff/storage surfaces, omits positive `ui_SCrunf(ii)` addback, or violates same-pass `Q`/`ET`/`D`/`Qd` storage lineage | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-035` | runtime + governance | H39 hourly closure gate spanning snow activation and WB19 lateral capacity lineage | Typed hard error / explicit `HOLD` when winter triggers are bypassed by sidecar-presence-only logic or WB19 emits lateral flux from non-`meblfc` active layers | HPHYS0247 H39 closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -1252,11 +1254,9 @@ drain-threshold relation inside lateral/drainage kernels.
 HPHYS0221 closes missing WB19 branch/coupling surfaces from baseline
 `watbal.for` for lateral partition and saturated-depth evolution.
 
-1. WB19 lateral saturated-zone classification must preserve `solwpv` branch
-   semantics:
-   - `solwpv = 2006`: include all layers where `wb18_perc_theta_i >= drfc_i`.
-   - `solwpv != 2006`: include only the contiguous near-surface saturated block
-     until first unsaturated layer.
+1. WB19 lateral execution originally carried provisional `solwpv` selector
+   wording, but HPHYS0247 supersedes lateral-active layer selection with
+   `SC-SUBHYD-001#INV-SUBHYD-024` baseline `meblfc` authority.
 2. WB19 must compute coupled water-yield terms over the active saturated block:
    - `avpora = Σ(por_i * dg_i / fcdep)`
    - `avfca = Σ(thetfc_i * dg_i / fcdep)`
@@ -1278,9 +1278,8 @@ HPHYS0221 closes missing WB19 branch/coupling surfaces from baseline
 HPHYS0222 resolves the WB19 saturated-depth branch-authority mismatch against
 baseline `watbal.for` by tightening `fcdep` mutation scope.
 
-1. WB19 lateral saturated-layer classification remains:
-   - `solwpv = 2006`: include all saturated layers.
-   - `solwpv != 2006`: include contiguous near-surface saturated block.
+1. WB19 lateral saturated-layer classification is superseded by HPHYS0247
+   `SC-SUBHYD-001#INV-SUBHYD-024` baseline `meblfc` authority.
 2. WB19 saturated-depth mutation (`fcdep`, `unsdep`) is authorized only for
    `solwpv < 2006`.
 3. For `solwpv >= 2006` (including disturbed-soil modes `9001+`), WB19 must
@@ -1732,6 +1731,7 @@ percolation boundary:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `73` | `Codex` | HPHYS0247 amendment: added `INV-WATBAL-035` tying H39 hourly closure evidence to runtime winter activation triggers and `SC-SUBHYD-001#INV-SUBHYD-024` WB19 lateral capacity lineage. |
 | `2026-06-02` | `72` | `Codex` | HPHYS0246 amendment: added WB18 aggregate soil-water writeback authority requiring `wb11_soil_water`/WB13 `Total-Soil` lineage to follow `SC-PERC-001#INV-PERC-013` baseline `watcon = Σsoilw(i)` semantics instead of `Σtheta`-only percolation writeback. |
 | `2026-06-01` | `71` | `Codex` | HPHYS0242 amendment: added `INV-WATBAL-034`, hourly WB14/WB12 cadence authority, surface-saturation `ui_SCrunf` clipping/addback, same-pass runoff/storage lineage, and refined HPHYS0239 ordering language so HPHYS0242 controls hourly WB19 drainage/lateral sequencing. |
 | `2026-06-01` | `70` | `Codex` | HPHYS0241 amendment: added `INV-WATBAL-033` and baseline `wathour.inc`/`watbal_hourly.for` authority for 24-slot MOFE hourly carry arrays (`ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, `ui_LfCrf`), explicit upstream/current copy-forward, aggregate-only substitution prohibition, and fail-closed malformed-array guard posture. |

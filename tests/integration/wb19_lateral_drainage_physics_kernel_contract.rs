@@ -267,11 +267,11 @@ fn wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes() {
         writeback_state_value(&lateral_response, "wb11_drainable_storage");
 
     assert!(
-        (q_lateral - 0.122_188_051_789_035_1).abs() <= TOL,
+        (q_lateral - 0.030_547_012_947_258_853).abs() <= TOL,
         "q={q_lateral}"
     );
     assert!(
-        (theta1_after_lateral - 4.377_811_948_210_965).abs() <= TOL,
+        (theta1_after_lateral - 4.469_452_987_052_741).abs() <= TOL,
         "theta1_after_lateral={theta1_after_lateral}"
     );
     assert!(
@@ -279,7 +279,7 @@ fn wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes() {
         "theta2_after_lateral={theta2_after_lateral}"
     );
     assert!(
-        (drainable_after_lateral - 2.377_811_948_210_965).abs() <= TOL,
+        (drainable_after_lateral - 2.469_452_987_052_741_3).abs() <= TOL,
         "drainable_after_lateral={drainable_after_lateral}"
     );
 
@@ -312,7 +312,7 @@ fn wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes() {
 
     assert!((q_drainage - 0.1).abs() <= TOL, "Qdd={q_drainage}");
     assert!(
-        (q_subhyd - 0.222_188_051_789_035_1).abs() <= TOL,
+        (q_subhyd - 0.130_547_012_947_258_84).abs() <= TOL,
         "Qd={q_subhyd}"
     );
     assert!(
@@ -320,8 +320,73 @@ fn wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes() {
         "theta2_after_drainage={theta2_after_drainage}"
     );
     assert!(
-        (drainable_after_drainage - 2.277_811_948_210_965).abs() <= TOL,
+        (drainable_after_drainage - 2.369_452_987_052_741).abs() <= TOL,
         "drainable_after_drainage={drainable_after_drainage}"
+    );
+}
+
+#[test]
+fn wb19_contract_conformance_requires_bottom_contiguous_lateral_saturation() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_wb19_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(6.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(3.0),
+    );
+
+    let lateral_response = kernel.run_hillslope_phase(&build_lateral_request(&state_surface, 0.0));
+    assert_eq!(
+        lateral_response.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+
+    let q_lateral = writeback_flux_value(&lateral_response, "q");
+    let theta1_after_lateral = writeback_state_value(&lateral_response, "wb18_perc_theta_0001");
+    let theta2_after_lateral = writeback_state_value(&lateral_response, "wb18_perc_theta_0002");
+
+    assert!(q_lateral.abs() <= TOL, "q={q_lateral}");
+    assert!(
+        (theta1_after_lateral - 6.0).abs() <= TOL,
+        "theta1_after_lateral={theta1_after_lateral}"
+    );
+    assert!(
+        (theta2_after_lateral - 3.0).abs() <= TOL,
+        "theta2_after_lateral={theta2_after_lateral}"
+    );
+}
+
+#[test]
+fn wb19_contract_conformance_applies_fffx_saturation_fraction_to_lateral_conductivity() {
+    let mut kernel = Wb11HydrologyKernel;
+    let partial_state = seeded_wb19_state_surface();
+    let mut full_state = seeded_wb19_state_surface();
+    full_state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+
+    let partial_response = kernel.run_hillslope_phase(&build_lateral_request(&partial_state, 0.0));
+    assert_eq!(
+        partial_response.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+    let full_response = kernel.run_hillslope_phase(&build_lateral_request(&full_state, 0.0));
+    assert_eq!(full_response.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
+
+    let q_partial = writeback_flux_value(&partial_response, "q");
+    let q_full = writeback_flux_value(&full_response, "q");
+
+    assert!(
+        (q_partial - 0.030_547_012_947_258_853).abs() <= TOL,
+        "q_partial={q_partial}"
+    );
+    assert!(
+        (q_full - 0.068_730_779_131_332_42).abs() <= TOL,
+        "q_full={q_full}"
     );
 }
 

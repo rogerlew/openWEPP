@@ -464,6 +464,64 @@ fn clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliati
 }
 
 #[test]
+fn clim05_contract_conformance_cold_trigger_runs_snow_without_sidecar_gate() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_clim05_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.options.snow_file_present"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.runtime_swe"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.runtime_depth_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.runtime_density_kg_m3"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-1.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-3.0));
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("cold-trigger snow execution should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let snow_flux = report
+        .writeback_surface
+        .flux_surface
+        .get(&BoundarySymbol::from("S"))
+        .expect("S should be present under cold trigger")
+        .as_f64();
+    let runtime_swe = report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("snow.runtime_swe"))
+        .expect("snow.runtime_swe should be present under cold trigger")
+        .as_f64();
+
+    assert!((snow_flux + 0.1).abs() <= CLIM05_TEST_TOLERANCE);
+    assert!((runtime_swe - 0.1).abs() <= CLIM05_TEST_TOLERANCE);
+}
+
+#[test]
 fn clim05_contract_conformance_rejects_missing_active_snow_control_symbol() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =

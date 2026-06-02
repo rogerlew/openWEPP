@@ -3582,15 +3582,6 @@ fn build_simimpl10_coupling_vector_provenance(
         )));
     }
 
-    let winter = HillslopeWinterCouplingProvenance {
-        active: snow_file_present,
-        snow_file_present,
-        rst,
-        newsnw,
-        ssd,
-        runtime_swe,
-    };
-
     let frost_file_present = parse_simimpl10_binary_flag(
         "frost.options.frost_file_present",
         require_simimpl10_coupling_scalar(runtime_surface, "frost.options.frost_file_present")?,
@@ -3606,6 +3597,19 @@ fn build_simimpl10_coupling_vector_provenance(
     let infcap_frz =
         require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz")?;
     let ssc = require_simimpl10_coupling_scalar(runtime_surface, "ssc")?;
+    let tmax = require_simimpl10_coupling_scalar(runtime_surface, "tmax")?;
+    let tmin = require_simimpl10_coupling_scalar(runtime_surface, "tmin")?;
+    let winter_active =
+        runtime_swe > 0.0 || dfrost > 0.0 || ws_frz > 0.0 || f64::midpoint(tmax, tmin) < 0.0;
+
+    let winter = HillslopeWinterCouplingProvenance {
+        active: winter_active,
+        snow_file_present,
+        rst,
+        newsnw,
+        ssd,
+        runtime_swe,
+    };
 
     if !(0.0..=SIMIMPL10_FROST_MAX_DEPTH_M).contains(&dfrost) {
         return Err(simcoup_failure(format!(

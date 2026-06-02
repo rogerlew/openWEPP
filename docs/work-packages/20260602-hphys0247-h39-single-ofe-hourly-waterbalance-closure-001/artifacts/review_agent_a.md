@@ -1,13 +1,13 @@
 # Review Agent A
 
-Status: queued
+Status: not-performed
 
 Evidence mode: not-run
 
 Static:
-- Queued independent review artifact.
+- Independent review was not performed in this execution turn.
 
 Ran:
 - Not run.
 
-Review result: not performed.
+Review result: not performed; disposition remains `HOLD`.

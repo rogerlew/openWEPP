@@ -1,11 +1,11 @@
 schema_version: 1
 suite_id: cas_l4_subhyd_layer_pool_withdrawal_cap_001
-last_updated_utc: 2026-06-01
+last_updated_utc: 2026-06-02
 fixtures:
   - path: layer_pool_withdrawal_cap_cases.json
-    sha256: 7d7ef77f779e6dfdb84dfce7a45bd2138821b797ddd55daff1969e11ce811bd6
+    sha256: c24fd6e261cea1defc7eda2eb5bf97215e6ac41b5579e1312413f1118c1540a2
     source_repo: /workdir/openWEPP
-    source_commit: 7833b6bf2b3412c763c0b900839c97b24897bb60
+    source_commit: a56a0918cd57241277fd7b9492b2168e271051fb
     source_path: tests/fixtures/constitutive/cas_l4_subhyd_layer_pool_withdrawal_cap_001/layer_pool_withdrawal_cap_cases.json
-    source_sha256: 7d7ef77f779e6dfdb84dfce7a45bd2138821b797ddd55daff1969e11ce811bd6
-    transform_note: "Repository-authored constitutive fixture for WB19 layer-pool available-cap authority."
+    source_sha256: c24fd6e261cea1defc7eda2eb5bf97215e6ac41b5579e1312413f1118c1540a2
+    transform_note: "Repository-authored constitutive fixture updated by HPHYS0247 for SC-SUBHYD-001#INV-SUBHYD-024 lateral capacity authority."
