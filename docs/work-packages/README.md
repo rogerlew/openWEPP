@@ -286,6 +286,8 @@ Authorized packages:
   - Purpose: close Dispatch Group D by reconciling WB14/WB12 cadence and
     infiltration/ET/runoff/storage observation ordering under hourly lane mode,
     then publishing final HPHYS0239 follow-up HOLD/GO posture.
+  - Status: completed; Dispatch Group D closed and HPHYS0239 follow-up
+    Dispatch Groups B/C/D are `GO` for the declared hourly cadence/order scope.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

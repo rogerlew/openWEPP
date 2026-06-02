@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 8
+contract_version: 9
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -66,6 +66,7 @@ Out of scope:
 | REF-EVAP-LEGACY-STAGE | `/workdir/wepp-forest_260430_baseline/src/evap.for:458-564` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline stage-memory authority for `s1`, `s2`, `tu`, `tv` branch transitions and deficit-coupled `Es` evolution. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-SOILX | `/workdir/wepp-forest_260430_baseline/src/evap.for:609-668` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layerwise soil-water extraction authority for soil evaporation from `st(i)` with depth-aware allocation. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-SWU | `/workdir/wepp-forest_260430_baseline/src/swu.for:122-191` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline root-zone transpiration uptake authority (`UPi`, `Ui`) and water-stress ratio lineage (`watstr = ΣUi/ep`). | `[DIRECT][Static]` |
+| REF-EVAP-LEGACY-HOURLY-ORDER | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:471-560` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly water-balance ordering: hourly infiltration/percolation mutate `st(i)` before ET is invoked only on the final hourly pass. | `[DIRECT][Static]` |
 | REF-EVAP-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative rate/depth domains and bounded stress factors. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -88,6 +89,7 @@ Out of scope:
 | `ET` | `m` | Daily cumulative evapotranspiration withdrawal term in water-balance closure Eq. [5.1.1]. | ET integration pathway | daily water-balance closure consumer |
 | `RA`, `Tmax`, `Tmin`, `Tdp`, `u_z` | `Ly`, `degC`, `degC`, `degC`, `m s^-1` | Climate forcing surfaces required by potential ET formulations. | climate forcing pathway | ET potential pathway |
 | `S` | `m` | Snow-water state that can satisfy evaporation demand before soil-water extraction. | winter hydrology pathway | ET withdrawal precedence logic |
+| `F` | `m` | Same-pass infiltration lineage that drives ET stage-memory reset and soil-water availability under hourly WB14/WB12 cadence. | infiltration/runoff partition pathway | ET stage-memory and extraction pathway |
 
 ## Algorithm State Surfaces (WB17 ET Production Kernel)
 
@@ -98,6 +100,7 @@ Out of scope:
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | ET consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | WB17 ET state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` |
+| Same-pass infiltration cadence lineage | `wb12_infiltration` or WB14-derived same-pass infiltration lineage before ET execution |
 | Baseline-authoritative ET stage-memory/state family | `s1`, `s2`, `tu`, `tv`, `st_####`, `rtd`, `pltol` |
 
 ### Required Outputs
@@ -134,7 +137,11 @@ WB17 mutates ET boundary surfaces deterministically:
    soil-evaporation demand (`Es`) before soil-water extraction.
 4. Compute explicit soil evaporation, plant transpiration, total ET, and stress
    ratio (`Ws`) with zero-demand handling (`Etp <= 1e-12` => `Ws = 1`).
-5. Reject missing, non-finite, or out-of-range ET inputs/outputs with typed
+5. In hourly-lane execution, consume same-pass infiltration lineage from WB14
+   and layer state mutated by prior hourly infiltration/percolation; stale
+   `wb12_infiltration` compatibility state cannot drive stage-memory or ET
+   acceptance when authoritative same-pass lineage exists.
+6. Reject missing, non-finite, or out-of-range ET inputs/outputs with typed
    hard-fail status; no silent fallback/clamping/defaulting paths are permitted.
 
 ## Branch and Guard Table (WB17 ET Kernel)
@@ -163,6 +170,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-011 | WB17 ET execution invariant: ET phase computes deterministic partitioned ET components (`Er`, `Es`, `Ep`) and derived closure outputs (`ET`, `Ws`) from required WB17 ET symbols and updates `wb11_soil_water` without implicit fallback branches. | hard-fail | REF-EVAP-CH5-PART, REF-EVAP-CH5-LINK, REF-EVAP-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-012 | WB17 ET guard invariant: missing/non-finite/out-of-range WB17 ET domains must surface typed hard failures (`HKERNEL-WB11-ET-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-EVAP-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-EVAP-013 | SIMIMPL21 baseline-authority invariant: ET contract authority must preserve baseline stage-memory transitions (`s1`, `s2`, `tu`, `tv`), depth-aware soil evaporation extraction from `st(i)`, and root-zone uptake semantics (`UPi`, `Ui`, `Ws = ΣUi/Etp`) with explicit branch lineage to legacy `evap` + `swu` routines. | hard-fail | REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-014 | HPHYS0242 hourly ET/infiltration ordering invariant: hourly-lane ET must execute only after the same-day WB14 infiltration and WB18 percolation lineage has mutated layer state, and stage-memory/soil-extraction logic must consume same-pass infiltration lineage rather than stale `wb12_infiltration` compatibility state. Missing or conflicting same-pass infiltration lineage is a typed hard failure, not a zero/default substitution. | hard-fail | REF-EVAP-LEGACY-HOURLY-ORDER, REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-CH5-DIST, SC-WATBAL-001#INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -181,6 +189,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-011` | runtime | WB17 ET production kernel execution path | Typed hard error on non-deterministic/malformed partition/writeback ET outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-012` | runtime | WB17 ET guard table (`HKERNEL-WB11-ET-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid ET inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-EVAP-013` | runtime + governance | Stage-memory/root-uptake lineage validator for legacy `evap` + `swu` authority closure | Typed hard error / explicit `HOLD` when stage-memory, depth extraction, or `UPi`/`Ui` lineage semantics are missing or contradicted | SIMIMPL ET migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-014` | runtime + governance | WB17 scheduler-order validator plus same-pass infiltration-lineage resolver | Typed hard error / explicit `HOLD` when hourly ET runs before WB14/WB18 lineage, consumes stale compatibility infiltration, or silently defaults missing infiltration lineage to zero | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -199,6 +208,7 @@ equation vectors.
 | `Θ`, `Θi`, `Θr`, `Θc`, `ULi` | identity names | soil-water state surfaces used by ET | chapter-declared units preserved | `[DIRECT][Static]` |
 | `Ws` | identity name | ET-to-plant stress boundary surface | `fraction` preserved | `[DIRECT][Static]` |
 | `ET` | identity name | ET-to-water-balance closure boundary surface | `m` preserved | `[DIRECT][Static]` |
+| `F` | `wb12_infiltration` or WB14 same-pass infiltration lineage | ET stage-memory reset and soil-water availability driver under hourly cadence | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `RA`, `Tmax`, `Tmin`, `Tdp`, `u_z` | identity names | climate-to-ET forcing surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `S` | identity name | snow-to-ET precedence surface | `m` preserved | `[DIRECT][Static]` |
 
@@ -359,6 +369,20 @@ Minimum WB17 ET production-kernel conformance vectors:
    root-uptake vectors keyed to these baseline lineage assertions before any
    production-kernel ET migration edits are promotable.
 
+## HPHYS0242 Hourly ET/Infiltration Ordering Addendum
+
+1. Hourly-lane ET is a final-hour consumer in the baseline water-balance loop:
+   WB14 infiltration and WB18 percolation mutate layer state first, and ET
+   observes that same-pass state.
+2. `wb12_infiltration` is only authoritative for ET when it represents the
+   same-pass WB14-derived infiltration lineage for the current day/lane.
+   Compatibility or pre-WB14 stale state cannot be used to satisfy ET
+   stage-memory or soil-extraction claims.
+3. Missing, non-finite, negative, or conflict-labeled same-pass infiltration
+   lineage must hard-fail in hourly ET lanes; defaulting to zero is prohibited.
+4. Contract-derived vectors must include an ET stale-infiltration conflict and
+   a scheduler-order proof that ET follows same-day infiltration/percolation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -373,6 +397,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `9` | `Codex` | HPHYS0242 amendment: added `INV-EVAP-014`, baseline hourly final-hour ET ordering authority, same-pass WB14 infiltration lineage requirements, and stale/default infiltration rejection posture for hourly ET lanes. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-07 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/8 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-07 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: added missing symbol/alias coverage (`Θc`, `ET`), normalized evidence-mode casing, strengthened snow provenance anchor wording, and evidence-tagged degenerate/tolerance claims. |

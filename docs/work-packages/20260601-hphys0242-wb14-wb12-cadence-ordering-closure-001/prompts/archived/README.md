@@ -1,6 +1,6 @@
 # Archived Prompts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static
 
-Archived prompts for HPHYS0242.
+No archived HPHYS0242 prompts were required.

@@ -155,16 +155,16 @@ impl HillslopePhaseGraph {
                 depends_on: HillslopePhase::PercolationDeepSeepage,
             },
             PhaseDependency {
-                phase: HillslopePhase::LateralTransfer,
+                phase: HillslopePhase::Drainage,
                 depends_on: HillslopePhase::Evapotranspiration,
             },
             PhaseDependency {
-                phase: HillslopePhase::Drainage,
-                depends_on: HillslopePhase::LateralTransfer,
+                phase: HillslopePhase::LateralTransfer,
+                depends_on: HillslopePhase::Drainage,
             },
             PhaseDependency {
                 phase: HillslopePhase::RunoffReconciliation,
-                depends_on: HillslopePhase::Drainage,
+                depends_on: HillslopePhase::LateralTransfer,
             },
             PhaseDependency {
                 phase: HillslopePhase::StorageReconciliation,

@@ -1,7 +1,10 @@
 use openwepp_hillslope_orchestrator::{
     HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
 };
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
+    HillslopeKernelPhaseClass, HillslopeKernelRequest,
+};
 use openwepp_sim_contract::status::BoundaryClass;
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 
@@ -106,6 +109,85 @@ fn run_wb14_reconciliation_outputs(surface: HillslopeWritebackSurface) -> (f64, 
         .expect("Q should be present")
         .as_f64();
     (infiltration, q_runoff)
+}
+
+fn run_wb14_runoff_phase_outputs(surface: HillslopeWritebackSurface) -> (f64, f64) {
+    let mut kernel = Wb11HydrologyKernel;
+    let state_surface = Box::leak(Box::new(surface.state_surface));
+    let flux_surface = Box::leak(Box::new(surface.flux_surface));
+    let request = HillslopeKernelRequest::with_transition_context(
+        "runoff_reconciliation",
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        None,
+        state_surface,
+        flux_surface,
+    );
+
+    let response = kernel.run_hillslope_phase(&request);
+    assert_eq!(response.status.message_id(), "HKERNEL-WB14-RUNOFF-OK-001");
+    let infiltration = response
+        .writeback
+        .state_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from("wb12_infiltration"))
+        .expect("wb12_infiltration should be present")
+        .value
+        .as_f64();
+    let q_runoff = response
+        .writeback
+        .flux_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from("Q"))
+        .expect("Q should be present")
+        .value
+        .as_f64();
+    (infiltration, q_runoff)
+}
+
+fn enable_mofe_current_saturation_carry(surface: &mut HillslopeWritebackSurface, carry: f64) {
+    surface.state_surface.insert(
+        BoundarySymbol::from("mofe_hourly_carry_arrays_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("mofe_hourly_upstream_area_ratio"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_depression_storage_delta"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(10.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+
+    for hour in 1..=24 {
+        for root in ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"] {
+            surface.state_surface.insert(
+                BoundarySymbol::from(format!("{root}_{hour:04}")),
+                BoundaryValue::scalar(0.0),
+            );
+        }
+    }
+    surface.state_surface.insert(
+        BoundarySymbol::from("ui_SCrunf_0001"),
+        BoundaryValue::scalar(carry),
+    );
 }
 
 fn capture_pre_runoff_state_surface(
@@ -490,6 +572,22 @@ fn wb14_contract_conformance_computes_infiltration_from_hyetograph() {
         .expect("wb12_runoff_closure_delta should be present")
         .as_f64();
     assert!(runoff_closure.abs() <= WB14_TEST_TOLERANCE);
+}
+
+#[test]
+fn hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback() {
+    let mut baseline_surface = seeded_wb14_surface();
+    enable_mofe_current_saturation_carry(&mut baseline_surface, 0.0);
+    let (_baseline_infiltration, baseline_q) = run_wb14_runoff_phase_outputs(baseline_surface);
+
+    let mut addback_surface = seeded_wb14_surface();
+    enable_mofe_current_saturation_carry(&mut addback_surface, 0.25);
+    let (_addback_infiltration, addback_q) = run_wb14_runoff_phase_outputs(addback_surface);
+
+    assert!(
+        (addback_q - (baseline_q + 0.25)).abs() <= WB14_TEST_TOLERANCE,
+        "HPHYS0242 requires Q to include current-OFE ui_SCrunf addback (baseline_q={baseline_q}, addback_q={addback_q})"
+    );
 }
 
 #[test]

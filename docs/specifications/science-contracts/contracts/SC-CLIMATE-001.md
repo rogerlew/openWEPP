@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 14
+contract_version: 15
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -109,6 +109,7 @@ Out of scope:
 | INV-CLIMATE-009 | SIMIMPL18 replay-span precipitation continuity invariant: parity lanes claiming identical baseline/candidate forcing must publish explicit full-span precipitation-key comparability policy (`P` over declared keyed horizon). When legacy baseline execution clamps to one year, year-policy adaptation (for example span expansion/rekey policy) must be explicit and deterministic; overlap-only silent comparison is non-authoritative. | hard-fail | REF-CLIMATE-CH2-AMT, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-010 | Breakpoint-mode dry-day invariant: when breakpoint mode is active and a daily climate record declares `nbrkpt=0`, runtime forcing remains valid and must publish deterministic dry-day breakpoint surfaces (`nbrkpt=0`, `prcp=0`, `stmdur=0`, `mxint=0`) with empty `timem_*` and `intsty_*` families; this state is not an empty-series hard-fail. | hard-fail | REF-CLIMATE-WF-STMGET-BRKPT0, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-011 | Daily thermal-inversion compatibility invariant: climate forcing with finite `tmax`/`tmin` remains valid even when `tmax < tmin`; runtime consumers must not hard-fail on ordering alone and must preserve baseline mean-temperature lineage (`tave = (tmax+tmin)/2`) for near-isothermal hourly synthesis branches. | hard-fail | REF-CLIMATE-WF-HRTMP-ITFLAG, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-CLIMATE-012 | HPHYS0242 WB14 hourly forcing-cadence invariant: hyetograph forcing consumed by WB14/WB12 hourly closure must publish deterministic same-day `ninten`/`nbrkpt`, ordered `timem_####`, and finite non-negative `intsty_####` lineage before ET/runoff/storage consumers execute. Dry-day empty-series semantics remain explicit; positive-event missing, non-monotone, negative, or stale forcing payloads hard-fail and cannot be silently reassembled or defaulted. | hard-fail | REF-CLIMATE-CH2-BRKPT, REF-CLIMATE-CH2-DISAG, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034, SC-RUNOFFPART-001#INV-RUNOFFPART-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -125,6 +126,7 @@ Out of scope:
 | `INV-CLIMATE-009` | runtime + governance | Replay forcing-span provenance + precipitation-key parity policy validator | Typed hard error / explicit `HOLD` when full-span `P` comparability policy is absent, overlap-only by-default, or baseline-year adaptation is implicit/ambiguous | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-010` | runtime | Breakpoint runtime adapter and forcing projection seams | Typed hard error only for malformed positive-cardinality breakpoint payloads; `nbrkpt=0` breakpoint dry-day records publish zero forcing payload without fallback mutation | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-011` | runtime | Runtime forcing projection and hydrology publication seams consuming `tmax`/`tmin` | Typed hard error only on missing/non-finite thermal symbols; finite inversion ordering (`tmax < tmin`) is compatibility-valid and must not hard-fail by ordering check alone | Tier-A climate/runtime compatibility gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-CLIMATE-012` | runtime + governance | Hyetograph forcing projection and WB14/WB12 scheduler-cadence validator | Typed hard error / explicit `HOLD` when positive-event hourly forcing is missing, malformed, stale relative to current day, or synthesized by fallback instead of published forcing lineage | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -148,6 +150,8 @@ introduce explicit aliases.
 | `tp`/`ip` | `tp`/`ip` (identity) | normalized storm-shape payload | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `T_i` | `T_i` (identity) | breakpoint time sequence | `min` or normalized fraction by mode | `[DIRECT][Static]` |
 | `I_i` | `I_i` (identity) | breakpoint intensity sequence | `mm h^-1` or normalized fraction by mode | `[DIRECT][Static]` |
+| `ninten`, `nbrkpt` | `ninten`, `nbrkpt` | hyetograph cardinality metadata for no-breakpoint/breakpoint modes | count preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `timem_####`, `intsty_####` | identity runtime series | same-day WB14/WB12 hyetograph forcing consumed by infiltration/runoff closure | elapsed seconds and `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `RA`, `RAmax` | `RA`, `RAmax` (identity) | daily radiation forcing payload | `Ly` -> `Ly` | `[DIRECT][Static]` |
 | `Tmax`, `Tmin`, `Tdp` | `Tmax`, `Tmin`, `Tdp` (identity) | daily thermodynamic forcing payload | `degC` -> `degC` | `[DIRECT][Static]` |
 | `W`, `u_w` | `W`, `u_w` (identity) | daily wind forcing payload | direction class + speed unchanged | `[DIRECT][Static]` |
@@ -255,6 +259,12 @@ For event days consumed by runoff reconciliation:
    and non-negative; terminal zero-intensity endpoint semantics are retained.
 4. Forcing surfaces must remain compatible with Chapter-4 Green-Ampt lineage
    infiltration consumers without implicit unit conversion.
+5. HPHYS0242 hourly cadence requires the same-day hyetograph lineage to be
+   available before WB14/WB12 runoff reconciliation and before final-hour ET
+   consumes same-pass infiltration lineage.
+6. Positive-event hyetograph payloads must not be reassembled from stale state
+   or silently defaulted; dry-day empty-series validity remains limited to
+   explicitly declared zero-precipitation dry-day records.
 
 ### WB14 Typed-Guard Alignment
 
@@ -270,6 +280,9 @@ states and must hard-fail through typed consumer guard posture (`HKERNEL-WB14-RU
    with typed missing-input posture.
 3. Non-monotone breakpoint/disaggregation time sequence or negative intensity
    fails with typed domain posture and no fallback re-assembly.
+4. HPHYS0242 vectors must prove same-day hyetograph payload freshness across
+   WB14/WB12/ET cadence and stale forcing rejection under positive-event
+   conflicts.
 
 ## CLIM05 Snow-Control Runtime Coupling Addendum
 
@@ -547,6 +560,7 @@ states and must hard-fail with typed hydrology guard posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `15` | `Codex` | HPHYS0242 amendment: added `INV-CLIMATE-012`, same-day WB14/WB12 hyetograph cadence requirements, stale/malformed positive-event forcing rejection, and explicit forcing freshness test-vector obligations. |
 | `2026-05-29` | `14` | `Codex` | CLIM18 amendment: added baseline-authoritative daily thermal-inversion compatibility invariant (`INV-CLIMATE-011`) and runtime forcing obligations so finite `tmax < tmin` records are accepted without ordering-only hard-fail while preserving typed missing/non-finite guards. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-03 package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with climate invariants, guard map, symbol alias map, and dual-review workflow readiness for SCI-03. |

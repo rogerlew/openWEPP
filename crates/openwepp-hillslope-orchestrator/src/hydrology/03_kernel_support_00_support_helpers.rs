@@ -492,6 +492,12 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         frost_coupling: Option<&FrostCouplingOutcome>,
     ) -> Result<[f64; MOFE_HOURLY_CARRY_ARRAY_COUNT], Wb11HydrologyKernelGuardError> {
+        let carry = Self::require_mofe_hourly_state_array(
+            request,
+            phase_class,
+            MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+        )?;
+
         let theta_symbol = Self::wb18_perc_state_symbol("theta", 1);
         let theta = Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
         Self::require_state_range_for_symbol(phase_class, &theta_symbol, theta, Some(0.0), None)?;
@@ -545,7 +551,7 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        Ok([0.0_f64; MOFE_HOURLY_CARRY_ARRAY_COUNT])
+        Ok(carry)
     }
 
     fn resolve_runoff_carryover_input(

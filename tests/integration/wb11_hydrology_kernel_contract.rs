@@ -628,11 +628,11 @@ fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconcil
 
     assert!(
         percolation_index < evap_index
-            && evap_index < lateral_index
-            && lateral_index < drainage_index
-            && drainage_index < runoff_index
+            && evap_index < drainage_index
+            && drainage_index < lateral_index
+            && lateral_index < runoff_index
             && runoff_index < storage_index,
-        "canonical hydrology-tail ordering must remain Percolation -> ET -> Lateral -> Drainage -> RunoffReconciliation -> StorageReconciliation"
+        "canonical hydrology-tail ordering must remain Percolation -> ET -> Drainage -> Lateral -> RunoffReconciliation -> StorageReconciliation"
     );
 
     let graph = HillslopePhaseGraph::canonical();
@@ -644,21 +644,21 @@ fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconcil
     );
     assert!(
         graph
-            .dependencies_for(HillslopePhase::LateralTransfer)
+            .dependencies_for(HillslopePhase::Drainage)
             .contains(&HillslopePhase::Evapotranspiration),
-        "lateral transfer must depend on evapotranspiration"
+        "drainage must depend on evapotranspiration"
     );
     assert!(
         graph
-            .dependencies_for(HillslopePhase::Drainage)
-            .contains(&HillslopePhase::LateralTransfer),
-        "drainage must depend on lateral transfer"
+            .dependencies_for(HillslopePhase::LateralTransfer)
+            .contains(&HillslopePhase::Drainage),
+        "lateral transfer must depend on drainage"
     );
     assert!(
         graph
             .dependencies_for(HillslopePhase::RunoffReconciliation)
-            .contains(&HillslopePhase::Drainage),
-        "runoff reconciliation must depend on drainage"
+            .contains(&HillslopePhase::LateralTransfer),
+        "runoff reconciliation must depend on lateral transfer"
     );
     assert!(
         graph
@@ -674,14 +674,41 @@ fn hphys0240_contract_wb11_carryover_tail_requires_storage_after_runoff() {
     assert!(
         graph
             .dependencies_for(HillslopePhase::RunoffReconciliation)
-            .contains(&HillslopePhase::Drainage),
-        "carryover-producing tail must complete drainage before runoff reconciliation"
+            .contains(&HillslopePhase::LateralTransfer),
+        "carryover-producing tail must complete WB19 drainage/lateral before runoff reconciliation"
     );
     assert!(
         graph
             .dependencies_for(HillslopePhase::StorageReconciliation)
             .contains(&HillslopePhase::RunoffReconciliation),
         "storage reconciliation must consume Q after runoff carryover resolution"
+    );
+}
+
+#[test]
+fn hphys0242_contract_wb11_hourly_tail_requires_drainage_before_lateral_and_same_pass_storage() {
+    let ordered = HillslopePhaseGraph::canonical_order();
+
+    let phase_index = |phase| {
+        ordered
+            .iter()
+            .position(|candidate| *candidate == phase)
+            .unwrap_or_else(|| panic!("{phase:?} must exist in canonical order"))
+    };
+
+    assert!(
+        phase_index(HillslopePhase::PercolationDeepSeepage)
+            < phase_index(HillslopePhase::Evapotranspiration),
+        "HPHYS0242 requires final-hour ET after same-pass percolation"
+    );
+    assert!(
+        phase_index(HillslopePhase::Evapotranspiration) < phase_index(HillslopePhase::Drainage)
+            && phase_index(HillslopePhase::Drainage) < phase_index(HillslopePhase::LateralTransfer)
+            && phase_index(HillslopePhase::LateralTransfer)
+                < phase_index(HillslopePhase::RunoffReconciliation)
+            && phase_index(HillslopePhase::RunoffReconciliation)
+                < phase_index(HillslopePhase::StorageReconciliation),
+        "HPHYS0242 hourly tail must be ET -> Drainage -> Lateral -> Runoff -> Storage"
     );
 }
 

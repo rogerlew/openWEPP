@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static + Ran
 
 Execution artifacts for HPHYS0242.

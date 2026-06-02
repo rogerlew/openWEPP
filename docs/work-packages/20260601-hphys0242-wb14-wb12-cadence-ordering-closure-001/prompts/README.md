@@ -1,6 +1,6 @@
 # Prompts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static
 
 Prompt set for HPHYS0242 execution.

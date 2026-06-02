@@ -1,5 +1,6 @@
 use openwepp_hillslope_orchestrator::{
-    HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
+    HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
+    Wb11HydrologyKernel,
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use openwepp_sim_contract::status::BoundaryClass;
@@ -453,5 +454,22 @@ fn hphys0240_contract_wb12_storage_tail_uses_q_from_same_pass_carryover_flux() {
             .get(&BoundarySymbol::from("wb12_storage_reconciled"))
             .copied(),
         Some(BoundaryValue::scalar(12.5))
+    );
+}
+
+#[test]
+fn hphys0242_contract_wb12_storage_tail_depends_on_same_pass_runoff_after_wb19_tail() {
+    let graph = HillslopePhaseGraph::canonical();
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::RunoffReconciliation)
+            .contains(&HillslopePhase::LateralTransfer),
+        "WB12 runoff reconciliation must wait for the same-pass WB19 drainage/lateral tail"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::StorageReconciliation)
+            .contains(&HillslopePhase::RunoffReconciliation),
+        "WB12 storage reconciliation must consume same-pass Q after runoff publication"
     );
 }

@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use openwepp_hillslope_orchestrator::Wb11HydrologyKernel;
+use openwepp_hillslope_orchestrator::{HillslopePhase, HillslopePhaseGraph, Wb11HydrologyKernel};
 use openwepp_kernel_contract::{
     BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
     HillslopeKernelPhaseClass, HillslopeKernelRequest,
@@ -487,5 +487,23 @@ fn wb18_contract_conformance_rejects_non_positive_kslast_when_slflag_enabled() {
     assert_eq!(
         response.status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn hphys0242_contract_wb18_hourly_percolation_precedes_final_hour_et() {
+    let ordered = HillslopePhaseGraph::canonical_order();
+    let percolation_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::PercolationDeepSeepage)
+        .expect("percolation phase must exist");
+    let et_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase must exist");
+
+    assert!(
+        percolation_index < et_index,
+        "HPHYS0242 requires WB18 hourly percolation lineage before final-hour ET"
     );
 }

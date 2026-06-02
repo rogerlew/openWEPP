@@ -1,5 +1,6 @@
 use openwepp_hillslope_orchestrator::{
-    HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
+    HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
+    Wb11HydrologyKernel,
 };
 use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
 use openwepp_sim_contract::status::BoundaryClass;
@@ -416,5 +417,26 @@ fn wb17_contract_conformance_rejects_domain_invalid_residue_interception() {
     assert_eq!(
         et_phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn hphys0242_contract_wb17_et_executes_after_same_pass_percolation_before_wb19_tail() {
+    let ordered = HillslopePhaseGraph::canonical_order();
+    let phase_index = |phase| {
+        ordered
+            .iter()
+            .position(|candidate| *candidate == phase)
+            .unwrap_or_else(|| panic!("{phase:?} must exist in canonical order"))
+    };
+
+    assert!(
+        phase_index(HillslopePhase::PercolationDeepSeepage)
+            < phase_index(HillslopePhase::Evapotranspiration),
+        "HPHYS0242 requires ET to consume same-pass percolation-mutated layer state"
+    );
+    assert!(
+        phase_index(HillslopePhase::Evapotranspiration) < phase_index(HillslopePhase::Drainage),
+        "HPHYS0242 requires ET before the hourly WB19 drainage/lateral tail"
     );
 }

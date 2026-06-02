@@ -1,10 +1,10 @@
 # 20260601-hphys0242-wb14-wb12-cadence-ordering-closure-001
 
 ## Status
-- state: queued
+- state: completed
 - date: 2026-06-01
 - timezone: America/Los_Angeles
-- decision: HOLD_PENDING_EXECUTION
+- decision: GO_HPHYS0239_FOLLOWUP_DISPATCH_GROUPS_B_C_D_CLOSED
 
 ## Objective
 Close HPHYS0237 Dispatch Group D by reconciling WB14/WB12 cadence and

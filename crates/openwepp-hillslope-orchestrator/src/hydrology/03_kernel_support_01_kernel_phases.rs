@@ -255,6 +255,206 @@ impl Wb11HydrologyKernel {
     }
 
     #[allow(clippy::too_many_lines)]
+    fn compute_same_pass_wb14_infiltration_lineage(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let Some(rainfall_input) =
+            Self::optional_state_scalar(request, phase_class, WB12_SYMBOL_RAINFALL_INPUT)?
+        else {
+            return Ok(None);
+        };
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            rainfall_input,
+            Some(0.0),
+            None,
+        )?;
+
+        let soil_conductivity =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_CONDUCTIVITY)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_CONDUCTIVITY,
+            soil_conductivity,
+            Some(0.0),
+            None,
+        )?;
+        let soil_conductivity = Self::resolve_wb14_effective_soil_conductivity(
+            request,
+            phase_class,
+            soil_conductivity,
+        )?;
+
+        let active_frost_coupling = Self::resolve_active_frost_coupling(request, phase_class)?;
+        let frost_coupling = if active_frost_coupling {
+            Some(Self::compute_active_frost_coupling(
+                request,
+                phase_class,
+                soil_conductivity,
+            )?)
+        } else {
+            None
+        };
+        let infiltration_conductivity = frost_coupling
+            .as_ref()
+            .map_or(soil_conductivity, |outcome| outcome.infcap_frz);
+
+        let soil_layer_depth =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_LAYER_DEPTH)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_LAYER_DEPTH,
+            soil_layer_depth,
+            Some(0.0),
+            None,
+        )?;
+        let theta_residual =
+            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_SOIL_THETA_RESIDUAL)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_RESIDUAL,
+            theta_residual,
+            Some(0.0),
+            None,
+        )?;
+        let theta_field_capacity = Self::require_state_scalar(
+            request,
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY,
+            theta_field_capacity,
+            Some(0.0),
+            None,
+        )?;
+        let moisture_deficit = theta_field_capacity - theta_residual;
+        if moisture_deficit < -WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SOIL_THETA_FIELD_CAPACITY),
+                value: theta_field_capacity,
+                minimum: Some(theta_residual),
+                maximum: None,
+            });
+        }
+        let matric_potential = soil_layer_depth * moisture_deficit.max(0.0);
+        if !matric_potential.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                value: matric_potential,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let hyetograph_point_count = Self::resolve_hyetograph_point_count(request, phase_class)?;
+        let (times, intensities) =
+            Self::load_hyetograph_series(request, phase_class, hyetograph_point_count)?;
+
+        let mut hyetograph_rainfall = 0.0_f64;
+        for index in 0..times.len().saturating_sub(1) {
+            let interval_rainfall = intensities[index] * (times[index + 1] - times[index]);
+            if !interval_rainfall.is_finite() || interval_rainfall < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                    value: interval_rainfall,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            hyetograph_rainfall += interval_rainfall.max(0.0);
+        }
+        if !hyetograph_rainfall.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: hyetograph_rainfall,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+
+        let hyetograph_duration_s = if times.len() >= 2 {
+            times[times.len() - 1] - times[0]
+        } else {
+            0.0
+        };
+        let active_irrigation_event =
+            Self::resolve_active_irrigation_event(request, phase_class, hyetograph_duration_s)?;
+        let irrigation_depth_m = active_irrigation_event.map_or(0.0, |event| event.depth_m);
+        let irrigation_duration_s = active_irrigation_event.map_or(0.0, |event| event.duration_s);
+        let irrigation_rate_m_per_s =
+            active_irrigation_event.map_or(0.0, |event| event.rate_m_per_s);
+        let coupled_rainfall_input = hyetograph_rainfall + irrigation_depth_m;
+        if (rainfall_input - coupled_rainfall_input).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
+                value: rainfall_input - coupled_rainfall_input,
+                minimum: Some(-WB11_ZERO_THRESHOLD),
+                maximum: Some(WB11_ZERO_THRESHOLD),
+            });
+        }
+
+        let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
+        let snow_coupling = if active_snow_coupling {
+            Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
+        } else {
+            SnowCouplingOutcome {
+                signed_s: 0.0,
+                accumulation: 0.0,
+                runtime_swe: 0.0,
+                runtime_depth_m: 0.0,
+                runtime_density_kg_m3: 0.0,
+                runtime_settle_day_count: 0.0,
+                hourly_state: Vec::new(),
+            }
+        };
+        let hyetograph_liquid_input = hyetograph_rainfall - snow_coupling.accumulation;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            hyetograph_liquid_input,
+            Some(0.0),
+            None,
+        )?;
+
+        let interception =
+            Self::compute_canopy_interception_depth(request, phase_class, hyetograph_liquid_input)?;
+        let (_liquid_after_interception, rainfall_scale) = Self::resolve_interception_rainfall_scale(
+            phase_class,
+            hyetograph_rainfall,
+            hyetograph_liquid_input,
+            interception,
+        )?;
+
+        let cumulative_infiltration = Self::compute_coupled_infiltration_depth(
+            phase_class,
+            infiltration_conductivity,
+            matric_potential,
+            &times,
+            &intensities,
+            rainfall_scale,
+            irrigation_rate_m_per_s,
+            irrigation_duration_s,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_INFILTRATION,
+            cumulative_infiltration,
+            Some(0.0),
+            None,
+        )?;
+        Ok(Some(cumulative_infiltration))
+    }
+
+    #[allow(clippy::too_many_lines)]
     fn run_evapotranspiration(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
@@ -392,10 +592,18 @@ impl Wb11HydrologyKernel {
         )?;
 
         let mut stage_state_updates = Vec::new();
+        let same_pass_infiltration = if stage_state.is_some() {
+            Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)?
+        } else {
+            None
+        };
         let soil_evaporation_demand = if let Some((mut s1, mut s2, tu, mut tv)) = stage_state {
-            let infiltration =
+            let infiltration = if let Some(value) = same_pass_infiltration {
+                value
+            } else {
                 Self::optional_state_scalar(request, phase_class, WB12_SYMBOL_INFILTRATION)?
-                    .unwrap_or(0.0);
+                    .unwrap_or(0.0)
+            };
             Self::require_state_range(
                 phase_class,
                 WB12_SYMBOL_INFILTRATION,
@@ -601,6 +809,14 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )];
+        if let Some(infiltration) = same_pass_infiltration {
+            state_updates.push(WritebackField::bounded(
+                WB12_SYMBOL_INFILTRATION,
+                infiltration,
+                Some(0.0),
+                None,
+            ));
+        }
         state_updates.extend(stage_state_updates);
 
         let writeback = KernelWritebackPayload::with_updates(
@@ -1063,6 +1279,16 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        let q_drainage = Self::optional_flux_scalar(request, phase_class, WB11_SYMBOL_DRAINAGE_QDD)?;
+        if let Some(value) = q_drainage {
+            Self::require_flux_range(
+                phase_class,
+                WB11_SYMBOL_DRAINAGE_QDD,
+                value,
+                Some(0.0),
+                None,
+            )?;
+        }
 
         let avgslp_symbol = BoundarySymbol::from(WB19_SYMBOL_AVG_SLOPE);
         let avgslp = Self::require_state_scalar_for_symbol(request, phase_class, &avgslp_symbol)?;
@@ -1138,8 +1364,25 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let (mut theta, drain_threshold, conductivity, thickness, _upper_limit) =
+        let (mut theta, drain_threshold, conductivity, thickness, upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
+        let top_effective_upper_limit = if mofe_hourly_carry_arrays_enabled {
+            let top_upper_limit = upper_limit[0];
+            let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", 1);
+            let frozen_water =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &frozen_water_symbol)?
+                    .unwrap_or(0.0);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &frozen_water_symbol,
+                frozen_water,
+                Some(0.0),
+                Some(top_upper_limit),
+            )?;
+            Some(top_upper_limit - frozen_water)
+        } else {
+            None
+        };
         let mut porosity = Vec::with_capacity(theta.len());
         let mut field_capacity_theta = Vec::with_capacity(theta.len());
         let mut coca = Vec::with_capacity(theta.len());
@@ -1223,7 +1466,12 @@ impl Wb11HydrologyKernel {
         } else {
             Vec::new()
         };
-        for _ in 0..lane_substeps {
+        let mut surface_saturation_substeps = if mofe_hourly_carry_arrays_enabled {
+            Vec::with_capacity(MOFE_HOURLY_CARRY_ARRAY_COUNT)
+        } else {
+            Vec::new()
+        };
+        for substep_index in 0..lane_substeps {
             let mut saturated_layer = vec![false; theta.len()];
             let mut encountered_unsaturated = false;
             for (index, (theta_i, threshold_i)) in
@@ -1321,6 +1569,28 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 Some(q_lateral_target),
             )?;
+            if let Some(top_limit) = top_effective_upper_limit {
+                let saturation_excess = theta[0] - top_limit;
+                let current_saturation_runoff = if saturation_excess > WB11_ZERO_THRESHOLD {
+                    theta[0] = top_limit;
+                    saturation_excess
+                } else {
+                    0.0
+                };
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &Self::hourly_symbol(
+                        MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+                        substep_index + 1,
+                    ),
+                    current_saturation_runoff,
+                    Some(0.0),
+                    None,
+                )?;
+                surface_saturation_substeps.push(Self::normalize_non_negative_within_tolerance(
+                    current_saturation_runoff,
+                ));
+            }
 
             watyld = 0.0;
             if fcdep_before > WB11_ZERO_THRESHOLD {
@@ -1428,16 +1698,38 @@ impl Wb11HydrologyKernel {
                     None,
                 ));
             }
+            for (index, value) in surface_saturation_substeps.iter().enumerate() {
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, index + 1),
+                    *value,
+                    Some(0.0),
+                    None,
+                ));
+            }
         }
-        let writeback = KernelWritebackPayload::with_updates(
-            state_updates,
-            vec![WritebackField::bounded(
-                WB11_SYMBOL_LATERAL_Q,
-                q_lateral,
+        let mut flux_updates = vec![WritebackField::bounded(
+            WB11_SYMBOL_LATERAL_Q,
+            q_lateral,
+            Some(0.0),
+            None,
+        )];
+        if let Some(q_drainage) = q_drainage {
+            let q_subhyd = q_drainage + q_lateral;
+            Self::require_flux_range(
+                phase_class,
+                WB11_SYMBOL_SUBHYD_QD,
+                q_subhyd,
                 Some(0.0),
                 None,
-            )],
-        );
+            )?;
+            flux_updates.push(WritebackField::bounded(
+                WB11_SYMBOL_SUBHYD_QD,
+                q_subhyd,
+                Some(0.0),
+                None,
+            ));
+        }
+        let writeback = KernelWritebackPayload::with_updates(state_updates, flux_updates);
         Ok(KernelRunResponse::new(status, writeback))
     }
 
@@ -1475,7 +1767,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let q_lateral = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_LATERAL_Q)?;
+        let q_lateral = Self::optional_flux_scalar(request, phase_class, WB11_SYMBOL_LATERAL_Q)?
+            .unwrap_or(0.0);
         Self::require_flux_range(
             phase_class,
             WB11_SYMBOL_LATERAL_Q,
@@ -2446,6 +2739,36 @@ impl Wb11HydrologyKernel {
         )?;
 
         let runon_input = Self::resolve_runoff_carryover_input(request, phase_class)?;
+        let mofe_hourly_carry_arrays_enabled =
+            Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?;
+        let mofe_hourly_saturation_carry = if mofe_hourly_carry_arrays_enabled {
+            Some(Self::resolve_mofe_hourly_current_saturation_carry(
+                request,
+                phase_class,
+                frost_coupling.as_ref(),
+            )?)
+        } else {
+            None
+        };
+        let surface_saturation_runoff = mofe_hourly_saturation_carry
+            .as_ref()
+            .map_or(0.0, |carry| carry.iter().copied().sum::<f64>());
+        Self::require_flux_range(
+            phase_class,
+            WB12_SYMBOL_RUNOFF_Q,
+            surface_saturation_runoff,
+            Some(0.0),
+            None,
+        )?;
+        let mofe_hourly_lateral_carry = if mofe_hourly_carry_arrays_enabled {
+            Some(Self::require_mofe_hourly_state_array(
+                request,
+                phase_class,
+                MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+            )?)
+        } else {
+            None
+        };
 
         let depression_storage_delta =
             Self::require_state_scalar(request, phase_class, WB12_SYMBOL_DEPRESSION_STORAGE_DELTA)?;
@@ -2461,7 +2784,7 @@ impl Wb11HydrologyKernel {
             Self::resolve_wb20_forward_solver_lane_enabled(request, phase_class)?;
         let runoff_snow_term = snow_coupling.signed_s + snow_coupling.accumulation;
 
-        let q_runoff = Self::compute_runoff_after_interception(
+        let partition_runoff = Self::compute_runoff_after_interception(
             phase_class,
             liquid_after_interception,
             runoff_snow_term,
@@ -2469,9 +2792,14 @@ impl Wb11HydrologyKernel {
             cumulative_infiltration,
             depression_storage_delta,
         )?;
+        let q_runoff = partition_runoff + surface_saturation_runoff;
+        Self::require_flux_range(phase_class, WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None)?;
 
         let closure_delta = if forward_solver_lane {
-            let solver_closure = liquid_after_interception + runon_input + runoff_snow_term
+            let solver_closure = liquid_after_interception
+                + runon_input
+                + runoff_snow_term
+                + surface_saturation_runoff
                 - cumulative_infiltration
                 - depression_storage_delta;
             solver_closure - q_runoff
@@ -2502,26 +2830,6 @@ impl Wb11HydrologyKernel {
             "HKERNEL-WB14-RUNOFF-OK-001",
         ) else {
             unreachable!("status message ids are non-empty WB14 constants")
-        };
-        let mofe_hourly_carry_arrays_enabled =
-            Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?;
-        let mofe_hourly_saturation_carry = if mofe_hourly_carry_arrays_enabled {
-            Some(Self::resolve_mofe_hourly_current_saturation_carry(
-                request,
-                phase_class,
-                frost_coupling.as_ref(),
-            )?)
-        } else {
-            None
-        };
-        let mofe_hourly_lateral_carry = if mofe_hourly_carry_arrays_enabled {
-            Some(Self::require_mofe_hourly_state_array(
-                request,
-                phase_class,
-                MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
-            )?)
-        } else {
-            None
         };
 
         let mut state_updates = vec![

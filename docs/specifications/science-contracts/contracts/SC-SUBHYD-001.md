@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -63,6 +63,7 @@ Out of scope:
 | REF-SUBHYD-CH6-WTDRAW | `chap6.pdf` §6.2.3 Eq. [6.2.14]-[6.2.15] + text | Water-table drawdown by drainage and drainable-porosity definition; sequential layer withdrawal and negligible-flow condition below drain depth. | `[DIRECT][Static]` |
 | REF-SUBHYD-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1 Eq. [5.1.1] | Daily closure consumes subsurface/drain loss term (`Qd`) with explicit accounting semantics. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SUBHYD-CH13-COUPLING | `references/50201000/chap13.pdf` §13.1-§13.2 Eq. [13.2.1]-[13.2.2] | Watershed/channel runon boundaries include lateral hillslope contributions and require unit-consistent runon depth/volume semantics. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-SUBHYD-LEGACY-HOURLY-TAIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:592-887` and `/workdir/wepp-forest_260430_baseline/src/drain.for:181-305` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly tail executes drainage, lateral flow, top-layer saturation clipping into `ui_SCrunf(ii)`, and copy-forward before daily runoff/storage publication. | `[DIRECT][Static]` |
 | REF-SUBHYD-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes, bounded porosity domains, and explicit branch handling for threshold transitions. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -128,6 +129,7 @@ replace the governing Chapter-6 process equations.
 |---|---|
 | Lateral flux output | `q` |
 | Drainage outputs | `Qdd`, `Qd` |
+| MOFE hourly carry outputs | `ui_LfCrf_####`, `ui_SCrunf_####` |
 | Lateral/drainage state updates | `wb11_drainable_storage`, `wb18_perc_theta_####`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range lateral/drainage domains |
 
@@ -136,12 +138,14 @@ replace the governing Chapter-6 process equations.
 WB19 mutates lateral/drainage boundary surfaces deterministically:
 - lateral phase computes Eq. [6.2.4]-derived `q`, withdraws layer water above
   field capacity from top to bottom, updates `wb18_perc_theta_####`, updates
-  `wb11_drainable_storage`, and publishes coupled saturated-depth surfaces
-  (`wb19_fcdep`, `wb19_unsdep`, `wb19_watyld`).
+  `wb11_drainable_storage`, publishes coupled saturated-depth surfaces
+  (`wb19_fcdep`, `wb19_unsdep`, `wb19_watyld`), and in MOFE hourly lanes emits
+  `ui_LfCrf(ii)` plus `ui_SCrunf(ii)` top-layer saturation clipping.
 - drainage phase computes Eq. [6.2.10]-[6.2.11]-derived `Qdd` with explicit
   equivalent-depth branch + capacity cap, performs tile-layer-to-surface
   withdrawal, updates `wb18_perc_theta_####`, updates
-  `wb11_drainable_storage`, and emits `Qd = q + Qdd`.
+  `wb11_drainable_storage`, and emits `Qd = q + Qdd` when both same-pass
+  components are available.
 
 ## Algorithm Specification (WB19 Lateral/Drainage Production Execution)
 
@@ -170,8 +174,13 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
    effective saturated conductivity. Emitted `Qdd` is capped by
    `wb11_drainage_coefficient`.
 4. Drainage phase withdraws `Qdd` from tile-layer-to-surface excess-water
-   sequence and emits total subsurface loss `Qd = q + Qdd`.
-5. Reject missing, non-finite, or out-of-range lateral/drainage domains with
+   sequence. In compatibility daily/direct lanes where same-pass `q` already
+   exists, drainage may emit total subsurface loss `Qd = q + Qdd`.
+5. HPHYS0242 hourly-lane ordering uses the baseline hourly tail: drainage
+   emits `Qdd` before lateral; lateral then emits final `Qd = Qdd + q`,
+   `ui_LfCrf(ii) = q(ii)`, and `ui_SCrunf(ii)` after clipping top-layer
+   saturation excess from `st(1)` against `fzul = ul(1) - frzw(1)`.
+6. Reject missing, non-finite, or out-of-range lateral/drainage domains with
    typed hard-fail status; no silent fallback/clamping paths are permitted.
 
 ## Branch and Guard Table (WB19 Lateral/Drainage Kernels)
@@ -179,7 +188,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
 | `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
-| `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`, `q` | runtime | deterministic layer-aware drainage execution/writeback |
+| `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`; same-pass `q` is required only for compatibility lanes where drainage publishes final `Qd` | runtime | deterministic layer-aware drainage execution/writeback |
 | `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
 
@@ -207,8 +216,9 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-018 | WB19 saturated-thickness response invariant: under fixed conductivity/geometry/forcing domains, increasing saturated thickness (and corresponding layer-derived available pool) must not decrease realized lateral flux (`q_high >= q_low`) and should increase it when neither case is constrained by non-saturated zero-flow branches. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-019 | WB19 FC/WP + COCA coupling invariant: water-yield coupling must compute `avfca` from `thetfc_####` theta lineage (not `wb18_perc_fc_####/dg_####` surrogate), enforce per-layer consistency `wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`, and apply `solwpv < 2006` `fcdep` mutation using this authoritative `watyld` branch. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-020 | WB19 hourly iterative lane invariant: when hourly lane is active (`wb19_lateral_drain_lane_substeps = 24`), WB19 lateral/drainage execution must iterate substeps with state recomputation each substep and accumulate realized daily `q` and `Qdd`; divisor-only single-pass substitution is invalid. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SUBHYD-021 | HPHYS0239 WB19->WB12/WB13 handoff invariant: WB19 lateral/drainage handoff must remain deterministic (`q` then `Qdd` then `Qd=q+Qdd`) and downstream WB12/WB13 consumers must consume post-WB19 same-pass flux symbols with anti-shadow precedence for `q`/`Qdd`/`Qd` under state/flux conflicts. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-021 | HPHYS0239 WB19->WB12/WB13 handoff invariant: WB19 lateral/drainage handoff must remain deterministic and downstream WB12/WB13 consumers must consume post-WB19 same-pass flux symbols with anti-shadow precedence for `q`/`Qdd`/`Qd` under state/flux conflicts. HPHYS0242 `INV-SUBHYD-023` is the controlling authority for hourly-lane drainage/lateral order. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-PHYS-BOUNDS, INV-SUBHYD-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-022 | HPHYS0240 runoff-carryover handoff invariant: downstream WB12/WB14 reconciliation in the post-WB19 hydrology tail must consume same-pass `wb12_runoff_carryover` flux for incoming runoff/runon carryover when present, preserving flux-authoritative anti-shadow semantics and finite non-negative boundary validation before storage reconciliation consumes derived `Q`. | hard-fail | REF-SUBHYD-CH5-COUPLING, REF-SUBHYD-CH13-COUPLING, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-023 | HPHYS0242 hourly WB19 tail invariant: hourly-lane WB19 execution must follow baseline tail ordering `Drainage -> LateralTransfer`, accumulate same-pass `Qdd`, `q`, and final `Qd = Qdd + q`, publish 24-slot `ui_LfCrf` from realized lateral flow, clip positive top-layer saturation excess into 24-slot `ui_SCrunf`, and leave no material post-clipping top-layer excess. Missing/malformed carry arrays, stale `Qd`, or omitted positive `ui_SCrunf` hard-fail. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034, SC-RUNOFFPART-001#INV-RUNOFFPART-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -236,6 +246,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-020` | runtime | WB19 hourly lane iterative execution validator across lateral/drainage phases | Hard-fail when hourly lane behavior collapses to single-pass divisor-only execution without per-substep state recomputation and accumulated daily flux publication | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-021` | runtime + governance | WB19-to-WB12/WB13 handoff validator for deterministic `q`/`Qdd`/`Qd` sequencing and anti-shadow consumption | Typed hard error / explicit `HOLD` when downstream reconciliation/publication consumes stale pre-WB19 surfaces or state-shadowed subsurface symbols | HPHYS hourly handoff closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-022` | runtime + governance | WB12/WB14 runoff-carryover handoff validator at post-WB19 tail boundary | Typed hard error / explicit `HOLD` when carryover uses stale `wb12_runon_input` despite present same-pass `wb12_runoff_carryover`, or when malformed carryover reaches storage-derived `Q` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-023` | runtime + governance | HPHYS0242 scheduler-order gate, drainage/lateral same-pass `Qd` assembler, and MOFE current carry-array producer | Typed hard error / explicit `HOLD` when hourly tail runs lateral before drainage, publishes stale `Qd`, omits `ui_LfCrf`/`ui_SCrunf`, or leaves unclipped material top-layer saturation excess | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -265,6 +276,8 @@ alias continuity for production kernels.
 | `ddrain`, `sdrain`, `drdiam` | `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter` | WB19 drainage-geometry surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qdd`, `Qd` | `Qdd`, `Qd` | drainage and aggregate subsurface-loss outputs | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qd` | identity name | daily subsurface loss handoff surface | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ui_LfCrf(ii)` | `ui_LfCrf_{hour:04}` | realized current-OFE hourly lateral-flow carry after withdrawal caps | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ui_SCrunf(ii)` | `ui_SCrunf_{hour:04}` | realized current-OFE hourly top-layer saturation excess after clipping from `st(1)` | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -564,9 +577,11 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 ## HPHYS0239 WB19->WB12/WB13 Handoff Ordering Addendum
 
 1. WB19 handoff sequencing is explicit and deterministic:
-   - lateral phase computes/publishes `q`,
-   - drainage phase computes/publishes `Qdd`,
-   - drainage phase publishes aggregate `Qd = q + Qdd`.
+   - same-pass `q`, `Qdd`, and `Qd = q + Qdd` must be published before WB12
+     and WB13 consumers read the hydrology tail,
+   - HPHYS0242 refines hourly-lane WB19 order to baseline
+     `Drainage -> LateralTransfer`; older lateral-before-drainage wording is
+     compatibility-only and is not controlling for hourly lanes.
 2. WB12 storage reconciliation and WB13 subsurface publication consume the
    post-WB19 same-pass symbols and must not reuse stale pre-WB19 state copies.
 3. Under state/flux symbol conflicts, WB12/WB13 coupling consumers are
@@ -588,6 +603,22 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 4. Contract-derived vectors must include carryover flux-over-state and
    malformed-carryover rejection probes across the runoff/storage tail.
 
+## HPHYS0242 Hourly Drainage/Lateral/Saturation Tail Addendum
+
+1. Baseline hourly tail order is authoritative for hourly lanes:
+   `Drainage -> LateralTransfer -> top-layer saturation clipping -> copy-forward`.
+2. Drainage publishes same-pass `Qdd`; lateral publishes realized same-pass `q`
+   and then final `Qd = Qdd + q` for WB12 storage closure.
+3. MOFE hourly lanes publish `ui_LfCrf(ii)` from realized lateral flow and
+   `ui_SCrunf(ii)` from top-layer saturation excess after enforcing
+   `st(1) <= fzul = ul(1) - frzw(1)` within declared tolerance.
+4. Positive `ui_SCrunf(ii)` is a required production output and must not be
+   represented only as an aggregate daily carryover or silently left in layer
+   storage.
+5. Contract-derived vectors must prove hourly order, final `Qd` freshness,
+   positive `ui_SCrunf` clipping, malformed carry-array rejection, and stale
+   state/flux anti-shadow behavior.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -601,6 +632,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `24` | `Codex` | HPHYS0242 amendment: added `INV-SUBHYD-023`, baseline hourly `Drainage -> LateralTransfer` tail authority, final same-pass `Qd = Qdd + q` publication, and required `ui_LfCrf`/`ui_SCrunf` MOFE current carry production with top-layer saturation clipping. |
 | `2026-06-01` | `23` | `Codex` | HPHYS0240 amendment: added `INV-SUBHYD-022` and carryover handoff addendum requiring post-WB19 WB12/WB14 reconciliation to consume same-pass `wb12_runoff_carryover` before compatibility `wb12_runon_input`, with malformed-carryover hard-fail posture before storage closure. |
 | `2026-06-01` | `22` | `Codex` | HPHYS0239 amendment: added `INV-SUBHYD-021` and handoff-ordering addendum codifying deterministic WB19 `q`/`Qdd`/`Qd` sequencing plus WB12/WB13 anti-shadow consumption requirements for same-pass handoff symbols. |
 | `2026-06-01` | `21` | `Codex` | HPHYS0238 amendment: added `INV-SUBHYD-020` and hourly iterative WB19 lateral/drainage addendum requiring per-substep state-recompute accumulation (`wb19_lateral_drain_lane_substeps`) and prohibiting divisor-only single-pass substitutions. |

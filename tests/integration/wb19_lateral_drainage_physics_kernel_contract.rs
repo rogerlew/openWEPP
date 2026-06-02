@@ -155,6 +155,33 @@ fn build_lateral_request(
     )
 }
 
+fn build_lateral_request_with_qdd(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    pe_recharge: f64,
+    q_drainage: f64,
+) -> HillslopeKernelRequest<'_> {
+    let flux_surface = Box::leak(Box::new(BTreeMap::from([
+        (
+            BoundarySymbol::from("Pe"),
+            BoundaryValue::scalar(pe_recharge),
+        ),
+        (
+            BoundarySymbol::from("Qdd"),
+            BoundaryValue::scalar(q_drainage),
+        ),
+    ])));
+
+    HillslopeKernelRequest::with_transition_context(
+        "lateral_transfer",
+        HillslopeKernelPhaseClass::HydrologyLateralTransfer,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        None,
+        state_surface,
+        flux_surface,
+    )
+}
+
 fn build_drainage_request(
     state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
     q_lateral: f64,
@@ -163,6 +190,22 @@ fn build_drainage_request(
         BoundarySymbol::from("q"),
         BoundaryValue::scalar(q_lateral),
     )])));
+
+    HillslopeKernelRequest::with_transition_context(
+        "drainage",
+        HillslopeKernelPhaseClass::HydrologyDrainage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        None,
+        state_surface,
+        flux_surface,
+    )
+}
+
+fn build_drainage_request_without_q(
+    state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+) -> HillslopeKernelRequest<'_> {
+    let flux_surface = Box::leak(Box::new(BTreeMap::new()));
 
     HillslopeKernelRequest::with_transition_context(
         "drainage",
@@ -184,6 +227,15 @@ fn writeback_state_value(response: &KernelRunResponse, symbol: &str) -> f64 {
         .unwrap_or_else(|| panic!("missing state writeback symbol {symbol}"))
         .value
         .as_f64()
+}
+
+fn apply_state_writebacks(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    response: &KernelRunResponse,
+) {
+    for field in &response.writeback.state_updates {
+        state_surface.insert(field.symbol.clone(), field.value);
+    }
 }
 
 fn writeback_flux_value(response: &KernelRunResponse, symbol: &str) -> f64 {
@@ -487,5 +539,72 @@ fn wb19_contract_conformance_rejects_non_integral_lane_substeps() {
     assert_eq!(
         drainage_response.status.boundary_class(),
         BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn hphys0242_contract_hourly_tail_runs_drainage_before_lateral_and_publishes_saturation_carry() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_wb19_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("mofe_hourly_carry_arrays_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_drain_enabled"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(9.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(15.0),
+    );
+
+    let drainage_response =
+        kernel.run_hillslope_phase(&build_drainage_request_without_q(&state_surface));
+    assert_eq!(
+        drainage_response.status.message_id(),
+        "HKERNEL-WB11-DRAIN-OK-001",
+        "hourly baseline tail requires drainage to run before lateral without a preexisting q"
+    );
+    let q_drainage = writeback_flux_value(&drainage_response, "Qdd");
+
+    let mut lateral_state = state_surface.clone();
+    apply_state_writebacks(&mut lateral_state, &drainage_response);
+    let lateral_response = kernel.run_hillslope_phase(&build_lateral_request_with_qdd(
+        &lateral_state,
+        0.0,
+        q_drainage,
+    ));
+    assert_eq!(
+        lateral_response.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+
+    let q_lateral = writeback_flux_value(&lateral_response, "q");
+    let q_subhyd = writeback_flux_value(&lateral_response, "Qd");
+    assert!(
+        (q_subhyd - (q_drainage + q_lateral)).abs() <= TOL,
+        "lateral phase must publish final same-pass Qd after drainage-first hourly tail"
+    );
+
+    let surface_saturation_sum = (1..=24)
+        .map(|hour| writeback_state_value(&lateral_response, &format!("ui_SCrunf_{hour:04}")))
+        .sum::<f64>();
+    assert!(
+        surface_saturation_sum > 0.0,
+        "positive top-layer saturation excess must be emitted as ui_SCrunf hourly carry"
+    );
+    let theta_top_after = writeback_state_value(&lateral_response, "wb18_perc_theta_0001");
+    assert!(
+        theta_top_after <= 8.0 + TOL,
+        "top-layer storage must be clipped to the unfrozen upper limit after ui_SCrunf publication"
     );
 }

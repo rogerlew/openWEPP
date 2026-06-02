@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 19
+contract_version: 20
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -180,6 +180,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | INV-PERC-009 | Governance scope invariant: claims about subsurface lateral-flow/drainage mechanics beyond declared percolation boundary are non-promotable unless backed by `SC-SUBHYD-001` authority. | governance-fail | REF-PERC-CH6-CONT, REF-PERC-CH6-DRAIN | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-010 | WB18 percolation execution invariant: percolation phase computes deterministic per-layer `pei`, preserves lane-specific execution semantics (daily single-pass; hourly 24-substep recompute loop), aggregates `D`/`Pe`, and updates both layer moisture (`wb18_perc_theta_####`) and aggregate soil-water state (`wb11_soil_water`) under explicit field-capacity branching. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-PHYS-BOUNDS + legacy `/workdir/wepp-forest_260430_baseline/src/purk.for` + `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-011 | WB18 percolation guard invariant: missing/non-finite/out-of-range per-layer percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted; explicit legacy-degenerate `Bi=0` branch for non-positive `FC/UL` is authoritative behavior, not silent fallback. | hard-fail | REF-PERC-PHYS-BOUNDS + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` | `[INFERENCE][Static] + [DIRECT][Static]` |
+| INV-PERC-012 | HPHYS0242 hourly percolation cadence invariant: in hourly-lane closure, WB18 must complete the 24-substep accumulated `D`/`Pe` and mutated `wb18_perc_theta_####` lineage before final-hour ET and the WB19 drainage/lateral tail execute; downstream WB12 storage reconciliation must consume the same-pass `D`. Stale, missing, non-finite, or aggregate-only percolation lineage cannot satisfy hourly WB14/WB12 closure. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-CH5-BAL, legacy `/workdir/wepp-forest_260430_baseline/src/purk.for`, legacy `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:541-560`, SC-WATBAL-001#INV-WATBAL-034, SC-EVAP-001#INV-EVAP-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -196,6 +197,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | `INV-PERC-009` | governance | Contract review/disposition/promotion checklist | Promotion `HOLD` when subsurface mechanics claims exceed declared contract boundary | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-010` | runtime | WB18 per-layer percolation production kernel execution path | Typed hard error on malformed/non-deterministic per-layer or aggregate percolation writeback outputs | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-011` | runtime | WB18 per-layer guard table (`HKERNEL-WB11-PERC-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid per-layer percolation inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
+| `INV-PERC-012` | runtime + governance | WB18 hourly-lane output lineage validator plus scheduler-order gate into ET/WB19/WB12 | Typed hard error / explicit `HOLD` when hourly `D`/`Pe`/layer-state lineage is stale, missing, malformed, or consumed out of baseline order | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -423,6 +425,19 @@ Minimum WB18 percolation production-kernel conformance vectors:
    without substep recomputation) is non-authoritative and non-promotable for
    WB18 closure.
 
+## HPHYS0242 WB18 Same-Pass Cadence Addendum
+
+1. Hourly-lane WB18 `D`/`Pe` publication is same-pass authoritative for the
+   downstream WB14/WB12 tail only after all 24 substeps complete and the layer
+   state has been written back.
+2. Final-hour ET must observe this same-day percolation-mutated layer state;
+   WB19 drainage/lateral and WB12 storage closure must consume the same-pass
+   `D` value.
+3. Compatibility aggregate state cannot replace missing or malformed hourly
+   percolation lineage in HPHYS0242 closure claims.
+4. Contract-derived vectors must assert hourly percolation before ET and
+   same-pass `D` consumption at WB12 storage reconciliation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -443,6 +458,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `20` | `Codex` | HPHYS0242 amendment: added `INV-PERC-012` and same-pass hourly `D`/`Pe`/layer-state cadence authority so final-hour ET, WB19, and WB12 storage consume percolation lineage produced by the current hourly pass. |
 | `2026-06-01` | `19` | `Codex` | HPHYS0235 amendment: reanchored hourly WB18 authority from divisor-only attenuation to legacy `watbal_hourly`/`purk` iterative 24-substep semantics; added non-promotable prohibition for single-pass divisor-only hourly treatment. |
 | `2026-06-01` | `18` | `Codex` | HPHYS0233 amendment: added daily restrictive-layer bottom-conductivity branch authority (`slflag`/`kslast` harmonic `Ksi_eff`) and WB13 deep-percolation publication anti-shadow requirement (flux-authoritative `D`). |
 | `2026-06-01` | `17` | `Codex` | HPHYS0232 amendment: added WB18 hourly-lane seepage attenuation authority (`wb18_perc_lane_substeps`) mapped to legacy `ui_LFtstp` lineage (`daily=1`, `hourly=24`), with required test-vector and guard obligations. |

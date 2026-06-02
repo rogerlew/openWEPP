@@ -1,6 +1,6 @@
 # Active Prompts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static
 
-Active kickoff prompt for HPHYS0242.
+Active kickoff prompt used for HPHYS0242.
