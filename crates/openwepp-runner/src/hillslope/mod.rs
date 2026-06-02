@@ -30,7 +30,10 @@ use openwepp_input_contract::parsers::soil::{SoilParserOptions, TopologyScope, p
 use openwepp_input_contract::parsers::wepp_ui::{
     WeppUiParseResult, WeppUiParserOptions, parse_wepp_ui_from_path,
 };
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelRequest, KernelRunResponse,
+    KernelWritebackPayload,
+};
 use openwepp_legacy_bridge::sidecar::{
     SidecarAdapterRequest, SidecarBinding, SidecarContract, SidecarDiscovery, SidecarId,
     SidecarRequirement, adapt_sidecar_bindings,
@@ -244,12 +247,119 @@ struct DailyExecutionResult {
     runtime_surface: HillslopeWritebackSurface,
     kernel_phase_message_ids: Vec<String>,
     erod14_wave2_kernel_status_seen: bool,
+    hphys0245_trace_rows: Vec<Hphys0245TraceRow>,
+}
+
+#[derive(Clone, Copy)]
+struct SchedulerLifecycleContext<'a> {
+    run_name: &'a str,
+    execution_lane: ExecutionLane,
+    publication_area_m2: f64,
+    simulation_year: i32,
+    sim_day_index: usize,
+    calendar_day: &'a ClimateDayProjection,
+    runtime_swe_before_m: f64,
+    hphys0245_trace_config: Option<&'a Hphys0245TraceConfig>,
+}
+
+#[derive(Debug, Clone)]
+struct Hphys0245TraceConfig {
+    path: PathBuf,
+    max_days: Option<usize>,
+}
+
+impl Hphys0245TraceConfig {
+    #[must_use]
+    fn includes_day(&self, sim_day_index: usize) -> bool {
+        self.max_days
+            .is_none_or(|max_days| sim_day_index <= max_days)
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct Hphys0245TraceRow {
+    schema: &'static str,
+    run_name: String,
+    sim_day_index: usize,
+    simulation_year: i32,
+    calendar_year: i32,
+    julian_day: u16,
+    boundary: String,
+    phase: Option<String>,
+    wb11_soil_water_m: Option<f64>,
+    wb11_soil_water_mm: Option<f64>,
+    wb18_theta_sum_m: Option<f64>,
+    wb18_theta_layers_m: BTreeMap<String, f64>,
+    wb18_pei_sum_m: Option<f64>,
+    wb18_pei_layers_m: BTreeMap<String, f64>,
+    d_m: Option<f64>,
+    pe_m: Option<f64>,
+    wb13_dp_mm: Option<f64>,
+    wb13_total_soil_mm: Option<f64>,
+    wb13_soil_water_total_mm: Option<f64>,
+    wb11_minus_theta_sum_m: Option<f64>,
+}
+
+struct Hphys0245TelemetryKernel<'a> {
+    inner: Wb11HydrologyKernel,
+    run_name: &'a str,
+    simulation_year: i32,
+    sim_day_index: usize,
+    calendar_year: i32,
+    julian_day: u16,
+    rows: Vec<Hphys0245TraceRow>,
+}
+
+impl<'a> Hphys0245TelemetryKernel<'a> {
+    fn new(
+        run_name: &'a str,
+        simulation_year: i32,
+        sim_day_index: usize,
+        calendar_year: i32,
+        julian_day: u16,
+    ) -> Self {
+        Self {
+            inner: Wb11HydrologyKernel,
+            run_name,
+            simulation_year,
+            sim_day_index,
+            calendar_year,
+            julian_day,
+            rows: Vec::new(),
+        }
+    }
+
+    fn into_rows(self) -> Vec<Hphys0245TraceRow> {
+        self.rows
+    }
+}
+
+impl HillslopeKernel for Hphys0245TelemetryKernel<'_> {
+    fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
+        let response = self.inner.run_hillslope_phase(request);
+        let post_phase_surface = hphys0245_surface_after_writeback(request, &response.writeback);
+        self.rows.push(build_hphys0245_trace_row(
+            self.run_name,
+            self.simulation_year,
+            self.sim_day_index,
+            self.calendar_year,
+            self.julian_day,
+            "post_phase",
+            Some(request.phase_name),
+            &post_phase_surface,
+            None,
+        ));
+        response
+    }
 }
 
 const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibility_seed_used";
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
+const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-trace-v1";
+const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
+const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
 const MOFE_HOURLY_CARRY_ARRAY_COUNT: usize = 24;
 const MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL: &str = "mofe_hourly_carry_arrays_enabled";
@@ -809,6 +919,8 @@ pub fn execute_hillslope_run(
     let mut scheduler_status_message_id = String::new();
     let mut previous_climate_symbols: Vec<BoundarySymbol> = Vec::new();
     let mut kernel_phase_message_ids = std::collections::BTreeSet::new();
+    let hphys0245_trace_config = hphys0245_trace_config_from_env()?;
+    let mut hphys0245_trace_rows = Vec::new();
 
     for (day_index, day_projection) in climate_span.days.iter().enumerate() {
         let climate_surface = build_hillslope_runtime_surface_from_climate_request_with_context(
@@ -832,12 +944,16 @@ pub fn execute_hillslope_run(
             simulation_year_from_calendar_year(day_projection.year, climate_span.first_day.year)?;
         let execution_result = execute_scheduler_kernel_lifecycle(
             runtime_surface,
-            lane_context.lane,
-            publication_area_m2,
-            simulation_year,
-            day_index + 1,
-            day_projection,
-            runtime_swe_publication_state_m,
+            SchedulerLifecycleContext {
+                run_name: &runfile.run_name,
+                execution_lane: lane_context.lane,
+                publication_area_m2,
+                simulation_year,
+                sim_day_index: day_index + 1,
+                calendar_day: day_projection,
+                runtime_swe_before_m: runtime_swe_publication_state_m,
+                hphys0245_trace_config: hphys0245_trace_config.as_ref(),
+            },
         )
         .map_err(|error| match error {
             HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
@@ -862,6 +978,7 @@ pub fn execute_hillslope_run(
             kernel_phase_message_ids.insert(message_id);
         }
         erod14_wave2_kernel_status_seen |= execution_result.erod14_wave2_kernel_status_seen;
+        hphys0245_trace_rows.extend(execution_result.hphys0245_trace_rows);
         wb13_rows.push(execution_result.wb13_row);
     }
 
@@ -950,6 +1067,10 @@ pub fn execute_hillslope_run(
                 detail: error.to_string(),
             },
         )?;
+    }
+
+    if let Some(trace_config) = hphys0245_trace_config.as_ref() {
+        write_hphys0245_trace_jsonl(trace_config, &hphys0245_trace_rows)?;
     }
 
     for optional_output in optional_outputs
@@ -2940,18 +3061,30 @@ fn seed_mofe03_wave2_class_symbols(
 #[allow(clippy::too_many_lines)]
 fn execute_scheduler_kernel_lifecycle(
     runtime_surface: HillslopeWritebackSurface,
-    execution_lane: ExecutionLane,
-    publication_area_m2: f64,
-    simulation_year: i32,
-    sim_day_index: usize,
-    calendar_day: &ClimateDayProjection,
-    runtime_swe_before_m: f64,
+    context: SchedulerLifecycleContext<'_>,
 ) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
-    seed_wb11_runtime_surface_inputs(&mut runtime_surface, execution_lane)?;
+    seed_wb11_runtime_surface_inputs(&mut runtime_surface, context.execution_lane)?;
     runtime_surface
         .state_surface
         .retain(|symbol, _| symbol.as_str() != "pl_schedule_slot_count");
+    let trace_day = context
+        .hphys0245_trace_config
+        .is_some_and(|config| config.includes_day(context.sim_day_index));
+    let mut hphys0245_trace_rows = Vec::new();
+    if trace_day {
+        hphys0245_trace_rows.push(build_hphys0245_trace_row(
+            context.run_name,
+            context.simulation_year,
+            context.sim_day_index,
+            context.calendar_day.year,
+            context.calendar_day.julian_day,
+            "post_seed",
+            None,
+            &runtime_surface,
+            None,
+        ));
+    }
 
     let topology_graph = TopologyGraph::new(1, 0, 0, Vec::new());
     let topology_report = validate_pre_execution_topology(&topology_graph).map_err(|error| {
@@ -2964,13 +3097,31 @@ fn execute_scheduler_kernel_lifecycle(
     })?;
 
     let scheduler = HillslopePhaseScheduler::canonical();
-    let mut kernel = Wb11HydrologyKernel;
-    let execution_report = scheduler
-        .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
-        .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "execution_provenance",
-            detail: format!("{SIMPIPE_GUARD_ID} scheduler/kernel lifecycle failed: {error}"),
-        })?;
+    let execution_report = if trace_day {
+        let mut kernel = Hphys0245TelemetryKernel::new(
+            context.run_name,
+            context.simulation_year,
+            context.sim_day_index,
+            context.calendar_day.year,
+            context.calendar_day.julian_day,
+        );
+        let report = scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "execution_provenance",
+                detail: format!("{SIMPIPE_GUARD_ID} scheduler/kernel lifecycle failed: {error}"),
+            })?;
+        hphys0245_trace_rows.extend(kernel.into_rows());
+        report
+    } else {
+        let mut kernel = Wb11HydrologyKernel;
+        scheduler
+            .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "execution_provenance",
+                detail: format!("{SIMPIPE_GUARD_ID} scheduler/kernel lifecycle failed: {error}"),
+            })?
+    };
 
     if !execution_report.scheduler_report.is_success() {
         let scheduler_status = &execution_report.scheduler_report.scheduler_status;
@@ -3033,14 +3184,41 @@ fn execute_scheduler_kernel_lifecycle(
         });
     }
 
+    if trace_day {
+        hphys0245_trace_rows.push(build_hphys0245_trace_row(
+            context.run_name,
+            context.simulation_year,
+            context.sim_day_index,
+            context.calendar_day.year,
+            context.calendar_day.julian_day,
+            "post_scheduler",
+            None,
+            &execution_report.writeback_surface,
+            None,
+        ));
+    }
+
     let wb13_row = build_simulation_owned_wb13_row(
         &execution_report.writeback_surface,
-        publication_area_m2,
-        simulation_year,
-        sim_day_index,
-        calendar_day,
-        runtime_swe_before_m,
+        context.publication_area_m2,
+        context.simulation_year,
+        context.sim_day_index,
+        context.calendar_day,
+        context.runtime_swe_before_m,
     )?;
+    if trace_day {
+        hphys0245_trace_rows.push(build_hphys0245_trace_row(
+            context.run_name,
+            context.simulation_year,
+            context.sim_day_index,
+            context.calendar_day.year,
+            context.calendar_day.julian_day,
+            "post_wb13",
+            None,
+            &execution_report.writeback_surface,
+            Some(&wb13_row),
+        ));
+    }
     let coupling_vectors =
         build_simimpl10_coupling_vector_provenance(&execution_report.writeback_surface, &wb13_row)?;
     let kernel_phase_message_ids = execution_report
@@ -3067,7 +3245,172 @@ fn execute_scheduler_kernel_lifecycle(
         runtime_surface: execution_report.writeback_surface,
         kernel_phase_message_ids,
         erod14_wave2_kernel_status_seen,
+        hphys0245_trace_rows,
     })
+}
+
+fn hphys0245_trace_config_from_env() -> Result<Option<Hphys0245TraceConfig>, HillslopeCliError> {
+    let Some(path_value) = std::env::var_os(HPHYS0245_TRACE_PATH_ENV) else {
+        return Ok(None);
+    };
+    if path_value.is_empty() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "hphys0245_trace",
+            detail: format!("{HPHYS0245_TRACE_PATH_ENV} cannot be empty when set"),
+        });
+    }
+
+    let max_days = match std::env::var(HPHYS0245_TRACE_MAX_DAYS_ENV) {
+        Ok(value) => {
+            let trimmed = value.trim();
+            if trimmed.is_empty() {
+                None
+            } else {
+                let parsed = trimmed.parse::<usize>().map_err(|error| {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "hphys0245_trace",
+                        detail: format!(
+                            "{HPHYS0245_TRACE_MAX_DAYS_ENV} must be a positive integer, observed {trimmed}: {error}"
+                        ),
+                    }
+                })?;
+                if parsed == 0 {
+                    return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "hphys0245_trace",
+                        detail: format!("{HPHYS0245_TRACE_MAX_DAYS_ENV} must be >= 1"),
+                    });
+                }
+                Some(parsed)
+            }
+        }
+        Err(std::env::VarError::NotPresent) => None,
+        Err(std::env::VarError::NotUnicode(_)) => {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "hphys0245_trace",
+                detail: format!("{HPHYS0245_TRACE_MAX_DAYS_ENV} must be valid UTF-8"),
+            });
+        }
+    };
+
+    Ok(Some(Hphys0245TraceConfig {
+        path: PathBuf::from(path_value),
+        max_days,
+    }))
+}
+
+fn write_hphys0245_trace_jsonl(
+    config: &Hphys0245TraceConfig,
+    rows: &[Hphys0245TraceRow],
+) -> Result<(), HillslopeCliError> {
+    ensure_output_parent_directory(&config.path)?;
+    let mut payload = String::new();
+    for row in rows {
+        let line = serde_json::to_string(row).map_err(|source| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "hphys0245_trace",
+                detail: format!("failed serializing trace row: {source}"),
+            }
+        })?;
+        payload.push_str(&line);
+        payload.push('\n');
+    }
+    fs::write(&config.path, payload).map_err(|source| HillslopeCliError::OutputWrite {
+        path: config.path.clone(),
+        source,
+    })
+}
+
+fn hphys0245_surface_after_writeback(
+    request: &HillslopeKernelRequest<'_>,
+    payload: &KernelWritebackPayload,
+) -> HillslopeWritebackSurface {
+    let mut surface = HillslopeWritebackSurface {
+        state_surface: request.state_surface.clone(),
+        flux_surface: request.flux_surface.clone(),
+    };
+    for field in &payload.state_updates {
+        surface
+            .state_surface
+            .insert(field.symbol.clone(), field.value);
+    }
+    for field in &payload.flux_updates {
+        surface
+            .flux_surface
+            .insert(field.symbol.clone(), field.value);
+    }
+    surface
+}
+
+#[allow(clippy::too_many_arguments)]
+fn build_hphys0245_trace_row(
+    run_name: &str,
+    simulation_year: i32,
+    sim_day_index: usize,
+    calendar_year: i32,
+    julian_day: u16,
+    boundary: &str,
+    phase: Option<&str>,
+    runtime_surface: &HillslopeWritebackSurface,
+    wb13_row: Option<&SimulationOwnedWb13Row>,
+) -> Hphys0245TraceRow {
+    let theta_layers =
+        hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_theta_");
+    let pei_layers =
+        hphys0245_prefixed_surface_values(&runtime_surface.flux_surface, "wb18_perc_pei_");
+    let theta_sum = hphys0245_sum_or_none(&theta_layers);
+    let pei_sum = hphys0245_sum_or_none(&pei_layers);
+    let wb11_soil_water = runtime_surface_symbol_value(runtime_surface, "wb11_soil_water");
+    let wb11_minus_theta_sum_m = match (wb11_soil_water, theta_sum) {
+        (Some(wb11), Some(theta)) => Some(wb11 - theta),
+        _ => None,
+    };
+    let wb13_wat = wb13_row.map(|row| &row.wb13_row);
+
+    Hphys0245TraceRow {
+        schema: HPHYS0245_TRACE_SCHEMA,
+        run_name: run_name.to_string(),
+        sim_day_index,
+        simulation_year,
+        calendar_year,
+        julian_day,
+        boundary: boundary.to_string(),
+        phase: phase.map(ToString::to_string),
+        wb11_soil_water_m: wb11_soil_water,
+        wb11_soil_water_mm: wb11_soil_water.map(|value| value * 1_000.0),
+        wb18_theta_sum_m: theta_sum,
+        wb18_theta_layers_m: theta_layers,
+        wb18_pei_sum_m: pei_sum,
+        wb18_pei_layers_m: pei_layers,
+        d_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "D"),
+        pe_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Pe"),
+        wb13_dp_mm: wb13_wat.map(|row| row.dp),
+        wb13_total_soil_mm: wb13_wat.map(|row| row.total_soil),
+        wb13_soil_water_total_mm: wb13_wat.map(|row| row.soil_water_total),
+        wb11_minus_theta_sum_m,
+    }
+}
+
+fn hphys0245_prefixed_surface_values(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    prefix: &str,
+) -> BTreeMap<String, f64> {
+    surface
+        .iter()
+        .filter_map(|(symbol, value)| {
+            let symbol = symbol.as_str();
+            symbol
+                .strip_prefix(prefix)
+                .map(|suffix| (suffix.to_string(), value.as_f64()))
+        })
+        .collect()
+}
+
+fn hphys0245_sum_or_none(values: &BTreeMap<String, f64>) -> Option<f64> {
+    if values.is_empty() {
+        None
+    } else {
+        Some(values.values().copied().sum())
+    }
 }
 
 fn format_wb12_storage_terms(runtime_surface: &HillslopeWritebackSurface) -> String {
@@ -6880,6 +7223,127 @@ mod tests {
                 fs::copy(&source_path, &destination_path).expect("file copy should succeed");
             }
         }
+    }
+
+    #[test]
+    fn hphys0245_trace_config_limits_requested_days() {
+        let config = Hphys0245TraceConfig {
+            path: PathBuf::from("trace.jsonl"),
+            max_days: Some(30),
+        };
+
+        assert!(config.includes_day(1));
+        assert!(config.includes_day(30));
+        assert!(!config.includes_day(31));
+
+        let unbounded = Hphys0245TraceConfig {
+            path: PathBuf::from("trace.jsonl"),
+            max_days: None,
+        };
+        assert!(unbounded.includes_day(31));
+    }
+
+    #[test]
+    fn hphys0245_trace_row_captures_storage_and_percolation_symbols() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb11_soil_water"),
+            BoundaryValue::scalar(0.25),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_theta_0001"),
+            BoundaryValue::scalar(0.10),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_theta_0002"),
+            BoundaryValue::scalar(0.12),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("wb18_perc_pei_0001"),
+            BoundaryValue::scalar(0.003),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("wb18_perc_pei_0002"),
+            BoundaryValue::scalar(0.004),
+        );
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.004));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Pe"), BoundaryValue::scalar(0.004));
+
+        let row = build_hphys0245_trace_row(
+            "H1",
+            1,
+            1,
+            2013,
+            1,
+            "post_phase",
+            Some("percolation_deep_seepage"),
+            &surface,
+            None,
+        );
+
+        assert_eq!(row.schema, HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(row.run_name, "H1");
+        assert_eq!(row.boundary, "post_phase");
+        assert_eq!(row.phase.as_deref(), Some("percolation_deep_seepage"));
+        assert!((row.wb11_soil_water_m.expect("wb11") - 0.25).abs() < 1.0e-12);
+        assert!((row.wb11_soil_water_mm.expect("wb11 mm") - 250.0).abs() < 1.0e-12);
+        assert!((row.wb18_theta_sum_m.expect("theta sum") - 0.22).abs() < 1.0e-12);
+        assert!((row.wb18_pei_sum_m.expect("pei sum") - 0.007).abs() < 1.0e-12);
+        assert!((row.d_m.expect("D") - 0.004).abs() < 1.0e-12);
+        assert!((row.pe_m.expect("Pe") - 0.004).abs() < 1.0e-12);
+        assert!((row.wb11_minus_theta_sum_m.expect("delta") - 0.03).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn hphys0245_trace_writer_serializes_jsonl_rows() {
+        let temp_dir = std::env::temp_dir().join(format!(
+            "openwepp_hphys0245_trace_writer_{}",
+            std::process::id()
+        ));
+        let trace_path = temp_dir.join("trace.jsonl");
+        let config = Hphys0245TraceConfig {
+            path: trace_path.clone(),
+            max_days: Some(1),
+        };
+        let row = Hphys0245TraceRow {
+            schema: HPHYS0245_TRACE_SCHEMA,
+            run_name: "H1".to_string(),
+            sim_day_index: 1,
+            simulation_year: 1,
+            calendar_year: 2013,
+            julian_day: 1,
+            boundary: "post_seed".to_string(),
+            phase: None,
+            wb11_soil_water_m: Some(0.1),
+            wb11_soil_water_mm: Some(100.0),
+            wb18_theta_sum_m: Some(0.08),
+            wb18_theta_layers_m: BTreeMap::from([("0001".to_string(), 0.08)]),
+            wb18_pei_sum_m: Some(0.0),
+            wb18_pei_layers_m: BTreeMap::new(),
+            d_m: None,
+            pe_m: None,
+            wb13_dp_mm: None,
+            wb13_total_soil_mm: None,
+            wb13_soil_water_total_mm: None,
+            wb11_minus_theta_sum_m: Some(0.02),
+        };
+
+        write_hphys0245_trace_jsonl(&config, &[row]).expect("trace writer should succeed");
+
+        let payload = fs::read_to_string(&trace_path).expect("trace file should be readable");
+        let lines = payload.lines().collect::<Vec<_>>();
+        assert_eq!(lines.len(), 1);
+        let document: serde_json::Value =
+            serde_json::from_str(lines[0]).expect("trace row should parse as JSON");
+        assert_eq!(document["schema"], HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(document["boundary"], "post_seed");
+        assert_eq!(document["wb18_theta_layers_m"]["0001"], 0.08);
+
+        fs::remove_dir_all(temp_dir).expect("temp trace directory should be removable");
     }
 
     fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {
