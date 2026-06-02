@@ -246,6 +246,28 @@ impl Wb11HydrologyKernel {
         Ok(Some(scalar))
     }
 
+    fn require_flux_scalar_for_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let Some(value) = request.flux_surface.get(symbol) else {
+            return Err(Wb11HydrologyKernelGuardError::MissingRequiredFluxSymbol {
+                phase_class,
+                symbol: symbol.clone(),
+            });
+        };
+        let scalar = value.as_f64();
+        if !scalar.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteFluxSymbol {
+                phase_class,
+                symbol: symbol.clone(),
+                value: scalar,
+            });
+        }
+        Ok(scalar)
+    }
+
     fn optional_state_scalar_for_symbol(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,

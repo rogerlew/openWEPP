@@ -32,6 +32,8 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
 
     // WB11 prerequisite hydrology inputs.
@@ -234,7 +236,7 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(12.5),
+        BoundaryValue::scalar(13.404_382_572_090_034),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
@@ -308,7 +310,7 @@ fn wb12_contract_conformance_reconciles_runoff_and_storage_surfaces() {
             .state_surface
             .get(&BoundarySymbol::from("wb12_storage_reconciled"))
             .copied(),
-        Some(BoundaryValue::scalar(12.5))
+        Some(BoundaryValue::scalar(13.404_382_572_090_034))
     );
     assert_eq!(
         report
@@ -453,7 +455,7 @@ fn hphys0240_contract_wb12_storage_tail_uses_q_from_same_pass_carryover_flux() {
             .state_surface
             .get(&BoundarySymbol::from("wb12_storage_reconciled"))
             .copied(),
-        Some(BoundaryValue::scalar(12.5))
+        Some(BoundaryValue::scalar(13.404_382_572_090_034))
     );
 }
 
@@ -463,8 +465,14 @@ fn hphys0242_contract_wb12_storage_tail_depends_on_same_pass_runoff_after_wb19_t
     assert!(
         graph
             .dependencies_for(HillslopePhase::RunoffReconciliation)
+            .contains(&HillslopePhase::PlantRootUptake),
+        "WB12 runoff reconciliation must wait for post-WB19 SWU/root uptake"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::PlantRootUptake)
             .contains(&HillslopePhase::LateralTransfer),
-        "WB12 runoff reconciliation must wait for the same-pass WB19 drainage/lateral tail"
+        "WB17 SWU/root uptake must wait for the same-pass WB19 drainage/lateral tail"
     );
     assert!(
         graph

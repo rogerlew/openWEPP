@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 9
+contract_version: 10
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Plant-growth and residue-state consumers influenced by ET stress signals
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-05-25
+last_reviewed: 2026-06-02
 supersedes: []
 superseded_by: []
 ---
@@ -99,44 +99,56 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | ET consumer-boundary state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception` |
+| WB17 ET state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `cancov`, `wb17_residue_interception` |
 | Same-pass infiltration cadence lineage | `wb12_infiltration` or WB14-derived same-pass infiltration lineage before ET execution |
-| Baseline-authoritative ET stage-memory/state family | `s1`, `s2`, `tu`, `tv`, `st_####`, `rtd`, `pltol` |
+| Baseline-authoritative ET stage-memory/state family | `s1`, `s2`, `tu`, `tv`, `wb18_perc_theta_####`, `dg_####`, `thetdr_####`, `frozen_depth_####` |
+| Post-WB19 root-uptake state/flux family | `Etp`, `ET`, `wb18_perc_theta_####`, `wb18_perc_ul_####`, `dg_####`, `thetdr_####`, `frozen_depth_####`, `rtd`, `pltol` |
 
 ### Required Outputs
 
 | Surface | Output |
 |---|---|
-| ET flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er` |
-| ET state updates | `wb11_soil_water` |
+| ET flux outputs | `ET`, `Ws`, `Ep`, `Es`, `Er`, `Etp`, `UPi`, `Ui`; `Ep`/`Ws` become final after post-WB19 root uptake |
+| ET state updates | `wb18_perc_theta_####`, `wb11_soil_water`, `wb17_residue_interception` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range ET state domains |
 
 ### Mutated State Surfaces
 
 WB17 mutates ET boundary surfaces deterministically:
-- potential partition: `Esp = wb11_et_demand * exp(-0.4 * lai)` and
-  `Etp = wb11_et_demand - Esp`.
-- residue partition: `Er = min(Esp, wb17_residue_interception)` and
-  `Es = Esp - Er`.
-- soil extraction + plant extraction:
-  - `Es_actual = min(Es, wb11_soil_water)`
-  - `Ep = min(Etp, wb11_soil_water - Es_actual)`
-  - `ET = Er + Es_actual + Ep`
-- stress update: `Ws = 1` for `Etp <= 1e-12`, otherwise `Ep / Etp`.
-- state update:
-  `wb11_soil_water = wb11_soil_water - Es_actual - Ep`.
+- bare-soil partition: `Esp = wb11_et_demand * exp(-0.5 * (cancov + 0.1))`
+  using the baseline `eaj` uncovered-soil branch.
+- residue-adjusted soil demand: `Esp_soil = max(Esp - wb17_residue_interception, 0)`.
+- stage-memory reduction: optional `s1`, `s2`, `tu`, `tv` state transitions
+  reduce `Esp_soil` before layer extraction when the full stage family is
+  present.
+- LAI-adjusted transpiration demand: `Etp = wb11_et_demand` for `lai > 3`,
+  otherwise `Etp = lai * wb11_et_demand / 3`.
+- ET demand cap and residue split follow baseline `evap.for:566-604`, so
+  residue evaporation is tracked as `Er` and soil extraction demand excludes
+  residue interception.
+- soil extraction mutates `wb18_perc_theta_####` by depth-aware extraction
+  from the upper `0.10 m` baseline evaporation zone.
+- plant extraction mutates `wb18_perc_theta_####` through baseline `swu`
+  root-depth weighting and deficit scaling when `Etp > 0` and `rtd > 0`;
+  this extraction is scheduled after WB19 drainage/lateral mutation per
+  `SC-WATBAL-001#INV-WATBAL-028`.
+- aggregate update recomputes `wb11_soil_water = Σ(wb18_perc_theta_i +
+  thetdr_i * (dg_i - frozen_depth_i))` after soil evaporation and again after
+  post-WB19 root uptake.
+- stress update: `Ws = 1` for `Etp <= 1e-12`, otherwise `Ws = Ep / Etp`.
 
 ## Algorithm Specification (WB17 ET Production Execution)
 
 1. Require finite ET inputs (`wb11_soil_water`, `wb11_et_demand`, `lai`,
-   `wb17_residue_interception`) and enforce non-negative domains.
-2. Compute deterministic potential partition (`Esp`, `Etp`) from Eq. [5.2.8]
-   and Eq. [5.2.9] using runtime alias
-   (`Eu` -> `wb11_et_demand`, `L` -> `lai`).
+   `cancov`, `wb17_residue_interception`) and enforce non-negative domains.
+2. Compute deterministic uncovered-soil evaporation demand from baseline
+   `eaj = exp(-0.5 * (cancov + 0.1))`, then compute LAI-adjusted plant
+   transpiration demand from `lai` and `wb11_et_demand`.
 3. Compute explicit residue evaporation partition (`Er`) and remaining
    soil-evaporation demand (`Es`) before soil-water extraction.
 4. Compute explicit soil evaporation, plant transpiration, total ET, and stress
-   ratio (`Ws`) with zero-demand handling (`Etp <= 1e-12` => `Ws = 1`).
+   ratio (`Ws`) through layer-first `st(i)` mutation semantics mapped to
+   `wb18_perc_theta_####`.
 5. In hourly-lane execution, consume same-pass infiltration lineage from WB14
    and layer state mutated by prior hourly infiltration/percolation; stale
    `wb12_infiltration` compatibility state cannot drive stage-memory or ET
@@ -171,6 +183,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-012 | WB17 ET guard invariant: missing/non-finite/out-of-range WB17 ET domains must surface typed hard failures (`HKERNEL-WB11-ET-E-001..003`) and cannot be silently clamped/defaulted. | hard-fail | REF-EVAP-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-EVAP-013 | SIMIMPL21 baseline-authority invariant: ET contract authority must preserve baseline stage-memory transitions (`s1`, `s2`, `tu`, `tv`), depth-aware soil evaporation extraction from `st(i)`, and root-zone uptake semantics (`UPi`, `Ui`, `Ws = ΣUi/Etp`) with explicit branch lineage to legacy `evap` + `swu` routines. | hard-fail | REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-014 | HPHYS0242 hourly ET/infiltration ordering invariant: hourly-lane ET must execute only after the same-day WB14 infiltration and WB18 percolation lineage has mutated layer state, and stage-memory/soil-extraction logic must consume same-pass infiltration lineage rather than stale `wb12_infiltration` compatibility state. Missing or conflicting same-pass infiltration lineage is a typed hard failure, not a zero/default substitution. | hard-fail | REF-EVAP-LEGACY-HOURLY-ORDER, REF-EVAP-LEGACY-STAGE, REF-EVAP-LEGACY-SOILX, REF-EVAP-CH5-DIST, SC-WATBAL-001#INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-015 | HPHYS0249 WB17 layer-storage invariant: promoted WB17 `Ep`/`Es` evidence must mutate runtime layer storage (`wb18_perc_theta_####` as the openWEPP alias for baseline `st(i)`) for upper-zone soil evaporation (`evap.for:618-668`) before WB19 and for root uptake (`swu.for:122-187`) after WB19 drainage/lateral mutation before recomputing final `wb11_soil_water`. Scalar-only subtraction from `wb11_soil_water`, LAI-only `exp(-0.4*lai)` soil partitioning, root uptake ahead of WB19, or root uptake that bypasses `rtd`/`wb18_perc_ul_####` is non-authoritative. | hard-fail | REF-EVAP-LEGACY-SOILX, REF-EVAP-LEGACY-SWU, REF-EVAP-LEGACY-HOURLY-ORDER, SC-WATBAL-001#INV-WATBAL-037 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -190,6 +203,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-012` | runtime | WB17 ET guard table (`HKERNEL-WB11-ET-E-001..003`) | Typed hard error on missing/non-finite/domain-invalid ET inputs/outputs | Tier-A gate | `[INFERENCE][Static]` |
 | `INV-EVAP-013` | runtime + governance | Stage-memory/root-uptake lineage validator for legacy `evap` + `swu` authority closure | Typed hard error / explicit `HOLD` when stage-memory, depth extraction, or `UPi`/`Ui` lineage semantics are missing or contradicted | SIMIMPL ET migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-014` | runtime + governance | WB17 scheduler-order validator plus same-pass infiltration-lineage resolver | Typed hard error / explicit `HOLD` when hourly ET runs before WB14/WB18 lineage, consumes stale compatibility infiltration, or silently defaults missing infiltration lineage to zero | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-015` | runtime + governance | WB17 layer-storage ET lineage validator across soil evaporation, `swu` uptake, and aggregate writeback | Typed hard error / explicit `HOLD` when WB17 emits `Ep`/`Es` from scalar-only storage, bypasses `wb18_perc_theta_####`, or fails to recompute aggregate storage after layer mutation | HPHYS0249 WB17/storage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -201,11 +215,14 @@ equation vectors.
 |---|---|---|---|---|
 | `Eu` | `wb11_et_demand` | ET demand surface consumed by WB17 partition runtime | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
 | `L` | `lai` | LAI-driven partition surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
+| `cv` | `cancov` | baseline canopy-cover surface consumed by `eaj = exp(-0.5*(cv+0.1))` | fraction preserved | `[DIRECT][Static]` |
 | `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | residue evaporation partition surface | `m d^-1` -> `m` daily flux output | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Esp`, `Etp`, `Es`, `Ep` | `Esp`, `Etp` (derived runtime), `Es`, `Ep` (flux outputs) | ET partition and component output surfaces | `m d^-1` potential -> `m` daily component flux outputs | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `s1`, `s2`, `tu`, `tv` | identity names (canonical stage-memory surface family) | stage-transition memory and threshold state | `m` / `d` preserved | `[DIRECT][Static]` |
 | `dx`, `ds`, `UPi`, `Ui` | identity names | root-zone distribution and uptake surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
-| `Θ`, `Θi`, `Θr`, `Θc`, `ULi` | identity names | soil-water state surfaces used by ET | chapter-declared units preserved | `[DIRECT][Static]` |
+| `st(i)`, `Θi` | `wb18_perc_theta_####` | baseline layer storage mutated by evaporation, transpiration, percolation, lateral flow, and aggregate recomputation | `m` preserved | `[DIRECT][Static]` |
+| `dg(i)` | `dg_####` | layer thickness/depth increment used for depth partitioning and aggregate recomputation | `m` preserved | `[DIRECT][Static]` |
+| `thetdr(i)`, `ULi` | `thetdr_####`, `wb18_perc_ul_####` | residual and upper-limit layer surfaces used by ET and aggregate recomputation | `m^3 m^-3` / `m` preserved | `[DIRECT][Static]` |
 | `Ws` | identity name | ET-to-plant stress boundary surface | `fraction` preserved | `[DIRECT][Static]` |
 | `ET` | identity name | ET-to-water-balance closure boundary surface | `m` preserved | `[DIRECT][Static]` |
 | `F` | `wb12_infiltration` or WB14 same-pass infiltration lineage | ET stage-memory reset and soil-water availability driver under hourly cadence | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -267,8 +284,13 @@ equation vectors.
 | `WB11_ET_GUARD_MISSING` | status message id | `HKERNEL-WB11-ET-E-001` | Typed missing-input guard code | REF-EVAP-PHYS-BOUNDS |
 | `WB11_ET_GUARD_NONFINITE` | status message id | `HKERNEL-WB11-ET-E-002` | Typed non-finite guard code | REF-EVAP-PHYS-BOUNDS |
 | `WB11_ET_GUARD_DOMAIN` | status message id | `HKERNEL-WB11-ET-E-003` | Typed domain guard code | REF-EVAP-PHYS-BOUNDS |
-| `WB17_PARTITION_EXP_COEFF` | coefficient | `0.4` | WB17 LAI partition coefficient in `Esp = Eu * exp(-0.4 * L)` | REF-EVAP-CH5-PART |
 | `WB17_ETP_ZERO_THRESHOLD` | `m d^-1` | `1e-12` | Explicit zero-demand denominator guard for `Ws` | REF-EVAP-CH5-LINK |
+| `WB17_CANOPY_BARE_SOIL_OFFSET` | coefficient | `0.1` | Baseline uncovered-soil branch offset in `eaj = exp(-0.5*(cv+0.1))` | REF-EVAP-LEGACY-SOILX |
+| `WB17_CANOPY_EAJ_COEFF` | coefficient | `0.5` | Baseline uncovered-soil exponential coefficient in `eaj` | REF-EVAP-LEGACY-SOILX |
+| `WB17_SOIL_EVAP_DEPTH_M` | `m` | `0.10` | Baseline upper-zone soil evaporation depth limit for layer extraction | REF-EVAP-LEGACY-SOILX |
+| `WB17_TRANSPIRATION_LAI_FULL_COVER` | `m^2 m^-2` | `3.0` | Baseline LAI cap for potential transpiration branch | REF-EVAP-LEGACY-SWU |
+| `WB17_SWU_UB` | coefficient | `3.065` | Baseline root-uptake exponential distribution coefficient | REF-EVAP-LEGACY-SWU |
+| `WB17_SWU_UOB` | coefficient | `0.953346` | Baseline root-uptake normalization coefficient | REF-EVAP-LEGACY-SWU |
 
 ## Tolerance and Numeric Notes
 
@@ -302,6 +324,11 @@ Minimum WB17 ET production-kernel conformance vectors:
 6. Root-uptake lineage vector proves depth-aware `UPi`/`Ui` extraction and
    stress ratio lineage (`Ws = ΣUi/Etp`) consistent with baseline `swu`
    semantics.
+7. HPHYS0249 upper-zone soil-evaporation vector proves `Es` extraction mutates
+   `wb18_perc_theta_####` layer storage before `wb11_soil_water` writeback.
+8. HPHYS0249 root-uptake vector proves `Ep` extraction uses `rtd`,
+   `wb18_perc_ul_####`, and `wb18_perc_theta_####` rather than scalar aggregate
+   subtraction.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -383,6 +410,28 @@ Minimum WB17 ET production-kernel conformance vectors:
 4. Contract-derived vectors must include an ET stale-infiltration conflict and
    a scheduler-order proof that ET follows same-day infiltration/percolation.
 
+## HPHYS0249 WB17 Layer-Storage ET Addendum
+
+1. WB17 production authority maps baseline `st(i)` to
+   `wb18_perc_theta_####`. The aggregate `wb11_soil_water` is a recomputed
+   consequence of layer mutation, not the primary ET extraction state.
+2. Soil evaporation follows baseline `evap.for` lineage: `eaj =
+   exp(-0.5*(cancov+0.1))`, residue interception is removed before stage
+   evaluation, residue evaporation is split back out, and the remaining soil
+   evaporation demand is withdrawn from the upper `0.10 m` of layer storage.
+3. Plant transpiration follows baseline `swu.for` lineage after WB19
+   drainage/lateral mutation when `Etp > 0` and `rtd > 0`: uptake is
+   distributed by root-depth weighting, reduced by
+   `pltol * wb18_perc_ul_i` deficit scaling when applicable, capped by
+   available `wb18_perc_theta_i`, and accumulated into `Ws = ΣUi / Etp`.
+4. After WB17 soil evaporation and after post-WB19 root uptake,
+   `wb11_soil_water` must be recomputed from
+   `wb18_perc_theta_####`, `thetdr_####`, `dg_####`, and optional frozen-depth
+   surfaces using the same lineage as `SC-WATBAL-001#INV-WATBAL-037`.
+5. Contract-derived vectors must include a soil-evaporation layer-mutation
+   case and a root-uptake layer-mutation case before production code edits are
+   promotable.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -391,12 +440,13 @@ Minimum WB17 ET production-kernel conformance vectors:
 | GAP-EVAP-002 | WB17 now fixes executed runtime aliases for `Eu`, `L`, and residue-partition ET symbols, but cross-domain alias harmonization for full Chapter-5 ET variable family remains incomplete. | Partial alias closure still leaves downstream harmonization risk. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-EVAP-003 | Companion contracts (`SC-PERC-001`, `SC-SUBHYD-001`, `SC-RESIDUE-001`) are not fully authored, so coupled ownership boundaries remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-EVAP-004 | Chapter-5 validation emphasizes total ET and water-balance behavior; component-level partition validation (`Esp` vs `Etp` vs stage transitions) is not fully separated in available cited evidence. | Partition-subcomponent confidence is lower than aggregate ET confidence until dedicated evidence is added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
-| GAP-EVAP-005 | Canonical authority now explicitly defines legacy stage-memory/state-transition and `swu` uptake lineage (`s1`, `s2`, `tu`, `tv`, `UPi`, `Ui`), but production WB17 runtime projection of these surfaces remains pending. | Contract authority is closed for SIMIMPL21; implementation promotability remains blocked until SIMIMPL23 runtime migration and SIMIMPL22 contract-derived tests land. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-EVAP-005 | Canonical authority now explicitly defines legacy stage-memory/state-transition, layer `st(i)` extraction, and `swu` uptake lineage (`s1`, `s2`, `tu`, `tv`, `UPi`, `Ui`), but full production WB17 runtime parity remains pending until HPHYS0249 implementation/test evidence closes layer-storage extraction and remaining snow/runtime coupling residuals are dispositioned. | Contract authority is closed for WB17 layer-first migration; implementation promotability remains blocked until HPHYS0249 evidence lands and residual families are not in known violation. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `10` | `Codex` | HPHYS0249 amendment: added `INV-EVAP-015` requiring WB17 `Ep`/`Es` production to mutate `wb18_perc_theta_####` layer storage using baseline `evap.for` and `swu.for` lineage before aggregate `wb11_soil_water` writeback. |
 | `2026-06-01` | `9` | `Codex` | HPHYS0242 amendment: added `INV-EVAP-014`, baseline hourly final-hour ET ordering authority, same-pass WB14 infiltration lineage requirements, and stale/default infiltration rejection posture for hourly ET lanes. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-07 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-5/8 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-07 review cycle. |

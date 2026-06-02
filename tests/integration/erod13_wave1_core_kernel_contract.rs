@@ -33,6 +33,8 @@ fn seeded_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
 
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),
@@ -201,7 +203,7 @@ fn seeded_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(11.709_931_093_255_933),
+        BoundaryValue::scalar(12.614_313_665_345_967),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),

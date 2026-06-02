@@ -1,8 +1,11 @@
 use openwepp_hillslope_orchestrator::{
     HillslopePhase, HillslopePhaseGraph, HillslopePhaseScheduler, HillslopeWritebackSurface,
-    Wb11HydrologyKernel,
+    Wb11HydrologyKernel, hillslope_consumer_adapter_for_phase,
 };
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, HillslopeKernel, HillslopeKernelPhaseClass,
+    HillslopeKernelRequest, KernelRunResponse, WritebackField,
+};
 use openwepp_sim_contract::status::BoundaryClass;
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 
@@ -34,6 +37,8 @@ fn seeded_wb17_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
 
     // WB17 ET runtime inputs.
@@ -253,62 +258,322 @@ fn seeded_wb17_surface() -> HillslopeWritebackSurface {
     }
 }
 
+fn run_wb17_phase(surface: &HillslopeWritebackSurface) -> KernelRunResponse {
+    let request = HillslopeKernelRequest::with_phase_context(
+        HillslopePhase::Evapotranspiration.as_str(),
+        HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+        hillslope_consumer_adapter_for_phase(HillslopePhase::Evapotranspiration),
+        None,
+        &surface.state_surface,
+        &surface.flux_surface,
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    kernel.run_hillslope_phase(&request)
+}
+
+fn run_wb17_root_uptake_phase(surface: &HillslopeWritebackSurface) -> KernelRunResponse {
+    let request = HillslopeKernelRequest::with_phase_context(
+        HillslopePhase::PlantRootUptake.as_str(),
+        HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
+        hillslope_consumer_adapter_for_phase(HillslopePhase::PlantRootUptake),
+        None,
+        &surface.state_surface,
+        &surface.flux_surface,
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    kernel.run_hillslope_phase(&request)
+}
+
+fn state_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
+    let target = BoundarySymbol::from(symbol);
+    fields.iter().find_map(|field| {
+        if field.symbol == target {
+            Some(field.value.as_f64())
+        } else {
+            None
+        }
+    })
+}
+
+fn flux_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
+    state_update_scalar(fields, symbol)
+}
+
 #[test]
 fn wb17_contract_conformance_emits_partitioned_et_components() {
-    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
-    let topology_report =
-        validate_pre_execution_topology(&graph).expect("topology report should build");
-    let scheduler = HillslopePhaseScheduler::canonical();
-    let mut kernel = Wb11HydrologyKernel;
+    let surface = seeded_wb17_surface();
+    let response = run_wb17_phase(&surface);
 
-    let report = scheduler
-        .execute_with_kernel(&topology_report, &mut kernel, seeded_wb17_surface())
-        .expect("wb17 execution should return typed report");
+    let et =
+        flux_update_scalar(&response.writeback.flux_updates, "ET").expect("ET should be present");
+    let ws =
+        flux_update_scalar(&response.writeback.flux_updates, "Ws").expect("Ws should be present");
+    let ep =
+        flux_update_scalar(&response.writeback.flux_updates, "Ep").expect("Ep should be present");
+    let es =
+        flux_update_scalar(&response.writeback.flux_updates, "Es").expect("Es should be present");
+    let er =
+        flux_update_scalar(&response.writeback.flux_updates, "Er").expect("Er should be present");
 
-    let et = report
-        .writeback_surface
-        .flux_surface
-        .get(&BoundarySymbol::from("ET"))
-        .expect("ET should be present")
-        .as_f64();
-    let ws = report
-        .writeback_surface
-        .flux_surface
-        .get(&BoundarySymbol::from("Ws"))
-        .expect("Ws should be present")
-        .as_f64();
-    let ep = report
-        .writeback_surface
-        .flux_surface
-        .get(&BoundarySymbol::from("Ep"))
-        .expect("Ep should be present")
-        .as_f64();
-    let es = report
-        .writeback_surface
-        .flux_surface
-        .get(&BoundarySymbol::from("Es"))
-        .expect("Es should be present")
-        .as_f64();
-    let er = report
-        .writeback_surface
-        .flux_surface
-        .get(&BoundarySymbol::from("Er"))
-        .expect("Er should be present")
-        .as_f64();
-
-    assert!((et - 0.25).abs() <= TOL);
-    assert!(ws.abs() <= TOL);
+    assert!((et - 0.15).abs() <= TOL);
+    assert!((ws - 1.0).abs() <= TOL);
     assert!(ep.abs() <= TOL);
-    assert!((es - 0.2).abs() <= TOL);
+    assert!((es - 0.1).abs() <= TOL);
     assert!((er - 0.05).abs() <= TOL);
 
-    let soil_water_after = report
-        .writeback_surface
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("wb11_soil_water should be present");
+    assert!((soil_water_after - 0.1).abs() <= TOL);
+}
+
+#[test]
+fn hphys0249_wb17_soil_evaporation_mutates_layer_storage_before_aggregate_writeback() {
+    let mut surface = seeded_wb17_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.11),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.04),
+    );
+    surface
         .state_surface
-        .get(&BoundarySymbol::from("wb11_soil_water"))
-        .expect("wb11_soil_water should be present")
-        .as_f64();
-    assert!(soil_water_after.abs() <= TOL);
+        .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.03),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.08),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+
+    let response = run_wb17_phase(&surface);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let expected_soil_evaporation = 0.04 * (-0.5_f64 * 0.1).exp();
+    let expected_layer_1 = 0.0;
+    let expected_layer_2 = 0.08 - (expected_soil_evaporation - 0.03);
+    let expected_soil_water = expected_layer_1 + expected_layer_2;
+
+    let layer_1_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB17 must publish layer 1 storage after soil evaporation");
+    let layer_2_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+            .expect("WB17 must publish layer 2 storage after soil evaporation");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB17 must publish aggregate soil water after layer extraction");
+    let es = flux_update_scalar(&response.writeback.flux_updates, "Es")
+        .expect("WB17 must publish soil evaporation");
+
+    assert!((layer_1_after - expected_layer_1).abs() <= TOL);
+    assert!((layer_2_after - expected_layer_2).abs() <= TOL);
+    assert!((soil_water_after - expected_soil_water).abs() <= TOL);
+    assert!((es - expected_soil_evaporation).abs() <= TOL);
+}
+
+#[test]
+fn hphys0249_wb17_soil_evaporation_aggregate_includes_residual_and_frozen_depth_terms() {
+    let mut surface = seeded_wb17_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.1138),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.04),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.03),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.08),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));
+    surface.state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.01),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.02),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frozen_depth_0001"),
+        BoundaryValue::scalar(0.01),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frozen_depth_0002"),
+        BoundaryValue::scalar(0.03),
+    );
+
+    let response = run_wb17_phase(&surface);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let expected_soil_evaporation = 0.04 * (-0.5_f64 * 0.1).exp();
+    let expected_layer_1 = 0.0;
+    let expected_layer_2 = 0.08 - (expected_soil_evaporation - 0.03);
+    let expected_soil_water =
+        expected_layer_1 + 0.01 * (0.05 - 0.01) + expected_layer_2 + 0.02 * (0.20 - 0.03);
+    let theta_only = expected_layer_1 + expected_layer_2;
+
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB17 must publish aggregate soil water after layer extraction");
+
+    assert!((soil_water_after - expected_soil_water).abs() <= TOL);
+    assert!((soil_water_after - theta_only).abs() > TOL);
+}
+
+#[test]
+fn hphys0249_wb17_residue_remainder_adds_back_to_top_layer_and_clears_interception() {
+    let mut surface = seeded_wb17_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.02),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(3.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.05),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.01),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.08),
+    );
+
+    let response = run_wb17_phase(&surface);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let layer_1_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB17 must publish top-layer storage after residue add-back");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB17 must publish aggregate soil water after residue add-back");
+    let residue_state_after = state_update_scalar(
+        &response.writeback.state_updates,
+        "wb17_residue_interception",
+    )
+    .expect("WB17 must clear residue interception after same-day handling");
+    let et =
+        flux_update_scalar(&response.writeback.flux_updates, "ET").expect("ET should be present");
+    let es =
+        flux_update_scalar(&response.writeback.flux_updates, "Es").expect("Es should be present");
+    let er =
+        flux_update_scalar(&response.writeback.flux_updates, "Er").expect("Er should be present");
+
+    assert!((layer_1_after - 0.06).abs() <= TOL);
+    assert!((soil_water_after - 0.14).abs() <= TOL);
+    assert!(residue_state_after.abs() <= TOL);
+    assert!(et.abs() <= TOL);
+    assert!(es.abs() <= TOL);
+    assert!(er.abs() <= TOL);
+}
+
+#[test]
+fn hphys0249_wb17_root_uptake_mutates_layer_storage_and_stress_from_swu_lineage() {
+    let mut surface = seeded_wb17_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.008),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.20));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
+    for layer in 1..=2 {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_theta_{layer:04}")),
+            BoundaryValue::scalar(0.004),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_ul_{layer:04}")),
+            BoundaryValue::scalar(0.02),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("dg_{layer:04}")),
+            BoundaryValue::scalar(0.10),
+        );
+    }
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("ET"), BoundaryValue::scalar(0.0));
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("Etp"), BoundaryValue::scalar(0.006));
+
+    let response = run_wb17_root_uptake_phase(&surface);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB17-SWU-OK-001");
+    let expected_layer_1_uptake = 0.003_947_385_293_021_583_f64;
+    let expected_layer_2_uptake = 0.000_852_615_503_174_695_3_f64;
+    let expected_ep = expected_layer_1_uptake + expected_layer_2_uptake;
+    let expected_ws = expected_ep / 0.006;
+    let layer_1_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB17 must publish layer 1 storage after root uptake");
+    let layer_2_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+            .expect("WB17 must publish layer 2 storage after root uptake");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB17 must publish aggregate soil water after root uptake");
+    let ep = flux_update_scalar(&response.writeback.flux_updates, "Ep")
+        .expect("WB17 must publish plant transpiration");
+    let ws = flux_update_scalar(&response.writeback.flux_updates, "Ws")
+        .expect("WB17 must publish water stress");
+
+    assert!((layer_1_after - (0.004 - expected_layer_1_uptake)).abs() <= TOL);
+    assert!((layer_2_after - (0.004 - expected_layer_2_uptake)).abs() <= TOL);
+    assert!((soil_water_after - (0.008 - expected_ep)).abs() <= TOL);
+    assert!((ep - expected_ep).abs() <= TOL);
+    assert!((ws - expected_ws).abs() <= TOL);
 }
 
 #[test]
@@ -438,5 +703,9 @@ fn hphys0242_contract_wb17_et_executes_after_same_pass_percolation_before_wb19_t
     assert!(
         phase_index(HillslopePhase::Evapotranspiration) < phase_index(HillslopePhase::Drainage),
         "HPHYS0242 requires ET before the hourly WB19 drainage/lateral tail"
+    );
+    assert!(
+        phase_index(HillslopePhase::LateralTransfer) < phase_index(HillslopePhase::PlantRootUptake),
+        "HPHYS0249 requires SWU/root uptake after the hourly WB19 drainage/lateral tail"
     );
 }

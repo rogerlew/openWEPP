@@ -1,0 +1,58 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.83s
+     Running tests/integration/erod14_wave2_multiofe_enrichment_kernel_contract.rs (target/debug/deps/erod14_wave2_multiofe_enrichment_kernel_contract-9b3c03a5b52bf778)
+
+running 14 tests
+test erod14_contract_vector_rejects_missing_required_symbol ... ok
+test erod14_contract_vector_rejects_case_classification_mismatch ... ok
+test erod14_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod14_contract_vector_case_four_zero_outflow_emits_zero_class_fractions ... ok
+test erod14_contract_vector_accepts_all_class_sedmax_saturation ... ok
+test erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs ... ok
+test erod18_contract_route_topology_rejects_domain_violation ... ok
+test erod18_contract_route_topology_rejects_missing_required_symbol ... ok
+test erod18_contract_route_topology_rejects_non_finite_required_symbol ... ok
+test erod17_contract_route_branch_seam_vector_requires_core_publication_family ... ok
+test erod17_contract_mshear_dispatch_vector_requires_segment_case_publication ... ok
+test erod17_contract_qostar_threshold_vector_requires_upper_boundary_branch_divergence ... ok
+test erod17_contract_ndep_followup_vector_requires_post_detachment_deposition_path ... ok
+test erod17_contract_deposition_end_vector_requires_xdend_publication ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/irrig10_irrigation_runtime_kernel_contract.rs (target/debug/deps/irrig10_irrigation_runtime_kernel_contract-d9fb842782ad7446)
+
+running 3 tests
+test irrig10_contract_vector_missing_schedule_day_symbol_is_typed ... ok
+test irrig10_depletion_contract_vector_activates_period_trigger ... ok
+test irrig10_fixeddate_contract_vector_couples_irrigation_depth_into_runoff_and_storage ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs (target/debug/deps/wb14_infiltration_hyetograph_kernel_contract-a95175f6d853bade)
+
+running 11 tests
+
+thread 'hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state' (1857263) panicked at tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs:995:5:
+storage closure must consume Q derived from carryover flux, observed 12.61431366535522
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test hphys0240_contract_wb14_rejects_non_finite_runoff_carryover_flux ... ok
+test hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state ... FAILED
+test wb14_contract_conformance_applies_ksatadj_9002_regime ... ok
+test hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback ... ok
+test wb14_contract_conformance_computes_infiltration_from_hyetograph ... ok
+test wb14_contract_conformance_rejects_active_9001_zero_ksatrec ... ok
+test wb14_contract_conformance_rejects_missing_hyetograph_symbol ... ok
+test wb14_contract_conformance_rejects_non_monotone_hyetograph_time ... ok
+test wb14_contract_conformance_normalizes_within_tolerance_negative_runoff_before_writeback ... ok
+test wb14_contract_conformance_applies_ksatadj_9001_regime ... ok
+test wb14_contract_conformance_applies_ksatadj_9003_burn_floor ... ok
+
+failures:
+
+failures:
+    hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state
+
+test result: FAILED. 10 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `--test wb14_infiltration_hyetograph_kernel_contract`

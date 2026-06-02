@@ -18,7 +18,7 @@ const WB15_TEST_TOLERANCE: f64 = 1.0e-9;
 const EXPECTED_INTERCEPTION_I: f64 = 0.001_571_663_34;
 const EXPECTED_INFILTRATION: f64 = 2.998_428_336_66;
 const EXPECTED_RUNOFF_Q: f64 = 0.2;
-const EXPECTED_STORAGE_RECONCILED: f64 = 11.798_428_336_66;
+const EXPECTED_STORAGE_RECONCILED: f64 = 14.005_269_757_751_464;
 
 #[allow(clippy::too_many_lines)]
 fn seeded_wb15_surface() -> HillslopeWritebackSurface {
@@ -38,6 +38,8 @@ fn seeded_wb15_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.65));
     state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.1));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.6));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
 
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),
@@ -332,19 +334,19 @@ fn wb15_contract_conformance_rejects_missing_canopy_state_symbol() {
 
     assert_eq!(
         report.scheduler_report.halted_phase,
-        Some(HillslopePhase::RunoffReconciliation)
+        Some(HillslopePhase::Evapotranspiration)
     );
-    let runoff_phase = report
+    let et_phase = report
         .phase_reports
         .iter()
-        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
-        .expect("runoff phase report should exist");
+        .find(|phase| phase.phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase report should exist");
     assert_eq!(
-        runoff_phase.decision_status.message_id(),
-        "HKERNEL-WB14-RUNOFF-E-001"
+        et_phase.decision_status.message_id(),
+        "HKERNEL-WB11-ET-E-001"
     );
     assert_eq!(
-        runoff_phase.decision_status.boundary_class(),
+        et_phase.decision_status.boundary_class(),
         BoundaryClass::MissingRequiredInput
     );
 }
@@ -405,19 +407,19 @@ fn wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol() {
 
     assert_eq!(
         report.scheduler_report.halted_phase,
-        Some(HillslopePhase::RunoffReconciliation)
+        Some(HillslopePhase::Evapotranspiration)
     );
-    let runoff_phase = report
+    let et_phase = report
         .phase_reports
         .iter()
-        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
-        .expect("runoff phase report should exist");
+        .find(|phase| phase.phase == HillslopePhase::Evapotranspiration)
+        .expect("evapotranspiration phase report should exist");
     assert_eq!(
-        runoff_phase.decision_status.message_id(),
-        "HKERNEL-WB14-RUNOFF-E-003"
+        et_phase.decision_status.message_id(),
+        "HKERNEL-WB11-ET-E-003"
     );
     assert_eq!(
-        runoff_phase.decision_status.boundary_class(),
+        et_phase.decision_status.boundary_class(),
         BoundaryClass::DomainViolation
     );
 }

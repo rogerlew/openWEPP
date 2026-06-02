@@ -17,6 +17,7 @@ pub(crate) enum HydrologyPhaseDispatch {
     PercolationDeepSeepage,
     LateralTransfer,
     Drainage,
+    PlantRootUptake,
     RunoffReconciliation,
     StorageReconciliation,
     PeakRunoff,
@@ -102,6 +103,7 @@ pub(crate) const fn hillslope_phase_class_for_phase(
         }
         HillslopePhase::LateralTransfer => HillslopeKernelPhaseClass::HydrologyLateralTransfer,
         HillslopePhase::Drainage => HillslopeKernelPhaseClass::HydrologyDrainage,
+        HillslopePhase::PlantRootUptake => HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
         HillslopePhase::RunoffReconciliation => {
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation
         }
@@ -137,6 +139,10 @@ pub(crate) fn hydrology_phase_dispatch_for_phase(
             Ok(HydrologyPhaseDispatch::Drainage)
         }
         (
+            HillslopePhase::PlantRootUptake,
+            HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
+        ) => Ok(HydrologyPhaseDispatch::PlantRootUptake),
+        (
             HillslopePhase::RunoffReconciliation,
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
         ) => Ok(HydrologyPhaseDispatch::RunoffReconciliation),
@@ -150,4 +156,3 @@ pub(crate) fn hydrology_phase_dispatch_for_phase(
         _ => Err(HillslopeHydrologyRoutingError::UnsupportedPhaseClass { phase, phase_class }),
     }
 }
-

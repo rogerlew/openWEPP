@@ -1,0 +1,22 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/wb16_peak_runoff_kernel_contract.rs (target/debug/deps/wb16_peak_runoff_kernel_contract-b4eafdc581c78d90)
+
+running 6 tests
+test wb16_contract_conformance_rejects_missing_peak_symbol ... ok
+test wb16_contract_conformance_accepts_near_zero_positive_runoff_with_floor_canonicalization ... ok
+test wb16_contract_conformance_rejects_non_finite_peak_symbol ... ok
+test wb16_contract_conformance_rejects_out_of_domain_peak_symbol ... ok
+test wb16_contract_conformance_executes_without_timep_symbol ... ok
+test wb16_contract_conformance_emits_peak_runoff_outputs_with_branch_authority ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/wb20_forward_water_balance_solver_lane_contract.rs (target/debug/deps/wb20_forward_water_balance_solver_lane_contract-8ef0a3593195c193)
+
+running 3 tests
+test wb20_contract_conformance_compatibility_lane_keeps_observed_closure_path ... ok
+test wb20_contract_conformance_rejects_invalid_lane_selector_domain ... ok
+test wb20_contract_conformance_forward_lane_excludes_observed_targets ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

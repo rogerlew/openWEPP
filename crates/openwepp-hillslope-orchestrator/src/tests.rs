@@ -976,7 +976,7 @@ fn canonical_graph_order_is_deterministic() {
         Vec::from(HillslopePhaseGraph::canonical_order()),
         "ARCH05 requires explicit deterministic scheduler order"
     );
-    assert_eq!(graph.dependency_edges().len(), 12);
+    assert_eq!(graph.dependency_edges().len(), 13);
 }
 
 #[test]
@@ -1169,6 +1169,10 @@ fn consumer_adapter_mapping_matches_phase_contract() {
         HillslopeConsumerAdapter::Watbal
     );
     assert_eq!(
+        hillslope_consumer_adapter_for_phase(HillslopePhase::PlantRootUptake),
+        HillslopeConsumerAdapter::Watbal
+    );
+    assert_eq!(
         hillslope_consumer_adapter_for_phase(HillslopePhase::Drainage),
         HillslopeConsumerAdapter::Perc
     );
@@ -1204,6 +1208,7 @@ fn wb10_contract_conformance_hydrology_phase_classes_are_not_generic() {
                     | "percolation_deep_seepage"
                     | "lateral_transfer"
                     | "drainage"
+                    | "plant_root_uptake"
                     | "runoff_reconciliation"
                     | "storage_reconciliation"
                     | "closure_diagnostics"
@@ -1250,6 +1255,10 @@ fn wb10_contract_conformance_hydrology_phase_classes_are_not_generic() {
     assert_eq!(
         kernel.observed_phase_classes.get("drainage"),
         Some(&"hydrology_drainage".to_owned())
+    );
+    assert_eq!(
+        kernel.observed_phase_classes.get("plant_root_uptake"),
+        Some(&"hydrology_plant_root_uptake".to_owned())
     );
     assert_eq!(
         kernel.observed_phase_classes.get("runoff_reconciliation"),
@@ -2551,13 +2560,16 @@ fn execute_with_kernel_applies_writeback_updates() {
     assert!(report.phase_reports.iter().all(|phase| {
         phase.decision_outcome == WritebackDecisionOutcome::Apply && phase.apply_result.is_some()
     }));
+    let phase_count =
+        u32::try_from(HillslopePhaseGraph::canonical_order().len()).expect("phase count fits u32");
+    let final_call_value = f64::from(phase_count);
     assert_eq!(
         report
             .writeback_surface
             .state_surface
             .get(&BoundarySymbol::from("soil_storage"))
             .copied(),
-        Some(BoundaryValue::from(13.0))
+        Some(BoundaryValue::from(final_call_value))
     );
     assert_eq!(
         report
@@ -2565,7 +2577,7 @@ fn execute_with_kernel_applies_writeback_updates() {
             .flux_surface
             .get(&BoundarySymbol::from("runoff_total"))
             .copied(),
-        Some(BoundaryValue::from(3.25))
+        Some(BoundaryValue::from(final_call_value * 0.25))
     );
 }
 
@@ -2613,8 +2625,14 @@ fn execute_with_kernel_lends_stable_surface_references() {
         .expect("kernel execution should succeed");
 
     assert!(report.scheduler_report.is_success());
-    assert_eq!(kernel.state_surface_ptrs.len(), 13);
-    assert_eq!(kernel.flux_surface_ptrs.len(), 13);
+    assert_eq!(
+        kernel.state_surface_ptrs.len(),
+        HillslopePhaseGraph::canonical_order().len()
+    );
+    assert_eq!(
+        kernel.flux_surface_ptrs.len(),
+        HillslopePhaseGraph::canonical_order().len()
+    );
     assert!(
         kernel
             .state_surface_ptrs

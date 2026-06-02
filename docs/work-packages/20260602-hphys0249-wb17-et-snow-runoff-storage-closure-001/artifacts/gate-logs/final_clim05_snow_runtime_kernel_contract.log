@@ -1,0 +1,14 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.51s
+     Running tests/integration/clim05_snow_runtime_kernel_contract.rs (target/debug/deps/clim05_snow_runtime_kernel_contract-262eda60ba29d684)
+
+running 6 tests
+test clim05_contract_conformance_rejects_non_finite_active_snow_control_symbol ... ok
+test clim05_contract_conformance_rejects_missing_active_snow_control_symbol ... ok
+test clim05_contract_conformance_rejects_invalid_active_snow_control_domain ... ok
+test simimpl29_contract_conformance_rejects_missing_hourly_snow_kernel_symbol ... ok
+test clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliation ... ok
+test clim05_contract_conformance_cold_trigger_runs_snow_without_sidecar_gate ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

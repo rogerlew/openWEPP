@@ -73,7 +73,11 @@ fn hillslope_writeback_success_applies_updates() {
         .expect("kernel execution should succeed");
 
     assert!(report.scheduler_report.is_success());
-    assert_eq!(report.phase_reports.len(), 13);
+    assert_eq!(
+        report.phase_reports.len(),
+        report.scheduler_report.executed_phases().len()
+    );
+    let phase_count = u32::try_from(report.phase_reports.len()).expect("phase count fits u32");
     assert!(
         report
             .phase_reports
@@ -86,7 +90,7 @@ fn hillslope_writeback_success_applies_updates() {
             .state_surface
             .get(&BoundarySymbol::from("st"))
             .copied(),
-        Some(BoundaryValue::from(13.0))
+        Some(BoundaryValue::from(f64::from(phase_count)))
     );
     assert_eq!(
         report
@@ -94,7 +98,7 @@ fn hillslope_writeback_success_applies_updates() {
             .flux_surface
             .get(&BoundarySymbol::from("qout"))
             .copied(),
-        Some(BoundaryValue::from(1.3))
+        Some(BoundaryValue::from(f64::from(phase_count) * 0.1))
     );
 }
 

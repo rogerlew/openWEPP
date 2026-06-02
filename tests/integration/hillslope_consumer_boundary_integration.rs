@@ -171,18 +171,23 @@ fn missing_runoff_slope_symbol_fails_at_runoff_reconciliation_boundary() {
         report.scheduler_report.halted_phase,
         Some(HillslopePhase::RunoffReconciliation)
     );
-    assert_eq!(kernel.invocation_count, 10);
-    assert_eq!(report.phase_reports.len(), 11);
+    let runoff_rank = HillslopePhase::RunoffReconciliation.rank();
+    assert_eq!(kernel.invocation_count, runoff_rank);
+    assert_eq!(report.phase_reports.len(), runoff_rank + 1);
     assert_eq!(
-        report.phase_reports[10].phase,
+        report.phase_reports[runoff_rank].phase,
         HillslopePhase::RunoffReconciliation
     );
     assert_eq!(
-        report.phase_reports[10].decision_status.boundary_class(),
+        report.phase_reports[runoff_rank]
+            .decision_status
+            .boundary_class(),
         BoundaryClass::MissingRequiredInput
     );
     assert_eq!(
-        report.phase_reports[10].decision_status.message_id(),
+        report.phase_reports[runoff_rank]
+            .decision_status
+            .message_id(),
         "HS-CONSUMER-E-001"
     );
 }
@@ -226,6 +231,7 @@ fn phase_from_name(phase_name: &str) -> HillslopePhase {
         "percolation_deep_seepage" => HillslopePhase::PercolationDeepSeepage,
         "lateral_transfer" => HillslopePhase::LateralTransfer,
         "drainage" => HillslopePhase::Drainage,
+        "plant_root_uptake" => HillslopePhase::PlantRootUptake,
         "runoff_reconciliation" => HillslopePhase::RunoffReconciliation,
         "storage_reconciliation" => HillslopePhase::StorageReconciliation,
         "closure_diagnostics" => HillslopePhase::ClosureDiagnostics,

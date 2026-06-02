@@ -11,6 +11,9 @@ impl HillslopeKernel for Wb11HydrologyKernel {
                 Self::run_lateral_transfer(request)
             }
             HillslopeKernelPhaseClass::HydrologyDrainage => Self::run_drainage(request),
+            HillslopeKernelPhaseClass::HydrologyPlantRootUptake => {
+                Self::run_plant_root_uptake(request)
+            }
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => {
                 Self::run_runoff_reconciliation(request)
             }
@@ -40,4 +43,3 @@ impl HillslopeKernel for Wb11HydrologyKernel {
         }
     }
 }
-

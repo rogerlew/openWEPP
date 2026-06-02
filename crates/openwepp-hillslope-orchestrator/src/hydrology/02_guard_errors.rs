@@ -151,6 +151,7 @@ impl Wb11HydrologyKernelGuardError {
             HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage => ("WB11", "PERC"),
             HillslopeKernelPhaseClass::HydrologyLateralTransfer => ("WB11", "LAT"),
             HillslopeKernelPhaseClass::HydrologyDrainage => ("WB11", "DRAIN"),
+            HillslopeKernelPhaseClass::HydrologyPlantRootUptake => ("WB17", "SWU"),
             HillslopeKernelPhaseClass::HydrologyRunoffReconciliation => ("WB14", "RUNOFF"),
             HillslopeKernelPhaseClass::HydrologyStorageReconciliation => ("WB12", "STORAGE"),
             HillslopeKernelPhaseClass::HydrologyPeakRunoff => ("WB16", "PEAK"),

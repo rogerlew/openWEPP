@@ -1,0 +1,49 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/hillslope_consumer_boundary_integration.rs (target/debug/deps/hillslope_consumer_boundary_integration-f43a021baef1bc86)
+
+running 4 tests
+test phase_to_consumer_adapter_contract_remains_stable ... ok
+test missing_soil_consumer_symbol_fails_with_typed_missing_input_status ... ok
+test missing_runoff_slope_symbol_fails_at_runoff_reconciliation_boundary ... ok
+test consumer_adapter_boundaries_receive_runtime_seam_symbols ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/int10_plant_water_coupling_validation_contract.rs (target/debug/deps/int10_plant_water_coupling_validation_contract-d0bb627931a59141)
+
+running 3 tests
+test int10_contract_conformance_rejects_non_finite_coupled_ordering_value ... ok
+test int10_contract_conformance_rejects_missing_growth_to_watbal_ordering_symbol ... ok
+test int10_contract_conformance_validates_coupled_replay_ordering_and_state_transfer ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/wb11_hydrology_kernel_contract.rs (target/debug/deps/wb11_hydrology_kernel_contract-0b2d4e4abee85301)
+
+running 12 tests
+test hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconciliation ... ok
+test hphys0240_contract_wb11_carryover_tail_requires_storage_after_runoff ... ok
+test hphys0242_contract_wb11_hourly_tail_requires_drainage_before_lateral_and_same_pass_storage ... ok
+test simimpl22_contract_wb11_ordering_vector_requires_purk_before_evap ... ok
+test wb11_contract_conformance_rejects_invalid_percolation_fraction ... ok
+test wb11_contract_conformance_rejects_non_finite_et_demand ... ok
+test simimpl22_contract_stage_memory_vector_requires_transitioning_s1_s2_tu_tv ... ok
+test simimpl22_contract_root_uptake_vector_requires_upi_ui_etp_and_ws_lineage ... ok
+test simimpl22_contract_wb13_publication_vector_requires_watcon_alias_lineage ... ok
+test wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces ... ok
+test hphys0241_contract_mofe_hourly_arrays_reject_negative_upstream_payload ... ok
+test hphys0241_contract_mofe_hourly_arrays_drive_runoff_carryover_and_copy_forward ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/wb12_reconciliation_kernel_contract.rs (target/debug/deps/wb12_reconciliation_kernel_contract-5e088336c44e9422)
+
+running 5 tests
+test hphys0242_contract_wb12_storage_tail_depends_on_same_pass_runoff_after_wb19_tail ... ok
+test wb12_contract_conformance_rejects_non_finite_runoff_input ... ok
+test hphys0240_contract_wb12_storage_tail_uses_q_from_same_pass_carryover_flux ... ok
+test wb12_contract_conformance_reconciles_runoff_and_storage_surfaces ... ok
+test wb12_contract_conformance_rejects_storage_closure_delta_over_tolerance ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

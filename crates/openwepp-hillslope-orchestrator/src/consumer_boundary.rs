@@ -662,6 +662,7 @@ pub const fn hillslope_consumer_adapter_for_phase(
         }
         HillslopePhase::Evapotranspiration
         | HillslopePhase::LateralTransfer
+        | HillslopePhase::PlantRootUptake
         | HillslopePhase::StorageReconciliation
         | HillslopePhase::ClosureDiagnostics => HillslopeConsumerAdapter::Watbal,
         HillslopePhase::PercolationDeepSeepage | HillslopePhase::Drainage => {

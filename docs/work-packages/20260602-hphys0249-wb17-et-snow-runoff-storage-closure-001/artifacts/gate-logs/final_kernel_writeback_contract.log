@@ -1,0 +1,12 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running tests/integration/kernel_writeback_contract.rs (target/debug/deps/kernel_writeback_contract-0eb641f7299b887f)
+
+running 4 tests
+test apply_reject_path_propagates_typed_error ... ok
+test reject_status_has_failure_domain_signal ... ok
+test watershed_writeback_reject_keeps_orchestrator_surface_unchanged ... ok
+test hillslope_writeback_success_applies_updates ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

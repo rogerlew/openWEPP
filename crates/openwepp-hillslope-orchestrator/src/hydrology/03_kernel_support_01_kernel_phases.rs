@@ -459,11 +459,12 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyEvapotranspiration;
-        let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        let soil_water_initial =
+            Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,
-            soil_water,
+            soil_water_initial,
             Some(0.0),
             None,
         )?;
@@ -479,6 +480,16 @@ impl Wb11HydrologyKernel {
 
         let lai = Self::require_state_scalar(request, phase_class, WB15_SYMBOL_PLANT_LAI)?;
         Self::require_state_range(phase_class, WB15_SYMBOL_PLANT_LAI, lai, Some(0.0), None)?;
+
+        let canopy_cover =
+            Self::require_state_scalar(request, phase_class, WB15_SYMBOL_PLANT_CANCOV)?;
+        Self::require_state_range(
+            phase_class,
+            WB15_SYMBOL_PLANT_CANCOV,
+            canopy_cover,
+            Some(0.0),
+            Some(WB15_CANCOV_MAX),
+        )?;
 
         let residue_interception =
             Self::require_state_scalar(request, phase_class, WB17_SYMBOL_RESIDUE_INTERCEPTION)?;
@@ -554,8 +565,52 @@ impl Wb11HydrologyKernel {
             }
         };
 
+        let nsl_symbol = BoundarySymbol::from("nsl");
+        let layer_count =
+            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &nsl_symbol)?;
+        if layer_count == 0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: nsl_symbol,
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
+        let mut layer_storage = Vec::with_capacity(layer_count);
+        let mut layer_depth = Vec::with_capacity(layer_count);
+        for layer_index in 1..=layer_count {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
+            let theta =
+                Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &theta_symbol,
+                theta,
+                Some(0.0),
+                None,
+            )?;
+
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &dg_symbol,
+                dg,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            layer_storage.push(theta);
+            layer_depth.push(dg);
+        }
+
         let soil_evaporation_partition_potential =
-            et_demand * (-WB17_LAI_PARTITION_COEFFICIENT * lai).exp();
+            et_demand
+                * (-WB17_CANOPY_EAJ_COEFFICIENT
+                    * (canopy_cover + WB17_CANOPY_BARE_SOIL_OFFSET))
+                    .exp();
         Self::require_flux_range(
             phase_class,
             WB17_SYMBOL_ES,
@@ -564,7 +619,11 @@ impl Wb11HydrologyKernel {
             Some(et_demand),
         )?;
 
-        let transpiration_partition_potential = et_demand - soil_evaporation_partition_potential;
+        let transpiration_partition_potential = if lai > WB17_TRANSPIRATION_LAI_FULL_COVER {
+            et_demand
+        } else {
+            lai * et_demand / WB17_TRANSPIRATION_LAI_FULL_COVER
+        };
         Self::require_flux_range(
             phase_class,
             WB17_SYMBOL_EP,
@@ -712,26 +771,73 @@ impl Wb11HydrologyKernel {
             soil_evaporation_potential
         };
 
-        let soil_evaporation_actual = soil_water.min(soil_evaporation_demand);
-        let soil_after_evaporation = soil_water - soil_evaporation_actual;
-        Self::require_state_range(
-            phase_class,
-            WB11_SYMBOL_SOIL_WATER,
-            soil_after_evaporation,
-            Some(0.0),
-            None,
-        )?;
+        let mut soil_evaporation_with_residue = soil_evaporation_demand + residue_interception;
+        let mut residue_evaporation = residue_interception;
+        let potential_et_before_layer =
+            soil_evaporation_with_residue + transpiration_partition_potential;
+        if et_demand < potential_et_before_layer {
+            soil_evaporation_with_residue =
+                (et_demand - transpiration_partition_potential).max(0.0);
+        }
+        let soil_evaporation_extraction_demand =
+            if soil_evaporation_with_residue < residue_interception {
+                residue_evaporation = soil_evaporation_with_residue.max(0.0);
+                if let Some(top_layer_storage) = layer_storage.first_mut() {
+                    *top_layer_storage += residue_interception - residue_evaporation;
+                }
+                0.0
+            } else {
+                soil_evaporation_with_residue - residue_interception
+            };
 
-        let transpiration_actual = soil_after_evaporation.min(transpiration_partition_potential);
-        Self::require_flux_range(
-            phase_class,
-            WB17_SYMBOL_EP,
-            transpiration_actual,
-            Some(0.0),
-            Some(transpiration_partition_potential),
-        )?;
+        let mut remaining_soil_evaporation = soil_evaporation_extraction_demand;
+        let mut cumulative_depth = 0.0;
+        for (index, storage) in layer_storage.iter_mut().enumerate() {
+            if remaining_soil_evaporation <= WB11_ZERO_THRESHOLD {
+                break;
+            }
+            let previous_depth = cumulative_depth;
+            cumulative_depth += layer_depth[index];
+            if previous_depth >= WB17_SOIL_EVAPORATION_DEPTH_M {
+                break;
+            }
 
-        let soil_water_after = soil_after_evaporation - transpiration_actual;
+            let withdrawable = if cumulative_depth > WB17_SOIL_EVAPORATION_DEPTH_M {
+                let layer_interval = cumulative_depth - previous_depth;
+                if layer_interval <= WB11_ZERO_THRESHOLD {
+                    return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                        phase_class,
+                        symbol: Self::wb19_dg_symbol(index + 1),
+                        value: layer_interval,
+                        minimum: Some(WB11_ZERO_THRESHOLD),
+                        maximum: None,
+                    });
+                }
+                let evaporation_interval =
+                    (WB17_SOIL_EVAPORATION_DEPTH_M - previous_depth).max(0.0);
+                *storage * evaporation_interval / layer_interval
+            } else {
+                *storage
+            };
+
+            if withdrawable > 0.0 {
+                let withdrawn = remaining_soil_evaporation.min(withdrawable);
+                *storage -= withdrawn;
+                remaining_soil_evaporation -= withdrawn;
+                if *storage < 1.0e-10 {
+                    *storage = 0.0;
+                }
+            }
+
+            if cumulative_depth > WB17_SOIL_EVAPORATION_DEPTH_M {
+                break;
+            }
+        }
+        let soil_evaporation_actual =
+            soil_evaporation_extraction_demand - remaining_soil_evaporation;
+
+        let soil_water_after =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,
@@ -740,18 +846,18 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let actual_et = residue_evaporation + soil_evaporation_actual + transpiration_actual;
+        let actual_et = residue_evaporation + soil_evaporation_actual;
         Self::require_flux_range(
             phase_class,
             WB11_SYMBOL_ET,
             actual_et,
             Some(0.0),
-            Some(et_demand),
+            None,
         )?;
 
         let etp = transpiration_partition_potential;
         let upi = etp;
-        let ui = transpiration_actual;
+        let ui = 0.0;
         let etp_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_ETP);
         let uptake_potential_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UPI);
         let uptake_actual_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UI);
@@ -774,14 +880,10 @@ impl Wb11HydrologyKernel {
             &uptake_actual_symbol,
             ui,
             Some(0.0),
-            Some(upi),
+            None,
         )?;
 
-        let ws = if etp <= WB11_ZERO_THRESHOLD {
-            1.0
-        } else {
-            ui / etp
-        };
+        let ws = 1.0;
         Self::require_flux_range(phase_class, WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0))?;
         Self::require_flux_range(
             phase_class,
@@ -809,10 +911,24 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )];
+        state_updates.push(WritebackField::bounded(
+            WB17_SYMBOL_RESIDUE_INTERCEPTION,
+            0.0,
+            Some(0.0),
+            None,
+        ));
         if let Some(infiltration) = same_pass_infiltration {
             state_updates.push(WritebackField::bounded(
                 WB12_SYMBOL_INFILTRATION,
                 infiltration,
+                Some(0.0),
+                None,
+            ));
+        }
+        for (index, value) in layer_storage.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                Self::wb18_perc_state_symbol("theta", index + 1),
+                *value,
                 Some(0.0),
                 None,
             ));
@@ -824,9 +940,252 @@ impl Wb11HydrologyKernel {
             vec![
                 WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
                 WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
-                WritebackField::bounded(WB17_SYMBOL_EP, transpiration_actual, Some(0.0), None),
+                WritebackField::bounded(WB17_SYMBOL_EP, 0.0, Some(0.0), None),
                 WritebackField::bounded(WB17_SYMBOL_ES, soil_evaporation_actual, Some(0.0), None),
                 WritebackField::bounded(WB17_SYMBOL_ER, residue_evaporation, Some(0.0), None),
+                WritebackField::bounded(etp_symbol, etp, Some(0.0), None),
+                WritebackField::bounded(uptake_potential_symbol, upi, Some(0.0), None),
+                WritebackField::bounded(uptake_actual_symbol, ui, Some(0.0), None),
+            ],
+        );
+        Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn run_plant_root_uptake(
+        request: &HillslopeKernelRequest<'_>,
+    ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
+        let phase_class = HillslopeKernelPhaseClass::HydrologyPlantRootUptake;
+        let base_et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
+        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, base_et, Some(0.0), None)?;
+
+        let etp_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_ETP);
+        let etp = Self::require_flux_scalar_for_symbol(request, phase_class, &etp_symbol)?;
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &etp_symbol,
+            etp,
+            Some(0.0),
+            None,
+        )?;
+
+        let nsl_symbol = BoundarySymbol::from("nsl");
+        let layer_count =
+            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &nsl_symbol)?;
+        if layer_count == 0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: nsl_symbol,
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
+        let mut layer_storage = Vec::with_capacity(layer_count);
+        let mut layer_depth = Vec::with_capacity(layer_count);
+        let mut layer_upper_limit = Vec::with_capacity(layer_count);
+        for layer_index in 1..=layer_count {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
+            let theta =
+                Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &theta_symbol,
+                theta,
+                Some(0.0),
+                None,
+            )?;
+
+            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &dg_symbol,
+                dg,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
+            let ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &ul_symbol,
+                ul,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+
+            layer_storage.push(theta);
+            layer_depth.push(dg);
+            layer_upper_limit.push(ul);
+        }
+
+        let root_depth_symbol = BoundarySymbol::from(PL_GROWTH_STATE_RTD_SYMBOL);
+        let root_depth =
+            Self::require_state_scalar_for_symbol(request, phase_class, &root_depth_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &root_depth_symbol,
+            root_depth,
+            Some(0.0),
+            None,
+        )?;
+
+        let plant_tolerance_symbol = BoundarySymbol::from("pltol");
+        let plant_tolerance =
+            Self::require_state_scalar_for_symbol(request, phase_class, &plant_tolerance_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &plant_tolerance_symbol,
+            plant_tolerance,
+            Some(WB17_PLTOL_MIN),
+            Some(WB17_PLTOL_MAX),
+        )?;
+
+        let profile_depth: f64 = layer_depth.iter().sum();
+        let effective_root_depth = root_depth.min(profile_depth);
+        let mut transpiration_actual = 0.0;
+        if etp > WB11_ZERO_THRESHOLD && effective_root_depth > WB11_ZERO_THRESHOLD {
+            let mut rooted_layer_count = layer_count;
+            let mut root_cumulative_depth = 0.0;
+            for (index, depth) in layer_depth.iter().enumerate() {
+                root_cumulative_depth += *depth;
+                if effective_root_depth <= root_cumulative_depth + WB11_ZERO_THRESHOLD {
+                    rooted_layer_count = index + 1;
+                    break;
+                }
+            }
+
+            let uptake_potential_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UPI);
+            let mut previous_cumulative_potential = 0.0;
+            let mut layer_cumulative_depth = 0.0;
+            for index in 0..rooted_layer_count {
+                layer_cumulative_depth += layer_depth[index];
+                let gx = if index + 1 < rooted_layer_count {
+                    layer_cumulative_depth
+                } else {
+                    effective_root_depth
+                };
+                let cumulative_potential = (1.0
+                    - (-WB17_SWU_UB * gx / effective_root_depth).exp())
+                    * etp
+                    / WB17_SWU_UOB;
+                let mut layer_uptake = cumulative_potential - previous_cumulative_potential;
+                if layer_uptake < 0.0 && layer_uptake.abs() <= WB11_ZERO_THRESHOLD {
+                    layer_uptake = 0.0;
+                }
+                Self::require_flux_range_for_symbol(
+                    phase_class,
+                    &uptake_potential_symbol,
+                    layer_uptake,
+                    Some(0.0),
+                    None,
+                )?;
+
+                let stress_threshold = plant_tolerance * layer_upper_limit[index];
+                if layer_storage[index] < stress_threshold {
+                    layer_uptake *= layer_storage[index] / stress_threshold;
+                }
+                if layer_storage[index] < layer_uptake {
+                    layer_uptake = layer_storage[index];
+                }
+                let remaining_transpiration = (etp - transpiration_actual).max(0.0);
+                if layer_uptake > remaining_transpiration {
+                    layer_uptake = remaining_transpiration;
+                }
+                if layer_uptake < 1.0e-10 {
+                    layer_uptake = 0.0;
+                }
+                layer_storage[index] -= layer_uptake;
+                if layer_storage[index] < 1.0e-10 {
+                    layer_storage[index] = 0.0;
+                }
+                transpiration_actual += layer_uptake;
+                previous_cumulative_potential = cumulative_potential;
+            }
+        }
+
+        Self::require_flux_range(
+            phase_class,
+            WB17_SYMBOL_EP,
+            transpiration_actual,
+            Some(0.0),
+            Some(etp),
+        )?;
+
+        let soil_water_after =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )?;
+
+        let actual_et = base_et + transpiration_actual;
+        Self::require_flux_range(
+            phase_class,
+            WB11_SYMBOL_ET,
+            actual_et,
+            Some(0.0),
+            None,
+        )?;
+
+        let uptake_potential_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UPI);
+        let uptake_actual_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UI);
+        let upi = etp;
+        let ui = transpiration_actual;
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &uptake_potential_symbol,
+            upi,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_flux_range_for_symbol(
+            phase_class,
+            &uptake_actual_symbol,
+            ui,
+            Some(0.0),
+            None,
+        )?;
+
+        let ws = if etp <= WB11_ZERO_THRESHOLD || effective_root_depth <= WB11_ZERO_THRESHOLD {
+            1.0
+        } else {
+            (ui / etp).min(1.0)
+        };
+        Self::require_flux_range(phase_class, WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0))?;
+
+        let Ok(status) =
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "HKERNEL-WB17-SWU-OK-001")
+        else {
+            unreachable!("status message ids are non-empty WB17 constants")
+        };
+        let mut state_updates = vec![WritebackField::bounded(
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water_after,
+            Some(0.0),
+            None,
+        )];
+        for (index, value) in layer_storage.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                Self::wb18_perc_state_symbol("theta", index + 1),
+                *value,
+                Some(0.0),
+                None,
+            ));
+        }
+
+        let writeback = KernelWritebackPayload::with_updates(
+            state_updates,
+            vec![
+                WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
+                WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
+                WritebackField::bounded(WB17_SYMBOL_EP, transpiration_actual, Some(0.0), None),
                 WritebackField::bounded(etp_symbol, etp, Some(0.0), None),
                 WritebackField::bounded(uptake_potential_symbol, upi, Some(0.0), None),
                 WritebackField::bounded(uptake_actual_symbol, ui, Some(0.0), None),

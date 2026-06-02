@@ -1,0 +1,12 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running tests/integration/wb15_canopy_interception_kernel_contract.rs (target/debug/deps/wb15_canopy_interception_kernel_contract-303dd23e7ffac599)
+
+running 4 tests
+test wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol ... ok
+test wb15_contract_conformance_rejects_missing_canopy_state_symbol ... ok
+test wb15_contract_conformance_rejects_non_finite_canopy_state_symbol ... ok
+test wb15_contract_conformance_couples_canopy_interception_into_runoff_and_storage_closure ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

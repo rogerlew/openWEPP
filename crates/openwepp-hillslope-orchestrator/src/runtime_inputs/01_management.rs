@@ -116,6 +116,7 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         ("lai", 0.0),
         ("rtmass", 0.0),
         ("rtd", 0.0),
+        ("pltol", 0.25),
         ("hia", 0.0),
     ] {
         pl_growth_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));

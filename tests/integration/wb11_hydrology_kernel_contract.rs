@@ -32,6 +32,8 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
 
     // WB11 kernel state inputs.
@@ -236,6 +238,10 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
         BoundaryValue::scalar(12.5),
     );
     state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
         BoundaryValue::scalar(1.0e-6),
     );
@@ -310,8 +316,8 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
         .expect("wb11_soil_water should be present")
         .as_f64();
     assert!(
-        (wb11_soil_water - 7.0).abs() <= 1.0e-12,
-        "wb11_soil_water must remain at 7.0 within tolerance, observed {wb11_soil_water}"
+        (wb11_soil_water - 7.904_382_572_090_036).abs() <= 1.0e-12,
+        "wb11_soil_water must reflect final post-WB19 aggregate storage, observed {wb11_soil_water}"
     );
     let drainable_storage = report
         .writeback_surface
@@ -330,7 +336,7 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
             .flux_surface
             .get(&BoundarySymbol::from("ET"))
             .copied(),
-        Some(BoundaryValue::scalar(2.0))
+        Some(BoundaryValue::scalar(1.902_458_849_001_428))
     );
     assert_eq!(
         report
@@ -613,6 +619,10 @@ fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconcil
         .iter()
         .position(|phase| *phase == HillslopePhase::LateralTransfer)
         .expect("lateral transfer phase must exist");
+    let root_uptake_index = ordered
+        .iter()
+        .position(|phase| *phase == HillslopePhase::PlantRootUptake)
+        .expect("plant root uptake phase must exist");
     let drainage_index = ordered
         .iter()
         .position(|phase| *phase == HillslopePhase::Drainage)
@@ -630,9 +640,10 @@ fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconcil
         percolation_index < evap_index
             && evap_index < drainage_index
             && drainage_index < lateral_index
-            && lateral_index < runoff_index
+            && lateral_index < root_uptake_index
+            && root_uptake_index < runoff_index
             && runoff_index < storage_index,
-        "canonical hydrology-tail ordering must remain Percolation -> ET -> Drainage -> Lateral -> RunoffReconciliation -> StorageReconciliation"
+        "canonical hydrology-tail ordering must remain Percolation -> ET -> Drainage -> Lateral -> PlantRootUptake -> RunoffReconciliation -> StorageReconciliation"
     );
 
     let graph = HillslopePhaseGraph::canonical();
@@ -657,8 +668,14 @@ fn hphys0239_contract_wb11_hydrology_tail_order_requires_wb19_then_wb12_reconcil
     assert!(
         graph
             .dependencies_for(HillslopePhase::RunoffReconciliation)
+            .contains(&HillslopePhase::PlantRootUptake),
+        "runoff reconciliation must depend on plant root uptake"
+    );
+    assert!(
+        graph
+            .dependencies_for(HillslopePhase::PlantRootUptake)
             .contains(&HillslopePhase::LateralTransfer),
-        "runoff reconciliation must depend on lateral transfer"
+        "plant root uptake must depend on lateral transfer"
     );
     assert!(
         graph
@@ -674,8 +691,8 @@ fn hphys0240_contract_wb11_carryover_tail_requires_storage_after_runoff() {
     assert!(
         graph
             .dependencies_for(HillslopePhase::RunoffReconciliation)
-            .contains(&HillslopePhase::LateralTransfer),
-        "carryover-producing tail must complete WB19 drainage/lateral before runoff reconciliation"
+            .contains(&HillslopePhase::PlantRootUptake),
+        "carryover-producing tail must complete SWU after WB19 before runoff reconciliation"
     );
     assert!(
         graph
@@ -705,10 +722,12 @@ fn hphys0242_contract_wb11_hourly_tail_requires_drainage_before_lateral_and_same
         phase_index(HillslopePhase::Evapotranspiration) < phase_index(HillslopePhase::Drainage)
             && phase_index(HillslopePhase::Drainage) < phase_index(HillslopePhase::LateralTransfer)
             && phase_index(HillslopePhase::LateralTransfer)
+                < phase_index(HillslopePhase::PlantRootUptake)
+            && phase_index(HillslopePhase::PlantRootUptake)
                 < phase_index(HillslopePhase::RunoffReconciliation)
             && phase_index(HillslopePhase::RunoffReconciliation)
                 < phase_index(HillslopePhase::StorageReconciliation),
-        "HPHYS0242 hourly tail must be ET -> Drainage -> Lateral -> Runoff -> Storage"
+        "HPHYS0242 hourly tail must be ET -> Drainage -> Lateral -> PlantRootUptake -> Runoff -> Storage"
     );
 }
 

@@ -1,0 +1,19 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.19s
+     Running tests/integration/clim06_frost_frozen_soil_kernel_contract.rs (target/debug/deps/clim06_frost_frozen_soil_kernel_contract-457c24eec99ad3f3)
+
+running 11 tests
+test clim06_contract_conformance_rejects_non_finite_active_frost_symbol ... ok
+test clim06_contract_conformance_rejects_out_of_domain_active_frost_symbol ... ok
+test clim06_contract_conformance_rejects_missing_active_frost_symbol ... ok
+test simimpl33_contract_conformance_rejects_missing_frost_runtime_residue_depth_symbol ... ok
+test simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_completeness ... ok
+test simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_symbols ... ok
+test clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_capacity ... ok
+test simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission ... ok
+test simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect ... ok
+test simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kfactor_selection ... ok
+test simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

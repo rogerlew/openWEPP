@@ -1073,6 +1073,7 @@ pub enum HillslopeKernelPhaseClass {
     HydrologyPercolationDeepSeepage,
     HydrologyLateralTransfer,
     HydrologyDrainage,
+    HydrologyPlantRootUptake,
     HydrologyRunoffReconciliation,
     HydrologyStorageReconciliation,
     HydrologyPeakRunoff,
@@ -1091,6 +1092,7 @@ impl HillslopeKernelPhaseClass {
             Self::HydrologyPercolationDeepSeepage => "hydrology_percolation_deep_seepage",
             Self::HydrologyLateralTransfer => "hydrology_lateral_transfer",
             Self::HydrologyDrainage => "hydrology_drainage",
+            Self::HydrologyPlantRootUptake => "hydrology_plant_root_uptake",
             Self::HydrologyRunoffReconciliation => "hydrology_runoff_reconciliation",
             Self::HydrologyStorageReconciliation => "hydrology_storage_reconciliation",
             Self::HydrologyPeakRunoff => "hydrology_peak_runoff",
@@ -1110,6 +1112,7 @@ impl HillslopeKernelPhaseClass {
                 | Self::HydrologyPercolationDeepSeepage
                 | Self::HydrologyLateralTransfer
                 | Self::HydrologyDrainage
+                | Self::HydrologyPlantRootUptake
                 | Self::HydrologyRunoffReconciliation
                 | Self::HydrologyStorageReconciliation
                 | Self::HydrologyPeakRunoff
@@ -1691,6 +1694,7 @@ mod tests {
         assert!(!HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyLateralTransfer.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyDrainage.is_growth_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyPlantRootUptake.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyStorageReconciliation.is_growth_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyPeakRunoff.is_growth_transition());
@@ -1712,6 +1716,7 @@ mod tests {
         );
         assert!(!HillslopeKernelPhaseClass::HydrologyLateralTransfer.is_decomposition_transition());
         assert!(!HillslopeKernelPhaseClass::HydrologyDrainage.is_decomposition_transition());
+        assert!(!HillslopeKernelPhaseClass::HydrologyPlantRootUptake.is_decomposition_transition());
         assert!(
             !HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_decomposition_transition()
         );
@@ -1737,6 +1742,7 @@ mod tests {
         assert!(HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyLateralTransfer.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyDrainage.is_hydrology_phase());
+        assert!(HillslopeKernelPhaseClass::HydrologyPlantRootUptake.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyRunoffReconciliation.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyStorageReconciliation.is_hydrology_phase());
         assert!(HillslopeKernelPhaseClass::HydrologyPeakRunoff.is_hydrology_phase());

@@ -1,0 +1,15 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.43s
+     Running tests/integration/erod13_wave1_core_kernel_contract.rs (target/debug/deps/erod13_wave1_core_kernel_contract-e96ab4dd2ed911e0)
+
+running 7 tests
+test erod13_contract_vector_deposition_branch_emits_negative_df ... ok
+test erod13_contract_vector_rejects_missing_required_symbol ... ok
+test erod13_contract_vector_rejects_continuity_residual_violation ... ok
+test erod13_contract_vector_rejects_domain_violation ... ok
+test erod13_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod13_contract_vector_nominal_detachment_emits_core_outputs ... ok
+test erod13_contract_vector_threshold_branch_sets_zero_df ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

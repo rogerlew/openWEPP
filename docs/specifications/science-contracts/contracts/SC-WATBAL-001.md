@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 74
+contract_version: 75
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -66,6 +66,7 @@ Out of scope:
 | REF-WATBAL-LEGACY-HOURLY-CARRY | `/workdir/wepp-forest_260430_baseline/src/wathour.inc:26-44` and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:438-471,776-885` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly MOFE carry-array authority for `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, `ui_LfCrf`, `ui_LFtstp=24`, upstream-current OFE copy-forward, and hourly runon/lateral/saturation carry use. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline aggregate root-zone water lineage from layer storage (`st`) through `soilw(i)` into `watcon`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WB13 | `/workdir/wepp-forest_260430_baseline/src/outfil.for:623-643` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB13 publication semantics for `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal`. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-HOURLY-ET-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:547-560,978-1026` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly final-hour ET execution and immediate post-ET `watcon = Σsoilw(i)` recomputation from layer `st(i)` storage. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly bottom-layer restrictive conductivity lineage for `Dp`/`Pe`: hourly bottom `meblfc` forces `fx=1`, bottom restrictive `kslast` plus `ui_bdrkth` thickness-weighted `sscz`, `sep/ui_LFtstp` state mutation, and `deepSeep` accumulation. | `[DIRECT][Static]` |
 | REF-WATBAL-INFILE-WEPPUI | `docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md` §4, §8, §11 | Cross-contract requested/effective `wepp_ui` mode propagation authority from parser boundary to runtime lane selection. | `[DIRECT][Static]` |
 | REF-WATBAL-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes and bounded stress factors required for physically valid accounting. | `[INFERENCE][Static]` |
@@ -199,6 +200,7 @@ lateral/drainage).
 | INV-WATBAL-034 | HPHYS0242 hourly cadence/ordering invariant: hourly-lane water-balance closure must preserve baseline `watbal_hourly` ordering for the WB14/WB12 tail: percolation precedes final-hour ET, drainage precedes lateral flow in the hourly tail, surface saturation excess (`ui_SCrunf(ii)`) is clipped from top-layer storage before runoff publication, `Q` includes `Σui_SCrunf(ii)` plus partition runoff, and storage reconciliation consumes same-pass `Q`, `ET`, `D`, and `Qd` rather than stale compatibility state. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS, SC-RUNOFFPART-001#INV-RUNOFFPART-014, SC-EVAP-001#INV-EVAP-014, SC-PERC-001#INV-PERC-012, SC-SUBHYD-001#INV-SUBHYD-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-035 | HPHYS0247 H39 hourly water-balance lateral/snow gate invariant: closure claims for H39 single-OFE hourly water balance must use runtime winter activation triggers from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-009` and WB19 lateral capacity lineage from `SC-SUBHYD-001#INV-SUBHYD-024`; sidecar-presence-only winter bypasses and lateral withdrawals from non-`meblfc` layers are invalid evidence. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH6-COUPLING, SC-SNOWFREEZE-001#INV-SNOWFREEZE-009, SC-SUBHYD-001#INV-SUBHYD-024 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-036 | HPHYS0248 H39 hourly `Dp`/`Pe` restrictive-bottom invariant: promoted H39 hourly water-balance evidence must derive WB18 bottom-layer `D`/`Pe` from `SC-PERC-001#INV-PERC-014` baseline hourly restrictive conductivity lineage (`fx=1`, `kslast`, `ui_bdrkth`, thickness-weighted `sscz`, `sep/ui_LFtstp`, accumulated `deepSeep`). H39 closure claims that use unrestricted bottom `Ksi`, daily-only harmonic conductivity, unsaturated `fx` damping, or omit the restrictive-layer thickness branch must remain in `HOLD`. | hard-fail | REF-WATBAL-LEGACY-HOURLY-BOTK, REF-WATBAL-CH5-BAL, SC-PERC-001#INV-PERC-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-037 | HPHYS0249 WB17 aggregate-storage invariant: WB17 `Ep`/`Es` closure claims must derive `Total-Soil` and `SoilWaterTotal` from layer-first ET mutation (`SC-EVAP-001#INV-EVAP-015`) followed by baseline `watcon = Σ(st(i) + thetdr(i)*(dg(i)-frozen(i)))` recomputation after soil evaporation and again after post-WB19 `swu` root uptake. Evidence that subtracts `Ep`/`Es` only from scalar `wb11_soil_water`, executes root uptake before WB19 drainage/lateral mutation, or publishes aggregate storage before final WB17 layer mutation is invalid. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-HOURLY-ET-WATCON, REF-WATBAL-LEGACY-WB13, SC-EVAP-001#INV-EVAP-015 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -240,6 +242,7 @@ lateral/drainage).
 | `INV-WATBAL-034` | runtime + governance | HPHYS0242 scheduler order, WB19 surface-saturation array producer, WB14 runoff assembler, and WB12 storage consumer | Typed hard error / explicit `HOLD` when hourly lane uses stale runoff/storage surfaces, omits positive `ui_SCrunf(ii)` addback, or violates same-pass `Q`/`ET`/`D`/`Qd` storage lineage | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-035` | runtime + governance | H39 hourly closure gate spanning snow activation and WB19 lateral capacity lineage | Typed hard error / explicit `HOLD` when winter triggers are bypassed by sidecar-presence-only logic or WB19 emits lateral flux from non-`meblfc` active layers | HPHYS0247 H39 closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-036` | runtime + governance | H39 hourly `Dp`/`Pe` restrictive-bottom gate spanning WB18 percolation, WB12 storage, and WB13 publication evidence | Typed hard error / explicit `HOLD` when H39 hourly `D`/`Pe` lineage bypasses baseline `ui_bdrkth`/`kslast` bottom-layer effective conductivity | HPHYS0248 H39 `Dp`/`Pe` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-037` | runtime + governance | WB17-to-WB13 aggregate storage validator spanning `Ep`/`Es`, layer storage, `watcon`, `Total-Soil`, and `SoilWaterTotal` | Typed hard error / explicit `HOLD` when WB17 ET bypasses layer mutation, aggregate storage is not recomputed after ET, or WB13 storage reflects pre-ET/stale scalar state | HPHYS0249 WB17/storage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -1746,6 +1749,25 @@ percolation boundary:
    `wb11_soil_water`; after HPHYS0246, WB13 remains a downstream reflection of
    WB18/WB19 aggregate state rather than a compensating publication layer.
 
+### HPHYS0249 WB17 Aggregate Storage Coupling Addendum
+
+HPHYS0249 closes the WB17 half of `INV-WATBAL-029` for ET-driven aggregate
+storage:
+
+1. WB17 must treat `SC-EVAP-001#INV-EVAP-015` layer mutation as the
+   authoritative source for `Ep`/`Es` storage effects, with `Es` mutation in
+   the ET phase and `Ep`/`swu` mutation after WB19 drainage/lateral execution.
+2. `wb11_soil_water` must be recomputed after WB17 soil evaporation and after
+   post-WB19 root uptake from
+   `wb18_perc_theta_####`, `thetdr_####`, `dg_####`, and optional frozen-depth
+   surfaces using baseline `watcon = Σsoilw(i)` semantics.
+3. WB13 `Total-Soil` and `SoilWaterTotal` must consume this post-WB17
+   aggregate. Publication from pre-ET aggregate state, scalar-only ET
+   decrement, or publication-layer compensation is invalid closure evidence.
+4. Full-suite continuation metrics for `Ep`, `Es`, `Snow-Water`, `RM`, `Q`,
+   `Total-Soil`, and `SoilWaterTotal` must be recorded before promoting H39
+   hourly water-balance closure beyond `HOLD`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1760,6 +1782,7 @@ percolation boundary:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `75` | `Codex` | HPHYS0249 amendment: added `INV-WATBAL-037` requiring WB17 `Ep`/`Es` layer-storage mutation from `SC-EVAP-001#INV-EVAP-015` before `watcon`/WB13 aggregate storage publication. |
 | `2026-06-02` | `74` | `Codex` | HPHYS0248 amendment: added `INV-WATBAL-036` requiring H39 hourly `Dp`/`Pe` evidence to use `SC-PERC-001#INV-PERC-014` baseline hourly restrictive-bottom `ui_bdrkth`/`kslast` conductivity lineage. |
 | `2026-06-02` | `73` | `Codex` | HPHYS0247 amendment: added `INV-WATBAL-035` tying H39 hourly closure evidence to runtime winter activation triggers and `SC-SUBHYD-001#INV-SUBHYD-024` WB19 lateral capacity lineage. |
 | `2026-06-02` | `72` | `Codex` | HPHYS0246 amendment: added WB18 aggregate soil-water writeback authority requiring `wb11_soil_water`/WB13 `Total-Soil` lineage to follow `SC-PERC-001#INV-PERC-013` baseline `watcon = Σsoilw(i)` semantics instead of `Σtheta`-only percolation writeback. |

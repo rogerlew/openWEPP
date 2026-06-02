@@ -1,7 +1,7 @@
 #[allow(clippy::wildcard_imports)]
 use super::*;
 
-pub(crate) const PHASE_COUNT: usize = 13;
+pub(crate) const PHASE_COUNT: usize = 14;
 pub(crate) const RUNOFF_SLOPE_REQUIRED_STATE_SYMBOLS: &[&str] =
     &["nslpts", "slplen", "avgslp", "xinput_0001", "slpinp_0001"];
 pub(crate) const RUNOFF_SOIL_REQUIRED_STATE_SYMBOLS: &[&str] =
@@ -127,6 +127,14 @@ pub(crate) const WB13_STATE_SYMBOL_SOIL_WATER_TOTAL: &str = "SoilWaterTotal";
 pub(crate) const WB17_STAGE_ONE_DEFICIT_SCALE: f64 = 0.4;
 pub(crate) const WB17_STAGE_TWO_DEFICIT_SCALE: f64 = 0.6;
 pub(crate) const WB17_STAGE_TWO_DENOMINATOR: f64 = 0.0035;
+pub(crate) const WB17_CANOPY_EAJ_COEFFICIENT: f64 = 0.5;
+pub(crate) const WB17_CANOPY_BARE_SOIL_OFFSET: f64 = 0.1;
+pub(crate) const WB17_TRANSPIRATION_LAI_FULL_COVER: f64 = 3.0;
+pub(crate) const WB17_SOIL_EVAPORATION_DEPTH_M: f64 = 0.10;
+pub(crate) const WB17_SWU_UB: f64 = 3.065;
+pub(crate) const WB17_SWU_UOB: f64 = 0.953_346;
+pub(crate) const WB17_PLTOL_MIN: f64 = 0.1;
+pub(crate) const WB17_PLTOL_MAX: f64 = 0.4;
 pub(crate) const WB13_DEPTH_TO_MM: f64 = 1000.0;
 pub(crate) const WB11_SYMBOL_PERC_LOSS_D: HillslopeProductionFluxSymbol =
     HillslopeProductionFluxSymbol::Wb11PercLossD;
@@ -434,7 +442,6 @@ pub(crate) const EROD19_DEPEND_XU_QOSTAR_NEAR_ZERO: f64 = 0.0001;
 pub(crate) const EROD19_DEPEND_NEWTON_RESIDUAL_TOLERANCE: f64 = 0.001;
 pub(crate) const EROD19_DEPEND_NEWTON_MAX_ITERS: usize = 10;
 pub(crate) const EROD19_TAUC_FALLBACK_SCALE: f64 = 0.2;
-pub(crate) const WB17_LAI_PARTITION_COEFFICIENT: f64 = 0.4;
 pub(crate) const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
 pub(crate) const WB18_PERC_MIN_FX: f64 = 0.002;
 pub(crate) const WB18_PERC_BI_COEFFICIENT: f64 = 2.655;

@@ -149,6 +149,7 @@ impl HillslopeKernel for Int10ProbeKernel {
             | "percolation_deep_seepage"
             | "lateral_transfer"
             | "drainage"
+            | "plant_root_uptake"
             | "runoff_reconciliation"
             | "storage_reconciliation" => {
                 assert!(request.decomposition_context.is_none());
@@ -214,7 +215,7 @@ fn int10_contract_conformance_validates_coupled_replay_ordering_and_state_transf
         report.scheduler_report.executed_phases(),
         Vec::from(HillslopePhaseGraph::canonical_order())
     );
-    assert_eq!(kernel.watbal_marker_checks, 6);
+    assert_eq!(kernel.watbal_marker_checks, 7);
 }
 
 #[test]

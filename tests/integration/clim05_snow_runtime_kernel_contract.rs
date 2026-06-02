@@ -17,7 +17,7 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 const EXPECTED_WB14_INFILTRATION: f64 = 2.849_436_367_164_438;
 const EXPECTED_S: f64 = -0.1;
 const EXPECTED_WB14_Q_WITH_S: f64 = 0.250_563_632_835_562;
-const EXPECTED_WB12_STORAGE_WITH_S: f64 = 11.649_436_367_164_439;
+const EXPECTED_WB12_STORAGE_WITH_S: f64 = 12.553_818_939_254_473;
 const CLIM05_TEST_TOLERANCE: f64 = 1.0e-6;
 
 #[allow(clippy::too_many_lines)]
@@ -37,6 +37,8 @@ fn seeded_clim05_surface() -> HillslopeWritebackSurface {
     state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(0.0));
     state_surface.insert(BoundarySymbol::from("vdmt"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
 
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),

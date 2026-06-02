@@ -163,8 +163,12 @@ impl HillslopePhaseGraph {
                 depends_on: HillslopePhase::Drainage,
             },
             PhaseDependency {
-                phase: HillslopePhase::RunoffReconciliation,
+                phase: HillslopePhase::PlantRootUptake,
                 depends_on: HillslopePhase::LateralTransfer,
+            },
+            PhaseDependency {
+                phase: HillslopePhase::RunoffReconciliation,
+                depends_on: HillslopePhase::PlantRootUptake,
             },
             PhaseDependency {
                 phase: HillslopePhase::StorageReconciliation,

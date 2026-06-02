@@ -1,0 +1,51 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.56s
+     Running tests/integration/wb14_infiltration_hyetograph_kernel_contract.rs (target/debug/deps/wb14_infiltration_hyetograph_kernel_contract-a95175f6d853bade)
+
+running 11 tests
+test hphys0240_contract_wb14_rejects_non_finite_runoff_carryover_flux ... ok
+test hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state ... ok
+test hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback ... ok
+test wb14_contract_conformance_computes_infiltration_from_hyetograph ... ok
+test wb14_contract_conformance_rejects_active_9001_zero_ksatrec ... ok
+test wb14_contract_conformance_rejects_non_monotone_hyetograph_time ... ok
+test wb14_contract_conformance_rejects_missing_hyetograph_symbol ... ok
+test wb14_contract_conformance_applies_ksatadj_9002_regime ... ok
+test wb14_contract_conformance_applies_ksatadj_9003_burn_floor ... ok
+test wb14_contract_conformance_normalizes_within_tolerance_negative_runoff_before_writeback ... ok
+test wb14_contract_conformance_applies_ksatadj_9001_regime ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/wb15_canopy_interception_kernel_contract.rs (target/debug/deps/wb15_canopy_interception_kernel_contract-303dd23e7ffac599)
+
+running 4 tests
+
+thread 'wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol' (1858424) panicked at tests/integration/wb15_canopy_interception_kernel_contract.rs:408:5:
+assertion `left == right` failed
+  left: Some(Evapotranspiration)
+ right: Some(RunoffReconciliation)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'wb15_contract_conformance_rejects_missing_canopy_state_symbol' (1858422) panicked at tests/integration/wb15_canopy_interception_kernel_contract.rs:335:5:
+assertion `left == right` failed
+  left: Some(Evapotranspiration)
+ right: Some(RunoffReconciliation)
+test wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol ... FAILED
+test wb15_contract_conformance_rejects_missing_canopy_state_symbol ... FAILED
+test wb15_contract_conformance_rejects_non_finite_canopy_state_symbol ... ok
+
+thread 'wb15_contract_conformance_couples_canopy_interception_into_runoff_and_storage_closure' (1858421) panicked at tests/integration/wb15_canopy_interception_kernel_contract.rs:279:5:
+scheduler halted at Some(StorageReconciliation)
+test wb15_contract_conformance_couples_canopy_interception_into_runoff_and_storage_closure ... FAILED
+
+failures:
+
+failures:
+    wb15_contract_conformance_couples_canopy_interception_into_runoff_and_storage_closure
+    wb15_contract_conformance_rejects_missing_canopy_state_symbol
+    wb15_contract_conformance_rejects_out_of_domain_canopy_state_symbol
+
+test result: FAILED. 1 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test wb15_canopy_interception_kernel_contract`
