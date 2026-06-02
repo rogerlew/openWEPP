@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 19
+contract_version: 21
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -14,7 +14,7 @@ consumer_scope:
   - Percolation and water-balance consumers requiring conductivity and storage-domain consistency
   - Erosion/hydraulics consumers requiring valid interrill/rill erodibility and shear-threshold surfaces
 evidence_level: Static
-last_reviewed: 2026-05-31
+last_reviewed: 2026-06-02
 supersedes: []
 superseded_by: []
 ---
@@ -99,6 +99,7 @@ Out of scope:
 | INV-SOIL-012 | Governance-range invariant: when empirical equations are used outside cited calibration ranges or suggested limits, outputs are non-promotable unless explicitly labeled and dispositioned with risk rationale. | governance-fail | REF-SOIL-CH7-KI, REF-SOIL-CH7-KRTAU, REF-SOIL-CH7-KE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-013 | SIMIMPL21 soil-water alias-lineage invariant: ET/soil-water closure surfaces must preserve deterministic alias continuity from layer storage (`st(i)` / `Θi`) to aggregate publication lineage (`watcon`, `Total-Soil`, `SoilWaterTotal`) without projection-side surrogate reconstruction. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH5-PERC, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-014 | AUTH03 constitutive FC/WP invariant: authoritative layer constitutive symbols must satisfy `por_i >= thetfc_i(-33kPa) >= thetdr_i(-1500kPa) >= 0` for every emitted layer interval, and profile aggregates (`Σ thetfc_i*dg_i`, `Σ thetdr_i*dg_i`) must remain finite and non-negative. | hard-fail | REF-SOIL-CH7-POR, REF-SOIL-CH7-INTRO, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SOIL-015 | HPHYS0254 normalized WB11 seed-grid invariant: hydrology-owned WB11/WB18/WB19 seed aliases must be emitted on the baseline-normalized corrected-layer grid used by `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm`; parser-depth tail truncation or scalar tail compensation outside `st(i)` layer state is invalid, while generic constitutive `thetfc_####`/`thetdr_####` symbols retain AUTH03/AUTH05 authority. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH7-POR, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -118,6 +119,7 @@ Out of scope:
 | `INV-SOIL-012` | governance | Review/disposition/promotion checklist | Promotion `HOLD` when range-exceedance labels/rationale are missing | Governance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-013` | runtime + governance | Soil layer-to-aggregate alias-lineage validator for ET/soil-water publication surfaces | Typed hard error / explicit `HOLD` when layer storage aliases and aggregate lineage cannot be traced from runtime-owned state | SIMIMPL soil-water lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-014` | runtime + governance | Constitutive layer-domain validator for FC/WP symbols and profile aggregates | Typed hard error / explicit `HOLD` when `por_i >= thetfc_i >= thetdr_i >= 0` or aggregate finite/non-negative closure is violated | AUTH03 Level-4 constitutive gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SOIL-015` | runtime + governance | Soil runtime projection validator for normalized WB11 hydrology seed cardinality/depth and corrected threshold aliases | Typed hard error / explicit `HOLD` when emitted hydrology seed aliases do not span normalized profile depth or use parser-depth fallback under normalized lineage availability | HPHYS0254 WB11 seed-grid closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -324,6 +326,23 @@ bit-for-bit parity). `[DIRECT][Static]`
    fail-closed runtime-boundary states and must not be repaired by surrogate
    FC/WP seed reconstruction.
 
+## HPHYS0254 WB11 Normalized Seed-Grid Addendum
+
+1. The "emitted layer" set for WB11/WB18/WB19 hydrology seeding is the
+   baseline-normalized corrected-layer grid used by
+   `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm`.
+2. Hydrology seed aliases `wb11_nsl`, `wb19_dg_####`, `wb19_solthk_####`,
+   `wb19_thetfc_####`, `wb19_thetdr_####`, `wb19_por_####`,
+   `cpm_####`, `wb19_coca_####`, `ssc_####`, and WB18 percolation
+   store/threshold aliases must share the normalized layer cardinality, so
+   `Σ(wb19_dg_####)*1000 == wb13_profile_depth_mm` within numeric tolerance.
+3. Generic constitutive `thetfc_####`/`thetdr_####` symbols remain governed by
+   AUTH03/AUTH05 corrected-parser-layer authority and must not be overwritten
+   to satisfy WB11 hydrology seeding.
+4. OFE-qualified parser provenance symbols may remain available for diagnostics,
+   but hydrology WB11 seed aliases cannot truncate normalized-tail depth or rely
+   on scalar tail compensation outside `st(i)`/`soilw(i)` layer state.
+
 ## HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 1. Soil authority for `ProfileWPStore` publication lineage remains the
@@ -449,6 +468,7 @@ promotes direct-theta cohort governance back to blocking Level-4 posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `21` | `Codex` | HPHYS0254 amendment: added `INV-SOIL-015` requiring hydrology WB11/WB18/WB19 seed aliases to use the baseline-normalized corrected-layer grid while preserving AUTH03/AUTH05 generic constitutive FC/WP symbols. |
 | `2026-06-01` | `20` | `Codex` | AUTH12 follow-up amendment: expanded measured-FC/WP contract scope to all measured-theta datvers (`7777/7778/9002/9003/9005`) and grounded producer/runtime pairing authority to WEPPpy SSURGO producer equations plus runtime `cpm` application (legacy `scon.for` basis). |
 | `2026-05-31` | `19` | `Codex` | AUTH12 amendment: ratified rocky-soil FC closure posture, set direct-theta cohort back to Level-4 required/hard-fail after closure criteria, and codified measured FC/WP authority for disturbed-policy (`9002/9003/9005`) families without additional FC/WP `cpm` multiplier application. |
 | `2026-05-31` | `18` | `Codex` | AUTH11 amendment: added direct-theta FC anti-evasion/promotion guards, restored anchored discrepancy-case requirements, and re-anchored suite posture to periodic/investigation pending promotion-protocol closure. |

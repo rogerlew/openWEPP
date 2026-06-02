@@ -329,6 +329,34 @@ impl Wb11HydrologyKernel {
         Ok(scalar)
     }
 
+    fn require_state_scalar_for_preferred_or_legacy_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        preferred_symbol: &BoundarySymbol,
+        legacy_symbol: &BoundarySymbol,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        if request.state_surface.contains_key(preferred_symbol) {
+            return Self::require_state_scalar_for_symbol(request, phase_class, preferred_symbol)
+                .map(|value| (preferred_symbol.clone(), value));
+        }
+        Self::require_state_scalar_for_symbol(request, phase_class, legacy_symbol)
+            .map(|value| (legacy_symbol.clone(), value))
+    }
+
+    fn optional_state_scalar_for_preferred_or_legacy_symbol(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        preferred_symbol: &BoundarySymbol,
+        legacy_symbol: &BoundarySymbol,
+    ) -> Result<Option<(BoundarySymbol, f64)>, Wb11HydrologyKernelGuardError> {
+        if request.state_surface.contains_key(preferred_symbol) {
+            return Self::optional_state_scalar_for_symbol(request, phase_class, preferred_symbol)
+                .map(|value| value.map(|scalar| (preferred_symbol.clone(), scalar)));
+        }
+        Self::optional_state_scalar_for_symbol(request, phase_class, legacy_symbol)
+            .map(|value| value.map(|scalar| (legacy_symbol.clone(), scalar)))
+    }
+
     fn hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{hour:04}"))
     }
@@ -1047,23 +1075,137 @@ impl Wb11HydrologyKernel {
     }
 
     fn wb19_dg_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb19_dg_{layer_index:04}"))
+    }
+
+    fn wb19_legacy_dg_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("dg_{layer_index:04}"))
     }
 
     fn wb19_coca_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb19_coca_{layer_index:04}"))
+    }
+
+    fn wb19_legacy_coca_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("coca_{layer_index:04}"))
     }
 
     fn wb19_por_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb19_por_{layer_index:04}"))
+    }
+
+    fn wb19_legacy_por_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("por_{layer_index:04}"))
     }
 
     fn wb19_thetfc_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb19_thetfc_{layer_index:04}"))
+    }
+
+    fn wb19_legacy_thetfc_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("thetfc_{layer_index:04}"))
     }
 
     fn wb19_thetdr_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb19_thetdr_{layer_index:04}"))
+    }
+
+    fn wb19_legacy_thetdr_symbol(layer_index: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("thetdr_{layer_index:04}"))
+    }
+
+    fn require_wb19_dg_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        Self::require_state_scalar_for_preferred_or_legacy_symbol(
+            request,
+            phase_class,
+            &Self::wb19_dg_symbol(layer_index),
+            &Self::wb19_legacy_dg_symbol(layer_index),
+        )
+    }
+
+    fn require_wb19_coca_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        Self::require_state_scalar_for_preferred_or_legacy_symbol(
+            request,
+            phase_class,
+            &Self::wb19_coca_symbol(layer_index),
+            &Self::wb19_legacy_coca_symbol(layer_index),
+        )
+    }
+
+    fn require_wb19_por_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        Self::require_state_scalar_for_preferred_or_legacy_symbol(
+            request,
+            phase_class,
+            &Self::wb19_por_symbol(layer_index),
+            &Self::wb19_legacy_por_symbol(layer_index),
+        )
+    }
+
+    fn require_wb19_thetfc_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        Self::require_state_scalar_for_preferred_or_legacy_symbol(
+            request,
+            phase_class,
+            &Self::wb19_thetfc_symbol(layer_index),
+            &Self::wb19_legacy_thetfc_symbol(layer_index),
+        )
+    }
+
+    fn require_wb19_thetdr_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        Self::require_state_scalar_for_preferred_or_legacy_symbol(
+            request,
+            phase_class,
+            &Self::wb19_thetdr_symbol(layer_index),
+            &Self::wb19_legacy_thetdr_symbol(layer_index),
+        )
+    }
+
+    fn optional_wb19_thetdr_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<Option<(BoundarySymbol, f64)>, Wb11HydrologyKernelGuardError> {
+        Self::optional_state_scalar_for_preferred_or_legacy_symbol(
+            request,
+            phase_class,
+            &Self::wb19_thetdr_symbol(layer_index),
+            &Self::wb19_legacy_thetdr_symbol(layer_index),
+        )
+    }
+
+    fn require_wb11_layer_count(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<(BoundarySymbol, usize), Wb11HydrologyKernelGuardError> {
+        let preferred_symbol = BoundarySymbol::from("wb11_nsl");
+        let legacy_symbol = BoundarySymbol::from("nsl");
+        let symbol = if request.state_surface.contains_key(&preferred_symbol) {
+            preferred_symbol
+        } else {
+            legacy_symbol
+        };
+        let layer_count =
+            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &symbol)?;
+        Ok((symbol, layer_count))
     }
 
     fn wb17_layer_flux_symbol(root: &str, layer_index: usize) -> BoundarySymbol {
@@ -1154,12 +1296,7 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<(Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>), Wb11HydrologyKernelGuardError>
     {
-        let nsl_symbol = BoundarySymbol::from("nsl");
-        let layer_count = Self::require_state_non_negative_integral_for_symbol(
-            request,
-            phase_class,
-            &nsl_symbol,
-        )?;
+        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
         if layer_count == 0 {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -1181,8 +1318,10 @@ impl Wb11HydrologyKernel {
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
             let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
-            let coca_symbol = Self::wb19_coca_symbol(layer_index);
+            let (dg_symbol, layer_dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
+            let (coca_symbol, coca) =
+                Self::require_wb19_coca_scalar(request, phase_class, layer_index)?;
 
             let layer_theta =
                 Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
@@ -1233,7 +1372,6 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let layer_dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
             if layer_dg <= WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
@@ -1244,8 +1382,6 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let coca =
-                Self::require_state_scalar_for_symbol(request, phase_class, &coca_symbol)?;
             if coca <= WB11_ZERO_THRESHOLD || coca > 1.0 + WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
@@ -2519,9 +2655,7 @@ impl Wb11HydrologyKernel {
             parsed
         };
 
-        let nsl_symbol = BoundarySymbol::from("nsl");
-        let layer_count =
-            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &nsl_symbol)?;
+        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
         if layer_count == 0 {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -2535,8 +2669,8 @@ impl Wb11HydrologyKernel {
         let mut layer_topology_state = Vec::with_capacity(layer_count);
         let mut total_fine_layer_count = 0usize;
         for layer_index in 1..=layer_count {
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
-            let dg_m = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            let (dg_symbol, dg_m) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &dg_symbol,

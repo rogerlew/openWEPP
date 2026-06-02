@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 79
+contract_version: 80
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -203,6 +203,7 @@ lateral/drainage).
 | INV-WATBAL-037 | HPHYS0249 WB17 aggregate-storage invariant: WB17 `Ep`/`Es` closure claims must derive `Total-Soil` and `SoilWaterTotal` from layer-first ET mutation (`SC-EVAP-001#INV-EVAP-015`) followed by baseline `watcon = Σ(st(i) + thetdr(i)*(dg(i)-frozen(i)))` recomputation after soil evaporation and again after post-WB19 `swu` root uptake. Evidence that subtracts `Ep`/`Es` only from scalar `wb11_soil_water`, executes root uptake before WB19 drainage/lateral mutation, or publishes aggregate storage before final WB17 layer mutation is invalid. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-HOURLY-ET-WATCON, REF-WATBAL-LEGACY-WB13, SC-EVAP-001#INV-EVAP-015 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-038 | HPHYS0250 WB13 final-`Ep` publication invariant: WB13 daily water-balance rows must consume `SC-EVAP-001#INV-EVAP-016` final post-WB19 root-uptake flux `Ep = ΣUi` and must preserve scheduler/growth activation required to produce active `rtd` before water-balance execution. Evidence that strips PL activation sentinels, suppresses growth-derived root depth under management-present runs, or lets stale state-surface `Ep` shadow final flux `Ep` is invalid WB13 closure evidence. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-ETDIST, SC-EVAP-001#INV-EVAP-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-039 | HPHYS0251 WB17/WB13 `swu.for` uptake-magnitude invariant: WB17 aggregate-storage and WB13 `Ep` publication claims must consume `SC-EVAP-001#INV-EVAP-017` root-uptake lineage, including crop-specific effective `pltol`, layer `UPi_####`/`Ui_####`, final `Ep=ΣUi`, and post-uptake `wb11_soil_water` recomputed from mutated layer storage before `Total-Soil`/`SoilWaterTotal` publication. A fixed `pltol=0.25` despite crop data, missing layer uptake traces, or aggregate storage derived from pre-uptake state is invalid closure evidence. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, SC-EVAP-001#INV-EVAP-017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-041 | HPHYS0254 WB11 initial-storage projection invariant: WB11 `st(i)`/`soilw(i)` seeding must use the same baseline-normalized hydrology seed grid as profile-depth/capacity authority, so `wb11_nsl`, `wb19_dg_####`, `wb19_solthk_####`, `wb19_thetfc_####`, `wb19_thetdr_####`, `wb19_por_####`, `cpm_####`, `wb19_coca_####`, `ssc_####`, and WB18 threshold/store aliases span `wb13_profile_depth_mm` without parser-depth tail truncation before `wb11_soil_water = Σsoilw(i)`. Generic `nsl` and constitutive `thetfc_####`/`thetdr_####` remain AUTH03/AUTH05-owned corrected-parser-layer symbols. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, SC-SOIL-001#INV-SOIL-015 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -248,6 +249,7 @@ lateral/drainage).
 | `INV-WATBAL-038` | runtime + governance | WB13 final-`Ep` validator spanning scheduler PL activation, post-WB19 `PlantRootUptake`, and flux-authoritative daily publication | Typed hard error / explicit `HOLD` when WB13 `Ep` is stale, pre-root-uptake, state-shadowed, or produced under suppressed growth/root-depth execution | HPHYS0250 `Ep` lineage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-039` | runtime + governance | WB17/WB13 `swu.for` uptake-magnitude validator spanning effective `pltol`, layer uptake traces, final `Ep`, and post-uptake aggregate storage | Typed hard error / explicit `HOLD` when crop `pltol` is masked, layer `UPi`/`Ui` traces are absent, or WB13 storage/`Ep` publication consumes pre-uptake state | HPHYS0251 uptake/storage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-040` | runtime + governance | WB19-to-WB17 storage-availability validator spanning frozen-adjusted lateral storage, post-WB19 layer `st(i)`, `watcon`, `Total-Soil`, and root uptake availability | Typed hard error / explicit `HOLD` when WB19 lateral capacity/withdrawal omits `SC-SUBHYD-001#INV-SUBHYD-025` `fzdrfc(i)` lineage or WB17/WB13 consume pre-WB19/stale aggregate storage | HPHYS0252 WB19 storage-availability closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-041` | runtime + governance | WB11 initial-storage projection validator spanning normalized primary layer grid, seeded layer storage, aggregate `watcon`, and WB13 storage publication | Typed hard error / explicit `HOLD` when WB11 seed layers truncate normalized profile depth, mix parser-depth `dg` with normalized profile aggregates, or seed aggregate storage from non-layer-authoritative compensation | HPHYS0254 WB11 initial-storage projection closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -1837,6 +1839,30 @@ SWU magnitude to WB19 layer-storage availability before WB17 root uptake.
    with the next focus selected from observed upstream storage lineage evidence,
    not from heuristic tuning.
 
+### HPHYS0254 WB11 Initial-Storage Projection Addendum
+
+HPHYS0254 continues the HPHYS0253/HPHYS0252 storage residual lineage by moving
+to the pre-scheduler WB11 seed grid.
+
+1. WB11 initial storage projection must publish hydrology seed aliases on the
+   baseline-normalized corrected layer grid used by profile depth/capacity
+   lineage, not the parser-row grid when normalized tail depth is present.
+2. `wb11_nsl`, `wb19_dg_####`, and `wb19_solthk_####` for the WB11 runtime hydrology
+   surface must span `wb13_profile_depth_mm`; `Σ(wb19_dg_####)*1000` must
+   reconcile to `wb13_profile_depth_mm` before seeding `st(i)`/`soilw(i)`.
+3. The hydrology threshold/conductivity family (`wb19_thetfc_####`,
+   `wb19_thetdr_####`, `wb19_por_####`, `cpm_####`, `wb19_coca_####`,
+   `ssc_####`, and WB18 threshold/store aliases) must share that same
+   normalized layer cardinality and depth grid.
+4. Generic constitutive `thetfc_####`/`thetdr_####` remain governed by
+   AUTH03/AUTH05 corrected-parser-layer authority and cannot be repurposed to
+   satisfy normalized WB11 hydrology seeding.
+5. `wb11_soil_water` must be seeded from layer-authoritative storage
+   (`st(i) + thetdr(i)*dg(i)` under unfrozen initial conditions), not by adding a
+   scalar tail or publication-side compensation outside the layer state.
+6. Missing, non-finite, or incomplete normalized-grid inputs are typed
+   fail-closed WB11 seed states and do not authorize parser-depth fallback.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1851,6 +1877,7 @@ SWU magnitude to WB19 layer-storage availability before WB17 root uptake.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `80` | `Codex` | HPHYS0254 amendment: added `INV-WATBAL-041` requiring WB11 initial `st(i)`/`soilw(i)` hydrology seed aliases (`wb11_nsl`, `wb19_*`) to use the baseline-normalized layer grid and reconcile `Σwb19_dg` to `wb13_profile_depth_mm` while preserving AUTH03/AUTH05 generic `nsl` and FC/WP symbols. |
 | `2026-06-02` | `79` | `Codex` | HPHYS0252 amendment: added `INV-WATBAL-040` tying WB19 frozen-adjusted lateral storage availability (`SC-SUBHYD-001#INV-SUBHYD-025`) to post-WB19 layer storage, WB17 root uptake, and WB13 `Total-Soil`/`SoilWaterTotal` continuation evidence. |
 | `2026-06-02` | `78` | `Codex` | HPHYS0251 amendment: added `INV-WATBAL-039` coupling baseline `swu.for` uptake magnitude, crop `pltol`, layer `UPi`/`Ui`, final `Ep`, and post-uptake aggregate storage publication. |
 | `2026-06-02` | `77` | `Codex` | HPHYS0250 follow-up amendment: extended WB15 interception publication to canonicalize only within-tolerance negative `I`/liquid values from snow/rain roundoff before writeback while preserving typed failures for material negatives. |

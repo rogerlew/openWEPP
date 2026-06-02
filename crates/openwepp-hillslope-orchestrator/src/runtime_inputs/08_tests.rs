@@ -200,8 +200,8 @@ mod tests {
     ) -> (f64, f64) {
         let nsl_raw = surface
             .state_surface
-            .get(&BoundarySymbol::from("nsl"))
-            .expect("nsl should be present")
+            .get(&BoundarySymbol::from("wb11_nsl"))
+            .expect("wb11_nsl should be present")
             .as_f64();
         let nsl = format!("{nsl_raw:.0}")
             .parse::<usize>()
@@ -213,125 +213,24 @@ mod tests {
         for layer_index in 1..=nsl {
             let dg = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("dg_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("dg_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_dg_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_dg_{layer_index:04} should be present"))
                 .as_f64();
             let thetfc = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_thetfc_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_thetfc_{layer_index:04} should be present"))
                 .as_f64();
             let thetdr = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_thetdr_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_thetdr_{layer_index:04} should be present"))
                 .as_f64();
             aggregated_fc_store_mm += thetfc * dg * 1_000.0;
             aggregated_wp_store_mm += thetdr * dg * 1_000.0;
         }
 
         (aggregated_fc_store_mm, aggregated_wp_store_mm)
-    }
-
-    type NormalizedCorrectedInterval = (f64, f64, f64, f64, f64, f64, f64);
-
-    fn corrected_normalized_intervals_from_ofe(
-        soil_datver: SoilDatver,
-        ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    ) -> Vec<NormalizedCorrectedInterval> {
-        let mut normalized_intervals = Vec::with_capacity(ofe.layers.len());
-        let mut normalized_top_mm = 0.0_f64;
-        for (thickness_m, porosity, cpm, coca, thetfc, thetdr) in
-            normalized_corrected_layers_from_ofe(soil_datver, ofe)
-        {
-            let normalized_bottom_mm = normalized_top_mm + (thickness_m * 1_000.0);
-            normalized_intervals.push((
-                normalized_top_mm,
-                normalized_bottom_mm,
-                porosity,
-                cpm,
-                coca,
-                thetfc,
-                thetdr,
-            ));
-            normalized_top_mm = normalized_bottom_mm;
-        }
-        normalized_intervals
-    }
-
-    fn mapped_authoritative_symbols_for_parser_layer(
-        parser_top_mm: f64,
-        parser_bottom_mm: f64,
-        layer_position: usize,
-        normalized_intervals: &[NormalizedCorrectedInterval],
-    ) -> (f64, f64, f64, f64, f64) {
-        let layer_thickness_mm = parser_bottom_mm - parser_top_mm;
-        assert!(
-            layer_thickness_mm > 0.0,
-            "fixture parser layer {} must have positive thickness",
-            layer_position + 1
-        );
-        let mut weighted_porosity = 0.0_f64;
-        let mut weighted_cpm = 0.0_f64;
-        let mut weighted_coca = 0.0_f64;
-        let mut weighted_thetfc = 0.0_f64;
-        let mut weighted_thetdr = 0.0_f64;
-        let mut covered_mm = 0.0_f64;
-
-        for (normalized_top_mm, normalized_bottom_mm, porosity, cpm, coca, thetfc, thetdr) in
-            normalized_intervals
-        {
-            let overlap_top_mm = parser_top_mm.max(*normalized_top_mm);
-            let overlap_bottom_mm = parser_bottom_mm.min(*normalized_bottom_mm);
-            let overlap_mm = (overlap_bottom_mm - overlap_top_mm).max(0.0);
-            if overlap_mm <= 0.0 {
-                continue;
-            }
-            weighted_porosity += *porosity * overlap_mm;
-            weighted_cpm += *cpm * overlap_mm;
-            weighted_coca += *coca * overlap_mm;
-            weighted_thetfc += *thetfc * overlap_mm;
-            weighted_thetdr += *thetdr * overlap_mm;
-            covered_mm += overlap_mm;
-        }
-
-        assert!(
-            (covered_mm - layer_thickness_mm).abs() <= 1.0e-9,
-            "expected full normalized overlap coverage for parser layer {} (covered {} mm of {} mm)",
-            layer_position + 1,
-            covered_mm,
-            layer_thickness_mm
-        );
-
-        (
-            weighted_porosity / covered_mm,
-            weighted_cpm / covered_mm,
-            weighted_coca / covered_mm,
-            weighted_thetfc / covered_mm,
-            weighted_thetdr / covered_mm,
-        )
-    }
-
-    fn expected_authoritative_theta_from_normalized_overlap_mapping(
-        soil_datver: SoilDatver,
-        ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    ) -> Vec<(f64, f64, f64, f64, f64)> {
-        let normalized_intervals = corrected_normalized_intervals_from_ofe(soil_datver, ofe);
-
-        let mut mapped = Vec::with_capacity(ofe.layers.len());
-        let mut parser_top_mm = 0.0_f64;
-        for (layer_position, layer) in ofe.layers.iter().enumerate() {
-            let parser_bottom_mm = layer.depth_mm;
-            mapped.push(mapped_authoritative_symbols_for_parser_layer(
-                parser_top_mm,
-                parser_bottom_mm,
-                layer_position,
-                &normalized_intervals,
-            ));
-            parser_top_mm = parser_bottom_mm;
-        }
-
-        mapped
     }
 
     fn soil_runtime_scalar(surface: &crate::HillslopeWritebackSurface, symbol: &str) -> f64 {
@@ -407,7 +306,7 @@ mod tests {
         let wb19_lateral_anisotropy_ratio =
             soil_runtime_scalar(&surface, "wb19_lateral_anisotropy_ratio");
 
-        assert!((solthk - 0.25).abs() < 1.0e-12);
+        assert!((solthk - 0.4).abs() < 1.0e-12);
         assert!((dg - 0.1).abs() < 1.0e-12);
         assert!(thetdr.is_finite());
         assert!(thetfc.is_finite());
@@ -423,16 +322,26 @@ mod tests {
 
         let exact_checks = [
             ("nsl", 2.0),
-            ("ssc", 15.0 / 3.6e6),
+            ("wb11_nsl", 2.0),
+            ("ssc", 11.5 / 3.6e6),
             ("dg_0002", 0.15),
             ("solthk_0002", 0.25),
+            ("wb19_dg_0002", 0.2),
+            ("wb19_solthk_0002", 0.4),
             ("ssc_0002", 8.0 / 3.6e6),
         ];
         for (symbol, expected) in exact_checks {
             assert!((soil_runtime_scalar(&surface, symbol) - expected).abs() < 1.0e-12);
         }
 
-        for symbol in ["por", "cpm", "coca", "por_0002", "cpm_0002", "coca_0002"] {
+        for symbol in [
+            "por",
+            "cpm",
+            "coca",
+            "wb19_por_0002",
+            "cpm_0002",
+            "wb19_coca_0002",
+        ] {
             let value = soil_runtime_scalar(&surface, symbol);
             assert!(
                 value.is_finite() && value > 0.0 && value <= 1.0,
@@ -516,12 +425,12 @@ mod tests {
         assert!((profile_wp_store_mm - expected_profile.wp_store).abs() < 1e-9);
         assert!((profile_fc_tail_mm - (profile_fc_store_mm - layer_fc_store_mm)).abs() < 1e-9);
         assert!(
-            (profile_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
-            "profile FC storage must preserve normalized-profile depth authority (no parser-depth truncation)"
+            (profile_fc_store_mm - layer_fc_store_mm).abs() < 1.0e-9,
+            "profile FC storage must now be represented by normalized primary WB11 layers"
         );
         assert!(
-            (profile_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,
-            "profile WP storage must preserve normalized-profile depth authority (no parser-depth truncation)"
+            (profile_wp_store_mm - layer_wp_store_mm).abs() < 1.0e-9,
+            "profile WP storage must now be represented by normalized primary WB11 layers"
         );
         assert!(profile_porosity_cap_mm >= profile_fc_store_mm);
         assert!(profile_fc_store_mm >= profile_wp_store_mm);
@@ -576,16 +485,16 @@ mod tests {
             "projected WP storage must match normalized-profile corrected aggregate"
         );
         assert!(
-            (projected_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
-            "projected FC storage must not silently truncate normalized-profile tail depth"
+            (projected_fc_store_mm - layer_fc_store_mm).abs() < 1.0e-9,
+            "projected FC storage must be represented by normalized primary WB11 layers"
         );
         assert!(
             (projected_fc_tail_mm - (projected_fc_store_mm - layer_fc_store_mm)).abs() < 1.0e-9,
-            "projected FC tail storage must equal normalized-profile minus parser-layer aggregation"
+            "projected FC tail storage must reconcile to zero residual normalized-primary layer coverage"
         );
         assert!(
-            (projected_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,
-            "projected WP storage must not silently truncate normalized-profile tail depth"
+            (projected_wp_store_mm - layer_wp_store_mm).abs() < 1.0e-9,
+            "projected WP storage must be represented by normalized primary WB11 layers"
         );
     }
 
@@ -665,11 +574,10 @@ mod tests {
             .ofes
             .first()
             .expect("9002 fixture should include a primary OFE");
-        let expected =
-            expected_authoritative_theta_from_normalized_overlap_mapping(soil.datver, ofe);
+        let expected = normalized_corrected_layers_from_ofe(soil.datver, ofe);
         assert!(
             expected.len() >= 2,
-            "expected at least two mapped layers for 9002 fixture"
+            "expected at least two normalized layers for 9002 fixture"
         );
 
         let surface = build_hillslope_runtime_surface_from_soil(&soil)
@@ -677,6 +585,7 @@ mod tests {
         for (
             layer_position,
             (
+                expected_dg,
                 expected_porosity,
                 expected_cpm,
                 expected_coca,
@@ -686,10 +595,15 @@ mod tests {
         ) in expected.iter().enumerate()
         {
             let layer_index = layer_position + 1;
+            let observed_dg = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("wb19_dg_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_dg_{layer_index:04} should be present"))
+                .as_f64();
             let observed_porosity = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("por_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("por_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_por_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_por_{layer_index:04} should be present"))
                 .as_f64();
             let observed_cpm = surface
                 .state_surface
@@ -698,39 +612,43 @@ mod tests {
                 .as_f64();
             let observed_coca = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("coca_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("coca_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_coca_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_coca_{layer_index:04} should be present"))
                 .as_f64();
             let observed_thetfc = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("thetfc_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetfc_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_thetfc_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_thetfc_{layer_index:04} should be present"))
                 .as_f64();
             let observed_thetdr = surface
                 .state_surface
-                .get(&BoundarySymbol::from(format!("thetdr_{layer_index:04}")))
-                .unwrap_or_else(|| panic!("thetdr_{layer_index:04} should be present"))
+                .get(&BoundarySymbol::from(format!("wb19_thetdr_{layer_index:04}")))
+                .unwrap_or_else(|| panic!("wb19_thetdr_{layer_index:04} should be present"))
                 .as_f64();
 
             assert!(
+                (observed_dg - expected_dg).abs() < 1.0e-9,
+                "layer {layer_index} authoritative dg must follow normalized primary WB11 grid"
+            );
+            assert!(
                 (observed_porosity - expected_porosity).abs() < 1.0e-9,
-                "layer {layer_index} authoritative porosity must follow normalized overlap mapping"
+                "layer {layer_index} authoritative porosity must follow normalized primary WB11 grid"
             );
             assert!(
                 (observed_cpm - expected_cpm).abs() < 1.0e-9,
-                "layer {layer_index} authoritative cpm must follow normalized overlap mapping"
+                "layer {layer_index} authoritative cpm must follow normalized primary WB11 grid"
             );
             assert!(
                 (observed_coca - expected_coca).abs() < 1.0e-9,
-                "layer {layer_index} authoritative coca must follow normalized overlap mapping"
+                "layer {layer_index} authoritative coca must follow normalized primary WB11 grid"
             );
             assert!(
                 (observed_thetfc - expected_thetfc).abs() < 1.0e-9,
-                "layer {layer_index} authoritative thetfc must follow normalized overlap mapping"
+                "layer {layer_index} authoritative thetfc must follow normalized primary WB11 grid"
             );
             assert!(
                 (observed_thetdr - expected_thetdr).abs() < 1.0e-9,
-                "layer {layer_index} authoritative thetdr must follow normalized overlap mapping"
+                "layer {layer_index} authoritative thetdr must follow normalized primary WB11 grid"
             );
         }
 

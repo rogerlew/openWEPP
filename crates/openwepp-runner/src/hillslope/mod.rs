@@ -1697,9 +1697,14 @@ fn seed_wb11_runtime_surface_inputs(
     const WB18_PERC_LANE_SUBSTEPS_SYMBOL: &str = "wb18_perc_lane_substeps";
     const WB19_LATERAL_DRAIN_LANE_SUBSTEPS_SYMBOL: &str = "wb19_lateral_drain_lane_substeps";
 
+    let nsl_symbol = if runtime_surface_symbol_value(runtime_surface, "wb11_nsl").is_some() {
+        "wb11_nsl"
+    } else {
+        "nsl"
+    };
     let nsl = scalar_to_usize(
-        "nsl",
-        require_runtime_surface_scalar(runtime_surface, "nsl")?,
+        nsl_symbol,
+        require_runtime_surface_scalar(runtime_surface, nsl_symbol)?,
     )?;
     if nsl == 0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -1904,11 +1909,11 @@ fn seed_wb11_runtime_surface_inputs(
         }
 
         for layer_index in 1..=nsl {
-            let dg_symbol = wb13_primary_layer_symbol("dg", layer_index);
-            let fc_symbol = wb13_primary_layer_symbol("thetfc", layer_index);
-            let wp_symbol = wb13_primary_layer_symbol("thetdr", layer_index);
+            let dg_symbol = format!("wb19_dg_{layer_index:04}");
+            let fc_symbol = format!("wb19_thetfc_{layer_index:04}");
+            let wp_symbol = format!("wb19_thetdr_{layer_index:04}");
             let ssc_symbol = wb13_primary_layer_symbol("ssc", layer_index);
-            let por_symbol = wb13_primary_layer_symbol("por", layer_index);
+            let por_symbol = format!("wb19_por_{layer_index:04}");
             let cpm_symbol = wb13_primary_layer_symbol("cpm", layer_index);
 
             let dg = require_runtime_surface_scalar(runtime_surface, dg_symbol.as_str())?;
@@ -4772,9 +4777,14 @@ fn derive_mofe04_publication_area_from_slope(
 fn derive_profile_fc_store_from_authoritative_layers(
     runtime_surface: &HillslopeWritebackSurface,
 ) -> Result<f64, HillslopeCliError> {
+    let nsl_symbol = if runtime_surface_symbol_value(runtime_surface, "wb11_nsl").is_some() {
+        "wb11_nsl"
+    } else {
+        "nsl"
+    };
     let nsl = scalar_to_usize(
-        "nsl",
-        require_runtime_surface_scalar(runtime_surface, "nsl")?,
+        nsl_symbol,
+        require_runtime_surface_scalar(runtime_surface, nsl_symbol)?,
     )?;
     if nsl == 0 {
         return Err(wb13_simout_failure(
@@ -4784,8 +4794,22 @@ fn derive_profile_fc_store_from_authoritative_layers(
 
     let mut profile_fc_store_m = 0.0_f64;
     for layer_index in 1..=nsl {
-        let thetfc_symbol = format!("thetfc_{layer_index:04}");
-        let dg_symbol = format!("dg_{layer_index:04}");
+        let preferred_thetfc_symbol = format!("wb19_thetfc_{layer_index:04}");
+        let legacy_thetfc_symbol = format!("thetfc_{layer_index:04}");
+        let thetfc_symbol =
+            if runtime_surface_symbol_value(runtime_surface, &preferred_thetfc_symbol).is_some() {
+                preferred_thetfc_symbol
+            } else {
+                legacy_thetfc_symbol
+            };
+        let preferred_dg_symbol = format!("wb19_dg_{layer_index:04}");
+        let legacy_dg_symbol = format!("dg_{layer_index:04}");
+        let dg_symbol =
+            if runtime_surface_symbol_value(runtime_surface, &preferred_dg_symbol).is_some() {
+                preferred_dg_symbol
+            } else {
+                legacy_dg_symbol
+            };
         let thetfc = require_runtime_surface_scalar(runtime_surface, &thetfc_symbol)?;
         let dg = require_runtime_surface_scalar(runtime_surface, &dg_symbol)?;
         if thetfc < 0.0 {
@@ -6398,8 +6422,22 @@ mod tests {
         runtime_surface
             .state_surface
             .insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.25));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("wb11_nsl"), BoundaryValue::scalar(1.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("wb19_nsl"), BoundaryValue::scalar(1.0));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_dg_0001"),
+            BoundaryValue::scalar(0.25),
+        );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("por_0001"),
+            BoundaryValue::scalar(0.45),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_por_0001"),
             BoundaryValue::scalar(0.45),
         );
         if include_cpm {
@@ -6416,7 +6454,15 @@ mod tests {
             BoundaryValue::scalar(0.30),
         );
         runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_thetfc_0001"),
+            BoundaryValue::scalar(0.30),
+        );
+        runtime_surface.state_surface.insert(
             BoundarySymbol::from("thetdr_0001"),
+            BoundaryValue::scalar(0.12),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_thetdr_0001"),
             BoundaryValue::scalar(0.12),
         );
         runtime_surface.state_surface.insert(

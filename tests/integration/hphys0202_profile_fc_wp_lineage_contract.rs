@@ -207,7 +207,7 @@ fn hphys0216d_profile_fc_layer_plus_tail_and_wp_projected_storage_authority() {
     assert_close(
         observed_fc,
         expected_layer.fc_store_mm + expected_fc_tail,
-        "ProfileFCStore must follow layer-authoritative aggregation plus normalized-tail contribution",
+        "ProfileFCStore must follow normalized primary layer aggregation plus residual tail contribution",
     );
     assert_close(
         observed_fc,
@@ -220,12 +220,13 @@ fn hphys0216d_profile_fc_layer_plus_tail_and_wp_projected_storage_authority() {
         "ProfileWPStore must follow wb13_profile_wp_store_mm projected storage authority",
     );
     assert!(
-        expected_fc_tail > 0.0 && (observed_fc - expected_layer.fc_store_mm).abs() > 1.0e-6,
-        "ProfileFCStore must not truncate normalized-profile tail to parser-layer depth aggregation"
+        expected_fc_tail.abs() < 1.0e-9
+            && (observed_fc - expected_layer.fc_store_mm).abs() < 1.0e-9,
+        "HPHYS0254 primary layers must cover normalized-profile depth so FC tail residual is zero"
     );
     assert!(
-        (observed_wp - expected_layer.wp_store_mm).abs() > 1.0e-6,
-        "ProfileWPStore must not silently truncate to parser-layer depth aggregation"
+        (observed_wp - expected_layer.wp_store_mm).abs() < 1.0e-9,
+        "HPHYS0254 primary layers must cover normalized-profile depth for WP storage"
     );
 }
 
@@ -267,12 +268,12 @@ fn hphys0207_profile_storage_projection_differs_from_parser_layer_depth_aggregat
         "authoritative layer FC/WP symbols must not remain raw parser theta lineage"
     );
     assert!(
-        (projected_fc_seed - parser_layer_aggregation.fc_store_mm).abs() > 1.0e-6,
-        "projected FC storage must preserve normalized-profile depth authority"
+        (projected_fc_seed - parser_layer_aggregation.fc_store_mm).abs() < 1.0e-9,
+        "projected FC storage must be represented by normalized primary WB11 layer aggregation"
     );
     assert!(
-        (projected_wp_seed - parser_layer_aggregation.wp_store_mm).abs() > 1.0e-6,
-        "projected WP storage must preserve normalized-profile depth authority"
+        (projected_wp_seed - parser_layer_aggregation.wp_store_mm).abs() < 1.0e-9,
+        "projected WP storage must be represented by normalized primary WB11 layer aggregation"
     );
 }
 
@@ -288,7 +289,7 @@ fn soil_parser_options_for_fixture() -> SoilParserOptions {
 fn expected_profile_aggregation_from_layers(
     surface: &HillslopeWritebackSurface,
 ) -> ProfileAggregation {
-    let nsl_raw = required_surface_scalar(surface, "nsl");
+    let nsl_raw = required_surface_scalar(surface, "wb11_nsl");
     let nsl_text = format!("{nsl_raw:.0}");
     let nsl = nsl_text
         .parse::<usize>()
@@ -298,9 +299,9 @@ fn expected_profile_aggregation_from_layers(
     let mut fc_store_mm = 0.0_f64;
     let mut wp_store_mm = 0.0_f64;
     for layer_index in 1..=nsl {
-        let dg_m = required_surface_scalar(surface, &format!("dg_{layer_index:04}"));
-        let thetfc = required_surface_scalar(surface, &format!("thetfc_{layer_index:04}"));
-        let thetdr = required_surface_scalar(surface, &format!("thetdr_{layer_index:04}"));
+        let dg_m = required_surface_scalar(surface, &format!("wb19_dg_{layer_index:04}"));
+        let thetfc = required_surface_scalar(surface, &format!("wb19_thetfc_{layer_index:04}"));
+        let thetdr = required_surface_scalar(surface, &format!("wb19_thetdr_{layer_index:04}"));
         fc_store_mm += thetfc * dg_m * 1_000.0;
         wp_store_mm += thetdr * dg_m * 1_000.0;
     }

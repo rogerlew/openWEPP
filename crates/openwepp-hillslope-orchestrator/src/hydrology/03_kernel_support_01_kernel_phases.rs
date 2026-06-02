@@ -567,9 +567,7 @@ impl Wb11HydrologyKernel {
             }
         };
 
-        let nsl_symbol = BoundarySymbol::from("nsl");
-        let layer_count =
-            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &nsl_symbol)?;
+        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
         if layer_count == 0 {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -594,8 +592,8 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
 
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
-            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            let (dg_symbol, dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &dg_symbol,
@@ -979,9 +977,7 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let nsl_symbol = BoundarySymbol::from("nsl");
-        let layer_count =
-            Self::require_state_non_negative_integral_for_symbol(request, phase_class, &nsl_symbol)?;
+        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
         if layer_count == 0 {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -1007,8 +1003,8 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
 
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
-            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
+            let (dg_symbol, dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &dg_symbol,
@@ -1254,12 +1250,12 @@ impl Wb11HydrologyKernel {
         let mut soil_water_after = 0.0;
         for (index, layer_theta) in theta.iter().enumerate() {
             let layer_index = index + 1;
-            let thetdr_symbol = Self::wb19_thetdr_symbol(layer_index);
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let (thetdr_symbol, thetdr) =
+                Self::require_wb19_thetdr_scalar(request, phase_class, layer_index)?;
+            let (dg_symbol, dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
             let frozen_depth_symbol = Self::wb18_perc_state_symbol("frozen_depth", layer_index);
 
-            let thetdr =
-                Self::require_state_scalar_for_symbol(request, phase_class, &thetdr_symbol)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &thetdr_symbol,
@@ -1268,7 +1264,6 @@ impl Wb11HydrologyKernel {
                 Some(1.0),
             )?;
 
-            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &dg_symbol,
@@ -1347,12 +1342,7 @@ impl Wb11HydrologyKernel {
             Some(1.0),
         )?;
 
-        let nsl_symbol = BoundarySymbol::from("nsl");
-        let layer_count = Self::require_state_non_negative_integral_for_symbol(
-            request,
-            phase_class,
-            &nsl_symbol,
-        )?;
+        let (nsl_symbol, layer_count) = Self::require_wb11_layer_count(request, phase_class)?;
         if layer_count == 0 {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -1374,7 +1364,8 @@ impl Wb11HydrologyKernel {
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
             let ssc_symbol = Self::wb18_perc_state_symbol("ssc", layer_index);
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
+            let (dg_symbol, dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
 
             let layer_theta =
                 Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
@@ -1427,7 +1418,6 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &dg_symbol,
@@ -1668,8 +1658,7 @@ impl Wb11HydrologyKernel {
                 let pei_pre = (WB18_PERC_TIMESTEP_S * ks_adjusted).min(excess);
                 let pei_unscaled = if layer_index < layer_count - 1 {
                     let lower_ratio = theta[layer_index + 1] / upper_limit[layer_index + 1];
-                    let lower_radicand = 1.0 - lower_ratio;
-                    if lower_radicand < -WB11_ZERO_THRESHOLD {
+                    if !lower_ratio.is_finite() || lower_ratio < 0.0 {
                         let lower_theta_symbol =
                             Self::wb18_perc_state_symbol("theta", layer_index + 2);
                         return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -1677,14 +1666,11 @@ impl Wb11HydrologyKernel {
                             symbol: lower_theta_symbol,
                             value: lower_ratio,
                             minimum: Some(0.0),
-                            maximum: Some(1.0),
+                            maximum: None,
                         });
                     }
-                    let lower_factor = if lower_radicand <= 0.0 {
-                        0.0
-                    } else {
-                        lower_radicand.sqrt()
-                    };
+                    let lower_ratio_clamped = lower_ratio.min(WB18_PERC_SATURATION_THRESHOLD);
+                    let lower_factor = (1.0 - lower_ratio_clamped).sqrt();
                     pei_pre * lower_factor
                 } else {
                     pei_pre
@@ -1928,8 +1914,8 @@ impl Wb11HydrologyKernel {
         let mut field_capacity_theta = Vec::with_capacity(theta.len());
         let mut coca = Vec::with_capacity(theta.len());
         for layer_index in 1..=theta.len() {
-            let por_symbol = Self::wb19_por_symbol(layer_index);
-            let por = Self::require_state_scalar_for_symbol(request, phase_class, &por_symbol)?;
+            let (por_symbol, por) =
+                Self::require_wb19_por_scalar(request, phase_class, layer_index)?;
             if por <= WB11_ZERO_THRESHOLD || por > 1.0 + WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                     phase_class,
@@ -1945,9 +1931,8 @@ impl Wb11HydrologyKernel {
             let layer_fc_store =
                 Self::require_state_scalar_for_symbol(request, phase_class, &fc_store_symbol)?;
 
-            let thetfc_symbol = Self::wb19_thetfc_symbol(layer_index);
-            let layer_thetfc =
-                Self::require_state_scalar_for_symbol(request, phase_class, &thetfc_symbol)?;
+            let (thetfc_symbol, layer_thetfc) =
+                Self::require_wb19_thetfc_scalar(request, phase_class, layer_index)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &thetfc_symbol,
@@ -1956,9 +1941,8 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
 
-            let thetdr_symbol = Self::wb19_thetdr_symbol(layer_index);
-            let layer_thetdr =
-                Self::require_state_scalar_for_symbol(request, phase_class, &thetdr_symbol)?;
+            let (thetdr_symbol, layer_thetdr) =
+                Self::require_wb19_thetdr_scalar(request, phase_class, layer_index)?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &thetdr_symbol,
@@ -1991,9 +1975,8 @@ impl Wb11HydrologyKernel {
             }
             field_capacity_theta.push(layer_thetfc);
 
-            let coca_symbol = Self::wb19_coca_symbol(layer_index);
-            let layer_coca =
-                Self::require_state_scalar_for_symbol(request, phase_class, &coca_symbol)?;
+            let (_coca_symbol, layer_coca) =
+                Self::require_wb19_coca_scalar(request, phase_class, layer_index)?;
             coca.push(layer_coca);
         }
 
@@ -2759,15 +2742,14 @@ impl Wb11HydrologyKernel {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
             let fc_symbol = Self::wb18_perc_state_symbol("fc", layer_index);
             let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
-            let dg_symbol = Self::wb19_dg_symbol(layer_index);
-            let thetdr_symbol = BoundarySymbol::from(format!("thetdr_{layer_index:04}"));
+            let (dg_symbol, dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, layer_index)?;
 
             let theta = Self::require_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
             let fc = Self::require_state_scalar_for_symbol(request, phase_class, &fc_symbol)?;
             let ul = Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
-            let dg = Self::require_state_scalar_for_symbol(request, phase_class, &dg_symbol)?;
             let thetdr_optional =
-                Self::optional_state_scalar_for_symbol(request, phase_class, &thetdr_symbol)?;
+                Self::optional_wb19_thetdr_scalar(request, phase_class, layer_index)?;
 
             if theta < -WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -2830,7 +2812,7 @@ impl Wb11HydrologyKernel {
             dg_sum += dg;
 
             match thetdr_optional {
-                Some(thetdr_raw) if !use_legacy_ksatadj_theta_derivation => {
+                Some((thetdr_symbol, thetdr_raw)) if !use_legacy_ksatadj_theta_derivation => {
                     if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&thetdr_raw) {
                         return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                             phase_class,

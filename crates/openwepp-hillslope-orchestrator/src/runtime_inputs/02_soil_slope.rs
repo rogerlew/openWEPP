@@ -106,15 +106,18 @@ pub fn build_hillslope_runtime_surface_from_soil(
         let ofe_index = ofe_position + 1;
         let corrected_layer_runtime_symbols =
             compute_corrected_layer_runtime_symbols(ofe, ofe_index, soil.datver)?;
-        let primary_layer_fc_store_mm = if ofe_index == 1 {
-            Some(aggregate_profile_fc_store_mm_from_mapped_layers(
+        let primary_wb11_layer_runtime_symbols = if ofe_index == 1 {
+            Some(compute_normalized_wb11_primary_layer_runtime_symbols(
                 ofe,
-                &corrected_layer_runtime_symbols,
                 ofe_index,
+                soil.datver,
             )?)
         } else {
             None
         };
+        let primary_layer_fc_store_mm = primary_wb11_layer_runtime_symbols
+            .as_ref()
+            .map(|layers| aggregate_profile_fc_store_mm_from_primary_wb11_layers(layers));
         if ofe.nsl != ofe.layers.len() {
             return Err(HillslopeRuntimeInputError::SoilLayerCountMismatch {
                 ofe_index,
@@ -132,6 +135,12 @@ pub fn build_hillslope_runtime_surface_from_soil(
             soil_ofe_symbol("nsl", ofe_index),
             BoundaryValue::scalar(f64::from(nsl)),
         );
+        if ofe_index == 1 {
+            state_surface.insert(
+                BoundarySymbol::from("nsl"),
+                BoundaryValue::scalar(f64::from(nsl)),
+            );
+        }
         state_surface.insert(
             soil_ofe_symbol("sat", ofe_index),
             BoundaryValue::scalar(ofe.sat),
@@ -332,34 +341,9 @@ pub fn build_hillslope_runtime_surface_from_soil(
                     soil_primary_layer_symbol("thetfc", layer_index),
                     BoundaryValue::scalar(layer_thetfc),
                 );
-                state_surface.insert(
-                    soil_primary_layer_symbol("ssc", layer_index),
-                    BoundaryValue::scalar(layer_ssc_m_s),
-                );
-                state_surface.insert(
-                    soil_primary_layer_symbol("por", layer_index),
-                    BoundaryValue::scalar(layer_porosity),
-                );
-                state_surface.insert(
-                    soil_primary_layer_symbol("cpm", layer_index),
-                    BoundaryValue::scalar(layer_cpm),
-                );
-                state_surface.insert(
-                    soil_primary_layer_symbol("coca", layer_index),
-                    BoundaryValue::scalar(layer_coca),
-                );
-                if let Some(theta_s) = layer.theta_s_rosetta {
-                    state_surface.insert(
-                        soil_primary_layer_symbol("theta_s", layer_index),
-                        BoundaryValue::scalar(theta_s),
-                    );
-                }
-
                 if layer_index == 1 {
-                    state_surface.insert(
-                        BoundarySymbol::from("dg"),
-                        BoundaryValue::scalar(layer_dg_m),
-                    );
+                    state_surface
+                        .insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(layer_dg_m));
                     state_surface.insert(
                         BoundarySymbol::from("thetdr"),
                         BoundaryValue::scalar(layer_thetdr),
@@ -368,30 +352,9 @@ pub fn build_hillslope_runtime_surface_from_soil(
                         BoundarySymbol::from("thetfc"),
                         BoundaryValue::scalar(layer_thetfc),
                     );
-                    state_surface.insert(
-                        BoundarySymbol::from("ssc"),
-                        BoundaryValue::scalar(layer_ssc_m_s),
-                    );
-                    state_surface.insert(
-                        BoundarySymbol::from("por"),
-                        BoundaryValue::scalar(layer_porosity),
-                    );
-                    state_surface.insert(
-                        BoundarySymbol::from("cpm"),
-                        BoundaryValue::scalar(layer_cpm),
-                    );
-                    state_surface.insert(
-                        BoundarySymbol::from("coca"),
-                        BoundaryValue::scalar(layer_coca),
-                    );
-                    if let Some(theta_s) = layer.theta_s_rosetta {
-                        state_surface.insert(
-                            BoundarySymbol::from("theta_s"),
-                            BoundaryValue::scalar(theta_s),
-                        );
-                    }
                 }
             }
+
             previous_depth_mm = layer_depth_mm;
         }
 
@@ -403,9 +366,23 @@ pub fn build_hillslope_runtime_surface_from_soil(
         }
 
         if ofe_index == 1 {
+            let primary_wb11_layers = primary_wb11_layer_runtime_symbols.as_ref().ok_or(
+                HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
+            )?;
+            let primary_wb11_nsl = u32::try_from(primary_wb11_layers.len()).map_err(|_| {
+                HillslopeRuntimeInputError::SoilLayerCountOutOfRange {
+                    ofe_index,
+                    value: primary_wb11_layers.len(),
+                }
+            })?;
+            publish_primary_wb11_runtime_layer_symbols(&mut state_surface, primary_wb11_layers);
             state_surface.insert(
-                BoundarySymbol::from("nsl"),
-                BoundaryValue::scalar(f64::from(nsl)),
+                BoundarySymbol::from("wb11_nsl"),
+                BoundaryValue::scalar(f64::from(primary_wb11_nsl)),
+            );
+            state_surface.insert(
+                BoundarySymbol::from("wb19_nsl"),
+                BoundaryValue::scalar(f64::from(primary_wb11_nsl)),
             );
             state_surface.insert(BoundarySymbol::from("sat"), BoundaryValue::scalar(ofe.sat));
             state_surface.insert(
@@ -436,7 +413,11 @@ pub fn build_hillslope_runtime_surface_from_soil(
             }
             state_surface.insert(
                 BoundarySymbol::from("solthk"),
-                BoundaryValue::scalar(primary_profile_depth_mm / 1_000.0),
+                BoundaryValue::scalar(
+                    primary_wb11_layers
+                        .last()
+                        .map_or(primary_profile_depth_mm / 1_000.0, |layer| layer.solthk_m),
+                ),
             );
             state_surface.insert(
                 BoundarySymbol::from("salb"),
@@ -496,70 +477,6 @@ pub fn build_hillslope_runtime_surface_from_soil(
     })
 }
 
-fn aggregate_profile_fc_store_mm_from_mapped_layers(
-    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
-    mapped_layers: &[CorrectedLayerRuntimeSymbols],
-    ofe_index: usize,
-) -> Result<f64, HillslopeRuntimeInputError> {
-    if mapped_layers.len() != ofe.layers.len() {
-        let layer_index = mapped_layers.len().saturating_add(1);
-        let layer_top_depth_mm = if layer_index > 1 {
-            ofe.layers[layer_index - 2].depth_mm
-        } else {
-            0.0
-        };
-        let layer_bottom_depth_mm = ofe
-            .layers
-            .get(layer_index - 1)
-            .map_or(layer_top_depth_mm, |layer| layer.depth_mm);
-        return Err(HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
-            ofe_index,
-            layer_index,
-            layer_top_depth_mm,
-            layer_bottom_depth_mm,
-            covered_depth_mm: 0.0,
-        });
-    }
-
-    let mut previous_depth_mm = 0.0_f64;
-    let mut layer_fc_store_mm = 0.0_f64;
-    for (layer_position, layer) in ofe.layers.iter().enumerate() {
-        let layer_index = layer_position + 1;
-        let layer_depth_mm = layer.depth_mm;
-        let layer_thickness_mm = layer_depth_mm - previous_depth_mm;
-        if !layer_thickness_mm.is_finite() || layer_thickness_mm <= 0.0 {
-            return Err(HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
-                ofe_index,
-                layer_index,
-                layer_top_depth_mm: previous_depth_mm,
-                layer_bottom_depth_mm: layer_depth_mm,
-                covered_depth_mm: 0.0,
-            });
-        }
-
-        let thetfc = mapped_layers[layer_position].thetfc;
-        if !thetfc.is_finite() {
-            return Err(HillslopeRuntimeInputError::NonFiniteThetaFieldCapacity { value: thetfc });
-        }
-        if thetfc < 0.0 {
-            return Err(HillslopeRuntimeInputError::NegativeProfileFcTailContribution {
-                ofe_index,
-                value_mm: thetfc,
-            });
-        }
-        layer_fc_store_mm += thetfc * layer_thickness_mm;
-        previous_depth_mm = layer_depth_mm;
-    }
-
-    if !layer_fc_store_mm.is_finite() {
-        return Err(HillslopeRuntimeInputError::NonFiniteProfileFcTailContribution {
-            ofe_index,
-            value_mm: layer_fc_store_mm,
-        });
-    }
-    Ok(layer_fc_store_mm)
-}
-
 #[derive(Clone, Copy, Debug)]
 struct Wb13ProfileSymbols {
     depth: f64,
@@ -575,6 +492,18 @@ struct CorrectedLayerRuntimeSymbols {
     coca: f64,
     thetfc: f64,
     thetdr: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct PrimaryWb11LayerRuntimeSymbols {
+    solthk_m: f64,
+    dg_m: f64,
+    porosity: f64,
+    cpm: f64,
+    coca: f64,
+    thetfc: f64,
+    thetdr: f64,
+    ssc_m_s: f64,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -603,6 +532,12 @@ struct LegacySoilLayerExpanded {
     cec: f64,
     rfg: f64,
     fc_wp_rock_multiplier_policy: FcWpRockMultiplierPolicy,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct LegacyConductivityLayer {
+    thickness_m: f64,
+    ksat_mm_h: f64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -712,6 +647,142 @@ fn compute_corrected_layer_runtime_symbols(
         &normalized_corrected_layers,
         ofe_index,
     )
+}
+
+fn compute_normalized_wb11_primary_layer_runtime_symbols(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    ofe_index: usize,
+    soil_datver: SoilDatver,
+) -> Result<Vec<PrimaryWb11LayerRuntimeSymbols>, HillslopeRuntimeInputError> {
+    let seeds = collect_legacy_soil_layer_seeds(ofe, ofe_index, soil_datver)?;
+    let normalized_corrected_layers =
+        compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(&seeds).ok_or(
+            HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
+        )?;
+    let normalized_ssc_values =
+        compute_normalized_ssc_runtime_symbols(ofe, &seeds, ofe_index)?;
+    if normalized_corrected_layers.len() != normalized_ssc_values.len() {
+        return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+            ofe_index,
+        });
+    }
+
+    let mut layers = Vec::with_capacity(normalized_corrected_layers.len());
+    let mut solthk_m = 0.0_f64;
+    for (layer_index, corrected_layer) in normalized_corrected_layers.into_iter().enumerate() {
+        solthk_m += WB13_PROFILE_LAYER_THICKNESS_M;
+        layers.push(PrimaryWb11LayerRuntimeSymbols {
+            solthk_m,
+            dg_m: WB13_PROFILE_LAYER_THICKNESS_M,
+            porosity: corrected_layer.porosity,
+            cpm: corrected_layer.cpm,
+            coca: corrected_layer.coca,
+            thetfc: corrected_layer.thetfc,
+            thetdr: corrected_layer.thetdr,
+            ssc_m_s: normalized_ssc_values[layer_index],
+        });
+    }
+    if layers.is_empty() {
+        return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+            ofe_index,
+        });
+    }
+    Ok(layers)
+}
+
+fn compute_normalized_ssc_runtime_symbols(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    seeds: &[LegacySoilLayerSeed],
+    ofe_index: usize,
+) -> Result<Vec<f64>, HillslopeRuntimeInputError> {
+    let cumulative_depths_mm = legacy_cumulative_depths_mm(seeds).ok_or(
+        HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
+    )?;
+    let source_layers =
+        legacy_conductivity_source_layers_from_seed_depths(ofe, &cumulative_depths_mm, ofe_index)?;
+    let total_depth_m = source_layers
+        .iter()
+        .map(|layer| layer.thickness_m)
+        .sum::<f64>();
+    let normalized_layer_count = legacy_normalized_layer_count(total_depth_m).ok_or(
+        HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
+    )?;
+    Ok(legacy_normalize_conductivity_layers_to_200mm(
+        &source_layers,
+        normalized_layer_count,
+    ))
+}
+
+fn aggregate_profile_fc_store_mm_from_primary_wb11_layers(
+    layers: &[PrimaryWb11LayerRuntimeSymbols],
+) -> f64 {
+    layers
+        .iter()
+        .map(|layer| layer.thetfc * layer.dg_m * 1_000.0)
+        .sum()
+}
+
+fn publish_primary_wb11_runtime_layer_symbols(
+    state_surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    layers: &[PrimaryWb11LayerRuntimeSymbols],
+) {
+    for (layer_position, layer) in layers.iter().enumerate() {
+        let layer_index = layer_position + 1;
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_solthk_{layer_index:04}")),
+            BoundaryValue::scalar(layer.solthk_m),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_dg_{layer_index:04}")),
+            BoundaryValue::scalar(layer.dg_m),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_dg_{layer_index:04}")),
+            BoundaryValue::scalar(layer.dg_m),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_thetdr_{layer_index:04}")),
+            BoundaryValue::scalar(layer.thetdr),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_thetdr_{layer_index:04}")),
+            BoundaryValue::scalar(layer.thetdr),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_thetfc_{layer_index:04}")),
+            BoundaryValue::scalar(layer.thetfc),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_thetfc_{layer_index:04}")),
+            BoundaryValue::scalar(layer.thetfc),
+        );
+        state_surface.insert(
+            soil_primary_layer_symbol("ssc", layer_index),
+            BoundaryValue::scalar(layer.ssc_m_s),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_por_{layer_index:04}")),
+            BoundaryValue::scalar(layer.porosity),
+        );
+        state_surface.insert(
+            soil_primary_layer_symbol("cpm", layer_index),
+            BoundaryValue::scalar(layer.cpm),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_coca_{layer_index:04}")),
+            BoundaryValue::scalar(layer.coca),
+        );
+
+        if layer_index == 1 {
+            state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(layer.ssc_m_s));
+            state_surface.insert(
+                BoundarySymbol::from("por"),
+                BoundaryValue::scalar(layer.porosity),
+            );
+            state_surface.insert(BoundarySymbol::from("cpm"), BoundaryValue::scalar(layer.cpm));
+            state_surface.insert(BoundarySymbol::from("coca"), BoundaryValue::scalar(layer.coca));
+        }
+    }
 }
 
 fn collect_legacy_soil_layer_seeds(
@@ -1075,6 +1146,60 @@ fn legacy_source_layers_from_seed_depths(
     Some(source_layers)
 }
 
+fn legacy_conductivity_source_layers_from_seed_depths(
+    ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
+    cumulative_depths_mm: &[f64],
+    ofe_index: usize,
+) -> Result<Vec<LegacyConductivityLayer>, HillslopeRuntimeInputError> {
+    let mut source_layers = Vec::with_capacity(ofe.layers.len());
+    let mut previous_depth_m = 0.0_f64;
+    for (layer_position, (layer, depth_mm)) in ofe
+        .layers
+        .iter()
+        .zip(cumulative_depths_mm.iter().copied())
+        .enumerate()
+    {
+        let layer_index = layer_position + 1;
+        let layer_ksat_mm_h = layer.ksat_mm_h.ok_or(
+            HillslopeRuntimeInputError::MissingSaturatedConductivity {
+                ofe_index,
+                layer_index,
+            },
+        )?;
+        if !layer_ksat_mm_h.is_finite() {
+            return Err(HillslopeRuntimeInputError::NonFiniteSaturatedConductivity {
+                ofe_index,
+                layer_index,
+                value_mm_h: layer_ksat_mm_h,
+            });
+        }
+        if layer_ksat_mm_h <= 0.0 {
+            return Err(HillslopeRuntimeInputError::NonPositiveSaturatedConductivity {
+                ofe_index,
+                layer_index,
+                value_mm_h: layer_ksat_mm_h,
+            });
+        }
+
+        let depth_m = depth_mm * 0.001;
+        let thickness_m = depth_m - previous_depth_m;
+        previous_depth_m = depth_m;
+        if thickness_m <= 0.0 {
+            continue;
+        }
+        source_layers.push(LegacyConductivityLayer {
+            thickness_m,
+            ksat_mm_h: layer_ksat_mm_h,
+        });
+    }
+    if source_layers.is_empty() {
+        return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+            ofe_index,
+        });
+    }
+    Ok(source_layers)
+}
+
 fn legacy_normalized_layer_count(total_depth_m: f64) -> Option<usize> {
     let rounded_total_mm = (total_depth_m * 1000.0).round();
     if !rounded_total_mm.is_finite() || rounded_total_mm <= 0.0 {
@@ -1148,6 +1273,48 @@ fn legacy_normalize_layers_to_200mm(
         normalized_layers.push(layer);
     }
     normalized_layers
+}
+
+fn legacy_normalize_conductivity_layers_to_200mm(
+    source_layers: &[LegacyConductivityLayer],
+    normalized_layer_count: usize,
+) -> Vec<f64> {
+    let mut remaining_thicknesses = source_layers
+        .iter()
+        .map(|layer| layer.thickness_m)
+        .collect::<Vec<f64>>();
+    let mut source_index = 0usize;
+    let mut normalized_ssc_values = Vec::with_capacity(normalized_layer_count);
+    for _normalized_index in 0..normalized_layer_count {
+        let mut weighted_ksat_mm_h = 0.0_f64;
+        let mut remaining = WB13_PROFILE_LAYER_THICKNESS_M;
+        while remaining > 0.0 && source_index < source_layers.len() {
+            let source_thickness = remaining_thicknesses[source_index];
+            if source_thickness <= 0.0 {
+                source_index += 1;
+                continue;
+            }
+            if source_thickness <= remaining {
+                let fraction = source_thickness / WB13_PROFILE_LAYER_THICKNESS_M;
+                weighted_ksat_mm_h += source_layers[source_index].ksat_mm_h * fraction;
+                remaining -= source_thickness;
+                source_index += 1;
+                if remaining.abs() <= LEGACY_INPUT_DELTA_EPS_M {
+                    remaining = 0.0;
+                }
+            } else {
+                let fraction = remaining / WB13_PROFILE_LAYER_THICKNESS_M;
+                weighted_ksat_mm_h += source_layers[source_index].ksat_mm_h * fraction;
+                remaining_thicknesses[source_index] -= remaining;
+                if remaining_thicknesses[source_index].abs() <= LEGACY_INPUT_DELTA_EPS_M {
+                    source_index += 1;
+                }
+                remaining = 0.0;
+            }
+        }
+        normalized_ssc_values.push(weighted_ksat_mm_h / 3.6e6);
+    }
+    normalized_ssc_values
 }
 
 fn legacy_accumulate_weighted_layer(

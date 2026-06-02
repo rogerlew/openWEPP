@@ -284,6 +284,42 @@ fn wb18_contract_conformance_saturated_branch_bypasses_fc_ul_ratio_guard() {
 }
 
 #[test]
+fn hphys0254_wb18_lower_layer_over_ul_uses_legacy_stu_cap() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_perc_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(9.0),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_perc_request(&state_surface));
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+
+    let bottom_flux = 86_400.0 * state_scalar(&state_surface, "wb18_perc_ssc_0002");
+    let lower_theta_after_bottom = 9.0 - bottom_flux;
+    assert!(
+        lower_theta_after_bottom / state_scalar(&state_surface, "wb18_perc_ul_0002") >= 0.95,
+        "test vector must exercise legacy lower-layer stu cap"
+    );
+
+    let stz = state_scalar(&state_surface, "wb18_perc_theta_0001")
+        / state_scalar(&state_surface, "wb18_perc_ul_0001");
+    let ratio = state_scalar(&state_surface, "wb18_perc_fc_0001")
+        / state_scalar(&state_surface, "wb18_perc_ul_0001");
+    let bi = -2.655_f64 / ratio.log10();
+    let fx = stz.powf(bi).max(0.002);
+    let pei_pre = 86_400.0 * state_scalar(&state_surface, "wb18_perc_ssc_0001") * fx;
+    let expected_top_pei = pei_pre * (1.0_f64 - 0.95).sqrt();
+
+    let pei_1 = writeback_flux_value(&response, "wb18_perc_pei_0001");
+    assert!(
+        (pei_1 - expected_top_pei).abs() <= TOL,
+        "baseline perc.for caps downstream stu to 0.95 before attenuation; expected={expected_top_pei}, observed={pei_1}"
+    );
+}
+
+#[test]
 fn wb18_contract_conformance_hourly_lane_substeps_execute_iterative_recompute() {
     let mut kernel = Wb11HydrologyKernel;
     let mut daily_state_surface = seeded_perc_state_surface();

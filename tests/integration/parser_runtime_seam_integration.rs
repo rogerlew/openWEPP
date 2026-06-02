@@ -69,7 +69,7 @@ struct HillslopeSeedProbeKernel {
 
 impl HillslopeKernel for HillslopeSeedProbeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
-        assert_state_value(request.state_surface, "solthk", 0.25);
+        assert_state_value(request.state_surface, "solthk", 0.4);
         assert_state_value(request.state_surface, "dg", 0.1);
         let thetdr = request
             .state_surface
@@ -89,9 +89,11 @@ impl HillslopeKernel for HillslopeSeedProbeKernel {
             "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
         );
         assert_state_value(request.state_surface, "nsl", 2.0);
-        assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
+        assert_state_value(request.state_surface, "ssc", 11.5 / 3.6e6);
         assert_state_value(request.state_surface, "dg_0002", 0.15);
         assert_state_value(request.state_surface, "solthk_0002", 0.25);
+        assert_state_value(request.state_surface, "wb19_dg_0002", 0.2);
+        assert_state_value(request.state_surface, "wb19_solthk_0002", 0.4);
         assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
         let profile_fc_store_mm = request
             .state_surface
@@ -103,27 +105,36 @@ impl HillslopeKernel for HillslopeSeedProbeKernel {
             .get(&BoundarySymbol::from("wb13_profile_wp_store_mm"))
             .expect("wb13_profile_wp_store_mm should be present")
             .as_f64();
-        let layer_fc_store_mm = request.state_surface[&BoundarySymbol::from("thetfc_0001")]
+        let wb11_nsl_raw = request.state_surface[&BoundarySymbol::from("wb11_nsl")]
             .as_f64()
-            * request.state_surface[&BoundarySymbol::from("dg_0001")].as_f64()
-            * 1_000.0
-            + request.state_surface[&BoundarySymbol::from("thetfc_0002")].as_f64()
-                * request.state_surface[&BoundarySymbol::from("dg_0002")].as_f64()
+            .round();
+        let wb11_nsl = format!("{wb11_nsl_raw:.0}")
+            .parse::<usize>()
+            .expect("wb11_nsl should parse as usize");
+        let mut layer_fc_store_mm = 0.0_f64;
+        let mut layer_wp_store_mm = 0.0_f64;
+        for layer_index in 1..=wb11_nsl {
+            let dg = request.state_surface
+                [&BoundarySymbol::from(format!("wb19_dg_{layer_index:04}"))]
+                .as_f64();
+            layer_fc_store_mm += request.state_surface
+                [&BoundarySymbol::from(format!("wb19_thetfc_{layer_index:04}"))]
+                .as_f64()
+                * dg
                 * 1_000.0;
-        let layer_wp_store_mm = request.state_surface[&BoundarySymbol::from("thetdr_0001")]
-            .as_f64()
-            * request.state_surface[&BoundarySymbol::from("dg_0001")].as_f64()
-            * 1_000.0
-            + request.state_surface[&BoundarySymbol::from("thetdr_0002")].as_f64()
-                * request.state_surface[&BoundarySymbol::from("dg_0002")].as_f64()
+            layer_wp_store_mm += request.state_surface
+                [&BoundarySymbol::from(format!("wb19_thetdr_{layer_index:04}"))]
+                .as_f64()
+                * dg
                 * 1_000.0;
+        }
         assert!(
-            (profile_fc_store_mm - layer_fc_store_mm).abs() > 1.0e-6,
-            "HPHYS0207 seam: FC storage projection must preserve normalized-profile depth authority"
+            (profile_fc_store_mm - layer_fc_store_mm).abs() < 1.0e-9,
+            "HPHYS0254 seam: normalized primary WB11 layers must represent full profile FC storage"
         );
         assert!(
-            (profile_wp_store_mm - layer_wp_store_mm).abs() > 1.0e-6,
-            "HPHYS0207 seam: WP storage projection must preserve normalized-profile depth authority"
+            (profile_wp_store_mm - layer_wp_store_mm).abs() < 1.0e-9,
+            "HPHYS0254 seam: normalized primary WB11 layers must represent full profile WP storage"
         );
 
         self.invocation_count += 1;
@@ -196,7 +207,7 @@ impl HillslopeKernel for HillslopeSlopeProbeKernel {
 
 impl HillslopeKernel for HillslopeSlopeSoilProbeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse {
-        assert_state_value(request.state_surface, "solthk", 0.25);
+        assert_state_value(request.state_surface, "solthk", 0.4);
         assert_state_value(request.state_surface, "dg", 0.1);
         let thetdr = request
             .state_surface
@@ -216,7 +227,7 @@ impl HillslopeKernel for HillslopeSlopeSoilProbeKernel {
             "authoritative theta symbols should be correction-lineage projected, not raw parser-theta values"
         );
         assert_state_value(request.state_surface, "nsl", 2.0);
-        assert_state_value(request.state_surface, "ssc", 15.0 / 3.6e6);
+        assert_state_value(request.state_surface, "ssc", 11.5 / 3.6e6);
         assert_state_value(request.state_surface, "ssc_0002", 8.0 / 3.6e6);
         assert_state_value(request.state_surface, "nelem", 2.0);
         assert_state_value(request.state_surface, "nwsofe", 2.0);

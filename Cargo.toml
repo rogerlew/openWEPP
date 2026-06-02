@@ -195,6 +195,10 @@ name = "wb11_hydrology_kernel_contract"
 path = "tests/integration/wb11_hydrology_kernel_contract.rs"
 
 [[test]]
+name = "wb11_storage_projection_kernel_contract"
+path = "tests/integration/wb11_storage_projection_kernel_contract.rs"
+
+[[test]]
 name = "wb12_reconciliation_kernel_contract"
 path = "tests/integration/wb12_reconciliation_kernel_contract.rs"
 
