@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 66
+contract_version: 67
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -109,7 +109,7 @@ Out of scope:
 | Coupled PL ordering preconditions | `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth` (validated at growth dispatch before hydrology lane entry) |
 | Runoff reconciliation state family | `nslpts`, `slplen`, `avgslp`, `xinput_0001`, `slpinp_0001`, `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
 | Storage reconciliation state family | `nsl`, `solthk`, `thetdr`, `thetfc`, `ssc` |
-| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
+| WB17 ET + WB18 perc + WB19 lateral/drain state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `wb17_residue_interception`, `solwpv`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `wb19_lateral_drain_lane_substeps`, `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 
 ### Required Outputs
 
@@ -186,6 +186,7 @@ lateral/drainage).
 | INV-WATBAL-027 | SIMIMPL18 storage-state mutation invariant: published WB13 storage terms (`Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`) must be runtime-state-derived and mutable across multi-day forcing; invariant publication of the full storage tuple under non-zero forcing/thermal variation is invalid and indicates static-parameter publication leakage. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-028 | SIMIMPL21 baseline execution-order invariant: canonical WB11 authority preserves baseline ordering `purk -> evap/evappm -> drain/lateral -> swu -> watcon recompute`; ET transpiration uptake (`swu`) is not authoritative when executed ahead of drainage/lateral mutation. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-029 | SIMIMPL21 aggregate-lineage invariant: root-zone aggregate publication lineage must remain layer-authoritative such that `watcon = Σ soilw(i)` with `soilw(i)` derived from layer storage state and unfrozen-depth adjustment; WB13 `Total-Soil`/`SoilWaterTotal` values must trace to this lineage plus declared frozen/snow components. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-030 | HPHYS0238 WB19 hourly iterative execution invariant: hourly lane execution must run WB19 lateral/drainage with explicit iterative substeps (`wb19_lateral_drain_lane_substeps=24`) and accumulated daily `q`/`Qdd`; divisor-only single-pass substitutions are non-authoritative for hourly closure claims. | hard-fail | REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -220,6 +221,7 @@ lateral/drainage).
 | `INV-WATBAL-027` | runtime + governance | Multi-day WB13 storage tuple continuity checker | Typed hard error / explicit `HOLD` when all published storage terms remain invariant across non-zero forcing and thermal transitions, indicating static publication leakage | Tier-A hydrology mutation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-028` | runtime + governance | Baseline WB11 sequencing validator for ET/perc/lateral/drain/root-uptake ordering | Typed hard error / explicit `HOLD` when execution order deviates from baseline-authoritative ordering in promoted WB11 closure claims | SIMIMPL ET/soil-water migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-029` | runtime + governance | Layer-to-aggregate water-lineage validator for WB13 publication surfaces | Typed hard error / explicit `HOLD` when aggregate/publication values are not traceable to declared `st(i)` -> `soilw(i)` -> `watcon` lineage | SIMIMPL hydrology publication-lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-030` | runtime | WB19 lateral/drainage hourly lane validator | Typed hard error / explicit `HOLD` when hourly lane claims do not execute WB19 iterative substeps and accumulated daily flux publication semantics | HPHYS hourly migration gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -1581,6 +1583,19 @@ signals.
    proving these assertions before SIMIMPL23 production ET migration claims are
    promotable.
 
+## HPHYS0238 WB19 Hourly Iterative Lateral/Drainage Addendum
+
+1. Hourly-lane WB19 execution authority requires iterative substeps in both
+   lateral (`run_lateral_transfer`) and drainage (`run_drainage`) kernels.
+2. Runner seeding must publish `wb19_lateral_drain_lane_substeps` for active
+   lane mode (`1` daily, `24` hourly).
+3. Lateral/drainage kernels must recompute state-dependent flux drivers each
+   substep from mutated layer state and accumulate realized daily `q`/`Qdd`.
+4. Divider-only single-pass substitutions for hourly behavior are not
+   authoritative and cannot satisfy hourly closure claims.
+5. Contract-derived tests must include daily-vs-hourly lane vectors proving
+   non-collapsed behavior under identical forcing/state domains.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1595,6 +1610,7 @@ signals.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `67` | `Codex` | HPHYS0238 amendment: added `INV-WATBAL-030` plus WB19 hourly iterative lateral/drainage addendum requiring seeded `wb19_lateral_drain_lane_substeps`, per-substep state recomputation, accumulated daily `q/Qdd`, and prohibition of divisor-only single-pass substitutions. |
 | `2026-06-01` | `66` | `Codex` | HPHYS0235 amendment: reanchored `ui_run=1` WB18/WB11 authority to legacy `watbal_hourly` 24-substep iterative percolation semantics, requiring accumulated hourly seepage lineage for `Dp` and prohibiting divisor-only single-pass hourly treatment for closure claims. |
 | `2026-06-01` | `65` | `Codex` | HPHYS0234 amendment: required flux-authoritative WB13 subsurface publication lineage for `q`/`Qdd`/`Qd` (anti-shadow posture), updated WB13 invariants and lineage register writer surfaces to `*_prefer_flux`, and added conflict-probe vector obligations. |
 | `2026-06-01` | `64` | `Codex` | HPHYS0227 amendment: corrected WB19 `avfca` authority to `thetfc_####` theta lineage, added per-layer FC/WP consistency requirement (`wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`), and linked required Level-4 suite `cas_l4_subhyd_watyld_fcwp_consistency_001` to `SC-SUBHYD-001#INV-SUBHYD-019`. |

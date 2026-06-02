@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 20
+contract_version: 21
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -206,6 +206,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-017 | WB19 layer-pool available-cap invariant: lateral/drainage available-pool caps are derived from active per-layer drainable storage (`Σ max(theta_i - drfc_i, 0)`) and must not be expanded by legacy compatibility scalar reconciliation (`max(layer_pool, legacy_term)`). | hard-fail | REF-SUBHYD-CH6-LATSTOR, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-018 | WB19 saturated-thickness response invariant: under fixed conductivity/geometry/forcing domains, increasing saturated thickness (and corresponding layer-derived available pool) must not decrease realized lateral flux (`q_high >= q_low`) and should increase it when neither case is constrained by non-saturated zero-flow branches. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-019 | WB19 FC/WP + COCA coupling invariant: water-yield coupling must compute `avfca` from `thetfc_####` theta lineage (not `wb18_perc_fc_####/dg_####` surrogate), enforce per-layer consistency `wb18_perc_fc_#### = (thetfc_####-thetdr_####)*dg_####`, and apply `solwpv < 2006` `fcdep` mutation using this authoritative `watyld` branch. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-020 | WB19 hourly iterative lane invariant: when hourly lane is active (`wb19_lateral_drain_lane_substeps = 24`), WB19 lateral/drainage execution must iterate substeps with state recomputation each substep and accumulate realized daily `q` and `Qdd`; divisor-only single-pass substitution is invalid. | hard-fail | REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-CH6-DRAINFLOW, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -230,6 +231,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-017` | runtime + external-authority | WB19 available-pool authority validator plus Level-4 constitutive suite checks | Hard-fail when available-pool authority is expanded via legacy max-reconciliation instead of layer-derived `Σ max(theta_i-drfc_i,0)` cap | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-018` | runtime + external-authority | WB19 saturated-thickness response behavioral validator plus Level-4 constitutive suite checks | Hard-fail when increased saturated thickness under fixed drivers fails to produce non-decreasing lateral flux response | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-019` | runtime + external-authority | WB19 FC/WP theta-lineage coupling validator plus Level-4 constitutive suite checks | Hard-fail when `avfca`/`watyld` uses FC-store surrogate lineage or FC-store/theta lineage is inconsistent | Tier-A gate + required A3 lane | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-020` | runtime | WB19 hourly lane iterative execution validator across lateral/drainage phases | Hard-fail when hourly lane behavior collapses to single-pass divisor-only execution without per-substep state recomputation and accumulated daily flux publication | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -530,6 +532,24 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `cas_l4_subhyd_watyld_fcwp_consistency_001` is required/hard-fail and
    linked to `INV-SUBHYD-019`.
 
+## HPHYS0238 WB19 Hourly Iterative Lateral/Drainage Addendum
+
+1. Hourly-lane WB19 execution must be explicit and state-iterative:
+   - iterate `lane_substeps = wb19_lateral_drain_lane_substeps`,
+   - recompute saturated-state, conductivity, and branch quantities each
+     substep from mutated layer state,
+   - accumulate realized daily `q` and `Qdd` across substeps.
+2. `wb19_lateral_drain_lane_substeps` is required to be a positive integral
+   scalar when published; runtime absence may default to `1` for backward
+   compatibility in direct kernel tests, but production seeding must publish the
+   symbol explicitly for daily/hourly lanes.
+3. For drainage, daily capacity (`wb11_drainage_coefficient`) remains a
+   cumulative-day cap across substeps (`ΣQdd <= wb11_drainage_coefficient`).
+4. Divider-only single-pass substitutions (for example, daily potential divided
+   by `24` without per-substep state recomputation) are non-authoritative.
+5. Contract-derived tests must include hourly-vs-daily lane vectors showing
+   behavior divergence under identical forcing/state inputs.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -543,6 +563,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `21` | `Codex` | HPHYS0238 amendment: added `INV-SUBHYD-020` and hourly iterative WB19 lateral/drainage addendum requiring per-substep state-recompute accumulation (`wb19_lateral_drain_lane_substeps`) and prohibiting divisor-only single-pass substitutions. |
 | `2026-06-01` | `20` | `Codex` | HPHYS0234 amendment: added WB13 subsurface anti-shadow authority requiring flux-preferred publication/coupling for `q`, `Qdd`, and `Qd` under state/flux symbol conflicts, with explicit conflict-probe vector obligations. |
 | `2026-06-01` | `19` | `Codex` | HPHYS0227 amendment: added `INV-SUBHYD-019` FC/WP + COCA water-yield coupling authority, required FC-store/theta consistency guard, and Level-4 suite linkage `cas_l4_subhyd_watyld_fcwp_consistency_001`. |
 | `2026-06-01` | `18` | `Codex` | HPHYS0226 amendment: added `INV-SUBHYD-018` saturated-thickness lateral-response behavioral authority and linked required Level-4 suite `cas_l4_subhyd_lateral_saturated_thickness_response_001`. |

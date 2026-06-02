@@ -1534,6 +1534,7 @@ fn seed_wb11_runtime_surface_inputs(
 ) -> Result<(), HillslopeCliError> {
     const WB11_STATE_SEED_COMPLETED_SYMBOL: &str = "wb11_state_seed_completed";
     const WB18_PERC_LANE_SUBSTEPS_SYMBOL: &str = "wb18_perc_lane_substeps";
+    const WB19_LATERAL_DRAIN_LANE_SUBSTEPS_SYMBOL: &str = "wb19_lateral_drain_lane_substeps";
 
     let nsl = scalar_to_usize(
         "nsl",
@@ -1552,6 +1553,10 @@ fn seed_wb11_runtime_surface_inputs(
     };
     runtime_surface.state_surface.insert(
         BoundarySymbol::from(WB18_PERC_LANE_SUBSTEPS_SYMBOL),
+        BoundaryValue::scalar(wb18_perc_lane_substeps),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(WB19_LATERAL_DRAIN_LANE_SUBSTEPS_SYMBOL),
         BoundaryValue::scalar(wb18_perc_lane_substeps),
     );
 
@@ -5582,9 +5587,16 @@ mod tests {
         let lane_substeps =
             require_runtime_surface_scalar(&runtime_surface, "wb18_perc_lane_substeps")
                 .expect("daily WB11 seed should publish wb18_perc_lane_substeps");
+        let wb19_lane_substeps =
+            require_runtime_surface_scalar(&runtime_surface, "wb19_lateral_drain_lane_substeps")
+                .expect("daily WB11 seed should publish wb19_lateral_drain_lane_substeps");
         assert!(
             (lane_substeps - 1.0).abs() < 1.0e-12,
             "daily lane must seed wb18_perc_lane_substeps=1"
+        );
+        assert!(
+            (wb19_lane_substeps - 1.0).abs() < 1.0e-12,
+            "daily lane must seed wb19_lateral_drain_lane_substeps=1"
         );
     }
 
@@ -5614,9 +5626,16 @@ mod tests {
         let lane_substeps =
             require_runtime_surface_scalar(&runtime_surface, "wb18_perc_lane_substeps")
                 .expect("hourly WB11 seed should publish wb18_perc_lane_substeps");
+        let wb19_lane_substeps =
+            require_runtime_surface_scalar(&runtime_surface, "wb19_lateral_drain_lane_substeps")
+                .expect("hourly WB11 seed should publish wb19_lateral_drain_lane_substeps");
         assert!(
             (lane_substeps - 24.0).abs() < 1.0e-12,
             "hourly lane must seed wb18_perc_lane_substeps=24"
+        );
+        assert!(
+            (wb19_lane_substeps - 24.0).abs() < 1.0e-12,
+            "hourly lane must seed wb19_lateral_drain_lane_substeps=24"
         );
     }
 

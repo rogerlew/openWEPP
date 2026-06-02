@@ -96,6 +96,10 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
         BoundaryValue::scalar(1.0),
     );
+    state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(1.0),
+    );
 
     state.insert(
         BoundarySymbol::from("wb19_drain_enabled"),
@@ -313,6 +317,175 @@ fn wb19_contract_conformance_rejects_domain_invalid_drain_enable_flag() {
     assert_eq!(response.status.message_id(), "HKERNEL-WB11-DRAIN-E-003");
     assert_eq!(
         response.status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+}
+
+#[test]
+fn wb19_contract_conformance_hourly_lane_preserves_lateral_flux_on_reference_fixture() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut daily_state = seeded_wb19_state_surface();
+    daily_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(1.0),
+    );
+    let mut hourly_state = daily_state.clone();
+    hourly_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+
+    let daily_response = kernel.run_hillslope_phase(&build_lateral_request(&daily_state, 0.0));
+    assert_eq!(
+        daily_response.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+    let hourly_response = kernel.run_hillslope_phase(&build_lateral_request(&hourly_state, 0.0));
+    assert_eq!(
+        hourly_response.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+
+    let q_daily = writeback_flux_value(&daily_response, "q");
+    let q_hourly = writeback_flux_value(&hourly_response, "q");
+    assert!(
+        (q_daily - q_hourly).abs() <= TOL,
+        "hourly and daily lane WB19 lateral execution should remain numerically equivalent on the reference fixture (q_daily={q_daily}, q_hourly={q_hourly})"
+    );
+}
+
+#[test]
+fn wb19_contract_conformance_hourly_lane_preserves_drainage_flux_when_uncapped() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut daily_state = seeded_wb19_state_surface();
+    daily_state.insert(
+        BoundarySymbol::from("wb11_drainage_coefficient"),
+        BoundaryValue::scalar(10.0),
+    );
+    daily_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(1.0),
+    );
+    let mut hourly_state = daily_state.clone();
+    hourly_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+
+    let daily_lateral = kernel.run_hillslope_phase(&build_lateral_request(&daily_state, 0.0));
+    assert_eq!(daily_lateral.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
+    let daily_q = writeback_flux_value(&daily_lateral, "q");
+    let mut daily_drain_state = daily_state.clone();
+    daily_drain_state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(writeback_state_value(
+            &daily_lateral,
+            "wb18_perc_theta_0001",
+        )),
+    );
+    daily_drain_state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(writeback_state_value(
+            &daily_lateral,
+            "wb18_perc_theta_0002",
+        )),
+    );
+    daily_drain_state.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(writeback_state_value(
+            &daily_lateral,
+            "wb11_drainable_storage",
+        )),
+    );
+    daily_drain_state.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(writeback_state_value(&daily_lateral, "wb11_soil_water")),
+    );
+    let daily_drainage =
+        kernel.run_hillslope_phase(&build_drainage_request(&daily_drain_state, daily_q));
+    assert_eq!(
+        daily_drainage.status.message_id(),
+        "HKERNEL-WB11-DRAIN-OK-001"
+    );
+    let qdd_daily = writeback_flux_value(&daily_drainage, "Qdd");
+
+    let hourly_lateral = kernel.run_hillslope_phase(&build_lateral_request(&hourly_state, 0.0));
+    assert_eq!(
+        hourly_lateral.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+    let hourly_q = writeback_flux_value(&hourly_lateral, "q");
+    let mut hourly_drain_state = hourly_state.clone();
+    hourly_drain_state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(writeback_state_value(
+            &hourly_lateral,
+            "wb18_perc_theta_0001",
+        )),
+    );
+    hourly_drain_state.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(writeback_state_value(
+            &hourly_lateral,
+            "wb18_perc_theta_0002",
+        )),
+    );
+    hourly_drain_state.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(writeback_state_value(
+            &hourly_lateral,
+            "wb11_drainable_storage",
+        )),
+    );
+    hourly_drain_state.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(writeback_state_value(&hourly_lateral, "wb11_soil_water")),
+    );
+    let hourly_drainage =
+        kernel.run_hillslope_phase(&build_drainage_request(&hourly_drain_state, hourly_q));
+    assert_eq!(
+        hourly_drainage.status.message_id(),
+        "HKERNEL-WB11-DRAIN-OK-001"
+    );
+    let hourly_qdd = writeback_flux_value(&hourly_drainage, "Qdd");
+    let hourly_total_drain = writeback_flux_value(&hourly_drainage, "Qd");
+
+    assert!(
+        (qdd_daily - hourly_qdd).abs() <= TOL,
+        "hourly and daily lane WB19 drainage execution should remain numerically equivalent on the reference fixture (qdd_daily={qdd_daily}, hourly_qdd={hourly_qdd})"
+    );
+    assert!(
+        (hourly_total_drain - (hourly_q + hourly_qdd)).abs() <= TOL,
+        "Qd must remain flux-conservative under hourly lane"
+    );
+}
+
+#[test]
+fn wb19_contract_conformance_rejects_non_integral_lane_substeps() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut invalid_state = seeded_wb19_state_surface();
+    invalid_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(1.5),
+    );
+    let lateral_response = kernel.run_hillslope_phase(&build_lateral_request(&invalid_state, 0.0));
+    assert_eq!(
+        lateral_response.status.message_id(),
+        "HKERNEL-WB11-LAT-E-003"
+    );
+    assert_eq!(
+        lateral_response.status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+
+    let drainage_response =
+        kernel.run_hillslope_phase(&build_drainage_request(&invalid_state, 0.0));
+    assert_eq!(
+        drainage_response.status.message_id(),
+        "HKERNEL-WB11-DRAIN-E-003"
+    );
+    assert_eq!(
+        drainage_response.status.boundary_class(),
         BoundaryClass::DomainViolation
     );
 }

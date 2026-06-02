@@ -1017,6 +1017,44 @@ impl Wb11HydrologyKernel {
         Ok(mode)
     }
 
+    fn wb19_lateral_drain_lane_substeps(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<usize, Wb11HydrologyKernelGuardError> {
+        let symbol = BoundarySymbol::from(WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS);
+        let lane_substeps_raw =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &symbol)?.unwrap_or(1.0);
+        if lane_substeps_raw < 1.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        let lane_substeps = lane_substeps_raw.round();
+        if (lane_substeps_raw - lane_substeps).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: symbol.clone(),
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        let lane_substeps_text = format!("{lane_substeps:.0}");
+        lane_substeps_text.parse::<usize>().map_err(|_| {
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol,
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            }
+        })
+    }
+
     fn wb19_drainable_storage(theta: &[f64], drain_threshold: &[f64]) -> f64 {
         theta
             .iter()
