@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 78
+contract_version: 79
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -247,6 +247,7 @@ lateral/drainage).
 | `INV-WATBAL-037` | runtime + governance | WB17-to-WB13 aggregate storage validator spanning `Ep`/`Es`, layer storage, `watcon`, `Total-Soil`, and `SoilWaterTotal` | Typed hard error / explicit `HOLD` when WB17 ET bypasses layer mutation, aggregate storage is not recomputed after ET, or WB13 storage reflects pre-ET/stale scalar state | HPHYS0249 WB17/storage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-038` | runtime + governance | WB13 final-`Ep` validator spanning scheduler PL activation, post-WB19 `PlantRootUptake`, and flux-authoritative daily publication | Typed hard error / explicit `HOLD` when WB13 `Ep` is stale, pre-root-uptake, state-shadowed, or produced under suppressed growth/root-depth execution | HPHYS0250 `Ep` lineage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-039` | runtime + governance | WB17/WB13 `swu.for` uptake-magnitude validator spanning effective `pltol`, layer uptake traces, final `Ep`, and post-uptake aggregate storage | Typed hard error / explicit `HOLD` when crop `pltol` is masked, layer `UPi`/`Ui` traces are absent, or WB13 storage/`Ep` publication consumes pre-uptake state | HPHYS0251 uptake/storage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-040` | runtime + governance | WB19-to-WB17 storage-availability validator spanning frozen-adjusted lateral storage, post-WB19 layer `st(i)`, `watcon`, `Total-Soil`, and root uptake availability | Typed hard error / explicit `HOLD` when WB19 lateral capacity/withdrawal omits `SC-SUBHYD-001#INV-SUBHYD-025` `fzdrfc(i)` lineage or WB17/WB13 consume pre-WB19/stale aggregate storage | HPHYS0252 WB19 storage-availability closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -1812,6 +1813,30 @@ HPHYS0251 closes the WB17/WB13 storage-coupling half of
    against HPHYS0250 continuation metrics before any claim that the uptake
    magnitude residual family has materially improved.
 
+### HPHYS0252 WB19 Storage-Availability Continuation Addendum
+
+HPHYS0252 continues the HPHYS0251 HOLD recommendation by moving upstream from
+SWU magnitude to WB19 layer-storage availability before WB17 root uptake.
+
+1. WB19 lateral storage availability must consume
+   `SC-SUBHYD-001#INV-SUBHYD-025`: capacity caps and withdrawal floors are
+   assembled with `fzdrfc(i) = max(drfc(i)-frzw(i),0)`, while hourly
+   conductivity remains governed by unfrozen `drfc(i)` `fffx` weighting.
+2. Post-WB19 layer storage (`wb18_perc_theta_####`) and aggregate
+   `wb11_soil_water`/`watcon` must remain the authoritative storage input to
+   `PlantRootUptake`; WB17 must not consume pre-WB19 shadow state when same-day
+   WB19 lateral/drainage writes are present.
+3. WB13 `Total-Soil` and `SoilWaterTotal` publication must consume the
+   post-WB19/post-WB17 aggregate storage lineage, not compensating publication
+   arithmetic.
+4. Comparator disposition must report targeted H1/H13/H39 storage-availability
+   diagnostics and the full 39-hillslope semantic suite against HPHYS0251
+   continuation metrics before any closure claim.
+5. If the baseline-authoritative WB19 `fzdrfc` correction is process-correct
+   but does not materially improve H39 residuals, disposition remains `HOLD`
+   with the next focus selected from observed upstream storage lineage evidence,
+   not from heuristic tuning.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1826,6 +1851,7 @@ HPHYS0251 closes the WB17/WB13 storage-coupling half of
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `79` | `Codex` | HPHYS0252 amendment: added `INV-WATBAL-040` tying WB19 frozen-adjusted lateral storage availability (`SC-SUBHYD-001#INV-SUBHYD-025`) to post-WB19 layer storage, WB17 root uptake, and WB13 `Total-Soil`/`SoilWaterTotal` continuation evidence. |
 | `2026-06-02` | `78` | `Codex` | HPHYS0251 amendment: added `INV-WATBAL-039` coupling baseline `swu.for` uptake magnitude, crop `pltol`, layer `UPi`/`Ui`, final `Ep`, and post-uptake aggregate storage publication. |
 | `2026-06-02` | `77` | `Codex` | HPHYS0250 follow-up amendment: extended WB15 interception publication to canonicalize only within-tolerance negative `I`/liquid values from snow/rain roundoff before writeback while preserving typed failures for material negatives. |
 | `2026-06-02` | `76` | `Codex` | HPHYS0250 amendment: added `INV-WATBAL-038` requiring WB13 `Ep` publication to consume final post-WB19 root-uptake flux and preserving PL scheduler activation needed for root-depth production. |

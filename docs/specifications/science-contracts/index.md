@@ -75,4 +75,9 @@ baseline `swu.for` uptake magnitude, crop `pltol(itype)` projection,
 legacy tolerance normalization, layer `UPi_####`/`Ui_####` traces, final
 `Ep`/`Ws`, and post-uptake aggregate-storage publication.
 
+HPHYS0252 registry note: `SC-SUBHYD-001#INV-SUBHYD-025` and
+`SC-WATBAL-001#INV-WATBAL-040` are the active continuation authority for WB19
+frozen-adjusted lateral storage availability, post-WB19 layer storage,
+post-WB19/post-WB17 aggregate storage, and H39 hourly continuation metrics.
+
 Sort rows by `contract_id`.

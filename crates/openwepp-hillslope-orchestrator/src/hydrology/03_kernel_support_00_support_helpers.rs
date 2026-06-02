@@ -1366,6 +1366,39 @@ impl Wb11HydrologyKernel {
             .sum()
     }
 
+    fn wb19_frozen_adjusted_lateral_thresholds(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        drain_threshold: &[f64],
+    ) -> Result<Vec<f64>, Wb11HydrologyKernelGuardError> {
+        let mut adjusted_threshold = Vec::with_capacity(drain_threshold.len());
+        for (index, threshold_i) in drain_threshold.iter().enumerate() {
+            let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", index + 1);
+            let frozen_water =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &frozen_water_symbol)?
+                    .unwrap_or(0.0);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &frozen_water_symbol,
+                frozen_water,
+                Some(0.0),
+                None,
+            )?;
+            let layer_threshold = (threshold_i - frozen_water).max(0.0);
+            if !layer_threshold.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: frozen_water_symbol,
+                    value: layer_threshold,
+                    minimum: Some(0.0),
+                    maximum: Some(*threshold_i),
+                });
+            }
+            adjusted_threshold.push(layer_threshold);
+        }
+        Ok(adjusted_threshold)
+    }
+
     fn wb19_withdraw_top_down(theta: &mut [f64], drain_threshold: &[f64], amount: f64) -> f64 {
         let mut remaining = amount.max(0.0);
         for (theta_i, threshold_i) in theta.iter_mut().zip(drain_threshold.iter()) {

@@ -1905,6 +1905,8 @@ impl Wb11HydrologyKernel {
 
         let (mut theta, drain_threshold, conductivity, thickness, upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
+        let lateral_withdrawal_threshold =
+            Self::wb19_frozen_adjusted_lateral_thresholds(request, phase_class, &drain_threshold)?;
         let top_effective_upper_limit = if mofe_hourly_carry_arrays_enabled {
             let top_upper_limit = upper_limit[0];
             let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", 1);
@@ -2011,10 +2013,9 @@ impl Wb11HydrologyKernel {
             Vec::new()
         };
         for substep_index in 0..lane_substeps {
-            let mut saturated_layer = vec![false; theta.len()];
-            for (index, (theta_i, threshold_i)) in
-                theta.iter().zip(drain_threshold.iter()).enumerate()
-            {
+            let mut capacity_active_layer = vec![false; theta.len()];
+            let mut conductivity_active_layer = vec![false; theta.len()];
+            for (index, theta_i) in theta.iter().enumerate() {
                 let meblfc = if index + 1 == theta.len() {
                     true
                 } else {
@@ -2030,13 +2031,16 @@ impl Wb11HydrologyKernel {
                     }
                     theta[index + 1] / lower_upper_limit >= 1.0 - WB11_ZERO_THRESHOLD
                 };
-                let saturated = *theta_i + WB11_ZERO_THRESHOLD >= *threshold_i;
-                saturated_layer[index] = saturated && meblfc;
+                capacity_active_layer[index] = *theta_i + WB11_ZERO_THRESHOLD
+                    >= lateral_withdrawal_threshold[index]
+                    && meblfc;
+                conductivity_active_layer[index] =
+                    *theta_i + WB11_ZERO_THRESHOLD >= drain_threshold[index] && meblfc;
             }
 
             let mut fcdep_before = 0.0_f64;
-            for (is_saturated, dg_i) in saturated_layer.iter().zip(thickness.iter()) {
-                if *is_saturated {
+            for (is_capacity_active, dg_i) in capacity_active_layer.iter().zip(thickness.iter()) {
+                if *is_capacity_active {
                     fcdep_before += *dg_i;
                 }
             }
@@ -2050,12 +2054,16 @@ impl Wb11HydrologyKernel {
             let mut legacy_saturation_fraction = 1.0_f64;
             if fcdep_before > WB11_ZERO_THRESHOLD {
                 for layer_index in 0..theta.len() {
-                    if !saturated_layer[layer_index] {
+                    if capacity_active_layer[layer_index] {
+                        lateral_capacity_tdv += (theta[layer_index]
+                            - lateral_withdrawal_threshold[layer_index])
+                            .max(0.0);
+                    }
+                    if !conductivity_active_layer[layer_index] {
                         continue;
                     }
                     let storage_excess =
                         (theta[layer_index] - drain_threshold[layer_index]).max(0.0);
-                    lateral_capacity_tdv += storage_excess;
                     let saturation_denominator =
                         upper_limit[layer_index] - drain_threshold[layer_index];
                     if saturation_denominator <= WB11_ZERO_THRESHOLD {
@@ -2132,13 +2140,16 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
 
-            let layer_pool = Self::wb19_drainable_storage(&theta, &drain_threshold);
-            let available_pool = layer_pool;
+            let available_pool =
+                Self::wb19_drainable_storage(&theta, &lateral_withdrawal_threshold);
             let q_lateral_target = q_lateral_potential
                 .min(available_pool)
                 .min(lateral_capacity_tdv);
-            let q_lateral_substep =
-                Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
+            let q_lateral_substep = Self::wb19_withdraw_top_down(
+                &mut theta,
+                &lateral_withdrawal_threshold,
+                q_lateral_target,
+            );
             q_lateral_target_total += q_lateral_target;
             q_lateral += q_lateral_substep;
             if mofe_hourly_carry_arrays_enabled {
@@ -2190,7 +2201,7 @@ impl Wb11HydrologyKernel {
 
             fcdep_after = fcdep_before;
             if solwpv_mode_lt_2006 && fcdep_before > WB11_ZERO_THRESHOLD {
-                if watyld <= WB11_ZERO_THRESHOLD {
+                if q_lateral_substep > WB11_ZERO_THRESHOLD && watyld <= WB11_ZERO_THRESHOLD {
                     return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                         phase_class,
                         symbol: BoundarySymbol::from(WB19_SYMBOL_WATER_YIELD_WATYLD),
@@ -2211,7 +2222,7 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             Some(q_lateral_target_total),
         )?;
-        let drainable_after = Self::wb19_drainable_storage(&theta, &drain_threshold);
+        let drainable_after = Self::wb19_drainable_storage(&theta, &lateral_withdrawal_threshold);
         let soil_water_after = Self::wb19_apply_soil_water_withdrawal(
             phase_class,
             WB11_SYMBOL_LATERAL_Q,

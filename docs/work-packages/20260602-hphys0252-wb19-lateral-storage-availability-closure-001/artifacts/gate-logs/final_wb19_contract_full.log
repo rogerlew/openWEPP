@@ -1,0 +1,20 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.97s
+     Running tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs (target/debug/deps/wb19_lateral_drainage_physics_kernel_contract-4bc79e192ea6480a)
+
+running 12 tests
+test hphys0252_wb19_lateral_uses_frozen_adjusted_capacity_and_withdrawal_floor ... ok
+test wb19_contract_conformance_applies_fffx_saturation_fraction_to_lateral_conductivity ... ok
+test hphys0242_contract_hourly_tail_runs_drainage_before_lateral_and_publishes_saturation_carry ... ok
+test wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier ... ok
+test wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes ... ok
+test wb19_contract_conformance_rejects_domain_invalid_drain_enable_flag ... ok
+test wb19_contract_conformance_hourly_lane_preserves_lateral_flux_on_reference_fixture ... ok
+test wb19_contract_conformance_rejects_missing_lateral_symbol ... ok
+test wb19_contract_conformance_hourly_lane_preserves_drainage_flux_when_uncapped ... ok
+test wb19_contract_conformance_rejects_non_integral_lane_substeps ... ok
+test wb19_contract_conformance_rejects_non_finite_drainage_symbol ... ok
+test wb19_contract_conformance_requires_bottom_contiguous_lateral_saturation ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

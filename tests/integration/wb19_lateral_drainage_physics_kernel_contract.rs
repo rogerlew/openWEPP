@@ -476,6 +476,94 @@ fn wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier() {
 }
 
 #[test]
+fn hphys0252_wb19_lateral_uses_frozen_adjusted_capacity_and_withdrawal_floor() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(2006.0),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("por_0001"),
+        BoundaryValue::scalar(0.95),
+    );
+    state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("coca_0001"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.8),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(1.0e-3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frzw_0001"),
+        BoundaryValue::scalar(0.4),
+    );
+    state_surface.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(0.5),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let lateral_response = kernel.run_hillslope_phase(&build_lateral_request(&state_surface, 0.0));
+    assert_eq!(
+        lateral_response.status.message_id(),
+        "HKERNEL-WB11-LAT-OK-001"
+    );
+
+    let q_lateral = writeback_flux_value(&lateral_response, "q");
+    let theta_after = writeback_state_value(&lateral_response, "wb18_perc_theta_0001");
+    let soil_water_after = writeback_state_value(&lateral_response, "wb11_soil_water");
+
+    assert!((q_lateral - 0.5).abs() <= TOL, "q={q_lateral}");
+    assert!(
+        (theta_after - 0.3).abs() <= TOL,
+        "theta_after={theta_after}"
+    );
+    assert!(
+        (soil_water_after - 0.5).abs() <= TOL,
+        "soil_water_after={soil_water_after}"
+    );
+}
+
+#[test]
 fn wb19_contract_conformance_rejects_missing_lateral_symbol() {
     let mut kernel = Wb11HydrologyKernel;
     let mut state_surface = seeded_wb19_state_surface();

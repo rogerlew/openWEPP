@@ -1,0 +1,19 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.01s
+     Running tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs (target/debug/deps/wb19_lateral_drainage_physics_kernel_contract-4bc79e192ea6480a)
+
+running 1 test
+
+thread 'hphys0252_wb19_lateral_uses_frozen_adjusted_capacity_and_withdrawal_floor' (2530210) panicked at tests/integration/wb19_lateral_drainage_physics_kernel_contract.rs:555:5:
+q=0.10000000000000009
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test hphys0252_wb19_lateral_uses_frozen_adjusted_capacity_and_withdrawal_floor ... FAILED
+
+failures:
+
+failures:
+    hphys0252_wb19_lateral_uses_frozen_adjusted_capacity_and_withdrawal_floor
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test wb19_lateral_drainage_physics_kernel_contract`
