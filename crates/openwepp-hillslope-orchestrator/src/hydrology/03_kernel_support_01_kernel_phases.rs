@@ -1108,7 +1108,22 @@ impl Wb11HydrologyKernel {
         let solwpv_mode = Self::wb19_solwpv_mode(request, phase_class)?;
         let solwpv_mode_is_2006 = solwpv_mode == 2006;
         let solwpv_mode_lt_2006 = solwpv_mode < 2006;
+        let mofe_hourly_carry_arrays_enabled =
+            Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?;
         let lane_substeps = Self::wb19_lateral_drain_lane_substeps(request, phase_class)?;
+        if mofe_hourly_carry_arrays_enabled && lane_substeps != MOFE_HOURLY_CARRY_ARRAY_COUNT {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS),
+                value: Self::diagnostic_count_to_f64(lane_substeps),
+                minimum: Some(Self::diagnostic_count_to_f64(
+                    MOFE_HOURLY_CARRY_ARRAY_COUNT,
+                )),
+                maximum: Some(Self::diagnostic_count_to_f64(
+                    MOFE_HOURLY_CARRY_ARRAY_COUNT,
+                )),
+            });
+        }
         let lane_substeps_f64 = lane_substeps
             .to_string()
             .parse::<f64>()
@@ -1203,6 +1218,11 @@ impl Wb11HydrologyKernel {
         let mut watyld = 0.0_f64;
         let mut fcdep_after = 0.0_f64;
         let mut unsdep_after = soldep;
+        let mut q_lateral_substeps = if mofe_hourly_carry_arrays_enabled {
+            Vec::with_capacity(MOFE_HOURLY_CARRY_ARRAY_COUNT)
+        } else {
+            Vec::new()
+        };
         for _ in 0..lane_substeps {
             let mut saturated_layer = vec![false; theta.len()];
             let mut encountered_unsaturated = false;
@@ -1291,6 +1311,9 @@ impl Wb11HydrologyKernel {
                 Self::wb19_withdraw_top_down(&mut theta, &drain_threshold, q_lateral_target);
             q_lateral_target_total += q_lateral_target;
             q_lateral += q_lateral_substep;
+            if mofe_hourly_carry_arrays_enabled {
+                q_lateral_substeps.push(q_lateral_substep);
+            }
             Self::require_flux_range(
                 phase_class,
                 WB11_SYMBOL_LATERAL_Q,
@@ -1395,6 +1418,16 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 None,
             ));
+        }
+        if mofe_hourly_carry_arrays_enabled {
+            for (index, value) in q_lateral_substeps.iter().enumerate() {
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT, index + 1),
+                    Self::normalize_non_negative_within_tolerance(*value),
+                    Some(0.0),
+                    None,
+                ));
+            }
         }
         let writeback = KernelWritebackPayload::with_updates(
             state_updates,
@@ -2470,6 +2503,26 @@ impl Wb11HydrologyKernel {
         ) else {
             unreachable!("status message ids are non-empty WB14 constants")
         };
+        let mofe_hourly_carry_arrays_enabled =
+            Self::resolve_mofe_hourly_carry_arrays_enabled(request, phase_class)?;
+        let mofe_hourly_saturation_carry = if mofe_hourly_carry_arrays_enabled {
+            Some(Self::resolve_mofe_hourly_current_saturation_carry(
+                request,
+                phase_class,
+                frost_coupling.as_ref(),
+            )?)
+        } else {
+            None
+        };
+        let mofe_hourly_lateral_carry = if mofe_hourly_carry_arrays_enabled {
+            Some(Self::require_mofe_hourly_state_array(
+                request,
+                phase_class,
+                MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+            )?)
+        } else {
+            None
+        };
 
         let mut state_updates = vec![
             WritebackField::bounded(
@@ -2732,6 +2785,32 @@ impl Wb11HydrologyKernel {
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(FROST_HOURLY_UNTILLED_FROZEN_DEPTH_ROOT, hourly.hour),
                     hourly.untilled_frozen_depth_m,
+                    Some(0.0),
+                    None,
+                ));
+            }
+        }
+        if let (Some(saturation_carry), Some(lateral_carry)) =
+            (mofe_hourly_saturation_carry, mofe_hourly_lateral_carry)
+        {
+            for hour in 1..=MOFE_HOURLY_CARRY_ARRAY_COUNT {
+                let saturation_value = saturation_carry[hour - 1];
+                let lateral_value = lateral_carry[hour - 1];
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, hour),
+                    saturation_value,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, hour),
+                    saturation_value,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT, hour),
+                    lateral_value,
                     Some(0.0),
                     None,
                 ));

@@ -279,6 +279,9 @@ Authorized packages:
   - Purpose: close Dispatch Group C by implementing explicit MOFE hourly
     upstream/runon/lateral carry-array runtime surfaces and routing-continuity
     handoffs for hourly lane mode.
+  - Status: executed; explicit array carry, lateral copy-forward, and
+    watershed manifest gates implemented. HPHYS stream remains in `HOLD` for
+    HPHYS0242 cadence-dependent positive saturation-carry closure and Group D.
 - `20260601-hphys0242-wb14-wb12-cadence-ordering-closure-001/`
   - Purpose: close Dispatch Group D by reconciling WB14/WB12 cadence and
     infiltration/ET/runoff/storage observation ordering under hourly lane mode,

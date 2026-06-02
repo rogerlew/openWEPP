@@ -1,6 +1,10 @@
 # Artifacts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: static + ran
 
-Execution artifacts for HPHYS0241.
+Static: this directory contains final HPHYS0241 execution evidence, gate
+results, review notes, verification notes, disposition, and HPHYS0242 handoff.
+
+Ran: required workspace gates and targeted HPHYS0241/MOFE tests were executed
+and recorded in `gate-results.md`.

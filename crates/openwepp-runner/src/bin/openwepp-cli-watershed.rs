@@ -54,6 +54,9 @@ const DEFAULT_DTCHR_SECONDS: f64 = 3_600.0;
 const DEFAULT_NTCHR: f64 = 24.0;
 const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
 const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
+const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
+const MOFE_HOURLY_CARRY_ARRAY_COUNT: u64 = 24;
+const MOFE_HOURLY_REQUIRED_ARRAYS: [&str; 4] = ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"];
 
 fn main() {
     if let Err(error) = run() {
@@ -1315,6 +1318,160 @@ fn validate_manifest_publication_metadata(
         ));
     }
 
+    validate_manifest_mofe_hourly_carry_metadata(
+        hillslope_id,
+        contributor_nofe,
+        manifest_file_path,
+        &manifest,
+    )?;
+
+    Ok(())
+}
+
+fn validate_manifest_mofe_hourly_carry_metadata(
+    hillslope_id: u32,
+    contributor_nofe: u16,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
+    let Some(carry_metadata) = manifest.pointer("/mofe_hourly_carry") else {
+        if contributor_nofe > 1 {
+            return Err(format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing /mofe_hourly_carry for multi-OFE contributor",
+                manifest_file_path.display()
+            ));
+        }
+        return Ok(());
+    };
+    if !carry_metadata.is_object() {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has non-object /mofe_hourly_carry",
+            manifest_file_path.display()
+        ));
+    }
+
+    let policy = carry_metadata
+        .pointer("/policy")
+        .and_then(Value::as_str)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing string /mofe_hourly_carry/policy",
+                manifest_file_path.display()
+            )
+        })?;
+    if policy != MOFE_HOURLY_CARRY_POLICY {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has unsupported mofe_hourly_carry policy '{}' (expected '{}')",
+            manifest_file_path.display(),
+            policy,
+            MOFE_HOURLY_CARRY_POLICY
+        ));
+    }
+
+    let active = carry_metadata
+        .pointer("/active")
+        .and_then(Value::as_bool)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing bool /mofe_hourly_carry/active",
+                manifest_file_path.display()
+            )
+        })?;
+    if contributor_nofe > 1 && !active {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has inactive mofe_hourly_carry for multi-OFE contributor",
+            manifest_file_path.display()
+        ));
+    }
+
+    let substep_count = carry_metadata
+        .pointer("/substep_count")
+        .and_then(Value::as_u64)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing integer /mofe_hourly_carry/substep_count",
+                manifest_file_path.display()
+            )
+        })?;
+    if substep_count != MOFE_HOURLY_CARRY_ARRAY_COUNT {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has mofe_hourly_carry substep_count={} (expected {})",
+            manifest_file_path.display(),
+            substep_count,
+            MOFE_HOURLY_CARRY_ARRAY_COUNT
+        ));
+    }
+
+    validate_manifest_mofe_hourly_carry_required_arrays(
+        hillslope_id,
+        manifest_file_path,
+        carry_metadata,
+    )?;
+    validate_manifest_mofe_hourly_carry_totals(hillslope_id, manifest_file_path, carry_metadata)?;
+
+    Ok(())
+}
+
+fn validate_manifest_mofe_hourly_carry_required_arrays(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    carry_metadata: &Value,
+) -> Result<(), String> {
+    let required_arrays = carry_metadata
+        .pointer("/required_arrays")
+        .and_then(Value::as_array)
+        .ok_or_else(|| {
+            format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing array /mofe_hourly_carry/required_arrays",
+                manifest_file_path.display()
+            )
+        })?;
+    let observed_arrays = required_arrays
+        .iter()
+        .map(|value| {
+            value.as_str().ok_or_else(|| {
+                format!(
+                    "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has non-string /mofe_hourly_carry/required_arrays entry",
+                    manifest_file_path.display()
+                )
+            })
+        })
+        .collect::<Result<BTreeSet<_>, _>>()?;
+    for required_array in MOFE_HOURLY_REQUIRED_ARRAYS {
+        if !observed_arrays.contains(required_array) {
+            return Err(format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing mofe_hourly_carry required array '{}'",
+                manifest_file_path.display(),
+                required_array
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn validate_manifest_mofe_hourly_carry_totals(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    carry_metadata: &Value,
+) -> Result<(), String> {
+    for pointer in ["/upstream_carry_total_m", "/current_carry_total_m"] {
+        let value = carry_metadata
+            .pointer(pointer)
+            .and_then(Value::as_f64)
+            .ok_or_else(|| {
+                format!(
+                    "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' missing numeric /mofe_hourly_carry{pointer}",
+                    manifest_file_path.display()
+                )
+            })?;
+        if !value.is_finite() || value < 0.0 {
+            return Err(format!(
+                "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' invalid /mofe_hourly_carry{pointer} {} (must be finite and >= 0)",
+                manifest_file_path.display(),
+                value
+            ));
+        }
+    }
     Ok(())
 }
 

@@ -1,10 +1,10 @@
 # 20260601-hphys0241-mofe-hourly-carry-arrays-routing-continuity-001
 
 ## Status
-- state: queued
+- state: hold
 - date: 2026-06-01
 - timezone: America/Los_Angeles
-- decision: HOLD_PENDING_EXECUTION
+- decision: HOLD_PENDING_HPHYS0242
 
 ## Objective
 Close HPHYS0237 Dispatch Group C by implementing baseline-authoritative MOFE
@@ -143,6 +143,7 @@ Each artifact must label evidence class (`Static:` vs `Ran:`).
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs`
 - `crates/openwepp-runner/src/hillslope/mod.rs`
 - `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
+- `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`
 
 ## Phase Plan
 ### Phase A - Contract authority amendment

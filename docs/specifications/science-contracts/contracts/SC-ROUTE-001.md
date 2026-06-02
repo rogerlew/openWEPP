@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 43
+contract_version: 44
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -76,6 +76,7 @@ Out of scope:
 | REF-ROUTE-RUNFILE-APPLICABILITY | `docs/contracts/openwepp-watershed-runfile-contract.md` (`inputs.applicability` selectors) + `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` (`CLIWAT-E-040`) | Concrete input-validator binding for Chapter-13 applicability declarations (`chapter13_small_watershed_intent=true`, excluded-process selectors=false) with typed fail-closed runtime behavior. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-CH4-COUPLING | `references/50201000/chap4.pdf` Eq. [4.2.1]-[4.2.9], [4.3.1]-[4.3.5], [4.4.27]-[4.4.29], [4.5.4], [4.5.6] | Channel hydrology uses hillslope infiltration/rainfall-excess and recession-infiltration relationships by explicit Chapter-13 linkage. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1-§5.4 and `chap13.pdf` §13.3 | Channel water-balance/percolation routines are stated as identical to hillslope routines. | `[DIRECT][Static]` |
+| REF-ROUTE-MOFE-HOURLY-CARRY | `SC-WATBAL-001#INV-WATBAL-033`, `SC-RUNOFFPART-001#INV-RUNOFFPART-013`, and `SC-SYSTEM-001#INV-SYSTEM-028` | Routing coupling completeness for multi-OFE hourly hillslope contributors requires explicit carry-array provenance before watershed dispatch. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-HBP-FORMAT | `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` (`EVENT Payload`) | Canonical binary pass serialization field names and units consumed at routing boundary (`total_detachment_kg`, `total_deposition_kg`, `sediment_concentration_kg_m3[npart]`, `particle_diameter_m[npart]`, `particle_flow_fraction[npart]`). | `[DIRECT][Static]` |
 | REF-ROUTE-HBP-READER | `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` (`Read Contract`, `Required Invariants`) | Reader/index fail-closed semantics for malformed/missing hillslope payload fields and no-text-fallback posture. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-LEGACY-HSROUTE-BOUNDARY | `/workdir/wepp-forest_260430_baseline/src/contin.for` + `/workdir/wepp-forest_260430_baseline/src/route.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Scope-boundary provenance anchor: legacy `call route` from `CONTIN` is hillslope sediment routing authority governed by `SC-SED-001`, not WS10 watershed/channel routing authority in this contract. | `[DIRECT][Static]` |
@@ -104,6 +105,7 @@ Out of scope:
 | `D`, `DF`, `DL` | `lb ft^-2 s^-1`, `lb ft^-2 s^-1`, `lb ft^-2 s^-1` | Detachment/deposition rates and lateral sediment inflow rate in continuity equation. | channel erosion segment solver | sediment load update |
 | `qsed`, `qsed_top`, `qsed_lat`, `Tc` | `lb ft^-1 s^-1`, `lb s^-1`, `lb s^-1 ft^-1`, `lb ft^-1 s^-1` | Segment sediment load, inlet/lateral sediment fluxes, and transport capacity. | sediment continuity + transport-capacity solver | downstream segment and outlet sediment yield |
 | `Kch`, `wc`, `Ech` | `s^-1`, `ft`, `lb ft^-1 s^-1` | Channel erodibility, active width, and per-length soil loss for active-channel branch (Eq. [13.5.20]). | detachment-capacity routine | erosion-width update and sediment load integration |
+| `mofe_hourly_carry` | manifest metadata | Contributor-level evidence that multi-OFE hourly hillslope pass payloads were produced with explicit 24-slot carry arrays rather than aggregate-only runon substitution. | hillslope runner manifest | watershed routing admission validator |
 
 ## Invariants
 
@@ -122,6 +124,7 @@ Out of scope:
 | INV-ROUTE-011 | Coupling completeness invariant: required hillslope/impoundment/channel handoff payloads (runon volumes, durations, peak flow, and HBP sediment payload family `total_detachment_kg`, `total_deposition_kg`, `particle_class_count`, `sediment_concentration_kg_m3_i`, `particle_diameter_m_i`, `particle_flow_fraction_i`) must be present and parseable before routing calculations proceed. | hard-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-CONT, REF-ROUTE-CH4-COUPLING, REF-ROUTE-CH5-COUPLING, REF-ROUTE-HBP-FORMAT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-012 | Governance invariant: channel-routing outputs are watershed-integrated Tier-B surfaces; unresolved major discrepancies must route to investigation/disposition and cannot be silently promoted as Tier-A-equivalent confidence. | governance-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-DETDEP, REF-ROUTE-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-ROUTE-013 | Applicability-bound invariant: authoritative scope is limited to small agricultural watersheds (Chapter-13 summary intent) with explicit exclusions (`no partial area response`, `no headcutting`, `no bank sloughing`, `no perennial streams`); watershed runfile intake must declare these selectors explicitly and fail closed when declarations are absent or violated. | hard-fail | REF-ROUTE-CH13-LIMIT, REF-ROUTE-RUNFILE-APPLICABILITY | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-014 | HPHYS0241 MOFE hourly carry routing-continuity invariant: watershed routing admission for multi-OFE hourly hillslope contributors must validate `mofe_hourly_carry` manifest provenance before consuming HBP pass payloads; aggregate-only carry metadata, inactive carry metadata, non-24-slot metadata, or malformed carry totals are coupling-incomplete and must hard-fail before channel routing. | hard-fail | REF-ROUTE-MOFE-HOURLY-CARRY, REF-ROUTE-CH13-RUNON, REF-ROUTE-HBP-FORMAT, REF-ROUTE-HBP-READER | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -140,6 +143,7 @@ Out of scope:
 | `INV-ROUTE-011` | runtime | Watershed handoff payload validator | Typed hard error on missing/unparseable boundary payload fields | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-012` | governance | Review/disposition/verification + comparator policy gate | Promotion `HOLD` when Tier-B discrepancies are undispositioned or misclassified | Governance gate | `[INFERENCE][Static]` |
 | `INV-ROUTE-013` | runtime + governance | Watershed runfile applicability validator (`inputs.applicability.*`) + promotion checklist | Typed hard error (`CLIWAT-E-040`) on missing/invalid applicability declarations; governance `HOLD` still required for any intentional out-of-scope workload claims | Governance + runtime gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-014` | runtime + governance | Watershed contributor manifest validator before HBP routing dispatch | Typed hard error (`CLIWAT-E-037`) when multi-OFE hourly contributors lack active 24-slot MOFE carry-array provenance or publish malformed carry totals | HPHYS MOFE routing-continuity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -155,6 +159,7 @@ channel erosion internals.
 | `durc`, `durrunon`, `durchan`, `durirrig`, `durrof` | identity names | event-duration boundaries | `s` preserved | `[DIRECT][Static]` |
 | `tb`, `tp`, `qpi`, `qpo` | identity names | hydrograph peak-routing boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
 | `qpo`, `durrof`, `roff` (WS10 typed state/flux projection) | `WatershedProductionStateSymbol::ChannelNode{field=Qpo|Durrof}`; `WatershedProductionFluxSymbol::ChannelNode{field=Roff}` | node-scoped production routing outputs | `m^3 s^-1`, `s`, `m^3` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `mofe_hourly_carry` | `openwepp-hillslope-run-manifest-v1.mofe_hourly_carry` | multi-OFE hourly hillslope contributor routing-admission metadata | 24-slot carry-array provenance preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `tc`, `tcc`, `tcs`, `tci` | identity names | time-of-concentration boundaries | `h` preserved | `[DIRECT][Static]` |
 | `alpha`, `alphah`, `alphac`, `alphai` | identity names | outlet-peak method-selection boundaries | `fraction` preserved | `[DIRECT][Static]` |
 | `lc`, `leff`, `ltop`, `qt`, `qlat`, `qlat_eff`, `qu`, `ql` | identity names | segment discharge-routing boundaries | chapter-declared units preserved | `[DIRECT][Static]` |
@@ -497,6 +502,24 @@ Minimum WS11 routing conformance vectors:
 4. Dynamic refresh validity is finite/domain bounded input closure; domain
    violations are typed hard-fail channel guard outcomes, not silent fallback.
 
+## HPHYS0241 MOFE Hourly Carry Routing-Continuity Addendum
+
+1. Watershed routing admission must treat multi-OFE hourly hillslope
+   contributors as coupling-incomplete unless their declared hillslope manifest
+   includes active `mofe_hourly_carry` provenance.
+2. Required routing-admission metadata is:
+   - `policy = baseline-wathour-24-slot-copy-forward`,
+   - `substep_count = 24`,
+   - required arrays exactly covering `ui_SUrunf`, `ui_SCrunf`,
+     `ui_LfUrf`, and `ui_LfCrf`,
+   - finite non-negative aggregate upstream/current carry totals.
+3. This metadata gate is an admission guard before HBP pass payload consumption;
+   it does not replace HBP field validation or channel runon/runoff equations.
+4. Missing, inactive, malformed, non-24-slot, or aggregate-only carry metadata
+   must hard-fail with watershed intake context. Channel routing may not infer
+   array completeness from canonicalized WB13 row ids or daily aggregate
+   `wb12_runoff_carryover` alone.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -517,6 +540,7 @@ Minimum WS11 routing conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `44` | `Codex` | HPHYS0241 amendment: added `INV-ROUTE-014` and routing-admission authority requiring active 24-slot MOFE hourly carry-array manifest provenance for multi-OFE hourly hillslope contributors before watershed HBP routing dispatch. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-15 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with Chapter-13 authority anchors, invariants, guard map, alias map, obligations, tolerances, and gap register for SCI-15 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: made outlet method selection explicitly exclusive, promoted `roff <= 0.001 m^3` peak-threshold gating into invariant/guard tables, added `durrof` alias coverage, and added Chapter-13 applicability-bound governance controls. |

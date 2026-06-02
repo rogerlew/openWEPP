@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 76
+contract_version: 77
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -89,6 +89,7 @@ Out of scope:
 | `Ep`, `Es`, `Er` | `mm` (daily depth-equivalent publication units) | Daily ET component publications consumed by replay/comparator surfaces and downstream summaries. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `Total-Soil`, `SoilWaterTotal` | `mm` | Daily soil-water aggregate publications derived from runtime layer-state lineage plus frozen/snow components. | hillslope daily hydrology closure | WB13/reporting/replay consumers |
 | `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore` | `mm` | Daily full-profile publications where `ProfileDepth`/`ProfilePorosityCap` derive from baseline-authoritative soil preprocessing + aggregation lineage, `ProfileFCStore` derives from layer aggregation plus explicit normalized-tail contribution (`Σ(thetfc_i*dg_i)*1000 + wb13_profile_fc_tail_mm`) under HPHYS0216D, and `ProfileWPStore` derives from normalized-profile storage symbol (`wb13_profile_wp_store_mm`). | hillslope daily hydrology closure | WB13/reporting/replay consumers |
+| `mofe_hourly_carry` manifest object | manifest metadata | Hillslope-run manifest provenance object declaring MOFE hourly carry-array activation, 24-slot policy, required array family names, and final aggregate carry evidence. | hillslope runner publication | watershed contributor intake validation |
 | `total_detachment_kg` | `kg` | Total hillslope detachment payload at event endpoint. | hillslope erosion component | channel sediment-load assembly |
 | `total_deposition_kg` | `kg` | Total hillslope deposition payload at event endpoint. | hillslope erosion component | watershed sediment bookkeeping |
 | `particle_class_count` | `count` | Particle-class cardinality for event payload vectors. | hillslope erosion component | watershed routing payload validator |
@@ -141,6 +142,7 @@ Out of scope:
 | INV-SYSTEM-025 | SIMIMPL16 replay contract-derived test-coverage invariant: system replay closeout claims must be backed by contract-derived tests covering `SIMIMPL13-TEST-001..005`, including span overlap closure, key-domain alignment, parquet alias continuity, strict-lane compensation when parquet strict is skipped, and conversion-derived dat provenance row-consistency checks. Missing/failed closure tests keep replay governance evidence non-authoritative. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-026 | SIMIMPL18 baseline-year policy and full-span precipitation parity invariant: replay comparability claims across legacy baseline and openWEPP candidate must publish explicit baseline-year policy that yields a declared common keyed horizon, preserve identical input/sidecar provenance references, and evaluate precipitation (`P`) parity across the full keyed span (not overlap-only subsets). Missing policy metadata or unmatched-span `P` claims are hard-fail/HOLD defects. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-027 | SIMIMPL21/HPARITY02 WB13 ET/soil-water/profile publication-lineage invariant: published `Ep`, `Es`, `Er`, `Total-Soil`, `SoilWaterTotal`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and `ProfileWPStore` surfaces must be simulation-owned outputs traceable to canonical WB11/WB13 lineage with explicit alias continuity and no projection-side surrogate reconstruction. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-LEGACY-OUTFIL, REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-028 | HPHYS0241 MOFE hourly carry manifest invariant: multi-OFE hourly hillslope publications must include `mofe_hourly_carry` manifest provenance proving active 24-slot carry-array execution for `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`; watershed contributor intake must reject missing, inactive, malformed, or non-24-slot carry metadata before routing dispatch. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-033, SC-RUNOFFPART-001#INV-RUNOFFPART-013 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -173,6 +175,7 @@ Out of scope:
 | `INV-SYSTEM-025` | governance | Replay contract-derived closure-test coverage gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required SIMIMPL13 blind-spot closure tests are missing/failing, including strict-lane compensation and conversion-derived dat row-consistency assertions | SIMIMPL replay contract-test closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-026` | runtime + governance | Baseline-year policy + full-span precipitation comparability gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when baseline-year expansion/rekey policy is missing, input-provenance parity is unproven, or full-span keyed `P` comparability is reduced to overlap-only subsets | SIMIMPL replay span-policy gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-027` | runtime + governance | WB13 ET/soil-water/profile publication-lineage validator for ET components, aggregate soil-water outputs, and profile-capacity outputs | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required WB13 ET/soil-water/profile outputs are not traceable to simulation-owned WB11/WB13 lineage with declared aliases | SIMIMPL ET/soil-water/profile publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-028` | runtime + governance | Hillslope manifest publisher plus watershed contributor manifest validator | Typed hard error / explicit `HOLD` (`CLIWAT-E-037`) when multi-OFE hourly contributor metadata lacks active 24-slot carry-array provenance, required array family names, or finite non-negative aggregate evidence | HPHYS MOFE hourly carry-array intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -196,6 +199,7 @@ consumed directly as parser payload terms instead of projected runtime symbols.
 | `H`, `Hfull`, `deltat`, `Qinf`, `Qo`, `durout`, `Hnext`, `outflow_volume` | `ws10_impoundment_{id}_{h,hfull,deltat,qinf,qo,durout,hnext,outflow_volume}` (`WatershedProductionStateSymbol::ImpoundmentNode`, `WatershedProductionFluxSymbol::ImpoundmentNode`) | impoundment-node runtime publication/consumption boundaries | `ft`, `s`, `ft^3 s^-1`, and volume semantics preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ep`, `Es`, `Er` | `Ep`, `Es`, `Er` (identity) | WB13 ET component publication surfaces | `mm` daily publication units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Total-Soil`, `SoilWaterTotal` | `Total-Soil`, `SoilWaterTotal` (identity; legacy semantic alias `Total-Soil Water` accepted in comparator tooling only) | WB13 aggregate soil-water publication surfaces | `mm` publication units preserved with WB11 lineage continuity | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, `ui_LfCrf` | `mofe_hourly_carry.required_arrays[]` plus runtime symbols `ui_*_{hour:04}` | MOFE hourly carry-array provenance from hillslope runner into watershed contributor validation | 24 scalar `m` entries per family preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Qi`, `Aimp`, `Qtotal`, `M`, `Ci`, `Co`, `Dep` | identity names | impoundment hydraulic/sediment process internals | chapter-declared units preserved | `[DIRECT][Static]` |
 
 ## Allowed Degenerate States
@@ -811,6 +815,27 @@ Minimum WS12 integration vectors:
 4. Valid contributor metadata for multi-OFE intake passes metadata gates and
    reaches downstream watershed execution/output boundaries.
 
+## HPHYS0241 MOFE Hourly Carry Metadata Addendum
+
+1. Hillslope runner manifests must publish a `mofe_hourly_carry` object with:
+   - `policy = baseline-wathour-24-slot-copy-forward`,
+   - `active` carry status,
+   - `substep_count = 24` for active MOFE hourly lanes,
+   - `required_arrays = ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"]`,
+   - finite non-negative aggregate evidence for upstream and current carry
+     totals.
+2. For multi-OFE contributors, watershed intake must require active
+   `mofe_hourly_carry` metadata before routing dispatch and must validate the
+   policy string, substep count, required-array family names, and finite
+   non-negative aggregate totals.
+3. Single-OFE contributors may publish inactive carry metadata, but the object
+   must remain parseable so downstream tooling can distinguish inactive
+   single-OFE lanes from missing multi-OFE carry evidence.
+4. Missing, inactive, malformed, non-24-slot, or aggregate-only carry metadata
+   for multi-OFE contributors is a typed hard-fail watershed boundary error and
+   cannot be repaired by inferring topology from canonicalized WB13 `OFE=1`
+   rows.
+
 ## EROD13 Wave-1 Active Boundary-Carry Addendum
 
 1. System integration boundaries carrying hillslope runtime outputs must
@@ -881,6 +906,7 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-01` | `77` | `Codex` | HPHYS0241 amendment: added `INV-SYSTEM-028` and `mofe_hourly_carry` manifest/watershed-intake authority requiring active 24-slot carry-array provenance for multi-OFE hourly contributors and fail-closed validation before watershed routing dispatch. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-17 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with integration invariants, guard map, alias map, tolerances, and gap register for SCI-17 review cycle. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: normalized evidence metadata, added duration-family alias coverage, added evidence labels for degenerate/tolerance rows, and clarified CREAMS dataset applicability range in gap text. |

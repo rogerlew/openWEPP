@@ -906,6 +906,7 @@ loss_all_years_class_data = "interchange/loss_pw0.all_years.class_data.parquet"
 }
 
 fn write_hillslope_manifest_fixture(path: PathBuf, contributor_ofe_count: usize, area_m2: f64) {
+    let carry_active = contributor_ofe_count > 1;
     let payload = format!(
         r#"{{
   "schema": "openwepp-hillslope-run-manifest-v1",
@@ -914,6 +915,14 @@ fn write_hillslope_manifest_fixture(path: PathBuf, contributor_ofe_count: usize,
     "contributor_ofe_count": {contributor_ofe_count},
     "area_policy": "sum-ofe-geometry-area",
     "publication_area_m2": {area_m2}
+  }},
+  "mofe_hourly_carry": {{
+    "policy": "baseline-wathour-24-slot-copy-forward",
+    "active": {carry_active},
+    "substep_count": 24,
+    "required_arrays": ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"],
+    "upstream_carry_total_m": 0.0,
+    "current_carry_total_m": 0.0
   }}
 }}
 "#

@@ -81,6 +81,7 @@ struct HillslopeRunManifest {
     adapter_boundary: HillslopeAdapterBoundaryProvenance,
     execution_provenance: HillslopeExecutionProvenance,
     wb13_publication: HillslopeWb13PublicationProvenance,
+    mofe_hourly_carry: HillslopeMofeHourlyCarryProvenance,
     coupling_vectors: HillslopeCouplingVectorProvenance,
 }
 
@@ -166,6 +167,16 @@ struct HillslopeWb13PublicationProvenance {
 }
 
 #[derive(Debug, Serialize)]
+struct HillslopeMofeHourlyCarryProvenance {
+    policy: String,
+    active: bool,
+    substep_count: usize,
+    required_arrays: Vec<String>,
+    upstream_carry_total_m: f64,
+    current_carry_total_m: f64,
+}
+
+#[derive(Debug, Serialize)]
 struct HillslopeCouplingVectorProvenance {
     guard_id: String,
     winter: HillslopeWinterCouplingProvenance,
@@ -239,6 +250,20 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
+const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
+const MOFE_HOURLY_CARRY_ARRAY_COUNT: usize = 24;
+const MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL: &str = "mofe_hourly_carry_arrays_enabled";
+const MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL: &str = "mofe_hourly_upstream_area_ratio";
+const MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT: &str = "ui_SUrunf";
+const MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT: &str = "ui_SCrunf";
+const MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT: &str = "ui_LfUrf";
+const MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT: &str = "ui_LfCrf";
+const MOFE_HOURLY_REQUIRED_ARRAYS: [&str; 4] = [
+    MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT,
+    MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+    MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+    MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum ExecutionLane {
@@ -884,6 +909,8 @@ pub fn execute_hillslope_run(
     };
     let wb13_publication =
         build_wb13_publication_provenance(&wb13_rows, contributor_ofe_count, publication_area_m2)?;
+    let mofe_hourly_carry =
+        build_mofe_hourly_carry_provenance(&runtime_surface, contributor_ofe_count)?;
     let pass_bytes = build_hbp_output(
         &output_pass,
         &wb13_rows,
@@ -1050,6 +1077,7 @@ pub fn execute_hillslope_run(
         adapter_boundary,
         execution_provenance,
         wb13_publication,
+        mofe_hourly_carry,
         coupling_vectors,
     };
 
@@ -1551,6 +1579,13 @@ fn seed_wb11_runtime_surface_inputs(
         ExecutionLane::Daily => 1.0,
         ExecutionLane::Hourly => 24.0,
     };
+    let contributor_ofe_count = runtime_surface_ofe_count(runtime_surface)?;
+    let mofe_hourly_carry_active = contributor_ofe_count > 1;
+    let wb18_perc_lane_substeps = if mofe_hourly_carry_active {
+        24.0
+    } else {
+        wb18_perc_lane_substeps
+    };
     runtime_surface.state_surface.insert(
         BoundarySymbol::from(WB18_PERC_LANE_SUBSTEPS_SYMBOL),
         BoundaryValue::scalar(wb18_perc_lane_substeps),
@@ -1559,6 +1594,7 @@ fn seed_wb11_runtime_surface_inputs(
         BoundarySymbol::from(WB19_LATERAL_DRAIN_LANE_SUBSTEPS_SYMBOL),
         BoundaryValue::scalar(wb18_perc_lane_substeps),
     );
+    seed_mofe_hourly_carry_runtime_surface_inputs(runtime_surface, mofe_hourly_carry_active)?;
 
     let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
     let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
@@ -3369,6 +3405,74 @@ fn build_wb13_publication_provenance(
     })
 }
 
+fn build_mofe_hourly_carry_provenance(
+    runtime_surface: &HillslopeWritebackSurface,
+    contributor_ofe_count: usize,
+) -> Result<HillslopeMofeHourlyCarryProvenance, HillslopeCliError> {
+    let active = contributor_ofe_count > 1;
+    let upstream_carry_total_m = if active {
+        sum_mofe_hourly_carry_array(
+            runtime_surface,
+            MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT,
+            true,
+        )? + sum_mofe_hourly_carry_array(
+            runtime_surface,
+            MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT,
+            true,
+        )?
+    } else {
+        0.0
+    };
+    let current_carry_total_m = if active {
+        sum_mofe_hourly_carry_array(
+            runtime_surface,
+            MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT,
+            true,
+        )? + sum_mofe_hourly_carry_array(
+            runtime_surface,
+            MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT,
+            true,
+        )?
+    } else {
+        0.0
+    };
+
+    Ok(HillslopeMofeHourlyCarryProvenance {
+        policy: MOFE_HOURLY_CARRY_POLICY.to_string(),
+        active,
+        substep_count: MOFE_HOURLY_CARRY_ARRAY_COUNT,
+        required_arrays: MOFE_HOURLY_REQUIRED_ARRAYS
+            .iter()
+            .map(|root| (*root).to_string())
+            .collect(),
+        upstream_carry_total_m,
+        current_carry_total_m,
+    })
+}
+
+fn sum_mofe_hourly_carry_array(
+    runtime_surface: &HillslopeWritebackSurface,
+    root: &str,
+    required: bool,
+) -> Result<f64, HillslopeCliError> {
+    let mut total = 0.0_f64;
+    for hour in 1..=MOFE_HOURLY_CARRY_ARRAY_COUNT {
+        let symbol = mofe_hourly_carry_hour_symbol(root, hour);
+        let Some(value) = runtime_surface_symbol_value(runtime_surface, &symbol) else {
+            if required {
+                return Err(mofe_hourly_carry_failure(format!(
+                    "missing required runtime symbol {symbol}"
+                )));
+            }
+            continue;
+        };
+        require_mofe_hourly_carry_non_negative(value, &symbol)?;
+        total += value;
+    }
+    require_mofe_hourly_carry_non_negative(total, root)?;
+    Ok(total)
+}
+
 fn scheduler_outcome_class_as_str(outcome_class: SchedulerOutcomeClass) -> &'static str {
     match outcome_class {
         SchedulerOutcomeClass::Completed => "completed",
@@ -4403,6 +4507,76 @@ fn runtime_surface_symbol_value_prefer_flux(
         })
 }
 
+fn runtime_surface_ofe_count(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<usize, HillslopeCliError> {
+    if let Some(nelem) = runtime_surface_symbol_value(runtime_surface, "nelem") {
+        let count = scalar_to_usize("nelem", nelem)?;
+        if count == 0 {
+            return Err(mofe_hourly_carry_failure(
+                "nelem must be >= 1 for MOFE hourly carry seeding",
+            ));
+        }
+        return Ok(count);
+    }
+    if let Some(nwsofe) = runtime_surface_symbol_value(runtime_surface, "nwsofe") {
+        let count = scalar_to_usize("nwsofe", nwsofe)?;
+        if count == 0 {
+            return Err(mofe_hourly_carry_failure(
+                "nwsofe must be >= 1 for MOFE hourly carry seeding",
+            ));
+        }
+        return Ok(count);
+    }
+    Ok(1)
+}
+
+fn seed_mofe_hourly_carry_runtime_surface_inputs(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    active: bool,
+) -> Result<(), HillslopeCliError> {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from(MOFE_HOURLY_CARRY_ARRAYS_ENABLED_SYMBOL),
+        BoundaryValue::scalar(if active { 1.0 } else { 0.0 }),
+    );
+    if active {
+        runtime_surface
+            .state_surface
+            .entry(BoundarySymbol::from(MOFE_HOURLY_UPSTREAM_AREA_RATIO_SYMBOL))
+            .or_insert_with(|| BoundaryValue::scalar(1.0));
+    }
+
+    for root in MOFE_HOURLY_REQUIRED_ARRAYS {
+        for hour in 1..=MOFE_HOURLY_CARRY_ARRAY_COUNT {
+            let symbol = mofe_hourly_carry_hour_symbol(root, hour);
+            if let Some(existing) = runtime_surface_symbol_value(runtime_surface, &symbol) {
+                require_mofe_hourly_carry_non_negative(existing, &symbol)?;
+            } else if active {
+                runtime_surface
+                    .state_surface
+                    .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(0.0));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn mofe_hourly_carry_hour_symbol(root: &str, hour: usize) -> String {
+    format!("{root}_{hour:04}")
+}
+
+fn require_mofe_hourly_carry_non_negative(
+    value: f64,
+    symbol: &str,
+) -> Result<(), HillslopeCliError> {
+    if !value.is_finite() || value < 0.0 {
+        return Err(mofe_hourly_carry_failure(format!(
+            "{symbol} must be finite and >= 0.0, observed {value}"
+        )));
+    }
+    Ok(())
+}
+
 fn parse_mofe03_binary_flag(symbol: &str, value: f64) -> Result<bool, HillslopeCliError> {
     if !value.is_finite() {
         return Err(mofe03_wave2_seed_failure(format!(
@@ -4519,6 +4693,13 @@ fn mofe03_erod14_class_symbol(root: &str, class_index: usize) -> String {
 fn mofe03_wave2_seed_failure(detail: impl Into<String>) -> HillslopeCliError {
     HillslopeCliError::RuntimeSurfaceFailure {
         surface: "mofe03_wave2_seed",
+        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
+    }
+}
+
+fn mofe_hourly_carry_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "mofe_hourly_carry",
         detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
     }
 }

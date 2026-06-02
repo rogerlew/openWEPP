@@ -674,6 +674,23 @@ loss = "output/H1.loss.json"
         manifest.contains("\"publication_area_m2\": 3600.0"),
         "manifest missing MOFE04 publication area marker for multi-OFE case: {manifest}"
     );
+    for expected in [
+        "\"mofe_hourly_carry\"",
+        "\"policy\": \"baseline-wathour-24-slot-copy-forward\"",
+        "\"active\": true",
+        "\"substep_count\": 24",
+        "\"ui_SUrunf\"",
+        "\"ui_SCrunf\"",
+        "\"ui_LfUrf\"",
+        "\"ui_LfCrf\"",
+        "\"upstream_carry_total_m\"",
+        "\"current_carry_total_m\"",
+    ] {
+        assert!(
+            manifest.contains(expected),
+            "manifest missing HPHYS0241 MOFE carry marker {expected}: {manifest}"
+        );
+    }
 
     assert!(
         manifest.contains("\"first_row_key\""),
@@ -724,6 +741,32 @@ loss = "output/H1.loss.json"
         manifest.contains("\"publication_area_m2\": 1800.0"),
         "manifest missing MOFE04 publication area marker for single-OFE case: {manifest}"
     );
+    assert!(
+        manifest.contains("\"mofe_hourly_carry\"")
+            && manifest.contains("\"policy\": \"baseline-wathour-24-slot-copy-forward\"")
+            && manifest.contains("\"active\": false"),
+        "single-OFE manifest must publish inactive HPHYS0241 carry metadata: {manifest}"
+    );
+}
+
+#[test]
+fn cli03_hphys0241_watershed_validator_requires_mofe_hourly_carry_metadata() {
+    for expected in [
+        "mofe_hourly_carry",
+        "baseline-wathour-24-slot-copy-forward",
+        "ui_SUrunf",
+        "ui_SCrunf",
+        "ui_LfUrf",
+        "ui_LfCrf",
+        "substep_count",
+        "upstream_carry_total_m",
+        "current_carry_total_m",
+    ] {
+        assert!(
+            WATERSHED_CLI_SOURCE.contains(expected),
+            "watershed CLI source must validate HPHYS0241 metadata marker {expected}"
+        );
+    }
 }
 
 #[test]

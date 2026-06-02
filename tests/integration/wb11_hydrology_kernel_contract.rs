@@ -250,6 +250,41 @@ fn seeded_wb11_surface() -> HillslopeWritebackSurface {
     }
 }
 
+fn enable_mofe_hourly_carry_arrays(
+    surface: &mut HillslopeWritebackSurface,
+    upstream_saturation: &[(usize, f64)],
+    upstream_lateral: &[(usize, f64)],
+) {
+    surface.state_surface.insert(
+        BoundarySymbol::from("mofe_hourly_carry_arrays_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("mofe_hourly_upstream_area_ratio"),
+        BoundaryValue::scalar(1.0),
+    );
+    for hour in 1..=24 {
+        for root in ["ui_SUrunf", "ui_SCrunf", "ui_LfUrf", "ui_LfCrf"] {
+            surface.state_surface.insert(
+                BoundarySymbol::from(format!("{root}_{hour:04}")),
+                BoundaryValue::scalar(0.0),
+            );
+        }
+    }
+    for (hour, value) in upstream_saturation {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ui_SUrunf_{hour:04}")),
+            BoundaryValue::scalar(*value),
+        );
+    }
+    for (hour, value) in upstream_lateral {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("ui_LfUrf_{hour:04}")),
+            BoundaryValue::scalar(*value),
+        );
+    }
+}
+
 #[test]
 fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
@@ -647,6 +682,101 @@ fn hphys0240_contract_wb11_carryover_tail_requires_storage_after_runoff() {
             .dependencies_for(HillslopePhase::StorageReconciliation)
             .contains(&HillslopePhase::RunoffReconciliation),
         "storage reconciliation must consume Q after runoff carryover resolution"
+    );
+}
+
+#[test]
+fn hphys0241_contract_mofe_hourly_arrays_drive_runoff_carryover_and_copy_forward() {
+    const TOL: f64 = 1.0e-12;
+
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb11_surface();
+    enable_mofe_hourly_carry_arrays(&mut surface, &[(1, 0.10)], &[(2, 0.05)]);
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(0.80),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_depression_storage_delta"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("HPHYS0241 MOFE carry-array vector should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let carryover = require_flux_scalar(&report, "wb12_runoff_carryover");
+    assert!(
+        (carryover - 0.15).abs() <= TOL,
+        "array-derived carryover must override compatibility runon state, observed {carryover}"
+    );
+
+    for hour in 1..=24 {
+        let current_saturation = require_state_scalar(&report, &format!("ui_SCrunf_{hour:04}"));
+        let upstream_saturation = require_state_scalar(&report, &format!("ui_SUrunf_{hour:04}"));
+        let current_lateral = require_state_scalar(&report, &format!("ui_LfCrf_{hour:04}"));
+        let upstream_lateral = require_state_scalar(&report, &format!("ui_LfUrf_{hour:04}"));
+        assert!(
+            current_saturation >= -TOL && current_lateral >= -TOL,
+            "current carry arrays must remain non-negative"
+        );
+        assert!(
+            (upstream_saturation - current_saturation).abs() <= TOL,
+            "ui_SUrunf must copy-forward ui_SCrunf at hour {hour}"
+        );
+        assert!(
+            (upstream_lateral - current_lateral).abs() <= TOL,
+            "ui_LfUrf must copy-forward ui_LfCrf at hour {hour}"
+        );
+    }
+}
+
+#[test]
+fn hphys0241_contract_mofe_hourly_arrays_reject_negative_upstream_payload() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_wb11_surface();
+    enable_mofe_hourly_carry_arrays(&mut surface, &[], &[(7, -0.001)]);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("HPHYS0241 malformed carry-array vector should return typed report");
+
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
+
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.message_id(),
+        "HKERNEL-WB14-RUNOFF-E-003"
+    );
+    assert_eq!(
+        runoff_phase.decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
     );
 }
 
