@@ -100,6 +100,7 @@ Out of scope:
 | INV-SOIL-013 | SIMIMPL21 soil-water alias-lineage invariant: ET/soil-water closure surfaces must preserve deterministic alias continuity from layer storage (`st(i)` / `Θi`) to aggregate publication lineage (`watcon`, `Total-Soil`, `SoilWaterTotal`) without projection-side surrogate reconstruction. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH5-PERC, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-014 | AUTH03 constitutive FC/WP invariant: authoritative layer constitutive symbols must satisfy `por_i >= thetfc_i(-33kPa) >= thetdr_i(-1500kPa) >= 0` for every emitted layer interval, and profile aggregates (`Σ thetfc_i*dg_i`, `Σ thetdr_i*dg_i`) must remain finite and non-negative. | hard-fail | REF-SOIL-CH7-POR, REF-SOIL-CH7-INTRO, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-015 | HPHYS0254 normalized WB11 seed-grid invariant: hydrology-owned WB11/WB18/WB19 seed aliases must be emitted on the baseline-normalized corrected-layer grid used by `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm`; parser-depth tail truncation or scalar tail compensation outside `st(i)` layer state is invalid, while generic constitutive `thetfc_####`/`thetdr_####` symbols retain AUTH03/AUTH05 authority. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH7-POR, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SOIL-016 | HPHYS0255 MOFE storage-scope invariant: multi-OFE soil projection must preserve OFE-qualified parser/corrected-layer provenance (`ofeN_*`) separately from unqualified WB11/WB18/WB19 hydrology seed aliases. Unqualified hydrology aliases describe the active single WB11 runtime storage state until a future per-OFE hydrology-state migration promotes OFE-qualified dynamic state vectors. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH7-POR, SC-WATBAL-001#INV-WATBAL-042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -120,6 +121,7 @@ Out of scope:
 | `INV-SOIL-013` | runtime + governance | Soil layer-to-aggregate alias-lineage validator for ET/soil-water publication surfaces | Typed hard error / explicit `HOLD` when layer storage aliases and aggregate lineage cannot be traced from runtime-owned state | SIMIMPL soil-water lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-014` | runtime + governance | Constitutive layer-domain validator for FC/WP symbols and profile aggregates | Typed hard error / explicit `HOLD` when `por_i >= thetfc_i >= thetdr_i >= 0` or aggregate finite/non-negative closure is violated | AUTH03 Level-4 constitutive gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SOIL-015` | runtime + governance | Soil runtime projection validator for normalized WB11 hydrology seed cardinality/depth and corrected threshold aliases | Typed hard error / explicit `HOLD` when emitted hydrology seed aliases do not span normalized profile depth or use parser-depth fallback under normalized lineage availability | HPHYS0254 WB11 seed-grid closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SOIL-016` | runtime + governance | MOFE soil projection validator separating OFE-qualified parser provenance from active unqualified WB11 hydrology state | Typed hard error / explicit `HOLD` when OFE-qualified diagnostic symbols overwrite active hydrology aliases or when unqualified storage is silently treated as area-weighted static MOFE storage | HPHYS0255 MOFE storage projection gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -343,6 +345,20 @@ bit-for-bit parity). `[DIRECT][Static]`
    but hydrology WB11 seed aliases cannot truncate normalized-tail depth or rely
    on scalar tail compensation outside `st(i)`/`soilw(i)` layer state.
 
+## HPHYS0255 MOFE Storage-Scope Addendum
+
+1. Multi-OFE soil projection must retain OFE-qualified corrected/parser-layer
+   symbols (`ofe1_*`, `ofe2_*`, ...) as contributor provenance.
+2. Unqualified WB11/WB18/WB19 hydrology seed aliases remain the active single
+   WB11 runtime storage state in the current architecture and must not be
+   overwritten by later OFE parser rows.
+3. The presence of multiple OFE-qualified soil profiles does not authorize
+   publication-side area-weighted storage synthesis for `Total-Soil`,
+   `SoilWaterTotal`, or WB13 profile stores.
+4. A per-OFE dynamic storage migration must define OFE-qualified hydrology
+   state vectors separately from parser/corrected-layer diagnostics before any
+   aggregate-storage publication claim can be promoted.
+
 ## HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 1. Soil authority for `ProfileWPStore` publication lineage remains the
@@ -468,6 +484,7 @@ promotes direct-theta cohort governance back to blocking Level-4 posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `22` | `Codex` | HPHYS0255 amendment: added `INV-SOIL-016` separating MOFE OFE-qualified soil provenance from unqualified active WB11 hydrology seed aliases and prohibiting static per-OFE storage synthesis. |
 | `2026-06-02` | `21` | `Codex` | HPHYS0254 amendment: added `INV-SOIL-015` requiring hydrology WB11/WB18/WB19 seed aliases to use the baseline-normalized corrected-layer grid while preserving AUTH03/AUTH05 generic constitutive FC/WP symbols. |
 | `2026-06-01` | `20` | `Codex` | AUTH12 follow-up amendment: expanded measured-FC/WP contract scope to all measured-theta datvers (`7777/7778/9002/9003/9005`) and grounded producer/runtime pairing authority to WEPPpy SSURGO producer equations plus runtime `cpm` application (legacy `scon.for` basis). |
 | `2026-05-31` | `19` | `Codex` | AUTH12 amendment: ratified rocky-soil FC closure posture, set direct-theta cohort back to Level-4 required/hard-fail after closure criteria, and codified measured FC/WP authority for disturbed-policy (`9002/9003/9005`) families without additional FC/WP `cpm` multiplier application. |

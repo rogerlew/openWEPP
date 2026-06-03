@@ -1770,6 +1770,10 @@ Authorized packages:
     `wepp-forest_260430` `ksatadj` regime authority (9001 exponential recovery,
     9002 Saxton-Rawls Brooks-Corey effective K, 9003 burn-severity floor) and
     rerun carved-letter `H324` parity evidence.
+- `20260602-hphys0255-mofe-storage-projection-closure-001/`
+  - Purpose: diagnose, contract, test, and disposition MOFE storage projection
+    semantics for WB11 seed aliases and WB13/H.wat storage publication so
+    multi-OFE storage behavior is explicit and guarded.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

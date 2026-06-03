@@ -143,6 +143,7 @@ Out of scope:
 | INV-SYSTEM-026 | SIMIMPL18 baseline-year policy and full-span precipitation parity invariant: replay comparability claims across legacy baseline and openWEPP candidate must publish explicit baseline-year policy that yields a declared common keyed horizon, preserve identical input/sidecar provenance references, and evaluate precipitation (`P`) parity across the full keyed span (not overlap-only subsets). Missing policy metadata or unmatched-span `P` claims are hard-fail/HOLD defects. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-INFILE-WEPPUI, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-027 | SIMIMPL21/HPARITY02 WB13 ET/soil-water/profile publication-lineage invariant: published `Ep`, `Es`, `Er`, `Total-Soil`, `SoilWaterTotal`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, and `ProfileWPStore` surfaces must be simulation-owned outputs traceable to canonical WB11/WB13 lineage with explicit alias continuity and no projection-side surrogate reconstruction. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-LEGACY-OUTFIL, REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-028 | HPHYS0241 MOFE hourly carry manifest invariant: multi-OFE hourly hillslope publications must include `mofe_hourly_carry` manifest provenance proving active 24-slot carry-array execution for `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, and `ui_LfCrf`; watershed contributor intake must reject missing, inactive, malformed, or non-24-slot carry metadata before routing dispatch. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-033, SC-RUNOFFPART-001#INV-RUNOFFPART-013 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-029 | HPHYS0255 MOFE WB13 storage-lineage provenance invariant: MOFE WB13/H.wat manifests must declare the storage lineage policy used by canonicalized single-row publication; under the current architecture this is `single-runtime-wb11-state`, and consumers must not reinterpret aggregate `Area` as proof of area-weighted dynamic storage aggregation. | hard-fail | REF-SYSTEM-LEGACY-WATBAL, REF-SYSTEM-CH1-COMPONENTS, SC-WATBAL-001#INV-WATBAL-042 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -176,6 +177,7 @@ Out of scope:
 | `INV-SYSTEM-026` | runtime + governance | Baseline-year policy + full-span precipitation comparability gate | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when baseline-year expansion/rekey policy is missing, input-provenance parity is unproven, or full-span keyed `P` comparability is reduced to overlap-only subsets | SIMIMPL replay span-policy gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-027` | runtime + governance | WB13 ET/soil-water/profile publication-lineage validator for ET components, aggregate soil-water outputs, and profile-capacity outputs | Typed hard error / explicit `HOLD` (`WS-SIMOUT-E-001`) when required WB13 ET/soil-water/profile outputs are not traceable to simulation-owned WB11/WB13 lineage with declared aliases | SIMIMPL ET/soil-water/profile publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-028` | runtime + governance | Hillslope manifest publisher plus watershed contributor manifest validator | Typed hard error / explicit `HOLD` (`CLIWAT-E-037`) when multi-OFE hourly contributor metadata lacks active 24-slot carry-array provenance, required array family names, or finite non-negative aggregate evidence | HPHYS MOFE hourly carry-array intake gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-029` | runtime + governance | Hillslope manifest publisher plus downstream publication consumers | Typed hard error / explicit `HOLD` when MOFE storage lineage policy is absent, malformed, or inconsistent with WB11/WB13 simulation-owned storage provenance | HPHYS0255 MOFE storage-lineage provenance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -779,6 +781,20 @@ Minimum WS12 integration vectors:
    `sum-ofe-geometry-area` under MOFE04 and may not regress to
    primary-OFE-only assumptions when `contributor_ofe_count > 1`.
 
+## HPHYS0255 MOFE Storage-Lineage Publication Addendum
+
+1. MOFE publication provenance must include `storage_lineage_policy`.
+2. The current policy value is `single-runtime-wb11-state`, meaning WB13/H.wat
+   storage fields are simulation-owned WB11/WB13 runtime outputs and are not
+   static area-weighted aggregates of OFE soil rows.
+3. Downstream system consumers must treat `Area` aggregation and storage
+   lineage as separate dimensions. `publication_area_m2` can aggregate
+   contributor geometry while `Total-Soil`, `SoilWaterTotal`, and profile
+   stores remain tied to the declared storage-lineage policy.
+4. If per-OFE dynamic hydrology state is migrated later, the manifest policy
+   must change only after canonical contracts define the state vectors,
+   aggregation operator, and fail-closed validation behavior.
+
 ## MOFE05 Watershed Contributor Metadata Intake Validation Addendum
 
 1. Watershed contributor intake authority must support per-contributor MOFE
@@ -906,6 +922,7 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-02` | `78` | `Codex` | HPHYS0255 amendment: added `INV-SYSTEM-029` requiring explicit MOFE WB13/H.wat `storage_lineage_policy` provenance and preserving separation between aggregate area and simulation-owned storage lineage. |
 | `2026-06-01` | `77` | `Codex` | HPHYS0241 amendment: added `INV-SYSTEM-028` and `mofe_hourly_carry` manifest/watershed-intake authority requiring active 24-slot carry-array provenance for multi-OFE hourly contributors and fail-closed validation before watershed routing dispatch. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-17 work-package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with integration invariants, guard map, alias map, tolerances, and gap register for SCI-17 review cycle. |

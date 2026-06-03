@@ -674,6 +674,10 @@ loss = "output/H1.loss.json"
         manifest.contains("\"publication_area_m2\": 3600.0"),
         "manifest missing MOFE04 publication area marker for multi-OFE case: {manifest}"
     );
+    assert!(
+        manifest.contains("\"storage_lineage_policy\": \"single-runtime-wb11-state\""),
+        "manifest missing HPHYS0255 storage-lineage policy marker: {manifest}"
+    );
     for expected in [
         "\"mofe_hourly_carry\"",
         "\"policy\": \"baseline-wathour-24-slot-copy-forward\"",

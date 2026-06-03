@@ -162,6 +162,7 @@ struct HillslopeWb13PublicationProvenance {
     publication_ofe_policy: String,
     contributor_ofe_count: usize,
     area_policy: String,
+    storage_lineage_policy: String,
     publication_area_m2: f64,
     row_count: usize,
     sim_day_index_monotonic: bool,
@@ -3957,6 +3958,7 @@ fn build_simimpl10_coupling_vector_provenance(
 
 const MOFE04_PUBLICATION_OFE_POLICY: &str = "single-row-canonicalized-hillslope-aggregate";
 const MOFE04_PUBLICATION_AREA_POLICY: &str = "sum-ofe-geometry-area";
+const HPHYS0255_STORAGE_LINEAGE_POLICY: &str = "single-runtime-wb11-state";
 
 fn build_wb13_publication_provenance(
     rows: &[SimulationOwnedWb13Row],
@@ -4008,6 +4010,7 @@ fn build_wb13_publication_provenance(
         publication_ofe_policy: MOFE04_PUBLICATION_OFE_POLICY.to_string(),
         contributor_ofe_count,
         area_policy: MOFE04_PUBLICATION_AREA_POLICY.to_string(),
+        storage_lineage_policy: HPHYS0255_STORAGE_LINEAGE_POLICY.to_string(),
         publication_area_m2,
         row_count: rows.len(),
         sim_day_index_monotonic,
