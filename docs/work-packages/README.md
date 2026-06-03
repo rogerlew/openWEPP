@@ -1882,8 +1882,20 @@ Authorized packages:
   - Status: completed/HOLD; stale inactive-day snow hourly surfaces are cleared
     and H1/H7/H39 material spring divergences are re-anchored on
     snowpack/SWE/`RM` lineage, but semantic parity remains `0/39` and
-    continuation must port baseline `snowd`/`melt` daily negative-melt
-    redistribution/early-melt timing rather than return to WB17 `Ep`.
+    continuation must port baseline `snowd`/`melt` while preserving corrected
+    `wepp-forest` negative-melt redistribution authority rather than return to
+    WB17 `Ep`.
+- `20260603-hphys0269-winter-melt-snowpack-baselining-001/`
+  - Purpose: execute the HPHYS0268 continuation by contract-first baselining of
+    pinned legacy `winter.for`/`snowd.for`/`melt.for` snowpack behavior,
+    iteratively diagnosing daily retention, negative-melt/cold-content,
+    density/depth settlement, hourly melt release, `RM`, and WB13
+    `Snow-Water` publication before returning to narrow WB17 `Ep` residuals.
+  - Status: completed/HOLD; implemented retained-rain accounting, signed raw
+    melt observability, and mass-closed daily net-melt redistribution, with
+    H1/H7/H39 and full H1..H39 metrics recorded. Semantic parity remains
+    `0/39`; continue with authoritative daily winter/snowpack state migration
+    with corrected `wepp-forest` negative-melt authority retained before resuming WB17 `Ep`.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

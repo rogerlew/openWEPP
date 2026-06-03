@@ -409,6 +409,7 @@ impl Wb11HydrologyKernel {
             SnowCouplingOutcome {
                 signed_s: 0.0,
                 accumulation: 0.0,
+                rain_retained: 0.0,
                 runtime_swe: 0.0,
                 runtime_depth_m: 0.0,
                 runtime_density_kg_m3: 0.0,
@@ -416,7 +417,8 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
-        let hyetograph_liquid_input_raw = hyetograph_rainfall - snow_coupling.accumulation;
+        let hyetograph_liquid_input_raw =
+            hyetograph_rainfall - snow_coupling.accumulation - snow_coupling.rain_retained;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_RAINFALL_INPUT,
@@ -3591,6 +3593,7 @@ impl Wb11HydrologyKernel {
             SnowCouplingOutcome {
                 signed_s: 0.0,
                 accumulation: 0.0,
+                rain_retained: 0.0,
                 runtime_swe: 0.0,
                 runtime_depth_m: 0.0,
                 runtime_density_kg_m3: 0.0,
@@ -3598,7 +3601,8 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
-        let hyetograph_liquid_input_raw = hyetograph_rainfall - snow_coupling.accumulation;
+        let hyetograph_liquid_input_raw =
+            hyetograph_rainfall - snow_coupling.accumulation - snow_coupling.rain_retained;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_RAINFALL_INPUT,
@@ -3690,7 +3694,8 @@ impl Wb11HydrologyKernel {
 
         let forward_solver_lane =
             Self::resolve_wb20_forward_solver_lane_enabled(request, phase_class)?;
-        let runoff_snow_term = snow_coupling.signed_s + snow_coupling.accumulation;
+        let runoff_snow_term =
+            snow_coupling.signed_s + snow_coupling.accumulation + snow_coupling.rain_retained;
 
         let partition_runoff = Self::compute_runoff_after_interception(
             phase_class,
@@ -3844,6 +3849,18 @@ impl Wb11HydrologyKernel {
                     Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
                 ));
                 state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_RAIN_RETAINED_ROOT, hourly.hour),
+                    hourly.rain_retained_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_RAW_ROOT, hourly.hour),
+                    hourly.melt_raw_m,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hourly.hour),
                     hourly.melt_m,
                     Some(0.0),
@@ -3920,6 +3937,18 @@ impl Wb11HydrologyKernel {
                 ));
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_RAW_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_RAIN_RETAINED_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,

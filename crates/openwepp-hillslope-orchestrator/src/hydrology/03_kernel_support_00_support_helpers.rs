@@ -11,6 +11,8 @@ struct SnowHourlyState {
     density_before_kg_m3: f64,
     depth_after_m: f64,
     density_after_kg_m3: f64,
+    rain_retained_m: f64,
+    melt_raw_m: f64,
     melt_m: f64,
 }
 
@@ -38,6 +40,7 @@ mod tests {
 struct SnowCouplingOutcome {
     signed_s: f64,
     accumulation: f64,
+    rain_retained: f64,
     runtime_swe: f64,
     runtime_depth_m: f64,
     runtime_density_kg_m3: f64,
@@ -120,7 +123,9 @@ const SNOW_HOURLY_DENSITY_BEFORE_ROOT: &str = "snow.hourly.density_before_kg_m3"
 const SNOW_HOURLY_DEPTH_AFTER_ROOT: &str = "snow.hourly.depth_after_m";
 const SNOW_HOURLY_DENSITY_AFTER_ROOT: &str = "snow.hourly.density_after_kg_m3";
 const SNOW_HOURLY_MELT_ROOT: &str = "snow.hourly.melt_m";
+const SNOW_HOURLY_MELT_RAW_ROOT: &str = "snow.hourly.melt_raw_m";
 const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";
+const SNOW_HOURLY_RAIN_RETAINED_ROOT: &str = "snow.hourly.rain_retained_m";
 const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
 
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
@@ -3241,20 +3246,18 @@ impl Wb11HydrologyKernel {
                 maximum: Some(snow_depth_m),
             });
         }
-        if wmelt_m < 0.0 {
-            wmelt_m = 0.0;
-        }
-
-        let melt_depth_at_snow_density = wmelt_m * 1000.0 / snow_density_kg_m3;
-        if melt_depth_at_snow_density >= snow_depth_m {
-            wmelt_m = snow_depth_m * (snow_density_kg_m3 / 1000.0);
+        if wmelt_m >= 0.0 {
+            let melt_depth_at_snow_density = wmelt_m * 1000.0 / snow_density_kg_m3;
+            if melt_depth_at_snow_density >= snow_depth_m {
+                wmelt_m = snow_depth_m * (snow_density_kg_m3 / 1000.0);
+            }
         }
 
         Self::require_dynamic_state_range(
             phase_class,
             BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
             wmelt_m,
-            Some(0.0),
+            None,
             Some(snow_depth_m * (snow_density_kg_m3 / 1000.0)),
         )?;
         Ok(wmelt_m)
@@ -3397,7 +3400,7 @@ impl Wb11HydrologyKernel {
         let daily_mean_temp = f64::midpoint(tmax, tmin);
 
         let mut accumulation_water_m = 0.0;
-        let mut total_melt_m = 0.0;
+        let mut total_rain_retained_m = 0.0;
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
 
         for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
@@ -3457,6 +3460,8 @@ impl Wb11HydrologyKernel {
             let depth_before_m = snodep.max(0.0);
             let density_before_kg_m3 = dens.max(0.0);
             let depth_available_m = depth_before_m;
+            let mut rain_retained_m = 0.0;
+            let mut melt_raw_m = 0.0;
             let mut melt_m = 0.0;
 
             if snodep <= WB11_ZERO_THRESHOLD {
@@ -3519,38 +3524,51 @@ impl Wb11HydrologyKernel {
                         snodep,
                         dens,
                     )?;
-                    if wmelt > WB11_ZERO_THRESHOLD {
-                        let smelt = (wmelt * 1000.0) / dens;
-                        let snodpt_after_inputs = snodep;
-                        snodep = snodpt_after_inputs - smelt;
-                        if snodep <= WB11_ZERO_THRESHOLD {
+                    melt_raw_m = wmelt;
+                    let smelt = if wmelt > WB11_ZERO_THRESHOLD {
+                        (wmelt * 1000.0) / dens
+                    } else {
+                        0.0
+                    };
+                    let snodpt_after_inputs = snodep;
+                    snodep = snodpt_after_inputs - smelt;
+                    if snodep <= WB11_ZERO_THRESHOLD {
+                        if smelt > 0.0 {
                             melt_m = snodpt_after_inputs * dens * 0.001;
-                            snodep = 0.0;
-                            dens = 0.0;
-                        } else if dens >= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
+                        }
+                        snodep = 0.0;
+                        dens = 0.0;
+                    } else if dens >= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
+                        if smelt > 0.0 {
                             melt_m = smelt * dens * 0.001;
                         } else {
-                            let mut densgt = dens * (snodpt_after_inputs / snodep);
-                            if densgt <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
-                                melt_m = 0.0;
-                                if hrrain > WB11_ZERO_THRESHOLD {
-                                    let densic = 1000.0 * hrrain / snodep;
-                                    if densic
-                                        <= (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt)
-                                            + WB11_ZERO_THRESHOLD
-                                    {
-                                        densgt += densic;
-                                    } else {
-                                        densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
-                                    }
-                                }
-                            } else {
-                                melt_m =
-                                    ((densgt - SIMIMPL29_DENSITY_MELT_GATE_KG_M3) * snodep) * 0.001;
-                                densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
-                            }
-                            dens = densgt;
+                            melt_m = wmelt.min(0.0);
                         }
+                    } else {
+                        let mut densgt = dens * (snodpt_after_inputs / snodep);
+                        if densgt <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
+                            melt_m = wmelt.min(0.0);
+                            if hrrain > WB11_ZERO_THRESHOLD {
+                                let densic = 1000.0 * hrrain / snodep;
+                                if densic
+                                    <= (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt)
+                                        + WB11_ZERO_THRESHOLD
+                                {
+                                    rain_retained_m = hrrain;
+                                    densgt += densic;
+                                } else {
+                                    rain_retained_m = snodep
+                                        * (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt)
+                                        / 1000.0;
+                                    densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
+                                }
+                            }
+                        } else {
+                            melt_m =
+                                ((densgt - SIMIMPL29_DENSITY_MELT_GATE_KG_M3) * snodep) * 0.001;
+                            densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
+                        }
+                        dens = densgt;
                     }
                 }
             }
@@ -3564,7 +3582,7 @@ impl Wb11HydrologyKernel {
             }
 
             accumulation_water_m += hrsnow * 0.1;
-            total_melt_m += melt_m.max(0.0);
+            total_rain_retained_m += rain_retained_m;
 
             hourly_state.push(SnowHourlyState {
                 hour,
@@ -3573,12 +3591,23 @@ impl Wb11HydrologyKernel {
                 density_before_kg_m3,
                 depth_after_m: snodep,
                 density_after_kg_m3: dens,
-                melt_m: melt_m.max(0.0),
+                rain_retained_m,
+                melt_raw_m,
+                melt_m,
             });
         }
 
-        let runtime_swe_after = (snodep * dens) * 0.001;
-        let signed_s = total_melt_m - accumulation_water_m;
+        let redistributed_melt_total_m = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
+        let runtime_swe_after =
+            (runtime_swe + accumulation_water_m + total_rain_retained_m - redistributed_melt_total_m)
+                .max(0.0);
+        if runtime_swe_after <= WB11_ZERO_THRESHOLD {
+            snodep = 0.0;
+            dens = 0.0;
+        } else if dens > WB11_ZERO_THRESHOLD {
+            snodep = runtime_swe_after * 1000.0 / dens;
+        }
+        let signed_s = redistributed_melt_total_m - accumulation_water_m - total_rain_retained_m;
         if !signed_s.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -3614,12 +3643,51 @@ impl Wb11HydrologyKernel {
         Ok(SnowCouplingOutcome {
             signed_s,
             accumulation: accumulation_water_m,
+            rain_retained: total_rain_retained_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: snodep,
             runtime_density_kg_m3: dens,
             runtime_settle_day_count: settle_day_count,
             hourly_state,
         })
+    }
+
+    fn redistribute_daily_signed_snowmelt(hourly_state: &mut [SnowHourlyState]) -> f64 {
+        let positive_melt_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_m.max(0.0))
+            .sum::<f64>();
+        let negative_melt_total_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_m.min(0.0))
+            .sum::<f64>();
+
+        if positive_melt_total_m <= WB11_ZERO_THRESHOLD
+            || negative_melt_total_m >= -WB11_ZERO_THRESHOLD
+        {
+            for hourly in hourly_state {
+                hourly.melt_m = hourly.melt_m.max(0.0);
+            }
+            return positive_melt_total_m;
+        }
+
+        let net_melt_m = positive_melt_total_m + negative_melt_total_m;
+        if net_melt_m <= WB11_ZERO_THRESHOLD {
+            for hourly in hourly_state {
+                hourly.melt_m = 0.0;
+            }
+            return 0.0;
+        }
+
+        let redistribution_scale = net_melt_m / positive_melt_total_m;
+        for hourly in hourly_state {
+            hourly.melt_m = if hourly.melt_m > WB11_ZERO_THRESHOLD {
+                hourly.melt_m * redistribution_scale
+            } else {
+                0.0
+            };
+        }
+        net_melt_m
     }
 
     fn compute_canopy_interception_depth(

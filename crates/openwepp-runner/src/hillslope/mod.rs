@@ -319,8 +319,10 @@ struct Hphys0245TraceRow {
     snow_runtime_settle_day_count: Option<f64>,
     snow_s_m: Option<f64>,
     snow_hourly_rain_sum_m: Option<f64>,
+    snow_hourly_rain_retained_sum_m: Option<f64>,
     snow_hourly_snowfall_depth_sum_m: Option<f64>,
     snow_hourly_snowfall_water_equiv_sum_m: Option<f64>,
+    snow_hourly_melt_raw_sum_m: Option<f64>,
     snow_hourly_melt_sum_m: Option<f64>,
     snow_runtime_swe_closure_error_m: Option<f64>,
     wb13_p_mm: Option<f64>,
@@ -442,7 +444,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v7";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v8";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -4385,6 +4387,14 @@ fn build_hphys0245_trace_row(
         runtime_surface,
         "snow.hourly.melt_m_",
     ));
+    let snow_hourly_melt_raw_sum_m = Some(hphys0245_sum_runtime_prefix(
+        runtime_surface,
+        "snow.hourly.melt_raw_m_",
+    ));
+    let snow_hourly_rain_retained_sum_m = Some(hphys0245_sum_runtime_prefix(
+        runtime_surface,
+        "snow.hourly.rain_retained_m_",
+    ));
     let snow_hourly_snowfall_water_equiv_sum_m = match (
         snow_hourly_snowfall_depth_sum_m,
         runtime_surface_symbol_value(runtime_surface, "snow.options.newsnw"),
@@ -4399,10 +4409,14 @@ fn build_hphys0245_trace_row(
         snow_s_m,
         snow_hourly_melt_sum_m,
         snow_hourly_snowfall_water_equiv_sum_m,
+        snow_hourly_rain_retained_sum_m,
     ) {
-        (Some(snow_s_m), Some(melt_sum_m), Some(snowfall_water_equiv_sum_m)) => {
-            Some(snow_s_m - (melt_sum_m - snowfall_water_equiv_sum_m))
-        }
+        (
+            Some(snow_s_m),
+            Some(melt_sum_m),
+            Some(snowfall_water_equiv_sum_m),
+            Some(rain_retained_sum_m),
+        ) => Some(snow_s_m - (melt_sum_m - snowfall_water_equiv_sum_m - rain_retained_sum_m)),
         _ => None,
     };
 
@@ -4448,8 +4462,10 @@ fn build_hphys0245_trace_row(
         ),
         snow_s_m,
         snow_hourly_rain_sum_m,
+        snow_hourly_rain_retained_sum_m,
         snow_hourly_snowfall_depth_sum_m,
         snow_hourly_snowfall_water_equiv_sum_m,
+        snow_hourly_melt_raw_sum_m,
         snow_hourly_melt_sum_m,
         snow_runtime_swe_closure_error_m,
         wb13_p_mm: wb13_wat.map(|row| row.p),
@@ -8920,6 +8936,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn hphys0260_trace_row_captures_wb17_wb18_storage_diagnostics() {
         let mut surface = HillslopeWritebackSurface::default();
         surface.state_surface.insert(
@@ -9276,8 +9293,10 @@ mod tests {
             snow_runtime_settle_day_count: Some(4.0),
             snow_s_m: Some(0.002),
             snow_hourly_rain_sum_m: Some(0.001),
+            snow_hourly_rain_retained_sum_m: Some(0.0),
             snow_hourly_snowfall_depth_sum_m: Some(0.010),
             snow_hourly_snowfall_water_equiv_sum_m: Some(0.001),
+            snow_hourly_melt_raw_sum_m: Some(0.003),
             snow_hourly_melt_sum_m: Some(0.003),
             snow_runtime_swe_closure_error_m: Some(0.0),
             wb13_p_mm: Some(10.0),
@@ -9390,6 +9409,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn hphys0268_trace_row_captures_spring_snowpack_lineage() {
         let mut surface = HillslopeWritebackSurface::default();
         surface.state_surface.insert(
@@ -9426,6 +9446,14 @@ mod tests {
         surface.state_surface.insert(
             BoundarySymbol::from("snow.hourly.melt_m_0001"),
             BoundaryValue::scalar(0.003),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_raw_m_0001"),
+            BoundaryValue::scalar(0.003),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.rain_retained_m_0001"),
+            BoundaryValue::scalar(0.0),
         );
         let wb13_row = SimulationOwnedWb13Row {
             wb13_row: Wb13DailyWaterBalanceRow {
