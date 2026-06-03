@@ -20,8 +20,13 @@ use openwepp_hillslope_output::manifest::{OutputChecksumEntry, assemble_output_c
 use openwepp_hillslope_output::writers::{optional_output_paths, required_output_paths};
 use openwepp_input_contract::parsers::climate::{ClimateDailyRecord, parse_climate_file};
 use openwepp_input_contract::parsers::frost::{parse_frost_from_path, parse_frost_from_str};
-use openwepp_input_contract::parsers::management::parse_management_from_path;
-use openwepp_input_contract::parsers::pmetpara::{PmetparaParseOptions, parse_pmetpara_file};
+use openwepp_input_contract::parsers::management::{
+    ManagementParseOutput, YearlyScenarioData, parse_management_from_path,
+};
+use openwepp_input_contract::parsers::pmetpara::{
+    ParseMode as PmetparaParseMode, PmetLookupState, PmetparaFile, PmetparaParseOptions,
+    parse_pmetpara_file,
+};
 use openwepp_input_contract::parsers::slope::{SlopeProfile, parse_slope_file};
 use openwepp_input_contract::parsers::snow::{
     SnowParseOutput, parse_snow_file, parse_snow_from_str,
@@ -313,6 +318,14 @@ struct Hphys0245TraceRow {
     pl_hia: Option<f64>,
     pl_pltol: Option<f64>,
     pl_swu_effective_pltol: Option<f64>,
+    pmet_sidecar_present: Option<f64>,
+    pmet_iflget: Option<f64>,
+    pmet_selected_kcb: Option<f64>,
+    pmet_selected_rawp: Option<f64>,
+    pmet_selected_line_index: Option<f64>,
+    pmet_lookup_fallback_first_row_used: Option<f64>,
+    wb11_et_demand_m: Option<f64>,
+    wb11_et_seed_branch: Option<String>,
     etp_m: Option<f64>,
     upi_m: Option<f64>,
     ui_m: Option<f64>,
@@ -393,7 +406,7 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
-const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-wb17-ep-init-trace-v5";
+const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-wb17-pmet-branch-trace-v6";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -673,7 +686,7 @@ pub fn execute_hillslope_run(
     let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
     let optional_outputs = optional_output_paths(&runfile.output_config);
 
-    let (snow, frost, wepp_ui_mode_selection) = if request.legacy_sidecar_discovery {
+    let (snow, frost, wepp_ui_mode_selection, mut pmetpara) = if request.legacy_sidecar_discovery {
         let mut excluded_files = vec![
             file_name_string(&run_file_path),
             file_name_string(&soil_path),
@@ -769,7 +782,7 @@ pub fn execute_hillslope_run(
                 .map(|warning| format!("{} {}", warning.code.as_str(), warning.message)),
         );
 
-        let _pmetpara = parse_pmetpara_file(
+        let pmetpara = parse_pmetpara_file(
             &pmetpara_path,
             PmetparaParseOptions {
                 mode: request.sidecar_policy.as_pmetpara_parse_mode(),
@@ -781,7 +794,12 @@ pub fn execute_hillslope_run(
             detail: error.to_string(),
         })?;
 
-        (snow, frost, build_mode_selection_provenance(&wepp_ui)?)
+        (
+            snow,
+            frost,
+            build_mode_selection_provenance(&wepp_ui)?,
+            pmetpara,
+        )
     } else {
         let sidecar_overrides = &runfile.sidecar_overrides;
 
@@ -863,11 +881,11 @@ pub fn execute_hillslope_run(
                 .map(|warning| format!("{} {}", warning.code.as_str(), warning.message)),
         );
 
-        if let Some(pmetpara_path) = sidecar_overrides.pmetpara_path.clone() {
+        let pmetpara = if let Some(pmetpara_path) = sidecar_overrides.pmetpara_path.clone() {
             pmetpara_input_path = Some(pmetpara_path.clone());
             resolved_sidecars.insert("pmetpara".to_string(), pmetpara_path.display().to_string());
 
-            let _pmetpara = parse_pmetpara_file(
+            parse_pmetpara_file(
                 &pmetpara_path,
                 PmetparaParseOptions {
                     mode: request.sidecar_policy.as_pmetpara_parse_mode(),
@@ -877,10 +895,17 @@ pub fn execute_hillslope_run(
             .map_err(|error| HillslopeCliError::ParseFailure {
                 surface: "pmetpara",
                 detail: error.to_string(),
-            })?;
-        }
+            })?
+        } else {
+            absent_pmetpara_file()
+        };
 
-        (snow, frost, build_mode_selection_provenance(&wepp_ui)?)
+        (
+            snow,
+            frost,
+            build_mode_selection_provenance(&wepp_ui)?,
+            pmetpara,
+        )
     };
 
     let publication_area_m2 = derive_mofe04_publication_area_from_slope(&slope)?;
@@ -907,6 +932,11 @@ pub fn execute_hillslope_run(
                 detail: error.to_string(),
             }
         })?;
+    let pmetpara_surface = build_hillslope_runtime_surface_from_pmetpara(
+        &management,
+        &mut pmetpara,
+        request.sidecar_policy.as_pmetpara_parse_mode(),
+    )?;
     let snow_surface = build_hillslope_runtime_surface_from_snow(&snow).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
             surface: "snow",
@@ -925,7 +955,10 @@ pub fn execute_hillslope_run(
             merge_runtime_surfaces(management_surface, soil_surface),
             slope_surface,
         ),
-        merge_runtime_surfaces(snow_surface, frost_surface),
+        merge_runtime_surfaces(
+            merge_runtime_surfaces(snow_surface, frost_surface),
+            pmetpara_surface,
+        ),
     );
     if static_runtime_surface.state_surface.is_empty() {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -1576,6 +1609,131 @@ fn merge_runtime_surfaces(
     base
 }
 
+fn absent_pmetpara_file() -> PmetparaFile {
+    PmetparaFile {
+        sidecar_present: false,
+        iflget: 1,
+        record_count: 0,
+        line_count_closed: true,
+        records: Vec::new(),
+        warnings: Vec::new(),
+        lookup: PmetLookupState {
+            fallback_first_row_used: false,
+        },
+    }
+}
+
+fn build_hillslope_runtime_surface_from_pmetpara(
+    management: &ManagementParseOutput,
+    pmetpara: &mut PmetparaFile,
+    mode: PmetparaParseMode,
+) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
+    let mut surface = HillslopeWritebackSurface::default();
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.mode.sidecar_present"),
+        BoundaryValue::scalar(if pmetpara.sidecar_present { 1.0 } else { 0.0 }),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.mode.iflget"),
+        BoundaryValue::scalar(f64::from(pmetpara.iflget)),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.record_count"),
+        BoundaryValue::scalar(usize_to_scalar(
+            "pmetpara.record_count",
+            pmetpara.record_count,
+        )?),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.line_count_closed"),
+        BoundaryValue::scalar(if pmetpara.line_count_closed { 1.0 } else { 0.0 }),
+    );
+
+    if !pmetpara.sidecar_present {
+        return Ok(surface);
+    }
+
+    let active_crop_name = active_management_crop_name(management)?;
+    let (kcb, rawp, line_index) = {
+        let record = pmetpara
+            .lookup_record(active_crop_name, mode)
+            .map_err(|error| HillslopeCliError::ParseFailure {
+                surface: "pmetpara",
+                detail: error.to_string(),
+            })?;
+        (record.kcb, record.rawp, record.line_index)
+    };
+
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.selected.kcb"),
+        BoundaryValue::scalar(kcb),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.selected.rawp"),
+        BoundaryValue::scalar(rawp),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.selected.line_index"),
+        BoundaryValue::scalar(f64::from(line_index)),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("pmetpara.lookup.fallback_first_row_used"),
+        BoundaryValue::scalar(if pmetpara.lookup.fallback_first_row_used {
+            1.0
+        } else {
+            0.0
+        }),
+    );
+
+    Ok(surface)
+}
+
+fn active_management_crop_name(
+    management: &ManagementParseOutput,
+) -> Result<&str, HillslopeCliError> {
+    let first_slot = management.schedule.slots.first().ok_or_else(|| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pmetpara",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} management schedule has no slot for PMET crop lookup"
+            ),
+        }
+    })?;
+    let yearly_ref = first_slot.yearly_refs.first().copied().ok_or_else(|| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pmetpara",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} management schedule slot has no yearly ref for PMET crop lookup"
+            ),
+        }
+    })?;
+    if yearly_ref == 0 || yearly_ref > management.registries.yearlies.len() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pmetpara",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} yearly ref {yearly_ref} out of range for PMET crop lookup"
+            ),
+        });
+    }
+
+    let yearly = &management.registries.yearlies[yearly_ref - 1];
+    let YearlyScenarioData::Cropland(cropland) = &yearly.data;
+    if cropland.itype == 0 || cropland.itype > management.registries.plants.len() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "pmetpara",
+            detail: format!(
+                "{SIMPIPE_GUARD_ID} plant ref {} out of range for PMET crop lookup",
+                cropland.itype
+            ),
+        });
+    }
+
+    Ok(management.registries.plants[cropland.itype - 1]
+        .meta
+        .name
+        .as_str())
+}
+
 fn validate_hillslope_ofe_topology_parity(
     slope_ofe_count: usize,
     management_topology_count: usize,
@@ -2149,6 +2307,14 @@ fn seed_wb11_runtime_surface_inputs(
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("wb11_et_demand"),
         BoundaryValue::scalar(wb11_et_demand),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_priestley_taylor"),
+        BoundaryValue::scalar(1.0),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
+        BoundaryValue::scalar(0.0),
     );
     if runtime_surface_symbol_value(runtime_surface, "wb17_residue_interception").is_none() {
         runtime_surface.state_surface.insert(
@@ -3617,6 +3783,20 @@ fn hphys0245_surface_after_writeback(
     surface
 }
 
+fn hphys0245_et_seed_branch(runtime_surface: &HillslopeWritebackSurface) -> Option<String> {
+    if runtime_surface_symbol_value(runtime_surface, "wb11_et_seed_branch_evappm")
+        .is_some_and(|value| value >= 0.5)
+    {
+        return Some("evappm_pmet".to_string());
+    }
+    if runtime_surface_symbol_value(runtime_surface, "wb11_et_seed_branch_priestley_taylor")
+        .is_some_and(|value| value >= 0.5)
+    {
+        return Some("evap_priestley_taylor".to_string());
+    }
+    None
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn build_hphys0245_trace_row(
     run_name: &str,
@@ -3726,6 +3906,23 @@ fn build_hphys0245_trace_row(
         pl_hia: runtime_surface_symbol_value(runtime_surface, "hia"),
         pl_pltol: runtime_surface_symbol_value(runtime_surface, "pltol"),
         pl_swu_effective_pltol: effective_pltol,
+        pmet_sidecar_present: runtime_surface_symbol_value(
+            runtime_surface,
+            "pmetpara.mode.sidecar_present",
+        ),
+        pmet_iflget: runtime_surface_symbol_value(runtime_surface, "pmetpara.mode.iflget"),
+        pmet_selected_kcb: runtime_surface_symbol_value(runtime_surface, "pmetpara.selected.kcb"),
+        pmet_selected_rawp: runtime_surface_symbol_value(runtime_surface, "pmetpara.selected.rawp"),
+        pmet_selected_line_index: runtime_surface_symbol_value(
+            runtime_surface,
+            "pmetpara.selected.line_index",
+        ),
+        pmet_lookup_fallback_first_row_used: runtime_surface_symbol_value(
+            runtime_surface,
+            "pmetpara.lookup.fallback_first_row_used",
+        ),
+        wb11_et_demand_m: runtime_surface_symbol_value(runtime_surface, "wb11_et_demand"),
+        wb11_et_seed_branch: hphys0245_et_seed_branch(runtime_surface),
         etp_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Etp"),
         upi_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "UPi"),
         ui_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ui"),
@@ -8187,6 +8384,107 @@ mod tests {
     }
 
     #[test]
+    fn hphys0262_trace_row_captures_pmet_demand_seeding_lineage() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("pmetpara.mode.sidecar_present"),
+            BoundaryValue::scalar(1.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pmetpara.mode.iflget"),
+            BoundaryValue::scalar(2.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pmetpara.selected.kcb"),
+            BoundaryValue::scalar(0.95),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pmetpara.selected.rawp"),
+            BoundaryValue::scalar(0.80),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pmetpara.selected.line_index"),
+            BoundaryValue::scalar(39.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("pmetpara.lookup.fallback_first_row_used"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb11_et_demand"),
+            BoundaryValue::scalar(0.000_385),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb11_et_seed_branch_priestley_taylor"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        let row =
+            build_hphys0245_trace_row("H39", 1, 1, 2013, 1, "post_seed", None, &surface, None);
+        let document = serde_json::to_value(&row).expect("trace row should serialize");
+
+        assert_eq!(document["pmet_sidecar_present"], 1.0);
+        assert_eq!(document["pmet_iflget"], 2.0);
+        assert_eq!(document["pmet_selected_kcb"], 0.95);
+        assert_eq!(document["pmet_selected_rawp"], 0.80);
+        assert_eq!(document["pmet_selected_line_index"], 39.0);
+        assert_eq!(document["pmet_lookup_fallback_first_row_used"], 0.0);
+        assert_eq!(document["wb11_et_demand_m"], 0.000_385);
+        assert_eq!(document["wb11_et_seed_branch"], "evap_priestley_taylor");
+    }
+
+    #[test]
+    fn hphys0262_projects_pmetpara_selected_crop_coefficients() {
+        let fixture_dir = fixture_path("hillslope_run_dir");
+        let management = parse_management_from_path(
+            fixture_dir.join("case.man"),
+            SidecarPolicy::Compat.as_management_parser_mode(),
+        )
+        .expect("fixture management should parse");
+        let mut pmetpara = parse_pmetpara_file(
+            fixture_dir.join("pmetpara.txt"),
+            PmetparaParseOptions {
+                mode: SidecarPolicy::Compat.as_pmetpara_parse_mode(),
+                require_sidecar: true,
+            },
+        )
+        .expect("fixture pmetpara should parse");
+
+        let surface = build_hillslope_runtime_surface_from_pmetpara(
+            &management,
+            &mut pmetpara,
+            SidecarPolicy::Compat.as_pmetpara_parse_mode(),
+        )
+        .expect("pmetpara should project");
+
+        assert_eq!(
+            runtime_surface_symbol_value(&surface, "pmetpara.mode.sidecar_present"),
+            Some(1.0)
+        );
+        assert_eq!(
+            runtime_surface_symbol_value(&surface, "pmetpara.mode.iflget"),
+            Some(2.0)
+        );
+        assert_eq!(
+            runtime_surface_symbol_value(&surface, "pmetpara.selected.kcb"),
+            Some(1.20)
+        );
+        assert_eq!(
+            runtime_surface_symbol_value(&surface, "pmetpara.selected.rawp"),
+            Some(0.55)
+        );
+        assert_eq!(
+            runtime_surface_symbol_value(&surface, "pmetpara.selected.line_index"),
+            Some(1.0)
+        );
+        assert_eq!(
+            runtime_surface_symbol_value(&surface, "pmetpara.lookup.fallback_first_row_used"),
+            Some(0.0)
+        );
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
     fn hphys0245_trace_writer_serializes_jsonl_rows() {
         let temp_dir = std::env::temp_dir().join(format!(
             "openwepp_hphys0245_trace_writer_{}",
@@ -8232,6 +8530,14 @@ mod tests {
             pl_hia: Some(0.2),
             pl_pltol: Some(0.33),
             pl_swu_effective_pltol: Some(0.33),
+            pmet_sidecar_present: Some(1.0),
+            pmet_iflget: Some(2.0),
+            pmet_selected_kcb: Some(0.95),
+            pmet_selected_rawp: Some(0.8),
+            pmet_selected_line_index: Some(1.0),
+            pmet_lookup_fallback_first_row_used: Some(0.0),
+            wb11_et_demand_m: Some(0.003),
+            wb11_et_seed_branch: Some("evappm_pmet".to_string()),
             etp_m: Some(0.003),
             upi_m: Some(0.003),
             ui_m: Some(0.002),
@@ -8276,6 +8582,9 @@ mod tests {
         assert_eq!(document["wb18_recomputed_soil_water_m"], 0.10);
         assert_eq!(document["pl_pltol"], 0.33);
         assert_eq!(document["pl_swu_effective_pltol"], 0.33);
+        assert_eq!(document["pmet_iflget"], 2.0);
+        assert_eq!(document["pmet_selected_kcb"], 0.95);
+        assert_eq!(document["wb11_et_seed_branch"], "evappm_pmet");
         assert_eq!(document["wb18_ul_layers_m"]["0001"], 0.24);
         assert_eq!(
             document["wb17_swu_stress_threshold_layers_m"]["0001"],

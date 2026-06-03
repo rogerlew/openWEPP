@@ -1826,6 +1826,11 @@ Authorized packages:
     magnitude/initialization lineage observable at the `evap`/`swu` seam,
     diagnosing H1/H7/H39 day-1 `Ep +0.235294 mm`, and rerunning the full
     H1..H39 hillslope semantic suite for continuation metrics.
+- `20260603-hphys0262-wb17-pmet-demand-seeding-lineage-closure-001/`
+  - Purpose: execute the HPHYS0261 continuation by making WB17 PMET sidecar,
+    crop-coefficient lookup, and actual ET-demand seed-branch lineage
+    observable, diagnosing H1/H7/H39 day-1 `Ep` residuals, and rerunning the
+    full H1..H39 hillslope semantic suite for continuation metrics.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to
