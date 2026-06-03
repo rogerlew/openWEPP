@@ -1821,6 +1821,11 @@ Authorized packages:
     evidence for WB17 layer uptake, WB18 percolation/storage components, and
     final WB13 storage publication, then rerun H1/H7/H39 plus full H1..H39
     semantic metrics to classify the next closure focus.
+- `20260603-hphys0261-wb17-ep-magnitude-initialization-lineage-closure-001/`
+  - Purpose: execute the HPHYS0260 continuation by making WB17 `Ep`
+    magnitude/initialization lineage observable at the `evap`/`swu` seam,
+    diagnosing H1/H7/H39 day-1 `Ep +0.235294 mm`, and rerunning the full
+    H1..H39 hillslope semantic suite for continuation metrics.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

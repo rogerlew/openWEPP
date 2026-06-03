@@ -189,6 +189,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-016 | HPHYS0250 final `Ep` lineage invariant: promoted WB17 `Ep` evidence must preserve plant-management/growth runtime activation through scheduler execution so `rtd` can be produced before water-balance phases, post-WB19 `PlantRootUptake` consumes active `rtd`/`pltol`/`Etp` lineage, and WB13 publication consumes the final root-uptake flux `Ep = ΣUi`, not the pre-`swu` ET-phase seed or stale state-surface aliases. Stripping PL runtime sentinel surfaces, suppressing growth phases, leaving `rtd=0` by scheduler construction when management data are present, or allowing same-name state `Ep` to shadow final flux `Ep` is invalid closure evidence. | hard-fail | REF-EVAP-LEGACY-ETP, REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK, SC-WATBAL-001#INV-WATBAL-038 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-017 | HPHYS0251 `swu.for` uptake-magnitude invariant: promoted WB17 root-uptake evidence must preserve baseline `swu.for:122-191` semantics by deriving `pltol(itype)` from management plant data when present, applying the explicit legacy normalization branch (`pltol <= 0 -> 0.25`, `pltol < 0.1 -> 0.1`, `pltol > 0.4 -> 0.4`), computing layer potential uptake with baseline cumulative weighting (`ub=3.065`, `uob=0.953346`), publishing layer `UPi_####` and `Ui_####`, capping actual `Ui` by post-WB19 `wb18_perc_theta_####`, and setting final `Ep=ΣUi`, `Ws=ΣUi/Etp` for positive demand. A fixed default that masks crop data, omitted layer uptake surfaces, or unlabeled silent domain clamping is invalid closure evidence. | hard-fail | REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK, SC-WATBAL-001#INV-WATBAL-039 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-018 | HPHYS0260 WB17 trace-localization invariant: residual ownership claims for H1/H7/H39 `Ep` must consume trace-grade post-`PlantRootUptake` evidence for aggregate `UPi`, aggregate `Ui`, layer `UPi_####`, layer `Ui_####`, final `Ep`, `Etp`, `Ws`, and post-uptake `wb18_perc_theta_####`. When `Ep = ΣUi_####`, `0 <= Ui_#### <= UPi_####`, and `Ws = Ep/Etp` for positive `Etp` close internally, continuation must not assign the stable `Ep` residual to trace publication or WB13 shadowing without new baseline-authoritative divergence evidence. | hard-fail | REF-EVAP-LEGACY-SWU, REF-EVAP-CH5-DIST, REF-EVAP-CH5-LINK, INV-EVAP-016, INV-EVAP-017, SC-WATBAL-001#INV-WATBAL-046 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-019 | HPHYS0261 WB17 `Ep` magnitude/initialization invariant: residual ownership claims for H1/H7/H39 `Ep` must expose trace-grade `evap`/`swu` seam inputs before changing equations: `Etp`, pre- and post-growth plant state available at trace boundaries (`lai`, `cancov`, `rtd`), raw `pltol`, effective legacy-normalized `pltol`, WB18 `ul(i)`, `pltol*ul(i)` stress thresholds, storage-to-threshold ratios, layer `UPi_####`/`Ui_####`, final `Ep`, and `Ws`. Evidence must preserve baseline call-order provenance that `evap.for` seeds `ep` from current `lai` before `watbal(_hourly).for` calls `ptgrp`/`ptgra`, while `swu.for` consumes the already-seeded `ep` after growth/root update. Heuristic `Ep` scaling or hidden LAI/root-depth substitution is invalid. | hard-fail | REF-EVAP-LEGACY-ETP, REF-EVAP-LEGACY-SWU, REF-EVAP-LEGACY-HOURLY-ORDER, INV-EVAP-018, SC-WATBAL-001#INV-WATBAL-047 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -212,6 +213,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-016` | runtime + governance | Final `Ep` lineage validator spanning PL scheduler activation, post-WB19 `PlantRootUptake`, and WB13 flux-authoritative publication | Typed hard error / explicit `HOLD` when growth/runtime sentinel stripping suppresses `rtd`, when `PlantRootUptake` does not publish final `Ep`, or when WB13 consumes stale pre-`swu` aliases | HPHYS0250 `Ep` lineage closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-017` | runtime + governance | Baseline `swu.for` magnitude validator spanning effective crop `pltol`, layer `UPi`/`Ui`, and final `Ep`/`Ws` publication | Typed hard error / explicit `HOLD` when crop `pltol` is masked by an unconditional default, legacy normalization is not observable, layer uptake traces are absent, or final `Ep`/`Ws` are not derived from post-WB19 `Ui` | HPHYS0251 uptake-magnitude closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-018` | runtime + governance | WB17 trace-localization validator spanning post-`PlantRootUptake` aggregate/layer `UPi`/`Ui`, final `Ep`, `Etp`, `Ws`, and post-uptake layer storage | Typed hard error / explicit `HOLD` when trace evidence omits layer uptake maps, when `Ep`/`Ws` identities do not reconcile, or when residual ownership is assigned without this trace-grade evidence | HPHYS0260 WB17 residual-classification gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-019` | runtime + governance | WB17 `Ep` magnitude/initialization validator spanning `evap` partition inputs, `swu` stress thresholds, and legacy call-order provenance | Typed hard error / explicit `HOLD` when trace evidence omits `pltol`, effective `pltol`, `ul(i)`, or threshold ratios, or when correction substitutes heuristic `Ep` scaling for baseline-authoritative lineage | HPHYS0261 magnitude/initialization gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -236,6 +238,7 @@ equation vectors.
 | `F` | `wb12_infiltration` or WB14 same-pass infiltration lineage | ET stage-memory reset and soil-water availability driver under hourly cadence | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `RA`, `Tmax`, `Tmin`, `Tdp`, `u_z` | identity names | climate-to-ET forcing surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `S` | identity name | snow-to-ET precedence surface | `m` preserved | `[DIRECT][Static]` |
+| HPHYS0261 trace WB17 magnitude/initialization diagnostics | `pl_pltol`, `pl_swu_effective_pltol`, `wb18_ul_layers_m`, `wb17_swu_stress_threshold_layers_m`, `wb17_swu_storage_to_threshold_layers`, `pl_lai`, `pl_rtd`, `etp_m`, `ep_m`, `ui_m`, `wb17_ui_layers_m`, `ws` | Opt-in trace observability for classifying H1/H7/H39 `Ep` magnitude residuals at the `evap`/`swu` seam before equation or compensation changes | `m`, `mm`, and dimensionless plant/stress units preserved as named | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -268,6 +271,11 @@ equation vectors.
   `UPi`/`Ui` uptake surfaces so HPHYS0260 residual classification can
   distinguish WB17 internal identity divergence from baseline-magnitude
   follow-up work. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-EVAP-P-007: Preserve opt-in trace observability for raw/effective
+  `pltol`, WB18 `ul(i)`, storage-to-threshold ratios, `Etp`, final `Ep`,
+  `ΣUi`, `lai`, and `rtd` so HPHYS0261 residual classification can separate
+  `swu` stress clipping from upstream `evap`/initialization magnitude.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -537,6 +545,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `14` | `Codex` | HPHYS0261 amendment: added `INV-EVAP-019` requiring trace-grade WB17 `Ep` magnitude/initialization evidence across `evap` partition state, `swu` effective `pltol`, WB18 `ul(i)`, and legacy call-order provenance. |
 | `2026-06-03` | `13` | `Codex` | HPHYS0260 amendment: added `INV-EVAP-018` requiring trace-grade post-`PlantRootUptake` aggregate/layer `UPi`/`Ui`, final `Ep`, `Etp`, and `Ws` identity evidence before assigning H1/H7/H39 `Ep` residual ownership. |
 | `2026-06-02` | `12` | `Codex` | HPHYS0251 amendment: added `INV-EVAP-017` for baseline `swu.for` uptake magnitude, crop-specific `pltol(itype)` projection/normalization, and layer `UPi_####`/`Ui_####` publication. |
 | `2026-06-02` | `11` | `Codex` | HPHYS0250 amendment: added `INV-EVAP-016` requiring PL runtime activation preservation, post-WB19 final `Ep = ΣUi` lineage, and WB13 flux-authoritative final `Ep` publication. |

@@ -311,9 +311,14 @@ struct Hphys0245TraceRow {
     pl_rtmass: Option<f64>,
     pl_rtd: Option<f64>,
     pl_hia: Option<f64>,
+    pl_pltol: Option<f64>,
+    pl_swu_effective_pltol: Option<f64>,
     etp_m: Option<f64>,
     upi_m: Option<f64>,
     ui_m: Option<f64>,
+    wb18_ul_layers_m: BTreeMap<String, f64>,
+    wb17_swu_stress_threshold_layers_m: BTreeMap<String, f64>,
+    wb17_swu_storage_to_threshold_layers: BTreeMap<String, f64>,
     wb17_upi_layers_m: BTreeMap<String, f64>,
     wb17_ui_layers_m: BTreeMap<String, f64>,
     ep_m: Option<f64>,
@@ -388,7 +393,7 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
-const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-wb17-storage-trace-v4";
+const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-wb17-ep-init-trace-v5";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -3626,6 +3631,8 @@ fn build_hphys0245_trace_row(
 ) -> Hphys0245TraceRow {
     let theta_layers =
         hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_theta_");
+    let wb18_ul_layers_m =
+        hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_ul_");
     let wb18_thetdr_layers = hphys0245_prefixed_surface_values_with_fallback(
         &runtime_surface.state_surface,
         "wb19_thetdr_",
@@ -3676,6 +3683,13 @@ fn build_hphys0245_trace_row(
         _ => None,
     };
     let wb13_wat = wb13_row.map(|row| &row.wb13_row);
+    let effective_pltol = runtime_surface_symbol_value(runtime_surface, "swu_effective_pltol");
+    let wb17_swu_stress_threshold_layers_m =
+        hphys0245_swu_stress_threshold_layers(&wb18_ul_layers_m, effective_pltol);
+    let wb17_swu_storage_to_threshold_layers = hphys0245_swu_storage_to_threshold_layers(
+        &theta_layers,
+        &wb17_swu_stress_threshold_layers_m,
+    );
 
     Hphys0245TraceRow {
         schema: HPHYS0245_TRACE_SCHEMA,
@@ -3710,9 +3724,14 @@ fn build_hphys0245_trace_row(
         pl_rtmass: runtime_surface_symbol_value(runtime_surface, "rtmass"),
         pl_rtd: runtime_surface_symbol_value(runtime_surface, "rtd"),
         pl_hia: runtime_surface_symbol_value(runtime_surface, "hia"),
+        pl_pltol: runtime_surface_symbol_value(runtime_surface, "pltol"),
+        pl_swu_effective_pltol: effective_pltol,
         etp_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Etp"),
         upi_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "UPi"),
         ui_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ui"),
+        wb18_ul_layers_m,
+        wb17_swu_stress_threshold_layers_m,
+        wb17_swu_storage_to_threshold_layers,
         wb17_upi_layers_m: potential_uptake_layers_m,
         wb17_ui_layers_m: actual_uptake_layers_m,
         ep_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ep"),
@@ -3774,6 +3793,51 @@ fn hphys0245_sum_or_none(values: &BTreeMap<String, f64>) -> Option<f64> {
     } else {
         Some(values.values().copied().sum())
     }
+}
+
+fn hphys0245_swu_stress_threshold_layers(
+    ul_layers: &BTreeMap<String, f64>,
+    effective_pltol: Option<f64>,
+) -> BTreeMap<String, f64> {
+    let Some(effective_pltol) = effective_pltol else {
+        return BTreeMap::new();
+    };
+    if !effective_pltol.is_finite() || effective_pltol < 0.0 {
+        return BTreeMap::new();
+    }
+    ul_layers
+        .iter()
+        .filter_map(|(suffix, ul)| {
+            if ul.is_finite() && *ul >= 0.0 {
+                let threshold = effective_pltol * *ul;
+                if threshold.is_finite() {
+                    return Some((suffix.clone(), threshold));
+                }
+            }
+            None
+        })
+        .collect()
+}
+
+fn hphys0245_swu_storage_to_threshold_layers(
+    theta_layers: &BTreeMap<String, f64>,
+    threshold_layers: &BTreeMap<String, f64>,
+) -> BTreeMap<String, f64> {
+    threshold_layers
+        .iter()
+        .filter_map(|(suffix, threshold)| {
+            if !threshold.is_finite() || *threshold <= 0.0 {
+                return None;
+            }
+            let theta = theta_layers.get(suffix)?;
+            let ratio = *theta / *threshold;
+            if ratio.is_finite() {
+                Some((suffix.clone(), ratio))
+            } else {
+                None
+            }
+        })
+        .collect()
 }
 
 fn hphys0245_recompute_wb18_soil_water(
@@ -8051,6 +8115,78 @@ mod tests {
     }
 
     #[test]
+    fn hphys0261_trace_row_captures_ep_initialization_magnitude_lineage() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_theta_0001"),
+            BoundaryValue::scalar(0.052),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_ul_0001"),
+            BoundaryValue::scalar(0.113),
+        );
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.33));
+        surface.state_surface.insert(
+            BoundarySymbol::from("swu_effective_pltol"),
+            BoundaryValue::scalar(0.33),
+        );
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(11.8));
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(1.8));
+        surface.flux_surface.insert(
+            BoundarySymbol::from("UPi_0001"),
+            BoundaryValue::scalar(0.0001),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("Ui_0001"),
+            BoundaryValue::scalar(0.0001),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("Etp"),
+            BoundaryValue::scalar(0.000_385),
+        );
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.000_385));
+
+        let row = build_hphys0245_trace_row(
+            "H1",
+            1,
+            1,
+            2013,
+            1,
+            "post_phase",
+            Some("plant_root_uptake"),
+            &surface,
+            None,
+        );
+        let document = serde_json::to_value(&row).expect("trace row should serialize");
+
+        assert_eq!(document["pl_pltol"], 0.33);
+        assert_eq!(document["pl_swu_effective_pltol"], 0.33);
+        assert_eq!(document["wb18_ul_layers_m"]["0001"], 0.113);
+        assert!(
+            (document["wb17_swu_stress_threshold_layers_m"]["0001"]
+                .as_f64()
+                .unwrap()
+                - 0.03729)
+                .abs()
+                < 1.0e-12
+        );
+        assert!(
+            document["wb17_swu_storage_to_threshold_layers"]["0001"]
+                .as_f64()
+                .unwrap()
+                > 1.0
+        );
+    }
+
+    #[test]
     fn hphys0245_trace_writer_serializes_jsonl_rows() {
         let temp_dir = std::env::temp_dir().join(format!(
             "openwepp_hphys0245_trace_writer_{}",
@@ -8094,9 +8230,17 @@ mod tests {
             pl_rtmass: Some(0.7),
             pl_rtd: Some(0.6),
             pl_hia: Some(0.2),
+            pl_pltol: Some(0.33),
+            pl_swu_effective_pltol: Some(0.33),
             etp_m: Some(0.003),
             upi_m: Some(0.003),
             ui_m: Some(0.002),
+            wb18_ul_layers_m: BTreeMap::from([("0001".to_string(), 0.24)]),
+            wb17_swu_stress_threshold_layers_m: BTreeMap::from([("0001".to_string(), 0.0792)]),
+            wb17_swu_storage_to_threshold_layers: BTreeMap::from([(
+                "0001".to_string(),
+                1.010_101_010_101_010_2,
+            )]),
             wb17_upi_layers_m: BTreeMap::from([("0001".to_string(), 0.003)]),
             wb17_ui_layers_m: BTreeMap::from([("0001".to_string(), 0.002)]),
             ep_m: Some(0.002),
@@ -8130,6 +8274,13 @@ mod tests {
         assert_eq!(document["wb18_thetdr_layers"]["0001"], 0.05);
         assert_eq!(document["wb18_dg_layers_m"]["0001"], 0.40);
         assert_eq!(document["wb18_recomputed_soil_water_m"], 0.10);
+        assert_eq!(document["pl_pltol"], 0.33);
+        assert_eq!(document["pl_swu_effective_pltol"], 0.33);
+        assert_eq!(document["wb18_ul_layers_m"]["0001"], 0.24);
+        assert_eq!(
+            document["wb17_swu_stress_threshold_layers_m"]["0001"],
+            0.0792
+        );
         assert_eq!(document["wb17_upi_layers_m"]["0001"], 0.003);
         assert_eq!(document["wb17_ui_layers_m"]["0001"], 0.002);
         assert_eq!(document["pl_rtd"], 0.6);
