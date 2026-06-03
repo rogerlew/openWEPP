@@ -235,7 +235,15 @@ impl Wb13DailyWaterBalanceRow {
         let rm = require_output_symbol(surface, "RM", Some(0.0), None)?;
         let q = require_output_symbol(surface, "Q", Some(0.0), None)?;
         let ep = require_output_symbol(surface, "Ep", Some(0.0), None)?;
-        let es = require_output_symbol(surface, "Es", Some(0.0), None)?;
+        let evappm_pmet_branch = surface
+            .value("wb11_et_seed_branch_evappm")
+            .is_some_and(|value| value >= 0.5);
+        let es = require_output_symbol(
+            surface,
+            "Es",
+            if evappm_pmet_branch { None } else { Some(0.0) },
+            None,
+        )?;
         let er = require_output_symbol(surface, "Er", Some(0.0), None)?;
         let dp = require_output_symbol(surface, "Dp", Some(0.0), None)?;
         let upstrmq = require_output_symbol(surface, "UpStrmQ", Some(0.0), None)?;
@@ -903,6 +911,61 @@ mod tests {
 
     fn expect_symbol(surface: &SummaryScalarSurface, symbol: &str, expected: f64) {
         assert_eq!(surface.value(symbol), Some(expected));
+    }
+
+    fn wb13_surface_with_soil_evaporation(
+        soil_evaporation: f64,
+        evappm_branch: f64,
+    ) -> SummaryScalarSurface {
+        surface(&[
+            ("P", 0.0),
+            ("RM", 0.0),
+            ("Q", 0.0),
+            ("Ep", 0.0),
+            ("Es", soil_evaporation),
+            ("Er", 0.0),
+            ("Dp", 0.0),
+            ("UpStrmQ", 0.0),
+            ("SubRIn", 0.0),
+            ("latqcc", 0.0),
+            ("Total-Soil", 1.0),
+            ("frozwt", 0.0),
+            ("Snow-Water", 0.0),
+            ("QOFE", 0.0),
+            ("Tile", 0.0),
+            ("Irr", 0.0),
+            ("Area", 1.0),
+            ("wb11_et_seed_branch_evappm", evappm_branch),
+            ("SoilWaterTotal", 1.0),
+            ("ProfileDepth", 1.0),
+            ("ProfilePorosityCap", 1.0),
+            ("ProfileFCStore", 0.5),
+            ("ProfileWPStore", 0.2),
+        ])
+    }
+
+    #[test]
+    fn wb13_row_allows_negative_soil_evaporation_only_for_evappm_pmet_branch() {
+        let pmet_row = Wb13DailyWaterBalanceRow::from_surface(
+            1,
+            1,
+            2026,
+            &wb13_surface_with_soil_evaporation(-0.575, 1.0),
+        )
+        .expect("EVAPPM PMET branch can publish signed legacy Es");
+        assert!((pmet_row.es + 0.575).abs() < 1.0e-12);
+
+        let error = Wb13DailyWaterBalanceRow::from_surface(
+            1,
+            1,
+            2026,
+            &wb13_surface_with_soil_evaporation(-0.575, 0.0),
+        )
+        .expect_err("non-PMET branch must retain nonnegative Es guard");
+        assert!(matches!(
+            error,
+            SummaryAccumulatorError::OutputSymbolOutOfRange { .. }
+        ));
     }
 
     #[test]

@@ -5865,8 +5865,11 @@ fn build_simulation_owned_wb13_row(
             "Ep must be >= 0.0, observed {transpiration_ep_m}"
         )));
     }
+    let evappm_pmet_branch =
+        runtime_surface_symbol_value(runtime_surface, "wb11_et_seed_branch_evappm")
+            .is_some_and(|value| value >= 0.5);
     let soil_evap_es_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Es")?;
-    if soil_evap_es_m < 0.0 {
+    if soil_evap_es_m < 0.0 && !evappm_pmet_branch {
         return Err(wb13_simout_failure(format!(
             "Es must be >= 0.0, observed {soil_evap_es_m}"
         )));
@@ -5943,6 +5946,10 @@ fn build_simulation_owned_wb13_row(
         ("Tile", tile),
         ("Irr", irrigation_mm),
         ("Area", area),
+        (
+            "wb11_et_seed_branch_evappm",
+            if evappm_pmet_branch { 1.0 } else { 0.0 },
+        ),
         ("SoilWaterTotal", soil_water_total),
         ("ProfileDepth", profile_depth_mm),
         ("ProfilePorosityCap", profile_porosity_cap),

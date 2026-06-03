@@ -57,6 +57,17 @@ fn state_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
     })
 }
 
+fn flux_update_scalar(fields: &[WritebackField], symbol: &str) -> Option<f64> {
+    let target = BoundarySymbol::from(symbol);
+    fields.iter().find_map(|field| {
+        if field.symbol == target {
+            Some(field.value.as_f64())
+        } else {
+            None
+        }
+    })
+}
+
 fn hphys0246_wb18_aggregate_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
@@ -412,6 +423,170 @@ fn hphys0246_wb18_percolation_requires_residual_storage_symbols_for_aggregate_wr
     assert!(
         response.writeback.state_updates.is_empty(),
         "failed WB18 guard must not publish partial state updates"
+    );
+}
+
+#[test]
+fn hphys0264_pmet_evapotranspiration_consumes_evappm_components_without_pt_repartition() {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.222),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.004),
+    );
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(1.2));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.72));
+    state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.000_2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.es_m"),
+        BoundaryValue::scalar(0.001_1),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.ep_m"),
+        BoundaryValue::scalar(0.003_4),
+    );
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.050),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.100),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
+    state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.04),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.05),
+    );
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "evapotranspiration",
+        HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let etp = flux_update_scalar(&response.writeback.flux_updates, "Etp")
+        .expect("PMET seam must publish Etp");
+    let es = flux_update_scalar(&response.writeback.flux_updates, "Es")
+        .expect("PMET seam must publish Es");
+    let er = flux_update_scalar(&response.writeback.flux_updates, "Er")
+        .expect("PMET seam must publish Er");
+
+    assert!(
+        (etp - 0.003_4).abs() < 1.0e-12,
+        "PMET mode must pass pmet.ep_m to SWU as Etp, observed {etp}"
+    );
+    assert!(
+        (es + er - 0.001_1).abs() < 1.0e-12,
+        "PMET mode must derive Es+Er from pmet.es_m, observed Es={es} Er={er}"
+    );
+    assert!(
+        (etp - (1.2 * 0.004 / 3.0)).abs() > 1.0e-6,
+        "test vector must detect the old Priestley-Taylor LAI repartition"
+    );
+}
+
+#[test]
+fn hphys0264_pmet_evapotranspiration_preserves_negative_evappm_soil_evaporation() {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.010),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.001),
+    );
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.4));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.10));
+    state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.es_m"),
+        BoundaryValue::scalar(-0.000_575_419_020_248_203_2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.ep_m"),
+        BoundaryValue::scalar(0.001),
+    );
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.010),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.20));
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "evapotranspiration",
+        HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let top_layer_storage =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("PMET negative Es path must publish adjusted top-layer storage");
+    let es = flux_update_scalar(&response.writeback.flux_updates, "Es")
+        .expect("PMET seam must publish Es");
+    let er = flux_update_scalar(&response.writeback.flux_updates, "Er")
+        .expect("PMET seam must publish Er");
+    let et = flux_update_scalar(&response.writeback.flux_updates, "ET")
+        .expect("PMET seam must publish signed ET");
+
+    assert!(
+        (top_layer_storage - 0.010_575_419_020_248_203).abs() < 1.0e-12,
+        "negative EVAPPM Es must add the deficit back to top-layer storage"
+    );
+    assert!(
+        (es + 0.000_575_419_020_248_203_2).abs() < 1.0e-12,
+        "PMET mode must preserve signed legacy es in the Es publication"
+    );
+    assert!(
+        er.abs() < 1.0e-12,
+        "negative EVAPPM Es must not become negative residue evaporation"
+    );
+    assert!(
+        (et + 0.000_575_419_020_248_203_2).abs() < 1.0e-12,
+        "PMET ET-phase base ET must preserve the signed EVAPPM soil component"
     );
 }
 

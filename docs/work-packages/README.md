@@ -1836,6 +1836,14 @@ Authorized packages:
     authoritative `evappm.for` PMET demand equations into WB11 ET-demand
     seeding, proving the PMET branch is selected when `pmetpara.iflget != 1`,
     and rerunning H1/H7/H39 plus full H1..H39 semantic metrics.
+- `20260603-hphys0264-wb11-wb17-pmet-seam-correction-closure-001/`
+  - Purpose: execute the HPHYS0263 continuation by making the WB11/WB17 PMET
+    seam branch-aware, consuming migrated `pmet.es_m`/`pmet.ep_m` without
+    Priestley-Taylor re-partitioning, and rerunning H1/H7/H39 plus full H1..H39
+    semantic metrics.
+  - Status: completed/HOLD; PMET component seam is corrected and full gates
+    passed, but H1..H39 semantic parity remains `0/39` with residual storage,
+    snow/runoff, percolation, lateral-flow, and longer-season `Ep` blockers.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to
