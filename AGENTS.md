@@ -27,6 +27,11 @@
   intervention.
 - Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
   self-containment, and observable validation expectations.
+- Prefer architectural work packages that implement, wire up, or complete
+  baseline-parity functionality across process seams before narrow residual
+  tuning. Residual-focused packages are appropriate after the authoritative
+  process path is wired and observable, or when diagnostics prove a confined
+  parity defect.
 - Substantive implementation work must occur within an authorized
   `docs/work-packages/<id>/` scope, either during explicit package execution
   or as user-directed follow-on work from that package.

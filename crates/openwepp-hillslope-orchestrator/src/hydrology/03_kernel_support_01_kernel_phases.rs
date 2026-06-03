@@ -3850,6 +3850,81 @@ impl Wb11HydrologyKernel {
                     None,
                 ));
             }
+        } else {
+            state_updates.push(WritebackField::bounded(
+                WB14_SYMBOL_SNOW_RUNTIME_SWE,
+                0.0,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                SNOW_RUNTIME_DEPTH_M_SYMBOL,
+                0.0,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL,
+                0.0,
+                Some(0.0),
+                Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+            ));
+            state_updates.push(WritebackField::bounded(
+                SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL,
+                0.0,
+                Some(0.0),
+                None,
+            ));
+            for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_DEPTH_BEFORE_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_DEPTH_AVAILABLE_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_DENSITY_BEFORE_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_DEPTH_AFTER_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_DENSITY_AFTER_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_RAIN_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_SNOWFALL_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+            }
         }
         if let Some(frost_outcome) = frost_coupling {
             if let Some(soil_water_after_frwatc) = frost_outcome.soil_water_after_frwatc {

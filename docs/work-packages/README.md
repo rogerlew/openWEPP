@@ -1874,6 +1874,16 @@ Authorized packages:
     non-capacity-active withdrawal is baseline-authoritative top-down WB19
     withdrawal, so no production patch is justified. Continue with upstream
     material storage magnitude plus snow/runoff coupling lineage.
+- `20260603-hphys0268-spring-snowpack-melt-wiring-closure-001/`
+  - Purpose: execute the HPHYS0267 continuation by re-anchoring H1/H7/H39 on
+    first material spring `Ep` divergence, making snowpack/SWE/`RM` lineage
+    observable, correcting proven baseline-authoritative snowpack wiring
+    defects, and rerunning full H1..H39 semantic metrics.
+  - Status: completed/HOLD; stale inactive-day snow hourly surfaces are cleared
+    and H1/H7/H39 material spring divergences are re-anchored on
+    snowpack/SWE/`RM` lineage, but semantic parity remains `0/39` and
+    continuation must port baseline `snowd`/`melt` daily negative-melt
+    redistribution/early-melt timing rather than return to WB17 `Ep`.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

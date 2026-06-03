@@ -313,6 +313,19 @@ struct Hphys0245TraceRow {
     wb13_dp_mm: Option<f64>,
     wb13_total_soil_mm: Option<f64>,
     wb13_soil_water_total_mm: Option<f64>,
+    snow_runtime_swe_m: Option<f64>,
+    snow_runtime_depth_m: Option<f64>,
+    snow_runtime_density_kg_m3: Option<f64>,
+    snow_runtime_settle_day_count: Option<f64>,
+    snow_s_m: Option<f64>,
+    snow_hourly_rain_sum_m: Option<f64>,
+    snow_hourly_snowfall_depth_sum_m: Option<f64>,
+    snow_hourly_snowfall_water_equiv_sum_m: Option<f64>,
+    snow_hourly_melt_sum_m: Option<f64>,
+    snow_runtime_swe_closure_error_m: Option<f64>,
+    wb13_p_mm: Option<f64>,
+    wb13_rm_mm: Option<f64>,
+    wb13_snow_water_mm: Option<f64>,
     wb11_minus_theta_sum_m: Option<f64>,
     pl_sumgdd: Option<f64>,
     pl_vdmt: Option<f64>,
@@ -4360,6 +4373,38 @@ fn build_hphys0245_trace_row(
         &theta_layers,
         &wb17_swu_stress_threshold_layers_m,
     );
+    let snow_hourly_rain_sum_m = Some(hphys0245_sum_runtime_prefix(
+        runtime_surface,
+        "snow.hourly.rain_m_",
+    ));
+    let snow_hourly_snowfall_depth_sum_m = Some(hphys0245_sum_runtime_prefix(
+        runtime_surface,
+        "snow.hourly.snowfall_m_",
+    ));
+    let snow_hourly_melt_sum_m = Some(hphys0245_sum_runtime_prefix(
+        runtime_surface,
+        "snow.hourly.melt_m_",
+    ));
+    let snow_hourly_snowfall_water_equiv_sum_m = match (
+        snow_hourly_snowfall_depth_sum_m,
+        runtime_surface_symbol_value(runtime_surface, "snow.options.newsnw"),
+    ) {
+        (Some(depth_sum_m), Some(new_snow_density_kg_m3)) => {
+            Some(depth_sum_m * new_snow_density_kg_m3 / 1_000.0)
+        }
+        _ => None,
+    };
+    let snow_s_m = runtime_surface_symbol_value_prefer_flux(runtime_surface, "S");
+    let snow_runtime_swe_closure_error_m = match (
+        snow_s_m,
+        snow_hourly_melt_sum_m,
+        snow_hourly_snowfall_water_equiv_sum_m,
+    ) {
+        (Some(snow_s_m), Some(melt_sum_m), Some(snowfall_water_equiv_sum_m)) => {
+            Some(snow_s_m - (melt_sum_m - snowfall_water_equiv_sum_m))
+        }
+        _ => None,
+    };
 
     Hphys0245TraceRow {
         schema: HPHYS0245_TRACE_SCHEMA,
@@ -4391,6 +4436,25 @@ fn build_hphys0245_trace_row(
         wb13_dp_mm: wb13_wat.map(|row| row.dp),
         wb13_total_soil_mm: wb13_wat.map(|row| row.total_soil),
         wb13_soil_water_total_mm: wb13_wat.map(|row| row.soil_water_total),
+        snow_runtime_swe_m: runtime_surface_symbol_value(runtime_surface, "snow.runtime_swe"),
+        snow_runtime_depth_m: runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m"),
+        snow_runtime_density_kg_m3: runtime_surface_symbol_value(
+            runtime_surface,
+            "snow.runtime_density_kg_m3",
+        ),
+        snow_runtime_settle_day_count: runtime_surface_symbol_value(
+            runtime_surface,
+            "snow.runtime_settle_day_count",
+        ),
+        snow_s_m,
+        snow_hourly_rain_sum_m,
+        snow_hourly_snowfall_depth_sum_m,
+        snow_hourly_snowfall_water_equiv_sum_m,
+        snow_hourly_melt_sum_m,
+        snow_runtime_swe_closure_error_m,
+        wb13_p_mm: wb13_wat.map(|row| row.p),
+        wb13_rm_mm: wb13_wat.map(|row| row.rm),
+        wb13_snow_water_mm: wb13_wat.map(|row| row.snow_water),
         wb11_minus_theta_sum_m,
         pl_sumgdd: runtime_surface_symbol_value(runtime_surface, "sumgdd"),
         pl_vdmt: runtime_surface_symbol_value(runtime_surface, "vdmt"),
@@ -4494,6 +4558,25 @@ fn hphys0245_prefixed_surface_values_with_fallback(
     let mut values = hphys0245_prefixed_surface_values(surface, fallback_prefix);
     values.extend(hphys0245_prefixed_surface_values(surface, preferred_prefix));
     values
+}
+
+fn hphys0245_prefixed_runtime_values(
+    runtime_surface: &HillslopeWritebackSurface,
+    prefix: &str,
+) -> BTreeMap<String, f64> {
+    let mut values = hphys0245_prefixed_surface_values(&runtime_surface.state_surface, prefix);
+    values.extend(hphys0245_prefixed_surface_values(
+        &runtime_surface.flux_surface,
+        prefix,
+    ));
+    values
+}
+
+fn hphys0245_sum_runtime_prefix(runtime_surface: &HillslopeWritebackSurface, prefix: &str) -> f64 {
+    hphys0245_prefixed_runtime_values(runtime_surface, prefix)
+        .values()
+        .copied()
+        .sum()
 }
 
 fn hphys0245_sum_or_none(values: &BTreeMap<String, f64>) -> Option<f64> {
@@ -9187,6 +9270,19 @@ mod tests {
             wb13_dp_mm: None,
             wb13_total_soil_mm: None,
             wb13_soil_water_total_mm: None,
+            snow_runtime_swe_m: Some(0.42),
+            snow_runtime_depth_m: Some(1.20),
+            snow_runtime_density_kg_m3: Some(350.0),
+            snow_runtime_settle_day_count: Some(4.0),
+            snow_s_m: Some(0.002),
+            snow_hourly_rain_sum_m: Some(0.001),
+            snow_hourly_snowfall_depth_sum_m: Some(0.010),
+            snow_hourly_snowfall_water_equiv_sum_m: Some(0.001),
+            snow_hourly_melt_sum_m: Some(0.003),
+            snow_runtime_swe_closure_error_m: Some(0.0),
+            wb13_p_mm: Some(10.0),
+            wb13_rm_mm: Some(2.0),
+            wb13_snow_water_mm: Some(420.0),
             wb11_minus_theta_sum_m: Some(0.02),
             pl_sumgdd: Some(42.0),
             pl_vdmt: Some(1.5),
@@ -9283,10 +9379,120 @@ mod tests {
         assert_eq!(document["wb17_ui_layers_m"]["0001"], 0.002);
         assert_eq!(document["pl_rtd"], 0.6);
         assert_eq!(document["ep_m"], 0.002);
+        assert_eq!(document["snow_runtime_swe_m"], 0.42);
+        assert_eq!(document["snow_hourly_snowfall_water_equiv_sum_m"], 0.001);
+        assert_eq!(document["snow_runtime_swe_closure_error_m"], 0.0);
+        assert_eq!(document["wb13_rm_mm"], 2.0);
         assert_eq!(document["wb19_lateral_withdrawal_layers_m"]["0001"], 0.08);
         assert_eq!(document["q_m"], 0.08);
 
         fs::remove_dir_all(temp_dir).expect("temp trace directory should be removable");
+    }
+
+    #[test]
+    fn hphys0268_trace_row_captures_spring_snowpack_lineage() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.120),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_depth_m"),
+            BoundaryValue::scalar(0.600),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_density_kg_m3"),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_settle_day_count"),
+            BoundaryValue::scalar(3.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.options.newsnw"),
+            BoundaryValue::scalar(100.0),
+        );
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("S"), BoundaryValue::scalar(0.002));
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.rain_m_0001"),
+            BoundaryValue::scalar(0.004),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.snowfall_m_0001"),
+            BoundaryValue::scalar(0.010),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_m_0001"),
+            BoundaryValue::scalar(0.003),
+        );
+        let wb13_row = SimulationOwnedWb13Row {
+            wb13_row: Wb13DailyWaterBalanceRow {
+                ofe: 1,
+                julian_day: 99,
+                year: 1,
+                p: 10.0,
+                rm: 12.0,
+                q: 0.0,
+                ep: 1.5,
+                es: 0.2,
+                er: 0.0,
+                dp: 0.1,
+                upstrmq: 0.0,
+                subrin: 0.0,
+                latqcc: 0.0,
+                total_soil: 200.0,
+                frozwt: 0.0,
+                snow_water: 120.0,
+                qofe: 0.0,
+                tile: 0.0,
+                irr: 0.0,
+                area: 10_000.0,
+                soil_water_total: 200.0,
+                profile_depth: 1_000.0,
+                profile_porosity_cap: 300.0,
+                profile_fc_store: 220.0,
+                profile_wp_store: 120.0,
+            },
+            month: 4,
+            day_of_month: 9,
+            water_year: 1,
+            sim_day_index: 99,
+        };
+
+        let row = build_hphys0245_trace_row(
+            "H1",
+            1,
+            99,
+            2013,
+            99,
+            "post_wb13",
+            None,
+            &surface,
+            Some(&wb13_row),
+        );
+
+        assert!((row.snow_runtime_swe_m.expect("runtime swe") - 0.120).abs() < 1.0e-12);
+        assert!((row.snow_runtime_depth_m.expect("runtime depth") - 0.600).abs() < 1.0e-12);
+        assert!((row.snow_runtime_density_kg_m3.expect("runtime density") - 200.0).abs() < 1.0e-12);
+        assert!(
+            (row.snow_hourly_snowfall_water_equiv_sum_m
+                .expect("snowfall water equivalent")
+                - 0.001)
+                .abs()
+                < 1.0e-12
+        );
+        assert!(
+            (row.snow_runtime_swe_closure_error_m
+                .expect("signed S closure")
+                - 0.0)
+                .abs()
+                < 1.0e-12
+        );
+        assert!((row.wb13_p_mm.expect("WB13 P") - 10.0).abs() < 1.0e-12);
+        assert!((row.wb13_rm_mm.expect("WB13 RM") - 12.0).abs() < 1.0e-12);
+        assert!((row.wb13_snow_water_mm.expect("WB13 Snow-Water") - 120.0).abs() < 1.0e-12);
     }
 
     fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {
