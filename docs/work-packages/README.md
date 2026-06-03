@@ -1853,6 +1853,17 @@ Authorized packages:
     identities close while SWU stress is active under material storage,
     snow/runoff, and lateral-flow context, so no production WB17/SWU patch was
     justified.
+- `20260603-hphys0266-layer-storage-lateral-snow-coupling-closure-001/`
+  - Purpose: execute the HPHYS0265 continuation by classifying whether first
+    longer-season SWU stress residuals are owned by layer storage distribution,
+    WB19 lateral active-zone coupling, snow/runoff timing, or a proven
+    baseline-authoritative production defect, then rerun H1/H7/H39 plus full
+    H1..H39 semantic metrics.
+  - Status: completed/HOLD; WB17, WB11/WB18 aggregate, and WB19 realized
+    lateral identities close at first-divergence days, so no production patch
+    was justified. Residual ownership remains in layer distribution plus
+    snow/runoff/lateral magnitude context, with H7 needing deeper WB19
+    threshold/withdrawal lineage trace.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

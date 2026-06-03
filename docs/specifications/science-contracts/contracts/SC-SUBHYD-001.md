@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 30
+contract_version: 31
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -239,6 +239,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-027 | HPHYS0257 WB19 hourly horizontal-conductivity invariant: modern hourly lateral lanes with input `ui_anisrt(i)` must consume baseline `ui_ssh(i)` as the conductivity term in the `watbal_hourly` `totK += ui_ssh(i)*fffx*dg(i)` loop. Runtime alias `wb19_lateral_ssh_####` must be layer-normalized from `ssc2*ui_anisrt`; substituting vertical `wb18_perc_ssc_####`, applying profile `anisrt` twice, or omitting required modern `ui_ssh` lineage is invalid. Daily lanes remain governed by `INV-SUBHYD-026` and continue to consume vertical `ssc`. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-SSH, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-ANISO, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-028 | HPHYS0258 WB19 lateral cap/withdrawal publication invariant: hourly lateral execution must expose deterministic diagnostics for `subq` potential (`wb19_q_lateral_potential`), capped target (`wb19_q_lateral_target`), active-layer `tdvv` (`wb19_lateral_capacity_tdv`/`wb19_tdvv`), active-layer counts, and per-layer realized withdrawal. Published `q`, `Qd`, and `ui_LfCrf(ii)` must use realized post-withdrawal lateral flow, never the uncapped potential or an unwithdrawn residual target. Evidence that cannot distinguish potential, target, and realized lateral flow is insufficient for WB19 hourly closure claims. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-044 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-029 | HPHYS0259 WB19 trace-evidence invariant: opt-in run traces used for H1/H7/H39 lateral residual classification must serialize the HPHYS0258 WB19 potential/target/`tdvv`/unrealized/per-layer-withdrawal diagnostics plus realized `q`, drainage `Qdd`, and final `Qd` from the same post-writeback surface. A trace that omits these fields, mixes pre-writeback and post-writeback surfaces, or cannot prove `q == Σwb19_lateral_withdrawal_####` and `Qd == q + Qdd` when drainage exists is insufficient evidence for assigning residual ownership. | hard-fail | INV-SUBHYD-028, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-045 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-030 | HPHYS0266 WB19 active-zone split invariant: first-divergence residual evidence that reopens WB19 lateral ownership after `INV-SUBHYD-029` must prove whether WB19 potential, target, realized `q`, `Qdd`, and `Qd` identities close on the same post-writeback row and must classify the active lateral capacity/conductivity layers and realized withdrawal layers against WB17 stressed root-uptake layers. If `potential == target == q`, `Qd == q + Qdd`, no unrealized lateral target remains, and lateral active/withdrawal layers are bottom-zone while SWU-stressed layers are root-zone, WB19 publication/cap logic is not the residual owner absent new baseline-authoritative magnitude evidence. | governance-hold | INV-SUBHYD-029, INV-SUBHYD-028, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, SC-WATBAL-001#INV-WATBAL-052 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -273,6 +274,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-027` | runtime + governance | WB19 hourly `ui_ssh` conductivity lineage and modern-soil runtime projection | Typed hard error / explicit `HOLD` when modern hourly lanes omit `wb19_lateral_ssh_####`, use vertical `ssc` in the hourly `totK` loop, or double-apply anisotropy | HPHYS0257 hourly `latqcc` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-028` | runtime + governance | WB19 lateral potential/target/`tdvv`/realized-withdrawal diagnostic publisher and `q`/`Qd` publication validator | Typed hard error / explicit `HOLD` when realized `q`/`Qd`/`ui_LfCrf` are not distinguishable from uncapped potential/target or when per-layer withdrawal evidence is missing for cap-lineage closure claims | HPHYS0258 hourly cap/withdrawal publication closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-029` | runtime + governance | Opt-in HPHYS trace serializer for WB19 potential/target/`tdvv`/realized withdrawal and `q`/`Qdd`/`Qd` lineage | Typed hard error / explicit `HOLD` when residual classification evidence lacks post-writeback WB19 trace fields or cannot reconcile realized lateral and subsurface fluxes | HPHYS0259 WB19 trace localization gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-030` | governance | H1/H7/H39 first-divergence active-zone classifier for WB19 potential/target/realized identities and lateral active/withdrawal layers versus WB17 stressed layers | Explicit `HOLD` when WB19 identities close and residual ownership requires layer-distribution or magnitude evidence outside publication/cap logic | HPHYS0266 WB19 active-zone split gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -311,6 +313,7 @@ alias continuity for production kernels.
 | `Qd` | identity name | daily subsurface loss handoff surface | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_LfCrf(ii)` | `ui_LfCrf_{hour:04}` | realized current-OFE hourly lateral-flow carry after withdrawal caps | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_SCrunf(ii)` | `ui_SCrunf_{hour:04}` | realized current-OFE hourly top-layer saturation excess after clipping from `st(1)` | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| WB19 active-zone split evidence | `wb19_lateral_capacity_active_count_layers`, `wb19_lateral_conductivity_active_count_layers`, `wb19_lateral_withdrawal_layers_m`, `wb19_q_lateral_potential_m`, `wb19_q_lateral_target_m`, `wb19_q_lateral_unrealized_m`, `q_m`, `qdd_m`, `qd_m` | HPHYS0266 trace aliases for proving lateral active/withdrawal zone and realized-flux identity closure | counts and `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -795,6 +798,7 @@ physics heuristically.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `31` | `Codex` | HPHYS0266 amendment: added `INV-SUBHYD-030` requiring WB19 active-zone split and realized lateral identity evidence before reopening WB19 ownership. |
 | `2026-06-03` | `30` | `Codex` | HPHYS0259 amendment: added `INV-SUBHYD-029` requiring opt-in run traces to carry WB19 potential/target/`tdvv`/realized-withdrawal and `q`/`Qdd`/`Qd` lineage for H1/H7/H39 residual localization. |
 | `2026-06-03` | `29` | `Codex` | HPHYS0258 amendment: added `INV-SUBHYD-028` and observable WB19 potential/target/`tdvv`/realized-withdrawal publication lineage for hourly lateral cap closure. |
 | `2026-06-03` | `28` | `Codex` | HPHYS0257 amendment: added `INV-SUBHYD-027` and baseline hourly `ui_ssh` horizontal-conductivity authority for modern `ui_anisrt` soil lineage in WB19 `latqcc` closure. |
