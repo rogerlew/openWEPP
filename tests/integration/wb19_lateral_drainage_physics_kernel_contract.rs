@@ -469,6 +469,125 @@ fn hphys0257_hourly_modern_lanes_fail_closed_without_ui_ssh_lateral_conductivity
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
+fn hphys0258_hourly_lateral_publishes_realized_cap_diagnostics() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9002.0),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("por_0001"),
+        BoundaryValue::scalar(0.95),
+    );
+    state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("coca_0001"),
+        BoundaryValue::scalar(0.9),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.31),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_fc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetfc_0001"),
+        BoundaryValue::scalar(0.2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ssc_0001"),
+        BoundaryValue::scalar(1.0e-4),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_ssh_0001"),
+        BoundaryValue::scalar(1.0e-2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frzw_0001"),
+        BoundaryValue::scalar(0.1),
+    );
+    state_surface.insert(BoundarySymbol::from("avgslp"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("slplen"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("mofe_hourly_carry_arrays_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_drainable_storage"),
+        BoundaryValue::scalar(0.11),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let response =
+        kernel.run_hillslope_phase(&build_lateral_request_with_qdd(&state_surface, 0.0, 0.02));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
+
+    let q_lateral = writeback_flux_value(&response, "q");
+    let q_subhyd = writeback_flux_value(&response, "Qd");
+    let q_lateral_potential = writeback_state_value(&response, "wb19_q_lateral_potential");
+    let q_lateral_target = writeback_state_value(&response, "wb19_q_lateral_target");
+    let lateral_capacity_tdv = writeback_state_value(&response, "wb19_lateral_capacity_tdv");
+    let tdvv = writeback_state_value(&response, "wb19_tdvv");
+    let unrealized = writeback_state_value(&response, "wb19_q_lateral_unrealized");
+    let layer_withdrawal = writeback_state_value(&response, "wb19_lateral_withdrawal_0001");
+    let first_hour_lateral = writeback_state_value(&response, "ui_LfCrf_0001");
+
+    assert!((q_lateral - 0.11).abs() <= TOL, "q_lateral={q_lateral}");
+    assert!(
+        q_lateral_potential > q_lateral,
+        "potential must remain observable above realized cap: potential={q_lateral_potential}, q={q_lateral}"
+    );
+    assert!(
+        (q_lateral_target - q_lateral).abs() <= TOL,
+        "target must equal realized withdrawal after tdvv cap: target={q_lateral_target}, q={q_lateral}"
+    );
+    assert!(
+        (lateral_capacity_tdv - q_lateral).abs() <= TOL,
+        "tdv cap must bind realized q: tdv={lateral_capacity_tdv}, q={q_lateral}"
+    );
+    assert!((tdvv - lateral_capacity_tdv).abs() <= TOL, "tdvv={tdvv}");
+    assert!(unrealized.abs() <= TOL, "unrealized={unrealized}");
+    assert!(
+        (layer_withdrawal - q_lateral).abs() <= TOL,
+        "per-layer withdrawal must reconcile to q: withdrawal={layer_withdrawal}, q={q_lateral}"
+    );
+    assert!(
+        (first_hour_lateral - q_lateral).abs() <= TOL,
+        "ui_LfCrf must publish realized q, not potential: ui_LfCrf_0001={first_hour_lateral}, q={q_lateral}"
+    );
+    assert!(
+        (q_subhyd - (q_lateral + 0.02)).abs() <= TOL,
+        "Qd must publish realized q plus drainage, Qd={q_subhyd}, q={q_lateral}"
+    );
+}
+
+#[test]
 fn wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier() {
     let mut kernel = Wb11HydrologyKernel;
     let mut legacy_state = BTreeMap::new();

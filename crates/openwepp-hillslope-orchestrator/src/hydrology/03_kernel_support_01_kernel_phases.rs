@@ -1990,10 +1990,15 @@ impl Wb11HydrologyKernel {
         }
 
         let mut q_lateral = 0.0_f64;
+        let mut q_lateral_potential_total = 0.0_f64;
         let mut q_lateral_target_total = 0.0_f64;
+        let mut lateral_capacity_tdv_total = 0.0_f64;
         let mut watyld = 0.0_f64;
         let mut fcdep_after = 0.0_f64;
         let mut unsdep_after = soldep;
+        let mut lateral_layer_withdrawal = vec![0.0_f64; theta.len()];
+        let mut lateral_capacity_active_count = vec![0.0_f64; theta.len()];
+        let mut lateral_conductivity_active_count = vec![0.0_f64; theta.len()];
         let mut q_lateral_substeps = if mofe_hourly_carry_arrays_enabled {
             Vec::with_capacity(MOFE_HOURLY_CARRY_ARRAY_COUNT)
         } else {
@@ -2047,6 +2052,16 @@ impl Wb11HydrologyKernel {
                         && meblfc;
                     conductivity_active_layer[index] =
                         *theta_i + WB11_ZERO_THRESHOLD >= drain_threshold[index] && meblfc;
+                }
+            }
+            for (index, is_capacity_active) in capacity_active_layer.iter().enumerate() {
+                if *is_capacity_active {
+                    lateral_capacity_active_count[index] += 1.0;
+                }
+            }
+            for (index, is_conductivity_active) in conductivity_active_layer.iter().enumerate() {
+                if *is_conductivity_active {
+                    lateral_conductivity_active_count[index] += 1.0;
                 }
             }
 
@@ -2256,6 +2271,8 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 None,
             )?;
+            q_lateral_potential_total += q_lateral_potential;
+            lateral_capacity_tdv_total += lateral_capacity_tdv;
 
             let available_pool =
                 Self::wb19_drainable_storage(&theta, &lateral_withdrawal_threshold);
@@ -2266,6 +2283,7 @@ impl Wb11HydrologyKernel {
                 &mut theta,
                 &lateral_withdrawal_threshold,
                 q_lateral_target,
+                &mut lateral_layer_withdrawal,
             );
             q_lateral_target_total += q_lateral_target;
             q_lateral += q_lateral_substep;
@@ -2391,12 +2409,74 @@ impl Wb11HydrologyKernel {
             None,
             None,
         ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_LATERAL_POTENTIAL,
+            q_lateral_potential_total,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_LATERAL_TARGET,
+            q_lateral_target_total,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_LATERAL_CAPACITY_TDV,
+            lateral_capacity_tdv_total,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_LATERAL_TDVV,
+            lateral_capacity_tdv_total,
+            Some(0.0),
+            None,
+        ));
+        state_updates.push(WritebackField::bounded(
+            WB19_SYMBOL_LATERAL_UNREALIZED,
+            (q_lateral_target_total - q_lateral).max(0.0),
+            Some(0.0),
+            Some(q_lateral_target_total),
+        ));
         for (index, value) in theta.iter().enumerate() {
             state_updates.push(WritebackField::bounded(
                 Self::wb18_perc_state_symbol("theta", index + 1),
                 *value,
                 Some(0.0),
                 None,
+            ));
+        }
+        for (index, value) in lateral_layer_withdrawal.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                format!("{}_{:04}", WB19_SYMBOL_LATERAL_WITHDRAWAL_ROOT, index + 1),
+                *value,
+                Some(0.0),
+                Some(q_lateral),
+            ));
+        }
+        for (index, value) in lateral_capacity_active_count.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                format!(
+                    "{}_{:04}",
+                    WB19_SYMBOL_LATERAL_CAPACITY_ACTIVE_COUNT_ROOT,
+                    index + 1
+                ),
+                *value,
+                Some(0.0),
+                Some(lane_substeps_f64),
+            ));
+        }
+        for (index, value) in lateral_conductivity_active_count.iter().enumerate() {
+            state_updates.push(WritebackField::bounded(
+                format!(
+                    "{}_{:04}",
+                    WB19_SYMBOL_LATERAL_CONDUCTIVITY_ACTIVE_COUNT_ROOT,
+                    index + 1
+                ),
+                *value,
+                Some(0.0),
+                Some(lane_substeps_f64),
             ));
         }
         if mofe_hourly_carry_arrays_enabled {

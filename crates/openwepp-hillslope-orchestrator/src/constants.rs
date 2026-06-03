@@ -151,6 +151,16 @@ pub(crate) const WB19_SYMBOL_SLOPE_LENGTH: &str = "slplen";
 pub(crate) const WB19_SYMBOL_LATERAL_ANISOTROPY_RATIO: &str = "wb19_lateral_anisotropy_ratio";
 pub(crate) const WB19_SYMBOL_LATERAL_SSH_ROOT: &str = "wb19_lateral_ssh";
 pub(crate) const WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS: &str = "wb19_lateral_drain_lane_substeps";
+pub(crate) const WB19_SYMBOL_LATERAL_POTENTIAL: &str = "wb19_q_lateral_potential";
+pub(crate) const WB19_SYMBOL_LATERAL_TARGET: &str = "wb19_q_lateral_target";
+pub(crate) const WB19_SYMBOL_LATERAL_CAPACITY_TDV: &str = "wb19_lateral_capacity_tdv";
+pub(crate) const WB19_SYMBOL_LATERAL_TDVV: &str = "wb19_tdvv";
+pub(crate) const WB19_SYMBOL_LATERAL_UNREALIZED: &str = "wb19_q_lateral_unrealized";
+pub(crate) const WB19_SYMBOL_LATERAL_WITHDRAWAL_ROOT: &str = "wb19_lateral_withdrawal";
+pub(crate) const WB19_SYMBOL_LATERAL_CAPACITY_ACTIVE_COUNT_ROOT: &str =
+    "wb19_lateral_capacity_active_count";
+pub(crate) const WB19_SYMBOL_LATERAL_CONDUCTIVITY_ACTIVE_COUNT_ROOT: &str =
+    "wb19_lateral_conductivity_active_count";
 pub(crate) const WB19_SYMBOL_DRAIN_ENABLED: &str = "wb19_drain_enabled";
 pub(crate) const WB19_SYMBOL_DRAIN_DEPTH: &str = "wb19_drain_depth";
 pub(crate) const WB19_SYMBOL_DRAIN_SPACING: &str = "wb19_drain_spacing";

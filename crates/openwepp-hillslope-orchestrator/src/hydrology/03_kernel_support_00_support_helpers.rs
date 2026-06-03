@@ -1576,9 +1576,16 @@ impl Wb11HydrologyKernel {
         Ok(frozen_water_by_layer)
     }
 
-    fn wb19_withdraw_top_down(theta: &mut [f64], drain_threshold: &[f64], amount: f64) -> f64 {
+    fn wb19_withdraw_top_down(
+        theta: &mut [f64],
+        drain_threshold: &[f64],
+        amount: f64,
+        layer_withdrawal: &mut [f64],
+    ) -> f64 {
         let mut remaining = amount.max(0.0);
-        for (theta_i, threshold_i) in theta.iter_mut().zip(drain_threshold.iter()) {
+        for (layer_index, (theta_i, threshold_i)) in
+            theta.iter_mut().zip(drain_threshold.iter()).enumerate()
+        {
             if remaining <= WB11_ZERO_THRESHOLD {
                 break;
             }
@@ -1588,6 +1595,9 @@ impl Wb11HydrologyKernel {
             }
             let withdrawn = available.min(remaining);
             *theta_i -= withdrawn;
+            if let Some(layer_withdrawal_i) = layer_withdrawal.get_mut(layer_index) {
+                *layer_withdrawal_i += withdrawn;
+            }
             remaining -= withdrawn;
         }
         amount.max(0.0) - remaining.max(0.0)

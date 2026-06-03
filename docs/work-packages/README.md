@@ -393,6 +393,16 @@ Authorized packages:
     `0.023532/0.047995/0.180364 mm`, but full `H1..H39` semantic pass remains
     `0/39`; next focus is the hourly `tdvv` cap, withdrawal threshold, and
     `latqcc`/storage publication lineage.
+- `20260603-hphys0258-wb19-hourly-cap-withdrawal-publication-closure-001/`
+  - Purpose: execute the HPHYS0257 continuation recommendation by diagnosing,
+    correcting, and validating hourly WB19 `tdvv` cap, frozen-adjusted
+    withdrawal, `latqcc`/`Qd` publication, and aggregate storage lineage.
+  - Status: completed/HOLD; canonical contracts and a red/green WB19 vector
+    now require observable potential/target/`tdvv`/realized-withdrawal
+    diagnostics and realized `q`/`Qd` publication. Full `H1..H39` metrics are
+    unchanged from HPHYS0257 (`0/39` semantic pass), so parity remains in
+    `HOLD` and continuation should use the new WB19 diagnostics before
+    reopening cap/publication logic.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

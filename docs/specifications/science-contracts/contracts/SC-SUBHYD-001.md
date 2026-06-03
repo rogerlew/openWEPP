@@ -4,7 +4,7 @@ title: Subsurface Hydrology and Drainage Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 26
+contract_version: 29
 producer_scope:
   - Daily subsurface lateral-flow flux surfaces from drainable-layer states
   - Surface depressional-storage and artificial-drainage flux surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed/channel routing consumers using subsurface and drainage contributions
   - Comparator/replay surfaces using daily closure confidence signals
 evidence_level: static
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-03
 supersedes: []
 superseded_by: []
 ---
@@ -134,6 +134,7 @@ replace the governing Chapter-6 process equations.
 | Drainage outputs | `Qdd`, `Qd` |
 | MOFE hourly carry outputs | `ui_LfCrf_####`, `ui_SCrunf_####` |
 | Lateral/drainage state updates | `wb11_drainable_storage`, `wb18_perc_theta_####`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld` |
+| Lateral cap/withdrawal diagnostics | `wb19_q_lateral_potential`, `wb19_q_lateral_target`, `wb19_lateral_capacity_tdv`, `wb19_tdvv`, `wb19_q_lateral_unrealized`, `wb19_lateral_withdrawal_####`, `wb19_lateral_capacity_active_count_####`, `wb19_lateral_conductivity_active_count_####` |
 | Scheduler/kernel failure surface | Typed hard-fail status for missing/non-finite/out-of-range lateral/drainage domains |
 
 ### Mutated State Surfaces
@@ -235,6 +236,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-025 | HPHYS0252 WB19 frozen-adjusted lateral storage invariant: WB19 lateral capacity and top-down withdrawal floors must follow baseline `watbal_hourly` `fzdrfc(i) = max(drfc(i)-frzw(i),0)` lineage. Lateral capacity-active layers use `st(i) >= fzdrfc(i)` plus the same bottom-contiguous `meblfc` condition, `fcdep`/`tdvv` are assembled from those capacity-active layers, `tdvv = Σ active max(st(i)-fzdrfc(i),0)`, and realized lateral withdrawal must not reduce `st(i)` below `fzdrfc(i)`. The hourly conductivity loop remains governed by `INV-SUBHYD-024` unfrozen `drfc(i)` `fffx` weighting. Negative/non-finite `frzw(i)` or hidden replacement of absent frost carry with a non-zero surrogate is invalid. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-026 | HPHYS0256 WB19 daily lateral lane invariant: daily lateral execution (`wb19_lateral_drain_lane_substeps = 1`) must follow baseline `watbal.for` daily authority rather than hourly `meblfc` authority. For `solwpv >= 2006`, all layers with `st(i) >= fzdrfc(i)` contribute to `fcdep`, `tdvv`, and conductivity without a `meblfc` gate; conductivity uses `fzul(i)=ul(i)-frzw(i)`, `sstz=st(i)/fzul(i)` when `fzul(i)>0` else `1`, `hk(i)=-2.655/log10(fc(i)/ul(i))` for positive ratios, and `fffx=max(sstz**hk(i),0.002)` when `sstz<0.95` else `1`. For `solwpv < 2006`, the active block is top-contiguous above `fzdrfc(i)`, and the post-aggregation `fffx=max((avstt/avul)**avhk,0.002)` applies when `avul>0.001` and `sstz<0.95`. Hourly lanes remain governed by `INV-SUBHYD-024`/`INV-SUBHYD-025`; applying hourly `meblfc` selection or hourly unfrozen-`drfc` conductivity to daily lanes is invalid. | hard-fail | REF-SUBHYD-LEGACY-DAILY-LATERAL, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-027 | HPHYS0257 WB19 hourly horizontal-conductivity invariant: modern hourly lateral lanes with input `ui_anisrt(i)` must consume baseline `ui_ssh(i)` as the conductivity term in the `watbal_hourly` `totK += ui_ssh(i)*fffx*dg(i)` loop. Runtime alias `wb19_lateral_ssh_####` must be layer-normalized from `ssc2*ui_anisrt`; substituting vertical `wb18_perc_ssc_####`, applying profile `anisrt` twice, or omitting required modern `ui_ssh` lineage is invalid. Daily lanes remain governed by `INV-SUBHYD-026` and continue to consume vertical `ssc`. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-SSH, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-ANISO, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-028 | HPHYS0258 WB19 lateral cap/withdrawal publication invariant: hourly lateral execution must expose deterministic diagnostics for `subq` potential (`wb19_q_lateral_potential`), capped target (`wb19_q_lateral_target`), active-layer `tdvv` (`wb19_lateral_capacity_tdv`/`wb19_tdvv`), active-layer counts, and per-layer realized withdrawal. Published `q`, `Qd`, and `ui_LfCrf(ii)` must use realized post-withdrawal lateral flow, never the uncapped potential or an unwithdrawn residual target. Evidence that cannot distinguish potential, target, and realized lateral flow is insufficient for WB19 hourly closure claims. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-044 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -267,6 +269,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-025` | runtime + governance | WB19 frozen-adjusted lateral capacity and withdrawal threshold lineage | Typed hard error / explicit `HOLD` when frozen-water `frzw(i)` does not lower `tdvv` floors through `fzdrfc(i)`, conductivity substitutes `fzdrfc(i)` for `drfc(i)` `fffx`, or withdrawal reduces `st(i)` below `fzdrfc(i)` | HPHYS0252 H39 storage-availability closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-026` | runtime + governance | WB19 daily lateral lane selector, `hk` conductivity weighting, `fzdrfc`/`fzul` availability, and daily `solwpv` branch behavior | Typed hard error / explicit `HOLD` when daily lanes use hourly `meblfc` selection, omit daily `hk`/`fzul` conductivity weighting, or collapse daily and hourly lateral semantics into one branch | HPHYS0256 `latqcc` lane-branch closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-027` | runtime + governance | WB19 hourly `ui_ssh` conductivity lineage and modern-soil runtime projection | Typed hard error / explicit `HOLD` when modern hourly lanes omit `wb19_lateral_ssh_####`, use vertical `ssc` in the hourly `totK` loop, or double-apply anisotropy | HPHYS0257 hourly `latqcc` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-028` | runtime + governance | WB19 lateral potential/target/`tdvv`/realized-withdrawal diagnostic publisher and `q`/`Qd` publication validator | Typed hard error / explicit `HOLD` when realized `q`/`Qd`/`ui_LfCrf` are not distinguishable from uncapped potential/target or when per-layer withdrawal evidence is missing for cap-lineage closure claims | HPHYS0258 hourly cap/withdrawal publication closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -288,6 +291,10 @@ alias continuity for production kernels.
 | `drfc_i` | `wb18_perc_fc_#### + (1-coca_####)*dg_####` | WB19 drain-threshold lineage used for saturated-zone classification and withdrawals | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `frzw_i` | `wb18_perc_frzw_####` | WB19 frozen-water storage surface used to lower lateral capacity/withdrawal threshold through `fzdrfc_i` | `m` preserved; absent means explicit zero frozen storage for non-frost lanes | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `fzdrfc_i` | `max(drfc_i-frzw_i,0)` | Baseline frozen-adjusted WB19 lateral capacity and top-down withdrawal floor | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `subq` before `tdvv` cap | `wb19_q_lateral_potential` | WB19 lateral potential before `latqcc = min(subq/slplen, tdvv)` capacity cap | `m` daily/substep aggregate preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `latqcc` target after `tdvv` cap | `wb19_q_lateral_target` | WB19 capped lateral target before top-down realized withdrawal | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `tdvv` | `wb19_lateral_capacity_tdv`, `wb19_tdvv` | WB19 active-layer frozen-adjusted capacity cap assembled before top-down withdrawal | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| per-layer lateral withdrawal | `wb19_lateral_withdrawal_####` | Realized top-down water removal from layer `i` during WB19 lateral execution | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `watyld` | `wb19_watyld` | WB19 water-yield coupling state for `solwpv < 2006` `fcdep` updates | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `fcdep`, `unsdep` | `wb19_fcdep`, `wb19_unsdep` | WB19 saturated/unsaturated depth states after lateral update | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `L` | `slplen` | hillslope length for lateral flux denominator | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -737,6 +744,22 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `wb19_lateral_ssh_####` differs from `wb18_perc_ssc_####`, and that omitting
    required modern hourly `wb19_lateral_ssh_####` fails closed.
 
+## HPHYS0258 WB19 Hourly Cap/Withdrawal Publication Addendum
+
+1. Baseline hourly `watbal_hourly.for` computes lateral potential from
+   `subq = fcdep * anisrt * latk * fslope`, converts to depth by `slplen`, and
+   caps the target with active-layer `tdvv` before top-down withdrawal.
+2. Runtime diagnostics must expose cumulative `wb19_q_lateral_potential`,
+   `wb19_q_lateral_target`, `wb19_lateral_capacity_tdv`/`wb19_tdvv`,
+   active-layer counts, and per-layer realized withdrawal so closure evidence
+   can separate potential, capped target, and realized publication lineage.
+3. Published `q`, `Qd`, and `ui_LfCrf(ii)` are realized withdrawal quantities.
+   They must not publish the uncapped potential or a target amount that could
+   not be removed from layer storage.
+4. WB19 cap-lineage closure claims must include contract vectors that force
+   `wb19_q_lateral_potential > wb19_q_lateral_target = wb19_tdvv = q` and prove
+   per-layer withdrawal sums reconcile to `q`.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -750,6 +773,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `29` | `Codex` | HPHYS0258 amendment: added `INV-SUBHYD-028` and observable WB19 potential/target/`tdvv`/realized-withdrawal publication lineage for hourly lateral cap closure. |
 | `2026-06-03` | `28` | `Codex` | HPHYS0257 amendment: added `INV-SUBHYD-027` and baseline hourly `ui_ssh` horizontal-conductivity authority for modern `ui_anisrt` soil lineage in WB19 `latqcc` closure. |
 | `2026-06-02` | `27` | `Codex` | HPHYS0256 amendment: added `INV-SUBHYD-026` and baseline daily `watbal.for` WB19 lateral lane authority, distinguishing daily `fzdrfc`/`fzul`/`hk` conductivity weighting from hourly `meblfc` authority. |
 | `2026-06-02` | `26` | `Codex` | HPHYS0252 amendment: added `INV-SUBHYD-025` and baseline `watbal_hourly` frozen-adjusted WB19 lateral storage authority (`fzdrfc = max(drfc-frzw,0)`) for capacity caps and top-down withdrawal floors while retaining unfrozen `drfc` conductivity weighting. |

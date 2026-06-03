@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 80
+contract_version: 84
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-03
 supersedes: []
 superseded_by: []
 ---
@@ -208,6 +208,7 @@ lateral/drainage).
 | INV-WATBAL-041 | HPHYS0254 WB11 initial-storage projection invariant: WB11 `st(i)`/`soilw(i)` seeding must use the same baseline-normalized hydrology seed grid as profile-depth/capacity authority, so `wb11_nsl`, `wb19_dg_####`, `wb19_solthk_####`, `wb19_thetfc_####`, `wb19_thetdr_####`, `wb19_por_####`, `cpm_####`, `wb19_coca_####`, `ssc_####`, and WB18 threshold/store aliases span `wb13_profile_depth_mm` without parser-depth tail truncation before `wb11_soil_water = Σsoilw(i)`. Generic `nsl` and constitutive `thetfc_####`/`thetdr_####` remain AUTH03/AUTH05-owned corrected-parser-layer symbols. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, SC-SOIL-001#INV-SOIL-015 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-042 | HPHYS0255 MOFE storage-lineage invariant: MOFE WB13/H.wat single-row publication may aggregate `Area` under MOFE04, but storage fields (`Total-Soil`, `SoilWaterTotal`, `ProfileDepth`, `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`) must remain traceable to simulation-owned WB11/WB13 runtime storage lineage. Static area-weighted storage synthesis from per-OFE soil rows is non-authoritative unless a future contract migrates per-OFE dynamic hydrology state and explicitly defines the aggregation operator. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, SC-SOIL-001#INV-SOIL-016, SC-SYSTEM-001#INV-SYSTEM-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-043 | HPHYS0256 WB19 `latqcc` lane-branch invariant: daily WB13 `latqcc` closure evidence must consume WB19 lateral flow produced under `SC-SUBHYD-001#INV-SUBHYD-026` daily `watbal.for` authority when `wb19_lateral_drain_lane_substeps=1`; hourly closure evidence must continue to use `SC-SUBHYD-001#INV-SUBHYD-024`/`INV-SUBHYD-025`. Evidence that applies hourly `meblfc` lateral selection to daily lanes, collapses daily/hourly lateral branches, or treats `latqcc` residuals without lane provenance is invalid. | hard-fail | REF-WATBAL-LEGACY-DAILY-LATERAL, REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-CH6-COUPLING, SC-SUBHYD-001#INV-SUBHYD-026 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-044 | HPHYS0258 WB19 realized lateral publication invariant: hourly WB13 `latqcc`/`Qd` closure claims must consume realized WB19 lateral withdrawal from `SC-SUBHYD-001#INV-SUBHYD-028`, with diagnostics distinguishing potential, capped target, `tdvv`, and realized per-layer withdrawal. WB13 publication of uncapped potential, capped-but-unwithdrawn target, stale `Qd`, or aggregate storage that cannot reconcile to realized `q` is invalid. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL, SC-SUBHYD-001#INV-SUBHYD-028 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -256,6 +257,7 @@ lateral/drainage).
 | `INV-WATBAL-041` | runtime + governance | WB11 initial-storage projection validator spanning normalized primary layer grid, seeded layer storage, aggregate `watcon`, and WB13 storage publication | Typed hard error / explicit `HOLD` when WB11 seed layers truncate normalized profile depth, mix parser-depth `dg` with normalized profile aggregates, or seed aggregate storage from non-layer-authoritative compensation | HPHYS0254 WB11 initial-storage projection closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-042` | runtime + governance | MOFE storage-lineage validator spanning WB11 seed aliases, scoped OFE soil diagnostics, WB13/H.wat storage publication, and MOFE04 provenance | Typed hard error / explicit `HOLD` when storage publication is silently reinterpreted as per-OFE static aggregation or lacks declared runtime-lineage policy under multi-OFE provenance | HPHYS0255 MOFE storage projection closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-043` | runtime + governance | WB13 `latqcc` publication validator spanning WB19 daily/hourly lane provenance and subsurface lateral flux authority | Typed hard error / explicit `HOLD` when daily `latqcc` is produced with hourly lateral selection, lane provenance is missing, or `latqcc` residual evidence ignores `SC-SUBHYD-001#INV-SUBHYD-026` | HPHYS0256 `latqcc` lane-branch closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-044` | runtime + governance | WB13 `latqcc`/`Qd` realized-publication validator spanning WB19 potential/target/`tdvv` diagnostics and post-withdrawal layer storage | Typed hard error / explicit `HOLD` when WB13 consumes potential/target instead of realized `q`, stale `Qd`, or storage not reconciled to per-layer WB19 withdrawal | HPHYS0258 hourly cap/withdrawal publication closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -294,6 +296,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `ui_LfCrf(ii)` | `ui_LfCrf_{hour:04}` state symbol | MOFE hourly current-OFE lateral-flow carry published from WB19 substeps for copy-forward | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | WB18 per-layer conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_ssh(i)` | `wb19_lateral_ssh_####` | WB19 hourly horizontal saturated conductivity after layer `ui_anisrt(i)` projection | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `subq`/`latqcc`/`tdvv` diagnostics | `wb19_q_lateral_potential`, `wb19_q_lateral_target`, `wb19_lateral_capacity_tdv`, `wb19_tdvv`, `wb19_q_lateral_unrealized`, `wb19_lateral_withdrawal_####` | WB19 potential/target/cap/realized-withdrawal lineage used to validate WB13 `latqcc`/`Qd` publication | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksbot` | `kslast` | restrictive-layer conductivity consumed by WB18 bottom-layer seepage when `slflag=1` | `m s^-1` preserved | `[DIRECT][Static]` |
 | `Bbot` | `ui_bdrkth` | restrictive-layer thickness consumed by hourly WB18 bottom-layer seepage when `slflag=1` | `m` preserved | `[DIRECT][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1908,6 +1911,22 @@ HPHYS0256 ties daily `latqcc` publication to WB19 lateral lane provenance.
 4. Full `H1..H39` continuation metrics must report whether `latqcc` residual
    movement came from daily lane correction, hourly lane correction, or neither.
 
+### HPHYS0258 WB19 Realized Lateral Publication Addendum
+
+HPHYS0258 makes WB19 hourly cap/withdrawal lineage observable for WB13 closure
+claims.
+
+1. Hourly `latqcc`/`Qd` publication must consume realized WB19 lateral
+   withdrawal, not uncapped potential or capped-but-unwithdrawn targets.
+2. Runtime diagnostics must expose potential, capped target, active-layer
+   `tdvv`, active-layer counts, and per-layer withdrawal so `latqcc` residuals
+   can be assigned to WB19 cap, publication, or downstream storage lineage.
+3. WB13 aggregate storage continuation evidence must reconcile post-WB19 layer
+   storage to realized withdrawal before `Total-Soil`/`SoilWaterTotal`
+   interpretation.
+4. Missing potential/target/realized distinction is insufficient evidence for
+   H39 hourly WB19 closure even when daily `q` is finite and non-negative.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1922,6 +1941,7 @@ HPHYS0256 ties daily `latqcc` publication to WB19 lateral lane provenance.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `84` | `Codex` | HPHYS0258 amendment: added `INV-WATBAL-044` tying WB13 `latqcc`/`Qd` closure evidence to realized WB19 lateral withdrawal diagnostics from `SC-SUBHYD-001#INV-SUBHYD-028`. |
 | `2026-06-03` | `83` | `Codex` | HPHYS0257 amendment: added hourly WB19 `ui_ssh`/`wb19_lateral_ssh_####` conductivity lineage for modern `ui_anisrt` soils so WB19 `latqcc`/`Qd` closure cannot substitute vertical `ssc`. |
 | `2026-06-02` | `82` | `Codex` | HPHYS0256 amendment: added `INV-WATBAL-043` requiring WB13 `latqcc` evidence to preserve WB19 daily/hourly lateral lane provenance and consume `SC-SUBHYD-001#INV-SUBHYD-026` for daily lanes. |
 | `2026-06-02` | `81` | `Codex` | HPHYS0255 amendment: added `INV-WATBAL-042` defining MOFE storage-lineage semantics, prohibiting static area-weighted storage synthesis without per-OFE dynamic hydrology-state authority, and requiring explicit storage-lineage provenance under MOFE publication. |
