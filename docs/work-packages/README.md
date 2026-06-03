@@ -1864,6 +1864,16 @@ Authorized packages:
     was justified. Residual ownership remains in layer distribution plus
     snow/runoff/lateral magnitude context, with H7 needing deeper WB19
     threshold/withdrawal lineage trace.
+- `20260603-hphys0267-post-lateral-pre-swu-threshold-lineage-closure-001/`
+  - Purpose: execute the HPHYS0266 continuation by making WB19
+    `drfc`/`fzdrfc` thresholds, pre/post-lateral layer storage, and WB17
+    stress-threshold inputs observable across the post-lateral/pre-SWU seam,
+    then classify H1/H7/H39 first-divergence ownership and rerun full H1..H39
+    metrics.
+  - Status: completed/HOLD; H1/H39 threshold identities close and H7
+    non-capacity-active withdrawal is baseline-authoritative top-down WB19
+    withdrawal, so no production patch is justified. Continue with upstream
+    material storage magnitude plus snow/runoff coupling lineage.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

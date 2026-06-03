@@ -298,6 +298,11 @@ struct Hphys0245TraceRow {
     wb18_theta_layers_m: BTreeMap<String, f64>,
     wb18_thetdr_layers: BTreeMap<String, f64>,
     wb18_dg_layers_m: BTreeMap<String, f64>,
+    wb18_fc_layers_m: BTreeMap<String, f64>,
+    wb19_coca_layers: BTreeMap<String, f64>,
+    wb19_frzw_layers_m: BTreeMap<String, f64>,
+    wb19_drfc_layers_m: BTreeMap<String, f64>,
+    wb19_fzdrfc_layers_m: BTreeMap<String, f64>,
     wb18_frozen_depth_layers_m: BTreeMap<String, f64>,
     wb18_recomputed_soil_water_m: Option<f64>,
     wb18_recomputed_minus_wb11_m: Option<f64>,
@@ -4295,6 +4300,19 @@ fn build_hphys0245_trace_row(
         "wb19_dg_",
         "dg_",
     );
+    let wb18_fc_layers_m =
+        hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_fc_");
+    let wb19_coca_layers = hphys0245_prefixed_surface_values_with_fallback(
+        &runtime_surface.state_surface,
+        "wb19_coca_",
+        "coca_",
+    );
+    let wb19_frzw_layers_m =
+        hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_frzw_");
+    let wb19_drfc_layers_m =
+        hphys0245_wb19_drfc_layers(&wb18_fc_layers_m, &wb18_dg_layers_m, &wb19_coca_layers);
+    let wb19_fzdrfc_layers_m =
+        hphys0245_wb19_fzdrfc_layers(&wb19_drfc_layers_m, &wb19_frzw_layers_m);
     let wb18_frozen_depth_layers_m = hphys0245_prefixed_surface_values(
         &runtime_surface.state_surface,
         "wb18_perc_frozen_depth_",
@@ -4358,6 +4376,11 @@ fn build_hphys0245_trace_row(
         wb18_theta_layers_m: theta_layers,
         wb18_thetdr_layers,
         wb18_dg_layers_m,
+        wb18_fc_layers_m,
+        wb19_coca_layers,
+        wb19_frzw_layers_m,
+        wb19_drfc_layers_m,
+        wb19_fzdrfc_layers_m,
         wb18_frozen_depth_layers_m,
         wb18_recomputed_soil_water_m,
         wb18_recomputed_minus_wb11_m,
@@ -4519,6 +4542,44 @@ fn hphys0245_swu_storage_to_threshold_layers(
             let ratio = *theta / *threshold;
             if ratio.is_finite() {
                 Some((suffix.clone(), ratio))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn hphys0245_wb19_drfc_layers(
+    fc_layers: &BTreeMap<String, f64>,
+    dg_layers: &BTreeMap<String, f64>,
+    coca_layers: &BTreeMap<String, f64>,
+) -> BTreeMap<String, f64> {
+    fc_layers
+        .iter()
+        .filter_map(|(suffix, fc)| {
+            let dg = dg_layers.get(suffix)?;
+            let coca = coca_layers.get(suffix)?;
+            let drfc = *fc + ((1.0 - *coca) * *dg);
+            if fc.is_finite() && dg.is_finite() && coca.is_finite() && drfc.is_finite() {
+                Some((suffix.clone(), drfc))
+            } else {
+                None
+            }
+        })
+        .collect()
+}
+
+fn hphys0245_wb19_fzdrfc_layers(
+    drfc_layers: &BTreeMap<String, f64>,
+    frzw_layers: &BTreeMap<String, f64>,
+) -> BTreeMap<String, f64> {
+    drfc_layers
+        .iter()
+        .filter_map(|(suffix, drfc)| {
+            let frzw = frzw_layers.get(suffix)?;
+            let fzdrfc = (*drfc - frzw).max(0.0);
+            if drfc.is_finite() && frzw.is_finite() && fzdrfc.is_finite() {
+                Some((suffix.clone(), fzdrfc))
             } else {
                 None
             }
@@ -8807,6 +8868,30 @@ mod tests {
             BoundaryValue::scalar(0.40),
         );
         surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_fc_0001"),
+            BoundaryValue::scalar(0.030),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_fc_0002"),
+            BoundaryValue::scalar(0.040),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("coca_0001"),
+            BoundaryValue::scalar(0.80),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_coca_0002"),
+            BoundaryValue::scalar(0.75),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_frzw_0002"),
+            BoundaryValue::scalar(0.005),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_frzw_0001"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
             BoundarySymbol::from("wb18_perc_frozen_depth_0002"),
             BoundaryValue::scalar(0.10),
         );
@@ -8867,6 +8952,14 @@ mod tests {
         assert_eq!(row.wb17_ui_layers_m.get("0002").copied(), Some(0.0015));
         assert_eq!(row.wb18_thetdr_layers.get("0001").copied(), Some(0.05));
         assert_eq!(row.wb18_dg_layers_m.get("0002").copied(), Some(0.40));
+        assert_eq!(row.wb18_fc_layers_m.get("0001").copied(), Some(0.030));
+        assert_eq!(row.wb19_coca_layers.get("0001").copied(), Some(0.80));
+        assert_eq!(row.wb19_coca_layers.get("0002").copied(), Some(0.75));
+        assert_eq!(row.wb19_frzw_layers_m.get("0002").copied(), Some(0.005));
+        assert!((row.wb19_drfc_layers_m["0001"] - 0.090).abs() < 1.0e-12);
+        assert!((row.wb19_drfc_layers_m["0002"] - 0.140).abs() < 1.0e-12);
+        assert!((row.wb19_fzdrfc_layers_m["0001"] - 0.090).abs() < 1.0e-12);
+        assert!((row.wb19_fzdrfc_layers_m["0002"] - 0.135).abs() < 1.0e-12);
         assert_eq!(
             row.wb18_frozen_depth_layers_m.get("0002").copied(),
             Some(0.10)
@@ -9079,6 +9172,11 @@ mod tests {
             wb18_theta_layers_m: BTreeMap::from([("0001".to_string(), 0.08)]),
             wb18_thetdr_layers: BTreeMap::from([("0001".to_string(), 0.05)]),
             wb18_dg_layers_m: BTreeMap::from([("0001".to_string(), 0.40)]),
+            wb18_fc_layers_m: BTreeMap::from([("0001".to_string(), 0.06)]),
+            wb19_coca_layers: BTreeMap::from([("0001".to_string(), 0.75)]),
+            wb19_frzw_layers_m: BTreeMap::from([("0001".to_string(), 0.01)]),
+            wb19_drfc_layers_m: BTreeMap::from([("0001".to_string(), 0.16)]),
+            wb19_fzdrfc_layers_m: BTreeMap::from([("0001".to_string(), 0.15)]),
             wb18_frozen_depth_layers_m: BTreeMap::new(),
             wb18_recomputed_soil_water_m: Some(0.10),
             wb18_recomputed_minus_wb11_m: Some(0.0),
@@ -9165,6 +9263,11 @@ mod tests {
         assert_eq!(document["wb18_theta_layers_m"]["0001"], 0.08);
         assert_eq!(document["wb18_thetdr_layers"]["0001"], 0.05);
         assert_eq!(document["wb18_dg_layers_m"]["0001"], 0.40);
+        assert_eq!(document["wb18_fc_layers_m"]["0001"], 0.06);
+        assert_eq!(document["wb19_coca_layers"]["0001"], 0.75);
+        assert_eq!(document["wb19_frzw_layers_m"]["0001"], 0.01);
+        assert_eq!(document["wb19_drfc_layers_m"]["0001"], 0.16);
+        assert_eq!(document["wb19_fzdrfc_layers_m"]["0001"], 0.15);
         assert_eq!(document["wb18_recomputed_soil_water_m"], 0.10);
         assert_eq!(document["pl_pltol"], 0.33);
         assert_eq!(document["pl_swu_effective_pltol"], 0.33);
