@@ -43,6 +43,11 @@ PMET formulas.
 - Adding `deglat`/`elevm` to hillslope climate projection required the
   watershed climate adapter to publish matching per-hillslope symbols to keep
   parser-runtime parity tests green.
+- Post-commit Claude Code review accepted as
+  `artifacts/review_claude_code_disposition.md` found that HPHYS0263 migrated
+  the EVAPPM equations but left a WB11/WB17 seam ambiguity: `pmet.ep_m` is an
+  actual/stressed PMET transpiration value while downstream WB17 still treats
+  `wb11_et_demand` as a potential demand and applies partition/SWU stress.
 
 ## Decision Log
 
@@ -71,6 +76,8 @@ PMET formulas.
   remain continuation scope.
 - Package remains `HOLD` for full `evappm.for` routine closure because
   post-ET redistribution lines `391-454` remain unported.
+- Package also remains `HOLD` because the PMET-mode WB11/WB17 seam must be
+  corrected before building the deferred redistribution path on top of it.
 
 ## Context and Orientation
 

@@ -48,7 +48,13 @@ Ran: HPHYS0263 diagnostics classified H1/H7/H39 after migration using
 - HPHYS0263 closed the large day-1 PMET demand branch defect observed after
   HPHYS0262.
 - Remaining full-suite `Ep` and storage residuals are no longer explained by
-  using the wrong WB11 demand branch for PMET-mode H1/H7/H39.
-- The next EVAPPM-specific owner is the unported post-ET redistribution in
-  `evappm.for:391-454`, especially where `Ep`, `Total-Soil`, and
-  `SoilWaterTotal` residuals co-occur.
+  using the Priestley-Taylor branch for PMET-mode H1/H7/H39, but post-commit
+  review found the PMET seam is still not end-to-end authoritative.
+- The accepted seam defect is that `wb11_et_demand` currently holds
+  `pmet.ep_m`, an actual/stressed PMET transpiration value, while WB17 still
+  treats it as potential demand for partition/SWU stress.
+- PMET `pmet.es_m` is currently diagnostic-only, so PMET `Ep` and `Es` do not
+  yet share a consistent line of authority.
+- The next EVAPPM-specific owner is WB11/WB17 PMET seam correction; only after
+  that should a continuation package build on unported post-ET redistribution in
+  `evappm.for:391-454`.
