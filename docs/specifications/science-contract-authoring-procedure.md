@@ -1,7 +1,7 @@
 # Science Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-05-31
+Last updated: 2026-06-03
 Scope: openWEPP process-based science contracts (`SC-<DOMAIN>-<NNN>`)
 
 ## Purpose
@@ -23,6 +23,7 @@ This procedure is normative for contract promotion readiness and complements:
 - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
 - `docs/decisions/0003-parity-semantic-not-bit.md`
 - `docs/work-packages/README.md`
+- `docs/specifications/unit-governance.md`
 - `docs/specifications/science-contracts/README.md`
 - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
 - `docs/specifications/correctness-authority-model.md`
@@ -243,6 +244,26 @@ If any condition fails, disposition is `HOLD`.
    - units check.
 3. Symbol substitution without alias documentation is non-compliant and blocks
    promotion.
+
+## Unit Governance Rules (Normative)
+
+Contract authors must apply
+`docs/specifications/unit-governance.md` before claiming promotion readiness.
+
+1. Every externally relevant dimensional symbol must have an explicit unit in
+   the contract and, once implemented, a boundary-symbol registry entry.
+2. Alias maps must include unit checks whenever canonical WEPP symbols differ
+   from Rust, JSON, CLI, sidecar, or publication names.
+3. Dimensional runtime seams must use typed boundary values where wrappers
+   exist; otherwise, the contract or work-package disposition must record a
+   scalar exception and follow-up remediation.
+4. Unit conversions must be named, directional, provenance-backed, and tested.
+   Raw dimensional conversion literals are non-compliant unless explicitly
+   allowlisted with provenance and follow-up disposition.
+5. Publication metadata must trace to the same unit authority as runtime
+   symbols. Legacy publication names do not override canonical unit authority.
+6. Missing unit declarations, ambiguous aliases, or unguarded unit-conversion
+   seams keep disposition in `HOLD` for kernel-affecting work.
 
 ## Minimal Prompt Templates
 

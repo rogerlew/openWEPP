@@ -1,6 +1,6 @@
 # HPHYS0273 Unit Governance Standard Closure
 
-Status: queued
+Status: completed
 
 ## Objective
 

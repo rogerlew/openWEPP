@@ -1,7 +1,7 @@
 # Kernel Process Contract Profile
 
 Status: Active
-Last updated: 2026-05-31
+Last updated: 2026-06-03
 Scope: openWEPP kernel-authority contracts and kernel-adjacent runtime projection
 contracts (`SC-*` files that define executable process behavior)
 
@@ -14,6 +14,7 @@ This profile complements, and does not replace:
 
 - `docs/specifications/science-contract-authoring-procedure.md`
 - `docs/specifications/science-contracts/README.md`
+- `docs/specifications/unit-governance.md`
 - `docs/specifications/correctness-authority-model.md`
 - `docs/specifications/external-authority/README.md`
 - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
@@ -79,11 +80,16 @@ titles may vary slightly, but content obligations are mandatory):
 7. Invariants and invariant guard map.
 8. Symbol alias map (canonical -> boundary/API names).
 9. Constants/parameters table with provenance anchors.
-10. Tolerance and numeric notes.
-11. Test-vector obligations:
+10. Unit-governance map:
+    - boundary-symbol registry entries or explicit registry gaps,
+    - typed boundary requirements or scalar exceptions,
+    - conversion helpers and raw-literal exceptions,
+    - output metadata linkage for published symbols.
+11. Tolerance and numeric notes.
+12. Test-vector obligations:
     - minimum scenario families,
     - expected observable outputs/invariants.
-12. Gap register and promotability labels.
+13. Gap register and promotability labels.
 
 ## Algorithm Detail Requirements (Normative)
 
@@ -97,6 +103,8 @@ At minimum, include:
    involved.
 5. Explicit handling for degenerate states (zero-demand, empty pools, dormant
    periods, etc.).
+6. Unit conversions named by directional helper or recorded as explicit
+   follow-up gaps under `docs/specifications/unit-governance.md`.
 
 ## Typed Failure Requirements (Normative)
 
@@ -115,7 +123,8 @@ conformance. Minimum required checklist items:
 2. All required schema sections present.
 3. Algorithm steps and branch table updated for changed behavior.
 4. Guard/error mapping updated and aligned with code errors.
-5. Test-vector obligations reflected in tests and evidence.
+5. Unit-governance map completed for touched dimensional surfaces.
+6. Test-vector obligations reflected in tests and evidence.
 
 ## Non-Compliance Rule
 

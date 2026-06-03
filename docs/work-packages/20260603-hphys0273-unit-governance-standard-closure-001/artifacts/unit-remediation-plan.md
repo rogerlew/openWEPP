@@ -1,6 +1,6 @@
 # Unit Remediation Plan
 
-Status: queued
+Status: completed
 Evidence mode: static
 
 Static:
@@ -51,4 +51,4 @@ handoff.
 - Future work packages should fail their gates when they introduce an
   unregistered dimensional symbol, a raw conversion literal, or metadata drift.
 
-Ran: not-run.
+Ran: not-run; this remediation queue is static governance evidence.

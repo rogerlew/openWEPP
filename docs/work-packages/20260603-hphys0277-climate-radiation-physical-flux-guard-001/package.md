@@ -38,6 +38,7 @@ HPHYS0272 fixed the unit conversion, but production still only rejects non-finit
 - /workdir/openWEPP/docs/work-packages/README.md
 - docs/specifications/science-contract-authoring-procedure.md
 - docs/specifications/science-contracts/kernel-process-contract-profile.md
+- docs/specifications/unit-governance.md
 - docs/specifications/science-contracts/index.md
 - docs/decisions/0011-architecture-first-top-down-science-contracts.md
 - docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md

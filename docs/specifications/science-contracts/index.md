@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-05-31
+Last updated: 2026-06-03
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -11,14 +11,21 @@ Kernel-process contract governance is mandatory and integrated through:
 
 1. `docs/specifications/science-contract-authoring-procedure.md`
 2. `docs/specifications/science-contracts/kernel-process-contract-profile.md`
-3. `docs/specifications/correctness-authority-model.md`
-4. `docs/specifications/external-authority/README.md`
-5. `docs/specifications/external-authority/suite-schema.md`
-6. `docs/governance/openwepp-release-procedure-draft.md`
-7. `.github/workflows/release-gates.yml`
+3. `docs/specifications/unit-governance.md`
+4. `docs/specifications/correctness-authority-model.md`
+5. `docs/specifications/external-authority/README.md`
+6. `docs/specifications/external-authority/suite-schema.md`
+7. `docs/governance/openwepp-release-procedure-draft.md`
+8. `.github/workflows/release-gates.yml`
 
 For kernel-affecting changes, missing profile/procedure compliance keeps
 disposition in `HOLD`.
+
+HPHYS0273 makes unit governance mandatory for science contracts, runtime
+boundary symbols, conversions, output metadata, and work-package gates.
+Follow-up enforcement packages HPHYS0274 through HPHYS0279 own registry,
+typed-boundary, conversion-helper, radiation-guard, metadata, and lint
+implementation.
 
 ## Registry Fields
 

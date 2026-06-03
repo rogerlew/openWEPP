@@ -1,6 +1,6 @@
 # Unit Governance Gap Analysis
 
-Status: queued
+Status: completed
 Evidence mode: static
 
 Static:
@@ -37,6 +37,24 @@ not governed as one enforceable system.
 | Output metadata is not registry-backed | Publication schemas can drift from runtime units | HPHYS0278 |
 | SC contract unit compliance is not linted | Missing units/alias-unit checks remain manual review problems | HPHYS0279 |
 
+## Static Evidence
+
+- `crates/openwepp-unit-boundary/src/lib.rs:51` through
+  `crates/openwepp-unit-boundary/src/lib.rs:280` show the current typed wrapper
+  set is limited to area, runoff depth, flow, storage volume, and process rate.
+- `crates/openwepp-kernel-contract/src/lib.rs:752` through
+  `crates/openwepp-kernel-contract/src/lib.rs:788` show
+  `BoundaryValue` carries typed variants plus generic `Scalar`.
+- `crates/openwepp-kernel-contract/src/lib.rs:847` through
+  `crates/openwepp-kernel-contract/src/lib.rs:868` show writeback fields accept
+  any `Into<BoundaryValue>`, so raw `f64` dimensional values can still enter
+  seams.
+- Static scan found `1005` `BoundaryValue::scalar` call sites under `crates/`,
+  confirming broad scalar compatibility remains active.
+- `crates/openwepp-hillslope-output/src/hillslope_wat.rs:369` through
+  `crates/openwepp-hillslope-output/src/hillslope_wat.rs:383` show output unit
+  metadata is attached locally by writer code, not registry-backed.
+
 ## Required Standardization Direction
 
 - Use canonical `SC-*` symbols and units as source authority.
@@ -48,4 +66,4 @@ not governed as one enforceable system.
   silently convert to make a value plausible.
 - Make output metadata consume the same unit authority as runtime surfaces.
 
-Ran: not-run.
+Ran: not-run; this inventory is static source/docs evidence.

@@ -1949,8 +1949,9 @@ Authorized packages:
   - Purpose: author canonical openWEPP unit-governance policy spanning science
     contracts, runtime boundary symbols, conversions, output metadata, tests,
     and work-package/release gates.
-  - Status: queued; governance work-package created from HPHYS0272 radiation
-    unit defect assessment and required before broad remediation packages.
+  - Status: completed; authored canonical `docs/specifications/unit-governance.md`,
+    linked contract authoring/profile governance, recorded gates, and left
+    implementation enforcement to HPHYS0274 through HPHYS0279.
 - `20260603-hphys0272-hourly-radiation-unit-closure-001/`
   - Purpose: correct the HPHYS0271 radiation-unit defect by restoring baseline
     `radly` (Langleys/day) to `radmj` (`MJ m^-2 d^-1`) conversion before

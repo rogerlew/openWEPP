@@ -1,8 +1,16 @@
 # HPHYS0273 Unit Governance Standard Closure Artifacts
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: static + ran
 
-Static: queued placeholder for HPHYS0273 Unit Governance Standard Closure.
+Static: HPHYS0273 authored canonical unit governance authority and updated
+package evidence for closure. See:
 
-Ran: not-run.
+- `contract-implementation-evidence.md`
+- `contract-test-implementation-evidence.md`
+- `unit-governance-gap-analysis.md`
+- `unit-governance-gate-requirements.md`
+- `unit-remediation-plan.md`
+- `disposition.md`
+
+Ran: documentation lint evidence is recorded in `gate-results.md`.
