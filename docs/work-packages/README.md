@@ -1831,6 +1831,11 @@ Authorized packages:
     crop-coefficient lookup, and actual ET-demand seed-branch lineage
     observable, diagnosing H1/H7/H39 day-1 `Ep` residuals, and rerunning the
     full H1..H39 hillslope semantic suite for continuation metrics.
+- `20260603-hphys0263-wb11-wb17-evappm-demand-migration-closure-001/`
+  - Purpose: execute the HPHYS0262 continuation by porting baseline-
+    authoritative `evappm.for` PMET demand equations into WB11 ET-demand
+    seeding, proving the PMET branch is selected when `pmetpara.iflget != 1`,
+    and rerunning H1/H7/H39 plus full H1..H39 semantic metrics.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

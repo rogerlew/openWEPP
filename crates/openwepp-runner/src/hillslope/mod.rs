@@ -326,6 +326,23 @@ struct Hphys0245TraceRow {
     pmet_lookup_fallback_first_row_used: Option<f64>,
     wb11_et_demand_m: Option<f64>,
     wb11_et_seed_branch: Option<String>,
+    pmet_etorc_mm: Option<f64>,
+    pmet_rn_mj_m2: Option<f64>,
+    pmet_fwv_m_s: Option<f64>,
+    pmet_rhd_pct: Option<f64>,
+    pmet_kcbadj: Option<f64>,
+    pmet_kcbcon: Option<f64>,
+    pmet_etke: Option<f64>,
+    pmet_etkr: Option<f64>,
+    pmet_etks: Option<f64>,
+    pmet_tew_mm: Option<f64>,
+    pmet_rew_mm: Option<f64>,
+    pmet_wfevp_mm: Option<f64>,
+    pmet_taw_mm: Option<f64>,
+    pmet_raw_mm: Option<f64>,
+    pmet_wftrp_mm: Option<f64>,
+    pmet_es_m: Option<f64>,
+    pmet_ep_m: Option<f64>,
     etp_m: Option<f64>,
     upi_m: Option<f64>,
     ui_m: Option<f64>,
@@ -406,7 +423,8 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
-const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-wb17-pmet-branch-trace-v6";
+const HPHYS0245_TRACE_SCHEMA: &str =
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v7";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -881,7 +899,13 @@ pub fn execute_hillslope_run(
                 .map(|warning| format!("{} {}", warning.code.as_str(), warning.message)),
         );
 
-        let pmetpara = if let Some(pmetpara_path) = sidecar_overrides.pmetpara_path.clone() {
+        let default_pmetpara_path = request.run_dir.join("pmetpara.txt");
+        let pmetpara_path = sidecar_overrides.pmetpara_path.clone().or_else(|| {
+            default_pmetpara_path
+                .is_file()
+                .then_some(default_pmetpara_path)
+        });
+        let pmetpara = if let Some(pmetpara_path) = pmetpara_path {
             pmetpara_input_path = Some(pmetpara_path.clone());
             resolved_sidecars.insert("pmetpara".to_string(), pmetpara_path.display().to_string());
 
@@ -1734,6 +1758,520 @@ fn active_management_crop_name(
         .as_str())
 }
 
+#[derive(Debug, Clone, Copy)]
+struct Wb11EtDemandSeed {
+    demand_m: f64,
+    branch_evappm: bool,
+    diagnostics: Option<EvappmDemandDiagnostics>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct EvappmDemandDiagnostics {
+    etorc_mm: f64,
+    rn_mj_m2: f64,
+    fwv_m_s: f64,
+    rhd_pct: f64,
+    kcbadj: f64,
+    kcbcon: f64,
+    etke: f64,
+    etkr: f64,
+    etks: f64,
+    tew_mm: f64,
+    rew_mm: f64,
+    wfevp_mm: f64,
+    taw_mm: f64,
+    raw_mm: f64,
+    wftrp_mm: f64,
+    es_m: f64,
+    ep_m: f64,
+}
+
+fn wb11_seed_failure(detail: impl Into<String>) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "wb11_seed",
+        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
+    }
+}
+
+fn compute_wb11_et_demand_seed(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb11EtDemandSeed, HillslopeCliError> {
+    let iflget =
+        runtime_surface_symbol_value(runtime_surface, "pmetpara.mode.iflget").unwrap_or(1.0);
+    if !iflget.is_finite() {
+        return Err(wb11_seed_failure(format!(
+            "pmetpara.mode.iflget must be finite when present, observed {iflget}"
+        )));
+    }
+    if (iflget - 1.0).abs() <= 1.0e-12 {
+        return compute_priestley_taylor_wb11_et_demand(runtime_surface);
+    }
+    compute_evappm_wb11_et_demand(runtime_surface)
+}
+
+fn compute_priestley_taylor_wb11_et_demand(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb11EtDemandSeed, HillslopeCliError> {
+    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
+    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
+    let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
+    if rad < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "rad must be >= 0.0, observed {rad}"
+        )));
+    }
+    let salb = require_runtime_surface_scalar(runtime_surface, "salb")?;
+    if !(0.0..=1.0).contains(&salb) {
+        return Err(wb11_seed_failure(format!(
+            "salb must be within [0,1], observed {salb}"
+        )));
+    }
+    let cancov = require_runtime_surface_scalar(runtime_surface, "cancov")?;
+    if cancov < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "cancov must be >= 0.0, observed {cancov}"
+        )));
+    }
+    let lai = require_runtime_surface_scalar(runtime_surface, "lai")?;
+    if lai < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "lai must be >= 0.0, observed {lai}"
+        )));
+    }
+
+    let tave = 0.5 * (tmax + tmin);
+    let tk = tave + 273.0;
+    if tk <= 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "derived tk must be > 0.0, observed {tk}"
+        )));
+    }
+    let delta = (21.255 - 5304.0 / tk).exp() * 5304.0 / (tk * tk);
+    let gamma = delta / (delta + 0.68);
+    let eaj = (-0.5 * (cancov + 0.1)).exp();
+    let alb = if lai > 0.0 {
+        0.23 * (1.0 - eaj) + salb * eaj
+    } else {
+        salb
+    };
+    let demand_m = (0.00128 * ((rad * (1.0 - alb)) / 58.3) * gamma).max(0.0);
+    if !demand_m.is_finite() {
+        return Err(wb11_seed_failure(format!(
+            "derived wb11_et_demand is non-finite ({demand_m})"
+        )));
+    }
+
+    Ok(Wb11EtDemandSeed {
+        demand_m,
+        branch_evappm: false,
+        diagnostics: None,
+    })
+}
+
+#[allow(clippy::manual_midpoint, clippy::similar_names, clippy::too_many_lines)]
+fn compute_evappm_wb11_et_demand(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Result<Wb11EtDemandSeed, HillslopeCliError> {
+    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
+    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
+    let tdpt = require_runtime_surface_scalar(runtime_surface, "tdpt")?;
+    let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
+    if rad < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "rad must be >= 0.0, observed {rad}"
+        )));
+    }
+    let radpot = evappm_radpot_ly(runtime_surface)?;
+    if radpot <= 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "radpot must be > 0.0 for EVAPPM demand, observed {radpot}"
+        )));
+    }
+    let vwind = require_runtime_surface_scalar(runtime_surface, "vwind")?;
+    if vwind < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "vwind must be >= 0.0 for EVAPPM demand, observed {vwind}"
+        )));
+    }
+    let elevm = require_runtime_surface_scalar(runtime_surface, "elevm")?;
+    if elevm >= 45_076.923_076_923_08 {
+        return Err(wb11_seed_failure(format!(
+            "elevm keeps legacy pressure base positive, observed {elevm}"
+        )));
+    }
+    let kcb = require_runtime_surface_scalar(runtime_surface, "pmetpara.selected.kcb")?;
+    let rawp = require_runtime_surface_scalar(runtime_surface, "pmetpara.selected.rawp")?;
+    let lai = require_runtime_surface_scalar(runtime_surface, "lai")?;
+    if lai < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "lai must be >= 0.0, observed {lai}"
+        )));
+    }
+    let canhgt = require_runtime_surface_scalar(runtime_surface, "canhgt")?;
+    if canhgt < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "canhgt must be >= 0.0, observed {canhgt}"
+        )));
+    }
+    let rtd = require_runtime_surface_scalar(runtime_surface, "rtd")?;
+    if rtd < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "rtd must be >= 0.0, observed {rtd}"
+        )));
+    }
+    let cancov = require_runtime_surface_scalar(runtime_surface, "cancov")?;
+    if cancov < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "cancov must be >= 0.0, observed {cancov}"
+        )));
+    }
+    let residue_interception =
+        require_runtime_surface_scalar(runtime_surface, "wb17_residue_interception")?;
+    if residue_interception < 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "wb17_residue_interception must be >= 0.0, observed {residue_interception}"
+        )));
+    }
+
+    let tave = 0.5 * (tmax + tmin);
+    let ed = saturation_vapor_pressure_kpa(tdpt);
+    let emaxt = saturation_vapor_pressure_kpa(tmax);
+    let emint = saturation_vapor_pressure_kpa(tmin);
+    let ee = 0.5 * (emaxt + emint);
+    if emaxt <= 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "derived emaxt must be > 0.0 for EVAPPM demand, observed {emaxt}"
+        )));
+    }
+    let ra = rad / 23.9;
+    let rso = radpot / 23.9;
+    if rso <= 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "derived rso must be > 0.0 for EVAPPM demand, observed {rso}"
+        )));
+    }
+    let rbo = (0.34 - 0.14 * ed.sqrt())
+        * 4.9e-9
+        * (((tmax + 273.2).powi(4) + (tmin + 273.2).powi(4)) / 2.0)
+        * (1.35 * (ra / rso) - 0.35);
+    let rn_mj_m2 = ra * 0.77 - rbo;
+    let fwv_m_s = vwind * 4.87 / (67.8_f64.mul_add(10.0, -5.42)).ln();
+    let dlt = 4098.0 / ((tave + 237.3) * (tave + 237.3)) * saturation_vapor_pressure_kpa(tave);
+    let pressure_base = 1.0 - 0.0065 * elevm / 293.0;
+    if pressure_base <= 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "legacy pressure base must be > 0.0 for EVAPPM demand, observed {pressure_base}"
+        )));
+    }
+    let pb = 101.3 * pressure_base.powf(5.26);
+    let gma = 0.000_665 * pb;
+    let denominator = dlt + gma * (1.0 + 0.34 * fwv_m_s);
+    if denominator <= 0.0 {
+        return Err(wb11_seed_failure(format!(
+            "EVAPPM etorc denominator must be > 0.0, observed {denominator}"
+        )));
+    }
+    let etorc_mm = (0.408 * dlt * rn_mj_m2 + gma * (900.0 / (tave + 273.0)) * (ee - ed) * fwv_m_s)
+        / denominator;
+    let rhd_pct = ed / emaxt * 100.0;
+    let height_factor = (canhgt / 3.0).powf(0.3);
+    let kcbadj = if lai > 0.0 && rtd > 0.0 {
+        kcb + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor
+    } else {
+        0.0
+    };
+    let kcbcon = kcbadj * (1.0 - (-0.45 * lai).exp());
+    let etke = if kcbadj > 0.0 {
+        kcbadj * (-0.45 * lai).exp()
+    } else {
+        1.2
+    };
+
+    let nsl = scalar_to_usize(
+        "wb11_nsl",
+        runtime_surface_symbol_value(runtime_surface, "wb11_nsl")
+            .or_else(|| runtime_surface_symbol_value(runtime_surface, "nsl"))
+            .ok_or_else(|| wb11_seed_failure("missing required runtime symbol wb11_nsl/nsl"))?,
+    )?;
+    let mut profile_depth_m = 0.0_f64;
+    for layer_index in 1..=nsl {
+        profile_depth_m += require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_dg")?;
+    }
+    if profile_depth_m <= 0.0 {
+        return Err(wb11_seed_failure(
+            "soil profile depth must be > 0.0 for EVAPPM demand",
+        ));
+    }
+
+    let epdp_m = 0.1_f64.min(profile_depth_m);
+    let mut tew_mm = 0.0_f64;
+    let mut rew_mm = 0.0_f64;
+    let mut wfevp_mm = 0.0_f64;
+    let mut cumulative_depth_m = 0.0_f64;
+    for layer_index in 1..=nsl {
+        let dg = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_dg")?;
+        let solthk = runtime_surface_symbol_value(
+            runtime_surface,
+            format!("wb19_solthk_{layer_index:04}").as_str(),
+        )
+        .unwrap_or(cumulative_depth_m + dg);
+        if solthk <= cumulative_depth_m {
+            return Err(wb11_seed_failure(format!(
+                "wb19_solthk_{layer_index:04} must increase with depth for EVAPPM demand"
+            )));
+        }
+        let thetfc = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetfc")?;
+        let thetdr = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetdr")?;
+        let theta_store =
+            require_evappm_layer_scalar(runtime_surface, layer_index, "wb18_perc_theta")?;
+        if thetdr > thetfc {
+            return Err(wb11_seed_failure(format!(
+                "wb19_thetdr_{layer_index:04} must be <= wb19_thetfc_{layer_index:04}"
+            )));
+        }
+        let layer_bottom_m = solthk;
+        let layer_fraction = if layer_bottom_m <= epdp_m {
+            1.0
+        } else if cumulative_depth_m < epdp_m {
+            (epdp_m - cumulative_depth_m) / (layer_bottom_m - cumulative_depth_m)
+        } else {
+            0.0
+        };
+        if layer_fraction > 0.0 {
+            tew_mm += (thetfc - 0.5 * thetdr) * dg * 1_000.0 * layer_fraction;
+            rew_mm += (thetfc - thetdr) * dg * 1_000.0 / 3.0 * layer_fraction;
+            wfevp_mm += theta_store * 1_000.0 * layer_fraction;
+        }
+        cumulative_depth_m = layer_bottom_m;
+        if cumulative_depth_m >= epdp_m {
+            break;
+        }
+    }
+    let wfevp_mm = wfevp_mm + residue_interception * 1_000.0;
+    let etkr = if (tew_mm - wfevp_mm) <= rew_mm {
+        1.0
+    } else {
+        let denominator = tew_mm - rew_mm;
+        if denominator <= 0.0 {
+            1.0
+        } else {
+            (wfevp_mm / denominator).powi(2)
+        }
+    };
+
+    let tpdp_m = rtd.min(profile_depth_m);
+    let mut taw_mm = 0.0_f64;
+    let mut wftrp_mm = 0.0_f64;
+    let mut cumulative_depth_m = 0.0_f64;
+    for layer_index in 1..=nsl {
+        let dg = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_dg")?;
+        let solthk = runtime_surface_symbol_value(
+            runtime_surface,
+            format!("wb19_solthk_{layer_index:04}").as_str(),
+        )
+        .unwrap_or(cumulative_depth_m + dg);
+        let thetfc = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetfc")?;
+        let thetdr = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetdr")?;
+        let theta_store =
+            require_evappm_layer_scalar(runtime_surface, layer_index, "wb18_perc_theta")?;
+        let layer_bottom_m = solthk;
+        if tpdp_m <= 0.0 {
+            break;
+        }
+        if layer_bottom_m <= tpdp_m {
+            taw_mm += (thetfc - thetdr) * dg * 1_000.0;
+            wftrp_mm += theta_store * 1_000.0;
+        } else if cumulative_depth_m < tpdp_m {
+            let layer_span_m = layer_bottom_m - cumulative_depth_m;
+            if layer_span_m <= 0.0 {
+                return Err(wb11_seed_failure(format!(
+                    "wb19_solthk_{layer_index:04} must increase with depth for EVAPPM demand"
+                )));
+            }
+            let fraction = (tpdp_m - cumulative_depth_m) / layer_span_m;
+            taw_mm += (thetfc - thetdr) * dg * 1_000.0 * fraction;
+            wftrp_mm = wfevp_mm + theta_store * 1_000.0 * fraction;
+            break;
+        }
+        cumulative_depth_m = layer_bottom_m;
+        if cumulative_depth_m >= tpdp_m {
+            break;
+        }
+    }
+
+    let etcsc = kcbadj * etorc_mm;
+    let rawpaj = rawp + 0.04 * (5.0 - etcsc);
+    let raw_mm = rawpaj * taw_mm;
+    let etksden = taw_mm - raw_mm;
+    let etks = if etksden <= 0.0 || (taw_mm - wftrp_mm) <= raw_mm {
+        1.0
+    } else {
+        wftrp_mm / etksden
+    };
+    let potes_m = etorc_mm * etke * 0.001;
+    let es_m = if potes_m > residue_interception {
+        let bpotes_m = potes_m - residue_interception;
+        let eaj = (-0.5 * (cancov + 0.1)).exp();
+        let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
+        let kecon = (etke * etkr).min(eaj * kcmax);
+        kecon * bpotes_m / etke + residue_interception
+    } else {
+        potes_m
+    };
+    let ep_m = etorc_mm * etks * kcbcon * 0.001;
+
+    let diagnostics = EvappmDemandDiagnostics {
+        etorc_mm,
+        rn_mj_m2,
+        fwv_m_s,
+        rhd_pct,
+        kcbadj,
+        kcbcon,
+        etke,
+        etkr,
+        etks,
+        tew_mm,
+        rew_mm,
+        wfevp_mm,
+        taw_mm,
+        raw_mm,
+        wftrp_mm,
+        es_m,
+        ep_m,
+    };
+    for (name, value) in [
+        ("pmet.etorc_mm", diagnostics.etorc_mm),
+        ("pmet.rn_mj_m2", diagnostics.rn_mj_m2),
+        ("pmet.fwv_m_s", diagnostics.fwv_m_s),
+        ("pmet.rhd_pct", diagnostics.rhd_pct),
+        ("pmet.kcbadj", diagnostics.kcbadj),
+        ("pmet.kcbcon", diagnostics.kcbcon),
+        ("pmet.etke", diagnostics.etke),
+        ("pmet.etkr", diagnostics.etkr),
+        ("pmet.etks", diagnostics.etks),
+        ("pmet.tew_mm", diagnostics.tew_mm),
+        ("pmet.rew_mm", diagnostics.rew_mm),
+        ("pmet.wfevp_mm", diagnostics.wfevp_mm),
+        ("pmet.taw_mm", diagnostics.taw_mm),
+        ("pmet.raw_mm", diagnostics.raw_mm),
+        ("pmet.wftrp_mm", diagnostics.wftrp_mm),
+        ("pmet.es_m", diagnostics.es_m),
+        ("pmet.ep_m", diagnostics.ep_m),
+    ] {
+        if !value.is_finite() {
+            return Err(wb11_seed_failure(format!(
+                "derived {name} must be finite, observed {value}"
+            )));
+        }
+    }
+
+    Ok(Wb11EtDemandSeed {
+        demand_m: ep_m,
+        branch_evappm: true,
+        diagnostics: Some(diagnostics),
+    })
+}
+
+fn saturation_vapor_pressure_kpa(temperature_c: f64) -> f64 {
+    0.6108 * (17.27 * temperature_c / (temperature_c + 237.3)).exp()
+}
+
+fn require_evappm_layer_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    layer_index: usize,
+    root: &str,
+) -> Result<f64, HillslopeCliError> {
+    let symbol = wb13_primary_layer_symbol(root, layer_index);
+    let value = require_runtime_surface_scalar(runtime_surface, symbol.as_str())?;
+    if !value.is_finite() {
+        return Err(wb11_seed_failure(format!(
+            "{symbol} must be finite for EVAPPM demand, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn evappm_radpot_ly(runtime_surface: &HillslopeWritebackSurface) -> Result<f64, HillslopeCliError> {
+    if let Some(radpot) = runtime_surface_symbol_value(runtime_surface, "radpot") {
+        if !radpot.is_finite() {
+            return Err(wb11_seed_failure(format!(
+                "radpot must be finite when present, observed {radpot}"
+            )));
+        }
+        return Ok(radpot);
+    }
+
+    let deglat = require_runtime_surface_scalar(runtime_surface, "deglat")?;
+    let year = require_runtime_surface_scalar(runtime_surface, "year")?;
+    let mon = require_runtime_surface_scalar(runtime_surface, "mon")?;
+    let day = require_runtime_surface_scalar(runtime_surface, "day")?;
+    let year = scalar_to_i32("year", year)?;
+    let mon = scalar_to_i32("mon", mon)?;
+    let day = scalar_to_i32("day", day)?;
+    let sdate = f64::from(day_of_year(year, mon, day)?);
+    Ok(legacy_sunmap_horizontal_radpot_ly(deglat, sdate))
+}
+
+fn legacy_sunmap_horizontal_radpot_ly(deglat: f64, sdate: f64) -> f64 {
+    let pi = std::f64::consts::PI;
+    let radlat = deglat * pi / 180.0;
+    let declination = 0.00698 - 0.4067 * ((sdate + 10.0) * 0.0172).cos();
+    let earth_sun_distance_factor = 1.0 - 0.0167 * ((sdate - 3.0) * 0.0172).cos();
+    let radiation_factor = (60.0 * 1.94) / (earth_sun_distance_factor * earth_sun_distance_factor);
+    let sunset_argument = -(radlat.tan() * declination.tan()).clamp(-1.0, 1.0);
+    let sunset_angle = sunset_argument.acos();
+    radiation_factor
+        * ((declination.sin() * radlat.sin() * (sunset_angle - -sunset_angle) * 12.0 / pi)
+            + (declination.cos()
+                * radlat.cos()
+                * (sunset_angle.sin() - (-sunset_angle).sin())
+                * 12.0
+                / pi))
+}
+
+fn publish_wb11_et_demand_seed(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    seed: Wb11EtDemandSeed,
+) {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(seed.demand_m),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_priestley_taylor"),
+        BoundaryValue::scalar(if seed.branch_evappm { 0.0 } else { 1.0 }),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
+        BoundaryValue::scalar(if seed.branch_evappm { 1.0 } else { 0.0 }),
+    );
+    if let Some(diagnostics) = seed.diagnostics {
+        for (symbol, value) in [
+            ("pmet.etorc_mm", diagnostics.etorc_mm),
+            ("pmet.rn_mj_m2", diagnostics.rn_mj_m2),
+            ("pmet.fwv_m_s", diagnostics.fwv_m_s),
+            ("pmet.rhd_pct", diagnostics.rhd_pct),
+            ("pmet.kcbadj", diagnostics.kcbadj),
+            ("pmet.kcbcon", diagnostics.kcbcon),
+            ("pmet.etke", diagnostics.etke),
+            ("pmet.etkr", diagnostics.etkr),
+            ("pmet.etks", diagnostics.etks),
+            ("pmet.tew_mm", diagnostics.tew_mm),
+            ("pmet.rew_mm", diagnostics.rew_mm),
+            ("pmet.wfevp_mm", diagnostics.wfevp_mm),
+            ("pmet.taw_mm", diagnostics.taw_mm),
+            ("pmet.raw_mm", diagnostics.raw_mm),
+            ("pmet.wftrp_mm", diagnostics.wftrp_mm),
+            ("pmet.es_m", diagnostics.es_m),
+            ("pmet.ep_m", diagnostics.ep_m),
+        ] {
+            runtime_surface
+                .state_surface
+                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        }
+    }
+}
+
 fn validate_hillslope_ofe_topology_parity(
     slope_ofe_count: usize,
     management_topology_count: usize,
@@ -1916,36 +2454,6 @@ fn seed_wb11_runtime_surface_inputs(
     );
     seed_mofe_hourly_carry_runtime_surface_inputs(runtime_surface, mofe_hourly_carry_active)?;
 
-    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
-    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
-    let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
-    if rad < 0.0 {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!("{SIMPIPE_GUARD_ID} rad must be >= 0.0, observed {rad}"),
-        });
-    }
-    let salb = require_runtime_surface_scalar(runtime_surface, "salb")?;
-    if !(0.0..=1.0).contains(&salb) {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!("{SIMPIPE_GUARD_ID} salb must be within [0,1], observed {salb}"),
-        });
-    }
-    let cancov = require_runtime_surface_scalar(runtime_surface, "cancov")?;
-    if cancov < 0.0 {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!("{SIMPIPE_GUARD_ID} cancov must be >= 0.0, observed {cancov}"),
-        });
-    }
-    let lai = require_runtime_surface_scalar(runtime_surface, "lai")?;
-    if lai < 0.0 {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!("{SIMPIPE_GUARD_ID} lai must be >= 0.0, observed {lai}"),
-        });
-    }
     let prcp = require_runtime_surface_scalar(runtime_surface, "prcp")?;
     if prcp < 0.0 {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
@@ -2034,33 +2542,6 @@ fn seed_wb11_runtime_surface_inputs(
         }
 
         hyetograph_rainfall += intensity * (next_time_s - time_s);
-    }
-
-    // Baseline-authoritative Priestley-Taylor potential ET branch from evap.for.
-    let tave = 0.5 * (tmax + tmin);
-    let tk = tave + 273.0;
-    if tk <= 0.0 {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!("{SIMPIPE_GUARD_ID} derived tk must be > 0.0, observed {tk}"),
-        });
-    }
-    let delta = (21.255 - 5304.0 / tk).exp() * 5304.0 / (tk * tk);
-    let gamma = delta / (delta + 0.68);
-    let eaj = (-0.5 * (cancov + 0.1)).exp();
-    let alb = if lai > 0.0 {
-        0.23 * (1.0 - eaj) + salb * eaj
-    } else {
-        salb
-    };
-    let wb11_et_demand = (0.00128 * ((rad * (1.0 - alb)) / 58.3) * gamma).max(0.0);
-    if !wb11_et_demand.is_finite() {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "wb11_seed",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} derived wb11_et_demand is non-finite ({wb11_et_demand})"
-            ),
-        });
     }
 
     let wb11_state_seeded = runtime_surface
@@ -2304,18 +2785,6 @@ fn seed_wb11_runtime_surface_inputs(
         });
     }
 
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("wb11_et_demand"),
-        BoundaryValue::scalar(wb11_et_demand),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("wb11_et_seed_branch_priestley_taylor"),
-        BoundaryValue::scalar(1.0),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
-        BoundaryValue::scalar(0.0),
-    );
     if runtime_surface_symbol_value(runtime_surface, "wb17_residue_interception").is_none() {
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb17_residue_interception"),
@@ -2446,6 +2915,9 @@ fn seed_wb11_runtime_surface_inputs(
         BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
         BoundaryValue::scalar(1.0),
     );
+
+    let wb11_et_seed = compute_wb11_et_demand_seed(runtime_surface)?;
+    publish_wb11_et_demand_seed(runtime_surface, wb11_et_seed);
 
     if runtime_surface_symbol_value(runtime_surface, "efflen").is_none() {
         let slplen = require_runtime_surface_scalar(runtime_surface, "slplen")?;
@@ -3923,6 +4395,23 @@ fn build_hphys0245_trace_row(
         ),
         wb11_et_demand_m: runtime_surface_symbol_value(runtime_surface, "wb11_et_demand"),
         wb11_et_seed_branch: hphys0245_et_seed_branch(runtime_surface),
+        pmet_etorc_mm: runtime_surface_symbol_value(runtime_surface, "pmet.etorc_mm"),
+        pmet_rn_mj_m2: runtime_surface_symbol_value(runtime_surface, "pmet.rn_mj_m2"),
+        pmet_fwv_m_s: runtime_surface_symbol_value(runtime_surface, "pmet.fwv_m_s"),
+        pmet_rhd_pct: runtime_surface_symbol_value(runtime_surface, "pmet.rhd_pct"),
+        pmet_kcbadj: runtime_surface_symbol_value(runtime_surface, "pmet.kcbadj"),
+        pmet_kcbcon: runtime_surface_symbol_value(runtime_surface, "pmet.kcbcon"),
+        pmet_etke: runtime_surface_symbol_value(runtime_surface, "pmet.etke"),
+        pmet_etkr: runtime_surface_symbol_value(runtime_surface, "pmet.etkr"),
+        pmet_etks: runtime_surface_symbol_value(runtime_surface, "pmet.etks"),
+        pmet_tew_mm: runtime_surface_symbol_value(runtime_surface, "pmet.tew_mm"),
+        pmet_rew_mm: runtime_surface_symbol_value(runtime_surface, "pmet.rew_mm"),
+        pmet_wfevp_mm: runtime_surface_symbol_value(runtime_surface, "pmet.wfevp_mm"),
+        pmet_taw_mm: runtime_surface_symbol_value(runtime_surface, "pmet.taw_mm"),
+        pmet_raw_mm: runtime_surface_symbol_value(runtime_surface, "pmet.raw_mm"),
+        pmet_wftrp_mm: runtime_surface_symbol_value(runtime_surface, "pmet.wftrp_mm"),
+        pmet_es_m: runtime_surface_symbol_value(runtime_surface, "pmet.es_m"),
+        pmet_ep_m: runtime_surface_symbol_value(runtime_surface, "pmet.ep_m"),
         etp_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Etp"),
         upi_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "UPi"),
         ui_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ui"),
@@ -7287,6 +7776,69 @@ mod tests {
     }
 
     #[test]
+    fn hphys0263_wb11_seed_uses_evappm_branch_when_pmetpara_selects_pmet() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", 20.0),
+            ("tmin", 10.0),
+            ("tdpt", 8.0),
+            ("rad", 20.0),
+            ("radpot", 25.0),
+            ("vwind", 2.0),
+            ("elevm", 300.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 4.0),
+            ("canhgt", 1.0),
+            ("rtd", 0.2),
+            ("prcp", 0.003),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+            ("pmetpara.mode.sidecar_present", 1.0),
+            ("pmetpara.mode.iflget", 2.0),
+            ("pmetpara.selected.kcb", 0.95),
+            ("pmetpara.selected.rawp", 0.8),
+            ("wb17_residue_interception", 0.0),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.80, true);
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_solthk_0001"),
+            BoundaryValue::scalar(0.25),
+        );
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("PMET-mode WB11 seed should succeed");
+
+        let demand = require_runtime_surface_scalar(&runtime_surface, "wb11_et_demand")
+            .expect("WB11 demand should be seeded");
+        let evappm_branch =
+            require_runtime_surface_scalar(&runtime_surface, "wb11_et_seed_branch_evappm")
+                .expect("EVAPPM branch flag should be published");
+        let priestley_branch = require_runtime_surface_scalar(
+            &runtime_surface,
+            "wb11_et_seed_branch_priestley_taylor",
+        )
+        .expect("Priestley branch flag should be published");
+        let etorc = require_runtime_surface_scalar(&runtime_surface, "pmet.etorc_mm")
+            .expect("migrated EVAPPM reference ET should be traced");
+        let kcbcon = require_runtime_surface_scalar(&runtime_surface, "pmet.kcbcon")
+            .expect("migrated EVAPPM basal canopy coefficient should be traced");
+
+        assert!(
+            (demand - 0.000_108_279_281_560_428_06).abs() < 1.0e-15,
+            "WB11 demand must follow pinned evappm.for plant-transpiration demand"
+        );
+        assert!((evappm_branch - 1.0).abs() < 1.0e-12);
+        assert!(priestley_branch.abs() < 1.0e-12);
+        assert!((etorc - 0.139_042_184_372_870_16).abs() < 1.0e-12);
+        assert!((kcbcon - 0.778_751_298_023_734_6).abs() < 1.0e-12);
+    }
+
+    #[test]
     fn hphys0213_wb19_lateral_withdrawal_publishes_realized_flux_and_updates_wb11_soil_water() {
         let mut state_surface = BTreeMap::new();
         state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
@@ -8538,6 +9090,23 @@ mod tests {
             pmet_lookup_fallback_first_row_used: Some(0.0),
             wb11_et_demand_m: Some(0.003),
             wb11_et_seed_branch: Some("evappm_pmet".to_string()),
+            pmet_etorc_mm: Some(3.5),
+            pmet_rn_mj_m2: Some(4.2),
+            pmet_fwv_m_s: Some(2.1),
+            pmet_rhd_pct: Some(60.0),
+            pmet_kcbadj: Some(0.95),
+            pmet_kcbcon: Some(0.7),
+            pmet_etke: Some(0.3),
+            pmet_etkr: Some(1.0),
+            pmet_etks: Some(0.8),
+            pmet_tew_mm: Some(25.0),
+            pmet_rew_mm: Some(8.0),
+            pmet_wfevp_mm: Some(12.0),
+            pmet_taw_mm: Some(40.0),
+            pmet_raw_mm: Some(20.0),
+            pmet_wftrp_mm: Some(30.0),
+            pmet_es_m: Some(0.001),
+            pmet_ep_m: Some(0.003),
             etp_m: Some(0.003),
             upi_m: Some(0.003),
             ui_m: Some(0.002),

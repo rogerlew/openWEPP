@@ -1018,6 +1018,7 @@ fn apply_primary_initial_live_canopy_assimilation(
     for (symbol, value) in [
         ("sumgdd", sumgdd),
         ("vdmt", vdmt),
+        ("canhgt", canhgt),
         ("lai", lai),
         ("rtmass", rtmass),
         ("rtd", rtd),

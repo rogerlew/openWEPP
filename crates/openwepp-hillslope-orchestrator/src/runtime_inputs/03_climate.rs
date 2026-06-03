@@ -66,6 +66,14 @@ pub fn seed_hillslope_runtime_surface_from_climate(
         BoundarySymbol::from("iwind"),
         BoundaryValue::scalar(f64::from(climate.shared.iwind)),
     );
+    state_surface.insert(
+        BoundarySymbol::from("deglat"),
+        BoundaryValue::scalar(climate.metadata.deglat),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("elevm"),
+        BoundaryValue::scalar(climate.metadata.elev),
+    );
     insert_monthly_climate_symbols(state_surface, &climate.monthly)?;
 
     match forcing {
@@ -264,4 +272,3 @@ pub fn build_hillslope_runtime_surface_from_climate_request_with_context(
     )?;
     Ok(surface)
 }
-

@@ -9,7 +9,7 @@ use openwepp_climate_runtime_adapter::{
 };
 use openwepp_input_contract::parsers::{
     chaninp::{ChaninpFile, ChaninpParseOutcome},
-    climate::{ClimateFile, ClimateMonthlyStats},
+    climate::{ClimateFile, ClimateMetadata, ClimateMonthlyStats},
     slope::{DistanceMode, SlopeProfile},
     watershed_channel::WatershedChannelFile,
     watershed_impoundment::{
@@ -241,6 +241,7 @@ pub struct WatershedClimateRuntimeRequest {
 #[derive(Debug, Clone, PartialEq)]
 pub struct WatershedHillslopeClimateAssignment {
     forcing: WatershedHillslopeClimateRequest,
+    metadata: ClimateMetadata,
     monthly: ClimateMonthlyStats,
     day_symbol_surfaces: Vec<ClimateForcingSymbolSurface>,
 }
@@ -2511,6 +2512,7 @@ pub fn build_watershed_climate_runtime_request_from_assignments(
             hillslope_id,
             WatershedHillslopeClimateAssignment {
                 forcing,
+                metadata: climate.metadata.clone(),
                 monthly: climate.monthly.clone(),
                 day_symbol_surfaces,
             },
@@ -2571,6 +2573,18 @@ pub fn seed_watershed_runtime_surface_from_climate(
             hillslope_id,
             "iwind",
             f64::from(request.iwind),
+        );
+        insert_hillslope_symbol(
+            state_surface,
+            hillslope_id,
+            "deglat",
+            assignment.metadata.deglat,
+        );
+        insert_hillslope_symbol(
+            state_surface,
+            hillslope_id,
+            "elevm",
+            assignment.metadata.elev,
         );
         insert_hillslope_monthly_climate_symbols(state_surface, hillslope_id, &assignment.monthly)?;
 
