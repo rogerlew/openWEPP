@@ -15,8 +15,8 @@ Findings:
   branch-aware PMET seam contract before production code changes.
 - WB17 PMET mode requires `pmet.es_m` and `pmet.ep_m`, bypasses non-PMET
   stage/PT partition, and preserves SWU as the final `Ep` path.
-- Signed `Es` publication is branch-scoped in runner and summary accumulator
-  code; non-PMET negative `Es` remains guarded.
+- Bounded `Es` roundoff handling is branch-scoped in runner and summary
+  accumulator code; material negative `Es` remains guarded.
 
 Disposition:
 

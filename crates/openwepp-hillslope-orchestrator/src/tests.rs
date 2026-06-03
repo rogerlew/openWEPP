@@ -510,7 +510,7 @@ fn hphys0264_pmet_evapotranspiration_consumes_evappm_components_without_pt_repar
 }
 
 #[test]
-fn hphys0264_pmet_evapotranspiration_preserves_negative_evappm_soil_evaporation() {
+fn hphys0264_pmet_evapotranspiration_rejects_material_negative_soil_evaporation() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(
         BoundarySymbol::from("wb11_soil_water"),
@@ -561,32 +561,73 @@ fn hphys0264_pmet_evapotranspiration_preserves_negative_evappm_soil_evaporation(
     let mut kernel = Wb11HydrologyKernel;
     let response = kernel.run_hillslope_phase(&request);
 
+    assert_eq!(
+        response.status.message_id(),
+        "HKERNEL-WB11-ET-E-003",
+        "material negative PMET Es must fail closed instead of publishing signed Es"
+    );
+    assert!(response.writeback.flux_updates.is_empty());
+    assert!(response.writeback.state_updates.is_empty());
+}
+
+#[test]
+fn hphys0264_pmet_evapotranspiration_snaps_roundoff_negative_soil_evaporation() {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.010),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.001),
+    );
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.4));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.10));
+    state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.es_m"),
+        BoundaryValue::scalar(-1.0e-13),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.ep_m"),
+        BoundaryValue::scalar(0.001),
+    );
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.010),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.20));
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "evapotranspiration",
+        HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
     assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
-    let top_layer_storage =
-        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
-            .expect("PMET negative Es path must publish adjusted top-layer storage");
     let es = flux_update_scalar(&response.writeback.flux_updates, "Es")
         .expect("PMET seam must publish Es");
-    let er = flux_update_scalar(&response.writeback.flux_updates, "Er")
-        .expect("PMET seam must publish Er");
-    let et = flux_update_scalar(&response.writeback.flux_updates, "ET")
-        .expect("PMET seam must publish signed ET");
-
     assert!(
-        (top_layer_storage - 0.010_575_419_020_248_203).abs() < 1.0e-12,
-        "negative EVAPPM Es must add the deficit back to top-layer storage"
-    );
-    assert!(
-        (es + 0.000_575_419_020_248_203_2).abs() < 1.0e-12,
-        "PMET mode must preserve signed legacy es in the Es publication"
-    );
-    assert!(
-        er.abs() < 1.0e-12,
-        "negative EVAPPM Es must not become negative residue evaporation"
-    );
-    assert!(
-        (et + 0.000_575_419_020_248_203_2).abs() < 1.0e-12,
-        "PMET ET-phase base ET must preserve the signed EVAPPM soil component"
+        es.abs() < f64::EPSILON,
+        "near-zero negative PMET Es roundoff must canonicalize to zero"
     );
 }
 

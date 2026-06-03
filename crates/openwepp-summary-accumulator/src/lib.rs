@@ -52,6 +52,8 @@ pub const WB13_H5_WAT_COLUMNS: [&str; 25] = [
     "ProfileWPStore",
 ];
 
+const WB13_NON_NEGATIVE_ROUNDOFF_TOLERANCE: f64 = 1.0e-12;
+
 /// Summary accumulation windows.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SummaryWindow {
@@ -238,12 +240,21 @@ impl Wb13DailyWaterBalanceRow {
         let evappm_pmet_branch = surface
             .value("wb11_et_seed_branch_evappm")
             .is_some_and(|value| value >= 0.5);
-        let es = require_output_symbol(
+        let es_raw = require_output_symbol(
             surface,
             "Es",
-            if evappm_pmet_branch { None } else { Some(0.0) },
+            if evappm_pmet_branch {
+                Some(-WB13_NON_NEGATIVE_ROUNDOFF_TOLERANCE)
+            } else {
+                Some(0.0)
+            },
             None,
         )?;
+        let es = if evappm_pmet_branch && es_raw < 0.0 {
+            0.0
+        } else {
+            es_raw
+        };
         let er = require_output_symbol(surface, "Er", Some(0.0), None)?;
         let dp = require_output_symbol(surface, "Dp", Some(0.0), None)?;
         let upstrmq = require_output_symbol(surface, "UpStrmQ", Some(0.0), None)?;
@@ -945,15 +956,27 @@ mod tests {
     }
 
     #[test]
-    fn wb13_row_allows_negative_soil_evaporation_only_for_evappm_pmet_branch() {
+    fn wb13_row_snaps_roundoff_negative_soil_evaporation_only_for_evappm_pmet_branch() {
         let pmet_row = Wb13DailyWaterBalanceRow::from_surface(
+            1,
+            1,
+            2026,
+            &wb13_surface_with_soil_evaporation(-1.0e-13, 1.0),
+        )
+        .expect("EVAPPM PMET branch can snap near-zero negative Es roundoff");
+        assert!(pmet_row.es.abs() < f64::EPSILON);
+
+        let pmet_error = Wb13DailyWaterBalanceRow::from_surface(
             1,
             1,
             2026,
             &wb13_surface_with_soil_evaporation(-0.575, 1.0),
         )
-        .expect("EVAPPM PMET branch can publish signed legacy Es");
-        assert!((pmet_row.es + 0.575).abs() < 1.0e-12);
+        .expect_err("EVAPPM PMET branch must reject material negative Es");
+        assert!(matches!(
+            pmet_error,
+            SummaryAccumulatorError::OutputSymbolOutOfRange { .. }
+        ));
 
         let error = Wb13DailyWaterBalanceRow::from_surface(
             1,

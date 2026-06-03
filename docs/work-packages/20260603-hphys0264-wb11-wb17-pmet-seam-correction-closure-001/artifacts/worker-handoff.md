@@ -10,8 +10,10 @@ Summary:
 - EVAPPM PMET mode now consumes `pmet.es_m` and `pmet.ep_m` directly in WB17,
   avoids Priestley-Taylor/LAI repartition of PMET `ep`, and preserves SWU as
   final `Ep` authority.
-- Branch-marked signed EVAPPM `Es` is allowed through WB13 publication; other
-  negative `Es` cases remain guarded.
+- Branch-marked EVAPPM PMET `Es` allows only within-tolerance negative
+  roundoff canonicalization; material negative `Es` remains guarded.
+- Claude Code review findings were dispositioned in
+  `review_claude_code_disposition.md`.
 
 Key files:
 
@@ -25,6 +27,8 @@ Key files:
 Validation:
 
 - Focused HPHYS0264 tests passed.
+- Review-disposition focused tests for material-negative `Es` rejection and
+  near-zero roundoff canonicalization passed.
 - `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
   `cargo test --workspace`, and `cargo deny check` passed.
 - Full H1..H39 diagnostics ran at `/tmp/hphys0264_20260603T083941Z` with

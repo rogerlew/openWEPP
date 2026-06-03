@@ -17,7 +17,7 @@ publishes `pmet.ep_m` through `wb11_et_demand` while the WB17 ET phase still
 treats that surface as generic potential demand and applies the existing
 Priestley-Taylor partition. Pinned legacy `evappm.for` computes `es` and `ep`
 directly, then `swu.for` consumes `ep` for root-zone uptake. The openWEPP seam
-must therefore be made branch-aware before any follow-on `evappm.for:391-454`
+must therefore be made branch-aware before any follow-on `evappm.for:460-523`
 redistribution work builds on top of it.
 
 ## Included Scope
@@ -33,7 +33,7 @@ redistribution work builds on top of it.
 
 ## Excluded Scope
 
-- Full migration of `evappm.for:391-454` post-ET soil evaporation
+- Full migration of `evappm.for:460-523` post-ET soil evaporation
   redistribution unless required to correct the seam.
 - Storage-drain root-cause correction outside the PMET seam.
 - Watershed routing closure beyond reported H1..H39 hillslope metrics.
@@ -129,10 +129,11 @@ Static:
   repartition of PMET `ep`, and preserve SWU as final `Ep` authority.
 - WB17 ET execution now detects `wb11_et_seed_branch_evappm`, requires
   migrated PMET component surfaces, bypasses non-PMET stage/PT partition
-  behavior, publishes `Etp = pmet.ep_m`, and preserves signed EVAPPM `Es`
-  where pinned baseline `evappm.for:460-523` returns negative `es`.
-- WB13 summary publication now allows signed `Es` only under the EVAPPM PMET
-  branch marker; non-PMET negative `Es` remains a hard error.
+  behavior, publishes `Etp = pmet.ep_m`, and rejects material negative
+  `pmet.es_m` while snapping only within-tolerance negative roundoff to zero.
+- WB13 summary publication now applies the same bounded `Es` roundoff
+  canonicalization under the EVAPPM PMET branch; material negative `Es` remains
+  a hard error.
 
 Ran:
 

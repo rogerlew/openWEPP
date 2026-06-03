@@ -11,8 +11,8 @@ Static:
   `BR-EVAP-WB17-PMET-COMPONENT-SEAM`, and `INV-EVAP-022`.
 - `INV-EVAP-022` requires EVAPPM PMET branch WB17 execution to consume
   `pmet.es_m` and `pmet.ep_m` directly, publish `Etp = pmet.ep_m` before SWU,
-  prohibit Priestley-Taylor/LAI re-partitioning of PMET `ep`, preserve signed
-  negative EVAPPM `Es`, and keep `Er` non-negative.
+  prohibit Priestley-Taylor/LAI re-partitioning of PMET `ep`, reject material
+  negative `pmet.es_m`, and keep `Er` non-negative.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md` is amended
   to version `90` with `INV-WATBAL-050`, requiring WB13/WAT closure evidence to
   prove the same PMET seam lineage and final post-SWU `Ep`.

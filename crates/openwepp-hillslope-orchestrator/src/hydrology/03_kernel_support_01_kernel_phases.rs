@@ -534,9 +534,11 @@ impl Wb11HydrologyKernel {
                 phase_class,
                 &pmet_soil_evaporation_symbol,
                 pmet_soil_evaporation,
-                None,
+                Some(-WB11_ZERO_THRESHOLD),
                 None,
             )?;
+            let pmet_soil_evaporation =
+                Self::normalize_non_negative_within_tolerance(pmet_soil_evaporation);
             Self::require_state_range_for_symbol(
                 phase_class,
                 &pmet_transpiration_symbol,
@@ -668,7 +670,13 @@ impl Wb11HydrologyKernel {
         let pmet_component_mode = evappm_pmet_components.is_some();
         let (soil_evaporation_with_residue, transpiration_partition_potential) =
             if let Some((pmet_es_m, pmet_ep_m)) = evappm_pmet_components {
-                Self::require_flux_range(phase_class, WB17_SYMBOL_ES, pmet_es_m, None, None)?;
+                Self::require_flux_range(
+                    phase_class,
+                    WB17_SYMBOL_ES,
+                    pmet_es_m,
+                    Some(0.0),
+                    None,
+                )?;
                 Self::require_flux_range(
                     phase_class,
                     WB17_SYMBOL_EP,
@@ -875,24 +883,15 @@ impl Wb11HydrologyKernel {
                 )
             };
         let mut residue_evaporation = residue_interception;
-        let signed_pmet_soil_evaporation =
-            pmet_component_mode && soil_evaporation_with_residue < 0.0;
         let soil_evaporation_extraction_demand =
             if soil_evaporation_with_residue < residue_interception {
-                residue_evaporation = if signed_pmet_soil_evaporation {
-                    0.0
-                } else if pmet_component_mode {
+                residue_evaporation = if pmet_component_mode {
                     soil_evaporation_with_residue
                 } else {
                     soil_evaporation_with_residue.max(0.0)
                 };
                 if let Some(top_layer_storage) = layer_storage.first_mut() {
-                    let returned_storage = if signed_pmet_soil_evaporation {
-                        residue_interception - soil_evaporation_with_residue
-                    } else {
-                        residue_interception - residue_evaporation
-                    };
-                    *top_layer_storage += returned_storage;
+                    *top_layer_storage += residue_interception - residue_evaporation;
                 }
                 0.0
             } else {
@@ -942,11 +941,8 @@ impl Wb11HydrologyKernel {
                 break;
             }
         }
-        let mut soil_evaporation_actual =
+        let soil_evaporation_actual =
             soil_evaporation_extraction_demand - remaining_soil_evaporation;
-        if signed_pmet_soil_evaporation {
-            soil_evaporation_actual = soil_evaporation_with_residue;
-        }
 
         let soil_water_after =
             Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
@@ -963,7 +959,7 @@ impl Wb11HydrologyKernel {
             phase_class,
             WB11_SYMBOL_ET,
             actual_et,
-            if pmet_component_mode { None } else { Some(0.0) },
+            Some(0.0),
             None,
         )?;
 
@@ -1001,11 +997,7 @@ impl Wb11HydrologyKernel {
             phase_class,
             WB17_SYMBOL_ES,
             soil_evaporation_actual,
-            if signed_pmet_soil_evaporation {
-                None
-            } else {
-                Some(0.0)
-            },
+            Some(0.0),
             Some(soil_evaporation_extraction_demand),
         )?;
         Self::require_flux_range(
@@ -1057,7 +1049,7 @@ impl Wb11HydrologyKernel {
                 WritebackField::bounded(
                     WB11_SYMBOL_ET,
                     actual_et,
-                    if pmet_component_mode { None } else { Some(0.0) },
+                    Some(0.0),
                     None,
                 ),
                 WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
@@ -1065,11 +1057,7 @@ impl Wb11HydrologyKernel {
                 WritebackField::bounded(
                     WB17_SYMBOL_ES,
                     soil_evaporation_actual,
-                    if signed_pmet_soil_evaporation {
-                        None
-                    } else {
-                        Some(0.0)
-                    },
+                    Some(0.0),
                     None,
                 ),
                 WritebackField::bounded(
@@ -1099,25 +1087,8 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyPlantRootUptake;
-        let evappm_branch_symbol = BoundarySymbol::from("wb11_et_seed_branch_evappm");
-        let pmet_component_mode = Self::optional_state_scalar_for_symbol(
-            request,
-            phase_class,
-            &evappm_branch_symbol,
-        )?
-        .is_some_and(|value| value >= 0.5);
         let base_et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
-        Self::require_flux_range(
-            phase_class,
-            WB11_SYMBOL_ET,
-            base_et,
-            if pmet_component_mode {
-                None
-            } else {
-                Some(0.0)
-            },
-            None,
-        )?;
+        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, base_et, Some(0.0), None)?;
 
         let etp_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_ETP);
         let etp = Self::require_flux_scalar_for_symbol(request, phase_class, &etp_symbol)?;
@@ -1286,17 +1257,7 @@ impl Wb11HydrologyKernel {
         )?;
 
         let actual_et = base_et + ui;
-        Self::require_flux_range(
-            phase_class,
-            WB11_SYMBOL_ET,
-            actual_et,
-            if pmet_component_mode {
-                None
-            } else {
-                Some(0.0)
-            },
-            None,
-        )?;
+        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, actual_et, Some(0.0), None)?;
 
         let uptake_potential_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UPI);
         let uptake_actual_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_UI);
@@ -1372,16 +1333,7 @@ impl Wb11HydrologyKernel {
         }
 
         let mut flux_updates = vec![
-            WritebackField::bounded(
-                WB11_SYMBOL_ET,
-                actual_et,
-                if pmet_component_mode {
-                    None
-                } else {
-                    Some(0.0)
-                },
-                None,
-            ),
+            WritebackField::bounded(WB11_SYMBOL_ET, actual_et, Some(0.0), None),
             WritebackField::bounded(WB11_SYMBOL_WS, ws, Some(0.0), Some(1.0)),
             WritebackField::bounded(WB17_SYMBOL_EP, ui, Some(0.0), None),
             WritebackField::bounded(etp_symbol, etp, Some(0.0), None),
@@ -4114,13 +4066,6 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyStorageReconciliation;
-        let evappm_branch_symbol = BoundarySymbol::from("wb11_et_seed_branch_evappm");
-        let pmet_component_mode = Self::optional_state_scalar_for_symbol(
-            request,
-            phase_class,
-            &evappm_branch_symbol,
-        )?
-        .is_some_and(|value| value >= 0.5);
         let storage_initial =
             Self::require_state_scalar(request, phase_class, WB12_SYMBOL_STORAGE_INITIAL)?;
         Self::require_state_range(
@@ -4184,17 +4129,7 @@ impl Wb11HydrologyKernel {
         )?;
 
         let et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
-        Self::require_flux_range(
-            phase_class,
-            WB11_SYMBOL_ET,
-            et,
-            if pmet_component_mode {
-                None
-            } else {
-                Some(0.0)
-            },
-            None,
-        )?;
+        Self::require_flux_range(phase_class, WB11_SYMBOL_ET, et, Some(0.0), None)?;
 
         let percolation_loss =
             Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_PERC_LOSS_D)?;

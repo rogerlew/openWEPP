@@ -5868,12 +5868,22 @@ fn build_simulation_owned_wb13_row(
     let evappm_pmet_branch =
         runtime_surface_symbol_value(runtime_surface, "wb11_et_seed_branch_evappm")
             .is_some_and(|value| value >= 0.5);
-    let soil_evap_es_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Es")?;
-    if soil_evap_es_m < 0.0 && !evappm_pmet_branch {
+    let soil_evap_es_m_raw = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Es")?;
+    if soil_evap_es_m_raw < -1.0e-12 {
         return Err(wb13_simout_failure(format!(
-            "Es must be >= 0.0, observed {soil_evap_es_m}"
+            "Es must be >= 0.0 within tolerance, observed {soil_evap_es_m_raw}"
         )));
     }
+    if soil_evap_es_m_raw < 0.0 && !evappm_pmet_branch {
+        return Err(wb13_simout_failure(format!(
+            "Es must be >= 0.0, observed {soil_evap_es_m_raw}"
+        )));
+    }
+    let soil_evap_es_m = if evappm_pmet_branch && soil_evap_es_m_raw < 0.0 {
+        0.0
+    } else {
+        soil_evap_es_m_raw
+    };
     let residue_evap_er_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Er")?;
     if residue_evap_er_m < 0.0 {
         return Err(wb13_simout_failure(format!(

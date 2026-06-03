@@ -8,9 +8,9 @@ Static:
 
 - Pinned baseline `evappm.for:430-459` computes PMET `es`, `ep`, and
   `et = es + ep` directly.
-- Pinned baseline `evappm.for:460-523` performs post-ET redistribution; cold
-  cases may leave `es` signed negative while returning the deficit to
-  top-layer storage.
+- Pinned baseline `evappm.for:460-523` performs post-ET redistribution; when
+  `es - resint < 0`, it returns the residue deficit to top-layer storage rather
+  than publishing a material negative `es`.
 - Pinned baseline `watbal_hourly.for:978-981` calls `swu` when `ep > 0` and
   `rtd > 0`.
 - Pinned baseline `swu.for:122-191` consumes positive `ep` as demand and sets

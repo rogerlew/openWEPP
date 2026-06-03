@@ -19,6 +19,8 @@ Disposition-grade artifacts:
 - `owned-file-manifest.md`
 - `review_agent_a.md`
 - `review_agent_b.md`
+- `review_claude_code.md`
+- `review_claude_code_disposition.md`
 - `verification_agent_a.md`
 - `verification_agent_b.md`
 - `disposition.md`
