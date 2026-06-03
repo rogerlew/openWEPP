@@ -76,9 +76,16 @@ minimum:
 - typed wrapper requirement or scalar exception,
 - publication metadata mapping when the symbol is published.
 
-Until the registry exists, packages must record registry gaps explicitly in
-their work-package artifacts and keep affected production migrations in
-`HOLD` when unit ambiguity can change process behavior.
+The active registry implementation is
+`crates/openwepp-sim-contract/src/units.rs`; the human-readable schema and
+coverage report is
+`docs/specifications/units/boundary-symbol-unit-registry.md`. Run
+`tools/release/check_unit_registry.sh` as the mandatory local gate for packages
+that add, change, or publish dimensional boundary symbols.
+
+Packages must record registry gaps explicitly in their work-package artifacts
+and keep affected production migrations in `HOLD` when unit ambiguity can
+change process behavior.
 
 ## Typed Boundary Values
 

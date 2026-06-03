@@ -1,6 +1,6 @@
 # HPHYS0274 Boundary Symbol Unit Registry Closure
 
-Status: queued
+Status: completed
 
 ## Objective
 

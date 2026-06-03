@@ -48,6 +48,11 @@ Canonical subsystem specification location:
 - [subsystems/README.md](subsystems/README.md)
 - Canonical subsystem specs: `docs/specifications/subsystems/<subsystem>/`
 
+Canonical unit-governance specification location:
+- [unit-governance.md](unit-governance.md)
+- Boundary-symbol registry:
+  `docs/specifications/units/boundary-symbol-unit-registry.md`
+
 Current chapter-to-contract scaffold:
 - `docs/work-packages/20260520-sci01-50201000-process-contract-mapping/artifacts/50201000-chapter-process-contract-map.md`
 

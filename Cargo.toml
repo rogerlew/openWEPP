@@ -65,6 +65,7 @@ arrow-schema = "54.2.1"
 parquet = "54.2.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -165,6 +166,10 @@ path = "tests/integration/sim_contract_closure_checks.rs"
 [[test]]
 name = "sim_contract_symbol_alias_registry"
 path = "tests/integration/sim_contract_symbol_alias_registry.rs"
+
+[[test]]
+name = "sim_contract_boundary_unit_registry"
+path = "tests/integration/sim_contract_boundary_unit_registry.rs"
 
 [[test]]
 name = "topology_graph_validation_gate"

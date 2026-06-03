@@ -697,6 +697,7 @@ dependencies = [
  "openwepp-climate-runtime-adapter",
  "openwepp-comparator-metadata",
  "openwepp-hillslope-orchestrator",
+ "openwepp-hillslope-output",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
  "openwepp-legacy-bridge",

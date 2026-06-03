@@ -1,29 +1,71 @@
 # Review Agent B
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: ran-review
 
-Static: queued independent review/disposition template for HPHYS0274 Boundary
-Symbol Unit Registry Closure.
+Static: Review scope included validation strength, maintainability, docs
+truthfulness, package artifacts, and package compliance.
 
-## Required Review Scope
+Ran: independent `rust_qa_reviewer` sub-agent review completed during HPHYS0274
+execution.
 
-- Contract/governance authority alignment.
-- Production/tooling/docs diff against package objective and write set.
-- Tests/gates and evidence truthfulness.
-- Regression/follow-up risks.
+## Findings And Disposition
 
-## Findings
+### B1: Clippy gate red
 
-- Status: queued; add findings during review.
-- Required disposition values: `accepted`, `rejected`, `deferred`, `follow-up`.
-- Every finding must include evidence, severity, disposition, rationale, and affected paths.
+- Severity: blocker.
+- Evidence: focused clippy failed on `BoundaryUnitRegistryError::fmt` and later
+  the HPHYS0274 required-alias data table.
+- Disposition: accepted.
+- Fix: added narrow `#[allow(clippy::too_many_lines)]` annotations for generated
+  display/data-table surfaces; final
+  `cargo clippy --test sim_contract_boundary_unit_registry -- -D warnings`
+  passed.
+- Closure impact: resolved.
 
-## Disposition Gate
+### B2: Package marked completed before artifacts closed
 
-- Package closure is blocked until every finding is dispositioned.
-- Accepted findings require fix evidence and verification reference.
-- Rejected findings require rationale.
-- Deferred/follow-up findings require links from `disposition.md` and `worker-handoff.md`.
+- Severity: blocker.
+- Evidence: queued `disposition.md`, `gate-results.md`, review, and
+  verification artifacts existed while implementation was still in progress.
+- Disposition: accepted.
+- Fix: final disposition, gate, review, verification, handoff, and supporting
+  evidence artifacts were completed after final gate execution.
+- Closure impact: resolved.
 
-Ran: not-run.
+### B3: Evidence truthfulness mismatch
+
+- Severity: blocker.
+- Evidence: early artifact text referenced final gate output before
+  `gate-results.md` was populated.
+- Disposition: accepted.
+- Fix: `gate-results.md` now records actual command results; other artifacts
+  reference those final results truthfully.
+- Closure impact: resolved.
+
+### B4: Release gate too narrow
+
+- Severity: high.
+- Evidence: the initial gate did not enumerate source/output symbols and allowed
+  concrete misses to pass.
+- Disposition: accepted.
+- Fix: the registry test now validates the HPHYS0274 required-alias manifest,
+  WAT schema metadata, template errors, ambiguous templates, and publication
+  alias conflicts; the wrapper also runs focused clippy.
+- Closure impact: resolved for HPHYS0274 touched scope; full repository scanning
+  remains a follow-up under HPHYS0279.
+
+### B5: Template-validator edge cases untested
+
+- Severity: medium.
+- Evidence: unsupported/malformed template logic existed without tests.
+- Disposition: accepted.
+- Fix: added tests for unsupported template tokens and ambiguous concrete
+  template matches.
+- Closure impact: resolved.
+
+## Conclusion
+
+No undispositioned Review Agent B findings remain. Full repository source-scan
+enforcement remains explicit HPHYS0279 continuation work, not an HPHYS0274
+closure claim.

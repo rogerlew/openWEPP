@@ -1944,7 +1944,9 @@ Authorized packages:
   - Purpose: implement a machine-readable boundary-symbol unit registry and
     validation gate so dimensional runtime symbols have authoritative units
     independent of naming convention.
-  - Status: queued; first implementation remediation after HPHYS0273.
+  - Status: completed; implemented `openwepp-sim-contract` boundary unit
+    registry, contract-derived tests, release gate wrapper, unit spec coverage
+    report, and explicit continuation gaps for HPHYS0275-HPHYS0279.
 - `20260603-hphys0273-unit-governance-standard-closure-001/`
   - Purpose: author canonical openWEPP unit-governance policy spanning science
     contracts, runtime boundary symbols, conversions, output metadata, tests,
