@@ -1411,6 +1411,33 @@ impl Wb11HydrologyKernel {
         Ok((theta, drain_threshold, conductivity, thickness, upper_limit))
     }
 
+    fn wb19_lateral_ssh_state_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("{WB19_SYMBOL_LATERAL_SSH_ROOT}_{layer_index:04}"))
+    }
+
+    fn wb19_load_hourly_lateral_conductivity(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_count: usize,
+    ) -> Result<Vec<f64>, Wb11HydrologyKernelGuardError> {
+        let mut lateral_conductivity = Vec::with_capacity(layer_count);
+        for layer_index in 1..=layer_count {
+            let symbol = Self::wb19_lateral_ssh_state_symbol(layer_index);
+            let value = Self::require_state_scalar_for_symbol(request, phase_class, &symbol)?;
+            if value <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol,
+                    value,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            lateral_conductivity.push(value);
+        }
+        Ok(lateral_conductivity)
+    }
+
     fn wb19_solwpv_mode(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,

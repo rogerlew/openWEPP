@@ -1888,9 +1888,15 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
+        let daily_lateral_lane = lane_substeps == 1 && !mofe_hourly_carry_arrays_enabled;
 
         let (mut theta, drain_threshold, conductivity, thickness, upper_limit) =
             Self::wb19_load_layer_state(request, phase_class)?;
+        let lateral_conductivity = if !daily_lateral_lane && solwpv_mode >= 7778 {
+            Self::wb19_load_hourly_lateral_conductivity(request, phase_class, theta.len())?
+        } else {
+            conductivity.clone()
+        };
         let lateral_withdrawal_threshold =
             Self::wb19_frozen_adjusted_lateral_thresholds(request, phase_class, &drain_threshold)?;
         let frozen_water = Self::wb19_frozen_water_by_layer(request, phase_class, theta.len())?;
@@ -1998,7 +2004,6 @@ impl Wb11HydrologyKernel {
         } else {
             Vec::new()
         };
-        let daily_lateral_lane = lane_substeps == 1 && !mofe_hourly_carry_arrays_enabled;
         for substep_index in 0..lane_substeps {
             let mut capacity_active_layer = vec![false; theta.len()];
             let mut conductivity_active_layer = vec![false; theta.len()];
@@ -2199,7 +2204,7 @@ impl Wb11HydrologyKernel {
                         legacy_saturation_fraction = saturation_fraction;
                         let layer_weight = thickness[layer_index] / fcdep_before;
                         saturated_depth_sum += thickness[layer_index];
-                        conductivity_depth_sum += conductivity[layer_index]
+                        conductivity_depth_sum += lateral_conductivity[layer_index]
                             * saturation_fraction
                             * thickness[layer_index];
                         avpora += porosity[layer_index] * layer_weight;

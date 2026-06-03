@@ -385,12 +385,17 @@ pub fn build_hillslope_runtime_surface_from_soil(
                 BoundaryValue::scalar(f64::from(primary_wb11_nsl)),
             );
             state_surface.insert(BoundarySymbol::from("sat"), BoundaryValue::scalar(ofe.sat));
+            let profile_lateral_anisotropy_ratio = match soil.datver {
+                SoilDatver::V7778 | SoilDatver::V9002 | SoilDatver::V9003 | SoilDatver::V9005 => {
+                    1.0
+                }
+                SoilDatver::V97_5 | SoilDatver::V2006_2 | SoilDatver::V7777 => {
+                    primary_top_layer.anisotropy_ratio.unwrap_or(1.0)
+                }
+            };
             state_surface.insert(
                 BoundarySymbol::from("wb19_lateral_anisotropy_ratio"),
-                // Baseline continuity: when no explicit anisotropy surface is
-                // available for this datver family, lateral anisotropy defaults
-                // to unity.
-                BoundaryValue::scalar(primary_top_layer.anisotropy_ratio.unwrap_or(1.0)),
+                BoundaryValue::scalar(profile_lateral_anisotropy_ratio),
             );
             state_surface.insert(
                 BoundarySymbol::from("ksatadj"),
@@ -504,6 +509,7 @@ struct PrimaryWb11LayerRuntimeSymbols {
     thetfc: f64,
     thetdr: f64,
     ssc_m_s: f64,
+    lateral_ssh_m_s: f64,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -538,6 +544,13 @@ struct LegacySoilLayerExpanded {
 struct LegacyConductivityLayer {
     thickness_m: f64,
     ksat_mm_h: f64,
+    lateral_ksat_mm_h: f64,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct NormalizedConductivityRuntimeSymbols {
+    ssc_m_s: f64,
+    lateral_ssh_m_s: f64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -659,9 +672,9 @@ fn compute_normalized_wb11_primary_layer_runtime_symbols(
         compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(&seeds).ok_or(
             HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
         )?;
-    let normalized_ssc_values =
-        compute_normalized_ssc_runtime_symbols(ofe, &seeds, ofe_index)?;
-    if normalized_corrected_layers.len() != normalized_ssc_values.len() {
+    let normalized_conductivity_values =
+        compute_normalized_conductivity_runtime_symbols(ofe, &seeds, ofe_index)?;
+    if normalized_corrected_layers.len() != normalized_conductivity_values.len() {
         return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
             ofe_index,
         });
@@ -679,7 +692,8 @@ fn compute_normalized_wb11_primary_layer_runtime_symbols(
             coca: corrected_layer.coca,
             thetfc: corrected_layer.thetfc,
             thetdr: corrected_layer.thetdr,
-            ssc_m_s: normalized_ssc_values[layer_index],
+            ssc_m_s: normalized_conductivity_values[layer_index].ssc_m_s,
+            lateral_ssh_m_s: normalized_conductivity_values[layer_index].lateral_ssh_m_s,
         });
     }
     if layers.is_empty() {
@@ -690,11 +704,11 @@ fn compute_normalized_wb11_primary_layer_runtime_symbols(
     Ok(layers)
 }
 
-fn compute_normalized_ssc_runtime_symbols(
+fn compute_normalized_conductivity_runtime_symbols(
     ofe: &openwepp_input_contract::parsers::soil::SoilOfe,
     seeds: &[LegacySoilLayerSeed],
     ofe_index: usize,
-) -> Result<Vec<f64>, HillslopeRuntimeInputError> {
+) -> Result<Vec<NormalizedConductivityRuntimeSymbols>, HillslopeRuntimeInputError> {
     let cumulative_depths_mm = legacy_cumulative_depths_mm(seeds).ok_or(
         HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable { ofe_index },
     )?;
@@ -759,6 +773,10 @@ fn publish_primary_wb11_runtime_layer_symbols(
         state_surface.insert(
             soil_primary_layer_symbol("ssc", layer_index),
             BoundaryValue::scalar(layer.ssc_m_s),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_lateral_ssh_{layer_index:04}")),
+            BoundaryValue::scalar(layer.lateral_ssh_m_s),
         );
         state_surface.insert(
             BoundarySymbol::from(format!("wb19_por_{layer_index:04}")),
@@ -1180,6 +1198,12 @@ fn legacy_conductivity_source_layers_from_seed_depths(
                 value_mm_h: layer_ksat_mm_h,
             });
         }
+        let layer_lateral_anisotropy_ratio = layer.anisotropy_ratio.unwrap_or(1.0);
+        if !layer_lateral_anisotropy_ratio.is_finite() || layer_lateral_anisotropy_ratio <= 0.0 {
+            return Err(HillslopeRuntimeInputError::CorrectedLayerNormalizationUnavailable {
+                ofe_index,
+            });
+        }
 
         let depth_m = depth_mm * 0.001;
         let thickness_m = depth_m - previous_depth_m;
@@ -1190,6 +1214,7 @@ fn legacy_conductivity_source_layers_from_seed_depths(
         source_layers.push(LegacyConductivityLayer {
             thickness_m,
             ksat_mm_h: layer_ksat_mm_h,
+            lateral_ksat_mm_h: layer_ksat_mm_h * layer_lateral_anisotropy_ratio,
         });
     }
     if source_layers.is_empty() {
@@ -1278,15 +1303,16 @@ fn legacy_normalize_layers_to_200mm(
 fn legacy_normalize_conductivity_layers_to_200mm(
     source_layers: &[LegacyConductivityLayer],
     normalized_layer_count: usize,
-) -> Vec<f64> {
+) -> Vec<NormalizedConductivityRuntimeSymbols> {
     let mut remaining_thicknesses = source_layers
         .iter()
         .map(|layer| layer.thickness_m)
         .collect::<Vec<f64>>();
     let mut source_index = 0usize;
-    let mut normalized_ssc_values = Vec::with_capacity(normalized_layer_count);
+    let mut normalized_conductivity_values = Vec::with_capacity(normalized_layer_count);
     for _normalized_index in 0..normalized_layer_count {
         let mut weighted_ksat_mm_h = 0.0_f64;
+        let mut weighted_lateral_ksat_mm_h = 0.0_f64;
         let mut remaining = WB13_PROFILE_LAYER_THICKNESS_M;
         while remaining > 0.0 && source_index < source_layers.len() {
             let source_thickness = remaining_thicknesses[source_index];
@@ -1297,6 +1323,8 @@ fn legacy_normalize_conductivity_layers_to_200mm(
             if source_thickness <= remaining {
                 let fraction = source_thickness / WB13_PROFILE_LAYER_THICKNESS_M;
                 weighted_ksat_mm_h += source_layers[source_index].ksat_mm_h * fraction;
+                weighted_lateral_ksat_mm_h +=
+                    source_layers[source_index].lateral_ksat_mm_h * fraction;
                 remaining -= source_thickness;
                 source_index += 1;
                 if remaining.abs() <= LEGACY_INPUT_DELTA_EPS_M {
@@ -1305,6 +1333,8 @@ fn legacy_normalize_conductivity_layers_to_200mm(
             } else {
                 let fraction = remaining / WB13_PROFILE_LAYER_THICKNESS_M;
                 weighted_ksat_mm_h += source_layers[source_index].ksat_mm_h * fraction;
+                weighted_lateral_ksat_mm_h +=
+                    source_layers[source_index].lateral_ksat_mm_h * fraction;
                 remaining_thicknesses[source_index] -= remaining;
                 if remaining_thicknesses[source_index].abs() <= LEGACY_INPUT_DELTA_EPS_M {
                     source_index += 1;
@@ -1312,9 +1342,12 @@ fn legacy_normalize_conductivity_layers_to_200mm(
                 remaining = 0.0;
             }
         }
-        normalized_ssc_values.push(weighted_ksat_mm_h / 3.6e6);
+        normalized_conductivity_values.push(NormalizedConductivityRuntimeSymbols {
+            ssc_m_s: weighted_ksat_mm_h / 3.6e6,
+            lateral_ssh_m_s: weighted_lateral_ksat_mm_h / 3.6e6,
+        });
     }
-    normalized_ssc_values
+    normalized_conductivity_values
 }
 
 fn legacy_accumulate_weighted_layer(

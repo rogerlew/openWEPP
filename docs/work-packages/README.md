@@ -382,6 +382,17 @@ Authorized packages:
     contract-backed and implemented, workspace gates pass, but the H1/H7/H39
     and full `H1..H39` rerun selected the hourly lane and metrics remain
     unchanged; next focus is hourly WB19 lateral residual lineage.
+- `20260603-hphys0257-wb19-hourly-latqcc-lineage-closure-001/`
+  - Purpose: execute the HPHYS0256 continuation recommendation by diagnosing,
+    correcting, and validating hourly WB19 lateral lineage for saturated-depth
+    selection, `tdvv` cap, layer withdrawal, and publication into `latqcc`,
+    `Qd`, and storage.
+  - Status: completed/HOLD; hourly `ui_ssh`/`wb19_lateral_ssh_####`
+    conductivity lineage is contract-backed, implemented, and covered by red
+    contract-derived tests; H1/H7/H39 day-1 `latqcc` diffs improved to
+    `0.023532/0.047995/0.180364 mm`, but full `H1..H39` semantic pass remains
+    `0/39`; next focus is the hourly `tdvv` cap, withdrawal threshold, and
+    `latqcc`/storage publication lineage.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

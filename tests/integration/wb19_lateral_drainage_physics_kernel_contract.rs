@@ -86,7 +86,15 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundaryValue::scalar(1.0e-5),
     );
     state.insert(
+        BoundarySymbol::from("wb19_lateral_ssh_0001"),
+        BoundaryValue::scalar(1.0e-5),
+    );
+    state.insert(
         BoundarySymbol::from("wb18_perc_ssc_0002"),
+        BoundaryValue::scalar(1.0e-5),
+    );
+    state.insert(
+        BoundarySymbol::from("wb19_lateral_ssh_0002"),
         BoundaryValue::scalar(1.0e-5),
     );
 
@@ -403,6 +411,60 @@ fn wb19_contract_conformance_applies_fffx_saturation_fraction_to_lateral_conduct
     assert!(
         (q_full - 0.068_230_108_807_835_57).abs() <= TOL,
         "q_full={q_full}"
+    );
+}
+
+#[test]
+fn hphys0257_hourly_modern_lanes_use_ui_ssh_lateral_conductivity() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_wb19_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9002.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_ssh_0001"),
+        BoundaryValue::scalar(5.0e-6),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_ssh_0002"),
+        BoundaryValue::scalar(5.0e-6),
+    );
+
+    let response = kernel.run_hillslope_phase(&build_lateral_request(&state_surface, 0.0));
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-LAT-OK-001");
+
+    let q_lateral = writeback_flux_value(&response, "q");
+    assert!(
+        (q_lateral - 0.015_273_506_473_629_437).abs() <= TOL,
+        "modern hourly lateral conductivity must consume wb19_lateral_ssh, q={q_lateral}"
+    );
+}
+
+#[test]
+fn hphys0257_hourly_modern_lanes_fail_closed_without_ui_ssh_lateral_conductivity() {
+    let mut kernel = Wb11HydrologyKernel;
+    let mut state_surface = seeded_wb19_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("solwpv"),
+        BoundaryValue::scalar(9002.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.remove(&BoundarySymbol::from("wb19_lateral_ssh_0001"));
+
+    let response = kernel.run_hillslope_phase(&build_lateral_request(&state_surface, 0.0));
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-LAT-E-001");
+    assert_eq!(
+        response.status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
     );
 }
 

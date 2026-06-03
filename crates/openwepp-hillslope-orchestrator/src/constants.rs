@@ -149,6 +149,7 @@ pub(crate) const WB11_SYMBOL_SUBHYD_QD: HillslopeProductionFluxSymbol =
 pub(crate) const WB19_SYMBOL_AVG_SLOPE: &str = "avgslp";
 pub(crate) const WB19_SYMBOL_SLOPE_LENGTH: &str = "slplen";
 pub(crate) const WB19_SYMBOL_LATERAL_ANISOTROPY_RATIO: &str = "wb19_lateral_anisotropy_ratio";
+pub(crate) const WB19_SYMBOL_LATERAL_SSH_ROOT: &str = "wb19_lateral_ssh";
 pub(crate) const WB19_SYMBOL_LATERAL_DRAIN_LANE_SUBSTEPS: &str = "wb19_lateral_drain_lane_substeps";
 pub(crate) const WB19_SYMBOL_DRAIN_ENABLED: &str = "wb19_drain_enabled";
 pub(crate) const WB19_SYMBOL_DRAIN_DEPTH: &str = "wb19_drain_depth";

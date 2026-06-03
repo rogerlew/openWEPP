@@ -65,6 +65,7 @@ Out of scope:
 | REF-SUBHYD-CH13-COUPLING | `references/50201000/chap13.pdf` §13.1-§13.2 Eq. [13.2.1]-[13.2.2] | Watershed/channel runon boundaries include lateral hillslope contributions and require unit-consistent runon depth/volume semantics. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-SUBHYD-LEGACY-DAILY-LATERAL | `/workdir/wepp-forest_260430_baseline/src/watbal.for:286-304,573-704` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline daily WB19 lateral flow computes `hk`, `fzdrfc`, `fzul`, daily `solwpv` branch selection, conductivity weighting, and daily `latqcc` publication. | `[DIRECT][Static]` |
 | REF-SUBHYD-LEGACY-HOURLY-TAIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:592-887` and `/workdir/wepp-forest_260430_baseline/src/drain.for:181-305` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly tail executes drainage, lateral flow, top-layer saturation clipping into `ui_SCrunf(ii)`, and copy-forward before daily runoff/storage publication. | `[DIRECT][Static]` |
+| REF-SUBHYD-LEGACY-HOURLY-SSH | `/workdir/wepp-forest_260430_baseline/src/input.for:753-761,836-844,927-928`, `/workdir/wepp-forest_260430_baseline/src/tilage.for:571-656`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:705-715` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly WB19 lateral conductivity consumes `ui_ssh(i)`, a layer-normalized horizontal conductivity assembled from input `ssc2*ui_anisrt`, not the vertical percolation conductivity `ssc(i)`. | `[DIRECT][Static]` |
 | REF-SUBHYD-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative flux magnitudes, bounded porosity domains, and explicit branch handling for threshold transitions. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -81,6 +82,7 @@ Out of scope:
 | `L` | `m` | Hillslope segment length for control-volume scaling. | hillslope geometry input | continuity/storage/flux equations |
 | `q` | `m d^-1` | Lateral subsurface discharge per unit width from hillslope. | subsurface lateral-flow routine | downslope OFE transfer and routing coupling |
 | `Ke` | `m s^-1` | Effective horizontal hydraulic conductivity at moisture state `θ`. | soil hydraulic state routine | lateral-flow flux equation |
+| `ui_ssh(i)` | `m s^-1` | Baseline hourly per-layer horizontal saturated conductivity assembled from `ssc2*ui_anisrt`. | soil/runtime projection | hourly WB19 lateral conductivity averaging |
 | `α` | `rad` | Average slope angle / effective flow-path angle. | topography/drainage geometry input | lateral-flow/drain-conductivity equations |
 | `DS` | `cm` | Maximum depressional-storage depth. | surface drainage subroutine | runoff-onset and storage-fill logic |
 | `PR` | `cm` | Rainfall excess required to satisfy depressional storage. | surface drainage subroutine | storage-fill branch condition |
@@ -119,7 +121,7 @@ replace the governing Chapter-6 process equations.
 | Surface | Symbols |
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
-| Layer hydrology state family | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, optional frozen-water `wb18_perc_frzw_####` |
+| Layer hydrology state family | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, hourly `wb19_lateral_ssh_####` when modern soil input provides `ui_anisrt`, optional frozen-water `wb18_perc_frzw_####` |
 | Lateral geometry + conductivity family | `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio` |
 | Drainage geometry + capacity family | `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient` |
 | Coupling carry-forward surface | `Pe` |
@@ -197,7 +199,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 
 | Branch ID | Trigger | Required symbols | Guard class | Failure posture |
 |---|---|---|---|---|
-| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
+| `BR-SUBHYD-WB19-LATERAL-EXECUTE` | phase class `hydrology_lateral_transfer` | `nsl`, `solthk`, `solwpv`, `dg_####`, `por_####`, `coca_####`, `thetfc_####`, `thetdr_####`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, hourly `wb19_lateral_ssh_####` when modern soil input provides `ui_anisrt`, `avgslp`, `slplen`, `wb19_lateral_anisotropy_ratio`, `Pe` | runtime | deterministic layer-aware lateral execution/writeback |
 | `BR-SUBHYD-WB19-DRAIN-EXECUTE` | phase class `hydrology_drainage` | WB19 lateral symbols + `wb19_drain_enabled`, `wb19_drain_depth`, `wb19_drain_spacing`, `wb19_drain_diameter`, `wb11_drainage_coefficient`; same-pass `q` is required only for compatibility lanes where drainage publishes final `Qd` | runtime | deterministic layer-aware drainage execution/writeback |
 | `BR-SUBHYD-WB19-LATERAL-GUARD` | lateral symbol missing/non-finite/out-of-range | WB19 lateral required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-LAT-E-001..003`) |
 | `BR-SUBHYD-WB19-DRAIN-GUARD` | drainage symbol missing/non-finite/out-of-range | WB19 drainage required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-DRAIN-E-001..003`) |
@@ -232,6 +234,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | INV-SUBHYD-024 | HPHYS0247 WB19 lateral saturated-zone lineage invariant: WB19 lateral execution must follow baseline `watbal_hourly` unfrozen conductivity-layer selection for hourly closure claims: a layer is conductivity-active only when `st(i) >= drfc(i)` and either it is the bottom layer or the layer below is saturated to `ul(i+1)` (`meblfc`), and conductivity averaging uses `fffx = clamp((st(i)-drfc(i))/(ul(i)-drfc(i)),0,1)` as the per-layer saturation fraction. For `solwpv < 2006`, the legacy branch applies the baseline post-aggregation multiplier by the final conductivity-active-layer `fffx`; for `solwpv >= 2006`, that second multiplier is not applied. Top-contiguous-only selection, FC-only thresholds, omitted `fffx`, or omitted legacy `solwpv < 2006` post multiplier are invalid. HPHYS0252 `INV-SUBHYD-025` supersedes capacity and withdrawal caps when frozen water `frzw(i)` is present. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-025 | HPHYS0252 WB19 frozen-adjusted lateral storage invariant: WB19 lateral capacity and top-down withdrawal floors must follow baseline `watbal_hourly` `fzdrfc(i) = max(drfc(i)-frzw(i),0)` lineage. Lateral capacity-active layers use `st(i) >= fzdrfc(i)` plus the same bottom-contiguous `meblfc` condition, `fcdep`/`tdvv` are assembled from those capacity-active layers, `tdvv = Σ active max(st(i)-fzdrfc(i),0)`, and realized lateral withdrawal must not reduce `st(i)` below `fzdrfc(i)`. The hourly conductivity loop remains governed by `INV-SUBHYD-024` unfrozen `drfc(i)` `fffx` weighting. Negative/non-finite `frzw(i)` or hidden replacement of absent frost carry with a non-zero surrogate is invalid. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SUBHYD-026 | HPHYS0256 WB19 daily lateral lane invariant: daily lateral execution (`wb19_lateral_drain_lane_substeps = 1`) must follow baseline `watbal.for` daily authority rather than hourly `meblfc` authority. For `solwpv >= 2006`, all layers with `st(i) >= fzdrfc(i)` contribute to `fcdep`, `tdvv`, and conductivity without a `meblfc` gate; conductivity uses `fzul(i)=ul(i)-frzw(i)`, `sstz=st(i)/fzul(i)` when `fzul(i)>0` else `1`, `hk(i)=-2.655/log10(fc(i)/ul(i))` for positive ratios, and `fffx=max(sstz**hk(i),0.002)` when `sstz<0.95` else `1`. For `solwpv < 2006`, the active block is top-contiguous above `fzdrfc(i)`, and the post-aggregation `fffx=max((avstt/avul)**avhk,0.002)` applies when `avul>0.001` and `sstz<0.95`. Hourly lanes remain governed by `INV-SUBHYD-024`/`INV-SUBHYD-025`; applying hourly `meblfc` selection or hourly unfrozen-`drfc` conductivity to daily lanes is invalid. | hard-fail | REF-SUBHYD-LEGACY-DAILY-LATERAL, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-LATFLUX, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SUBHYD-027 | HPHYS0257 WB19 hourly horizontal-conductivity invariant: modern hourly lateral lanes with input `ui_anisrt(i)` must consume baseline `ui_ssh(i)` as the conductivity term in the `watbal_hourly` `totK += ui_ssh(i)*fffx*dg(i)` loop. Runtime alias `wb19_lateral_ssh_####` must be layer-normalized from `ssc2*ui_anisrt`; substituting vertical `wb18_perc_ssc_####`, applying profile `anisrt` twice, or omitting required modern `ui_ssh` lineage is invalid. Daily lanes remain governed by `INV-SUBHYD-026` and continue to consume vertical `ssc`. | hard-fail | REF-SUBHYD-LEGACY-HOURLY-SSH, REF-SUBHYD-LEGACY-HOURLY-TAIL, REF-SUBHYD-CH6-ANISO, REF-SUBHYD-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -263,6 +266,7 @@ WB19 mutates lateral/drainage boundary surfaces deterministically:
 | `INV-SUBHYD-024` | runtime + governance | WB19 lateral saturated-zone selector, `tdvv` capacity cap, `fffx` conductivity weighting, and legacy `solwpv < 2006` post multiplier | Typed hard error / explicit `HOLD` when lateral flow is produced from non-`meblfc` layers, omits saturation-fraction weighting or the legacy post multiplier, or withdraws beyond active-layer `tdvv` | HPHYS0247 H39 lateral residual closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-025` | runtime + governance | WB19 frozen-adjusted lateral capacity and withdrawal threshold lineage | Typed hard error / explicit `HOLD` when frozen-water `frzw(i)` does not lower `tdvv` floors through `fzdrfc(i)`, conductivity substitutes `fzdrfc(i)` for `drfc(i)` `fffx`, or withdrawal reduces `st(i)` below `fzdrfc(i)` | HPHYS0252 H39 storage-availability closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SUBHYD-026` | runtime + governance | WB19 daily lateral lane selector, `hk` conductivity weighting, `fzdrfc`/`fzul` availability, and daily `solwpv` branch behavior | Typed hard error / explicit `HOLD` when daily lanes use hourly `meblfc` selection, omit daily `hk`/`fzul` conductivity weighting, or collapse daily and hourly lateral semantics into one branch | HPHYS0256 `latqcc` lane-branch closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SUBHYD-027` | runtime + governance | WB19 hourly `ui_ssh` conductivity lineage and modern-soil runtime projection | Typed hard error / explicit `HOLD` when modern hourly lanes omit `wb19_lateral_ssh_####`, use vertical `ssc` in the hourly `totK` loop, or double-apply anisotropy | HPHYS0257 hourly `latqcc` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -277,6 +281,7 @@ alias continuity for production kernels.
 | `θDR_i` | `thetdr_####` | WB19 per-layer residual theta lineage used for FC/WP consistency checks against `wb18_perc_fc_####` | dimensionless preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `θUL_i` | `wb18_perc_ul_####` | WB19 per-layer upper-limit surfaces used in branch coupling checks | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `K_i` | `wb18_perc_ssc_####` | WB19 per-layer saturated conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `ui_ssh(i)` | `wb19_lateral_ssh_####` | WB19 hourly per-layer horizontal saturated conductivity after layer `ui_anisrt(i)` projection | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `por_i` | `por_####` | WB19 per-layer porosity surfaces used in water-yield coupling | dimensionless preserved (`0 < por <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `coca_i` | `coca_####` | WB19 entrapped-air correction surfaces used by drain-threshold lineage | dimensionless preserved (`0 < coca <= 1`) | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -652,7 +657,9 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    remains non-authoritative for expanding lateral withdrawal beyond `tdvv`.
 3. Lateral effective conductivity averaging uses
    `fffx(i) = clamp((st(i)-drfc(i))/(ul(i)-drfc(i)),0,1)` and accumulates
-   `Σ Ksat(i)*fffx(i)*dg(i)` over conductivity-active layers.
+   `Σ Klat(i)*fffx(i)*dg(i)` over conductivity-active layers. HPHYS0257
+   defines modern hourly `Klat(i)` as baseline `ui_ssh(i)` rather than vertical
+   `ssc(i)`.
 4. For `solwpv < 2006`, baseline `watbal_hourly` applies a post-aggregation
    multiplier by the final active-layer `fffx` retained from the active-layer
    loop before computing lateral flux; `solwpv >= 2006` omits this second
@@ -708,6 +715,28 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
    `fzdrfc` can emit lateral flow without the hourly `meblfc` gate, while the
    same state under hourly substeps remains governed by hourly `meblfc`.
 
+## HPHYS0257 WB19 Hourly Horizontal-Conductivity Addendum
+
+1. Baseline hourly `watbal_hourly.for` uses `ui_ssh(mn,iplane)` in the `totK`
+   accumulation for lateral flow. For modern WEPP UI soil formats that carry
+   per-layer `ui_anisrt`, `input.for` assembles `ui_ssh1` from
+   thickness-weighted `ssc2*ui_anisrt` and `tilage.for` projects it to runtime
+   layers.
+2. `wb18_perc_ssc_####` remains the vertical conductivity used by percolation,
+   drainage, and daily lateral lanes. It is not a substitute for hourly
+   `ui_ssh(i)` when modern `ui_anisrt(i)` authority is present.
+3. Runtime projection must publish `wb19_lateral_ssh_####` for modern hourly
+   lateral consumers. Missing, non-finite, non-positive, or unprojected modern
+   horizontal conductivity is a WB19 hard-fail/`HOLD` condition, not a cue to
+   fall back to vertical `ssc`.
+4. Profile `anisrt` remains the separate multiplier in the final `subq`
+   calculation. For `solwpv >= 7778`, the restrictive-layer input branch does
+   not read profile `anisrt`; baseline profile anisotropy remains unity while
+   layer `ui_anisrt` is represented through `ui_ssh`.
+5. Contract-derived vectors must prove hourly `q` changes when
+   `wb19_lateral_ssh_####` differs from `wb18_perc_ssc_####`, and that omitting
+   required modern hourly `wb19_lateral_ssh_####` fails closed.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -721,6 +750,7 @@ Minimum WB19 lateral/drainage production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `28` | `Codex` | HPHYS0257 amendment: added `INV-SUBHYD-027` and baseline hourly `ui_ssh` horizontal-conductivity authority for modern `ui_anisrt` soil lineage in WB19 `latqcc` closure. |
 | `2026-06-02` | `27` | `Codex` | HPHYS0256 amendment: added `INV-SUBHYD-026` and baseline daily `watbal.for` WB19 lateral lane authority, distinguishing daily `fzdrfc`/`fzul`/`hk` conductivity weighting from hourly `meblfc` authority. |
 | `2026-06-02` | `26` | `Codex` | HPHYS0252 amendment: added `INV-SUBHYD-025` and baseline `watbal_hourly` frozen-adjusted WB19 lateral storage authority (`fzdrfc = max(drfc-frzw,0)`) for capacity caps and top-down withdrawal floors while retaining unfrozen `drfc` conductivity weighting. |
 | `2026-06-02` | `25` | `Codex` | HPHYS0247 amendment: added `INV-SUBHYD-024` and baseline `watbal_hourly` WB19 saturated-zone capacity authority (`meblfc`, active-layer `tdvv`, `fffx` conductivity weighting, and legacy `solwpv < 2006` post multiplier) for H39 hourly lateral closure. |

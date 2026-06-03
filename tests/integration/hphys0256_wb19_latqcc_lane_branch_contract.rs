@@ -101,6 +101,10 @@ fn base_daily_hourly_divergence_state() -> BTreeMap<BoundarySymbol, BoundaryValu
             BoundarySymbol::from(format!("wb18_perc_ssc_{suffix}")),
             BoundaryValue::scalar(1.0e-6),
         );
+        state.insert(
+            BoundarySymbol::from(format!("wb19_lateral_ssh_{suffix}")),
+            BoundaryValue::scalar(1.0e-6),
+        );
     }
 
     state.insert(

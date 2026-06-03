@@ -311,9 +311,8 @@ mod tests {
         assert!(thetdr.is_finite());
         assert!(thetfc.is_finite());
         assert!(
-            (wb19_lateral_anisotropy_ratio - raw_top_layer.anisotropy_ratio.unwrap_or(1.0)).abs()
-                < 1.0e-12,
-            "wb19_lateral_anisotropy_ratio must follow top-layer authoritative anisotropy lineage"
+            (wb19_lateral_anisotropy_ratio - 1.0).abs() < 1.0e-12,
+            "modern ui_anisrt soils must not double-apply layer anisotropy as profile anisrt"
         );
         assert!(
             (thetdr - raw_top_thetdr).abs() > 1.0e-9 || (thetfc - raw_top_thetfc).abs() > 1.0e-9,
@@ -324,6 +323,8 @@ mod tests {
             ("nsl", 2.0),
             ("wb11_nsl", 2.0),
             ("ssc", 11.5 / 3.6e6),
+            ("wb19_lateral_ssh_0001", 13.4 / 3.6e6),
+            ("wb19_lateral_ssh_0002", 8.8 / 3.6e6),
             ("dg_0002", 0.15),
             ("solthk_0002", 0.25),
             ("wb19_dg_0002", 0.2),
