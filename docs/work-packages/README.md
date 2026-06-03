@@ -1844,6 +1844,15 @@ Authorized packages:
   - Status: completed/HOLD; PMET component seam is corrected and full gates
     passed, but H1..H39 semantic parity remains `0/39` with residual storage,
     snow/runoff, percolation, lateral-flow, and longer-season `Ep` blockers.
+- `20260603-hphys0265-longer-season-ep-divergence-localization-closure-001/`
+  - Purpose: execute the HPHYS0264 next focus by localizing the first large
+    longer-season `Ep` divergence after PMET seam correction, separating
+    WB17/SWU ownership from aggregate storage, snow/runoff timing, `Dp`, and
+    `latqcc` coupling with multi-day H1/H7/H39 traces and full H1..H39 metrics.
+  - Status: completed/HOLD; first-divergence evidence shows PMET and WB17/SWU
+    identities close while SWU stress is active under material storage,
+    snow/runoff, and lateral-flow context, so no production WB17/SWU patch was
+    justified.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to
