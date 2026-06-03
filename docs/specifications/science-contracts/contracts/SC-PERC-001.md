@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -14,7 +14,7 @@ consumer_scope:
   - Subsurface/drainage consumers that ingest percolation recharge terms
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-06-02
+last_reviewed: 2026-06-03
 supersedes: []
 superseded_by: []
 ---
@@ -206,6 +206,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | INV-PERC-012 | HPHYS0242 hourly percolation cadence invariant: in hourly-lane closure, WB18 must complete the 24-substep accumulated `D`/`Pe` and mutated `wb18_perc_theta_####` lineage before final-hour ET and the WB19 drainage/lateral tail execute; downstream WB12 storage reconciliation must consume the same-pass `D`. Stale, missing, non-finite, or aggregate-only percolation lineage cannot satisfy hourly WB14/WB12 closure. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-CH5-BAL, legacy `/workdir/wepp-forest_260430_baseline/src/purk.for`, legacy `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:541-560`, SC-WATBAL-001#INV-WATBAL-034, SC-EVAP-001#INV-EVAP-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-013 | HPHYS0246 WB18 aggregate soil-water invariant: after WB18 percolation mutates `st(i)`/`wb18_perc_theta_####`, aggregate `wb11_soil_water` must be recomputed as baseline `watcon = Σ soilw(i)` rather than `Σst(i)`, preserving required `thetdr_i*dg_i` residual/dead-water storage in unfrozen conditions and subtracting declared frozen depth when explicitly present. | hard-fail | REF-PERC-LEGACY-SOILW, SC-WATBAL-001#INV-WATBAL-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-014 | HPHYS0248 hourly bottom restrictive-layer invariant: when hourly WB18 executes at the bottom layer, baseline `perc.for` sets `meblfc=1` and forces `fx=1`; when `slflag=1`, effective conductivity must then follow thickness-weighted restrictive-layer lineage `Ksi_eff = (dg_i+ui_bdrkth)/(dg_i/Ksi + ui_bdrkth/kslast)` before `sep = min(vv, 86400*Ksi_eff)` and `purk`'s `sep/ui_LFtstp` mutation/`deepSeep` accumulation. Reusing unrestricted bottom `Ksi`, omitting `ui_bdrkth`, applying unsaturated `fx` damping to hourly bottom seepage, or using daily-only harmonic conductivity for hourly closure is invalid evidence. | hard-fail | REF-PERC-LEGACY-HOURLY-BOTK, REF-PERC-CH5-PERC, SC-WATBAL-001#INV-WATBAL-036 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-015 | HPHYS0260 WB18 trace-localization invariant: residual ownership claims for H1/H7/H39 `Dp`, `Total-Soil`, or `SoilWaterTotal` must consume trace-grade post-WB18 and final-storage evidence for `D`, `Pe`, `wb18_perc_pei_####`, `wb18_perc_theta_####`, `wb19_thetdr_####`, `wb19_dg_####`, optional `wb18_perc_frozen_depth_####`, and aggregate `wb11_soil_water`. Trace classification must preserve the baseline aggregate relation `watcon = Σ(st(i) + thetdr(i)*(dg(i)-frozen(i)))` and the WB18 publication relation `D = Pe` for bottom-layer loss, without collapsing `D` to `Σpei_####`. | hard-fail | REF-PERC-LEGACY-SOILW, REF-PERC-LEGACY-HOURLY-BOTK, REF-PERC-CH5-BAL, INV-PERC-013, INV-PERC-014, SC-WATBAL-001#INV-WATBAL-046 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -225,6 +226,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | `INV-PERC-012` | runtime + governance | WB18 hourly-lane output lineage validator plus scheduler-order gate into ET/WB19/WB12 | Typed hard error / explicit `HOLD` when hourly `D`/`Pe`/layer-state lineage is stale, missing, malformed, or consumed out of baseline order | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-013` | runtime | WB18 aggregate soil-water recomputation from `wb18_perc_theta_####`, `wb19_thetdr_####`, `wb19_dg_####`, and optional `wb18_perc_frozen_depth_####` (legacy generic fallback accepted for fixture compatibility) | Typed hard error on missing/non-finite/domain-invalid residual-storage symbols; aggregate writeback must not collapse to `Σtheta` | HPHYS0246 closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-014` | runtime + governance | WB18 hourly bottom-layer effective-conductivity selector plus H39 `Dp`/`Pe` evidence gate | Typed hard error / explicit `HOLD` when hourly restrictive-layer `D`/`Pe` lineage omits `ui_bdrkth`/`kslast` or bypasses baseline thickness-weighted `sscz` | HPHYS0248 H39 `Dp`/`Pe` closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PERC-015` | runtime + governance | WB18 trace-localization validator spanning `D`/`Pe`, per-layer `pei`, per-layer `st`, residual/depth/frozen aggregate components, and final aggregate `wb11_soil_water` | Typed hard error / explicit `HOLD` when trace evidence omits required WB18/storage maps, when `D`/`Pe` or aggregate storage identities do not reconcile, or when residual ownership is assigned without trace-grade evidence | HPHYS0260 WB18/storage residual-classification gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -282,6 +284,11 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 - OBL-PERC-P-002: Enforce explicit Eq. [5.4.1]-[5.4.5] branch logic and guard domains; no implicit fallback branches. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PERC-P-003: Propagate invariant failures as typed errors; no silent clamping/defaulting of percolation terms. `[INFERENCE][Static]`
 - OBL-PERC-P-004: Preserve boundary-ready loss/recharge semantics for daily closure (`D`) and subsurface coupling (`Pe`). `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PERC-P-005: Preserve opt-in trace observability for per-layer WB18
+  routing fluxes, mutated layer storage, residual/depth/frozen aggregate
+  components, and aggregate `D`/`Pe` so residual classification can distinguish
+  WB18 internal identity divergence from baseline-magnitude follow-up work.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -366,6 +373,11 @@ Minimum WB18 percolation production-kernel conformance vectors:
    missing/non-finite/domain-invalid for WB18 aggregate writeback, the phase
    must return typed `HKERNEL-WB11-PERC-E-001..003` failure rather than silently
    defaulting the residual component to zero.
+10. HPHYS0260 trace-localization vector proves opt-in trace rows serialize
+    `D`, `Pe`, `wb18_perc_pei_####`, `wb18_perc_theta_####`,
+    `wb19_thetdr_####`, `wb19_dg_####`, optional
+    `wb18_perc_frozen_depth_####`, and aggregate `wb11_soil_water` from
+    post-WB18/final-storage writeback surfaces.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -525,6 +537,24 @@ Minimum WB18 percolation production-kernel conformance vectors:
    valid continuation state for non-bottom percolation and attenuates by
    `sqrt(0.05)` rather than failing the scheduler.
 
+## HPHYS0260 WB18 Trace Localization Addendum
+
+1. H1/H7/H39 `Dp` and final-storage residual classification must consume
+   post-WB18 and final trace rows carrying aggregate `D`, aggregate `Pe`,
+   per-layer `wb18_perc_pei_####`, post-routing `wb18_perc_theta_####`,
+   `wb19_thetdr_####`, `wb19_dg_####`, optional
+   `wb18_perc_frozen_depth_####`, and aggregate `wb11_soil_water`.
+2. Trace classifiers must verify `D = Pe` for the WB18 bottom-loss publication
+   relation and must not classify `D` as `Σwb18_perc_pei_####`; the per-layer
+   `pei` map includes within-profile transfers as well as bottom export.
+3. Aggregate storage classification must recompute
+   `Σ(wb18_perc_theta_i + wb19_thetdr_i*(wb19_dg_i - frozen_i))` with absent
+   frozen-depth maps selecting the unfrozen branch, then compare that result to
+   traced `wb11_soil_water`.
+4. If these identities close while H1/H7/H39 `Dp` or storage residuals persist,
+   continuation must target baseline-authoritative magnitude/initialization
+   lineage rather than trace publication or aggregate recomputation defects.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -533,6 +563,7 @@ Minimum WB18 percolation production-kernel conformance vectors:
 | GAP-PERC-002 | Extended alias coverage for optional per-layer diagnostics beyond WB18 core symbols (`wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `wb18_perc_pei_####`) is not yet finalized. | Core WB18 aliases are fixed; extended diagnostics remain provisional. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-PERC-003 | Companion contract `SC-SUBHYD-001` is not yet fully authored, so cross-domain ownership boundaries for subsurface routing remain provisional. | Promotion-readiness depends on downstream contract completion/consistency. | non-promotable | `[DIRECT][Static]` |
 | GAP-PERC-004 | Chapter-5 validation evidence is reported at aggregate water-balance behavior; dedicated per-layer percolation validation vectors are not explicitly separated in cited material. | Per-layer percolation confidence is lower than aggregate daily closure confidence until dedicated evidence is added. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-PERC-005 | HPHYS0260 adds trace-grade WB18 residual classification authority but does not itself change percolation physics. | Closure remains `HOLD` when identities close but comparator residuals persist, because follow-on work must target baseline-authoritative magnitude or initialization lineage. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Promotion Readiness
 
@@ -545,6 +576,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `24` | `Codex` | HPHYS0260 amendment: added `INV-PERC-015` requiring trace-grade `D`/`Pe`, per-layer `pei`, layer storage, residual/depth/frozen components, and aggregate `watcon` identity evidence before assigning H1/H7/H39 `Dp`/storage residual ownership. |
 | `2026-06-02` | `23` | `Codex` | HPHYS0254 amendment: added baseline `perc.for` lower-layer `stu >= 0.95 -> 0.95` clamp authority so WB18 non-bottom percolation attenuates over-UL downstream layers by `sqrt(0.05)` instead of hard-failing. |
 | `2026-06-02` | `22` | `Codex` | HPHYS0248 amendment: added `INV-PERC-014` and baseline `perc.for`/`purk.for` hourly bottom restrictive-layer authority requiring `ui_bdrkth`/`kslast` thickness-weighted effective conductivity for hourly `Dp`/`Pe` lineage. |
 | `2026-06-02` | `21` | `Codex` | HPHYS0246 amendment: added `INV-PERC-013` requiring WB18 aggregate `wb11_soil_water` writeback to recompute baseline `watcon = Σsoilw(i)` from layer theta plus residual/dead-water storage (`thetdr_i*dg_i`, minus explicit frozen-depth when present) rather than collapsing to `Σtheta`; added alias, guard, and test-vector obligations. |

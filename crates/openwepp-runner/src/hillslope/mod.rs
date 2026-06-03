@@ -291,6 +291,11 @@ struct Hphys0245TraceRow {
     wb11_soil_water_mm: Option<f64>,
     wb18_theta_sum_m: Option<f64>,
     wb18_theta_layers_m: BTreeMap<String, f64>,
+    wb18_thetdr_layers: BTreeMap<String, f64>,
+    wb18_dg_layers_m: BTreeMap<String, f64>,
+    wb18_frozen_depth_layers_m: BTreeMap<String, f64>,
+    wb18_recomputed_soil_water_m: Option<f64>,
+    wb18_recomputed_minus_wb11_m: Option<f64>,
     wb18_pei_sum_m: Option<f64>,
     wb18_pei_layers_m: BTreeMap<String, f64>,
     d_m: Option<f64>,
@@ -309,6 +314,8 @@ struct Hphys0245TraceRow {
     etp_m: Option<f64>,
     upi_m: Option<f64>,
     ui_m: Option<f64>,
+    wb17_upi_layers_m: BTreeMap<String, f64>,
+    wb17_ui_layers_m: BTreeMap<String, f64>,
     ep_m: Option<f64>,
     ws: Option<f64>,
     wb19_q_lateral_potential_m: Option<f64>,
@@ -381,7 +388,7 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
-const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-trace-v3";
+const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-wb17-storage-trace-v4";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -3605,7 +3612,7 @@ fn hphys0245_surface_after_writeback(
     surface
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn build_hphys0245_trace_row(
     run_name: &str,
     simulation_year: i32,
@@ -3619,8 +3626,26 @@ fn build_hphys0245_trace_row(
 ) -> Hphys0245TraceRow {
     let theta_layers =
         hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_theta_");
+    let wb18_thetdr_layers = hphys0245_prefixed_surface_values_with_fallback(
+        &runtime_surface.state_surface,
+        "wb19_thetdr_",
+        "thetdr_",
+    );
+    let wb18_dg_layers_m = hphys0245_prefixed_surface_values_with_fallback(
+        &runtime_surface.state_surface,
+        "wb19_dg_",
+        "dg_",
+    );
+    let wb18_frozen_depth_layers_m = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "wb18_perc_frozen_depth_",
+    );
     let pei_layers =
         hphys0245_prefixed_surface_values(&runtime_surface.flux_surface, "wb18_perc_pei_");
+    let potential_uptake_layers_m =
+        hphys0245_prefixed_surface_values(&runtime_surface.flux_surface, "UPi_");
+    let actual_uptake_layers_m =
+        hphys0245_prefixed_surface_values(&runtime_surface.flux_surface, "Ui_");
     let wb19_lateral_withdrawal_layers_m = hphys0245_prefixed_surface_values(
         &runtime_surface.state_surface,
         "wb19_lateral_withdrawal_",
@@ -3636,6 +3661,16 @@ fn build_hphys0245_trace_row(
     let theta_sum = hphys0245_sum_or_none(&theta_layers);
     let pei_sum = hphys0245_sum_or_none(&pei_layers);
     let wb11_soil_water = runtime_surface_symbol_value(runtime_surface, "wb11_soil_water");
+    let wb18_recomputed_soil_water_m = hphys0245_recompute_wb18_soil_water(
+        &theta_layers,
+        &wb18_thetdr_layers,
+        &wb18_dg_layers_m,
+        &wb18_frozen_depth_layers_m,
+    );
+    let wb18_recomputed_minus_wb11_m = match (wb18_recomputed_soil_water_m, wb11_soil_water) {
+        (Some(recomputed), Some(wb11)) => Some(recomputed - wb11),
+        _ => None,
+    };
     let wb11_minus_theta_sum_m = match (wb11_soil_water, theta_sum) {
         (Some(wb11), Some(theta)) => Some(wb11 - theta),
         _ => None,
@@ -3655,6 +3690,11 @@ fn build_hphys0245_trace_row(
         wb11_soil_water_mm: wb11_soil_water.map(|value| value * 1_000.0),
         wb18_theta_sum_m: theta_sum,
         wb18_theta_layers_m: theta_layers,
+        wb18_thetdr_layers,
+        wb18_dg_layers_m,
+        wb18_frozen_depth_layers_m,
+        wb18_recomputed_soil_water_m,
+        wb18_recomputed_minus_wb11_m,
         wb18_pei_sum_m: pei_sum,
         wb18_pei_layers_m: pei_layers,
         d_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "D"),
@@ -3673,6 +3713,8 @@ fn build_hphys0245_trace_row(
         etp_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Etp"),
         upi_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "UPi"),
         ui_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ui"),
+        wb17_upi_layers_m: potential_uptake_layers_m,
+        wb17_ui_layers_m: actual_uptake_layers_m,
         ep_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ep"),
         ws: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ws"),
         wb19_q_lateral_potential_m: runtime_surface_symbol_value(
@@ -3716,11 +3758,59 @@ fn hphys0245_prefixed_surface_values(
         .collect()
 }
 
+fn hphys0245_prefixed_surface_values_with_fallback(
+    surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+    preferred_prefix: &str,
+    fallback_prefix: &str,
+) -> BTreeMap<String, f64> {
+    let mut values = hphys0245_prefixed_surface_values(surface, fallback_prefix);
+    values.extend(hphys0245_prefixed_surface_values(surface, preferred_prefix));
+    values
+}
+
 fn hphys0245_sum_or_none(values: &BTreeMap<String, f64>) -> Option<f64> {
     if values.is_empty() {
         None
     } else {
         Some(values.values().copied().sum())
+    }
+}
+
+fn hphys0245_recompute_wb18_soil_water(
+    theta_layers: &BTreeMap<String, f64>,
+    thetdr_layers: &BTreeMap<String, f64>,
+    dg_layers: &BTreeMap<String, f64>,
+    frozen_depth_layers: &BTreeMap<String, f64>,
+) -> Option<f64> {
+    if theta_layers.is_empty() {
+        return None;
+    }
+    let mut soil_water = 0.0;
+    for (suffix, theta) in theta_layers {
+        let thetdr = thetdr_layers.get(suffix)?;
+        let dg = dg_layers.get(suffix)?;
+        let frozen_depth = frozen_depth_layers.get(suffix).copied().unwrap_or(0.0);
+        if !theta.is_finite()
+            || !thetdr.is_finite()
+            || !dg.is_finite()
+            || !frozen_depth.is_finite()
+            || *thetdr < 0.0
+            || *dg <= 0.0
+            || frozen_depth < 0.0
+            || frozen_depth > *dg
+        {
+            return None;
+        }
+        let layer_soil_water = *theta + (*thetdr * (*dg - frozen_depth));
+        if !layer_soil_water.is_finite() {
+            return None;
+        }
+        soil_water += layer_soil_water;
+    }
+    if soil_water.is_finite() {
+        Some(soil_water)
+    } else {
+        None
     }
 }
 
@@ -7856,6 +7946,111 @@ mod tests {
     }
 
     #[test]
+    fn hphys0260_trace_row_captures_wb17_wb18_storage_diagnostics() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb11_soil_water"),
+            BoundaryValue::scalar(0.256),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_theta_0001"),
+            BoundaryValue::scalar(0.10),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_theta_0002"),
+            BoundaryValue::scalar(0.12),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_thetdr_0001"),
+            BoundaryValue::scalar(0.05),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_thetdr_0002"),
+            BoundaryValue::scalar(0.07),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_dg_0001"),
+            BoundaryValue::scalar(0.30),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_dg_0002"),
+            BoundaryValue::scalar(0.40),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_frozen_depth_0002"),
+            BoundaryValue::scalar(0.10),
+        );
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("UPi"), BoundaryValue::scalar(0.005));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Ui"), BoundaryValue::scalar(0.0025));
+        surface.flux_surface.insert(
+            BoundarySymbol::from("UPi_0001"),
+            BoundaryValue::scalar(0.003),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("UPi_0002"),
+            BoundaryValue::scalar(0.002),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("Ui_0001"),
+            BoundaryValue::scalar(0.001),
+        );
+        surface.flux_surface.insert(
+            BoundarySymbol::from("Ui_0002"),
+            BoundaryValue::scalar(0.0015),
+        );
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Ep"), BoundaryValue::scalar(0.0025));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Etp"), BoundaryValue::scalar(0.005));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Ws"), BoundaryValue::scalar(0.5));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.004));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Pe"), BoundaryValue::scalar(0.004));
+
+        let row = build_hphys0245_trace_row(
+            "H7",
+            1,
+            1,
+            2013,
+            1,
+            "post_phase",
+            Some("plant_root_uptake"),
+            &surface,
+            None,
+        );
+
+        assert_eq!(row.schema, HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(row.wb17_upi_layers_m.get("0001").copied(), Some(0.003));
+        assert_eq!(row.wb17_upi_layers_m.get("0002").copied(), Some(0.002));
+        assert_eq!(row.wb17_ui_layers_m.get("0001").copied(), Some(0.001));
+        assert_eq!(row.wb17_ui_layers_m.get("0002").copied(), Some(0.0015));
+        assert_eq!(row.wb18_thetdr_layers.get("0001").copied(), Some(0.05));
+        assert_eq!(row.wb18_dg_layers_m.get("0002").copied(), Some(0.40));
+        assert_eq!(
+            row.wb18_frozen_depth_layers_m.get("0002").copied(),
+            Some(0.10)
+        );
+        assert!((row.wb18_recomputed_soil_water_m.expect("aggregate") - 0.256).abs() < 1.0e-12);
+        assert!((row.wb18_recomputed_minus_wb11_m.expect("delta")).abs() < 1.0e-12);
+        assert!((row.upi_m.expect("UPi") - 0.005).abs() < 1.0e-12);
+        assert!((row.ui_m.expect("Ui") - 0.0025).abs() < 1.0e-12);
+        assert!((row.ep_m.expect("Ep") - 0.0025).abs() < 1.0e-12);
+        assert!((row.ws.expect("Ws") - 0.5).abs() < 1.0e-12);
+        assert!((row.d_m.expect("D") - row.pe_m.expect("Pe")).abs() < 1.0e-12);
+    }
+
+    #[test]
     fn hphys0245_trace_writer_serializes_jsonl_rows() {
         let temp_dir = std::env::temp_dir().join(format!(
             "openwepp_hphys0245_trace_writer_{}",
@@ -7879,6 +8074,11 @@ mod tests {
             wb11_soil_water_mm: Some(100.0),
             wb18_theta_sum_m: Some(0.08),
             wb18_theta_layers_m: BTreeMap::from([("0001".to_string(), 0.08)]),
+            wb18_thetdr_layers: BTreeMap::from([("0001".to_string(), 0.05)]),
+            wb18_dg_layers_m: BTreeMap::from([("0001".to_string(), 0.40)]),
+            wb18_frozen_depth_layers_m: BTreeMap::new(),
+            wb18_recomputed_soil_water_m: Some(0.10),
+            wb18_recomputed_minus_wb11_m: Some(0.0),
             wb18_pei_sum_m: Some(0.0),
             wb18_pei_layers_m: BTreeMap::new(),
             d_m: None,
@@ -7897,6 +8097,8 @@ mod tests {
             etp_m: Some(0.003),
             upi_m: Some(0.003),
             ui_m: Some(0.002),
+            wb17_upi_layers_m: BTreeMap::from([("0001".to_string(), 0.003)]),
+            wb17_ui_layers_m: BTreeMap::from([("0001".to_string(), 0.002)]),
             ep_m: Some(0.002),
             ws: Some(0.8),
             wb19_q_lateral_potential_m: Some(0.12),
@@ -7925,6 +8127,11 @@ mod tests {
         assert_eq!(document["schema"], HPHYS0245_TRACE_SCHEMA);
         assert_eq!(document["boundary"], "post_seed");
         assert_eq!(document["wb18_theta_layers_m"]["0001"], 0.08);
+        assert_eq!(document["wb18_thetdr_layers"]["0001"], 0.05);
+        assert_eq!(document["wb18_dg_layers_m"]["0001"], 0.40);
+        assert_eq!(document["wb18_recomputed_soil_water_m"], 0.10);
+        assert_eq!(document["wb17_upi_layers_m"]["0001"], 0.003);
+        assert_eq!(document["wb17_ui_layers_m"]["0001"], 0.002);
         assert_eq!(document["pl_rtd"], 0.6);
         assert_eq!(document["ep_m"], 0.002);
         assert_eq!(document["wb19_lateral_withdrawal_layers_m"]["0001"], 0.08);

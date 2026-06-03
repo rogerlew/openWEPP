@@ -1816,6 +1816,11 @@ Authorized packages:
   - Purpose: diagnose, contract, test, and disposition MOFE storage projection
     semantics for WB11 seed aliases and WB13/H.wat storage publication so
     multi-OFE storage behavior is explicit and guarded.
+- `20260603-hphys0260-wb17-wb18-final-storage-reconciliation-closure-001/`
+  - Purpose: execute the HPHYS0259 continuation by extending trace-grade
+    evidence for WB17 layer uptake, WB18 percolation/storage components, and
+    final WB13 storage publication, then rerun H1/H7/H39 plus full H1..H39
+    semantic metrics to classify the next closure focus.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

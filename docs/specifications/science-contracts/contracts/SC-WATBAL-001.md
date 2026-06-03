@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 85
+contract_version: 86
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -210,6 +210,7 @@ lateral/drainage).
 | INV-WATBAL-043 | HPHYS0256 WB19 `latqcc` lane-branch invariant: daily WB13 `latqcc` closure evidence must consume WB19 lateral flow produced under `SC-SUBHYD-001#INV-SUBHYD-026` daily `watbal.for` authority when `wb19_lateral_drain_lane_substeps=1`; hourly closure evidence must continue to use `SC-SUBHYD-001#INV-SUBHYD-024`/`INV-SUBHYD-025`. Evidence that applies hourly `meblfc` lateral selection to daily lanes, collapses daily/hourly lateral branches, or treats `latqcc` residuals without lane provenance is invalid. | hard-fail | REF-WATBAL-LEGACY-DAILY-LATERAL, REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-CH6-COUPLING, SC-SUBHYD-001#INV-SUBHYD-026 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-044 | HPHYS0258 WB19 realized lateral publication invariant: hourly WB13 `latqcc`/`Qd` closure claims must consume realized WB19 lateral withdrawal from `SC-SUBHYD-001#INV-SUBHYD-028`, with diagnostics distinguishing potential, capped target, `tdvv`, and realized per-layer withdrawal. WB13 publication of uncapped potential, capped-but-unwithdrawn target, stale `Qd`, or aggregate storage that cannot reconcile to realized `q` is invalid. | hard-fail | REF-WATBAL-LEGACY-HOURLY-CARRY, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL, SC-SUBHYD-001#INV-SUBHYD-028 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-045 | HPHYS0259 WB19 trace-localization invariant: residual ownership claims for H1/H7/H39 `latqcc`, `Ep`, `Dp`, `Total-Soil`, or `SoilWaterTotal` must consume trace-grade WB19 evidence from `SC-SUBHYD-001#INV-SUBHYD-029` before reopening WB19 cap/publication logic. When trace identities prove realized `q`, `Qd`, and per-layer withdrawal reconcile internally, continuation must assign the dominant residual focus to downstream WB17 `Ep`, WB18 `Dp`, and final aggregate storage reconciliation unless new baseline-authoritative WB19 divergence evidence is produced. | hard-fail | REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL, SC-SUBHYD-001#INV-SUBHYD-029, INV-WATBAL-044 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-046 | HPHYS0260 WB17/WB18/final-storage trace-localization invariant: after HPHYS0259 closes WB19 realized-flow identities, residual ownership claims for H1/H7/H39 `Ep`, `Dp`, `Total-Soil`, or `SoilWaterTotal` must consume trace-grade WB17 `UPi_####`/`Ui_####`, WB18 `D`/`Pe`/`pei`/layer-storage, residual/depth/frozen aggregate components, and final WB13 storage publication evidence. When WB17 uptake identities, WB18 `D=Pe`, and aggregate `watcon = Σ(st(i)+thetdr(i)*(dg(i)-frozen(i)))` reconcile internally, continuation must target baseline-authoritative magnitude/initialization lineage rather than trace publication or WB13 shadowing. | hard-fail | REF-WATBAL-LEGACY-WB13, REF-WATBAL-LEGACY-WATCON, REF-WATBAL-CH5-BAL, SC-EVAP-001#INV-EVAP-018, SC-PERC-001#INV-PERC-015, INV-WATBAL-045 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -260,6 +261,7 @@ lateral/drainage).
 | `INV-WATBAL-043` | runtime + governance | WB13 `latqcc` publication validator spanning WB19 daily/hourly lane provenance and subsurface lateral flux authority | Typed hard error / explicit `HOLD` when daily `latqcc` is produced with hourly lateral selection, lane provenance is missing, or `latqcc` residual evidence ignores `SC-SUBHYD-001#INV-SUBHYD-026` | HPHYS0256 `latqcc` lane-branch closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-044` | runtime + governance | WB13 `latqcc`/`Qd` realized-publication validator spanning WB19 potential/target/`tdvv` diagnostics and post-withdrawal layer storage | Typed hard error / explicit `HOLD` when WB13 consumes potential/target instead of realized `q`, stale `Qd`, or storage not reconciled to per-layer WB19 withdrawal | HPHYS0258 hourly cap/withdrawal publication closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-045` | runtime + governance | H1/H7/H39 residual classifier spanning WB19 trace evidence, WB13 `latqcc`/`Qd`, WB17 `Ep`, WB18 `Dp`, and aggregate storage | Typed hard error / explicit `HOLD` when continuation assigns residual ownership without trace-grade WB19 identity checks or ignores downstream Ep/Dp/storage dominance after WB19 identities close | HPHYS0259 trace localization gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-046` | runtime + governance | H1/H7/H39 residual classifier spanning WB17 layer uptake, WB18 percolation/storage, aggregate `watcon`, and WB13 storage publication | Typed hard error / explicit `HOLD` when trace evidence omits required WB17/WB18/storage maps, when identities do not reconcile, or when residual ownership is assigned to publication/shadowing after identities close | HPHYS0260 WB17/WB18/storage residual-classification gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -300,6 +302,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `ui_ssh(i)` | `wb19_lateral_ssh_####` | WB19 hourly horizontal saturated conductivity after layer `ui_anisrt(i)` projection | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `subq`/`latqcc`/`tdvv` diagnostics | `wb19_q_lateral_potential`, `wb19_q_lateral_target`, `wb19_lateral_capacity_tdv`, `wb19_tdvv`, `wb19_q_lateral_unrealized`, `wb19_lateral_withdrawal_####` | WB19 potential/target/cap/realized-withdrawal lineage used to validate WB13 `latqcc`/`Qd` publication | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | HPHYS0259 trace WB19 diagnostics | `wb19_q_lateral_potential_m`, `wb19_q_lateral_target_m`, `wb19_lateral_capacity_tdv_m`, `wb19_tdvv_m`, `wb19_q_lateral_unrealized_m`, `wb19_lateral_withdrawal_layers_m`, `q_m`, `qdd_m`, `qd_m` | Opt-in run-trace evidence for classifying `latqcc` residual ownership before shifting focus to `Ep`/`Dp`/storage | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| HPHYS0260 trace WB17/WB18/storage diagnostics | `wb17_upi_layers_m`, `wb17_ui_layers_m`, `wb18_thetdr_layers`, `wb18_dg_layers_m`, `wb18_frozen_depth_layers_m`, `wb18_recomputed_soil_water_m`, `wb18_recomputed_minus_wb11_m`, `upi_m`, `ui_m`, `ep_m`, `etp_m`, `ws`, `d_m`, `pe_m`, `wb13_total_soil_mm`, `wb13_soil_water_total_mm` | Opt-in run-trace evidence for classifying `Ep`, `Dp`, `Total-Soil`, and `SoilWaterTotal` residual ownership after WB19 identities close | `m`, `mm`, and dimensionless stress units preserved as named | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksbot` | `kslast` | restrictive-layer conductivity consumed by WB18 bottom-layer seepage when `slflag=1` | `m s^-1` preserved | `[DIRECT][Static]` |
 | `Bbot` | `ui_bdrkth` | restrictive-layer thickness consumed by hourly WB18 bottom-layer seepage when `slflag=1` | `m` preserved | `[DIRECT][Static]` |
 | `dg_i` | `dg_####` | WB19 per-layer thickness surfaces used by lateral/drainage withdrawal and conductivity weighting | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -527,6 +530,10 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
      transitions (state-transfer continuity);
    - missing or non-finite coupled ordering symbols hard-fail before watbal
      lane completion.
+6. HPHYS0260 trace-localization vector proves opt-in trace rows serialize WB17
+   layer uptake, WB18 layer flux/storage, residual/depth/frozen aggregate
+   components, and final WB13 storage publication fields needed to classify
+   H1/H7/H39 `Ep`/`Dp`/storage residuals.
 
 ## WB12 Reconciliation Authority Addendum
 
@@ -1945,6 +1952,26 @@ balance publication/storage.
 3. Under closed WB19 identities, continuation focus moves to WB17 `Ep`, WB18
    `Dp`, and final `Total-Soil`/`SoilWaterTotal` reconciliation.
 
+### HPHYS0260 WB17/WB18/Storage Trace Residual Localization Addendum
+
+HPHYS0260 requires trace-grade WB17/WB18/final-storage evidence before
+assigning post-HPHYS0259 residual ownership to publication or shadowing.
+
+1. H1/H7/H39 classification reports must consume trace rows carrying WB17
+   aggregate/layer `UPi` and `Ui`, final `Ep`, `Etp`, `Ws`, WB18 aggregate
+   `D`/`Pe`, per-layer `pei`, post-mutation `st`, `thetdr`, `dg`, optional
+   frozen depth, recomputed aggregate `watcon`, and WB13 `Total-Soil` plus
+   `SoilWaterTotal`.
+2. WB17 identities close when `Ep = ΣUi_####`, aggregate `Ui = ΣUi_####`,
+   aggregate `UPi = ΣUPi_####`, `0 <= Ui_#### <= UPi_####`, and
+   `Ws = Ep/Etp` when `Etp > 0`.
+3. WB18/storage identities close when `D = Pe` for bottom export and traced
+   `wb11_soil_water` equals
+   `Σ(wb18_perc_theta_i + wb19_thetdr_i*(wb19_dg_i - frozen_i))`.
+4. If these identities close and residuals persist, continuation remains
+   `HOLD` and should target baseline-authoritative magnitude/initialization
+   lineage rather than heuristic storage compensation.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -1954,11 +1981,13 @@ balance publication/storage.
 | GAP-WATBAL-003 | Wave-0 erosion-lane alias-ownership ambiguity for required runoff/peak-duration boundary symbols is explicitly dispositioned by canonical EROD11 alias ownership registers. | Alias-ownership ambiguity closure is complete for required boundary symbols; production erosion physics remains separately `HOLD`-gated by non-promotable companion/process gaps. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-WATBAL-004 | Chapter-5 validation caveat (stronger near-surface than full-profile agreement) remains and is explicitly retained as a documented limitation with governance risk acceptance. | Deep-profile closure confidence remains lower than near-surface Tier-A signals and requires explicit interpretation in governance decisions; this is accepted as a model-governance limitation. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-WATBAL-005 | WB16 baseline-authoritative `ealpha` producer chain (`frcfac -> rdat(alpha) -> alphay -> eplane`) is now implemented in production runtime surfaces for runtime-projection-complete lanes, with explicit runtime/compatibility provenance policy. | Producer-chain migration closure is complete for scoped runtime lanes; compatibility branch remains explicitly non-promotable and warning-gated when required producer symbols are absent. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-WATBAL-006 | HPHYS0260 adds trace-grade WB17/WB18/final-storage residual classification authority but does not itself change hydrology physics. | Full water-balance parity remains `HOLD` when identities close but H1..H39 semantic residuals persist; follow-on work must target baseline-authoritative magnitude or initialization lineage. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `86` | `Codex` | HPHYS0260 amendment: added `INV-WATBAL-046` requiring trace-grade WB17 layer uptake, WB18 percolation/storage, aggregate `watcon`, and WB13 storage publication evidence before assigning post-WB19 H1/H7/H39 residual ownership. |
 | `2026-06-03` | `85` | `Codex` | HPHYS0259 amendment: added `INV-WATBAL-045` requiring trace-grade WB19 identity evidence before assigning residual ownership and shifting continuation focus to Ep/Dp/storage when WB19 identities close. |
 | `2026-06-03` | `84` | `Codex` | HPHYS0258 amendment: added `INV-WATBAL-044` tying WB13 `latqcc`/`Qd` closure evidence to realized WB19 lateral withdrawal diagnostics from `SC-SUBHYD-001#INV-SUBHYD-028`. |
 | `2026-06-03` | `83` | `Codex` | HPHYS0257 amendment: added hourly WB19 `ui_ssh`/`wb19_lateral_ssh_####` conductivity lineage for modern `ui_anisrt` soils so WB19 `latqcc`/`Qd` closure cannot substitute vertical `ssc`. |
