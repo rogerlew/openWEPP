@@ -14,6 +14,37 @@ struct SnowHourlyState {
     rain_retained_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
+    melt_amelt_in: f64,
+    melt_bmelt_in: f64,
+    melt_cmelt_in: f64,
+    melt_dmelt_in: f64,
+    melt_hrtef_f: f64,
+    melt_hrdtf_f: f64,
+    melt_vwmph: f64,
+    melt_rainin: f64,
+    melt_wind_adjustment: f64,
+    melt_branch_active: f64,
+    dewpoint_c: f64,
+    wind_m_s: f64,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct SnowMeltTerms {
+    amelt_in: f64,
+    bmelt_in: f64,
+    cmelt_in: f64,
+    dmelt_in: f64,
+    hrtef_f: f64,
+    hrdtf_f: f64,
+    vwmph: f64,
+    rainin: f64,
+    wind_adjustment: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct SnowMeltComputation {
+    wmelt_m: f64,
+    terms: SnowMeltTerms,
 }
 
 #[cfg(test)]
@@ -124,6 +155,16 @@ const SNOW_HOURLY_DEPTH_AFTER_ROOT: &str = "snow.hourly.depth_after_m";
 const SNOW_HOURLY_DENSITY_AFTER_ROOT: &str = "snow.hourly.density_after_kg_m3";
 const SNOW_HOURLY_MELT_ROOT: &str = "snow.hourly.melt_m";
 const SNOW_HOURLY_MELT_RAW_ROOT: &str = "snow.hourly.melt_raw_m";
+const SNOW_HOURLY_MELT_AMELT_ROOT: &str = "snow.hourly.melt_amelt_in";
+const SNOW_HOURLY_MELT_BMELT_ROOT: &str = "snow.hourly.melt_bmelt_in";
+const SNOW_HOURLY_MELT_CMELT_ROOT: &str = "snow.hourly.melt_cmelt_in";
+const SNOW_HOURLY_MELT_DMELT_ROOT: &str = "snow.hourly.melt_dmelt_in";
+const SNOW_HOURLY_MELT_HRTEF_ROOT: &str = "snow.hourly.melt_hrtef_f";
+const SNOW_HOURLY_MELT_HRDTF_ROOT: &str = "snow.hourly.melt_hrdtf_f";
+const SNOW_HOURLY_MELT_VWMPH_ROOT: &str = "snow.hourly.melt_vwmph";
+const SNOW_HOURLY_MELT_RAININ_ROOT: &str = "snow.hourly.melt_rainin";
+const SNOW_HOURLY_MELT_WIND_ADJUSTMENT_ROOT: &str = "snow.hourly.melt_wind_adjustment";
+const SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT: &str = "snow.hourly.melt_branch_active";
 const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";
 const SNOW_HOURLY_RAIN_RETAINED_ROOT: &str = "snow.hourly.rain_retained_m";
 const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
@@ -131,6 +172,8 @@ const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
 const WINTER_HOURLY_AIR_TEMP_ROOT: &str = "winter.hourly.air_temp_c";
 const WINTER_HOURLY_CLOUD_ROOT: &str = "winter.hourly.cloud_fraction";
+const WINTER_HOURLY_DEWPOINT_ROOT: &str = "winter.hourly.dewpoint_c";
+const WINTER_HOURLY_WIND_ROOT: &str = "winter.hourly.wind_m_s";
 const FROST_HOURLY_QSRF_ROOT: &str = "frost.hourly.qsrf_w_m2";
 const FROST_HOURLY_QUF_ROOT: &str = "frost.hourly.quf_w_m2";
 const FROST_HOURLY_KSRF_ROOT: &str = "frost.hourly.ksrf_w_m_k";
@@ -3142,7 +3185,7 @@ impl Wb11HydrologyKernel {
         })
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn compute_simimpl29_melt_hour(
         phase_class: HillslopeKernelPhaseClass,
         cancov: f64,
@@ -3154,7 +3197,7 @@ impl Wb11HydrologyKernel {
         hrrain_m: f64,
         snow_depth_m: f64,
         snow_density_kg_m3: f64,
-    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+    ) -> Result<SnowMeltComputation, Wb11HydrologyKernelGuardError> {
         Self::require_dynamic_state_range(
             phase_class,
             BoundarySymbol::from("cancov"),
@@ -3206,7 +3249,10 @@ impl Wb11HydrologyKernel {
         )?;
 
         if snow_depth_m <= WB11_ZERO_THRESHOLD || snow_density_kg_m3 <= WB11_ZERO_THRESHOLD {
-            return Ok(0.0);
+            return Ok(SnowMeltComputation {
+                wmelt_m: 0.0,
+                terms: SnowMeltTerms::default(),
+            });
         }
 
         let hrtef = hrtemp_c * (9.0 / 5.0);
@@ -3235,6 +3281,17 @@ impl Wb11HydrologyKernel {
         } else {
             0.007 * rainin * hrtef
         };
+        let terms = SnowMeltTerms {
+            amelt_in: amelt,
+            bmelt_in: bmelt,
+            cmelt_in: cmelt,
+            dmelt_in: dmelt,
+            hrtef_f: hrtef,
+            hrdtf_f: hrdtf,
+            vwmph,
+            rainin,
+            wind_adjustment: adj,
+        };
 
         let mut wmelt_m = 0.0254 * (amelt + bmelt + cmelt + dmelt);
         if !wmelt_m.is_finite() {
@@ -3260,7 +3317,7 @@ impl Wb11HydrologyKernel {
             None,
             Some(snow_depth_m * (snow_density_kg_m3 / 1000.0)),
         )?;
-        Ok(wmelt_m)
+        Ok(SnowMeltComputation { wmelt_m, terms })
     }
 
     #[allow(clippy::too_many_lines)]
@@ -3463,6 +3520,8 @@ impl Wb11HydrologyKernel {
             let mut rain_retained_m = 0.0;
             let mut melt_raw_m = 0.0;
             let mut melt_m = 0.0;
+            let mut melt_terms = SnowMeltTerms::default();
+            let mut melt_branch_active = 0.0;
 
             if snodep <= WB11_ZERO_THRESHOLD {
                 if hrsnow <= WB11_ZERO_THRESHOLD {
@@ -3512,7 +3571,7 @@ impl Wb11HydrologyKernel {
                 }
 
                 if snodep > WB11_ZERO_THRESHOLD {
-                    let wmelt = Self::compute_simimpl29_melt_hour(
+                    let melt_computation = Self::compute_simimpl29_melt_hour(
                         phase_class,
                         cancov,
                         hrad_mj_m2,
@@ -3524,6 +3583,9 @@ impl Wb11HydrologyKernel {
                         snodep,
                         dens,
                     )?;
+                    melt_branch_active = 1.0;
+                    melt_terms = melt_computation.terms;
+                    let wmelt = melt_computation.wmelt_m;
                     melt_raw_m = wmelt;
                     let smelt = if wmelt > WB11_ZERO_THRESHOLD {
                         (wmelt * 1000.0) / dens
@@ -3594,6 +3656,18 @@ impl Wb11HydrologyKernel {
                 rain_retained_m,
                 melt_raw_m,
                 melt_m,
+                melt_amelt_in: melt_terms.amelt_in,
+                melt_bmelt_in: melt_terms.bmelt_in,
+                melt_cmelt_in: melt_terms.cmelt_in,
+                melt_dmelt_in: melt_terms.dmelt_in,
+                melt_hrtef_f: melt_terms.hrtef_f,
+                melt_hrdtf_f: melt_terms.hrdtf_f,
+                melt_vwmph: melt_terms.vwmph,
+                melt_rainin: melt_terms.rainin,
+                melt_wind_adjustment: melt_terms.wind_adjustment,
+                melt_branch_active,
+                dewpoint_c: tdpt,
+                wind_m_s: vwind,
             });
         }
 

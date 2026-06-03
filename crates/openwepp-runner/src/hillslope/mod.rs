@@ -357,6 +357,23 @@ struct Hphys0245TraceRow {
     snow_hourly_snowfall_water_equiv_sum_m: Option<f64>,
     snow_hourly_melt_raw_sum_m: Option<f64>,
     snow_hourly_melt_sum_m: Option<f64>,
+    snow_hourly_melt_raw_m: BTreeMap<String, f64>,
+    snow_hourly_melt_m: BTreeMap<String, f64>,
+    snow_hourly_melt_amelt_in: BTreeMap<String, f64>,
+    snow_hourly_melt_bmelt_in: BTreeMap<String, f64>,
+    snow_hourly_melt_cmelt_in: BTreeMap<String, f64>,
+    snow_hourly_melt_dmelt_in: BTreeMap<String, f64>,
+    snow_hourly_melt_hrtef_f: BTreeMap<String, f64>,
+    snow_hourly_melt_hrdtf_f: BTreeMap<String, f64>,
+    snow_hourly_melt_vwmph: BTreeMap<String, f64>,
+    snow_hourly_melt_rainin: BTreeMap<String, f64>,
+    snow_hourly_melt_wind_adjustment: BTreeMap<String, f64>,
+    snow_hourly_melt_branch_active: BTreeMap<String, f64>,
+    winter_hourly_air_temp_c: BTreeMap<String, f64>,
+    winter_hourly_rad_mj_m2: BTreeMap<String, f64>,
+    winter_hourly_cloud_fraction: BTreeMap<String, f64>,
+    winter_hourly_dewpoint_c: BTreeMap<String, f64>,
+    winter_hourly_wind_m_s: BTreeMap<String, f64>,
     snow_runtime_swe_closure_error_m: Option<f64>,
     wb13_p_mm: Option<f64>,
     wb13_rm_mm: Option<f64>,
@@ -481,7 +498,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v9";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v11";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -4343,7 +4360,11 @@ fn hphys0245_optional_delta(after: Option<f64>, before: Option<f64>) -> Option<f
     }
 }
 
-#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+#[allow(
+    clippy::similar_names,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
 fn build_hphys0245_trace_row(
     run_name: &str,
     simulation_year: i32,
@@ -4450,6 +4471,72 @@ fn build_hphys0245_trace_row(
         runtime_surface,
         "snow.hourly.rain_retained_m_",
     ));
+    let snow_hourly_melt_raw_m = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_raw_m_",
+    );
+    let snow_hourly_melt_m =
+        hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "snow.hourly.melt_m_");
+    let snow_hourly_melt_amelt_in = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_amelt_in_",
+    );
+    let snow_hourly_melt_bmelt_in = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_bmelt_in_",
+    );
+    let snow_hourly_melt_cmelt_in = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_cmelt_in_",
+    );
+    let snow_hourly_melt_dmelt_in = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_dmelt_in_",
+    );
+    let snow_hourly_melt_hrtef_f = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_hrtef_f_",
+    );
+    let snow_hourly_melt_hrdtf_f = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_hrdtf_f_",
+    );
+    let snow_hourly_melt_vwmph = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_vwmph_",
+    );
+    let snow_hourly_melt_rainin = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_rainin_",
+    );
+    let snow_hourly_melt_wind_adjustment = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_wind_adjustment_",
+    );
+    let snow_hourly_melt_branch_active = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.melt_branch_active_",
+    );
+    let winter_hourly_air_temp_c = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "winter.hourly.air_temp_c_",
+    );
+    let winter_hourly_rad_mj_m2 = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "winter.hourly.rad_mj_m2_",
+    );
+    let winter_hourly_cloud_fraction = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "winter.hourly.cloud_fraction_",
+    );
+    let winter_hourly_dewpoint_c = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "winter.hourly.dewpoint_c_",
+    );
+    let winter_hourly_wind_m_s = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "winter.hourly.wind_m_s_",
+    );
     let snow_hourly_snowfall_water_equiv_sum_m = match (
         snow_hourly_snowfall_depth_sum_m,
         runtime_surface_symbol_value(runtime_surface, "snow.options.newsnw"),
@@ -4549,6 +4636,23 @@ fn build_hphys0245_trace_row(
         snow_hourly_snowfall_water_equiv_sum_m,
         snow_hourly_melt_raw_sum_m,
         snow_hourly_melt_sum_m,
+        snow_hourly_melt_raw_m,
+        snow_hourly_melt_m,
+        snow_hourly_melt_amelt_in,
+        snow_hourly_melt_bmelt_in,
+        snow_hourly_melt_cmelt_in,
+        snow_hourly_melt_dmelt_in,
+        snow_hourly_melt_hrtef_f,
+        snow_hourly_melt_hrdtf_f,
+        snow_hourly_melt_vwmph,
+        snow_hourly_melt_rainin,
+        snow_hourly_melt_wind_adjustment,
+        snow_hourly_melt_branch_active,
+        winter_hourly_air_temp_c,
+        winter_hourly_rad_mj_m2,
+        winter_hourly_cloud_fraction,
+        winter_hourly_dewpoint_c,
+        winter_hourly_wind_m_s,
         snow_runtime_swe_closure_error_m,
         wb13_p_mm: wb13_wat.map(|row| row.p),
         wb13_rm_mm: wb13_wat.map(|row| row.rm),
@@ -9402,6 +9506,23 @@ mod tests {
             snow_hourly_snowfall_water_equiv_sum_m: Some(0.001),
             snow_hourly_melt_raw_sum_m: Some(0.003),
             snow_hourly_melt_sum_m: Some(0.003),
+            snow_hourly_melt_raw_m: BTreeMap::from([("0001".to_string(), 0.003)]),
+            snow_hourly_melt_m: BTreeMap::from([("0001".to_string(), 0.003)]),
+            snow_hourly_melt_amelt_in: BTreeMap::from([("0001".to_string(), 0.10)]),
+            snow_hourly_melt_bmelt_in: BTreeMap::from([("0001".to_string(), 0.20)]),
+            snow_hourly_melt_cmelt_in: BTreeMap::from([("0001".to_string(), 0.30)]),
+            snow_hourly_melt_dmelt_in: BTreeMap::from([("0001".to_string(), 0.40)]),
+            snow_hourly_melt_hrtef_f: BTreeMap::from([("0001".to_string(), 36.0)]),
+            snow_hourly_melt_hrdtf_f: BTreeMap::from([("0001".to_string(), 30.0)]),
+            snow_hourly_melt_vwmph: BTreeMap::from([("0001".to_string(), 4.0)]),
+            snow_hourly_melt_rainin: BTreeMap::from([("0001".to_string(), 0.01)]),
+            snow_hourly_melt_wind_adjustment: BTreeMap::from([("0001".to_string(), 1.07)]),
+            snow_hourly_melt_branch_active: BTreeMap::from([("0001".to_string(), 1.0)]),
+            winter_hourly_air_temp_c: BTreeMap::from([("0001".to_string(), 2.0)]),
+            winter_hourly_rad_mj_m2: BTreeMap::from([("0001".to_string(), 1.5)]),
+            winter_hourly_cloud_fraction: BTreeMap::from([("0001".to_string(), 0.5)]),
+            winter_hourly_dewpoint_c: BTreeMap::from([("0001".to_string(), -1.0)]),
+            winter_hourly_wind_m_s: BTreeMap::from([("0001".to_string(), 2.0)]),
             snow_runtime_swe_closure_error_m: Some(0.0),
             wb13_p_mm: Some(10.0),
             wb13_rm_mm: Some(2.0),
@@ -9506,6 +9627,10 @@ mod tests {
         assert_eq!(document["snow_runtime_swe_before_m"], 0.40);
         assert_eq!(document["snow_runtime_swe_delta_m"], 0.02);
         assert_eq!(document["snow_hourly_snowfall_water_equiv_sum_m"], 0.001);
+        assert_eq!(document["snow_hourly_melt_raw_m"]["0001"], 0.003);
+        assert_eq!(document["snow_hourly_melt_m"]["0001"], 0.003);
+        assert_eq!(document["snow_hourly_melt_amelt_in"]["0001"], 0.10);
+        assert_eq!(document["winter_hourly_air_temp_c"]["0001"], 2.0);
         assert_eq!(document["snow_runtime_swe_closure_error_m"], 0.0);
         assert_eq!(document["wb13_rm_mm"], 2.0);
         assert_eq!(document["wb19_lateral_withdrawal_layers_m"]["0001"], 0.08);
@@ -9693,6 +9818,112 @@ mod tests {
         );
         assert_eq!(document["snow_runtime_density_delta_kg_m3"], 20.0);
         assert_eq!(document["snow_runtime_settle_day_count_delta"], 1.0);
+    }
+
+    #[test]
+    fn hphys0271_trace_row_captures_melt_term_hourly_forcing_maps() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_raw_m_0001"),
+            BoundaryValue::scalar(0.0254),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_m_0001"),
+            BoundaryValue::scalar(0.0200),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_amelt_in_0001"),
+            BoundaryValue::scalar(0.10),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_bmelt_in_0001"),
+            BoundaryValue::scalar(0.20),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_cmelt_in_0001"),
+            BoundaryValue::scalar(0.30),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_dmelt_in_0001"),
+            BoundaryValue::scalar(0.40),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_hrtef_f_0001"),
+            BoundaryValue::scalar(36.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_hrdtf_f_0001"),
+            BoundaryValue::scalar(30.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_vwmph_0001"),
+            BoundaryValue::scalar(4.47),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_rainin_0001"),
+            BoundaryValue::scalar(0.02),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_wind_adjustment_0001"),
+            BoundaryValue::scalar(1.07),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_branch_active_0001"),
+            BoundaryValue::scalar(1.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("winter.hourly.air_temp_c_0001"),
+            BoundaryValue::scalar(2.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("winter.hourly.rad_mj_m2_0001"),
+            BoundaryValue::scalar(1.25),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("winter.hourly.cloud_fraction_0001"),
+            BoundaryValue::scalar(0.5),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("winter.hourly.dewpoint_c_0001"),
+            BoundaryValue::scalar(-1.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("winter.hourly.wind_m_s_0001"),
+            BoundaryValue::scalar(2.0),
+        );
+
+        let row = build_hphys0245_trace_row(
+            "H1",
+            1,
+            36,
+            2013,
+            36,
+            "post_wb13",
+            None,
+            &surface,
+            None,
+            None,
+        );
+        let document = serde_json::to_value(&row).expect("trace row should serialize");
+
+        assert_eq!(document["schema"], HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(document["snow_hourly_melt_raw_m"]["0001"], 0.0254);
+        assert_eq!(document["snow_hourly_melt_m"]["0001"], 0.0200);
+        assert_eq!(document["snow_hourly_melt_amelt_in"]["0001"], 0.10);
+        assert_eq!(document["snow_hourly_melt_bmelt_in"]["0001"], 0.20);
+        assert_eq!(document["snow_hourly_melt_cmelt_in"]["0001"], 0.30);
+        assert_eq!(document["snow_hourly_melt_dmelt_in"]["0001"], 0.40);
+        assert_eq!(document["snow_hourly_melt_hrtef_f"]["0001"], 36.0);
+        assert_eq!(document["snow_hourly_melt_hrdtf_f"]["0001"], 30.0);
+        assert_eq!(document["snow_hourly_melt_vwmph"]["0001"], 4.47);
+        assert_eq!(document["snow_hourly_melt_rainin"]["0001"], 0.02);
+        assert_eq!(document["snow_hourly_melt_wind_adjustment"]["0001"], 1.07);
+        assert_eq!(document["snow_hourly_melt_branch_active"]["0001"], 1.0);
+        assert_eq!(document["winter_hourly_air_temp_c"]["0001"], 2.0);
+        assert_eq!(document["winter_hourly_rad_mj_m2"]["0001"], 1.25);
+        assert_eq!(document["winter_hourly_cloud_fraction"]["0001"], 0.5);
+        assert_eq!(document["winter_hourly_dewpoint_c"]["0001"], -1.0);
+        assert_eq!(document["winter_hourly_wind_m_s"]["0001"], 2.0);
     }
 
     fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {

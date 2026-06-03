@@ -3866,6 +3866,78 @@ impl Wb11HydrologyKernel {
                     Some(0.0),
                     None,
                 ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_AMELT_ROOT, hourly.hour),
+                    hourly.melt_amelt_in,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_BMELT_ROOT, hourly.hour),
+                    hourly.melt_bmelt_in,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_CMELT_ROOT, hourly.hour),
+                    hourly.melt_cmelt_in,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_DMELT_ROOT, hourly.hour),
+                    hourly.melt_dmelt_in,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_HRTEF_ROOT, hourly.hour),
+                    hourly.melt_hrtef_f,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_HRDTF_ROOT, hourly.hour),
+                    hourly.melt_hrdtf_f,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_VWMPH_ROOT, hourly.hour),
+                    hourly.melt_vwmph,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_RAININ_ROOT, hourly.hour),
+                    hourly.melt_rainin,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_WIND_ADJUSTMENT_ROOT, hourly.hour),
+                    hourly.melt_wind_adjustment,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT, hourly.hour),
+                    hourly.melt_branch_active,
+                    Some(0.0),
+                    Some(1.0),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(WINTER_HOURLY_DEWPOINT_ROOT, hourly.hour),
+                    hourly.dewpoint_c,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(WINTER_HOURLY_WIND_ROOT, hourly.hour),
+                    hourly.wind_m_s,
+                    Some(0.0),
+                    None,
+                ));
             }
         } else {
             state_updates.push(WritebackField::bounded(
@@ -3949,6 +4021,78 @@ impl Wb11HydrologyKernel {
                 ));
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_RAIN_RETAINED_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_AMELT_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_BMELT_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_CMELT_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_DMELT_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_HRTEF_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_HRDTF_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_VWMPH_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_RAININ_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_WIND_ADJUSTMENT_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT, hour),
+                    0.0,
+                    Some(0.0),
+                    Some(1.0),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(WINTER_HOURLY_DEWPOINT_ROOT, hour),
+                    0.0,
+                    None,
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(WINTER_HOURLY_WIND_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,

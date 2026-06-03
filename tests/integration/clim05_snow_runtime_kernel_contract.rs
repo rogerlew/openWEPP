@@ -728,6 +728,100 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
 }
 
 #[test]
+fn hphys0271_contract_conformance_records_melt_terms_and_hourly_forcing() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+
+    let mut surface = seeded_clim05_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.runtime_swe"),
+        BoundaryValue::scalar(0.350),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.runtime_depth_m"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("snow.runtime_density_kg_m3"),
+        BoundaryValue::scalar(350.0),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(2.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(1.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("vwind"), BoundaryValue::scalar(2.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tdpt"), BoundaryValue::scalar(-1.0));
+
+    for hour in 1..=24 {
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("snow.hourly.rain_m_{hour:04}")),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("snow.hourly.snowfall_m_{hour:04}")),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("winter.hourly.rad_mj_m2_{hour:04}")),
+            BoundaryValue::scalar(if hour == 1 { 1.25 } else { 0.0 }),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("winter.hourly.air_temp_c_{hour:04}")),
+            BoundaryValue::scalar(if hour == 1 { 2.0 } else { 1.0 }),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from(format!("winter.hourly.cloud_fraction_{hour:04}")),
+            BoundaryValue::scalar(0.5),
+        );
+    }
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("melt-term snow execution should return typed report");
+    assert!(
+        report.scheduler_report.is_success(),
+        "scheduler halted at {:?}",
+        report.scheduler_report.halted_phase
+    );
+
+    let hour_value = |symbol: &str| {
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from(symbol))
+            .unwrap_or_else(|| panic!("{symbol} should be present"))
+            .as_f64()
+    };
+
+    let amelt = hour_value("snow.hourly.melt_amelt_in_0001");
+    let bmelt = hour_value("snow.hourly.melt_bmelt_in_0001");
+    let cmelt = hour_value("snow.hourly.melt_cmelt_in_0001");
+    let dmelt = hour_value("snow.hourly.melt_dmelt_in_0001");
+    let raw_melt = hour_value("snow.hourly.melt_raw_m_0001");
+
+    assert!((raw_melt - (0.0254 * (amelt + bmelt + cmelt + dmelt))).abs() <= 1.0e-12);
+    assert!((hour_value("snow.hourly.melt_branch_active_0001") - 1.0).abs() <= 1.0e-12);
+    assert!((hour_value("winter.hourly.dewpoint_c_0001") + 1.0).abs() <= 1.0e-12);
+    assert!((hour_value("winter.hourly.wind_m_s_0001") - 2.0).abs() <= 1.0e-12);
+    assert!((hour_value("snow.hourly.melt_hrtef_f_0001") - 3.6).abs() <= 1.0e-12);
+    assert!((hour_value("snow.hourly.melt_hrdtf_f_0001") + 1.8).abs() <= 1.0e-12);
+    assert!(
+        (hour_value("snow.hourly.melt_vwmph_0001") - ((2.0 * 3600.0) / 1609.0)).abs() <= 1.0e-12
+    );
+    assert!(hour_value("snow.hourly.melt_wind_adjustment_0001") > 0.0);
+    assert!(hour_value("snow.hourly.melt_rainin_0001").abs() <= 1.0e-12);
+}
+
+#[test]
 fn clim05_contract_conformance_rejects_missing_active_snow_control_symbol() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =

@@ -1896,6 +1896,18 @@ Authorized packages:
     H1/H7/H39 and full H1..H39 metrics recorded. Semantic parity remains
     `0/39`; continue with authoritative daily winter/snowpack state migration
     with corrected `wepp-forest` negative-melt authority retained before resuming WB17 `Ep`.
+- `20260603-hphys0271-day36-melt-forcing-lineage-closure-001/`
+  - Purpose: execute the HPHYS0270 review continuation by diagnosing H1
+    sim-day 36 spurious early-February melt through `melt.for` term-level
+    energy-balance and hourly-forcing lineage (`amelt/bmelt/cmelt/dmelt`,
+    temperature, radiation, dewpoint/vapor pressure, wind, branch flags), while
+    prohibiting WB17 `Ep`, aggregate-storage, WB13 publication, and negative-
+    melt compensation edits.
+  - Status: completed/HOLD; implemented contract-first term-level melt and
+    hourly-forcing trace publication, proved H1 day-36 raw melt reconstructs
+    exactly from `amelt/bmelt/cmelt/dmelt`, ran targeted H1/H7/H39 and full
+    H1..H39 metrics, and held continuation on baseline hourly forcing lineage
+    (`radcur`/cloud/branch timing) before any WB13/WB17/storage compensation.
 - `20260603-hphys0270-winter-daily-snowpack-state-closure-001/`
   - Purpose: execute the HPHYS0269 continuation by diagnosing and wiring the
     next authoritative daily `winter -> snowd -> melt` snowpack state slice,
