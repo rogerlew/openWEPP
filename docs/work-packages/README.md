@@ -403,6 +403,18 @@ Authorized packages:
     unchanged from HPHYS0257 (`0/39` semantic pass), so parity remains in
     `HOLD` and continuation should use the new WB19 diagnostics before
     reopening cap/publication logic.
+- `20260603-hphys0259-wb19-trace-ep-dp-storage-localization-closure-001/`
+  - Purpose: execute the HPHYS0258 continuation recommendation by propagating
+    WB19 realized-flow diagnostics into run trace evidence, using H1/H7/H39
+    traces to classify `latqcc` as WB19-internal or downstream publication/
+    storage, then re-adjudicating Ep/Dp/storage focus with a full `H1..H39`
+    semantic snapshot.
+  - Status: completed/HOLD; opt-in trace schema
+    `openwepp-hphys0245-wb11-wb18-wb19-trace-v3` now carries WB19
+    potential/target/`tdvv`/realized-withdrawal and `q`/`Qdd`/`Qd`
+    diagnostics. H1/H7/H39 day-1 identities close, so continuation should not
+    reopen WB19 cap/publication without new baseline evidence and should focus
+    on WB17 `Ep`, WB18 `Dp`, and final aggregate storage reconciliation.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

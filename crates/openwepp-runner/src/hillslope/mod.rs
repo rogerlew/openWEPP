@@ -311,6 +311,17 @@ struct Hphys0245TraceRow {
     ui_m: Option<f64>,
     ep_m: Option<f64>,
     ws: Option<f64>,
+    wb19_q_lateral_potential_m: Option<f64>,
+    wb19_q_lateral_target_m: Option<f64>,
+    wb19_lateral_capacity_tdv_m: Option<f64>,
+    wb19_tdvv_m: Option<f64>,
+    wb19_q_lateral_unrealized_m: Option<f64>,
+    wb19_lateral_withdrawal_layers_m: BTreeMap<String, f64>,
+    wb19_lateral_capacity_active_count_layers: BTreeMap<String, f64>,
+    wb19_lateral_conductivity_active_count_layers: BTreeMap<String, f64>,
+    q_m: Option<f64>,
+    qdd_m: Option<f64>,
+    qd_m: Option<f64>,
 }
 
 struct Hphys0245TelemetryKernel<'a> {
@@ -370,7 +381,7 @@ const WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL: &str = "wb16_ealpha_compatibil
 const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
-const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-trace-v2";
+const HPHYS0245_TRACE_SCHEMA: &str = "openwepp-hphys0245-wb11-wb18-wb19-trace-v3";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -3610,6 +3621,18 @@ fn build_hphys0245_trace_row(
         hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_theta_");
     let pei_layers =
         hphys0245_prefixed_surface_values(&runtime_surface.flux_surface, "wb18_perc_pei_");
+    let wb19_lateral_withdrawal_layers_m = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "wb19_lateral_withdrawal_",
+    );
+    let wb19_lateral_capacity_active_count_layers = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "wb19_lateral_capacity_active_count_",
+    );
+    let wb19_lateral_conductivity_active_count_layers = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "wb19_lateral_conductivity_active_count_",
+    );
     let theta_sum = hphys0245_sum_or_none(&theta_layers);
     let pei_sum = hphys0245_sum_or_none(&pei_layers);
     let wb11_soil_water = runtime_surface_symbol_value(runtime_surface, "wb11_soil_water");
@@ -3652,6 +3675,29 @@ fn build_hphys0245_trace_row(
         ui_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ui"),
         ep_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ep"),
         ws: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Ws"),
+        wb19_q_lateral_potential_m: runtime_surface_symbol_value(
+            runtime_surface,
+            "wb19_q_lateral_potential",
+        ),
+        wb19_q_lateral_target_m: runtime_surface_symbol_value(
+            runtime_surface,
+            "wb19_q_lateral_target",
+        ),
+        wb19_lateral_capacity_tdv_m: runtime_surface_symbol_value(
+            runtime_surface,
+            "wb19_lateral_capacity_tdv",
+        ),
+        wb19_tdvv_m: runtime_surface_symbol_value(runtime_surface, "wb19_tdvv"),
+        wb19_q_lateral_unrealized_m: runtime_surface_symbol_value(
+            runtime_surface,
+            "wb19_q_lateral_unrealized",
+        ),
+        wb19_lateral_withdrawal_layers_m,
+        wb19_lateral_capacity_active_count_layers,
+        wb19_lateral_conductivity_active_count_layers,
+        q_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "q"),
+        qdd_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Qdd"),
+        qd_m: runtime_surface_symbol_value_prefer_flux(runtime_surface, "Qd"),
     }
 }
 
@@ -7717,6 +7763,99 @@ mod tests {
     }
 
     #[test]
+    fn hphys0259_trace_row_captures_wb19_lateral_diagnostics() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_q_lateral_potential"),
+            BoundaryValue::scalar(0.120),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_q_lateral_target"),
+            BoundaryValue::scalar(0.080),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_lateral_capacity_tdv"),
+            BoundaryValue::scalar(0.080),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_tdvv"),
+            BoundaryValue::scalar(0.080),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_q_lateral_unrealized"),
+            BoundaryValue::scalar(0.020),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_lateral_withdrawal_0001"),
+            BoundaryValue::scalar(0.030),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_lateral_withdrawal_0002"),
+            BoundaryValue::scalar(0.050),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_lateral_capacity_active_count_0001"),
+            BoundaryValue::scalar(24.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_lateral_conductivity_active_count_0001"),
+            BoundaryValue::scalar(12.0),
+        );
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("q"), BoundaryValue::scalar(0.080));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Qdd"), BoundaryValue::scalar(0.010));
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Qd"), BoundaryValue::scalar(0.090));
+
+        let row = build_hphys0245_trace_row(
+            "H39",
+            1,
+            1,
+            2013,
+            1,
+            "post_phase",
+            Some("lateral_transfer"),
+            &surface,
+            None,
+        );
+
+        assert_eq!(row.schema, HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(row.phase.as_deref(), Some("lateral_transfer"));
+        assert!((row.wb19_q_lateral_potential_m.expect("potential") - 0.120).abs() < 1.0e-12);
+        assert!((row.wb19_q_lateral_target_m.expect("target") - 0.080).abs() < 1.0e-12);
+        assert!((row.wb19_lateral_capacity_tdv_m.expect("capacity tdv") - 0.080).abs() < 1.0e-12);
+        assert!((row.wb19_tdvv_m.expect("tdvv") - 0.080).abs() < 1.0e-12);
+        assert!((row.wb19_q_lateral_unrealized_m.expect("unrealized") - 0.020).abs() < 1.0e-12);
+        assert_eq!(
+            row.wb19_lateral_withdrawal_layers_m.get("0001").copied(),
+            Some(0.030)
+        );
+        assert_eq!(
+            row.wb19_lateral_withdrawal_layers_m.get("0002").copied(),
+            Some(0.050)
+        );
+        assert_eq!(
+            row.wb19_lateral_capacity_active_count_layers
+                .get("0001")
+                .copied(),
+            Some(24.0)
+        );
+        assert_eq!(
+            row.wb19_lateral_conductivity_active_count_layers
+                .get("0001")
+                .copied(),
+            Some(12.0)
+        );
+        assert!((row.q_m.expect("q") - 0.080).abs() < 1.0e-12);
+        assert!((row.qdd_m.expect("Qdd") - 0.010).abs() < 1.0e-12);
+        assert!((row.qd_m.expect("Qd") - 0.090).abs() < 1.0e-12);
+    }
+
+    #[test]
     fn hphys0245_trace_writer_serializes_jsonl_rows() {
         let temp_dir = std::env::temp_dir().join(format!(
             "openwepp_hphys0245_trace_writer_{}",
@@ -7760,6 +7899,20 @@ mod tests {
             ui_m: Some(0.002),
             ep_m: Some(0.002),
             ws: Some(0.8),
+            wb19_q_lateral_potential_m: Some(0.12),
+            wb19_q_lateral_target_m: Some(0.08),
+            wb19_lateral_capacity_tdv_m: Some(0.08),
+            wb19_tdvv_m: Some(0.08),
+            wb19_q_lateral_unrealized_m: Some(0.0),
+            wb19_lateral_withdrawal_layers_m: BTreeMap::from([("0001".to_string(), 0.08)]),
+            wb19_lateral_capacity_active_count_layers: BTreeMap::from([("0001".to_string(), 24.0)]),
+            wb19_lateral_conductivity_active_count_layers: BTreeMap::from([(
+                "0001".to_string(),
+                24.0,
+            )]),
+            q_m: Some(0.08),
+            qdd_m: Some(0.01),
+            qd_m: Some(0.09),
         };
 
         write_hphys0245_trace_jsonl(&config, &[row]).expect("trace writer should succeed");
@@ -7774,6 +7927,8 @@ mod tests {
         assert_eq!(document["wb18_theta_layers_m"]["0001"], 0.08);
         assert_eq!(document["pl_rtd"], 0.6);
         assert_eq!(document["ep_m"], 0.002);
+        assert_eq!(document["wb19_lateral_withdrawal_layers_m"]["0001"], 0.08);
+        assert_eq!(document["q_m"], 0.08);
 
         fs::remove_dir_all(temp_dir).expect("temp trace directory should be removable");
     }
