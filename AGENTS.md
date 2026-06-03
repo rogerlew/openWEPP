@@ -27,6 +27,12 @@
   intervention.
 - Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
   self-containment, and observable validation expectations.
+- Every work package must require dual independent reviews with explicit
+  finding disposition before closure. Each finding must be marked `accepted`,
+  `rejected`, `deferred`, or `follow-up` with rationale; accepted findings must
+  be fixed and verified, rejected findings must explain why no change is
+  required, and deferred/follow-up findings must be linked from disposition and
+  worker-handoff artifacts.
 - Prefer architectural work packages that implement, wire up, or complete
   baseline-parity functionality across process seams before narrow residual
   tuning. Residual-focused packages are appropriate after the authoritative
@@ -87,7 +93,8 @@ requirement, not optional package style guidance.
   - gate results,
   - disposition,
   - worker handoff,
-  - dual review artifacts (`review_agent_a.md`, `review_agent_b.md`),
+  - dual review artifacts with mandatory finding disposition templates
+    (`review_agent_a.md`, `review_agent_b.md`),
   - dual verification artifacts
     (`verification_agent_a.md`, `verification_agent_b.md`).
 
@@ -102,6 +109,8 @@ requirement, not optional package style guidance.
   2. contract-derived tests,
   3. pre-implementation contract gate,
   4. production code edits.
+- Explicitly require dual reviews, finding disposition, and verification that no
+  review findings remain undispositioned before final package disposition.
 - Require truthfulness labeling in evidence artifacts (`Static:` vs `Ran:`).
 
 4. Make physics authority explicit in canonical contracts

@@ -30,6 +30,18 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Work-package authoring must reference and follow:
   `docs/codex_exec_plans.md`.
 
+## Dual review and disposition (required)
+
+- Every work package must include two independent review artifacts:
+  `artifacts/review_agent_a.md` and `artifacts/review_agent_b.md`.
+- Every review finding must be dispositioned as `accepted`, `rejected`,
+  `deferred`, or `follow-up` before package closure.
+- Accepted findings must be fixed and verified; rejected findings must include
+  rationale; deferred/follow-up findings must be linked from
+  `artifacts/disposition.md` and `artifacts/worker-handoff.md`.
+- Dual verification artifacts must verify both technical gates and that no
+  review findings remain undispositioned.
+
 ## Phase shape (inherited from wepp-palimpsest)
 - **Phase 0**: docs-only audit / inventory
 - **Phase 1**: architecture decision with operator-signed acceptance
@@ -1896,6 +1908,59 @@ Authorized packages:
     H1/H7/H39 and full H1..H39 metrics recorded. Semantic parity remains
     `0/39`; continue with authoritative daily winter/snowpack state migration
     with corrected `wepp-forest` negative-melt authority retained before resuming WB17 `Ep`.
+- `20260603-hphys0279-sc-contract-unit-compliance-lint-001/`
+  - Purpose: implement contract/documentation linting that enforces
+    `Variables and Units` coverage, alias-map unit checks, and registry
+    cross-links for kernel-affecting `SC-*` contracts.
+  - Status: queued; follow-up remediation from HPHYS0273 to make unit
+    compliance machine-checkable before production edits.
+- `20260603-hphys0278-output-unit-metadata-registry-alignment-001/`
+  - Purpose: align hillslope and watershed output Parquet unit metadata with
+    canonical unit-registry authority so publication schemas cannot drift from
+    runtime units.
+  - Status: queued; follow-up remediation from HPHYS0273/HPHYS0274 for output
+    metadata governance without changing publication values or column names.
+- `20260603-hphys0277-climate-radiation-physical-flux-guard-001/`
+  - Purpose: add a production typed guard for physically impossible hourly
+    radiation flux using baseline/physics-derived potential-radiation bounds,
+    with no clipping or downstream compensation.
+  - Status: queued; follow-up remediation from HPHYS0272/HPHYS0273 because
+    HPHYS0272 fixed unit conversion but did not add a finite high-flux runtime
+    guard.
+- `20260603-hphys0276-unit-conversion-helper-and-raw-literal-guard-001/`
+  - Purpose: centralize unit conversion constants/helpers and add source-level
+    anti-evasion guards for unauthorized raw dimensional conversion literals in
+    production paths.
+  - Status: queued; follow-up remediation from HPHYS0273 to prevent
+    directionally valid constants such as `0.04184`, `1000.0`, `0.001`, and
+    `86400.0` from being used without named provenance-backed conversion APIs.
+- `20260603-hphys0275-boundaryvalue-dimensional-typing-remediation-001/`
+  - Purpose: expand and apply unit-safe `BoundaryValue` /
+    `openwepp-unit-boundary` typing for high-risk dimensional runtime boundary
+    surfaces, reducing reliance on raw `BoundaryValue::scalar`.
+  - Status: queued; follow-up remediation from HPHYS0273/HPHYS0274 for typed
+    unit construction and fail-closed dimensional boundary handling.
+- `20260603-hphys0274-boundary-symbol-unit-registry-closure-001/`
+  - Purpose: implement a machine-readable boundary-symbol unit registry and
+    validation gate so dimensional runtime symbols have authoritative units
+    independent of naming convention.
+  - Status: queued; first implementation remediation after HPHYS0273.
+- `20260603-hphys0273-unit-governance-standard-closure-001/`
+  - Purpose: author canonical openWEPP unit-governance policy spanning science
+    contracts, runtime boundary symbols, conversions, output metadata, tests,
+    and work-package/release gates.
+  - Status: queued; governance work-package created from HPHYS0272 radiation
+    unit defect assessment and required before broad remediation packages.
+- `20260603-hphys0272-hourly-radiation-unit-closure-001/`
+  - Purpose: correct the HPHYS0271 radiation-unit defect by restoring baseline
+    `radly` (Langleys/day) to `radmj` (`MJ m^-2 d^-1`) conversion before
+    SIMIMPL28 `sunmap`/`radcur`/`hr_tmp` hourly radiation emission, with no
+    WB13/WB17/storage/snowmelt compensation edits.
+  - Status: completed/HOLD; implemented contract-first radiation-unit closure,
+    confirmed H1 day-36 max hourly radiation dropped from `59.258047` to
+    `2.388678 MJ m^-2 h^-1`, and reran H1/H7/H39 plus full H1..H39 metrics.
+    Semantic parity remains `0/39`; continue on remaining snowpack/ET/storage
+    residuals without radiation clipping or downstream compensation.
 - `20260603-hphys0271-day36-melt-forcing-lineage-closure-001/`
   - Purpose: execute the HPHYS0270 review continuation by diagnosing H1
     sim-day 36 spurious early-February melt through `melt.for` term-level

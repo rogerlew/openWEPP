@@ -1735,6 +1735,67 @@ mod tests {
     }
 
     #[test]
+    fn climate_runtime_surface_with_context_uses_single_radly_to_radmj_conversion() {
+        let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
+            .expect("strict climate fixture should parse");
+        let context = simimpl28_winter_context(0.0);
+        let surface =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect("contextual climate runtime surface should build");
+        let daily_radmj = 200.0 * 0.04184;
+        let hourly_radiation = (1..=24)
+            .map(|hour| {
+                surface
+                    .state_surface
+                    .get(&BoundarySymbol::from(format!(
+                        "winter.hourly.rad_mj_m2_{hour:04}"
+                    )))
+                    .expect("hourly winter radiation symbol should exist")
+                    .as_f64()
+            })
+            .collect::<Vec<_>>();
+        let max_hourly_radiation = hourly_radiation.iter().copied().fold(0.0, f64::max);
+        let total_hourly_radiation = hourly_radiation.iter().sum::<f64>();
+
+        assert!(hourly_radiation.iter().all(|value| value.is_finite()));
+        assert!(hourly_radiation.iter().all(|value| *value >= 0.0));
+        assert!(
+            max_hourly_radiation < daily_radmj,
+            "hourly radiation must be MJ-scale; max={max_hourly_radiation}, daily_radmj={daily_radmj}"
+        );
+        assert!(
+            total_hourly_radiation < daily_radmj * 1.25,
+            "hourly radiation sum must remain proportional to single-converted daily radiation; sum={total_hourly_radiation}, daily_radmj={daily_radmj}"
+        );
+    }
+
+    #[test]
+    fn climate_runtime_surface_with_context_near_isothermal_radiation_is_radmj_over_24() {
+        let near_isothermal_climate = VALID_CLIMATE.replace("12.0 2.0 200.0", "1.0 0.5 200.0");
+        let climate = parse_climate_from_str(&near_isothermal_climate, ClimateParserMode::Strict)
+            .expect("near-isothermal climate fixture should parse");
+        let context = simimpl28_winter_context(0.0);
+        let surface =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect("near-isothermal contextual climate runtime surface should build");
+        let expected_hourly_radmj = (200.0 * 0.04184) / 24.0;
+
+        for hour in 1..=24 {
+            let hrrad_mj_m2 = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "winter.hourly.rad_mj_m2_{hour:04}"
+                )))
+                .expect("hourly winter radiation symbol should exist")
+                .as_f64();
+            assert!(
+                (hrrad_mj_m2 - expected_hourly_radmj).abs() < 1e-12,
+                "hour {hour} expected {expected_hourly_radmj}, got {hrrad_mj_m2}"
+            );
+        }
+    }
+
+    #[test]
     fn climate_runtime_surface_with_context_respects_rst_partition_branches() {
         let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
             .expect("strict climate fixture should parse");

@@ -46,7 +46,7 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
         });
     }
 
-    let (day, mon, year, rain_m, stmdur_s, tmax, tmin, radmj, wnttim) = match forcing {
+    let (day, mon, year, rain_m, stmdur_s, tmax, tmin, radly, wnttim) = match forcing {
         HillslopeClimateDailyForcing::NoBreakpoint(day) => (
             day.day,
             day.mon,
@@ -121,7 +121,7 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
 
     let sdate = simimpl28_day_of_year(day, mon, year)?;
     let geometry = simimpl28_aspect_geometry(metadata.deglat, avgslp, azm)?;
-    let radly = radmj / SIMIMPL28_LANGLEY_TO_MJ_PER_M2;
+    let radmj = radly * SIMIMPL28_LANGLEY_TO_MJ_PER_M2;
     let sunmap = simimpl28_sunmap(radly, sdate, geometry)?;
     let itflag = (tmax - tmin) <= 1.0;
 

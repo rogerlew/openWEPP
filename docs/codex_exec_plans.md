@@ -6,6 +6,16 @@ These plans are thorough design documents, and "living documents". As a user of 
 
 We enable Codex to use these documents by first updating `AGENTS.md` to describe when to use `PLANS.md`, and then of course, to add the `PLANS.md` file to our repository.
 
+## openWEPP Work-Package Addendum
+
+Every openWEPP work-package ExecPlan must require dual independent reviews
+before final disposition. The plan must require every review finding to be
+explicitly dispositioned as `accepted`, `rejected`, `deferred`, or `follow-up`
+with rationale. Accepted findings must be fixed and verified. Rejected findings
+must explain why no change is required. Deferred or follow-up findings must be
+linked from the disposition and worker-handoff artifacts. Package closure is
+blocked while any review finding is undispositioned.
+
 ## `AGENTS.md`
 
 [`AGENTS.md`](https://github.com/openai/agents.md) is a simple format for guiding coding agents such as Codex. We describe a term that users can use as a shorthand and a simple rule for when to use planning documents. Here, we call it an "ExecPlan". Note that this is an arbitrary term, Codex has not been trained on it. This shorthand can then be used when prompting Codex to direct it to a particular definition of a plan.
