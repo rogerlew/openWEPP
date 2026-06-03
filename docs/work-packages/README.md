@@ -1896,6 +1896,18 @@ Authorized packages:
     H1/H7/H39 and full H1..H39 metrics recorded. Semantic parity remains
     `0/39`; continue with authoritative daily winter/snowpack state migration
     with corrected `wepp-forest` negative-melt authority retained before resuming WB17 `Ep`.
+- `20260603-hphys0270-winter-daily-snowpack-state-closure-001/`
+  - Purpose: execute the HPHYS0269 continuation by diagnosing and wiring the
+    next authoritative daily `winter -> snowd -> melt` snowpack state slice,
+    centered on H1/H7 day 99 and H39 day 115 pre-day/post-day SWE, depth,
+    density, settlement, `RM`, and `Snow-Water` lineage while preserving the
+    corrected `wepp-forest` negative-melt fix.
+  - Status: completed/HOLD; added canonical daily carry-state trace authority
+    and HPHYS trace schema `v9` for pre-day/post-day SWE, depth, density,
+    settle-count, and deltas. Targeted H1/H7/H39 and full H1..H39 metrics ran;
+    semantic pass remains `0/39`. Post-execution review bisected H1 and
+    redirects continuation to the day-36 spurious melt energy-balance/hourly
+    forcing seam rather than broad seasonal accumulation.
 - `20260526-hrref01-hairsine-rose-references-intake-001/`
   - Purpose: execute references-intake step for the Hairsine-Rose multi-class
     sediment model concept backlog by adding R-17+ entries to

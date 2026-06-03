@@ -282,6 +282,31 @@ impl Hphys0245TraceConfig {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct Hphys0245SnowRuntimeBeforeState {
+    swe_m: Option<f64>,
+    depth_m: Option<f64>,
+    density_kg_m3: Option<f64>,
+    settle_day_count: Option<f64>,
+}
+
+impl Hphys0245SnowRuntimeBeforeState {
+    fn from_surface(runtime_surface: &HillslopeWritebackSurface, swe_m: f64) -> Self {
+        Self {
+            swe_m: Some(swe_m),
+            depth_m: runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m"),
+            density_kg_m3: runtime_surface_symbol_value(
+                runtime_surface,
+                "snow.runtime_density_kg_m3",
+            ),
+            settle_day_count: runtime_surface_symbol_value(
+                runtime_surface,
+                "snow.runtime_settle_day_count",
+            ),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 struct Hphys0245TraceRow {
     schema: &'static str,
@@ -317,6 +342,14 @@ struct Hphys0245TraceRow {
     snow_runtime_depth_m: Option<f64>,
     snow_runtime_density_kg_m3: Option<f64>,
     snow_runtime_settle_day_count: Option<f64>,
+    snow_runtime_swe_before_m: Option<f64>,
+    snow_runtime_depth_before_m: Option<f64>,
+    snow_runtime_density_before_kg_m3: Option<f64>,
+    snow_runtime_settle_day_count_before: Option<f64>,
+    snow_runtime_swe_delta_m: Option<f64>,
+    snow_runtime_depth_delta_m: Option<f64>,
+    snow_runtime_density_delta_kg_m3: Option<f64>,
+    snow_runtime_settle_day_count_delta: Option<f64>,
     snow_s_m: Option<f64>,
     snow_hourly_rain_sum_m: Option<f64>,
     snow_hourly_rain_retained_sum_m: Option<f64>,
@@ -393,6 +426,7 @@ struct Hphys0245TelemetryKernel<'a> {
     sim_day_index: usize,
     calendar_year: i32,
     julian_day: u16,
+    snow_runtime_before: Option<Hphys0245SnowRuntimeBeforeState>,
     rows: Vec<Hphys0245TraceRow>,
 }
 
@@ -403,6 +437,7 @@ impl<'a> Hphys0245TelemetryKernel<'a> {
         sim_day_index: usize,
         calendar_year: i32,
         julian_day: u16,
+        snow_runtime_before: Option<Hphys0245SnowRuntimeBeforeState>,
     ) -> Self {
         Self {
             inner: Wb11HydrologyKernel,
@@ -411,6 +446,7 @@ impl<'a> Hphys0245TelemetryKernel<'a> {
             sim_day_index,
             calendar_year,
             julian_day,
+            snow_runtime_before,
             rows: Vec::new(),
         }
     }
@@ -434,6 +470,7 @@ impl HillslopeKernel for Hphys0245TelemetryKernel<'_> {
             Some(request.phase_name),
             &post_phase_surface,
             None,
+            self.snow_runtime_before,
         ));
         response
     }
@@ -444,7 +481,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v8";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v9";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -3777,6 +3814,12 @@ fn execute_scheduler_kernel_lifecycle(
     let trace_day = context
         .hphys0245_trace_config
         .is_some_and(|config| config.includes_day(context.sim_day_index));
+    let snow_runtime_before = trace_day.then(|| {
+        Hphys0245SnowRuntimeBeforeState::from_surface(
+            &runtime_surface,
+            context.runtime_swe_before_m,
+        )
+    });
     let mut hphys0245_trace_rows = Vec::new();
     if trace_day {
         hphys0245_trace_rows.push(build_hphys0245_trace_row(
@@ -3789,6 +3832,7 @@ fn execute_scheduler_kernel_lifecycle(
             None,
             &runtime_surface,
             None,
+            snow_runtime_before,
         ));
     }
 
@@ -3810,6 +3854,7 @@ fn execute_scheduler_kernel_lifecycle(
             context.sim_day_index,
             context.calendar_day.year,
             context.calendar_day.julian_day,
+            snow_runtime_before,
         );
         let report = scheduler
             .execute_with_kernel(&topology_report, &mut kernel, runtime_surface)
@@ -3901,6 +3946,7 @@ fn execute_scheduler_kernel_lifecycle(
             None,
             &execution_report.writeback_surface,
             None,
+            snow_runtime_before,
         ));
     }
 
@@ -3923,6 +3969,7 @@ fn execute_scheduler_kernel_lifecycle(
             None,
             &execution_report.writeback_surface,
             Some(&wb13_row),
+            snow_runtime_before,
         ));
     }
     let coupling_vectors =
@@ -4289,6 +4336,13 @@ fn hphys0245_et_seed_branch(runtime_surface: &HillslopeWritebackSurface) -> Opti
     None
 }
 
+fn hphys0245_optional_delta(after: Option<f64>, before: Option<f64>) -> Option<f64> {
+    match (after, before) {
+        (Some(after), Some(before)) => Some(after - before),
+        _ => None,
+    }
+}
+
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn build_hphys0245_trace_row(
     run_name: &str,
@@ -4300,6 +4354,7 @@ fn build_hphys0245_trace_row(
     phase: Option<&str>,
     runtime_surface: &HillslopeWritebackSurface,
     wb13_row: Option<&SimulationOwnedWb13Row>,
+    snow_runtime_before: Option<Hphys0245SnowRuntimeBeforeState>,
 ) -> Hphys0245TraceRow {
     let theta_layers =
         hphys0245_prefixed_surface_values(&runtime_surface.state_surface, "wb18_perc_theta_");
@@ -4405,6 +4460,31 @@ fn build_hphys0245_trace_row(
         _ => None,
     };
     let snow_s_m = runtime_surface_symbol_value_prefer_flux(runtime_surface, "S");
+    let snow_runtime_swe_m = runtime_surface_symbol_value(runtime_surface, "snow.runtime_swe");
+    let snow_runtime_depth_m =
+        runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m");
+    let snow_runtime_density_kg_m3 =
+        runtime_surface_symbol_value(runtime_surface, "snow.runtime_density_kg_m3");
+    let snow_runtime_settle_day_count =
+        runtime_surface_symbol_value(runtime_surface, "snow.runtime_settle_day_count");
+    let snow_runtime_swe_before_m = snow_runtime_before.and_then(|state| state.swe_m);
+    let snow_runtime_depth_before_m = snow_runtime_before.and_then(|state| state.depth_m);
+    let snow_runtime_density_before_kg_m3 =
+        snow_runtime_before.and_then(|state| state.density_kg_m3);
+    let snow_runtime_settle_day_count_before =
+        snow_runtime_before.and_then(|state| state.settle_day_count);
+    let snow_runtime_swe_delta_m =
+        hphys0245_optional_delta(snow_runtime_swe_m, snow_runtime_swe_before_m);
+    let snow_runtime_depth_delta_m =
+        hphys0245_optional_delta(snow_runtime_depth_m, snow_runtime_depth_before_m);
+    let snow_runtime_density_delta_kg_m3 = hphys0245_optional_delta(
+        snow_runtime_density_kg_m3,
+        snow_runtime_density_before_kg_m3,
+    );
+    let snow_runtime_settle_day_count_delta = hphys0245_optional_delta(
+        snow_runtime_settle_day_count,
+        snow_runtime_settle_day_count_before,
+    );
     let snow_runtime_swe_closure_error_m = match (
         snow_s_m,
         snow_hourly_melt_sum_m,
@@ -4450,16 +4530,18 @@ fn build_hphys0245_trace_row(
         wb13_dp_mm: wb13_wat.map(|row| row.dp),
         wb13_total_soil_mm: wb13_wat.map(|row| row.total_soil),
         wb13_soil_water_total_mm: wb13_wat.map(|row| row.soil_water_total),
-        snow_runtime_swe_m: runtime_surface_symbol_value(runtime_surface, "snow.runtime_swe"),
-        snow_runtime_depth_m: runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m"),
-        snow_runtime_density_kg_m3: runtime_surface_symbol_value(
-            runtime_surface,
-            "snow.runtime_density_kg_m3",
-        ),
-        snow_runtime_settle_day_count: runtime_surface_symbol_value(
-            runtime_surface,
-            "snow.runtime_settle_day_count",
-        ),
+        snow_runtime_swe_m,
+        snow_runtime_depth_m,
+        snow_runtime_density_kg_m3,
+        snow_runtime_settle_day_count,
+        snow_runtime_swe_before_m,
+        snow_runtime_depth_before_m,
+        snow_runtime_density_before_kg_m3,
+        snow_runtime_settle_day_count_before,
+        snow_runtime_swe_delta_m,
+        snow_runtime_depth_delta_m,
+        snow_runtime_density_delta_kg_m3,
+        snow_runtime_settle_day_count_delta,
         snow_s_m,
         snow_hourly_rain_sum_m,
         snow_hourly_rain_retained_sum_m,
@@ -8827,6 +8909,7 @@ mod tests {
             Some("percolation_deep_seepage"),
             &surface,
             None,
+            None,
         );
 
         assert_eq!(row.schema, HPHYS0245_TRACE_SCHEMA);
@@ -8900,6 +8983,7 @@ mod tests {
             "post_phase",
             Some("lateral_transfer"),
             &surface,
+            None,
             None,
         );
 
@@ -9043,6 +9127,7 @@ mod tests {
             Some("plant_root_uptake"),
             &surface,
             None,
+            None,
         );
 
         assert_eq!(row.schema, HPHYS0245_TRACE_SCHEMA);
@@ -9123,6 +9208,7 @@ mod tests {
             Some("plant_root_uptake"),
             &surface,
             None,
+            None,
         );
         let document = serde_json::to_value(&row).expect("trace row should serialize");
 
@@ -9181,8 +9267,18 @@ mod tests {
             BoundaryValue::scalar(1.0),
         );
 
-        let row =
-            build_hphys0245_trace_row("H39", 1, 1, 2013, 1, "post_seed", None, &surface, None);
+        let row = build_hphys0245_trace_row(
+            "H39",
+            1,
+            1,
+            2013,
+            1,
+            "post_seed",
+            None,
+            &surface,
+            None,
+            None,
+        );
         let document = serde_json::to_value(&row).expect("trace row should serialize");
 
         assert_eq!(document["pmet_sidecar_present"], 1.0);
@@ -9291,6 +9387,14 @@ mod tests {
             snow_runtime_depth_m: Some(1.20),
             snow_runtime_density_kg_m3: Some(350.0),
             snow_runtime_settle_day_count: Some(4.0),
+            snow_runtime_swe_before_m: Some(0.40),
+            snow_runtime_depth_before_m: Some(1.10),
+            snow_runtime_density_before_kg_m3: Some(340.0),
+            snow_runtime_settle_day_count_before: Some(3.0),
+            snow_runtime_swe_delta_m: Some(0.02),
+            snow_runtime_depth_delta_m: Some(0.10),
+            snow_runtime_density_delta_kg_m3: Some(10.0),
+            snow_runtime_settle_day_count_delta: Some(1.0),
             snow_s_m: Some(0.002),
             snow_hourly_rain_sum_m: Some(0.001),
             snow_hourly_rain_retained_sum_m: Some(0.0),
@@ -9399,6 +9503,8 @@ mod tests {
         assert_eq!(document["pl_rtd"], 0.6);
         assert_eq!(document["ep_m"], 0.002);
         assert_eq!(document["snow_runtime_swe_m"], 0.42);
+        assert_eq!(document["snow_runtime_swe_before_m"], 0.40);
+        assert_eq!(document["snow_runtime_swe_delta_m"], 0.02);
         assert_eq!(document["snow_hourly_snowfall_water_equiv_sum_m"], 0.001);
         assert_eq!(document["snow_runtime_swe_closure_error_m"], 0.0);
         assert_eq!(document["wb13_rm_mm"], 2.0);
@@ -9499,6 +9605,7 @@ mod tests {
             None,
             &surface,
             Some(&wb13_row),
+            None,
         );
 
         assert!((row.snow_runtime_swe_m.expect("runtime swe") - 0.120).abs() < 1.0e-12);
@@ -9521,6 +9628,71 @@ mod tests {
         assert!((row.wb13_p_mm.expect("WB13 P") - 10.0).abs() < 1.0e-12);
         assert!((row.wb13_rm_mm.expect("WB13 RM") - 12.0).abs() < 1.0e-12);
         assert!((row.wb13_snow_water_mm.expect("WB13 Snow-Water") - 120.0).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn hphys0270_trace_row_captures_pre_day_snowpack_state() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.120),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_depth_m"),
+            BoundaryValue::scalar(0.600),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_density_kg_m3"),
+            BoundaryValue::scalar(200.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_settle_day_count"),
+            BoundaryValue::scalar(4.0),
+        );
+        let snow_runtime_before = Hphys0245SnowRuntimeBeforeState {
+            swe_m: Some(0.150),
+            depth_m: Some(0.750),
+            density_kg_m3: Some(180.0),
+            settle_day_count: Some(3.0),
+        };
+
+        let row = build_hphys0245_trace_row(
+            "H39",
+            1,
+            115,
+            2013,
+            115,
+            "post_wb13",
+            None,
+            &surface,
+            None,
+            Some(snow_runtime_before),
+        );
+        let document = serde_json::to_value(&row).expect("trace row should serialize");
+
+        assert_eq!(document["schema"], HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(document["snow_runtime_swe_before_m"], 0.150);
+        assert_eq!(document["snow_runtime_depth_before_m"], 0.750);
+        assert_eq!(document["snow_runtime_density_before_kg_m3"], 180.0);
+        assert_eq!(document["snow_runtime_settle_day_count_before"], 3.0);
+        assert!(
+            (document["snow_runtime_swe_delta_m"]
+                .as_f64()
+                .expect("SWE delta")
+                + 0.030)
+                .abs()
+                < 1.0e-12
+        );
+        assert!(
+            (document["snow_runtime_depth_delta_m"]
+                .as_f64()
+                .expect("depth delta")
+                + 0.150)
+                .abs()
+                < 1.0e-12
+        );
+        assert_eq!(document["snow_runtime_density_delta_kg_m3"], 20.0);
+        assert_eq!(document["snow_runtime_settle_day_count_delta"], 1.0);
     }
 
     fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {
