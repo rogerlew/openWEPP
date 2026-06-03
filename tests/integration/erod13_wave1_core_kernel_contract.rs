@@ -203,7 +203,7 @@ fn seeded_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(12.614_313_665_345_967),
+        BoundaryValue::scalar(12.769_814_232_504_201),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
@@ -329,7 +329,6 @@ fn erod13_contract_vector_nominal_detachment_emits_core_outputs() {
         "scheduler halted at {:?}",
         report.scheduler_report.halted_phase
     );
-
     let dc = report
         .writeback_surface
         .state_surface

@@ -1893,6 +1893,7 @@ impl Wb11HydrologyKernel {
             Self::wb19_load_layer_state(request, phase_class)?;
         let lateral_withdrawal_threshold =
             Self::wb19_frozen_adjusted_lateral_thresholds(request, phase_class, &drain_threshold)?;
+        let frozen_water = Self::wb19_frozen_water_by_layer(request, phase_class, theta.len())?;
         let top_effective_upper_limit = if mofe_hourly_carry_arrays_enabled {
             let top_upper_limit = upper_limit[0];
             let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", 1);
@@ -1910,6 +1911,7 @@ impl Wb11HydrologyKernel {
         } else {
             None
         };
+        let mut field_capacity_store = Vec::with_capacity(theta.len());
         let mut porosity = Vec::with_capacity(theta.len());
         let mut field_capacity_theta = Vec::with_capacity(theta.len());
         let mut coca = Vec::with_capacity(theta.len());
@@ -1973,6 +1975,7 @@ impl Wb11HydrologyKernel {
                     maximum: Some(expected_fc_store),
                 });
             }
+            field_capacity_store.push(layer_fc_store);
             field_capacity_theta.push(layer_thetfc);
 
             let (_coca_symbol, layer_coca) =
@@ -1995,30 +1998,51 @@ impl Wb11HydrologyKernel {
         } else {
             Vec::new()
         };
+        let daily_lateral_lane = lane_substeps == 1 && !mofe_hourly_carry_arrays_enabled;
         for substep_index in 0..lane_substeps {
             let mut capacity_active_layer = vec![false; theta.len()];
             let mut conductivity_active_layer = vec![false; theta.len()];
-            for (index, theta_i) in theta.iter().enumerate() {
-                let meblfc = if index + 1 == theta.len() {
-                    true
-                } else {
-                    let lower_upper_limit = upper_limit[index + 1];
-                    if lower_upper_limit <= WB11_ZERO_THRESHOLD {
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: Self::wb18_perc_state_symbol("ul", index + 2),
-                            value: lower_upper_limit,
-                            minimum: Some(WB11_ZERO_THRESHOLD),
-                            maximum: None,
-                        });
-                    }
-                    theta[index + 1] / lower_upper_limit >= 1.0 - WB11_ZERO_THRESHOLD
-                };
-                capacity_active_layer[index] = *theta_i + WB11_ZERO_THRESHOLD
-                    >= lateral_withdrawal_threshold[index]
-                    && meblfc;
-                conductivity_active_layer[index] =
-                    *theta_i + WB11_ZERO_THRESHOLD >= drain_threshold[index] && meblfc;
+            if daily_lateral_lane {
+                let mut daily_top_contiguous_block_open = true;
+                for (index, theta_i) in theta.iter().enumerate() {
+                    let daily_layer_active =
+                        *theta_i + WB11_ZERO_THRESHOLD >= lateral_withdrawal_threshold[index];
+                    let active = if solwpv_mode_lt_2006 {
+                        let top_contiguous_active =
+                            daily_top_contiguous_block_open && daily_layer_active;
+                        if !daily_layer_active {
+                            daily_top_contiguous_block_open = false;
+                        }
+                        top_contiguous_active
+                    } else {
+                        daily_layer_active
+                    };
+                    capacity_active_layer[index] = active;
+                    conductivity_active_layer[index] = active;
+                }
+            } else {
+                for (index, theta_i) in theta.iter().enumerate() {
+                    let meblfc = if index + 1 == theta.len() {
+                        true
+                    } else {
+                        let lower_upper_limit = upper_limit[index + 1];
+                        if lower_upper_limit <= WB11_ZERO_THRESHOLD {
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: Self::wb18_perc_state_symbol("ul", index + 2),
+                                value: lower_upper_limit,
+                                minimum: Some(WB11_ZERO_THRESHOLD),
+                                maximum: None,
+                            });
+                        }
+                        theta[index + 1] / lower_upper_limit >= 1.0 - WB11_ZERO_THRESHOLD
+                    };
+                    capacity_active_layer[index] = *theta_i + WB11_ZERO_THRESHOLD
+                        >= lateral_withdrawal_threshold[index]
+                        && meblfc;
+                    conductivity_active_layer[index] =
+                        *theta_i + WB11_ZERO_THRESHOLD >= drain_threshold[index] && meblfc;
+                }
             }
 
             let mut fcdep_before = 0.0_f64;
@@ -2036,47 +2060,152 @@ impl Wb11HydrologyKernel {
             let mut lateral_capacity_tdv = 0.0_f64;
             let mut legacy_saturation_fraction = 1.0_f64;
             if fcdep_before > WB11_ZERO_THRESHOLD {
-                for layer_index in 0..theta.len() {
-                    if capacity_active_layer[layer_index] {
-                        lateral_capacity_tdv += (theta[layer_index]
-                            - lateral_withdrawal_threshold[layer_index])
-                            .max(0.0);
+                if daily_lateral_lane {
+                    let mut daily_average_storage = 0.0_f64;
+                    let mut daily_average_upper_limit = 0.0_f64;
+                    let mut daily_average_hk = 0.0_f64;
+                    for layer_index in 0..theta.len() {
+                        if capacity_active_layer[layer_index] {
+                            lateral_capacity_tdv += (theta[layer_index]
+                                - lateral_withdrawal_threshold[layer_index])
+                                .max(0.0);
+                        }
+                        if !conductivity_active_layer[layer_index] {
+                            continue;
+                        }
+                        let fc_upper_ratio =
+                            field_capacity_store[layer_index] / upper_limit[layer_index];
+                        let layer_hk = if fc_upper_ratio > 0.0 {
+                            let computed_hk = -2.655 / fc_upper_ratio.log10();
+                            if !computed_hk.is_finite() {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: Self::wb18_perc_state_symbol("fc", layer_index + 1),
+                                    value: fc_upper_ratio,
+                                    minimum: Some(WB11_ZERO_THRESHOLD),
+                                    maximum: None,
+                                });
+                            }
+                            computed_hk
+                        } else {
+                            0.0
+                        };
+                        let layer_weight = thickness[layer_index] / fcdep_before;
+                        saturated_depth_sum += thickness[layer_index];
+                        avpora += porosity[layer_index] * layer_weight;
+                        avfca += field_capacity_theta[layer_index] * layer_weight;
+                        avcoca += coca[layer_index] * layer_weight;
+
+                        if solwpv_mode_lt_2006 {
+                            conductivity_depth_sum +=
+                                conductivity[layer_index] * thickness[layer_index];
+                            let effective_upper_limit =
+                                (upper_limit[layer_index] - frozen_water[layer_index]).max(0.0);
+                            daily_average_storage += theta[layer_index] * layer_weight;
+                            daily_average_upper_limit += effective_upper_limit * layer_weight;
+                            daily_average_hk += layer_hk * layer_weight;
+                        } else {
+                            let effective_upper_limit =
+                                upper_limit[layer_index] - frozen_water[layer_index];
+                            let saturation_fraction = if effective_upper_limit > 0.0 {
+                                theta[layer_index] / effective_upper_limit
+                            } else {
+                                1.0
+                            };
+                            if !saturation_fraction.is_finite()
+                                || saturation_fraction < -WB11_ZERO_THRESHOLD
+                            {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: Self::wb18_perc_state_symbol("theta", layer_index + 1),
+                                    value: saturation_fraction,
+                                    minimum: Some(0.0),
+                                    maximum: None,
+                                });
+                            }
+                            let conductivity_fraction = if saturation_fraction < 0.95 {
+                                saturation_fraction.powf(layer_hk).max(0.002)
+                            } else {
+                                1.0
+                            };
+                            if !conductivity_fraction.is_finite() {
+                                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                    phase_class,
+                                    symbol: Self::wb18_perc_state_symbol("theta", layer_index + 1),
+                                    value: conductivity_fraction,
+                                    minimum: Some(0.0),
+                                    maximum: None,
+                                });
+                            }
+                            conductivity_depth_sum += conductivity[layer_index]
+                                * conductivity_fraction
+                                * thickness[layer_index];
+                        }
                     }
-                    if !conductivity_active_layer[layer_index] {
-                        continue;
+                    if solwpv_mode_lt_2006 && daily_average_upper_limit > 0.001 {
+                        let saturation_fraction =
+                            daily_average_storage / daily_average_upper_limit;
+                        legacy_saturation_fraction = if saturation_fraction < 0.95 {
+                            saturation_fraction.powf(daily_average_hk).max(0.002)
+                        } else {
+                            1.0
+                        };
+                        if !legacy_saturation_fraction.is_finite() {
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: Self::wb18_perc_state_symbol("theta", 1),
+                                value: legacy_saturation_fraction,
+                                minimum: Some(0.0),
+                                maximum: None,
+                            });
+                        }
                     }
-                    let storage_excess =
-                        (theta[layer_index] - drain_threshold[layer_index]).max(0.0);
-                    let saturation_denominator =
-                        upper_limit[layer_index] - drain_threshold[layer_index];
-                    if saturation_denominator <= WB11_ZERO_THRESHOLD {
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: Self::wb18_perc_state_symbol("ul", layer_index + 1),
-                            value: upper_limit[layer_index],
-                            minimum: Some(drain_threshold[layer_index] + WB11_ZERO_THRESHOLD),
-                            maximum: None,
-                        });
+                } else {
+                    for layer_index in 0..theta.len() {
+                        if capacity_active_layer[layer_index] {
+                            lateral_capacity_tdv += (theta[layer_index]
+                                - lateral_withdrawal_threshold[layer_index])
+                                .max(0.0);
+                        }
+                        if !conductivity_active_layer[layer_index] {
+                            continue;
+                        }
+                        let storage_excess =
+                            (theta[layer_index] - drain_threshold[layer_index]).max(0.0);
+                        let saturation_denominator =
+                            upper_limit[layer_index] - drain_threshold[layer_index];
+                        if saturation_denominator <= WB11_ZERO_THRESHOLD {
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: Self::wb18_perc_state_symbol("ul", layer_index + 1),
+                                value: upper_limit[layer_index],
+                                minimum: Some(
+                                    drain_threshold[layer_index] + WB11_ZERO_THRESHOLD,
+                                ),
+                                maximum: None,
+                            });
+                        }
+                        let saturation_fraction =
+                            (storage_excess / saturation_denominator).clamp(0.0, 1.0);
+                        if !saturation_fraction.is_finite() {
+                            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                                phase_class,
+                                symbol: Self::wb18_perc_state_symbol("theta", layer_index + 1),
+                                value: saturation_fraction,
+                                minimum: Some(0.0),
+                                maximum: Some(1.0),
+                            });
+                        }
+                        legacy_saturation_fraction = saturation_fraction;
+                        let layer_weight = thickness[layer_index] / fcdep_before;
+                        saturated_depth_sum += thickness[layer_index];
+                        conductivity_depth_sum += conductivity[layer_index]
+                            * saturation_fraction
+                            * thickness[layer_index];
+                        avpora += porosity[layer_index] * layer_weight;
+                        avfca += field_capacity_theta[layer_index] * layer_weight;
+                        avcoca += coca[layer_index] * layer_weight;
                     }
-                    let saturation_fraction =
-                        (storage_excess / saturation_denominator).clamp(0.0, 1.0);
-                    if !saturation_fraction.is_finite() {
-                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                            phase_class,
-                            symbol: Self::wb18_perc_state_symbol("theta", layer_index + 1),
-                            value: saturation_fraction,
-                            minimum: Some(0.0),
-                            maximum: Some(1.0),
-                        });
-                    }
-                    legacy_saturation_fraction = saturation_fraction;
-                    let layer_weight = thickness[layer_index] / fcdep_before;
-                    saturated_depth_sum += thickness[layer_index];
-                    conductivity_depth_sum +=
-                        conductivity[layer_index] * saturation_fraction * thickness[layer_index];
-                    avpora += porosity[layer_index] * layer_weight;
-                    avfca += field_capacity_theta[layer_index] * layer_weight;
-                    avcoca += coca[layer_index] * layer_weight;
                 }
             }
 

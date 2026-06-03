@@ -252,7 +252,11 @@ fn writeback_flux_value(response: &KernelRunResponse, symbol: &str) -> f64 {
 #[test]
 fn wb19_contract_conformance_emits_layer_aware_lateral_and_drainage_fluxes() {
     let mut kernel = Wb11HydrologyKernel;
-    let state_surface = seeded_wb19_state_surface();
+    let mut state_surface = seeded_wb19_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
 
     let lateral_response = kernel.run_hillslope_phase(&build_lateral_request(&state_surface, 0.0));
     assert_eq!(
@@ -330,6 +334,10 @@ fn wb19_contract_conformance_requires_bottom_contiguous_lateral_saturation() {
     let mut kernel = Wb11HydrologyKernel;
     let mut state_surface = seeded_wb19_state_surface();
     state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state_surface.insert(
         BoundarySymbol::from("wb18_perc_theta_0001"),
         BoundaryValue::scalar(6.0),
     );
@@ -362,8 +370,16 @@ fn wb19_contract_conformance_requires_bottom_contiguous_lateral_saturation() {
 #[test]
 fn wb19_contract_conformance_applies_fffx_saturation_fraction_to_lateral_conductivity() {
     let mut kernel = Wb11HydrologyKernel;
-    let partial_state = seeded_wb19_state_surface();
+    let mut partial_state = seeded_wb19_state_surface();
+    partial_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
     let mut full_state = seeded_wb19_state_surface();
+    full_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
     full_state.insert(
         BoundarySymbol::from("wb18_perc_theta_0002"),
         BoundaryValue::scalar(8.0),
@@ -385,7 +401,7 @@ fn wb19_contract_conformance_applies_fffx_saturation_fraction_to_lateral_conduct
         "q_partial={q_partial}"
     );
     assert!(
-        (q_full - 0.068_730_779_131_332_42).abs() <= TOL,
+        (q_full - 0.068_230_108_807_835_57).abs() <= TOL,
         "q_full={q_full}"
     );
 }
@@ -438,6 +454,10 @@ fn wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier() {
         BoundaryValue::scalar(2.0),
     );
     legacy_state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    legacy_state.insert(
         BoundarySymbol::from("wb11_drainable_storage"),
         BoundaryValue::scalar(0.0),
     );
@@ -466,11 +486,11 @@ fn wb19_contract_conformance_applies_legacy_solwpv_second_fffx_multiplier() {
     let q_modern = writeback_flux_value(&modern_response, "q");
 
     assert!(
-        (q_legacy - 0.003_158_126_200_437_910_4).abs() <= TOL,
+        (q_legacy - 0.003_095_638_704_712_803_7).abs() <= TOL,
         "q_legacy={q_legacy}"
     );
     assert!(
-        (q_modern - 0.007_368_961_134_355_123).abs() <= TOL,
+        (q_modern - 0.007_198_073_806_022_010_6).abs() <= TOL,
         "q_modern={q_modern}"
     );
 }
@@ -612,7 +632,7 @@ fn wb19_contract_conformance_rejects_domain_invalid_drain_enable_flag() {
 }
 
 #[test]
-fn wb19_contract_conformance_hourly_lane_preserves_lateral_flux_on_reference_fixture() {
+fn wb19_contract_conformance_daily_and_hourly_lateral_lanes_diverge_on_reference_fixture() {
     let mut kernel = Wb11HydrologyKernel;
     let mut daily_state = seeded_wb19_state_surface();
     daily_state.insert(
@@ -639,8 +659,16 @@ fn wb19_contract_conformance_hourly_lane_preserves_lateral_flux_on_reference_fix
     let q_daily = writeback_flux_value(&daily_response, "q");
     let q_hourly = writeback_flux_value(&hourly_response, "q");
     assert!(
-        (q_daily - q_hourly).abs() <= TOL,
-        "hourly and daily lane WB19 lateral execution should remain numerically equivalent on the reference fixture (q_daily={q_daily}, q_hourly={q_hourly})"
+        (q_daily - 0.005_213_489_109_570_009).abs() <= TOL,
+        "q_daily={q_daily}"
+    );
+    assert!(
+        (q_hourly - 0.030_547_012_947_258_874).abs() <= TOL,
+        "q_hourly={q_hourly}"
+    );
+    assert!(
+        q_hourly > q_daily,
+        "daily and hourly WB19 lateral execution should retain distinct lane semantics (q_daily={q_daily}, q_hourly={q_hourly})"
     );
 }
 

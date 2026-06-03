@@ -134,6 +134,10 @@ fn seeded_state(
         BoundaryValue::scalar(fixture.anisotropy),
     );
     state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state.insert(
         BoundarySymbol::from("dg_0001"),
         BoundaryValue::scalar(fixture.dg_0001_m),
     );

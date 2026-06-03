@@ -134,6 +134,10 @@ fn seeded_wb19_state_surface() -> BTreeMap<BoundarySymbol, BoundaryValue> {
         BoundaryValue::scalar(1.0),
     );
     state.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
+    state.insert(
         BoundarySymbol::from("wb19_drain_enabled"),
         BoundaryValue::scalar(1.0),
     );

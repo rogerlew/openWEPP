@@ -1507,9 +1507,33 @@ impl Wb11HydrologyKernel {
         phase_class: HillslopeKernelPhaseClass,
         drain_threshold: &[f64],
     ) -> Result<Vec<f64>, Wb11HydrologyKernelGuardError> {
+        let frozen_water =
+            Self::wb19_frozen_water_by_layer(request, phase_class, drain_threshold.len())?;
         let mut adjusted_threshold = Vec::with_capacity(drain_threshold.len());
         for (index, threshold_i) in drain_threshold.iter().enumerate() {
-            let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", index + 1);
+            let layer_threshold = (threshold_i - frozen_water[index]).max(0.0);
+            if !layer_threshold.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: Self::wb18_perc_state_symbol("frzw", index + 1),
+                    value: layer_threshold,
+                    minimum: Some(0.0),
+                    maximum: Some(*threshold_i),
+                });
+            }
+            adjusted_threshold.push(layer_threshold);
+        }
+        Ok(adjusted_threshold)
+    }
+
+    fn wb19_frozen_water_by_layer(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_count: usize,
+    ) -> Result<Vec<f64>, Wb11HydrologyKernelGuardError> {
+        let mut frozen_water_by_layer = Vec::with_capacity(layer_count);
+        for layer_index in 1..=layer_count {
+            let frozen_water_symbol = Self::wb18_perc_state_symbol("frzw", layer_index);
             let frozen_water =
                 Self::optional_state_scalar_for_symbol(request, phase_class, &frozen_water_symbol)?
                     .unwrap_or(0.0);
@@ -1520,19 +1544,9 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 None,
             )?;
-            let layer_threshold = (threshold_i - frozen_water).max(0.0);
-            if !layer_threshold.is_finite() {
-                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                    phase_class,
-                    symbol: frozen_water_symbol,
-                    value: layer_threshold,
-                    minimum: Some(0.0),
-                    maximum: Some(*threshold_i),
-                });
-            }
-            adjusted_threshold.push(layer_threshold);
+            frozen_water_by_layer.push(frozen_water);
         }
-        Ok(adjusted_threshold)
+        Ok(frozen_water_by_layer)
     }
 
     fn wb19_withdraw_top_down(theta: &mut [f64], drain_threshold: &[f64], amount: f64) -> f64 {

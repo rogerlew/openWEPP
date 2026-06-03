@@ -41,7 +41,7 @@ fn writeback_scalar(response: &openwepp_kernel_contract::KernelRunResponse, symb
 
 #[test]
 #[allow(clippy::too_many_lines)]
-fn hphys0221_wb19_solwpv_branch_uses_hphys0247_bottom_contiguous_saturation_selection() {
+fn hphys0221_wb19_hourly_solwpv_branch_uses_hphys0247_bottom_contiguous_saturation_selection() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(2.0));
@@ -123,6 +123,10 @@ fn hphys0221_wb19_solwpv_branch_uses_hphys0247_bottom_contiguous_saturation_sele
         BoundaryValue::scalar(0.5),
     );
     state_surface.insert(BoundarySymbol::from("cpm_0002"), BoundaryValue::scalar(1.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb19_lateral_drain_lane_substeps"),
+        BoundaryValue::scalar(24.0),
+    );
 
     let mut kernel = Wb11HydrologyKernel;
 
@@ -139,8 +143,8 @@ fn hphys0221_wb19_solwpv_branch_uses_hphys0247_bottom_contiguous_saturation_sele
         "HPHYS0247 bottom-contiguous selection should allow bottom-layer flow independent of solwpv selector mode"
     );
     assert!(
-        fcdep_2005.abs() <= TOL,
-        "solwpv<2006 still owns fcdep mutation after realized lateral flow"
+        (fcdep_2005 - 1.0).abs() <= TOL,
+        "hourly substep recomputation should leave threshold-saturated bottom-layer fcdep; fcdep_2005={fcdep_2005}"
     );
 
     state_surface.insert(

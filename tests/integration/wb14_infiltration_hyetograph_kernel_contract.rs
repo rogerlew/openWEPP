@@ -478,7 +478,7 @@ fn seeded_wb14_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(12.614_313_665_345_967),
+        BoundaryValue::scalar(12.769_814_232_504_201),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
@@ -993,7 +993,7 @@ fn hphys0240_contract_wb14_runoff_carryover_flux_overrides_stale_runon_state() {
         .expect("wb12_storage_reconciled should be present")
         .as_f64();
     assert!(
-        (storage - 12.614_313_665_355_22).abs() <= WB14_TEST_TOLERANCE,
+        (storage - 12.769_814_232_504_201).abs() <= WB14_TEST_TOLERANCE,
         "storage closure must consume Q derived from carryover flux, observed {storage}"
     );
 }

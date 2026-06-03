@@ -18,7 +18,7 @@ const WB15_TEST_TOLERANCE: f64 = 1.0e-9;
 const EXPECTED_INTERCEPTION_I: f64 = 0.001_571_663_34;
 const EXPECTED_INFILTRATION: f64 = 2.998_428_336_66;
 const EXPECTED_RUNOFF_Q: f64 = 0.2;
-const EXPECTED_STORAGE_RECONCILED: f64 = 14.005_269_757_751_464;
+const EXPECTED_STORAGE_RECONCILED: f64 = 14.160_770_324_900_444;
 
 #[allow(clippy::too_many_lines)]
 fn seeded_wb15_surface() -> HillslopeWritebackSurface {

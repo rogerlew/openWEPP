@@ -21,12 +21,12 @@ fixtures:
     path: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/wb19_fcwp_coca_watyld_cases.json
     fixture_class: component
     units_basis: SI
-    hash: 42dbffae3d690c680bda3124935cc25e511266bb42511cbe97649b7144a68948
+    hash: a1c50a82cd1e497875cb034481c4b2ef710c319907480b0f584fde30f48fae5e
     source_repo: /workdir/openWEPP
-    source_commit: 236ecee254b7c1672cade901a39cce4352c907b1
+    source_commit: working-tree-hphys0256
     source_path: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/wb19_fcwp_coca_watyld_cases.json
-    source_sha256: 42dbffae3d690c680bda3124935cc25e511266bb42511cbe97649b7144a68948
-    transform_note: "Repository-authored paired FC/WP theta lineage fixture for WB19 avfca/watyld authority."
+    source_sha256: a1c50a82cd1e497875cb034481c4b2ef710c319907480b0f584fde30f48fae5e
+    transform_note: "Repository-authored paired FC/WP theta lineage fixture for WB19 avfca/watyld authority with explicit HPHYS0247 hourly iterative lane semantics after HPHYS0256."
 tolerances:
   mode: abs
   abs:
@@ -41,7 +41,7 @@ owner: openWEPP maintainers
 provenance:
   authored_by: Codex
   authored_utc: 2026-06-01
-  last_updated_utc: 2026-06-01
+  last_updated_utc: 2026-06-02
 notes: ""
 ---
 
@@ -55,8 +55,9 @@ FC/WP theta lineage:
 1. `avfca` follows `thetfc_####` (not `wb18_perc_fc_####/dg_####` surrogate).
 2. `watyld = avpora - (avfca + (1-avcoca))`.
 3. For `solwpv < 2006`, `fcdep` mutation follows `q/watyld`.
-4. Under fixed `drfc` lineage and fixed forcing, realized `q` remains stable
-   while FC/WP theta lineage perturbs `watyld` and downstream `fcdep`.
+4. Under fixed `drfc` lineage, fixed forcing, and explicit hourly lane
+   substeps, realized `q` remains stable while FC/WP theta lineage perturbs
+   `watyld` and downstream final-substep `fcdep`.
 
 ## Authority Links
 

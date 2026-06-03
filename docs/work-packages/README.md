@@ -373,6 +373,15 @@ Authorized packages:
     contract-backed and H1/H7/H39 post-seed storage aligns with baseline
     inferred t=0, but full `H1..H39` semantic pass remains `0/39`; next focus
     is WB19 `latqcc` residual closure.
+- `20260602-hphys0256-wb19-latqcc-lane-branch-closure-001/`
+  - Purpose: execute the HPHYS0254 continuation recommendation by diagnosing,
+    correcting, and validating WB19 `latqcc` lateral-transfer lineage after
+    corrected WB11 seed projection, centered on daily-vs-hourly lateral branch
+    authority and frozen-adjusted availability.
+  - Status: completed/HOLD; daily `watbal.for` lane authority is now
+    contract-backed and implemented, workspace gates pass, but the H1/H7/H39
+    and full `H1..H39` rerun selected the hourly lane and metrics remain
+    unchanged; next focus is hourly WB19 lateral residual lineage.
 - `20260531-hphys0216-profilefc-layer-authority-realignment-001/`
   - Purpose: execute `ProfileFCStore` remediation by realigning WB13 FC
     publication authority to baseline-authoritative layer aggregation

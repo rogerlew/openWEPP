@@ -184,8 +184,8 @@ suites:
     provenance:
       authored_by: Codex
       authored_utc: 2026-06-01
-      last_updated_utc: 2026-06-01
-    notes: "Level-4 constitutive hard-fail suite for WB19 avfca/watyld coupling authority using FC/WP theta lineage with fixed COCA threshold forcing."
+      last_updated_utc: 2026-06-02
+    notes: "Level-4 constitutive hard-fail suite for WB19 avfca/watyld coupling authority using FC/WP theta lineage with fixed COCA threshold forcing and explicit hourly iterative lane semantics."
 
   - suite_id: cas_l4_soil_fc_direct_theta_minus33_cohort_001
     title: Soil Profile FC Direct Theta(-33kPa) Constitutive Cohort Guard Suite

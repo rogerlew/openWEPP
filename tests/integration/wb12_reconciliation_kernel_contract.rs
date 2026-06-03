@@ -236,7 +236,7 @@ fn seeded_wb12_surface() -> HillslopeWritebackSurface {
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_observed"),
-        BoundaryValue::scalar(13.404_382_572_090_034),
+        BoundaryValue::scalar(13.559_883_139_239_014),
     );
     state_surface.insert(
         BoundarySymbol::from("wb12_storage_closure_tolerance"),
@@ -310,7 +310,7 @@ fn wb12_contract_conformance_reconciles_runoff_and_storage_surfaces() {
             .state_surface
             .get(&BoundarySymbol::from("wb12_storage_reconciled"))
             .copied(),
-        Some(BoundaryValue::scalar(13.404_382_572_090_034))
+        Some(BoundaryValue::scalar(13.559_883_139_239_014))
     );
     assert_eq!(
         report
@@ -455,7 +455,7 @@ fn hphys0240_contract_wb12_storage_tail_uses_q_from_same_pass_carryover_flux() {
             .state_surface
             .get(&BoundarySymbol::from("wb12_storage_reconciled"))
             .copied(),
-        Some(BoundaryValue::scalar(13.404_382_572_090_034))
+        Some(BoundaryValue::scalar(13.559_883_139_239_014))
     );
 }
 

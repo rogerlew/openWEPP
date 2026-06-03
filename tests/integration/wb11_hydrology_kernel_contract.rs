@@ -316,7 +316,7 @@ fn wb11_contract_conformance_kernel_updates_et_perc_lateral_drain_surfaces() {
         .expect("wb11_soil_water should be present")
         .as_f64();
     assert!(
-        (wb11_soil_water - 7.904_382_572_090_036).abs() <= 1.0e-12,
+        (wb11_soil_water - 8.059_883_139_239_016).abs() <= 1.0e-12,
         "wb11_soil_water must reflect final post-WB19 aggregate storage, observed {wb11_soil_water}"
     );
     let drainable_storage = report

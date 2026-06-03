@@ -391,6 +391,10 @@ name = "hphys0227_wb19_fcwp_coca_watyld_authority_contract"
 path = "tests/integration/hphys0227_wb19_fcwp_coca_watyld_authority_contract.rs"
 
 [[test]]
+name = "hphys0256_wb19_latqcc_lane_branch_contract"
+path = "tests/integration/hphys0256_wb19_latqcc_lane_branch_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 
