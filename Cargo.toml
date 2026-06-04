@@ -424,6 +424,18 @@ name = "hphys0285_spring_soil_storage_retention_contract"
 path = "tests/integration/hphys0285_spring_soil_storage_retention_contract.rs"
 
 [[test]]
+name = "hphys0286_layer_retention_wb18_wb17_contract"
+path = "tests/integration/hphys0286_layer_retention_wb18_wb17_contract.rs"
+
+[[test]]
+name = "hphys0287_snow_liquid_partition_guard_contract"
+path = "tests/integration/hphys0287_snow_liquid_partition_guard_contract.rs"
+
+[[test]]
+name = "hphys0288_winter_rain_snowmelt_partition_contract"
+path = "tests/integration/hphys0288_winter_rain_snowmelt_partition_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

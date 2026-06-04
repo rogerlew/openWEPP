@@ -12,6 +12,7 @@ struct SnowHourlyState {
     depth_after_m: f64,
     density_after_kg_m3: f64,
     rain_retained_m: f64,
+    rain_released_m: f64,
     melt_raw_m: f64,
     melt_m: f64,
     melt_amelt_in: f64,
@@ -72,6 +73,7 @@ struct SnowCouplingOutcome {
     signed_s: f64,
     accumulation: f64,
     rain_retained: f64,
+    rain_released: f64,
     runtime_swe: f64,
     runtime_depth_m: f64,
     runtime_density_kg_m3: f64,
@@ -173,6 +175,7 @@ const SNOW_HOURLY_MELT_WIND_ADJUSTMENT_ROOT: &str = "snow.hourly.melt_wind_adjus
 const SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT: &str = "snow.hourly.melt_branch_active";
 const SNOW_HOURLY_RAIN_ROOT: &str = "snow.hourly.rain_m";
 const SNOW_HOURLY_RAIN_RETAINED_ROOT: &str = "snow.hourly.rain_retained_m";
+const SNOW_HOURLY_RAIN_RELEASED_ROOT: &str = "snow.hourly.rain_released_m";
 const SNOW_HOURLY_SNOWFALL_ROOT: &str = "snow.hourly.snowfall_m";
 
 const WINTER_HOURLY_RAD_ROOT: &str = "winter.hourly.rad_mj_m2";
@@ -2691,19 +2694,7 @@ impl Wb11HydrologyKernel {
             }
         }
 
-        let runtime_swe = Self::optional_state_scalar(
-            request,
-            phase_class,
-            WB14_SYMBOL_SNOW_RUNTIME_SWE,
-        )?
-        .unwrap_or(0.0);
-        if !runtime_swe.is_finite() {
-            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                value: runtime_swe,
-            });
-        }
+        let runtime_swe = Self::validate_runtime_snow_state_domains(request, phase_class)?;
 
         let tmax = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
         let tmin = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
@@ -2723,17 +2714,78 @@ impl Wb11HydrologyKernel {
 
         let active_snow_coupling =
             runtime_swe > WB11_ZERO_THRESHOLD || (cold_day_active && snow_controls_projected);
-        if active_snow_coupling {
-            Self::require_state_range(
-                phase_class,
-                WB14_SYMBOL_SNOW_RUNTIME_SWE,
-                runtime_swe,
-                Some(0.0),
-                None,
-            )?;
+        Ok(active_snow_coupling)
+    }
+
+    fn validate_runtime_snow_state_domains(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let runtime_swe_symbol = BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE);
+        let depth_symbol = BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL);
+        let density_symbol = BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL);
+        let settle_day_count_symbol = BoundarySymbol::from(SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL);
+        let snow_option_symbols = [
+            BoundarySymbol::from(WB14_SYMBOL_SNOW_FILE_PRESENT),
+            BoundarySymbol::from(WB14_SYMBOL_SNOW_RST),
+            BoundarySymbol::from(WB14_SYMBOL_SNOW_NEWSNW),
+            BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD),
+        ];
+
+        let snow_projection_present = [
+            &runtime_swe_symbol,
+            &depth_symbol,
+            &density_symbol,
+            &settle_day_count_symbol,
+        ]
+        .into_iter()
+        .chain(snow_option_symbols.iter())
+        .any(|symbol| request.state_surface.contains_key(symbol));
+        if !snow_projection_present {
+            return Ok(0.0);
         }
 
-        Ok(active_snow_coupling)
+        let runtime_swe =
+            Self::require_state_scalar_for_symbol(request, phase_class, &runtime_swe_symbol)?;
+        Self::require_state_range(
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+            runtime_swe,
+            Some(0.0),
+            None,
+        )?;
+
+        let runtime_depth_m =
+            Self::require_state_scalar_for_symbol(request, phase_class, &depth_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            depth_symbol,
+            runtime_depth_m,
+            Some(0.0),
+            None,
+        )?;
+
+        let runtime_density_kg_m3 =
+            Self::require_state_scalar_for_symbol(request, phase_class, &density_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            density_symbol,
+            runtime_density_kg_m3,
+            Some(0.0),
+            Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
+        )?;
+
+        let runtime_settle_day_count =
+            Self::require_state_scalar_for_symbol(request, phase_class, &settle_day_count_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            settle_day_count_symbol,
+            runtime_settle_day_count,
+            Some(0.0),
+            None,
+        )?;
+
+        Ok(runtime_swe)
     }
 
     fn resolve_active_frost_coupling(
@@ -3753,6 +3805,7 @@ impl Wb11HydrologyKernel {
 
         let mut accumulation_water_m = 0.0;
         let mut total_rain_retained_m = 0.0;
+        let mut total_rain_released_m = 0.0;
         let mut hourly_state = Vec::with_capacity(SIMIMPL29_HOURS_PER_DAY);
 
         for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
@@ -3813,6 +3866,7 @@ impl Wb11HydrologyKernel {
             let density_before_kg_m3 = dens.max(0.0);
             let depth_available_m = depth_before_m;
             let mut rain_retained_m = 0.0;
+            let mut rain_released_m = 0.0;
             let mut melt_raw_m = 0.0;
             let mut melt_m = 0.0;
             let mut melt_terms = SnowMeltTerms::default();
@@ -3998,9 +4052,15 @@ impl Wb11HydrologyKernel {
                 snodep = 0.0;
                 dens = 0.0;
             }
+            if depth_before_m > WB11_ZERO_THRESHOLD
+                && hrrain > rain_retained_m + WB11_ZERO_THRESHOLD
+            {
+                rain_released_m = hrrain - rain_retained_m;
+            }
 
             accumulation_water_m += hrsnow * 0.1;
             total_rain_retained_m += rain_retained_m;
+            total_rain_released_m += rain_released_m;
 
             hourly_state.push(SnowHourlyState {
                 hour,
@@ -4010,6 +4070,7 @@ impl Wb11HydrologyKernel {
                 depth_after_m: snodep,
                 density_after_kg_m3: dens,
                 rain_retained_m,
+                rain_released_m,
                 melt_raw_m,
                 melt_m,
                 melt_amelt_in: melt_terms.amelt_in,
@@ -4028,6 +4089,11 @@ impl Wb11HydrologyKernel {
         }
 
         let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
+        for hourly in &mut hourly_state {
+            if hourly.rain_released_m > WB11_ZERO_THRESHOLD {
+                hourly.melt_m += hourly.rain_released_m;
+            }
+        }
         let available_runtime_swe_for_state_loss =
             runtime_swe + accumulation_water_m + total_rain_retained_m;
         if !available_runtime_swe_for_state_loss.is_finite() {
@@ -4094,6 +4160,8 @@ impl Wb11HydrologyKernel {
         }
         let signed_s =
             melt_redistribution.routed_melt_total_m - accumulation_water_m - total_rain_retained_m;
+        let routed_melt_total_m =
+            melt_redistribution.routed_melt_total_m + total_rain_released_m;
         if !signed_s.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -4103,6 +4171,13 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.routed_melt_m"),
+            routed_melt_total_m,
+            Some(0.0),
+            None,
+        )?;
 
         Self::require_dynamic_state_range(
             phase_class,
@@ -4130,6 +4205,7 @@ impl Wb11HydrologyKernel {
             signed_s,
             accumulation: accumulation_water_m,
             rain_retained: total_rain_retained_m,
+            rain_released: total_rain_released_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: snodep,
             runtime_density_kg_m3: dens,

@@ -48,6 +48,20 @@
   under the current package or open a new one.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
+- Do not canonicalize-and-proceed on kernel domain violations. Invalid,
+  missing, physically impossible, or out-of-contract process state must fail
+  closed with typed guards unless a canonical `SC-*` contract explicitly
+  authorizes a bounded tolerance normalization.
+- Bounded canonicalization is allowed only for contract-cited roundoff or
+  publication-format normalization with explicit threshold, units, provenance,
+  tests, and evidence. It must not change process control flow, hide mass
+  imbalance, replace missing authority, or convert material negative storage /
+  flux / SWE into a valid value.
+- Removing, loosening, or converting a fail-closed guard from a prior work
+  package requires contract-first amendment, a contract-derived regression test
+  proving the old guard is obsolete or overbroad, before/after evidence, and
+  accepted dual-review disposition. Without that evidence, preserve the guard
+  and keep the package in `HOLD`.
 - Do not implement provisional, surrogate, or heuristic process-physics math in production kernel/runtime publication paths.
 - For legacy migration scope, required implementation target is baseline-authoritative physics migration from `/workdir/wepp-forest_260430_baseline` into openWEPP architecture, not behavioral approximation.
 - If baseline-authoritative process physics is not yet ported, keep disposition in `HOLD` and open a follow-on package; do not close gaps with temporary formulas.
@@ -147,8 +161,10 @@ requirement, not optional package style guidance.
   completion.
 - Kickoff prompt must explicitly require canonical `SC-*` physics authority
   updates for migration packages.
-- Kickoff prompt must prohibit silent defaults/clamping for domain violations
-  and require typed errors/guards.
+- Kickoff prompt must prohibit silent defaults, unbounded clamping, and
+  canonicalize-and-proceed behavior for domain violations; require typed
+  fail-closed errors/guards unless bounded normalization is explicitly
+  contract-authorized.
 - Kickoff prompt must instruct autonomous progression through the package phase
   plan and artifact updates through disposition without asking the user for
   "next steps" unless blocked.
@@ -221,7 +237,8 @@ scope.
 - `Files: <explicit path list>.`
 - `Task: execute package objective end-to-end for declared scope.`
 - `Constraints: contract-first sequencing; canonical SC authority;`
-  `baseline provenance (<if applicable>); typed guards; no silent defaults.`
+  `baseline provenance (<if applicable>); typed guards; no silent defaults;`
+  `no canonicalize-and-proceed for domain violations.`
 - `Autonomy: execute package phases end-to-end and update required artifacts`
   `without requesting additional user direction unless hard-blocked.`
 - `Outputs: update package artifacts/disposition for all completed phases.`

@@ -468,6 +468,14 @@ fn hphys0264_pmet_evapotranspiration_consumes_evappm_components_without_pt_repar
         BoundarySymbol::from("wb18_perc_theta_0002"),
         BoundaryValue::scalar(0.100),
     );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(1.0),
+    );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
     state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));
     state_surface.insert(
@@ -547,6 +555,10 @@ fn hphys0264_pmet_evapotranspiration_rejects_material_negative_soil_evaporation(
         BoundarySymbol::from("wb18_perc_theta_0001"),
         BoundaryValue::scalar(0.010),
     );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.20));
     state_surface.insert(
         BoundarySymbol::from("thetdr_0001"),
@@ -607,6 +619,10 @@ fn hphys0264_pmet_evapotranspiration_snaps_roundoff_negative_soil_evaporation() 
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_theta_0001"),
         BoundaryValue::scalar(0.010),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
     );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.20));
     state_surface.insert(
@@ -676,6 +692,14 @@ fn hphys0281_pmet_evapotranspiration_applies_condensation_storage_return() {
     state_surface.insert(
         BoundarySymbol::from("wb18_perc_theta_0002"),
         BoundaryValue::scalar(0.100),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0001"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_ul_0002"),
+        BoundaryValue::scalar(1.0),
     );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
     state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));

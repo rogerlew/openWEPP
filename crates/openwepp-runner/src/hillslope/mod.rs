@@ -319,6 +319,7 @@ struct Hphys0245TraceRow {
     phase: Option<String>,
     wb11_soil_water_m: Option<f64>,
     wb11_soil_water_mm: Option<f64>,
+    wb12_infiltration_m: Option<f64>,
     wb18_theta_sum_m: Option<f64>,
     wb18_theta_layers_m: BTreeMap<String, f64>,
     wb18_thetdr_layers: BTreeMap<String, f64>,
@@ -353,6 +354,7 @@ struct Hphys0245TraceRow {
     snow_s_m: Option<f64>,
     snow_hourly_rain_sum_m: Option<f64>,
     snow_hourly_rain_retained_sum_m: Option<f64>,
+    snow_hourly_rain_released_sum_m: Option<f64>,
     snow_hourly_snowfall_depth_sum_m: Option<f64>,
     snow_hourly_snowfall_water_equiv_sum_m: Option<f64>,
     snow_hourly_melt_raw_sum_m: Option<f64>,
@@ -498,7 +500,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v11";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v13";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -4444,6 +4446,7 @@ fn build_hphys0245_trace_row(
     let theta_sum = hphys0245_sum_or_none(&theta_layers);
     let pei_sum = hphys0245_sum_or_none(&pei_layers);
     let wb11_soil_water = runtime_surface_symbol_value(runtime_surface, "wb11_soil_water");
+    let wb12_infiltration_m = runtime_surface_symbol_value(runtime_surface, "wb12_infiltration");
     let wb18_recomputed_soil_water_m = hphys0245_recompute_wb18_soil_water(
         &theta_layers,
         &wb18_thetdr_layers,
@@ -4485,6 +4488,10 @@ fn build_hphys0245_trace_row(
     let snow_hourly_rain_retained_sum_m = Some(hphys0245_sum_runtime_prefix(
         runtime_surface,
         "snow.hourly.rain_retained_m_",
+    ));
+    let snow_hourly_rain_released_sum_m = Some(hphys0245_sum_runtime_prefix(
+        runtime_surface,
+        "snow.hourly.rain_released_m_",
     ));
     let snow_hourly_melt_raw_m = hphys0245_prefixed_surface_values(
         &runtime_surface.state_surface,
@@ -4592,13 +4599,20 @@ fn build_hphys0245_trace_row(
         snow_hourly_melt_sum_m,
         snow_hourly_snowfall_water_equiv_sum_m,
         snow_hourly_rain_retained_sum_m,
+        snow_hourly_rain_released_sum_m,
     ) {
         (
             Some(snow_s_m),
             Some(melt_sum_m),
             Some(snowfall_water_equiv_sum_m),
             Some(rain_retained_sum_m),
-        ) => Some(snow_s_m - (melt_sum_m - snowfall_water_equiv_sum_m - rain_retained_sum_m)),
+            Some(rain_released_sum_m),
+        ) => Some(
+            snow_s_m
+                - ((melt_sum_m - rain_released_sum_m)
+                    - snowfall_water_equiv_sum_m
+                    - rain_retained_sum_m),
+        ),
         _ => None,
     };
 
@@ -4613,6 +4627,7 @@ fn build_hphys0245_trace_row(
         phase: phase.map(ToString::to_string),
         wb11_soil_water_m: wb11_soil_water,
         wb11_soil_water_mm: wb11_soil_water.map(|value| value * 1_000.0),
+        wb12_infiltration_m,
         wb18_theta_sum_m: theta_sum,
         wb18_theta_layers_m: theta_layers,
         wb18_thetdr_layers,
@@ -4647,6 +4662,7 @@ fn build_hphys0245_trace_row(
         snow_s_m,
         snow_hourly_rain_sum_m,
         snow_hourly_rain_retained_sum_m,
+        snow_hourly_rain_released_sum_m,
         snow_hourly_snowfall_depth_sum_m,
         snow_hourly_snowfall_water_equiv_sum_m,
         snow_hourly_melt_raw_sum_m,
@@ -9585,6 +9601,7 @@ mod tests {
             phase: None,
             wb11_soil_water_m: Some(0.1),
             wb11_soil_water_mm: Some(100.0),
+            wb12_infiltration_m: Some(0.003),
             wb18_theta_sum_m: Some(0.08),
             wb18_theta_layers_m: BTreeMap::from([("0001".to_string(), 0.08)]),
             wb18_thetdr_layers: BTreeMap::from([("0001".to_string(), 0.05)]),
@@ -9619,6 +9636,7 @@ mod tests {
             snow_s_m: Some(0.002),
             snow_hourly_rain_sum_m: Some(0.001),
             snow_hourly_rain_retained_sum_m: Some(0.0),
+            snow_hourly_rain_released_sum_m: Some(0.0),
             snow_hourly_snowfall_depth_sum_m: Some(0.010),
             snow_hourly_snowfall_water_equiv_sum_m: Some(0.001),
             snow_hourly_melt_raw_sum_m: Some(0.003),
@@ -9744,6 +9762,8 @@ mod tests {
         assert_eq!(document["snow_runtime_swe_before_m"], 0.40);
         assert_eq!(document["snow_runtime_swe_delta_m"], 0.02);
         assert_eq!(document["snow_hourly_snowfall_water_equiv_sum_m"], 0.001);
+        assert_eq!(document["snow_hourly_rain_released_sum_m"], 0.0);
+        assert_eq!(document["wb12_infiltration_m"], 0.003);
         assert_eq!(document["snow_hourly_melt_raw_m"]["0001"], 0.003);
         assert_eq!(document["snow_hourly_melt_m"]["0001"], 0.003);
         assert_eq!(document["snow_hourly_melt_amelt_in"]["0001"], 0.10);
@@ -9870,6 +9890,56 @@ mod tests {
         assert!((row.wb13_p_mm.expect("WB13 P") - 10.0).abs() < 1.0e-12);
         assert!((row.wb13_rm_mm.expect("WB13 RM") - 12.0).abs() < 1.0e-12);
         assert!((row.wb13_snow_water_mm.expect("WB13 Snow-Water") - 120.0).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn hphys0288_trace_row_captures_rain_on_snow_release_without_snowpack_loss() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface
+            .flux_surface
+            .insert(BoundarySymbol::from("S"), BoundaryValue::scalar(-0.001));
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.rain_m_0001"),
+            BoundaryValue::scalar(0.003),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.rain_retained_m_0001"),
+            BoundaryValue::scalar(0.001),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.rain_released_m_0001"),
+            BoundaryValue::scalar(0.002),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.melt_m_0001"),
+            BoundaryValue::scalar(0.002),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.hourly.snowfall_m_0001"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("snow.options.newsnw"),
+            BoundaryValue::scalar(100.0),
+        );
+
+        let row = build_hphys0245_trace_row(
+            "H39",
+            1,
+            142,
+            2014,
+            506,
+            "post_snow",
+            Some("snow_coupling"),
+            &surface,
+            None,
+            None,
+        );
+        let document = serde_json::to_value(&row).expect("trace row should serialize");
+
+        assert_eq!(document["snow_hourly_rain_released_sum_m"], 0.002);
+        assert_eq!(document["snow_hourly_melt_sum_m"], 0.002);
+        assert_eq!(document["snow_runtime_swe_closure_error_m"], 0.0);
     }
 
     #[test]

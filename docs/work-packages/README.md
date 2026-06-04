@@ -1,5 +1,27 @@
 # Work Packages
 
+- `20260604-hphys0288-winter-rain-on-snow-melt-partition-magnitude-closure-001/`
+  - Purpose: diagnose and correct baseline-authoritative residual rain-on-snow
+    release into the winter `hrmlt`/`wmelt` runoff/infiltration forcing seam,
+    preserving HPHYS0287 fail-closed snow-state guards.
+  - Status: executed-hold; residual rain-on-snow release now routes into
+    snowmelt forcing and improves `Ep`/storage/lateral metrics, but full
+    H1..H39 semantic parity remains `0/39` and `Q`/`RM`/`Snow-Water` are
+    effectively unchanged for continuation.
+- `20260604-hphys0287-snow-liquid-retention-runoff-infiltration-partition-closure-001/`
+  - Purpose: diagnose and correct snow liquid retention, runoff, and
+    infiltration partition residuals left after HPHYS0286.
+  - Status: executed-hold; restored fail-closed runtime snow-state guarding
+    before inactive snow fallback and liquid partition; this was guard
+    hardening, not valid-run snow-magnitude parity progress. Full H1..H39
+    metrics are unchanged from HPHYS0286, leaving semantic parity open at
+    `0/39`.
+- `20260604-hphys0286-layer-retention-wb18-wb17-coupling-closure-001/`
+  - Purpose: diagnose and correct post-ingress layer capacity/retention and
+    WB18/WB17 coupling after HPHYS0285 same-pass liquid ingress.
+  - Status: executed-hold; post-ET lower-layer upper-limit redistribution
+    fixed and metrics improved, but `Q`, `RM`, and `Snow-Water` remained
+    unchanged for HPHYS0287 continuation.
 - `20260604-hphys0285-spring-soil-storage-retention-closure-001/`
   - Purpose: diagnose and correct the post-HPHYS0284 spring liquid/profile
     storage retention residual across infiltration capacity, WB18 percolation,

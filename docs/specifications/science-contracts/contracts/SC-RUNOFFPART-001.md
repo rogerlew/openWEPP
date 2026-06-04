@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 29
+contract_version: 31
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -64,6 +64,7 @@ Out of scope:
 | REF-RUNOFFPART-CH4-LIMITS | `chap4.pdf` §4.6 | Domain limitations (Hortonian-flow framing, no explicit variable-source-area/return-flow treatment, recession approximation limits). | `[DIRECT][Static]` |
 | REF-RUNOFFPART-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1 Eq. [5.1.1] | Daily water-balance consumer uses runoff depth `Q` as a closure term with signed conventions preserved. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-LEGACY-HOURLY-CARRY | `/workdir/wepp-forest_260430_baseline/src/wathour.inc:26-44` and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:438-471,843-902` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | MOFE hourly upstream saturation/lateral carry arrays are part of the runoff/runon source term consumed before current-OFE runoff partition closure, and current-OFE `ui_SCrunf(ii)` surface-saturation excess is added to daily `runoff`. | `[DIRECT][Static]` |
+| REF-RUNOFFPART-LEGACY-WINTER-RAINRELEASE | `/workdir/wepp-forest_260430_baseline/src/snowd.for` lines 240-279 and `/workdir/wepp-forest_260430_baseline/src/winter.for` lines 456-459, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Rain-on-snow holding-capacity accounting retains part or all of `hrrain` in snowpack; any positive residual `hrrain` is added into `hrmlt` before daily `wmelt` is summed. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-LEGACY-WMELT-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` lines 342-345 and `/workdir/wepp-forest_260430_baseline/src/grna.for` lines 267-269, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Snowmelt (`wmelt`) is part of the same event water supply used by infiltration and runoff partition: `fin` includes `wmelt`, and Green-Ampt snowmelt forcing derives `smrate = wmelt / dur`. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-LEGACY-FIN-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,471-479,494-516,520-524`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Same-pass local `fin/xfin` liquid supply includes direct rain after interception, routed snowmelt, and irrigation before infiltration/runoff closure and layer-storage ingress; MOFE carry/runon arrays are governed by `REF-RUNOFFPART-LEGACY-HOURLY-CARRY` and require separate promotion for storage-ingress closure. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-CH11-COUPLING | `references/50201000/chap11.pdf` chapter context + `chap4.pdf` §4.4.4 | Erosion continuity uses peak runoff and effective duration surfaces from runoff partition domain. | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -135,6 +136,8 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-014 | HPHYS0242 surface-saturation runoff addback invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 runoff publication must add `surdra = Σui_SCrunf(ii)` to partition-derived runoff `Q`, use that same addback in closure residuals, and reject missing, malformed, non-finite, negative, or aggregate-only current saturation payloads. Positive top-layer saturation excess cannot remain hidden in storage or be replaced by `wb12_runoff_carryover`. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-015 | HPHYS0283 snowmelt event-forcing invariant: WB12 runoff partition must include routed snowmelt in the event liquid supply available to Green-Ampt infiltration before residual runoff is computed, and the resulting infiltration must remain available to WB18 same-pass layer ingress. A closure that adds melt to `Q`/runoff residuals while omitting it from infiltration forcing or downstream layer storage violates baseline `wmelt -> smrate/fin/xfin` semantics. | hard-fail | REF-RUNOFFPART-LEGACY-WMELT-INFIL, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-CH4-RAINEX, SC-SNOWFREEZE-001#INV-SNOWFREEZE-018, SC-PERC-001#INV-PERC-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-016 | HPHYS0285 local-liquid infiltration handoff invariant: WB12/WB14 runoff partition must treat positive same-pass infiltration from direct rain, routed snowmelt, or irrigation as both a runoff residual term and a WB18 layer-storage ingress obligation. Active-snow state may affect snowmelt supply, but it cannot gate whether non-snow positive local infiltration remains available to WB18 `fin/xfin` ingress. MOFE carry/runon infiltration remains a follow-up closure item under the existing carry-array invariants. | hard-fail | REF-RUNOFFPART-LEGACY-FIN-INFIL, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-CH4-RAINEX, SC-PERC-001#INV-PERC-017, SC-WATBAL-001#INV-WATBAL-060 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-017 | HPHYS0287 snow liquid partition guard invariant: WB12/WB14 runoff partition must validate projected runtime snow-state domains before deciding that snow coupling is inactive and before assembling direct-rain, retained-rain, routed-melt, irrigation, infiltration, and residual runoff terms. When any snow option/control/runtime state is projected, missing runtime snow vector members must hard-fail rather than defaulting to zero. Material negative or non-finite `snow.runtime_swe`/depth/density/settle state must hard-fail instead of being canonicalized to zero by the inactive branch. This guard protects the liquid-partition lineage without allowing invalid snow state to suppress valid non-snow infiltration. | hard-fail | SC-SNOWFREEZE-001#INV-SNOWFREEZE-020, INV-RUNOFFPART-015, INV-RUNOFFPART-016, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-018 | HPHYS0288 rain-on-snow routed-melt partition invariant: WB12/WB14 liquid forcing must treat positive rain-on-snow residual released by `snowd.for` holding-capacity accounting as part of routed `wmelt` after `winter.for` daily post-processing. Direct-rain liquid supplied to the hyetograph path must be reduced by both retained rain and residual rain-on-snow that has been promoted into `wmelt`; leaving that residual on the direct-rain-only path, omitting it from `wmelt`, or double counting it across direct rain and routed melt violates the baseline `hrrain -> hrmlt -> wmelt -> fin/smrate` lineage. | hard-fail | REF-RUNOFFPART-LEGACY-WINTER-RAINRELEASE, REF-RUNOFFPART-LEGACY-WMELT-INFIL, SC-SNOWFREEZE-001#INV-SNOWFREEZE-021, SC-WATBAL-001#INV-WATBAL-063 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -156,6 +159,8 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-014` | runtime + governance | WB19 current-saturation array validator plus WB12/WB14 runoff assembler | Typed hard error / explicit `HOLD` when `ui_SCrunf` is missing/malformed, current saturation addback is omitted from `Q`, or closure residuals use a different runoff value than the published flux | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-015` | runtime + governance | WB12 meltwater event-forcing assembler and infiltration/runoff residual closure | Typed hard error / explicit `HOLD` when routed melt is excluded from infiltration forcing or is double-counted in runoff closure | HPHYS0283 spring partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-016` | runtime + governance | WB12 local-liquid infiltration handoff assembler and WB18 ingress availability validator | Typed hard error / explicit `HOLD` when positive same-pass infiltration is published as runoff closure only, active-snow-gated before WB18, or unavailable to layer storage | HPHYS0285 spring soil-retention gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-017` | runtime + governance | WB12/WB14 runtime snow-state validator before inactive snow fallback and liquid-partition assembly | Typed hard error / explicit `HOLD` when material negative snow runtime state is silently zeroed before runoff/infiltration partition | HPHYS0287 snow liquid partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-018` | runtime + governance | WB12/WB14 rain-on-snow direct-rain vs routed-melt assembler | Typed hard error / explicit `HOLD` when residual rain-on-snow is omitted from routed melt, left exclusively as direct rain, or double counted | HPHYS0288 rain-on-snow partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -237,6 +242,8 @@ runoff partition internals.
 - OBL-RUNOFFPART-P-003: Apply explicit branch logic for Eq. [4.3.1], depression-storage adjustments, and multi-OFE case classification. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-RUNOFFPART-P-004: Propagate invariant violations as typed errors; no silent defaulting/clamping of hydrologic terms. `[INFERENCE][Static]`
 - OBL-RUNOFFPART-P-005: Include routed snowmelt in the event liquid supply before evaluating infiltration capacity and runoff residuals; publish `wb12_infiltration`, `Q`, and closure diagnostics from the same supply so WB18 can apply the same infiltrated liquid to layer storage. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-RUNOFFPART-P-006: Validate runtime snow-state domains before inactive snow fallback in WB12/WB14 partition paths; domain-invalid snow state must not be converted to zero-state continuation. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-RUNOFFPART-P-007: Route residual rain-on-snow released from snowpack holding-capacity accounting through the `wmelt` event-forcing path and remove it from direct-rain hyetograph forcing to avoid omission or double counting. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -441,6 +448,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 7. Same-pass `wb12_runoff_carryover` flux overrides stale
    `wb12_runon_input` in WB14 reconciliation and malformed present carryover
    fluxes hard-fail with typed non-finite/domain posture.
+8. Material negative projected runtime snow state hard-fails before inactive
+   snow fallback or liquid-partition assembly; bounded near-zero values may
+   only be normalized after the non-negative-domain guard accepts tolerance.
 
 ## WB15 Canopy Interception Runtime Coupling Addendum
 
@@ -824,6 +834,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-04` | `31` | `Codex` | HPHYS0288 amendment: added WB12/WB14 residual rain-on-snow routed-melt partition authority requiring released rain to follow `hrrain -> hrmlt -> wmelt -> fin/smrate` rather than direct-rain-only forcing. |
+| `2026-06-04` | `30` | `Codex` | HPHYS0287 amendment: added WB12/WB14 fail-closed runtime snow-state guard before inactive fallback and liquid partition assembly. |
 | `2026-06-04` | `29` | `Codex` | HPHYS0285 amendment: added local-liquid WB12/WB14 infiltration handoff authority requiring positive direct-rain, melt, and irrigation infiltration to remain available for WB18 `fin/xfin` storage ingress without active-snow gating; MOFE carry/runon storage-ingress promotion is deferred. |
 | `2026-06-04` | `28` | `Codex` | HPHYS0283 amendment: linked WB12 snowmelt infiltration partition to WB18 same-pass layer ingress (`SC-PERC-001#INV-PERC-016`) so reduced runoff without storage mutation remains invalid. |
 | `2026-06-04` | `27` | `Codex` | HPHYS0283 amendment: added baseline-authoritative snowmelt event-forcing authority for WB12 infiltration/runoff partition and forbade melt-only runoff closure shortcuts. |

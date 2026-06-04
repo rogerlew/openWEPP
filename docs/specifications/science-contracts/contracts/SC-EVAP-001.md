@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 24
+contract_version: 25
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -68,6 +68,7 @@ Out of scope:
 | REF-EVAP-LEGACY-PMET | `/workdir/wepp-forest_260430_baseline/src/evappm.for:181-297` and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:557-559` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline Penman-Monteith ET-demand branch authority (`evappm`) selected by `iflget != 1`, including `kcb`/`rawp` crop coefficients and final-hour hourly call-order. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-PMET-DEMAND | `/workdir/wepp-forest_260430_baseline/src/evappm.for:181-388` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline-authoritative PMET demand subset: FAO-56 reference ET (`etorc`), basal crop coefficient adjustment (`kcbadj`/`kcbcon`), evaporation-reduction coefficient (`etkr`), water-stress coefficient (`etks`), potential soil evaporation (`potes`), residue-intercepted soil evaporation (`es`), and plant transpiration (`ep`) before post-ET soil redistribution. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-PMET-SEAM | `/workdir/wepp-forest_260430_baseline/src/evappm.for:430-523`, `/workdir/wepp-forest_260430_baseline/src/swu.for:122-191`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:978-981` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline PMET seam authority: `evappm` computes non-negative soil/residue evaporation `es`, transpiration demand `ep`, and `et = es + ep`; when `es - resint < 0`, `evappm` returns `-xx` to top-layer storage rather than publishing a material negative `es`; later `swu` consumes positive `ep` for root-zone uptake and publishes final `ep = Σu(k)`. PMET-mode WB17 must not re-run Priestley-Taylor/LAI partition on `pmet.ep_m`. | `[DIRECT][Static]` |
+| REF-EVAP-LEGACY-POST-ET-UL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:557-590`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative WB17/WB18 seam: after final-hour `evap`/`evappm`, lower layers above upper limit are redistributed upward before drainage/lateral and `swu`; with outside water (`fin > 1.0e-6`), the active cap is `max(ul(i)-frzw(i),0)`, otherwise it is `ul(i)`. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-SUNMAP-RADPOT | `/workdir/wepp-forest_260430_baseline/src/sunmap.for:181-234` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline horizontal-surface potential radiation (`radpot`) used by `evappm` to derive `rso` when runtime climate projection does not provide `radpot` directly. | `[DIRECT][Static]` |
 | REF-EVAP-INFILE-PMET | `SC-INFILE-PMETPARA-001` | Canonical sidecar discoverability, `iflget`, crop-key lookup, `kcb`, `rawp`, and fallback-observability authority. | `[DIRECT][Static]` |
 | REF-EVAP-LEGACY-SOILX | `/workdir/wepp-forest_260430_baseline/src/evap.for:609-668` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layerwise soil-water extraction authority for soil evaporation from `st(i)` with depth-aware allocation. | `[DIRECT][Static]` |
@@ -117,7 +118,7 @@ Out of scope:
 | WB17 ET state inputs | `wb11_soil_water`, `wb11_et_demand`, `lai`, `cancov`, `wb17_residue_interception` |
 | WB11 ET-demand branch lineage | `pmetpara.mode.sidecar_present`, `pmetpara.mode.iflget`, selected `kcb`, selected `rawp`, selected PMET crop row, actual ET seed branch, `etorc`, `kcbadj`, `kcbcon`, `etke`, `etkr`, `etks`, `TEW`, `REW`, `wfevp`, `TAW`, `RAW`, `wftrp`, `pmet.es_m`, `pmet.ep_m`, optional `pmet.es_storage_return_m` |
 | Same-pass infiltration cadence lineage | `wb12_infiltration` or WB14-derived same-pass infiltration lineage before ET execution |
-| Baseline-authoritative ET stage-memory/state family | `s1`, `s2`, `tu`, `tv`, `wb18_perc_theta_####`, `dg_####`, `thetdr_####`, `frozen_depth_####` |
+| Baseline-authoritative ET stage-memory/state family | `s1`, `s2`, `tu`, `tv`, `wb18_perc_theta_####`, `wb18_perc_ul_####`, optional `wb18_perc_frzw_####`, `dg_####`, `thetdr_####`, `frozen_depth_####` |
 | Post-WB19 root-uptake state/flux family | `Etp`, `ET`, `wb18_perc_theta_####`, `wb18_perc_ul_####`, `dg_####`, `thetdr_####`, `frozen_depth_####`, `rtd`, `pltol` |
 
 ### Required Outputs
@@ -153,6 +154,11 @@ WB17 mutates ET boundary surfaces deterministically:
   residue interception.
 - soil extraction mutates `wb18_perc_theta_####` by depth-aware extraction
   from the upper `0.10 m` baseline evaporation zone.
+- after soil extraction and before WB19 drainage/lateral consumers, lower-layer
+  storage above the baseline active upper cap is moved upward from `i=nsl..2`;
+  positive same-pass outside water uses
+  `max(wb18_perc_ul_i-wb18_perc_frzw_i,0)` and otherwise uses
+  `wb18_perc_ul_i`.
 - plant extraction mutates `wb18_perc_theta_####` through baseline `swu`
   root-depth weighting and deficit scaling when `Etp > 0` and `rtd > 0`;
   this extraction is scheduled after WB19 drainage/lateral mutation per
@@ -178,7 +184,10 @@ WB17 mutates ET boundary surfaces deterministically:
    and layer state mutated by prior hourly infiltration/percolation; stale
    `wb12_infiltration` compatibility state cannot drive stage-memory or ET
    acceptance when authoritative same-pass lineage exists.
-6. Reject missing, non-finite, or out-of-range ET inputs/outputs with typed
+6. Apply baseline post-ET lower-layer upper-limit redistribution before
+   aggregate storage writeback and before WB19 drainage/lateral phases consume
+   `wb18_perc_theta_####`.
+7. Reject missing, non-finite, or out-of-range ET inputs/outputs with typed
    hard-fail status; no silent fallback/clamping/defaulting paths are permitted.
 
 ## Branch and Guard Table (WB17 ET Kernel)
@@ -189,6 +198,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `BR-EVAP-WB11-PMET-SEED` | `pmetpara.mode.iflget != 1` | PMET sidecar selector, crop lookup, `kcb`, `rawp`, climate forcing used by `evappm` | runtime + governance | must execute baseline-authoritative `evappm` demand seeding or remain explicit `HOLD`; no PT fallback or coefficient-tuned proxy |
 | `BR-EVAP-WB11-PMET-MIGRATED-SEED` | `pmetpara.mode.iflget != 1` after HPHYS0263 migration | `rad`, `radpot` or `deglat` + calendar date for baseline `sunmap` derivation, `tmax`, `tmin`, `tdpt`, `vwind`, `elevm`, `canhgt`, `lai`, `rtd`, `kcb`, `rawp`, `st(i)`, `thetfc(i)`, `thetdr(i)`, `solthk(i)`, `dg(i)`, `fin`, `resint` | runtime | compute `wb11_et_demand` from pinned `evappm.for:181-388` subset, publish non-negative PMET components, publish positive `pmet.es_storage_return_m` when negative `es` condensation must return to top-layer storage, canonicalize negative raw `ep` to zero demand, and label actual branch `evappm_pmet` |
 | `BR-EVAP-WB17-PMET-COMPONENT-SEAM` | `wb11_et_seed_branch_evappm = 1` | `pmet.es_m`, `pmet.ep_m`, optional `pmet.es_storage_return_m`, `wb17_residue_interception`, `wb18_perc_theta_####`, `dg_####` | runtime | consume PMET `es`/`ep` components as the WB17 ET-phase boundary; publish `Etp = pmet.ep_m` for later `swu`, derive `Es`/`Er` from non-negative `pmet.es_m`, apply non-negative `pmet.es_storage_return_m` to top-layer `wb18_perc_theta_0001` before soil extraction, reject material negative `pmet.es_m` while snapping only within-tolerance negative roundoff to zero, and skip Priestley-Taylor/LAI re-partition |
+| `BR-EVAP-WB17-POST-ET-UL` | after WB17 soil extraction before aggregate writeback | `wb18_perc_theta_####`, `wb18_perc_ul_####`, optional `wb18_perc_frzw_####`, same-pass WB14/WB12 outside-water lineage | runtime | move lower-layer excess upward using baseline `watbal_hourly.for:564-590` cap semantics; reject malformed caps/frozen-water domains; do not discard excess or publication-compensate aggregate storage |
 | `BR-EVAP-WB11-MISSING` | required ET symbol absent | ET required symbols | runtime | typed hard-fail (`HKERNEL-WB11-ET-E-001`) |
 | `BR-EVAP-WB11-NONFINITE` | ET symbol is NaN/Inf | ET required symbols | runtime | typed hard-fail (`HKERNEL-WB11-ET-E-002`) |
 | `BR-EVAP-WB11-DOMAIN` | ET symbol/derived flux outside domain bounds | ET required + emitted symbols | runtime | typed hard-fail (`HKERNEL-WB11-ET-E-003`) |
@@ -222,6 +232,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | INV-EVAP-023 | HPHYS0265 first-large longer-season `Ep` divergence localization invariant: after HPHYS0264 PMET seam closure, any residual ownership claim for seasonal `Ep` must be backed by multi-day H1/H7/H39 trace evidence at the first candidate/baseline WAT row where `|candidate Ep - baseline Ep| > 0.05 mm`. Evidence must include seed branch, `pmet.ep_m`, WB17 `Etp`, final `Ep`, `ΣUi`, `Ws`, `pltol`, effective `pltol`, `rtd`, `lai`, layer `Ui`, layer storage-to-threshold ratios, and same-day storage/snow/runoff/percolation/lateral terms. If WB17 identities close but candidate `Ep` still differs from baseline, closure may not assign the residual to WB17 publication or the PMET seam; it must classify the residual as upstream demand/growth/storage/snow-runoff coupling until baseline-authoritative evidence identifies a narrower defect. | governance-hold | REF-EVAP-LEGACY-PMET-SEAM, REF-EVAP-LEGACY-SWU, INV-EVAP-018, INV-EVAP-021, INV-EVAP-022, SC-WATBAL-001#INV-WATBAL-051 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-024 | HPHYS0267 post-lateral/pre-SWU stress-threshold invariant: seasonal `Ep` residual ownership claims after HPHYS0266 must expose WB17 stress inputs on the same post-lateral state consumed by `swu`: `Etp`, final `Ep`, `ΣUi`, `Ws`, effective `pltol`, `ul_i`, `pltol*ul_i`, post-lateral `theta_i`, storage-to-threshold ratios, and any overlapping WB19 lateral withdrawal layers. If WB17 identities close on the post-lateral state, production WB17 changes require baseline-authoritative evidence that the consumed storage or threshold inputs differ from pinned `swu.for` lineage; heuristic stress rescaling is invalid. | governance-hold | INV-EVAP-023, INV-EVAP-019, REF-EVAP-LEGACY-SWU, SC-SUBHYD-001#INV-SUBHYD-031, SC-WATBAL-001#INV-WATBAL-053 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-EVAP-025 | HPHYS0281 EVAPPM condensation-return invariant: when the migrated PMET seed computes negative `es`/`potes` under pinned `evappm.for:461-472` condensation semantics, production must not publish material-negative `pmet.es_m` or hide the quantity through output clamping. The producer must publish `pmet.es_m = 0` plus positive `pmet.es_storage_return_m = -es_raw`, and the WB17 ET phase must add that return to top-layer `wb18_perc_theta_0001` before residue split and soil extraction. When the same condensation regime produces negative raw `ep`, production must publish non-negative `pmet.ep_m = 0` and `wb11_et_demand = 0` rather than forwarding negative transpiration demand; this `ep` canonicalization is an openWEPP guard-consistency decision under semantic-not-bit parity, not a bit-faithful baseline clamp port. The existing WB11 guards against material-negative `pmet.es_m` and `pmet.ep_m` remain authoritative. | hard-fail | REF-EVAP-LEGACY-PMET-SEAM, INV-EVAP-021, INV-EVAP-022, SC-WATBAL-001#INV-WATBAL-050 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-EVAP-026 | HPHYS0286 post-ET upper-limit redistribution invariant: WB17 ET phase completion must preserve baseline `watbal_hourly.for:564-590` retention semantics by moving any lower-layer `st(i)`/`wb18_perc_theta_i` above its active upper cap into the next higher layer before WB19 drainage/lateral and before aggregate storage publication. The active cap is `max(ul(i)-frzw(i),0)` when same-pass outside water is present (`fin > 1.0e-6`) and `ul(i)` otherwise. This seam must conserve layer liquid storage across the redistribution, except for prior ET extraction, and cannot be replaced by a discard clamp, scalar `wb11_soil_water` correction, or publication-only WB13 compensation. | hard-fail | REF-EVAP-LEGACY-POST-ET-UL, INV-EVAP-015, SC-PERC-001#INV-PERC-018, SC-WATBAL-001#INV-WATBAL-061 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -251,6 +262,7 @@ WB17 mutates ET boundary surfaces deterministically:
 | `INV-EVAP-022` | runtime + governance | PMET seam validator spanning `wb11_et_seed_branch_evappm`, `pmet.es_m`, `pmet.ep_m`, ET-phase `Es`/`Er`, pre-SWU `Etp`, post-SWU `Ep`, and branch proof | Typed hard error / explicit `HOLD` when PMET mode reuses PT partition, omits `pmet.es_m`, or claims final `Ep` before SWU root uptake | HPHYS0264 PMET seam correction gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-023` | governance | First-large longer-season `Ep` divergence classifier spanning candidate/baseline WAT rows and multi-day trace `pmet.ep_m`/`Etp`/`Ep`/`Ui`/`Ws`/plant/storage context | Explicit `HOLD` when seasonal `Ep` ownership is assigned without first-divergence evidence, or when WB17 identities close but ownership is still assigned to WB17 publication/PMET seam | HPHYS0265 first-divergence localization gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-EVAP-024` | governance | Post-lateral/pre-SWU stress-threshold classifier spanning `Etp`, `Ep`, `ΣUi`, `Ws`, effective `pltol`, `ul_i`, `pltol*ul_i`, post-lateral `theta_i`, and WB19 withdrawal overlap | Explicit `HOLD` when WB17 identities close and no baseline-authoritative stress-threshold defect is proven | HPHYS0267 stress-threshold lineage gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-EVAP-026` | runtime + governance | Post-ET lower-layer upper-limit redistribution before WB19 and aggregate writeback | Typed hard error / explicit `HOLD` when lower-layer excess remains below WB19, is discarded, or uses stale/non-authoritative outside-water/frozen-water lineage | HPHYS0286 layer-retention/WB17-WB18 coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -406,6 +418,9 @@ Minimum WB17 ET production-kernel conformance vectors:
     aggregate `UPi`/`Ui`, layer `UPi_####`/`Ui_####`, final `Ep`, `Etp`,
     `Ws`, and post-uptake layer storage from the post-`PlantRootUptake`
     writeback surface.
+11. HPHYS0286 post-ET retention vector proves lower-layer excess above `UL`
+    moves upward before aggregate writeback, and a positive same-pass
+    outside-water vector proves `UL-frzw` cap behavior without storage discard.
 
 ## WB13 Daily Output Coupling Addendum
 
@@ -599,6 +614,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-04` | `25` | `Codex` | HPHYS0286 amendment: added `INV-EVAP-026` requiring baseline `watbal_hourly.for` post-ET lower-layer upper-limit redistribution before WB19 and aggregate storage publication. |
 | `2026-06-03` | `15` | `Codex` | HPHYS0262 amendment: added `INV-EVAP-020` requiring PMET sidecar, selected `kcb`/`rawp`, fallback status, and actual ET-demand seed-branch lineage before closing H1/H7/H39 `Ep` magnitude residuals; baseline `evappm.for` migration is required for PMET closure. |
 | `2026-06-03` | `16` | `Codex` | HPHYS0263 amendment: added `INV-EVAP-021` and `REF-EVAP-LEGACY-PMET-DEMAND` requiring the pinned `evappm.for:181-388` PMET demand subset to seed WB11 demand when `pmetpara.mode.iflget != 1`, with intermediate trace diagnostics and no PT/proxy substitution. |
 | `2026-06-03` | `17` | `Codex` | HPHYS0263 amendment: added `REF-EVAP-LEGACY-SUNMAP-RADPOT` and required `radpot` to be runtime-provided or derived from pinned `sunmap.for:181-234` before EVAPPM `rso` computation. |

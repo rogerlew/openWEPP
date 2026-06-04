@@ -1,4 +1,37 @@
 impl Wb11HydrologyKernel {
+    fn resolve_snow_partition_terms(
+        phase_class: HillslopeKernelPhaseClass,
+        hyetograph_rainfall: f64,
+        snow_coupling: &SnowCouplingOutcome,
+    ) -> Result<(f64, f64), Wb11HydrologyKernelGuardError> {
+        let runoff_snow_term = snow_coupling.signed_s
+            + snow_coupling.accumulation
+            + snow_coupling.rain_retained
+            + snow_coupling.rain_released;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.routed_melt_m"),
+            runoff_snow_term,
+            Some(0.0),
+            None,
+        )?;
+        let hyetograph_liquid_input_raw = hyetograph_rainfall
+            - snow_coupling.accumulation
+            - snow_coupling.rain_retained
+            - snow_coupling.rain_released;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_RAINFALL_INPUT,
+            hyetograph_liquid_input_raw,
+            Some(0.0),
+            None,
+        )?;
+        let hyetograph_liquid_input =
+            Self::normalize_non_negative_within_tolerance(hyetograph_liquid_input_raw);
+
+        Ok((runoff_snow_term, hyetograph_liquid_input))
+    }
+
     #[allow(clippy::too_many_lines)]
     fn solve_ponded_cumulative_infiltration(
         phase_class: HillslopeKernelPhaseClass,
@@ -402,19 +435,7 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let runtime_swe = Self::optional_state_scalar(
-            request,
-            phase_class,
-            WB14_SYMBOL_SNOW_RUNTIME_SWE,
-        )?
-        .unwrap_or(0.0);
-        if !runtime_swe.is_finite() {
-            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                value: runtime_swe,
-            });
-        }
+        let runtime_swe = Self::validate_runtime_snow_state_domains(request, phase_class)?;
         if hyetograph_rainfall <= WB11_ZERO_THRESHOLD
             && irrigation_depth_m <= WB11_ZERO_THRESHOLD
             && runtime_swe <= WB11_ZERO_THRESHOLD
@@ -430,6 +451,7 @@ impl Wb11HydrologyKernel {
                 signed_s: 0.0,
                 accumulation: 0.0,
                 rain_retained: 0.0,
+                rain_released: 0.0,
                 runtime_swe: 0.0,
                 runtime_depth_m: 0.0,
                 runtime_density_kg_m3: 0.0,
@@ -437,26 +459,8 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
-        let runoff_snow_term =
-            snow_coupling.signed_s + snow_coupling.accumulation + snow_coupling.rain_retained;
-        Self::require_dynamic_state_range(
-            phase_class,
-            BoundarySymbol::from("snow.routed_melt_m"),
-            runoff_snow_term,
-            Some(0.0),
-            None,
-        )?;
-        let hyetograph_liquid_input_raw =
-            hyetograph_rainfall - snow_coupling.accumulation - snow_coupling.rain_retained;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_RAINFALL_INPUT,
-            hyetograph_liquid_input_raw,
-            Some(0.0),
-            None,
-        )?;
-        let hyetograph_liquid_input =
-            Self::normalize_non_negative_within_tolerance(hyetograph_liquid_input_raw);
+        let (runoff_snow_term, hyetograph_liquid_input) =
+            Self::resolve_snow_partition_terms(phase_class, hyetograph_rainfall, &snow_coupling)?;
 
         let interception =
             Self::compute_canopy_interception_depth(request, phase_class, hyetograph_liquid_input)?;
@@ -685,6 +689,7 @@ impl Wb11HydrologyKernel {
 
         let mut layer_storage = Vec::with_capacity(layer_count);
         let mut layer_depth = Vec::with_capacity(layer_count);
+        let mut layer_upper_limit = Vec::with_capacity(layer_count);
         for layer_index in 1..=layer_count {
             let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
             let theta =
@@ -707,8 +712,22 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
 
+            let ul_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
+            let layer_ul =
+                Self::require_state_scalar_for_symbol(request, phase_class, &ul_symbol)?;
+            if layer_ul <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ul_symbol,
+                    value: layer_ul,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
             layer_storage.push(theta);
             layer_depth.push(dg);
+            layer_upper_limit.push(layer_ul);
         }
 
         let mut stage_state_updates = Vec::new();
@@ -716,6 +735,21 @@ impl Wb11HydrologyKernel {
             Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)?
         } else {
             None
+        };
+        let post_et_outside_water_depth = if let Some(infiltration) = same_pass_infiltration {
+            infiltration
+        } else {
+            let infiltration =
+                Self::optional_state_scalar(request, phase_class, WB12_SYMBOL_INFILTRATION)?
+                    .unwrap_or(0.0);
+            Self::require_state_range(
+                phase_class,
+                WB12_SYMBOL_INFILTRATION,
+                infiltration,
+                Some(0.0),
+                None,
+            )?;
+            infiltration
         };
         let pmet_component_mode = evappm_pmet_components.is_some();
         let (soil_evaporation_with_residue, transpiration_partition_potential) =
@@ -996,6 +1030,14 @@ impl Wb11HydrologyKernel {
         }
         let soil_evaporation_actual =
             soil_evaporation_extraction_demand - remaining_soil_evaporation;
+
+        Self::apply_post_et_upper_limit_redistribution(
+            request,
+            phase_class,
+            &mut layer_storage,
+            &layer_upper_limit,
+            post_et_outside_water_depth > 1.0e-6,
+        )?;
 
         let soil_water_after =
             Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
@@ -1586,6 +1628,78 @@ impl Wb11HydrologyKernel {
                 None,
             )?;
         }
+        Ok(())
+    }
+
+    fn apply_post_et_upper_limit_redistribution(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        theta: &mut [f64],
+        upper_limit: &[f64],
+        outside_water_active: bool,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if theta.len() != upper_limit.len() || theta.is_empty() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("nsl"),
+                value: Self::diagnostic_count_to_f64(theta.len()),
+                minimum: Some(1.0),
+                maximum: Some(Self::diagnostic_count_to_f64(upper_limit.len())),
+            });
+        }
+
+        let frozen_water = if outside_water_active {
+            Some(Self::wb19_frozen_water_by_layer(request, phase_class, theta.len())?)
+        } else {
+            None
+        };
+
+        for index in (1..theta.len()).rev() {
+            let layer_upper_limit = upper_limit[index];
+            if layer_upper_limit <= WB11_ZERO_THRESHOLD || !layer_upper_limit.is_finite() {
+                let ul_symbol = Self::wb18_perc_state_symbol("ul", index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: ul_symbol,
+                    value: layer_upper_limit,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+
+            let active_cap = if let Some(frozen_water_by_layer) = &frozen_water {
+                (layer_upper_limit - frozen_water_by_layer[index]).max(0.0)
+            } else {
+                layer_upper_limit
+            };
+            if !active_cap.is_finite() {
+                let cap_symbol = Self::wb18_perc_state_symbol("ul", index + 1);
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: cap_symbol,
+                    value: active_cap,
+                    minimum: Some(0.0),
+                    maximum: Some(layer_upper_limit),
+                });
+            }
+
+            if theta[index] > active_cap + WB11_ZERO_THRESHOLD {
+                let excess = theta[index] - active_cap;
+                theta[index] = active_cap;
+                theta[index - 1] += excess;
+
+                for affected_index in [index - 1, index] {
+                    Self::require_state_range_for_symbol(
+                        phase_class,
+                        &Self::wb18_perc_state_symbol("theta", affected_index + 1),
+                        theta[affected_index],
+                        Some(0.0),
+                        None,
+                    )?;
+                }
+            }
+        }
+
         Ok(())
     }
 
@@ -3857,19 +3971,7 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let runtime_swe = Self::optional_state_scalar(
-            request,
-            phase_class,
-            WB14_SYMBOL_SNOW_RUNTIME_SWE,
-        )?
-        .unwrap_or(0.0);
-        if !runtime_swe.is_finite() {
-            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                value: runtime_swe,
-            });
-        }
+        let runtime_swe = Self::validate_runtime_snow_state_domains(request, phase_class)?;
         let active_snow_coupling = if hyetograph_rainfall <= WB11_ZERO_THRESHOLD
             && irrigation_depth_m <= WB11_ZERO_THRESHOLD
             && runtime_swe <= WB11_ZERO_THRESHOLD
@@ -3885,6 +3987,7 @@ impl Wb11HydrologyKernel {
                 signed_s: 0.0,
                 accumulation: 0.0,
                 rain_retained: 0.0,
+                rain_released: 0.0,
                 runtime_swe: 0.0,
                 runtime_depth_m: 0.0,
                 runtime_density_kg_m3: 0.0,
@@ -3892,26 +3995,8 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
-        let runoff_snow_term =
-            snow_coupling.signed_s + snow_coupling.accumulation + snow_coupling.rain_retained;
-        Self::require_dynamic_state_range(
-            phase_class,
-            BoundarySymbol::from("snow.routed_melt_m"),
-            runoff_snow_term,
-            Some(0.0),
-            None,
-        )?;
-        let hyetograph_liquid_input_raw =
-            hyetograph_rainfall - snow_coupling.accumulation - snow_coupling.rain_retained;
-        Self::require_state_range(
-            phase_class,
-            WB12_SYMBOL_RAINFALL_INPUT,
-            hyetograph_liquid_input_raw,
-            Some(0.0),
-            None,
-        )?;
-        let hyetograph_liquid_input =
-            Self::normalize_non_negative_within_tolerance(hyetograph_liquid_input_raw);
+        let (runoff_snow_term, hyetograph_liquid_input) =
+            Self::resolve_snow_partition_terms(phase_class, hyetograph_rainfall, &snow_coupling)?;
 
         let interception =
             Self::compute_canopy_interception_depth(request, phase_class, hyetograph_liquid_input)?;
@@ -4159,6 +4244,13 @@ impl Wb11HydrologyKernel {
                     phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_RAIN_RETAINED_ROOT, hourly.hour),
                     hourly.rain_retained_m,
+                    Some(0.0),
+                    None,
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
+                    Self::hourly_symbol(SNOW_HOURLY_RAIN_RELEASED_ROOT, hourly.hour),
+                    hourly.rain_released_m,
                     Some(0.0),
                     None,
                 )?);

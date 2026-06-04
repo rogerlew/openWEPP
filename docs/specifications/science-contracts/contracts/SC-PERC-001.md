@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 26
+contract_version: 27
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -64,6 +64,7 @@ Out of scope:
 | REF-PERC-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative hourly bottom-layer restrictive seepage lineage: hourly bottom layer sets `meblfc=1` and forces `fx=1`, `perc` assigns bottom restrictive conductivity via `kslast`, computes thickness-weighted `sscz = (dg(i)+ui_bdrkth)/(dg(i)/ssc(i)+ui_bdrkth/ssc(i+1))`, `purk` mutates `st` and remembers bottom seepage as `sep/ui_LFtstp`, and `watbal_hourly` accumulates `deepSeep += sep`. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-LOWER-SAT-CLAMP | `/workdir/wepp-forest_260430_baseline/src/perc.for:143-158,186-188`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative lower-layer saturation attenuation: non-bottom `stu = (st(i+1)+frzw(i+1))/ul(i+1)` is capped to `0.95` before `cr = sqrt(1-stu)` and before `sep = min(vv, 86400*fx*sscz*cr)`, so over-UL lower storage throttles percolation by `sqrt(0.05)` instead of causing a hard failure. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-HOURLY-FIN | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,471-479,494-516,520-524`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative same-pass liquid input lineage: `fin = rain - interception + wmelt + irrigation`, hourly `xfin = fin/24 + carry`, one-layer ingress into `st(1)`, and multi-layer top-down distribution where `tmpvr1 = xfin * dg(i) / tillay(2)` before `st(i) = st(i) + tmpvr1` until remaining `xfin` is exhausted. | `[DIRECT][Static]` |
+| REF-PERC-LEGACY-HOURLY-POSTET-UL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:564-590`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative post-ET layer retention seam: after final-hour ET and before drainage/lateral routing, lower layers with `st(i)` above the active cap move excess to `st(i-1)`; with outside water (`fin > 1.0e-6`) the cap is `max(ul(i)-frzw(i),0)`, otherwise the cap is `ul(i)`. | `[DIRECT][Static]` |
 | REF-PERC-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative fluxes, finite conductivity/travel-time domains, and bounded storage fractions for physical plausibility. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -98,7 +99,7 @@ Out of scope:
 |---|---|
 | Scheduler phase metadata | `phase_name`, `phase_class`, `consumer_adapter` |
 | Percolation consumer-boundary state family | `wb11_nsl` (legacy `nsl` fallback), `wb19_thetdr`, `wb19_thetfc`, `ssc` |
-| WB18 percolation state inputs | `wb11_soil_water`, `wb12_infiltration`/same-pass WB14 snowmelt forcing lineage when active routed melt is present, `management.initial.params.tillay2_m`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, `wb18_perc_ssc_####`, `wb19_thetdr_####`, `wb19_dg_####` (legacy generic `thetdr_####`/`dg_####` accepted for fixture compatibility), optional `wb18_perc_frozen_depth_####`, optional `wb18_perc_lane_substeps`, optional `slflag`, optional `kslast`, optional `ui_bdrkth` |
+| WB18 percolation state inputs | `wb11_soil_water`, `wb12_infiltration`/same-pass WB14 snowmelt forcing lineage when active routed melt is present, `management.initial.params.tillay2_m`, `wb18_perc_theta_####`, `wb18_perc_fc_####`, `wb18_perc_ul_####`, optional `wb18_perc_frzw_####` for the post-ET outside-water cap, `wb18_perc_ssc_####`, `wb19_thetdr_####`, `wb19_dg_####` (legacy generic `thetdr_####`/`dg_####` accepted for fixture compatibility), optional `wb18_perc_frozen_depth_####`, optional `wb18_perc_lane_substeps`, optional `slflag`, optional `kslast`, optional `ui_bdrkth` |
 
 ### Required Outputs
 
@@ -229,6 +230,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | INV-PERC-015 | HPHYS0260 WB18 trace-localization invariant: residual ownership claims for H1/H7/H39 `Dp`, `Total-Soil`, or `SoilWaterTotal` must consume trace-grade post-WB18 and final-storage evidence for `D`, `Pe`, `wb18_perc_pei_####`, `wb18_perc_theta_####`, `wb19_thetdr_####`, `wb19_dg_####`, optional `wb18_perc_frozen_depth_####`, and aggregate `wb11_soil_water`. Trace classification must preserve the baseline aggregate relation `watcon = Σ(st(i) + thetdr(i)*(dg(i)-frozen(i)))` and the WB18 publication relation `D = Pe` for bottom-layer loss, without collapsing `D` to `Σpei_####`. | hard-fail | REF-PERC-LEGACY-SOILW, REF-PERC-LEGACY-HOURLY-BOTK, REF-PERC-CH5-BAL, INV-PERC-013, INV-PERC-014, SC-WATBAL-001#INV-WATBAL-046 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-016 | HPHYS0283 active-snowmelt infiltration-to-layer invariant: when routed snowmelt (`wmelt`) is present, WB18 percolation must consume the same-pass WB14/WB12 infiltration lineage as top-down `fin/xfin` ingress to `st(i)`/`wb18_perc_theta_i` before percolation routing and aggregate `watcon` recomputation. Evidence that publishes `wb12_infiltration` or reduces `Q` without increasing layer/aggregate storage remains a hard storage-collapse defect for active snowmelt events. Full direct-rain `fin/xfin` ingress remains baseline authority but is outside the HPHYS0283 snowmelt-specific closure claim unless separately promoted by a follow-on package. | hard-fail | REF-PERC-LEGACY-HOURLY-FIN, REF-PERC-LEGACY-SOILW, SC-SNOWFREEZE-001#INV-SNOWFREEZE-018, SC-RUNOFFPART-001#INV-RUNOFFPART-015, SC-WATBAL-001#INV-WATBAL-058 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-017 | HPHYS0285 local-liquid same-pass infiltration-to-layer invariant: WB18 percolation must consume the same-pass WB14/WB12 infiltration lineage from positive local `fin/xfin` liquid supply before percolation routing and aggregate `watcon` recomputation, regardless of whether the local supply originated as direct rain, routed snowmelt, or irrigation. Active-snow state may alter the local liquid supply calculation, but it cannot gate whether positive same-pass infiltration mutates `st(i)`/`wb18_perc_theta_i`; inactive stale snow state also cannot hard-fail non-snow liquid ingress before the active-snow predicate is satisfied. In hourly lanes, the storage-ingress increment follows baseline `xfin = fin/ui_LFtstpF` cadence and is applied per substep before that substep's percolation, not as a single daily pulse before the 24-substep loop. Evidence that publishes non-zero local `wb12_infiltration` while leaving layer/aggregate storage unchanged is a hard spring soil-retention defect. MOFE carry/runon infiltration remains governed by existing carry-array invariants and requires separate closure evidence before promotion under HPHYS0285. Active snowpack domain failures remain owned by `SC-SNOWFREEZE-001`. | hard-fail | REF-PERC-LEGACY-HOURLY-FIN, REF-PERC-LEGACY-SOILW, SC-RUNOFFPART-001#INV-RUNOFFPART-016, SC-WATBAL-001#INV-WATBAL-060 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-018 | HPHYS0286 post-ET layer-retention invariant: after WB17 soil evaporation mutates `st(i)`/`wb18_perc_theta_i` and before WB19 drainage/lateral consumers read layer state, lower layers `i=nsl..2` must not remain above the baseline active upper cap. Excess storage moves upward into `i-1`; when same-pass outside water is active (`fin > 1.0e-6`, represented by authoritative WB14/WB12 local-liquid infiltration lineage), the lower-layer cap is `max(ULi-frzw_i,0)`, otherwise it is `ULi`. This is baseline-authoritative retention/coupling behavior, not a heuristic capacity clamp; the top layer can receive routed excess and separate surface-saturation routing owns any later top-layer overflow. | hard-fail | REF-PERC-LEGACY-HOURLY-POSTET-UL, REF-PERC-LEGACY-HOURLY-FIN, SC-EVAP-001#INV-EVAP-026, SC-WATBAL-001#INV-WATBAL-061 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -251,6 +253,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | `INV-PERC-015` | runtime + governance | WB18 trace-localization validator spanning `D`/`Pe`, per-layer `pei`, per-layer `st`, residual/depth/frozen aggregate components, and final aggregate `wb11_soil_water` | Typed hard error / explicit `HOLD` when trace evidence omits required WB18/storage maps, when `D`/`Pe` or aggregate storage identities do not reconcile, or when residual ownership is assigned without trace-grade evidence | HPHYS0260 WB18/storage residual-classification gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-016` | runtime + governance | WB18 active-snowmelt same-pass infiltration ingress before percolation, layer-state writeback, and aggregate `wb11_soil_water` recomputation | Typed hard error / explicit `HOLD` when routed melt/infiltration is absent from layer storage or is deferred to publication-only compensation | HPHYS0283 spring storage-collapse gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PERC-017` | runtime + governance | WB18 local-liquid same-pass infiltration ingress before percolation, layer-state writeback, and aggregate `wb11_soil_water` recomputation | Typed hard error / explicit `HOLD` when positive WB12/WB14 same-pass infiltration is active-snow-gated, absent from layer storage, or deferred to publication-only compensation | HPHYS0285 spring soil-retention gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PERC-018` | runtime + governance | Post-WB17/pre-WB19 lower-layer upper-limit redistribution over `wb18_perc_theta_####`, `wb18_perc_ul_####`, optional `wb18_perc_frzw_####`, and same-pass outside-water lineage | Typed hard error / explicit `HOLD` when lower layers remain above the baseline active cap before WB19 or when excess is discarded/publication-compensated instead of moved upward | HPHYS0286 layer-retention/WB17-WB18 coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -262,6 +265,7 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 | `Θi` | `wb18_perc_theta_####` | per-layer moisture state consumed and mutated by WB18 percolation routing | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `FCi` | `wb18_perc_fc_####` | per-layer field-capacity threshold surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ULi` | `wb18_perc_ul_####` | per-layer upper-limit storage surfaces | `m` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `frzw(i)` | `wb18_perc_frzw_####` | optional frozen-water storage used by the post-ET outside-water upper-limit cap `max(ULi-frzw_i,0)` | `m` preserved | `[DIRECT][Static]` |
 | `Ksi` | `wb18_perc_ssc_####` | per-layer saturated hydraulic conductivity surfaces | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Ksbot` | `kslast` | restrictive-layer conductivity used by daily bottom-layer branch when `slflag=1` | `m s^-1` preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Bbot` | `ui_bdrkth` | restrictive-layer thickness used by hourly bottom-layer thickness-weighted branch when `slflag=1` | `m` preserved | `[DIRECT][Static]` |
@@ -408,6 +412,11 @@ Minimum WB18 percolation production-kernel conformance vectors:
    missing/non-finite/domain-invalid for WB18 aggregate writeback, the phase
    must return typed `HKERNEL-WB11-PERC-E-001..003` failure rather than silently
    defaulting the residual component to zero.
+10. HPHYS0286 post-ET cap vector: a two-layer ET-phase surface with lower-layer
+    `wb18_perc_theta_0002 > wb18_perc_ul_0002` must write back layer 2 at the
+    baseline active cap and move the excess to layer 1 without changing
+    aggregate storage except for actual ET extraction; a positive same-pass
+    outside-water vector must use `max(UL-frzw,0)` for the lower-layer cap.
 10. HPHYS0260 trace-localization vector proves opt-in trace rows serialize
     `D`, `Pe`, `wb18_perc_pei_####`, `wb18_perc_theta_####`,
     `wb19_thetdr_####`, `wb19_dg_####`, optional
@@ -631,6 +640,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-04` | `27` | `Codex` | HPHYS0286 amendment: added baseline-authoritative post-ET lower-layer upper-limit redistribution (`watbal_hourly.for:564-590`) with `fin > 1e-6` frozen-water cap semantics before WB19 drainage/lateral consumers. |
 | `2026-06-04` | `26` | `Codex` | HPHYS0285 amendment: promoted local-liquid `fin/xfin` same-pass infiltration ingress authority so WB18 layer storage cannot be gated by active snow state when direct rain, irrigation, or routed melt infiltrates; hourly ingress uses baseline per-substep `xfin = fin/ui_LFtstpF` cadence. MOFE carry/runon ingress remains follow-up scope. |
 | `2026-06-04` | `25` | `Codex` | HPHYS0283 amendment: added same-pass `fin/xfin` infiltration ingress authority requiring routed snowmelt/infiltration to mutate WB18 layer storage before percolation and aggregate `watcon` recomputation. |
 | `2026-06-03` | `24` | `Codex` | HPHYS0260 amendment: added `INV-PERC-015` requiring trace-grade `D`/`Pe`, per-layer `pei`, layer storage, residual/depth/frozen components, and aggregate `watcon` identity evidence before assigning H1/H7/H39 `Dp`/storage residual ownership. |

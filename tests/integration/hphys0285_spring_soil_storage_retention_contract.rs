@@ -181,18 +181,18 @@ fn hphys0285_contract_direct_rain_infiltration_enters_profile_storage() {
 }
 
 #[test]
-fn hphys0285_contract_inactive_stale_snow_state_does_not_gate_direct_rain_ingress() {
+fn hphys0285_contract_inactive_snow_options_do_not_gate_direct_rain_ingress() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
     let scheduler = HillslopePhaseScheduler::canonical();
     let mut kernel = Wb11HydrologyKernel;
     let mut surface = direct_rain_surface();
-    insert_state(&mut surface, "snow.runtime_swe", -0.002);
+    insert_state(&mut surface, "snow.runtime_swe", 0.0);
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("inactive stale snow state should not block non-snow ingress");
+        .expect("inactive snow options should not block non-snow ingress");
 
     assert!(
         report.scheduler_report.is_success(),
@@ -215,16 +215,16 @@ fn hphys0285_contract_inactive_stale_snow_state_does_not_gate_direct_rain_ingres
 
     assert!(
         (infiltration - RAINFALL_DEPTH_M).abs() <= 1.0e-6,
-        "inactive snow state must not suppress direct-rain infiltration; infiltration={infiltration}"
+        "inactive snow options must not suppress direct-rain infiltration; infiltration={infiltration}"
     );
     assert!(
         soil_water > 10.0 + 0.5 * RAINFALL_DEPTH_M,
-        "inactive snow state must not suppress WB18/WB11 storage ingress; soil_water={soil_water}"
+        "inactive snow options must not suppress WB18/WB11 storage ingress; soil_water={soil_water}"
     );
 }
 
 #[test]
-fn hphys0285_contract_dry_cold_stale_snow_state_does_not_gate_percolation() {
+fn hphys0285_contract_dry_cold_zero_snow_state_does_not_gate_percolation() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
         validate_pre_execution_topology(&graph).expect("topology report should build");
@@ -240,7 +240,7 @@ fn hphys0285_contract_dry_cold_stale_snow_state_does_not_gate_percolation() {
         ("snow.options.rst", -1.0),
         ("snow.options.newsnw", 100.0),
         ("snow.options.ssd", 350.0),
-        ("snow.runtime_swe", -0.002),
+        ("snow.runtime_swe", 0.0),
         ("tmax", -2.0),
         ("tmin", -4.0),
     ] {
@@ -249,7 +249,7 @@ fn hphys0285_contract_dry_cold_stale_snow_state_does_not_gate_percolation() {
 
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
-        .expect("dry no-event stale snow state should not block percolation");
+        .expect("dry no-event zero snow state should not block percolation");
 
     assert!(
         report.scheduler_report.is_success(),
