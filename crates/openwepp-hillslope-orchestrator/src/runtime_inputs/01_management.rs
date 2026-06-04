@@ -152,6 +152,18 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
             validate_projection_non_negative("rrinit_seed", 0, 0, initial_data.residue_line[3])?;
         let rspace_seed =
             validate_projection_non_negative("rspace_seed", 0, 0, initial_data.residue_line[4])?;
+        let tillay1_seed = validate_projection_non_negative(
+            "tillay1_seed",
+            0,
+            0,
+            initial_data.thaw_line[2],
+        )?;
+        let tillay2_seed = validate_projection_non_negative(
+            "tillay2_seed",
+            0,
+            0,
+            initial_data.thaw_line[3],
+        )?;
         let width_seed =
             validate_projection_non_negative("width_seed", 0, 0, initial_data.thaw_line[4])?;
 
@@ -243,6 +255,14 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         pl_growth_surface.insert(
             slope_ofe_symbol("rspace", ofe_index),
             BoundaryValue::scalar(rspace_seed),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("tillay1_m", ofe_index),
+            BoundaryValue::scalar(tillay1_seed),
+        );
+        pl_growth_surface.insert(
+            pl_growth_ofe_symbol("tillay2_m", ofe_index),
+            BoundaryValue::scalar(tillay2_seed),
         );
         pl_growth_surface.insert(
             slope_ofe_symbol("width", ofe_index),
@@ -341,6 +361,14 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
             pl_growth_surface.insert(
                 BoundarySymbol::from("rspace"),
                 BoundaryValue::scalar(rspace_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("management.initial.params.tillay1_m"),
+                BoundaryValue::scalar(tillay1_seed),
+            );
+            pl_growth_surface.insert(
+                BoundarySymbol::from("management.initial.params.tillay2_m"),
+                BoundaryValue::scalar(tillay2_seed),
             );
             pl_growth_surface.insert(
                 BoundarySymbol::from("width"),

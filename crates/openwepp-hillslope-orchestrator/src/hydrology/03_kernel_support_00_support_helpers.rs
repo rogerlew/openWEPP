@@ -4177,7 +4177,7 @@ impl Wb11HydrologyKernel {
         Ok(interception)
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn compute_coupled_infiltration_depth(
         phase_class: HillslopeKernelPhaseClass,
         infiltration_conductivity: f64,
@@ -4185,9 +4185,32 @@ impl Wb11HydrologyKernel {
         times: &[f64],
         intensities: &[f64],
         rainfall_scale: f64,
+        snowmelt_depth_m: f64,
         irrigation_rate_m_per_s: f64,
         irrigation_duration_s: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.routed_melt_m"),
+            snowmelt_depth_m,
+            Some(0.0),
+            None,
+        )?;
+        let event_duration = if times.len() >= 2 {
+            times[times.len() - 1] - times[0]
+        } else {
+            0.0
+        };
+        if snowmelt_depth_m > WB11_ZERO_THRESHOLD && event_duration <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_HYETOGRAPH_NINTEN),
+                value: event_duration,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
         let mut cumulative_infiltration = 0.0_f64;
         for index in 0..times.len().saturating_sub(1) {
             let interval_duration = times[index + 1] - times[index];
@@ -4198,6 +4221,23 @@ impl Wb11HydrologyKernel {
                     phase_class,
                     symbol: BoundarySymbol::from(WB12_SYMBOL_RAINFALL_INPUT),
                     value: interval_rainfall,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+
+            let interval_snowmelt_depth = if snowmelt_depth_m > WB11_ZERO_THRESHOLD {
+                snowmelt_depth_m * interval_duration / event_duration
+            } else {
+                0.0
+            };
+            if !interval_snowmelt_depth.is_finite()
+                || interval_snowmelt_depth < -WB11_ZERO_THRESHOLD
+            {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow.routed_melt_m"),
+                    value: interval_snowmelt_depth,
                     minimum: Some(0.0),
                     maximum: None,
                 });
@@ -4221,7 +4261,9 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let interval_liquid_depth = interval_rainfall + interval_irrigation_depth.max(0.0);
+            let interval_liquid_depth = interval_rainfall
+                + interval_snowmelt_depth.max(0.0)
+                + interval_irrigation_depth.max(0.0);
             if interval_duration <= WB11_ZERO_THRESHOLD {
                 continue;
             }

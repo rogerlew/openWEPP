@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 26
+contract_version: 28
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-05-29
+last_reviewed: 2026-06-04
 supersedes: []
 superseded_by: []
 ---
@@ -64,6 +64,7 @@ Out of scope:
 | REF-RUNOFFPART-CH4-LIMITS | `chap4.pdf` §4.6 | Domain limitations (Hortonian-flow framing, no explicit variable-source-area/return-flow treatment, recession approximation limits). | `[DIRECT][Static]` |
 | REF-RUNOFFPART-CH5-COUPLING | `references/50201000/chap5.pdf` §5.1 Eq. [5.1.1] | Daily water-balance consumer uses runoff depth `Q` as a closure term with signed conventions preserved. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-LEGACY-HOURLY-CARRY | `/workdir/wepp-forest_260430_baseline/src/wathour.inc:26-44` and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:438-471,843-902` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | MOFE hourly upstream saturation/lateral carry arrays are part of the runoff/runon source term consumed before current-OFE runoff partition closure, and current-OFE `ui_SCrunf(ii)` surface-saturation excess is added to daily `runoff`. | `[DIRECT][Static]` |
+| REF-RUNOFFPART-LEGACY-WMELT-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` lines 342-345 and `/workdir/wepp-forest_260430_baseline/src/grna.for` lines 267-269, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Snowmelt (`wmelt`) is part of the same event water supply used by infiltration and runoff partition: `fin` includes `wmelt`, and Green-Ampt snowmelt forcing derives `smrate = wmelt / dur`. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-CH11-COUPLING | `references/50201000/chap11.pdf` chapter context + `chap4.pdf` §4.4.4 | Erosion continuity uses peak runoff and effective duration surfaces from runoff partition domain. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-RUNOFFPART-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative depth/volume/rate magnitudes (except explicitly signed intermediary comparisons) and bounded branch domains. | `[INFERENCE][Static]` |
 
@@ -131,6 +132,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-012 | HPHYS0240 runoff-carryover authority invariant: WB12/WB14 runoff partitioning must use same-pass `wb12_runoff_carryover` flux when present, use `wb12_runon_input` only as finite non-negative compatibility input when the flux is absent, and publish the resolved carryover flux into the runoff closure/output boundary. Malformed present carryover fluxes hard-fail and cannot be silently replaced by stale state. | hard-fail | REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-013 | HPHYS0241 MOFE hourly carry-array runoff invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 runoff partitioning must resolve runon from the explicit 24-slot upstream array sum `Σ(ui_SUrunf(ii) + ui_LfUrf(ii))` with required area-scaling provenance when non-zero upstream carry is present. Present aggregate `wb12_runoff_carryover` must match the array-derived value or hard-fail; missing/malformed arrays cannot fall back to daily aggregate state. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-MULTIOFE, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-014 | HPHYS0242 surface-saturation runoff addback invariant: when MOFE hourly carry arrays are enabled, WB12/WB14 runoff publication must add `surdra = Σui_SCrunf(ii)` to partition-derived runoff `Q`, use that same addback in closure residuals, and reject missing, malformed, non-finite, negative, or aggregate-only current saturation payloads. Positive top-layer saturation excess cannot remain hidden in storage or be replaced by `wb12_runoff_carryover`. | hard-fail | REF-RUNOFFPART-LEGACY-HOURLY-CARRY, REF-RUNOFFPART-CH4-RAINEX, REF-RUNOFFPART-CH5-COUPLING, REF-RUNOFFPART-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-015 | HPHYS0283 snowmelt event-forcing invariant: WB12 runoff partition must include routed snowmelt in the event liquid supply available to Green-Ampt infiltration before residual runoff is computed, and the resulting infiltration must remain available to WB18 same-pass layer ingress. A closure that adds melt to `Q`/runoff residuals while omitting it from infiltration forcing or downstream layer storage violates baseline `wmelt -> smrate/fin/xfin` semantics. | hard-fail | REF-RUNOFFPART-LEGACY-WMELT-INFIL, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-CH4-RAINEX, SC-SNOWFREEZE-001#INV-SNOWFREEZE-018, SC-PERC-001#INV-PERC-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -150,6 +152,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-012` | runtime + governance | WB12/WB14 runoff-carryover resolver and output-boundary validator | Typed hard error / explicit `HOLD` when same-pass `wb12_runoff_carryover` is ignored, malformed, or replaced by stale `wb12_runon_input` | HPHYS hourly carryover closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-013` | runtime + governance | MOFE hourly carry-array resolver, aggregate anti-shadow check, and malformed-array rejection vectors | Typed hard error / explicit `HOLD` when array-derived carry is absent/malformed, aggregate carry conflicts with arrays, or area-scaling provenance is missing for non-zero upstream carry | HPHYS MOFE hourly carry-array closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-014` | runtime + governance | WB19 current-saturation array validator plus WB12/WB14 runoff assembler | Typed hard error / explicit `HOLD` when `ui_SCrunf` is missing/malformed, current saturation addback is omitted from `Q`, or closure residuals use a different runoff value than the published flux | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-015` | runtime + governance | WB12 meltwater event-forcing assembler and infiltration/runoff residual closure | Typed hard error / explicit `HOLD` when routed melt is excluded from infiltration forcing or is double-counted in runoff closure | HPHYS0283 spring partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -230,6 +233,7 @@ runoff partition internals.
 - OBL-RUNOFFPART-P-002: Evaluate and retain event partition residuals and enforce hard-fail behavior on tolerance violation. `[INFERENCE][Static]`
 - OBL-RUNOFFPART-P-003: Apply explicit branch logic for Eq. [4.3.1], depression-storage adjustments, and multi-OFE case classification. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-RUNOFFPART-P-004: Propagate invariant violations as typed errors; no silent defaulting/clamping of hydrologic terms. `[INFERENCE][Static]`
+- OBL-RUNOFFPART-P-005: Include routed snowmelt in the event liquid supply before evaluating infiltration capacity and runoff residuals; publish `wb12_infiltration`, `Q`, and closure diagnostics from the same supply so WB18 can apply the same infiltrated liquid to layer storage. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -817,6 +821,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-04` | `28` | `Codex` | HPHYS0283 amendment: linked WB12 snowmelt infiltration partition to WB18 same-pass layer ingress (`SC-PERC-001#INV-PERC-016`) so reduced runoff without storage mutation remains invalid. |
+| `2026-06-04` | `27` | `Codex` | HPHYS0283 amendment: added baseline-authoritative snowmelt event-forcing authority for WB12 infiltration/runoff partition and forbade melt-only runoff closure shortcuts. |
 | `2026-06-01` | `26` | `Codex` | HPHYS0242 amendment: added `INV-RUNOFFPART-014` and addendum requiring `Σui_SCrunf(ii)` current surface-saturation addback in WB12/WB14 `Q`, shared closure residual lineage, and malformed/aggregate-only current-array rejection. |
 | `2026-06-01` | `25` | `Codex` | HPHYS0241 amendment: added `INV-RUNOFFPART-013` and runoff/runon authority for explicit 24-slot MOFE hourly carry arrays, aggregate anti-shadow validation against `wb12_runoff_carryover`, compatibility-only `wb12_runon_input` posture, and fail-closed malformed-array vectors. |
 | `2026-06-01` | `24` | `Codex` | HPHYS0240 amendment: added `INV-RUNOFFPART-012` and addendum codifying same-pass `wb12_runoff_carryover` authority, compatibility-only `wb12_runon_input` fallback, carryover flux publication, and malformed-flux hard-fail vectors. |

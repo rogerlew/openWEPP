@@ -417,6 +417,15 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
+        let runoff_snow_term =
+            snow_coupling.signed_s + snow_coupling.accumulation + snow_coupling.rain_retained;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.routed_melt_m"),
+            runoff_snow_term,
+            Some(0.0),
+            None,
+        )?;
         let hyetograph_liquid_input_raw =
             hyetograph_rainfall - snow_coupling.accumulation - snow_coupling.rain_retained;
         Self::require_state_range(
@@ -445,6 +454,7 @@ impl Wb11HydrologyKernel {
             &times,
             &intensities,
             rainfall_scale,
+            runoff_snow_term,
             irrigation_rate_m_per_s,
             irrigation_duration_s,
         )?;
@@ -1447,6 +1457,118 @@ impl Wb11HydrologyKernel {
         Ok(soil_water_after)
     }
 
+    fn resolve_infiltration_tillage_depth(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_depth: &[f64],
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let first_layer_depth = *layer_depth.first().ok_or_else(|| {
+            Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("nsl"),
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            }
+        })?;
+        let profile_depth = layer_depth.iter().sum::<f64>();
+        let tillage_depth_symbol = BoundarySymbol::from("management.initial.params.tillay2_m");
+        let tillage_depth = Self::optional_state_scalar_for_symbol(
+            request,
+            phase_class,
+            &tillage_depth_symbol,
+        )?
+        .unwrap_or(0.0);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &tillage_depth_symbol,
+            tillage_depth,
+            Some(0.0),
+            Some(profile_depth),
+        )?;
+
+        if tillage_depth > WB11_ZERO_THRESHOLD {
+            Ok(tillage_depth)
+        } else {
+            Ok(first_layer_depth)
+        }
+    }
+
+    fn apply_same_pass_infiltration_to_layer_storage(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        theta: &mut [f64],
+        layer_depth: &[f64],
+        infiltration: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_INFILTRATION,
+            infiltration,
+            Some(0.0),
+            None,
+        )?;
+        if infiltration <= WB11_ZERO_THRESHOLD {
+            return Ok(());
+        }
+        if theta.len() != layer_depth.len() || theta.is_empty() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("nsl"),
+                value: Self::diagnostic_count_to_f64(theta.len()),
+                minimum: Some(1.0),
+                maximum: Some(Self::diagnostic_count_to_f64(layer_depth.len())),
+            });
+        }
+
+        let tillage_depth =
+            Self::resolve_infiltration_tillage_depth(request, phase_class, layer_depth)?;
+        let mut remaining_infiltration = infiltration;
+        let mut cumulative_depth = 0.0_f64;
+        for (index, layer_theta) in theta.iter_mut().enumerate() {
+            if remaining_infiltration <= WB11_ZERO_THRESHOLD {
+                break;
+            }
+            cumulative_depth += layer_depth[index];
+            let add_to_layer = if cumulative_depth < tillage_depth - WB11_ZERO_THRESHOLD {
+                remaining_infiltration * layer_depth[index] / tillage_depth
+            } else {
+                remaining_infiltration
+            };
+            if !add_to_layer.is_finite() || add_to_layer < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB12_SYMBOL_INFILTRATION),
+                    value: add_to_layer,
+                    minimum: Some(0.0),
+                    maximum: Some(infiltration),
+                });
+            }
+            *layer_theta += add_to_layer.max(0.0);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &Self::wb18_perc_state_symbol("theta", index + 1),
+                *layer_theta,
+                Some(0.0),
+                None,
+            )?;
+            remaining_infiltration -= add_to_layer;
+        }
+
+        if remaining_infiltration > WB11_ZERO_THRESHOLD {
+            let last_index = theta.len() - 1;
+            theta[last_index] += remaining_infiltration;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &Self::wb18_perc_state_symbol("theta", last_index + 1),
+                theta[last_index],
+                Some(0.0),
+                None,
+            )?;
+        }
+        Ok(())
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_percolation(
         request: &HillslopeKernelRequest<'_>,
@@ -1571,6 +1693,25 @@ impl Wb11HydrologyKernel {
             upper_limit.push(layer_ul);
             conductivity.push(layer_ssc);
             layer_depth.push(dg);
+        }
+
+        let same_pass_infiltration = if request
+            .state_surface
+            .contains_key(&BoundarySymbol::from("management.initial.params.tillay2_m"))
+            && Self::resolve_active_snow_coupling(request, phase_class)?
+        {
+            Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)?
+        } else {
+            None
+        };
+        if let Some(infiltration) = same_pass_infiltration {
+            Self::apply_same_pass_infiltration_to_layer_storage(
+                request,
+                phase_class,
+                &mut theta,
+                &layer_depth,
+                infiltration,
+            )?;
         }
 
         let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
@@ -1877,6 +2018,14 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         ));
+        if let Some(infiltration) = same_pass_infiltration {
+            state_updates.push(WritebackField::bounded(
+                WB12_SYMBOL_INFILTRATION,
+                infiltration,
+                Some(0.0),
+                None,
+            ));
+        }
         for (index, value) in theta.iter().enumerate() {
             state_updates.push(WritebackField::bounded(
                 Self::wb18_perc_state_symbol("theta", index + 1),
@@ -3704,6 +3853,15 @@ impl Wb11HydrologyKernel {
                 hourly_state: Vec::new(),
             }
         };
+        let runoff_snow_term =
+            snow_coupling.signed_s + snow_coupling.accumulation + snow_coupling.rain_retained;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.routed_melt_m"),
+            runoff_snow_term,
+            Some(0.0),
+            None,
+        )?;
         let hyetograph_liquid_input_raw =
             hyetograph_rainfall - snow_coupling.accumulation - snow_coupling.rain_retained;
         Self::require_state_range(
@@ -3732,6 +3890,7 @@ impl Wb11HydrologyKernel {
             &times,
             &intensities,
             rainfall_scale,
+            runoff_snow_term,
             irrigation_rate_m_per_s,
             irrigation_duration_s,
         )?;
@@ -3750,7 +3909,7 @@ impl Wb11HydrologyKernel {
         Self::require_infiltration_liquid_closure(
             phase_class,
             cumulative_infiltration,
-            liquid_after_interception,
+            liquid_after_interception + runoff_snow_term,
         )?;
 
         let runon_input = Self::resolve_runoff_carryover_input(request, phase_class)?;
@@ -3797,8 +3956,6 @@ impl Wb11HydrologyKernel {
 
         let forward_solver_lane =
             Self::resolve_wb20_forward_solver_lane_enabled(request, phase_class)?;
-        let runoff_snow_term =
-            snow_coupling.signed_s + snow_coupling.accumulation + snow_coupling.rain_retained;
 
         let partition_runoff = Self::compute_runoff_after_interception(
             phase_class,

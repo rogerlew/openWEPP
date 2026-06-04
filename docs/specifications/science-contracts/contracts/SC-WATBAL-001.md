@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 100
+contract_version: 102
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-03
+last_reviewed: 2026-06-04
 supersedes: []
 superseded_by: []
 ---
@@ -64,6 +64,7 @@ Out of scope:
 | REF-WATBAL-CH8-COUPLING | `references/50201000/chap8.pdf` §8.2.4 and §8.1 coupling text | Plant-water-stress consumption of `Ws` and required plant-surface inputs to water balance. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-ORDER | `/workdir/wepp-forest_260430_baseline/src/watbal.for:486-497,551-552,918-922,958-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB11 execution ordering authority (`purk -> evap/evappm -> drain/lateral -> swu -> watcon recompute`). | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-HOURLY-CARRY | `/workdir/wepp-forest_260430_baseline/src/wathour.inc:26-44` and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:438-471,776-885` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly MOFE carry-array authority for `ui_SUrunf`, `ui_SCrunf`, `ui_LfUrf`, `ui_LfCrf`, `ui_LFtstp=24`, upstream-current OFE copy-forward, and hourly runon/lateral/saturation carry use. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-WMELT-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` lines 342-345 and `/workdir/wepp-forest_260430_baseline/src/grna.for` lines 267-269, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Daily/hourly water-balance lineage includes `wmelt(iplane)` in infiltration water supply (`fin`) and Green-Ampt snowmelt event forcing (`smrate = wmelt / dur`) before residual runoff/storage closure is computed. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline aggregate root-zone water lineage from layer storage (`st`) through `soilw(i)` into `watcon`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WB13 | `/workdir/wepp-forest_260430_baseline/src/outfil.for:623-643` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB13 publication semantics for `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-HOURLY-ET-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:547-560,978-1026` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly final-hour ET execution and immediate post-ET `watcon = Σsoilw(i)` recomputation from layer `st(i)` storage. | `[DIRECT][Static]` |
@@ -222,6 +223,7 @@ lateral/drainage).
 | INV-WATBAL-055 | HPHYS0269 winter melt/snowpack baselining invariant: water-balance closure evidence must consume `SC-SNOWFREEZE-001#INV-SNOWFREEZE-015` before returning to WB17 `Ep` or storage residual tuning. WB13 `RM` must represent residual direct rain plus redistributed melt, and signed `S` must equal redistributed melt minus snowfall water equivalent minus rain retained in snowpack. Closure evidence that treats all rain-on-snow as immediate liquid forcing, clamps negative hourly melt before corrected daily redistribution, reproduces the pinned baseline negative-melt sign/branch bug, or hides retained-rain lineage is invalid. | hard-fail | INV-WATBAL-054, SC-SNOWFREEZE-001#INV-SNOWFREEZE-015, REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-LEGACY-WB13 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-056 | HPHYS0270 daily snowpack state closure invariant: WB13 `RM`/`Snow-Water` and WB17 `Ep` residual classifications must consume `SC-SNOWFREEZE-001#INV-SNOWFREEZE-016` daily carry-state evidence. The required evidence includes day-begin and post-day SWE/depth/density/settle-count state plus deltas so the classifier can distinguish day-begin publication lineage, same-day snowpack mutation, and downstream ET/storage response without compensating through WB13 publication, WB17 `Ep`, or aggregate storage. | governance-hold | INV-WATBAL-054, INV-WATBAL-055, SC-SNOWFREEZE-001#INV-SNOWFREEZE-016, REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-LEGACY-WB13 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-057 | HPHYS0271/HPHYS0272 day-36 melt-forcing closure invariant: WB13 `RM`/`Snow-Water`, WB17 `Ep`, and aggregate-storage residual classifications for the H1 sim-day 36 snowpack break must consume `SC-SNOWFREEZE-001#INV-SNOWFREEZE-017` term-level melt/hourly-forcing evidence and `SC-CLIMATE-001#INV-CLIMATE-013` radiation-unit evidence. Evidence that assigns day-36 residual ownership to publication, ET, storage, negative-melt redistribution, or heuristic radiation clipping without proving the `melt.for` trigger/magnitude and climate-radiation unit lineage is invalid. | governance-hold | INV-WATBAL-054, INV-WATBAL-055, INV-WATBAL-056, SC-SNOWFREEZE-001#INV-SNOWFREEZE-017, SC-CLIMATE-001#INV-CLIMATE-013, REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-LEGACY-WB13 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-058 | HPHYS0283 spring meltwater partition invariant: daily closure must consume a WB12 partition in which routed snowmelt has been offered to infiltration before residual runoff is assigned, and WB18 must mutate same-pass layer/aggregate storage from that infiltrated melt before percolation and final `watcon` recomputation. `S` remains the signed snow-storage term (`melt - accumulation - retained rain`), but the corresponding positive meltwater cannot bypass infiltration/layer ingress and be subtracted only as `Q`. Spring storage-collapse residual ownership is invalid without this partition and storage-ingress evidence. | hard-fail | REF-WATBAL-LEGACY-WMELT-INFIL, REF-WATBAL-CH5-SNOW, SC-SNOWFREEZE-001#INV-SNOWFREEZE-018, SC-RUNOFFPART-001#INV-RUNOFFPART-015, SC-PERC-001#INV-PERC-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -477,6 +479,11 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   soil-water aggregate lineage semantics from simulation-owned runtime surfaces
   and reject projection-side recomputation that bypasses declared lineage checks.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-C-006: Water-balance storage reconciliation must consume runoff
+  outputs produced from a melt-aware infiltration/runoff partition and WB18
+  layer storage mutated by the same infiltrated liquid; it may not compensate
+  for a missing `wmelt` infiltration/layer-ingress path by changing `Ep`, WB13
+  publication, or aggregate storage formulas. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -2019,6 +2026,8 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-04` | `102` | `Codex` | HPHYS0283 amendment: linked melt-aware WB12 partition authority to WB18 same-pass layer ingress (`SC-PERC-001#INV-PERC-016`) so storage closure cannot pass by reducing runoff alone. |
+| `2026-06-04` | `101` | `Codex` | HPHYS0283 amendment: added baseline-authoritative `wmelt` infiltration/runoff partition authority to water-balance closure and forbade downstream storage/ET/publication compensation for melt-only runoff paths. |
 | `2026-06-03` | `100` | `Codex` | HPHYS0272 amendment: linked H1 day-36 WB13/WB17/storage residual ownership to `SC-CLIMATE-001#INV-CLIMATE-013` radiation-unit closure and prohibited downstream compensation for Langley-scale radiation artifacts. |
 | `2026-06-03` | `99` | `Codex` | HPHYS0271 amendment: added `INV-WATBAL-057` requiring H1 day-36 `melt.for` term-level and hourly-forcing evidence before assigning `RM`/`Snow-Water`, WB17 `Ep`, or storage residual ownership. |
 | `2026-06-03` | `98` | `Codex` | HPHYS0270 amendment: added `INV-WATBAL-056` requiring daily snowpack carry-state evidence before assigning WB13 `RM`/`Snow-Water`, WB17 `Ep`, or storage residual ownership. |
