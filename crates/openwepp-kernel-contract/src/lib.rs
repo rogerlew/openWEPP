@@ -13,9 +13,13 @@ use openwepp_sim_contract::closure::{
 use openwepp_sim_contract::status::{
     BoundaryClass, SimulationPhase, SimulationStatus, StatusError,
 };
+pub use openwepp_unit_boundary::BoundaryError;
 use openwepp_unit_boundary::{
-    FlowRateCubicMetersPerSecond, ProcessRateMillimetersPerHour, RunoffDepthMillimeters,
-    StorageVolumeCubicMeters, SurfaceAreaSquareMeters,
+    DensityKilogramsPerCubicMeter, ElapsedTimeSeconds, FlowRateCubicMetersPerSecond,
+    FractionUnitInterval, HourOfDay, LinearRateMetersPerSecond, ProcessRateMillimetersPerHour,
+    RunoffDepthMillimeters, SolarRadiationLangleysPerDay,
+    SolarRadiationMegajoulesPerSquareMeterPerDay, SolarRadiationMegajoulesPerSquareMeterPerHour,
+    StorageVolumeCubicMeters, SurfaceAreaSquareMeters, TemperatureCelsius, WaterDepthMeters,
 };
 
 /// Message id emitted when writeback payload evaluation accepts all fields.
@@ -756,12 +760,68 @@ pub enum BoundaryValue {
     StorageVolumeCubicMeters(StorageVolumeCubicMeters),
     ProcessRateMillimetersPerHour(ProcessRateMillimetersPerHour),
     SurfaceAreaSquareMeters(SurfaceAreaSquareMeters),
+    WaterDepthMeters(WaterDepthMeters),
+    ElapsedTimeSeconds(ElapsedTimeSeconds),
+    HourOfDay(HourOfDay),
+    LinearRateMetersPerSecond(LinearRateMetersPerSecond),
+    SolarRadiationLangleysPerDay(SolarRadiationLangleysPerDay),
+    SolarRadiationMegajoulesPerSquareMeterPerDay(SolarRadiationMegajoulesPerSquareMeterPerDay),
+    SolarRadiationMegajoulesPerSquareMeterPerHour(SolarRadiationMegajoulesPerSquareMeterPerHour),
+    TemperatureCelsius(TemperatureCelsius),
+    DensityKilogramsPerCubicMeter(DensityKilogramsPerCubicMeter),
+    FractionUnitInterval(FractionUnitInterval),
 }
 
 impl BoundaryValue {
     #[must_use]
     pub const fn scalar(value: f64) -> Self {
         Self::Scalar(value)
+    }
+
+    pub fn water_depth_meters(value: f64) -> Result<Self, BoundaryError> {
+        WaterDepthMeters::try_new(value).map(Self::WaterDepthMeters)
+    }
+
+    pub fn elapsed_time_seconds(value: f64) -> Result<Self, BoundaryError> {
+        ElapsedTimeSeconds::try_new(value).map(Self::ElapsedTimeSeconds)
+    }
+
+    pub fn hour_of_day(value: f64) -> Result<Self, BoundaryError> {
+        HourOfDay::try_new(value).map(Self::HourOfDay)
+    }
+
+    pub fn linear_rate_meters_per_second(value: f64) -> Result<Self, BoundaryError> {
+        LinearRateMetersPerSecond::try_new(value).map(Self::LinearRateMetersPerSecond)
+    }
+
+    pub fn solar_radiation_langleys_per_day(value: f64) -> Result<Self, BoundaryError> {
+        SolarRadiationLangleysPerDay::try_new(value).map(Self::SolarRadiationLangleysPerDay)
+    }
+
+    pub fn solar_radiation_megajoules_per_square_meter_per_day(
+        value: f64,
+    ) -> Result<Self, BoundaryError> {
+        SolarRadiationMegajoulesPerSquareMeterPerDay::try_new(value)
+            .map(Self::SolarRadiationMegajoulesPerSquareMeterPerDay)
+    }
+
+    pub fn solar_radiation_megajoules_per_square_meter_per_hour(
+        value: f64,
+    ) -> Result<Self, BoundaryError> {
+        SolarRadiationMegajoulesPerSquareMeterPerHour::try_new(value)
+            .map(Self::SolarRadiationMegajoulesPerSquareMeterPerHour)
+    }
+
+    pub fn temperature_celsius(value: f64) -> Result<Self, BoundaryError> {
+        TemperatureCelsius::try_new(value).map(Self::TemperatureCelsius)
+    }
+
+    pub fn density_kilograms_per_cubic_meter(value: f64) -> Result<Self, BoundaryError> {
+        DensityKilogramsPerCubicMeter::try_new(value).map(Self::DensityKilogramsPerCubicMeter)
+    }
+
+    pub fn fraction_unit_interval(value: f64) -> Result<Self, BoundaryError> {
+        FractionUnitInterval::try_new(value).map(Self::FractionUnitInterval)
     }
 
     #[must_use]
@@ -773,6 +833,20 @@ impl BoundaryValue {
             Self::StorageVolumeCubicMeters(value) => value.as_cubic_meters(),
             Self::ProcessRateMillimetersPerHour(value) => value.as_millimeters_per_hour(),
             Self::SurfaceAreaSquareMeters(value) => value.as_square_meters(),
+            Self::WaterDepthMeters(value) => value.as_meters(),
+            Self::ElapsedTimeSeconds(value) => value.as_seconds(),
+            Self::HourOfDay(value) => value.as_hours(),
+            Self::LinearRateMetersPerSecond(value) => value.as_meters_per_second(),
+            Self::SolarRadiationLangleysPerDay(value) => value.as_langleys_per_day(),
+            Self::SolarRadiationMegajoulesPerSquareMeterPerDay(value) => {
+                value.as_megajoules_per_square_meter_per_day()
+            }
+            Self::SolarRadiationMegajoulesPerSquareMeterPerHour(value) => {
+                value.as_megajoules_per_square_meter_per_hour()
+            }
+            Self::TemperatureCelsius(value) => value.as_celsius(),
+            Self::DensityKilogramsPerCubicMeter(value) => value.as_kilograms_per_cubic_meter(),
+            Self::FractionUnitInterval(value) => value.as_fraction(),
         }
     }
 
@@ -785,6 +859,16 @@ impl BoundaryValue {
             Self::StorageVolumeCubicMeters(_) => "m3",
             Self::ProcessRateMillimetersPerHour(_) => "mm/hr",
             Self::SurfaceAreaSquareMeters(_) => "m2",
+            Self::WaterDepthMeters(_) => "m",
+            Self::ElapsedTimeSeconds(_) => "s",
+            Self::HourOfDay(_) => "h",
+            Self::LinearRateMetersPerSecond(_) => "m s^-1",
+            Self::SolarRadiationLangleysPerDay(_) => "Ly d^-1",
+            Self::SolarRadiationMegajoulesPerSquareMeterPerDay(_) => "MJ m^-2 d^-1",
+            Self::SolarRadiationMegajoulesPerSquareMeterPerHour(_) => "MJ m^-2 h^-1",
+            Self::TemperatureCelsius(_) => "degC",
+            Self::DensityKilogramsPerCubicMeter(_) => "kg m^-3",
+            Self::FractionUnitInterval(_) => "dimensionless",
         }
     }
 }
@@ -822,6 +906,66 @@ impl From<ProcessRateMillimetersPerHour> for BoundaryValue {
 impl From<SurfaceAreaSquareMeters> for BoundaryValue {
     fn from(value: SurfaceAreaSquareMeters) -> Self {
         Self::SurfaceAreaSquareMeters(value)
+    }
+}
+
+impl From<WaterDepthMeters> for BoundaryValue {
+    fn from(value: WaterDepthMeters) -> Self {
+        Self::WaterDepthMeters(value)
+    }
+}
+
+impl From<ElapsedTimeSeconds> for BoundaryValue {
+    fn from(value: ElapsedTimeSeconds) -> Self {
+        Self::ElapsedTimeSeconds(value)
+    }
+}
+
+impl From<HourOfDay> for BoundaryValue {
+    fn from(value: HourOfDay) -> Self {
+        Self::HourOfDay(value)
+    }
+}
+
+impl From<LinearRateMetersPerSecond> for BoundaryValue {
+    fn from(value: LinearRateMetersPerSecond) -> Self {
+        Self::LinearRateMetersPerSecond(value)
+    }
+}
+
+impl From<SolarRadiationLangleysPerDay> for BoundaryValue {
+    fn from(value: SolarRadiationLangleysPerDay) -> Self {
+        Self::SolarRadiationLangleysPerDay(value)
+    }
+}
+
+impl From<SolarRadiationMegajoulesPerSquareMeterPerDay> for BoundaryValue {
+    fn from(value: SolarRadiationMegajoulesPerSquareMeterPerDay) -> Self {
+        Self::SolarRadiationMegajoulesPerSquareMeterPerDay(value)
+    }
+}
+
+impl From<SolarRadiationMegajoulesPerSquareMeterPerHour> for BoundaryValue {
+    fn from(value: SolarRadiationMegajoulesPerSquareMeterPerHour) -> Self {
+        Self::SolarRadiationMegajoulesPerSquareMeterPerHour(value)
+    }
+}
+
+impl From<TemperatureCelsius> for BoundaryValue {
+    fn from(value: TemperatureCelsius) -> Self {
+        Self::TemperatureCelsius(value)
+    }
+}
+
+impl From<DensityKilogramsPerCubicMeter> for BoundaryValue {
+    fn from(value: DensityKilogramsPerCubicMeter) -> Self {
+        Self::DensityKilogramsPerCubicMeter(value)
+    }
+}
+
+impl From<FractionUnitInterval> for BoundaryValue {
+    fn from(value: FractionUnitInterval) -> Self {
+        Self::FractionUnitInterval(value)
     }
 }
 

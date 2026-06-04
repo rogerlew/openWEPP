@@ -1938,8 +1938,10 @@ Authorized packages:
   - Purpose: expand and apply unit-safe `BoundaryValue` /
     `openwepp-unit-boundary` typing for high-risk dimensional runtime boundary
     surfaces, reducing reliance on raw `BoundaryValue::scalar`.
-  - Status: queued; follow-up remediation from HPHYS0273/HPHYS0274 for typed
-    unit construction and fail-closed dimensional boundary handling.
+  - Status: completed/HOLD; migrated selected hillslope daily climate and
+    SIMIMPL28 hourly runtime producer seams to typed `BoundaryValue` variants,
+    split untyped wind-direction/watershed aliases as follow-up, and recorded
+    known workspace HOLD on SIMIMPL18 ET-domain fixture failures.
 - `20260603-hphys0274-boundary-symbol-unit-registry-closure-001/`
   - Purpose: implement a machine-readable boundary-symbol unit registry and
     validation gate so dimensional runtime symbols have authoritative units

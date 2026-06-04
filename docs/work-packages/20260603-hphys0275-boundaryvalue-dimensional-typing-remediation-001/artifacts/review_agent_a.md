@@ -1,29 +1,26 @@
 # Review Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: static
 
-Static: queued review/disposition template for HPHYS0275 BoundaryValue
-Dimensional Typing Remediation.
+Static: Independent Rust code review by subagent Hume. Ran: no commands by
+reviewer.
 
-## Required Review Scope
+## Findings and Dispositions
 
-- Contract/governance authority alignment.
-- Production/tooling/docs diff against package objective and write set.
-- Tests/gates and evidence truthfulness.
-- Regression/follow-up risks.
+- Finding A1, High: `wind` was incorrectly typed as `m s^-1` even though input
+  and contract authority define it as direction. Disposition: accepted. Fix:
+  production leaves `wind` scalar/follow-up, registry splits `wind_direction`
+  from `vwind`, and tests assert `wind` remains scalar while `vwind` is typed.
+- Finding A2, High: registry `TypedRequired` overclaimed watershed-prefixed
+  aliases still published as scalar. Disposition: accepted. Fix: registry rows
+  split `hs{ofe}_stmdur`, `hs{ofe}_stmstr`, `hs{ofe}_timem_{idx4}`, and
+  `hs{ofe}_intsty_{idx4}` into follow-up rows.
+- Finding A3, Medium: `winter.hourly.rad_mj_m2_{idx4}` was migrated in code
+  but left `FollowUpRequired` in the registry. Disposition: accepted. Fix:
+  promoted row to `TypedRequired` and added registry typed-posture assertions.
+- Residual risk: dynamic series error labels are family-level (`timem_*`,
+  `intsty_*`). Disposition: follow-up. Rationale: fail-closed typed errors are
+  preserved; exact dynamic label ergonomics can be improved separately.
 
-## Findings
-
-- Status: queued; add findings during review.
-- Required disposition values: `accepted`, `rejected`, `deferred`, `follow-up`.
-- Every finding must include evidence, severity, disposition, rationale, and affected paths.
-
-## Disposition Gate
-
-- Package closure is blocked until every finding is dispositioned.
-- Accepted findings require fix evidence and verification reference.
-- Rejected findings require rationale.
-- Deferred/follow-up findings require links from `disposition.md` and `worker-handoff.md`.
-
-Ran: not-run.
+Ran: not-run by reviewer.

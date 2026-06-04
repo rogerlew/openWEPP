@@ -172,6 +172,10 @@ name = "sim_contract_boundary_unit_registry"
 path = "tests/integration/sim_contract_boundary_unit_registry.rs"
 
 [[test]]
+name = "hphys0275_boundary_value_dimensional_typing_contract"
+path = "tests/integration/hphys0275_boundary_value_dimensional_typing_contract.rs"
+
+[[test]]
 name = "topology_graph_validation_gate"
 path = "tests/integration/topology_graph_validation_gate.rs"
 

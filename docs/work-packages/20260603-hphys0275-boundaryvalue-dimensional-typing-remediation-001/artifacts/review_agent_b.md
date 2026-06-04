@@ -1,29 +1,30 @@
 # Review Agent B
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: static
 
-Static: queued independent review/disposition template for HPHYS0275
-BoundaryValue Dimensional Typing Remediation.
+Static: Independent Rust QA review by subagent Faraday. Ran: no commands by
+reviewer.
 
-## Required Review Scope
+## Findings and Dispositions
 
-- Contract/governance authority alignment.
-- Production/tooling/docs diff against package objective and write set.
-- Tests/gates and evidence truthfulness.
-- Regression/follow-up risks.
+- Finding B1, High: evidence artifacts were still queued/not-run while docs
+  claimed ran evidence. Disposition: accepted. Fix: all package artifacts now
+  use truth-labeled `Static:`/`Ran:` sections with actual gate results.
+- Finding B2, High: registry overclaimed watershed-prefixed climate aliases as
+  typed. Disposition: accepted. Fix: watershed-prefixed aliases were split into
+  `FollowUpRequired` rows and covered by registry typed-posture tests.
+- Finding B3, Medium: registry underclaimed migrated
+  `winter.hourly.rad_mj_m2_{idx4}`. Disposition: accepted. Fix: promoted to
+  `TypedRequired` and tested.
+- Finding B4, Medium: focused tests were too narrow for the documented
+  closure claim. Disposition: accepted. Fix: tests now cover breakpoint
+  `stmstr`, all projected series points in tested records, all 24 hourly
+  SIMIMPL28 families, registry typed posture, and selected numeric lineage
+  values.
+- Non-blocking debt: daily `MJ m^-2 d^-1` wrapper lacked direct coverage.
+  Disposition: accepted. Fix: added unit-boundary test for daily MJ radiation.
+- Non-blocking debt: series error labels are family-level. Disposition:
+  follow-up; see `unit-remediation-plan.md`.
 
-## Findings
-
-- Status: queued; add findings during review.
-- Required disposition values: `accepted`, `rejected`, `deferred`, `follow-up`.
-- Every finding must include evidence, severity, disposition, rationale, and affected paths.
-
-## Disposition Gate
-
-- Package closure is blocked until every finding is dispositioned.
-- Accepted findings require fix evidence and verification reference.
-- Rejected findings require rationale.
-- Deferred/follow-up findings require links from `disposition.md` and `worker-handoff.md`.
-
-Ran: not-run.
+Ran: not-run by reviewer.

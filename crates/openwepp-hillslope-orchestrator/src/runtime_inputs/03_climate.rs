@@ -81,11 +81,15 @@ pub fn seed_hillslope_runtime_surface_from_climate(
             insert_common_day_symbols(state_surface, day.day, day.mon, day.year);
             state_surface.insert(
                 BoundarySymbol::from("prcp"),
-                BoundaryValue::scalar(day.prcp),
+                climate_boundary_value("prcp", ">= 0", BoundaryValue::water_depth_meters(day.prcp))?,
             );
             state_surface.insert(
                 BoundarySymbol::from("stmdur"),
-                BoundaryValue::scalar(day.stmdur),
+                climate_boundary_value(
+                    "stmdur",
+                    ">= 0",
+                    BoundaryValue::elapsed_time_seconds(day.stmdur),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("timep"),
@@ -101,24 +105,43 @@ pub fn seed_hillslope_runtime_surface_from_climate(
             );
             state_surface.insert(
                 BoundarySymbol::from("avrint"),
-                BoundaryValue::scalar(day.avrint),
+                climate_boundary_value(
+                    "avrint",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second(day.avrint),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("mxint"),
-                BoundaryValue::scalar(day.mxint),
+                climate_boundary_value(
+                    "mxint",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second(day.mxint),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("tmax"),
-                BoundaryValue::scalar(day.tmax),
+                climate_boundary_value("tmax", "finite", BoundaryValue::temperature_celsius(day.tmax))?,
             );
             state_surface.insert(
                 BoundarySymbol::from("tmin"),
-                BoundaryValue::scalar(day.tmin),
+                climate_boundary_value("tmin", "finite", BoundaryValue::temperature_celsius(day.tmin))?,
             );
-            state_surface.insert(BoundarySymbol::from("rad"), BoundaryValue::scalar(day.rad));
+            state_surface.insert(
+                BoundarySymbol::from("rad"),
+                climate_boundary_value(
+                    "rad",
+                    ">= 0",
+                    BoundaryValue::solar_radiation_langleys_per_day(day.rad),
+                )?,
+            );
             state_surface.insert(
                 BoundarySymbol::from("vwind"),
-                BoundaryValue::scalar(day.vwind),
+                climate_boundary_value(
+                    "vwind",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second(day.vwind),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("wind"),
@@ -126,41 +149,74 @@ pub fn seed_hillslope_runtime_surface_from_climate(
             );
             state_surface.insert(
                 BoundarySymbol::from("tdpt"),
-                BoundaryValue::scalar(day.tdpt),
+                climate_boundary_value("tdpt", "finite", BoundaryValue::temperature_celsius(day.tdpt))?,
             );
-            insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
-            insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
+            insert_typed_series_values(
+                state_surface,
+                day_symbols.timem_symbols(),
+                &day.timem,
+                "timem_*",
+                ">= 0",
+                BoundaryValue::elapsed_time_seconds,
+            )?;
+            insert_typed_series_values(
+                state_surface,
+                day_symbols.intsty_symbols(),
+                &day.intsty,
+                "intsty_*",
+                ">= 0",
+                BoundaryValue::linear_rate_meters_per_second,
+            )?;
         }
         HillslopeClimateDailyForcing::Breakpoint(day) => {
             insert_common_day_symbols(state_surface, day.day, day.mon, day.year);
             state_surface.insert(
                 BoundarySymbol::from("stmstr"),
-                BoundaryValue::scalar(day.stmstr),
+                climate_boundary_value("stmstr", "0..=24", BoundaryValue::hour_of_day(day.stmstr))?,
             );
             state_surface.insert(
                 BoundarySymbol::from("prcp"),
-                BoundaryValue::scalar(day.prcp),
+                climate_boundary_value("prcp", ">= 0", BoundaryValue::water_depth_meters(day.prcp))?,
             );
             state_surface.insert(
                 BoundarySymbol::from("stmdur"),
-                BoundaryValue::scalar(day.stmdur),
+                climate_boundary_value(
+                    "stmdur",
+                    ">= 0",
+                    BoundaryValue::elapsed_time_seconds(day.stmdur),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("mxint"),
-                BoundaryValue::scalar(day.mxint),
+                climate_boundary_value(
+                    "mxint",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second(day.mxint),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("tmax"),
-                BoundaryValue::scalar(day.tmax),
+                climate_boundary_value("tmax", "finite", BoundaryValue::temperature_celsius(day.tmax))?,
             );
             state_surface.insert(
                 BoundarySymbol::from("tmin"),
-                BoundaryValue::scalar(day.tmin),
+                climate_boundary_value("tmin", "finite", BoundaryValue::temperature_celsius(day.tmin))?,
             );
-            state_surface.insert(BoundarySymbol::from("rad"), BoundaryValue::scalar(day.rad));
+            state_surface.insert(
+                BoundarySymbol::from("rad"),
+                climate_boundary_value(
+                    "rad",
+                    ">= 0",
+                    BoundaryValue::solar_radiation_langleys_per_day(day.rad),
+                )?,
+            );
             state_surface.insert(
                 BoundarySymbol::from("vwind"),
-                BoundaryValue::scalar(day.vwind),
+                climate_boundary_value(
+                    "vwind",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second(day.vwind),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("wind"),
@@ -168,7 +224,7 @@ pub fn seed_hillslope_runtime_surface_from_climate(
             );
             state_surface.insert(
                 BoundarySymbol::from("tdpt"),
-                BoundaryValue::scalar(day.tdpt),
+                climate_boundary_value("tdpt", "finite", BoundaryValue::temperature_celsius(day.tdpt))?,
             );
 
             let nbrkpt = u32::try_from(day.nbrkpt).map_err(|_| {
@@ -179,8 +235,22 @@ pub fn seed_hillslope_runtime_surface_from_climate(
                 BoundaryValue::scalar(f64::from(nbrkpt)),
             );
 
-            insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
-            insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
+            insert_typed_series_values(
+                state_surface,
+                day_symbols.timem_symbols(),
+                &day.timem,
+                "timem_*",
+                ">= 0",
+                BoundaryValue::elapsed_time_seconds,
+            )?;
+            insert_typed_series_values(
+                state_surface,
+                day_symbols.intsty_symbols(),
+                &day.intsty,
+                "intsty_*",
+                ">= 0",
+                BoundaryValue::linear_rate_meters_per_second,
+            )?;
         }
     }
 

@@ -63,6 +63,8 @@ fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
         ("stmdur", "s", DimensionClass::Time),
         ("stmstr", "h", DimensionClass::Time),
         ("timem_0001", "s", DimensionClass::Time),
+        ("wind", "deg", DimensionClass::Direction),
+        ("vwind", "m s^-1", DimensionClass::WindSpeed),
         ("hs21_stmdur", "s", DimensionClass::Time),
         ("hs21_stmstr", "h", DimensionClass::Time),
         ("hs21_timem_0001", "s", DimensionClass::Time),
@@ -128,6 +130,61 @@ fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
             entry.dimension_class(),
             dimension,
             "{alias} dimension mismatch"
+        );
+    }
+}
+
+#[test]
+fn hphys0275_registry_marks_only_migrated_aliases_typed_required() {
+    let registry = BoundaryUnitRegistry::canonical_registry()
+        .expect("canonical unit registry should construct");
+
+    for alias in [
+        "prcp",
+        "rad",
+        "tmax",
+        "tmin",
+        "tdpt",
+        "vwind",
+        "stmdur",
+        "stmstr",
+        "timem_0001",
+        "mxint",
+        "avrint",
+        "intsty_0001",
+        "winter.hourly.rad_mj_m2_0001",
+        "winter.hourly.air_temp_c_0001",
+        "winter.hourly.cloud_fraction_0001",
+        "snow.hourly.rain_m_0001",
+        "snow.hourly.snowfall_m_0001",
+    ] {
+        let entry = registry
+            .entry_for_boundary_alias(alias)
+            .unwrap_or_else(|_| panic!("migrated alias {alias} should resolve"));
+        assert_eq!(
+            entry.typed_boundary(),
+            TypedBoundaryRequirement::TypedRequired,
+            "{alias} typed posture"
+        );
+    }
+
+    for alias in [
+        "wind",
+        "hs21_stmdur",
+        "hs21_stmstr",
+        "hs21_timem_0001",
+        "hs21_mxint",
+        "hs21_avrint",
+        "hs21_intsty_0001",
+        "snow.hourly.rain_retained_m_0001",
+    ] {
+        let entry = registry
+            .entry_for_boundary_alias(alias)
+            .unwrap_or_else(|_| panic!("follow-up alias {alias} should resolve"));
+        assert_eq!(
+            entry.typed_boundary(),
+            TypedBoundaryRequirement::FollowUpRequired,
+            "{alias} typed posture"
         );
     }
 }

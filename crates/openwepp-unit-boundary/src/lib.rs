@@ -25,6 +25,12 @@ pub enum BoundaryError {
         value: f64,
         minimum: f64,
     },
+    /// Value is above an allowed upper bound.
+    AboveMaximum {
+        boundary: &'static str,
+        value: f64,
+        maximum: f64,
+    },
 }
 
 impl fmt::Display for BoundaryError {
@@ -39,6 +45,13 @@ impl fmt::Display for BoundaryError {
                 minimum,
             } => {
                 write!(f, "{boundary} must be >= {minimum}; received {value}")
+            }
+            Self::AboveMaximum {
+                boundary,
+                value,
+                maximum,
+            } => {
+                write!(f, "{boundary} must be <= {maximum}; received {value}")
             }
         }
     }
@@ -293,6 +306,289 @@ impl ProcessRateMillimetersPerHour {
     }
 }
 
+/// Water depth at a runtime seam (`m`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WaterDepthMeters(f64);
+
+impl WaterDepthMeters {
+    /// Construct a water depth in meters.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_m` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_m < 0.0`.
+    pub fn try_new(value_m: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("water_depth_m", value_m)?;
+        Ok(Self(value_m))
+    }
+
+    /// Raw value in meters.
+    #[must_use]
+    pub const fn as_meters(self) -> f64 {
+        self.0
+    }
+}
+
+/// Elapsed time at a runtime seam (`s`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ElapsedTimeSeconds(f64);
+
+impl ElapsedTimeSeconds {
+    /// Construct an elapsed time in seconds.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_s` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_s < 0.0`.
+    pub fn try_new(value_s: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("elapsed_time_s", value_s)?;
+        Ok(Self(value_s))
+    }
+
+    /// Raw value in seconds.
+    #[must_use]
+    pub const fn as_seconds(self) -> f64 {
+        self.0
+    }
+}
+
+/// Hour-of-day marker at a runtime seam (`h`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct HourOfDay(f64);
+
+impl HourOfDay {
+    /// Construct an hour-of-day marker.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - within `[0.0, 24.0]`
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_h` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_h < 0.0`.
+    /// - [`BoundaryError::AboveMaximum`] when `value_h > 24.0`.
+    pub fn try_new(value_h: f64) -> Result<Self, BoundaryError> {
+        validate_finite("hour_of_day_h", value_h)?;
+        validate_minimum("hour_of_day_h", value_h, 0.0)?;
+        validate_maximum("hour_of_day_h", value_h, 24.0)?;
+        Ok(Self(value_h))
+    }
+
+    /// Raw value in hours.
+    #[must_use]
+    pub const fn as_hours(self) -> f64 {
+        self.0
+    }
+}
+
+/// Linear rate at a runtime seam (`m s^-1`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LinearRateMetersPerSecond(f64);
+
+impl LinearRateMetersPerSecond {
+    /// Construct a linear rate in meters per second.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_m_per_s` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_m_per_s < 0.0`.
+    pub fn try_new(value_m_per_s: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("linear_rate_m_s", value_m_per_s)?;
+        Ok(Self(value_m_per_s))
+    }
+
+    /// Raw value in meters per second.
+    #[must_use]
+    pub const fn as_meters_per_second(self) -> f64 {
+        self.0
+    }
+}
+
+/// Daily solar radiation at the climate runtime seam (`Ly d^-1`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SolarRadiationLangleysPerDay(f64);
+
+impl SolarRadiationLangleysPerDay {
+    /// Construct daily radiation in Langleys per day.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_ly_per_day` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_ly_per_day < 0.0`.
+    pub fn try_new(value_ly_per_day: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("solar_radiation_ly_d", value_ly_per_day)?;
+        Ok(Self(value_ly_per_day))
+    }
+
+    /// Raw value in Langleys per day.
+    #[must_use]
+    pub const fn as_langleys_per_day(self) -> f64 {
+        self.0
+    }
+}
+
+/// Daily solar radiation (`MJ m^-2 d^-1`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SolarRadiationMegajoulesPerSquareMeterPerDay(f64);
+
+impl SolarRadiationMegajoulesPerSquareMeterPerDay {
+    /// Construct daily radiation in megajoules per square meter per day.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_mj_m2_day` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_mj_m2_day < 0.0`.
+    pub fn try_new(value_mj_m2_day: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("solar_radiation_mj_m2_d", value_mj_m2_day)?;
+        Ok(Self(value_mj_m2_day))
+    }
+
+    /// Raw value in megajoules per square meter per day.
+    #[must_use]
+    pub const fn as_megajoules_per_square_meter_per_day(self) -> f64 {
+        self.0
+    }
+}
+
+/// Hourly solar radiation (`MJ m^-2 h^-1`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SolarRadiationMegajoulesPerSquareMeterPerHour(f64);
+
+impl SolarRadiationMegajoulesPerSquareMeterPerHour {
+    /// Construct hourly radiation in megajoules per square meter per hour.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_mj_m2_hour` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_mj_m2_hour < 0.0`.
+    pub fn try_new(value_mj_m2_hour: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("solar_radiation_mj_m2_h", value_mj_m2_hour)?;
+        Ok(Self(value_mj_m2_hour))
+    }
+
+    /// Raw value in megajoules per square meter per hour.
+    #[must_use]
+    pub const fn as_megajoules_per_square_meter_per_hour(self) -> f64 {
+        self.0
+    }
+}
+
+/// Temperature at a runtime seam (`degC`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct TemperatureCelsius(f64);
+
+impl TemperatureCelsius {
+    /// Construct a Celsius temperature.
+    ///
+    /// Domain guards:
+    /// - finite
+    ///
+    /// # Errors
+    ///
+    /// Returns [`BoundaryError::NonFinite`] when `value_c` is `NaN` or infinite.
+    pub fn try_new(value_c: f64) -> Result<Self, BoundaryError> {
+        validate_finite("temperature_c", value_c)?;
+        Ok(Self(value_c))
+    }
+
+    /// Raw value in degrees Celsius.
+    #[must_use]
+    pub const fn as_celsius(self) -> f64 {
+        self.0
+    }
+}
+
+/// Density at a runtime seam (`kg m^-3`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DensityKilogramsPerCubicMeter(f64);
+
+impl DensityKilogramsPerCubicMeter {
+    /// Construct density in kilograms per cubic meter.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - non-negative (`>= 0.0`)
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_kg_m3` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_kg_m3 < 0.0`.
+    pub fn try_new(value_kg_m3: f64) -> Result<Self, BoundaryError> {
+        validate_non_negative("density_kg_m3", value_kg_m3)?;
+        Ok(Self(value_kg_m3))
+    }
+
+    /// Raw value in kilograms per cubic meter.
+    #[must_use]
+    pub const fn as_kilograms_per_cubic_meter(self) -> f64 {
+        self.0
+    }
+}
+
+/// Dimensionless fraction constrained to `[0, 1]`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FractionUnitInterval(f64);
+
+impl FractionUnitInterval {
+    /// Construct a unit-interval fraction.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - within `[0.0, 1.0]`
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value < 0.0`.
+    /// - [`BoundaryError::AboveMaximum`] when `value > 1.0`.
+    pub fn try_new(value: f64) -> Result<Self, BoundaryError> {
+        validate_finite("fraction_unit_interval", value)?;
+        validate_minimum("fraction_unit_interval", value, 0.0)?;
+        validate_maximum("fraction_unit_interval", value, 1.0)?;
+        Ok(Self(value))
+    }
+
+    /// Raw dimensionless fraction.
+    #[must_use]
+    pub const fn as_fraction(self) -> f64 {
+        self.0
+    }
+}
+
 fn validate_finite(boundary: &'static str, value: f64) -> Result<(), BoundaryError> {
     if value.is_finite() {
         Ok(())
@@ -309,6 +605,18 @@ fn validate_minimum(boundary: &'static str, value: f64, minimum: f64) -> Result<
             boundary,
             value,
             minimum,
+        })
+    }
+}
+
+fn validate_maximum(boundary: &'static str, value: f64, maximum: f64) -> Result<(), BoundaryError> {
+    if value <= maximum {
+        Ok(())
+    } else {
+        Err(BoundaryError::AboveMaximum {
+            boundary,
+            value,
+            maximum,
         })
     }
 }
@@ -367,7 +675,7 @@ mod tests {
                 assert_eq!(boundary, "runoff_depth_mm");
                 assert!(value.is_nan(), "expected NaN, received {value}");
             }
-            other @ BoundaryError::BelowMinimum { .. } => {
+            other => {
                 panic!("unexpected error variant: {other:?}");
             }
         }
@@ -447,6 +755,102 @@ mod tests {
             BoundaryError::NonFinite {
                 boundary: "runoff_depth_mm",
                 value: f64::INFINITY,
+            }
+        );
+    }
+
+    #[test]
+    fn water_depth_meters_rejects_negative() {
+        let error = WaterDepthMeters::try_new(-0.001).expect_err("negative depth must fail");
+        assert_eq!(
+            error,
+            BoundaryError::BelowMinimum {
+                boundary: "water_depth_m",
+                value: -0.001,
+                minimum: 0.0,
+            }
+        );
+    }
+
+    #[test]
+    fn elapsed_time_seconds_preserves_value() {
+        let elapsed = ElapsedTimeSeconds::try_new(7_200.0).expect("valid elapsed time");
+        assert_close(elapsed.as_seconds(), 7_200.0);
+    }
+
+    #[test]
+    fn hour_of_day_rejects_out_of_range() {
+        let error = HourOfDay::try_new(24.5).expect_err("out-of-range hour must fail");
+        assert_eq!(
+            error,
+            BoundaryError::AboveMaximum {
+                boundary: "hour_of_day_h",
+                value: 24.5,
+                maximum: 24.0,
+            }
+        );
+    }
+
+    #[test]
+    fn linear_rate_meters_per_second_preserves_value() {
+        let rate = LinearRateMetersPerSecond::try_new(1.25e-6).expect("valid linear rate");
+        assert_close(rate.as_meters_per_second(), 1.25e-6);
+    }
+
+    #[test]
+    fn radiation_wrappers_reject_negative_values() {
+        assert!(matches!(
+            SolarRadiationLangleysPerDay::try_new(-1.0),
+            Err(BoundaryError::BelowMinimum {
+                boundary: "solar_radiation_ly_d",
+                ..
+            })
+        ));
+        assert!(matches!(
+            SolarRadiationMegajoulesPerSquareMeterPerHour::try_new(-1.0),
+            Err(BoundaryError::BelowMinimum {
+                boundary: "solar_radiation_mj_m2_h",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn daily_mj_radiation_preserves_value() {
+        let radiation = SolarRadiationMegajoulesPerSquareMeterPerDay::try_new(8.368)
+            .expect("valid daily radiation");
+        assert_close(radiation.as_megajoules_per_square_meter_per_day(), 8.368);
+    }
+
+    #[test]
+    fn temperature_celsius_accepts_signed_finite_values() {
+        let temperature = TemperatureCelsius::try_new(-17.5).expect("valid signed temperature");
+        assert_close(temperature.as_celsius(), -17.5);
+    }
+
+    #[test]
+    fn density_rejects_non_finite_values() {
+        let error = DensityKilogramsPerCubicMeter::try_new(f64::INFINITY)
+            .expect_err("infinite density must fail");
+        assert_eq!(
+            error,
+            BoundaryError::NonFinite {
+                boundary: "density_kg_m3",
+                value: f64::INFINITY,
+            }
+        );
+    }
+
+    #[test]
+    fn fraction_unit_interval_rejects_above_one() {
+        let error =
+            FractionUnitInterval::try_new(1.001).expect_err("above-unit fraction must fail");
+        assert_eq!(
+            error,
+            BoundaryError::AboveMaximum {
+                boundary: "fraction_unit_interval",
+                value: 1.001,
+                maximum: 1.0,
             }
         );
     }

@@ -1,6 +1,6 @@
 # HPHYS0275 BoundaryValue Dimensional Typing Remediation
 
-Status: queued
+Status: completed/HOLD
 
 ## Objective
 
@@ -56,9 +56,14 @@ Expand and apply unit-safe `BoundaryValue`/`openwepp-unit-boundary` typing for h
 
 - crates/openwepp-unit-boundary/src/lib.rs
 - crates/openwepp-kernel-contract/src/lib.rs
+- crates/openwepp-sim-contract/src/units.rs
 - crates/openwepp-hillslope-orchestrator/**
 - crates/openwepp-runner/**
 - tests/integration/**
+- Cargo.toml
+- docs/architecture/unit-safe-boundary-types.md
+- docs/specifications/science-contracts/unit-safe-boundary-types-contract.md
+- docs/specifications/units/boundary-symbol-unit-registry.md
 - docs/work-packages/20260603-hphys0275-boundaryvalue-dimensional-typing-remediation-001/**
 
 ## Phase Plan

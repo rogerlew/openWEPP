@@ -52,10 +52,10 @@ winter unit governance:
   `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`, and
   `InterceptionStorage`.
 - WAT publication area column: `Area`.
-- Climate runtime aliases: `prcp`, `rad`, `tmax`, `tmin`, `tdpt`, `wind`,
-  `vwind`, `stmdur`, `stmstr`, `timem_####`, `mxint`, `avrint`, and
-  `intsty_####`, including hillslope-prefixed `hs##_...` watershed aliases for
-  storm timing/intensity surfaces.
+- Climate runtime aliases: `prcp`, `rad`, `tmax`, `tmin`, `tdpt`, `wind`
+  direction, `vwind`, `stmdur`, `stmstr`, `timem_####`, `mxint`, `avrint`,
+  and `intsty_####`, including hillslope-prefixed `hs##_...` watershed aliases
+  for storm timing/intensity surfaces.
 - Winter hourly aliases: `winter.hourly.rad_mj_m2_####`,
   `winter.hourly.air_temp_c_####`, `winter.hourly.dewpoint_c_####`,
   `winter.hourly.wind_m_s_####`, and
@@ -103,6 +103,22 @@ required-alias manifest, WAT schema metadata alignment, failure modes for
 missing/ambiguous units, template-token validation, and duplicate publication
 alias rejection. The wrapper also runs focused clippy with warnings denied.
 
+## HPHYS0275 Typed Boundary Remediation
+
+HPHYS0275 migrates the first high-risk runtime producer seams from
+`BoundaryValue::scalar` to typed `BoundaryValue` variants:
+
+- Daily climate runtime: `prcp`, `rad`, `tmax`, `tmin`, `tdpt`, `vwind`,
+  `stmdur`, `stmstr`, `timem_####`, `mxint`, `avrint`, and `intsty_####`.
+- SIMIMPL28 winter hourly runtime: `winter.hourly.rad_mj_m2_####`,
+  `winter.hourly.air_temp_c_####`,
+  `winter.hourly.cloud_fraction_####`, `snow.hourly.rain_m_####`, and
+  `snow.hourly.snowfall_m_####`.
+
+The registry keeps unported rows as `FollowUpRequired`. `snow.hourly.rain_m`
+and `snow.hourly.rain_retained_m` are split so the migrated forcing input can
+be `TypedRequired` while the retained-rain trace remains follow-up.
+
 ## HOLD Gaps
 
 The following gaps are explicit continuation work, not silent omissions:
@@ -110,8 +126,11 @@ The following gaps are explicit continuation work, not silent omissions:
 - Full repository symbol coverage is not complete; HPHYS0274 intentionally
   covers high-risk hydrology, snow/freeze, ET, climate, soil, percolation, and
   WAT publication surfaces first.
-- Typed `BoundaryValue` variants remain follow-up work under HPHYS0275; most
-  dimensional runtime symbols are registered as `FollowUpRequired`.
+- Typed `BoundaryValue` variants remain continuation work after HPHYS0275 for
+  output publication rows, wind-direction runtime typing, snow runtime state,
+  retained snow traces, soil/WB13 runtime geometry and storage rows, and
+  watershed-prefixed producer paths not migrated in the first typed-boundary
+  wave.
 - Named conversion-helper enforcement remains follow-up work under HPHYS0276.
 - High hourly radiation physical flux guards remain follow-up work under
   HPHYS0277.

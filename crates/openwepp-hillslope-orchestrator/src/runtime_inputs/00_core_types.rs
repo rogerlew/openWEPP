@@ -22,7 +22,8 @@ use openwepp_input_contract::parsers::{
     soil::{DisturbedPolicy, SoilDatver, SoilProfile},
 };
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
+    BoundaryError, BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface,
+    ClimateForcingSymbolSurfaceError,
 };
 
 use crate::constants::{

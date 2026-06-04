@@ -148,23 +148,43 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
 
         symbols.insert(
             simimpl28_hourly_symbol("winter.hourly.rad_mj_m2", hour),
-            BoundaryValue::scalar(hrrad_mj_m2),
+            climate_boundary_value(
+                "winter.hourly.rad_mj_m2",
+                ">= 0",
+                BoundaryValue::solar_radiation_megajoules_per_square_meter_per_hour(hrrad_mj_m2),
+            )?,
         );
         symbols.insert(
             simimpl28_hourly_symbol("winter.hourly.air_temp_c", hour),
-            BoundaryValue::scalar(hrtemp_c),
+            climate_boundary_value(
+                "winter.hourly.air_temp_c",
+                "finite",
+                BoundaryValue::temperature_celsius(hrtemp_c),
+            )?,
         );
         symbols.insert(
             simimpl28_hourly_symbol("winter.hourly.cloud_fraction", hour),
-            BoundaryValue::scalar(sunmap.cloud_fraction),
+            climate_boundary_value(
+                "winter.hourly.cloud_fraction",
+                "0..=1",
+                BoundaryValue::fraction_unit_interval(sunmap.cloud_fraction),
+            )?,
         );
         symbols.insert(
             simimpl28_hourly_symbol("snow.hourly.rain_m", hour),
-            BoundaryValue::scalar(hrrain_m),
+            climate_boundary_value(
+                "snow.hourly.rain_m",
+                ">= 0",
+                BoundaryValue::water_depth_meters(hrrain_m),
+            )?,
         );
         symbols.insert(
             simimpl28_hourly_symbol("snow.hourly.snowfall_m", hour),
-            BoundaryValue::scalar(hrsnow_m),
+            climate_boundary_value(
+                "snow.hourly.snowfall_m",
+                ">= 0",
+                BoundaryValue::water_depth_meters(hrsnow_m),
+            )?,
         );
     }
 

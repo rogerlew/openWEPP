@@ -35,14 +35,37 @@ fn map_surface_build_error(error: &ClimateForcingSymbolSurfaceError) -> ClimateR
     }
 }
 
-fn insert_series_values(
+fn insert_typed_series_values(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     symbols: &[BoundarySymbol],
     values: &[f64],
-) {
+    field: &'static str,
+    allowed: &'static str,
+    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
+) -> Result<(), ClimateRuntimeInputError> {
     debug_assert_eq!(symbols.len(), values.len());
     for (symbol, value) in symbols.iter().zip(values.iter()) {
-        surface.insert(symbol.clone(), BoundaryValue::scalar(*value));
+        let typed_value = climate_boundary_value(field, allowed, constructor(*value))?;
+        surface.insert(symbol.clone(), typed_value);
     }
+    Ok(())
 }
 
+fn climate_boundary_value(
+    field: &'static str,
+    allowed: &'static str,
+    value: Result<BoundaryValue, BoundaryError>,
+) -> Result<BoundaryValue, ClimateRuntimeInputError> {
+    value.map_err(|error| match error {
+        BoundaryError::NonFinite { value, .. } => {
+            ClimateRuntimeInputError::NonFiniteField { field, value }
+        }
+        BoundaryError::BelowMinimum { value, .. } | BoundaryError::AboveMaximum { value, .. } => {
+            ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                symbol: field.to_string(),
+                value,
+                allowed,
+            }
+        }
+    })
+}
