@@ -1908,6 +1908,16 @@ Authorized packages:
     H1/H7/H39 and full H1..H39 metrics recorded. Semantic parity remains
     `0/39`; continue with authoritative daily winter/snowpack state migration
     with corrected `wepp-forest` negative-melt authority retained before resuming WB17 `Ep`.
+- `20260604-hphys0280-hphys0275-typed-boundary-continuation-001/`
+  - Purpose: execute HPHYS0275 continuation by adding direction-specific typed
+    boundary values and migrating declared watershed-prefixed climate plus snow
+    runtime/trace surfaces away from raw scalar publication without changing
+    physics or output values.
+  - Status: completed/HOLD; implemented direction degrees, typed wind,
+    watershed-prefixed climate aliases, selected snow runtime/trace typing, and
+    executable registry posture updates. Focused gates, clippy, deny, and unit
+    registry gate pass; full workspace remains HOLD on pre-existing
+    `pl14s`/SIMIMPL18 failures reproduced on clean `HEAD`.
 - `20260603-hphys0279-sc-contract-unit-compliance-lint-001/`
   - Purpose: implement contract/documentation linting that enforces
     `Variables and Units` coverage, alias-map unit checks, and registry

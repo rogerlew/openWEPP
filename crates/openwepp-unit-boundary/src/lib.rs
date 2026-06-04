@@ -853,6 +853,37 @@ impl TemperatureCelsius {
     }
 }
 
+/// Direction angle at a runtime seam (`deg`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectionDegrees(f64);
+
+impl DirectionDegrees {
+    /// Construct a direction angle in degrees.
+    ///
+    /// Domain guards:
+    /// - finite
+    /// - within `[0.0, 360.0]`
+    ///
+    /// # Errors
+    ///
+    /// Returns:
+    /// - [`BoundaryError::NonFinite`] when `value_deg` is `NaN` or infinite.
+    /// - [`BoundaryError::BelowMinimum`] when `value_deg < 0.0`.
+    /// - [`BoundaryError::AboveMaximum`] when `value_deg > 360.0`.
+    pub fn try_new(value_deg: f64) -> Result<Self, BoundaryError> {
+        validate_finite("direction_degrees", value_deg)?;
+        validate_minimum("direction_degrees", value_deg, 0.0)?;
+        validate_maximum("direction_degrees", value_deg, 360.0)?;
+        Ok(Self(value_deg))
+    }
+
+    /// Raw value in degrees.
+    #[must_use]
+    pub const fn as_degrees(self) -> f64 {
+        self.0
+    }
+}
+
 /// Density at a runtime seam (`kg m^-3`).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DensityKilogramsPerCubicMeter(f64);
@@ -1275,6 +1306,31 @@ mod tests {
     fn temperature_celsius_accepts_signed_finite_values() {
         let temperature = TemperatureCelsius::try_new(-17.5).expect("valid signed temperature");
         assert_close(temperature.as_celsius(), -17.5);
+    }
+
+    #[test]
+    fn direction_degrees_rejects_out_of_range() {
+        let low_error =
+            DirectionDegrees::try_new(-0.001).expect_err("negative direction must fail");
+        assert_eq!(
+            low_error,
+            BoundaryError::BelowMinimum {
+                boundary: "direction_degrees",
+                value: -0.001,
+                minimum: 0.0,
+            }
+        );
+
+        let high_error =
+            DirectionDegrees::try_new(360.001).expect_err("above-circle direction must fail");
+        assert_eq!(
+            high_error,
+            BoundaryError::AboveMaximum {
+                boundary: "direction_degrees",
+                value: 360.001,
+                maximum: 360.0,
+            }
+        );
     }
 
     #[test]

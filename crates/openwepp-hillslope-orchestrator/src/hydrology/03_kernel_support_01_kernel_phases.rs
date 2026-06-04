@@ -3875,24 +3875,27 @@ impl Wb11HydrologyKernel {
             ),
         ];
         if active_snow_coupling {
-            state_updates.push(WritebackField::bounded(
+            state_updates.push(Self::typed_water_depth_writeback_field(
+                phase_class,
                 WB14_SYMBOL_SNOW_RUNTIME_SWE,
                 snow_coupling.runtime_swe,
                 Some(0.0),
                 None,
-            ));
-            state_updates.push(WritebackField::bounded(
+            )?);
+            state_updates.push(Self::typed_water_depth_writeback_field(
+                phase_class,
                 SNOW_RUNTIME_DEPTH_M_SYMBOL,
                 snow_coupling.runtime_depth_m,
                 Some(0.0),
                 None,
-            ));
-            state_updates.push(WritebackField::bounded(
+            )?);
+            state_updates.push(Self::typed_density_writeback_field(
+                phase_class,
                 SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL,
                 snow_coupling.runtime_density_kg_m3,
                 Some(0.0),
                 Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-            ));
+            )?);
             state_updates.push(WritebackField::bounded(
                 SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL,
                 snow_coupling.runtime_settle_day_count,
@@ -3900,54 +3903,61 @@ impl Wb11HydrologyKernel {
                 None,
             ));
             for hourly in &snow_coupling.hourly_state {
-                state_updates.push(WritebackField::bounded(
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DEPTH_BEFORE_ROOT, hourly.hour),
                     hourly.depth_before_m,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DEPTH_AVAILABLE_ROOT, hourly.hour),
                     hourly.depth_available_m,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_density_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DENSITY_BEFORE_ROOT, hourly.hour),
                     hourly.density_before_kg_m3,
                     Some(0.0),
                     Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DEPTH_AFTER_ROOT, hourly.hour),
                     hourly.depth_after_m,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_density_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DENSITY_AFTER_ROOT, hourly.hour),
                     hourly.density_after_kg_m3,
                     Some(0.0),
                     Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_RAIN_RETAINED_ROOT, hourly.hour),
                     hourly.rain_retained_m,
                     Some(0.0),
                     None,
-                ));
+                )?);
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_MELT_RAW_ROOT, hourly.hour),
                     hourly.melt_raw_m,
                     None,
                     None,
                 ));
-                state_updates.push(WritebackField::bounded(
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hourly.hour),
                     hourly.melt_m,
                     Some(0.0),
                     None,
-                ));
+                )?);
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_MELT_AMELT_ROOT, hourly.hour),
                     hourly.melt_amelt_in,
@@ -4002,44 +4012,50 @@ impl Wb11HydrologyKernel {
                     None,
                     None,
                 ));
-                state_updates.push(WritebackField::bounded(
+                state_updates.push(Self::typed_fraction_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT, hourly.hour),
                     hourly.melt_branch_active,
                     Some(0.0),
                     Some(1.0),
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_temperature_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(WINTER_HOURLY_DEWPOINT_ROOT, hourly.hour),
                     hourly.dewpoint_c,
                     None,
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_linear_rate_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(WINTER_HOURLY_WIND_ROOT, hourly.hour),
                     hourly.wind_m_s,
                     Some(0.0),
                     None,
-                ));
+                )?);
             }
         } else {
-            state_updates.push(WritebackField::bounded(
+            state_updates.push(Self::typed_water_depth_writeback_field(
+                phase_class,
                 WB14_SYMBOL_SNOW_RUNTIME_SWE,
                 0.0,
                 Some(0.0),
                 None,
-            ));
-            state_updates.push(WritebackField::bounded(
+            )?);
+            state_updates.push(Self::typed_water_depth_writeback_field(
+                phase_class,
                 SNOW_RUNTIME_DEPTH_M_SYMBOL,
                 0.0,
                 Some(0.0),
                 None,
-            ));
-            state_updates.push(WritebackField::bounded(
+            )?);
+            state_updates.push(Self::typed_density_writeback_field(
+                phase_class,
                 SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL,
                 0.0,
                 Some(0.0),
                 Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-            ));
+            )?);
             state_updates.push(WritebackField::bounded(
                 SNOW_RUNTIME_SETTLE_DAY_COUNT_SYMBOL,
                 0.0,
@@ -4047,66 +4063,75 @@ impl Wb11HydrologyKernel {
                 None,
             ));
             for hour in 1..=SIMIMPL29_HOURS_PER_DAY {
-                state_updates.push(WritebackField::bounded(
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DEPTH_BEFORE_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DEPTH_AVAILABLE_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_density_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DENSITY_BEFORE_ROOT, hour),
                     0.0,
                     Some(0.0),
                     Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DEPTH_AFTER_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_density_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_DENSITY_AFTER_ROOT, hour),
                     0.0,
                     Some(0.0),
                     Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_RAIN_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_SNOWFALL_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
+                )?);
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_MELT_RAW_ROOT, hour),
                     0.0,
                     None,
                     None,
                 ));
-                state_updates.push(WritebackField::bounded(
+                state_updates.push(Self::typed_water_depth_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_RAIN_RETAINED_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
+                )?);
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(SNOW_HOURLY_MELT_AMELT_ROOT, hour),
                     0.0,
@@ -4161,24 +4186,27 @@ impl Wb11HydrologyKernel {
                     None,
                     None,
                 ));
-                state_updates.push(WritebackField::bounded(
+                state_updates.push(Self::typed_fraction_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(SNOW_HOURLY_MELT_BRANCH_ACTIVE_ROOT, hour),
                     0.0,
                     Some(0.0),
                     Some(1.0),
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_temperature_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(WINTER_HOURLY_DEWPOINT_ROOT, hour),
                     0.0,
                     None,
                     None,
-                ));
-                state_updates.push(WritebackField::bounded(
+                )?);
+                state_updates.push(Self::typed_linear_rate_writeback_field(
+                    phase_class,
                     Self::hourly_symbol(WINTER_HOURLY_WIND_ROOT, hour),
                     0.0,
                     Some(0.0),
                     None,
-                ));
+                )?);
             }
         }
         if let Some(frost_outcome) = frost_coupling {

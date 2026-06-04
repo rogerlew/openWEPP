@@ -145,7 +145,11 @@ pub fn seed_hillslope_runtime_surface_from_climate(
             );
             state_surface.insert(
                 BoundarySymbol::from("wind"),
-                BoundaryValue::scalar(day.wind),
+                climate_boundary_value(
+                    "wind",
+                    "0..=360",
+                    BoundaryValue::direction_degrees(day.wind),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("tdpt"),
@@ -220,7 +224,11 @@ pub fn seed_hillslope_runtime_surface_from_climate(
             );
             state_surface.insert(
                 BoundarySymbol::from("wind"),
-                BoundaryValue::scalar(day.wind),
+                climate_boundary_value(
+                    "wind",
+                    "0..=360",
+                    BoundaryValue::direction_degrees(day.wind),
+                )?,
             );
             state_surface.insert(
                 BoundarySymbol::from("tdpt"),

@@ -8,6 +8,7 @@ use openwepp_input_contract::parsers::climate::{
     ParserMode as ClimateParserMode, parse_climate_from_str,
 };
 use openwepp_kernel_contract::{BoundaryError, BoundarySymbol, BoundaryValue};
+use openwepp_watershed_orchestrator::runtime_inputs::build_watershed_runtime_surface_from_climate_assignments;
 
 const STRICT_VALID_CLIMATE: &str = include_str!("../fixtures/infile/climate/strict_valid.cli");
 const BREAKPOINT_STMSTR_CLIMATE: &str = include_str!(
@@ -91,6 +92,13 @@ fn hphys0275_boundary_constructors_fail_closed_for_invalid_domains() {
             ..
         })
     ));
+    assert!(matches!(
+        BoundaryValue::direction_degrees(360.001),
+        Err(BoundaryError::AboveMaximum {
+            boundary: "direction_degrees",
+            ..
+        })
+    ));
 }
 
 #[test]
@@ -109,6 +117,7 @@ fn hphys0275_daily_climate_surface_publishes_high_risk_symbols_as_typed_values()
         ("tmin", "degC"),
         ("tdpt", "degC"),
         ("vwind", "m s^-1"),
+        ("wind", "deg"),
         ("avrint", "m s^-1"),
         ("mxint", "m s^-1"),
         ("timem_0001", "s"),
@@ -122,7 +131,6 @@ fn hphys0275_daily_climate_surface_publishes_high_risk_symbols_as_typed_values()
         assert!(value.as_f64().is_finite(), "{symbol} must remain finite");
     }
 
-    assert_eq!(state_value(state, "wind").unit_label(), "scalar");
     assert!((state_value(state, "wind").as_f64() - 180.0).abs() < 1.0e-12);
     assert!((state_value(state, "prcp").as_f64() - 0.01).abs() < 1.0e-12);
     assert!((state_value(state, "rad").as_f64() - 200.0).abs() < 1.0e-12);
@@ -161,6 +169,7 @@ fn hphys0275_breakpoint_climate_surface_publishes_selected_symbols_as_typed_valu
         ("tmin", "degC"),
         ("rad", "Ly d^-1"),
         ("vwind", "m s^-1"),
+        ("wind", "deg"),
         ("tdpt", "degC"),
     ];
 
@@ -171,7 +180,6 @@ fn hphys0275_breakpoint_climate_surface_publishes_selected_symbols_as_typed_valu
         assert!(value.as_f64().is_finite(), "{symbol} must remain finite");
     }
 
-    assert_eq!(state_value(state, "wind").unit_label(), "scalar");
     let nbrkpt = state_count(state, "nbrkpt");
     for index in 1..=nbrkpt {
         let timem = format!("timem_{index:04}");
@@ -212,5 +220,37 @@ fn hphys0275_winter_hourly_surface_publishes_high_risk_symbols_as_typed_values()
             assert_ne!(value.unit_label(), "scalar", "{symbol} must not be scalar");
             assert!(value.as_f64().is_finite(), "{symbol} must remain finite");
         }
+    }
+}
+
+#[test]
+fn hphys0280_watershed_climate_surface_preserves_typed_units() {
+    let climate = parse_climate_from_str(STRICT_VALID_CLIMATE, ClimateParserMode::Strict)
+        .expect("strict climate fixture should parse");
+    let assignments = BTreeMap::from([(1_u32, climate)]);
+    let surface = build_watershed_runtime_surface_from_climate_assignments(&assignments, 0)
+        .expect("watershed climate runtime surface should build");
+    let state = &surface.state_surface;
+
+    let typed_symbols = [
+        ("hs1_prcp", "m"),
+        ("hs1_stmdur", "s"),
+        ("hs1_rad", "Ly d^-1"),
+        ("hs1_tmax", "degC"),
+        ("hs1_tmin", "degC"),
+        ("hs1_tdpt", "degC"),
+        ("hs1_vwind", "m s^-1"),
+        ("hs1_wind", "deg"),
+        ("hs1_avrint", "m s^-1"),
+        ("hs1_mxint", "m s^-1"),
+        ("hs1_timem_0001", "s"),
+        ("hs1_intsty_0001", "m s^-1"),
+    ];
+
+    for (symbol, expected_unit) in typed_symbols {
+        let value = state_value(state, symbol);
+        assert_eq!(value.unit_label(), expected_unit, "{symbol} unit label");
+        assert_ne!(value.unit_label(), "scalar", "{symbol} must not be scalar");
+        assert!(value.as_f64().is_finite(), "{symbol} must remain finite");
     }
 }

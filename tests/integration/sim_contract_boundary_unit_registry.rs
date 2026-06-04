@@ -33,6 +33,17 @@ fn canonical_registry_contains_hydrology_et_percolation_publication_units() {
             "{alias} dimension mismatch"
         );
     }
+
+    for alias in ["wind", "hs21_wind"] {
+        let entry = registry
+            .entry_for_boundary_alias(alias)
+            .unwrap_or_else(|_| panic!("direction alias {alias} should resolve"));
+        assert_eq!(
+            entry.domain_class(),
+            DomainClass::DirectionDegrees,
+            "{alias} direction domain"
+        );
+    }
 }
 
 #[test]
@@ -54,6 +65,7 @@ fn canonical_registry_keeps_prcp_meters_distinct_from_p_publication_mm() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
     let registry = BoundaryUnitRegistry::canonical_registry()
         .expect("canonical unit registry should construct");
@@ -65,9 +77,18 @@ fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
         ("timem_0001", "s", DimensionClass::Time),
         ("wind", "deg", DimensionClass::Direction),
         ("vwind", "m s^-1", DimensionClass::WindSpeed),
+        ("hs21_prcp", "m", DimensionClass::Depth),
+        ("hs21_rad", "Ly d^-1", DimensionClass::RadiationDaily),
+        ("hs21_tmax", "degC", DimensionClass::Temperature),
+        ("hs21_tmin", "degC", DimensionClass::Temperature),
+        ("hs21_tdpt", "degC", DimensionClass::Temperature),
+        ("hs21_vwind", "m s^-1", DimensionClass::WindSpeed),
+        ("hs21_wind", "deg", DimensionClass::Direction),
         ("hs21_stmdur", "s", DimensionClass::Time),
         ("hs21_stmstr", "h", DimensionClass::Time),
         ("hs21_timem_0001", "s", DimensionClass::Time),
+        ("hs21_mxint", "m s^-1", DimensionClass::Rate),
+        ("hs21_avrint", "m s^-1", DimensionClass::Rate),
         ("hs21_intsty_0001", "m s^-1", DimensionClass::Rate),
         (
             "winter.hourly.rad_mj_m2_0001",
@@ -97,7 +118,39 @@ fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
             DimensionClass::Density,
         ),
         ("snow.hourly.rain_m_0011", "m", DimensionClass::Depth),
+        (
+            "snow.hourly.rain_retained_m_0011",
+            "m",
+            DimensionClass::Depth,
+        ),
+        (
+            "snow.hourly.depth_before_m_0011",
+            "m",
+            DimensionClass::Depth,
+        ),
+        (
+            "snow.hourly.depth_available_m_0011",
+            "m",
+            DimensionClass::Depth,
+        ),
+        ("snow.hourly.depth_after_m_0011", "m", DimensionClass::Depth),
+        (
+            "snow.hourly.density_before_kg_m3_0011",
+            "kg m^-3",
+            DimensionClass::Density,
+        ),
+        (
+            "snow.hourly.density_after_kg_m3_0011",
+            "kg m^-3",
+            DimensionClass::Density,
+        ),
+        ("snow.hourly.melt_m_0011", "m", DimensionClass::Depth),
         ("snow.hourly.melt_raw_m_0011", "m", DimensionClass::Depth),
+        (
+            "snow.hourly.melt_branch_active_0011",
+            "dimensionless",
+            DimensionClass::Fraction,
+        ),
         (
             "snow.hourly.melt_amelt_in_0011",
             "in",
@@ -154,9 +207,36 @@ fn hphys0275_registry_marks_only_migrated_aliases_typed_required() {
         "intsty_0001",
         "winter.hourly.rad_mj_m2_0001",
         "winter.hourly.air_temp_c_0001",
+        "winter.hourly.dewpoint_c_0001",
+        "winter.hourly.wind_m_s_0001",
         "winter.hourly.cloud_fraction_0001",
+        "snow.runtime_swe",
+        "snow.runtime_depth_m",
+        "snow.runtime_density_kg_m3",
         "snow.hourly.rain_m_0001",
+        "snow.hourly.rain_retained_m_0001",
         "snow.hourly.snowfall_m_0001",
+        "wind",
+        "hs21_prcp",
+        "hs21_rad",
+        "hs21_tmax",
+        "hs21_tmin",
+        "hs21_tdpt",
+        "hs21_vwind",
+        "hs21_wind",
+        "hs21_stmdur",
+        "hs21_stmstr",
+        "hs21_timem_0001",
+        "hs21_mxint",
+        "hs21_avrint",
+        "hs21_intsty_0001",
+        "snow.hourly.depth_before_m_0001",
+        "snow.hourly.depth_available_m_0001",
+        "snow.hourly.depth_after_m_0001",
+        "snow.hourly.density_before_kg_m3_0001",
+        "snow.hourly.density_after_kg_m3_0001",
+        "snow.hourly.melt_m_0001",
+        "snow.hourly.melt_branch_active_0001",
     ] {
         let entry = registry
             .entry_for_boundary_alias(alias)
@@ -169,14 +249,11 @@ fn hphys0275_registry_marks_only_migrated_aliases_typed_required() {
     }
 
     for alias in [
-        "wind",
-        "hs21_stmdur",
-        "hs21_stmstr",
-        "hs21_timem_0001",
-        "hs21_mxint",
-        "hs21_avrint",
-        "hs21_intsty_0001",
-        "snow.hourly.rain_retained_m_0001",
+        "snow.hourly.melt_raw_m_0001",
+        "snow.hourly.melt_amelt_in_0001",
+        "snow.hourly.melt_bmelt_in_0001",
+        "snow.hourly.melt_cmelt_in_0001",
+        "snow.hourly.melt_dmelt_in_0001",
     ] {
         let entry = registry
             .entry_for_boundary_alias(alias)

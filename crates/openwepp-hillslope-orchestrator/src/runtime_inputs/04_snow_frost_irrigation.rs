@@ -661,15 +661,30 @@ pub fn seed_hillslope_runtime_surface_from_snow(
     );
     state_surface.insert(
         BoundarySymbol::from("snow.runtime_swe"),
-        BoundaryValue::scalar(0.0),
+        snow_runtime_boundary_value(
+            "snow.runtime_swe",
+            0.0,
+            ">= 0.0",
+            BoundaryValue::water_depth_meters,
+        )?,
     );
     state_surface.insert(
         BoundarySymbol::from("snow.runtime_depth_m"),
-        BoundaryValue::scalar(0.0),
+        snow_runtime_boundary_value(
+            "snow.runtime_depth_m",
+            0.0,
+            ">= 0.0",
+            BoundaryValue::water_depth_meters,
+        )?,
     );
     state_surface.insert(
         BoundarySymbol::from("snow.runtime_density_kg_m3"),
-        BoundaryValue::scalar(0.0),
+        snow_runtime_boundary_value(
+            "snow.runtime_density_kg_m3",
+            0.0,
+            ">= 0.0",
+            BoundaryValue::density_kilograms_per_cubic_meter,
+        )?,
     );
     state_surface.insert(
         BoundarySymbol::from("snow.runtime_settle_day_count"),
@@ -677,6 +692,27 @@ pub fn seed_hillslope_runtime_surface_from_snow(
     );
 
     Ok(())
+}
+
+fn snow_runtime_boundary_value(
+    field: &'static str,
+    value: f64,
+    allowed: &'static str,
+    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
+) -> Result<BoundaryValue, HillslopeRuntimeInputError> {
+    constructor(value).map_err(|error| match error {
+        BoundaryError::NonFinite { value, .. } => HillslopeRuntimeInputError::NonFiniteSnowControl {
+            field,
+            value,
+        },
+        BoundaryError::BelowMinimum { value, .. } | BoundaryError::AboveMaximum { value, .. } => {
+            HillslopeRuntimeInputError::SnowControlOutOfDomain {
+                field,
+                value,
+                allowed,
+            }
+        }
+    })
 }
 
 /// Seed parsed frost-control runtime symbols into an existing hillslope runtime

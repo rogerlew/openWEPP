@@ -351,60 +351,37 @@ fn clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliati
     );
 
     for hour in 1..=24 {
-        assert!(
-            report
+        let typed_symbols = [
+            (format!("snow.hourly.depth_before_m_{hour:04}"), "m"),
+            (format!("snow.hourly.depth_available_m_{hour:04}"), "m"),
+            (
+                format!("snow.hourly.density_before_kg_m3_{hour:04}"),
+                "kg m^-3",
+            ),
+            (format!("snow.hourly.depth_after_m_{hour:04}"), "m"),
+            (
+                format!("snow.hourly.density_after_kg_m3_{hour:04}"),
+                "kg m^-3",
+            ),
+            (format!("snow.hourly.rain_retained_m_{hour:04}"), "m"),
+            (format!("snow.hourly.melt_m_{hour:04}"), "m"),
+            (
+                format!("snow.hourly.melt_branch_active_{hour:04}"),
+                "dimensionless",
+            ),
+            (format!("winter.hourly.dewpoint_c_{hour:04}"), "degC"),
+            (format!("winter.hourly.wind_m_s_{hour:04}"), "m s^-1"),
+        ];
+
+        for (symbol, expected_unit) in typed_symbols {
+            let value = report
                 .writeback_surface
                 .state_surface
-                .contains_key(&BoundarySymbol::from(format!(
-                    "snow.hourly.depth_before_m_{hour:04}"
-                ))),
-            "missing snow.hourly.depth_before_m_{hour:04}"
-        );
-        assert!(
-            report
-                .writeback_surface
-                .state_surface
-                .contains_key(&BoundarySymbol::from(format!(
-                    "snow.hourly.depth_available_m_{hour:04}"
-                ))),
-            "missing snow.hourly.depth_available_m_{hour:04}"
-        );
-        assert!(
-            report
-                .writeback_surface
-                .state_surface
-                .contains_key(&BoundarySymbol::from(format!(
-                    "snow.hourly.density_before_kg_m3_{hour:04}"
-                ))),
-            "missing snow.hourly.density_before_kg_m3_{hour:04}"
-        );
-        assert!(
-            report
-                .writeback_surface
-                .state_surface
-                .contains_key(&BoundarySymbol::from(format!(
-                    "snow.hourly.depth_after_m_{hour:04}"
-                ))),
-            "missing snow.hourly.depth_after_m_{hour:04}"
-        );
-        assert!(
-            report
-                .writeback_surface
-                .state_surface
-                .contains_key(&BoundarySymbol::from(format!(
-                    "snow.hourly.density_after_kg_m3_{hour:04}"
-                ))),
-            "missing snow.hourly.density_after_kg_m3_{hour:04}"
-        );
-        assert!(
-            report
-                .writeback_surface
-                .state_surface
-                .contains_key(&BoundarySymbol::from(format!(
-                    "snow.hourly.melt_m_{hour:04}"
-                ))),
-            "missing snow.hourly.melt_m_{hour:04}"
-        );
+                .get(&BoundarySymbol::from(symbol.clone()))
+                .unwrap_or_else(|| panic!("missing {symbol}"));
+            assert_eq!(value.unit_label(), expected_unit, "{symbol} unit label");
+            assert_ne!(value.unit_label(), "scalar", "{symbol} must not be scalar");
+        }
     }
 
     let infiltration = report
@@ -434,12 +411,31 @@ fn clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliati
         .state_surface
         .get(&BoundarySymbol::from("snow.runtime_swe"))
         .expect("snow.runtime_swe should be present")
-        .as_f64();
+        .to_owned();
+    assert_eq!(snow_runtime_swe.unit_label(), "m");
     assert!(
-        (snow_runtime_swe - (1.0 - EXPECTED_S)).abs() <= CLIM05_TEST_TOLERANCE,
+        (snow_runtime_swe.as_f64() - (1.0 - EXPECTED_S)).abs() <= CLIM05_TEST_TOLERANCE,
         "runtime_swe={} expected={}",
-        snow_runtime_swe,
+        snow_runtime_swe.as_f64(),
         1.0 - EXPECTED_S
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from("snow.runtime_depth_m"))
+            .expect("snow.runtime_depth_m should be present")
+            .unit_label(),
+        "m"
+    );
+    assert_eq!(
+        report
+            .writeback_surface
+            .state_surface
+            .get(&BoundarySymbol::from("snow.runtime_density_kg_m3"))
+            .expect("snow.runtime_density_kg_m3 should be present")
+            .unit_label(),
+        "kg m^-3"
     );
 
     let q_runoff = report

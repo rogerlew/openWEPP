@@ -1,6 +1,6 @@
 # Unit-Safe Boundary Types Contract
 
-Status: Active (ARCH09, HPHYS0276 amended)
+Status: Active (ARCH09, HPHYS0280 amended)
 Evidence: Static + Ran  
 Ran evidence:
 - `cargo test --manifest-path crates/openwepp-unit-boundary/Cargo.toml`
@@ -21,6 +21,7 @@ This contract defines typed numerical boundary-value obligations for:
 - linear rates in `m s^-1`
 - daily and hourly solar radiation
 - signed Celsius temperatures
+- directional degrees
 - density
 - unit-interval fractions
 - named directional unit conversions for first-wave high-risk runtime/kernel
@@ -49,6 +50,7 @@ It is implemented by:
 | `SolarRadiationMegajoulesPerSquareMeterPerDay` | daily radiation | finite and `>= 0` | `BoundaryError::{NonFinite|BelowMinimum}` |
 | `SolarRadiationMegajoulesPerSquareMeterPerHour` | hourly radiation | finite and `>= 0` | `BoundaryError::{NonFinite|BelowMinimum}` |
 | `TemperatureCelsius` | temperature | finite signed value | `BoundaryError::NonFinite` |
+| `DirectionDegrees` | direction angle | finite and `[0, 360]` | `BoundaryError::{NonFinite|BelowMinimum|AboveMaximum}` |
 | `DensityKilogramsPerCubicMeter` | density (`M/L^3`) | finite and `>= 0` | `BoundaryError::{NonFinite|BelowMinimum}` |
 | `FractionUnitInterval` | fraction | finite and `[0, 1]` | `BoundaryError::{NonFinite|BelowMinimum|AboveMaximum}` |
 
@@ -60,11 +62,14 @@ Normative requirements:
    invalid values.
 5. HPHYS0275 migrated runtime producer seams MUST publish high-risk climate and
    SIMIMPL28 hourly symbols through typed `BoundaryValue` constructors rather
-   than `BoundaryValue::scalar`. Wind direction is explicitly excluded from the
-   first migration wave until a direction-specific wrapper is specified.
+   than `BoundaryValue::scalar`.
 6. HPHYS0276 first-wave production conversion seams MUST call named
    `openwepp-unit-boundary::conversions` helpers rather than spelling raw
    dimensional conversion literals directly.
+7. HPHYS0280 continuation seams MUST publish climate `wind` direction,
+   watershed-prefixed climate aliases for HPHYS0275 typed families, and
+   selected snow runtime/trace state surfaces through typed `BoundaryValue`
+   constructors rather than `BoundaryValue::scalar`.
 
 ## 3. Conversion Contracts
 
@@ -129,6 +134,9 @@ Invariant IDs:
   carry non-scalar unit labels at publication.
 - `INV-USB-007`: first-wave high-risk production conversion seams use named
   directional helpers and the raw-literal guard rejects unauthorized literals.
+- `INV-USB-008`: HPHYS0280 continuation surfaces carry non-scalar unit labels:
+  direction degrees, watershed-prefixed climate aliases, and selected snow
+  runtime/trace depth/density/temperature/rate/fraction families.
 
 ## 5. Test Evidence Mapping
 
@@ -142,8 +150,11 @@ Invariant IDs:
 | `process_rate_rejects_non_finite_conversion` | `INV-USB-001`, `INV-USB-004` |
 | `fraction_unit_interval_rejects_above_one` | `INV-USB-005` |
 | `hour_of_day_rejects_out_of_range` | `INV-USB-005` |
-| `hphys0275_daily_climate_surface_publishes_high_risk_symbols_as_typed_values` | `INV-USB-006` |
+| `direction_degrees_rejects_out_of_range` | `INV-USB-008` |
+| `hphys0275_daily_climate_surface_publishes_high_risk_symbols_as_typed_values` | `INV-USB-006`, `INV-USB-008` |
 | `hphys0275_winter_hourly_surface_publishes_high_risk_symbols_as_typed_values` | `INV-USB-006` |
+| `hphys0280_watershed_climate_surface_preserves_typed_units` | `INV-USB-008` |
+| `clim05_snow_runtime_kernel_contract` HPHYS0280 assertions | `INV-USB-008` |
 | `radiation_conversion_direction_uses_langley_to_mj_m2` | `INV-USB-004`, `INV-USB-007` |
 | `legacy_snow_melt_conversion_helpers_preserve_direction` | `INV-USB-004`, `INV-USB-007` |
 | `snow_density_depth_conversions_are_directional` | `INV-USB-004`, `INV-USB-007` |

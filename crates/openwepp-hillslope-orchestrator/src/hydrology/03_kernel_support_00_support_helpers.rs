@@ -418,12 +418,10 @@ impl Wb11HydrologyKernel {
     ) -> Wb11HydrologyKernelGuardError {
         match error {
             openwepp_unit_boundary::BoundaryError::NonFinite { value, .. } => {
-                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                     phase_class,
                     symbol,
                     value: *value,
-                    minimum: None,
-                    maximum: None,
                 }
             }
             openwepp_unit_boundary::BoundaryError::BelowMinimum { value, minimum, .. } => {
@@ -445,6 +443,131 @@ impl Wb11HydrologyKernel {
                 }
             }
         }
+    }
+
+    fn typed_water_depth_writeback_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+    ) -> Result<BoundaryValue, Wb11HydrologyKernelGuardError> {
+        BoundaryValue::water_depth_meters(value)
+            .map_err(|error| Self::unit_conversion_guard_error(phase_class, symbol.clone(), &error))
+    }
+
+    fn typed_density_writeback_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+    ) -> Result<BoundaryValue, Wb11HydrologyKernelGuardError> {
+        BoundaryValue::density_kilograms_per_cubic_meter(value)
+            .map_err(|error| Self::unit_conversion_guard_error(phase_class, symbol.clone(), &error))
+    }
+
+    fn typed_temperature_writeback_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+    ) -> Result<BoundaryValue, Wb11HydrologyKernelGuardError> {
+        BoundaryValue::temperature_celsius(value)
+            .map_err(|error| Self::unit_conversion_guard_error(phase_class, symbol.clone(), &error))
+    }
+
+    fn typed_linear_rate_writeback_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+    ) -> Result<BoundaryValue, Wb11HydrologyKernelGuardError> {
+        BoundaryValue::linear_rate_meters_per_second(value)
+            .map_err(|error| Self::unit_conversion_guard_error(phase_class, symbol.clone(), &error))
+    }
+
+    fn typed_fraction_writeback_value(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: &BoundarySymbol,
+        value: f64,
+    ) -> Result<BoundaryValue, Wb11HydrologyKernelGuardError> {
+        BoundaryValue::fraction_unit_interval(value)
+            .map_err(|error| Self::unit_conversion_guard_error(phase_class, symbol.clone(), &error))
+    }
+
+    fn typed_water_depth_writeback_field(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<WritebackField, Wb11HydrologyKernelGuardError> {
+        let symbol = symbol.into();
+        Ok(WritebackField::bounded(
+            symbol.clone(),
+            Self::typed_water_depth_writeback_value(phase_class, &symbol, value)?,
+            minimum,
+            maximum,
+        ))
+    }
+
+    fn typed_density_writeback_field(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<WritebackField, Wb11HydrologyKernelGuardError> {
+        let symbol = symbol.into();
+        Ok(WritebackField::bounded(
+            symbol.clone(),
+            Self::typed_density_writeback_value(phase_class, &symbol, value)?,
+            minimum,
+            maximum,
+        ))
+    }
+
+    fn typed_temperature_writeback_field(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<WritebackField, Wb11HydrologyKernelGuardError> {
+        let symbol = symbol.into();
+        Ok(WritebackField::bounded(
+            symbol.clone(),
+            Self::typed_temperature_writeback_value(phase_class, &symbol, value)?,
+            minimum,
+            maximum,
+        ))
+    }
+
+    fn typed_linear_rate_writeback_field(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<WritebackField, Wb11HydrologyKernelGuardError> {
+        let symbol = symbol.into();
+        Ok(WritebackField::bounded(
+            symbol.clone(),
+            Self::typed_linear_rate_writeback_value(phase_class, &symbol, value)?,
+            minimum,
+            maximum,
+        ))
+    }
+
+    fn typed_fraction_writeback_field(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: impl Into<BoundarySymbol>,
+        value: f64,
+        minimum: Option<f64>,
+        maximum: Option<f64>,
+    ) -> Result<WritebackField, Wb11HydrologyKernelGuardError> {
+        let symbol = symbol.into();
+        Ok(WritebackField::bounded(
+            symbol.clone(),
+            Self::typed_fraction_writeback_value(phase_class, &symbol, value)?,
+            minimum,
+            maximum,
+        ))
     }
 
     fn require_hourly_state_scalar(

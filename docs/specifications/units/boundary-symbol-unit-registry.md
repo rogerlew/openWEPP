@@ -103,7 +103,7 @@ required-alias manifest, WAT schema metadata alignment, failure modes for
 missing/ambiguous units, template-token validation, and duplicate publication
 alias rejection. The wrapper also runs focused clippy with warnings denied.
 
-## HPHYS0275 Typed Boundary Remediation
+## HPHYS0275/HPHYS0280 Typed Boundary Remediation
 
 HPHYS0275 migrates the first high-risk runtime producer seams from
 `BoundaryValue::scalar` to typed `BoundaryValue` variants:
@@ -114,6 +114,16 @@ HPHYS0275 migrates the first high-risk runtime producer seams from
   `winter.hourly.air_temp_c_####`,
   `winter.hourly.cloud_fraction_####`, `snow.hourly.rain_m_####`, and
   `snow.hourly.snowfall_m_####`.
+
+HPHYS0280 continues the same typed-boundary remediation:
+
+- Daily climate runtime `wind` direction publishes as typed degrees.
+- Watershed-prefixed climate aliases for HPHYS0275 typed families preserve
+  non-scalar unit labels instead of scalarizing per-hillslope climate values.
+- Snow runtime state and selected hourly trace families publish typed water
+  depths, density, signed Celsius temperatures, hourly radiation, wind speed,
+  and unit-interval branch/fraction values where registry authority is
+  already explicit.
 
 The registry keeps unported rows as `FollowUpRequired`. `snow.hourly.rain_m`
 and `snow.hourly.rain_retained_m` are split so the migrated forcing input can
@@ -126,11 +136,11 @@ The following gaps are explicit continuation work, not silent omissions:
 - Full repository symbol coverage is not complete; HPHYS0274 intentionally
   covers high-risk hydrology, snow/freeze, ET, climate, soil, percolation, and
   WAT publication surfaces first.
-- Typed `BoundaryValue` variants remain continuation work after HPHYS0275 for
-  output publication rows, wind-direction runtime typing, snow runtime state,
-  retained snow traces, soil/WB13 runtime geometry and storage rows, and
-  watershed-prefixed producer paths not migrated in the first typed-boundary
-  wave.
+- Typed `BoundaryValue` variants remain continuation work after HPHYS0280 for
+  output publication rows, integer/count wrappers such as
+  `snow.runtime_settle_day_count`, soil/WB13 runtime geometry and storage rows,
+  and non-selected production paths not migrated in the first two
+  typed-boundary waves.
 - Named conversion-helper enforcement remains follow-up work under HPHYS0276.
 - High hourly radiation physical flux guards are implemented for first-wave
   SIMIMPL28 winter hourly radiation under HPHYS0277.

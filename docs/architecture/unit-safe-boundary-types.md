@@ -1,6 +1,6 @@
 # Unit-Safe Boundary Types
 
-Status: Active (ARCH09, HPHYS0276 amended)
+Status: Active (ARCH09, HPHYS0280 amended)
 Evidence: Static + Ran  
 Ran evidence:
 - `cargo fmt --manifest-path crates/openwepp-unit-boundary/Cargo.toml --check`
@@ -36,6 +36,7 @@ Implementation path:
 | `SolarRadiationMegajoulesPerSquareMeterPerDay` | `MJ m^-2 d^-1` | finite, `>= 0` | internal daily radiation after explicit conversion can be typed without changing lineage |
 | `SolarRadiationMegajoulesPerSquareMeterPerHour` | `MJ m^-2 h^-1` | finite, `>= 0` | SIMIMPL28 hourly winter forcing must not carry Langley-scale values under MJ labels |
 | `TemperatureCelsius` | `degC` | finite | thermal forcing can be signed and must not be treated as dimensionless |
+| `DirectionDegrees` | `deg` | finite, `[0, 360]` | climate wind-direction seams are angles, not scalar magnitudes or wind speeds |
 | `DensityKilogramsPerCubicMeter` | `kg m^-3` | finite, `>= 0` | snow/freeze density seams require explicit density units |
 | `FractionUnitInterval` | `dimensionless` | finite, `[0, 1]` | fractions remain dimensionless but bounded at construction |
 
@@ -81,8 +82,10 @@ The crate provides explicit constructors/helpers for unit conversions:
 HPHYS0275 adds direct runtime constructors for already-canonical seam units.
 Those constructors do not rescale values; they validate domain and carry unit
 identity through `BoundaryValue::unit_label()`.
-Wind direction remains scalar/follow-up because the first HPHYS0275 wave only
-adds wind-speed typing; direction-specific typing requires a separate wrapper.
+HPHYS0280 adds `DirectionDegrees` for climate wind direction and continues
+typed publication for declared watershed-prefixed climate aliases plus selected
+snow runtime/trace depth, density, temperature, rate, radiation, and fraction
+families.
 
 All conversion paths perform finite checks on inputs and conversion results.
 No silent clamping/coercion/defaulting is permitted.

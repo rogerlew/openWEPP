@@ -15,9 +15,9 @@ use openwepp_sim_contract::status::{
 };
 pub use openwepp_unit_boundary::BoundaryError;
 use openwepp_unit_boundary::{
-    DensityKilogramsPerCubicMeter, ElapsedTimeSeconds, FlowRateCubicMetersPerSecond,
-    FractionUnitInterval, HourOfDay, LinearRateMetersPerSecond, ProcessRateMillimetersPerHour,
-    RunoffDepthMillimeters, SolarRadiationLangleysPerDay,
+    DensityKilogramsPerCubicMeter, DirectionDegrees, ElapsedTimeSeconds,
+    FlowRateCubicMetersPerSecond, FractionUnitInterval, HourOfDay, LinearRateMetersPerSecond,
+    ProcessRateMillimetersPerHour, RunoffDepthMillimeters, SolarRadiationLangleysPerDay,
     SolarRadiationMegajoulesPerSquareMeterPerDay, SolarRadiationMegajoulesPerSquareMeterPerHour,
     StorageVolumeCubicMeters, SurfaceAreaSquareMeters, TemperatureCelsius, WaterDepthMeters,
 };
@@ -768,6 +768,7 @@ pub enum BoundaryValue {
     SolarRadiationMegajoulesPerSquareMeterPerDay(SolarRadiationMegajoulesPerSquareMeterPerDay),
     SolarRadiationMegajoulesPerSquareMeterPerHour(SolarRadiationMegajoulesPerSquareMeterPerHour),
     TemperatureCelsius(TemperatureCelsius),
+    DirectionDegrees(DirectionDegrees),
     DensityKilogramsPerCubicMeter(DensityKilogramsPerCubicMeter),
     FractionUnitInterval(FractionUnitInterval),
 }
@@ -816,6 +817,10 @@ impl BoundaryValue {
         TemperatureCelsius::try_new(value).map(Self::TemperatureCelsius)
     }
 
+    pub fn direction_degrees(value: f64) -> Result<Self, BoundaryError> {
+        DirectionDegrees::try_new(value).map(Self::DirectionDegrees)
+    }
+
     pub fn density_kilograms_per_cubic_meter(value: f64) -> Result<Self, BoundaryError> {
         DensityKilogramsPerCubicMeter::try_new(value).map(Self::DensityKilogramsPerCubicMeter)
     }
@@ -845,6 +850,7 @@ impl BoundaryValue {
                 value.as_megajoules_per_square_meter_per_hour()
             }
             Self::TemperatureCelsius(value) => value.as_celsius(),
+            Self::DirectionDegrees(value) => value.as_degrees(),
             Self::DensityKilogramsPerCubicMeter(value) => value.as_kilograms_per_cubic_meter(),
             Self::FractionUnitInterval(value) => value.as_fraction(),
         }
@@ -867,6 +873,7 @@ impl BoundaryValue {
             Self::SolarRadiationMegajoulesPerSquareMeterPerDay(_) => "MJ m^-2 d^-1",
             Self::SolarRadiationMegajoulesPerSquareMeterPerHour(_) => "MJ m^-2 h^-1",
             Self::TemperatureCelsius(_) => "degC",
+            Self::DirectionDegrees(_) => "deg",
             Self::DensityKilogramsPerCubicMeter(_) => "kg m^-3",
             Self::FractionUnitInterval(_) => "dimensionless",
         }
@@ -954,6 +961,12 @@ impl From<SolarRadiationMegajoulesPerSquareMeterPerHour> for BoundaryValue {
 impl From<TemperatureCelsius> for BoundaryValue {
     fn from(value: TemperatureCelsius) -> Self {
         Self::TemperatureCelsius(value)
+    }
+}
+
+impl From<DirectionDegrees> for BoundaryValue {
+    fn from(value: DirectionDegrees) -> Self {
+        Self::DirectionDegrees(value)
     }
 }
 

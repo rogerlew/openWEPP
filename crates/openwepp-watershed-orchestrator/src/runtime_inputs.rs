@@ -17,8 +17,8 @@ use openwepp_input_contract::parsers::{
     },
 };
 use openwepp_kernel_contract::{
-    BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface, ClimateForcingSymbolSurfaceError,
-    WatershedProductionStateSymbol,
+    BoundaryError, BoundarySymbol, BoundaryValue, ClimateForcingSymbolSurface,
+    ClimateForcingSymbolSurfaceError, WatershedProductionStateSymbol,
 };
 
 use crate::WatershedWritebackSurface;
@@ -2607,8 +2607,22 @@ pub fn seed_watershed_runtime_surface_from_climate(
                     day.mon,
                     day.year,
                 );
-                insert_hillslope_symbol(state_surface, hillslope_id, "prcp", day.prcp);
-                insert_hillslope_symbol(state_surface, hillslope_id, "stmdur", day.stmdur);
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "prcp",
+                    day.prcp,
+                    ">= 0",
+                    BoundaryValue::water_depth_meters,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "stmdur",
+                    day.stmdur,
+                    ">= 0",
+                    BoundaryValue::elapsed_time_seconds,
+                )?;
                 insert_hillslope_symbol(state_surface, hillslope_id, "timep", day.timep);
                 insert_hillslope_symbol(state_surface, hillslope_id, "ip", day.ip);
                 let ninten = u32::try_from(day.ninten).map_err(|_| {
@@ -2618,16 +2632,88 @@ pub fn seed_watershed_runtime_surface_from_climate(
                     }
                 })?;
                 insert_hillslope_symbol(state_surface, hillslope_id, "ninten", f64::from(ninten));
-                insert_hillslope_symbol(state_surface, hillslope_id, "avrint", day.avrint);
-                insert_hillslope_symbol(state_surface, hillslope_id, "mxint", day.mxint);
-                insert_hillslope_symbol(state_surface, hillslope_id, "tmax", day.tmax);
-                insert_hillslope_symbol(state_surface, hillslope_id, "tmin", day.tmin);
-                insert_hillslope_symbol(state_surface, hillslope_id, "rad", day.rad);
-                insert_hillslope_symbol(state_surface, hillslope_id, "vwind", day.vwind);
-                insert_hillslope_symbol(state_surface, hillslope_id, "wind", day.wind);
-                insert_hillslope_symbol(state_surface, hillslope_id, "tdpt", day.tdpt);
-                insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
-                insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "avrint",
+                    day.avrint,
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "mxint",
+                    day.mxint,
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "tmax",
+                    day.tmax,
+                    "finite",
+                    BoundaryValue::temperature_celsius,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "tmin",
+                    day.tmin,
+                    "finite",
+                    BoundaryValue::temperature_celsius,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "rad",
+                    day.rad,
+                    ">= 0",
+                    BoundaryValue::solar_radiation_langleys_per_day,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "vwind",
+                    day.vwind,
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "wind",
+                    day.wind,
+                    "0..=360",
+                    BoundaryValue::direction_degrees,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "tdpt",
+                    day.tdpt,
+                    "finite",
+                    BoundaryValue::temperature_celsius,
+                )?;
+                insert_typed_series_values(
+                    state_surface,
+                    hillslope_id,
+                    day_symbols.timem_symbols(),
+                    &day.timem,
+                    "timem_*",
+                    ">= 0",
+                    BoundaryValue::elapsed_time_seconds,
+                )?;
+                insert_typed_series_values(
+                    state_surface,
+                    hillslope_id,
+                    day_symbols.intsty_symbols(),
+                    &day.intsty,
+                    "intsty_*",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
             }
             WatershedClimateDailyForcing::Breakpoint(day) => {
                 insert_hillslope_common_day_symbols(
@@ -2637,16 +2723,86 @@ pub fn seed_watershed_runtime_surface_from_climate(
                     day.mon,
                     day.year,
                 );
-                insert_hillslope_symbol(state_surface, hillslope_id, "stmstr", day.stmstr);
-                insert_hillslope_symbol(state_surface, hillslope_id, "prcp", day.prcp);
-                insert_hillslope_symbol(state_surface, hillslope_id, "stmdur", day.stmdur);
-                insert_hillslope_symbol(state_surface, hillslope_id, "mxint", day.mxint);
-                insert_hillslope_symbol(state_surface, hillslope_id, "tmax", day.tmax);
-                insert_hillslope_symbol(state_surface, hillslope_id, "tmin", day.tmin);
-                insert_hillslope_symbol(state_surface, hillslope_id, "rad", day.rad);
-                insert_hillslope_symbol(state_surface, hillslope_id, "vwind", day.vwind);
-                insert_hillslope_symbol(state_surface, hillslope_id, "wind", day.wind);
-                insert_hillslope_symbol(state_surface, hillslope_id, "tdpt", day.tdpt);
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "stmstr",
+                    day.stmstr,
+                    "0..=24",
+                    BoundaryValue::hour_of_day,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "prcp",
+                    day.prcp,
+                    ">= 0",
+                    BoundaryValue::water_depth_meters,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "stmdur",
+                    day.stmdur,
+                    ">= 0",
+                    BoundaryValue::elapsed_time_seconds,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "mxint",
+                    day.mxint,
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "tmax",
+                    day.tmax,
+                    "finite",
+                    BoundaryValue::temperature_celsius,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "tmin",
+                    day.tmin,
+                    "finite",
+                    BoundaryValue::temperature_celsius,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "rad",
+                    day.rad,
+                    ">= 0",
+                    BoundaryValue::solar_radiation_langleys_per_day,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "vwind",
+                    day.vwind,
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "wind",
+                    day.wind,
+                    "0..=360",
+                    BoundaryValue::direction_degrees,
+                )?;
+                insert_typed_hillslope_symbol(
+                    state_surface,
+                    hillslope_id,
+                    "tdpt",
+                    day.tdpt,
+                    "finite",
+                    BoundaryValue::temperature_celsius,
+                )?;
 
                 let nbrkpt = u32::try_from(day.nbrkpt).map_err(|_| {
                     WatershedClimateRuntimeInputError::BreakpointCountOutOfRange {
@@ -2656,8 +2812,24 @@ pub fn seed_watershed_runtime_surface_from_climate(
                 })?;
                 insert_hillslope_symbol(state_surface, hillslope_id, "nbrkpt", f64::from(nbrkpt));
 
-                insert_series_values(state_surface, day_symbols.timem_symbols(), &day.timem);
-                insert_series_values(state_surface, day_symbols.intsty_symbols(), &day.intsty);
+                insert_typed_series_values(
+                    state_surface,
+                    hillslope_id,
+                    day_symbols.timem_symbols(),
+                    &day.timem,
+                    "timem_*",
+                    ">= 0",
+                    BoundaryValue::elapsed_time_seconds,
+                )?;
+                insert_typed_series_values(
+                    state_surface,
+                    hillslope_id,
+                    day_symbols.intsty_symbols(),
+                    &day.intsty,
+                    "intsty_*",
+                    ">= 0",
+                    BoundaryValue::linear_rate_meters_per_second,
+                )?;
             }
         }
     }
@@ -2857,6 +3029,27 @@ fn insert_hillslope_symbol(
     surface.insert(BoundarySymbol::from(key), BoundaryValue::scalar(value));
 }
 
+fn insert_typed_hillslope_symbol(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    hillslope_id: u32,
+    symbol: &str,
+    value: f64,
+    allowed: &'static str,
+    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
+) -> Result<(), WatershedClimateRuntimeInputError> {
+    let key = format!("hs{hillslope_id}_{symbol}");
+    let boundary_value = constructor(value).map_err(|_| {
+        WatershedClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            hillslope_id,
+            symbol: key.clone(),
+            value,
+            allowed,
+        }
+    })?;
+    surface.insert(BoundarySymbol::from(key), boundary_value);
+    Ok(())
+}
+
 fn insert_hillslope_monthly_climate_symbols(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
     hillslope_id: u32,
@@ -2913,15 +3106,28 @@ fn insert_hillslope_monthly_vector_symbols(
     Ok(())
 }
 
-fn insert_series_values(
+fn insert_typed_series_values(
     surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    hillslope_id: u32,
     symbols: &[BoundarySymbol],
     values: &[f64],
-) {
+    root: &'static str,
+    allowed: &'static str,
+    constructor: fn(f64) -> Result<BoundaryValue, BoundaryError>,
+) -> Result<(), WatershedClimateRuntimeInputError> {
     debug_assert_eq!(symbols.len(), values.len());
     for (symbol, value) in symbols.iter().zip(values.iter()) {
-        surface.insert(symbol.clone(), BoundaryValue::scalar(*value));
+        let boundary_value = constructor(*value).map_err(|_| {
+            WatershedClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                hillslope_id,
+                symbol: format!("{root}:{}", symbol.as_str()),
+                value: *value,
+                allowed,
+            }
+        })?;
+        surface.insert(symbol.clone(), boundary_value);
     }
+    Ok(())
 }
 
 #[cfg(test)]
