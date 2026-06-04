@@ -4,7 +4,7 @@ title: Evapotranspiration Stress Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 23
 producer_scope:
   - Potential and actual evapotranspiration partition surfaces
   - Evaporation/transpiration stress and availability-limited ET surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Plant-growth and residue-state consumers influenced by ET stress signals
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-06-03
+last_reviewed: 2026-06-04
 supersedes: []
 superseded_by: []
 ---
@@ -83,7 +83,7 @@ Out of scope:
 | `Esp` | `m d^-1` | Potential soil evaporation (Eq. [5.2.8]). | ET partition pathway | soil-evaporation stage logic |
 | `Etp` | `m d^-1` | Potential plant transpiration before/after LAI adjustment (Eq. [5.2.9], [5.2.14]). | ET partition pathway | layer uptake and stress-factor pathway |
 | `Esu` | `m d^-1` | Stage-one soil-evaporation upper limit (Eq. [5.2.10]). | soil-evaporation stage logic | stage-transition logic |
-| `Esb`, `Es` | `m d^-1` | Bare-soil and residue-adjusted actual soil evaporation (Eq. [5.2.12], [5.2.13]). | soil-evaporation stage logic | root-zone ET withdrawal |
+| `Esb` | `m d^-1` | Bare-soil and residue-adjusted process-rate lineage for actual soil evaporation (Eq. [5.2.12], [5.2.13]); final published `Es` depth is declared separately. | soil-evaporation stage logic | root-zone ET withdrawal |
 | `Tr`, `d2` | `mm d^-0.5`, `d` | Soil transmissivity and stage-two day counter driving Eq. [5.2.11]-[5.2.12]. | soil parameterization + stage state | stage-two evaporation computation |
 | `s1`, `s2`, `tu`, `tv` | `m`, `m`, `m`, `d` | Baseline stage-memory state surfaces controlling stage-one/stage-two soil-evaporation transition dynamics. | ET stage-memory pathway | stage-transition and `Es` branch logic |
 | `Cr` | `kg ha^-1` | Plant residue mass for evaporation attenuation (Eq. [5.2.13]). | residue/crop state | soil-evaporation attenuation |
@@ -94,6 +94,9 @@ Out of scope:
 | `Rd`, `rtd`, `pltol` | `m`, `m`, `fraction` | Active root depth and plant-tolerance domain required by baseline `swu` uptake distribution and deficit scaling. | plant-growth/runtime management pathway | post-WB19 root-uptake pathway |
 | `Ws` | `fraction` | Plant-growth water-stress factor (`0..1`) from supply-demand ratio (Eq. [5.5.1], Eq. [8.2.15]). | ET coupling pathway | plant-growth regulation |
 | `ET` | `m` | Daily cumulative evapotranspiration withdrawal term in water-balance closure Eq. [5.1.1]. | ET integration pathway | daily water-balance closure consumer |
+| `Ep` | `mm` | Published WAT daily plant transpiration depth, derived from final post-SWU `ΣUi`/runtime `Ep` daily flux and converted to registry WAT depth units. | WB17/SWU ET output publication pathway | WAT output and comparator consumers |
+| `Es` | `mm` | Published WAT daily actual soil evaporation depth after snow, residue, stage-memory, and layer-extraction constraints. | WB17 ET output publication pathway | WAT output and comparator consumers |
+| `Er` | `mm` | Published WAT daily residue/interception evaporation depth separated from actual soil evaporation. | WB17 ET output publication pathway | WAT output and comparator consumers |
 | `RA`, `radpot`, `Tmax`, `Tmin`, `Tdp`, `u_z` | `Ly`, `Ly`, `degC`, `degC`, `degC`, `m s^-1` | Climate forcing surfaces required by potential ET formulations, including baseline `sunmap` potential radiation when `evappm` derives `rso`. | climate forcing pathway | ET potential pathway |
 | `iflget`, `kcb`, `rawp` | mode, coefficient, fraction | Legacy ET-method selector and Penman-Monteith crop coefficients from `pmetpara` sidecar lookup. | PMET sidecar/runtime projection | ET demand seed pathway |
 | `etorc`, `rn`, `rso`, `rbo`, `fwv`, `rhd` | `mm d^-1`, `MJ m^-2 d^-1`, `MJ m^-2 d^-1`, `MJ m^-2 d^-1`, `m s^-1`, `%` | Baseline `evappm` reference-ET and meteorological intermediate surfaces. | PMET demand seed pathway | WB11/WB17 demand lineage diagnostics |
@@ -260,8 +263,11 @@ equation vectors.
 | `Eu` | `wb11_et_demand` | ET demand surface consumed by WB17 partition runtime | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
 | `L` | `lai` | LAI-driven partition surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `cv` | `cancov` | baseline canopy-cover surface consumed by `eaj = exp(-0.5*(cv+0.1))` | fraction preserved | `[DIRECT][Static]` |
-| `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | residue evaporation partition surface | `m d^-1` -> `m` daily flux output | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `Esp`, `Etp`, `Es`, `Ep` | `Esp`, `Etp` (derived runtime), `Es`, `Ep` (flux outputs) | ET partition and component output surfaces | `m d^-1` potential -> `m` daily component flux outputs | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Er` | `wb17_residue_interception` (input) + `Er` (flux output) | residue evaporation partition surface | `m d^-1` -> `m` daily flux output -> `mm` WAT publication depth | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Esp`, `Etp`, `Es`, `Ep` | `Esp`, `Etp` (derived runtime), `Es`, `Ep` (flux outputs) | ET partition and component output surfaces | `m d^-1` potential -> `m` daily component flux outputs -> `mm` WAT publication depths for `Es`/`Ep` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Ep` | `hillslope_wat.Ep`, `hillslope_wat.Ep:mm` | WAT output and explicit publication-unit aliases for daily plant transpiration depth | runtime `m` daily flux converted to registry `mm` WAT depth | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Es` | `hillslope_wat.Es`, `hillslope_wat.Es:mm` | WAT output and explicit publication-unit aliases for daily actual soil evaporation depth | runtime `m` daily flux converted to registry `mm` WAT depth | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Er` | `hillslope_wat.Er`, `hillslope_wat.Er:mm` | WAT output and explicit publication-unit aliases for daily residue/interception evaporation depth | runtime `m` daily flux converted to registry `mm` WAT depth | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `s1`, `s2`, `tu`, `tv` | identity names (canonical stage-memory surface family) | stage-transition memory and threshold state | `m` / `d` preserved | `[DIRECT][Static]` |
 | `dx`, `ds`, `UPi`, `Ui` | identity names | root-zone distribution and uptake surfaces | chapter-declared units preserved | `[DIRECT][Static]` |
 | `st(i)`, `Θi` | `wb18_perc_theta_####` | baseline layer storage mutated by evaporation, transpiration, percolation, lateral flow, and aggregate recomputation | `m` preserved | `[DIRECT][Static]` |
@@ -601,6 +607,7 @@ Minimum WB17 ET production-kernel conformance vectors:
 | `2026-06-03` | `20` | `Codex` | HPHYS0265 amendment: added `INV-EVAP-023` requiring first-large longer-season `Ep` divergence localization evidence before assigning seasonal `Ep` residual ownership or patching WB17/SWU behavior. |
 | `2026-06-03` | `21` | `Codex` | HPHYS0267 amendment: added `INV-EVAP-024` requiring post-lateral/pre-SWU stress-threshold lineage evidence before WB17 residual ownership claims. |
 | `2026-06-04` | `22` | `Codex` | HPHYS0281 amendment: added `INV-EVAP-025` and PMET `pmet.es_storage_return_m` authority so EVAPPM condensation returns negative soil/residue demand to top-layer storage while preserving the material-negative `pmet.es_m` guard. |
+| `2026-06-04` | `23` | `Codex` | HPHYS0282 amendment: aligned `Ep`, `Es`, and `Er` Variables/Units plus Symbol Alias Map rows with executable WAT `mm` registry aliases to close SC-EVAP unit-compliance lint debt. |
 | `2026-06-03` | `14` | `Codex` | HPHYS0261 amendment: added `INV-EVAP-019` requiring trace-grade WB17 `Ep` magnitude/initialization evidence across `evap` partition state, `swu` effective `pltol`, WB18 `ul(i)`, and legacy call-order provenance. |
 | `2026-06-03` | `13` | `Codex` | HPHYS0260 amendment: added `INV-EVAP-018` requiring trace-grade post-`PlantRootUptake` aggregate/layer `UPi`/`Ui`, final `Ep`, `Etp`, and `Ws` identity evidence before assigning H1/H7/H39 `Ep` residual ownership. |
 | `2026-06-02` | `12` | `Codex` | HPHYS0251 amendment: added `INV-EVAP-017` for baseline `swu.for` uptake magnitude, crop-specific `pltol(itype)` projection/normalization, and layer `UPi_####`/`Ui_####` publication. |

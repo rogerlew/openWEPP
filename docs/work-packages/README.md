@@ -1917,6 +1917,14 @@ Authorized packages:
     contract-authored, implemented, and validated; focused SIMIMPL18 and full
     workspace tests pass. HOLD remains only for pre-existing SC-EVAP
     HPHYS0279 unit-compliance findings on older `Ep`/`Es`/`Er` rows.
+- `20260604-hphys0282-sc-evap-unit-compliance-closure-001/`
+  - Purpose: resolve the remaining SC-EVAP unit-compliance lint findings by
+    aligning `SC-EVAP-001` Variables/Units and Symbol Alias Map rows with the
+    executable registry for WAT output `Ep`, `Es`, and `Er`.
+  - Status: completed/GO; SC-EVAP now passes the executable unit-compliance
+    lint for WAT `Ep`, `Es`, and `Er` units and aliases. Focused HPHYS0279
+    lint tests, scoped docs lint, diff hygiene, dual review, and dual
+    verification are complete.
 - `20260604-hphys0280-hphys0275-typed-boundary-continuation-001/`
   - Purpose: execute HPHYS0275 continuation by adding direction-specific typed
     boundary values and migrating declared watershed-prefixed climate plus snow
