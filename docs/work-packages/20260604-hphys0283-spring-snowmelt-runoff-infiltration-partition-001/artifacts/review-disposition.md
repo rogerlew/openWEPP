@@ -11,5 +11,6 @@ Evidence mode: Static + Ran
 | B-001 | accepted, fixed | Full Rust gate chain passed. |
 | B-002 | accepted, fixed | Final full H1..H39 suite rerun at `/tmp/hphys0283_full3_20260604T163035Z`. |
 | B-003 | follow-up | Remaining residual assigned to snowpack timing/retention before returning to `Ep`. |
+| C-001 | accepted, fixed | Low tillage-depth lineage note resolved by narrowing `SC-PERC-001#REF-PERC-LEGACY-HOURLY-FIN` to `watbal_hourly.for:500-516` for the `tillay(2)` distribution rule and distinguishing it from `grna.for` `smrate` forcing authority. |
 
 No review finding remains undispositioned.

@@ -63,7 +63,7 @@ Out of scope:
 | REF-PERC-LEGACY-SOILW | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-966`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1018-1025`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative aggregate soil-water recomputation after percolation/lateral/drainage uses `soilw(i) = st(i) + thetdr(i)*(dg(i)-frozen(i))` and `watcon = Σsoilw(i)`. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative hourly bottom-layer restrictive seepage lineage: hourly bottom layer sets `meblfc=1` and forces `fx=1`, `perc` assigns bottom restrictive conductivity via `kslast`, computes thickness-weighted `sscz = (dg(i)+ui_bdrkth)/(dg(i)/ssc(i)+ui_bdrkth/ssc(i+1))`, `purk` mutates `st` and remembers bottom seepage as `sep/ui_LFtstp`, and `watbal_hourly` accumulates `deepSeep += sep`. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-LOWER-SAT-CLAMP | `/workdir/wepp-forest_260430_baseline/src/perc.for:143-158,186-188`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative lower-layer saturation attenuation: non-bottom `stu = (st(i+1)+frzw(i+1))/ul(i+1)` is capped to `0.95` before `cr = sqrt(1-stu)` and before `sep = min(vv, 86400*fx*sscz*cr)`, so over-UL lower storage throttles percolation by `sqrt(0.05)` instead of causing a hard failure. | `[DIRECT][Static]` |
-| REF-PERC-LEGACY-HOURLY-FIN | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,460-525`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative same-pass liquid input lineage: `fin = rain - interception + wmelt + irrigation` before runoff/runon adjustments, then hourly `xfin = fin/24 + carry` is added to `st(i)` starting at the top layer and distributed through `tillay(2)` before percolation/ET. | `[DIRECT][Static]` |
+| REF-PERC-LEGACY-HOURLY-FIN | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,471-479,494-516,520-524`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative same-pass liquid input lineage: `fin = rain - interception + wmelt + irrigation`, hourly `xfin = fin/24 + carry`, one-layer ingress into `st(1)`, and multi-layer top-down distribution where `tmpvr1 = xfin * dg(i) / tillay(2)` before `st(i) = st(i) + tmpvr1` until remaining `xfin` is exhausted. | `[DIRECT][Static]` |
 | REF-PERC-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative fluxes, finite conductivity/travel-time domains, and bounded storage fractions for physical plausibility. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -137,6 +137,9 @@ WB18 mutates percolation boundary surfaces deterministically:
    - distribute infiltrated water top-down into `st(i)`/`wb18_perc_theta_i`
      using `tillay(2)` where present; if `tillay(2) <= 0`, the first layer
      receives the remaining ingress per baseline branch behavior,
+   - treat the `tillay(2)` layer-allocation rule as grounded by
+     `watbal_hourly.for:500-516`; the `grna.for` `smrate = wmelt/dur`
+     lineage establishes snowmelt forcing, not layer distribution,
    - do not defer this water to WB12 storage reconciliation or WB13
      publication compensation.
 3. Execute explicit per-layer field-capacity branch (`pei = 0` when
@@ -601,6 +604,9 @@ Minimum WB18 percolation production-kernel conformance vectors:
    baseline `tillay(2)` in this distribution lineage; non-positive values
    select the baseline branch where the first layer receives the remaining
    ingress.
+5. The HPHYS0283 layer-distribution claim is grounded in
+   `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:500-516`;
+   `grna.for` `smrate = wmelt/dur` is only the melt-as-forcing authority.
 
 ## Gap Register
 
