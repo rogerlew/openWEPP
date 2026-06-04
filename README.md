@@ -10,34 +10,82 @@
 
 ## Overview
 
-openWEPP reimplements the WEPP simulation engine in Rust with an
-architecture-first approach: typed state, explicit module boundaries,
-contract-first interfaces, and deterministic orchestration.
+openWEPP is a ground-up Rust reimplementation of the WEPP hillslope and
+watershed simulation engine. The process kernels are preserved as their
+governing equations; everything around them — state ownership, orchestration
+order, and I/O — is rebuilt on four foundations:
 
-openWEPP is un-affiliated and has no endorsement or affiliation with
-USDA-ARS National Soil Erosion Research Laboratory WEPP.
+- **Typed state** — each quantity carries its units and meaning in the type
+  system, so unit mismatches fail to compile instead of silently corrupting
+  results.
+- **Explicit module boundaries** — each process (infiltration, snowmelt,
+  routing) declares its inputs and outputs instead of sharing global memory, so
+  one routine cannot silently clobber another's data.
+- **Contract-first interfaces** — the governing equations and invariants are
+  written down and checked before the code that implements them.
+- **Deterministic orchestration** — identical inputs produce identical outputs,
+  in a fixed and reproducible order, on any machine.
 
-Science behavior is governed by top-down contracts derived from:
-- WEPP technical references (including `references/50201000`),
-- literature-backed invariants,
-- physical/common-sense invariants,
-- static legacy code inspection as secondary evidence.
+openWEPP is unaffiliated with, and not endorsed by, the USDA-ARS National Soil
+Erosion Research Laboratory or the WEPP project.
 
-Legacy binary comparison is used as an investigation signal, not a universal
-gold oracle.
-
-Comparator confidence tiers:
-- higher confidence: single OFE and daily water-balance surfaces
-- lower confidence: hourly and watershed surfaces (investigation triggers)
+Correctness authority is the **science contract**, not any binary. Contracts are
+authored top-down from WEPP technical references (including `references/50201000`),
+literature-backed invariants, and physical invariants, with static legacy-code
+inspection as secondary evidence. No producer is trusted on reputation: a
+legacy-binary comparison is an investigation signal, not a gold oracle, and the
+same contract gate applies to every kernel implementation regardless of origin.
+See [ADR-0011](docs/decisions/0011-architecture-first-top-down-science-contracts.md).
 
 openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generation (cligen), DEM-to-watershed delineation (TOPAZ / WhiteboxTools), and run orchestration remain [wepppy](https://github.com/rogerlew/wepppy) concerns. openWEPP plugs into wepppy as a subprocess-per-hillslope replacement for the legacy WEPP binary, emitting parquet via the existing `wepppyo3` interchange schemas.
 
 ### Why Rust
 
-- **Borrow checker enforces trajectory ownership.** The producer/consumer state-ownership rules formalized in the wepp-palimpsest trajectory-ownership contract map directly onto Rust lifetimes and ownership transfer. The compiler enforces what F90 conventions only request.
-- **Typestate makes illegal state machines unrepresentable.** WEPP's OFE loops and channel-network traversals are state machines that the wepp-palimpsest fuzzing program has spent weeks debugging. Rust's typestate pattern eliminates a class of bugs at compile time.
-- **No implicit numeric promotion.** Silent `f32` / `f64` conversions that legacy WEPP is full of become compile errors.
-- **Modern numerics ecosystem.** `ndarray`, `polars`, `arrow`, `parquet`, `rand_chacha` provide a mature, audited foundation that Fortran cannot match.
+WEPP's scientific core was written in Fortran 77, and its maintenance burden
+comes less from the equations than from what the language leaves implicit. State
+is shared through `COMMON` blocks — global memory any routine can read or write —
+so a change in one place can silently alter another, and the order in which
+routines run becomes load-bearing in ways the source never states. Quantities
+are untyped `REAL` numbers with no units, names are truncated to a few
+characters, and out-of-range reads or numerical faults pass downstream in
+silence. The science is sound; it is buried under decades of these implicit
+couplings and the workarounds added to route around them.
+
+Fortran 90 was the obvious modernization path and was not chosen. F90 improves
+the *syntax* — free-form source, modules, derived types, dynamic allocation — but
+it does not change what the compiler *guarantees*. Shared mutable global state,
+silent unit and type errors, and untracked ownership of who may write which
+value all survive the move. Modernizing the Fortran would have been real effort
+without the structural payoff: the defects that make the model hard to trust are
+exactly the ones F90 still permits.
+
+Rust was selected because it turns those implicit rules into things the compiler
+checks. Each concept below is paired with the class of legacy defect it removes:
+
+- **Ownership and the borrow checker.** Rust tracks which routine owns each piece
+  of state and refuses to compile code where two routines could change the same
+  value at once. The `COMMON`-block aliasing bug — change one thing, silently
+  break another — becomes a compile error instead of a debugging session.
+- **A type system that carries physical meaning.** In Fortran a depth, a flux,
+  and a temperature are all just `REAL`, and nothing stops you adding a depth to
+  a flux. Rust lets each quantity carry its units and identity in its type, so an
+  equation only compiles when its dimensions are consistent — restoring the rigor
+  the governing equations always had on paper.
+- **Errors that must be handled, not ignored.** A divide-by-zero, an
+  out-of-range read, or a `NaN` can run silently in Fortran and corrupt a season
+  of output. Rust forces every fallible step to be handled explicitly, so a fault
+  surfaces at the timestep it occurs rather than thousands of steps later.
+- **No silent precision changes.** Mixing single- and double-precision —
+  pervasive in legacy WEPP — is a compile error in Rust unless you ask for it
+  explicitly, removing a quiet source of drift in long accumulations like the
+  water and sediment balances.
+- **Reproducibility by construction.** No garbage collector, deterministic
+  execution order, and explicit control of random-number streams mean identical
+  inputs yield identical results on any machine — a baseline scientific models
+  need and that legacy WEPP cannot guarantee across compilers and platforms.
+- **A mature numerics ecosystem.** Audited libraries for arrays, dataframes, and
+  the `arrow` / `parquet` formats let openWEPP emit the same data products
+  wepppy already consumes, without bespoke I/O code.
 
 ### In scope
 
@@ -59,6 +107,65 @@ openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generati
 - WEPP single-storm simulation modes (`ss`, `ss_batch`)
 - Silent fallback when legacy sidecar inputs are missing or ambiguous
 - Sediment routing physics (deferred to the wepp-palimpsest sediment kernelization program)
+
+## Re-implementation Strategy
+
+openWEPP is explicitly **not** a clean-room rewrite. The port follows the
+discipline in Michael C. Feathers' *Working Effectively with Legacy Code*
+(2004): rather than rewrite the model in a single pass, it is taken apart one
+process at a time, with tests holding each piece in place before it moves.
+
+The legacy code has natural **seams** — the boundaries between physical
+processes such as infiltration, snowmelt, percolation, runoff, and channel
+routing. The workflow finds a seam, extracts the routine behind it as a
+self-contained kernel, and wraps it in **characterization tests** that pin its
+behavior before anything is changed. Extraction repeatedly surfaces **boundary
+conditions** that were never written down — an edge case the original code
+handled implicitly, visible only once the routine is isolated and exercised.
+Each one is resolved, the kernel is re-tested, and the process moves to the next
+seam. New code is grown *alongside* the old (Feathers' "sprout" and "wrap"
+techniques) rather than edited in place, so the legacy path stays runnable as a
+reference throughout.
+
+openWEPP departs from Feathers in one deliberate way. Classic characterization
+testing treats the legacy behavior as the thing to preserve — the test passes if
+the new code matches the old. openWEPP cannot, because legacy WEPP carries known
+defects and routines that were disabled to work around them. So legacy behavior
+is pinned as a **baseline to diff against, not as the answer**: when an extracted
+kernel diverges from legacy, the governing **science contract** decides which is
+correct, not the old binary. A divergence is a signal to investigate — often the
+trace of a boundary condition that decades of patches had buried.
+
+### Trust but verify (Codex and Claude)
+
+The implementation is written by coding agents — Codex authors kernels and
+tests; Claude Code reviews, debugs, and audits — and no agent's output is trusted
+on its say-so. The same posture that demotes the legacy binary applies to the
+agents: correctness authority is the contract, and every change passes through
+fixed gates before it is accepted.
+
+- **Contract-first sequencing.** For kernel work the order is enforced: amend the
+  science contract, write contract-derived tests, record the pre-implementation
+  gate, *then* edit production code. The authority exists before the code that
+  implements it.
+- **Mechanical gates.** Every change must clear `cargo fmt`, `cargo clippy`
+  (warnings denied), `cargo test`, and `cargo deny` (license and advisory
+  policy), plus contract-invariant and conservation/closure checks on the state
+  surfaces it touches.
+- **Dual independent review.** Each work package requires two independent agent
+  reviews and two verifications; every finding is dispositioned (`accepted` /
+  `rejected` / `deferred`) with rationale, and accepted findings must be fixed
+  and re-verified before the package closes.
+- **No silent failure.** Numerical faults (`NaN`, divide-by-zero, out-of-range)
+  must surface as typed errors for the orchestrator to handle; an agent may not
+  paper over a violation with a default value.
+- **Evidence labeling.** Review and audit artifacts state whether a claim is
+  `Static` (read and reasoned) or `Ran` (command actually executed), so the
+  record never overstates what was checked.
+
+The work packages that drive this process are kept as an honest record —
+progress and dead ends alike — so the reconstruction of each kernel, including
+where it was genuinely hard, stays auditable after the fact.
 
 ## Runner and release boundary
 
