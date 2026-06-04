@@ -167,6 +167,99 @@ The work packages that drive this process are kept as an honest record —
 progress and dead ends alike — so the reconstruction of each kernel, including
 where it was genuinely hard, stays auditable after the fact.
 
+## Engine Modernizations
+
+The science kernels are WEPP's; the capabilities below are what the new
+architecture builds *around* them. Each one addresses something the original
+Fortran left to convention, to the modeler's memory, or to manual inspection.
+Where a term from modern software practice is unavoidable, it is explained in
+place.
+
+### Deterministic scheduling and topology checking
+
+In legacy WEPP the order the routines run in is fixed by the order of the `CALL`
+statements in the source. Nothing in the code records *why* infiltration must run
+before percolation — you simply have to know. Move a call, or add one in the
+wrong place, and the model still runs, but the numbers quietly change.
+
+openWEPP has each process declare what it needs before it can run and what it
+produces. The orchestrator — the part that drives the daily loop — builds the run
+order from those declarations rather than from the source layout, and builds it
+the same way every time. Before any simulation begins, it checks the whole set of
+declarations for consistency: if a process is missing an input, or two processes
+depend on each other in a circle, the run stops with a clear message instead of
+producing a plausible but wrong answer. (This pre-run check is called *topology
+validation*; "topology" here just means the map of which process feeds which.)
+The ordering that used to live in your head and in the source layout is now
+written down and checked.
+
+### The orchestrator decides what gets saved
+
+In `COMMON`-block Fortran any routine can write any shared variable at any time.
+A routine can overwrite a value another routine still needs, or store a
+physically impossible number such as a negative depth, and nothing stops it — the
+bad value simply flows downstream until something far away misbehaves.
+
+In openWEPP a process does not write into the shared state itself. It hands its
+results to the orchestrator, which checks each value against its allowed range and
+then decides whether to apply it. A negative storage or an out-of-range flux is
+caught at the moment it is produced and rejected, not discovered days of simulated
+time later. There is exactly one place where state changes are committed, and it
+is guarded — so the "what overwrote my variable?" class of bug cannot occur.
+
+### Quantities carry their units, and WEPP's names are kept
+
+In Fortran every quantity is a `REAL`: a soil depth, a rainfall rate, and a
+temperature look identical to the compiler, so nothing catches adding a depth to a
+flux or feeding millimeters where meters were expected. The dimensional
+bookkeeping is left entirely to the modeler, and six-character names carried
+meaning only the author fully remembered.
+
+In openWEPP each quantity that crosses a process boundary carries its unit and
+meaning with it, and the program refuses to build if an equation mixes
+incompatible units — the dimensional checking you do by hand is done by the
+machine. A central registry records the unit for every such quantity so it can
+never be guessed from a name. At the same time the canonical WEPP symbols from the
+equations and technical documentation are kept as the authoritative names; where a
+different internal name is needed, it is recorded as an explicit alias rather than
+replacing the name you know. The rigor your equations always had on paper is
+enforced in the code, without losing the vocabulary you wrote them in.
+
+### Re-running and looking inside a finished simulation
+
+When a legacy run looks wrong, finding out why usually means adding print
+statements, recompiling, and rerunning the whole simulation to watch a handful of
+variables — often many times over.
+
+openWEPP records its internal state to a file as the run proceeds. Afterward that
+record can be reopened and examined *without* rerunning the model: you can compare
+two runs day by day to find the first day they diverge, isolate a single process
+and re-run only that part, or replay one window of time. (A separate tool, the
+*replay* program, does this.) The conservation checks modelers have always
+watched — does the water balance close, is mass conserved — are computed
+automatically at every step and reported as explicit, labeled results, rather than
+something you total up from an output file by hand. The questions you used to
+answer with print statements and full reruns are answered by reading a record the
+run already kept.
+
+### Checking the physics on every change
+
+Confidence in legacy WEPP came from comparing its output against field data and
+against the previous version — done by hand, occasionally, by whoever remembered
+to do it.
+
+openWEPP writes that checking down as a standing set of automatic comparisons
+against trusted outside sources: published values, controlled experiments, and
+conservation laws. (In software practice such a standing set of checks is called a
+*test suite*; re-running it automatically on every change is how a modern project
+keeps a fix in one place from silently breaking something elsewhere.) These run on
+every change to the code. The legacy binary is one input, but only as a flag for
+investigation — never the final word; the physics references and conservation laws
+decide which side is right. A further guard watches the checks themselves and
+refuses any change that quietly weakens or removes a required comparison. The
+validation that used to depend on someone remembering to do it now happens
+automatically, and no single change can quietly lower the bar.
+
 ## Runner and release boundary
 
 openWEPP owns its own launcher boundary through `openwepp_runner` and does not
