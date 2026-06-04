@@ -29,6 +29,11 @@ Generated review artifacts:
 - `docs/architecture/generated/hillslope-phase-schedule.mmd`
 - `docs/architecture/generated/hillslope-phase-schedule.dot`
 
+Export tooling, the developer-task interface (congruence gate, diff,
+validation), and review dispositions are specified in the canonical subsystem
+spec:
+[schedule-export-and-introspection.md](../specifications/subsystems/schedule-export/schedule-export-and-introspection.md).
+
 The JSON artifact is the text-diffable source for node rank, consumer adapter,
 edge, and `topological_order` review. The Mermaid artifact is the GitHub-rendered
 diagram form. The DOT artifact supports standalone graph tooling.
