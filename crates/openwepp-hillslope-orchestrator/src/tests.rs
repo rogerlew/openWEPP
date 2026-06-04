@@ -632,6 +632,93 @@ fn hphys0264_pmet_evapotranspiration_snaps_roundoff_negative_soil_evaporation() 
 }
 
 #[test]
+fn hphys0281_pmet_evapotranspiration_applies_condensation_storage_return() {
+    let mut state_surface = BTreeMap::new();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.162),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_demand"),
+        BoundaryValue::scalar(0.001),
+    );
+    state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.4));
+    state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.10));
+    state_surface.insert(
+        BoundarySymbol::from("wb17_residue_interception"),
+        BoundaryValue::scalar(0.000_2),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
+        BoundaryValue::scalar(1.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.es_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.es_storage_return_m"),
+        BoundaryValue::scalar(0.000_3),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("pmet.ep_m"),
+        BoundaryValue::scalar(0.001),
+    );
+    state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(0.050),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(0.100),
+    );
+    state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.05));
+    state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.20));
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0001"),
+        BoundaryValue::scalar(0.04),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("thetdr_0002"),
+        BoundaryValue::scalar(0.05),
+    );
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "evapotranspiration",
+        HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-ET-OK-001");
+    let theta_0001 = state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+        .expect("PMET condensation return must update top-layer storage");
+    let es = flux_update_scalar(&response.writeback.flux_updates, "Es")
+        .expect("PMET seam must publish Es");
+    let er = flux_update_scalar(&response.writeback.flux_updates, "Er")
+        .expect("PMET seam must publish Er");
+
+    assert!(
+        (theta_0001 - 0.050_5).abs() < 1.0e-12,
+        "top-layer storage must include explicit condensation return plus residue return"
+    );
+    assert!(
+        es.abs() < f64::EPSILON,
+        "zero PMET Es must not trigger soil extraction"
+    );
+    assert!(
+        er.abs() < f64::EPSILON,
+        "zero PMET Es under residue interception must return residue to storage instead of evaporating it"
+    );
+}
+
+#[test]
 fn hphys0250_wb11_growth_transition_publishes_state_after_for_ep_lineage() {
     let state_surface = BTreeMap::new();
     let flux_surface = BTreeMap::new();

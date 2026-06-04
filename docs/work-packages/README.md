@@ -1908,6 +1908,15 @@ Authorized packages:
     H1/H7/H39 and full H1..H39 metrics recorded. Semantic parity remains
     `0/39`; continue with authoritative daily winter/snowpack state migration
     with corrected `wepp-forest` negative-melt authority retained before resuming WB17 `Ep`.
+- `20260604-hphys0281-wb11-evappm-condensation-closure-001/`
+  - Purpose: diagnose and close the WB11 `HKERNEL-WB11-ET-E-003` failure by
+    porting baseline-authoritative EVAPPM condensation handling so negative
+    `es - resint` demand returns to top-layer storage instead of publishing
+    material-negative `pmet.es_m`.
+  - Status: completed/HOLD; EVAPPM condensation return handling is
+    contract-authored, implemented, and validated; focused SIMIMPL18 and full
+    workspace tests pass. HOLD remains only for pre-existing SC-EVAP
+    HPHYS0279 unit-compliance findings on older `Ep`/`Es`/`Er` rows.
 - `20260604-hphys0280-hphys0275-typed-boundary-continuation-001/`
   - Purpose: execute HPHYS0275 continuation by adding direction-specific typed
     boundary values and migrating declared watershed-prefixed climate plus snow

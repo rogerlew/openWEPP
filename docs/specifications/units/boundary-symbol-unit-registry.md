@@ -1,7 +1,7 @@
 # Boundary Symbol Unit Registry
 
 Status: Active
-Last updated: 2026-06-03
+Last updated: 2026-06-04
 Authority: `docs/specifications/unit-governance.md`
 
 ## Purpose
@@ -51,6 +51,7 @@ winter unit governance:
   `QOFE`, `Tile`, `Irr`, `SoilWaterTotal`, `ProfileDepth`,
   `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`, and
   `InterceptionStorage`.
+- EVAPPM PMET runtime storage-return depth: `pmet.es_storage_return_m`.
 - WAT publication area column: `Area`.
 - Climate runtime aliases: `prcp`, `rad`, `tmax`, `tmin`, `tdpt`, `wind`
   direction, `vwind`, `stmdur`, `stmstr`, `timem_####`, `mxint`, `avrint`,

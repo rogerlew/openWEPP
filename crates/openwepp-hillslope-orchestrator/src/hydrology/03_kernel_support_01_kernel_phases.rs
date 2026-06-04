@@ -522,6 +522,7 @@ impl Wb11HydrologyKernel {
         let evappm_pmet_components = if evappm_branch >= 0.5 {
             let pmet_soil_evaporation_symbol = BoundarySymbol::from("pmet.es_m");
             let pmet_transpiration_symbol = BoundarySymbol::from("pmet.ep_m");
+            let pmet_storage_return_symbol = BoundarySymbol::from("pmet.es_storage_return_m");
             let pmet_soil_evaporation = Self::require_state_scalar_for_symbol(
                 request,
                 phase_class,
@@ -548,7 +549,24 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 None,
             )?;
-            Some((pmet_soil_evaporation, pmet_transpiration))
+            let pmet_storage_return = Self::optional_state_scalar_for_symbol(
+                request,
+                phase_class,
+                &pmet_storage_return_symbol,
+            )?
+            .unwrap_or(0.0);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &pmet_storage_return_symbol,
+                pmet_storage_return,
+                Some(0.0),
+                None,
+            )?;
+            Some((
+                pmet_soil_evaporation,
+                pmet_transpiration,
+                pmet_storage_return,
+            ))
         } else {
             None
         };
@@ -671,7 +689,7 @@ impl Wb11HydrologyKernel {
         };
         let pmet_component_mode = evappm_pmet_components.is_some();
         let (soil_evaporation_with_residue, transpiration_partition_potential) =
-            if let Some((pmet_es_m, pmet_ep_m)) = evappm_pmet_components {
+            if let Some((pmet_es_m, pmet_ep_m, pmet_es_storage_return_m)) = evappm_pmet_components {
                 Self::require_flux_range(
                     phase_class,
                     WB17_SYMBOL_ES,
@@ -686,6 +704,9 @@ impl Wb11HydrologyKernel {
                     Some(0.0),
                     None,
                 )?;
+                if let Some(top_layer_storage) = layer_storage.first_mut() {
+                    *top_layer_storage += pmet_es_storage_return_m;
+                }
                 (pmet_es_m, pmet_ep_m)
             } else {
                 let soil_evaporation_partition_potential = et_demand

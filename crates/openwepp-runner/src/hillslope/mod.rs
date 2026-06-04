@@ -1857,6 +1857,7 @@ struct EvappmDemandDiagnostics {
     raw_mm: f64,
     wftrp_mm: f64,
     es_m: f64,
+    es_storage_return_m: f64,
     ep_m: f64,
 }
 
@@ -2183,7 +2184,7 @@ fn compute_evappm_wb11_et_demand(
         wftrp_mm / etksden
     };
     let potes_m = etorc_mm * etke * 0.001;
-    let es_m = if potes_m > residue_interception {
+    let es_raw_m = if potes_m > residue_interception {
         let bpotes_m = potes_m - residue_interception;
         let eaj = (-0.5 * (cancov + 0.1)).exp();
         let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
@@ -2192,7 +2193,10 @@ fn compute_evappm_wb11_et_demand(
     } else {
         potes_m
     };
-    let ep_m = etorc_mm * etks * kcbcon * 0.001;
+    let es_storage_return_m = if es_raw_m < 0.0 { -es_raw_m } else { 0.0 };
+    let es_m = if es_raw_m < 0.0 { 0.0 } else { es_raw_m };
+    let ep_raw_m = etorc_mm * etks * kcbcon * 0.001;
+    let ep_m = if ep_raw_m < 0.0 { 0.0 } else { ep_raw_m };
 
     let diagnostics = EvappmDemandDiagnostics {
         etorc_mm,
@@ -2211,6 +2215,7 @@ fn compute_evappm_wb11_et_demand(
         raw_mm,
         wftrp_mm,
         es_m,
+        es_storage_return_m,
         ep_m,
     };
     for (name, value) in [
@@ -2230,6 +2235,7 @@ fn compute_evappm_wb11_et_demand(
         ("pmet.raw_mm", diagnostics.raw_mm),
         ("pmet.wftrp_mm", diagnostics.wftrp_mm),
         ("pmet.es_m", diagnostics.es_m),
+        ("pmet.es_storage_return_m", diagnostics.es_storage_return_m),
         ("pmet.ep_m", diagnostics.ep_m),
     ] {
         if !value.is_finite() {
@@ -2306,7 +2312,7 @@ fn legacy_sunmap_horizontal_radpot_ly(deglat: f64, sdate: f64) -> f64 {
 fn publish_wb11_et_demand_seed(
     runtime_surface: &mut HillslopeWritebackSurface,
     seed: Wb11EtDemandSeed,
-) {
+) -> Result<(), HillslopeCliError> {
     runtime_surface.state_surface.insert(
         BoundarySymbol::from("wb11_et_demand"),
         BoundaryValue::scalar(seed.demand_m),
@@ -2320,6 +2326,14 @@ fn publish_wb11_et_demand_seed(
         BoundaryValue::scalar(if seed.branch_evappm { 1.0 } else { 0.0 }),
     );
     if let Some(diagnostics) = seed.diagnostics {
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("pmet.es_storage_return_m"),
+            BoundaryValue::water_depth_meters(diagnostics.es_storage_return_m).map_err(|error| {
+                wb11_seed_failure(format!(
+                    "pmet.es_storage_return_m must be a non-negative finite water depth: {error}"
+                ))
+            })?,
+        );
         for (symbol, value) in [
             ("pmet.etorc_mm", diagnostics.etorc_mm),
             ("pmet.rn_mj_m2", diagnostics.rn_mj_m2),
@@ -2344,6 +2358,7 @@ fn publish_wb11_et_demand_seed(
                 .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
         }
     }
+    Ok(())
 }
 
 fn validate_hillslope_ofe_topology_parity(
@@ -2991,7 +3006,7 @@ fn seed_wb11_runtime_surface_inputs(
     );
 
     let wb11_et_seed = compute_wb11_et_demand_seed(runtime_surface)?;
-    publish_wb11_et_demand_seed(runtime_surface, wb11_et_seed);
+    publish_wb11_et_demand_seed(runtime_surface, wb11_et_seed)?;
 
     if runtime_surface_symbol_value(runtime_surface, "efflen").is_none() {
         let slplen = require_runtime_surface_scalar(runtime_surface, "slplen")?;
@@ -6220,12 +6235,7 @@ fn build_simulation_owned_wb13_row(
             "Es must be >= 0.0 within tolerance, observed {soil_evap_es_m_raw}"
         )));
     }
-    if soil_evap_es_m_raw < 0.0 && !evappm_pmet_branch {
-        return Err(wb13_simout_failure(format!(
-            "Es must be >= 0.0, observed {soil_evap_es_m_raw}"
-        )));
-    }
-    let soil_evap_es_m = if evappm_pmet_branch && soil_evap_es_m_raw < 0.0 {
+    let soil_evap_es_m = if soil_evap_es_m_raw < 0.0 {
         0.0
     } else {
         soil_evap_es_m_raw
@@ -7378,6 +7388,32 @@ mod tests {
     }
 
     #[test]
+    fn hphys0281_wb13_publication_canonicalizes_roundoff_negative_es_without_evappm_clamp() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("Es"), BoundaryValue::scalar(-1.0e-13));
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("wb11_et_seed_branch_evappm"));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should snap within-tolerance negative Es roundoff");
+
+        assert!(
+            row.wb13_row.es.abs() < f64::EPSILON,
+            "WB13 Es roundoff must canonicalize to zero without EVAPPM material-negative clamp behavior"
+        );
+    }
+
+    #[test]
     fn hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage() {
         let source = include_str!("mod.rs");
         let sentinel = "pl_schedule_slot_count";
@@ -8165,7 +8201,7 @@ mod tests {
             ("pmetpara.mode.iflget", 2.0),
             ("pmetpara.selected.kcb", 0.95),
             ("pmetpara.selected.rawp", 0.8),
-            ("wb17_residue_interception", 0.0),
+            ("wb17_residue_interception", 0.000_2),
         ]);
         insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.80, true);
         runtime_surface.state_surface.insert(
@@ -8199,6 +8235,87 @@ mod tests {
         assert!(priestley_branch.abs() < 1.0e-12);
         assert!((etorc - 0.139_042_184_372_870_16).abs() < 1.0e-12);
         assert!((kcbcon - 0.778_751_298_023_734_6).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn hphys0281_wb11_evappm_seed_publishes_condensation_storage_return() {
+        let mut runtime_surface = wb11_seed_test_surface(&[
+            ("nsl", 1.0),
+            ("nelem", 1.0),
+            ("slplen", 50.0),
+            ("tmax", -1.6),
+            ("tmin", -14.6),
+            ("tdpt", -1.0),
+            ("rad", 200.0),
+            ("radpot", 250.0),
+            ("vwind", 3.0),
+            ("elevm", 300.0),
+            ("salb", 0.3),
+            ("cancov", 0.0),
+            ("lai", 4.0),
+            ("canhgt", 1.0),
+            ("rtd", 0.2),
+            ("prcp", 0.004_4),
+            ("ninten", 2.0),
+            ("timem_0001", 0.0),
+            ("timem_0002", 86_400.0),
+            ("intsty_0001", 0.0),
+            ("pmetpara.mode.sidecar_present", 1.0),
+            ("pmetpara.mode.iflget", 2.0),
+            ("pmetpara.selected.kcb", 0.95),
+            ("pmetpara.selected.rawp", 0.8),
+            ("wb17_residue_interception", 0.000_2),
+        ]);
+        insert_wb11_primary_layer_lineage_symbols(&mut runtime_surface, 0.80, true);
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("wb19_solthk_0001"),
+            BoundaryValue::scalar(0.25),
+        );
+
+        seed_wb11_runtime_surface_inputs(&mut runtime_surface, ExecutionLane::Daily)
+            .expect("supersaturated cold-day EVAPPM seed should not fail");
+
+        let pmet_soil_evaporation = require_runtime_surface_scalar(&runtime_surface, "pmet.es_m")
+            .expect("PMET soil evaporation should be published");
+        let storage_return =
+            require_runtime_surface_scalar(&runtime_surface, "pmet.es_storage_return_m")
+                .expect("negative EVAPPM soil evaporation should publish a storage return");
+        let storage_return_value = runtime_surface
+            .state_surface
+            .get(&BoundarySymbol::from("pmet.es_storage_return_m"))
+            .expect("storage return boundary value should be present");
+        let pmet_transpiration = require_runtime_surface_scalar(&runtime_surface, "pmet.ep_m")
+            .expect("PMET transpiration should be published");
+        let demand = require_runtime_surface_scalar(&runtime_surface, "wb11_et_demand")
+            .expect("WB11 ET demand should be published");
+        let etorc = require_runtime_surface_scalar(&runtime_surface, "pmet.etorc_mm")
+            .expect("PMET reference ET diagnostic should be published");
+
+        assert!(
+            etorc < 0.0,
+            "test vector must exercise condensation/reference-ET reversal, observed {etorc}"
+        );
+        assert!(
+            pmet_soil_evaporation.abs() < f64::EPSILON,
+            "material-negative PMET Es must publish as non-negative zero, observed {pmet_soil_evaporation}"
+        );
+        assert!(
+            storage_return > 0.0,
+            "negative raw EVAPPM Es magnitude must be carried as top-layer storage return"
+        );
+        assert_eq!(
+            storage_return_value.unit_label(),
+            "m",
+            "storage return must publish as typed water-depth meters"
+        );
+        assert!(
+            pmet_transpiration.abs() < f64::EPSILON,
+            "condensation must not publish material-negative PMET transpiration, observed {pmet_transpiration}"
+        );
+        assert!(
+            demand.abs() < f64::EPSILON,
+            "WB11 PMET demand must follow canonicalized non-negative transpiration, observed {demand}"
+        );
     }
 
     #[test]
