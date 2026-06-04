@@ -1,0 +1,144 @@
+{
+  "nodes": [
+    {
+      "phase": "normalization",
+      "rank": 0,
+      "consumer_adapter": "soil"
+    },
+    {
+      "phase": "storage_bounds",
+      "rank": 1,
+      "consumer_adapter": "soil"
+    },
+    {
+      "phase": "decomposition_transition",
+      "rank": 2,
+      "consumer_adapter": "decomposition"
+    },
+    {
+      "phase": "residue_partition_transition",
+      "rank": 3,
+      "consumer_adapter": "decomposition"
+    },
+    {
+      "phase": "annual_growth_transition",
+      "rank": 4,
+      "consumer_adapter": "growth"
+    },
+    {
+      "phase": "perennial_growth_transition",
+      "rank": 5,
+      "consumer_adapter": "growth"
+    },
+    {
+      "phase": "percolation_deep_seepage",
+      "rank": 6,
+      "consumer_adapter": "perc"
+    },
+    {
+      "phase": "evapotranspiration",
+      "rank": 7,
+      "consumer_adapter": "watbal"
+    },
+    {
+      "phase": "drainage",
+      "rank": 8,
+      "consumer_adapter": "perc"
+    },
+    {
+      "phase": "lateral_transfer",
+      "rank": 9,
+      "consumer_adapter": "watbal"
+    },
+    {
+      "phase": "plant_root_uptake",
+      "rank": 10,
+      "consumer_adapter": "watbal"
+    },
+    {
+      "phase": "runoff_reconciliation",
+      "rank": 11,
+      "consumer_adapter": "runoff"
+    },
+    {
+      "phase": "storage_reconciliation",
+      "rank": 12,
+      "consumer_adapter": "watbal"
+    },
+    {
+      "phase": "closure_diagnostics",
+      "rank": 13,
+      "consumer_adapter": "watbal"
+    }
+  ],
+  "edges": [
+    {
+      "from": "normalization",
+      "to": "storage_bounds"
+    },
+    {
+      "from": "storage_bounds",
+      "to": "decomposition_transition"
+    },
+    {
+      "from": "decomposition_transition",
+      "to": "residue_partition_transition"
+    },
+    {
+      "from": "residue_partition_transition",
+      "to": "annual_growth_transition"
+    },
+    {
+      "from": "annual_growth_transition",
+      "to": "perennial_growth_transition"
+    },
+    {
+      "from": "perennial_growth_transition",
+      "to": "percolation_deep_seepage"
+    },
+    {
+      "from": "percolation_deep_seepage",
+      "to": "evapotranspiration"
+    },
+    {
+      "from": "evapotranspiration",
+      "to": "drainage"
+    },
+    {
+      "from": "drainage",
+      "to": "lateral_transfer"
+    },
+    {
+      "from": "lateral_transfer",
+      "to": "plant_root_uptake"
+    },
+    {
+      "from": "plant_root_uptake",
+      "to": "runoff_reconciliation"
+    },
+    {
+      "from": "runoff_reconciliation",
+      "to": "storage_reconciliation"
+    },
+    {
+      "from": "storage_reconciliation",
+      "to": "closure_diagnostics"
+    }
+  ],
+  "topological_order": [
+    "normalization",
+    "storage_bounds",
+    "decomposition_transition",
+    "residue_partition_transition",
+    "annual_growth_transition",
+    "perennial_growth_transition",
+    "percolation_deep_seepage",
+    "evapotranspiration",
+    "drainage",
+    "lateral_transfer",
+    "plant_root_uptake",
+    "runoff_reconciliation",
+    "storage_reconciliation",
+    "closure_diagnostics"
+  ]
+}

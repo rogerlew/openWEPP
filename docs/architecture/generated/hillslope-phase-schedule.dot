@@ -1,0 +1,31 @@
+digraph hillslope_phase_schedule {
+    rankdir=TB;
+    node [shape=box];
+    "normalization" [label="normalization\nrank: 0\nadapter: soil"];
+    "storage_bounds" [label="storage_bounds\nrank: 1\nadapter: soil"];
+    "decomposition_transition" [label="decomposition_transition\nrank: 2\nadapter: decomposition"];
+    "residue_partition_transition" [label="residue_partition_transition\nrank: 3\nadapter: decomposition"];
+    "annual_growth_transition" [label="annual_growth_transition\nrank: 4\nadapter: growth"];
+    "perennial_growth_transition" [label="perennial_growth_transition\nrank: 5\nadapter: growth"];
+    "percolation_deep_seepage" [label="percolation_deep_seepage\nrank: 6\nadapter: perc"];
+    "evapotranspiration" [label="evapotranspiration\nrank: 7\nadapter: watbal"];
+    "drainage" [label="drainage\nrank: 8\nadapter: perc"];
+    "lateral_transfer" [label="lateral_transfer\nrank: 9\nadapter: watbal"];
+    "plant_root_uptake" [label="plant_root_uptake\nrank: 10\nadapter: watbal"];
+    "runoff_reconciliation" [label="runoff_reconciliation\nrank: 11\nadapter: runoff"];
+    "storage_reconciliation" [label="storage_reconciliation\nrank: 12\nadapter: watbal"];
+    "closure_diagnostics" [label="closure_diagnostics\nrank: 13\nadapter: watbal"];
+    "normalization" -> "storage_bounds";
+    "storage_bounds" -> "decomposition_transition";
+    "decomposition_transition" -> "residue_partition_transition";
+    "residue_partition_transition" -> "annual_growth_transition";
+    "annual_growth_transition" -> "perennial_growth_transition";
+    "perennial_growth_transition" -> "percolation_deep_seepage";
+    "percolation_deep_seepage" -> "evapotranspiration";
+    "evapotranspiration" -> "drainage";
+    "drainage" -> "lateral_transfer";
+    "lateral_transfer" -> "plant_root_uptake";
+    "plant_root_uptake" -> "runoff_reconciliation";
+    "runoff_reconciliation" -> "storage_reconciliation";
+    "storage_reconciliation" -> "closure_diagnostics";
+}

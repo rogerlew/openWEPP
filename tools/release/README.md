@@ -44,6 +44,12 @@ Required authority lane runs by default.
     symbols are registered.
   - Current full-contract runs are expected to report HOLD inventory until
     legacy `SC-INFILE-*` and registry-linkage gaps are remediated.
+- `check_hillslope_schedule_export.sh`
+  - Regenerates the code-derived hillslope phase schedule artifacts from
+    `HillslopePhaseGraph::canonical()` into a temporary directory and compares
+    them against the committed Mermaid, JSON, and DOT artifacts under
+    `docs/architecture/generated/`.
+  - Fails on documentation drift without writing repository files.
 
 ## Typical Usage
 
@@ -57,6 +63,10 @@ bash tools/release/check_authority_suite_antievasion.sh --base-ref HEAD~1 --head
 
 ```bash
 bash tools/release/check_sc_unit_compliance.sh
+```
+
+```bash
+bash tools/release/check_hillslope_schedule_export.sh
 ```
 
 ```bash

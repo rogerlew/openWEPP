@@ -1,10 +1,19 @@
 # Schedule Export and Introspection — Spec
 
-Status: Draft / Proposed (reviewed by Codex 2026-06-04; maintainer sign-off pending)
-Evidence mode: Static
+Status: Implemented by ARCH23 on 2026-06-04
+Evidence mode: Static + Ran
 Authored-by: Claude Code (documentation authority per CLAUDE.md)
 Scope: developer-facing export and introspection of the hillslope phase
 schedule DAG, with the watershed dispatch scheduler as a declared follow-on.
+
+Implementation:
+
+- `crates/openwepp-hillslope-orchestrator/src/schedule_export.rs`
+- `crates/openwepp-hillslope-orchestrator/src/bin/openwepp_hillslope_schedule_export.rs`
+- `docs/architecture/generated/hillslope-phase-schedule.json`
+- `docs/architecture/generated/hillslope-phase-schedule.mmd`
+- `docs/architecture/generated/hillslope-phase-schedule.dot`
+- `tools/release/check_hillslope_schedule_export.sh`
 
 ## 1. Problem Statement
 

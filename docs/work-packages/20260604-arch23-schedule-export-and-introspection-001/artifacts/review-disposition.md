@@ -1,20 +1,15 @@
 # Review Disposition
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static
 
 ## Finding Disposition Register
 
-Every finding from `review_agent_a.md` and `review_agent_b.md` must be listed here before closure.
-
-- Finding ID:
-  Source:
-  Disposition: queued
-  Rationale:
-  Fix evidence:
-  Verification evidence:
-  Follow-up link:
+No findings were recorded by Review Agent A or Review Agent B.
 
 ## Closure Check
 
-- No undispositioned findings remain: queued
+- No undispositioned findings remain: yes.
+- Accepted findings fixed and verified: not applicable.
+- Rejected findings with rationale: not applicable.
+- Deferred/follow-up findings linked: not applicable.

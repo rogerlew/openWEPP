@@ -1,6 +1,6 @@
 # Active Prompts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static
 
-Use `arch23_kickoff_agent_prompt.md` to execute the package end to end.
+`arch23_kickoff_agent_prompt.md` was used to execute the package end to end.

@@ -1,7 +1,7 @@
 # Review Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static + Ran
 
 ## Review Scope
 
@@ -13,14 +13,20 @@ Evidence mode: not-run
 
 ## Findings
 
-Use one block per finding.
+No findings.
 
-- Finding ID:
-  Severity:
-  Location:
-  Summary:
-  Evidence:
-  Recommendation:
-  Disposition: queued
-  Disposition rationale:
-  Verification:
+## Review Notes
+
+Static: exporter consumes `HillslopePhaseGraph::canonical()` and validates graph shape before rendering. The code does not define a second production graph.
+
+Static: malformed graph construction is `#[cfg(test)]` only.
+
+Static: JSON diff parsing is structured through an internal parser instead of line-based matching.
+
+Static: docs no longer duplicate stale phase/edge lists and point to generated artifacts.
+
+Ran: focused clippy, focused tests, workspace clippy, workspace tests, and schedule congruence gate all passed.
+
+## Disposition
+
+No findings require disposition.

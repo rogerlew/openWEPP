@@ -69,6 +69,14 @@ impl HillslopePhaseGraph {
         edges
     }
 
+    #[cfg(test)]
+    #[must_use]
+    pub(crate) fn from_dependencies_for_test(
+        dependencies: BTreeMap<HillslopePhase, Vec<HillslopePhase>>,
+    ) -> Self {
+        Self { dependencies }
+    }
+
     #[must_use]
     pub fn topological_order(&self) -> Option<Vec<HillslopePhase>> {
         let mut indegree: BTreeMap<HillslopePhase, usize> = BTreeMap::new();

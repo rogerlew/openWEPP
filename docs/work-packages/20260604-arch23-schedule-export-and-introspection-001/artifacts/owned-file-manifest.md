@@ -1,9 +1,9 @@
 # Owned File Manifest
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static
 
-## Intended Write Set
+## Actual Files Touched
 
 - `crates/openwepp-hillslope-orchestrator/src/lib.rs`
 - `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`
@@ -18,13 +18,12 @@ Evidence mode: not-run
 - `docs/specifications/science-contracts/hillslope-phase-scheduler-contract.md`
 - `tools/release/check_hillslope_schedule_export.sh`
 - `tools/release/README.md`
-- `docs/work-packages/README.md`
 - `docs/work-packages/20260604-arch23-schedule-export-and-introspection-001/**`
-
-## Actual Files Touched
-
-- queued
 
 ## Out-of-Scope Touches
 
-- queued
+None.
+
+## Notes
+
+Static: `docs/work-packages/README.md` already contained the ARCH23 package entry from scaffold and was not edited during execution.

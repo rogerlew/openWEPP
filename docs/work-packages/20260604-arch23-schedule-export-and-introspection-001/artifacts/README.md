@@ -1,7 +1,7 @@
 # ARCH23 Artifacts
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static + Ran
 
 Artifacts in this directory must label evidence truthfully:
 
