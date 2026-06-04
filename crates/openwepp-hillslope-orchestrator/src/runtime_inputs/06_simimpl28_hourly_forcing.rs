@@ -1,9 +1,12 @@
-const SIMIMPL28_LANGLEY_TO_MJ_PER_M2: f64 = 0.04184;
 const SIMIMPL28_SUNMAP_SOLCON: f64 = 1.94;
 const SIMIMPL28_RADCUR_SOLCON: f64 = 0.082;
 const SIMIMPL28_PI: f64 = std::f64::consts::PI;
 const SIMIMPL28_DOMAIN_EPS: f64 = 1e-12;
 const SIMIMPL28_WINTER_HOURS_PER_DAY: usize = 24;
+// UNIT-CONVERSION-ALLOW: mm_m_scale SIMIMPL28 legacy random-seed scaling, not dimensional conversion.
+const SIMIMPL28_RANDOM_THOUSANDTH_SCALE: f64 = 0.001;
+// UNIT-CONVERSION-ALLOW: cm_m_scale SIMIMPL28 legacy random-seed scaling, not dimensional conversion.
+const SIMIMPL28_RANDOM_HUNDREDTH_SCALE: f64 = 0.01;
 
 #[derive(Debug, Clone, Copy)]
 struct Simimpl28AspectGeometry {
@@ -121,7 +124,7 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
 
     let sdate = simimpl28_day_of_year(day, mon, year)?;
     let geometry = simimpl28_aspect_geometry(metadata.deglat, avgslp, azm)?;
-    let radmj = radly * SIMIMPL28_LANGLEY_TO_MJ_PER_M2;
+    let radmj = simimpl28_langleys_to_mj_m2("rad", radly)?;
     let sunmap = simimpl28_sunmap(radly, sdate, geometry)?;
     let itflag = (tmax - tmin) <= 1.0;
 
@@ -308,6 +311,20 @@ fn simimpl28_aspect_geometry(
     })
 }
 
+fn simimpl28_langleys_to_mj_m2(
+    symbol: &'static str,
+    value_ly: f64,
+) -> Result<f64, ClimateRuntimeInputError> {
+    openwepp_unit_boundary::conversions::langleys_per_day_to_megajoules_per_square_meter_per_day(
+        value_ly,
+    )
+    .map_err(|_| ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+        symbol: symbol.to_string(),
+        value: value_ly,
+        allowed: "finite and >= 0",
+    })
+}
+
 fn simimpl28_psolr(sol_d: f64, v: f64, w: f64, x: f64, y: f64) -> f64 {
     (sol_d.sin() * w.sin() * (x - y) * 12.0 / SIMIMPL28_PI)
         + (sol_d.cos() * w.cos() * ((x + v).sin() - (y + v).sin()) * 12.0 / SIMIMPL28_PI)
@@ -362,7 +379,7 @@ fn simimpl28_sunmap(
     }
     t6 += 2.0 * SIMIMPL28_PI;
 
-    let r4 = if t6 < t1 {
+    let r4_ly = if t6 < t1 {
         let t8 = t6;
         let t9 = t1;
         r1 * (simimpl28_psolr(d, geometry.delong, geometry.eqlat, t3, t2_effective)
@@ -377,7 +394,8 @@ fn simimpl28_sunmap(
         } else {
             r1 * simimpl28_psolr(d, geometry.delong, geometry.eqlat, t3, t2_effective)
         }
-    } * SIMIMPL28_LANGLEY_TO_MJ_PER_M2;
+    };
+    let r4 = simimpl28_langleys_to_mj_m2("sunmap.r4", r4_ly)?;
 
     let t4 = t2_effective * 12.0 / SIMIMPL28_PI;
     let halfdy = t4.abs();
@@ -423,7 +441,7 @@ fn simimpl28_sunmap(
         / (0.7 * (0.75_f64.powf(ms) - 0.4_f64.powf(ms)));
     cloud_fraction = cloud_fraction.clamp(0.0, 1.0);
 
-    let rpoth_mj_m2 = r3 * SIMIMPL28_LANGLEY_TO_MJ_PER_M2;
+    let rpoth_mj_m2 = simimpl28_langleys_to_mj_m2("sunmap.r3", r3)?;
     let sb = rpoth_mj_m2 * tao.powf(ms);
     let sd = 0.3 * (rpoth_mj_m2 - sb);
     let denominator = sb + sd;
@@ -435,7 +453,7 @@ fn simimpl28_sunmap(
         });
     }
     let f = (r4 * tao.powf(ms) + sd) / denominator;
-    let estrad_mj_m2 = f * radly * SIMIMPL28_LANGLEY_TO_MJ_PER_M2;
+    let estrad_mj_m2 = simimpl28_langleys_to_mj_m2("sunmap.estrad", f * radly)?;
 
     if !(halfdy.is_finite()
         && d.is_finite()
@@ -526,7 +544,17 @@ fn simimpl28_hr_tmp_hour(
     tmin: f64,
 ) -> Result<(f64, f64), ClimateRuntimeInputError> {
     let (hrrad_mj_m2, hrtemp_c) = if itflag {
-        (radmj / 24.0, f64::midpoint(tmax, tmin))
+        (
+            openwepp_unit_boundary::conversions::megajoules_per_square_meter_per_day_to_uniform_hourly(
+                radmj,
+            )
+            .map_err(|_| ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                symbol: "rad".to_string(),
+                value: radmj,
+                allowed: "finite and >= 0",
+            })?,
+            f64::midpoint(tmax, tmin),
+        )
     } else {
         if sunmap.rpoth_mj_m2.abs() <= SIMIMPL28_DOMAIN_EPS {
             return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
@@ -580,7 +608,23 @@ fn simimpl28_stmtim_hourly_partition(
     if rain_m <= 0.0001 {
         return Ok((0.0, 0.0));
     }
-    let tmpvr3 = stmdur_s * 0.000_277_78;
+    let tmpvr3 = openwepp_unit_boundary::conversions::seconds_to_legacy_stmtim_hours(stmdur_s)
+        .map_err(|error| match error {
+            openwepp_unit_boundary::BoundaryError::NonFinite { value, .. } => {
+                ClimateRuntimeInputError::NonFiniteField {
+                    field: "stmdur",
+                    value,
+                }
+            }
+            openwepp_unit_boundary::BoundaryError::BelowMinimum { value, .. }
+            | openwepp_unit_boundary::BoundaryError::AboveMaximum { value, .. } => {
+                ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                    symbol: "stmdur".to_string(),
+                    value,
+                    allowed: "finite and >= 0",
+                }
+            }
+        })?;
     let mut wntdur = tmpvr3.floor();
     if (tmpvr3 - wntdur) >= 0.5 {
         wntdur += 1.0;
@@ -634,10 +678,13 @@ fn simimpl28_winter_random_start_hour(sdate: i32) -> f64 {
     k4 += i;
     i = k4 / 100;
     k4 -= 100 * i;
-    let randn = ((((f64::from(k1) * 0.001 + f64::from(k2)) * 0.01 + f64::from(k3)) * 0.001
-        + f64::from(k4))
-        * 0.01)
-        * 24.0;
+    let randn_seed =
+        ((f64::from(k1) * SIMIMPL28_RANDOM_THOUSANDTH_SCALE + f64::from(k2))
+            * SIMIMPL28_RANDOM_HUNDREDTH_SCALE
+            + f64::from(k3))
+            * SIMIMPL28_RANDOM_THOUSANDTH_SCALE
+            + f64::from(k4);
+    let randn = (randn_seed * SIMIMPL28_RANDOM_HUNDREDTH_SCALE) * 24.0;
     let mut wnttim = randn.floor();
     if wnttim < 1.0 {
         wnttim = 1.0;

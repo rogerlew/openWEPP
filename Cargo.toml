@@ -176,6 +176,10 @@ name = "hphys0275_boundary_value_dimensional_typing_contract"
 path = "tests/integration/hphys0275_boundary_value_dimensional_typing_contract.rs"
 
 [[test]]
+name = "hphys0276_raw_unit_conversion_guard_contract"
+path = "tests/integration/hphys0276_raw_unit_conversion_guard_contract.rs"
+
+[[test]]
 name = "topology_graph_validation_gate"
 path = "tests/integration/topology_graph_validation_gate.rs"
 

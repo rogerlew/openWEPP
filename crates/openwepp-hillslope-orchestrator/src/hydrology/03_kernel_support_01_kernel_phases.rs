@@ -2281,6 +2281,7 @@ impl Wb11HydrologyKernel {
                                 * thickness[layer_index];
                         }
                     }
+                    // UNIT-CONVERSION-ALLOW: mm_m_scale legacy soil-water averaging threshold in meters, not conversion.
                     if solwpv_mode_lt_2006 && daily_average_upper_limit > 0.001 {
                         let saturation_fraction =
                             daily_average_storage / daily_average_upper_limit;
@@ -2845,7 +2846,18 @@ impl Wb11HydrologyKernel {
                     }
 
                     let dranks = if saturated_depth_sum > WB11_ZERO_THRESHOLD {
-                        (conductivity_depth_sum / saturated_depth_sum) * 3600.0 * 100.0
+                        let saturated_conductivity_m_s =
+                            conductivity_depth_sum / saturated_depth_sum;
+                        openwepp_unit_boundary::conversions::meters_per_second_to_centimeters_per_hour(
+                            saturated_conductivity_m_s,
+                        )
+                        .map_err(|error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                drain_spacing_symbol.clone(),
+                                &error,
+                            )
+                        })?
                     } else {
                         0.0
                     };
@@ -2859,12 +2871,41 @@ impl Wb11HydrologyKernel {
                         });
                     }
 
-                    let mut drain_depth_cm = (soldep - drain_depth) * 100.0;
-                    if drain_depth_cm < 0.0 {
-                        drain_depth_cm = 1.0;
-                    }
-                    let spacing_cm = drain_spacing * 100.0;
-                    let radius_cm = (drain_diameter / 2.0) * 100.0;
+                    let drain_depth_delta_m = soldep - drain_depth;
+                    let drain_depth_cm = if drain_depth_delta_m < 0.0 {
+                        1.0
+                    } else {
+                        openwepp_unit_boundary::conversions::meters_to_centimeters(
+                            drain_depth_delta_m,
+                        )
+                        .map_err(|error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                drain_depth_symbol.clone(),
+                                &error,
+                            )
+                        })?
+                    };
+                    let spacing_cm =
+                        openwepp_unit_boundary::conversions::meters_to_centimeters(drain_spacing)
+                            .map_err(|error| {
+                                Self::unit_conversion_guard_error(
+                                    phase_class,
+                                    drain_spacing_symbol.clone(),
+                                    &error,
+                                )
+                            })?;
+                    let radius_cm =
+                        openwepp_unit_boundary::conversions::meters_to_centimeters(
+                            drain_diameter / 2.0,
+                        )
+                        .map_err(|error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                drain_diameter_symbol.clone(),
+                                &error,
+                            )
+                        })?;
 
                     let spacing_ratio = drain_depth_cm / spacing_cm;
                     let equivalent_depth_cm = if spacing_ratio <= 0.3 && spacing_ratio > 0.0 {
@@ -2915,7 +2956,17 @@ impl Wb11HydrologyKernel {
                         });
                     }
 
-                    let water_table_cm = (drain_depth - dep2watbl).max(0.0) * 100.0;
+                    let water_table_cm =
+                        openwepp_unit_boundary::conversions::meters_to_centimeters(
+                            (drain_depth - dep2watbl).max(0.0),
+                        )
+                        .map_err(|error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                drain_depth_symbol.clone(),
+                                &error,
+                            )
+                        })?;
                     let drainage_cm_h = (8.0 * dranks * equivalent_depth_cm * water_table_cm
                         + 4.0 * dranks * water_table_cm.powi(2))
                         / spacing_cm.powi(2);
@@ -2929,7 +2980,18 @@ impl Wb11HydrologyKernel {
                         });
                     }
 
-                    q_drainage_potential = (drainage_cm_h / 100.0) * lane_hour_fraction;
+                    q_drainage_potential =
+                        openwepp_unit_boundary::conversions::centimeters_to_meters(
+                            drainage_cm_h,
+                        )
+                        .map_err(|error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                drain_depth_symbol.clone(),
+                                &error,
+                            )
+                        })?
+                            * lane_hour_fraction;
                     Self::require_flux_range(
                         phase_class,
                         WB11_SYMBOL_DRAINAGE_QDD,
@@ -3288,7 +3350,18 @@ impl Wb11HydrologyKernel {
 
         let (sat_frac, avthetafc, avthetadr) =
             Self::wb14_load_top_two_layer_ksatadj_metrics(request, phase_class)?;
-        let upper_ks_mm_h = soil_conductivity * 3.6e6;
+        let upper_ks_mm_h =
+            openwepp_unit_boundary::ProcessRateMillimetersPerHour::from_meters_per_second(
+                soil_conductivity,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from("keff"),
+                    &error,
+                )
+            })?
+            .as_millimeters_per_hour();
 
         let effective_ks_mm_h = if (solwpv_rounded - 9001.0).abs() <= WB11_ZERO_THRESHOLD {
             let ksatfac_symbol = BoundarySymbol::from("ksatfac");
@@ -3394,11 +3467,20 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        Ok((if effective_ks_mm_h < 0.0 {
+        let effective_ks_mm_h = if effective_ks_mm_h < 0.0 {
             0.0
         } else {
             effective_ks_mm_h
-        }) / 3.6e6)
+        };
+        openwepp_unit_boundary::ProcessRateMillimetersPerHour::try_new(effective_ks_mm_h)
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from("keff"),
+                    &error,
+                )
+            })
+            .map(openwepp_unit_boundary::ProcessRateMillimetersPerHour::as_meters_per_second)
     }
 
     #[allow(clippy::too_many_lines)]

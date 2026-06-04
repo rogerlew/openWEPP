@@ -1,12 +1,14 @@
 # Unit-Safe Boundary Types
 
-Status: Active (ARCH09, HPHYS0275 amended)
+Status: Active (ARCH09, HPHYS0276 amended)
 Evidence: Static + Ran  
 Ran evidence:
 - `cargo fmt --manifest-path crates/openwepp-unit-boundary/Cargo.toml --check`
 - `cargo clippy --manifest-path crates/openwepp-unit-boundary/Cargo.toml --all-targets -- -D warnings`
 - `cargo test --manifest-path crates/openwepp-unit-boundary/Cargo.toml`
 - `cargo test --test hphys0275_boundary_value_dimensional_typing_contract`
+- `cargo test --test hphys0276_raw_unit_conversion_guard_contract`
+- `tools/release/check_raw_unit_conversions.sh`
 
 ## Purpose
 
@@ -55,6 +57,26 @@ The crate provides explicit constructors/helpers for unit conversions:
 - rate:
   - `ProcessRateMillimetersPerHour::from_meters_per_second`
   - `ProcessRateMillimetersPerHour::as_meters_per_second`
+- named first-wave conversion helpers in
+  `openwepp_unit_boundary::conversions`:
+  - `meters_to_millimeters`
+  - `millimeters_to_meters`
+  - `meters_to_centimeters`
+  - `centimeters_to_meters`
+  - `hours_to_seconds`
+  - `seconds_to_hours`
+  - `seconds_to_legacy_stmtim_hours`
+  - `langleys_per_day_to_megajoules_per_square_meter_per_day`
+  - `megajoules_per_square_meter_per_day_to_uniform_hourly`
+  - `meters_per_second_to_centimeters_per_hour`
+  - `meters_per_second_to_legacy_miles_per_hour`
+  - `meters_to_legacy_inches`
+  - `legacy_inches_to_meters`
+  - `snow_depth_meters_to_water_equivalent_meters`
+  - `water_equivalent_meters_to_snow_depth_meters`
+  - `water_depth_meters_to_snow_density_increment`
+  - `kilograms_per_cubic_meter_to_grams_per_cubic_centimeter`
+  - `celsius_delta_to_fahrenheit_delta`
 
 HPHYS0275 adds direct runtime constructors for already-canonical seam units.
 Those constructors do not rescale values; they validate domain and carry unit
@@ -64,6 +86,11 @@ adds wind-speed typing; direction-specific typing requires a separate wrapper.
 
 All conversion paths perform finite checks on inputs and conversion results.
 No silent clamping/coercion/defaulting is permitted.
+
+HPHYS0276 adds a source-level raw literal guard at
+`tools/release/check_raw_unit_conversions.py`. The guard enforces selected
+high-risk production files first and keeps broader conversion inventory as
+follow-up evidence rather than silently allowing unreviewed literals.
 
 ## Error Policy
 

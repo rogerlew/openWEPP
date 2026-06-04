@@ -127,6 +127,40 @@ Every conversion helper must state:
 Correct constants used in the wrong direction are defects. Packages must avoid
 "rounding into plausibility" by clipping, defaulting, or double-converting.
 
+### Conversion Helper Authority
+
+`openwepp-unit-boundary` owns first-wave dimensional conversion helpers for
+runtime/kernel seams. Helpers must be named by source unit and target unit, not
+by numeric constant. HPHYS0276 establishes the following canonical first-wave
+helper classes:
+
+- length/depth conversions: `m <-> mm`, `m <-> cm`, legacy `m <-> inch`,
+- time/rate conversions: `h <-> s`, `m s^-1 -> cm h^-1`, legacy
+  `m s^-1 -> mile h^-1`,
+- radiation conversions: `Ly d^-1 -> MJ m^-2 d^-1` and uniform
+  `MJ m^-2 d^-1 -> MJ m^-2 h^-1`,
+- snow density/depth conversions: `snow depth m + density kg m^-3 <->
+  water-equivalent m`, `kg m^-3 -> g cm^-3`.
+
+Production code in guard-enforced paths must call these helpers instead of
+spelling literals such as `0.04184`, `1000.0`, `0.001`, `3600.0`, `39.37`, or
+`0.0254`. Existing production files that still contain raw conversion literals
+must either be migrated by a follow-up package or documented as an explicit
+guard exception with rationale and provenance.
+
+### Raw Conversion Literal Guard
+
+`tools/release/check_raw_unit_conversions.py` is the source-level guard for
+raw dimensional conversion literals. The first HPHYS0276 enforcement wave
+covers the high-risk SIMIMPL28/SIMIMPL29 winter radiation, snowpack/melt, and
+WB19 drainage conversion seams. The guard must:
+
+- fail on unauthorized raw conversion literals in enforced production files,
+- ignore test modules and non-Rust fixtures by default,
+- require a documented allow marker for any intentional raw literal exception,
+- support explicit path arguments for contract-derived lint fixtures,
+- report remaining all-production conversion inventory for follow-up planning.
+
 ## Publication Metadata
 
 Output writers must publish unit metadata from the same authority as runtime

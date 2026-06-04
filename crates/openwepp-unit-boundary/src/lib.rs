@@ -10,10 +10,6 @@
 use std::error::Error;
 use std::fmt;
 
-const MILLIMETERS_PER_METER: f64 = 1_000.0;
-const LITERS_PER_CUBIC_METER: f64 = 1_000.0;
-const SECONDS_PER_HOUR: f64 = 3_600.0;
-
 /// Boundary-construction or conversion error.
 #[derive(Debug, Clone, PartialEq)]
 pub enum BoundaryError {
@@ -58,6 +54,299 @@ impl fmt::Display for BoundaryError {
 }
 
 impl Error for BoundaryError {}
+
+/// Named directional conversion helpers for high-risk dimensional seams.
+pub mod conversions {
+    use super::{
+        BoundaryError, checked_div, checked_mul, validate_finite, validate_minimum,
+        validate_non_negative,
+    };
+
+    /// Exact length scale for `m <-> mm`.
+    pub const MILLIMETERS_PER_METER: f64 = 1_000.0;
+    /// Exact length scale for `m <-> cm`.
+    pub const CENTIMETERS_PER_METER: f64 = 100.0;
+    /// Exact volume scale for `m^3 <-> L`.
+    pub const LITERS_PER_CUBIC_METER: f64 = 1_000.0;
+    /// Exact time scale for `h <-> s`.
+    pub const SECONDS_PER_HOUR: f64 = 3_600.0;
+    /// Legacy WEPP STMTIM seconds-to-hours factor from `stmtim.for`.
+    pub const LEGACY_STMTIM_HOURS_PER_SECOND: f64 = 0.000_277_78;
+    /// Legacy WEPP solar conversion from `/workdir/wepp-forest_260430_baseline/src/sunmap.for`.
+    pub const MEGAJOULES_PER_SQUARE_METER_PER_LANGLEY: f64 = 0.04184;
+    /// Legacy WEPP snowmelt rain heat conversion from meters to inches.
+    pub const LEGACY_INCHES_PER_METER: f64 = 39.37;
+    /// Exact length scale from inches to meters.
+    pub const METERS_PER_INCH: f64 = 0.0254;
+    /// Legacy WEPP snowmelt wind conversion denominator.
+    pub const LEGACY_METERS_PER_MILE: f64 = 1_609.0;
+    /// Density scale for `kg m^-3 -> g cm^-3`.
+    pub const KILOGRAMS_PER_CUBIC_METER_PER_GRAM_PER_CUBIC_CENTIMETER: f64 = 1_000.0;
+
+    /// Convert meters to millimeters.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn meters_to_millimeters(value_m: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("length_m", value_m)?;
+        checked_mul("length_mm", value_m, MILLIMETERS_PER_METER)
+    }
+
+    /// Convert millimeters to meters.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn millimeters_to_meters(value_mm: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("length_mm", value_mm)?;
+        checked_div("length_m", value_mm, MILLIMETERS_PER_METER)
+    }
+
+    /// Convert meters to centimeters.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn meters_to_centimeters(value_m: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("length_m", value_m)?;
+        checked_mul("length_cm", value_m, CENTIMETERS_PER_METER)
+    }
+
+    /// Convert centimeters to meters.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn centimeters_to_meters(value_cm: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("length_cm", value_cm)?;
+        checked_div("length_m", value_cm, CENTIMETERS_PER_METER)
+    }
+
+    /// Convert hours to seconds.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn hours_to_seconds(value_h: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("elapsed_time_h", value_h)?;
+        checked_mul("elapsed_time_s", value_h, SECONDS_PER_HOUR)
+    }
+
+    /// Convert seconds to hours.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn seconds_to_hours(value_s: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("elapsed_time_s", value_s)?;
+        checked_div("elapsed_time_h", value_s, SECONDS_PER_HOUR)
+    }
+
+    /// Convert seconds to legacy STMTIM storm-duration hours.
+    ///
+    /// This preserves `/workdir/wepp-forest_260430_baseline/src/stmtim.for`
+    /// line 49, which uses `stmdur * 0.00027778` rather than exact division.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn seconds_to_legacy_stmtim_hours(value_s: f64) -> Result<f64, BoundaryError> {
+        validate_non_negative("elapsed_time_s", value_s)?;
+        checked_mul(
+            "legacy_stmtim_elapsed_time_h",
+            value_s,
+            LEGACY_STMTIM_HOURS_PER_SECOND,
+        )
+    }
+
+    /// Convert meters per second to centimeters per hour.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or an
+    /// intermediate value is non-finite.
+    pub fn meters_per_second_to_centimeters_per_hour(
+        value_m_per_s: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("linear_rate_m_s", value_m_per_s)?;
+        let meters_per_hour = checked_mul("linear_rate_m_h", value_m_per_s, SECONDS_PER_HOUR)?;
+        checked_mul("linear_rate_cm_h", meters_per_hour, CENTIMETERS_PER_METER)
+    }
+
+    /// Convert meters per second to legacy WEPP miles per hour.
+    ///
+    /// The denominator preserves the legacy SIMIMPL29 `1609.` value rather than
+    /// changing behavior to the exact SI mile length.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or an
+    /// intermediate value is non-finite.
+    pub fn meters_per_second_to_legacy_miles_per_hour(
+        value_m_per_s: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("linear_rate_m_s", value_m_per_s)?;
+        let meters_per_hour = checked_mul("linear_rate_m_h", value_m_per_s, SECONDS_PER_HOUR)?;
+        checked_div(
+            "legacy_wind_mile_h",
+            meters_per_hour,
+            LEGACY_METERS_PER_MILE,
+        )
+    }
+
+    /// Convert meters to legacy WEPP inches.
+    ///
+    /// This helper is signed because SIMIMPL29 melt/rain heat terms may carry
+    /// signed intermediate energy terms before final domain guards.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input or converted value is
+    /// non-finite.
+    pub fn meters_to_legacy_inches(value_m: f64) -> Result<f64, BoundaryError> {
+        validate_finite("length_m", value_m)?;
+        checked_mul("legacy_length_in", value_m, LEGACY_INCHES_PER_METER)
+    }
+
+    /// Convert legacy WEPP inches to meters.
+    ///
+    /// This helper is signed because SIMIMPL29 melt terms may be negative
+    /// before final guards.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input or converted value is
+    /// non-finite.
+    pub fn legacy_inches_to_meters(value_in: f64) -> Result<f64, BoundaryError> {
+        validate_finite("legacy_length_in", value_in)?;
+        checked_mul("length_m", value_in, METERS_PER_INCH)
+    }
+
+    /// Convert Langleys per day to megajoules per square meter per day.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn langleys_per_day_to_megajoules_per_square_meter_per_day(
+        value_ly_per_day: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("solar_radiation_ly_d", value_ly_per_day)?;
+        checked_mul(
+            "solar_radiation_mj_m2_d",
+            value_ly_per_day,
+            MEGAJOULES_PER_SQUARE_METER_PER_LANGLEY,
+        )
+    }
+
+    /// Uniformly distribute daily radiation to hourly radiation.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn megajoules_per_square_meter_per_day_to_uniform_hourly(
+        value_mj_m2_day: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("solar_radiation_mj_m2_d", value_mj_m2_day)?;
+        checked_div("solar_radiation_mj_m2_h", value_mj_m2_day, 24.0)
+    }
+
+    /// Convert snow depth and density to water-equivalent depth.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when either input is negative/non-finite or
+    /// the converted value is non-finite.
+    pub fn snow_depth_meters_to_water_equivalent_meters(
+        snow_depth_m: f64,
+        density_kg_m3: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("snow_depth_m", snow_depth_m)?;
+        validate_non_negative("density_kg_m3", density_kg_m3)?;
+        let density_depth = checked_mul("snow_density_depth_kg_m2", snow_depth_m, density_kg_m3)?;
+        checked_div(
+            "snow_water_equivalent_m",
+            density_depth,
+            MILLIMETERS_PER_METER,
+        )
+    }
+
+    /// Convert snow water-equivalent depth and density to snowpack depth.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when water equivalent is negative/non-finite,
+    /// density is non-finite/non-positive, or the converted value is non-finite.
+    pub fn water_equivalent_meters_to_snow_depth_meters(
+        water_equivalent_m: f64,
+        density_kg_m3: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("snow_water_equivalent_m", water_equivalent_m)?;
+        validate_finite("density_kg_m3", density_kg_m3)?;
+        validate_minimum("density_kg_m3", density_kg_m3, f64::EPSILON)?;
+        let scaled_water = checked_mul(
+            "snow_water_equivalent_mm",
+            water_equivalent_m,
+            MILLIMETERS_PER_METER,
+        )?;
+        checked_div("snow_depth_m", scaled_water, density_kg_m3)
+    }
+
+    /// Convert retained water depth over snow depth to density increment.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when water depth is negative/non-finite,
+    /// snow depth is non-finite/non-positive, or the converted value is
+    /// non-finite.
+    pub fn water_depth_meters_to_snow_density_increment(
+        water_depth_m: f64,
+        snow_depth_m: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("water_depth_m", water_depth_m)?;
+        validate_finite("snow_depth_m", snow_depth_m)?;
+        validate_minimum("snow_depth_m", snow_depth_m, f64::EPSILON)?;
+        let water_depth_mm = checked_mul("water_depth_mm", water_depth_m, MILLIMETERS_PER_METER)?;
+        checked_div("density_kg_m3", water_depth_mm, snow_depth_m)
+    }
+
+    /// Convert density from kilograms per cubic meter to grams per cubic centimeter.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input is negative/non-finite or the
+    /// converted value is non-finite.
+    pub fn kilograms_per_cubic_meter_to_grams_per_cubic_centimeter(
+        density_kg_m3: f64,
+    ) -> Result<f64, BoundaryError> {
+        validate_non_negative("density_kg_m3", density_kg_m3)?;
+        checked_div(
+            "density_g_cm3",
+            density_kg_m3,
+            KILOGRAMS_PER_CUBIC_METER_PER_GRAM_PER_CUBIC_CENTIMETER,
+        )
+    }
+
+    /// Convert a Celsius temperature difference to Fahrenheit degrees.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`BoundaryError`] when the input or converted value is
+    /// non-finite.
+    pub fn celsius_delta_to_fahrenheit_delta(value_c: f64) -> Result<f64, BoundaryError> {
+        validate_finite("temperature_delta_c", value_c)?;
+        checked_mul("temperature_delta_f", value_c, 9.0 / 5.0)
+    }
+}
 
 /// Drainage or contributing area at a boundary (`m^2`).
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -118,7 +407,7 @@ impl RunoffDepthMillimeters {
     /// - [`BoundaryError::BelowMinimum`] when `value_m < 0.0`.
     pub fn from_meters(value_m: f64) -> Result<Self, BoundaryError> {
         validate_non_negative("runoff_depth_m", value_m)?;
-        let value_mm = checked_mul("runoff_depth_mm", value_m, MILLIMETERS_PER_METER)?;
+        let value_mm = conversions::meters_to_millimeters(value_m)?;
         Self::try_new(value_mm)
     }
 
@@ -131,7 +420,7 @@ impl RunoffDepthMillimeters {
     /// Value converted to meters.
     #[must_use]
     pub fn as_meters(self) -> f64 {
-        self.0 / MILLIMETERS_PER_METER
+        self.0 / conversions::MILLIMETERS_PER_METER
     }
 
     /// Convert runoff depth to equivalent storage volume for a given area.
@@ -179,7 +468,7 @@ impl FlowRateCubicMetersPerSecond {
     /// - [`BoundaryError::BelowMinimum`] when `value_l_per_s < 0.0`.
     pub fn from_liters_per_second(value_l_per_s: f64) -> Result<Self, BoundaryError> {
         validate_non_negative("flow_rate_l_s", value_l_per_s)?;
-        let value_m3_per_s = value_l_per_s / LITERS_PER_CUBIC_METER;
+        let value_m3_per_s = value_l_per_s / conversions::LITERS_PER_CUBIC_METER;
         Self::try_new(value_m3_per_s)
     }
 
@@ -192,7 +481,7 @@ impl FlowRateCubicMetersPerSecond {
     /// Value converted to liters per second.
     #[must_use]
     pub fn as_liters_per_second(self) -> f64 {
-        self.0 * LITERS_PER_CUBIC_METER
+        self.0 * conversions::LITERS_PER_CUBIC_METER
     }
 }
 
@@ -226,7 +515,7 @@ impl StorageVolumeCubicMeters {
     /// - [`BoundaryError::BelowMinimum`] when `value_liters < 0.0`.
     pub fn from_liters(value_liters: f64) -> Result<Self, BoundaryError> {
         validate_non_negative("storage_volume_l", value_liters)?;
-        let value_m3 = value_liters / LITERS_PER_CUBIC_METER;
+        let value_m3 = value_liters / conversions::LITERS_PER_CUBIC_METER;
         Self::try_new(value_m3)
     }
 
@@ -239,7 +528,7 @@ impl StorageVolumeCubicMeters {
     /// Value converted to liters.
     #[must_use]
     pub fn as_liters(self) -> f64 {
-        self.0 * LITERS_PER_CUBIC_METER
+        self.0 * conversions::LITERS_PER_CUBIC_METER
     }
 
     /// Convert storage volume to equivalent depth for a given area.
@@ -288,8 +577,16 @@ impl ProcessRateMillimetersPerHour {
     /// - [`BoundaryError::BelowMinimum`] when `value_m_per_s < 0.0`.
     pub fn from_meters_per_second(value_m_per_s: f64) -> Result<Self, BoundaryError> {
         validate_non_negative("process_rate_m_s", value_m_per_s)?;
-        let mm_per_s = checked_mul("process_rate_mm_s", value_m_per_s, MILLIMETERS_PER_METER)?;
-        let mm_per_hr = checked_mul("process_rate_mm_hr", mm_per_s, SECONDS_PER_HOUR)?;
+        let mm_per_s = checked_mul(
+            "process_rate_mm_s",
+            value_m_per_s,
+            conversions::MILLIMETERS_PER_METER,
+        )?;
+        let mm_per_hr = checked_mul(
+            "process_rate_mm_hr",
+            mm_per_s,
+            conversions::SECONDS_PER_HOUR,
+        )?;
         Self::try_new(mm_per_hr)
     }
 
@@ -302,7 +599,7 @@ impl ProcessRateMillimetersPerHour {
     /// Value converted to meters per second.
     #[must_use]
     pub fn as_meters_per_second(self) -> f64 {
-        self.0 / MILLIMETERS_PER_METER / SECONDS_PER_HOUR
+        self.0 / conversions::MILLIMETERS_PER_METER / conversions::SECONDS_PER_HOUR
     }
 }
 
@@ -470,6 +767,18 @@ impl SolarRadiationMegajoulesPerSquareMeterPerDay {
         Ok(Self(value_mj_m2_day))
     }
 
+    /// Construct daily radiation from Langleys per day.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`BoundaryError`] when input or converted radiation is
+    /// non-finite or negative.
+    pub fn from_langleys_per_day(value_ly_per_day: f64) -> Result<Self, BoundaryError> {
+        let value_mj_m2_day =
+            conversions::langleys_per_day_to_megajoules_per_square_meter_per_day(value_ly_per_day)?;
+        Self::try_new(value_mj_m2_day)
+    }
+
     /// Raw value in megajoules per square meter per day.
     #[must_use]
     pub const fn as_megajoules_per_square_meter_per_day(self) -> f64 {
@@ -496,6 +805,20 @@ impl SolarRadiationMegajoulesPerSquareMeterPerHour {
     pub fn try_new(value_mj_m2_hour: f64) -> Result<Self, BoundaryError> {
         validate_non_negative("solar_radiation_mj_m2_h", value_mj_m2_hour)?;
         Ok(Self(value_mj_m2_hour))
+    }
+
+    /// Construct uniform hourly radiation from daily radiation.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`BoundaryError`] when input or converted radiation is
+    /// non-finite or negative.
+    pub fn from_uniform_daily_megajoules_per_square_meter(
+        value_mj_m2_day: f64,
+    ) -> Result<Self, BoundaryError> {
+        let value_mj_m2_hour =
+            conversions::megajoules_per_square_meter_per_day_to_uniform_hourly(value_mj_m2_day)?;
+        Self::try_new(value_mj_m2_hour)
     }
 
     /// Raw value in megajoules per square meter per hour.
@@ -753,7 +1076,7 @@ mod tests {
         assert_eq!(
             error,
             BoundaryError::NonFinite {
-                boundary: "runoff_depth_mm",
+                boundary: "length_mm",
                 value: f64::INFINITY,
             }
         );
@@ -820,6 +1143,132 @@ mod tests {
         let radiation = SolarRadiationMegajoulesPerSquareMeterPerDay::try_new(8.368)
             .expect("valid daily radiation");
         assert_close(radiation.as_megajoules_per_square_meter_per_day(), 8.368);
+    }
+
+    #[test]
+    fn radiation_conversion_direction_uses_langley_to_mj_m2() {
+        let daily = SolarRadiationMegajoulesPerSquareMeterPerDay::from_langleys_per_day(200.0)
+            .expect("valid legacy radiation");
+        assert_close(daily.as_megajoules_per_square_meter_per_day(), 8.368);
+
+        let hourly =
+            SolarRadiationMegajoulesPerSquareMeterPerHour::from_uniform_daily_megajoules_per_square_meter(
+                daily.as_megajoules_per_square_meter_per_day(),
+            )
+            .expect("valid uniform hourly radiation");
+        assert_close(
+            hourly.as_megajoules_per_square_meter_per_hour(),
+            8.368 / 24.0,
+        );
+    }
+
+    #[test]
+    fn legacy_snow_melt_conversion_helpers_preserve_direction() {
+        let wind_mph =
+            conversions::meters_per_second_to_legacy_miles_per_hour(2.0).expect("valid wind speed");
+        assert_close(wind_mph, (2.0 * 3_600.0) / 1_609.0);
+
+        let rain_inches = conversions::meters_to_legacy_inches(0.0254).expect("valid rain depth");
+        assert_close(rain_inches, 0.0254 * 39.37);
+
+        let melt_meters = conversions::legacy_inches_to_meters(2.5).expect("valid melt depth");
+        assert_close(melt_meters, 0.0635);
+    }
+
+    #[test]
+    fn first_wave_length_time_rate_helpers_preserve_direction() {
+        assert_close(
+            conversions::meters_to_millimeters(1.25).expect("valid meters"),
+            1_250.0,
+        );
+        assert_close(
+            conversions::millimeters_to_meters(1_250.0).expect("valid millimeters"),
+            1.25,
+        );
+        assert_close(
+            conversions::meters_to_centimeters(1.25).expect("valid meters"),
+            125.0,
+        );
+        assert_close(
+            conversions::centimeters_to_meters(125.0).expect("valid centimeters"),
+            1.25,
+        );
+        assert_close(
+            conversions::hours_to_seconds(1.5).expect("valid hours"),
+            5_400.0,
+        );
+        assert_close(
+            conversions::seconds_to_hours(5_400.0).expect("valid seconds"),
+            1.5,
+        );
+        assert_close(
+            conversions::seconds_to_legacy_stmtim_hours(3_600.0).expect("valid seconds"),
+            1.000_008,
+        );
+        assert_close(
+            conversions::meters_per_second_to_centimeters_per_hour(0.0025)
+                .expect("valid linear rate"),
+            900.0,
+        );
+        assert_close(
+            conversions::celsius_delta_to_fahrenheit_delta(10.0).expect("valid delta"),
+            18.0,
+        );
+    }
+
+    #[test]
+    fn first_wave_helpers_reject_invalid_domains() {
+        assert!(matches!(
+            conversions::seconds_to_hours(-1.0),
+            Err(BoundaryError::BelowMinimum {
+                boundary: "elapsed_time_s",
+                ..
+            })
+        ));
+        assert!(matches!(
+            conversions::meters_per_second_to_centimeters_per_hour(f64::INFINITY),
+            Err(BoundaryError::NonFinite {
+                boundary: "linear_rate_m_s",
+                ..
+            })
+        ));
+        assert!(matches!(
+            conversions::water_equivalent_meters_to_snow_depth_meters(0.1, 0.0),
+            Err(BoundaryError::BelowMinimum {
+                boundary: "density_kg_m3",
+                ..
+            })
+        ));
+        assert!(matches!(
+            conversions::meters_to_millimeters(f64::MAX),
+            Err(BoundaryError::NonFinite {
+                boundary: "length_mm",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn snow_density_depth_conversions_are_directional() {
+        let water_equivalent =
+            conversions::snow_depth_meters_to_water_equivalent_meters(0.35, 300.0)
+                .expect("valid snowpack");
+        assert_close(water_equivalent, 0.105);
+
+        let depth =
+            conversions::water_equivalent_meters_to_snow_depth_meters(water_equivalent, 300.0)
+                .expect("valid snowpack depth");
+        assert_close(depth, 0.35);
+
+        let density_increment =
+            conversions::water_depth_meters_to_snow_density_increment(0.01, 0.25)
+                .expect("valid retained water");
+        assert_close(density_increment, 40.0);
+
+        let density_g_cm3 =
+            conversions::kilograms_per_cubic_meter_to_grams_per_cubic_centimeter(350.0)
+                .expect("valid snow density");
+        assert_close(density_g_cm3, 0.35);
     }
 
     #[test]

@@ -1931,9 +1931,10 @@ Authorized packages:
   - Purpose: centralize unit conversion constants/helpers and add source-level
     anti-evasion guards for unauthorized raw dimensional conversion literals in
     production paths.
-  - Status: queued; follow-up remediation from HPHYS0273 to prevent
-    directionally valid constants such as `0.04184`, `1000.0`, `0.001`, and
-    `86400.0` from being used without named provenance-backed conversion APIs.
+  - Status: completed/HOLD; implemented first-wave named conversion helpers
+    and raw-literal guard for SIMIMPL28/SIMIMPL29/WB19 seams, dispositioned
+    dual-review findings, and left 73 all-production raw-literal inventory
+    findings plus the known SIMIMPL18 workspace failure as HOLD follow-up.
 - `20260603-hphys0275-boundaryvalue-dimensional-typing-remediation-001/`
   - Purpose: expand and apply unit-safe `BoundaryValue` /
     `openwepp-unit-boundary` typing for high-risk dimensional runtime boundary

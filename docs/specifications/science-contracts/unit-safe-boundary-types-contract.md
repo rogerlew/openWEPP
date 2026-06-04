@@ -1,10 +1,12 @@
 # Unit-Safe Boundary Types Contract
 
-Status: Active (ARCH09, HPHYS0275 amended)
+Status: Active (ARCH09, HPHYS0276 amended)
 Evidence: Static + Ran  
 Ran evidence:
 - `cargo test --manifest-path crates/openwepp-unit-boundary/Cargo.toml`
 - `cargo test --test hphys0275_boundary_value_dimensional_typing_contract`
+- `cargo test --test hphys0276_raw_unit_conversion_guard_contract`
+- `tools/release/check_raw_unit_conversions.sh`
 
 ## 1. Contract Scope
 
@@ -21,6 +23,10 @@ This contract defines typed numerical boundary-value obligations for:
 - signed Celsius temperatures
 - density
 - unit-interval fractions
+- named directional unit conversions for first-wave high-risk runtime/kernel
+  seams
+- raw conversion literal guard enforcement for first-wave high-risk production
+  paths
 
 It is implemented by:
 - `/home/workdir/openWEPP/crates/openwepp-unit-boundary/src/lib.rs`
@@ -56,6 +62,9 @@ Normative requirements:
    SIMIMPL28 hourly symbols through typed `BoundaryValue` constructors rather
    than `BoundaryValue::scalar`. Wind direction is explicitly excluded from the
    first migration wave until a direction-specific wrapper is specified.
+6. HPHYS0276 first-wave production conversion seams MUST call named
+   `openwepp-unit-boundary::conversions` helpers rather than spelling raw
+   dimensional conversion literals directly.
 
 ## 3. Conversion Contracts
 
@@ -77,6 +86,35 @@ Normative requirements:
 - `from_meters_per_second(mps)` maps `mps * 1000 * 3600` to `mm/hr`.
 - `as_meters_per_second()` maps `mm/hr / 1000 / 3600` to `m/s`.
 
+### 3.5 HPHYS0276 Directional Helper Surface
+
+The following helpers are canonical first-wave conversion authority:
+
+| helper | source unit | target unit | formula/provenance |
+| --- | --- | --- | --- |
+| `meters_to_millimeters` | `m` | `mm` | `m * 1000`; WEPP water-balance output lineage (`watbal*.for`) |
+| `millimeters_to_meters` | `mm` | `m` | `mm / 1000`; parser/runtime input normalization |
+| `meters_to_centimeters` | `m` | `cm` | `m * 100`; WB19 drainage tile geometry |
+| `centimeters_to_meters` | `cm` | `m` | `cm / 100`; WB19 drainage return conversion |
+| `hours_to_seconds` | `h` | `s` | `h * 3600`; climate breakpoint timing |
+| `seconds_to_hours` | `s` | `h` | `s / 3600`; SIMIMPL28 storm duration partitioning |
+| `seconds_to_legacy_stmtim_hours` | `s` | legacy STMTIM `h` | `s * 0.00027778`; `/workdir/wepp-forest_260430_baseline/src/stmtim.for` line 49 |
+| `meters_per_second_to_centimeters_per_hour` | `m s^-1` | `cm h^-1` | `m s^-1 * 3600 * 100`; WB19 drainage conductivity |
+| `meters_per_second_to_legacy_miles_per_hour` | `m s^-1` | `mile h^-1` | `(m s^-1 * 3600) / 1609`; SIMIMPL29 legacy snowmelt wind term |
+| `meters_to_legacy_inches` | `m` | `inch` | `m * 39.37`; SIMIMPL29 rain heat term |
+| `legacy_inches_to_meters` | `inch` | `m` | `inch * 0.0254`; SIMIMPL29 melt water term |
+| `langleys_per_day_to_megajoules_per_square_meter_per_day` | `Ly d^-1` | `MJ m^-2 d^-1` | `Ly d^-1 * 0.04184`; `/workdir/wepp-forest_260430_baseline/src/sunmap.for` line 99 |
+| `megajoules_per_square_meter_per_day_to_uniform_hourly` | `MJ m^-2 d^-1` | `MJ m^-2 h^-1` | `daily / 24`; SIMIMPL28 no-sunrise hourly fallback |
+| `snow_depth_meters_to_water_equivalent_meters` | `m`, `kg m^-3` | `m` | `depth_m * density_kg_m3 / 1000`; SIMIMPL29 snowpack density lineage |
+| `water_equivalent_meters_to_snow_depth_meters` | `m`, `kg m^-3` | `m` | `swe_m * 1000 / density_kg_m3`; SIMIMPL29 snowpack depth lineage |
+| `water_depth_meters_to_snow_density_increment` | `m`, `m` | `kg m^-3` | `water_m * 1000 / snow_depth_m`; SIMIMPL29 rain-retention density increment |
+| `kilograms_per_cubic_meter_to_grams_per_cubic_centimeter` | `kg m^-3` | `g cm^-3` | `density_kg_m3 / 1000`; frost/snow conductivity density lineage |
+| `celsius_delta_to_fahrenheit_delta` | `degC delta` | `degF delta` | `degC * 9 / 5`; SIMIMPL29 snowmelt temperature terms |
+
+Every helper validates finite inputs and finite outputs. Helpers with
+non-negative source domains reject negative values. Helpers with density or
+depth divisors reject non-positive divisors.
+
 ## 4. Invariants
 
 Invariant IDs:
@@ -89,6 +127,8 @@ Invariant IDs:
   their declared maximum.
 - `INV-USB-006`: migrated HPHYS0275 climate/winter-hourly runtime symbols
   carry non-scalar unit labels at publication.
+- `INV-USB-007`: first-wave high-risk production conversion seams use named
+  directional helpers and the raw-literal guard rejects unauthorized literals.
 
 ## 5. Test Evidence Mapping
 
@@ -104,6 +144,11 @@ Invariant IDs:
 | `hour_of_day_rejects_out_of_range` | `INV-USB-005` |
 | `hphys0275_daily_climate_surface_publishes_high_risk_symbols_as_typed_values` | `INV-USB-006` |
 | `hphys0275_winter_hourly_surface_publishes_high_risk_symbols_as_typed_values` | `INV-USB-006` |
+| `radiation_conversion_direction_uses_langley_to_mj_m2` | `INV-USB-004`, `INV-USB-007` |
+| `legacy_snow_melt_conversion_helpers_preserve_direction` | `INV-USB-004`, `INV-USB-007` |
+| `snow_density_depth_conversions_are_directional` | `INV-USB-004`, `INV-USB-007` |
+| `hphys0276_raw_unit_conversion_guard_rejects_unauthorized_literal` | `INV-USB-007` |
+| `hphys0276_raw_unit_conversion_guard_accepts_helper_based_source` | `INV-USB-007` |
 
 ## 6. Boundary Naming and Alias Posture
 

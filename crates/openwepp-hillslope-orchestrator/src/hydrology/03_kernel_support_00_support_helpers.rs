@@ -207,6 +207,8 @@ const SIMIMPL29_DENSITY_MELT_GATE_KG_M3: f64 = 350.0;
 const SIMIMPL29_SNOWPACK_SETTLE_BASE: f64 = 0.041_666_7;
 const SIMIMPL29_CANOPY_FACTOR: f64 = 1.0;
 const SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M: f64 = 10.0;
+// UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
+const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
 impl Wb11HydrologyKernel {
     fn require_state_scalar(
@@ -407,6 +409,42 @@ impl Wb11HydrologyKernel {
 
     fn hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {
         BoundarySymbol::from(format!("{root}_{hour:04}"))
+    }
+
+    fn unit_conversion_guard_error(
+        phase_class: HillslopeKernelPhaseClass,
+        symbol: BoundarySymbol,
+        error: &openwepp_unit_boundary::BoundaryError,
+    ) -> Wb11HydrologyKernelGuardError {
+        match error {
+            openwepp_unit_boundary::BoundaryError::NonFinite { value, .. } => {
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol,
+                    value: *value,
+                    minimum: None,
+                    maximum: None,
+                }
+            }
+            openwepp_unit_boundary::BoundaryError::BelowMinimum { value, minimum, .. } => {
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol,
+                    value: *value,
+                    minimum: Some(*minimum),
+                    maximum: None,
+                }
+            }
+            openwepp_unit_boundary::BoundaryError::AboveMaximum { value, maximum, .. } => {
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol,
+                    value: *value,
+                    minimum: None,
+                    maximum: Some(*maximum),
+                }
+            }
+        }
     }
 
     fn require_hourly_state_scalar(
@@ -2782,9 +2820,19 @@ impl Wb11HydrologyKernel {
                 let spacing_mm = if layer_index > 2 {
                     200.0 / Self::diagnostic_count_to_f64(fine_bot_count)
                 } else {
+                    // UNIT-CONVERSION-ALLOW: cm_m_scale percentage allocation, not dimensional conversion.
                     100.0 / Self::diagnostic_count_to_f64(fine_top_count)
                 };
-                let dg_mm = dg_m * 1_000.0;
+                let dg_mm =
+                    openwepp_unit_boundary::conversions::meters_to_millimeters(dg_m).map_err(
+                        |error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                dg_symbol.clone(),
+                                &error,
+                            )
+                        },
+                    )?;
                 let dg_mm_trunc = dg_mm.trunc();
                 let ratio_trunc = (dg_mm / spacing_mm).trunc();
                 let mut count = format!("{ratio_trunc:.0}")
@@ -3054,13 +3102,24 @@ impl Wb11HydrologyKernel {
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
 
-        let snow_conductivity_w_m_k = if snow_depth_m > 0.001 && snow_density_kg_m3 > 0.0 {
-            let density_kg_m3 = snow_density_kg_m3;
-            let base = if density_kg_m3 < 156.0 {
-                0.023 + (0.234 * (density_kg_m3 / 1_000.0))
+        let snow_conductivity_w_m_k = if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+            && snow_density_kg_m3 > 0.0
+        {
+            let density_g_cm3 =
+                openwepp_unit_boundary::conversions::kilograms_per_cubic_meter_to_grams_per_cubic_centimeter(
+                    snow_density_kg_m3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+                        &error,
+                    )
+                })?;
+            let base = if snow_density_kg_m3 < 156.0 {
+                0.023 + (0.234 * density_g_cm3)
             } else {
-                0.138 - 1.01 * (density_kg_m3 / 1_000.0)
-                    + 3.233 * (density_kg_m3 / 1_000.0).powi(2)
+                0.138 - 1.01 * density_g_cm3 + 3.233 * density_g_cm3.powi(2)
             };
             (base * ksnowf).max(WB11_ZERO_THRESHOLD)
         } else {
@@ -3085,17 +3144,23 @@ impl Wb11HydrologyKernel {
                 tmin,
                 hourly.hour,
             )?;
-            let surface_temp_c = if snow_depth_m > 0.001 && hourly_air_temp_c > 0.0 {
+            let surface_temp_c = if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+                && hourly_air_temp_c > 0.0
+            {
                 0.0
             } else {
                 hourly_air_temp_c
             };
 
             let mut resistance_m2_c_w = 0.0;
-            if snow_depth_m > 0.001 && snow_conductivity_w_m_k > WB11_ZERO_THRESHOLD {
+            if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+                && snow_conductivity_w_m_k > WB11_ZERO_THRESHOLD
+            {
                 resistance_m2_c_w += snow_depth_m / snow_conductivity_w_m_k;
             }
-            if residue_depth_m > 0.001 && conductivity_residue_w_m_k > WB11_ZERO_THRESHOLD {
+            if residue_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+                && conductivity_residue_w_m_k > WB11_ZERO_THRESHOLD
+            {
                 resistance_m2_c_w += residue_depth_m / conductivity_residue_w_m_k;
             }
             if tilled_frozen_depth_m > WB11_ZERO_THRESHOLD {
@@ -3255,15 +3320,41 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let hrtef = hrtemp_c * (9.0 / 5.0);
-        let hrdtf = tdpt_c * (9.0 / 5.0);
+        let hrtef =
+            openwepp_unit_boundary::conversions::celsius_delta_to_fahrenheit_delta(hrtemp_c)
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from("winter.hourly.air_temp_c"),
+                        &error,
+                    )
+                })?;
+        let hrdtf =
+            openwepp_unit_boundary::conversions::celsius_delta_to_fahrenheit_delta(tdpt_c)
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from("tdpt"),
+                        &error,
+                    )
+                })?;
 
         let amelt = 0.0607 * hrad_mj_m2 * (1.0 - cancov * SIMIMPL29_CANOPY_FACTOR);
         let bmelt = 0.025 / 24.0 * hrtef
             - (0.84 * (1.0 - cloud_fraction)) * (1.0 - cancov * SIMIMPL29_CANOPY_FACTOR) / 24.0;
 
         let adj = 1.57 * SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M.powf(-1.0 / 6.0);
-        let vwmph = (vwind_m_s * 3600.0) / 1609.0;
+        let vwmph =
+            openwepp_unit_boundary::conversions::meters_per_second_to_legacy_miles_per_hour(
+                vwind_m_s,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from("vwind"),
+                    &error,
+                )
+            })?;
         let cmelt = if vwmph > 0.0 {
             (0.0084 / 24.0)
                 * vwmph
@@ -3275,7 +3366,14 @@ impl Wb11HydrologyKernel {
             0.045 / 24.0 * hrtef
         };
 
-        let rainin = hrrain_m * 39.37;
+        let rainin = openwepp_unit_boundary::conversions::meters_to_legacy_inches(hrrain_m)
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
+                    &error,
+                )
+            })?;
         let dmelt = if hrdtf > 0.0 {
             0.007 * rainin * hrdtf
         } else {
@@ -3293,7 +3391,17 @@ impl Wb11HydrologyKernel {
             wind_adjustment: adj,
         };
 
-        let mut wmelt_m = 0.0254 * (amelt + bmelt + cmelt + dmelt);
+        let mut wmelt_m =
+            openwepp_unit_boundary::conversions::legacy_inches_to_meters(
+                amelt + bmelt + cmelt + dmelt,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                    &error,
+                )
+            })?;
         if !wmelt_m.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -3304,18 +3412,52 @@ impl Wb11HydrologyKernel {
             });
         }
         if wmelt_m >= 0.0 {
-            let melt_depth_at_snow_density = wmelt_m * 1000.0 / snow_density_kg_m3;
+            let melt_depth_at_snow_density =
+                openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
+                    wmelt_m,
+                    snow_density_kg_m3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                        &error,
+                    )
+                })?;
             if melt_depth_at_snow_density >= snow_depth_m {
-                wmelt_m = snow_depth_m * (snow_density_kg_m3 / 1000.0);
+                wmelt_m =
+                    openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                        snow_depth_m,
+                        snow_density_kg_m3,
+                    )
+                    .map_err(|error| {
+                        Self::unit_conversion_guard_error(
+                            phase_class,
+                            BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                            &error,
+                        )
+                    })?;
             }
         }
 
+        let maximum_melt_m =
+            openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                snow_depth_m,
+                snow_density_kg_m3,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                    &error,
+                )
+            })?;
         Self::require_dynamic_state_range(
             phase_class,
             BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
             wmelt_m,
             None,
-            Some(snow_depth_m * (snow_density_kg_m3 / 1000.0)),
+            Some(maximum_melt_m),
         )?;
         Ok(SnowMeltComputation { wmelt_m, terms })
     }
@@ -3442,7 +3584,18 @@ impl Wb11HydrologyKernel {
             if runtime_density_kg_m3 <= WB11_ZERO_THRESHOLD {
                 runtime_density_kg_m3 = newsnw;
             }
-            runtime_depth_m = runtime_swe * 1000.0 / runtime_density_kg_m3;
+            runtime_depth_m =
+                openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
+                    runtime_swe,
+                    runtime_density_kg_m3,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                        &error,
+                    )
+                })?;
         }
         if runtime_depth_m > WB11_ZERO_THRESHOLD && runtime_density_kg_m3 <= WB11_ZERO_THRESHOLD {
             runtime_density_kg_m3 = newsnw;
@@ -3588,7 +3741,17 @@ impl Wb11HydrologyKernel {
                     let wmelt = melt_computation.wmelt_m;
                     melt_raw_m = wmelt;
                     let smelt = if wmelt > WB11_ZERO_THRESHOLD {
-                        (wmelt * 1000.0) / dens
+                        openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
+                            wmelt,
+                            dens,
+                        )
+                        .map_err(|error| {
+                            Self::unit_conversion_guard_error(
+                                phase_class,
+                                BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                                &error,
+                            )
+                        })?
                     } else {
                         0.0
                     };
@@ -3596,13 +3759,35 @@ impl Wb11HydrologyKernel {
                     snodep = snodpt_after_inputs - smelt;
                     if snodep <= WB11_ZERO_THRESHOLD {
                         if smelt > 0.0 {
-                            melt_m = snodpt_after_inputs * dens * 0.001;
+                            melt_m =
+                                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                                    snodpt_after_inputs,
+                                    dens,
+                                )
+                                .map_err(|error| {
+                                    Self::unit_conversion_guard_error(
+                                        phase_class,
+                                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                                        &error,
+                                    )
+                                })?;
                         }
                         snodep = 0.0;
                         dens = 0.0;
                     } else if dens >= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
                         if smelt > 0.0 {
-                            melt_m = smelt * dens * 0.001;
+                            melt_m =
+                                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                                    smelt,
+                                    dens,
+                                )
+                                .map_err(|error| {
+                                    Self::unit_conversion_guard_error(
+                                        phase_class,
+                                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                                        &error,
+                                    )
+                                })?;
                         } else {
                             melt_m = wmelt.min(0.0);
                         }
@@ -3611,7 +3796,17 @@ impl Wb11HydrologyKernel {
                         if densgt <= SIMIMPL29_DENSITY_MELT_GATE_KG_M3 {
                             melt_m = wmelt.min(0.0);
                             if hrrain > WB11_ZERO_THRESHOLD {
-                                let densic = 1000.0 * hrrain / snodep;
+                                let densic = openwepp_unit_boundary::conversions::water_depth_meters_to_snow_density_increment(
+                                    hrrain,
+                                    snodep,
+                                )
+                                .map_err(|error| {
+                                    Self::unit_conversion_guard_error(
+                                        phase_class,
+                                        BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
+                                        &error,
+                                    )
+                                })?;
                                 if densic
                                     <= (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt)
                                         + WB11_ZERO_THRESHOLD
@@ -3619,15 +3814,34 @@ impl Wb11HydrologyKernel {
                                     rain_retained_m = hrrain;
                                     densgt += densic;
                                 } else {
-                                    rain_retained_m = snodep
-                                        * (SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt)
-                                        / 1000.0;
+                                    rain_retained_m =
+                                        openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                                            snodep,
+                                            SIMIMPL29_DENSITY_MELT_GATE_KG_M3 - densgt,
+                                        )
+                                        .map_err(|error| {
+                                            Self::unit_conversion_guard_error(
+                                                phase_class,
+                                                BoundarySymbol::from(SNOW_HOURLY_RAIN_ROOT),
+                                                &error,
+                                            )
+                                        })?;
                                     densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
                                 }
                             }
                         } else {
                             melt_m =
-                                ((densgt - SIMIMPL29_DENSITY_MELT_GATE_KG_M3) * snodep) * 0.001;
+                                openwepp_unit_boundary::conversions::snow_depth_meters_to_water_equivalent_meters(
+                                    snodep,
+                                    densgt - SIMIMPL29_DENSITY_MELT_GATE_KG_M3,
+                                )
+                                .map_err(|error| {
+                                    Self::unit_conversion_guard_error(
+                                        phase_class,
+                                        BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                                        &error,
+                                    )
+                                })?;
                             densgt = SIMIMPL29_DENSITY_MELT_GATE_KG_M3;
                         }
                         dens = densgt;
@@ -3679,7 +3893,18 @@ impl Wb11HydrologyKernel {
             snodep = 0.0;
             dens = 0.0;
         } else if dens > WB11_ZERO_THRESHOLD {
-            snodep = runtime_swe_after * 1000.0 / dens;
+            snodep =
+                openwepp_unit_boundary::conversions::water_equivalent_meters_to_snow_depth_meters(
+                    runtime_swe_after,
+                    dens,
+                )
+                .map_err(|error| {
+                    Self::unit_conversion_guard_error(
+                        phase_class,
+                        BoundarySymbol::from(SNOW_RUNTIME_DEPTH_M_SYMBOL),
+                        &error,
+                    )
+                })?;
         }
         let signed_s = redistributed_melt_total_m - accumulation_water_m - total_rain_retained_m;
         if !signed_s.is_finite() {
