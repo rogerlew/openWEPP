@@ -193,6 +193,12 @@ validation*; "topology" here just means the map of which process feeds which.)
 The ordering that used to live in your head and in the source layout is now
 written down and checked.
 
+*In the repo:* crates `openwepp-hillslope-orchestrator`,
+`openwepp-watershed-orchestrator`, `openwepp-topology`; contracts
+`hillslope-phase-scheduler-contract`, `watershed-dispatch-scheduler-contract`,
+`topology-validation-gate`; types `TopologyValidationReport`,
+`HillslopeSchedulerReport`, `SchedulerOutcomeClass`.
+
 ### The orchestrator decides what gets saved
 
 In `COMMON`-block Fortran any routine can write any shared variable at any time.
@@ -206,6 +212,10 @@ then decides whether to apply it. A negative storage or an out-of-range flux is
 caught at the moment it is produced and rejected, not discovered days of simulated
 time later. There is exactly one place where state changes are committed, and it
 is guarded — so the "what overwrote my variable?" class of bug cannot occur.
+
+*In the repo:* crate `openwepp-kernel-contract`; contract
+`kernel-writeback-contract`; `evaluate_kernel_writeback`,
+`KernelWritebackPayload`, `WritebackField`, `KernelWritebackDecision`.
 
 ### Quantities carry their units, and WEPP's names are kept
 
@@ -225,13 +235,19 @@ different internal name is needed, it is recorded as an explicit alias rather th
 replacing the name you know. The rigor your equations always had on paper is
 enforced in the code, without losing the vocabulary you wrote them in.
 
+*In the repo:* crates `openwepp-unit-boundary`, `openwepp-sim-contract`
+(`units.rs`, `symbols.rs`); contracts `unit-safe-boundary-types-contract`,
+`symbol-alias-registry`, `boundary-symbol-unit-registry`, `unit-governance`;
+gates `check_unit_registry.sh`, `check_raw_unit_conversions.sh`,
+`check_sc_unit_compliance.sh`.
+
 ### Re-running and looking inside a finished simulation
 
 When a legacy run looks wrong, finding out why usually means adding print
 statements, recompiling, and rerunning the whole simulation to watch a handful of
 variables — often many times over.
 
-openWEPP records its internal state to a file as the run proceeds. Afterward that
+openWEPP records its internal state to an HBP (hillslope binary pass) shard as the run proceeds. Afterward that
 record can be reopened and examined *without* rerunning the model: you can compare
 two runs day by day to find the first day they diverge, isolate a single process
 and re-run only that part, or replay one window of time. (A separate tool, the
@@ -241,6 +257,10 @@ automatically at every step and reported as explicit, labeled results, rather th
 something you total up from an output file by hand. The questions you used to
 answer with print statements and full reruns are answered by reading a record the
 run already kept.
+
+*In the repo:* `openwepp-replay`; HBP (hillslope binary pass) shards; contracts
+`closure-check-primitives`, `status-taxonomy`; type `ClosureViolation`;
+observe-tags.
 
 ### Checking the physics on every change
 
@@ -259,6 +279,11 @@ decide which side is right. A further guard watches the checks themselves and
 refuses any change that quietly weakens or removes a required comparison. The
 validation that used to depend on someone remembering to do it now happens
 automatically, and no single change can quietly lower the bar.
+
+*In the repo:* `docs/specifications/external-authority/` (`registry.yaml`,
+`promotion-protocol`, `required-suite-obligations.json`); gates
+`check_authority_suite_antievasion.sh`, `run_release_candidate_gates.sh`; test
+`auth11_required_suite_obligation_guards_contract`.
 
 ## Runner and release boundary
 
