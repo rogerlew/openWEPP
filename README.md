@@ -258,9 +258,11 @@ something you total up from an output file by hand. The questions you used to
 answer with print statements and full reruns are answered by reading a record the
 run already kept.
 
-*In the repo:* `openwepp-replay`; HBP (hillslope binary pass) shards; contracts
-`closure-check-primitives`, `status-taxonomy`; type `ClosureViolation`;
-observe-tags.
+*In the repo:* `openwepp-replay`; HBP (hillslope binary pass) shards;
+observability subsystem `OBS-CONTRACT-001`
+(`docs/specifications/subsystems/observability/`, `trace-event-schema`,
+`replay-window-interface`); contracts `closure-check-primitives`,
+`status-taxonomy`; type `ClosureViolation`.
 
 ### Checking the physics on every change
 
@@ -315,23 +317,30 @@ all roles (watershed, hillslope, replay). See:
 ├── README.md              # This file
 ├── LICENSE                # Apache-2.0
 ├── NOTICE                 # Apache-2.0 attribution (USDA WEPP provenance)
-├── Cargo.toml             # Workspace root (members empty until first crate)
-├── rust-toolchain.toml    # Pinned toolchain
+├── Cargo.toml             # Workspace root; member crates under crates/
+├── rust-toolchain.toml    # Pinned toolchain channel
 ├── deny.toml              # cargo-deny: license allowlist, no viral copyleft
+├── crates/                # Engine workspace: orchestrators, typed contracts, I/O adapters
+├── tools/
+│   ├── release/           # Release-candidate and anti-evasion gate scripts
+│   └── legacy_comparison_suite/   # Python legacy-comparison utilities
 ├── docs/
 │   ├── README.md          # Doc index
 │   ├── decisions/         # Architecture decision records
-│   ├── specifications/    # openWEPP science-contract authority and source hierarchy
+│   ├── specifications/    # Science-contract authority; SC-* registry, units, subsystems
 │   ├── contracts/         # Interface contracts (.run, HBP, parquet schemas)
 │   ├── architecture/      # Process architecture, data flow
 │   ├── numerics/          # Determinism, RNG, summation policy
+│   ├── governance/        # Governance policies, release procedure, transition plans
 │   ├── standards/         # Rust coding, comments, and QA standards
 │   └── work-packages/     # Dated initiative tracking convention
 ├── references/            # Scientific references (tracked bibliography + local cache policy)
 └── usersum/               # End-user docs (vendorable into wepppy's usersum)
 ```
 
-Crate layout under `crates/` is intentionally undecided pre-bootstrap; the first work package that lands a crate establishes the convention.
+Engine code lives in the `crates/` Cargo workspace — orchestrators, typed
+contracts, and I/O adapters; see [Cargo.toml](Cargo.toml) for the member crate
+list.
 
 ## Python Tooling Environment (uv)
 
