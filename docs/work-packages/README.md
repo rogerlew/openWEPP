@@ -1924,9 +1924,13 @@ Authorized packages:
   - Purpose: add a production typed guard for physically impossible hourly
     radiation flux using baseline/physics-derived potential-radiation bounds,
     with no clipping or downstream compensation.
-  - Status: queued; follow-up remediation from HPHYS0272/HPHYS0273 because
-    HPHYS0272 fixed unit conversion but did not add a finite high-flux runtime
-    guard.
+  - Status: completed/HOLD; finite high hourly radiation now fails closed with
+    a typed physical-flux guard derived from baseline `radcur.for` potential
+    radiation lineage. H1/H7/H39 and full H1..H39 metrics completed without
+    guard trips. Broader semantic parity remains `0/39` and `cargo test
+    --workspace` remains blocked by the known SIMIMPL18/WB11 ET domain
+    violation outside this package. Dual review and dual verification are
+    complete with Review B governance finding `B-1` accepted and dispositioned.
 - `20260603-hphys0276-unit-conversion-helper-and-raw-literal-guard-001/`
   - Purpose: centralize unit conversion constants/helpers and add source-level
     anti-evasion guards for unauthorized raw dimensional conversion literals in

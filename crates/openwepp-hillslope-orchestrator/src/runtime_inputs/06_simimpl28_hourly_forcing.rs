@@ -3,6 +3,10 @@ const SIMIMPL28_RADCUR_SOLCON: f64 = 0.082;
 const SIMIMPL28_PI: f64 = std::f64::consts::PI;
 const SIMIMPL28_DOMAIN_EPS: f64 = 1e-12;
 const SIMIMPL28_WINTER_HOURS_PER_DAY: usize = 24;
+const SIMIMPL28_HOURLY_RADIATION_BOUND_REL_TOLERANCE: f64 = 1.0e-9;
+const SIMIMPL28_HOURLY_RADIATION_BOUND_ABS_TOLERANCE_MJ_M2: f64 = 1.0e-12;
+const SIMIMPL28_HOURLY_RADIATION_BOUND_ALLOWED: &str =
+    "0 <= hradmj <= physical hourly extraterrestrial radiation bound from radcur solar-constant lineage";
 // UNIT-CONVERSION-ALLOW: mm_m_scale SIMIMPL28 legacy random-seed scaling, not dimensional conversion.
 const SIMIMPL28_RANDOM_THOUSANDTH_SCALE: f64 = 0.001;
 // UNIT-CONVERSION-ALLOW: cm_m_scale SIMIMPL28 legacy random-seed scaling, not dimensional conversion.
@@ -21,6 +25,7 @@ struct Simimpl28SunmapResult {
     dsunmp: f64,
     estrad_mj_m2: f64,
     rpoth_mj_m2: f64,
+    hourly_radiation_upper_bound_mj_m2: f64,
     cloud_fraction: f64,
 }
 
@@ -403,6 +408,8 @@ fn simimpl28_sunmap(
     let r3 = r1
         * ((d.sin() * geometry.radlat.sin() * (t1 - t0) * 12.0 / SIMIMPL28_PI)
             + (d.cos() * geometry.radlat.cos() * (t1.sin() - t0.sin()) * 12.0 / SIMIMPL28_PI));
+    let hourly_radiation_upper_bound_mj_m2 =
+        simimpl28_hourly_extraterrestrial_radiation_upper_bound(sdate)?;
 
     if r3.abs() <= SIMIMPL28_DOMAIN_EPS {
         return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
@@ -459,6 +466,7 @@ fn simimpl28_sunmap(
         && d.is_finite()
         && estrad_mj_m2.is_finite()
         && rpoth_mj_m2.is_finite()
+        && hourly_radiation_upper_bound_mj_m2.is_finite()
         && cloud_fraction.is_finite())
     {
         return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
@@ -473,8 +481,29 @@ fn simimpl28_sunmap(
         dsunmp: d,
         estrad_mj_m2,
         rpoth_mj_m2,
+        hourly_radiation_upper_bound_mj_m2,
         cloud_fraction,
     })
+}
+
+fn simimpl28_hourly_extraterrestrial_radiation_upper_bound(
+    sdate: i32,
+) -> Result<f64, ClimateRuntimeInputError> {
+    let day = f64::from(sdate);
+    let rdsun = 1.0 + 0.033 * ((2.0 * SIMIMPL28_PI * day) / 365.0).cos();
+    let hour_angle_integral = 2.0 * (SIMIMPL28_PI / 24.0).sin();
+    let bound = ((12.0 * 60.0) / SIMIMPL28_PI)
+        * SIMIMPL28_RADCUR_SOLCON
+        * rdsun
+        * hour_angle_integral;
+    if !bound.is_finite() || bound <= 0.0 {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: "winter.hourly.rad_mj_m2.physical_upper_bound".to_string(),
+            value: bound,
+            allowed: "> 0 and finite",
+        });
+    }
+    Ok(bound)
 }
 
 fn simimpl28_radcur(
@@ -573,6 +602,16 @@ fn simimpl28_hr_tmp_hour(
         return Err(ClimateRuntimeInputError::NonFiniteField {
             field: "winter.hourly.rad_mj_m2",
             value: hrrad_mj_m2,
+        });
+    }
+    let allowed_upper = sunmap.hourly_radiation_upper_bound_mj_m2
+        * (1.0 + SIMIMPL28_HOURLY_RADIATION_BOUND_REL_TOLERANCE)
+        + SIMIMPL28_HOURLY_RADIATION_BOUND_ABS_TOLERANCE_MJ_M2;
+    if hrrad_mj_m2 < 0.0 || hrrad_mj_m2 > allowed_upper {
+        return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+            symbol: simimpl28_hourly_symbol("winter.hourly.rad_mj_m2", hour).to_string(),
+            value: hrrad_mj_m2,
+            allowed: SIMIMPL28_HOURLY_RADIATION_BOUND_ALLOWED,
         });
     }
     if !hrtemp_c.is_finite() {

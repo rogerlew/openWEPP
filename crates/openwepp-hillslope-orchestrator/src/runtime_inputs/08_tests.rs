@@ -1796,6 +1796,40 @@ mod tests {
     }
 
     #[test]
+    fn climate_runtime_surface_with_context_rejects_physically_impossible_hourly_radiation() {
+        let high_radiation_climate =
+            VALID_CLIMATE.replace("12.0 2.0 200.0", "12.0 2.0 6000.0");
+        let climate = parse_climate_from_str(&high_radiation_climate, ClimateParserMode::Strict)
+            .expect("high finite radiation climate fixture should parse");
+        let context = simimpl28_winter_context(0.0);
+        let error =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect_err("physically impossible hourly radiation should fail closed");
+
+        match error {
+            ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                symbol,
+                value,
+                allowed,
+            } => {
+                assert!(
+                    symbol.starts_with("winter.hourly.rad_mj_m2_"),
+                    "unexpected symbol {symbol}"
+                );
+                assert!(
+                    value > 5.0,
+                    "overlarge finite radiation should trip the physical flux guard, got {value}"
+                );
+                assert!(
+                    allowed.contains("physical hourly extraterrestrial"),
+                    "unexpected allowed domain {allowed}"
+                );
+            }
+            other => panic!("expected physical hourly radiation guard error, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn climate_runtime_surface_with_context_respects_rst_partition_branches() {
         let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
             .expect("strict climate fixture should parse");

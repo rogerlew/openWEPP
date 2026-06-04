@@ -1,0 +1,4 @@
+hillslope_id	rc	seconds	trace_path	stdout	stderr
+1	0	41.569	/tmp/openwepp-hphys0277-radiation-guard/hillslope_output/H1.hphys0272.trace.jsonl	/tmp/openwepp-hphys0277-radiation-guard/logs/targeted/H1_trace.stdout.log	/tmp/openwepp-hphys0277-radiation-guard/logs/targeted/H1_trace.stderr.log
+7	0	41.237	/tmp/openwepp-hphys0277-radiation-guard/hillslope_output/H7.hphys0272.trace.jsonl	/tmp/openwepp-hphys0277-radiation-guard/logs/targeted/H7_trace.stdout.log	/tmp/openwepp-hphys0277-radiation-guard/logs/targeted/H7_trace.stderr.log
+39	0	41.352	/tmp/openwepp-hphys0277-radiation-guard/hillslope_output/H39.hphys0272.trace.jsonl	/tmp/openwepp-hphys0277-radiation-guard/logs/targeted/H39_trace.stdout.log	/tmp/openwepp-hphys0277-radiation-guard/logs/targeted/H39_trace.stderr.log

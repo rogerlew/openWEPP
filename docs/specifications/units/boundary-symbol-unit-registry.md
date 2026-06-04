@@ -132,8 +132,8 @@ The following gaps are explicit continuation work, not silent omissions:
   watershed-prefixed producer paths not migrated in the first typed-boundary
   wave.
 - Named conversion-helper enforcement remains follow-up work under HPHYS0276.
-- High hourly radiation physical flux guards remain follow-up work under
-  HPHYS0277.
+- High hourly radiation physical flux guards are implemented for first-wave
+  SIMIMPL28 winter hourly radiation under HPHYS0277.
 - Output writers still hard-code publication metadata until HPHYS0278 aligns
   schemas with this registry.
 - Contract lint coverage for all `SC-*` unit sections remains follow-up work

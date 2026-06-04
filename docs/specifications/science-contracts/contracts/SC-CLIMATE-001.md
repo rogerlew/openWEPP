@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 16
+contract_version: 17
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -114,7 +114,7 @@ Out of scope:
 | INV-CLIMATE-010 | Breakpoint-mode dry-day invariant: when breakpoint mode is active and a daily climate record declares `nbrkpt=0`, runtime forcing remains valid and must publish deterministic dry-day breakpoint surfaces (`nbrkpt=0`, `prcp=0`, `stmdur=0`, `mxint=0`) with empty `timem_*` and `intsty_*` families; this state is not an empty-series hard-fail. | hard-fail | REF-CLIMATE-WF-STMGET-BRKPT0, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-011 | Daily thermal-inversion compatibility invariant: climate forcing with finite `tmax`/`tmin` remains valid even when `tmax < tmin`; runtime consumers must not hard-fail on ordering alone and must preserve baseline mean-temperature lineage (`tave = (tmax+tmin)/2`) for near-isothermal hourly synthesis branches. | hard-fail | REF-CLIMATE-WF-HRTMP-ITFLAG, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-CH5-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-012 | HPHYS0242 WB14 hourly forcing-cadence invariant: hyetograph forcing consumed by WB14/WB12 hourly closure must publish deterministic same-day `ninten`/`nbrkpt`, ordered `timem_####`, and finite non-negative `intsty_####` lineage before ET/runoff/storage consumers execute. Dry-day empty-series semantics remain explicit; positive-event missing, non-monotone, negative, or stale forcing payloads hard-fail and cannot be silently reassembled or defaulted. | hard-fail | REF-CLIMATE-CH2-BRKPT, REF-CLIMATE-CH2-DISAG, REF-CLIMATE-CH4-COUPLING, REF-CLIMATE-PHYS-BOUNDS, SC-WATBAL-001#INV-WATBAL-034, SC-RUNOFFPART-001#INV-RUNOFFPART-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-CLIMATE-013 | HPHYS0272 winter hourly radiation unit invariant: runtime climate projection must preserve legacy `radly` as Langleys/day at the daily parser seam, convert exactly once to `radmj = radly * 0.04184` for `hr_tmp`, and publish `winter.hourly.rad_mj_m2_####` in `MJ m^-2 h^-1`. Evidence or code paths that treat daily `rad`/`radly` as already `MJ m^-2 d^-1`, re-convert an MJ value back to Langleys, or silently clip physically impossible hourly radiation are non-authoritative. | hard-fail | REF-CLIMATE-WF-RADLY-RADMJ, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-PHYS-BOUNDS, SC-SNOWFREEZE-001#INV-SNOWFREEZE-017 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-CLIMATE-013 | HPHYS0272/HPHYS0277 winter hourly radiation unit and physical-flux invariant: runtime climate projection must preserve legacy `radly` as Langleys/day at the daily parser seam, convert exactly once to `radmj = radly * 0.04184` for `hr_tmp`, and publish `winter.hourly.rad_mj_m2_####` in `MJ m^-2 h^-1`. Every finite hourly `hradmj` must additionally satisfy `0 <= hradmj <= E0h_max(sdate)`, where `E0h_max` is the hourly extraterrestrial normal-incidence energy bound derived from the baseline `radcur.for` solar constant (`0.082 MJ m^-2 min^-1`), earth-sun distance term `rdsun = 1 + 0.033*cos(2π*sdate/365)`, and one-hour hour-angle integral `2*sin(π/24)`. Evidence or code paths that treat daily `rad`/`radly` as already `MJ m^-2 d^-1`, re-convert an MJ value back to Langleys, silently clip physically impossible hourly radiation, or publish Langley-scale finite radiation under `MJ` labels are non-authoritative. | hard-fail | REF-CLIMATE-WF-RADLY-RADMJ, REF-CLIMATE-CH3-COUPLING, REF-CLIMATE-PHYS-BOUNDS, SC-SNOWFREEZE-001#INV-SNOWFREEZE-017 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -132,7 +132,7 @@ Out of scope:
 | `INV-CLIMATE-010` | runtime | Breakpoint runtime adapter and forcing projection seams | Typed hard error only for malformed positive-cardinality breakpoint payloads; `nbrkpt=0` breakpoint dry-day records publish zero forcing payload without fallback mutation | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-011` | runtime | Runtime forcing projection and hydrology publication seams consuming `tmax`/`tmin` | Typed hard error only on missing/non-finite thermal symbols; finite inversion ordering (`tmax < tmin`) is compatibility-valid and must not hard-fail by ordering check alone | Tier-A climate/runtime compatibility gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-012` | runtime + governance | Hyetograph forcing projection and WB14/WB12 scheduler-cadence validator | Typed hard error / explicit `HOLD` when positive-event hourly forcing is missing, malformed, stale relative to current day, or synthesized by fallback instead of published forcing lineage | HPHYS cadence/order closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-CLIMATE-013` | runtime + governance | SIMIMPL28 hourly winter radiation projection and HPHYS0271/HPHYS0272 melt-forcing diagnostics | Typed hard error for missing/non-finite radiation; explicit `HOLD` when hourly radiation evidence is Langley-scale under `MJ` labels or exceeds baseline unit lineage without provenance | HPHYS0272 radiation-unit closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-CLIMATE-013` | runtime + governance | SIMIMPL28 hourly winter radiation projection and HPHYS0271/HPHYS0272/HPHYS0277 melt-forcing diagnostics | Typed hard error for missing/non-finite radiation or finite `hradmj` above the physical hourly extraterrestrial bound; explicit `HOLD` when hourly radiation evidence is Langley-scale under `MJ` labels or exceeds baseline unit lineage without provenance | HPHYS0272/HPHYS0277 radiation-unit closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -190,6 +190,7 @@ output-column `Dp` (deep percolation, `mm`) governed by `SC-PERC-001` and
 - Missing required forcing payload fields for downstream chapter consumers. `[DIRECT][Static] + [INFERENCE][Static]`
 - Hourly winter radiation published under `winter.hourly.rad_mj_m2_####` using raw `radly` Langleys/day magnitude or any path that converts already-MJ daily radiation back to Langleys. `[DIRECT][Static] + [INFERENCE][Static]`
 - Silent clipping of physically impossible hourly radiation instead of correcting the baseline unit lineage or failing typed guards. `[INFERENCE][Static]`
+- Finite `winter.hourly.rad_mj_m2_####` above the physical hourly extraterrestrial normal-incidence energy bound derived from `radcur.for`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Replay forcing evidence that asserts parity without explicit full-span `P`
   key-policy metadata when baseline/candidate spans differ (for example legacy
   one-year clamp cases). `[DIRECT][Static] + [INFERENCE][Static]`
@@ -219,6 +220,11 @@ output-column `Dp` (deep percolation, `mm`) governed by `SC-PERC-001` and
   `0.04184`, and publish hourly `hradmj`/`winter.hourly.rad_mj_m2_####` in
   `MJ m^-2 h^-1`.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-CLIMATE-P-009: SIMIMPL28 winter forcing projection must fail closed with
+  a typed runtime error when a finite hourly radiation value exceeds the
+  physical hourly extraterrestrial normal-incidence bound derived from
+  `radcur.for`; it must not clip, cap, renormalize, or compensate downstream.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -246,7 +252,7 @@ output-column `Dp` (deep percolation, `mm`) governed by `SC-PERC-001` and
 | SIMIMPL18 forcing-span precipitation continuity (`INV-CLIMATE-009`) | replay forcing provenance and semantic parity policy publication boundary | Hard error / `HOLD` when full-span keyed `P` policy metadata is absent or overlap-only comparison is treated as authoritative | Tier-A replay forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | CLIM17 breakpoint-mode dry-day parity (`INV-CLIMATE-010`) | breakpoint runtime adapter and hillslope/watershed climate projection seams | Hard error for malformed positive-cardinality payloads; deterministic zero forcing projection for `nbrkpt=0` breakpoint-mode dry days | Tier-A breakpoint forcing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | CLIM18 thermal inversion compatibility (`INV-CLIMATE-011`) | runtime forcing projection and WB11/WB13 climate-consumer seams | Hard error only for missing/non-finite thermal symbols; finite inversion ordering remains valid compatibility input | Tier-A climate/runtime compatibility gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| HPHYS0272 hourly radiation unit closure (`INV-CLIMATE-013`) | SIMIMPL28 hourly winter forcing projection and downstream snowmelt diagnostics | Hard error for missing/non-finite radiation; `HOLD` when emitted hourly radiation is Langley-scale under `MJ` labels or exceeds baseline unit lineage | HPHYS0272 radiation-unit gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| HPHYS0272/HPHYS0277 hourly radiation unit and physical-flux closure (`INV-CLIMATE-013`) | SIMIMPL28 hourly winter forcing projection and downstream snowmelt diagnostics | Hard error for missing/non-finite radiation or finite hourly radiation above the physical hourly extraterrestrial bound; `HOLD` when emitted hourly radiation is Langley-scale under `MJ` labels or exceeds baseline unit lineage | HPHYS0272/HPHYS0277 radiation-unit gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -259,6 +265,7 @@ parity). Contract-specific interpretation tolerances:
 | TOL-CLIMATE-002 | Storm-depth closure residual after disaggregation restore | `<= 1e-10 mm` | Applies to restore step from normalized to dimensional sequence. |
 | TOL-CLIMATE-003 | Storm-duration closure residual after disaggregation restore | `<= 1e-10 h` | Applies to breakpoint sequence end-time consistency. |
 | TOL-CLIMATE-004 | Monotonicity tolerance for cumulative breakpoint time/depth sequences | nondecreasing within `1e-12` numeric noise | Negative steps beyond tolerance are invalid-state failures. |
+| TOL-CLIMATE-005 | Hourly radiation physical-bound runtime tolerance | relative `1e-9` plus absolute `1e-12 MJ m^-2 h^-1` | Allows floating-point roundoff in `radcur`-derived bound evaluation only; not a clipping allowance. |
 
 ## WB14 Hyetograph-Coupling Addendum
 
@@ -511,7 +518,13 @@ states and must hard-fail with typed hydrology guard posture.
    radiation is `MJ m^-2 h^-1`, that the sum of emitted hourly radiation is
    proportional to the single-converted daily radiation, and that Langley-scale
    `59+ MJ m^-2 h^-1` artifacts cannot pass as valid hourly forcing.
-6. Frost heat-flow hourly families (`frost.hourly.*`) remain SIMIMPL29 scope;
+6. HPHYS0277 physical-flux closure requires a typed hard-fail guard after
+   `hr_tmp` hourly radiation synthesis and before boundary publication:
+   emitted `hradmj` must be finite, non-negative, and no greater than the
+   physical hourly extraterrestrial normal-incidence bound
+   `((12*60)/π) * 0.082 * rdsun * 2*sin(π/24)` with `rdsun` from `radcur.for`.
+   The guard is an invariant check only and must not mutate `hradmj`.
+7. Frost heat-flow hourly families (`frost.hourly.*`) remain SIMIMPL29 scope;
    SIMIMPL28 must not claim closure by emitting surrogate frost heat-flow
    proxies unsupported by baseline-authoritative equations.
 
@@ -529,6 +542,9 @@ states and must hard-fail with typed hydrology guard posture.
 5. HPHYS0272 unit vector confirms a `200 Ly d^-1` daily climate row produces
    hourly `winter.hourly.rad_mj_m2_####` values on the order of `MJ m^-2 h^-1`
    and not raw Langley-scale magnitudes.
+6. HPHYS0277 high-flux vector confirms an overlarge finite `radly` payload
+   fails with a typed runtime error at `winter.hourly.rad_mj_m2_####` instead
+   of publishing, clipping, or compensating.
 
 ## CLIM17 Breakpoint Dry-Day Parity Addendum
 
@@ -586,6 +602,7 @@ states and must hard-fail with typed hydrology guard posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-03` | `17` | `Codex` | HPHYS0277 amendment: extended `INV-CLIMATE-013` with the `radcur.for`-derived physical hourly radiation flux bound and required typed fail-closed guard without clipping or downstream compensation. |
 | `2026-06-03` | `16` | `Codex` | HPHYS0272 amendment: added `INV-CLIMATE-013` for baseline-authoritative `radly` (`Ly d^-1`) to `radmj` (`MJ m^-2 d^-1`) conversion and hourly `hradmj` unit closure before SIMIMPL28 winter forcing publication. |
 | `2026-06-01` | `15` | `Codex` | HPHYS0242 amendment: added `INV-CLIMATE-012`, same-day WB14/WB12 hyetograph cadence requirements, stale/malformed positive-event forcing rejection, and explicit forcing freshness test-vector obligations. |
 | `2026-05-29` | `14` | `Codex` | CLIM18 amendment: added baseline-authoritative daily thermal-inversion compatibility invariant (`INV-CLIMATE-011`) and runtime forcing obligations so finite `tmax < tmin` records are accepted without ordering-only hard-fail while preserving typed missing/non-finite guards. |
