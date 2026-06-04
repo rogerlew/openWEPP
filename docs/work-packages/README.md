@@ -1697,6 +1697,12 @@ Authorized packages:
     `BoundarySymbol(String)` production kernel surfaces to typed state
     interfaces, with contract-first sequencing (contract updates, contract
     tests, pre-implementation gate, then migration code).
+- `20260604-arch23-schedule-export-and-introspection-001/`
+  - Purpose: execute `docs/architecture/schedule-export-and-introspection.md`
+    by adding deterministic code-derived hillslope schedule export,
+    introspection, diff, generated artifacts, and a release congruence gate,
+    then reconciling stale scheduler architecture/contract docs without
+    changing runtime scheduler behavior.
 - `20260523-clim07-climate-comparator-and-closure-evidence-001/`
   - Purpose: add targeted continuous-daily and breakpoint climate comparator
     vectors, parser-to-kernel seam checks, and confidence-tier closure
