@@ -1,29 +1,27 @@
 # Review Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: mixed
 
-Static: queued review/disposition template for HPHYS0278 Output Unit Metadata
-Registry Alignment.
+Static: Review Agent A inspected the HPHYS0278 diff for Rust correctness,
+typed error handling, registry authority, schema API changes, and output-value
+stability.
 
-## Required Review Scope
+Ran:
 
-- Contract/governance authority alignment.
-- Production/tooling/docs diff against package objective and write set.
-- Tests/gates and evidence truthfulness.
-- Regression/follow-up risks.
+- `git diff --check -- <changed Rust/test files>`: pass.
+- `cargo test --test sim_contract_boundary_unit_registry hphys0278_output`: pass.
+- `cargo test -p openwepp-hillslope-output -p openwepp-watershed-output`: pass.
 
 ## Findings
 
-- Status: queued; add findings during review.
-- Required disposition values: `accepted`, `rejected`, `deferred`, `follow-up`.
-- Every finding must include evidence, severity, disposition, rationale, and affected paths.
+| ID | Severity | Finding | Disposition | Resolution |
+| --- | --- | --- | --- | --- |
+| A-1 | Medium | `openwepp-watershed-output` flattened writer errors to `String`, losing output-unit metadata taxonomy at the watershed writer boundary. | accepted/resolved | Added typed `WatershedWriterError` enum with `UnitMetadata`, `Io`, `Parquet`, and `UnsupportedFieldType` variants. |
+| A-2 | Medium | Output schema unit alignment logic was duplicated across hillslope and watershed writers. | accepted/resolved | Added shared `validate_output_schema_unit(...)` in `openwepp-sim-contract`; both writers now delegate registry lookup and mismatch detection to that authority. |
 
-## Disposition Gate
+## Residual Risk
 
-- Package closure is blocked until every finding is dispositioned.
-- Accepted findings require fix evidence and verification reference.
-- Rejected findings require rationale.
-- Deferred/follow-up findings require links from `disposition.md` and `worker-handoff.md`.
-
-Ran: not-run.
+Static: no blocker remains from Review Agent A. The metadata-only change from an
+empty unit string to `dimensionless` for `Fraction In Flow Exiting` is now a
+registry-backed explicit unit label.

@@ -172,6 +172,19 @@ Publication column names may preserve legacy labels, but legacy naming does not
 override canonical unit authority. If a publication column uses a different
 unit from the runtime symbol, the conversion must be explicit and named.
 
+HPHYS0278 establishes `openwepp-sim-contract` output-unit metadata as the
+canonical writer-facing authority. Output schemas that attach a `units`
+metadata key must resolve the `(schema_id, column_name)` pair through the
+output-unit registry. Registry-backed rows must cross-check against the
+boundary-symbol registry unit. Publication-only rows must carry an explicit
+rationale rather than silently bypassing registry governance.
+
+Dynamic key/value publication schemas that store the physical unit in a
+row-level sibling column must not publish a fake fixed `units` value on the
+numeric field. They must instead declare `unit_source = "units"` field metadata
+and resolve the dynamic value column through the output-unit registry with
+explicit publication-only rationale.
+
 ## Contract Requirements
 
 Every kernel-affecting `SC-*` contract must include:

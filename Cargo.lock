@@ -742,6 +742,7 @@ version = "0.1.0"
 dependencies = [
  "arrow-array",
  "arrow-schema",
+ "openwepp-sim-contract",
  "parquet",
 ]
 
@@ -825,6 +826,7 @@ version = "0.1.0"
 dependencies = [
  "arrow-array",
  "arrow-schema",
+ "openwepp-sim-contract",
  "parquet",
 ]
 

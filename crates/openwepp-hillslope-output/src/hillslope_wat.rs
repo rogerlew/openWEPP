@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 use arrow_array::{ArrayRef, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
+use openwepp_sim_contract::units::{OutputUnitRegistryError, validate_output_schema_unit};
 use parquet::arrow::ArrowWriter;
 use parquet::basic::Compression;
 use parquet::file::properties::WriterProperties;
@@ -84,6 +85,7 @@ pub struct WriteSummary {
 pub enum HillslopeWatParquetError {
     Io { path: PathBuf, source: io::Error },
     Parquet { detail: String },
+    UnitMetadata { detail: String },
 }
 
 impl HillslopeWatParquetError {
@@ -92,6 +94,7 @@ impl HillslopeWatParquetError {
         match self {
             Self::Io { .. } => "OHOUT-WAT-E-001",
             Self::Parquet { .. } => "OHOUT-WAT-E-002",
+            Self::UnitMetadata { .. } => "OHOUT-WAT-E-003",
         }
     }
 
@@ -114,6 +117,9 @@ impl fmt::Display for HillslopeWatParquetError {
                 )
             }
             Self::Parquet { detail } => write!(f, "{} parquet error: {detail}", self.code()),
+            Self::UnitMetadata { detail } => {
+                write!(f, "{} unit metadata error: {detail}", self.code())
+            }
         }
     }
 }
@@ -122,14 +128,15 @@ impl std::error::Error for HillslopeWatParquetError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io { source, .. } => Some(source),
-            Self::Parquet { .. } => None,
+            Self::Parquet { .. } | Self::UnitMetadata { .. } => None,
         }
     }
 }
 
-#[must_use]
 #[allow(clippy::too_many_lines)]
-pub fn hillslope_wat_schema(version: InterchangeVersion) -> Schema {
+pub fn hillslope_wat_schema(
+    version: InterchangeVersion,
+) -> Result<Schema, HillslopeWatParquetError> {
     let mut metadata = HashMap::new();
     metadata.insert("dataset_version".to_string(), version.dataset_version());
     metadata.insert(
@@ -142,7 +149,7 @@ pub fn hillslope_wat_schema(version: InterchangeVersion) -> Schema {
     );
     metadata.insert("schema_version".to_string(), version.major.to_string());
 
-    Schema::new_with_metadata(
+    let schema = Schema::new_with_metadata(
         vec![
             Field::new("wepp_id", DataType::Int32, false),
             Field::new("ofe_id", DataType::Int16, false),
@@ -332,7 +339,8 @@ pub fn hillslope_wat_schema(version: InterchangeVersion) -> Schema {
             ),
         ],
         metadata,
-    )
+    );
+    align_output_schema_units("hillslope_wat", &schema)
 }
 
 pub fn write_hillslope_wat_parquet(
@@ -340,7 +348,7 @@ pub fn write_hillslope_wat_parquet(
     rows: &[HillslopeWatRow],
     version: InterchangeVersion,
 ) -> Result<WriteSummary, HillslopeWatParquetError> {
-    let schema = hillslope_wat_schema(version);
+    let schema = hillslope_wat_schema(version)?;
     let batch = hillslope_wat_rows_to_batch(&schema, rows)?;
 
     let file = File::create(path).map_err(|source| HillslopeWatParquetError::Io {
@@ -364,6 +372,34 @@ pub fn write_hillslope_wat_parquet(
     Ok(WriteSummary {
         rows_written: rows.len(),
     })
+}
+
+fn output_registry_error(error: &OutputUnitRegistryError) -> HillslopeWatParquetError {
+    HillslopeWatParquetError::UnitMetadata {
+        detail: error.to_string(),
+    }
+}
+
+fn align_output_schema_units(
+    schema_id: &'static str,
+    schema: &Schema,
+) -> Result<Schema, HillslopeWatParquetError> {
+    let mut fields = Vec::with_capacity(schema.fields().len());
+
+    for field_ref in schema.fields() {
+        let field = field_ref.as_ref();
+        let Some(local_unit) = field.metadata().get("units") else {
+            fields.push(field.clone());
+            continue;
+        };
+        let registry_unit = validate_output_schema_unit(schema_id, field.name(), local_unit)
+            .map_err(|error| output_registry_error(&error))?;
+        let mut metadata = field.metadata().clone();
+        metadata.insert("units".to_string(), registry_unit.to_string());
+        fields.push(field.clone().with_metadata(metadata));
+    }
+
+    Ok(Schema::new_with_metadata(fields, schema.metadata().clone()))
 }
 
 fn field_with_meta(
@@ -549,7 +585,8 @@ mod tests {
 
     #[test]
     fn schema_includes_required_dataset_metadata_keys() {
-        let schema = hillslope_wat_schema(InterchangeVersion::default());
+        let schema = hillslope_wat_schema(InterchangeVersion::default())
+            .expect("hillslope WAT schema should construct");
         let metadata = schema.metadata();
 
         for key in [
@@ -564,7 +601,8 @@ mod tests {
 
     #[test]
     fn schema_includes_units_and_description_field_metadata() {
-        let schema = hillslope_wat_schema(InterchangeVersion::default());
+        let schema = hillslope_wat_schema(InterchangeVersion::default())
+            .expect("hillslope WAT schema should construct");
         let p_field = schema
             .fields
             .iter()

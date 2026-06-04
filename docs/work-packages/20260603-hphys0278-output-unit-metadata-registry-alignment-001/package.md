@@ -1,6 +1,6 @@
 # HPHYS0278 Output Unit Metadata Registry Alignment
 
-Status: queued
+Status: completed/HOLD
 
 ## Objective
 

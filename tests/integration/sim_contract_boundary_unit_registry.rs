@@ -1,8 +1,12 @@
+use std::collections::BTreeSet;
+
 use openwepp_hillslope_output::hillslope_wat::{InterchangeVersion, hillslope_wat_schema};
 use openwepp_sim_contract::units::{
     BoundaryUnitEntry, BoundaryUnitRegistry, BoundaryUnitRegistryError, DimensionClass,
-    DomainClass, TypedBoundaryRequirement, hphys0274_required_boundary_aliases,
+    DomainClass, OutputUnitEntry, OutputUnitRegistry, OutputUnitRegistryError,
+    TypedBoundaryRequirement, hphys0274_required_boundary_aliases,
 };
+use openwepp_watershed_output::writers::watershed_interchange_schemas;
 
 #[test]
 fn canonical_registry_contains_hydrology_et_percolation_publication_units() {
@@ -289,7 +293,8 @@ fn canonical_registry_gate_rejects_missing_required_aliases() {
 fn registry_units_cover_hillslope_wat_schema_metadata() {
     let registry = BoundaryUnitRegistry::canonical_registry()
         .expect("canonical unit registry should construct");
-    let schema = hillslope_wat_schema(InterchangeVersion::default());
+    let schema = hillslope_wat_schema(InterchangeVersion::default())
+        .expect("hillslope WAT schema should construct");
 
     for field in schema.fields() {
         let Some(unit) = field.metadata().get("units") else {
@@ -306,6 +311,190 @@ fn registry_units_cover_hillslope_wat_schema_metadata() {
             field.name()
         );
     }
+}
+
+#[test]
+fn hphys0278_output_unit_registry_covers_output_schema_unit_metadata() {
+    let registry = OutputUnitRegistry::canonical_registry()
+        .expect("canonical output unit registry should construct");
+    let mut seen_schema_unit_columns = BTreeSet::new();
+    let mut seen_dynamic_unit_columns = BTreeSet::new();
+    let mut schemas = Vec::new();
+    schemas.push((
+        "hillslope_wat",
+        hillslope_wat_schema(InterchangeVersion::default())
+            .expect("hillslope WAT schema should construct"),
+    ));
+    schemas.extend(
+        watershed_interchange_schemas().expect("watershed interchange schemas should construct"),
+    );
+
+    for (schema_id, schema) in schemas {
+        for field in schema.fields() {
+            let Some(unit) = field.metadata().get("units") else {
+                if field
+                    .metadata()
+                    .get("unit_source")
+                    .is_some_and(|unit_source| unit_source == "units")
+                {
+                    seen_dynamic_unit_columns.insert((schema_id.to_string(), field.name().clone()));
+                }
+                continue;
+            };
+            seen_schema_unit_columns.insert((schema_id.to_string(), field.name().clone()));
+            let entry = registry
+                .entry_for_output_column(schema_id, field.name())
+                .unwrap_or_else(|error| {
+                    panic!(
+                        "{schema_id}.{} missing output unit registry entry: {error}",
+                        field.name()
+                    )
+                });
+            assert_eq!(
+                entry.unit_label(),
+                unit,
+                "{schema_id}.{} schema unit must match output registry",
+                field.name()
+            );
+        }
+    }
+
+    for entry in registry.entries() {
+        if entry.unit_label() == "row_field:units" {
+            assert!(
+                seen_dynamic_unit_columns.contains(&(
+                    entry.schema_id().to_string(),
+                    entry.column_name().to_string()
+                )),
+                "{}.{} dynamic output registry row must correspond to schema unit_source metadata",
+                entry.schema_id(),
+                entry.column_name()
+            );
+            continue;
+        }
+        assert!(
+            seen_schema_unit_columns.contains(&(
+                entry.schema_id().to_string(),
+                entry.column_name().to_string()
+            )),
+            "{}.{} output registry row must correspond to schema unit metadata",
+            entry.schema_id(),
+            entry.column_name()
+        );
+    }
+}
+
+#[test]
+fn hphys0278_dynamic_row_level_output_units_are_registry_governed() {
+    let registry = OutputUnitRegistry::canonical_registry()
+        .expect("canonical output unit registry should construct");
+    let schemas = watershed_interchange_schemas().expect("watershed schemas should construct");
+
+    for schema_id in ["watershed_loss_all_years_out", "watershed_loss_average_out"] {
+        let schema = schemas
+            .iter()
+            .find(|(candidate, _)| *candidate == schema_id)
+            .map_or_else(
+                || panic!("{schema_id} schema should exist"),
+                |(_, schema)| schema,
+            );
+        let value_field = schema
+            .field_with_name("value")
+            .expect("dynamic output schema should include value column");
+        assert_eq!(
+            value_field
+                .metadata()
+                .get("unit_source")
+                .map(String::as_str),
+            Some("units"),
+            "{schema_id}.value should declare row-level unit source"
+        );
+        assert!(
+            schema.field_with_name("units").is_ok(),
+            "{schema_id} should include sibling units column"
+        );
+        let entry = registry
+            .entry_for_output_column(schema_id, "value")
+            .expect("dynamic value column should resolve in output unit registry");
+        assert_eq!(entry.unit_label(), "row_field:units");
+    }
+}
+
+#[test]
+fn hphys0278_output_registry_rejects_stale_boundary_units_and_unexplained_publication_units() {
+    let stale_boundary_unit = OutputUnitRegistry::new([OutputUnitEntry::boundary_registry(
+        "test_schema",
+        "P",
+        "m",
+        "hillslope_wat.P",
+    )])
+    .expect_err("boundary-backed output units must match boundary registry units");
+    assert_eq!(
+        stale_boundary_unit,
+        OutputUnitRegistryError::BoundaryUnitMismatch {
+            row: 1,
+            schema_id: "test_schema".into(),
+            column_name: "P".into(),
+            boundary_alias: "hillslope_wat.P".into(),
+            output_unit: "m".into(),
+            boundary_unit: "mm".into(),
+        }
+    );
+
+    let unexplained_publication_unit =
+        OutputUnitRegistry::new([OutputUnitEntry::publication_only(
+            "test_schema",
+            "custom_column",
+            "kg",
+            "",
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        )])
+        .expect_err("publication-only output units require rationale");
+    assert_eq!(
+        unexplained_publication_unit,
+        OutputUnitRegistryError::EmptyPublicationOnlyRationale {
+            row: 1,
+            schema_id: "test_schema".into(),
+            column_name: "custom_column".into(),
+        }
+    );
+
+    let unexplained_contract = OutputUnitRegistry::new([OutputUnitEntry::publication_only(
+        "test_schema",
+        "custom_column",
+        "kg",
+        "test publication-only unit",
+        "",
+        "SC-SYSTEM-001#INV-SYSTEM-001",
+    )])
+    .expect_err("publication-only output units require contract authority");
+    assert_eq!(
+        unexplained_contract,
+        OutputUnitRegistryError::EmptyPublicationOnlyContract {
+            row: 1,
+            schema_id: "test_schema".into(),
+            column_name: "custom_column".into(),
+        }
+    );
+
+    let unexplained_invariant = OutputUnitRegistry::new([OutputUnitEntry::publication_only(
+        "test_schema",
+        "custom_column",
+        "kg",
+        "test publication-only unit",
+        "SC-SYSTEM-001",
+        "",
+    )])
+    .expect_err("publication-only output units require invariant authority");
+    assert_eq!(
+        unexplained_invariant,
+        OutputUnitRegistryError::EmptyPublicationOnlyContract {
+            row: 1,
+            schema_id: "test_schema".into(),
+            column_name: "custom_column".into(),
+        }
+    );
 }
 
 #[test]

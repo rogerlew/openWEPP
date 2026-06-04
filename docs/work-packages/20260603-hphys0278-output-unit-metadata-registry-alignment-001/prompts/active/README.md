@@ -1,5 +1,6 @@
 # Active Prompts
 
-Status: queued
+Status: completed
 
-Active kickoff prompt for HPHYS0278 Output Unit Metadata Registry Alignment.
+Active kickoff prompt used for HPHYS0278 Output Unit Metadata Registry
+Alignment.

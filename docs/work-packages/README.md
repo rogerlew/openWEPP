@@ -1928,8 +1928,10 @@ Authorized packages:
   - Purpose: align hillslope and watershed output Parquet unit metadata with
     canonical unit-registry authority so publication schemas cannot drift from
     runtime units.
-  - Status: queued; follow-up remediation from HPHYS0273/HPHYS0274 for output
-    metadata governance without changing publication values or column names.
+  - Status: completed/HOLD; output metadata registry alignment implemented,
+    dual review/verification completed, and focused gates pass. Full workspace
+    remains HOLD on the known SIMIMPL18/PL14S `HKERNEL-WB11-ET-E-003` failure
+    reproduced on clean `HEAD`.
 - `20260603-hphys0277-climate-radiation-physical-flux-guard-001/`
   - Purpose: add a production typed guard for physically impossible hourly
     radiation flux using baseline/physics-derived potential-radiation bounds,

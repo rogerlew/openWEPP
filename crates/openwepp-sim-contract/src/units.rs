@@ -161,6 +161,259 @@ impl BoundaryUnitEntry {
     }
 }
 
+/// Authority class for output publication unit metadata.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+pub enum OutputUnitAuthority {
+    BoundaryRegistry {
+        boundary_alias: &'static str,
+    },
+    PublicationOnly {
+        rationale: &'static str,
+        contract_id: &'static str,
+        invariant_id: &'static str,
+    },
+}
+
+/// Canonical unit metadata for one output schema column.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Ord, PartialOrd)]
+pub struct OutputUnitEntry {
+    schema_id: &'static str,
+    column_name: &'static str,
+    unit_label: &'static str,
+    authority: OutputUnitAuthority,
+}
+
+impl OutputUnitEntry {
+    #[must_use]
+    pub const fn boundary_registry(
+        schema_id: &'static str,
+        column_name: &'static str,
+        unit_label: &'static str,
+        boundary_alias: &'static str,
+    ) -> Self {
+        Self {
+            schema_id,
+            column_name,
+            unit_label,
+            authority: OutputUnitAuthority::BoundaryRegistry { boundary_alias },
+        }
+    }
+
+    #[must_use]
+    pub const fn publication_only(
+        schema_id: &'static str,
+        column_name: &'static str,
+        unit_label: &'static str,
+        rationale: &'static str,
+        contract_id: &'static str,
+        invariant_id: &'static str,
+    ) -> Self {
+        Self {
+            schema_id,
+            column_name,
+            unit_label,
+            authority: OutputUnitAuthority::PublicationOnly {
+                rationale,
+                contract_id,
+                invariant_id,
+            },
+        }
+    }
+
+    #[must_use]
+    pub const fn schema_id(&self) -> &'static str {
+        self.schema_id
+    }
+
+    #[must_use]
+    pub const fn column_name(&self) -> &'static str {
+        self.column_name
+    }
+
+    #[must_use]
+    pub const fn unit_label(&self) -> &'static str {
+        self.unit_label
+    }
+
+    #[must_use]
+    pub const fn authority(&self) -> OutputUnitAuthority {
+        self.authority
+    }
+}
+
+/// Output-unit metadata registry validation and lookup errors.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OutputUnitRegistryError {
+    RegistryEmpty,
+    EmptySchemaId {
+        row: usize,
+    },
+    EmptyColumnName {
+        row: usize,
+        schema_id: Box<str>,
+    },
+    EmptyUnitLabel {
+        row: usize,
+        schema_id: Box<str>,
+        column_name: Box<str>,
+    },
+    DuplicateOutputColumn {
+        schema_id: Box<str>,
+        column_name: Box<str>,
+    },
+    EmptyPublicationOnlyRationale {
+        row: usize,
+        schema_id: Box<str>,
+        column_name: Box<str>,
+    },
+    EmptyPublicationOnlyContract {
+        row: usize,
+        schema_id: Box<str>,
+        column_name: Box<str>,
+    },
+    BoundaryAliasNotFound {
+        row: usize,
+        schema_id: Box<str>,
+        column_name: Box<str>,
+        boundary_alias: Box<str>,
+    },
+    BoundaryUnitMismatch {
+        row: usize,
+        schema_id: Box<str>,
+        column_name: Box<str>,
+        boundary_alias: Box<str>,
+        output_unit: Box<str>,
+        boundary_unit: Box<str>,
+    },
+    OutputSchemaUnitMismatch {
+        schema_id: Box<str>,
+        column_name: Box<str>,
+        schema_unit: Box<str>,
+        registry_unit: Box<str>,
+    },
+    OutputColumnNotFound {
+        schema_id: Box<str>,
+        column_name: Box<str>,
+    },
+    BoundaryRegistry {
+        detail: Box<str>,
+    },
+}
+
+impl fmt::Display for OutputUnitRegistryError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::RegistryEmpty => f.write_str("output unit registry must contain entries"),
+            Self::EmptySchemaId { row } => {
+                write!(f, "output unit registry row {row} has empty schema_id")
+            }
+            Self::EmptyColumnName { row, schema_id } => write!(
+                f,
+                "output unit registry row {row} for schema {schema_id} has empty column_name"
+            ),
+            Self::EmptyUnitLabel {
+                row,
+                schema_id,
+                column_name,
+            } => write!(
+                f,
+                "output unit registry row {row} for {schema_id}.{column_name} has empty unit_label"
+            ),
+            Self::DuplicateOutputColumn {
+                schema_id,
+                column_name,
+            } => write!(
+                f,
+                "duplicate output unit registry row for {schema_id}.{column_name}"
+            ),
+            Self::EmptyPublicationOnlyRationale {
+                row,
+                schema_id,
+                column_name,
+            } => write!(
+                f,
+                "publication-only output unit row {row} for {schema_id}.{column_name} lacks rationale"
+            ),
+            Self::EmptyPublicationOnlyContract {
+                row,
+                schema_id,
+                column_name,
+            } => write!(
+                f,
+                "publication-only output unit row {row} for {schema_id}.{column_name} lacks contract/invariant authority"
+            ),
+            Self::BoundaryAliasNotFound {
+                row,
+                schema_id,
+                column_name,
+                boundary_alias,
+            } => write!(
+                f,
+                "output unit row {row} for {schema_id}.{column_name} references missing boundary alias {boundary_alias}"
+            ),
+            Self::BoundaryUnitMismatch {
+                row,
+                schema_id,
+                column_name,
+                boundary_alias,
+                output_unit,
+                boundary_unit,
+            } => write!(
+                f,
+                "output unit row {row} for {schema_id}.{column_name} declares {output_unit}, but boundary alias {boundary_alias} declares {boundary_unit}"
+            ),
+            Self::OutputSchemaUnitMismatch {
+                schema_id,
+                column_name,
+                schema_unit,
+                registry_unit,
+            } => write!(
+                f,
+                "output schema {schema_id}.{column_name} declares {schema_unit}, but output unit registry declares {registry_unit}"
+            ),
+            Self::OutputColumnNotFound {
+                schema_id,
+                column_name,
+            } => write!(
+                f,
+                "output unit registry has no row for {schema_id}.{column_name}"
+            ),
+            Self::BoundaryRegistry { detail } => {
+                write!(f, "boundary unit registry lookup failed: {detail}")
+            }
+        }
+    }
+}
+
+/// Validate one fixed-unit output schema column against canonical output-unit
+/// metadata and return the canonical registry label.
+///
+/// # Errors
+///
+/// Returns typed `OutputUnitRegistryError` when the canonical registry is
+/// invalid, the schema/column pair is absent, or the schema unit differs from
+/// registry authority.
+pub fn validate_output_schema_unit(
+    schema_id: &str,
+    column_name: &str,
+    schema_unit: &str,
+) -> Result<&'static str, OutputUnitRegistryError> {
+    let registry = OutputUnitRegistry::canonical_registry()?;
+    let entry = registry.entry_for_output_column(schema_id, column_name)?;
+    let registry_unit = entry.unit_label();
+    if schema_unit != registry_unit {
+        return Err(OutputUnitRegistryError::OutputSchemaUnitMismatch {
+            schema_id: boxed_str(schema_id),
+            column_name: boxed_str(column_name),
+            schema_unit: boxed_str(schema_unit),
+            registry_unit: boxed_str(registry_unit),
+        });
+    }
+    Ok(registry_unit)
+}
+
+impl Error for OutputUnitRegistryError {}
+
 /// Boundary-symbol unit registry validation and lookup errors.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BoundaryUnitRegistryError {
@@ -612,6 +865,91 @@ impl BoundaryUnitRegistry {
             })?;
         }
         Ok(())
+    }
+}
+
+/// Validated output-unit metadata registry keyed by `(schema_id, column_name)`.
+#[derive(Debug, Clone)]
+pub struct OutputUnitRegistry {
+    output_to_entry: BTreeMap<(String, String), OutputUnitEntry>,
+}
+
+impl OutputUnitRegistry {
+    /// Build a validated output-unit registry.
+    ///
+    /// # Errors
+    ///
+    /// Returns typed `OutputUnitRegistryError` variants for malformed rows,
+    /// duplicate output columns, boundary-backed rows that do not resolve, or
+    /// output/boundary unit mismatches.
+    pub fn new(
+        entries: impl IntoIterator<Item = OutputUnitEntry>,
+    ) -> Result<Self, OutputUnitRegistryError> {
+        let boundary_registry = BoundaryUnitRegistry::canonical_registry().map_err(|error| {
+            OutputUnitRegistryError::BoundaryRegistry {
+                detail: boxed_str(error.to_string()),
+            }
+        })?;
+        let mut output_to_entry = BTreeMap::new();
+
+        for (index, entry) in entries.into_iter().enumerate() {
+            let row = index + 1;
+            validate_output_unit_entry(row, &entry, &boundary_registry)?;
+
+            let key = (
+                entry.schema_id.trim().to_string(),
+                entry.column_name.trim().to_string(),
+            );
+            if output_to_entry.contains_key(&key) {
+                return Err(OutputUnitRegistryError::DuplicateOutputColumn {
+                    schema_id: boxed_str(key.0),
+                    column_name: boxed_str(key.1),
+                });
+            }
+            output_to_entry.insert(key, entry);
+        }
+
+        if output_to_entry.is_empty() {
+            return Err(OutputUnitRegistryError::RegistryEmpty);
+        }
+
+        Ok(Self { output_to_entry })
+    }
+
+    /// Canonical output unit registry for HPHYS0278 writer metadata.
+    ///
+    /// # Errors
+    ///
+    /// Returns typed `OutputUnitRegistryError` if embedded rows violate the
+    /// output metadata registry schema.
+    pub fn canonical_registry() -> Result<Self, OutputUnitRegistryError> {
+        Self::new(canonical_output_unit_entries())
+    }
+
+    /// Return all canonical output entries in deterministic key order.
+    #[must_use]
+    pub fn entries(&self) -> Vec<&OutputUnitEntry> {
+        self.output_to_entry.values().collect()
+    }
+
+    /// Return one output-unit entry by schema id and column name.
+    ///
+    /// # Errors
+    ///
+    /// Returns `OutputColumnNotFound` when the schema/column pair is absent.
+    pub fn entry_for_output_column(
+        &self,
+        schema_id: &str,
+        column_name: &str,
+    ) -> Result<&OutputUnitEntry, OutputUnitRegistryError> {
+        let schema_key = schema_id.trim().to_string();
+        let column_key = column_name.trim().to_string();
+        self.output_to_entry
+            .get(&(schema_key.clone(), column_key.clone()))
+            .ok_or(OutputUnitRegistryError::OutputColumnNotFound {
+                schema_id: boxed_str(schema_key),
+                column_name: boxed_str(column_key),
+            })
     }
 }
 
@@ -1794,6 +2132,1319 @@ pub fn canonical_boundary_unit_entries() -> Vec<BoundaryUnitEntry> {
     ]
 }
 
+#[allow(clippy::too_many_lines)]
+#[must_use]
+pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
+    const PUB_ONLY: &str = "publication-only output column with no runtime boundary symbol in the HPHYS0278 touched registry";
+    const VOLUME_CONVERSION: &str =
+        "publication output converts registered water-balance depth to volume using output area";
+    const AGG_DEPTH: &str =
+        "publication output derives an aggregate depth from registered water-balance components";
+    const SEDIMENT: &str = "publication-only sediment, pollutant, ash, or loss summary column outside runtime hydrology boundary registry";
+    const SOIL_OUTPUT: &str =
+        "publication-only soil diagnostic column outside runtime hydrology boundary registry";
+    const SYSTEM_OUTPUT: &str = "publication-only watershed routing/output diagnostic outside runtime hydrology boundary registry";
+
+    vec![
+        OutputUnitEntry::boundary_registry("hillslope_wat", "P", "mm", "hillslope_wat.P"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "RM", "mm", "hillslope_wat.RM"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Q", "mm", "hillslope_wat.Q"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Ep", "mm", "hillslope_wat.Ep"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Es", "mm", "hillslope_wat.Es"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Er", "mm", "hillslope_wat.Er"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Dp", "mm", "hillslope_wat.Dp"),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "UpStrmQ",
+            "mm",
+            "hillslope_wat.UpStrmQ",
+        ),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "SubRIn", "mm", "hillslope_wat.SubRIn"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "latqcc", "mm", "hillslope_wat.latqcc"),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "Total-Soil",
+            "mm",
+            "hillslope_wat.Total-Soil",
+        ),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "frozwt", "mm", "hillslope_wat.frozwt"),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "Snow-Water",
+            "mm",
+            "hillslope_wat.Snow-Water",
+        ),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "QOFE", "mm", "hillslope_wat.QOFE"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Tile", "mm", "hillslope_wat.Tile"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Irr", "mm", "hillslope_wat.Irr"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Area", "m^2", "hillslope_wat.Area"),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "SoilWaterTotal",
+            "mm",
+            "hillslope_wat.SoilWaterTotal",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "ProfileDepth",
+            "mm",
+            "hillslope_wat.ProfileDepth",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "ProfilePorosityCap",
+            "mm",
+            "hillslope_wat.ProfilePorosityCap",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "ProfileFCStore",
+            "mm",
+            "hillslope_wat.ProfileFCStore",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "ProfileWPStore",
+            "mm",
+            "hillslope_wat.ProfileWPStore",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "hillslope_wat",
+            "InterceptionStorage",
+            "mm",
+            "hillslope_wat.InterceptionStorage",
+        ),
+        OutputUnitEntry::boundary_registry("watershed_ebe", "precip", "mm", "hillslope_wat.P"),
+        OutputUnitEntry::publication_only(
+            "watershed_ebe",
+            "runoff_volume",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_ebe",
+            "peak_runoff",
+            "m^3/s",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_ebe",
+            "sediment_yield",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_ebe",
+            "soluble_pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_ebe",
+            "particulate_pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_ebe",
+            "total_pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chan_peak",
+            "Time (s)",
+            "s",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chan_peak",
+            "Peak_Discharge (m^3/s)",
+            "m^3/s",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chanwb",
+            "Inflow (m^3)",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chanwb",
+            "Outflow (m^3)",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chanwb",
+            "Storage (m^3)",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chanwb",
+            "Baseflow (m^3)",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chanwb",
+            "Loss (m^3)",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chanwb",
+            "Balance (m^3)",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "P (mm)", "mm", "hillslope_wat.P"),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "RM (mm)", "mm", "hillslope_wat.RM"),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "Q (mm)", "mm", "hillslope_wat.Q"),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "Ep (mm)", "mm", "hillslope_wat.Ep"),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "Es (mm)", "mm", "hillslope_wat.Es"),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "Er (mm)", "mm", "hillslope_wat.Er"),
+        OutputUnitEntry::boundary_registry("watershed_chnwb", "Dp (mm)", "mm", "hillslope_wat.Dp"),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "UpStrmQ (mm)",
+            "mm",
+            "hillslope_wat.UpStrmQ",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "SubRIn (mm)",
+            "mm",
+            "hillslope_wat.SubRIn",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "latqcc (mm)",
+            "mm",
+            "hillslope_wat.latqcc",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "Total Soil Water (mm)",
+            "mm",
+            "hillslope_wat.Total-Soil",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "frozwt (mm)",
+            "mm",
+            "hillslope_wat.frozwt",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "Snow Water (mm)",
+            "mm",
+            "hillslope_wat.Snow-Water",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "QOFE (mm)",
+            "mm",
+            "hillslope_wat.QOFE",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "Tile (mm)",
+            "mm",
+            "hillslope_wat.Tile",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "Irr (mm)",
+            "mm",
+            "hillslope_wat.Irr",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chnwb",
+            "Surf (mm)",
+            "mm",
+            PUB_ONLY,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_chnwb",
+            "Base (mm)",
+            "mm",
+            PUB_ONLY,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_chnwb",
+            "Area (m^2)",
+            "m^2",
+            "hillslope_wat.Area",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Poros",
+            "%",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Keff",
+            "mm/hr",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Suct",
+            "mm",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "FC",
+            "mm/mm",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "WP",
+            "mm/mm",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Rough",
+            "mm",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Ki",
+            "adjsmt",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Kr",
+            "adjsmt",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Tauc",
+            "adjsmt",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "Saturation",
+            "frac",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "TSW",
+            "mm",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_soil",
+            "TSMF",
+            "frac",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "runvol",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "sbrunv",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "tdet",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "tdep",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "seddep_1",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "seddep_2",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "seddep_3",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "seddep_4",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "seddep_5",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "sed_del",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "sed_vol_conc",
+            "m^3/m^3",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Area",
+            "m^2",
+            "hillslope_wat.Area",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "P",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "RM",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Q",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Dp",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-PERC-001",
+            "SC-PERC-001#INV-PERC-014",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "latqcc",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "QOFE",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Ep",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-EVAP-001",
+            "SC-EVAP-001#INV-EVAP-016",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Es",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-EVAP-001",
+            "SC-EVAP-001#INV-EVAP-016",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Er",
+            "m^3",
+            VOLUME_CONVERSION,
+            "SC-EVAP-001",
+            "SC-EVAP-001#INV-EVAP-016",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "UpStrmQ",
+            "mm",
+            "hillslope_wat.UpStrmQ",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "SubRIn",
+            "mm",
+            "hillslope_wat.SubRIn",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Total-Soil Water",
+            "mm",
+            "hillslope_wat.Total-Soil",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "SoilWaterTotal",
+            "mm",
+            "hillslope_wat.SoilWaterTotal",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "ProfileDepth",
+            "mm",
+            "hillslope_wat.ProfileDepth",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "ProfilePorosityCap",
+            "mm",
+            "hillslope_wat.ProfilePorosityCap",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "ProfileFCStore",
+            "mm",
+            "hillslope_wat.ProfileFCStore",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "ProfileWPStore",
+            "mm",
+            "hillslope_wat.ProfileWPStore",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "InterceptionStorage",
+            "mm",
+            "hillslope_wat.InterceptionStorage",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "TSMF",
+            "frac",
+            SOIL_OUTPUT,
+            "SC-SOIL-001",
+            "SC-SOIL-001#INV-SOIL-011",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "frozwt",
+            "mm",
+            "hillslope_wat.frozwt",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Snow-Water",
+            "mm",
+            "hillslope_wat.Snow-Water",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "QRain",
+            "mm",
+            AGG_DEPTH,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "QSnow",
+            "mm",
+            AGG_DEPTH,
+            "SC-SNOWFREEZE-001",
+            "SC-SNOWFREEZE-001#INV-SNOWFREEZE-014",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Tile",
+            "mm",
+            "hillslope_wat.Tile",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Irr",
+            "mm",
+            "hillslope_wat.Irr",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Precipitation",
+            "mm",
+            "hillslope_wat.P",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Rain+Melt",
+            "mm",
+            "hillslope_wat.RM",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Percolation",
+            "mm",
+            "hillslope_wat.Dp",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Lateral Flow",
+            "mm",
+            "hillslope_wat.latqcc",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Runoff",
+            "mm",
+            "hillslope_wat.Q",
+        ),
+        OutputUnitEntry::boundary_registry(
+            "watershed_totalwatsed3",
+            "Transpiration",
+            "mm",
+            "hillslope_wat.Ep",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Evaporation",
+            "mm",
+            AGG_DEPTH,
+            "SC-EVAP-001",
+            "SC-EVAP-001#INV-EVAP-016",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ET",
+            "mm",
+            AGG_DEPTH,
+            "SC-EVAP-001",
+            "SC-EVAP-001#INV-EVAP-016",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Baseflow",
+            "mm",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Aquifer losses",
+            "mm",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Reservoir Volume",
+            "mm",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "Streamflow",
+            "mm",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "wind_transport",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "wind_transport_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "wind_transport_black",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "wind_transport_black_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "wind_transport_white",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "wind_transport_white_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "water_transport",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "water_transport_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "water_transport_black",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "water_transport_black_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "water_transport_white",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "water_transport_white_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_transport",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_transport_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_transport_black",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_transport_black_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_transport_white",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_transport_white_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "transportable_ash",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "transportable_ash_per_ha",
+            "tonne/ha",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_vol_conc",
+            "m^3/m^3",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "sed+ash_vol_conc",
+            "m^3/m^3",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_totalwatsed3",
+            "ash_black_pct_by_vol",
+            "percent",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Runoff Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Subrunoff Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Baseflow Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Soil Loss",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Sediment Deposition",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Sediment Yield",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Solub. React. Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Particulate Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_hill",
+            "Total Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Runoff Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Subrunoff Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Baseflow Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Soil Loss",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Sediment Deposition",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Sediment Yield",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Hillslope Area",
+            "ha",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Solub. React. Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Particulate Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_hill",
+            "Total Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Discharge Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Sediment Yield",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Soil Loss",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Upland Charge",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Subsuface Flow Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Solub. React. Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Particulate Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_chn",
+            "Total Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Discharge Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Sediment Yield",
+            "tonne",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Soil Loss",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Upland Charge",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Subsuface Flow Volume",
+            "m^3",
+            SYSTEM_OUTPUT,
+            "SC-SUBHYD-001",
+            "SC-SUBHYD-001#INV-SUBHYD-025",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Contributing Area",
+            "ha",
+            SYSTEM_OUTPUT,
+            "SC-WATBAL-001",
+            "SC-WATBAL-001#INV-WATBAL-054",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Solub. React. Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Particulate Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_chn",
+            "Total Pollutant",
+            "kg",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_out",
+            "value",
+            "row_field:units",
+            "dynamic key/value publication column; physical unit is stored in the sibling row-level units column",
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_out",
+            "value",
+            "row_field:units",
+            "dynamic key/value publication column; physical unit is stored in the sibling row-level units column",
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_class",
+            "Diameter",
+            "mm",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_class",
+            "Pct Sand",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_class",
+            "Pct Silt",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_class",
+            "Pct Clay",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_class",
+            "Pct OM",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_all_years_class",
+            "Fraction In Flow Exiting",
+            "dimensionless",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_class",
+            "Diameter",
+            "mm",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_class",
+            "Pct Sand",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_class",
+            "Pct Silt",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_class",
+            "Pct Clay",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_class",
+            "Pct OM",
+            "%",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+        OutputUnitEntry::publication_only(
+            "watershed_loss_average_class",
+            "Fraction In Flow Exiting",
+            "dimensionless",
+            SEDIMENT,
+            "SC-SYSTEM-001",
+            "SC-SYSTEM-001#INV-SYSTEM-001",
+        ),
+    ]
+}
+
 fn validate_entry(row: usize, entry: &BoundaryUnitEntry) -> Result<(), BoundaryUnitRegistryError> {
     let canonical_symbol = entry.canonical_symbol.trim();
     if canonical_symbol.is_empty() {
@@ -1884,6 +3535,82 @@ fn validate_entry(row: usize, entry: &BoundaryUnitEntry) -> Result<(), BoundaryU
 
 fn alias_uses_template(alias: &str) -> bool {
     alias.contains('{') || alias.contains('}')
+}
+
+fn boxed_str(value: impl Into<String>) -> Box<str> {
+    value.into().into_boxed_str()
+}
+
+fn validate_output_unit_entry(
+    row: usize,
+    entry: &OutputUnitEntry,
+    boundary_registry: &BoundaryUnitRegistry,
+) -> Result<(), OutputUnitRegistryError> {
+    let schema_id = entry.schema_id.trim();
+    if schema_id.is_empty() {
+        return Err(OutputUnitRegistryError::EmptySchemaId { row });
+    }
+    let column_name = entry.column_name.trim();
+    if column_name.is_empty() {
+        return Err(OutputUnitRegistryError::EmptyColumnName {
+            row,
+            schema_id: boxed_str(schema_id),
+        });
+    }
+    let unit_label = entry.unit_label.trim();
+    if unit_label.is_empty() {
+        return Err(OutputUnitRegistryError::EmptyUnitLabel {
+            row,
+            schema_id: boxed_str(schema_id),
+            column_name: boxed_str(column_name),
+        });
+    }
+
+    match entry.authority {
+        OutputUnitAuthority::BoundaryRegistry { boundary_alias } => {
+            let boundary_entry = boundary_registry
+                .entry_for_boundary_alias(boundary_alias)
+                .map_err(|_| OutputUnitRegistryError::BoundaryAliasNotFound {
+                    row,
+                    schema_id: boxed_str(schema_id),
+                    column_name: boxed_str(column_name),
+                    boundary_alias: boxed_str(boundary_alias),
+                })?;
+            let boundary_unit = boundary_entry.unit_label();
+            if unit_label != boundary_unit {
+                return Err(OutputUnitRegistryError::BoundaryUnitMismatch {
+                    row,
+                    schema_id: boxed_str(schema_id),
+                    column_name: boxed_str(column_name),
+                    boundary_alias: boxed_str(boundary_alias),
+                    output_unit: boxed_str(unit_label),
+                    boundary_unit: boxed_str(boundary_unit),
+                });
+            }
+        }
+        OutputUnitAuthority::PublicationOnly {
+            rationale,
+            contract_id,
+            invariant_id,
+        } => {
+            if rationale.trim().is_empty() {
+                return Err(OutputUnitRegistryError::EmptyPublicationOnlyRationale {
+                    row,
+                    schema_id: boxed_str(schema_id),
+                    column_name: boxed_str(column_name),
+                });
+            }
+            if contract_id.trim().is_empty() || invariant_id.trim().is_empty() {
+                return Err(OutputUnitRegistryError::EmptyPublicationOnlyContract {
+                    row,
+                    schema_id: boxed_str(schema_id),
+                    column_name: boxed_str(column_name),
+                });
+            }
+        }
+    }
+
+    Ok(())
 }
 
 fn validate_boundary_alias_template(
