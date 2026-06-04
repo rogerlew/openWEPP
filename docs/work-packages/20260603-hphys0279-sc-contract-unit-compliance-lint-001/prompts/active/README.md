@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: queued
+Status: completed
 
-Active kickoff prompt for HPHYS0279 SC Contract Unit Compliance Lint.
+Active kickoff prompt used for HPHYS0279 SC Contract Unit Compliance Lint.

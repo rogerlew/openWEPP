@@ -202,6 +202,28 @@ Missing unit declarations, ambiguous aliases, or unguarded conversion seams are
 non-promotable gaps unless the package is explicitly docs-only and records a
 follow-up implementation package.
 
+### SC Contract Unit Compliance Lint
+
+`tools/release/check_sc_unit_compliance.sh` is the source-level documentation
+guard for `SC-*` contract unit readiness. The guard must fail on:
+
+- missing or unparseable executable boundary-symbol unit registry source,
+- missing `Variables and Units` sections or missing `Symbol`/`Units` columns,
+- missing `Symbol Alias Map` sections or missing `Units check` columns,
+- empty or placeholder unit declarations,
+- alias rows whose unit checks omit executable registry units for registered
+  symbols,
+- registered boundary/API or publication aliases that are absent from the
+  owning contract's `Symbol Alias Map`,
+- registered boundary-symbol entries that are not declared in the owning
+  contract's `Variables and Units` section,
+- alias-only `Variables and Units` coverage where a registered canonical symbol
+  is absent.
+
+Until the full legacy contract set is remediated, this guard is the
+authoritative gap-inventory command for HPHYS0279 follow-up planning rather
+than a full release-blocking green gate.
+
 ## Work-Package Gates
 
 Every work package that adds, changes, or publishes dimensional symbols must

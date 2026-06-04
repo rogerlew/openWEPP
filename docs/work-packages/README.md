@@ -1922,8 +1922,11 @@ Authorized packages:
   - Purpose: implement contract/documentation linting that enforces
     `Variables and Units` coverage, alias-map unit checks, and registry
     cross-links for kernel-affecting `SC-*` contracts.
-  - Status: queued; follow-up remediation from HPHYS0273 to make unit
-    compliance machine-checkable before production edits.
+  - Status: completed/HOLD; SC unit compliance lint command and fixtures are
+    implemented, dual review/verification completed, and focused tests pass.
+    Default full-contract lint reports 227 remediation findings and remains
+    HOLD; full workspace remains HOLD on the known SIMIMPL18/PL14S
+    `HKERNEL-WB11-ET-E-003` failure.
 - `20260603-hphys0278-output-unit-metadata-registry-alignment-001/`
   - Purpose: align hillslope and watershed output Parquet unit metadata with
     canonical unit-registry authority so publication schemas cannot drift from

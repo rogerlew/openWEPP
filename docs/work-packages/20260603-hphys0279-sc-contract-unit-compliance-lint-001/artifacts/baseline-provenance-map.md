@@ -1,8 +1,21 @@
 # Baseline Provenance Map
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: static
 
-Static: queued placeholder for HPHYS0279 SC Contract Unit Compliance Lint.
+Static: HPHYS0279 changes documentation/tooling governance only. No process
+physics, runtime behavior, comparator tolerances, publication values, or legacy
+baseline equations changed.
 
-Ran: not-run.
+Provenance:
+
+- Contract unit lint authority derives from
+  `docs/specifications/unit-governance.md`.
+- Contract-profile shape derives from
+  `docs/specifications/science-contracts/kernel-process-contract-profile.md`.
+- Symbol alias/unit rules derive from
+  `docs/specifications/science-contract-authoring-procedure.md`.
+- Executable registry cross-checks parse
+  `crates/openwepp-sim-contract/src/units.rs`.
+
+Ran: not applicable; no baseline physics comparison was required.

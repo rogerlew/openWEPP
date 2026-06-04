@@ -1,5 +1,5 @@
 # HPHYS0279 SC Contract Unit Compliance Lint Prompts
 
-Status: queued
+Status: completed
 
 Prompt inventory for HPHYS0279 SC Contract Unit Compliance Lint.

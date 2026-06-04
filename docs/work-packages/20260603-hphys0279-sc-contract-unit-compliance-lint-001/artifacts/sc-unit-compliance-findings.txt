@@ -1,0 +1,228 @@
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'prcp' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_prcp' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_radly' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'tmax' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'tmin' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'tdpt' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_temperature' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'vwind' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_vwind' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'wind_direction' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_wind_direction' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'stmdur' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_stmdur' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'stmstr' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_stmstr' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'timem' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_timem' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'mxint' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-009: registry symbol 'watershed_mxint' for SC-CLIMATE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_prcp' for canonical symbol 'watershed_prcp' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_rad' for canonical symbol 'watershed_radly' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_tmax' for canonical symbol 'watershed_temperature' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_tmin' for canonical symbol 'watershed_temperature' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_tdpt' for canonical symbol 'watershed_temperature' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_vwind' for canonical symbol 'watershed_vwind' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'wind' for canonical symbol 'wind_direction' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_wind' for canonical symbol 'watershed_wind_direction' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_stmdur' for canonical symbol 'watershed_stmdur' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_stmstr' for canonical symbol 'watershed_stmstr' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'timem_{idx4}' for canonical symbol 'timem' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_timem_{idx4}' for canonical symbol 'watershed_timem' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'avrint' for canonical symbol 'mxint' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'intsty_{idx4}' for canonical symbol 'mxint' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_mxint' for canonical symbol 'watershed_mxint' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_avrint' for canonical symbol 'watershed_mxint' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md:1: SCUNIT-E-011: registered alias 'hs{ofe}_intsty_{idx4}' for canonical symbol 'watershed_mxint' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-009: registry symbol 'Ep' for SC-EVAP-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-009: registry symbol 'Er' for SC-EVAP-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Ep' for canonical symbol 'Ep' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Ep:mm' for canonical symbol 'Ep' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Es' for canonical symbol 'Es' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Es:mm' for canonical symbol 'Es' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Er' for canonical symbol 'Er' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Er:mm' for canonical symbol 'Er' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:86: SCUNIT-E-004: symbol 'Es' declares units '`m d^-1`', but registry requires 'mm'
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:252: SCUNIT-E-008: alias row for 'Er' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-EVAP-001.md:253: SCUNIT-E-008: alias row for 'Es' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-CLIMATE-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-FROST-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-GWCOEFF-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-HBP-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-DEPLETION-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-IRRIGATION-FIXEDDATE-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-LCWB-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-PHOSPHORUS-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-PMETPARA-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-SLOPE-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-SNOW-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-SOIL-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-TC-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-TCR-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-CHANNEL-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-IMPOUNDMENT-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-WATERSHED-STRUCTURE-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md:1: SCUNIT-E-001: missing Variables and Units section
+docs/specifications/science-contracts/contracts/SC-INFILE-WEPPUI-001.md:1: SCUNIT-E-005: missing Symbol Alias Map section
+docs/specifications/science-contracts/contracts/SC-PERC-001.md:1: SCUNIT-E-009: registry symbol 'Dp' for SC-PERC-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-PERC-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Dp' for canonical symbol 'Dp' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-PERC-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Dp:mm' for canonical symbol 'Dp' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-PERC-001.md:85: SCUNIT-E-004: symbol 'Pe' declares units '`m d^-1`', but registry requires 'mm'
+docs/specifications/science-contracts/contracts/SC-PERC-001.md:251: SCUNIT-E-008: alias row for 'Pe' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'Snow-Water' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'winter_rad_hourly' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'winter_air_temp_hourly' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'winter_dewpoint_hourly' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'winter_wind_hourly' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'winter_cloud_fraction_hourly' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_runtime_swe' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_runtime_depth' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_runtime_density' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_runtime_settle_day_count' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_rain' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_rain_retained' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_snowfall' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_depth' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_density' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_melt' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_melt_raw' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_melt_branch_active' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-009: registry symbol 'snow_hourly_melt_terms' for SC-SNOWFREEZE-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Snow-Water' for canonical symbol 'Snow-Water' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Snow-Water:mm' for canonical symbol 'Snow-Water' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'winter.hourly.rad_mj_m2_{idx4}' for canonical symbol 'winter_rad_hourly' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'winter.hourly.air_temp_c_{idx4}' for canonical symbol 'winter_air_temp_hourly' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'winter.hourly.dewpoint_c_{idx4}' for canonical symbol 'winter_dewpoint_hourly' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'winter.hourly.wind_m_s_{idx4}' for canonical symbol 'winter_wind_hourly' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'winter.hourly.cloud_fraction_{idx4}' for canonical symbol 'winter_cloud_fraction_hourly' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.runtime_depth_m' for canonical symbol 'snow_runtime_depth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.runtime_density_kg_m3' for canonical symbol 'snow_runtime_density' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.runtime_settle_day_count' for canonical symbol 'snow_runtime_settle_day_count' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.rain_m_{idx4}' for canonical symbol 'snow_hourly_rain' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.rain_retained_m_{idx4}' for canonical symbol 'snow_hourly_rain_retained' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.snowfall_m_{idx4}' for canonical symbol 'snow_hourly_snowfall' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.depth_before_m_{idx4}' for canonical symbol 'snow_hourly_depth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.depth_available_m_{idx4}' for canonical symbol 'snow_hourly_depth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.depth_after_m_{idx4}' for canonical symbol 'snow_hourly_depth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.density_before_kg_m3_{idx4}' for canonical symbol 'snow_hourly_density' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.density_after_kg_m3_{idx4}' for canonical symbol 'snow_hourly_density' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_m_{idx4}' for canonical symbol 'snow_hourly_melt' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_raw_m_{idx4}' for canonical symbol 'snow_hourly_melt_raw' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_branch_active_{idx4}' for canonical symbol 'snow_hourly_melt_branch_active' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_amelt_in_{idx4}' for canonical symbol 'snow_hourly_melt_terms' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_bmelt_in_{idx4}' for canonical symbol 'snow_hourly_melt_terms' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_cmelt_in_{idx4}' for canonical symbol 'snow_hourly_melt_terms' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:1: SCUNIT-E-011: registered alias 'snow.hourly.melt_dmelt_in_{idx4}' for canonical symbol 'snow_hourly_melt_terms' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:181: SCUNIT-E-008: alias row for 'Snow-Water' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:184: SCUNIT-E-008: alias row for 'snow_runtime_settle_day_count' does not mention registry unit 'count' in Units check
+docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md:185: SCUNIT-E-008: alias row for 'snow_runtime_settle_day_count' does not mention registry unit 'count' in Units check
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'ProfileDepth' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'dg' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'solthk' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'thetdr' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'thetfc' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'por' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'ssc' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'nsl' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-009: registry symbol 'sat' for SC-SOIL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfileDepth' for canonical symbol 'ProfileDepth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'wb13_profile_depth_mm' for canonical symbol 'ProfileDepth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfileDepth:mm' for canonical symbol 'ProfileDepth' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'dg_{idx4}' for canonical symbol 'dg' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_dg_{idx4}' for canonical symbol 'dg' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'solthk_{idx4}' for canonical symbol 'solthk' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_solthk' for canonical symbol 'solthk' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_solthk_{idx4}' for canonical symbol 'solthk' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'thetdr_{idx4}' for canonical symbol 'thetdr' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_thetdr_{idx4}' for canonical symbol 'thetdr' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'thetfc_{idx4}' for canonical symbol 'thetfc' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_thetfc_{idx4}' for canonical symbol 'thetfc' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'por_{idx4}' for canonical symbol 'por' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_por_{idx4}' for canonical symbol 'por' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ssc_{idx4}' for canonical symbol 'ssc' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_ssc_{idx4}' for canonical symbol 'ssc' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'wb11_nsl' for canonical symbol 'nsl' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'wb19_nsl' for canonical symbol 'nsl' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_nsl' for canonical symbol 'nsl' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SOIL-001.md:1: SCUNIT-E-011: registered alias 'ofe{ofe}_sat' for canonical symbol 'sat' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-009: registry symbol 'SubRIn' for SC-SUBHYD-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-009: registry symbol 'latqcc' for SC-SUBHYD-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-009: registry symbol 'Tile' for SC-SUBHYD-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.SubRIn' for canonical symbol 'SubRIn' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.SubRIn:mm' for canonical symbol 'SubRIn' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.latqcc' for canonical symbol 'latqcc' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.latqcc:mm' for canonical symbol 'latqcc' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Tile' for canonical symbol 'Tile' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Tile:mm' for canonical symbol 'Tile' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md:302: SCUNIT-E-008: alias row for 'latqcc' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'RM' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'UpStrmQ' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'Total-Soil' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'frozwt' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'QOFE' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'Irr' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'Area' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'SoilWaterTotal' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'ProfilePorosityCap' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'ProfileFCStore' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'ProfileWPStore' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'wb13_profile_fc_tail_mm' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-009: registry symbol 'InterceptionStorage' for SC-WATBAL-001 is not declared in Variables and Units
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.P' for canonical symbol 'P' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.P:mm' for canonical symbol 'P' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.RM' for canonical symbol 'RM' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.RM:mm' for canonical symbol 'RM' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Q' for canonical symbol 'Q' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Q:mm' for canonical symbol 'Q' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.UpStrmQ' for canonical symbol 'UpStrmQ' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.UpStrmQ:mm' for canonical symbol 'UpStrmQ' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Total-Soil' for canonical symbol 'Total-Soil' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Total-Soil:mm' for canonical symbol 'Total-Soil' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.frozwt' for canonical symbol 'frozwt' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.frozwt:mm' for canonical symbol 'frozwt' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.QOFE' for canonical symbol 'QOFE' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.QOFE:mm' for canonical symbol 'QOFE' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Irr' for canonical symbol 'Irr' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Irr:mm' for canonical symbol 'Irr' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Area' for canonical symbol 'Area' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.Area:m^2' for canonical symbol 'Area' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.SoilWaterTotal' for canonical symbol 'SoilWaterTotal' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.SoilWaterTotal:mm' for canonical symbol 'SoilWaterTotal' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfilePorosityCap' for canonical symbol 'ProfilePorosityCap' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'wb13_profile_porosity_cap_mm' for canonical symbol 'ProfilePorosityCap' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfilePorosityCap:mm' for canonical symbol 'ProfilePorosityCap' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfileFCStore' for canonical symbol 'ProfileFCStore' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'wb13_profile_fc_store_mm' for canonical symbol 'ProfileFCStore' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfileFCStore:mm' for canonical symbol 'ProfileFCStore' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfileWPStore' for canonical symbol 'ProfileWPStore' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'wb13_profile_wp_store_mm' for canonical symbol 'ProfileWPStore' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.ProfileWPStore:mm' for canonical symbol 'ProfileWPStore' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.InterceptionStorage' for canonical symbol 'InterceptionStorage' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:1: SCUNIT-E-011: registered alias 'hillslope_wat.InterceptionStorage:mm' for canonical symbol 'InterceptionStorage' is missing from Symbol Alias Map
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:82: SCUNIT-E-004: symbol 'P' declares units '`m`', but registry requires 'mm'
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:85: SCUNIT-E-004: symbol 'Q' declares units '`m`', but registry requires 'mm'
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:299: SCUNIT-E-008: alias row for 'P' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:300: SCUNIT-E-008: alias row for 'Q' does not mention registry unit 'mm' in Units check
+docs/specifications/science-contracts/contracts/SC-WATBAL-001.md:320: SCUNIT-E-008: alias row for 'Q' does not mention registry unit 'mm' in Units check
+FAIL: 227 SC unit compliance finding(s)

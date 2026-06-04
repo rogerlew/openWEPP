@@ -37,6 +37,13 @@ Required authority lane runs by default.
     - lane/failure posture changes without control-path updates,
     - non-blocking Level-4 suites without queued/in-progress closure package
       linkage in `docs/work-packages/README.md`.
+- `check_sc_unit_compliance.sh`
+  - Lints canonical `SC-*` contracts for unit-governance readiness:
+    `Variables and Units` coverage, alias-map `Units check` coverage, and
+    cross-checks against the executable boundary-symbol unit registry where
+    symbols are registered.
+  - Current full-contract runs are expected to report HOLD inventory until
+    legacy `SC-INFILE-*` and registry-linkage gaps are remediated.
 
 ## Typical Usage
 
@@ -46,6 +53,10 @@ bash tools/release/run_release_candidate_gates.sh --skip-stability
 
 ```bash
 bash tools/release/check_authority_suite_antievasion.sh --base-ref HEAD~1 --head-ref HEAD
+```
+
+```bash
+bash tools/release/check_sc_unit_compliance.sh
 ```
 
 ```bash

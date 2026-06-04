@@ -1,8 +1,12 @@
 # HPHYS0279 SC Contract Unit Compliance Lint Artifacts
 
-Status: queued
-Evidence mode: not-run
+Status: completed/HOLD
+Evidence mode: mixed
 
-Static: queued placeholder for HPHYS0279 SC Contract Unit Compliance Lint.
+Static: artifacts record HPHYS0279 contract-first SC unit compliance linting,
+focused fixture validation, dual review/verification, current full-contract
+HOLD inventory, and workspace HOLD evidence.
 
-Ran: not-run.
+Ran: focused HPHYS0279 integration tests, default SC unit compliance inventory,
+scoped markdown lint, clippy, deny, and full workspace test; see
+`gate-results.md`.
