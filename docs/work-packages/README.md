@@ -1,5 +1,11 @@
 # Work Packages
 
+- `20260604-hphys0285-spring-soil-storage-retention-closure-001/`
+  - Purpose: diagnose and correct the post-HPHYS0284 spring liquid/profile
+    storage retention residual across infiltration capacity, WB18 percolation,
+    and aggregate `Total-Soil` lineage.
+  - Status: executed-hold; same-pass liquid ingress fixed and metrics improved,
+    but H1..H39 semantic parity remains `0/39` for continuation.
 - `20260604-hphys0284-spring-snowpack-retention-timing-closure-001/`
   - Purpose: diagnose and correct the post-HPHYS0283 spring snowpack
     timing/retention residual in H1/H7/H39 before returning to downstream

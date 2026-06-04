@@ -402,6 +402,26 @@ impl Wb11HydrologyKernel {
             });
         }
 
+        let runtime_swe = Self::optional_state_scalar(
+            request,
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+        )?
+        .unwrap_or(0.0);
+        if !runtime_swe.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: runtime_swe,
+            });
+        }
+        if hyetograph_rainfall <= WB11_ZERO_THRESHOLD
+            && irrigation_depth_m <= WB11_ZERO_THRESHOLD
+            && runtime_swe <= WB11_ZERO_THRESHOLD
+        {
+            return Ok(None);
+        }
+
         let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
         let snow_coupling = if active_snow_coupling {
             Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
@@ -1698,22 +1718,11 @@ impl Wb11HydrologyKernel {
         let same_pass_infiltration = if request
             .state_surface
             .contains_key(&BoundarySymbol::from("management.initial.params.tillay2_m"))
-            && Self::resolve_active_snow_coupling(request, phase_class)?
         {
             Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)?
         } else {
             None
         };
-        if let Some(infiltration) = same_pass_infiltration {
-            Self::apply_same_pass_infiltration_to_layer_storage(
-                request,
-                phase_class,
-                &mut theta,
-                &layer_depth,
-                infiltration,
-            )?;
-        }
-
         let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
         let lane_substeps_raw =
             Self::optional_state_scalar_for_symbol(request, phase_class, &lane_substeps_symbol)?
@@ -1807,6 +1816,16 @@ impl Wb11HydrologyKernel {
         // Bottom-up routing mirrors legacy WEPP percolation ordering in PURK.
         let mut lane_substep_index = 0.0_f64;
         while lane_substep_index < lane_substeps {
+            if let Some(infiltration) = same_pass_infiltration {
+                Self::apply_same_pass_infiltration_to_layer_storage(
+                    request,
+                    phase_class,
+                    &mut theta,
+                    &layer_depth,
+                    infiltration / lane_substeps,
+                )?;
+            }
+
             let mut substep_percolation_loss = 0.0_f64;
             for layer_index in (0..layer_count).rev() {
                 let layer_theta = theta[layer_index];
@@ -3838,7 +3857,27 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let active_snow_coupling = Self::resolve_active_snow_coupling(request, phase_class)?;
+        let runtime_swe = Self::optional_state_scalar(
+            request,
+            phase_class,
+            WB14_SYMBOL_SNOW_RUNTIME_SWE,
+        )?
+        .unwrap_or(0.0);
+        if !runtime_swe.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: runtime_swe,
+            });
+        }
+        let active_snow_coupling = if hyetograph_rainfall <= WB11_ZERO_THRESHOLD
+            && irrigation_depth_m <= WB11_ZERO_THRESHOLD
+            && runtime_swe <= WB11_ZERO_THRESHOLD
+        {
+            false
+        } else {
+            Self::resolve_active_snow_coupling(request, phase_class)?
+        };
         let snow_coupling = if active_snow_coupling {
             Self::compute_active_snow_coupling(request, phase_class, hyetograph_rainfall)?
         } else {

@@ -213,6 +213,7 @@ const SIMIMPL29_DENSITY_MELT_GATE_KG_M3: f64 = 350.0;
 const SIMIMPL29_SNOWPACK_SETTLE_BASE: f64 = 0.041_666_7;
 const SIMIMPL29_CANOPY_FACTOR: f64 = 1.0;
 const SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M: f64 = 10.0;
+const SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M: f64 = 0.005;
 // UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
 const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
@@ -2696,13 +2697,13 @@ impl Wb11HydrologyKernel {
             WB14_SYMBOL_SNOW_RUNTIME_SWE,
         )?
         .unwrap_or(0.0);
-        Self::require_state_range(
-            phase_class,
-            WB14_SYMBOL_SNOW_RUNTIME_SWE,
-            runtime_swe,
-            Some(0.0),
-            None,
-        )?;
+        if !runtime_swe.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: runtime_swe,
+            });
+        }
 
         let tmax = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
         let tmin = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
@@ -2720,7 +2721,19 @@ impl Wb11HydrologyKernel {
                 .state_surface
                 .contains_key(&BoundarySymbol::from(WB14_SYMBOL_SNOW_SSD));
 
-        Ok(runtime_swe > WB11_ZERO_THRESHOLD || (cold_day_active && snow_controls_projected))
+        let active_snow_coupling =
+            runtime_swe > WB11_ZERO_THRESHOLD || (cold_day_active && snow_controls_projected);
+        if active_snow_coupling {
+            Self::require_state_range(
+                phase_class,
+                WB14_SYMBOL_SNOW_RUNTIME_SWE,
+                runtime_swe,
+                Some(0.0),
+                None,
+            )?;
+        }
+
+        Ok(active_snow_coupling)
     }
 
     fn resolve_active_frost_coupling(
@@ -4015,17 +4028,46 @@ impl Wb11HydrologyKernel {
         }
 
         let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
-        let runtime_swe_after_raw = runtime_swe + accumulation_water_m + total_rain_retained_m
-            - melt_redistribution.snowpack_state_loss_m;
-        if !runtime_swe_after_raw.is_finite()
-            || runtime_swe_after_raw < -WB11_ZERO_THRESHOLD
+        let available_runtime_swe_for_state_loss =
+            runtime_swe + accumulation_water_m + total_rain_retained_m;
+        if !available_runtime_swe_for_state_loss.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: available_runtime_swe_for_state_loss,
+            });
+        }
+        if !melt_redistribution.snowpack_state_loss_m.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: melt_redistribution.snowpack_state_loss_m,
+            });
+        }
+        let bounded_state_loss_m = if melt_redistribution.snowpack_state_loss_m
+            > available_runtime_swe_for_state_loss
+                + SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M
         {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
                 symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
-                value: runtime_swe_after_raw,
+                value: available_runtime_swe_for_state_loss
+                    - melt_redistribution.snowpack_state_loss_m,
                 minimum: Some(0.0),
                 maximum: None,
+            });
+        } else if melt_redistribution.snowpack_state_loss_m > available_runtime_swe_for_state_loss
+        {
+            available_runtime_swe_for_state_loss
+        } else {
+            melt_redistribution.snowpack_state_loss_m
+        };
+        let runtime_swe_after_raw = available_runtime_swe_for_state_loss - bounded_state_loss_m;
+        if !runtime_swe_after_raw.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: runtime_swe_after_raw,
             });
         }
         let runtime_swe_after = if runtime_swe_after_raw <= WB11_ZERO_THRESHOLD {

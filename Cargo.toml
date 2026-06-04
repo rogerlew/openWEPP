@@ -420,6 +420,10 @@ name = "hphys0284_negative_melt_snowpack_state_contract"
 path = "tests/integration/hphys0284_negative_melt_snowpack_state_contract.rs"
 
 [[test]]
+name = "hphys0285_spring_soil_storage_retention_contract"
+path = "tests/integration/hphys0285_spring_soil_storage_retention_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

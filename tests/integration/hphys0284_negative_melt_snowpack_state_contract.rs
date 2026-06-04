@@ -194,6 +194,33 @@ fn execute_surface(surface: HillslopeWritebackSurface) -> HillslopeKernelExecuti
 }
 
 #[test]
+fn hphys0284_large_negative_melt_state_overdraw_fails_closed() {
+    let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
+    let topology_report =
+        validate_pre_execution_topology(&graph).expect("topology report should build");
+    let scheduler = HillslopePhaseScheduler::canonical();
+    let mut kernel = Wb11HydrologyKernel;
+    let mut surface = mixed_positive_negative_melt_surface(12);
+    insert_state(&mut surface, "snow.runtime_swe", 0.001);
+    insert_state(&mut surface, "snow.runtime_depth_m", 1.0);
+    insert_state(&mut surface, "snow.runtime_density_kg_m3", 350.0);
+
+    let report = scheduler
+        .execute_with_kernel(&topology_report, &mut kernel, surface)
+        .expect("typed kernel guard should return a failure report");
+    let status = &report.scheduler_report.scheduler_status;
+
+    assert!(
+        !report.scheduler_report.is_success()
+            && status.finite_ok()
+            && !status.domain_ok()
+            && status.message_id() == "HKERNEL-WB11-PERC-E-003",
+        "expected typed runtime SWE domain failure report, got {:?}",
+        report.scheduler_report
+    );
+}
+
+#[test]
 fn hphys0284_negative_melt_state_uses_corrected_legacy_depth_adjustment() {
     let report = execute_surface(mixed_positive_negative_melt_surface(12));
     let (raw_positive_melt, raw_negative_melt, routed_melt) = melt_totals(&report);
