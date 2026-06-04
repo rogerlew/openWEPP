@@ -79,6 +79,12 @@ struct SnowCouplingOutcome {
     hourly_state: Vec<SnowHourlyState>,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct SnowMeltRedistributionOutcome {
+    routed_melt_total_m: f64,
+    snowpack_state_loss_m: f64,
+}
+
 #[derive(Debug, Clone)]
 struct FrostCouplingOutcome {
     dfrost: f64,
@@ -4008,10 +4014,25 @@ impl Wb11HydrologyKernel {
             });
         }
 
-        let redistributed_melt_total_m = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
-        let runtime_swe_after =
-            (runtime_swe + accumulation_water_m + total_rain_retained_m - redistributed_melt_total_m)
-                .max(0.0);
+        let melt_redistribution = Self::redistribute_daily_signed_snowmelt(&mut hourly_state);
+        let runtime_swe_after_raw = runtime_swe + accumulation_water_m + total_rain_retained_m
+            - melt_redistribution.snowpack_state_loss_m;
+        if !runtime_swe_after_raw.is_finite()
+            || runtime_swe_after_raw < -WB11_ZERO_THRESHOLD
+        {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB14_SYMBOL_SNOW_RUNTIME_SWE),
+                value: runtime_swe_after_raw,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        let runtime_swe_after = if runtime_swe_after_raw <= WB11_ZERO_THRESHOLD {
+            0.0
+        } else {
+            runtime_swe_after_raw
+        };
         if runtime_swe_after <= WB11_ZERO_THRESHOLD {
             snodep = 0.0;
             dens = 0.0;
@@ -4029,7 +4050,8 @@ impl Wb11HydrologyKernel {
                     )
                 })?;
         }
-        let signed_s = redistributed_melt_total_m - accumulation_water_m - total_rain_retained_m;
+        let signed_s =
+            melt_redistribution.routed_melt_total_m - accumulation_water_m - total_rain_retained_m;
         if !signed_s.is_finite() {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -4074,7 +4096,9 @@ impl Wb11HydrologyKernel {
         })
     }
 
-    fn redistribute_daily_signed_snowmelt(hourly_state: &mut [SnowHourlyState]) -> f64 {
+    fn redistribute_daily_signed_snowmelt(
+        hourly_state: &mut [SnowHourlyState],
+    ) -> SnowMeltRedistributionOutcome {
         let positive_melt_total_m = hourly_state
             .iter()
             .map(|hourly| hourly.melt_m.max(0.0))
@@ -4090,7 +4114,10 @@ impl Wb11HydrologyKernel {
             for hourly in hourly_state {
                 hourly.melt_m = hourly.melt_m.max(0.0);
             }
-            return positive_melt_total_m;
+            return SnowMeltRedistributionOutcome {
+                routed_melt_total_m: positive_melt_total_m,
+                snowpack_state_loss_m: positive_melt_total_m,
+            };
         }
 
         let net_melt_m = positive_melt_total_m + negative_melt_total_m;
@@ -4098,7 +4125,10 @@ impl Wb11HydrologyKernel {
             for hourly in hourly_state {
                 hourly.melt_m = 0.0;
             }
-            return 0.0;
+            return SnowMeltRedistributionOutcome {
+                routed_melt_total_m: 0.0,
+                snowpack_state_loss_m: 0.0,
+            };
         }
 
         let redistribution_scale = net_melt_m / positive_melt_total_m;
@@ -4109,7 +4139,10 @@ impl Wb11HydrologyKernel {
                 0.0
             };
         }
-        net_melt_m
+        SnowMeltRedistributionOutcome {
+            routed_melt_total_m: net_melt_m,
+            snowpack_state_loss_m: positive_melt_total_m - negative_melt_total_m,
+        }
     }
 
     fn compute_canopy_interception_depth(

@@ -1,5 +1,12 @@
 # Work Packages
 
+- `20260604-hphys0284-spring-snowpack-retention-timing-closure-001/`
+  - Purpose: diagnose and correct the post-HPHYS0283 spring snowpack
+    timing/retention residual in H1/H7/H39 before returning to downstream
+    `Ep` or aggregate-storage residuals.
+  - Status: complete; corrected negative-melt snowpack carry-state lineage,
+    improved `Snow-Water`/`RM`/`Q` semantics, and left downstream
+    storage/runoff residuals for continuation.
 - `20260604-hphys0283-spring-snowmelt-runoff-infiltration-partition-001/`
   - Purpose: localize and correct the spring 2014 snowmelt runoff/infiltration
     partition causing H1..H39 `Total-Soil` collapse after the post-0281

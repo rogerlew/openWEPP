@@ -616,6 +616,7 @@ fn hphys0269_contract_conformance_retains_rain_in_subthreshold_snowpack() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_daily_melt() {
     let graph = parse_topology_fixture_str(VALID_TOPOLOGY).expect("fixture should parse");
     let topology_report =
@@ -681,7 +682,7 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
         report.scheduler_report.halted_phase
     );
 
-    let raw_melt_sum = (1..=24)
+    let raw_positive_melt = (1..=24)
         .map(|hour| {
             report
                 .writeback_surface
@@ -691,6 +692,20 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
                 )))
                 .expect("raw melt trace should be present")
                 .as_f64()
+                .max(0.0)
+        })
+        .sum::<f64>();
+    let raw_negative_melt = (1..=24)
+        .map(|hour| {
+            report
+                .writeback_surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.melt_raw_m_{hour:04}"
+                )))
+                .expect("raw melt trace should be present")
+                .as_f64()
+                .min(0.0)
         })
         .sum::<f64>();
     let redistributed_melt_sum = (1..=24)
@@ -718,9 +733,12 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
         .expect("runtime SWE should be present")
         .as_f64();
 
-    assert!(raw_melt_sum < redistributed_melt_sum + 1.0e-12);
+    let expected_state_loss = raw_positive_melt - raw_negative_melt;
+
+    assert!(raw_positive_melt > 0.0);
+    assert!(raw_negative_melt < 0.0);
     assert!((redistributed_melt_sum - snow_flux).abs() <= CLIM05_TEST_TOLERANCE);
-    assert!((runtime_swe - (0.350 - redistributed_melt_sum)).abs() <= CLIM05_TEST_TOLERANCE);
+    assert!((runtime_swe - (0.350 - expected_state_loss)).abs() <= CLIM05_TEST_TOLERANCE);
 }
 
 #[test]
