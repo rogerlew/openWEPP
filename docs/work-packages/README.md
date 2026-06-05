@@ -1,5 +1,15 @@
 # Work Packages
 
+- `20260605-hphys0298-paired-snow-rm-lineage-partition-closure-001/`
+  - Purpose: implement one large paired baseline/openWEPP snow-`RM` lineage
+    observation strategy for all nine H1/H7/H39 target windows, proving
+    baseline observe identity and assigning first-divergent cut-point verdicts
+    before any downstream hydrology compensation.
+  - Status: queued; package is scaffolded as an autonomous ExecPlan with
+    contract-first sequencing, isolated/reversible
+    `/workdir/wepp-forest_260430_baseline` diagnostic instrumentation, full
+    H1..H39 metrics, partition-ledger closure criteria, and mandatory dual
+    review/disposition/verification gates.
 - `20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/`
   - Purpose: convert HPHYS0296 snow/`RM` candidates into an auditable defect
     ledger by reconstructing pinned-baseline negative-melt behavior against
