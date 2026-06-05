@@ -57,8 +57,10 @@ fn hphys0304_runner_uses_fixed_baseline_and_requires_fresh_candidate_identity() 
 fn hphys0304_artifacts_and_follow_on_are_status_coherent_when_executed() {
     let follow_on_package = fs::read_to_string(FOLLOW_ON_PACKAGE).unwrap();
     let follow_on_prompt = fs::read_to_string(FOLLOW_ON_PROMPT).unwrap();
+    let follow_on_status_is_coherent = follow_on_package.contains("Status\n\nQueued")
+        || follow_on_package.contains("HOLD after execution");
     assert!(
-        follow_on_package.contains("Status\n\nQueued")
+        follow_on_status_is_coherent
             && follow_on_package.contains("amelt")
             && follow_on_package.contains("dmelt")
             && follow_on_package.contains("snodpt")

@@ -261,6 +261,7 @@ lateral/drainage).
 | INV-WATBAL-076 | HPHYS0301 H39 rain-release water-balance invariant: water-balance continuation must consume the HPHYS0301 H39 first-2013 residual-rain/release ledger before authorizing any hourly forcing, raw-melt, routed-melt, or downstream consumer edit. The HPHYS0300 raw-rain aggregate delta is invalid as production forcing authority when baseline evidence is residual `hrrain` after rain-on-snow retention/release and openWEPP evidence is raw `snow_hourly_rain_sum_m`; valid comparison uses openWEPP released plus post-winter rain. If source-line forcing root cause is not proven, the row remains `HOLD` under rain-retention/post-raw melt lineage and still requires paired `melt.for`/`snowd.for` term/state evidence. WB17/WB18/WB19/WB13 compensation remains prohibited. | governance-hold | INV-WATBAL-075, INV-WATBAL-074, SC-SNOWFREEZE-001#INV-SNOWFREEZE-032 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-077 | HPHYS0302 water-balance comparator-surface invariant: before any WB17/WB18/WB19/WB13 or snow-producer edit is authorized from H1/H7/H39 target-window residuals, the evidence must prove baseline and openWEPP comparator surfaces represent the same physical quantity in the same units. Daily WAT/WB13 `RM` and `Snow-Water` comparisons are publication/output-surface evidence only; raw `hrmlt` and post-raw `wmelt` aggregate comparisons may localize upstream cut-points but do not prove `amelt`/`bmelt`/`cmelt`/`dmelt` producer defects. Aggregate deltas without paired term/state surfaces remain `HOLD`; downstream water-balance compensation remains prohibited. | governance-hold | INV-WATBAL-076, INV-WATBAL-075, SC-SNOWFREEZE-001#INV-SNOWFREEZE-033 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-078 | HPHYS0305 paired melt-term/state instrumentation invariant: H1/H7/H39 snow/`RM` continuation may not authorize snow producer, forcing, WB13, WB17, WB18, WB19, or WB12 production edits until fixed-comparator baseline observe evidence and openWEPP trace evidence expose paired same-unit term/state surfaces for `amelt`, `bmelt`, `cmelt`, `dmelt`, `hrrain`, `hrtemp`, `tdpt`, `hrad`, `cloudC`, `vwind`, `snodpt`, and `densgt` over all nine target windows. The HPHYS0305 ledger must classify a first divergent source or record a concrete blocker per window; missing paired surfaces keep the row in `HOLD`. | governance-hold | INV-WATBAL-077, INV-WATBAL-075, SC-SNOWFREEZE-001#INV-SNOWFREEZE-033 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-079 | HPHYS0306 branch-active melt-term observe invariant: fixed-baseline `amelt`/`bmelt`/`cmelt`/`dmelt` term values are authoritative only for hours where `melt.for` is actually called and the terms are computed before `wmelt = 0.0254 * (amelt + bmelt + cmelt + dmelt)`. Inactive hours with no baseline melt call are not implicit zero-valued term observations. Paired ledgers must first compare the baseline melt-call key set against openWEPP `snow_hourly_melt_branch_active`; any key-set mismatch is a `branch-active-mask-hold`. Only after the active masks match may forcing, snow-state, or melt-term magnitudes be compared on that branch-active domain. Inactive-hour zero-imputation, treating openWEPP inactive trace publication as baseline term authority, or downstream compensation remains invalid. | governance-hold | INV-WATBAL-078, INV-WATBAL-077, SC-SNOWFREEZE-001#INV-SNOWFREEZE-033 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Water-Balance Disposition Addendum
 
@@ -339,6 +340,26 @@ contract authority. Required baseline/openWEPP pairings are:
 - `hrtemp`/`tdpt`/`hrad`/`cloudC`/`vwind` -> `winter_hourly_*`
 - `snodpt`/`densgt` -> `snow_hourly_depth_after_m` and
   `snow_hourly_density_after_kg_m3`
+
+### HPHYS0306 Branch-Active Melt-Term Observe Addendum
+
+HPHYS0306 closes the HPHYS0305 missing-`amelt` blocker by separating missing
+baseline term observations from inactive fixed-baseline melt hours. The
+baseline branch-active domain is the set of fixed-comparator observe keys where
+`melt.for` reached the paired `amelt`/`bmelt`/`cmelt`/`dmelt` observation after
+term computation. The openWEPP branch-active domain is the set of
+`snow_hourly_melt_branch_active` keys with `true` values. These domains are
+compared before numeric term-state comparisons:
+
+- baseline inactive + openWEPP inactive: skip term/forcing/state comparison;
+- baseline active + openWEPP inactive or baseline inactive + openWEPP active:
+  route `branch-active-mask-hold`;
+- baseline active + openWEPP active: compare paired same-unit
+  forcing/state/term surfaces and classify the first source.
+
+No package may convert inactive fixed-baseline hours into zero-valued
+`amelt`/`bmelt`/`cmelt`/`dmelt` observations unless a later canonical contract
+amendment cites baseline code that explicitly stores such inactive values.
 
 ## Invariant Guard Map
 
@@ -422,6 +443,7 @@ contract authority. Required baseline/openWEPP pairings are:
 | `INV-WATBAL-076` | governance | HPHYS0301 H39 residual-rain/release water-balance ledger before forcing, raw-melt, routed-melt, or downstream edits | Explicit `HOLD` when raw rain aggregates are treated as forcing authority, residual rain is compared to raw rain, or downstream compensation is asserted before rain-release/post-raw producer closure | HPHYS0301 H39 rain-release water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-077` | governance | HPHYS0302 comparator-surface audit across daily output surfaces, aggregate raw/post-raw snowmelt surfaces, and missing melt term/state surfaces | Explicit `HOLD` when aggregate/output deltas are treated as producer authority or downstream compensation is asserted before paired term/state evidence | HPHYS0302 water-balance comparator-surface gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-078` | governance | HPHYS0305 paired fixed-baseline/openWEPP melt-term, forcing, and snow-state instrumentation ledger for all nine H1/H7/H39 target windows | Explicit `HOLD` when paired surfaces are missing, units are not same-quantity, a first divergent source is absent, or downstream compensation is asserted from aggregate residuals | HPHYS0305 paired melt-term/state gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-079` | governance | HPHYS0306 branch-active fixed-baseline/openWEPP melt-term observe ledger using baseline melt-call keys and openWEPP `snow_hourly_melt_branch_active` keys before term magnitude comparison | Explicit `HOLD` when branch-active masks differ, inactive baseline hours are zero-imputed, paired active-domain surfaces are incomplete, or downstream compensation is asserted | HPHYS0306 branch-active observe semantics gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -2200,6 +2222,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `128` | `Codex` | HPHYS0306 amendment: added branch-active melt-term observe semantics (`INV-WATBAL-079`) so inactive fixed-baseline `melt.for` hours are not zero-imputed and active-mask divergence is classified before numeric term comparison. |
 | `2026-06-05` | `127` | `Codex` | HPHYS0305 amendment: added paired melt-term/state water-balance gate (`INV-WATBAL-078`) and ratified openWEPP trace aliases for rain/snow-depth/depth/density hourly maps needed before any snow or downstream compensation edit. |
 | `2026-06-05` | `126` | `Codex` | HPHYS0303 ratification amendment: aligned water-balance negative-melt governance with fixed `wepp_260430` comparator commit `47ac4c32faeea81bb99081f955a14c38b815ef4d` and preserved the original `dac3c950` branch as archived bug context. |
 | `2026-06-05` | `125` | `Codex` | HPHYS0302 amendment: added `INV-WATBAL-077`, requiring same-quantity/same-unit comparator-surface proof before assigning water-balance residual ownership or authorizing downstream/snow-producer edits. |

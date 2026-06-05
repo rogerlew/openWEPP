@@ -1,14 +1,25 @@
 # Work Packages
 
+- `20260605-hphys0306-baseline-melt-term-observe-semantics-closure-001/`
+  - Purpose: close the HPHYS0305 missing-`amelt` blocker by making
+    branch-active/inactive fixed-baseline melt-term observe semantics explicit,
+    reclassifying H1/H7/H39 paired melt-term/forcing/snow-state surfaces on the
+    correct comparison domain, and preserving the no-production-edit gate until
+    a source-owned divergence is identified.
+  - Status: executed-hold; branch-active reclassification eliminated the
+    HPHYS0305 inactive-hour zero-imputation ambiguity, routed eight windows to
+    melt-call mask divergence, routed H39 first-2013 to same-hour
+    `cmelt`/`snodpt` divergence, and authorized no production physics edits.
 - `20260605-hphys0305-paired-melt-term-state-instrumentation-001/`
   - Purpose: implement the second ADR-0016 Required Continuation Order step by
     instrumenting paired fixed-baseline/openWEPP melt-term and snow-state
     surfaces (`amelt`, `bmelt`, `cmelt`, `dmelt`, forcing lanes, `snodpt`,
     `densgt`) for the H1/H7/H39 snow/`RM` target windows before any producer
     or downstream hydrology edit is authorized.
-  - Status: queued; scaffolded by HPHYS0304 as the required follow-on package
-    after the fixed-baseline H1..H39 semantic rerun and target-window
-    reclassification.
+  - Status: executed-hold; paired instrumentation ran and proved fixed observe
+    identity, but all nine target windows remained blocked by incomplete
+    baseline `amelt` paired surfaces, routing continuation to HPHYS0306
+    branch-active observe semantics closure.
 - `20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/`
   - Purpose: execute ADR-0016 Required Continuation Order step 1 by rerunning
     the H1..H39 semantic suite against the fixed `wepp_260430` comparator
