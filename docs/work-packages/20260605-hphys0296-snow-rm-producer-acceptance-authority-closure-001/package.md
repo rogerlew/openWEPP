@@ -8,18 +8,20 @@ document during execution. It follows `/workdir/openWEPP/docs/codex_exec_plans.m
 ## Objective
 
 Classify the remaining H1/H7/H39 snow/`RM` producer residuals after HPHYS0295
-as either accepted corrected-negative-melt semantic divergence or unresolved
-baseline-authoritative winter/snow/rain/melt producer migration debt. Do not
-compensate the residual downstream in WB17, WB18, WB19, or WB13.
+into an auditable defect ledger: `LEGACY-DEFECTIVE`, `OPENWEPP-DEFECTIVE`, or
+`UNRESOLVED`, with reconstruction and independent correctness evidence required
+before any residual leaves the failing set. Do not compensate the residual
+downstream in WB17, WB18, WB19, or WB13.
 
 ## Rationale
 
 HPHYS0295 showed that cumulative storage-collapse windows are dominated by
 snow/`RM` residuals, while `Q`, WB18 local identity, and WB19 trace identities
-remain internally closed. The next low-regret package must decide whether the
-snow/`RM` producer is acceptable under the corrected `/workdir/wepp-forest`
-negative-melt authority, or whether additional baseline-authoritative producer
-work is required before downstream hydrology residuals can be trusted.
+remain internally closed. The next low-regret package must decide, per window,
+which model is defective under `/workdir/wepp-forest_260430_baseline`
+reconstruction, corrected negative-melt authority, and independent conservation
+or reference-equation evidence before downstream hydrology residuals can be
+trusted.
 
 ## Progress
 
@@ -28,7 +30,7 @@ work is required before downstream hydrology residuals can be trusted.
 - [x] Add contract-derived test.
 - [x] Run pre-implementation contract gate.
 - [x] Run H1..H39 and targeted H1/H7/H39 snow/`RM` diagnostics.
-- [x] Classify acceptance versus producer-migration hold.
+- [x] Classify unresolved candidates versus producer-migration hold.
 - [x] Run validation gates.
 - [x] Update review, verification, disposition, and handoff artifacts.
 
@@ -45,6 +47,10 @@ work is required before downstream hydrology residuals can be trusted.
 - Observation: Candidate WB13 `RM` publication identity is closed in all
   targeted windows.
   Evidence: `RM identity abs` is `0.000000 mm` for all nine diagnostic windows.
+- Observation: Claude Code review found the initial acceptance gate
+  correlational rather than root-cause proving.
+  Evidence: `artifacts/claude-code-review-findings.md` requires per-window
+  defective-model verdicts before any residual leaves the failing set.
 
 ## Decision Log
 
@@ -53,19 +59,28 @@ work is required before downstream hydrology residuals can be trusted.
   did not prove a downstream hydrology defect.
   Date/Author: `2026-06-05` / `Codex`.
 - Decision: Leave the package in `executed-hold`.
-  Rationale: six windows can be carried as corrected-negative-melt candidates,
-  but the spring-2016 H1/H7/H39 windows remain producer-magnitude/timing holds
-  and dual review/verification was not dispatched.
+  Rationale: six windows remain corrected-negative-melt candidates only because
+  they lack reconstruction and independent defective-model verdicts; the
+  spring-2016 H1/H7/H39 windows remain producer-magnitude/timing holds and dual
+  review/verification was not dispatched.
+  Date/Author: `2026-06-05` / `Codex`.
+- Decision: Tighten HPHYS0296 contract authority after review.
+  Rationale: correlation plus internal closure is insufficient acceptance
+  authority; future re-tiering must be a defect-ledger action with per-window
+  root-cause, reconstruction, correctness adjudication, and explicit
+  `LEGACY-DEFECTIVE`/`OPENWEPP-DEFECTIVE`/`UNRESOLVED` disposition.
   Date/Author: `2026-06-05` / `Codex`.
 
 ## Outcomes & Retrospective
 
 HPHYS0296 established contract authority and diagnostics for snow/`RM`
-acceptance. Six H1/H7/H39 windows are consistent with corrected negative-melt
-semantic divergence candidates, while all three spring-2016 windows remain
-producer-magnitude/timing holds. No production kernel/runtime patch was made.
-Continuation should focus on spring-2016 snow/winter producer magnitude/timing,
-not downstream ET, percolation, lateral flow, or WB13 aggregate compensation.
+acceptance. After review disposition, six H1/H7/H39 windows remain unresolved
+corrected negative-melt candidates rather than accepted divergence; all three
+spring-2016 windows remain producer-magnitude/timing holds. No production
+kernel/runtime patch was made. Continuation should build a snow/`RM` defect
+ledger with reconstruction and independent correctness verdicts, then continue
+spring-2016 snow/winter producer magnitude/timing work; it should not patch
+downstream ET, percolation, lateral flow, or WB13 aggregate compensation.
 
 ## Included Scope
 
@@ -79,8 +94,8 @@ not downstream ET, percolation, lateral flow, or WB13 aggregate compensation.
   - `RM = post_winter_rain + routed_melt + irrigation` publication identity,
   - retained/released rain-on-snow contribution,
   - `Snow-Water` state residual magnitude,
-  - whether residuals are producer-migration debt or accepted semantic
-    divergence.
+  - whether residuals remain producer-migration debt or have a proven
+    per-window defective-model verdict.
 - Patch production code only when diagnostics prove a baseline-authoritative
   producer defect with a concrete source-line lineage.
 
@@ -90,8 +105,8 @@ not downstream ET, percolation, lateral flow, or WB13 aggregate compensation.
 - Do not patch WB18 percolation or aggregate `watcon`.
 - Do not patch WB19 lateral flow.
 - Do not patch WB13 aggregate storage or `RM` publication as compensation.
-- Do not recreate the pinned-baseline negative-melt sign/scale bug rejected by
-  corrected `/workdir/wepp-forest` authority.
+- Do not recreate the `/workdir/wepp-forest_260430_baseline` negative-melt
+  sign/scale bug rejected by corrected negative-melt authority.
 
 ## Deliverables
 
@@ -158,8 +173,8 @@ not downstream ET, percolation, lateral flow, or WB13 aggregate compensation.
 ## Exit Criteria
 
 - Contracts and contract-derived tests exist and pass.
-- H1/H7/H39 snow/`RM` windows are classified as accepted corrected-negative
-  semantic divergence or producer-migration hold.
+- H1/H7/H39 snow/`RM` windows are classified as unresolved candidates,
+  producer-migration holds, or auditable per-window defective-model verdicts.
 - Full H1..H39 metrics are recorded.
 - No downstream compensation patch is applied.
 - Package remains `executed-hold` unless semantic parity and dual

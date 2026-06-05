@@ -16,18 +16,29 @@ fn hphys0296_contracts_define_snow_rm_acceptance_authority() {
     assert!(
         snow.contains("INV-SNOWFREEZE-027")
             && snow.contains("snow/`RM` producer acceptance invariant")
+            && snow.contains(
+                "necessary diagnostic evidence but are not sufficient acceptance authority"
+            )
+            && snow.contains("per-window defective-model verdict")
+            && snow.contains("reconstruction controlled experiment")
+            && snow.contains("independent correctness adjudication")
+            && snow.contains("documented-legacy-defective")
             && snow.contains("Downstream WB17/WB18/WB19/WB13 compensation is invalid"),
         "SC-SNOWFREEZE must define HPHYS0296 snow/RM producer acceptance authority"
     );
     assert!(
         runoff.contains("INV-RUNOFFPART-024")
             && runoff.contains("runoff-consumer acceptance invariant")
+            && runoff.contains("closed runoff-consumer identity is necessary evidence only")
+            && runoff.contains("per-window defective-model verdict")
             && runoff.contains("runoff partitioning remains excluded"),
         "SC-RUNOFFPART must keep closed runoff partitioning separate from snow/RM producer residuals"
     );
     assert!(
         watbal.contains("INV-WATBAL-071")
             && watbal.contains("snow/`RM` acceptance invariant")
+            && watbal.contains("may not by themselves accept a residual")
+            && watbal.contains("per-window defective-model verdict")
             && watbal.contains("No WB17/WB18/WB19/WB13 downstream compensation is allowed"),
         "SC-WATBAL must define the HPHYS0296 downstream-compensation prohibition"
     );
@@ -82,8 +93,8 @@ fn hphys0296_preserves_corrected_negative_melt_not_baseline_bug_compatibility() 
         "HPHYS0296 acceptance must preserve corrected negative-melt routed/state-loss authority"
     );
     assert!(
-        snow.contains("corrected-negative-melt divergence")
-            && snow.contains("pinned baseline comparator"),
+        snow.contains("corrected-fix derivation/provenance")
+            && snow.contains("/workdir/wepp-forest_260430_baseline"),
         "HPHYS0296 contract authority must distinguish corrected semantic parity from bug-compatible baseline reproduction"
     );
 }

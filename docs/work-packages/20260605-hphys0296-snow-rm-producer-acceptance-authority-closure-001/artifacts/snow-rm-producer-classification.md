@@ -14,8 +14,9 @@ Classification counts:
 Interpretation:
 - H1/H7/H39 first-2013 and spring-2014 windows contain material negative raw
   hourly melt and internally closed candidate `RM` publication identity. These
-  windows can be carried as corrected-negative-melt semantic divergence
-  candidates, pending review.
+  windows remain unresolved corrected-negative-melt candidates until a
+  per-window defective-model verdict is proven by mechanistic root cause,
+  reconstruction, and independent correctness adjudication.
 - H1/H7/H39 spring-2016 windows do not contain material negative raw melt
   sufficient to explain the residual. They remain snow/winter producer
   magnitude/timing holds.
@@ -26,5 +27,6 @@ Interpretation:
 
 Conclusion:
 - HPHYS0296 does not justify downstream WB17/WB18/WB19/WB13 compensation.
-- Continue with a producer-focused package on the spring-2016 snow/winter
-  magnitude/timing residual.
+- Continue with a producer-focused defect-ledger package: first prove or reject
+  the six corrected-negative-melt candidate verdicts, then diagnose the
+  spring-2016 snow/winter magnitude/timing residual.

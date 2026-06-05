@@ -4,6 +4,30 @@ Status: passed
 Evidence mode: Ran
 
 Ran:
+- Baseline-path correction rerun:
+  - `cargo fmt --check`
+    - Result: passed.
+  - `cargo test --test hphys0296_snow_rm_acceptance_authority_contract -- --nocapture`
+    - Result: initially failed because the static assertion still expected the
+      old corrected-fix wording; assertion was updated to require
+      `/workdir/wepp-forest_260430_baseline`.
+  - `cargo fmt --check`
+    - Result: passed.
+  - `cargo test --test hphys0296_snow_rm_acceptance_authority_contract -- --nocapture`
+    - Result: passed, `3 passed; 0 failed`.
+  - `wctl doc-lint --path docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001`
+    - Result: passed, `0 files validated, 0 errors, 0 warnings`.
+- Post-review disposition rerun:
+  - `cargo fmt --check`
+    - Result: initially failed on formatting in the updated contract test.
+  - `cargo fmt`
+    - Result: applied formatting.
+  - `cargo fmt --check`
+    - Result: passed.
+  - `cargo test --test hphys0296_snow_rm_acceptance_authority_contract -- --nocapture`
+    - Result: passed, `3 passed; 0 failed`.
+  - `wctl doc-lint --path docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001`
+    - Result: passed, `0 files validated, 0 errors, 0 warnings`.
 - `cargo test --test hphys0296_snow_rm_acceptance_authority_contract -- --nocapture`
   - Result: passed, `3 passed; 0 failed`.
 - `.venv/bin/python docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/artifacts/hphys0296_diagnostics.py --run-root /tmp/hphys0296_full_20260605T070000Z --trace-max-days 1800`

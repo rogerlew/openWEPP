@@ -8,8 +8,13 @@ Summary:
   contract-derived test.
 - Full H1..H39 metrics remain semantically open (`0/39`), while `Q` remains
   closed (`39/39`).
-- Six target windows classify as corrected-negative-melt candidates.
+- Six target windows classify as unresolved corrected-negative-melt candidates;
+  none are accepted or re-tiered.
 - H1/H7/H39 spring-2016 windows remain producer-magnitude/timing holds.
+- Claude Code review has been dispositioned by tightening acceptance authority:
+  per-window defective-model verdicts with reconstruction and independent
+  correctness adjudication are required before any residual leaves the failing
+  set.
 - No production kernel/runtime patch was made.
 
 Run root:
@@ -33,7 +38,10 @@ Validation already run:
 - `wctl doc-lint --path docs/work-packages/20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001`
 
 Next package:
-- HPHYS0297 should focus on spring-2016 snow/winter producer magnitude/timing.
+- HPHYS0297 should be a snow/`RM` defect-ledger package.
+- First produce root-cause/reconstruction/correctness verdicts for the six
+  corrected-negative-melt candidates before any re-tiering.
+- Then focus on spring-2016 snow/winter producer magnitude/timing.
 - Do not compensate in WB17, WB18, WB19, or WB13.
 - The core question is why candidate spring-2016 `RM` and `Snow-Water` are lower
   than baseline when negative raw melt is immaterial and candidate publication
