@@ -10,9 +10,9 @@ fn hphys0289_contract_requires_wb13_rm_from_routed_wmelt_not_swe_delta_proxy() {
 
     assert!(
         runner.contains(
-            "require_runtime_surface_scalar_prefer_flux(runtime_surface, \"snow.routed_melt_m\")"
+            "require_runtime_flux_surface_scalar(runtime_surface, \"snow.routed_melt_m\")"
         ),
-        "WB13 publication must consume an explicit routed wmelt surface"
+        "WB13 publication must consume an explicit routed wmelt producer flux"
     );
     assert!(
         !runner.contains("precipitation_m + runtime_swe_before_m - runtime_swe_m + irrigation_m"),

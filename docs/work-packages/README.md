@@ -1,5 +1,13 @@
 # Work Packages
 
+- `20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/`
+  - Purpose: guard the same-day snow publication flux lifecycle from runoff
+    reconciliation through WB13, then localize remaining H1/H7/H39
+    snowpack/liquid partition residuals without changing WB13 publication math.
+  - Status: executed-hold; WB13 now consumes fail-closed flux-only
+    `snow.post_winter_rain_m + snow.routed_melt_m + Irr`, runoff
+    reconciliation publishes both same-day snow fluxes, and trace localization
+    is flux-only, but full H1..H39 semantic parity remains `0/39`.
 - `20260605-hphys0290-post-winter-rain-publication-lineage-closure-001/`
   - Purpose: publish and consume an explicit post-winter `rain(iplane)`
     equivalent for WB13 `RM`, replacing the HPHYS0289 inference branch.

@@ -4709,7 +4709,7 @@ impl Wb11HydrologyKernel {
             }
         }
 
-        let flux_updates = vec![
+        let mut flux_updates = vec![
             WritebackField::bounded(
                 WB15_SYMBOL_INTERCEPTION_I,
                 interception,
@@ -4724,18 +4724,6 @@ impl Wb11HydrologyKernel {
             ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
             WritebackField::bounded(
-                BoundarySymbol::from("snow.routed_melt_m"),
-                runoff_snow_term,
-                Some(0.0),
-                None,
-            ),
-            WritebackField::bounded(
-                BoundarySymbol::from("snow.post_winter_rain_m"),
-                hyetograph_liquid_input,
-                Some(0.0),
-                None,
-            ),
-            WritebackField::bounded(
                 BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER),
                 runon_input,
                 Some(0.0),
@@ -4744,9 +4732,51 @@ impl Wb11HydrologyKernel {
             WritebackField::unbounded(WB12_SYMBOL_RUNOFF_CLOSURE_DELTA, closure_delta),
             WritebackField::unbounded(WB12_SYMBOL_SNOW_COUPLING_S, snow_coupling.signed_s),
         ];
+        flux_updates.extend(Self::publish_same_day_snow_publication_fluxes(
+            phase_class,
+            runoff_snow_term,
+            hyetograph_liquid_input,
+        )?);
 
         let writeback = KernelWritebackPayload::with_updates(state_updates, flux_updates);
         Ok(KernelRunResponse::new(status, writeback))
+    }
+
+    fn publish_same_day_snow_publication_fluxes(
+        phase_class: HillslopeKernelPhaseClass,
+        routed_melt_m: f64,
+        post_winter_rain_m: f64,
+    ) -> Result<Vec<WritebackField>, Wb11HydrologyKernelGuardError> {
+        // HPHYS0291 same-day snow publication lifecycle: WB13 consumes producer-owned
+        // fluxes, not state defaults or downstream reconstructions.
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.routed_melt_m"),
+            routed_melt_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            post_winter_rain_m,
+            Some(0.0),
+            None,
+        )?;
+        Ok(vec![
+            WritebackField::bounded(
+                BoundarySymbol::from("snow.routed_melt_m"),
+                routed_melt_m,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from("snow.post_winter_rain_m"),
+                post_winter_rain_m,
+                Some(0.0),
+                None,
+            ),
+        ])
     }
 
     #[allow(clippy::too_many_lines)]

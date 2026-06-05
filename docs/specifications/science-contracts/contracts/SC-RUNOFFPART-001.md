@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 33
+contract_version: 34
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -141,6 +141,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-018 | HPHYS0288 rain-on-snow routed-melt partition invariant: WB12/WB14 liquid forcing must treat positive rain-on-snow residual released by `snowd.for` holding-capacity accounting as part of routed `wmelt` after `winter.for` daily post-processing. Direct-rain liquid supplied to the hyetograph path must be reduced by both retained rain and residual rain-on-snow that has been promoted into `wmelt`; leaving that residual on the direct-rain-only path, omitting it from `wmelt`, or double counting it across direct rain and routed melt violates the baseline `hrrain -> hrmlt -> wmelt -> fin/smrate` lineage. | hard-fail | REF-RUNOFFPART-LEGACY-WINTER-RAINRELEASE, REF-RUNOFFPART-LEGACY-WMELT-INFIL, SC-SNOWFREEZE-001#INV-SNOWFREEZE-021, SC-WATBAL-001#INV-WATBAL-063 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-019 | HPHYS0289 routed-melt publication invariant: WB12/WB14 must publish an explicit daily routed-melt depth equivalent to baseline `wmelt(iplane)` after winter redistribution and rain-on-snow release so WB13 can compute `RM = post-winter rain + wmelt + irrigation`. The publication surface must be finite, non-negative, and identical to the snowmelt liquid term used by infiltration/runoff closure; deriving WB13 `RM` from raw precipitation and SWE delta while the kernel used a different routed-melt term is invalid. | hard-fail | REF-RUNOFFPART-LEGACY-WMELT-INFIL, REF-RUNOFFPART-LEGACY-WB13-RM, SC-SNOWFREEZE-001#INV-SNOWFREEZE-022, SC-WATBAL-001#INV-WATBAL-064 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-020 | HPHYS0290 post-winter rain publication invariant: WB12/WB14 must publish the post-winter direct-rain depth equivalent to baseline `rain(iplane)` after winter clearing/restoration, snowpack retention, and rain-on-snow promotion to `wmelt`. The openWEPP surface is `snow.post_winter_rain_m`; it must be finite, non-negative, and sourced from the same liquid partition used for direct-rain hyetograph/runoff forcing. WB13 may not reconstruct this term from raw precipitation, snow-active flags, SWE deltas, or routed melt. | hard-fail | REF-RUNOFFPART-LEGACY-WB13-RM, REF-RUNOFFPART-LEGACY-WINTER-RAINRELEASE, INV-RUNOFFPART-018, INV-RUNOFFPART-019, SC-SNOWFREEZE-001#INV-SNOWFREEZE-023, SC-WATBAL-001#INV-WATBAL-065 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-021 | HPHYS0291 snow publication lifecycle invariant: runoff reconciliation owns same-day publication of `snow.post_winter_rain_m` and `snow.routed_melt_m` into the flux surface before WB13 publication. The publisher must emit finite non-negative values on every daily execution, including explicit zeroes when no routed melt or post-winter direct rain exists, and WB13 may not accept state/default substitutes for absent producer fluxes. | hard-fail | INV-RUNOFFPART-019, INV-RUNOFFPART-020, SC-SNOWFREEZE-001#INV-SNOWFREEZE-024, SC-WATBAL-001#INV-WATBAL-066, REF-RUNOFFPART-LEGACY-WB13-RM | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -166,6 +167,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-018` | runtime + governance | WB12/WB14 rain-on-snow direct-rain vs routed-melt assembler | Typed hard error / explicit `HOLD` when residual rain-on-snow is omitted from routed melt, left exclusively as direct rain, or double counted | HPHYS0288 rain-on-snow partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-019` | runtime + governance | WB12/WB14 daily routed-`wmelt` publisher and WB13 consumer seam | Typed hard error / explicit `HOLD` when routed melt is missing, negative, non-finite, or differs from the liquid term used by runoff/infiltration closure | HPHYS0289 WB13 publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-020` | runtime + governance | WB12/WB14 daily post-winter direct-rain publisher and WB13 consumer seam | Typed hard error / explicit `HOLD` when post-winter rain is missing, negative, non-finite, not tied to direct-rain forcing, or reconstructed downstream | HPHYS0290 WB13 post-winter-rain publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-021` | runtime + governance | WB12/WB14 same-day snow publication flux lifecycle before WB13 | Typed hard error / explicit `HOLD` when required fluxes are absent, stale-state shadowed, or defaulted instead of produced | HPHYS0291 snow publication lifecycle gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -839,6 +841,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `34` | `Codex` | HPHYS0291 amendment: required runoff reconciliation to publish same-day snow publication fluxes before WB13 and prohibited state/default substitutes for absent producer fluxes. |
 | `2026-06-05` | `33` | `Codex` | HPHYS0290 amendment: required WB12/WB14 to publish explicit post-winter direct rain as `snow.post_winter_rain_m` for WB13 `RM` instead of allowing downstream inference. |
 | `2026-06-04` | `32` | `Codex` | HPHYS0289 amendment: required WB12/WB14 to publish explicit daily routed `wmelt` matching the infiltration/runoff liquid term so WB13 `RM` can consume baseline `rain + wmelt + irrigation`. |
 | `2026-06-04` | `31` | `Codex` | HPHYS0288 amendment: added WB12/WB14 residual rain-on-snow routed-melt partition authority requiring released rain to follow `hrrain -> hrmlt -> wmelt -> fin/smrate` rather than direct-rain-only forcing. |

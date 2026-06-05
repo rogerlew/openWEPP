@@ -444,6 +444,10 @@ name = "hphys0290_post_winter_rain_publication_contract"
 path = "tests/integration/hphys0290_post_winter_rain_publication_contract.rs"
 
 [[test]]
+name = "hphys0291_snow_publication_lifecycle_contract"
+path = "tests/integration/hphys0291_snow_publication_lifecycle_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

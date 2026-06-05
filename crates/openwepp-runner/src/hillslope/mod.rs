@@ -4572,9 +4572,9 @@ fn build_hphys0245_trace_row(
     };
     let snow_s_m = runtime_surface_symbol_value_prefer_flux(runtime_surface, "S");
     let snow_routed_melt_m =
-        runtime_surface_symbol_value_prefer_flux(runtime_surface, "snow.routed_melt_m");
+        runtime_surface_flux_symbol_value(runtime_surface, "snow.routed_melt_m");
     let snow_post_winter_rain_m =
-        runtime_surface_symbol_value_prefer_flux(runtime_surface, "snow.post_winter_rain_m");
+        runtime_surface_flux_symbol_value(runtime_surface, "snow.post_winter_rain_m");
     let snow_runtime_swe_m = runtime_surface_symbol_value(runtime_surface, "snow.runtime_swe");
     let snow_runtime_depth_m =
         runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m");
@@ -6229,8 +6229,7 @@ fn build_simulation_owned_wb13_row(
             "Irr must be >= 0.0, observed {irrigation_m}"
         )));
     }
-    let routed_melt_m =
-        require_runtime_surface_scalar_prefer_flux(runtime_surface, "snow.routed_melt_m")?;
+    let routed_melt_m = require_runtime_flux_surface_scalar(runtime_surface, "snow.routed_melt_m")?;
     if routed_melt_m < 0.0 {
         return Err(wb13_simout_failure(format!(
             "snow.routed_melt_m must be >= 0.0, observed {routed_melt_m}"
@@ -6435,6 +6434,16 @@ fn runtime_surface_symbol_value_prefer_flux(
                 .get(&key)
                 .map(|value| value.as_f64())
         })
+}
+
+fn runtime_surface_flux_symbol_value(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Option<f64> {
+    runtime_surface
+        .flux_surface
+        .get(&BoundarySymbol::from(symbol))
+        .map(|value| value.as_f64())
 }
 
 fn runtime_surface_ofe_count(
@@ -7715,6 +7724,39 @@ mod tests {
                 assert!(
                     detail.contains("snow.routed_melt_m must be >= 0.0"),
                     "expected negative routed wmelt guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0291_wb13_rm_publication_rejects_state_only_routed_melt() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .flux_surface
+            .remove(&BoundarySymbol::from("snow.routed_melt_m"));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.010),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("state-only routed melt must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("missing required runtime flux symbol snow.routed_melt_m"),
+                    "expected missing producer flux guard detail, observed: {detail}"
                 );
             }
             other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
@@ -9397,7 +9439,7 @@ mod tests {
             BoundarySymbol::from("snow.runtime_swe"),
             BoundaryValue::scalar(0.0),
         );
-        runtime_surface.state_surface.insert(
+        runtime_surface.flux_surface.insert(
             BoundarySymbol::from("snow.routed_melt_m"),
             BoundaryValue::scalar(0.0),
         );
