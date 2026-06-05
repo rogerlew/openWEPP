@@ -1,0 +1,743 @@
+[
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H1.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H1.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H1.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H2.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H2.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H2.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H3.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H3.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H3.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H4.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H4.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H4.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H5.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H5.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H5.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H6.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H6.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H6.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H7.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H7.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H7.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H8.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H8.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H8.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H9.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H9.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H9.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H10.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H10.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H10.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H11.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H11.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H11.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H12.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H12.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H12.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H13.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H13.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H13.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H14.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H14.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H14.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H15.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H15.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H15.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H16.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H16.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H16.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H17.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H17.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H17.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H18.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H18.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H18.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H19.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H19.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H19.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H20.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H20.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H20.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H21.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H21.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H21.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H22.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H22.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H22.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H23.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H23.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H23.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H24.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H24.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H24.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H25.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H25.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H25.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H26.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H26.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H26.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H27.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H27.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H27.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H28.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H28.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H28.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H29.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H29.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H29.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H30.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H30.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H30.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H31.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H31.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H31.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H32.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H32.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H32.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H33.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H33.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H33.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H34.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H34.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H34.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H35.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H35.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H35.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H36.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H36.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H36.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H37.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H37.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H37.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H38.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H38.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H38.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  },
+  {
+    "args": [
+      "/workdir/wepppy/.venv/bin/python",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py",
+      "--baseline-wat",
+      "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H39.parquet",
+      "--candidate-wat",
+      "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H39.wat.parquet",
+      "--candidate-year-offset",
+      "2012",
+      "--tolerance-config",
+      "/home/workdir/openWEPP/tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json",
+      "--report-json",
+      "/home/workdir/openWEPP/docs/work-packages/20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/artifacts/fixed-baseline-semantic-reports/H39.semantic.json"
+    ],
+    "returncode": 0,
+    "stderr": "",
+    "stdout": ""
+  }
+]

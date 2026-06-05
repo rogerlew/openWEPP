@@ -1,5 +1,25 @@
 # Work Packages
 
+- `20260605-hphys0305-paired-melt-term-state-instrumentation-001/`
+  - Purpose: implement the second ADR-0016 Required Continuation Order step by
+    instrumenting paired fixed-baseline/openWEPP melt-term and snow-state
+    surfaces (`amelt`, `bmelt`, `cmelt`, `dmelt`, forcing lanes, `snodpt`,
+    `densgt`) for the H1/H7/H39 snow/`RM` target windows before any producer
+    or downstream hydrology edit is authorized.
+  - Status: queued; scaffolded by HPHYS0304 as the required follow-on package
+    after the fixed-baseline H1..H39 semantic rerun and target-window
+    reclassification.
+- `20260605-hphys0304-fixed-comparator-semantic-rerun-continuation-001/`
+  - Purpose: execute ADR-0016 Required Continuation Order step 1 by rerunning
+    the H1..H39 semantic suite against the fixed `wepp_260430` comparator
+    baseline and reclassifying H1/H7/H39 snow/`RM` target windows under
+    ADR-0011 confidence tiers.
+  - Status: executed-hold; fixed-baseline semantic rerun produced `0/39`
+    semantic-pass hillslopes with no structural row/key failures and no
+    material movement from HPHYS0302 metrics, reclassified all nine target
+    windows as `fixed-baseline-unchanged-term-state-hold`, preserved the
+    HPHYS0302 production-edit `HOLD`, and scaffolded HPHYS0305 for paired
+    melt-term/state instrumentation.
 - `20260605-hphys0303-adr0016-fixed-comparator-ratification-001/`
   - Purpose: execute the local ADR-0016 ratification work for the fixed
     `wepp_260430` comparator anchor: preserve immutable archaeology tags,

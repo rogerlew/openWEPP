@@ -1,0 +1,238 @@
+[
+  {
+    "column": "Area",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.010000000002037268,
+    "max_abs_key": [
+      1,
+      1,
+      2013
+    ],
+    "mean_abs_diff_mean": 0.000512820514091007,
+    "total_fail_count": 0
+  },
+  {
+    "column": "Dp",
+    "hillslope_fail_count": 38,
+    "max_abs_diff": 0.24479985054954173,
+    "max_abs_key": [
+      1,
+      179,
+      2015
+    ],
+    "mean_abs_diff_mean": 0.05044354901804561,
+    "total_fail_count": 10961
+  },
+  {
+    "column": "Ep",
+    "hillslope_fail_count": 39,
+    "max_abs_diff": 7.100843908920885,
+    "max_abs_key": [
+      1,
+      185,
+      2015
+    ],
+    "mean_abs_diff_mean": 0.6336571797708912,
+    "total_fail_count": 42688
+  },
+  {
+    "column": "Er",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "Es",
+    "hillslope_fail_count": 1,
+    "max_abs_diff": 1.828582943108198,
+    "max_abs_key": [
+      1,
+      160,
+      2016
+    ],
+    "mean_abs_diff_mean": 0.010140431715611934,
+    "total_fail_count": 470
+  },
+  {
+    "column": "Irr",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "P",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 3.552713678800501e-15,
+    "max_abs_key": [
+      1,
+      64,
+      2014
+    ],
+    "mean_abs_diff_mean": 4.567986418054738e-17,
+    "total_fail_count": 0
+  },
+  {
+    "column": "ProfileDepth",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "ProfileFCStore",
+    "hillslope_fail_count": 27,
+    "max_abs_diff": 9.33442611933711,
+    "max_abs_key": [
+      1,
+      1,
+      2013
+    ],
+    "mean_abs_diff_mean": 2.0526911601041227,
+    "total_fail_count": 39447
+  },
+  {
+    "column": "ProfilePorosityCap",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.14310267765324625,
+    "max_abs_key": [
+      1,
+      1,
+      2013
+    ],
+    "mean_abs_diff_mean": 0.02091313154103493,
+    "total_fail_count": 0
+  },
+  {
+    "column": "ProfileWPStore",
+    "hillslope_fail_count": 1,
+    "max_abs_diff": 1.6698631026452233,
+    "max_abs_key": [
+      1,
+      1,
+      2013
+    ],
+    "mean_abs_diff_mean": 0.05729745831355476,
+    "total_fail_count": 1461
+  },
+  {
+    "column": "Q",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 2.0816681711721685e-14,
+    "max_abs_key": [
+      1,
+      143,
+      2014
+    ],
+    "mean_abs_diff_mean": 7.739858510220362e-17,
+    "total_fail_count": 0
+  },
+  {
+    "column": "QOFE",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 2.0816681711721685e-14,
+    "max_abs_key": [
+      1,
+      143,
+      2014
+    ],
+    "mean_abs_diff_mean": 7.739858510220362e-17,
+    "total_fail_count": 0
+  },
+  {
+    "column": "RM",
+    "hillslope_fail_count": 39,
+    "max_abs_diff": 27.959999999999997,
+    "max_abs_key": [
+      1,
+      139,
+      2014
+    ],
+    "mean_abs_diff_mean": 0.2560855095903018,
+    "total_fail_count": 7097
+  },
+  {
+    "column": "Snow-Water",
+    "hillslope_fail_count": 39,
+    "max_abs_diff": 65.50683982565039,
+    "max_abs_key": [
+      1,
+      106,
+      2015
+    ],
+    "mean_abs_diff_mean": 2.899431502849478,
+    "total_fail_count": 10391
+  },
+  {
+    "column": "SoilWaterTotal",
+    "hillslope_fail_count": 39,
+    "max_abs_diff": 317.13012867850887,
+    "max_abs_key": [
+      1,
+      260,
+      2016
+    ],
+    "mean_abs_diff_mean": 56.01007160382758,
+    "total_fail_count": 52185
+  },
+  {
+    "column": "SubRIn",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "Tile",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "Total-Soil",
+    "hillslope_fail_count": 39,
+    "max_abs_diff": 317.13012867850887,
+    "max_abs_key": [
+      1,
+      260,
+      2016
+    ],
+    "mean_abs_diff_mean": 56.01007160382758,
+    "total_fail_count": 52185
+  },
+  {
+    "column": "UpStrmQ",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "frozwt",
+    "hillslope_fail_count": 0,
+    "max_abs_diff": 0.0,
+    "max_abs_key": null,
+    "mean_abs_diff_mean": 0.0,
+    "total_fail_count": 0
+  },
+  {
+    "column": "latqcc",
+    "hillslope_fail_count": 39,
+    "max_abs_diff": 3.023091871829949,
+    "max_abs_key": [
+      1,
+      83,
+      2015
+    ],
+    "mean_abs_diff_mean": 0.2858823717106818,
+    "total_fail_count": 38462
+  }
+]

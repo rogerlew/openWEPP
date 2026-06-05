@@ -1,0 +1,2126 @@
+{
+  "report_schema_version": "pl14s-semantic-wat-v2",
+  "inputs": {
+    "baseline_wat": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H14.parquet",
+    "candidate_wat": "/tmp/hphys0300_full_20260605T155527Z/hillslope_output/H14.wat.parquet",
+    "baseline_format": "parquet",
+    "candidate_format": "parquet",
+    "row_key_fields": [
+      "OFE",
+      "J",
+      "Y"
+    ],
+    "width_diagnostic_mode": "observed_row_field_count",
+    "baseline_numeric_widths": [
+      25
+    ],
+    "candidate_numeric_widths": [
+      25
+    ],
+    "baseline_column_alias_sources": {
+      "Area": [
+        "Area"
+      ],
+      "Dp": [
+        "Dp"
+      ],
+      "Ep": [
+        "Ep"
+      ],
+      "Er": [
+        "Er"
+      ],
+      "Es": [
+        "Es"
+      ],
+      "Irr": [
+        "Irr"
+      ],
+      "J": [
+        "julian"
+      ],
+      "OFE": [
+        "OFE"
+      ],
+      "P": [
+        "P"
+      ],
+      "ProfileDepth": [
+        "ProfileDepth"
+      ],
+      "ProfileFCStore": [
+        "ProfileFCStore"
+      ],
+      "ProfilePorosityCap": [
+        "ProfilePorosityCap"
+      ],
+      "ProfileWPStore": [
+        "ProfileWPStore"
+      ],
+      "Q": [
+        "Q"
+      ],
+      "QOFE": [
+        "QOFE"
+      ],
+      "RM": [
+        "RM"
+      ],
+      "Snow-Water": [
+        "Snow-Water"
+      ],
+      "SoilWaterTotal": [
+        "SoilWaterTotal"
+      ],
+      "SubRIn": [
+        "SubRIn"
+      ],
+      "Tile": [
+        "Tile"
+      ],
+      "Total-Soil": [
+        "Total-Soil Water"
+      ],
+      "UpStrmQ": [
+        "UpStrmQ"
+      ],
+      "Y": [
+        "year"
+      ],
+      "frozwt": [
+        "frozwt"
+      ],
+      "latqcc": [
+        "latqcc"
+      ]
+    },
+    "candidate_column_alias_sources": {
+      "Area": [
+        "Area"
+      ],
+      "Dp": [
+        "Dp"
+      ],
+      "Ep": [
+        "Ep"
+      ],
+      "Er": [
+        "Er"
+      ],
+      "Es": [
+        "Es"
+      ],
+      "Irr": [
+        "Irr"
+      ],
+      "J": [
+        "julian"
+      ],
+      "OFE": [
+        "OFE"
+      ],
+      "P": [
+        "P"
+      ],
+      "ProfileDepth": [
+        "ProfileDepth"
+      ],
+      "ProfileFCStore": [
+        "ProfileFCStore"
+      ],
+      "ProfilePorosityCap": [
+        "ProfilePorosityCap"
+      ],
+      "ProfileWPStore": [
+        "ProfileWPStore"
+      ],
+      "Q": [
+        "Q"
+      ],
+      "QOFE": [
+        "QOFE"
+      ],
+      "RM": [
+        "RM"
+      ],
+      "Snow-Water": [
+        "Snow-Water"
+      ],
+      "SoilWaterTotal": [
+        "SoilWaterTotal"
+      ],
+      "SubRIn": [
+        "SubRIn"
+      ],
+      "Tile": [
+        "Tile"
+      ],
+      "Total-Soil": [
+        "Total-Soil"
+      ],
+      "UpStrmQ": [
+        "UpStrmQ"
+      ],
+      "Y": [
+        "year"
+      ],
+      "frozwt": [
+        "frozwt"
+      ],
+      "latqcc": [
+        "latqcc"
+      ]
+    },
+    "candidate_partition_value": null,
+    "candidate_partition_column": "wepp_id",
+    "candidate_year_offset": 2012,
+    "baseline_sha256": "4492589236c8afa43d8ee7da3263705b17a5f116dcadeca88220968aacfe3dbe",
+    "candidate_sha256": "90c5053e4ca0a3ee65c177fb433b59733517d378736f1c908145e7a4b6aab720"
+  },
+  "tolerances": {
+    "default": {
+      "abs": 0.1,
+      "rel": 0.02
+    },
+    "column_overrides": {
+      "Dp": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "Ep": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "Er": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "Es": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "P": {
+        "abs": 0.1,
+        "rel": 0.01
+      },
+      "Q": {
+        "abs": 0.05,
+        "rel": 0.03
+      },
+      "RM": {
+        "abs": 0.1,
+        "rel": 0.02
+      },
+      "Snow-Water": {
+        "abs": 0.2,
+        "rel": 0.02
+      },
+      "SoilWaterTotal": {
+        "abs": 0.5,
+        "rel": 0.01
+      },
+      "Total-Soil": {
+        "abs": 0.5,
+        "rel": 0.01
+      },
+      "frozwt": {
+        "abs": 0.2,
+        "rel": 0.02
+      }
+    }
+  },
+  "comparison": {
+    "semantic_pass": false,
+    "shared_column_count": 22,
+    "shared_columns": [
+      "Area",
+      "Dp",
+      "Ep",
+      "Er",
+      "Es",
+      "Irr",
+      "P",
+      "ProfileDepth",
+      "ProfileFCStore",
+      "ProfilePorosityCap",
+      "ProfileWPStore",
+      "Q",
+      "QOFE",
+      "RM",
+      "Snow-Water",
+      "SoilWaterTotal",
+      "SubRIn",
+      "Tile",
+      "Total-Soil",
+      "UpStrmQ",
+      "frozwt",
+      "latqcc"
+    ],
+    "baseline_only_columns": [],
+    "candidate_only_columns": [],
+    "common_row_count": 1461,
+    "only_baseline_count": 0,
+    "only_candidate_count": 0,
+    "only_baseline_examples": [],
+    "only_candidate_examples": [],
+    "investigation_columns_used": [
+      "P",
+      "Q",
+      "Ep",
+      "Es",
+      "Er",
+      "Dp",
+      "Total-Soil",
+      "frozwt",
+      "Snow-Water",
+      "SoilWaterTotal"
+    ],
+    "investigation_columns_missing": [],
+    "column_stats": [
+      {
+        "column": "Area",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Dp",
+        "compared_points": 1461,
+        "fail_count": 385,
+        "pass": false,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.06769479149407014,
+        "rmse": 0.1252316385257216,
+        "max_abs_diff": 0.24479951428667815,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          198,
+          2015
+        ]
+      },
+      {
+        "column": "Ep",
+        "compared_points": 1461,
+        "fail_count": 977,
+        "pass": false,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.6177388558808399,
+        "rmse": 1.3457813865627273,
+        "max_abs_diff": 6.846262606319963,
+        "max_rel_diff": 0.9176484975378532,
+        "max_abs_key": [
+          1,
+          185,
+          2015
+        ]
+      },
+      {
+        "column": "Er",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Es",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 0.0063842527923243615,
+        "rmse": 0.009399211388368672,
+        "max_abs_diff": 0.03980762743223593,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          214,
+          2015
+        ]
+      },
+      {
+        "column": "Irr",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "P",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.01,
+        "mean_abs_diff": 4.567986418054738e-17,
+        "rmse": 2.5814139215111905e-16,
+        "max_abs_diff": 3.552713678800501e-15,
+        "max_rel_diff": 2.1610180527983576e-16,
+        "max_abs_key": [
+          1,
+          64,
+          2014
+        ]
+      },
+      {
+        "column": "ProfileDepth",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "ProfileFCStore",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0012730036671939615,
+        "rmse": 0.0012730036671939865,
+        "max_abs_diff": 0.0012730036671939615,
+        "max_rel_diff": 7.492608175846243e-06,
+        "max_abs_key": [
+          1,
+          1,
+          2013
+        ]
+      },
+      {
+        "column": "ProfilePorosityCap",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0023554492395305715,
+        "rmse": 0.0023554492395305385,
+        "max_abs_diff": 0.0023554492395305715,
+        "max_rel_diff": 2.3434974027764118e-06,
+        "max_abs_key": [
+          1,
+          1,
+          2013
+        ]
+      },
+      {
+        "column": "ProfileWPStore",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0008708518295676981,
+        "rmse": 0.0008708518295677119,
+        "max_abs_diff": 0.0008708518295676981,
+        "max_rel_diff": 1.805215814288457e-05,
+        "max_abs_key": [
+          1,
+          1,
+          2013
+        ]
+      },
+      {
+        "column": "Q",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.05,
+        "rel_tolerance": 0.03,
+        "mean_abs_diff": 6.14095987947091e-17,
+        "rmse": 3.718770866772693e-16,
+        "max_abs_diff": 6.938893903907228e-15,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          140,
+          2014
+        ]
+      },
+      {
+        "column": "QOFE",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 6.14095987947091e-17,
+        "rmse": 3.718770866772693e-16,
+        "max_abs_diff": 6.938893903907228e-15,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          140,
+          2014
+        ]
+      },
+      {
+        "column": "RM",
+        "compared_points": 1461,
+        "fail_count": 182,
+        "pass": false,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.25237771491969635,
+        "rmse": 1.304435221434375,
+        "max_abs_diff": 26.43,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          110,
+          2015
+        ]
+      },
+      {
+        "column": "Snow-Water",
+        "compared_points": 1461,
+        "fail_count": 288,
+        "pass": false,
+        "abs_tolerance": 0.2,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 3.0432274419421668,
+        "rmse": 8.442348627158244,
+        "max_abs_diff": 55.80413341312041,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          106,
+          2015
+        ]
+      },
+      {
+        "column": "SoilWaterTotal",
+        "compared_points": 1461,
+        "fail_count": 1270,
+        "pass": false,
+        "abs_tolerance": 0.5,
+        "rel_tolerance": 0.01,
+        "mean_abs_diff": 33.341626678783854,
+        "rmse": 47.50956183197957,
+        "max_abs_diff": 132.79207103463665,
+        "max_rel_diff": 0.6913836117548442,
+        "max_abs_key": [
+          1,
+          255,
+          2014
+        ]
+      },
+      {
+        "column": "SubRIn",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Tile",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "Total-Soil",
+        "compared_points": 1461,
+        "fail_count": 1270,
+        "pass": false,
+        "abs_tolerance": 0.5,
+        "rel_tolerance": 0.01,
+        "mean_abs_diff": 33.341626678783854,
+        "rmse": 47.50956183197957,
+        "max_abs_diff": 132.79207103463665,
+        "max_rel_diff": 0.6913836117548442,
+        "max_abs_key": [
+          1,
+          255,
+          2014
+        ]
+      },
+      {
+        "column": "UpStrmQ",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "frozwt",
+        "compared_points": 1461,
+        "fail_count": 0,
+        "pass": true,
+        "abs_tolerance": 0.2,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.0,
+        "rmse": 0.0,
+        "max_abs_diff": 0.0,
+        "max_rel_diff": 0.0,
+        "max_abs_key": null
+      },
+      {
+        "column": "latqcc",
+        "compared_points": 1461,
+        "fail_count": 863,
+        "pass": false,
+        "abs_tolerance": 0.1,
+        "rel_tolerance": 0.02,
+        "mean_abs_diff": 0.25748144792196603,
+        "rmse": 0.3605942662276429,
+        "max_abs_diff": 1.0543817185774118,
+        "max_rel_diff": 1.0,
+        "max_abs_key": [
+          1,
+          252,
+          2014
+        ]
+      }
+    ],
+    "top_divergent_rows": [
+      {
+        "key": [
+          1,
+          255,
+          2014
+        ],
+        "mean_abs_diff_score": 26.78073939804139,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 2.85,
+            "candidate": 0.9011955570044402,
+            "abs_diff": 1.9488044429955598
+          },
+          "Es": {
+            "baseline": 0.03,
+            "candidate": 0.0003520461416342019,
+            "abs_diff": 0.029647953858365796
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 63.2,
+            "candidate": 195.99207103463667,
+            "abs_diff": 132.79207103463665
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 63.2,
+            "candidate": 195.99207103463667,
+            "abs_diff": 132.79207103463665
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          256,
+          2014
+        ],
+        "mean_abs_diff_score": 26.668315781552053,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 1.72,
+            "candidate": 0.6164269247884997,
+            "abs_diff": 1.1035730752115003
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.00019665411785937787,
+            "abs_diff": 0.01980334588214062
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 61.46,
+            "candidate": 194.11749094007013,
+            "abs_diff": 132.65749094007012
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 61.46,
+            "candidate": 194.11749094007013,
+            "abs_diff": 132.65749094007012
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          254,
+          2014
+        ],
+        "mean_abs_diff_score": 26.65127092952456,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 2.77,
+            "candidate": 0.6016822640525283,
+            "abs_diff": 2.168317735947472
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.0002658818375427084,
+            "abs_diff": 0.019734118162457293
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.11,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.13479951428667813
+          },
+          "Total-Soil": {
+            "baseline": 66.07,
+            "candidate": 198.16492896342447,
+            "abs_diff": 132.09492896342448
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 66.07,
+            "candidate": 198.16492896342447,
+            "abs_diff": 132.09492896342448
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          257,
+          2014
+        ],
+        "mean_abs_diff_score": 26.487665461694803,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 1.25,
+            "candidate": 0.6673299511099071,
+            "abs_diff": 0.5826700488900929
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.00018339537622710076,
+            "abs_diff": 0.0198166046237729
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 60.19,
+            "candidate": 192.20468422457375,
+            "abs_diff": 132.01468422457376
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 60.19,
+            "candidate": 192.20468422457375,
+            "abs_diff": 132.01468422457376
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          253,
+          2014
+        ],
+        "mean_abs_diff_score": 26.444590852394732,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 2.8,
+            "candidate": 0.5303430242281663,
+            "abs_diff": 2.2696569757718335
+          },
+          "Es": {
+            "baseline": 0.01,
+            "candidate": 0.0002595838874998013,
+            "abs_diff": 0.009740416112500198
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 68.97,
+            "candidate": 200.05085580888814,
+            "abs_diff": 131.08085580888815
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 68.97,
+            "candidate": 200.05085580888814,
+            "abs_diff": 131.08085580888815
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          258,
+          2014
+        ],
+        "mean_abs_diff_score": 26.232741177661797,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.97,
+            "candidate": 0.8203863455707675,
+            "abs_diff": 0.14961365442923247
+          },
+          "Es": {
+            "baseline": 0.03,
+            "candidate": 0.00018943471307861253,
+            "abs_diff": 0.029810565286921387
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 59.2,
+            "candidate": 190.1515940213076,
+            "abs_diff": 130.95159402130759
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 59.2,
+            "candidate": 190.1515940213076,
+            "abs_diff": 130.95159402130759
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          252,
+          2014
+        ],
+        "mean_abs_diff_score": 26.18936188411086,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 2.72,
+            "candidate": 0.5368911198089642,
+            "abs_diff": 2.183108880191036
+          },
+          "Es": {
+            "baseline": 0.01,
+            "candidate": 0.00028986919879187895,
+            "abs_diff": 0.009710130801208122
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 72.03,
+            "candidate": 201.87800015791484,
+            "abs_diff": 129.84800015791484
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 72.03,
+            "candidate": 201.87800015791484,
+            "abs_diff": 129.84800015791484
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          251,
+          2014
+        ],
+        "mean_abs_diff_score": 26.120268255837527,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 4.77,
+            "candidate": 1.0201857609387146,
+            "abs_diff": 3.749814239061285
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.0006559545458177738,
+            "abs_diff": 0.019344045454182227
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 75.01,
+            "candidate": 203.72436237978656,
+            "abs_diff": 128.71436237978656
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 75.01,
+            "candidate": 203.72436237978656,
+            "abs_diff": 128.71436237978656
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          259,
+          2014
+        ],
+        "mean_abs_diff_score": 26.029213520147902,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.79,
+            "candidate": 0.6223092685962941,
+            "abs_diff": 0.16769073140370594
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.00011355912066457905,
+            "abs_diff": 0.019886440879335422
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 58.38,
+            "candidate": 188.30987925745467,
+            "abs_diff": 129.92987925745467
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 58.38,
+            "candidate": 188.30987925745467,
+            "abs_diff": 129.92987925745467
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          260,
+          2014
+        ],
+        "mean_abs_diff_score": 25.816073110003163,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.68,
+            "candidate": 0.5501066697241342,
+            "abs_diff": 0.1298933302758658
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 8.280734538551725e-05,
+            "abs_diff": 0.019917192654614484
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 57.67,
+            "candidate": 186.55306053140723,
+            "abs_diff": 128.88306053140724
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 57.67,
+            "candidate": 186.55306053140723,
+            "abs_diff": 128.88306053140724
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          250,
+          2014
+        ],
+        "mean_abs_diff_score": 25.630988126793135,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 5.68,
+            "candidate": 1.3398731531834482,
+            "abs_diff": 4.340126846816552
+          },
+          "Es": {
+            "baseline": 0.03,
+            "candidate": 0.001058841643110193,
+            "abs_diff": 0.028941158356889807
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 80.1,
+            "candidate": 206.0680068742356,
+            "abs_diff": 125.96800687423561
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 80.1,
+            "candidate": 206.0680068742356,
+            "abs_diff": 125.96800687423561
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          261,
+          2014
+        ],
+        "mean_abs_diff_score": 25.594200811016247,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.6,
+            "candidate": 0.5134339625327321,
+            "abs_diff": 0.08656603746726788
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 6.445351692032415e-05,
+            "abs_diff": 0.019935546483079675
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 57.05,
+            "candidate": 184.84535350596272,
+            "abs_diff": 127.79535350596272
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 57.05,
+            "candidate": 184.84535350596272,
+            "abs_diff": 127.79535350596272
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          262,
+          2014
+        ],
+        "mean_abs_diff_score": 25.396448243271116,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.36,
+            "candidate": 0.20569577354197296,
+            "abs_diff": 0.15430422645802702
+          },
+          "Es": {
+            "baseline": 0.01,
+            "candidate": 2.1568187967565494e-05,
+            "abs_diff": 0.009978431812032435
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 56.68,
+            "candidate": 183.45770013007723,
+            "abs_diff": 126.77770013007722
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 56.68,
+            "candidate": 183.45770013007723,
+            "abs_diff": 126.77770013007722
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          263,
+          2014
+        ],
+        "mean_abs_diff_score": 25.201115716393357,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.52,
+            "candidate": 0.3457752550861345,
+            "abs_diff": 0.17422474491386553
+          },
+          "Es": {
+            "baseline": 0.01,
+            "candidate": 3.368582459463729e-05,
+            "abs_diff": 0.009966314175405363
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 56.15,
+            "candidate": 181.94108329527882,
+            "abs_diff": 125.79108329527881
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 56.15,
+            "candidate": 181.94108329527882,
+            "abs_diff": 125.79108329527881
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          264,
+          2014
+        ],
+        "mean_abs_diff_score": 24.94947386550812,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.48,
+            "candidate": 0.5535898018433361,
+            "abs_diff": 0.07358980184333608
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 4.741238431145439e-05,
+            "abs_diff": 0.019952587615688546
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 55.65,
+            "candidate": 180.22819837566777,
+            "abs_diff": 124.57819837566777
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 55.65,
+            "candidate": 180.22819837566777,
+            "abs_diff": 124.57819837566777
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          249,
+          2014
+        ],
+        "mean_abs_diff_score": 24.924079297710573,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 5.4,
+            "candidate": 1.404396985902156,
+            "abs_diff": 3.9956030140978447
+          },
+          "Es": {
+            "baseline": 0.03,
+            "candidate": 0.0013434520456298326,
+            "abs_diff": 0.028656547954370167
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 86.14,
+            "candidate": 208.74586695038343,
+            "abs_diff": 122.60586695038343
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 86.14,
+            "candidate": 208.74586695038343,
+            "abs_diff": 122.60586695038343
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          265,
+          2014
+        ],
+        "mean_abs_diff_score": 24.745385470965896,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.45,
+            "candidate": 0.3544477565865236,
+            "abs_diff": 0.0955522434134764
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 2.4341890428714024e-05,
+            "abs_diff": 0.019975658109571286
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 55.18,
+            "candidate": 178.72676364692464,
+            "abs_diff": 123.54676364692463
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 55.18,
+            "candidate": 178.72676364692464,
+            "abs_diff": 123.54676364692463
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          266,
+          2014
+        ],
+        "mean_abs_diff_score": 24.55982959424662,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.42,
+            "candidate": 0.2530095074556013,
+            "abs_diff": 0.16699049254439868
+          },
+          "Es": {
+            "baseline": 0.01,
+            "candidate": 1.5009756861331974e-05,
+            "abs_diff": 0.009984990243138668
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 54.75,
+            "candidate": 177.338260472696,
+            "abs_diff": 122.58826047269599
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 54.75,
+            "candidate": 177.338260472696,
+            "abs_diff": 122.58826047269599
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          248,
+          2014
+        ],
+        "mean_abs_diff_score": 24.190991101680694,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 3.83,
+            "candidate": 1.069056974453272,
+            "abs_diff": 2.760943025546728
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.0011649329630790235,
+            "abs_diff": 0.018835067036920977
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 91.94,
+            "candidate": 211.5026667049683,
+            "abs_diff": 119.56266670496831
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 91.94,
+            "candidate": 211.5026667049683,
+            "abs_diff": 119.56266670496831
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          267,
+          2014
+        ],
+        "mean_abs_diff_score": 24.182233152855552,
+        "columns": {
+          "P": {
+            "baseline": 0.82,
+            "candidate": 0.82,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.4,
+            "candidate": 0.32333246681096994,
+            "abs_diff": 0.07666753318903008
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 1.7234958782886778e-05,
+            "abs_diff": 0.019982765041217113
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 55.15,
+            "candidate": 175.8904408580193,
+            "abs_diff": 120.7404408580193
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 55.15,
+            "candidate": 175.8904408580193,
+            "abs_diff": 120.7404408580193
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          245,
+          2014
+        ],
+        "mean_abs_diff_score": 24.00849181262812,
+        "columns": {
+          "P": {
+            "baseline": 0.7,
+            "candidate": 0.7,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 4.48,
+            "candidate": 0.9699661541968251,
+            "abs_diff": 3.5100338458031755
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.0005864182526099763,
+            "abs_diff": 0.019413581747390024
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 95.65,
+            "candidate": 213.92533559222198,
+            "abs_diff": 118.27533559222198
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 95.65,
+            "candidate": 213.92533559222198,
+            "abs_diff": 118.27533559222198
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          268,
+          2014
+        ],
+        "mean_abs_diff_score": 23.78298677662132,
+        "columns": {
+          "P": {
+            "baseline": 4.61,
+            "candidate": 4.61,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 0.58,
+            "candidate": 0.6148567806015964,
+            "abs_diff": 0.03485678060159647
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 1.4524619434160007e-05,
+            "abs_diff": 0.019985475380565842
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 59.17,
+            "candidate": 177.9351129979722,
+            "abs_diff": 118.7651129979722
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 59.17,
+            "candidate": 177.9351129979722,
+            "abs_diff": 118.7651129979722
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          226,
+          2016
+        ],
+        "mean_abs_diff_score": 23.778145177814025,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 3.37,
+            "candidate": 0.8363631854332325,
+            "abs_diff": 2.5336368145667674
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.00040729192032393696,
+            "abs_diff": 0.019592708079676065
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 60.42,
+            "candidate": 178.03171137060357,
+            "abs_diff": 117.61171137060357
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 60.42,
+            "candidate": 178.03171137060357,
+            "abs_diff": 117.61171137060357
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          247,
+          2014
+        ],
+        "mean_abs_diff_score": 23.765211516975643,
+        "columns": {
+          "P": {
+            "baseline": 2.05,
+            "candidate": 2.05,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 3.04,
+            "candidate": 0.8969807739205531,
+            "abs_diff": 2.143019226079447
+          },
+          "Es": {
+            "baseline": 0.01,
+            "candidate": 0.0007853093100927283,
+            "abs_diff": 0.009214690689907271
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.24,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.004799514286678158
+          },
+          "Total-Soil": {
+            "baseline": 96.19,
+            "candidate": 213.9375408693502,
+            "abs_diff": 117.74754086935019
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 96.19,
+            "candidate": 213.9375408693502,
+            "abs_diff": 117.74754086935019
+          }
+        }
+      },
+      {
+        "key": [
+          1,
+          227,
+          2016
+        ],
+        "mean_abs_diff_score": 23.691238744555555,
+        "columns": {
+          "P": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Q": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Ep": {
+            "baseline": 2.04,
+            "candidate": 0.8384961737155436,
+            "abs_diff": 1.2015038262844564
+          },
+          "Es": {
+            "baseline": 0.02,
+            "candidate": 0.00034323167842984745,
+            "abs_diff": 0.019656768321570154
+          },
+          "Er": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Dp": {
+            "baseline": 0.0,
+            "candidate": 0.24479951428667815,
+            "abs_diff": 0.24479951428667815
+          },
+          "Total-Soil": {
+            "baseline": 58.36,
+            "candidate": 176.08321366833144,
+            "abs_diff": 117.72321366833144
+          },
+          "frozwt": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "Snow-Water": {
+            "baseline": 0.0,
+            "candidate": 0.0,
+            "abs_diff": 0.0
+          },
+          "SoilWaterTotal": {
+            "baseline": 58.36,
+            "candidate": 176.08321366833144,
+            "abs_diff": 117.72321366833144
+          }
+        }
+      }
+    ]
+  }
+}
