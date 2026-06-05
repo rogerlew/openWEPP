@@ -1,5 +1,5 @@
 # Archived Prompts
 
-Status: queued
+Status: complete
 
-Move superseded HPHYS0298 prompts here after replacement.
+No HPHYS0298 prompts were superseded during execution.

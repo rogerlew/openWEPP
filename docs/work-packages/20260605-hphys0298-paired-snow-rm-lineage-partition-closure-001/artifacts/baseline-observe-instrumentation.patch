@@ -1,0 +1,102 @@
+diff --git a/src/contin.for b/src/contin.for
+index d2312925..00883110 100755
+--- a/src/contin.for
++++ b/src/contin.for
+@@ -846,6 +846,12 @@ c
+ 
+               if ((snodpy(iplane).gt.0.0).or.(tmin.le.0.0).or.
+      1            (frdp(iplane).gt.0.0)) then
++                 call wepp_observe('H298_GATE_A',year,sdate,iplane,
++     1             0,0,snodpy(iplane),tmin)
++                 call wepp_observe('H298_GATE_B',year,sdate,iplane,
++     1             0,0,frdp(iplane),rain(iplane))
++                 call wepp_observe('H298_GATE_C',year,sdate,iplane,
++     1             0,0,warain,xmxint(iplane))
+                  call winter(rain(iplane),snoflg)
+ 
+ c               Following code change from David Hall - dcf 3/7/2000
+@@ -859,6 +865,10 @@ c               if (rain(iplane).gt.0.0)
+                 wntflg(iplane) = 1
+                 if (wmelt(iplane).gt.0.0001) nomelt = 1
+                 if (warain.le.0.0) xmxint(iplane) = 0.0
++                call wepp_observe('H298_DRV_A',year,sdate,iplane,
++     1            0,0,rain(iplane),wmelt(iplane))
++                call wepp_observe('H298_DRV_B',year,sdate,iplane,
++     1            0,0,float(nomelt),xmxint(iplane))
+               else
+                 wntflg(iplane) = 0
+                 call sunmap(rcalsl,hday,dsunmp)
+diff --git a/src/watbal.for b/src/watbal.for
+index 9ea255b7..efa4183f 100755
+--- a/src/watbal.for
++++ b/src/watbal.for
+@@ -1022,6 +1022,12 @@ CAS
+ c
+         rm=(rain(iplane)+wmelt(iplane)+irdept(iplane)+iraplo(iplane))
+      1       *1000.
++        call wepp_observe('H298_WB_A',year,sdate,iplane,0,0,
++     1    rain(iplane),wmelt(iplane))
++        call wepp_observe('H298_WB_B',year,sdate,iplane,0,0,
++     1    irdept(iplane),iraplo(iplane))
++        call wepp_observe('H298_WB_C',year,sdate,iplane,0,0,
++     1    rm,runoff(iplane))
+ c
+ cd    Added by S. Dun, March 12, 2008
+ c     print out the water in soil form when frost exists
+diff --git a/src/watbal_hourly.for b/src/watbal_hourly.for
+index b9abce9a..e68e93fb 100755
+--- a/src/watbal_hourly.for
++++ b/src/watbal_hourly.for
+@@ -1081,6 +1081,12 @@ CAS
+ c
+         rm=(rain(iplane)+wmelt(iplane)+irdept(iplane)+iraplo(iplane))
+      1       *1000.
++        call wepp_observe('H298_WBH_A',year,sdate,iplane,0,0,
++     1    rain(iplane),wmelt(iplane))
++        call wepp_observe('H298_WBH_B',year,sdate,iplane,0,0,
++     1    irdept(iplane),iraplo(iplane))
++        call wepp_observe('H298_WBH_C',year,sdate,iplane,0,0,
++     1    rm,runoff(iplane))
+ c
+ cd    Added by S. Dun, March 12, 2008
+ c     print out the water in soil form when frost exists
+diff --git a/src/winter.for b/src/winter.for
+index 6ee33628..7b37ded7 100755
+--- a/src/winter.for
++++ b/src/winter.for
+@@ -407,6 +407,10 @@ c
+      1        float(wfr_qdm0+wfr_bnd),float(wfr_calls))
+ 	        endif
+ 	      endif
++          call wepp_observe('H298_RAW_A',year,sdate,iplane,0,hour,
++     1      hrmlt(hour,iplane),hrrain(hour))
++          call wepp_observe('H298_RAW_B',year,sdate,iplane,0,hour,
++     1      hrsnow(hour),snodpt(iplane))
+ 	      if(hour.lt.24) goto 500
+ c
+ c     END OF 500 HOURLY LOOP
+@@ -430,6 +434,13 @@ c
+            endif
+ c
+ 20     continue
++c
++       cfac = 0.0
++       if (pstvML.gt.0.0) cfac = 1.0 - ngtvML / pstvML
++       call wepp_observe('H298_NEG_A',year,sdate,iplane,0,0,
++     1   pstvML,ngtvML)
++       call wepp_observe('H298_NEG_B',year,sdate,iplane,0,0,
++     1   float(pstvhr),cfac)
+ c
+        if (pstvML .le. ngtvML) then
+               wmelt(iplane) = 0
+@@ -462,6 +473,10 @@ c
+ cd    End adding
+ 
+       wmelt(iplane)=totmel
++      call wepp_observe('H298_POST_A',year,sdate,iplane,0,0,
++     1  wmelt(iplane),totmel)
++      call wepp_observe('H298_POST_B',year,sdate,iplane,0,0,
++     1  snodpt(iplane),densgt)
+ c
+       return
+       end

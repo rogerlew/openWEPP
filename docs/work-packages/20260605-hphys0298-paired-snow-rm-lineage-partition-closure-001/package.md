@@ -1,6 +1,6 @@
 # HPHYS0298 Paired Snow/RM Lineage Partition Closure
 
-Status: queued
+Status: hold
 
 This work package is an autonomous ExecPlan and must remain a living document
 during execution. It follows `/workdir/openWEPP/docs/codex_exec_plans.md`.
@@ -24,24 +24,38 @@ boundary.
 ## Progress
 
 - [x] (2026-06-05) Scaffolded autonomous package and kickoff prompt.
-- [ ] Amend canonical `SC-*` contracts for paired lineage partition authority.
-- [ ] Add contract-derived HPHYS0298 guard test.
-- [ ] Record pre-implementation contract gate before instrumentation work.
-- [ ] Build isolated instrumented baseline diagnostics and prove observe
+- [x] Amend canonical `SC-*` contracts for paired lineage partition authority.
+- [x] Add contract-derived HPHYS0298 guard test.
+- [x] Record pre-implementation contract gate before instrumentation work.
+- [x] Build isolated instrumented baseline diagnostics and prove observe
   identity.
-- [ ] Add matching openWEPP lineage trace schema and capture all nine target
+- [x] Add matching openWEPP lineage trace schema and capture all nine target
   windows.
-- [ ] Run full H1..H39 semantic suite on the same HEAD used for traces.
-- [ ] Publish per-window first-divergence partition ledger.
-- [ ] Apply only contract-authorized production fixes, if first-divergence
+- [x] Run full H1..H39 semantic suite on the same HEAD used for traces.
+- [x] Publish per-window first-divergence partition ledger.
+- [x] Apply only contract-authorized production fixes, if first-divergence
   evidence makes one unambiguous and in scope.
-- [ ] Run validation gates, dual reviews, dual verification, disposition, and
+- [x] Run validation gates, dual reviews, dual verification, disposition, and
   worker handoff.
 
 ## Surprises & Discoveries
 
-- Observation: Pending execution.
-  Evidence: queued.
+- Observation: Baseline observe instrumentation in the detached
+  `/tmp/hphys0298_wepp_forest_obs` worktree is output-neutral for H1/H7/H39.
+  Evidence: `artifacts/baseline-observe-identity.md`.
+- Observation: All nine target windows first diverge before downstream storage
+  consumers at the hourly snow/rain forcing cut-point.
+  Evidence: `artifacts/paired-lineage-summary.md`.
+- Observation: The `OPENWEPP-DEFECTIVE` verdict is a porting-fidelity defect
+  against the unimpeached pinned-baseline precipitation-phase partition at
+  `/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`, not a generic
+  baseline-diff claim.
+  Evidence: `artifacts/claude-code-review-findings.md`.
+- Observation: No production physics patch was applied because the first
+  divergent snow/`RM` producer behavior requires a follow-on
+  baseline-authoritative winter hourly snow/rain forcing migration, not
+  compensation in WB13/WB17/WB18/WB19.
+  Evidence: `artifacts/disposition.md`.
 
 ## Decision Log
 
@@ -66,10 +80,16 @@ boundary.
 
 ## Outcomes & Retrospective
 
-Pending execution. The expected endpoint is a source-partition ledger with all
-nine windows assigned to `LEGACY-DEFECTIVE`, `OPENWEPP-DEFECTIVE`, or
-`UNRESOLVED`, plus the first divergent cut-point and evidence path for each
-window.
+HPHYS0298 executed through contract amendments, contract-derived tests, paired
+baseline/openWEPP diagnostics, full H1..H39 semantic metrics, dual review,
+dual verification, and disposition.
+
+Outcome: `HOLD`. The package met its diagnostic objective and assigned all nine
+target windows to `OPENWEPP-DEFECTIVE`, but it did not close production physics.
+The required follow-up is a baseline-authoritative winter hourly snow/rain
+forcing partition package scoped to the first divergent cut-point identified
+here, specifically the `winter.for:410-412` precipitation-phase partition
+lineage.
 
 ## Context and Orientation
 

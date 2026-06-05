@@ -1,0 +1,1515 @@
+[
+  {
+    "hillslope_id": 1,
+    "window": "first-abs-storage-ge-10mm",
+    "year": 2013,
+    "start_julian": 112,
+    "end_julian": 127,
+    "row_count": 16,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.009999999999990905,
+          "Total-Soil": 0.009999999999990905
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 15,
+    "baseline_raw_melt_sum_mm": 163.789058,
+    "baseline_positive_raw_melt_sum_mm": 163.789058,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 12.505690000000001,
+    "baseline_raw_snow_sum_mm": 68.569,
+    "baseline_post_wmelt_sum_mm": 176.29509000000002,
+    "baseline_wb_rm_observe_sum_mm": 176.29508999999996,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 161.49263768110612,
+    "openwepp_positive_raw_melt_sum_mm": 173.02602604780955,
+    "openwepp_negative_raw_melt_sum_mm": -11.533388366703441,
+    "openwepp_raw_rain_sum_mm": 14.114848484848485,
+    "openwepp_raw_snow_sum_mm": 6.856969696969698,
+    "openwepp_routed_melt_sum_mm": 161.3492423501855,
+    "openwepp_post_winter_rain_sum_mm": 0.26818181818181847,
+    "openwepp_wb13_rm_sum_mm": 161.6174241683673,
+    "openwepp_wb13_q_sum_mm": 6.938893903907228e-15,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 1.1102230246251565e-16,
+    "baseline_wat_rm_sum_mm": 176.29,
+    "candidate_wat_rm_sum_mm": 161.6174241683673,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 6.938893903907228e-15,
+    "baseline_wat_snow_sum_mm": 1269.5800000000002,
+    "candidate_wat_snow_sum_mm": 1222.4996119271975,
+    "candidate_total_soil_sum_mm": 6802.733354148804,
+    "baseline_total_soil_sum_mm": 7010.26,
+    "baseline_wb_rm_observe_minus_wat_mm": 0.005089999999967176,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 2.296420318893894,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": -1.609158484848484,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 61.7120303030303,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 14.94584764981451,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 14.677665831632652,
+    "observed_baseline_minus_candidate_rm_mm": 14.672575831632685,
+    "observed_baseline_minus_candidate_q_mm": -6.938893903907228e-15,
+    "observed_baseline_minus_candidate_snow_mm": 47.080388072802634,
+    "observed_baseline_minus_candidate_total_soil_mm": 207.526645851196,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 12.50569,
+        "openwepp_value_mm": 14.114848,
+        "delta_mm": -1.609158,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 68.569,
+        "openwepp_value_mm": 6.85697,
+        "delta_mm": 61.71203,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 163.789058,
+        "openwepp_value_mm": 161.492638,
+        "delta_mm": 2.29642,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 176.29509,
+        "openwepp_value_mm": 161.349242,
+        "delta_mm": 14.945848,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 12.50569,
+        "openwepp_value_mm": 0.268182,
+        "delta_mm": 12.237508,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 176.29509,
+        "openwepp_value_mm": 161.617424,
+        "delta_mm": 14.677666,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 1,
+    "window": "spring-2014",
+    "year": 2014,
+    "start_julian": 120,
+    "end_julian": 146,
+    "row_count": 27,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.009999999999990905,
+          "Total-Soil": 0.009999999999990905
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 26,
+    "baseline_raw_melt_sum_mm": 526.4656249999999,
+    "baseline_positive_raw_melt_sum_mm": 526.4656249999999,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 21.821910000000003,
+    "baseline_raw_snow_sum_mm": 81.2218,
+    "baseline_post_wmelt_sum_mm": 548.2876,
+    "baseline_wb_rm_observe_sum_mm": 550.9076,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 480.52640105173344,
+    "openwepp_positive_raw_melt_sum_mm": 508.8349879395867,
+    "openwepp_negative_raw_melt_sum_mm": -28.30858688785327,
+    "openwepp_raw_rain_sum_mm": 21.407310559006216,
+    "openwepp_raw_snow_sum_mm": 8.289211180124223,
+    "openwepp_routed_melt_sum_mm": 480.81393879507647,
+    "openwepp_post_winter_rain_sum_mm": 6.523478260869567,
+    "openwepp_wb13_rm_sum_mm": 487.33741705594605,
+    "openwepp_wb13_q_sum_mm": 2.6020852139652106e-14,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 3.552713678800501e-15,
+    "baseline_wat_rm_sum_mm": 550.9,
+    "candidate_wat_rm_sum_mm": 487.33741705594605,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 2.6020852139652106e-14,
+    "baseline_wat_snow_sum_mm": 8146.030000000001,
+    "candidate_wat_snow_sum_mm": 7578.062142688799,
+    "candidate_total_soil_sum_mm": 11803.776173622522,
+    "baseline_total_soil_sum_mm": 10257.05,
+    "baseline_wb_rm_observe_minus_wat_mm": 0.00760000000002492,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 45.93922394826649,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": 0.4145994409937863,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 72.93258881987578,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 67.47366120492353,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 63.570182944053954,
+    "observed_baseline_minus_candidate_rm_mm": 63.56258294405393,
+    "observed_baseline_minus_candidate_q_mm": -2.6020852139652106e-14,
+    "observed_baseline_minus_candidate_snow_mm": 567.9678573112014,
+    "observed_baseline_minus_candidate_total_soil_mm": -1546.7261736225228,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 21.82191,
+        "openwepp_value_mm": 21.407311,
+        "delta_mm": 0.414599,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 81.2218,
+        "openwepp_value_mm": 8.289211,
+        "delta_mm": 72.932589,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 526.465625,
+        "openwepp_value_mm": 480.526401,
+        "delta_mm": 45.939224,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 548.2876,
+        "openwepp_value_mm": 480.813939,
+        "delta_mm": 67.473661,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 21.82191,
+        "openwepp_value_mm": 6.523478,
+        "delta_mm": 15.298432,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 550.9076,
+        "openwepp_value_mm": 487.337417,
+        "delta_mm": 63.570183,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 1,
+    "window": "spring-2016",
+    "year": 2016,
+    "start_julian": 104,
+    "end_julian": 111,
+    "row_count": 8,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.009999999999990905,
+          "Total-Soil": 0.009999999999990905
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 6,
+    "baseline_raw_melt_sum_mm": 82.0224347,
+    "baseline_positive_raw_melt_sum_mm": 82.0224347,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 8.88999,
+    "baseline_raw_snow_sum_mm": 16.65,
+    "baseline_post_wmelt_sum_mm": 90.9129,
+    "baseline_wb_rm_observe_sum_mm": 90.91290000000001,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 69.14344492293915,
+    "openwepp_positive_raw_melt_sum_mm": 69.3682590863303,
+    "openwepp_negative_raw_melt_sum_mm": -0.22481416339114363,
+    "openwepp_raw_rain_sum_mm": 10.555000000000001,
+    "openwepp_raw_snow_sum_mm": 1.6650000000000003,
+    "openwepp_routed_melt_sum_mm": 75.64359325374349,
+    "openwepp_post_winter_rain_sum_mm": 8.673617379884035e-16,
+    "openwepp_wb13_rm_sum_mm": 75.64359325374349,
+    "openwepp_wb13_q_sum_mm": 0.0,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 0.0,
+    "baseline_wat_rm_sum_mm": 90.92,
+    "candidate_wat_rm_sum_mm": 75.64359325374349,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 0.0,
+    "baseline_wat_snow_sum_mm": 228.23000000000002,
+    "candidate_wat_snow_sum_mm": 159.06007042956793,
+    "candidate_total_soil_sum_mm": 5320.375502203156,
+    "baseline_total_soil_sum_mm": 4463.14,
+    "baseline_wb_rm_observe_minus_wat_mm": -0.007099999999994111,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 12.878989777060852,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": -1.6650100000000023,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 14.984999999999998,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 15.269306746256504,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 15.269306746256518,
+    "observed_baseline_minus_candidate_rm_mm": 15.276406746256512,
+    "observed_baseline_minus_candidate_q_mm": 0.0,
+    "observed_baseline_minus_candidate_snow_mm": 69.16992957043209,
+    "observed_baseline_minus_candidate_total_soil_mm": -857.2355022031561,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 8.88999,
+        "openwepp_value_mm": 10.555,
+        "delta_mm": -1.66501,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 16.65,
+        "openwepp_value_mm": 1.665,
+        "delta_mm": 14.985,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 82.022435,
+        "openwepp_value_mm": 69.143445,
+        "delta_mm": 12.87899,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 90.9129,
+        "openwepp_value_mm": 75.643593,
+        "delta_mm": 15.269307,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 8.88999,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": 8.88999,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 90.9129,
+        "openwepp_value_mm": 75.643593,
+        "delta_mm": 15.269307,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": 0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 7,
+    "window": "first-abs-storage-ge-10mm",
+    "year": 2013,
+    "start_julian": 112,
+    "end_julian": 127,
+    "row_count": 16,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 15,
+    "baseline_raw_melt_sum_mm": 182.03854581000002,
+    "baseline_positive_raw_melt_sum_mm": 182.03854581000002,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 12.204440000000002,
+    "baseline_raw_snow_sum_mm": 71.5815,
+    "baseline_post_wmelt_sum_mm": 194.2432,
+    "baseline_wb_rm_observe_sum_mm": 194.2432,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 182.20375211408253,
+    "openwepp_positive_raw_melt_sum_mm": 194.5338302776707,
+    "openwepp_negative_raw_melt_sum_mm": -12.330078163588158,
+    "openwepp_raw_rain_sum_mm": 13.813598484848484,
+    "openwepp_raw_snow_sum_mm": 7.158219696969699,
+    "openwepp_routed_melt_sum_mm": 182.54454980305547,
+    "openwepp_post_winter_rain_sum_mm": 0.268181818181818,
+    "openwepp_wb13_rm_sum_mm": 182.81273162123728,
+    "openwepp_wb13_q_sum_mm": 3.469446951953614e-15,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 3.3306690738754696e-16,
+    "baseline_wat_rm_sum_mm": 194.23999999999998,
+    "candidate_wat_rm_sum_mm": 182.81273162123728,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 3.469446951953614e-15,
+    "baseline_wat_snow_sum_mm": 1575.5899999999997,
+    "candidate_wat_snow_sum_mm": 1569.6991907181766,
+    "candidate_total_soil_sum_mm": 4973.173283595014,
+    "baseline_total_soil_sum_mm": 5159.77,
+    "baseline_wb_rm_observe_minus_wat_mm": 0.003200000000020964,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": -0.1652063040825169,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": -1.6091584848484821,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 64.42328030303031,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 11.698650196944527,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 11.430468378762725,
+    "observed_baseline_minus_candidate_rm_mm": 11.427268378762705,
+    "observed_baseline_minus_candidate_q_mm": -3.469446951953614e-15,
+    "observed_baseline_minus_candidate_snow_mm": 5.890809281823067,
+    "observed_baseline_minus_candidate_total_soil_mm": 186.59671640498618,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 12.20444,
+        "openwepp_value_mm": 13.813598,
+        "delta_mm": -1.609158,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 71.5815,
+        "openwepp_value_mm": 7.15822,
+        "delta_mm": 64.42328,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 182.038546,
+        "openwepp_value_mm": 182.203752,
+        "delta_mm": -0.165206,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 194.2432,
+        "openwepp_value_mm": 182.54455,
+        "delta_mm": 11.69865,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 12.20444,
+        "openwepp_value_mm": 0.268182,
+        "delta_mm": 11.936258,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 194.2432,
+        "openwepp_value_mm": 182.812732,
+        "delta_mm": 11.430468,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 7,
+    "window": "spring-2014",
+    "year": 2014,
+    "start_julian": 120,
+    "end_julian": 146,
+    "row_count": 27,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 27,
+    "baseline_raw_melt_sum_mm": 552.4675783440001,
+    "baseline_positive_raw_melt_sum_mm": 552.4675783440001,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 24.656990000000008,
+    "baseline_raw_snow_sum_mm": 80.6709,
+    "baseline_post_wmelt_sum_mm": 577.1245,
+    "baseline_wb_rm_observe_sum_mm": 577.1245,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 508.36591592447576,
+    "openwepp_positive_raw_melt_sum_mm": 538.3825435974187,
+    "openwepp_negative_raw_melt_sum_mm": -30.016627672942978,
+    "openwepp_raw_rain_sum_mm": 24.08240372670808,
+    "openwepp_raw_snow_sum_mm": 8.23411801242236,
+    "openwepp_routed_melt_sum_mm": 511.9674972965614,
+    "openwepp_post_winter_rain_sum_mm": 3.393478260869566,
+    "openwepp_wb13_rm_sum_mm": 515.360975557431,
+    "openwepp_wb13_q_sum_mm": 3.7730235602495554e-14,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 0.0,
+    "baseline_wat_rm_sum_mm": 577.1599999999999,
+    "candidate_wat_rm_sum_mm": 515.360975557431,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 3.7730235602495554e-14,
+    "baseline_wat_snow_sum_mm": 8957.939999999999,
+    "candidate_wat_snow_sum_mm": 8469.699356194002,
+    "candidate_total_soil_sum_mm": 8489.451464177238,
+    "baseline_total_soil_sum_mm": 8784.26,
+    "baseline_wb_rm_observe_minus_wat_mm": -0.03549999999984266,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 44.10166241952436,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": 0.5745862732919278,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 72.43678198757765,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 65.1570027034386,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 61.763524442569064,
+    "observed_baseline_minus_candidate_rm_mm": 61.79902444256891,
+    "observed_baseline_minus_candidate_q_mm": -3.7730235602495554e-14,
+    "observed_baseline_minus_candidate_snow_mm": 488.240643805997,
+    "observed_baseline_minus_candidate_total_soil_mm": 294.80853582276177,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 24.65699,
+        "openwepp_value_mm": 24.082404,
+        "delta_mm": 0.574586,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 80.6709,
+        "openwepp_value_mm": 8.234118,
+        "delta_mm": 72.436782,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 552.467578,
+        "openwepp_value_mm": 508.365916,
+        "delta_mm": 44.101662,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 577.1245,
+        "openwepp_value_mm": 511.967497,
+        "delta_mm": 65.157003,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 24.65699,
+        "openwepp_value_mm": 3.393478,
+        "delta_mm": 21.263512,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 577.1245,
+        "openwepp_value_mm": 515.360976,
+        "delta_mm": 61.763524,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 7,
+    "window": "spring-2016",
+    "year": 2016,
+    "start_julian": 104,
+    "end_julian": 111,
+    "row_count": 8,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 8,
+    "baseline_raw_melt_sum_mm": 143.7177707,
+    "baseline_positive_raw_melt_sum_mm": 143.7177707,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 8.88999,
+    "baseline_raw_snow_sum_mm": 16.65,
+    "baseline_post_wmelt_sum_mm": 152.6083,
+    "baseline_wb_rm_observe_sum_mm": 152.6083,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 129.28669418188295,
+    "openwepp_positive_raw_melt_sum_mm": 129.5426238256024,
+    "openwepp_negative_raw_melt_sum_mm": -0.25592964371943205,
+    "openwepp_raw_rain_sum_mm": 10.555000000000001,
+    "openwepp_raw_snow_sum_mm": 1.6650000000000003,
+    "openwepp_routed_melt_sum_mm": 135.7245736361005,
+    "openwepp_post_winter_rain_sum_mm": 8.673617379884035e-16,
+    "openwepp_wb13_rm_sum_mm": 135.7245736361005,
+    "openwepp_wb13_q_sum_mm": 3.469446951953614e-15,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 1.7763568394002505e-15,
+    "baseline_wat_rm_sum_mm": 152.61,
+    "candidate_wat_rm_sum_mm": 135.7245736361005,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 3.469446951953614e-15,
+    "baseline_wat_snow_sum_mm": 619.87,
+    "candidate_wat_snow_sum_mm": 509.0148063307931,
+    "candidate_total_soil_sum_mm": 3864.217989097086,
+    "baseline_total_soil_sum_mm": 3817.4900000000002,
+    "baseline_wb_rm_observe_minus_wat_mm": -0.0016999999999995907,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 14.431076518117038,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": -1.6650100000000023,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 14.984999999999998,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 16.883726363899513,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 16.883726363899513,
+    "observed_baseline_minus_candidate_rm_mm": 16.885426363899512,
+    "observed_baseline_minus_candidate_q_mm": -3.469446951953614e-15,
+    "observed_baseline_minus_candidate_snow_mm": 110.85519366920693,
+    "observed_baseline_minus_candidate_total_soil_mm": -46.72798909708581,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 8.88999,
+        "openwepp_value_mm": 10.555,
+        "delta_mm": -1.66501,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 16.65,
+        "openwepp_value_mm": 1.665,
+        "delta_mm": 14.985,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 143.717771,
+        "openwepp_value_mm": 129.286694,
+        "delta_mm": 14.431077,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 152.6083,
+        "openwepp_value_mm": 135.724574,
+        "delta_mm": 16.883726,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 8.88999,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": 8.88999,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 152.6083,
+        "openwepp_value_mm": 135.724574,
+        "delta_mm": 16.883726,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 39,
+    "window": "first-abs-storage-ge-10mm",
+    "year": 2013,
+    "start_julian": 97,
+    "end_julian": 112,
+    "row_count": 16,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 16,
+    "baseline_raw_melt_sum_mm": 21.502584,
+    "baseline_positive_raw_melt_sum_mm": 21.502584,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 30.769730999999997,
+    "baseline_raw_snow_sum_mm": 220.54073,
+    "baseline_post_wmelt_sum_mm": 52.2726,
+    "baseline_wb_rm_observe_sum_mm": 52.2726,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 37.64694892634793,
+    "openwepp_positive_raw_melt_sum_mm": 48.22815583344469,
+    "openwepp_negative_raw_melt_sum_mm": -10.581206907096753,
+    "openwepp_raw_rain_sum_mm": 47.24671608208502,
+    "openwepp_raw_snow_sum_mm": 21.71499716843259,
+    "openwepp_routed_melt_sum_mm": 40.90241511575335,
+    "openwepp_post_winter_rain_sum_mm": 0.6882867494824014,
+    "openwepp_wb13_rm_sum_mm": 41.59070186523575,
+    "openwepp_wb13_q_sum_mm": 4.3368086899420177e-16,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 1.3322676295501878e-15,
+    "baseline_wat_rm_sum_mm": 52.28,
+    "candidate_wat_rm_sum_mm": 41.59070186523575,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 4.3368086899420177e-16,
+    "baseline_wat_snow_sum_mm": 2357.54,
+    "candidate_wat_snow_sum_mm": 2323.9408458858525,
+    "candidate_total_soil_sum_mm": 3868.2204579362137,
+    "baseline_total_soil_sum_mm": 4031.2499999999995,
+    "baseline_wb_rm_observe_minus_wat_mm": -0.00740000000000407,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": -16.144364926347933,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": -16.476985082085026,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 198.8257328315674,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 11.370184884246648,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 10.681898134764246,
+    "observed_baseline_minus_candidate_rm_mm": 10.68929813476425,
+    "observed_baseline_minus_candidate_q_mm": -4.3368086899420177e-16,
+    "observed_baseline_minus_candidate_snow_mm": 33.599154114147495,
+    "observed_baseline_minus_candidate_total_soil_mm": 163.0295420637858,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrrain",
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 30.769731,
+        "openwepp_value_mm": 47.246716,
+        "delta_mm": -16.476985,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 220.54073,
+        "openwepp_value_mm": 21.714997,
+        "delta_mm": 198.825733,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 21.502584,
+        "openwepp_value_mm": 37.646949,
+        "delta_mm": -16.144365,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 52.2726,
+        "openwepp_value_mm": 40.902415,
+        "delta_mm": 11.370185,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 30.769731,
+        "openwepp_value_mm": 0.688287,
+        "delta_mm": 30.081444,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 52.2726,
+        "openwepp_value_mm": 41.590702,
+        "delta_mm": 10.681898,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 39,
+    "window": "spring-2014",
+    "year": 2014,
+    "start_julian": 120,
+    "end_julian": 146,
+    "row_count": 27,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 26,
+    "baseline_raw_melt_sum_mm": 524.9120396440001,
+    "baseline_positive_raw_melt_sum_mm": 524.9120396440001,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 22.050480000000004,
+    "baseline_raw_snow_sum_mm": 80.6709,
+    "baseline_post_wmelt_sum_mm": 546.9627,
+    "baseline_wb_rm_observe_sum_mm": 549.5827,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 476.8391001174181,
+    "openwepp_positive_raw_melt_sum_mm": 506.1583664204126,
+    "openwepp_negative_raw_melt_sum_mm": -29.319266302994542,
+    "openwepp_raw_rain_sum_mm": 21.46240372670808,
+    "openwepp_raw_snow_sum_mm": 8.23411801242236,
+    "openwepp_routed_melt_sum_mm": 477.1937998847499,
+    "openwepp_post_winter_rain_sum_mm": 6.650978260869566,
+    "openwepp_wb13_rm_sum_mm": 483.84477814561944,
+    "openwepp_wb13_q_sum_mm": 2.3418766925686896e-14,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 3.552713678800501e-15,
+    "baseline_wat_rm_sum_mm": 549.6,
+    "candidate_wat_rm_sum_mm": 483.84477814561944,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 2.3418766925686896e-14,
+    "baseline_wat_snow_sum_mm": 8093.53,
+    "candidate_wat_snow_sum_mm": 7501.171307368474,
+    "candidate_total_soil_sum_mm": 8709.856632772447,
+    "baseline_total_soil_sum_mm": 9683.8,
+    "baseline_wb_rm_observe_minus_wat_mm": -0.017299999999977445,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 48.07293952658193,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": 0.5880762732919251,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 72.43678198757765,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 69.76890011525012,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 65.7379218543806,
+    "observed_baseline_minus_candidate_rm_mm": 65.75522185438058,
+    "observed_baseline_minus_candidate_q_mm": -2.3418766925686896e-14,
+    "observed_baseline_minus_candidate_snow_mm": 592.3586926315256,
+    "observed_baseline_minus_candidate_total_soil_mm": 973.9433672275518,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 22.05048,
+        "openwepp_value_mm": 21.462404,
+        "delta_mm": 0.588076,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 80.6709,
+        "openwepp_value_mm": 8.234118,
+        "delta_mm": 72.436782,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 524.91204,
+        "openwepp_value_mm": 476.8391,
+        "delta_mm": 48.07294,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 546.9627,
+        "openwepp_value_mm": 477.1938,
+        "delta_mm": 69.7689,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 22.05048,
+        "openwepp_value_mm": 6.650978,
+        "delta_mm": 15.399502,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 549.5827,
+        "openwepp_value_mm": 483.844778,
+        "delta_mm": 65.737922,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  },
+  {
+    "hillslope_id": 39,
+    "window": "spring-2016",
+    "year": 2016,
+    "start_julian": 104,
+    "end_julian": 111,
+    "row_count": 8,
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_observe_identity_pass": true,
+    "baseline_observe_identity": {
+      "wat_bit_identical": true,
+      "target_window_semantic_identity": {
+        "release_row_widths": [
+          25
+        ],
+        "observe_row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "semantic_pass": true
+      },
+      "release_matches_stored_partition": {
+        "row_widths": [
+          25
+        ],
+        "target_rows_compared": 51,
+        "target_rows_missing": 0,
+        "max_abs_by_column_mm": {
+          "RM": 0.0,
+          "Q": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "Total-Soil": 0.0
+        },
+        "pass": true
+      }
+    },
+    "baseline_observe_missing_day_count": 0,
+    "openwepp_trace_missing_day_count": 0,
+    "openwepp_trace_missing_field_count": 0,
+    "openwepp_trace_missing_fields": [],
+    "baseline_gate_day_count": 6,
+    "baseline_raw_melt_sum_mm": 90.3551527,
+    "baseline_positive_raw_melt_sum_mm": 90.3551527,
+    "baseline_negative_raw_melt_sum_mm": 0.0,
+    "baseline_raw_rain_sum_mm": 8.88999,
+    "baseline_raw_snow_sum_mm": 16.65,
+    "baseline_post_wmelt_sum_mm": 99.245,
+    "baseline_wb_rm_observe_sum_mm": 99.245,
+    "baseline_wb_q_observe_sum_mm": 0.0,
+    "openwepp_raw_melt_sum_mm": 76.80350976911527,
+    "openwepp_positive_raw_melt_sum_mm": 77.04689578497053,
+    "openwepp_negative_raw_melt_sum_mm": -0.24338601585525438,
+    "openwepp_raw_rain_sum_mm": 10.555000000000001,
+    "openwepp_raw_snow_sum_mm": 1.6650000000000003,
+    "openwepp_routed_melt_sum_mm": 83.28983730227469,
+    "openwepp_post_winter_rain_sum_mm": 8.673617379884035e-16,
+    "openwepp_wb13_rm_sum_mm": 83.28983730227469,
+    "openwepp_wb13_q_sum_mm": 1.734723475976807e-15,
+    "openwepp_wb13_rm_identity_abs_sum_mm": 1.7763568394002505e-15,
+    "baseline_wat_rm_sum_mm": 99.22999999999999,
+    "candidate_wat_rm_sum_mm": 83.28983730227469,
+    "baseline_wat_q_sum_mm": 0.0,
+    "candidate_wat_q_sum_mm": 1.734723475976807e-15,
+    "baseline_wat_snow_sum_mm": 270.66999999999996,
+    "candidate_wat_snow_sum_mm": 196.1390518318957,
+    "candidate_total_soil_sum_mm": 3600.876234239261,
+    "baseline_total_soil_sum_mm": 3650.4700000000003,
+    "baseline_wb_rm_observe_minus_wat_mm": 0.01500000000001478,
+    "baseline_raw_melt_minus_openwepp_raw_melt_mm": 13.55164293088474,
+    "baseline_raw_rain_minus_openwepp_raw_rain_mm": -1.6650100000000023,
+    "baseline_raw_snow_minus_openwepp_raw_snow_mm": 14.984999999999998,
+    "baseline_post_wmelt_minus_openwepp_routed_melt_mm": 15.955162697725314,
+    "baseline_wb_rm_observe_minus_openwepp_wb13_rm_mm": 15.955162697725314,
+    "observed_baseline_minus_candidate_rm_mm": 15.940162697725299,
+    "observed_baseline_minus_candidate_q_mm": -1.734723475976807e-15,
+    "observed_baseline_minus_candidate_snow_mm": 74.53094816810426,
+    "observed_baseline_minus_candidate_total_soil_mm": 49.59376576073919,
+    "first_divergent_cut_point": "hourly-forcing",
+    "verdict": "OPENWEPP-DEFECTIVE",
+    "verdict_reason": "Hourly rain/snow forcing reaching the snow producer differs before raw melt, post-winter driver publication, and storage consumers.",
+    "first_divergent_symbols": [
+      "hrsnow"
+    ],
+    "source_provenance": [
+      {
+        "canonical_symbol": "hrrain",
+        "openwepp_symbol": "snow_hourly_rain_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 8.88999,
+        "openwepp_value_mm": 10.555,
+        "delta_mm": -1.66501,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4530"
+      },
+      {
+        "canonical_symbol": "hrsnow",
+        "openwepp_symbol": "snow_hourly_snowfall_water_equiv_sum_m",
+        "unit": "mm",
+        "baseline_value_mm": 16.65,
+        "openwepp_value_mm": 1.665,
+        "delta_mm": 14.985,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:412",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4606"
+      },
+      {
+        "canonical_symbol": "hrmlt",
+        "openwepp_symbol": "snow_hourly_melt_raw_m",
+        "unit": "mm",
+        "baseline_value_mm": 90.355153,
+        "openwepp_value_mm": 76.80351,
+        "delta_mm": 13.551643,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:410",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4540"
+      },
+      {
+        "canonical_symbol": "wmelt",
+        "openwepp_symbol": "snow_routed_melt_m",
+        "unit": "mm",
+        "baseline_value_mm": 99.245,
+        "openwepp_value_mm": 83.289837,
+        "delta_mm": 15.955163,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/winter.for:476",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4616"
+      },
+      {
+        "canonical_symbol": "rain",
+        "openwepp_symbol": "snow_post_winter_rain_m",
+        "unit": "mm",
+        "baseline_value_mm": 8.88999,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": 8.88999,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/contin.for:847",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4618"
+      },
+      {
+        "canonical_symbol": "RM",
+        "openwepp_symbol": "wb13_rm_mm",
+        "unit": "mm",
+        "baseline_value_mm": 99.245,
+        "openwepp_value_mm": 83.289837,
+        "delta_mm": 15.955163,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1084",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4771"
+      },
+      {
+        "canonical_symbol": "Q",
+        "openwepp_symbol": "wb13_q_mm",
+        "unit": "mm",
+        "baseline_value_mm": 0.0,
+        "openwepp_value_mm": 0.0,
+        "delta_mm": -0.0,
+        "baseline_source_path": "/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1088",
+        "openwepp_source_path": "crates/openwepp-runner/src/hillslope/mod.rs:4772"
+      }
+    ],
+    "next_action": "Open follow-on package to migrate baseline-authoritative hourly snow/rain forcing partition into openWEPP winter producer inputs.",
+    "prohibited_compensation_note": "Closed Q/WB13 identity only excludes runoff/storage compensation as first source; it is not acceptance authority for WB17/WB18/WB19 residuals."
+  }
+]

@@ -1,5 +1,5 @@
 # Active Prompts
 
-Status: queued
+Status: complete
 
-Run `hphys0298_kickoff_agent_prompt.md` for package-end-to-end execution.
+`hphys0298_kickoff_agent_prompt.md` was used for package-end-to-end execution.

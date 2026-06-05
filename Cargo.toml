@@ -472,6 +472,10 @@ name = "hphys0297_snow_rm_defect_ledger_contract"
 path = "tests/integration/hphys0297_snow_rm_defect_ledger_contract.rs"
 
 [[test]]
+name = "hphys0298_paired_lineage_partition_contract"
+path = "tests/integration/hphys0298_paired_lineage_partition_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

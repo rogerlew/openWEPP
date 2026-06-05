@@ -1,8 +1,9 @@
 # HPHYS0298 Artifacts
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: static+ran
 
-This directory stores HPHYS0298 execution evidence. Every artifact must label
-evidence as `Static:` or `Ran:` when execution begins.
+This directory stores HPHYS0298 execution evidence. Package execution populated
+the required contract, diagnostic, review, verification, gate, disposition, and
+handoff artifacts.
