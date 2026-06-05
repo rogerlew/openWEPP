@@ -241,6 +241,7 @@ lateral/drainage).
 | INV-WATBAL-068 | HPHYS0293 snow producer versus post-ingress storage attribution invariant: after HPHYS0292 demonstrates `Q` parity and WB12 capacity closure, daily `Total-Soil`/`SoilWaterTotal` attribution must first classify `Snow-Water`/`RM` timing from snow producer evidence (`hrmelt_raw`, redistributed melt, retained/released rain, runtime SWE/depth/density before/after, WB13 publication). A storage/percolation/lateral package may proceed only after the snow producer is either corrected or explicitly excluded by trace evidence. Corrected negative-melt state authority may explain pinned-baseline snowpack comparator residuals without authorizing empirical compensation in WB18/WB19/WB17. | governance-hold | INV-WATBAL-067, SC-SNOWFREEZE-001#INV-SNOWFREEZE-026, SC-RUNOFFPART-001#INV-RUNOFFPART-023, REF-WATBAL-LEGACY-WMELT-INFIL, REF-SNOWFREEZE-WEPPFOREST-WINTER-NEGMLT-FIX | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-069 | HPHYS0294 post-ingress storage/percolation/lateral attribution invariant: with HPHYS0293 snow producer residuals carried as excluded comparator differences and HPHYS0292 `Q` parity closed, daily `Total-Soil`/`SoilWaterTotal` residual ownership must consume WB18/WB19 trace evidence before production edits: aggregate `watcon` identity, same-pass infiltration ingress, `D=Pe`, per-layer `pei`, WB19 lateral potential/target/realized/unrealized terms, and cumulative snow/`RM` residual masks. Mixed residual direction across H1/H7/H39 is not sufficient proof of a WB18/WB19 defect without row-level magnitude accounting. | governance-hold | INV-WATBAL-068, INV-WATBAL-061, SC-PERC-001#INV-PERC-019, SC-SNOWFREEZE-001#INV-SNOWFREEZE-026, SC-RUNOFFPART-001#INV-RUNOFFPART-023 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-070 | HPHYS0295 cumulative storage-budget ownership invariant: after HPHYS0294 closes local WB18 aggregate identity, `D=Pe`, and WB19 target/unrealized lineage, H1/H7/H39 `Total-Soil`/`SoilWaterTotal` residual ownership must be assigned from cumulative row-to-row accounting across candidate/baseline storage deltas, `Ep`, `Es`, `Er`, `D`, `latqcc`, `Q`, `RM`, `Snow-Water`, WB18/WB19 trace identities, and HPHYS0293 excluded snow-producer masks. Production edits to WB17, WB18, WB19, or WB13 are invalid until the cumulative budget proves a process owner that survives per-day timing and excluded snow/`RM` residual separation. | governance-hold | INV-WATBAL-069, INV-WATBAL-068, SC-EVAP-001#INV-EVAP-027, SC-PERC-001#INV-PERC-019, SC-SUBHYD-001#INV-SUBHYD-031 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-071 | HPHYS0296 snow/`RM` acceptance invariant: after cumulative accounting assigns dominant residual ownership to snow/`RM`, the package may accept a residual as semantic-not-bit divergence only when corrected-negative-melt evidence explains the candidate/baseline `RM`/`Snow-Water` difference and candidate WB13 publication identity plus snow-state closure remain internally closed. When dominant windows lack material negative raw melt and instead show internally closed candidate `RM`/`Snow-Water` publication with large candidate/baseline magnitude/timing differences, water-balance closure remains `HOLD` on snow/winter producer migration or comparator-authority alignment. No WB17/WB18/WB19/WB13 downstream compensation is allowed. | governance-hold | INV-WATBAL-070, INV-WATBAL-068, SC-SNOWFREEZE-001#INV-SNOWFREEZE-027, SC-RUNOFFPART-001#INV-RUNOFFPART-024 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -316,6 +317,7 @@ lateral/drainage).
 | `INV-WATBAL-068` | governance | Snow producer versus post-ingress storage classifier after HPHYS0292 `Q` closure | Explicit `HOLD` when WB18/WB19/WB17 ownership is asserted before snow producer `Snow-Water`/`RM` timing is corrected or excluded by trace evidence | HPHYS0293 winter melt magnitude/timing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-069` | governance | Post-ingress storage/percolation/lateral classifier with snow-excluded residual masks | Explicit `HOLD` when storage/lateral/percolation ownership is asserted from comparator deltas alone or without WB18/WB19 trace-grade magnitude accounting | HPHYS0294 post-ingress storage/percolation/lateral gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-070` | governance | Cumulative H1/H7/H39 row-to-row storage-budget classifier across ET, percolation, lateral, `Q`, `RM`, `Snow-Water`, WB18/WB19 identities, and excluded snow masks | Explicit `HOLD` when production ownership is asserted before cumulative budget evidence proves a process owner that survives timing and excluded residual separation | HPHYS0295 cumulative storage-budget ownership gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-071` | governance | HPHYS0296 snow/`RM` semantic acceptance classifier joining cumulative budget dominance, corrected-negative-melt evidence, candidate `RM` publication identity, and snow-state closure | Explicit `HOLD` unless corrected-negative-melt evidence explains the residual or a baseline-authoritative snow/winter producer defect is identified; downstream compensation remains invalid | HPHYS0296 snow/`RM` acceptance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -509,6 +511,12 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   `Es`, `Er`, `D`, `latqcc`, `Q`, `RM`, `Snow-Water`, WB18/WB19 identities,
   and excluded snow masks before asserting a WB17/WB18/WB19/WB13 production
   owner for H1/H7/H39 residuals.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-020: HPHYS0296 closure must preserve snow/`RM` acceptance
+  evidence across corrected negative-melt lineage, runtime SWE closure, WB13
+  `RM`/`Snow-Water` publication identity, `Q` closure, and cumulative storage
+  windows before accepting semantic divergence or holding for producer
+  migration.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -2068,6 +2076,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `116` | `Codex` | HPHYS0296 amendment: added snow/`RM` semantic acceptance gate requiring corrected-negative-melt explanation or producer-migration hold, with downstream compensation prohibited. |
 | `2026-06-05` | `115` | `Codex` | HPHYS0295 amendment: added cumulative row-to-row storage-budget ownership authority requiring ET/percolation/lateral/snow-mask accounting before WB17/WB18/WB19/WB13 production edits. |
 | `2026-06-05` | `114` | `Codex` | HPHYS0294 amendment: added post-ingress storage/percolation/lateral attribution authority requiring WB18/WB19 trace-grade magnitude accounting and snow-excluded residual masks before production edits. |
 | `2026-06-05` | `110` | `Codex` | HPHYS0291 amendment: added same-day snow publication lifecycle authority from runoff producer fluxes through WB13 and required trace evidence before assigning remaining residual ownership. |

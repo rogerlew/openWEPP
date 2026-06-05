@@ -464,6 +464,10 @@ name = "hphys0295_cumulative_storage_budget_contract"
 path = "tests/integration/hphys0295_cumulative_storage_budget_contract.rs"
 
 [[test]]
+name = "hphys0296_snow_rm_acceptance_authority_contract"
+path = "tests/integration/hphys0296_snow_rm_acceptance_authority_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

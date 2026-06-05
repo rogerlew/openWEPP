@@ -1,5 +1,15 @@
 # Work Packages
 
+- `20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/`
+  - Purpose: classify H1/H7/H39 snow/`RM` producer residuals as accepted
+    corrected-negative-melt semantic divergence or unresolved
+    baseline-authoritative winter/snow/rain/melt producer migration debt before
+    any downstream hydrology compensation.
+  - Status: executed-hold; contracts/tests and full H1..H39 diagnostics ran,
+    six target windows classify as corrected-negative-melt candidates, all
+    spring-2016 target windows remain snow/winter producer magnitude/timing
+    holds, and no downstream WB17/WB18/WB19/WB13 compensation patch is
+    authorized.
 - `20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/`
   - Purpose: diagnose cumulative row-to-row storage-budget ownership across
     WB17 `Ep`/`Es`, WB18 `D`, WB19 `latqcc`, and HPHYS0293 excluded snow/`RM`
