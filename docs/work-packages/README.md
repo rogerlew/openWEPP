@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0292-spring-snowmelt-infiltration-capacity-lineage-closure-001/`
+  - Purpose: diagnose and correct baseline-authoritative spring snowmelt
+    producer partitioning upstream of WB13, separating melt magnitude/timing
+    from WB12 infiltration-capacity and `Q` ownership for H1/H7/H39.
+  - Status: executed-hold; WB14 now conserves routed snowmelt mass while using
+    producer hourly melt timing, target H1/H7/H39 spring rows infiltrate routed
+    melt before residual `Q`, and full H1..H39 runtime passes with `Q` parity
+    `39/39`, but semantic parity remains `0/39` and dual independent
+    review/verification was not dispatched under current tool policy.
 - `20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/`
   - Purpose: guard the same-day snow publication flux lifecycle from runoff
     reconciliation through WB13, then localize remaining H1/H7/H39

@@ -488,6 +488,7 @@ impl Wb11HydrologyKernel {
             &intensities,
             rainfall_scale,
             runoff_snow_term,
+            &snow_coupling.hourly_state,
             irrigation_rate_m_per_s,
             irrigation_duration_s,
         )?;
@@ -4024,6 +4025,7 @@ impl Wb11HydrologyKernel {
             &intensities,
             rainfall_scale,
             runoff_snow_term,
+            &snow_coupling.hourly_state,
             irrigation_rate_m_per_s,
             irrigation_duration_s,
         )?;
@@ -4146,6 +4148,24 @@ impl Wb11HydrologyKernel {
                 None,
             ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_RECONCILED, q_runoff, Some(0.0), None),
+            WritebackField::bounded(
+                BoundarySymbol::from("wb14_soil_conductivity_m_s"),
+                soil_conductivity,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from("wb14_effective_conductivity_m_s"),
+                infiltration_conductivity,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from("wb14_matric_potential_m"),
+                matric_potential,
+                Some(0.0),
+                None,
+            ),
             WritebackField::bounded(
                 IRRIG_SYMBOL_RUNTIME_SOURCE,
                 active_irrigation_event.map_or(0.0, |event| event.source.as_scalar()),

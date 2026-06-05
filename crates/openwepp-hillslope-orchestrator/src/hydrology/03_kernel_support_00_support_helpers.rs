@@ -2658,6 +2658,20 @@ impl Wb11HydrologyKernel {
         (overlap_end - overlap_start).max(0.0)
     }
 
+    fn bounded_interval_overlap_duration(
+        interval_start: f64,
+        interval_end: f64,
+        active_start: f64,
+        active_end: f64,
+    ) -> f64 {
+        if active_end <= active_start {
+            return 0.0;
+        }
+        let overlap_start = interval_start.max(active_start);
+        let overlap_end = interval_end.min(active_end);
+        (overlap_end - overlap_start).max(0.0)
+    }
+
     fn resolve_active_snow_coupling(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -4337,6 +4351,7 @@ impl Wb11HydrologyKernel {
         intensities: &[f64],
         rainfall_scale: f64,
         snowmelt_depth_m: f64,
+        snowmelt_hourly_state: &[SnowHourlyState],
         irrigation_rate_m_per_s: f64,
         irrigation_duration_s: f64,
     ) -> Result<f64, Wb11HydrologyKernelGuardError> {
@@ -4347,25 +4362,74 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
-        let event_duration = if times.len() >= 2 {
-            times[times.len() - 1] - times[0]
-        } else {
-            0.0
-        };
-        if snowmelt_depth_m > WB11_ZERO_THRESHOLD && event_duration <= WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_HYETOGRAPH_NINTEN),
-                value: event_duration,
-                minimum: Some(WB11_ZERO_THRESHOLD),
-                maximum: None,
-            });
+
+        let mut snowmelt_shape_scale = 0.0_f64;
+        if snowmelt_depth_m > WB11_ZERO_THRESHOLD {
+            let hourly_melt_total = snowmelt_hourly_state
+                .iter()
+                .try_fold(0.0_f64, |total, hourly| {
+                    if !hourly.melt_m.is_finite() {
+                        return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                            phase_class,
+                            symbol: Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hourly.hour),
+                            value: hourly.melt_m,
+                        });
+                    }
+                    if hourly.melt_m < -WB11_ZERO_THRESHOLD {
+                        return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                            phase_class,
+                            symbol: Self::hourly_symbol(SNOW_HOURLY_MELT_ROOT, hourly.hour),
+                            value: hourly.melt_m,
+                            minimum: Some(0.0),
+                            maximum: None,
+                        });
+                    }
+                    Ok(total + hourly.melt_m.max(0.0))
+                })?;
+            if hourly_melt_total <= WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from("snow.routed_melt_m"),
+                    value: hourly_melt_total,
+                    minimum: Some(WB11_ZERO_THRESHOLD),
+                    maximum: None,
+                });
+            }
+            snowmelt_shape_scale = snowmelt_depth_m / hourly_melt_total;
         }
 
+        let mut breakpoints = Vec::new();
+        breakpoints.extend(times.iter().copied().filter(|time| time.is_finite()));
+        if snowmelt_depth_m > WB11_ZERO_THRESHOLD {
+            for hour in 0..=SIMIMPL29_HOURS_PER_DAY {
+                breakpoints.push(Self::diagnostic_count_to_f64(hour) * 3_600.0);
+            }
+        }
+        if irrigation_rate_m_per_s > WB11_ZERO_THRESHOLD {
+            breakpoints.push(0.0);
+            breakpoints.push(irrigation_duration_s.max(0.0));
+        }
+        breakpoints.sort_by(f64::total_cmp);
+        breakpoints.dedup_by(|left, right| (*left - *right).abs() <= WB11_ZERO_THRESHOLD);
+
         let mut cumulative_infiltration = 0.0_f64;
-        for index in 0..times.len().saturating_sub(1) {
-            let interval_duration = times[index + 1] - times[index];
-            let scaled_rainfall_rate = intensities[index] * rainfall_scale;
+        for segment_index in 0..breakpoints.len().saturating_sub(1) {
+            let segment_start = breakpoints[segment_index];
+            let segment_end = breakpoints[segment_index + 1];
+            let interval_duration = segment_end - segment_start;
+            if interval_duration <= WB11_ZERO_THRESHOLD {
+                continue;
+            }
+
+            let mut scaled_rainfall_rate = 0.0_f64;
+            for index in 0..times.len().saturating_sub(1) {
+                if segment_start >= times[index] - WB11_ZERO_THRESHOLD
+                    && segment_end <= times[index + 1] + WB11_ZERO_THRESHOLD
+                {
+                    scaled_rainfall_rate = intensities[index] * rainfall_scale;
+                    break;
+                }
+            }
             let interval_rainfall = scaled_rainfall_rate * interval_duration;
             if !interval_rainfall.is_finite() || interval_rainfall < -WB11_ZERO_THRESHOLD {
                 return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
@@ -4377,11 +4441,24 @@ impl Wb11HydrologyKernel {
                 });
             }
 
-            let interval_snowmelt_depth = if snowmelt_depth_m > WB11_ZERO_THRESHOLD {
-                snowmelt_depth_m * interval_duration / event_duration
-            } else {
-                0.0
-            };
+            let mut interval_snowmelt_depth = 0.0_f64;
+            if snowmelt_depth_m > WB11_ZERO_THRESHOLD {
+                for hourly in snowmelt_hourly_state {
+                    let hour_start =
+                        Self::diagnostic_count_to_f64(hourly.hour.saturating_sub(1)) * 3_600.0;
+                    let hour_end = Self::diagnostic_count_to_f64(hourly.hour) * 3_600.0;
+                    let overlap = Self::bounded_interval_overlap_duration(
+                        segment_start,
+                        segment_end,
+                        hour_start,
+                        hour_end,
+                    );
+                    if overlap > WB11_ZERO_THRESHOLD {
+                        interval_snowmelt_depth +=
+                            hourly.melt_m.max(0.0) * snowmelt_shape_scale * overlap / 3_600.0;
+                    }
+                }
+            }
             if !interval_snowmelt_depth.is_finite()
                 || interval_snowmelt_depth < -WB11_ZERO_THRESHOLD
             {
@@ -4395,8 +4472,8 @@ impl Wb11HydrologyKernel {
             }
 
             let interval_irrigation_duration = Self::interval_overlap_duration(
-                times[index],
-                times[index + 1],
+                segment_start,
+                segment_end,
                 irrigation_duration_s,
             );
             let interval_irrigation_depth = irrigation_rate_m_per_s * interval_irrigation_duration;

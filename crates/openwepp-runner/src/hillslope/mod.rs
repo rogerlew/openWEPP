@@ -320,6 +320,18 @@ struct Hphys0245TraceRow {
     wb11_soil_water_m: Option<f64>,
     wb11_soil_water_mm: Option<f64>,
     wb12_infiltration_m: Option<f64>,
+    wb12_rainfall_input_m: Option<f64>,
+    wb12_runon_input_m: Option<f64>,
+    wb12_depression_storage_delta_m: Option<f64>,
+    wb12_partition_liquid_supply_m: Option<f64>,
+    wb12_partition_residual_before_q_m: Option<f64>,
+    wb14_soil_conductivity_m_s: Option<f64>,
+    wb14_frost_infcap_m_s: Option<f64>,
+    wb14_effective_conductivity_m_s: Option<f64>,
+    wb14_soil_layer_depth_m: Option<f64>,
+    wb14_theta_residual: Option<f64>,
+    wb14_theta_field_capacity: Option<f64>,
+    wb14_matric_potential_m: Option<f64>,
     wb18_theta_sum_m: Option<f64>,
     wb18_theta_layers_m: BTreeMap<String, f64>,
     wb18_thetdr_layers: BTreeMap<String, f64>,
@@ -381,6 +393,7 @@ struct Hphys0245TraceRow {
     snow_runtime_swe_closure_error_m: Option<f64>,
     wb13_p_mm: Option<f64>,
     wb13_rm_mm: Option<f64>,
+    wb13_q_mm: Option<f64>,
     wb13_snow_water_mm: Option<f64>,
     wb11_minus_theta_sum_m: Option<f64>,
     pl_sumgdd: Option<f64>,
@@ -502,7 +515,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v14";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v15";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -4449,6 +4462,35 @@ fn build_hphys0245_trace_row(
     let pei_sum = hphys0245_sum_or_none(&pei_layers);
     let wb11_soil_water = runtime_surface_symbol_value(runtime_surface, "wb11_soil_water");
     let wb12_infiltration_m = runtime_surface_symbol_value(runtime_surface, "wb12_infiltration");
+    let wb12_rainfall_input_m =
+        runtime_surface_symbol_value(runtime_surface, "wb12_rainfall_input");
+    let wb12_runon_input_m = runtime_surface_symbol_value(runtime_surface, "wb12_runon_input");
+    let wb12_depression_storage_delta_m =
+        runtime_surface_symbol_value(runtime_surface, "wb12_depression_storage_delta");
+    let wb14_soil_conductivity_m_s =
+        runtime_surface_symbol_value(runtime_surface, "wb14_soil_conductivity_m_s")
+            .or_else(|| runtime_surface_symbol_value(runtime_surface, "ssc"));
+    let wb14_frost_infcap_m_s =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_infcap_frz");
+    let wb14_effective_conductivity_m_s =
+        runtime_surface_symbol_value(runtime_surface, "wb14_effective_conductivity_m_s")
+            .or_else(|| wb14_frost_infcap_m_s.or(wb14_soil_conductivity_m_s));
+    let wb14_soil_layer_depth_m = runtime_surface_symbol_value(runtime_surface, "dg");
+    let wb14_theta_residual = runtime_surface_symbol_value(runtime_surface, "thetdr");
+    let wb14_theta_field_capacity = runtime_surface_symbol_value(runtime_surface, "thetfc");
+    let wb14_matric_potential_m =
+        runtime_surface_symbol_value(runtime_surface, "wb14_matric_potential_m").or_else(
+            || match (
+                wb14_soil_layer_depth_m,
+                wb14_theta_residual,
+                wb14_theta_field_capacity,
+            ) {
+                (Some(depth), Some(theta_residual), Some(theta_field_capacity)) => {
+                    Some(depth * (theta_field_capacity - theta_residual).max(0.0))
+                }
+                _ => None,
+            },
+        );
     let wb18_recomputed_soil_water_m = hphys0245_recompute_wb18_soil_water(
         &theta_layers,
         &wb18_thetdr_layers,
@@ -4575,6 +4617,26 @@ fn build_hphys0245_trace_row(
         runtime_surface_flux_symbol_value(runtime_surface, "snow.routed_melt_m");
     let snow_post_winter_rain_m =
         runtime_surface_flux_symbol_value(runtime_surface, "snow.post_winter_rain_m");
+    let wb12_partition_liquid_supply_m = match (
+        snow_post_winter_rain_m,
+        snow_routed_melt_m,
+        wb12_runon_input_m,
+    ) {
+        (Some(post_winter_rain), Some(routed_melt), Some(runon)) => {
+            Some(post_winter_rain + routed_melt + runon)
+        }
+        _ => None,
+    };
+    let wb12_partition_residual_before_q_m = match (
+        wb12_partition_liquid_supply_m,
+        wb12_infiltration_m,
+        wb12_depression_storage_delta_m,
+    ) {
+        (Some(supply), Some(infiltration), Some(depression_storage_delta)) => {
+            Some(supply - infiltration - depression_storage_delta)
+        }
+        _ => None,
+    };
     let snow_runtime_swe_m = runtime_surface_symbol_value(runtime_surface, "snow.runtime_swe");
     let snow_runtime_depth_m =
         runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m");
@@ -4634,6 +4696,18 @@ fn build_hphys0245_trace_row(
         wb11_soil_water_m: wb11_soil_water,
         wb11_soil_water_mm: wb11_soil_water.map(|value| value * 1_000.0),
         wb12_infiltration_m,
+        wb12_rainfall_input_m,
+        wb12_runon_input_m,
+        wb12_depression_storage_delta_m,
+        wb12_partition_liquid_supply_m,
+        wb12_partition_residual_before_q_m,
+        wb14_soil_conductivity_m_s,
+        wb14_frost_infcap_m_s,
+        wb14_effective_conductivity_m_s,
+        wb14_soil_layer_depth_m,
+        wb14_theta_residual,
+        wb14_theta_field_capacity,
+        wb14_matric_potential_m,
         wb18_theta_sum_m: theta_sum,
         wb18_theta_layers_m: theta_layers,
         wb18_thetdr_layers,
@@ -4695,6 +4769,7 @@ fn build_hphys0245_trace_row(
         snow_runtime_swe_closure_error_m,
         wb13_p_mm: wb13_wat.map(|row| row.p),
         wb13_rm_mm: wb13_wat.map(|row| row.rm),
+        wb13_q_mm: wb13_wat.map(|row| row.q),
         wb13_snow_water_mm: wb13_wat.map(|row| row.snow_water),
         wb11_minus_theta_sum_m,
         pl_sumgdd: runtime_surface_symbol_value(runtime_surface, "sumgdd"),
@@ -10068,6 +10143,18 @@ mod tests {
             wb11_soil_water_m: Some(0.1),
             wb11_soil_water_mm: Some(100.0),
             wb12_infiltration_m: Some(0.003),
+            wb12_rainfall_input_m: Some(0.004),
+            wb12_runon_input_m: Some(0.001),
+            wb12_depression_storage_delta_m: Some(0.0),
+            wb12_partition_liquid_supply_m: Some(0.008),
+            wb12_partition_residual_before_q_m: Some(0.005),
+            wb14_soil_conductivity_m_s: Some(2.0e-6),
+            wb14_frost_infcap_m_s: None,
+            wb14_effective_conductivity_m_s: Some(2.0e-6),
+            wb14_soil_layer_depth_m: Some(0.40),
+            wb14_theta_residual: Some(0.05),
+            wb14_theta_field_capacity: Some(0.20),
+            wb14_matric_potential_m: Some(0.06),
             wb18_theta_sum_m: Some(0.08),
             wb18_theta_layers_m: BTreeMap::from([("0001".to_string(), 0.08)]),
             wb18_thetdr_layers: BTreeMap::from([("0001".to_string(), 0.05)]),
@@ -10129,6 +10216,7 @@ mod tests {
             snow_runtime_swe_closure_error_m: Some(0.0),
             wb13_p_mm: Some(10.0),
             wb13_rm_mm: Some(2.0),
+            wb13_q_mm: Some(1.5),
             wb13_snow_water_mm: Some(420.0),
             wb11_minus_theta_sum_m: Some(0.02),
             pl_sumgdd: Some(42.0),
@@ -10234,12 +10322,17 @@ mod tests {
         assert_eq!(document["snow_hourly_snowfall_water_equiv_sum_m"], 0.001);
         assert_eq!(document["snow_hourly_rain_released_sum_m"], 0.0);
         assert_eq!(document["wb12_infiltration_m"], 0.003);
+        assert_eq!(document["wb12_partition_liquid_supply_m"], 0.008);
+        assert_eq!(document["wb12_partition_residual_before_q_m"], 0.005);
+        assert_eq!(document["wb14_effective_conductivity_m_s"], 2.0e-6);
+        assert_eq!(document["wb14_matric_potential_m"], 0.06);
         assert_eq!(document["snow_hourly_melt_raw_m"]["0001"], 0.003);
         assert_eq!(document["snow_hourly_melt_m"]["0001"], 0.003);
         assert_eq!(document["snow_hourly_melt_amelt_in"]["0001"], 0.10);
         assert_eq!(document["winter_hourly_air_temp_c"]["0001"], 2.0);
         assert_eq!(document["snow_runtime_swe_closure_error_m"], 0.0);
         assert_eq!(document["wb13_rm_mm"], 2.0);
+        assert_eq!(document["wb13_q_mm"], 1.5);
         assert_eq!(document["wb19_lateral_withdrawal_layers_m"]["0001"], 0.08);
         assert_eq!(document["q_m"], 0.08);
 

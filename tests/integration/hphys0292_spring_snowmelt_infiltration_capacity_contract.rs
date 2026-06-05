@@ -7,7 +7,8 @@ use openwepp_kernel_contract::{
     HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
 };
 
-const RUNNER_SOURCE: &str = "crates/openwepp-runner/src/hillslope/mod.rs";
+const KERNEL_HELPER_SOURCE: &str =
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
 const KERNEL_PHASE_SOURCE: &str =
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs";
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
@@ -22,7 +23,7 @@ fn insert_state(surface: &mut HillslopeWritebackSurface, symbol: &str, value: f6
 }
 
 #[allow(clippy::too_many_lines)]
-fn snowmelt_runoff_surface() -> HillslopeWritebackSurface {
+fn high_capacity_active_snowmelt_surface() -> HillslopeWritebackSurface {
     let mut surface = HillslopeWritebackSurface {
         state_surface: BTreeMap::new(),
         flux_surface: BTreeMap::new(),
@@ -141,24 +142,19 @@ fn snowmelt_runoff_surface() -> HillslopeWritebackSurface {
     surface
 }
 
-fn dry_no_snow_runoff_surface() -> HillslopeWritebackSurface {
-    let mut surface = snowmelt_runoff_surface();
-    for (symbol, value) in [
-        ("snow.options.snow_file_present", 0.0),
-        ("snow.runtime_swe", 0.0),
-        ("snow.runtime_depth_m", 0.0),
-        ("snow.runtime_density_kg_m3", 0.0),
-        ("snow.runtime_settle_day_count", 0.0),
-        ("tmax", 0.0),
-        ("tmin", 0.0),
-    ] {
-        insert_state(&mut surface, symbol, value);
-    }
+fn realistic_capacity_full_day_snowmelt_surface() -> HillslopeWritebackSurface {
+    let mut surface = high_capacity_active_snowmelt_surface();
+    insert_state(&mut surface, "ssc", 40.0 / 3_600_000.0);
     for hour in 1..=24 {
         insert_state(
             &mut surface,
             &format!("winter.hourly.rad_mj_m2_{hour:04}"),
-            0.0,
+            0.329_489,
+        );
+        insert_state(
+            &mut surface,
+            &format!("winter.hourly.air_temp_c_{hour:04}"),
+            5.0,
         );
     }
     surface
@@ -191,119 +187,112 @@ fn writeback_flux_value(response: &KernelRunResponse, symbol: &str) -> f64 {
         .as_f64()
 }
 
+fn writeback_state_value(response: &KernelRunResponse, symbol: &str) -> f64 {
+    response
+        .writeback
+        .state_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing state writeback symbol {symbol}"))
+        .value
+        .as_f64()
+}
+
 #[test]
-fn hphys0291_contracts_define_same_day_snow_publication_lifecycle() {
+fn hphys0292_contracts_define_spring_snowmelt_capacity_localization() {
     let snow = fs::read_to_string(SC_SNOWFREEZE).expect("snow contract should be readable");
     let runoff = fs::read_to_string(SC_RUNOFFPART).expect("runoff contract should be readable");
     let watbal = fs::read_to_string(SC_WATBAL).expect("watbal contract should be readable");
 
     assert!(
-        snow.contains("INV-SNOWFREEZE-024")
-            && snow.contains("same-day snow publication lifecycle invariant"),
-        "SC-SNOWFREEZE must define HPHYS0291 same-day lifecycle authority"
+        snow.contains("INV-SNOWFREEZE-025")
+            && snow.contains("spring snowmelt producer-partition localization invariant"),
+        "SC-SNOWFREEZE must define HPHYS0292 producer-partition authority"
     );
     assert!(
-        runoff.contains("INV-RUNOFFPART-021")
-            && runoff.contains("runoff reconciliation owns same-day publication"),
-        "SC-RUNOFFPART must define HPHYS0291 producer lifecycle authority"
+        runoff.contains("INV-RUNOFFPART-022")
+            && runoff.contains("spring snowmelt infiltration-capacity localization invariant"),
+        "SC-RUNOFFPART must define HPHYS0292 WB12 capacity authority"
     );
     assert!(
-        watbal.contains("INV-WATBAL-066")
-            && watbal.contains("downstream of a same-day producer flux lifecycle"),
-        "SC-WATBAL must define HPHYS0291 WB13 consumer lifecycle authority"
+        watbal.contains("INV-WATBAL-067")
+            && watbal.contains("spring snowmelt/infiltration capacity lineage invariant"),
+        "SC-WATBAL must define HPHYS0292 water-balance localization authority"
     );
 }
 
 #[test]
-fn hphys0291_kernel_source_uses_named_snow_publication_helper() {
-    let kernel =
+fn hphys0292_source_preserves_wmelt_infiltration_before_residual_q() {
+    let helpers =
+        fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
+    let phases =
         fs::read_to_string(KERNEL_PHASE_SOURCE).expect("kernel phase source should be readable");
 
     assert!(
-        kernel.contains("fn publish_same_day_snow_publication_fluxes"),
-        "runoff reconciliation must use a named same-day snow publication helper"
+        helpers.contains("fn compute_coupled_infiltration_depth")
+            && helpers.contains("snowmelt_hourly_state: &[SnowHourlyState]")
+            && helpers.contains("snowmelt_shape_scale")
+            && helpers.contains("bounded_interval_overlap_duration")
+            && helpers.contains("BoundarySymbol::from(\"snow.routed_melt_m\")"),
+        "coupled infiltration helper must include routed snowmelt as event liquid"
     );
     assert!(
-        kernel.contains("BoundarySymbol::from(\"snow.post_winter_rain_m\")"),
-        "helper must publish snow.post_winter_rain_m"
-    );
-    assert!(
-        kernel.contains("BoundarySymbol::from(\"snow.routed_melt_m\")"),
-        "helper must publish snow.routed_melt_m"
-    );
-    assert!(
-        kernel.contains("HPHYS0291 same-day snow publication lifecycle"),
-        "producer helper must carry explicit HPHYS0291 lifecycle provenance"
+        phases.contains("liquid_after_interception + runoff_snow_term")
+            && phases.contains("Self::compute_runoff_after_interception(")
+            && phases.contains("runoff_snow_term,")
+            && phases.contains("wb14_effective_conductivity_m_s")
+            && phases.contains("wb14_matric_potential_m"),
+        "runoff residual must be computed after routed melt has been offered to infiltration"
     );
 }
 
 #[test]
-fn hphys0291_kernel_publishes_required_snow_fluxes_on_runoff_reconciliation() {
-    let dry_response = run_runoff_response(dry_no_snow_runoff_surface());
-    assert_eq!(
-        dry_response.status.message_id(),
-        "HKERNEL-WB14-RUNOFF-OK-001"
-    );
-    assert!(
-        writeback_flux_value(&dry_response, "snow.routed_melt_m").abs() <= TOL,
-        "dry/no-snow run must publish explicit zero routed melt"
-    );
-    assert!(
-        writeback_flux_value(&dry_response, "snow.post_winter_rain_m").abs() <= TOL,
-        "dry/no-snow run must publish explicit zero post-winter rain"
-    );
+fn hphys0292_active_snowmelt_infiltrates_before_residual_runoff() {
+    let response = run_runoff_response(high_capacity_active_snowmelt_surface());
+    assert_eq!(response.status.message_id(), "HKERNEL-WB14-RUNOFF-OK-001");
 
-    let active_response = run_runoff_response(snowmelt_runoff_surface());
-    assert_eq!(
-        active_response.status.message_id(),
-        "HKERNEL-WB14-RUNOFF-OK-001"
-    );
-    let routed_melt_m = writeback_flux_value(&active_response, "snow.routed_melt_m");
-    let post_winter_rain_m = writeback_flux_value(&active_response, "snow.post_winter_rain_m");
+    let routed_melt = writeback_flux_value(&response, "snow.routed_melt_m");
+    let post_winter_rain = writeback_flux_value(&response, "snow.post_winter_rain_m");
+    let infiltration = writeback_state_value(&response, "wb12_infiltration");
+    let q = writeback_flux_value(&response, "Q");
+
     assert!(
-        routed_melt_m > 0.0,
-        "active snow vector must publish positive routed melt, observed {routed_melt_m}"
+        routed_melt > 0.0,
+        "test vector must generate active routed melt, observed {routed_melt}"
     );
     assert!(
-        post_winter_rain_m.abs() <= TOL,
-        "snowmelt-only vector must publish explicit zero post-winter rain, observed {post_winter_rain_m}"
+        post_winter_rain.abs() <= TOL,
+        "snowmelt-only vector must not publish direct post-winter rain, observed {post_winter_rain}"
+    );
+    assert!(
+        (infiltration - routed_melt).abs() <= TOL,
+        "high-capacity WB12 path must offer routed melt to infiltration before Q; infiltration={infiltration}, routed_melt={routed_melt}"
+    );
+    assert!(
+        q.abs() <= TOL,
+        "high-capacity active snowmelt vector should leave no residual Q, observed {q}"
     );
 }
 
 #[test]
-fn hphys0291_wb13_requires_same_day_fluxes_without_state_default_masking() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
+fn hphys0292_snowmelt_only_capacity_uses_positive_hour_duration() {
+    let response = run_runoff_response(realistic_capacity_full_day_snowmelt_surface());
+    assert_eq!(response.status.message_id(), "HKERNEL-WB14-RUNOFF-OK-001");
+
+    let routed_melt = writeback_flux_value(&response, "snow.routed_melt_m");
+    let infiltration = writeback_state_value(&response, "wb12_infiltration");
+    let q = writeback_flux_value(&response, "Q");
 
     assert!(
-        runner.contains(
-            "require_runtime_flux_surface_scalar(runtime_surface, \"snow.post_winter_rain_m\")"
-        ),
-        "WB13 must require post-winter rain from the same-day flux surface"
+        routed_melt > 0.020,
+        "test vector must generate material full-day routed melt, observed {routed_melt}"
     );
     assert!(
-        runner.contains("hphys0291_wb13_rm_publication_rejects_state_only_routed_melt"),
-        "WB13 tests must reject state-only routed melt when lifecycle authority is active"
+        (infiltration - routed_melt).abs() <= TOL,
+        "40 mm/h effective capacity over positive melt hours should absorb snowmelt-only forcing; infiltration={infiltration}, routed_melt={routed_melt}"
     );
     assert!(
-        !runner.contains("reset_daily_snow_publication_fluxes"),
-        "daily lifecycle must not satisfy required snow publication by reset/default state"
-    );
-}
-
-#[test]
-fn hphys0291_trace_preserves_snow_publication_lifecycle_surfaces() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
-
-    assert!(
-        runner.contains("snow_routed_melt_m")
-            && runner.contains("snow_post_winter_rain_m")
-            && runner.contains(
-                "runtime_surface_flux_symbol_value(runtime_surface, \"snow.routed_melt_m\")"
-            )
-            && runner.contains(
-                "runtime_surface_flux_symbol_value(runtime_surface, \"snow.post_winter_rain_m\")"
-            )
-            && runner.contains("openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v15"),
-        "trace schema must expose flux-only routed melt and post-winter rain lifecycle surfaces"
+        q.abs() <= TOL,
+        "snowmelt-only full-day capacity vector should leave no residual Q, observed {q}"
     );
 }
