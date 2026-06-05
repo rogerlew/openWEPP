@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 32
+contract_version: 33
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -140,6 +140,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | INV-RUNOFFPART-017 | HPHYS0287 snow liquid partition guard invariant: WB12/WB14 runoff partition must validate projected runtime snow-state domains before deciding that snow coupling is inactive and before assembling direct-rain, retained-rain, routed-melt, irrigation, infiltration, and residual runoff terms. When any snow option/control/runtime state is projected, missing runtime snow vector members must hard-fail rather than defaulting to zero. Material negative or non-finite `snow.runtime_swe`/depth/density/settle state must hard-fail instead of being canonicalized to zero by the inactive branch. This guard protects the liquid-partition lineage without allowing invalid snow state to suppress valid non-snow infiltration. | hard-fail | SC-SNOWFREEZE-001#INV-SNOWFREEZE-020, INV-RUNOFFPART-015, INV-RUNOFFPART-016, REF-RUNOFFPART-CH4-INFIL, REF-RUNOFFPART-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-018 | HPHYS0288 rain-on-snow routed-melt partition invariant: WB12/WB14 liquid forcing must treat positive rain-on-snow residual released by `snowd.for` holding-capacity accounting as part of routed `wmelt` after `winter.for` daily post-processing. Direct-rain liquid supplied to the hyetograph path must be reduced by both retained rain and residual rain-on-snow that has been promoted into `wmelt`; leaving that residual on the direct-rain-only path, omitting it from `wmelt`, or double counting it across direct rain and routed melt violates the baseline `hrrain -> hrmlt -> wmelt -> fin/smrate` lineage. | hard-fail | REF-RUNOFFPART-LEGACY-WINTER-RAINRELEASE, REF-RUNOFFPART-LEGACY-WMELT-INFIL, SC-SNOWFREEZE-001#INV-SNOWFREEZE-021, SC-WATBAL-001#INV-WATBAL-063 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-RUNOFFPART-019 | HPHYS0289 routed-melt publication invariant: WB12/WB14 must publish an explicit daily routed-melt depth equivalent to baseline `wmelt(iplane)` after winter redistribution and rain-on-snow release so WB13 can compute `RM = post-winter rain + wmelt + irrigation`. The publication surface must be finite, non-negative, and identical to the snowmelt liquid term used by infiltration/runoff closure; deriving WB13 `RM` from raw precipitation and SWE delta while the kernel used a different routed-melt term is invalid. | hard-fail | REF-RUNOFFPART-LEGACY-WMELT-INFIL, REF-RUNOFFPART-LEGACY-WB13-RM, SC-SNOWFREEZE-001#INV-SNOWFREEZE-022, SC-WATBAL-001#INV-WATBAL-064 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-RUNOFFPART-020 | HPHYS0290 post-winter rain publication invariant: WB12/WB14 must publish the post-winter direct-rain depth equivalent to baseline `rain(iplane)` after winter clearing/restoration, snowpack retention, and rain-on-snow promotion to `wmelt`. The openWEPP surface is `snow.post_winter_rain_m`; it must be finite, non-negative, and sourced from the same liquid partition used for direct-rain hyetograph/runoff forcing. WB13 may not reconstruct this term from raw precipitation, snow-active flags, SWE deltas, or routed melt. | hard-fail | REF-RUNOFFPART-LEGACY-WB13-RM, REF-RUNOFFPART-LEGACY-WINTER-RAINRELEASE, INV-RUNOFFPART-018, INV-RUNOFFPART-019, SC-SNOWFREEZE-001#INV-SNOWFREEZE-023, SC-WATBAL-001#INV-WATBAL-065 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -164,6 +165,7 @@ replace the Chapter-4 process equations. `[DIRECT][Static] + [INFERENCE][Static]
 | `INV-RUNOFFPART-017` | runtime + governance | WB12/WB14 runtime snow-state validator before inactive snow fallback and liquid-partition assembly | Typed hard error / explicit `HOLD` when material negative snow runtime state is silently zeroed before runoff/infiltration partition | HPHYS0287 snow liquid partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-018` | runtime + governance | WB12/WB14 rain-on-snow direct-rain vs routed-melt assembler | Typed hard error / explicit `HOLD` when residual rain-on-snow is omitted from routed melt, left exclusively as direct rain, or double counted | HPHYS0288 rain-on-snow partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-RUNOFFPART-019` | runtime + governance | WB12/WB14 daily routed-`wmelt` publisher and WB13 consumer seam | Typed hard error / explicit `HOLD` when routed melt is missing, negative, non-finite, or differs from the liquid term used by runoff/infiltration closure | HPHYS0289 WB13 publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-RUNOFFPART-020` | runtime + governance | WB12/WB14 daily post-winter direct-rain publisher and WB13 consumer seam | Typed hard error / explicit `HOLD` when post-winter rain is missing, negative, non-finite, not tied to direct-rain forcing, or reconstructed downstream | HPHYS0290 WB13 post-winter-rain publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -837,6 +839,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `33` | `Codex` | HPHYS0290 amendment: required WB12/WB14 to publish explicit post-winter direct rain as `snow.post_winter_rain_m` for WB13 `RM` instead of allowing downstream inference. |
 | `2026-06-04` | `32` | `Codex` | HPHYS0289 amendment: required WB12/WB14 to publish explicit daily routed `wmelt` matching the infiltration/runoff liquid term so WB13 `RM` can consume baseline `rain + wmelt + irrigation`. |
 | `2026-06-04` | `31` | `Codex` | HPHYS0288 amendment: added WB12/WB14 residual rain-on-snow routed-melt partition authority requiring released rain to follow `hrrain -> hrmlt -> wmelt -> fin/smrate` rather than direct-rain-only forcing. |
 | `2026-06-04` | `30` | `Codex` | HPHYS0287 amendment: added WB12/WB14 fail-closed runtime snow-state guard before inactive fallback and liquid partition assembly. |

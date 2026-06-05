@@ -69,6 +69,26 @@ fn canonical_registry_keeps_prcp_meters_distinct_from_p_publication_mm() {
 }
 
 #[test]
+fn hphys0290_registry_declares_post_winter_rain_flux_metadata() {
+    let registry = BoundaryUnitRegistry::canonical_registry()
+        .expect("canonical unit registry should construct");
+
+    let entry = registry
+        .entry_for_boundary_alias("snow.post_winter_rain_m")
+        .expect("post-winter rain alias should resolve");
+    assert_eq!(entry.canonical_symbol(), "snow_post_winter_rain");
+    assert_eq!(entry.unit_label(), "m");
+    assert_eq!(entry.dimension_class(), DimensionClass::Depth);
+    assert_eq!(entry.domain_class(), DomainClass::NonNegativeFinite);
+    assert_eq!(
+        entry.typed_boundary(),
+        TypedBoundaryRequirement::TypedRequired
+    );
+    assert_eq!(entry.contract_id(), "SC-SNOWFREEZE-001");
+    assert_eq!(entry.invariant_id(), "SC-SNOWFREEZE-001#INV-SNOWFREEZE-023");
+}
+
+#[test]
 #[allow(clippy::too_many_lines)]
 fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
     let registry = BoundaryUnitRegistry::canonical_registry()
@@ -115,6 +135,7 @@ fn canonical_registry_resolves_climate_soil_and_snow_runtime_aliases() {
             DimensionClass::Fraction,
         ),
         ("snow.runtime_swe", "m", DimensionClass::Depth),
+        ("snow.post_winter_rain_m", "m", DimensionClass::Depth),
         ("snow.runtime_depth_m", "m", DimensionClass::Depth),
         (
             "snow.runtime_density_kg_m3",
@@ -215,6 +236,7 @@ fn hphys0275_registry_marks_only_migrated_aliases_typed_required() {
         "winter.hourly.wind_m_s_0001",
         "winter.hourly.cloud_fraction_0001",
         "snow.runtime_swe",
+        "snow.post_winter_rain_m",
         "snow.runtime_depth_m",
         "snow.runtime_density_kg_m3",
         "snow.hourly.rain_m_0001",

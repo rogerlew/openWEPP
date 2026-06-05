@@ -1,5 +1,12 @@
 # Work Packages
 
+- `20260605-hphys0290-post-winter-rain-publication-lineage-closure-001/`
+  - Purpose: publish and consume an explicit post-winter `rain(iplane)`
+    equivalent for WB13 `RM`, replacing the HPHYS0289 inference branch.
+  - Status: executed-hold; WB13 now consumes fail-closed explicit
+    `snow.post_winter_rain_m + snow.routed_melt_m + Irr`, and H39 2014-146 is
+    proven to be baseline warm-rain/no-snow restoration rather than WB13
+    inference, but full H1..H39 semantic parity remains `0/39`.
 - `20260604-hphys0289-wb13-rm-snowwater-publication-lineage-closure-001/`
   - Purpose: diagnose and correct WB13 `RM`/`Snow-Water` publication lineage
     so daily rows consume baseline-authoritative post-winter

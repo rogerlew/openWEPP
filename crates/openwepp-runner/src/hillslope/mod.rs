@@ -352,6 +352,8 @@ struct Hphys0245TraceRow {
     snow_runtime_density_delta_kg_m3: Option<f64>,
     snow_runtime_settle_day_count_delta: Option<f64>,
     snow_s_m: Option<f64>,
+    snow_routed_melt_m: Option<f64>,
+    snow_post_winter_rain_m: Option<f64>,
     snow_hourly_rain_sum_m: Option<f64>,
     snow_hourly_rain_retained_sum_m: Option<f64>,
     snow_hourly_rain_released_sum_m: Option<f64>,
@@ -500,7 +502,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v13";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v14";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -4569,6 +4571,10 @@ fn build_hphys0245_trace_row(
         _ => None,
     };
     let snow_s_m = runtime_surface_symbol_value_prefer_flux(runtime_surface, "S");
+    let snow_routed_melt_m =
+        runtime_surface_symbol_value_prefer_flux(runtime_surface, "snow.routed_melt_m");
+    let snow_post_winter_rain_m =
+        runtime_surface_symbol_value_prefer_flux(runtime_surface, "snow.post_winter_rain_m");
     let snow_runtime_swe_m = runtime_surface_symbol_value(runtime_surface, "snow.runtime_swe");
     let snow_runtime_depth_m =
         runtime_surface_symbol_value(runtime_surface, "snow.runtime_depth_m");
@@ -4660,6 +4666,8 @@ fn build_hphys0245_trace_row(
         snow_runtime_density_delta_kg_m3,
         snow_runtime_settle_day_count_delta,
         snow_s_m,
+        snow_routed_melt_m,
+        snow_post_winter_rain_m,
         snow_hourly_rain_sum_m,
         snow_hourly_rain_retained_sum_m,
         snow_hourly_rain_released_sum_m,
@@ -6126,7 +6134,7 @@ fn build_simulation_owned_wb13_row(
     simulation_year: i32,
     sim_day_index: usize,
     calendar_day: &ClimateDayProjection,
-    runtime_swe_before_m: f64,
+    _runtime_swe_before_m: f64,
 ) -> Result<SimulationOwnedWb13Row, HillslopeCliError> {
     if simulation_year <= 0 {
         return Err(wb13_simout_failure(format!(
@@ -6228,17 +6236,17 @@ fn build_simulation_owned_wb13_row(
             "snow.routed_melt_m must be >= 0.0, observed {routed_melt_m}"
         )));
     }
-    let winter_partition_active =
-        runtime_swe_before_m > 1.0e-12 || runtime_swe_m > 1.0e-12 || routed_melt_m > 1.0e-12;
-    let post_winter_rain_m = if winter_partition_active {
-        0.0
-    } else {
-        precipitation_m
-    };
+    let post_winter_rain_m =
+        require_runtime_flux_surface_scalar(runtime_surface, "snow.post_winter_rain_m")?;
+    if post_winter_rain_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "snow.post_winter_rain_m must be >= 0.0, observed {post_winter_rain_m}"
+        )));
+    }
     let rm_m = post_winter_rain_m + routed_melt_m + irrigation_m;
     if rm_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "RM source (post-winter rain + snow.routed_melt_m + Irr) must be >= 0.0, observed {rm_m}"
+            "RM source (snow.post_winter_rain_m + snow.routed_melt_m + Irr) must be >= 0.0, observed {rm_m}"
         )));
     }
     let rm = rm_m * 1_000.0;
@@ -6542,6 +6550,26 @@ fn require_runtime_surface_scalar_prefer_flux(
     if !value.is_finite() {
         return Err(wb13_simout_failure(format!(
             "runtime symbol {symbol} must be finite, observed {value}"
+        )));
+    }
+    Ok(value)
+}
+
+fn require_runtime_flux_surface_scalar(
+    runtime_surface: &HillslopeWritebackSurface,
+    symbol: &str,
+) -> Result<f64, HillslopeCliError> {
+    let key = BoundarySymbol::from(symbol);
+    let value = runtime_surface
+        .flux_surface
+        .get(&key)
+        .map(|value| value.as_f64())
+        .ok_or_else(|| {
+            wb13_simout_failure(format!("missing required runtime flux symbol {symbol}"))
+        })?;
+    if !value.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "runtime flux symbol {symbol} must be finite, observed {value}"
         )));
     }
     Ok(value)
@@ -7601,6 +7629,10 @@ mod tests {
             BoundarySymbol::from("snow.routed_melt_m"),
             BoundaryValue::scalar(0.0),
         );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(0.010),
+        );
         runtime_surface
             .state_surface
             .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.001));
@@ -7683,6 +7715,201 @@ mod tests {
                 assert!(
                     detail.contains("snow.routed_melt_m must be >= 0.0"),
                     "expected negative routed wmelt guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0290_wb13_rm_publication_consumes_explicit_post_winter_rain() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.010));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.040),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.002),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(0.000_382_5),
+        );
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.001));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.040,
+        )
+        .expect("valid WB13 probe surface should publish row");
+
+        assert!(
+            (row.wb13_row.rm - 3.382_5).abs() < 1.0e-12,
+            "WB13 RM must equal explicit post-winter rain + routed wmelt + irrigation"
+        );
+    }
+
+    #[test]
+    fn hphys0290_wb13_rm_publication_requires_post_winter_rain_surface() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("snow.post_winter_rain_m"));
+        runtime_surface
+            .flux_surface
+            .remove(&BoundarySymbol::from("snow.post_winter_rain_m"));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("missing post-winter rain must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("snow.post_winter_rain_m"),
+                    "expected missing post-winter rain guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0290_wb13_rm_publication_prefers_flux_post_winter_rain_over_stale_state() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(0.010),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(0.000_5),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.002),
+        );
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("valid WB13 probe surface should publish row");
+
+        assert!(
+            (row.wb13_row.rm - 2.5).abs() < 1.0e-12,
+            "WB13 RM must prefer post-winter rain from flux surface over stale state surface"
+        );
+    }
+
+    #[test]
+    fn hphys0290_wb13_rm_publication_rejects_state_only_post_winter_rain() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .flux_surface
+            .remove(&BoundarySymbol::from("snow.post_winter_rain_m"));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(0.010),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("state-only post-winter rain must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("missing required runtime flux symbol snow.post_winter_rain_m"),
+                    "expected missing producer flux guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0290_wb13_rm_publication_rejects_negative_post_winter_rain() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(-1.0e-6),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("negative post-winter rain must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("snow.post_winter_rain_m must be >= 0.0"),
+                    "expected negative post-winter rain guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0290_wb13_rm_publication_rejects_non_finite_post_winter_rain() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            BoundaryValue::scalar(f64::NAN),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("non-finite post-winter rain must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("runtime flux symbol snow.post_winter_rain_m must be finite"),
+                    "expected non-finite post-winter rain guard detail, observed: {detail}"
                 );
             }
             other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
@@ -9108,6 +9335,7 @@ mod tests {
         (sum_length / storage_integral).powf(m) * sum_length
     }
 
+    #[allow(clippy::too_many_lines)]
     fn seeded_wb13_runtime_surface_probe() -> HillslopeWritebackSurface {
         let mut runtime_surface = HillslopeWritebackSurface::default();
         runtime_surface
@@ -9171,6 +9399,10 @@ mod tests {
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.post_winter_rain_m"),
             BoundaryValue::scalar(0.0),
         );
         runtime_surface
@@ -9826,6 +10058,8 @@ mod tests {
             snow_runtime_density_delta_kg_m3: Some(10.0),
             snow_runtime_settle_day_count_delta: Some(1.0),
             snow_s_m: Some(0.002),
+            snow_routed_melt_m: Some(0.003),
+            snow_post_winter_rain_m: Some(0.004),
             snow_hourly_rain_sum_m: Some(0.001),
             snow_hourly_rain_retained_sum_m: Some(0.0),
             snow_hourly_rain_released_sum_m: Some(0.0),
@@ -9953,6 +10187,8 @@ mod tests {
         assert_eq!(document["snow_runtime_swe_m"], 0.42);
         assert_eq!(document["snow_runtime_swe_before_m"], 0.40);
         assert_eq!(document["snow_runtime_swe_delta_m"], 0.02);
+        assert_eq!(document["snow_routed_melt_m"], 0.003);
+        assert_eq!(document["snow_post_winter_rain_m"], 0.004);
         assert_eq!(document["snow_hourly_snowfall_water_equiv_sum_m"], 0.001);
         assert_eq!(document["snow_hourly_rain_released_sum_m"], 0.0);
         assert_eq!(document["wb12_infiltration_m"], 0.003);

@@ -30,6 +30,13 @@ impl Wb11HydrologyKernel {
         )?;
         let hyetograph_liquid_input =
             Self::normalize_non_negative_within_tolerance(hyetograph_liquid_input_raw);
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from("snow.post_winter_rain_m"),
+            hyetograph_liquid_input,
+            Some(0.0),
+            None,
+        )?;
 
         Ok((runoff_snow_term, hyetograph_liquid_input))
     }
@@ -4719,6 +4726,12 @@ impl Wb11HydrologyKernel {
             WritebackField::bounded(
                 BoundarySymbol::from("snow.routed_melt_m"),
                 runoff_snow_term,
+                Some(0.0),
+                None,
+            ),
+            WritebackField::bounded(
+                BoundarySymbol::from("snow.post_winter_rain_m"),
+                hyetograph_liquid_input,
                 Some(0.0),
                 None,
             ),
