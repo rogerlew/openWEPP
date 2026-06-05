@@ -6221,13 +6221,27 @@ fn build_simulation_owned_wb13_row(
             "Irr must be >= 0.0, observed {irrigation_m}"
         )));
     }
-    let rm_m = precipitation_m + runtime_swe_before_m - runtime_swe_m + irrigation_m;
-    if rm_m < -1.0e-12 {
+    let routed_melt_m =
+        require_runtime_surface_scalar_prefer_flux(runtime_surface, "snow.routed_melt_m")?;
+    if routed_melt_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "RM source (prcp + SWE_before - SWE_after + Irr) must be >= 0.0, observed {rm_m}"
+            "snow.routed_melt_m must be >= 0.0, observed {routed_melt_m}"
         )));
     }
-    let rm = rm_m.max(0.0) * 1_000.0;
+    let winter_partition_active =
+        runtime_swe_before_m > 1.0e-12 || runtime_swe_m > 1.0e-12 || routed_melt_m > 1.0e-12;
+    let post_winter_rain_m = if winter_partition_active {
+        0.0
+    } else {
+        precipitation_m
+    };
+    let rm_m = post_winter_rain_m + routed_melt_m + irrigation_m;
+    if rm_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "RM source (post-winter rain + snow.routed_melt_m + Irr) must be >= 0.0, observed {rm_m}"
+        )));
+    }
+    let rm = rm_m * 1_000.0;
     let irrigation_mm = irrigation_m * 1_000.0;
 
     let q_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Q")?;
@@ -7502,6 +7516,177 @@ mod tests {
             (row.wb13_row.ep - 4.2).abs() < 1.0e-12,
             "WB13 Ep must use final post-root-uptake flux even when stale state Ep is present"
         );
+    }
+
+    #[test]
+    fn hphys0289_wb13_rm_publication_consumes_routed_wmelt_not_raw_prcp_swe_delta() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.010));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.040),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.002),
+        );
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("S"), BoundaryValue::scalar(0.002));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.001));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.040,
+        )
+        .expect("valid WB13 probe surface should publish row");
+
+        assert!(
+            (row.wb13_row.rm - 3.0).abs() < 1.0e-12,
+            "snow-active WB13 RM must equal routed wmelt + irrigation when winter cleared rain"
+        );
+    }
+
+    #[test]
+    fn hphys0289_wb13_rm_publication_requires_routed_wmelt_surface() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("snow.routed_melt_m"));
+        runtime_surface
+            .flux_surface
+            .remove(&BoundarySymbol::from("snow.routed_melt_m"));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("missing routed wmelt must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("snow.routed_melt_m"),
+                    "expected missing routed wmelt guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
+    fn hphys0289_wb13_rm_publication_preserves_warm_rain_without_snow_partition() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.010));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.001));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("warm rain without snow partition should publish row");
+
+        assert!(
+            (row.wb13_row.rm - 11.0).abs() < 1.0e-12,
+            "snow-inactive WB13 RM must preserve post-winter rain plus irrigation"
+        );
+    }
+
+    #[test]
+    fn hphys0289_wb13_rm_publication_prefers_flux_routed_wmelt_over_stale_state() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("prcp"), BoundaryValue::scalar(0.010));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.030),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.020),
+        );
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.003),
+        );
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.001));
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.040,
+        )
+        .expect("valid WB13 probe surface should publish row");
+
+        assert!(
+            (row.wb13_row.rm - 4.0).abs() < 1.0e-12,
+            "WB13 RM must prefer routed wmelt from flux surface over stale state surface"
+        );
+    }
+
+    #[test]
+    fn hphys0289_wb13_rm_publication_rejects_negative_routed_wmelt() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.flux_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(-1.0e-6),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("negative routed wmelt must fail WB13 publication guard");
+
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("snow.routed_melt_m must be >= 0.0"),
+                    "expected negative routed wmelt guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
     }
 
     #[test]
@@ -8984,6 +9169,13 @@ mod tests {
             BoundarySymbol::from("snow.runtime_swe"),
             BoundaryValue::scalar(0.0),
         );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("snow.routed_melt_m"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("S"), BoundaryValue::scalar(0.0));
         runtime_surface
             .state_surface
             .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.0));

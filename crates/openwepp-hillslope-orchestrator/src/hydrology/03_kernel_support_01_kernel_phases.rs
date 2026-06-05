@@ -15,6 +15,8 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             None,
         )?;
+        let runoff_snow_term =
+            Self::normalize_non_negative_within_tolerance(runoff_snow_term);
         let hyetograph_liquid_input_raw = hyetograph_rainfall
             - snow_coupling.accumulation
             - snow_coupling.rain_retained
@@ -4714,6 +4716,12 @@ impl Wb11HydrologyKernel {
                 None,
             ),
             WritebackField::bounded(WB12_SYMBOL_RUNOFF_Q, q_runoff, Some(0.0), None),
+            WritebackField::bounded(
+                BoundarySymbol::from("snow.routed_melt_m"),
+                runoff_snow_term,
+                Some(0.0),
+                None,
+            ),
             WritebackField::bounded(
                 BoundarySymbol::from(WB12_SYMBOL_RUNOFF_CARRYOVER),
                 runon_input,

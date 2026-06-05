@@ -436,6 +436,10 @@ name = "hphys0288_winter_rain_snowmelt_partition_contract"
 path = "tests/integration/hphys0288_winter_rain_snowmelt_partition_contract.rs"
 
 [[test]]
+name = "hphys0289_wb13_rm_snowwater_publication_contract"
+path = "tests/integration/hphys0289_wb13_rm_snowwater_publication_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

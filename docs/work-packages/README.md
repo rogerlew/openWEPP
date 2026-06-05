@@ -1,5 +1,13 @@
 # Work Packages
 
+- `20260604-hphys0289-wb13-rm-snowwater-publication-lineage-closure-001/`
+  - Purpose: diagnose and correct WB13 `RM`/`Snow-Water` publication lineage
+    so daily rows consume baseline-authoritative post-winter
+    `rain + wmelt + irrigation` and runtime snowpack storage surfaces.
+  - Status: executed-hold; WB13 `RM` now consumes routed `wmelt` and
+    `Snow-Water` consumes runtime SWE, but full H1..H39 semantic parity
+    remains `0/39`; continue with explicit post-winter rain publication
+    seam.
 - `20260604-hphys0288-winter-rain-on-snow-melt-partition-magnitude-closure-001/`
   - Purpose: diagnose and correct baseline-authoritative residual rain-on-snow
     release into the winter `hrmlt`/`wmelt` runoff/infiltration forcing seam,
