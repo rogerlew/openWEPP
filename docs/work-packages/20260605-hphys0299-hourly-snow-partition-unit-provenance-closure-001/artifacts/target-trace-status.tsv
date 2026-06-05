@@ -1,0 +1,4 @@
+hillslope_id	rc	seconds	trace_path	stdout	stderr
+1	0	16.647	/tmp/hphys0299_full_20260605T101220Z/hillslope_output/H1.hphys0299.trace.jsonl	/tmp/hphys0299_full_20260605T101220Z/logs/targeted_traces/H1_hphys0299_trace.stdout.log	/tmp/hphys0299_full_20260605T101220Z/logs/targeted_traces/H1_hphys0299_trace.stderr.log
+7	0	17.106	/tmp/hphys0299_full_20260605T101220Z/hillslope_output/H7.hphys0299.trace.jsonl	/tmp/hphys0299_full_20260605T101220Z/logs/targeted_traces/H7_hphys0299_trace.stdout.log	/tmp/hphys0299_full_20260605T101220Z/logs/targeted_traces/H7_hphys0299_trace.stderr.log
+39	0	16.551	/tmp/hphys0299_full_20260605T101220Z/hillslope_output/H39.hphys0299.trace.jsonl	/tmp/hphys0299_full_20260605T101220Z/logs/targeted_traces/H39_hphys0299_trace.stdout.log	/tmp/hphys0299_full_20260605T101220Z/logs/targeted_traces/H39_hphys0299_trace.stderr.log

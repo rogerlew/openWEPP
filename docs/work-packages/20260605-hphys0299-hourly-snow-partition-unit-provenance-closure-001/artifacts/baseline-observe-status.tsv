@@ -1,0 +1,4 @@
+hillslope_id	release_rc	observe_off_rc	observe_on_rc	release_to_off_bit_identical	off_to_on_bit_identical	release_to_off_semantic_identity	off_to_on_semantic_identity	partition_identity	h298_records	observe_log
+1	0	0	0	True	True	True	True	True	48102	/tmp/hphys0299_full_20260605T101220Z/baseline_observe/H1_observe_on/runs/wepp_observe.log
+7	0	0	0	True	True	True	True	True	48387	/tmp/hphys0299_full_20260605T101220Z/baseline_observe/H7_observe_on/runs/wepp_observe.log
+39	0	0	0	True	True	True	True	True	48102	/tmp/hphys0299_full_20260605T101220Z/baseline_observe/H39_observe_on/runs/wepp_observe.log

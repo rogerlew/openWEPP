@@ -1,15 +1,26 @@
 # Work Packages
 
+- `20260605-hphys0299-hourly-snow-partition-unit-provenance-closure-001/`
+  - Purpose: correct and validate the HPHYS0298 hourly snow/rain partition
+    lineage by comparing pinned-baseline `hrsnow` snow-depth to openWEPP
+    `snow_hourly_snowfall_depth_sum_m`, not derived snowfall water equivalent,
+    before authorizing any producer physics migration or downstream hydrology
+    focus change.
+  - Status: executed-hold; corrected depth-vs-depth diagnostics supersede
+    HPHYS0298's all-window hourly-forcing verdict, routing seven windows to
+    raw hourly melt, one H7 first-2013 row to post-raw routed-melt/negative-melt
+    follow-on without legacy-defective acceptance, and only H39 first-2013 to a
+    remaining corrected-depth hourly-forcing defect; no downstream compensation
+    is authorized.
 - `20260605-hphys0298-paired-snow-rm-lineage-partition-closure-001/`
   - Purpose: implement one large paired baseline/openWEPP snow-`RM` lineage
     observation strategy for all nine H1/H7/H39 target windows, proving
     baseline observe identity and assigning first-divergent cut-point verdicts
     before any downstream hydrology compensation.
-  - Status: queued; package is scaffolded as an autonomous ExecPlan with
-    contract-first sequencing, isolated/reversible
-    `/workdir/wepp-forest_260430_baseline` diagnostic instrumentation, full
-    H1..H39 metrics, partition-ledger closure criteria, and mandatory dual
-    review/disposition/verification gates.
+  - Status: executed-hold; paired diagnostics ran and were reviewed, but
+    HPHYS0299 now audits a discovered diagnostic unit/provenance seam before
+    treating the all-window hourly-forcing verdict as production migration
+    authority.
 - `20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/`
   - Purpose: convert HPHYS0296 snow/`RM` candidates into an auditable defect
     ledger by reconstructing pinned-baseline negative-melt behavior against
