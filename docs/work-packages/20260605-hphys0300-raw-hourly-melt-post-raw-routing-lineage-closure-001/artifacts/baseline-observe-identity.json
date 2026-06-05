@@ -1,0 +1,335 @@
+{
+  "1": {
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "h298_record_count": 48102,
+    "h298_tag_counts": {
+      "H298_DRV_A": 767,
+      "H298_DRV_B": 767,
+      "H298_GATE_A": 767,
+      "H298_GATE_B": 767,
+      "H298_GATE_C": 767,
+      "H298_NEG_A": 767,
+      "H298_NEG_B": 767,
+      "H298_POST_A": 767,
+      "H298_POST_B": 767,
+      "H298_RAW_A": 18408,
+      "H298_RAW_B": 18408,
+      "H298_WBH_A": 1461,
+      "H298_WBH_B": 1461,
+      "H298_WBH_C": 1461
+    },
+    "hillslope_id": 1,
+    "observe_binary": "/tmp/hphys0298_wepp_forest_obs/src/wepp_hill",
+    "observe_log": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H1_observe_on/runs/wepp_observe.log",
+    "observe_off_rc": 0,
+    "observe_off_seconds": 0.08772593224421144,
+    "observe_off_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f",
+    "observe_off_to_observe_on_bit_identical": true,
+    "observe_off_to_observe_on_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "observe_off_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H1_observe_off/output/H1.wat.dat",
+    "observe_on_rc": 0,
+    "observe_on_seconds": 1.3049682630226016,
+    "observe_on_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f",
+    "observe_on_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H1_observe_on/output/H1.wat.dat",
+    "observe_worktree": "/tmp/hphys0298_wepp_forest_obs",
+    "pass": true,
+    "release_binary": "/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill",
+    "release_matches_stored_partition": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.009999999999990905,
+        "Total-Soil": 0.009999999999990905
+      },
+      "pass": true,
+      "row_widths": [
+        25
+      ],
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "release_rc": 0,
+    "release_seconds": 0.08280459884554148,
+    "release_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f",
+    "release_to_observe_off_bit_identical": true,
+    "release_to_observe_off_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "release_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H1_release/output/H1.wat.dat",
+    "target_window_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "wat_bit_identical": true
+  },
+  "7": {
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "h298_record_count": 48387,
+    "h298_tag_counts": {
+      "H298_DRV_A": 772,
+      "H298_DRV_B": 772,
+      "H298_GATE_A": 772,
+      "H298_GATE_B": 772,
+      "H298_GATE_C": 772,
+      "H298_NEG_A": 772,
+      "H298_NEG_B": 772,
+      "H298_POST_A": 772,
+      "H298_POST_B": 772,
+      "H298_RAW_A": 18528,
+      "H298_RAW_B": 18528,
+      "H298_WBH_A": 1461,
+      "H298_WBH_B": 1461,
+      "H298_WBH_C": 1461
+    },
+    "hillslope_id": 7,
+    "observe_binary": "/tmp/hphys0298_wepp_forest_obs/src/wepp_hill",
+    "observe_log": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H7_observe_on/runs/wepp_observe.log",
+    "observe_off_rc": 0,
+    "observe_off_seconds": 0.08155543077737093,
+    "observe_off_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b",
+    "observe_off_to_observe_on_bit_identical": true,
+    "observe_off_to_observe_on_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "observe_off_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H7_observe_off/output/H7.wat.dat",
+    "observe_on_rc": 0,
+    "observe_on_seconds": 1.2912468402646482,
+    "observe_on_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b",
+    "observe_on_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H7_observe_on/output/H7.wat.dat",
+    "observe_worktree": "/tmp/hphys0298_wepp_forest_obs",
+    "pass": true,
+    "release_binary": "/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill",
+    "release_matches_stored_partition": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "pass": true,
+      "row_widths": [
+        25
+      ],
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "release_rc": 0,
+    "release_seconds": 0.08256440097466111,
+    "release_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b",
+    "release_to_observe_off_bit_identical": true,
+    "release_to_observe_off_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "release_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H7_release/output/H7.wat.dat",
+    "target_window_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "wat_bit_identical": true
+  },
+  "39": {
+    "baseline_commit": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "baseline_source": "/workdir/wepp-forest_260430_baseline",
+    "h298_record_count": 48102,
+    "h298_tag_counts": {
+      "H298_DRV_A": 767,
+      "H298_DRV_B": 767,
+      "H298_GATE_A": 767,
+      "H298_GATE_B": 767,
+      "H298_GATE_C": 767,
+      "H298_NEG_A": 767,
+      "H298_NEG_B": 767,
+      "H298_POST_A": 767,
+      "H298_POST_B": 767,
+      "H298_RAW_A": 18408,
+      "H298_RAW_B": 18408,
+      "H298_WBH_A": 1461,
+      "H298_WBH_B": 1461,
+      "H298_WBH_C": 1461
+    },
+    "hillslope_id": 39,
+    "observe_binary": "/tmp/hphys0298_wepp_forest_obs/src/wepp_hill",
+    "observe_log": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H39_observe_on/runs/wepp_observe.log",
+    "observe_off_rc": 0,
+    "observe_off_seconds": 0.07734565995633602,
+    "observe_off_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc",
+    "observe_off_to_observe_on_bit_identical": true,
+    "observe_off_to_observe_on_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "observe_off_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H39_observe_off/output/H39.wat.dat",
+    "observe_on_rc": 0,
+    "observe_on_seconds": 1.2848940710537136,
+    "observe_on_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc",
+    "observe_on_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H39_observe_on/output/H39.wat.dat",
+    "observe_worktree": "/tmp/hphys0298_wepp_forest_obs",
+    "pass": true,
+    "release_binary": "/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill",
+    "release_matches_stored_partition": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "pass": true,
+      "row_widths": [
+        25
+      ],
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "release_rc": 0,
+    "release_seconds": 0.0815442567691207,
+    "release_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc",
+    "release_to_observe_off_bit_identical": true,
+    "release_to_observe_off_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "release_wat": "/tmp/hphys0300_full_20260605T155527Z/baseline_observe/H39_release/output/H39.wat.dat",
+    "target_window_semantic_identity": {
+      "max_abs_by_column_mm": {
+        "Q": 0.0,
+        "RM": 0.0,
+        "Snow-Water": 0.0,
+        "SoilWaterTotal": 0.0,
+        "Total-Soil": 0.0
+      },
+      "observe_row_widths": [
+        25
+      ],
+      "release_row_widths": [
+        25
+      ],
+      "semantic_pass": true,
+      "target_rows_compared": 51,
+      "target_rows_missing": 0
+    },
+    "wat_bit_identical": true
+  }
+}

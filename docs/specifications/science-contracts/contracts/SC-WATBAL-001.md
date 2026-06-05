@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 110
+contract_version: 122
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-05
 supersedes: []
 superseded_by: []
 ---
@@ -245,6 +245,7 @@ lateral/drainage).
 | INV-WATBAL-072 | HPHYS0297 snow/`RM` defect-ledger water-balance invariant: water-balance residual accounting must consume the HPHYS0297 ledger before re-tiering any snow/`RM` window or returning focus to WB17/WB18/WB19. A valid ledger row must include observed candidate/baseline `RM`, reconstructed `/workdir/wepp-forest_260430_baseline` branch `RM`, reconstruction residual to named tolerance, closed `Q` and producer-consumer identity evidence, independent correctness rationale, and a final `LEGACY-DEFECTIVE`/`OPENWEPP-DEFECTIVE`/`UNRESOLVED` verdict. Rows with reconstruction residual outside tolerance remain failing/HOLD; they cannot be excluded from semantic accounting. | governance-hold | INV-WATBAL-071, INV-WATBAL-070, SC-SNOWFREEZE-001#INV-SNOWFREEZE-028, SC-RUNOFFPART-001#INV-RUNOFFPART-025 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-073 | HPHYS0298 paired snow/`RM` source-partition invariant: water-balance residual accounting must consume the HPHYS0298 partition ledger before re-tiering any of the nine H1/H7/H39 target windows or returning focus to WB17/WB18/WB19/WB13. A valid ledger row must include baseline observe identity status, full H1..H39 same-HEAD metrics, candidate/baseline `RM` and residual, ordered first-divergent cut-point, canonical symbol values and units, baseline and openWEPP source-line provenance, closed `Q` and WB13 `RM` identity status, prohibited compensation paths, independent correctness rationale, and a final `LEGACY-DEFECTIVE`/`OPENWEPP-DEFECTIVE`/`UNRESOLVED` verdict. Observe-identity failure, missing first-divergence evidence, or missing verdict keeps the window failing/HOLD and prevents downstream WB17/WB18/WB19/WB13 compensation. | governance-hold | INV-WATBAL-072, INV-WATBAL-071, SC-SNOWFREEZE-001#INV-SNOWFREEZE-029, SC-RUNOFFPART-001#INV-RUNOFFPART-026 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-074 | HPHYS0299 hourly snow partition unit/provenance invariant: water-balance residual accounting must consume the corrected HPHYS0299 unit/provenance ledger before treating HPHYS0298 `hourly-forcing` verdicts as production migration authority or returning focus to WB17/WB18/WB19/WB13. The corrected ledger must compare pinned-baseline `stmtim.for` `hrsnow` snow-depth to openWEPP `snow_hourly_snowfall_depth_sum_m`; the derived `snow_hourly_snowfall_water_equiv_sum_m` surface may support SWE diagnostics but is invalid as canonical `hrsnow` parity evidence. If corrected depth-vs-depth evidence closes the apparent `hrsnow` residual, the old HPHYS0298 all-window `OPENWEPP-DEFECTIVE` verdict is non-authoritative for production migration and continuation routing must be recalculated from full H1..H39 same-HEAD metrics. | governance-hold | INV-WATBAL-073, SC-SNOWFREEZE-001#INV-SNOWFREEZE-030, SC-CLIMATE-001#INV-CLIMATE-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-075 | HPHYS0300 raw hourly melt/post-raw routing water-balance invariant: water-balance continuation after HPHYS0299 must classify the nine H1/H7/H39 target windows from corrected forcing status, raw `hrmlt`, post-raw `wmelt`/routed melt, WB13 `RM`, `Q`, `Snow-Water`, and full H1..H39 same-HEAD metrics before re-tiering or returning to WB17/WB18/WB19. Production water-balance edits are invalid while the first divergent source is raw/post-raw snow producer lineage or corrected-depth hourly forcing. A valid HPHYS0300 ledger must preserve the H7 first-2013 `baseline_negative_raw_melt_sum_mm = 0.0` finding, keep H39 first-2013 separate as hourly forcing, require term/state lineage evidence before snow producer edits, and explicitly prohibit compensation through `Ep`, aggregate storage, percolation, lateral flow, or WB13 publication. | governance-hold | INV-WATBAL-074, INV-WATBAL-073, SC-SNOWFREEZE-001#INV-SNOWFREEZE-031, SC-RUNOFFPART-001#INV-RUNOFFPART-026 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Water-Balance Disposition Addendum
 
@@ -268,6 +269,15 @@ ledger is now required before reusing HPHYS0298 `hourly-forcing` verdicts:
 canonical `hrsnow` is snowfall depth, the openWEPP parity summary is
 `snow_hourly_snowfall_depth_sum_m`, and `snow_hourly_snowfall_water_equiv_sum_m`
 is a derived SWE-related summary for different diagnostics.
+
+### HPHYS0300 Water-Balance Raw/Post-Raw Addendum
+
+HPHYS0300 water-balance closure is a producer-lineage classifier. It may use
+full-suite H1..H39 metrics to quantify continuation impact, but those metrics
+cannot authorize WB17, WB18, WB19, or WB13 compensation while raw `hrmlt`,
+post-raw `wmelt`, or corrected-depth hourly forcing remains the first
+divergent source. Rows lacking term/state evidence remain `HOLD`, not
+semantic closure.
 
 ## Invariant Guard Map
 
@@ -347,6 +357,7 @@ is a derived SWE-related summary for different diagnostics.
 | `INV-WATBAL-072` | governance | HPHYS0297 water-balance ledger for observed/reconstructed `RM`, closed `Q`, producer-consumer identity, and final verdict | Explicit `HOLD` when reconstruction fails tolerance or verdict is absent; residuals remain in semantic accounting | HPHYS0297 snow/`RM` defect-ledger gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-073` | governance | HPHYS0298 partition ledger for baseline observe identity, same-HEAD full-suite metrics, ordered first-divergent cut-point, canonical values/source lines, closed downstream identities, and final verdict | Explicit `HOLD` when observe identity fails, first-divergence evidence is absent, verdict is absent, or downstream compensation is asserted | HPHYS0298 paired snow/`RM` lineage partition gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-074` | governance | HPHYS0299 corrected unit/provenance ledger separating canonical `hrsnow` snowfall depth from derived snowfall water-equivalent summaries before continuation routing | Explicit `HOLD` when `hrsnow` is mapped to water-equivalent snowfall, corrected depth-vs-depth evidence is absent, or HPHYS0298 production-migration authority is reused without corrected evidence | HPHYS0299 hourly snow partition unit/provenance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-075` | governance | HPHYS0300 raw/post-raw water-balance ledger spanning corrected forcing status, raw `hrmlt`, post-raw `wmelt`/routed melt, WB13 `RM`, `Q`, `Snow-Water`, full-suite metrics, and term/state evidence requirements | Explicit `HOLD` when downstream WB17/WB18/WB19/WB13 ownership is asserted before raw/post-raw producer closure or when H7/H39 special cases are collapsed into generic melt acceptance | HPHYS0300 raw hourly melt/post-raw routing gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -2119,6 +2130,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `122` | `Codex` | HPHYS0300 amendment: added `INV-WATBAL-075`, requiring raw hourly melt/post-raw routed-melt lineage evidence before downstream water-balance focus changes or snow producer edits. |
 | `2026-06-05` | `121` | `Codex` | HPHYS0299 amendment: added `INV-WATBAL-074`, suspending HPHYS0298 production-migration authority until corrected paired evidence compares pinned-baseline `hrsnow` depth with openWEPP snowfall-depth traces rather than water-equivalent summaries. |
 | `2026-06-05` | `120` | `Codex` | HPHYS0298 Claude review disposition: clarified that all-window `hourly-forcing` residual ownership is a producer-side porting-fidelity defect against `SC-SNOWFREEZE-001#INV-SNOWFREEZE-029` and pinned baseline `winter.for:410-412`, not downstream WB17/WB18/WB19/WB13 compensation authority. |
 | `2026-06-05` | `119` | `Codex` | HPHYS0298 amendment: added paired source-partition authority requiring baseline observe identity, same-HEAD full-suite metrics, ordered first-divergent cut-point evidence, source-line provenance, and final verdicts before re-tiering or downstream hydrology compensation. |

@@ -1,5 +1,15 @@
 # Work Packages
 
+- `20260605-hphys0300-raw-hourly-melt-post-raw-routing-lineage-closure-001/`
+  - Purpose: localize and, only if contract-authorized, correct the raw
+    hourly `hrmlt` and post-raw `wmelt`/routed-melt lineage for the H1/H7/H39
+    target windows after HPHYS0299 corrected the `hrsnow` unit/provenance seam.
+  - Status: executed-hold; contract-first diagnostics and same-HEAD full
+    H1..H39 metrics ran, all raw/post-raw rows remain aggregate-only
+    term/state holds, no production edits are authorized, and continuation
+    should add paired `melt.for`/`snowd.for` term/state instrumentation while
+    keeping H39 first-2013 forcing separate and prohibiting WB17/WB18/WB19/WB13
+    compensation.
 - `20260605-hphys0299-hourly-snow-partition-unit-provenance-closure-001/`
   - Purpose: correct and validate the HPHYS0298 hourly snow/rain partition
     lineage by comparing pinned-baseline `hrsnow` snow-depth to openWEPP

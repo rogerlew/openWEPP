@@ -480,6 +480,10 @@ name = "hphys0299_hourly_snow_partition_unit_provenance_contract"
 path = "tests/integration/hphys0299_hourly_snow_partition_unit_provenance_contract.rs"
 
 [[test]]
+name = "hphys0300_raw_hourly_melt_post_raw_routing_contract"
+path = "tests/integration/hphys0300_raw_hourly_melt_post_raw_routing_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 
