@@ -1,0 +1,23 @@
+{
+  "command": "tools/release/check_sc_unit_compliance.py --path <contract> --format json",
+  "pass": true,
+  "result_artifact_present": true,
+  "results": [
+    {
+      "contract": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "finding_count": 0,
+      "parsed": [],
+      "rc": 0,
+      "stderr_inline": "",
+      "stdout_inline": "[]\n"
+    },
+    {
+      "contract": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+      "finding_count": 0,
+      "parsed": [],
+      "rc": 0,
+      "stderr_inline": "",
+      "stdout_inline": "[]\n"
+    }
+  ]
+}

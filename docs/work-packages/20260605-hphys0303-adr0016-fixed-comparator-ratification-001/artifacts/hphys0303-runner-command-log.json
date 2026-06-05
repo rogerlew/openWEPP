@@ -1,0 +1,972 @@
+[
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      "refs/tags/wepp_260430_original_buggy_dac3c950"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.003,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/001_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/001_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "rev-parse",
+      "wepp_260430_original_buggy_dac3c950^{commit}"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.004,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/002_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/002_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      "refs/tags/kernel-rewrite-abandoned-20260605"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.003,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/003_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/003_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "rev-parse",
+      "kernel-rewrite-abandoned-20260605^{commit}"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.005,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/004_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/004_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "worktree",
+      "remove",
+      "--force",
+      "/tmp/hphys0303_wepp_260430_negmeltfix"
+    ],
+    "cwd": null,
+    "name": "git_worktree",
+    "rc": 0,
+    "seconds": 0.09,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/005_git_worktree.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/005_git_worktree.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "worktree",
+      "add",
+      "--detach",
+      "--no-checkout",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "dac3c950d8b16cc73774bf5ce2e7e11f80baac70"
+    ],
+    "cwd": null,
+    "name": "git_worktree",
+    "rc": 0,
+    "seconds": 0.011,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/006_git_worktree.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/006_git_worktree.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "sparse-checkout",
+      "init",
+      "--no-cone"
+    ],
+    "cwd": null,
+    "name": "git_sparse-checkout",
+    "rc": 0,
+    "seconds": 0.005,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/007_git_sparse-checkout.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/007_git_sparse-checkout.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "sparse-checkout",
+      "set",
+      "--stdin"
+    ],
+    "cwd": null,
+    "name": "git_sparse_set",
+    "rc": 0,
+    "seconds": 0.003,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/008_git_sparse_set.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/008_git_sparse_set.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      "refs/heads/wepp_260430_negmeltfix_comparator"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.003,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/009_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/009_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "checkout",
+      "wepp_260430_negmeltfix_comparator"
+    ],
+    "cwd": null,
+    "name": "git_checkout",
+    "rc": 0,
+    "seconds": 1.315,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/010_git_checkout.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/010_git_checkout.stdout.log"
+  },
+  {
+    "cmd": [
+      "bash",
+      "tools/build_wepp_dated_release.sh"
+    ],
+    "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix",
+    "name": "build_fixed_comparator_release",
+    "rc": 0,
+    "seconds": 65.941,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/011_build_fixed_comparator_release.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/011_build_fixed_comparator_release.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "add",
+      "src/winter.for",
+      "release/wepp_260430",
+      "release/wepp_260430_hill"
+    ],
+    "cwd": null,
+    "name": "git_add",
+    "rc": 0,
+    "seconds": 0.155,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/012_git_add.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/012_git_add.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "diff",
+      "--cached",
+      "--quiet"
+    ],
+    "cwd": null,
+    "name": "git_diff",
+    "rc": 0,
+    "seconds": 0.025,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/013_git_diff.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/013_git_diff.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.004,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/014_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/014_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      "refs/tags/wepp_260430_negmeltfix_comparator_47ac4c32faee"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.004,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/015_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/015_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "rev-parse",
+      "wepp_260430_negmeltfix_comparator_47ac4c32faee^{commit}"
+    ],
+    "cwd": null,
+    "name": "git_rev-parse",
+    "rc": 0,
+    "seconds": 0.004,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/016_git_rev-parse.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/016_git_rev-parse.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "diff",
+      "--name-only",
+      "dac3c950d8b16cc73774bf5ce2e7e11f80baac70..47ac4c32faeea81bb99081f955a14c38b815ef4d"
+    ],
+    "cwd": null,
+    "name": "git_diff",
+    "rc": 0,
+    "seconds": 0.005,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/017_git_diff.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/017_git_diff.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "diff",
+      "dac3c950d8b16cc73774bf5ce2e7e11f80baac70..47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "--",
+      "src/winter.for"
+    ],
+    "cwd": null,
+    "name": "git_diff",
+    "rc": 0,
+    "seconds": 0.006,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/018_git_diff.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/018_git_diff.stdout.log"
+  },
+  {
+    "cmd": [
+      "bash",
+      "/workdir/wepp-forest_260430_baseline/tools/smoke_wepp_binary_host.sh",
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": null,
+    "name": "smoke_fixed_hill",
+    "rc": 1,
+    "seconds": 0.01,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/019_smoke_fixed_hill.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/019_smoke_fixed_hill.stdout.log"
+  },
+  {
+    "cmd": [
+      "bash",
+      "/workdir/wepp-forest_260430_baseline/tools/smoke_wepp_binary_host.sh",
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430"
+    ],
+    "cwd": null,
+    "name": "smoke_fixed_watershed",
+    "rc": 1,
+    "seconds": 0.007,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/020_smoke_fixed_watershed.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/020_smoke_fixed_watershed.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_baseline/runs",
+    "name": "legacy_H1_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/021_legacy_H1_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/021_legacy_H1_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H2_fixed_baseline/runs",
+    "name": "legacy_H2_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.084,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/022_legacy_H2_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/022_legacy_H2_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H3_fixed_baseline/runs",
+    "name": "legacy_H3_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.086,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/023_legacy_H3_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/023_legacy_H3_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H4_fixed_baseline/runs",
+    "name": "legacy_H4_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.088,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/024_legacy_H4_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/024_legacy_H4_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H5_fixed_baseline/runs",
+    "name": "legacy_H5_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/025_legacy_H5_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/025_legacy_H5_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H6_fixed_baseline/runs",
+    "name": "legacy_H6_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.088,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/026_legacy_H6_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/026_legacy_H6_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_baseline/runs",
+    "name": "legacy_H7_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/027_legacy_H7_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/027_legacy_H7_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H8_fixed_baseline/runs",
+    "name": "legacy_H8_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.086,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/028_legacy_H8_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/028_legacy_H8_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H9_fixed_baseline/runs",
+    "name": "legacy_H9_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.091,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/029_legacy_H9_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/029_legacy_H9_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H10_fixed_baseline/runs",
+    "name": "legacy_H10_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.088,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/030_legacy_H10_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/030_legacy_H10_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H11_fixed_baseline/runs",
+    "name": "legacy_H11_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.088,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/031_legacy_H11_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/031_legacy_H11_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H12_fixed_baseline/runs",
+    "name": "legacy_H12_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/032_legacy_H12_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/032_legacy_H12_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H13_fixed_baseline/runs",
+    "name": "legacy_H13_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.089,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/033_legacy_H13_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/033_legacy_H13_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H14_fixed_baseline/runs",
+    "name": "legacy_H14_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.088,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/034_legacy_H14_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/034_legacy_H14_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H15_fixed_baseline/runs",
+    "name": "legacy_H15_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.09,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/035_legacy_H15_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/035_legacy_H15_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H16_fixed_baseline/runs",
+    "name": "legacy_H16_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.086,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/036_legacy_H16_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/036_legacy_H16_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H17_fixed_baseline/runs",
+    "name": "legacy_H17_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/037_legacy_H17_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/037_legacy_H17_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H18_fixed_baseline/runs",
+    "name": "legacy_H18_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.085,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/038_legacy_H18_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/038_legacy_H18_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H19_fixed_baseline/runs",
+    "name": "legacy_H19_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.085,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/039_legacy_H19_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/039_legacy_H19_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H20_fixed_baseline/runs",
+    "name": "legacy_H20_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.088,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/040_legacy_H20_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/040_legacy_H20_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H21_fixed_baseline/runs",
+    "name": "legacy_H21_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.084,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/041_legacy_H21_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/041_legacy_H21_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H22_fixed_baseline/runs",
+    "name": "legacy_H22_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.084,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/042_legacy_H22_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/042_legacy_H22_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H23_fixed_baseline/runs",
+    "name": "legacy_H23_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/043_legacy_H23_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/043_legacy_H23_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H24_fixed_baseline/runs",
+    "name": "legacy_H24_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/044_legacy_H24_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/044_legacy_H24_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H25_fixed_baseline/runs",
+    "name": "legacy_H25_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.079,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/045_legacy_H25_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/045_legacy_H25_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H26_fixed_baseline/runs",
+    "name": "legacy_H26_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.08,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/046_legacy_H26_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/046_legacy_H26_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H27_fixed_baseline/runs",
+    "name": "legacy_H27_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.083,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/047_legacy_H27_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/047_legacy_H27_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H28_fixed_baseline/runs",
+    "name": "legacy_H28_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/048_legacy_H28_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/048_legacy_H28_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H29_fixed_baseline/runs",
+    "name": "legacy_H29_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.079,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/049_legacy_H29_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/049_legacy_H29_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H30_fixed_baseline/runs",
+    "name": "legacy_H30_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/050_legacy_H30_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/050_legacy_H30_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H31_fixed_baseline/runs",
+    "name": "legacy_H31_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.082,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/051_legacy_H31_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/051_legacy_H31_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H32_fixed_baseline/runs",
+    "name": "legacy_H32_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/052_legacy_H32_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/052_legacy_H32_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H33_fixed_baseline/runs",
+    "name": "legacy_H33_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.08,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/053_legacy_H33_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/053_legacy_H33_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H34_fixed_baseline/runs",
+    "name": "legacy_H34_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/054_legacy_H34_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/054_legacy_H34_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H35_fixed_baseline/runs",
+    "name": "legacy_H35_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/055_legacy_H35_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/055_legacy_H35_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H36_fixed_baseline/runs",
+    "name": "legacy_H36_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.08,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/056_legacy_H36_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/056_legacy_H36_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H37_fixed_baseline/runs",
+    "name": "legacy_H37_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.079,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/057_legacy_H37_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/057_legacy_H37_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H38_fixed_baseline/runs",
+    "name": "legacy_H38_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.08,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/058_legacy_H38_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/058_legacy_H38_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_baseline/runs",
+    "name": "legacy_H39_fixed_baseline",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/059_legacy_H39_fixed_baseline.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/059_legacy_H39_fixed_baseline.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "worktree",
+      "remove",
+      "--force",
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe"
+    ],
+    "cwd": null,
+    "name": "git_worktree",
+    "rc": 0,
+    "seconds": 0.077,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/060_git_worktree.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/060_git_worktree.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "worktree",
+      "add",
+      "--detach",
+      "--no-checkout",
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+      "47ac4c32faeea81bb99081f955a14c38b815ef4d"
+    ],
+    "cwd": null,
+    "name": "git_worktree",
+    "rc": 0,
+    "seconds": 0.01,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/061_git_worktree.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/061_git_worktree.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+      "sparse-checkout",
+      "init",
+      "--no-cone"
+    ],
+    "cwd": null,
+    "name": "git_sparse-checkout",
+    "rc": 0,
+    "seconds": 0.004,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/062_git_sparse-checkout.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/062_git_sparse-checkout.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+      "sparse-checkout",
+      "set",
+      "--stdin"
+    ],
+    "cwd": null,
+    "name": "git_sparse_set",
+    "rc": 0,
+    "seconds": 0.003,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/063_git_sparse_set.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/063_git_sparse_set.stdout.log"
+  },
+  {
+    "cmd": [
+      "git",
+      "-C",
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+      "checkout",
+      "47ac4c32faeea81bb99081f955a14c38b815ef4d"
+    ],
+    "cwd": null,
+    "name": "git_checkout",
+    "rc": 0,
+    "seconds": 1.366,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/064_git_checkout.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/064_git_checkout.stdout.log"
+  },
+  {
+    "cmd": [
+      "bash",
+      "tools/build_wepp_dated_release.sh"
+    ],
+    "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+    "name": "build_fixed_observe_release",
+    "rc": 0,
+    "seconds": 67.061,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_release/runs",
+    "name": "legacy_H1_fixed_release",
+    "rc": 0,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_off/runs",
+    "name": "legacy_H1_fixed_observe_off",
+    "rc": 0,
+    "seconds": 0.083,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_on/runs",
+    "name": "legacy_H1_fixed_observe_on",
+    "rc": 0,
+    "seconds": 1.25,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_release/runs",
+    "name": "legacy_H7_fixed_release",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_off/runs",
+    "name": "legacy_H7_fixed_observe_off",
+    "rc": 0,
+    "seconds": 0.076,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_on/runs",
+    "name": "legacy_H7_fixed_observe_on",
+    "rc": 0,
+    "seconds": 1.258,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_release/runs",
+    "name": "legacy_H39_fixed_release",
+    "rc": 0,
+    "seconds": 0.08,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_off/runs",
+    "name": "legacy_H39_fixed_observe_off",
+    "rc": 0,
+    "seconds": 0.081,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stdout.log"
+  },
+  {
+    "cmd": [
+      "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+    ],
+    "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_on/runs",
+    "name": "legacy_H39_fixed_observe_on",
+    "rc": 0,
+    "seconds": 1.245,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stdout.log"
+  },
+  {
+    "cmd": [
+      "python3",
+      "tools/release/check_sc_unit_compliance.py",
+      "--path",
+      "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+      "--format",
+      "json"
+    ],
+    "cwd": "/home/workdir/openWEPP",
+    "name": "sc_lint_SC-SNOWFREEZE-001",
+    "rc": 1,
+    "seconds": 0.09,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/075_sc_lint_SC-SNOWFREEZE-001.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/075_sc_lint_SC-SNOWFREEZE-001.stdout.log"
+  },
+  {
+    "cmd": [
+      "python3",
+      "tools/release/check_sc_unit_compliance.py",
+      "--path",
+      "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+      "--format",
+      "json"
+    ],
+    "cwd": "/home/workdir/openWEPP",
+    "name": "sc_lint_SC-WATBAL-001",
+    "rc": 1,
+    "seconds": 0.087,
+    "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/076_sc_lint_SC-WATBAL-001.stderr.log",
+    "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/076_sc_lint_SC-WATBAL-001.stdout.log"
+  }
+]

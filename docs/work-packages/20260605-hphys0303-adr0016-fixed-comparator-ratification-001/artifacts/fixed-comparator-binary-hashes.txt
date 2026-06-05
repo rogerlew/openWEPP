@@ -1,0 +1,6 @@
+# Fixed Comparator Binary Hashes
+
+Ran:
+
+- `wepp_260430`: `cd56985bf1575d8d82d4b4f943ca29a4fc2865448d7c308c0220c565a8955e87` at `/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430`
+- `wepp_260430_hill`: `b9337f1db714ef3d4ae45633b88249ccdc5416fbb7f5614a45fb688126eb45cd` at `/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill`

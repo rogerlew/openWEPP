@@ -1,0 +1,471 @@
+{
+  "changed_hillslopes": [
+    1,
+    2,
+    3,
+    6,
+    8,
+    9,
+    10,
+    11,
+    12,
+    14,
+    17,
+    21,
+    26,
+    28,
+    33,
+    38
+  ],
+  "fixed_partition_dir": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions",
+  "hillslope_count": 39,
+  "original_partition_dir": "/tmp/unpalatable_parity_20260529T192707Z/reports/hillslope/baseline_partitions",
+  "proof_mode": "runtime-output-delta-manifest plus source-delta-limited static proof",
+  "rows": [
+    {
+      "changed_columns": {
+        "Snow-Water": 2,
+        "SoilWaterTotal": 10,
+        "Total-Soil Water": 10
+      },
+      "changed_rows": 12,
+      "hill": 1,
+      "max_abs_diff": 0.010000000000047748,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "Snow-Water": 2,
+        "SoilWaterTotal": 4,
+        "Total-Soil Water": 4
+      },
+      "changed_rows": 6,
+      "hill": 2,
+      "max_abs_diff": 0.010000000000047748,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 1,
+        "Total-Soil Water": 1
+      },
+      "changed_rows": 1,
+      "hill": 3,
+      "max_abs_diff": 0.009999999999990905,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 4,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 5,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "RM": 1,
+        "Snow-Water": 1,
+        "SoilWaterTotal": 2,
+        "Total-Soil Water": 2
+      },
+      "changed_rows": 4,
+      "hill": 6,
+      "max_abs_diff": 0.009999999999999787,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 7,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 3,
+        "Total-Soil Water": 3
+      },
+      "changed_rows": 3,
+      "hill": 8,
+      "max_abs_diff": 0.010000000000019327,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 2,
+        "Total-Soil Water": 2
+      },
+      "changed_rows": 2,
+      "hill": 9,
+      "max_abs_diff": 0.010000000000019327,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 6,
+        "Total-Soil Water": 6
+      },
+      "changed_rows": 6,
+      "hill": 10,
+      "max_abs_diff": 0.010000000000047748,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "RM": 1,
+        "SoilWaterTotal": 4,
+        "Total-Soil Water": 4
+      },
+      "changed_rows": 5,
+      "hill": 11,
+      "max_abs_diff": 0.00999999999999801,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 1,
+        "Total-Soil Water": 1
+      },
+      "changed_rows": 1,
+      "hill": 12,
+      "max_abs_diff": 0.009999999999990905,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 13,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 7,
+        "Total-Soil Water": 7
+      },
+      "changed_rows": 7,
+      "hill": 14,
+      "max_abs_diff": 0.009999999999990905,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 15,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 16,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 1,
+        "Total-Soil Water": 1
+      },
+      "changed_rows": 1,
+      "hill": 17,
+      "max_abs_diff": 0.009999999999990905,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 18,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 19,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 20,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 1,
+        "Total-Soil Water": 1
+      },
+      "changed_rows": 1,
+      "hill": 21,
+      "max_abs_diff": 0.009999999999990905,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 22,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 23,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 24,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 25,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 4,
+        "Total-Soil Water": 4
+      },
+      "changed_rows": 4,
+      "hill": 26,
+      "max_abs_diff": 0.010000000000005116,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 27,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "SoilWaterTotal": 2,
+        "Total-Soil Water": 2
+      },
+      "changed_rows": 2,
+      "hill": 28,
+      "max_abs_diff": 0.009999999999990905,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 29,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 30,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 31,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 32,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "Snow-Water": 2,
+        "SoilWaterTotal": 3,
+        "Total-Soil Water": 3
+      },
+      "changed_rows": 5,
+      "hill": 33,
+      "max_abs_diff": 0.010000000000005116,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 34,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 35,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 36,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 37,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {
+        "Snow-Water": 2,
+        "SoilWaterTotal": 2,
+        "Total-Soil Water": 2
+      },
+      "changed_rows": 4,
+      "hill": 38,
+      "max_abs_diff": 0.010000000000047748,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    },
+    {
+      "changed_columns": {},
+      "changed_rows": 0,
+      "hill": 39,
+      "max_abs_diff": 0.0,
+      "merged_rows": 1461,
+      "row_count_fixed": 1461,
+      "row_count_original": 1461,
+      "status": "compared"
+    }
+  ]
+}

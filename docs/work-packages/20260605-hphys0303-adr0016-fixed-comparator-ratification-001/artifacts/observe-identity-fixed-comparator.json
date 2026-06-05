@@ -1,0 +1,392 @@
+{
+  "hills_checked": [
+    1,
+    7,
+    39
+  ],
+  "observe_build": {
+    "binaries": {
+      "wepp_260430": {
+        "exists": true,
+        "path": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430",
+        "sha256": "7923803238c5f7ad20751a8e9c493397d94b1aa98613b52da9ba2fff92b4a4be"
+      },
+      "wepp_260430_hill": {
+        "exists": true,
+        "path": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "sha256": "ec2d25b6a22a33f3f87a1fd37e4f1a861ebb0f1693ed9396d7e0eec1fbd52969"
+      }
+    },
+    "command": {
+      "cmd": [
+        "bash",
+        "tools/build_wepp_dated_release.sh"
+      ],
+      "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+      "name": "build_fixed_observe_release",
+      "rc": 0,
+      "seconds": 67.0605733837001,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stdout.log"
+    }
+  },
+  "observe_source_worktree": "/tmp/hphys0298_wepp_forest_obs",
+  "observe_worktree": "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+  "pass": true,
+  "required_hills": [
+    1,
+    7,
+    39
+  ],
+  "rows": [
+    {
+      "hill": 1,
+      "observe_off": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "hill": 1,
+        "lane": "fixed_observe_off",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_off/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.083,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_off/output/H1.wat.dat",
+        "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+      },
+      "observe_off_to_observe_on_bit_identical": true,
+      "observe_off_to_observe_on_semantic_identity": {
+        "common_rows": 1461,
+        "left_row_widths": [
+          25
+        ],
+        "max_abs_by_column": {
+          "Area": 0.0,
+          "Dp": 0.0,
+          "Ep": 0.0,
+          "Er": 0.0,
+          "Es": 0.0,
+          "Irr": 0.0,
+          "P": 0.0,
+          "ProfileDepth": 0.0,
+          "ProfileFCStore": 0.0,
+          "ProfilePorosityCap": 0.0,
+          "ProfileWPStore": 0.0,
+          "Q": 0.0,
+          "QOFE": 0.0,
+          "RM": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "SubRIn": 0.0,
+          "Tile": 0.0,
+          "UpStrmQ": 0.0,
+          "frozwt": 0.0,
+          "latqcc": 0.0
+        },
+        "missing_or_extra_rows": 0,
+        "right_row_widths": [
+          25
+        ],
+        "semantic_pass": true
+      },
+      "observe_on": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "hill": 1,
+        "lane": "fixed_observe_on",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_on/runs/wepp_observe.log",
+        "observe_records": 66195,
+        "rc": 0,
+        "seconds": 1.25,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_on/output/H1.wat.dat",
+        "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+      },
+      "pass": true,
+      "release": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 1,
+        "lane": "fixed_release",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_release/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_release/output/H1.wat.dat",
+        "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+      },
+      "release_to_observe_off_bit_identical": true,
+      "release_to_observe_off_semantic_identity": {
+        "common_rows": 1461,
+        "left_row_widths": [
+          25
+        ],
+        "max_abs_by_column": {
+          "Area": 0.0,
+          "Dp": 0.0,
+          "Ep": 0.0,
+          "Er": 0.0,
+          "Es": 0.0,
+          "Irr": 0.0,
+          "P": 0.0,
+          "ProfileDepth": 0.0,
+          "ProfileFCStore": 0.0,
+          "ProfilePorosityCap": 0.0,
+          "ProfileWPStore": 0.0,
+          "Q": 0.0,
+          "QOFE": 0.0,
+          "RM": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "SubRIn": 0.0,
+          "Tile": 0.0,
+          "UpStrmQ": 0.0,
+          "frozwt": 0.0,
+          "latqcc": 0.0
+        },
+        "missing_or_extra_rows": 0,
+        "right_row_widths": [
+          25
+        ],
+        "semantic_pass": true
+      }
+    },
+    {
+      "hill": 7,
+      "observe_off": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "hill": 7,
+        "lane": "fixed_observe_off",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_off/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.076,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_off/output/H7.wat.dat",
+        "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+      },
+      "observe_off_to_observe_on_bit_identical": true,
+      "observe_off_to_observe_on_semantic_identity": {
+        "common_rows": 1461,
+        "left_row_widths": [
+          25
+        ],
+        "max_abs_by_column": {
+          "Area": 0.0,
+          "Dp": 0.0,
+          "Ep": 0.0,
+          "Er": 0.0,
+          "Es": 0.0,
+          "Irr": 0.0,
+          "P": 0.0,
+          "ProfileDepth": 0.0,
+          "ProfileFCStore": 0.0,
+          "ProfilePorosityCap": 0.0,
+          "ProfileWPStore": 0.0,
+          "Q": 0.0,
+          "QOFE": 0.0,
+          "RM": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "SubRIn": 0.0,
+          "Tile": 0.0,
+          "UpStrmQ": 0.0,
+          "frozwt": 0.0,
+          "latqcc": 0.0
+        },
+        "missing_or_extra_rows": 0,
+        "right_row_widths": [
+          25
+        ],
+        "semantic_pass": true
+      },
+      "observe_on": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "hill": 7,
+        "lane": "fixed_observe_on",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_on/runs/wepp_observe.log",
+        "observe_records": 66853,
+        "rc": 0,
+        "seconds": 1.258,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_on/output/H7.wat.dat",
+        "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+      },
+      "pass": true,
+      "release": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 7,
+        "lane": "fixed_release",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_release/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_release/output/H7.wat.dat",
+        "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+      },
+      "release_to_observe_off_bit_identical": true,
+      "release_to_observe_off_semantic_identity": {
+        "common_rows": 1461,
+        "left_row_widths": [
+          25
+        ],
+        "max_abs_by_column": {
+          "Area": 0.0,
+          "Dp": 0.0,
+          "Ep": 0.0,
+          "Er": 0.0,
+          "Es": 0.0,
+          "Irr": 0.0,
+          "P": 0.0,
+          "ProfileDepth": 0.0,
+          "ProfileFCStore": 0.0,
+          "ProfilePorosityCap": 0.0,
+          "ProfileWPStore": 0.0,
+          "Q": 0.0,
+          "QOFE": 0.0,
+          "RM": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "SubRIn": 0.0,
+          "Tile": 0.0,
+          "UpStrmQ": 0.0,
+          "frozwt": 0.0,
+          "latqcc": 0.0
+        },
+        "missing_or_extra_rows": 0,
+        "right_row_widths": [
+          25
+        ],
+        "semantic_pass": true
+      }
+    },
+    {
+      "hill": 39,
+      "observe_off": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "hill": 39,
+        "lane": "fixed_observe_off",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_off/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_off/output/H39.wat.dat",
+        "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+      },
+      "observe_off_to_observe_on_bit_identical": true,
+      "observe_off_to_observe_on_semantic_identity": {
+        "common_rows": 1461,
+        "left_row_widths": [
+          25
+        ],
+        "max_abs_by_column": {
+          "Area": 0.0,
+          "Dp": 0.0,
+          "Ep": 0.0,
+          "Er": 0.0,
+          "Es": 0.0,
+          "Irr": 0.0,
+          "P": 0.0,
+          "ProfileDepth": 0.0,
+          "ProfileFCStore": 0.0,
+          "ProfilePorosityCap": 0.0,
+          "ProfileWPStore": 0.0,
+          "Q": 0.0,
+          "QOFE": 0.0,
+          "RM": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "SubRIn": 0.0,
+          "Tile": 0.0,
+          "UpStrmQ": 0.0,
+          "frozwt": 0.0,
+          "latqcc": 0.0
+        },
+        "missing_or_extra_rows": 0,
+        "right_row_widths": [
+          25
+        ],
+        "semantic_pass": true
+      },
+      "observe_on": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+        "hill": 39,
+        "lane": "fixed_observe_on",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_on/runs/wepp_observe.log",
+        "observe_records": 66246,
+        "rc": 0,
+        "seconds": 1.245,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_on/output/H39.wat.dat",
+        "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+      },
+      "pass": true,
+      "release": {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 39,
+        "lane": "fixed_release",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_release/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.08,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_release/output/H39.wat.dat",
+        "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+      },
+      "release_to_observe_off_bit_identical": true,
+      "release_to_observe_off_semantic_identity": {
+        "common_rows": 1461,
+        "left_row_widths": [
+          25
+        ],
+        "max_abs_by_column": {
+          "Area": 0.0,
+          "Dp": 0.0,
+          "Ep": 0.0,
+          "Er": 0.0,
+          "Es": 0.0,
+          "Irr": 0.0,
+          "P": 0.0,
+          "ProfileDepth": 0.0,
+          "ProfileFCStore": 0.0,
+          "ProfilePorosityCap": 0.0,
+          "ProfileWPStore": 0.0,
+          "Q": 0.0,
+          "QOFE": 0.0,
+          "RM": 0.0,
+          "Snow-Water": 0.0,
+          "SoilWaterTotal": 0.0,
+          "SubRIn": 0.0,
+          "Tile": 0.0,
+          "UpStrmQ": 0.0,
+          "frozwt": 0.0,
+          "latqcc": 0.0
+        },
+        "missing_or_extra_rows": 0,
+        "right_row_widths": [
+          25
+        ],
+        "semantic_pass": true
+      }
+    }
+  ],
+  "scope": "H1/H7/H39 fixed release vs fixed observe-off/observe-on WAT identity"
+}

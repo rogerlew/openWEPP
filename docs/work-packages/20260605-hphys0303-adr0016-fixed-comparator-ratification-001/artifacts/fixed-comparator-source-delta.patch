@@ -1,0 +1,24 @@
+diff --git a/src/winter.for b/src/winter.for
+index 6ee33628..db5f84c2 100755
+--- a/src/winter.for
++++ b/src/winter.for
+@@ -431,7 +431,8 @@ c
+ c
+ 20     continue
+ c
+-       if (pstvML .le. ngtvML) then
++c      HPHYS0303 fixed comparator: compare net daily melt sign
++       if (pstvML + ngtvML .le. 0.0) then
+               wmelt(iplane) = 0
+            do 30 hour = 1, 24
+               hrmlt(hour,iplane) = 0.0
+@@ -444,7 +445,8 @@ c        Prevent crash with divide by 0 5-5-2008 jrf
+        else
+ c
+            do 40 hour = 1, 24
+-              hrmlt(hour,iplane) = hrmlt(hour,iplane)*(1-ngtvML/pstvML)
++c      HPHYS0303 fixed comparator: ngtvML<0 reduces positive melt
++              hrmlt(hour,iplane) = hrmlt(hour,iplane)*(1+ngtvML/pstvML)
+ 40         continue
+ c        Prevent crash with divide by 0 5-5-2008 jrf
+          if (densgt.ne.0.0) then

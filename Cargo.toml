@@ -488,6 +488,14 @@ name = "hphys0301_h39_forcing_melt_term_producer_contract"
 path = "tests/integration/hphys0301_h39_forcing_melt_term_producer_contract.rs"
 
 [[test]]
+name = "hphys0302_comparator_surface_audit_contract"
+path = "tests/integration/hphys0302_comparator_surface_audit_contract.rs"
+
+[[test]]
+name = "hphys0303_adr0016_comparator_ratification_contract"
+path = "tests/integration/hphys0303_adr0016_comparator_ratification_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

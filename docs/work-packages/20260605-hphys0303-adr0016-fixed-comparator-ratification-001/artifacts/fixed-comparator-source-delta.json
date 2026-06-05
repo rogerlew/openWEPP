@@ -1,0 +1,17 @@
+{
+  "base_sha": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+  "changed_files": [
+    "release/wepp_260430",
+    "release/wepp_260430_hill",
+    "src/winter.for"
+  ],
+  "contains_net_sign_fix": true,
+  "contains_positive_melt_scale_fix": true,
+  "fix_provenance_sha": "03fee4558456535138592630b5dedc4d81ce8d06",
+  "fixed_sha": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+  "pass": true,
+  "source_delta_limited_to_winter": true,
+  "source_files": [
+    "src/winter.for"
+  ]
+}

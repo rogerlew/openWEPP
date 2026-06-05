@@ -1,0 +1,4135 @@
+{
+  "abandoned_repo": "/workdir/wepp-forest",
+  "abandoned_sha": "924ab16d07edea8b904bcf64d3d7e276fc45d21e",
+  "base_sha": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+  "baseline_repo": "/workdir/wepp-forest_260430_baseline",
+  "blockers": [],
+  "commands": [
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        "refs/tags/wepp_260430_original_buggy_dac3c950"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.003,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/001_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/001_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "rev-parse",
+        "wepp_260430_original_buggy_dac3c950^{commit}"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.004,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/002_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/002_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        "refs/tags/kernel-rewrite-abandoned-20260605"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.003,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/003_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/003_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "rev-parse",
+        "kernel-rewrite-abandoned-20260605^{commit}"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.005,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/004_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/004_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "worktree",
+        "remove",
+        "--force",
+        "/tmp/hphys0303_wepp_260430_negmeltfix"
+      ],
+      "cwd": null,
+      "name": "git_worktree",
+      "rc": 0,
+      "seconds": 0.09,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/005_git_worktree.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/005_git_worktree.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "worktree",
+        "add",
+        "--detach",
+        "--no-checkout",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "dac3c950d8b16cc73774bf5ce2e7e11f80baac70"
+      ],
+      "cwd": null,
+      "name": "git_worktree",
+      "rc": 0,
+      "seconds": 0.011,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/006_git_worktree.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/006_git_worktree.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "sparse-checkout",
+        "init",
+        "--no-cone"
+      ],
+      "cwd": null,
+      "name": "git_sparse-checkout",
+      "rc": 0,
+      "seconds": 0.005,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/007_git_sparse-checkout.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/007_git_sparse-checkout.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "sparse-checkout",
+        "set",
+        "--stdin"
+      ],
+      "cwd": null,
+      "name": "git_sparse_set",
+      "rc": 0,
+      "seconds": 0.003,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/008_git_sparse_set.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/008_git_sparse_set.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        "refs/heads/wepp_260430_negmeltfix_comparator"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.003,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/009_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/009_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "checkout",
+        "wepp_260430_negmeltfix_comparator"
+      ],
+      "cwd": null,
+      "name": "git_checkout",
+      "rc": 0,
+      "seconds": 1.315,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/010_git_checkout.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/010_git_checkout.stdout.log"
+    },
+    {
+      "cmd": [
+        "bash",
+        "tools/build_wepp_dated_release.sh"
+      ],
+      "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "name": "build_fixed_comparator_release",
+      "rc": 0,
+      "seconds": 65.941,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/011_build_fixed_comparator_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/011_build_fixed_comparator_release.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "add",
+        "src/winter.for",
+        "release/wepp_260430",
+        "release/wepp_260430_hill"
+      ],
+      "cwd": null,
+      "name": "git_add",
+      "rc": 0,
+      "seconds": 0.155,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/012_git_add.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/012_git_add.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "diff",
+        "--cached",
+        "--quiet"
+      ],
+      "cwd": null,
+      "name": "git_diff",
+      "rc": 0,
+      "seconds": 0.025,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/013_git_diff.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/013_git_diff.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.004,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/014_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/014_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        "refs/tags/wepp_260430_negmeltfix_comparator_47ac4c32faee"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.004,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/015_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/015_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "rev-parse",
+        "wepp_260430_negmeltfix_comparator_47ac4c32faee^{commit}"
+      ],
+      "cwd": null,
+      "name": "git_rev-parse",
+      "rc": 0,
+      "seconds": 0.004,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/016_git_rev-parse.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/016_git_rev-parse.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "diff",
+        "--name-only",
+        "dac3c950d8b16cc73774bf5ce2e7e11f80baac70..47ac4c32faeea81bb99081f955a14c38b815ef4d"
+      ],
+      "cwd": null,
+      "name": "git_diff",
+      "rc": 0,
+      "seconds": 0.005,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/017_git_diff.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/017_git_diff.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix",
+        "diff",
+        "dac3c950d8b16cc73774bf5ce2e7e11f80baac70..47ac4c32faeea81bb99081f955a14c38b815ef4d",
+        "--",
+        "src/winter.for"
+      ],
+      "cwd": null,
+      "name": "git_diff",
+      "rc": 0,
+      "seconds": 0.006,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/018_git_diff.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/018_git_diff.stdout.log"
+    },
+    {
+      "cmd": [
+        "bash",
+        "/workdir/wepp-forest_260430_baseline/tools/smoke_wepp_binary_host.sh",
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": null,
+      "name": "smoke_fixed_hill",
+      "rc": 1,
+      "seconds": 0.01,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/019_smoke_fixed_hill.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/019_smoke_fixed_hill.stdout.log"
+    },
+    {
+      "cmd": [
+        "bash",
+        "/workdir/wepp-forest_260430_baseline/tools/smoke_wepp_binary_host.sh",
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430"
+      ],
+      "cwd": null,
+      "name": "smoke_fixed_watershed",
+      "rc": 1,
+      "seconds": 0.007,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/020_smoke_fixed_watershed.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/020_smoke_fixed_watershed.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_baseline/runs",
+      "name": "legacy_H1_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/021_legacy_H1_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/021_legacy_H1_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H2_fixed_baseline/runs",
+      "name": "legacy_H2_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.084,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/022_legacy_H2_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/022_legacy_H2_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H3_fixed_baseline/runs",
+      "name": "legacy_H3_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.086,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/023_legacy_H3_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/023_legacy_H3_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H4_fixed_baseline/runs",
+      "name": "legacy_H4_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.088,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/024_legacy_H4_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/024_legacy_H4_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H5_fixed_baseline/runs",
+      "name": "legacy_H5_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/025_legacy_H5_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/025_legacy_H5_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H6_fixed_baseline/runs",
+      "name": "legacy_H6_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.088,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/026_legacy_H6_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/026_legacy_H6_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_baseline/runs",
+      "name": "legacy_H7_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/027_legacy_H7_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/027_legacy_H7_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H8_fixed_baseline/runs",
+      "name": "legacy_H8_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.086,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/028_legacy_H8_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/028_legacy_H8_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H9_fixed_baseline/runs",
+      "name": "legacy_H9_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.091,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/029_legacy_H9_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/029_legacy_H9_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H10_fixed_baseline/runs",
+      "name": "legacy_H10_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.088,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/030_legacy_H10_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/030_legacy_H10_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H11_fixed_baseline/runs",
+      "name": "legacy_H11_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.088,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/031_legacy_H11_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/031_legacy_H11_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H12_fixed_baseline/runs",
+      "name": "legacy_H12_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/032_legacy_H12_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/032_legacy_H12_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H13_fixed_baseline/runs",
+      "name": "legacy_H13_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.089,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/033_legacy_H13_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/033_legacy_H13_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H14_fixed_baseline/runs",
+      "name": "legacy_H14_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.088,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/034_legacy_H14_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/034_legacy_H14_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H15_fixed_baseline/runs",
+      "name": "legacy_H15_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.09,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/035_legacy_H15_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/035_legacy_H15_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H16_fixed_baseline/runs",
+      "name": "legacy_H16_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.086,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/036_legacy_H16_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/036_legacy_H16_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H17_fixed_baseline/runs",
+      "name": "legacy_H17_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/037_legacy_H17_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/037_legacy_H17_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H18_fixed_baseline/runs",
+      "name": "legacy_H18_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.085,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/038_legacy_H18_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/038_legacy_H18_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H19_fixed_baseline/runs",
+      "name": "legacy_H19_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.085,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/039_legacy_H19_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/039_legacy_H19_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H20_fixed_baseline/runs",
+      "name": "legacy_H20_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.088,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/040_legacy_H20_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/040_legacy_H20_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H21_fixed_baseline/runs",
+      "name": "legacy_H21_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.084,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/041_legacy_H21_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/041_legacy_H21_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H22_fixed_baseline/runs",
+      "name": "legacy_H22_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.084,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/042_legacy_H22_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/042_legacy_H22_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H23_fixed_baseline/runs",
+      "name": "legacy_H23_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/043_legacy_H23_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/043_legacy_H23_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H24_fixed_baseline/runs",
+      "name": "legacy_H24_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/044_legacy_H24_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/044_legacy_H24_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H25_fixed_baseline/runs",
+      "name": "legacy_H25_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.079,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/045_legacy_H25_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/045_legacy_H25_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H26_fixed_baseline/runs",
+      "name": "legacy_H26_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.08,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/046_legacy_H26_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/046_legacy_H26_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H27_fixed_baseline/runs",
+      "name": "legacy_H27_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.083,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/047_legacy_H27_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/047_legacy_H27_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H28_fixed_baseline/runs",
+      "name": "legacy_H28_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/048_legacy_H28_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/048_legacy_H28_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H29_fixed_baseline/runs",
+      "name": "legacy_H29_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.079,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/049_legacy_H29_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/049_legacy_H29_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H30_fixed_baseline/runs",
+      "name": "legacy_H30_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/050_legacy_H30_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/050_legacy_H30_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H31_fixed_baseline/runs",
+      "name": "legacy_H31_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.082,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/051_legacy_H31_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/051_legacy_H31_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H32_fixed_baseline/runs",
+      "name": "legacy_H32_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/052_legacy_H32_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/052_legacy_H32_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H33_fixed_baseline/runs",
+      "name": "legacy_H33_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.08,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/053_legacy_H33_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/053_legacy_H33_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H34_fixed_baseline/runs",
+      "name": "legacy_H34_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/054_legacy_H34_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/054_legacy_H34_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H35_fixed_baseline/runs",
+      "name": "legacy_H35_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/055_legacy_H35_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/055_legacy_H35_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H36_fixed_baseline/runs",
+      "name": "legacy_H36_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.08,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/056_legacy_H36_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/056_legacy_H36_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H37_fixed_baseline/runs",
+      "name": "legacy_H37_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.079,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/057_legacy_H37_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/057_legacy_H37_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H38_fixed_baseline/runs",
+      "name": "legacy_H38_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.08,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/058_legacy_H38_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/058_legacy_H38_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_baseline/runs",
+      "name": "legacy_H39_fixed_baseline",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/059_legacy_H39_fixed_baseline.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/059_legacy_H39_fixed_baseline.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "worktree",
+        "remove",
+        "--force",
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe"
+      ],
+      "cwd": null,
+      "name": "git_worktree",
+      "rc": 0,
+      "seconds": 0.077,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/060_git_worktree.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/060_git_worktree.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/workdir/wepp-forest_260430_baseline",
+        "worktree",
+        "add",
+        "--detach",
+        "--no-checkout",
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+        "47ac4c32faeea81bb99081f955a14c38b815ef4d"
+      ],
+      "cwd": null,
+      "name": "git_worktree",
+      "rc": 0,
+      "seconds": 0.01,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/061_git_worktree.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/061_git_worktree.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+        "sparse-checkout",
+        "init",
+        "--no-cone"
+      ],
+      "cwd": null,
+      "name": "git_sparse-checkout",
+      "rc": 0,
+      "seconds": 0.004,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/062_git_sparse-checkout.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/062_git_sparse-checkout.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+        "sparse-checkout",
+        "set",
+        "--stdin"
+      ],
+      "cwd": null,
+      "name": "git_sparse_set",
+      "rc": 0,
+      "seconds": 0.003,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/063_git_sparse_set.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/063_git_sparse_set.stdout.log"
+    },
+    {
+      "cmd": [
+        "git",
+        "-C",
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+        "checkout",
+        "47ac4c32faeea81bb99081f955a14c38b815ef4d"
+      ],
+      "cwd": null,
+      "name": "git_checkout",
+      "rc": 0,
+      "seconds": 1.366,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/064_git_checkout.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/064_git_checkout.stdout.log"
+    },
+    {
+      "cmd": [
+        "bash",
+        "tools/build_wepp_dated_release.sh"
+      ],
+      "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+      "name": "build_fixed_observe_release",
+      "rc": 0,
+      "seconds": 67.061,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_release/runs",
+      "name": "legacy_H1_fixed_release",
+      "rc": 0,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_off/runs",
+      "name": "legacy_H1_fixed_observe_off",
+      "rc": 0,
+      "seconds": 0.083,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_on/runs",
+      "name": "legacy_H1_fixed_observe_on",
+      "rc": 0,
+      "seconds": 1.25,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_release/runs",
+      "name": "legacy_H7_fixed_release",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_off/runs",
+      "name": "legacy_H7_fixed_observe_off",
+      "rc": 0,
+      "seconds": 0.076,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_on/runs",
+      "name": "legacy_H7_fixed_observe_on",
+      "rc": 0,
+      "seconds": 1.258,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_release/runs",
+      "name": "legacy_H39_fixed_release",
+      "rc": 0,
+      "seconds": 0.08,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_off/runs",
+      "name": "legacy_H39_fixed_observe_off",
+      "rc": 0,
+      "seconds": 0.081,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stdout.log"
+    },
+    {
+      "cmd": [
+        "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill"
+      ],
+      "cwd": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_on/runs",
+      "name": "legacy_H39_fixed_observe_on",
+      "rc": 0,
+      "seconds": 1.245,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stdout.log"
+    },
+    {
+      "cmd": [
+        "python3",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "--format",
+        "json"
+      ],
+      "cwd": "/home/workdir/openWEPP",
+      "name": "sc_lint_SC-SNOWFREEZE-001",
+      "rc": 1,
+      "seconds": 0.09,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/075_sc_lint_SC-SNOWFREEZE-001.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/075_sc_lint_SC-SNOWFREEZE-001.stdout.log"
+    },
+    {
+      "cmd": [
+        "python3",
+        "tools/release/check_sc_unit_compliance.py",
+        "--path",
+        "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+        "--format",
+        "json"
+      ],
+      "cwd": "/home/workdir/openWEPP",
+      "name": "sc_lint_SC-WATBAL-001",
+      "rc": 1,
+      "seconds": 0.087,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/076_sc_lint_SC-WATBAL-001.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/076_sc_lint_SC-WATBAL-001.stdout.log"
+    }
+  ],
+  "fix_provenance_sha": "03fee4558456535138592630b5dedc4d81ce8d06",
+  "fixed_baseline_parquets": {
+    "all_generated": true,
+    "expected_count": 39,
+    "expected_years": [
+      2013,
+      2014,
+      2015,
+      2016
+    ],
+    "generated_count": 39,
+    "partition_dir": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions",
+    "partitions": [
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 1,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H1.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "c163c85a788d0caaaf7028f78ca4e6e3e197833a68780ff28b7abad5a3472d1c",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_baseline/output/H1.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 2,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H2.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "aef97d9741606ca5e3d136b12022be9f96b7eb0a55c5920d345dc4592bb835e9",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H2_fixed_baseline/output/H2.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 3,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H3.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "b8cdfb63122ffcca0aef6d00ba6141bced5df52c7d48d4ca1e016a9bdb2fdd40",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H3_fixed_baseline/output/H3.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 4,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H4.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "191edff545191878ed7df03ce3421fdb05388c4b12ad75c9149dc2823114bfe9",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H4_fixed_baseline/output/H4.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 5,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H5.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "8d9be49057244d70fd68c2e21e2c7ac5bd8c18e0e1ccc56a43355d5e6dd57190",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H5_fixed_baseline/output/H5.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 6,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H6.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "76987b75369eaaf325d5e1a348183d86139e2b96a43f50b39a577b9f5d87f2b7",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H6_fixed_baseline/output/H6.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 7,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H7.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "1b09e45be5444f639d6a091cfdd4985b01116dac4d0d05091edf2eda7dd50b52",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_baseline/output/H7.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 8,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H8.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "59811a759ef6bc77e61c44343fbe5f9df557d6747b77cc9b2da55a937b7def20",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H8_fixed_baseline/output/H8.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 9,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H9.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "41fec1f4fd1d0e32f28eff3c6497ec580f7ab32b51b1f0d09085fa5fed07cd16",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H9_fixed_baseline/output/H9.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 10,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H10.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "2a21a4e4e29c8c08aa970f6a318621f6b336c01801cfb04bf1e564caba6c62da",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H10_fixed_baseline/output/H10.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 11,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H11.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "b12291c28e3942f7ae65189010e53fd7a2f29d57d35bcaaf8c6931041a077cd2",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H11_fixed_baseline/output/H11.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 12,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H12.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "fd6cd83bceaefb79053c0c84a97e2d3223047a76ac0559a3447bab5f0ca51573",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H12_fixed_baseline/output/H12.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 13,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H13.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "603e98eafea90e9682a7b67c82cc6f9a689197781354d037040ecd764d0b374c",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H13_fixed_baseline/output/H13.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 14,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H14.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "4492589236c8afa43d8ee7da3263705b17a5f116dcadeca88220968aacfe3dbe",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H14_fixed_baseline/output/H14.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 15,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H15.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "f2a6a8eda145ea9b34190b3bae6761326300c8546a226e7efc96d0ad3606e114",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H15_fixed_baseline/output/H15.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 16,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H16.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "18df881082200293309bba9f53e68f7a13388a5d5df04060c966566253d2e1d0",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H16_fixed_baseline/output/H16.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 17,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H17.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "0da5df637d11544f9fb6c8a8336ef76196c481ce17a4a1e763eb6091180df353",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H17_fixed_baseline/output/H17.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 18,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H18.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "acf3f5668a0afb69e74b8dc1aa31546c1c0787967b011c385fffe516c22fe314",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H18_fixed_baseline/output/H18.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 19,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H19.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "9545f8f6e5505762c258c582e83ca4ccc009aea9636f00548618bd0a0d1c34ef",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H19_fixed_baseline/output/H19.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 20,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H20.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "8be94b0451645c1a66567d83d9487838c35cf89edfd9706ef9caf43a050a8335",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H20_fixed_baseline/output/H20.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 21,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H21.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "ac3fa4f17dffebaf51b1fe2b3a64cb9a6ba67f10a43b0bb7ada528c2b040d401",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H21_fixed_baseline/output/H21.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 22,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H22.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "963a0bb5c5039ff4b0909c8ee94e75fcfef85a13ade86c4875446b21dbe0cd45",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H22_fixed_baseline/output/H22.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 23,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H23.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "4083461caab45bdb5092c6702e315b7fd1093f1213859d1c086c01afd26bf87a",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H23_fixed_baseline/output/H23.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 24,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H24.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "850f3da1e081a446e908e10a2615a6fc1a99ef64285824e12586330679a28707",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H24_fixed_baseline/output/H24.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 25,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H25.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "da19ceff24da89e6b837e105b0b534f52da6e4d38b305e808253648f7ba39de0",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H25_fixed_baseline/output/H25.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 26,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H26.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "c846fc2c2bc148fba6727338da6420837ba030f324be15217006ed619a8bcc9a",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H26_fixed_baseline/output/H26.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 27,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H27.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "96124cc0eeedcf9d9bc9cf74542e353be4a564790eac89da8ad7cb93354f4736",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H27_fixed_baseline/output/H27.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 28,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H28.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "7e4f41ffadc5feea79d303998a4e48d83fa661207e873fc52c56e7cb969d732a",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H28_fixed_baseline/output/H28.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 29,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H29.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "a85c55f34d026aefd1162c71982b4f31dde6098a18001bea06117b00ce1371f9",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H29_fixed_baseline/output/H29.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 30,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H30.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "33c7b7f5046aa0fd59721becc88d23fa5f401ccb2760690cc43e165488d9859e",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H30_fixed_baseline/output/H30.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 31,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H31.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "ecb8ce607cd6e78954bc1c6c9a2b2062bda66067e71950dce400db4888a3147a",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H31_fixed_baseline/output/H31.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 32,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H32.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "50291d68ceb8738d400aa4e30b63482d68789e86c2ca3b0919708d44354a0092",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H32_fixed_baseline/output/H32.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 33,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H33.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "0329ffae33862fac27cefdb7a2e10abd3519f291baad52306464b7a105fbf65e",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H33_fixed_baseline/output/H33.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 34,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H34.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "9d2d3f0f223872eb1a0fc2ae113c7937086eca81818c9f612a35a80867603fea",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H34_fixed_baseline/output/H34.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 35,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H35.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "29251ec0ad8403b8aeffcbeeeabcba53a08ed2e9574640ebeaa6da0fb353421d",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H35_fixed_baseline/output/H35.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 36,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H36.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "f39bc8d517b482f9b27ff93f895478e08ac9dd38e078ae93806fced387981da6",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H36_fixed_baseline/output/H36.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 37,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H37.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "ce01b7da46507384fdc1431dd60fa7b5467a43416f145ede74525d979a6e9e1d",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H37_fixed_baseline/output/H37.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 38,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H38.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "a66779b342e7ca5e4e1262d776f457fe422fa16676690dcb29f74c8e9ca7f2c9",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H38_fixed_baseline/output/H38.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      },
+      {
+        "duplicate_key_count": 0,
+        "expected_year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "expected_years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ],
+        "expected_years_pass": true,
+        "hill": 39,
+        "julian_max": 366,
+        "julian_min": 1,
+        "parquet": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions/baseline_H39.parquet",
+        "row_count": 1461,
+        "row_widths": [
+          25
+        ],
+        "sha256": "15bed354b7ce65a28807e2508149f62eda4445086d043d0f8ef4f5c7a41cdf1d",
+        "source_wat": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_baseline/output/H39.wat.dat",
+        "year_max": 2016,
+        "year_min": 2013,
+        "year_row_counts": {
+          "2013": 365,
+          "2014": 365,
+          "2015": 365,
+          "2016": 366
+        },
+        "years": [
+          2013,
+          2014,
+          2015,
+          2016
+        ]
+      }
+    ],
+    "runs": [
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 1,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/021_legacy_H1_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/021_legacy_H1_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_baseline/output/H1.wat.dat",
+        "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 2,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H2_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.084,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/022_legacy_H2_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/022_legacy_H2_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H2_fixed_baseline/output/H2.wat.dat",
+        "wat_sha256": "bb47e86974ce8cd99ec28cdb62e9736610291717c19ec10bfd85b4de7c85130d"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 3,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H3_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.086,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/023_legacy_H3_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/023_legacy_H3_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H3_fixed_baseline/output/H3.wat.dat",
+        "wat_sha256": "38333d628c39fd686b33ed243f851bfda7c35ba26a4c177ad1b9be50e3fbbb1f"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 4,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H4_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.088,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/024_legacy_H4_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/024_legacy_H4_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H4_fixed_baseline/output/H4.wat.dat",
+        "wat_sha256": "956e928ab41ec52743dbcad81b754a42d6f044633ae1d251a117c533505ea6fa"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 5,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H5_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/025_legacy_H5_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/025_legacy_H5_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H5_fixed_baseline/output/H5.wat.dat",
+        "wat_sha256": "6bce8fdffc26ede1c56e1cdf4f6832c71c43f82c047a0317d501c9387b9a33c7"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 6,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H6_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.088,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/026_legacy_H6_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/026_legacy_H6_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H6_fixed_baseline/output/H6.wat.dat",
+        "wat_sha256": "ca65103a90786b6e687d46d1bc0d3fd917170f367939354b3663f6746d5b7d71"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 7,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/027_legacy_H7_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/027_legacy_H7_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_baseline/output/H7.wat.dat",
+        "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 8,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H8_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.086,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/028_legacy_H8_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/028_legacy_H8_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H8_fixed_baseline/output/H8.wat.dat",
+        "wat_sha256": "3c0366d05ea9324c0438492aee89d27ff3b7246598105a7e8f146967fad3bdb4"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 9,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H9_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.091,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/029_legacy_H9_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/029_legacy_H9_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H9_fixed_baseline/output/H9.wat.dat",
+        "wat_sha256": "0a9824f9101937b7f1f87890be0b013eb71d9f369fc5380e029b2bffc620bdf9"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 10,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H10_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.088,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/030_legacy_H10_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/030_legacy_H10_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H10_fixed_baseline/output/H10.wat.dat",
+        "wat_sha256": "8d4ac228c4e8e8db8a5005ac83f0f05a5c437051f3ace9c408aeed0190c30541"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 11,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H11_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.088,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/031_legacy_H11_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/031_legacy_H11_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H11_fixed_baseline/output/H11.wat.dat",
+        "wat_sha256": "fbb3b0eacb2fc6068412b81a42f8fcd3933fc7c626457a3cf1a8a8701ac97b3d"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 12,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H12_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/032_legacy_H12_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/032_legacy_H12_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H12_fixed_baseline/output/H12.wat.dat",
+        "wat_sha256": "b4ed0f59722d452a8d1be25d45a5a2a04820b1d4c2f67c6e7fe1ad8aaccd0b7a"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 13,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H13_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.089,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/033_legacy_H13_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/033_legacy_H13_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H13_fixed_baseline/output/H13.wat.dat",
+        "wat_sha256": "5ce67afe5c60ba4e41ab6d28903ff97248eef3e9a979088ad3fede443f006568"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 14,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H14_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.088,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/034_legacy_H14_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/034_legacy_H14_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H14_fixed_baseline/output/H14.wat.dat",
+        "wat_sha256": "b0c854a3623fa12efa664d4b1d2402a41b68a809295bfe00c9779c92d8e5034f"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 15,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H15_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.09,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/035_legacy_H15_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/035_legacy_H15_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H15_fixed_baseline/output/H15.wat.dat",
+        "wat_sha256": "a14b0497297b1560b12c13ab11bc46879165af881f55f7366ac5759371f60382"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 16,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H16_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.086,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/036_legacy_H16_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/036_legacy_H16_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H16_fixed_baseline/output/H16.wat.dat",
+        "wat_sha256": "dd6070bd907cc5752f7ad9edc3a7f1d0fc59c1627397d4839fe39f439ad784a1"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 17,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H17_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/037_legacy_H17_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/037_legacy_H17_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H17_fixed_baseline/output/H17.wat.dat",
+        "wat_sha256": "715847a0054434e9359e256e948e56e680944bc8e2d979b0611e86abc3193d8c"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 18,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H18_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.085,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/038_legacy_H18_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/038_legacy_H18_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H18_fixed_baseline/output/H18.wat.dat",
+        "wat_sha256": "3346a8e01ab4f230d2069ea747c390cb32a60e9ef1abc9c75e94bb07aa420e4f"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 19,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H19_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.085,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/039_legacy_H19_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/039_legacy_H19_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H19_fixed_baseline/output/H19.wat.dat",
+        "wat_sha256": "6bac0798b73f1dbbb969587758163e4c5add20e80228761bf9d1cb17ea686fd8"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 20,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H20_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.088,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/040_legacy_H20_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/040_legacy_H20_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H20_fixed_baseline/output/H20.wat.dat",
+        "wat_sha256": "a58234e12b7ff077890dc024bd00ad6d9b0c8ebcb281fcf55c8476dcf32bb8c1"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 21,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H21_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.084,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/041_legacy_H21_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/041_legacy_H21_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H21_fixed_baseline/output/H21.wat.dat",
+        "wat_sha256": "9feb12071e2b0c008b3c20b8c5ea28fb17d95054e527bfcb4ff28d12db1e03f2"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 22,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H22_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.084,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/042_legacy_H22_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/042_legacy_H22_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H22_fixed_baseline/output/H22.wat.dat",
+        "wat_sha256": "d27a754ff046cd853f5bda755658331bddd75679ad36c39ae2812dd237112e8d"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 23,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H23_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/043_legacy_H23_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/043_legacy_H23_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H23_fixed_baseline/output/H23.wat.dat",
+        "wat_sha256": "2968cf0af6ae66939b1a562063f0273292f03cd43bbb488e533178d797ea3788"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 24,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H24_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.087,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/044_legacy_H24_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/044_legacy_H24_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H24_fixed_baseline/output/H24.wat.dat",
+        "wat_sha256": "77cbb6732984077bfa6d4c7d0702a2d42cbbfd648427867043bdba99dd56a118"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 25,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H25_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.079,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/045_legacy_H25_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/045_legacy_H25_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H25_fixed_baseline/output/H25.wat.dat",
+        "wat_sha256": "7f930e0597de0cfb8522c3ff3f85c278b95e9c93679aa6ce8d47d81e69575183"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 26,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H26_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.08,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/046_legacy_H26_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/046_legacy_H26_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H26_fixed_baseline/output/H26.wat.dat",
+        "wat_sha256": "ae0e6eb653f661a5b78ac68db104f82ebfc5ead89195aa38d701a5650df21338"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 27,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H27_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.083,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/047_legacy_H27_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/047_legacy_H27_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H27_fixed_baseline/output/H27.wat.dat",
+        "wat_sha256": "38fb3f2af86c04d469813f7a24e61a3372290cfdd80acc48468e2ebafa3972d5"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 28,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H28_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/048_legacy_H28_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/048_legacy_H28_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H28_fixed_baseline/output/H28.wat.dat",
+        "wat_sha256": "4b21ccda32cbf117194c3f4a27363e2dfdd3642773ef9688b98abe276220dd9a"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 29,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H29_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.079,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/049_legacy_H29_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/049_legacy_H29_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H29_fixed_baseline/output/H29.wat.dat",
+        "wat_sha256": "7348b56412b1a892e158f274319883b27a13070fd956019bf360abbd155c2293"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 30,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H30_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/050_legacy_H30_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/050_legacy_H30_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H30_fixed_baseline/output/H30.wat.dat",
+        "wat_sha256": "a8bf5946af07c321e4ed999b07a9b51c60c696cbfdfe9132e340345fdc3f4923"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 31,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H31_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.082,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/051_legacy_H31_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/051_legacy_H31_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H31_fixed_baseline/output/H31.wat.dat",
+        "wat_sha256": "40b513cd8e86c9d991606ed93bffcd7e2947905ef00e8262ca88c733f14315e4"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 32,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H32_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/052_legacy_H32_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/052_legacy_H32_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H32_fixed_baseline/output/H32.wat.dat",
+        "wat_sha256": "a7edb79d305d8a2e1a6baa9d49577414aaf271ee65ca1787878b7536e2a0ff31"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 33,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H33_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.08,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/053_legacy_H33_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/053_legacy_H33_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H33_fixed_baseline/output/H33.wat.dat",
+        "wat_sha256": "7a2bc101c9f993c52364839f967c8b73e63ad77f564a3a7052f9873d7b1a5250"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 34,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H34_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/054_legacy_H34_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/054_legacy_H34_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H34_fixed_baseline/output/H34.wat.dat",
+        "wat_sha256": "f54683978ea375953bfe524a0bfc0de5bb5491aaaf2ad7c9b7e48f818f8058ab"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 35,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H35_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/055_legacy_H35_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/055_legacy_H35_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H35_fixed_baseline/output/H35.wat.dat",
+        "wat_sha256": "585cc3087e6c88af32037d2baa64276f06931317d6b8d6577507aaa01fc4139f"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 36,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H36_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.08,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/056_legacy_H36_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/056_legacy_H36_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H36_fixed_baseline/output/H36.wat.dat",
+        "wat_sha256": "a8caed1051169a4304a8f462ac02fa7ef97d6943ad95fc0f1ae6de06d992ee91"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 37,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H37_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.079,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/057_legacy_H37_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/057_legacy_H37_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H37_fixed_baseline/output/H37.wat.dat",
+        "wat_sha256": "be3c0c8614909dc933ec6ec8194df8e97063e9d5d48f5141458de97f95a7a845"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 38,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H38_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.08,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/058_legacy_H38_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/058_legacy_H38_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H38_fixed_baseline/output/H38.wat.dat",
+        "wat_sha256": "643243aa2a2af4a39a76b0001b4547a9ce0491a5a52fbec5e036663fe1e7a2b6"
+      },
+      {
+        "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "hill": 39,
+        "lane": "fixed_baseline",
+        "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_baseline/runs/wepp_observe.log",
+        "observe_records": 0,
+        "rc": 0,
+        "seconds": 0.081,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/059_legacy_H39_fixed_baseline.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/059_legacy_H39_fixed_baseline.stdout.log",
+        "wat_exists": true,
+        "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_baseline/output/H39.wat.dat",
+        "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+      }
+    ],
+    "source_binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+    "source_binary_sha256": "b9337f1db714ef3d4ae45633b88249ccdc5416fbb7f5614a45fb688126eb45cd",
+    "year_key_validation_pass": true
+  },
+  "fixed_branch": "wepp_260430_negmeltfix_comparator",
+  "fixed_build": {
+    "binaries": {
+      "wepp_260430": {
+        "exists": true,
+        "path": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430",
+        "sha256": "cd56985bf1575d8d82d4b4f943ca29a4fc2865448d7c308c0220c565a8955e87"
+      },
+      "wepp_260430_hill": {
+        "exists": true,
+        "path": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+        "sha256": "b9337f1db714ef3d4ae45633b88249ccdc5416fbb7f5614a45fb688126eb45cd"
+      }
+    },
+    "command": {
+      "cmd": [
+        "bash",
+        "tools/build_wepp_dated_release.sh"
+      ],
+      "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix",
+      "name": "build_fixed_comparator_release",
+      "rc": 0,
+      "seconds": 65.94122715387493,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/011_build_fixed_comparator_release.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/011_build_fixed_comparator_release.stdout.log"
+    }
+  },
+  "fixed_sha": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+  "fixed_tag": "wepp_260430_negmeltfix_comparator_47ac4c32faee",
+  "fixed_vs_original_output_delta": {
+    "changed_hillslopes": [
+      1,
+      2,
+      3,
+      6,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      17,
+      21,
+      26,
+      28,
+      33,
+      38
+    ],
+    "fixed_partition_dir": "/tmp/hphys0303_adr0016_1780691036/reports/hillslope/fixed_baseline_partitions",
+    "hillslope_count": 39,
+    "original_partition_dir": "/tmp/unpalatable_parity_20260529T192707Z/reports/hillslope/baseline_partitions",
+    "proof_mode": "runtime-output-delta-manifest plus source-delta-limited static proof",
+    "rows": [
+      {
+        "changed_columns": {
+          "Snow-Water": 2,
+          "SoilWaterTotal": 10,
+          "Total-Soil Water": 10
+        },
+        "changed_rows": 12,
+        "hill": 1,
+        "max_abs_diff": 0.010000000000047748,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "Snow-Water": 2,
+          "SoilWaterTotal": 4,
+          "Total-Soil Water": 4
+        },
+        "changed_rows": 6,
+        "hill": 2,
+        "max_abs_diff": 0.010000000000047748,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 1,
+          "Total-Soil Water": 1
+        },
+        "changed_rows": 1,
+        "hill": 3,
+        "max_abs_diff": 0.009999999999990905,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 4,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 5,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "RM": 1,
+          "Snow-Water": 1,
+          "SoilWaterTotal": 2,
+          "Total-Soil Water": 2
+        },
+        "changed_rows": 4,
+        "hill": 6,
+        "max_abs_diff": 0.009999999999999787,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 7,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 3,
+          "Total-Soil Water": 3
+        },
+        "changed_rows": 3,
+        "hill": 8,
+        "max_abs_diff": 0.010000000000019327,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 2,
+          "Total-Soil Water": 2
+        },
+        "changed_rows": 2,
+        "hill": 9,
+        "max_abs_diff": 0.010000000000019327,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 6,
+          "Total-Soil Water": 6
+        },
+        "changed_rows": 6,
+        "hill": 10,
+        "max_abs_diff": 0.010000000000047748,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "RM": 1,
+          "SoilWaterTotal": 4,
+          "Total-Soil Water": 4
+        },
+        "changed_rows": 5,
+        "hill": 11,
+        "max_abs_diff": 0.00999999999999801,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 1,
+          "Total-Soil Water": 1
+        },
+        "changed_rows": 1,
+        "hill": 12,
+        "max_abs_diff": 0.009999999999990905,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 13,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 7,
+          "Total-Soil Water": 7
+        },
+        "changed_rows": 7,
+        "hill": 14,
+        "max_abs_diff": 0.009999999999990905,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 15,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 16,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 1,
+          "Total-Soil Water": 1
+        },
+        "changed_rows": 1,
+        "hill": 17,
+        "max_abs_diff": 0.009999999999990905,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 18,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 19,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 20,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 1,
+          "Total-Soil Water": 1
+        },
+        "changed_rows": 1,
+        "hill": 21,
+        "max_abs_diff": 0.009999999999990905,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 22,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 23,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 24,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 25,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 4,
+          "Total-Soil Water": 4
+        },
+        "changed_rows": 4,
+        "hill": 26,
+        "max_abs_diff": 0.010000000000005116,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 27,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "SoilWaterTotal": 2,
+          "Total-Soil Water": 2
+        },
+        "changed_rows": 2,
+        "hill": 28,
+        "max_abs_diff": 0.009999999999990905,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 29,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 30,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 31,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 32,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "Snow-Water": 2,
+          "SoilWaterTotal": 3,
+          "Total-Soil Water": 3
+        },
+        "changed_rows": 5,
+        "hill": 33,
+        "max_abs_diff": 0.010000000000005116,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 34,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 35,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 36,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 37,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {
+          "Snow-Water": 2,
+          "SoilWaterTotal": 2,
+          "Total-Soil Water": 2
+        },
+        "changed_rows": 4,
+        "hill": 38,
+        "max_abs_diff": 0.010000000000047748,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      },
+      {
+        "changed_columns": {},
+        "changed_rows": 0,
+        "hill": 39,
+        "max_abs_diff": 0.0,
+        "merged_rows": 1461,
+        "row_count_fixed": 1461,
+        "row_count_original": 1461,
+        "status": "compared"
+      }
+    ]
+  },
+  "fixed_worktree": "/tmp/hphys0303_wepp_260430_negmeltfix",
+  "git_refs": {
+    "abandoned_tag": {
+      "created": false,
+      "pass": true,
+      "tag": "kernel-rewrite-abandoned-20260605",
+      "target": "924ab16d07edea8b904bcf64d3d7e276fc45d21e"
+    },
+    "fixed_sha": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "fixed_tag": {
+      "created": false,
+      "pass": true,
+      "tag": "wepp_260430_negmeltfix_comparator_47ac4c32faee",
+      "target": "47ac4c32faeea81bb99081f955a14c38b815ef4d"
+    },
+    "original_tag": {
+      "created": false,
+      "pass": true,
+      "tag": "wepp_260430_original_buggy_dac3c950",
+      "target": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70"
+    }
+  },
+  "hphys0302_hold_carried_forward": true,
+  "observe_identity": {
+    "hills_checked": [
+      1,
+      7,
+      39
+    ],
+    "observe_build": {
+      "binaries": {
+        "wepp_260430": {
+          "exists": true,
+          "path": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430",
+          "sha256": "7923803238c5f7ad20751a8e9c493397d94b1aa98613b52da9ba2fff92b4a4be"
+        },
+        "wepp_260430_hill": {
+          "exists": true,
+          "path": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "sha256": "ec2d25b6a22a33f3f87a1fd37e4f1a861ebb0f1693ed9396d7e0eec1fbd52969"
+        }
+      },
+      "command": {
+        "cmd": [
+          "bash",
+          "tools/build_wepp_dated_release.sh"
+        ],
+        "cwd": "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+        "name": "build_fixed_observe_release",
+        "rc": 0,
+        "seconds": 67.0605733837001,
+        "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stderr.log",
+        "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/065_build_fixed_observe_release.stdout.log"
+      }
+    },
+    "observe_source_worktree": "/tmp/hphys0298_wepp_forest_obs",
+    "observe_worktree": "/tmp/hphys0303_wepp_260430_negmeltfix_observe",
+    "pass": true,
+    "required_hills": [
+      1,
+      7,
+      39
+    ],
+    "rows": [
+      {
+        "hill": 1,
+        "observe_off": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "hill": 1,
+          "lane": "fixed_observe_off",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_off/runs/wepp_observe.log",
+          "observe_records": 0,
+          "rc": 0,
+          "seconds": 0.083,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/067_legacy_H1_fixed_observe_off.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_off/output/H1.wat.dat",
+          "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+        },
+        "observe_off_to_observe_on_bit_identical": true,
+        "observe_off_to_observe_on_semantic_identity": {
+          "common_rows": 1461,
+          "left_row_widths": [
+            25
+          ],
+          "max_abs_by_column": {
+            "Area": 0.0,
+            "Dp": 0.0,
+            "Ep": 0.0,
+            "Er": 0.0,
+            "Es": 0.0,
+            "Irr": 0.0,
+            "P": 0.0,
+            "ProfileDepth": 0.0,
+            "ProfileFCStore": 0.0,
+            "ProfilePorosityCap": 0.0,
+            "ProfileWPStore": 0.0,
+            "Q": 0.0,
+            "QOFE": 0.0,
+            "RM": 0.0,
+            "Snow-Water": 0.0,
+            "SoilWaterTotal": 0.0,
+            "SubRIn": 0.0,
+            "Tile": 0.0,
+            "UpStrmQ": 0.0,
+            "frozwt": 0.0,
+            "latqcc": 0.0
+          },
+          "missing_or_extra_rows": 0,
+          "right_row_widths": [
+            25
+          ],
+          "semantic_pass": true
+        },
+        "observe_on": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "hill": 1,
+          "lane": "fixed_observe_on",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_on/runs/wepp_observe.log",
+          "observe_records": 66195,
+          "rc": 0,
+          "seconds": 1.25,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/068_legacy_H1_fixed_observe_on.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_observe_on/output/H1.wat.dat",
+          "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+        },
+        "pass": true,
+        "release": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+          "hill": 1,
+          "lane": "fixed_release",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_release/runs/wepp_observe.log",
+          "observe_records": 0,
+          "rc": 0,
+          "seconds": 0.087,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/066_legacy_H1_fixed_release.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H1_fixed_release/output/H1.wat.dat",
+          "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+        },
+        "release_to_observe_off_bit_identical": true,
+        "release_to_observe_off_semantic_identity": {
+          "common_rows": 1461,
+          "left_row_widths": [
+            25
+          ],
+          "max_abs_by_column": {
+            "Area": 0.0,
+            "Dp": 0.0,
+            "Ep": 0.0,
+            "Er": 0.0,
+            "Es": 0.0,
+            "Irr": 0.0,
+            "P": 0.0,
+            "ProfileDepth": 0.0,
+            "ProfileFCStore": 0.0,
+            "ProfilePorosityCap": 0.0,
+            "ProfileWPStore": 0.0,
+            "Q": 0.0,
+            "QOFE": 0.0,
+            "RM": 0.0,
+            "Snow-Water": 0.0,
+            "SoilWaterTotal": 0.0,
+            "SubRIn": 0.0,
+            "Tile": 0.0,
+            "UpStrmQ": 0.0,
+            "frozwt": 0.0,
+            "latqcc": 0.0
+          },
+          "missing_or_extra_rows": 0,
+          "right_row_widths": [
+            25
+          ],
+          "semantic_pass": true
+        }
+      },
+      {
+        "hill": 7,
+        "observe_off": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "hill": 7,
+          "lane": "fixed_observe_off",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_off/runs/wepp_observe.log",
+          "observe_records": 0,
+          "rc": 0,
+          "seconds": 0.076,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/070_legacy_H7_fixed_observe_off.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_off/output/H7.wat.dat",
+          "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+        },
+        "observe_off_to_observe_on_bit_identical": true,
+        "observe_off_to_observe_on_semantic_identity": {
+          "common_rows": 1461,
+          "left_row_widths": [
+            25
+          ],
+          "max_abs_by_column": {
+            "Area": 0.0,
+            "Dp": 0.0,
+            "Ep": 0.0,
+            "Er": 0.0,
+            "Es": 0.0,
+            "Irr": 0.0,
+            "P": 0.0,
+            "ProfileDepth": 0.0,
+            "ProfileFCStore": 0.0,
+            "ProfilePorosityCap": 0.0,
+            "ProfileWPStore": 0.0,
+            "Q": 0.0,
+            "QOFE": 0.0,
+            "RM": 0.0,
+            "Snow-Water": 0.0,
+            "SoilWaterTotal": 0.0,
+            "SubRIn": 0.0,
+            "Tile": 0.0,
+            "UpStrmQ": 0.0,
+            "frozwt": 0.0,
+            "latqcc": 0.0
+          },
+          "missing_or_extra_rows": 0,
+          "right_row_widths": [
+            25
+          ],
+          "semantic_pass": true
+        },
+        "observe_on": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "hill": 7,
+          "lane": "fixed_observe_on",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_on/runs/wepp_observe.log",
+          "observe_records": 66853,
+          "rc": 0,
+          "seconds": 1.258,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/071_legacy_H7_fixed_observe_on.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_observe_on/output/H7.wat.dat",
+          "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+        },
+        "pass": true,
+        "release": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+          "hill": 7,
+          "lane": "fixed_release",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_release/runs/wepp_observe.log",
+          "observe_records": 0,
+          "rc": 0,
+          "seconds": 0.081,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/069_legacy_H7_fixed_release.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H7_fixed_release/output/H7.wat.dat",
+          "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+        },
+        "release_to_observe_off_bit_identical": true,
+        "release_to_observe_off_semantic_identity": {
+          "common_rows": 1461,
+          "left_row_widths": [
+            25
+          ],
+          "max_abs_by_column": {
+            "Area": 0.0,
+            "Dp": 0.0,
+            "Ep": 0.0,
+            "Er": 0.0,
+            "Es": 0.0,
+            "Irr": 0.0,
+            "P": 0.0,
+            "ProfileDepth": 0.0,
+            "ProfileFCStore": 0.0,
+            "ProfilePorosityCap": 0.0,
+            "ProfileWPStore": 0.0,
+            "Q": 0.0,
+            "QOFE": 0.0,
+            "RM": 0.0,
+            "Snow-Water": 0.0,
+            "SoilWaterTotal": 0.0,
+            "SubRIn": 0.0,
+            "Tile": 0.0,
+            "UpStrmQ": 0.0,
+            "frozwt": 0.0,
+            "latqcc": 0.0
+          },
+          "missing_or_extra_rows": 0,
+          "right_row_widths": [
+            25
+          ],
+          "semantic_pass": true
+        }
+      },
+      {
+        "hill": 39,
+        "observe_off": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "hill": 39,
+          "lane": "fixed_observe_off",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_off/runs/wepp_observe.log",
+          "observe_records": 0,
+          "rc": 0,
+          "seconds": 0.081,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/073_legacy_H39_fixed_observe_off.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_off/output/H39.wat.dat",
+          "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+        },
+        "observe_off_to_observe_on_bit_identical": true,
+        "observe_off_to_observe_on_semantic_identity": {
+          "common_rows": 1461,
+          "left_row_widths": [
+            25
+          ],
+          "max_abs_by_column": {
+            "Area": 0.0,
+            "Dp": 0.0,
+            "Ep": 0.0,
+            "Er": 0.0,
+            "Es": 0.0,
+            "Irr": 0.0,
+            "P": 0.0,
+            "ProfileDepth": 0.0,
+            "ProfileFCStore": 0.0,
+            "ProfilePorosityCap": 0.0,
+            "ProfileWPStore": 0.0,
+            "Q": 0.0,
+            "QOFE": 0.0,
+            "RM": 0.0,
+            "Snow-Water": 0.0,
+            "SoilWaterTotal": 0.0,
+            "SubRIn": 0.0,
+            "Tile": 0.0,
+            "UpStrmQ": 0.0,
+            "frozwt": 0.0,
+            "latqcc": 0.0
+          },
+          "missing_or_extra_rows": 0,
+          "right_row_widths": [
+            25
+          ],
+          "semantic_pass": true
+        },
+        "observe_on": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix_observe/release/wepp_260430_hill",
+          "hill": 39,
+          "lane": "fixed_observe_on",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_on/runs/wepp_observe.log",
+          "observe_records": 66246,
+          "rc": 0,
+          "seconds": 1.245,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/074_legacy_H39_fixed_observe_on.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_observe_on/output/H39.wat.dat",
+          "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+        },
+        "pass": true,
+        "release": {
+          "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+          "hill": 39,
+          "lane": "fixed_release",
+          "observe_log": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_release/runs/wepp_observe.log",
+          "observe_records": 0,
+          "rc": 0,
+          "seconds": 0.08,
+          "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stderr.log",
+          "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/072_legacy_H39_fixed_release.stdout.log",
+          "wat_exists": true,
+          "wat_path": "/tmp/hphys0303_adr0016_1780691036/legacy_runs/H39_fixed_release/output/H39.wat.dat",
+          "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+        },
+        "release_to_observe_off_bit_identical": true,
+        "release_to_observe_off_semantic_identity": {
+          "common_rows": 1461,
+          "left_row_widths": [
+            25
+          ],
+          "max_abs_by_column": {
+            "Area": 0.0,
+            "Dp": 0.0,
+            "Ep": 0.0,
+            "Er": 0.0,
+            "Es": 0.0,
+            "Irr": 0.0,
+            "P": 0.0,
+            "ProfileDepth": 0.0,
+            "ProfileFCStore": 0.0,
+            "ProfilePorosityCap": 0.0,
+            "ProfileWPStore": 0.0,
+            "Q": 0.0,
+            "QOFE": 0.0,
+            "RM": 0.0,
+            "Snow-Water": 0.0,
+            "SoilWaterTotal": 0.0,
+            "SubRIn": 0.0,
+            "Tile": 0.0,
+            "UpStrmQ": 0.0,
+            "frozwt": 0.0,
+            "latqcc": 0.0
+          },
+          "missing_or_extra_rows": 0,
+          "right_row_widths": [
+            25
+          ],
+          "semantic_pass": true
+        }
+      }
+    ],
+    "scope": "H1/H7/H39 fixed release vs fixed observe-off/observe-on WAT identity"
+  },
+  "package": "20260605-hphys0303-adr0016-fixed-comparator-ratification-001",
+  "production_edit_authorized": false,
+  "ratification_checklist": {
+    "abandoned_line_tag": {
+      "evidence": "artifacts/fixed-comparator-git-refs.md",
+      "pass": true
+    },
+    "fixed_binary_hashes": {
+      "evidence": "artifacts/fixed-comparator-binary-hashes.txt",
+      "pass": true
+    },
+    "fixed_branch_tag_commit": {
+      "evidence": "artifacts/fixed-comparator-git-refs.md",
+      "pass": true
+    },
+    "h1_h39_parquet_manifest": {
+      "evidence": "artifacts/fixed-baseline-parquet-manifest.json",
+      "pass": true
+    },
+    "hphys0302_hold": {
+      "evidence": "artifacts/comparator-ratification-ledger.json",
+      "pass": true
+    },
+    "observe_identity": {
+      "evidence": "artifacts/observe-identity-fixed-comparator.json",
+      "pass": true
+    },
+    "original_baseline_tag": {
+      "evidence": "artifacts/fixed-comparator-git-refs.md",
+      "pass": true
+    },
+    "output_delta_manifest": {
+      "evidence": "artifacts/fixed-vs-original-output-delta.json",
+      "pass": true
+    },
+    "sc_lint_result_artifact": {
+      "evidence": "artifacts/sc-unit-provenance-lint.json",
+      "pass": true
+    },
+    "smoke_or_replay_disposition": {
+      "evidence": "artifacts/comparator-ratification-ledger.json",
+      "pass": true
+    },
+    "source_delta_limited": {
+      "evidence": "artifacts/fixed-comparator-source-delta.json",
+      "pass": true
+    }
+  },
+  "ratification_status": "accepted-ready",
+  "remote_push_performed": false,
+  "run_root": "/tmp/hphys0303_adr0016_1780691036",
+  "sc_unit_provenance_lint": {
+    "command": "tools/release/check_sc_unit_compliance.py --path <contract> --format json",
+    "pass": true,
+    "result_artifact_present": true,
+    "results": [
+      {
+        "contract": "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md",
+        "finding_count": 0,
+        "parsed": [],
+        "rc": 0,
+        "stderr_inline": "",
+        "stdout_inline": "[]\n"
+      },
+      {
+        "contract": "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md",
+        "finding_count": 0,
+        "parsed": [],
+        "rc": 0,
+        "stderr_inline": "",
+        "stdout_inline": "[]\n"
+      }
+    ]
+  },
+  "schema": "hphys0303-adr0016-ratification-v1",
+  "smoke_checks": [
+    {
+      "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+      "label": "fixed_hill",
+      "pass": false,
+      "rc": 1,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/019_smoke_fixed_hill.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/019_smoke_fixed_hill.stdout.log"
+    },
+    {
+      "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430",
+      "label": "fixed_watershed",
+      "pass": false,
+      "rc": 1,
+      "stderr": "/tmp/hphys0303_adr0016_1780691036/logs/commands/020_smoke_fixed_watershed.stderr.log",
+      "stdout": "/tmp/hphys0303_adr0016_1780691036/logs/commands/020_smoke_fixed_watershed.stdout.log"
+    }
+  ],
+  "smoke_checks_disposition": {
+    "pass": true,
+    "reason": "host smoke helper requires p*.run/chntyp.txt/gwcoeff.txt files absent from the selected HPHYS fixture root; H1..H39 fixed baseline replay is the executable binary gate",
+    "status": "non_applicable_missing_helper_fixtures"
+  },
+  "source_delta": {
+    "base_sha": "dac3c950d8b16cc73774bf5ce2e7e11f80baac70",
+    "changed_files": [
+      "release/wepp_260430",
+      "release/wepp_260430_hill",
+      "src/winter.for"
+    ],
+    "contains_net_sign_fix": true,
+    "contains_positive_melt_scale_fix": true,
+    "fix_provenance_sha": "03fee4558456535138592630b5dedc4d81ce8d06",
+    "fixed_sha": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "pass": true,
+    "source_delta_limited_to_winter": true,
+    "source_files": [
+      "src/winter.for"
+    ]
+  }
+}

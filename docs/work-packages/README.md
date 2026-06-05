@@ -1,5 +1,30 @@
 # Work Packages
 
+- `20260605-hphys0303-adr0016-fixed-comparator-ratification-001/`
+  - Purpose: execute the local ADR-0016 ratification work for the fixed
+    `wepp_260430` comparator anchor: preserve immutable archaeology tags,
+    create a fixed negative-melt comparator branch/tag, rebuild and hash fixed
+    binaries, regenerate baseline comparator artifacts where feasible, amend
+    ADR-0012/ADR-0016 and negative-melt provenance citations, and carry the
+    HPHYS0302 production-edit HOLD forward.
+  - Status: executed-accepted-ready; execution was local only, did not push
+    remote refs, created fixed comparator commit
+    `47ac4c32faeea81bb99081f955a14c38b815ef4d`, regenerated H1..H39 fixed
+    baseline comparator parquets with year/key validation, proved H1/H7/H39
+    observe identity, passed SC unit/provenance lint after contract-table
+    amendments, and amended ADR-0016/ADR-0012 plus negative-melt provenance
+    citations. HPHYS0302 production-edit `HOLD` remains active; H1..H39
+    openWEPP-vs-fixed-baseline semantic rerun remains required continuation.
+- `20260605-hphys0302-comparator-surface-audit-closure-001/`
+  - Purpose: audit comparator surfaces for `RM`, `Snow-Water`, and melt-term
+    lineage across H1/H7/H39 target windows before any new producer-defect
+    conclusion or production patch.
+  - Status: executed-hold; comparator-surface audit emitted 45 surface rows:
+    `RM` passes as daily WB13/WAT like-for-like output, `Snow-Water` passes as
+    a daily output surface, raw `hrmlt` and post-raw `wmelt` pass only as
+    aggregate cut-point surfaces, and all nine term-level melt rows remain
+    blocked on missing paired baseline `amelt`/`bmelt`/`cmelt`/`dmelt`
+    term-state surfaces; no production edit is authorized.
 - `20260605-hphys0301-h39-forcing-melt-term-producer-closure-001/`
   - Purpose: resolve the H39 first-2013 HPHYS0300 forcing lane by reconciling
     baseline residual rain-on-snow evidence against openWEPP raw, retained,
