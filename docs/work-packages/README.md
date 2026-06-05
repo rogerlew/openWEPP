@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0293-winter-melt-magnitude-timing-snowpack-depletion-closure-001/`
+  - Purpose: diagnose and correct baseline-authoritative winter melt
+    magnitude/timing and spring snowpack depletion after HPHYS0292 closed WB14
+    routed-melt infiltration capacity and `Q` parity.
+  - Status: executed-hold; contracts/tests now classify HPHYS0293 snow
+    producer depletion separately from WB14, full H1..H39 still has semantic
+    parity `0/39` with `Q` parity `39/39`, and target rows show internally
+    closed snow-state accounting but persistent corrected-negative-melt snow
+    producer residuals versus the pinned comparator.
 - `20260605-hphys0292-spring-snowmelt-infiltration-capacity-lineage-closure-001/`
   - Purpose: diagnose and correct baseline-authoritative spring snowmelt
     producer partitioning upstream of WB13, separating melt magnitude/timing

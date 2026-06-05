@@ -452,6 +452,10 @@ name = "hphys0292_spring_snowmelt_infiltration_capacity_contract"
 path = "tests/integration/hphys0292_spring_snowmelt_infiltration_capacity_contract.rs"
 
 [[test]]
+name = "hphys0293_winter_melt_timing_contract"
+path = "tests/integration/hphys0293_winter_melt_timing_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 
