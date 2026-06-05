@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 33
+contract_version: 34
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -184,6 +184,19 @@ the first divergent term/state source with source-line provenance and preserve
 the corrected `/workdir/wepp-forest` negative-melt branch. Rows with only
 aggregate `hrmlt`/`wmelt` deltas remain diagnostic `HOLD` and require
 additional paired instrumentation rather than downstream compensation.
+
+Sufficiency and forcing-function closure: paired term/state evidence is
+sufficient to leave `HOLD` when it identifies the first divergent source as one
+named baseline/openWEPP term or state input (`amelt`, `bmelt`, `cmelt`,
+`dmelt`, `hrrain`, `hrtemp`, `tdpt`, `hrad`, `cloudC`, `vwind`, `snodpt`,
+or `densgt`) with source-line provenance, unit reconciliation, and unchanged
+upstream forcing status for that row/window. Once that criterion is satisfied,
+the owning work-package must implement the baseline-authoritative correction or
+record a concrete blocking invariant; it must not request a further
+diagnostic-only package for the same isolated source. H39 first-2013 remains an
+earned corrected-depth hourly-forcing correction lane and does not wait on
+raw-melt term instrumentation when its forcing root cause is independently
+localized.
 
 ## Invariant Guard Map
 
@@ -649,6 +662,7 @@ SIMIMPL32 must implement contract-derived tests that demonstrate:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `34` | `Codex` | HPHYS0300 Claude review disposition: added sufficiency/forcing-function closure criteria so paired melt-term/state evidence cannot become an unbounded diagnostic gate, and kept H39 first-2013 forcing correction separable from raw-melt instrumentation. |
 | `2026-06-05` | `33` | `Codex` | HPHYS0300 amendment: added `INV-SNOWFREEZE-031`, requiring term/state lineage evidence before raw hourly melt or post-raw routed-melt production corrections and preserving corrected negative-melt authority. |
 | `2026-06-05` | `32` | `Codex` | HPHYS0299 amendment: added `INV-SNOWFREEZE-030`, corrected HPHYS0298 stale partition provenance to `winter.for:296-300`/`stmtim.for:43-95`, and required `hrsnow` parity diagnostics to use openWEPP snowfall-depth surfaces rather than derived water-equivalent summaries. |
 | `2026-06-05` | `31` | `Codex` | HPHYS0298 Claude review disposition: clarified that `hrsnow`/`hrrain` hourly-forcing verdicts are porting-fidelity defects against the un-impeached pinned-baseline `winter.for:410-412` precipitation-phase partition routine, and recorded paired instrumented baseline observation as an available comparator capability. |

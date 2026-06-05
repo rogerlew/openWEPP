@@ -22,6 +22,11 @@ fn hphys0300_contracts_require_term_state_evidence_before_melt_edits() {
             && snow.contains("`snodpt`, and `densgt`")
             && snow.contains("baseline_negative_raw_melt_sum_mm = 0.0")
             && snow.contains("H39 first-2013 remains a corrected-depth hourly-forcing seam")
+            && snow.contains("Sufficiency and forcing-function closure")
+            && snow.contains("must not request a further")
+            && snow.contains("diagnostic-only package")
+            && snow.contains("does not wait on")
+            && snow.contains("raw-melt term instrumentation")
             && snow.contains("Aggregate `RM`, `Snow-Water`, or storage improvement alone"),
         "SC-SNOWFREEZE must gate HPHYS0300 raw/post-raw correction on term/state evidence"
     );
@@ -31,7 +36,10 @@ fn hphys0300_contracts_require_term_state_evidence_before_melt_edits() {
             && watbal.contains("full H1..H39 same-HEAD metrics")
             && watbal.contains("require term/state lineage evidence before snow producer edits")
             && watbal.contains("prohibit compensation through `Ep`, aggregate storage, percolation, lateral flow, or WB13 publication")
-            && watbal.contains("Rows lacking term/state evidence remain `HOLD`"),
+            && watbal.contains("Rows lacking term/state evidence remain `HOLD`")
+            && watbal.contains("The HPHYS0300 evidence gate is bounded")
+            && watbal.contains("must either implement the baseline-authoritative producer correction")
+            && watbal.contains("another diagnostic-only package"),
         "SC-WATBAL must prohibit downstream compensation until raw/post-raw producer closure"
     );
 }

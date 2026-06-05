@@ -54,3 +54,9 @@ Notes:
 - Final `cargo deny check` retained existing warnings for duplicate crates
   (`getrandom`, `hashbrown`, `twox-hash`) and unmatched license allowances
   (`ISC`, `Unicode-DFS-2016`); advisories, bans, licenses, and sources passed.
+- Claude review disposition added bounded evidence-gate criteria and
+  forcing-function continuation routing. Post-disposition focused validation
+  passed:
+  - `cargo fmt --check`
+  - `cargo test --test hphys0300_raw_hourly_melt_post_raw_routing_contract`
+  - `markdown-doc lint --path docs/work-packages/20260605-hphys0300-raw-hourly-melt-post-raw-routing-lineage-closure-001 --path docs/work-packages/README.md --path docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md --path docs/specifications/science-contracts/contracts/SC-WATBAL-001.md --path docs/specifications/science-contracts/index.md --format json`

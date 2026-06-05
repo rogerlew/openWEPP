@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 122
+contract_version: 123
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -278,6 +278,15 @@ cannot authorize WB17, WB18, WB19, or WB13 compensation while raw `hrmlt`,
 post-raw `wmelt`, or corrected-depth hourly forcing remains the first
 divergent source. Rows lacking term/state evidence remain `HOLD`, not
 semantic closure.
+
+The HPHYS0300 evidence gate is bounded. Once paired baseline/openWEPP
+term/state evidence isolates a raw-melt or post-raw source to a named
+producer-side term/state input with units and source-line provenance, the next
+package must either implement the baseline-authoritative producer correction or
+record the blocking invariant that prevents it. It must not route the same
+isolated source into another diagnostic-only package, and it must keep H39
+first-2013 corrected-depth hourly forcing on a separate actionable correction
+lane instead of waiting for raw-melt term instrumentation.
 
 ## Invariant Guard Map
 
@@ -2130,6 +2139,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-05` | `123` | `Codex` | HPHYS0300 Claude review disposition: added bounded evidence-gate criteria requiring an implementation-or-blocking-invariant decision once paired term/state evidence isolates a raw/post-raw producer source, with H39 first-2013 forcing kept separately actionable. |
 | `2026-06-05` | `122` | `Codex` | HPHYS0300 amendment: added `INV-WATBAL-075`, requiring raw hourly melt/post-raw routed-melt lineage evidence before downstream water-balance focus changes or snow producer edits. |
 | `2026-06-05` | `121` | `Codex` | HPHYS0299 amendment: added `INV-WATBAL-074`, suspending HPHYS0298 production-migration authority until corrected paired evidence compares pinned-baseline `hrsnow` depth with openWEPP snowfall-depth traces rather than water-equivalent summaries. |
 | `2026-06-05` | `120` | `Codex` | HPHYS0298 Claude review disposition: clarified that all-window `hourly-forcing` residual ownership is a producer-side porting-fidelity defect against `SC-SNOWFREEZE-001#INV-SNOWFREEZE-029` and pinned baseline `winter.for:410-412`, not downstream WB17/WB18/WB19/WB13 compensation authority. |

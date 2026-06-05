@@ -38,10 +38,17 @@ Diagnostic Outcome:
 
 Continuation:
 
-- Scaffold the next package around paired baseline/openWEPP instrumentation for
-  `melt.for`/`snowd.for` term and snow-state lineage: `amelt`, `bmelt`,
-  `cmelt`, `dmelt`, `hrrain`, `hrtemp`, `tdpt`, `hrad`, `cloudC`, `vwind`,
-  `snodpt`, and `densgt`.
-- Preserve the H39 first-2013 forcing seam as separate continuation routing.
+- Scaffold the next package with a forcing function, not a pure diagnostic:
+  fix the independently localized H39 first-2013 corrected-depth hourly-forcing
+  lane when its source-line root cause is confirmed, and instrument paired
+  baseline/openWEPP `melt.for`/`snowd.for` term and snow-state lineage for the
+  seven raw-hourly-melt windows.
+- Required raw/post-raw symbols: `amelt`, `bmelt`, `cmelt`, `dmelt`, `hrrain`,
+  `hrtemp`, `tdpt`, `hrad`, `cloudC`, `vwind`, `snodpt`, and `densgt`.
+- Once paired term/state evidence isolates a named producer source with units
+  and source-line provenance, the next package must implement the
+  baseline-authoritative producer correction or record the concrete blocking
+  invariant; it must not open another diagnostic-only package for that same
+  isolated source.
 - Do not compensate through WB17 `Ep`, WB18 `Dp`/`Pe`, WB19 `latqcc`,
   aggregate storage, or WB13 publication.

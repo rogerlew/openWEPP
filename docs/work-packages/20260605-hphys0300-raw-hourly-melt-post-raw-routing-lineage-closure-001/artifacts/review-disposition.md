@@ -15,9 +15,9 @@ Dispositions:
   disposition, verification, worker handoff, package progress, and final
   disposition were completed before final package handoff.
 - **A-MEDIUM contract metadata/catalog drift**: resolved.
-  `SC-SNOWFREEZE-001` front matter now records `contract_version: 33` and
+  `SC-SNOWFREEZE-001` front matter now records `contract_version: 34` and
   `last_reviewed: 2026-06-05`; `SC-WATBAL-001` now records
-  `contract_version: 122` and `last_reviewed: 2026-06-05`; the
+  `contract_version: 123` and `last_reviewed: 2026-06-05`; the
   science-contract index now records `2026-06-05` for both rows.
 - **A-MEDIUM / B-MEDIUM weak routing regression**: resolved.
   `tests/integration/hphys0300_raw_hourly_melt_post_raw_routing_contract.rs`
@@ -42,13 +42,29 @@ Dispositions:
   `verification_agent_b.md` were still placeholders. The verifier outputs were
   recorded in those files, the findings were explicitly dispositioned, and a
   final local placeholder audit plus focused gates were run after completion.
+- **CLAUDE-0300-001 infinite-regress instrumentation risk**: resolved by
+  amending canonical `SC-SNOWFREEZE-001` and `SC-WATBAL-001` with bounded
+  sufficiency criteria. Paired term/state evidence becomes sufficient when it
+  isolates a named producer-side term/state source with source-line provenance,
+  unit reconciliation, and unchanged upstream forcing status. Once that
+  criterion is met, the owning package must implement the
+  baseline-authoritative producer correction or record a concrete blocking
+  invariant; it may not request another diagnostic-only package for the same
+  isolated source.
+- **CLAUDE-0300-002 H39 forcing-function recommendation**: accepted. H39
+  first-2013 remains separate from raw-melt term instrumentation and is now
+  explicitly routed as an actionable corrected-depth hourly-forcing correction
+  lane when its forcing root cause is independently localized.
 
 Ran:
 
 - `cargo fmt --check`
 - `cargo test --test hphys0300_raw_hourly_melt_post_raw_routing_contract`
+  after Claude review disposition.
 
 Result:
 
 - Focused formatting and strengthened HPHYS0300 contract/routing regression
   passed after review fixes: `3 passed; 0 failed`.
+- Claude review disposition regression passed after bounded-gate amendments:
+  `3 passed; 0 failed`.

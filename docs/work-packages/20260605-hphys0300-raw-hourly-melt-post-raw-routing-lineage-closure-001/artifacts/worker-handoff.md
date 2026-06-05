@@ -33,10 +33,16 @@ Primary Artifacts:
 
 Continuation Route:
 
-- Build paired baseline/openWEPP term/state instrumentation for
-  `melt.for`/`snowd.for` before production snow kernel edits.
-- Required symbols: `amelt`, `bmelt`, `cmelt`, `dmelt`, `hrrain`, `hrtemp`,
-  `tdpt`, `hrad`, `cloudC`, `vwind`, `snodpt`, and `densgt`.
+- Use a forcing-function package, not a ninth pure diagnostic. Fix H39
+  first-2013 corrected-depth hourly forcing when its source-line root cause is
+  confirmed, and instrument paired baseline/openWEPP term/state lineage for
+  the seven raw-hourly-melt windows.
+- Required raw/post-raw symbols: `amelt`, `bmelt`, `cmelt`, `dmelt`, `hrrain`,
+  `hrtemp`, `tdpt`, `hrad`, `cloudC`, `vwind`, `snodpt`, and `densgt`.
+- Once term/state evidence isolates a named producer source with units and
+  source-line provenance, implement the baseline-authoritative producer
+  correction in that package or record the concrete blocking invariant; do not
+  route the same isolated source into another diagnostic-only package.
 - Keep H7 first-2013 as post-raw/routed-melt hold unless term/state evidence
   proves otherwise.
 - Keep H39 first-2013 as a corrected-depth hourly-forcing seam, not generic

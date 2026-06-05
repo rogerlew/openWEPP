@@ -6,10 +6,12 @@
     target windows after HPHYS0299 corrected the `hrsnow` unit/provenance seam.
   - Status: executed-hold; contract-first diagnostics and same-HEAD full
     H1..H39 metrics ran, all raw/post-raw rows remain aggregate-only
-    term/state holds, no production edits are authorized, and continuation
-    should add paired `melt.for`/`snowd.for` term/state instrumentation while
-    keeping H39 first-2013 forcing separate and prohibiting WB17/WB18/WB19/WB13
-    compensation.
+    term/state holds, no production edits are authorized, and continuation must
+    use a forcing-function package: fix the independently localized H39
+    first-2013 forcing seam when source-line proof is confirmed, instrument
+    paired `melt.for`/`snowd.for` term/state lineage for raw-melt windows, and
+    implement the producer correction once a named source is isolated instead
+    of opening another diagnostic-only package.
 - `20260605-hphys0299-hourly-snow-partition-unit-provenance-closure-001/`
   - Purpose: correct and validate the HPHYS0298 hourly snow/rain partition
     lineage by comparing pinned-baseline `hrsnow` snow-depth to openWEPP
