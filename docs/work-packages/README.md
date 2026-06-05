@@ -1,15 +1,24 @@
 # Work Packages
 
-- `20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/`
-  - Purpose: classify H1/H7/H39 snow/`RM` producer residuals as accepted
-    corrected-negative-melt semantic divergence or unresolved
-    baseline-authoritative winter/snow/rain/melt producer migration debt before
-    any downstream hydrology compensation.
+- `20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/`
+  - Purpose: convert HPHYS0296 snow/`RM` candidates into an auditable defect
+    ledger by reconstructing pinned-baseline negative-melt behavior against
+    openWEPP traces, assigning per-window verdicts, and preserving spring-2016
+    producer holds without downstream compensation.
   - Status: executed-hold; contracts/tests and full H1..H39 diagnostics ran,
-    six target windows classify as corrected-negative-melt candidates, all
-    spring-2016 target windows remain snow/winter producer magnitude/timing
-    holds, and no downstream WB17/WB18/WB19/WB13 compensation patch is
-    authorized.
+    all nine H1/H7/H39 target windows remain `UNRESOLVED`, the pinned-baseline
+    negative-melt branch alone does not reconstruct baseline `RM` to the named
+    `2.000 mm` tolerance, and no downstream WB17/WB18/WB19/WB13 compensation or
+    residual re-tiering is authorized.
+- `20260605-hphys0296-snow-rm-producer-acceptance-authority-closure-001/`
+  - Purpose: classify H1/H7/H39 snow/`RM` producer residuals into an auditable
+    defect-ledger posture before any downstream hydrology compensation.
+  - Status: executed-hold; contracts/tests and full H1..H39 diagnostics ran,
+    Claude Code review tightened the acceptance gate, six target windows remain
+    unresolved corrected-negative-melt candidates pending reconstruction and
+    independent correctness verdicts, all spring-2016 target windows remain
+    snow/winter producer magnitude/timing holds, and no downstream
+    WB17/WB18/WB19/WB13 compensation patch is authorized.
 - `20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/`
   - Purpose: diagnose cumulative row-to-row storage-budget ownership across
     WB17 `Ep`/`Es`, WB18 `D`, WB19 `latqcc`, and HPHYS0293 excluded snow/`RM`
