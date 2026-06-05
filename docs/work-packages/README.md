@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0294-post-ingress-storage-percolation-lateral-retention-closure-001/`
+  - Purpose: diagnose post-ingress `Total-Soil`/`SoilWaterTotal` residual
+    ownership after HPHYS0293 snow-producer residual exclusion and HPHYS0292
+    `Q` closure, separating WB18 aggregate/percolation identity from WB19
+    lateral-retention magnitude before production edits.
+  - Status: executed-hold; contracts/tests and full H1..H39 diagnostics ran,
+    WB18 aggregate identity and `D=Pe` close on H1/H7/H39 target rows, WB19
+    target/unrealized lineage is internally closed, and no production WB18/WB19
+    patch is justified without a follow-on cumulative storage-budget owner.
 - `20260605-hphys0293-winter-melt-magnitude-timing-snowpack-depletion-closure-001/`
   - Purpose: diagnose and correct baseline-authoritative winter melt
     magnitude/timing and spring snowpack depletion after HPHYS0292 closed WB14
