@@ -500,6 +500,10 @@ name = "hphys0304_fixed_comparator_semantic_rerun_contract"
 path = "tests/integration/hphys0304_fixed_comparator_semantic_rerun_contract.rs"
 
 [[test]]
+name = "hphys0305_paired_melt_term_state_contract"
+path = "tests/integration/hphys0305_paired_melt_term_state_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

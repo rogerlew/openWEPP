@@ -1,7 +1,9 @@
 # Artifacts
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: static
 
-HPHYS0305 artifacts are queued.
+HPHYS0305 artifacts record contract-first instrumentation, fixed-comparator
+observe identity, target-window paired ledgers, gate results, review
+disposition, verification, final HOLD disposition, and worker handoff.

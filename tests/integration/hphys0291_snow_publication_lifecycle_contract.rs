@@ -303,7 +303,7 @@ fn hphys0291_trace_preserves_snow_publication_lifecycle_surfaces() {
             && runner.contains(
                 "runtime_surface_flux_symbol_value(runtime_surface, \"snow.post_winter_rain_m\")"
             )
-            && runner.contains("openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v15"),
+            && runner.contains("openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v16"),
         "trace schema must expose flux-only routed melt and post-winter rain lifecycle surfaces"
     );
 }

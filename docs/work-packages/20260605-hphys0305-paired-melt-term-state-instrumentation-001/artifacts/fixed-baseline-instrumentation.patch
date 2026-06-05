@@ -1,0 +1,40 @@
+--- a/src/melt.for
++++ b/src/melt.for
+@@ -273,6 +273,17 @@
+ c -- NOTE that 0.0254 is a conversion factor from inches to meters. --
+ c
+       wmelt(iplane) = 0.0254 * (amelt + bmelt + cmelt + dmelt)
++      call wepp_observe('H305_T_AB',year,sdate,iplane,0,hour,
++     1  amelt,bmelt)
++      call wepp_observe('H305_T_CD',year,sdate,iplane,0,hour,
++     1  cmelt,dmelt)
++      call wepp_observe('H305_F_HT',year,sdate,iplane,0,hour,
++     1  hrtemp,tdpt)
++      call wepp_observe('H305_F_RR',year,sdate,iplane,0,hour,
++     1  hradmj,hrrain(hour))
++      call wepp_observe('H305_F_CV',year,sdate,iplane,0,hour,
++     1  cloudC,vwind)
++
+ c
+ c      if(wmelt(iplane) .lt. 0) wmelt(iplane) = 0.0
+ c
+--- a/src/winter.for
++++ b/src/winter.for
+@@ -371,6 +371,8 @@
+ c -- possibly taking place.
+ c
+          hrmlt(hour,iplane)  = wmelt(iplane)
++         call wepp_observe('H305_S_OUT',year,sdate,iplane,0,hour,
++     1     snodpt(iplane),densgt)
+ cd        wmelt(iplane) = wmelt(iplane) + hrrain(hour)
+        
+ c
+@@ -459,6 +461,8 @@
+                hrmlt(hour,iplane)= hrmlt(hour,iplane) + hrrain(hour)              
+            endif
+            totmel = totmel + hrmlt(hour,iplane)
++           call wepp_observe('H305_M_POST',year,sdate,iplane,0,hour,
++     1       hrmlt(hour,iplane),hrrain(hour))
+ 50     continue
+ 
+ cd    End adding

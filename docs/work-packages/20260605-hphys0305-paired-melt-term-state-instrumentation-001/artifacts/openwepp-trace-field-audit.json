@@ -1,0 +1,62 @@
+[
+  {
+    "all_fields_present_at_least_once": true,
+    "field_day_counts": {
+      "snow_hourly_density_after_kg_m3": 24825,
+      "snow_hourly_depth_after_m": 24825,
+      "snow_hourly_melt_amelt_in": 24825,
+      "snow_hourly_melt_bmelt_in": 24825,
+      "snow_hourly_melt_cmelt_in": 24825,
+      "snow_hourly_melt_dmelt_in": 24825,
+      "snow_hourly_rain_m": 24741,
+      "winter_hourly_air_temp_c": 11917,
+      "winter_hourly_cloud_fraction": 11917,
+      "winter_hourly_dewpoint_c": 24825,
+      "winter_hourly_rad_mj_m2": 11917,
+      "winter_hourly_wind_m_s": 24825
+    },
+    "hillslope_id": 1,
+    "row_count": 24837,
+    "trace_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/hillslope_output/H1.hphys0299.trace.jsonl"
+  },
+  {
+    "all_fields_present_at_least_once": true,
+    "field_day_counts": {
+      "snow_hourly_density_after_kg_m3": 24825,
+      "snow_hourly_depth_after_m": 24825,
+      "snow_hourly_melt_amelt_in": 24825,
+      "snow_hourly_melt_bmelt_in": 24825,
+      "snow_hourly_melt_cmelt_in": 24825,
+      "snow_hourly_melt_dmelt_in": 24825,
+      "snow_hourly_rain_m": 24741,
+      "winter_hourly_air_temp_c": 12070,
+      "winter_hourly_cloud_fraction": 12070,
+      "winter_hourly_dewpoint_c": 24825,
+      "winter_hourly_rad_mj_m2": 12070,
+      "winter_hourly_wind_m_s": 24825
+    },
+    "hillslope_id": 7,
+    "row_count": 24837,
+    "trace_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/hillslope_output/H7.hphys0299.trace.jsonl"
+  },
+  {
+    "all_fields_present_at_least_once": true,
+    "field_day_counts": {
+      "snow_hourly_density_after_kg_m3": 24825,
+      "snow_hourly_depth_after_m": 24825,
+      "snow_hourly_melt_amelt_in": 24825,
+      "snow_hourly_melt_bmelt_in": 24825,
+      "snow_hourly_melt_cmelt_in": 24825,
+      "snow_hourly_melt_dmelt_in": 24825,
+      "snow_hourly_rain_m": 24741,
+      "winter_hourly_air_temp_c": 11968,
+      "winter_hourly_cloud_fraction": 11968,
+      "winter_hourly_dewpoint_c": 24825,
+      "winter_hourly_rad_mj_m2": 11968,
+      "winter_hourly_wind_m_s": 24825
+    },
+    "hillslope_id": 39,
+    "row_count": 24837,
+    "trace_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/hillslope_output/H39.hphys0299.trace.jsonl"
+  }
+]

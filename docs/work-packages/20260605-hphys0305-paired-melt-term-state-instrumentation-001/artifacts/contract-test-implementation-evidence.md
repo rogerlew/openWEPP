@@ -1,13 +1,18 @@
 # Contract-Test Implementation Evidence
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: ran
 
 Static:
 
-- Pending execution.
+- Added `tests/integration/hphys0305_paired_melt_term_state_contract.rs`.
+- Registered the test in `Cargo.toml`.
+- The guard enforces package autonomy, fixed-comparator identity, required
+  observe tags, no remote push behavior, `INV-WATBAL-078`, and openWEPP trace
+  map alias registration.
 
 Ran:
 
-- Not run yet.
+- `cargo test --test hphys0305_paired_melt_term_state_contract -- --nocapture`
+  passed (`4` tests).

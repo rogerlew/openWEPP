@@ -114,13 +114,10 @@ fn hphys0303_ledger_and_adrs_are_status_coherent() {
         let smoke_disposition = ledger["smoke_checks_disposition"]["status"]
             .as_str()
             .unwrap_or("");
-        let smoke_passed = ledger["smoke_checks"]
-            .as_array()
-            .map(|rows| {
-                rows.iter()
-                    .all(|row| row["pass"].as_bool().unwrap_or(false))
-            })
-            .unwrap_or(false);
+        let smoke_passed = ledger["smoke_checks"].as_array().is_some_and(|rows| {
+            rows.iter()
+                .all(|row| row["pass"].as_bool().unwrap_or(false))
+        });
         assert!(
             smoke_passed || smoke_disposition == "non_applicable_missing_helper_fixtures",
             "failed smoke checks require explicit non-applicable fixture disposition"

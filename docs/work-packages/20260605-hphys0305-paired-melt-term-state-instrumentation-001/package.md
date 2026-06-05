@@ -2,7 +2,9 @@
 
 ## Status
 
-Queued.
+HOLD after execution: paired fixed-baseline `amelt` surfaces are incomplete for
+all nine required target windows, so production physics edits are not
+authorized.
 
 ## Objective
 
@@ -64,6 +66,8 @@ or WB12 production change is considered.
 - `/home/workdir/openWEPP/docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
 - `/workdir/wepp-forest_260430_baseline` at fixed comparator commit
   `47ac4c32faeea81bb99081f955a14c38b815ef4d`.
+  This fixed comparator is the ADR-0016/HPHYS0303 ratified `wepp_260430`
+  comparator for negative-melt carried-state authority.
 
 ## Intended Write Set
 
@@ -94,12 +98,21 @@ or WB12 production change is considered.
 
 - [x] (2026-06-05T21:03:04Z) Scaffolded as the queued ADR-0016 Required
   Continuation Order step 2 package by HPHYS0304.
-- [ ] Execute contract authority phase.
-- [ ] Execute contract-derived tests.
-- [ ] Execute pre-implementation gate.
-- [ ] Execute paired instrumentation.
-- [ ] Execute target-window classification and full-suite context.
-- [ ] Complete review, disposition, verification, and handoff.
+- [x] Execute contract authority phase.
+- [x] Execute contract-derived tests.
+- [x] Execute pre-implementation gate.
+- [x] Execute paired instrumentation.
+- [x] Execute target-window classification and full-suite context.
+- [x] Complete review, disposition, verification, and handoff.
+
+## Execution Outcome
+
+HPHYS0305 completed contract-first instrumentation and targeted H1/H7/H39
+execution, but it remains in `HOLD` because the fixed-baseline observe stream
+does not provide complete `amelt` paired surfaces for the nine required target
+windows. The strict package rule treats that as `paired-surface-gap` and routes
+all rows to `surface-gap-hold`; no production physics correction or downstream
+compensation is authorized.
 
 ## Exit Criteria
 

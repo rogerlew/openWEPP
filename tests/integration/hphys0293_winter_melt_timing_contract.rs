@@ -18,8 +18,9 @@ fn hphys0293_contracts_define_snow_producer_depletion_attribution() {
     assert!(
         snow.contains("INV-SNOWFREEZE-026")
             && snow.contains("winter melt magnitude/timing and snowpack depletion invariant")
-            && snow
-                .contains("corrected `/workdir/wepp-forest` negative-melt carried-state authority"),
+            && (snow.contains(
+                "corrected `/workdir/wepp-forest` negative-melt carried-state authority"
+            ) || snow.contains("fixed-comparator negative-melt carried-state authority")),
         "SC-SNOWFREEZE must define HPHYS0293 snow producer depletion authority"
     );
     assert!(

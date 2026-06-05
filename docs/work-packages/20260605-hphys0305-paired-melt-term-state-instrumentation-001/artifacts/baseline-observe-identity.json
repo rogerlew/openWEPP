@@ -1,0 +1,179 @@
+{
+  "1": {
+    "fixed_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "fixed_observe_binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+    "fixed_source_identity": {
+      "fixed_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "source_head": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "source_mode": "copied_existing_verified_worktree",
+      "source_reuse_verified": true,
+      "source_status_short": [
+        " M src/pmxelm.inc",
+        " M src/pmxhil.inc",
+        " M src/pmxpln.inc",
+        " M src/pntype.inc",
+        " M src/wepp",
+        " M src/wepp_hill"
+      ],
+      "source_worktree": "/tmp/hphys0303_wepp_260430_negmeltfix"
+    },
+    "hillslope_id": 1,
+    "observe_off_lane": {
+      "binary": "/tmp/hphys0305_wepp_260430_melt_terms/release/wepp_260430_hill",
+      "binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+      "hillslope_id": 1,
+      "lane": "hphys0305_observe_off",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H1_hphys0305_observe_off/runs/wepp_observe.log",
+      "observe_records": 0,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H1_hphys0305_observe_off/output/H1.wat.dat",
+      "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+    },
+    "observe_off_to_observe_on_bit_identical": true,
+    "observe_on_lane": {
+      "binary": "/tmp/hphys0305_wepp_260430_melt_terms/release/wepp_260430_hill",
+      "binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+      "hillslope_id": 1,
+      "lane": "hphys0305_observe_on",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H1_hphys0305_observe_on/runs/wepp_observe.log",
+      "observe_records": 85844,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H1_hphys0305_observe_on/output/H1.wat.dat",
+      "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+    },
+    "pass": true,
+    "release_lane": {
+      "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+      "binary_sha256": "b9337f1db714ef3d4ae45633b88249ccdc5416fbb7f5614a45fb688126eb45cd",
+      "hillslope_id": 1,
+      "lane": "fixed_release",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H1_fixed_release/runs/wepp_observe.log",
+      "observe_records": 0,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H1_fixed_release/output/H1.wat.dat",
+      "wat_sha256": "25bbd9452e7184b29adf559dbf007f82bbe10ac6ebcc51c8f103b22f9c72822f"
+    },
+    "release_to_observe_off_bit_identical": true
+  },
+  "7": {
+    "fixed_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "fixed_observe_binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+    "fixed_source_identity": {
+      "fixed_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "source_head": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "source_mode": "copied_existing_verified_worktree",
+      "source_reuse_verified": true,
+      "source_status_short": [
+        " M src/pmxelm.inc",
+        " M src/pmxhil.inc",
+        " M src/pmxpln.inc",
+        " M src/pntype.inc",
+        " M src/wepp",
+        " M src/wepp_hill"
+      ],
+      "source_worktree": "/tmp/hphys0303_wepp_260430_negmeltfix"
+    },
+    "hillslope_id": 7,
+    "observe_off_lane": {
+      "binary": "/tmp/hphys0305_wepp_260430_melt_terms/release/wepp_260430_hill",
+      "binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+      "hillslope_id": 7,
+      "lane": "hphys0305_observe_off",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H7_hphys0305_observe_off/runs/wepp_observe.log",
+      "observe_records": 0,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H7_hphys0305_observe_off/output/H7.wat.dat",
+      "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+    },
+    "observe_off_to_observe_on_bit_identical": true,
+    "observe_on_lane": {
+      "binary": "/tmp/hphys0305_wepp_260430_melt_terms/release/wepp_260430_hill",
+      "binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+      "hillslope_id": 7,
+      "lane": "hphys0305_observe_on",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H7_hphys0305_observe_on/runs/wepp_observe.log",
+      "observe_records": 87277,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H7_hphys0305_observe_on/output/H7.wat.dat",
+      "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+    },
+    "pass": true,
+    "release_lane": {
+      "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+      "binary_sha256": "b9337f1db714ef3d4ae45633b88249ccdc5416fbb7f5614a45fb688126eb45cd",
+      "hillslope_id": 7,
+      "lane": "fixed_release",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H7_fixed_release/runs/wepp_observe.log",
+      "observe_records": 0,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H7_fixed_release/output/H7.wat.dat",
+      "wat_sha256": "311034a648583fdc16004ffdbee3a2a304475ad7597f881f6d5fcaf2dbbab37b"
+    },
+    "release_to_observe_off_bit_identical": true
+  },
+  "39": {
+    "fixed_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "fixed_observe_binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+    "fixed_source_identity": {
+      "fixed_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "source_head": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+      "source_mode": "copied_existing_verified_worktree",
+      "source_reuse_verified": true,
+      "source_status_short": [
+        " M src/pmxelm.inc",
+        " M src/pmxhil.inc",
+        " M src/pmxpln.inc",
+        " M src/pntype.inc",
+        " M src/wepp",
+        " M src/wepp_hill"
+      ],
+      "source_worktree": "/tmp/hphys0303_wepp_260430_negmeltfix"
+    },
+    "hillslope_id": 39,
+    "observe_off_lane": {
+      "binary": "/tmp/hphys0305_wepp_260430_melt_terms/release/wepp_260430_hill",
+      "binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+      "hillslope_id": 39,
+      "lane": "hphys0305_observe_off",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H39_hphys0305_observe_off/runs/wepp_observe.log",
+      "observe_records": 0,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H39_hphys0305_observe_off/output/H39.wat.dat",
+      "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+    },
+    "observe_off_to_observe_on_bit_identical": true,
+    "observe_on_lane": {
+      "binary": "/tmp/hphys0305_wepp_260430_melt_terms/release/wepp_260430_hill",
+      "binary_sha256": "7d179a49a44ea40517a5d1b36846aa02e92cf3e8b679227771fa5bee25b63290",
+      "hillslope_id": 39,
+      "lane": "hphys0305_observe_on",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H39_hphys0305_observe_on/runs/wepp_observe.log",
+      "observe_records": 85995,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H39_hphys0305_observe_on/output/H39.wat.dat",
+      "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+    },
+    "pass": true,
+    "release_lane": {
+      "binary": "/tmp/hphys0303_wepp_260430_negmeltfix/release/wepp_260430_hill",
+      "binary_sha256": "b9337f1db714ef3d4ae45633b88249ccdc5416fbb7f5614a45fb688126eb45cd",
+      "hillslope_id": 39,
+      "lane": "fixed_release",
+      "observe_log": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H39_fixed_release/runs/wepp_observe.log",
+      "observe_records": 0,
+      "rc": 0,
+      "wat_exists": true,
+      "wat_path": "/tmp/hphys0305_paired_melt_terms_20260605T000000Z/fixed_baseline/H39_fixed_release/output/H39.wat.dat",
+      "wat_sha256": "162461c5693dc5fa27ab031b9bbd7c073fd6ccc0037105bb53c80a0a29043fbc"
+    },
+    "release_to_observe_off_bit_identical": true
+  }
+}

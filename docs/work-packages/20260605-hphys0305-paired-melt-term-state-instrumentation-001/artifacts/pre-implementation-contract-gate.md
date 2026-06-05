@@ -1,13 +1,19 @@
 # Pre-Implementation Contract Gate
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: ran
 
 Static:
 
-- Pending execution.
+- Contract authority and contract-derived test coverage exist before running
+  fixed-comparator observe evidence or interpreting paired term/state results.
+- HPHYS0305 remains instrumentation-only; production physics corrections are
+  not authorized by the pre-implementation gate.
 
 Ran:
 
-- Not run yet.
+- `python -m py_compile docs/work-packages/20260605-hphys0305-paired-melt-term-state-instrumentation-001/artifacts/hphys0305_paired_melt_term_state.py`
+  passed.
+- `cargo test --test hphys0305_paired_melt_term_state_contract -- --nocapture`
+  passed.

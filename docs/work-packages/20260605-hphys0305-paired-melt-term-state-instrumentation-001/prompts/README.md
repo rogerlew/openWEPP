@@ -1,7 +1,7 @@
 # Prompts
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: static
 
 This directory stores execution prompts for HPHYS0305.
