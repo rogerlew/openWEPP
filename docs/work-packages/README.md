@@ -1,5 +1,19 @@
 # Work Packages
 
+- `20260605-hphys0301-h39-forcing-melt-term-producer-closure-001/`
+  - Purpose: resolve the H39 first-2013 HPHYS0300 forcing lane by reconciling
+    baseline residual rain-on-snow evidence against openWEPP raw, retained,
+    released, post-winter rain, raw melt, and routed melt traces before any
+    production forcing or snow-producer edit.
+  - Status: executed-hold; contract-first forcing-function package reclassified
+    H39 first-2013 from raw forcing correction to residual-rain/release
+    lineage after the apparent `-16.476986 mm` raw-rain delta collapsed to
+    `-0.237193 mm` against openWEPP released plus post-winter rain; no
+    production forcing, snow-producer, or downstream WB17/WB18/WB19/WB13 edit
+    is authorized, and Claude Code review now requires the next package to
+    audit comparator surfaces for `RM`, `Snow-Water`, and melt-term lineage
+    before any producer-defect conclusion or paired `melt.for` / `snowd.for`
+    implementation work.
 - `20260605-hphys0300-raw-hourly-melt-post-raw-routing-lineage-closure-001/`
   - Purpose: localize and, only if contract-authorized, correct the raw
     hourly `hrmlt` and post-raw `wmelt`/routed-melt lineage for the H1/H7/H39
