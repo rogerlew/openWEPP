@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/`
+  - Purpose: diagnose cumulative row-to-row storage-budget ownership across
+    WB17 `Ep`/`Es`, WB18 `D`, WB19 `latqcc`, and HPHYS0293 excluded snow/`RM`
+    masks before any production physics edits.
+  - Status: executed-hold; contracts/tests and full H1..H39 diagnostics ran,
+    H1/H7/H39 cumulative windows are dominated by snow/`RM` residuals with
+    small residual budget gaps, and no WB17/WB18/WB19/WB13 production patch is
+    justified without a follow-on snow/`RM` producer acceptance or authority
+    alignment package.
 - `20260605-hphys0294-post-ingress-storage-percolation-lateral-retention-closure-001/`
   - Purpose: diagnose post-ingress `Total-Soil`/`SoilWaterTotal` residual
     ownership after HPHYS0293 snow-producer residual exclusion and HPHYS0292
