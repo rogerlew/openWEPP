@@ -1,7 +1,7 @@
 # Unit Governance Standard
 
 Status: Active
-Last updated: 2026-06-03
+Last updated: 2026-06-05
 Scope: openWEPP science contracts, runtime boundary symbols, conversion
 helpers, tests, and publication metadata
 
@@ -201,6 +201,15 @@ Every kernel-affecting `SC-*` contract must include:
 Missing unit declarations, ambiguous aliases, or unguarded conversion seams are
 non-promotable gaps unless the package is explicitly docs-only and records a
 follow-up implementation package.
+
+ADR-0017 extends this rule to comparator/ledger evidence. A paired legacy
+surface and openWEPP surface must be proven like-for-like in unit and lineage
+stage before a residual can be labeled `OPENWEPP-DEFECTIVE`. Depth versus
+snow-water-equivalent, raw producer versus released/post-processed flux, or
+meters versus millimetres pairings resolve to `HARNESS-SURFACE-MISMATCH` or
+`UNRESOLVED` until corrected evidence exists. Suspicious ratios such as
+approximately `10x` or `1000x` must be treated as unit-mismatch hypotheses
+first.
 
 ### SC Contract Unit Compliance Lint
 

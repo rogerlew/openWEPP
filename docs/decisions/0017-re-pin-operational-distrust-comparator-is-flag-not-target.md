@@ -1,9 +1,9 @@
 # ADR-0017: Re-pin operational distrust — the fixed comparator is a flag, not a target
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-06-05
 **Deciders:** Roger Lew, Codex
-**Author of draft:** Claude Code (drafted at decider Roger Lew's direction; Codex ratification pending)
+**Author of draft:** Claude Code (drafted at decider Roger Lew's direction; ratified by Codex package `20260605-adr0017-comparator-distrust-ratification-001`)
 **Amends:** [ADR-0016](0016-promote-260430-baseline-as-canonical-comparator-and-abandon-kernel-rewrite.md)
 **Reaffirms:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 
@@ -82,7 +82,8 @@ with no forcing function to keep practice aligned to it.
    paired surfaces are proven identical in units and lineage stage, and (b)
    independent correctness authority (acceptance criterion C) is **met, not
    waived**. "Not required to act here" is no longer an acceptable disposition of
-   criterion C for an openWEPP-defect verdict.
+   criterion C for an openWEPP-defect verdict. Criterion C is not waivable for
+   an `OPENWEPP-DEFECTIVE` finding.
 
 4. **Symmetric verdict taxonomy with a first-class harness verdict.** Replace the
    asymmetric `{OPENWEPP-DEFECTIVE default, LEGACY-DEFECTIVE reserved}` scheme.

@@ -12,7 +12,7 @@ fn read(path: &str) -> String {
 #[test]
 fn hphys0313_contract_authority_is_registered() {
     let snowfreeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    assert!(snowfreeze.contains("contract_version: 43"));
+    assert!(snowfreeze.contains("contract_version: 44"));
     assert!(snowfreeze.contains("INV-SNOWFREEZE-038"));
     assert!(
         snowfreeze.contains("HPHYS0313 split-route snowpack settling/carry recursion invariant")
@@ -21,7 +21,7 @@ fn hphys0313_contract_authority_is_registered() {
     assert!(snowfreeze.contains("SC-WATBAL-001#INV-WATBAL-086"));
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert!(watbal.contains("contract_version: 136"));
+    assert!(watbal.contains("contract_version: 137"));
     assert!(watbal.contains("INV-WATBAL-086"));
     assert!(watbal.contains("HPHYS0313 split-route snowpack water-balance invariant"));
     assert!(watbal.contains("rounded observe output"));

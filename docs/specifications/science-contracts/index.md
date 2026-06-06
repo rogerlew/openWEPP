@@ -15,11 +15,20 @@ Kernel-process contract governance is mandatory and integrated through:
 4. `docs/specifications/correctness-authority-model.md`
 5. `docs/specifications/external-authority/README.md`
 6. `docs/specifications/external-authority/suite-schema.md`
-7. `docs/governance/openwepp-release-procedure-draft.md`
-8. `.github/workflows/release-gates.yml`
+7. `docs/decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md`
+8. `docs/governance/openwepp-release-procedure-draft.md`
+9. `.github/workflows/release-gates.yml`
 
 For kernel-affecting changes, missing profile/procedure compliance keeps
 disposition in `HOLD`.
+
+ADR0017 registry note: ADR-0017 is active comparator-governance authority:
+comparator agreement is a flag, not a target. Comparator/ledger contracts must
+fail closed on unit or lineage-stage ambiguity, support
+`HARNESS-SURFACE-MISMATCH`, require independent correctness authority before
+any `OPENWEPP-DEFECTIVE` verdict, and route snow/`RM` and water-balance
+continuations through `SC-SNOWFREEZE-001#INV-SNOWFREEZE-039` and
+`SC-WATBAL-001#INV-WATBAL-087`.
 
 HPHYS0273 makes unit governance mandatory for science contracts, runtime
 boundary symbols, conversions, output metadata, and work-package gates.

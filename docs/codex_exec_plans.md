@@ -16,6 +16,14 @@ must explain why no change is required. Deferred or follow-up findings must be
 linked from the disposition and worker-handoff artifacts. Package closure is
 blocked while any review finding is undispositioned.
 
+ADR-0017 makes comparator agreement a flag rather than a target for all
+comparator/ledger work packages. ExecPlans that classify legacy-comparator
+residuals must require like-for-like unit and lineage-stage proof before any
+`OPENWEPP-DEFECTIVE` verdict, must include `HARNESS-SURFACE-MISMATCH` as a peer
+verdict for unit or surface-pairing defects, must prohibit waiving independent
+correctness authority for openWEPP-defect labels, and must keep `HOLD` findings
+owned by a named follow-on gate rather than unscoped.
+
 ## `AGENTS.md`
 
 [`AGENTS.md`](https://github.com/openai/agents.md) is a simple format for guiding coding agents such as Codex. We describe a term that users can use as a shorthand and a simple rule for when to use planning documents. Here, we call it an "ExecPlan". Note that this is an arbitrary term, Codex has not been trained on it. This shorthand can then be used when prompting Codex to direct it to a particular definition of a plan.

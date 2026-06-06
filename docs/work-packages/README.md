@@ -1,5 +1,12 @@
 # Work Packages
 
+- `20260605-adr0017-comparator-distrust-ratification-001/`
+  - Purpose: ratify ADR-0017 so the fixed comparator is enforced as an
+    investigation flag rather than a target, with explicit like-for-like
+    unit/lineage gates, symmetric verdict taxonomy, and owned-HOLD governance.
+  - Status: complete; ADR0017 accepted, governance/SC contract amendments and
+    contract-derived tests landed, dual review/verification disposition
+    recorded, and no production physics edits authorized.
 - `20260605-hphys0313-snowpack-settling-carry-recursion-closure-001/`
   - Purpose: execute the HPHYS0312 required continuation by reconstructing the
     full-precision 2013 settling/depth route and recursively scanning the 2014

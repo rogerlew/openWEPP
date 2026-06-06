@@ -536,6 +536,10 @@ name = "hphys0313_snowpack_settling_carry_recursion_contract"
 path = "tests/integration/hphys0313_snowpack_settling_carry_recursion_contract.rs"
 
 [[test]]
+name = "adr0017_comparator_distrust_ratification_contract"
+path = "tests/integration/adr0017_comparator_distrust_ratification_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

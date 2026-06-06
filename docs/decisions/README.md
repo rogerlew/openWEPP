@@ -20,7 +20,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0014](0014-snow-drift-routine-non-implementation.md) | Do not implement legacy snow drift routine (`sndrft.for`) | Accepted |
 | [0015](0015-relicense-to-apache-2.md) | Relicense openWEPP to Apache-2.0 (supersedes ADR-0001) | Accepted |
 | [0016](0016-promote-260430-baseline-as-canonical-comparator-and-abandon-kernel-rewrite.md) | Promote wepp_260430 + negative-melt fix as canonical comparator; abandon kernel rewrite | Accepted (amended by 0017) |
-| [0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) | Re-pin operational distrust — the fixed comparator is a flag, not a target | Proposed |
+| [0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) | Re-pin operational distrust — the fixed comparator is a flag, not a target | Accepted |
 
 ## ADR template
 

@@ -1,7 +1,7 @@
 # Science Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-06-03
+Last updated: 2026-06-05
 Scope: openWEPP process-based science contracts (`SC-<DOMAIN>-<NNN>`)
 
 ## Purpose
@@ -77,6 +77,18 @@ authority location.
      `/workdir/wepp-forest_260430_baseline`,
    - surrogate/proxy/heuristic formulas are not promotable closure unless
      explicitly documented as non-promotable research branches under `HOLD`.
+9. ADR-0017 comparator-distrust governance is mandatory for comparator/ledger contracts:
+   - comparator agreement is an investigation flag, not a target;
+   - `OPENWEPP-DEFECTIVE` verdicts require like-for-like unit and lineage-stage
+     proof plus independent correctness authority;
+   - independent correctness authority may not be waived for an
+     `OPENWEPP-DEFECTIVE` verdict;
+   - the peer `HARNESS-SURFACE-MISMATCH` verdict is required;
+   - depth-vs-water-equivalent, raw-vs-released, or lineage-stage mismatches
+     resolve to `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, not openWEPP
+     defects;
+   - `HOLD` is valid only when it records an owner/follow-on package, next
+     evidence gate, and reason closure is blocked.
 
 ## Required File Layout Per Contract Cycle
 
@@ -264,6 +276,13 @@ Contract authors must apply
    symbols. Legacy publication names do not override canonical unit authority.
 6. Missing unit declarations, ambiguous aliases, or unguarded unit-conversion
    seams keep disposition in `HOLD` for kernel-affecting work.
+
+Comparator/ledger packages must perform the unit check before assigning defect
+ownership. Unit ambiguity or a suspicious ratio consistent with a unit
+conversion, such as approximately `10x` for snow depth versus snow-water
+equivalent or `1000x` for meters versus millimetres, is a fail-closed
+`HARNESS-SURFACE-MISMATCH` / `UNRESOLVED` gate until like-for-like evidence is
+recorded.
 
 ## Minimal Prompt Templates
 

@@ -1,7 +1,7 @@
 # Correctness Authority Model
 
 Status: Active
-Last updated: 2026-05-31
+Last updated: 2026-06-05
 Scope: openWEPP kernel/process correctness adjudication and gate authority
 
 ## Purpose
@@ -45,6 +45,36 @@ Work-package artifacts remain evidence only and do not replace either plane.
 5. `A6` (legacy comparator) cannot be used as a sole acceptance oracle.
 6. Legacy-only deviations (`A2`/`A6`) route to investigation/disposition; they
    do not override passing `A0/A1/A3` outcomes.
+
+## ADR-0017 Comparator-Flag Adjudication (Normative)
+
+ADR-0017 ratifies the operational rule that a legacy comparator is a flag, not
+a target. Comparator agreement can increase confidence, and comparator
+divergence can identify where to investigate, but neither state is sufficient
+acceptance authority.
+
+Comparator/ledger packages must use the peer verdict set
+`HARNESS-SURFACE-MISMATCH`, `LEGACY-DEFECTIVE`, `OPENWEPP-DEFECTIVE`, and
+`UNRESOLVED`. A row may be labeled `OPENWEPP-DEFECTIVE` only after the package
+proves both requirements:
+
+1. the paired surfaces are like-for-like in units and lineage stage; and
+2. independent correctness authority is met through contract/source,
+   conservation, documented physics-law, external constitutive, or accepted
+   corrected-fix evidence.
+
+Criterion-C-style independent correctness authority may not be waived for an
+`OPENWEPP-DEFECTIVE` verdict. A depth-vs-water-equivalent, raw-vs-released, or
+lineage-stage mismatch must resolve to `HARNESS-SURFACE-MISMATCH` or
+`UNRESOLVED`, not to an openWEPP defect. Suspicious unit-ratio signatures such
+as approximately `10x` or `1000x` must be treated as surface-mismatch hypotheses
+until disproven.
+
+`HOLD` remains valid when it is owned and scoped: the artifact must state the
+owner or owning follow-on package, the next evidence gate, and the reason
+closure is not yet possible. Ownerless or unscoped `HOLD` findings are
+governance failures. Findings that invalidate prior verdicts must retract or
+supersede those verdicts in the package that published them.
 
 ## Release/CI Lane Enforcement (Normative)
 
