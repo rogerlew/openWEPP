@@ -5,10 +5,12 @@
     source-line classifying baseline `winter.for` storm-start normalization
     against OpenWEPP SIMIMPL28 timing projection, then implementing and
     validating the baseline-authoritative timing path if the proof holds.
-  - Status: queued; right-sized to include contract authority, source-line
-    classification, implementation/evidence generation, H1/H7/H39 trace
-    rerun, full carried-row disposition, dual review, and closure/handoff in
-    one autonomous package unless a hard blocker is proven.
+  - Status: complete; HPHYS0320 source-line classified the `wnttim < 1.0`
+    start-time minimum as pinned-baseline `winter.for`/`stmtim.for` authority,
+    corrected OpenWEPP SIMIMPL28 timing projection before active-interval
+    evaluation, validated H1/H7/H39 trace closure, ran a 39/39 release-binary
+    hillslope batch, closed the combined `57` timing-seam carried rows, and
+    recorded dual review, verification, and handoff.
 - `20260606-hphys0319-fixed-baseline-stmtim-observe-recovery-001/`
   - Purpose: recover fixed-baseline `stmtim.for` observe values for the 2013
     day 11 hour 11 H1/H7/H39 route, pair them with regenerated OpenWEPP

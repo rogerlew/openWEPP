@@ -1,12 +1,15 @@
 # HPHYS0320 Artifacts
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: Static
+
+Static:
 
 Artifact ledger for HPHYS0320 `stmtim` start-time source-line closure.
 
-Required artifacts:
+Completed artifacts:
+
 - `contract-implementation-evidence.md`
 - `contract-test-implementation-evidence.md`
 - `pre-implementation-contract-gate.md`
@@ -19,8 +22,12 @@ Required artifacts:
 - `gate-results.md`
 - `review_agent_a.md`
 - `review_agent_b.md`
+- `review_claude_wnttim_storm_start_normalization.md`
 - `review-disposition.md`
 - `verification_agent_a.md`
 - `verification_agent_b.md`
 - `disposition.md`
 - `worker-handoff.md`
+
+The package closes the HPHYS0319 `stmtim-active-interval-divergence-hold` as an
+OpenWEPP SIMIMPL28 start-time normalization omission.

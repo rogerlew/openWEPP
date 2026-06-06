@@ -23,7 +23,8 @@ mod tests {
         build_hillslope_runtime_surface_from_climate_with_context,
         build_hillslope_runtime_surface_from_management,
         build_hillslope_runtime_surface_from_slope, build_hillslope_runtime_surface_from_soil,
-        legacy_correct_layer_moisture, legacy_expand_soil_layers_to_200mm, LegacySoilLayerSeed,
+        legacy_correct_layer_moisture, legacy_expand_soil_layers_to_200mm,
+        simimpl28_stmtim_hourly_partition, LegacySoilLayerSeed,
     };
 
     const VALID_CLIMATE: &str =
@@ -2054,6 +2055,43 @@ mod tests {
 
         assert!(active_count > 0);
         assert!((stmtim_hrsnow_total - snowfall_total).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn hphys0320_stmtim_normalizes_zero_start_before_active_interval() {
+        let partition = simimpl28_stmtim_hourly_partition(
+            0.00082, 38_040.0, 11.0, 0.0, 0.0, -11.594,
+        )
+        .expect("HPHYS0320 finite breakpoint start should normalize");
+
+        assert!((partition.wntdur_h - 11.0).abs() < 1.0e-12);
+        assert!((partition.wnttim_h - 1.0).abs() < 1.0e-12);
+        assert!(partition.active_interval);
+        assert!(!partition.rain_branch);
+        assert!(partition.snow_branch);
+        assert!(partition.hrrain_m.abs() < 1.0e-12);
+        assert!((partition.hrsnow_m - 0.000_745_454_545_454_545_5).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn hphys0320_stmtim_nonfinite_start_time_fails_closed() {
+        let error = simimpl28_stmtim_hourly_partition(
+            0.00082,
+            38_040.0,
+            11.0,
+            f64::NAN,
+            0.0,
+            -11.594,
+        )
+        .expect_err("non-finite start time must fail closed");
+
+        match error {
+            ClimateRuntimeInputError::NonFiniteField { field, value } => {
+                assert_eq!(field, "wnttim");
+                assert!(value.is_nan());
+            }
+            other => panic!("expected wnttim non-finite error, got {other:?}"),
+        }
     }
 
     #[test]

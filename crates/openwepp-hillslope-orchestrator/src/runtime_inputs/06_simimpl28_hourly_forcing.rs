@@ -741,6 +741,7 @@ fn simimpl28_stmtim_hourly_partition(
             value: stmdur_s,
         });
     }
+    wnttim = simimpl28_stmtim_start_time(wnttim)?;
     if rain_m <= 0.0001 {
         return Ok(Simimpl28StmtimHourlyPartition {
             hrrain_m: 0.0,
@@ -824,6 +825,19 @@ fn simimpl28_stmtim_hourly_partition(
             snow_branch: false,
         })
     }
+}
+
+fn simimpl28_stmtim_start_time(mut wnttim: f64) -> Result<f64, ClimateRuntimeInputError> {
+    if !wnttim.is_finite() {
+        return Err(ClimateRuntimeInputError::NonFiniteField {
+            field: "wnttim",
+            value: wnttim,
+        });
+    }
+    if wnttim < 1.0 {
+        wnttim = 1.0;
+    }
+    Ok(wnttim)
 }
 
 fn simimpl28_winter_random_start_hour(sdate: i32) -> f64 {

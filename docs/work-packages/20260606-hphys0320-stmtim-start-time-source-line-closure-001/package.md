@@ -1,6 +1,6 @@
 # HPHYS0320 Stmtim Start-Time Source-Line Closure
 
-Status: queued
+Status: complete
 
 ## Objective
 
@@ -138,6 +138,8 @@ Temporary execution writes may use
 8. Closeout: update disposition, handoff, artifact statuses, and README.
 
 ## Contract-First Sequence
+
+The package followed contract-first sequencing:
 
 1. Contracts.
 2. Contract-derived tests.

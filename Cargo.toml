@@ -560,6 +560,10 @@ name = "hphys0319_fixed_baseline_stmtim_observe_contract"
 path = "tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs"
 
 [[test]]
+name = "hphys0320_stmtim_start_time_source_line_contract"
+path = "tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs"
+
+[[test]]
 name = "adr0017_comparator_distrust_ratification_contract"
 path = "tests/integration/adr0017_comparator_distrust_ratification_contract.rs"
 

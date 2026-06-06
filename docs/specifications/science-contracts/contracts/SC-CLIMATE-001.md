@@ -4,7 +4,7 @@ title: Climate Forcing Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 22
 producer_scope:
   - Weather-generator forcing surfaces (daily precipitation occurrence/amount)
   - Storm disaggregation forcing surfaces (duration, intensity distribution)
@@ -62,6 +62,7 @@ Out of scope:
 | REF-CLIMATE-WF-STMGET-BRKPT0 | `/workdir/wepp-forest_260430_baseline/src/stmget.for` (`ibrkpt=1` breakpoint branch dry-day handling) and `/workdir/wepp-forest_260430_baseline/src/brkpt.for` (positive-event breakpoint transform path). | Baseline-authoritative breakpoint dry-day semantics in breakpoint mode (`nbrkpt=0` accepted with zero precipitation/intensity forcing) and positive-event transform behavior for `nbrkpt>0`. | `[DIRECT][Static]` |
 | REF-CLIMATE-WF-HRTMP-ITFLAG | `/workdir/wepp-forest_260430_baseline/src/hr_tmp.for` (`itflag=1` branch) | Baseline-authoritative near-isothermal daily thermal forcing behavior: when `itflag=1` (`tmax-tmin <= 1`), hourly synthesis uses mean-air-temperature branch (`hrtemp = (tmax+tmin)/2`) and does not require strict `tmax >= tmin` ordering. | `[DIRECT][Static]` |
 | REF-CLIMATE-WF-RADLY-RADMJ | `/workdir/wepp-forest_260430_baseline/src/stmget.for:188-194`, `/workdir/wepp-forest_260430_baseline/src/winter.for:256-258`, `/workdir/wepp-forest_260430_baseline/src/sunmap.for:99-260`, `/workdir/wepp-forest_260430_baseline/src/radcur.for:1-71`, `/workdir/wepp-forest_260430_baseline/src/hr_tmp.for:41-47` | Baseline-authoritative winter radiation unit lineage: climate `radly` is read as daily solar radiation in Langleys/day, `winter.for` converts `radmj = radly * 0.04184` before hourly synthesis, `sunmap` consumes `radly` to derive sloped daily `estrad` and potential `rpoth` in `MJ m^-2 d^-1`, `radcur` computes hourly potential radiation, and `hr_tmp` emits hourly `hradmj` in `MJ m^-2 h^-1`. | `[DIRECT][Static]` |
+| REF-CLIMATE-WF-WNTTIM-MIN | `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-64`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative winter storm-start timing lineage: after random or breakpoint `wnttim` assignment, `winter.for` normalizes finite `wnttim < 1.0` to `1.0` before `stmtim.for` rounds duration, applies end-of-day adjustment, and evaluates active hourly membership. This lower bound is the derived 1-based storm-hour window convention: `stmtim.for` evaluates hourly membership over hours `1..24`, so a finite start at `0` would otherwise describe a pre-hour-one window edge and hide the first in-day storm hour from the active-interval predicate. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-CLIMATE-PHYS-BOUNDS | Physical/common-sense invariant class | Probability bounds and non-negative rainfall/intensity domains are required for physical validity. | `[INFERENCE][Static]` |
 
 ## Variables and Units (Externally Relevant)
@@ -119,6 +120,7 @@ Out of scope:
 | INV-CLIMATE-015 | HPHYS0317 paired hourly snowfall input-surface parity invariant: H1/H7/H39 spring-2014 and spring-2016 inherited snow/`RM` rows that route to the 2013 day 11 hour 11 positive-`hrsnow` blocker may not be labeled `OPENWEPP-DEFECTIVE` or corrected in production unless the paired fixed-baseline/openWEPP input-surface ledger publishes same-year/day/hour values for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrsnow`, `hrrain`, active interval membership, and rain/snow branch choice. Source-code resemblance between `stmtim.for:43-95` and `simimpl28_stmtim_hourly_partition` is insufficient. If any controlling surface is missing from the paired ledger, the row remains ADR0017 `UNRESOLVED` under an owned instrumentation `HOLD`, and snow producer, branch-predicate, melt-term, or downstream water-balance compensation remains invalid. | governance-hold | INV-CLIMATE-014, SC-SNOWFREEZE-001#INV-SNOWFREEZE-043, SC-WATBAL-001#INV-WATBAL-091, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs:57-71`, `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs:627-697` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-016 | HPHYS0318 SIMIMPL28 `stmtim` control-surface instrumentation invariant: openWEPP runtime must publish trace-grade per-hour diagnostic symbols for the same inputs and branch outcomes consumed by `simimpl28_stmtim_hourly_partition`: `snow.hourly.stmtim.rain_m_####`, `stmdur_s_####`, `wntdur_h_####`, `wnttim_h_####`, `hrtemp_c_####`, `rst_c_####`, `hrrain_m_####`, `hrsnow_m_####`, `active_interval_####`, `rain_branch_####`, and `snow_branch_####`. The diagnostic values must come from the existing SIMIMPL28 partition helper, preserve the existing `snow.hourly.rain_m_####` and `snow.hourly.snowfall_m_####` values, and use `0/1` flag domains for branch/membership booleans. HPHYS0318 closes OpenWEPP-side observability only; absent fixed-baseline paired `stmtim` observe values keep the 2013 day 11 hour 11 route in ADR0017 `UNRESOLVED`/`HOLD` and do not authorize precipitation-phase or downstream water-balance edits. | governance-hold | INV-CLIMATE-015, SC-SNOWFREEZE-001#INV-SNOWFREEZE-044, SC-WATBAL-001#INV-WATBAL-092, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-CLIMATE-017 | HPHYS0319 fixed-baseline `stmtim` observe recovery invariant: before any precipitation-phase production edit is authorized for the combined `57` carried rows, a paired ledger must recover fixed-baseline observe values from `/workdir/wepp-forest_260430_baseline` commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrrain`, `hrsnow`, active interval membership, rain branch, and snow branch at H1/H7/H39 2013 day 11 hour 11, then compare those values to regenerated OpenWEPP `snow.hourly.stmtim.*_0011` diagnostics. Temporary observe-only Fortran instrumentation may be used as evidence, but it must be path-scoped, patch-recorded, source-line-provenanced, and non-authoritative for equations. If the paired values are unavailable, non-finite, unit-ambiguous, or do not prove an OpenWEPP-owned source defect with independent correctness authority, the route remains ADR0017 `UNRESOLVED`/`HOLD` and no precipitation-phase, snow-producer, branch-predicate, melt-term, or downstream water-balance edit is valid. | governance-hold | INV-CLIMATE-016, SC-SNOWFREEZE-001#INV-SNOWFREEZE-045, SC-WATBAL-001#INV-WATBAL-093, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `/workdir/wepp-forest_260430_baseline/src/winter.for:292-300`, `/workdir/wepp-forest_260430_baseline/src/wepp_observe.for` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-CLIMATE-018 | HPHYS0320 SIMIMPL28 storm-start minimum-hour invariant: OpenWEPP winter forcing projection must apply the pinned-baseline `winter.for:206-235` rule that finite `wnttim < 1.0` normalizes to `1.0` after random or breakpoint start-time selection and before `stmtim` active-interval evaluation. For the HPHYS0319 H1/H7/H39 2013 day 11 hour 11 key, breakpoint `stmstr = 0`, `rain = 0.00082 m`, and `stmdur ~= 38040 s` therefore produce `wntdur = 11`, adjusted `wnttim = 1`, active interval `1`, snow branch `1`, and `hrsnow ~= 0.00074545 m` when `hrtemp <= rst`. Non-finite start-time inputs remain typed failures; this invariant authorizes only the cited finite baseline normalization, not unbounded clamping or downstream compensation. | hard-fail | REF-CLIMATE-WF-WNTTIM-MIN, INV-CLIMATE-017, SC-SNOWFREEZE-001#INV-SNOWFREEZE-046, SC-WATBAL-001#INV-WATBAL-094 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -141,6 +143,7 @@ Out of scope:
 | `INV-CLIMATE-015` | governance | HPHYS0317 paired input-surface ledger for the 2013 day 11 hour 11 positive-`hrsnow` route | Explicit `HOLD` when any controlling fixed-baseline/openWEPP input surface is missing, when source-code resemblance is used as proof, or when production/downstream edits are asserted before same-unit same-lineage input-surface proof and independent correctness authority | HPHYS0317 paired hourly snowfall input-surface gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-016` | runtime + governance | SIMIMPL28 OpenWEPP `stmtim` control-surface trace publication and HPHYS0318 paired-ledger hold | Typed runtime publication of finite/unit-declared OpenWEPP diagnostics; explicit `HOLD` when fixed-baseline paired `stmtim` observe values are still absent or production edits are asserted from OpenWEPP-side observability alone | HPHYS0318 `stmtim` control-surface instrumentation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-CLIMATE-017` | governance | HPHYS0319 temporary fixed-baseline `stmtim` observe recovery paired with regenerated OpenWEPP `snow.hourly.stmtim.*_0011` diagnostics | Explicit `HOLD` when fixed-baseline observe recovery is unavailable, unit ambiguous, not paired at the same key, or used to authorize production edits without source-line ownership and independent correctness authority | HPHYS0319 fixed-baseline `stmtim` observe recovery gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-CLIMATE-018` | runtime + governance | SIMIMPL28 start-time projection and HPHYS0320 paired source-line classification | Typed hard error for non-finite start time; finite `wnttim < 1.0` is explicitly normalized to `1.0` before `stmtim` active-interval evaluation per baseline `winter.for`; `HOLD` if paired H1/H7/H39 traces do not prove the timing seam closes or reroute the remaining divergence | HPHYS0320 storm-start timing closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -256,6 +259,13 @@ output-column `Dp` (deep percolation, `mm`) governed by `SC-PERC-001` and
   the paired ledger proves source-line-owned OpenWEPP defect authority plus
   independent correctness authority.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-CLIMATE-P-013: HPHYS0320 SIMIMPL28 runtime producers must normalize finite
+  storm start times below hour `1.0` to `1.0` before `stmtim` duration overflow
+  and active-interval evaluation, publish the normalized `wnttim` in
+  `snow.hourly.stmtim.wnttim_h_####`, and fail closed for non-finite start-time
+  payloads. This is a contract-cited baseline compatibility rule, not a generic
+  clamp.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -287,6 +297,7 @@ output-column `Dp` (deep percolation, `mm`) governed by `SC-PERC-001` and
 | HPHYS0299 hourly snowfall unit/provenance closure (`INV-CLIMATE-014`) | Paired snow/`RM` partition diagnostics and SIMIMPL28 hourly snowfall trace publication | `HOLD` when `hrsnow` depth is compared to water-equivalent snowfall or when stale `winter.for:410-412` cut-point text is treated as the authoritative partition equation | HPHYS0299 unit/provenance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | HPHYS0317 paired hourly snowfall input-surface closure (`INV-CLIMATE-015`) | HPHYS0317 paired fixed-baseline/openWEPP input-surface ledger | `HOLD` when any controlling `stmtim` input surface or branch outcome is missing, unmatched, or not same-lineage; production edits require same-unit same-lineage proof plus independent correctness authority | HPHYS0317 input-surface parity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | HPHYS0318 `stmtim` OpenWEPP trace instrumentation (`INV-CLIMATE-016`) | SIMIMPL28 runtime publication and HPHYS0245 trace serialization | OpenWEPP diagnostics may be added without physics changes; `HOLD` remains when fixed-baseline paired `stmtim` observe values are unavailable | HPHYS0318 instrumentation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| HPHYS0320 storm-start timing closure (`INV-CLIMATE-018`) | SIMIMPL28 runtime projection and paired H1/H7/H39 trace rerun | Hard error for non-finite start time; finite below-hour-one starts follow baseline `wnttim = 1.0` normalization before active-interval evaluation; `HOLD` only for residual paired divergence outside the timing seam | HPHYS0320 timing closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Tolerance and Numeric Notes
 
@@ -544,7 +555,8 @@ states and must hard-fail with typed hydrology guard posture.
    `hrtemp > rst` routes event share to `snow.hourly.rain_m_####`, otherwise to
    `snow.hourly.snowfall_m_####`; event start-time and duration use baseline
    rounding/start rules (`stmstr` for breakpoint forcing, deterministic
-   day-seeded start-time for non-breakpoint forcing).
+   day-seeded start-time for non-breakpoint forcing, then finite
+   `wnttim < 1.0 -> 1.0` before `stmtim` active-interval evaluation).
 4. Missing/non-finite/out-of-domain required winter forcing context symbols
    under active synthesis must hard-fail with typed runtime errors (no silent
    fallback/defaulting).
@@ -579,6 +591,10 @@ states and must hard-fail with typed hydrology guard posture.
 6. HPHYS0277 high-flux vector confirms an overlarge finite `radly` payload
    fails with a typed runtime error at `winter.hourly.rad_mj_m2_####` instead
    of publishing, clipping, or compensating.
+7. HPHYS0320 start-time vector confirms breakpoint `stmstr = 0` with the
+   HPHYS0319 event duration emits normalized `wnttim = 1`, activates hour 11,
+   selects the snow branch when `hrtemp <= rst`, and emits
+   `hrsnow ~= 0.00074545 m`.
 
 ## CLIM17 Breakpoint Dry-Day Parity Addendum
 
@@ -636,6 +652,7 @@ states and must hard-fail with typed hydrology guard posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-06` | `22` | `Codex` | HPHYS0320 amendment: added baseline-authoritative `wnttim < 1 -> 1` SIMIMPL28 storm-start timing closure authority (`INV-CLIMATE-018`). |
 | `2026-06-06` | `21` | `Codex` | HPHYS0319 amendment: added fixed-baseline `stmtim` observe recovery and paired classification gate (`INV-CLIMATE-017`) before precipitation-phase production edits. |
 | `2026-06-06` | `20` | `Codex` | HPHYS0318 amendment: added OpenWEPP SIMIMPL28 `stmtim` control-surface instrumentation invariant (`INV-CLIMATE-016`) while preserving the fixed-baseline paired-observe `HOLD`. |
 | `2026-06-06` | `19` | `Codex` | HPHYS0317 amendment: added paired hourly snowfall input-surface parity invariant (`INV-CLIMATE-015`) requiring controlling `stmtim` lane values before precipitation-phase production edits. |

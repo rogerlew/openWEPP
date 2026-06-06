@@ -41,7 +41,7 @@ Files:
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260606-hphys0320-stmtim-start-time-source-line-closure-001/**`
 
-Task: execute HPHYS0320 end-to-end. Source-line classify the fixed-baseline
+Task: execute HPHYS0320 end-to-end. source-line classify the fixed-baseline
 `winter.for` storm-start timing path against OpenWEPP SIMIMPL28, implement the
 baseline-authoritative timing closure if authorized, regenerate paired
 H1/H7/H39 traces, and disposition the combined `57` carried rows.

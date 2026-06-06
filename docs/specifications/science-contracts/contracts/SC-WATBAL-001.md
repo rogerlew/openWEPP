@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 143
+contract_version: 144
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -276,6 +276,7 @@ lateral/drainage).
 | INV-WATBAL-091 | HPHYS0317 paired hourly snowfall input-surface water-balance gate: water-balance continuation must consume the combined HPHYS0315/HPHYS0316 `57`-row paired input-surface ledger for the 2013 day 11 hour 11 positive-`hrsnow` route before any WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow-producer, branch-predicate, or melt-term edit. The ledger must publish same-unit same-lineage fixed-baseline/openWEPP values for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrsnow`, `hrrain`, active interval membership, and branch choice. If any controlling surface is absent or not paired, the rows remain ADR0017 `UNRESOLVED` under `paired-input-surface-instrumentation-hold`, and water-balance compensation remains invalid. | governance-hold | INV-WATBAL-090, INV-WATBAL-089, INV-WATBAL-088, SC-SNOWFREEZE-001#INV-SNOWFREEZE-043, SC-CLIMATE-001#INV-CLIMATE-015 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-092 | HPHYS0318 `stmtim` control-surface water-balance gate: water-balance continuation must consume OpenWEPP `snow.hourly.stmtim.*_####` trace maps for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrrain`, `hrsnow`, active interval membership, rain branch, and snow branch before attributing the 2013 day 11 hour 11 route to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow producer, branch predicate, or melt term. HPHYS0318 OpenWEPP instrumentation is necessary but not sufficient: if fixed-baseline paired `stmtim` observe values remain absent, the combined `57` carried rows remain ADR0017 `UNRESOLVED` under `paired-fixed-baseline-stmtim-observe-hold`, and water-balance compensation remains invalid. | governance-hold | INV-WATBAL-091, SC-SNOWFREEZE-001#INV-SNOWFREEZE-044, SC-CLIMATE-001#INV-CLIMATE-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-093 | HPHYS0319 fixed-baseline `stmtim` observe water-balance gate: before assigning the combined `57` carried rows to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow producer, branch predicate, or melt terms, water-balance continuation must consume a paired H1/H7/H39 2013 day 11 hour 11 ledger that recovers fixed-baseline `stmtim` observe values from the pinned baseline and compares them with regenerated OpenWEPP `snow.hourly.stmtim.*_0011` diagnostics. The ledger must identify absent/extra active interval, rain-vs-snow branch, and same-unit magnitude deltas for `hrrain` and `hrsnow`, preserve the combined `57` carried rows, and mark production/downstream authorization as false unless source-line-owned OpenWEPP defect authority plus independent correctness authority are both present. Temporary observe instrumentation is evidence only; water-balance compensation from comparator disagreement, rounded output, or source-code resemblance remains invalid. | governance-hold | INV-WATBAL-092, SC-SNOWFREEZE-001#INV-SNOWFREEZE-045, SC-CLIMATE-001#INV-CLIMATE-017, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `/workdir/wepp-forest_260430_baseline/src/winter.for:292-300` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-094 | HPHYS0320 `stmtim` start-time water-balance gate: water-balance continuation may close the combined `57` carried rows for the timing seam only after source-line classification proves pinned-baseline `winter.for:206-235` normalizes finite `wnttim < 1.0` to `1.0` before `stmtim.for:43-64` active-interval evaluation and OpenWEPP SIMIMPL28 implements the same rule. Paired H1/H7/H39 reruns must prove `wntdur = 11`, `wnttim = 1`, active interval `1`, snow branch `1`, and `hrsnow ~= 0.00074545 m` at 2013 day 11 hour 11. WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, and WB12 runoff compensation remains invalid; residual divergence must be routed to a named source lane. | governance-hold | INV-WATBAL-093, SC-SNOWFREEZE-001#INV-SNOWFREEZE-046, SC-CLIMATE-001#INV-CLIMATE-018, `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-64` | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Water-Balance Disposition Addendum
 
@@ -518,6 +519,7 @@ openWEPP evaluates the same baseline state on the wrong condition. Otherwise:
 | `INV-WATBAL-091` | governance | HPHYS0317 water-balance consumer gate requiring paired hourly snowfall input-surface closure for the combined `57` carried spring rows before downstream edits | Explicit `HOLD` when any controlling input surface is missing, row totals are incomplete, source-code resemblance is treated as proof, or WB13/WB17/WB18/WB19/WB12 compensation is asserted before upstream source-line-owned producer proof | HPHYS0317 paired hourly snowfall input-surface water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-092` | runtime + governance | HPHYS0318 water-balance consumer gate consuming OpenWEPP `stmtim` trace maps and preserving fixed-baseline paired-observe hold | Explicit `HOLD` when OpenWEPP diagnostics are absent, fixed-baseline paired observe values remain unavailable, or WB13/WB17/WB18/WB19/WB12 compensation is asserted from instrumentation alone | HPHYS0318 `stmtim` control-surface water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-093` | governance | HPHYS0319 water-balance consumer gate consuming fixed-baseline `stmtim` observe recovery paired with regenerated OpenWEPP `stmtim` traces | Explicit `HOLD` when fixed-baseline observe recovery is absent, not same-key paired, lacks source-line ownership, or is used to authorize WB13/WB17/WB18/WB19/WB12 compensation without independent correctness authority | HPHYS0319 fixed-baseline `stmtim` observe water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-094` | governance | HPHYS0320 water-balance consumer gate consuming source-line classification, SIMIMPL28 start-time implementation, and paired H1/H7/H39 reruns | Explicit `HOLD` when timing closure evidence is absent, residual divergence is unowned, or WB13/WB17/WB18/WB19/WB12 compensation is asserted instead of source-line timing closure | HPHYS0320 `stmtim` start-time water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -781,6 +783,12 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   edit authorization explicitly, and keep WB13/WB17/WB18/WB19/WB12 edits in
   `HOLD` unless the ledger proves upstream source-line-owned OpenWEPP defect
   authority plus independent correctness authority.
+  `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-030: HPHYS0320 water-balance continuation producers must consume
+  source-line classification and paired rerun evidence for the SIMIMPL28
+  start-time normalization, close only the timing seam when H1/H7/H39 match the
+  HPHYS0319 fixed-baseline observe lane, and route any residual to a named
+  follow-on source lane without WB13/WB17/WB18/WB19/WB12 compensation.
   `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
@@ -2340,6 +2348,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-06` | `144` | `Codex` | HPHYS0320 amendment: added `stmtim` start-time water-balance gate (`INV-WATBAL-094`) for source-line timing closure and residual rerouting without downstream compensation. |
 | `2026-06-06` | `143` | `Codex` | HPHYS0319 amendment: added fixed-baseline `stmtim` observe recovery water-balance gate (`INV-WATBAL-093`) before WB13/WB17/WB18/WB19/WB12 attribution or compensation. |
 | `2026-06-06` | `142` | `Codex` | HPHYS0318 amendment: added OpenWEPP `stmtim` control-surface water-balance gate (`INV-WATBAL-092`) while preserving fixed-baseline paired-observe `HOLD`. |
 | `2026-06-06` | `141` | `Codex` | HPHYS0317 amendment: added paired hourly snowfall input-surface water-balance gate (`INV-WATBAL-091`) for the combined 57 carried-row route before downstream compensation or producer edits. |
