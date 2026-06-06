@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0312-prior-year-terminal-snowpack-lineage-closure-001/`
+  - Purpose: execute the HPHYS0311 required continuation by scanning the prior
+    calendar year for each inherited terminal snowpack delta and classifying
+    the first material fixed-comparator/openWEPP snowpack divergence before any
+    producer or downstream water-balance edit.
+  - Status: executed-hold; diagnostics represented all `57` HPHYS0309 rows
+    carried by the six inherited HPHYS0311 groups, routing `3` to
+    `settling-depth-update-hold`, `3` to
+    `year-start-inherited-state-hold`, and authorizing no production edits.
 - `20260605-hphys0311-snow-carry-source-line-parity-closure-001/`
   - Purpose: execute the HPHYS0310 required continuation by comparing
     fixed-comparator `snowd.for`/`winter.for` carry-state source lines against

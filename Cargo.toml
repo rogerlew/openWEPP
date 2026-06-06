@@ -528,6 +528,10 @@ name = "hphys0311_snow_carry_source_line_parity_contract"
 path = "tests/integration/hphys0311_snow_carry_source_line_parity_contract.rs"
 
 [[test]]
+name = "hphys0312_prior_year_terminal_snowpack_lineage_contract"
+path = "tests/integration/hphys0312_prior_year_terminal_snowpack_lineage_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 
