@@ -1,8 +1,17 @@
 # Partition Ledger
 
-Status: complete
+Status: historical/superseded
 
-Evidence mode: ran
+Evidence mode: ran + static supersession
+
+Static:
+
+- Retrospective review `artifacts/review_claude_hrsnow_unit_artifact.md`
+  found the historical `hrsnow` verdict paired baseline snowfall depth against
+  openWEPP `snow_hourly_snowfall_water_equiv_sum_m`, a water-equivalent
+  accounting surface.
+- HPHYS0299 supersedes the HPHYS0298 all-window `hourly-forcing` migration
+  inference with corrected depth-vs-depth `hrsnow` evidence.
 
 Ran:
 
@@ -14,17 +23,18 @@ Result:
 
 - Markdown summary: `artifacts/paired-lineage-summary.md`.
 - JSON ledger: `artifacts/paired-lineage-ledger.json`.
-- All nine H1/H7/H39 target windows were classified as `OPENWEPP-DEFECTIVE`.
-- First divergent cut-point: `hourly-forcing` for all nine windows.
-- First divergent symbol: `hrsnow` for eight windows; `hrrain,hrsnow` for H39 2013 days `97-112`.
+- Historical classifier output: all nine H1/H7/H39 target windows were
+  classified as `OPENWEPP-DEFECTIVE`.
+- Historical first divergent cut-point: `hourly-forcing` for all nine windows.
+- Historical first divergent symbol: `hrsnow` for eight windows;
+  `hrrain,hrsnow` for H39 2013 days `97-112`.
 - `Q` remained closed in all nine windows; the defect source is upstream of downstream storage consumers.
-- Verdict interpretation: this is a porting-fidelity defect against the
-  unimpeached pinned-baseline precipitation-phase partition at
-  `/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`.
+- Verdict interpretation: superseded. The `hrsnow` comparison was
+  depth-vs-water-equivalent and is non-authoritative for production migration.
 - The JSON ledger includes per-window `source_provenance` rows with canonical symbol, openWEPP symbol, unit, values, deltas, and source path/line references.
 
 Continuation:
 
-- Open a follow-on package for baseline-authoritative winter hourly snow/rain
-  forcing partition migration of `winter.for:410-412` before returning to raw
-  melt or downstream water-balance consumers.
+- Do not open a winter hourly snow/rain forcing migration from HPHYS0298 alone.
+  Continue from HPHYS0299 corrected depth-vs-depth `hrsnow` evidence and later
+  residual localization artifacts.

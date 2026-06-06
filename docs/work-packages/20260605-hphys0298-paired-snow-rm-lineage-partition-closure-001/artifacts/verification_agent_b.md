@@ -1,5 +1,13 @@
 # Verification Agent B
 
+Retrospective note: `review_claude_hrsnow_unit_artifact.md` supersedes the
+historical final QA statement below where it routes HPHYS0298 continuation to
+baseline-authoritative winter hourly snow/rain forcing migration. The accepted
+2026-06-05 retrospective disposition marks that route non-authoritative because
+HPHYS0298 paired baseline snowfall-depth `hrsnow` with openWEPP
+`snow_hourly_snowfall_water_equiv_sum_m`. Use HPHYS0299 corrected
+depth-vs-depth evidence for continuation authority.
+
 Status: complete
 
 Evidence mode: static+ran
@@ -135,9 +143,11 @@ blocker is resolved.
 
 - None.
 
-## Final QA Statement
+## Retrospective Final QA Amendment
 
-QA pass granted for Verification Agent B. HPHYS0298 remains truthfully in
-`HOLD` for the follow-on baseline-authoritative winter hourly snow/rain forcing
-partition migration; all B-lane accepted review findings are fixed or
-truthfully held.
+The original final QA pass remains historical verification of artifact
+completeness only. It is superseded for production-migration routing: HPHYS0298
+remains in `HOLD` because its `hrsnow` verdict paired baseline snowfall depth
+with openWEPP water-equivalent output. Continue from HPHYS0299 corrected
+depth-vs-depth evidence rather than opening a migration package from HPHYS0298's
+historical `hourly-forcing` classification.

@@ -43,18 +43,23 @@ boundary.
 - Observation: Baseline observe instrumentation in the detached
   `/tmp/hphys0298_wepp_forest_obs` worktree is output-neutral for H1/H7/H39.
   Evidence: `artifacts/baseline-observe-identity.md`.
-- Observation: All nine target windows first diverge before downstream storage
-  consumers at the hourly snow/rain forcing cut-point.
+- Historical observation: HPHYS0298 initially classified all nine target
+  windows as first-divergent at the hourly snow/rain forcing cut-point.
   Evidence: `artifacts/paired-lineage-summary.md`.
-- Observation: The `OPENWEPP-DEFECTIVE` verdict is a porting-fidelity defect
-  against the unimpeached pinned-baseline precipitation-phase partition at
-  `/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`, not a generic
-  baseline-diff claim.
-  Evidence: `artifacts/claude-code-review-findings.md`.
-- Observation: No production physics patch was applied because the first
-  divergent snow/`RM` producer behavior requires a follow-on
-  baseline-authoritative winter hourly snow/rain forcing migration, not
-  compensation in WB13/WB17/WB18/WB19.
+- Retrospective correction: `artifacts/review_claude_hrsnow_unit_artifact.md`
+  shows the HPHYS0298 all-window `OPENWEPP-DEFECTIVE @ hrsnow` verdict paired
+  pinned-baseline snowfall-depth symbol `hrsnow` with openWEPP
+  `snow_hourly_snowfall_water_equiv_sum_m`. That is a depth-vs-SWE unit
+  artifact, not production migration authority.
+  Evidence: `artifacts/review-disposition.md`.
+- Supersession: HPHYS0299 supersedes the HPHYS0298 direct migration inference
+  by requiring corrected depth-vs-depth `hrsnow` evidence before any winter
+  hourly snow/rain forcing migration authority is assigned.
+  Evidence:
+  `docs/work-packages/20260605-hphys0299-hourly-snow-partition-unit-provenance-closure-001/artifacts/disposition.md`.
+- Observation: No production physics patch was applied. HPHYS0298 remains
+  `HOLD`; do not use its historical depth-vs-water-equivalent verdict to
+  justify WB13/WB17/WB18/WB19 compensation or winter forcing migration.
   Evidence: `artifacts/disposition.md`.
 
 ## Decision Log
@@ -84,12 +89,12 @@ HPHYS0298 executed through contract amendments, contract-derived tests, paired
 baseline/openWEPP diagnostics, full H1..H39 semantic metrics, dual review,
 dual verification, and disposition.
 
-Outcome: `HOLD`. The package met its diagnostic objective and assigned all nine
-target windows to `OPENWEPP-DEFECTIVE`, but it did not close production physics.
-The required follow-up is a baseline-authoritative winter hourly snow/rain
-forcing partition package scoped to the first divergent cut-point identified
-here, specifically the `winter.for:410-412` precipitation-phase partition
-lineage.
+Outcome: `HOLD`. The package met its historical diagnostic-output objective but
+its all-window `OPENWEPP-DEFECTIVE @ hrsnow` migration verdict is
+non-authoritative because it paired baseline snowfall depth with an openWEPP
+water-equivalent accounting surface. HPHYS0299 is the corrected continuation
+authority for `hrsnow` depth-vs-depth evidence; HPHYS0298 alone must not be used
+to justify production physics edits or downstream compensation.
 
 ## Context and Orientation
 

@@ -9,6 +9,11 @@ Static:
 - HPHYS0298 was scoped to partition snow/`RM` residual source for the nine
   H1/H7/H39 target windows, not to compensate downstream water-balance
   consumers.
+- Retrospective review `artifacts/review_claude_hrsnow_unit_artifact.md`
+  identified the historical HPHYS0298 `hrsnow` verdict as a
+  depth-vs-water-equivalent comparator artifact.
+- HPHYS0299 supersedes the HPHYS0298 direct winter-forcing migration inference
+  with corrected depth-vs-depth `hrsnow` authority.
 - No openWEPP production physics code was changed.
 - Production parity remains incomplete.
 
@@ -26,17 +31,18 @@ Ran:
 
 `HOLD`.
 
-HPHYS0298 completed its diagnostic objective and localized all nine target
-windows to the first divergent cut-point `hourly-forcing`. It did not close
-production physics because the required correction is upstream of WB13, WB17,
-WB18, and WB19.
+HPHYS0298 completed its historical diagnostic-output objective but its headline
+all-window `OPENWEPP-DEFECTIVE @ hrsnow` verdict is superseded and
+non-authoritative for production migration. The paired ledger compared
+pinned-baseline snowfall-depth symbol `hrsnow` against openWEPP
+`snow_hourly_snowfall_water_equiv_sum_m`, a water-equivalent accounting
+surface. The resulting near-10x ratio is a unit artifact, not proof that
+openWEPP mispartitioned hourly precipitation.
 
-This is a porting-fidelity defect against an unimpeached pinned-baseline
-precipitation-phase partition routine. For this verdict,
-`OPENWEPP-DEFECTIVE` means openWEPP failed to reproduce the baseline
-`winter.for:410-412` `hrrain`/`hrsnow` partition before the corrected
-negative-melt defect family is reached; it does not mean the residual was
-accepted solely because openWEPP differed from the baseline.
+Use HPHYS0299 corrected depth-vs-depth `hrsnow` evidence as the authority for
+any continuation. HPHYS0298 remains useful as historical evidence that the
+residuals are real, but it must not be used to justify winter hourly forcing
+migration, WB13/WB17/WB18/WB19 compensation, or ADR conclusions by itself.
 
 ## Target-Window Partition
 
@@ -75,14 +81,12 @@ First divergent symbols:
 
 ## Follow-On Recommendation
 
-Scaffold the next package as a baseline-authoritative winter hourly snow/rain
-forcing partition migration. The write set should target the openWEPP climate
-hourly forcing projection consumed by winter snow/freeze logic, with explicit
-provenance to `/workdir/wepp-forest_260430_baseline` and the canonical
-`SC-SNOWFREEZE-001` / `SC-WATBAL-001` obligations added by HPHYS0298. The
-specific baseline lineage to port is
-`/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`.
+Do not scaffold a winter hourly snow/rain forcing migration from HPHYS0298
+alone. Continue from HPHYS0299 and later corrected ledgers, where canonical
+`hrsnow` is paired to an openWEPP snowfall-depth surface. Re-localize remaining
+residuals from the corrected Total-Soil/drainage and snow/`RM` evidence chain.
 
 Do not address the HPHYS0298 residual by changing WB13, WB17, WB18, or WB19
 storage consumers unless a later package proves those surfaces are the first
-divergent cut-point after hourly forcing is corrected.
+divergent cut-point after corrected unit/provenance evidence closes upstream
+surfaces.

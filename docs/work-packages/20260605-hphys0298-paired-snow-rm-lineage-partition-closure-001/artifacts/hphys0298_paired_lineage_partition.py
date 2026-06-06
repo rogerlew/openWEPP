@@ -35,10 +35,13 @@ BASELINE_OBSERVE_WORKTREE = "/tmp/hphys0298_wepp_forest_obs"
 WINDOW_TOLERANCE_MM = 2.0
 IDENTITY_TOLERANCE_MM = 1.0e-9
 PARTITION_CONTEXT_TOLERANCE_MM = 0.011
+HRSNOW_DEPTH_TRACE_FIELD = "snow_hourly_snowfall_depth_sum_m"
+HRSNOW_WATER_EQUIV_TRACE_FIELD = "snow_hourly_snowfall_water_equiv_sum_m"
+HISTORICAL_HPHYS0298_HRSNOW_TRACE_FIELD = HRSNOW_WATER_EQUIV_TRACE_FIELD
 REQUIRED_OPENWEPP_TRACE_FIELDS = (
     "snow_hourly_melt_raw_m",
     "snow_hourly_rain_sum_m",
-    "snow_hourly_snowfall_water_equiv_sum_m",
+    HISTORICAL_HPHYS0298_HRSNOW_TRACE_FIELD,
     "snow_routed_melt_m",
     "snow_post_winter_rain_m",
     "wb13_rm_mm",
@@ -60,6 +63,7 @@ BASELINE_SOURCES = {
 OPENWEPP_SOURCES = {
     "snow_hourly_melt_raw_m": "crates/openwepp-runner/src/hillslope/mod.rs:4540",
     "snow_hourly_rain_sum_m": "crates/openwepp-runner/src/hillslope/mod.rs:4530",
+    "snow_hourly_snowfall_depth_sum_m": "crates/openwepp-runner/src/hillslope/mod.rs:4606",
     "snow_hourly_snowfall_water_equiv_sum_m": "crates/openwepp-runner/src/hillslope/mod.rs:4606",
     "snow_routed_melt_m": "crates/openwepp-runner/src/hillslope/mod.rs:4616",
     "snow_post_winter_rain_m": "crates/openwepp-runner/src/hillslope/mod.rs:4618",
@@ -101,6 +105,22 @@ HPHYS0291 = HPHYS0297.HPHYS0291
 HPHYS0265 = HPHYS0297.HPHYS0265
 TARGET_WINDOWS = HPHYS0297.TARGET_WINDOWS
 TARGET_HILLS = sorted(TARGET_WINDOWS)
+
+
+class UnitPairingEvidenceError(RuntimeError):
+    """Raised when a canonical paired-lineage symbol maps to the wrong dimension."""
+
+
+def validate_unit_pairings() -> None:
+    if HISTORICAL_HPHYS0298_HRSNOW_TRACE_FIELD == HRSNOW_WATER_EQUIV_TRACE_FIELD:
+        raise UnitPairingEvidenceError(
+            "HPHYS0298 unit guard: canonical `hrsnow` is snowfall depth and "
+            f"must be paired with `{HRSNOW_DEPTH_TRACE_FIELD}`. The historical "
+            f"HPHYS0298 harness pairs it with `{HRSNOW_WATER_EQUIV_TRACE_FIELD}`, "
+            "a water-equivalent accounting surface. HPHYS0298 verdicts from this "
+            "mapping are non-authoritative; use HPHYS0299 corrected depth-vs-depth "
+            "evidence before assigning production migration authority."
+        )
 
 
 @dataclass
@@ -753,7 +773,7 @@ def source_provenance_for(row: dict[str, Any]) -> list[dict[str, Any]]:
         ),
         provenance_row(
             "hrsnow",
-            "snow_hourly_snowfall_water_equiv_sum_m",
+            HISTORICAL_HPHYS0298_HRSNOW_TRACE_FIELD,
             "mm",
             row["baseline_raw_snow_sum_mm"],
             row["openwepp_raw_snow_sum_mm"],
@@ -908,7 +928,7 @@ def analyze_window(
         result["openwepp_positive_raw_melt_sum_mm"] += sum(value for value in open_raw if value > 0.0)
         result["openwepp_negative_raw_melt_sum_mm"] += sum(value for value in open_raw if value < 0.0)
         result["openwepp_raw_rain_sum_mm"] += trace_m_to_mm(trace, "snow_hourly_rain_sum_m")
-        result["openwepp_raw_snow_sum_mm"] += trace_m_to_mm(trace, "snow_hourly_snowfall_water_equiv_sum_m")
+        result["openwepp_raw_snow_sum_mm"] += trace_m_to_mm(trace, HISTORICAL_HPHYS0298_HRSNOW_TRACE_FIELD)
         routed_melt = trace_m_to_mm(trace, "snow_routed_melt_m")
         post_rain = trace_m_to_mm(trace, "snow_post_winter_rain_m")
         open_rm = trace_mm(trace, "wb13_rm_mm")
@@ -1073,11 +1093,11 @@ def write_paired_summary(
         "and openWEPP first diverge before downstream WB17/WB18/WB19 storage consumers.\n"
     )
     text += (
-        "- For the HPHYS0298 all-window `hourly-forcing` result, "
-        "`OPENWEPP-DEFECTIVE` is a porting-fidelity defect against the "
-        "unimpeached pinned-baseline precipitation-phase partition at "
-        "`/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`, "
-        "not a generic baseline-diff claim.\n"
+        "- Supersession: the historical HPHYS0298 all-window `hourly-forcing` "
+        "result is non-authoritative for production migration because it paired "
+        "canonical depth symbol `hrsnow` with openWEPP water-equivalent field "
+        f"`{HRSNOW_WATER_EQUIV_TRACE_FIELD}`. HPHYS0299 supplies the corrected "
+        "depth-vs-depth authority.\n"
     )
     text += (
         "- `LEGACY-DEFECTIVE` is reserved for the signed negative-melt correction case; "
@@ -1160,6 +1180,11 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    try:
+        validate_unit_pairings()
+    except UnitPairingEvidenceError as error:
+        print(str(error), file=sys.stderr)
+        return 2
     args.run_root.mkdir(parents=True, exist_ok=True)
     args.artifact_dir.mkdir(parents=True, exist_ok=True)
     if not args.skip_full_suite:

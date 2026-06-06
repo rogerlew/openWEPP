@@ -1,5 +1,12 @@
 # Claude Code Review Findings — HPHYS0298
 
+Retrospective supersession: `review_claude_hrsnow_unit_artifact.md` corrects
+this review's central `hrsnow` conclusion. The HPHYS0298 all-window
+`OPENWEPP-DEFECTIVE @ hrsnow` verdict compared baseline snowfall depth with
+openWEPP `snow_hourly_snowfall_water_equiv_sum_m`, so the migration-authority
+statements below are historical and non-authoritative. Use HPHYS0299 corrected
+depth-vs-depth evidence for continuation authority.
+
 Reviewer: Claude Code (independent review).
 Verdict: **STRONG APPROVE.** The science path delivered a definitive,
 reconstruction-grade, `file:line` root cause that answers "which model is

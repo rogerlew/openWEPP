@@ -1,5 +1,20 @@
 # HPHYS0298 Paired Snow/RM Lineage Partition
 
+Status: historical/superseded
+
+Evidence mode: ran + static supersession
+
+Static:
+
+- Retrospective review `artifacts/review_claude_hrsnow_unit_artifact.md`
+  found the HPHYS0298 `hrsnow` row paired baseline snowfall depth against
+  openWEPP `snow_hourly_snowfall_water_equiv_sum_m`, a water-equivalent
+  accounting surface.
+- HPHYS0299 supersedes the HPHYS0298 all-window `hourly-forcing` migration
+  inference with corrected depth-vs-depth `hrsnow` provenance.
+- The ledger below is retained as historical output, not production migration
+  authority.
+
 Ran:
 
 - Run root: `/tmp/hphys0298_full_20260605T000000Z`
@@ -45,7 +60,12 @@ Ran:
 
 ## Interpretation
 
-- `OPENWEPP-DEFECTIVE` means the pinned, observe-identity-passing baseline and openWEPP first diverge before downstream WB17/WB18/WB19 storage consumers.
-- For the HPHYS0298 all-window `hourly-forcing` result, `OPENWEPP-DEFECTIVE` is a porting-fidelity defect against the unimpeached pinned-baseline precipitation-phase partition at `/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`, not a generic baseline-diff claim.
+- The `OPENWEPP-DEFECTIVE` / `hourly-forcing` rows are historical HPHYS0298
+  classifier output and are superseded for production migration purposes.
+- The `hrsnow` deltas are non-authoritative because the openWEPP side used
+  `snow_hourly_snowfall_water_equiv_sum_m`; canonical `hrsnow` parity requires
+  an openWEPP snowfall-depth surface, as corrected in HPHYS0299.
+- HPHYS0298 still records real residual windows, but it does not prove winter
+  hourly precipitation-phase migration authority by itself.
 - `LEGACY-DEFECTIVE` is reserved for the signed negative-melt correction case; it must show raw-lineage closure and material negative raw melt before the correction cut-point.
 - `UNRESOLVED` remains a hold and cannot be converted into closure by downstream metric improvement.

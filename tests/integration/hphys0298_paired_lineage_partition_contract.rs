@@ -1,4 +1,5 @@
 use std::fs;
+use std::process::Command;
 
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const SC_RUNOFFPART: &str = "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md";
@@ -28,12 +29,13 @@ fn hphys0298_contracts_require_paired_lineage_partition() {
         "SC-SNOWFREEZE must encode HPHYS0298 paired first-divergence authority"
     );
     assert!(
-        snow.contains("porting-fidelity defect")
-            && snow.contains("precipitation-phase partition routine")
+        snow.contains("HPHYS0299 supersedes the direct migration inference")
+            && snow.contains("snow_hourly_snowfall_water_equiv_sum_m")
+            && snow.contains("not canonical `hrsnow` parity evidence")
             && snow.contains("winter.for:410-412")
             && snow.contains("wepp_260430_hill")
             && snow.contains("supersedes any stale assertion that no reference binary exists"),
-        "SC-SNOWFREEZE must record Claude review disposition for HPHYS0298 porting authority"
+        "SC-SNOWFREEZE must record HPHYS0299 supersession and corrected hrsnow authority"
     );
     for window in [
         "H1 2013 112-127",
@@ -95,6 +97,8 @@ fn hphys0298_package_names_all_target_windows_and_outputs() {
         package.contains("artifacts/paired-observe-identity-evidence.md")
             && package.contains("artifacts/partition-ledger.md")
             && package.contains("artifacts/full-39-suite-metrics.md")
+            && package.contains("HPHYS0299 supersedes the HPHYS0298")
+            && package.contains("review_claude_hrsnow_unit_artifact.md")
             && package.contains("Do not reproduce the pinned-baseline negative-melt")
             && package.contains("Do not reintroduce parser compatibility for `wepp_observe*`")
             && package
@@ -144,5 +148,38 @@ fn hphys0298_harness_checks_forcing_before_raw_melt_and_fails_closed_on_missing_
             && harness.contains("openwepp_trace_missing_field_count")
             && harness.contains("trace-gap"),
         "harness must fail closed when required paired openWEPP trace fields are missing"
+    );
+    assert!(
+        harness.contains("UnitPairingEvidenceError")
+            && harness.contains("snow_hourly_snowfall_depth_sum_m")
+            && harness.contains("snow_hourly_snowfall_water_equiv_sum_m")
+            && harness.contains("HPHYS0299 corrected depth-vs-depth"),
+        "harness must fail closed on the historical HPHYS0298 depth-vs-water-equivalent pairing"
+    );
+}
+
+#[test]
+fn hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing() {
+    let output = Command::new(".venv/bin/python")
+        .arg(HARNESS)
+        .arg("--run-root")
+        .arg("/tmp/hphys0298_unit_guard")
+        .arg("--skip-full-suite")
+        .arg("--skip-targeted-traces")
+        .arg("--skip-baseline-observe")
+        .output()
+        .expect("harness should execute far enough to reject unit pairing");
+
+    assert!(
+        !output.status.success(),
+        "historical HPHYS0298 harness must fail closed instead of regenerating a depth-vs-water-equivalent verdict"
+    );
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains("snow_hourly_snowfall_water_equiv_sum_m")
+            && stderr.contains("snow_hourly_snowfall_depth_sum_m")
+            && stderr.contains("HPHYS0299 corrected depth-vs-depth"),
+        "unit guard stderr must point to the bad water-equivalent field and corrected HPHYS0299 depth surface"
     );
 }

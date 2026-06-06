@@ -7,6 +7,11 @@ Evidence mode: static+ran
 Static:
 
 - HPHYS0298 remains `HOLD`.
+- Retrospective review `artifacts/review_claude_hrsnow_unit_artifact.md`
+  supersedes the historical all-window `OPENWEPP-DEFECTIVE @ hrsnow` migration
+  inference because it was a depth-vs-water-equivalent pairing artifact.
+- Continue from HPHYS0299 corrected depth-vs-depth `hrsnow` evidence, not from
+  the HPHYS0298 winter-forcing migration recommendation.
 - No production openWEPP physics file was changed.
 - The next worker should not patch downstream WB13/WB17/WB18/WB19 consumers as
   compensation for this package's residuals.
@@ -32,15 +37,15 @@ Ran:
 
 ## Partition Ledger
 
-All nine target windows are `OPENWEPP-DEFECTIVE` at first divergent cut-point
-`hourly-forcing`.
+Historical classifier output marked all nine target windows
+`OPENWEPP-DEFECTIVE` at first divergent cut-point `hourly-forcing`.
 
-Interpretation: this is a porting-fidelity defect against the unimpeached
-pinned-baseline precipitation-phase partition at
-`/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`. The paired
-ledger proves openWEPP diverges at `hrsnow` or `hrrain`/`hrsnow` before
-downstream WB13/WB17/WB18/WB19 consumers and before the corrected negative-melt
-defect family.
+Retrospective interpretation: superseded. The ledger paired canonical
+pinned-baseline snowfall-depth symbol `hrsnow` against openWEPP
+`snow_hourly_snowfall_water_equiv_sum_m`, a water-equivalent accounting
+surface. The table remains useful as historical residual evidence, but it is
+not production migration authority and must not be used as a winter-forcing
+porting oracle.
 
 | Hill | Window | First Symbols | Baseline RM | Candidate RM | RM Delta |
 | --- | --- | --- | --- | --- | --- |
@@ -95,12 +100,8 @@ Full metrics artifact: `artifacts/full-39-suite-metrics.md`.
 
 ## Next Package
 
-Recommended next package: baseline-authoritative migration of the winter hourly
-snow/rain forcing partition consumed by snow/freeze logic. It should use the
-HPHYS0298 harness as the continuation oracle and should keep the negative-melt
-bug-fix authority from corrected openWEPP/wepp-forest history rather than
-replicating the pinned negative-melt bug. The concrete porting target is
-`/workdir/wepp-forest_260430_baseline/src/winter.for:410-412`, with paired
-instrumented baseline observation through
-`/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill` available as a
-reference capability.
+Do not use HPHYS0298 as the direct next-package oracle. Use HPHYS0299 and later
+corrected ledgers as continuation authority, then re-localize remaining
+Total-Soil/drainage and snow/`RM` residuals from unit-consistent evidence.
+Negative-melt bug-fix authority remains with corrected openWEPP/wepp-forest
+history rather than reproducing the pinned negative-melt bug.

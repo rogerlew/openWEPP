@@ -1,5 +1,13 @@
 # Verification Agent A
 
+Retrospective note: `review_claude_hrsnow_unit_artifact.md` supersedes the
+historical final approval statement below where it treats HPHYS0298's
+all-window `hourly-forcing` result as production migration direction. The
+accepted 2026-06-05 retrospective disposition marks that verdict
+non-authoritative because HPHYS0298 paired baseline snowfall-depth `hrsnow`
+with openWEPP `snow_hourly_snowfall_water_equiv_sum_m`. Use HPHYS0299
+corrected depth-vs-depth evidence for continuation authority.
+
 Status: complete
 
 Evidence mode: static+ran
@@ -120,11 +128,11 @@ Ran:
   completed artifacts, and corrects the outcome/follow-on text to the
   `hourly-forcing` result at `package.md:82-84`.
 
-## Final Approval
+## Retrospective Final Approval Amendment
 
-Verification pass granted for Verification Agent A's lane. A-001 through A-005
-remained verified from the prior pass, and the A-006/B-004 closeout blocker is
-now resolved. HPHYS0298 remains correctly in `HOLD` for production physics
-closure because the package localized all nine target windows to upstream
-`hourly-forcing`, requiring a follow-on baseline-authoritative migration rather
-than downstream WB13/WB17/WB18/WB19 compensation.
+The original final approval remains historical verification of the then-current
+artifact completeness only. It is superseded for production-migration routing:
+HPHYS0298 remains in `HOLD` because its `hrsnow` verdict paired baseline
+snowfall depth with openWEPP water-equivalent output. Continue from HPHYS0299
+corrected depth-vs-depth evidence rather than opening a migration package from
+HPHYS0298's historical `hourly-forcing` classification.
