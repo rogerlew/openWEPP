@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0313-snowpack-settling-carry-recursion-closure-001/`
+  - Purpose: execute the HPHYS0312 required continuation by reconstructing the
+    full-precision 2013 settling/depth route and recursively scanning the 2014
+    terminal carry-state chain feeding 2015 day 1 hour 1.
+  - Status: executed-hold; diagnostics represented all `57` HPHYS0309 rows
+    carried by the six HPHYS0312 inherited terminal groups, routing `3` to
+    `cold-driftg-addition-lineage-hold`, `3` to
+    `recursive-year-start-inherited-state-hold`, and authorizing no production
+    edits.
 - `20260605-hphys0312-prior-year-terminal-snowpack-lineage-closure-001/`
   - Purpose: execute the HPHYS0311 required continuation by scanning the prior
     calendar year for each inherited terminal snowpack delta and classifying

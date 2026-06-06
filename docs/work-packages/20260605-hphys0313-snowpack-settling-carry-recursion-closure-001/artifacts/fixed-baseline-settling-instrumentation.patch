@@ -1,0 +1,84 @@
+--- a/src/snowd.for
++++ b/src/snowd.for
+@@ -1,5 +1,6 @@
+       subroutine snowd(irtype,denh2o,iplane,driftf,driftg,snodep,
+-     1                 densgy,densgt,smelt,hour)
++     1                 densgy,densgt,smelt,hour,obs_year,
++     2                 obs_sdate)
+ c
+ c     +++ PURPOSE +++
+ c     This subroutine handles snowdrift and snow depth calculations.
+@@ -7,7 +8,7 @@
+ c     by Charles R. Meyer 6/4/96 to reduce code complexity.
+ c
+ c     +++ ARGUMENT DECLARATIONS +++
+-      integer irtype,iplane,hour
++      integer irtype,iplane,hour,obs_year,obs_sdate
+       real    denh2o,driftf,driftg,snodep,densgy,densgt,smelt
+ c
+ c     +++ARGUMENT DEFINITIONS+++
+@@ -124,19 +125,34 @@
+ C ----- Equation 3.7.1  CRM -- 10/27/95
+             setf = ((exp(-(float(wdayct(iplane)) * 2.0)))*0.0416667)
+      1             +1.0
++            call wepp_observe('H313_WDAY',obs_year,obs_sdate,
++     1        iplane,0,hour,
++     1        float(wdayct(iplane)),hrsnow(hour))
++            call wepp_observe('H313_PRE',obs_year,obs_sdate,
++     1        iplane,0,hour,
++     1        snodpt(iplane),densgy)
+ 
+ CAS            if(densgy.gt.250) setf = 1
+             if(densgy.gt.ssd) setf = 1
+             
+             densgt = densgy * setf
++            call wepp_observe('H313_SETF',obs_year,obs_sdate,
++     1        iplane,0,hour,
++     1        setf,float(wdayct(iplane)))
+ c
+ c -- We set an upper cap for snow density.
+ c
+             if (densgt .gt. 522) densgt = 522
++            call wepp_observe('H313_RAW',obs_year,obs_sdate,
++     1        iplane,0,hour,
++     1        densgy,densgt)
+ c
+ C ----- Equation 3.7.2  CRM -- 10/27/95
+ cd            snodpt(iplane) = snodpt(iplane) / setf
+               snodpt(iplane) = snodpt(iplane) * densgy/ densgt
++              call wepp_observe('H313_POST',obs_year,obs_sdate,
++     1          iplane,0,hour,
++     1          snodpt(iplane),densgt)
+          endif
+ cd    End the moving section
+ 
+@@ -174,6 +190,9 @@
+           endif
+ c     End Loop M3
+ c    
++          call wepp_observe('H313_FINAL',obs_year,obs_sdate,
++     1      iplane,0,hour,
++     1      snodep,densgt)
+ c -- This ELSE is if temp > -4...ie. melt is occurring.
+ c
+ c     Loop M2
+--- a/src/winter.for
++++ b/src/winter.for
+@@ -364,7 +364,7 @@
+ c --------------------------
+ c
+         call snowd(iresd(1,iplane),denh2o,iplane,driftf,driftg,
+-     1             snodep,densgy,densgt,smelt,hour)
++     1             snodep,densgy,densgt,smelt,hour,year,sdate)
+ c
+ c -- Set up the hourly arrays for thaw and melt.  These will be
+ c -- passed back to the main WEPP model to account for erosion
+--- a/src/wepp_observe.for
++++ b/src/wepp_observe.for
+@@ -46,5 +46,5 @@
+ 
+       return
+  1000 format (a,' y=',i6,' d=',i4,' e=',i4,' c=',i4,' s=',i4,
+-     1  ' v1=',1pe12.4,' v2=',1pe12.4)
++     1  ' v1=',1pe24.16,' v2=',1pe24.16)
+       end

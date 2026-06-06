@@ -1,0 +1,932 @@
+[
+  {
+    "affected_hphys0309_rows": 8,
+    "hillslope_id": 1,
+    "hphys0313_route": "cold-driftg-addition-lineage-hold",
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "recursive_scan": null,
+    "scan_year": 2013,
+    "settling_reconstruction": {
+      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane",
+      "first_high_precision_material_divergence": {
+        "baseline_density_after_kg_m3": 145.94224548339844,
+        "baseline_depth_after_m": 0.23210395872592926,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
+        "depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
+        "hour": 11,
+        "julian": 11,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_density_after_kg_m3": 146.09040892677456,
+        "openwepp_depth_after_m": 0.2313581349641911,
+        "year": 2013
+      },
+      "first_high_precision_reconstruction": {
+        "baseline": {
+          "densgt_after_kg_m3": 146.09027099609375,
+          "densgt_after_setf_kg_m3": 146.09027099609375,
+          "densgy_before_kg_m3": 145.27108764648438,
+          "densgy_raw_kg_m3": 145.27108764648438,
+          "density_after_cold_branch_kg_m3": 145.94224548339844,
+          "depth_after_cold_branch_m": 0.23210395872592926,
+          "depth_after_settling_m": 0.23135849833488464,
+          "depth_before_settling_m": 0.2326631247997284,
+          "expected_density_after_kg_m3": 146.09026762652482,
+          "expected_depth_after_m": 0.23135849474733344,
+          "expected_setf_from_wdayct": 1.005638974646035,
+          "hrsnow_m": 0.0007454545120708644,
+          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "setf": 1.0056389570236206,
+          "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
+          "wdayct": 1.0,
+          "wdayct_at_setf": 1.0
+        },
+        "comparison": {
+          "baseline_driftg_final_addition_present": true,
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
+          "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
+          "openwepp_matches_post_settling_before_driftg": true,
+          "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
+          "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
+          "settling_equation_reconstruction_parity": true,
+          "source_owned_driftg_lineage_candidate": true
+        },
+        "key": {
+          "hour": 11,
+          "julian": 11,
+          "year": 2013
+        },
+        "openwepp": {
+          "density_after_kg_m3": 146.09040892677456,
+          "density_before_kg_m3": 145.27122815441345,
+          "depth_after_m": 0.2313581349641911,
+          "depth_before_m": 0.23266275762140814,
+          "expected_density_after_kg_m3": 146.09040892677456,
+          "expected_depth_after_m": 0.2313581349641911,
+          "expected_setf_from_settle_day_count": 1.005638974646035,
+          "raw_melt_m": 0.0,
+          "settle_day_count_used": 1.0,
+          "settling_depth_reconstruction_residual_m": 0.0,
+          "snowfall_depth_m": 0.0
+        },
+        "production_edit_authorized": false,
+        "source_owned_openwepp_defect_proven": false
+      },
+      "hphys0312_candidate_key": {
+        "hour": 11,
+        "julian": 11,
+        "year": 2013
+      },
+      "hphys0312_candidate_material_after_high_precision": false,
+      "hphys0312_candidate_reconstruction": {
+        "baseline": {
+          "densgt_after_kg_m3": 146.09027099609375,
+          "densgt_after_setf_kg_m3": 146.09027099609375,
+          "densgy_before_kg_m3": 145.27108764648438,
+          "densgy_raw_kg_m3": 145.27108764648438,
+          "density_after_cold_branch_kg_m3": 145.94224548339844,
+          "depth_after_cold_branch_m": 0.23210395872592926,
+          "depth_after_settling_m": 0.23135849833488464,
+          "depth_before_settling_m": 0.2326631247997284,
+          "expected_density_after_kg_m3": 146.09026762652482,
+          "expected_depth_after_m": 0.23135849474733344,
+          "expected_setf_from_wdayct": 1.005638974646035,
+          "hrsnow_m": 0.0007454545120708644,
+          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "setf": 1.0056389570236206,
+          "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
+          "wdayct": 1.0,
+          "wdayct_at_setf": 1.0
+        },
+        "comparison": {
+          "baseline_driftg_final_addition_present": true,
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
+          "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
+          "openwepp_matches_post_settling_before_driftg": true,
+          "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
+          "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
+          "settling_equation_reconstruction_parity": true,
+          "source_owned_driftg_lineage_candidate": true
+        },
+        "key": {
+          "hour": 11,
+          "julian": 11,
+          "year": 2013
+        },
+        "openwepp": {
+          "density_after_kg_m3": 146.09040892677456,
+          "density_before_kg_m3": 145.27122815441345,
+          "depth_after_m": 0.2313581349641911,
+          "depth_before_m": 0.23266275762140814,
+          "expected_density_after_kg_m3": 146.09040892677456,
+          "expected_depth_after_m": 0.2313581349641911,
+          "expected_setf_from_settle_day_count": 1.005638974646035,
+          "raw_melt_m": 0.0,
+          "settle_day_count_used": 1.0,
+          "settling_depth_reconstruction_residual_m": 0.0,
+          "snowfall_depth_m": 0.0
+        },
+        "production_edit_authorized": false,
+        "source_owned_openwepp_defect_proven": false
+      },
+      "last_high_precision_within_tolerance_state_before_first_divergence": {
+        "baseline_density_after_kg_m3": 145.27108764648438,
+        "baseline_depth_after_m": 0.2326631247997284,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.000140507929074829,
+        "depth_delta_openwepp_minus_baseline_m": -3.6717832024857344e-07,
+        "hour": 10,
+        "julian": 11,
+        "material_density_divergent": false,
+        "material_depth_divergent": false,
+        "openwepp_density_after_kg_m3": 145.27122815441345,
+        "openwepp_depth_after_m": 0.23266275762140814,
+        "year": 2013
+      },
+      "production_edit_authorized": false,
+      "route": "cold-driftg-addition-lineage-hold",
+      "source_owned_openwepp_defect_proven": false
+    },
+    "source_hphys0312_route": "settling-depth-update-hold",
+    "source_line_findings": {
+      "03_kernel_support_00_support_helpers.rs:3872-3877": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3901-3905": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3901"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3906-3912": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3906",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3914-3924": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+      ],
+      "snowd.for:122-139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
+      ],
+      "snowd.for:125-126": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:125"
+      ],
+      "snowd.for:129": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:129"
+      ],
+      "snowd.for:131": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:131"
+      ],
+      "snowd.for:135": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:135"
+      ],
+      "snowd.for:139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:139"
+      ],
+      "snowd.for:145-146": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:310-312": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
+      ],
+      "snowd.for:61-65": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:61",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:65"
+      ],
+      "winter.for:366-367": [
+        "/workdir/wepp-forest_260430_baseline/src/winter.for:366"
+      ]
+    },
+    "target_year": 2014,
+    "window": "spring-2014"
+  },
+  {
+    "affected_hphys0309_rows": 15,
+    "classification_reason": "first 2014 material divergence is already present at year-start; recurse earlier again before edits",
+    "hillslope_id": 1,
+    "hphys0313_route": "recursive-year-start-inherited-state-hold",
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "recursive_scan": {
+      "first_material_divergence": {
+        "baseline_density_after_kg_m3": 250.52,
+        "baseline_depth_after_m": 0.45469,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.4085001311336214,
+        "depth_delta_openwepp_minus_baseline_m": 0.013144251023522513,
+        "hour": 1,
+        "julian": 1,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_air_temp_c": -4.272778815335758,
+        "openwepp_density_after_kg_m3": 250.92850013113363,
+        "openwepp_density_before_kg_m3": 250.92850013113363,
+        "openwepp_depth_after_m": 0.4678342510235225,
+        "openwepp_depth_before_m": 0.4678342510235225,
+        "openwepp_melt_branch_active": 0.0,
+        "openwepp_rain_m": 0.0,
+        "openwepp_raw_melt_m": 0.0,
+        "openwepp_routed_melt_m": 0.0,
+        "openwepp_snowfall_depth_m": 0.0,
+        "year": 2014
+      },
+      "last_within_tolerance_state_before_first_divergence": null,
+      "material_thresholds": {
+        "density_tolerance_kg_m3": 0.5,
+        "depth_tolerance_m": 0.0005
+      },
+      "terminal_state": {
+        "baseline_density_after_kg_m3": 250.57,
+        "baseline_depth_after_m": 0.7891,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.2854792039074141,
+        "depth_delta_openwepp_minus_baseline_m": 0.010605155647557485,
+        "hour": 24,
+        "julian": 365,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_air_temp_c": -15.407292550005643,
+        "openwepp_density_after_kg_m3": 250.8554792039074,
+        "openwepp_density_before_kg_m3": 250.8554792039074,
+        "openwepp_depth_after_m": 0.7997051556475575,
+        "openwepp_depth_before_m": 0.7997051556475575,
+        "openwepp_melt_branch_active": 0.0,
+        "openwepp_rain_m": 0.0,
+        "openwepp_raw_melt_m": 0.0,
+        "openwepp_routed_melt_m": 0.0,
+        "openwepp_snowfall_depth_m": 0.0,
+        "year": 2014
+      }
+    },
+    "scan_year": 2014,
+    "settling_reconstruction": null,
+    "source_hphys0312_route": "year-start-inherited-state-hold",
+    "source_line_findings": {
+      "03_kernel_support_00_support_helpers.rs:3872-3877": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3901-3905": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3901"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3906-3912": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3906",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3914-3924": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+      ],
+      "snowd.for:122-139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
+      ],
+      "snowd.for:125-126": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:125"
+      ],
+      "snowd.for:129": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:129"
+      ],
+      "snowd.for:131": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:131"
+      ],
+      "snowd.for:135": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:135"
+      ],
+      "snowd.for:139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:139"
+      ],
+      "snowd.for:145-146": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:310-312": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
+      ],
+      "snowd.for:61-65": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:61",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:65"
+      ],
+      "winter.for:366-367": [
+        "/workdir/wepp-forest_260430_baseline/src/winter.for:366"
+      ]
+    },
+    "target_year": 2016,
+    "window": "spring-2016"
+  },
+  {
+    "affected_hphys0309_rows": 7,
+    "hillslope_id": 7,
+    "hphys0313_route": "cold-driftg-addition-lineage-hold",
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "recursive_scan": null,
+    "scan_year": 2013,
+    "settling_reconstruction": {
+      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane",
+      "first_high_precision_material_divergence": {
+        "baseline_density_after_kg_m3": 145.67596435546875,
+        "baseline_depth_after_m": 0.23611217737197876,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.14468522545868723,
+        "depth_delta_openwepp_minus_baseline_m": -0.0007457325136988602,
+        "hour": 11,
+        "julian": 11,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_density_after_kg_m3": 145.82064958092744,
+        "openwepp_depth_after_m": 0.2353664448582799,
+        "year": 2013
+      },
+      "first_high_precision_reconstruction": {
+        "baseline": {
+          "densgt_after_kg_m3": 145.8206329345703,
+          "densgt_after_setf_kg_m3": 145.8206329345703,
+          "densgy_before_kg_m3": 145.00296020507812,
+          "densgy_raw_kg_m3": 145.00296020507812,
+          "density_after_cold_branch_kg_m3": 145.67596435546875,
+          "depth_after_cold_branch_m": 0.23611217737197876,
+          "depth_after_settling_m": 0.23536671698093414,
+          "depth_before_settling_m": 0.23669394850730896,
+          "expected_density_after_kg_m3": 145.82062822127457,
+          "expected_depth_after_m": 0.23536671392441494,
+          "expected_setf_from_wdayct": 1.005638974646035,
+          "hrsnow_m": 0.0007454545120708644,
+          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "setf": 1.0056389570236206,
+          "settling_depth_reconstruction_residual_m": -3.0565192044029743e-09,
+          "wdayct": 1.0,
+          "wdayct_at_setf": 1.0
+        },
+        "comparison": {
+          "baseline_driftg_final_addition_present": true,
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14468522545868723,
+          "final_depth_delta_openwepp_minus_baseline_m": -0.0007457325136988602,
+          "openwepp_matches_post_settling_before_driftg": true,
+          "settling_density_delta_openwepp_minus_baseline_kg_m3": 1.664635712472773e-05,
+          "settling_depth_delta_openwepp_minus_baseline_m": -2.721226542434785e-07,
+          "settling_equation_reconstruction_parity": true,
+          "source_owned_driftg_lineage_candidate": true
+        },
+        "key": {
+          "hour": 11,
+          "julian": 11,
+          "year": 2013
+        },
+        "openwepp": {
+          "density_after_kg_m3": 145.82064958092744,
+          "density_before_kg_m3": 145.00298144495983,
+          "depth_after_m": 0.2353664448582799,
+          "depth_before_m": 0.2366936702733631,
+          "expected_density_after_kg_m3": 145.82064958092744,
+          "expected_depth_after_m": 0.2353664448582799,
+          "expected_setf_from_settle_day_count": 1.005638974646035,
+          "raw_melt_m": 0.0,
+          "settle_day_count_used": 1.0,
+          "settling_depth_reconstruction_residual_m": 0.0,
+          "snowfall_depth_m": 0.0
+        },
+        "production_edit_authorized": false,
+        "source_owned_openwepp_defect_proven": false
+      },
+      "hphys0312_candidate_key": {
+        "hour": 11,
+        "julian": 11,
+        "year": 2013
+      },
+      "hphys0312_candidate_material_after_high_precision": false,
+      "hphys0312_candidate_reconstruction": {
+        "baseline": {
+          "densgt_after_kg_m3": 145.8206329345703,
+          "densgt_after_setf_kg_m3": 145.8206329345703,
+          "densgy_before_kg_m3": 145.00296020507812,
+          "densgy_raw_kg_m3": 145.00296020507812,
+          "density_after_cold_branch_kg_m3": 145.67596435546875,
+          "depth_after_cold_branch_m": 0.23611217737197876,
+          "depth_after_settling_m": 0.23536671698093414,
+          "depth_before_settling_m": 0.23669394850730896,
+          "expected_density_after_kg_m3": 145.82062822127457,
+          "expected_depth_after_m": 0.23536671392441494,
+          "expected_setf_from_wdayct": 1.005638974646035,
+          "hrsnow_m": 0.0007454545120708644,
+          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "setf": 1.0056389570236206,
+          "settling_depth_reconstruction_residual_m": -3.0565192044029743e-09,
+          "wdayct": 1.0,
+          "wdayct_at_setf": 1.0
+        },
+        "comparison": {
+          "baseline_driftg_final_addition_present": true,
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14468522545868723,
+          "final_depth_delta_openwepp_minus_baseline_m": -0.0007457325136988602,
+          "openwepp_matches_post_settling_before_driftg": true,
+          "settling_density_delta_openwepp_minus_baseline_kg_m3": 1.664635712472773e-05,
+          "settling_depth_delta_openwepp_minus_baseline_m": -2.721226542434785e-07,
+          "settling_equation_reconstruction_parity": true,
+          "source_owned_driftg_lineage_candidate": true
+        },
+        "key": {
+          "hour": 11,
+          "julian": 11,
+          "year": 2013
+        },
+        "openwepp": {
+          "density_after_kg_m3": 145.82064958092744,
+          "density_before_kg_m3": 145.00298144495983,
+          "depth_after_m": 0.2353664448582799,
+          "depth_before_m": 0.2366936702733631,
+          "expected_density_after_kg_m3": 145.82064958092744,
+          "expected_depth_after_m": 0.2353664448582799,
+          "expected_setf_from_settle_day_count": 1.005638974646035,
+          "raw_melt_m": 0.0,
+          "settle_day_count_used": 1.0,
+          "settling_depth_reconstruction_residual_m": 0.0,
+          "snowfall_depth_m": 0.0
+        },
+        "production_edit_authorized": false,
+        "source_owned_openwepp_defect_proven": false
+      },
+      "last_high_precision_within_tolerance_state_before_first_divergence": {
+        "baseline_density_after_kg_m3": 145.00296020507812,
+        "baseline_depth_after_m": 0.23669394850730896,
+        "density_delta_openwepp_minus_baseline_kg_m3": 2.1239881704104846e-05,
+        "depth_delta_openwepp_minus_baseline_m": -2.7823394585513306e-07,
+        "hour": 10,
+        "julian": 11,
+        "material_density_divergent": false,
+        "material_depth_divergent": false,
+        "openwepp_density_after_kg_m3": 145.00298144495983,
+        "openwepp_depth_after_m": 0.2366936702733631,
+        "year": 2013
+      },
+      "production_edit_authorized": false,
+      "route": "cold-driftg-addition-lineage-hold",
+      "source_owned_openwepp_defect_proven": false
+    },
+    "source_hphys0312_route": "settling-depth-update-hold",
+    "source_line_findings": {
+      "03_kernel_support_00_support_helpers.rs:3872-3877": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3901-3905": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3901"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3906-3912": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3906",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3914-3924": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+      ],
+      "snowd.for:122-139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
+      ],
+      "snowd.for:125-126": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:125"
+      ],
+      "snowd.for:129": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:129"
+      ],
+      "snowd.for:131": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:131"
+      ],
+      "snowd.for:135": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:135"
+      ],
+      "snowd.for:139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:139"
+      ],
+      "snowd.for:145-146": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:310-312": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
+      ],
+      "snowd.for:61-65": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:61",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:65"
+      ],
+      "winter.for:366-367": [
+        "/workdir/wepp-forest_260430_baseline/src/winter.for:366"
+      ]
+    },
+    "target_year": 2014,
+    "window": "spring-2014"
+  },
+  {
+    "affected_hphys0309_rows": 9,
+    "classification_reason": "first 2014 material divergence is already present at year-start; recurse earlier again before edits",
+    "hillslope_id": 7,
+    "hphys0313_route": "recursive-year-start-inherited-state-hold",
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "recursive_scan": {
+      "first_material_divergence": {
+        "baseline_density_after_kg_m3": 251.09,
+        "baseline_depth_after_m": 0.47369,
+        "density_delta_openwepp_minus_baseline_kg_m3": -0.7826171330456191,
+        "depth_delta_openwepp_minus_baseline_m": 0.015279465660242741,
+        "hour": 1,
+        "julian": 1,
+        "material_density_divergent": true,
+        "material_depth_divergent": true,
+        "openwepp_air_temp_c": -3.9001417400967004,
+        "openwepp_density_after_kg_m3": 250.30738286695438,
+        "openwepp_density_before_kg_m3": 250.30738286695438,
+        "openwepp_depth_after_m": 0.48896946566024274,
+        "openwepp_depth_before_m": 0.48896946566024274,
+        "openwepp_melt_branch_active": 0.0,
+        "openwepp_rain_m": 0.0,
+        "openwepp_raw_melt_m": 0.0,
+        "openwepp_routed_melt_m": 0.0,
+        "openwepp_snowfall_depth_m": 0.0,
+        "year": 2014
+      },
+      "last_within_tolerance_state_before_first_divergence": null,
+      "material_thresholds": {
+        "density_tolerance_kg_m3": 0.5,
+        "depth_tolerance_m": 0.0005
+      },
+      "terminal_state": {
+        "baseline_density_after_kg_m3": 251.1,
+        "baseline_depth_after_m": 0.82567,
+        "density_delta_openwepp_minus_baseline_kg_m3": -0.29222607380111754,
+        "depth_delta_openwepp_minus_baseline_m": 0.015452255827127503,
+        "hour": 24,
+        "julian": 365,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_air_temp_c": -14.541038318276142,
+        "openwepp_density_after_kg_m3": 250.80777392619888,
+        "openwepp_density_before_kg_m3": 250.80777392619888,
+        "openwepp_depth_after_m": 0.8411222558271275,
+        "openwepp_depth_before_m": 0.8411222558271275,
+        "openwepp_melt_branch_active": 0.0,
+        "openwepp_rain_m": 0.0,
+        "openwepp_raw_melt_m": 0.0,
+        "openwepp_routed_melt_m": 0.0,
+        "openwepp_snowfall_depth_m": 0.0,
+        "year": 2014
+      }
+    },
+    "scan_year": 2014,
+    "settling_reconstruction": null,
+    "source_hphys0312_route": "year-start-inherited-state-hold",
+    "source_line_findings": {
+      "03_kernel_support_00_support_helpers.rs:3872-3877": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3901-3905": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3901"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3906-3912": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3906",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3914-3924": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+      ],
+      "snowd.for:122-139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
+      ],
+      "snowd.for:125-126": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:125"
+      ],
+      "snowd.for:129": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:129"
+      ],
+      "snowd.for:131": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:131"
+      ],
+      "snowd.for:135": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:135"
+      ],
+      "snowd.for:139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:139"
+      ],
+      "snowd.for:145-146": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:310-312": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
+      ],
+      "snowd.for:61-65": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:61",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:65"
+      ],
+      "winter.for:366-367": [
+        "/workdir/wepp-forest_260430_baseline/src/winter.for:366"
+      ]
+    },
+    "target_year": 2016,
+    "window": "spring-2016"
+  },
+  {
+    "affected_hphys0309_rows": 9,
+    "hillslope_id": 39,
+    "hphys0313_route": "cold-driftg-addition-lineage-hold",
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "recursive_scan": null,
+    "scan_year": 2013,
+    "settling_reconstruction": {
+      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane",
+      "first_high_precision_material_divergence": {
+        "baseline_density_after_kg_m3": 145.94224548339844,
+        "baseline_depth_after_m": 0.23210395872592926,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
+        "depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
+        "hour": 11,
+        "julian": 11,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_density_after_kg_m3": 146.09040892677456,
+        "openwepp_depth_after_m": 0.2313581349641911,
+        "year": 2013
+      },
+      "first_high_precision_reconstruction": {
+        "baseline": {
+          "densgt_after_kg_m3": 146.09027099609375,
+          "densgt_after_setf_kg_m3": 146.09027099609375,
+          "densgy_before_kg_m3": 145.27108764648438,
+          "densgy_raw_kg_m3": 145.27108764648438,
+          "density_after_cold_branch_kg_m3": 145.94224548339844,
+          "depth_after_cold_branch_m": 0.23210395872592926,
+          "depth_after_settling_m": 0.23135849833488464,
+          "depth_before_settling_m": 0.2326631247997284,
+          "expected_density_after_kg_m3": 146.09026762652482,
+          "expected_depth_after_m": 0.23135849474733344,
+          "expected_setf_from_wdayct": 1.005638974646035,
+          "hrsnow_m": 0.0007454545120708644,
+          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "setf": 1.0056389570236206,
+          "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
+          "wdayct": 1.0,
+          "wdayct_at_setf": 1.0
+        },
+        "comparison": {
+          "baseline_driftg_final_addition_present": true,
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
+          "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
+          "openwepp_matches_post_settling_before_driftg": true,
+          "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
+          "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
+          "settling_equation_reconstruction_parity": true,
+          "source_owned_driftg_lineage_candidate": true
+        },
+        "key": {
+          "hour": 11,
+          "julian": 11,
+          "year": 2013
+        },
+        "openwepp": {
+          "density_after_kg_m3": 146.09040892677456,
+          "density_before_kg_m3": 145.27122815441345,
+          "depth_after_m": 0.2313581349641911,
+          "depth_before_m": 0.23266275762140814,
+          "expected_density_after_kg_m3": 146.09040892677456,
+          "expected_depth_after_m": 0.2313581349641911,
+          "expected_setf_from_settle_day_count": 1.005638974646035,
+          "raw_melt_m": 0.0,
+          "settle_day_count_used": 1.0,
+          "settling_depth_reconstruction_residual_m": 0.0,
+          "snowfall_depth_m": 0.0
+        },
+        "production_edit_authorized": false,
+        "source_owned_openwepp_defect_proven": false
+      },
+      "hphys0312_candidate_key": {
+        "hour": 11,
+        "julian": 11,
+        "year": 2013
+      },
+      "hphys0312_candidate_material_after_high_precision": false,
+      "hphys0312_candidate_reconstruction": {
+        "baseline": {
+          "densgt_after_kg_m3": 146.09027099609375,
+          "densgt_after_setf_kg_m3": 146.09027099609375,
+          "densgy_before_kg_m3": 145.27108764648438,
+          "densgy_raw_kg_m3": 145.27108764648438,
+          "density_after_cold_branch_kg_m3": 145.94224548339844,
+          "depth_after_cold_branch_m": 0.23210395872592926,
+          "depth_after_settling_m": 0.23135849833488464,
+          "depth_before_settling_m": 0.2326631247997284,
+          "expected_density_after_kg_m3": 146.09026762652482,
+          "expected_depth_after_m": 0.23135849474733344,
+          "expected_setf_from_wdayct": 1.005638974646035,
+          "hrsnow_m": 0.0007454545120708644,
+          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "setf": 1.0056389570236206,
+          "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
+          "wdayct": 1.0,
+          "wdayct_at_setf": 1.0
+        },
+        "comparison": {
+          "baseline_driftg_final_addition_present": true,
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
+          "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
+          "openwepp_matches_post_settling_before_driftg": true,
+          "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
+          "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
+          "settling_equation_reconstruction_parity": true,
+          "source_owned_driftg_lineage_candidate": true
+        },
+        "key": {
+          "hour": 11,
+          "julian": 11,
+          "year": 2013
+        },
+        "openwepp": {
+          "density_after_kg_m3": 146.09040892677456,
+          "density_before_kg_m3": 145.27122815441345,
+          "depth_after_m": 0.2313581349641911,
+          "depth_before_m": 0.23266275762140814,
+          "expected_density_after_kg_m3": 146.09040892677456,
+          "expected_depth_after_m": 0.2313581349641911,
+          "expected_setf_from_settle_day_count": 1.005638974646035,
+          "raw_melt_m": 0.0,
+          "settle_day_count_used": 1.0,
+          "settling_depth_reconstruction_residual_m": 0.0,
+          "snowfall_depth_m": 0.0
+        },
+        "production_edit_authorized": false,
+        "source_owned_openwepp_defect_proven": false
+      },
+      "last_high_precision_within_tolerance_state_before_first_divergence": {
+        "baseline_density_after_kg_m3": 145.27108764648438,
+        "baseline_depth_after_m": 0.2326631247997284,
+        "density_delta_openwepp_minus_baseline_kg_m3": 0.000140507929074829,
+        "depth_delta_openwepp_minus_baseline_m": -3.6717832024857344e-07,
+        "hour": 10,
+        "julian": 11,
+        "material_density_divergent": false,
+        "material_depth_divergent": false,
+        "openwepp_density_after_kg_m3": 145.27122815441345,
+        "openwepp_depth_after_m": 0.23266275762140814,
+        "year": 2013
+      },
+      "production_edit_authorized": false,
+      "route": "cold-driftg-addition-lineage-hold",
+      "source_owned_openwepp_defect_proven": false
+    },
+    "source_hphys0312_route": "settling-depth-update-hold",
+    "source_line_findings": {
+      "03_kernel_support_00_support_helpers.rs:3872-3877": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3901-3905": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3901"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3906-3912": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3906",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3914-3924": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+      ],
+      "snowd.for:122-139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
+      ],
+      "snowd.for:125-126": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:125"
+      ],
+      "snowd.for:129": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:129"
+      ],
+      "snowd.for:131": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:131"
+      ],
+      "snowd.for:135": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:135"
+      ],
+      "snowd.for:139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:139"
+      ],
+      "snowd.for:145-146": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:310-312": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
+      ],
+      "snowd.for:61-65": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:61",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:65"
+      ],
+      "winter.for:366-367": [
+        "/workdir/wepp-forest_260430_baseline/src/winter.for:366"
+      ]
+    },
+    "target_year": 2014,
+    "window": "spring-2014"
+  },
+  {
+    "affected_hphys0309_rows": 9,
+    "classification_reason": "first 2014 material divergence is already present at year-start; recurse earlier again before edits",
+    "hillslope_id": 39,
+    "hphys0313_route": "recursive-year-start-inherited-state-hold",
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "recursive_scan": {
+      "first_material_divergence": {
+        "baseline_density_after_kg_m3": 250.58,
+        "baseline_depth_after_m": 0.45901,
+        "density_delta_openwepp_minus_baseline_kg_m3": -0.47767666027880296,
+        "depth_delta_openwepp_minus_baseline_m": 0.0147979087518893,
+        "hour": 1,
+        "julian": 1,
+        "material_density_divergent": false,
+        "material_depth_divergent": true,
+        "openwepp_air_temp_c": -4.272778815335758,
+        "openwepp_density_after_kg_m3": 250.1023233397212,
+        "openwepp_density_before_kg_m3": 250.1023233397212,
+        "openwepp_depth_after_m": 0.4738079087518893,
+        "openwepp_depth_before_m": 0.4738079087518893,
+        "openwepp_melt_branch_active": 0.0,
+        "openwepp_rain_m": 0.0,
+        "openwepp_raw_melt_m": 0.0,
+        "openwepp_routed_melt_m": 0.0,
+        "openwepp_snowfall_depth_m": 0.0,
+        "year": 2014
+      },
+      "last_within_tolerance_state_before_first_divergence": null,
+      "material_thresholds": {
+        "density_tolerance_kg_m3": 0.5,
+        "depth_tolerance_m": 0.0005
+      },
+      "terminal_state": {
+        "baseline_density_after_kg_m3": 251.35,
+        "baseline_depth_after_m": 0.79017,
+        "density_delta_openwepp_minus_baseline_kg_m3": -1.3254775669037997,
+        "depth_delta_openwepp_minus_baseline_m": 0.01571179113865462,
+        "hour": 24,
+        "julian": 365,
+        "material_density_divergent": true,
+        "material_depth_divergent": true,
+        "openwepp_air_temp_c": -15.407292550005643,
+        "openwepp_density_after_kg_m3": 250.0245224330962,
+        "openwepp_density_before_kg_m3": 250.0245224330962,
+        "openwepp_depth_after_m": 0.8058817911386547,
+        "openwepp_depth_before_m": 0.8058817911386547,
+        "openwepp_melt_branch_active": 0.0,
+        "openwepp_rain_m": 0.0,
+        "openwepp_raw_melt_m": 0.0,
+        "openwepp_routed_melt_m": 0.0,
+        "openwepp_snowfall_depth_m": 0.0,
+        "year": 2014
+      }
+    },
+    "scan_year": 2014,
+    "settling_reconstruction": null,
+    "source_hphys0312_route": "year-start-inherited-state-hold",
+    "source_line_findings": {
+      "03_kernel_support_00_support_helpers.rs:3872-3877": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3901-3905": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3901"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3906-3912": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3906",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
+      ],
+      "03_kernel_support_00_support_helpers.rs:3914-3924": [
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+      ],
+      "snowd.for:122-139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
+      ],
+      "snowd.for:125-126": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:125"
+      ],
+      "snowd.for:129": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:129"
+      ],
+      "snowd.for:131": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:131"
+      ],
+      "snowd.for:135": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:135"
+      ],
+      "snowd.for:139": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:139"
+      ],
+      "snowd.for:145-146": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:310-312": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
+      ],
+      "snowd.for:61-65": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:61",
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:65"
+      ],
+      "winter.for:366-367": [
+        "/workdir/wepp-forest_260430_baseline/src/winter.for:366"
+      ]
+    },
+    "target_year": 2016,
+    "window": "spring-2016"
+  }
+]
