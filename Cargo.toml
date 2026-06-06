@@ -540,6 +540,10 @@ name = "hphys0314_adr0017_snow_rm_reclassification_contract"
 path = "tests/integration/hphys0314_adr0017_snow_rm_reclassification_contract.rs"
 
 [[test]]
+name = "hphys0315_hourly_snowfall_input_lineage_contract"
+path = "tests/integration/hphys0315_hourly_snowfall_input_lineage_contract.rs"
+
+[[test]]
 name = "adr0017_comparator_distrust_ratification_contract"
 path = "tests/integration/adr0017_comparator_distrust_ratification_contract.rs"
 

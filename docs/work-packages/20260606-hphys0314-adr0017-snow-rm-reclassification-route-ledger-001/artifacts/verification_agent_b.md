@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Status: verification-hold
+Status: complete
 
 Evidence mode: Static
 
@@ -31,4 +31,11 @@ Initial verification: HOLD.
 - Completed both verification artifacts so B-001 can be rechecked.
 - Rerun and record broad gates in `gate-results.md` so B-003 can be rechecked.
 
-Final verification: pending follow-up verification.
+## Follow-Up Verification
+
+| Finding | Verification | Result |
+|---|---|---|
+| B-001 | Review and verification artifacts are complete/static, and HPHYS0314 artifact-completeness tests include review, disposition, verification, gate, handoff, and metrics artifacts. | CLOSED |
+| B-003 | `gate-results.md` records `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, and `cargo deny check`; all exited `0`, with non-fatal `cargo deny` warnings truthfully labeled. | CLOSED |
+
+Final verification: PASS.

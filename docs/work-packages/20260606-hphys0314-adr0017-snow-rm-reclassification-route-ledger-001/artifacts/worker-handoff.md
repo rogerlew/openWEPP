@@ -1,6 +1,6 @@
 # Worker Handoff
 
-Status: in-progress
+Status: complete
 
 Evidence mode: Static
 
@@ -29,4 +29,4 @@ ADR0017. It does not authorize production edits.
 
 ## Pending
 
-- Final dual review and dual verification.
+- None for HPHYS0314.

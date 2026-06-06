@@ -1,12 +1,12 @@
 # Disposition
 
-Status: in-progress
+Status: executed-hold
 
 Evidence mode: Static
 
 Static:
 
-## Interim Disposition
+## Final Disposition
 
 - HPHYS0314 contract authority is implemented.
 - HPHYS0314 route ledger is published and accounts for all `57` carried
@@ -14,6 +14,12 @@ Static:
 - Stale HPHYS0298 `OPENWEPP-DEFECTIVE` labels are superseded by ADR0017
   `UNRESOLVED` owned `HOLD` rows.
 - Production edits authorized by HPHYS0314: none.
+- Dual review findings are dispositioned in `review-disposition.md`.
+- Dual verification is complete in `verification_agent_a.md` and
+  `verification_agent_b.md`.
+- Required gates are recorded in `gate-results.md`; all executed gates passed,
+  with `cargo deny check` exiting `0` while reporting existing non-fatal
+  warnings.
 
 ## Held Continuations
 
@@ -24,4 +30,4 @@ Static:
 
 ## Closeout Gate
 
-Final disposition remains pending dual review and dual verification.
+Final disposition: `executed-hold`.

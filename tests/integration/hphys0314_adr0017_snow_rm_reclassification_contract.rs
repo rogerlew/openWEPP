@@ -142,4 +142,24 @@ fn hphys0314_metrics_and_evidence_artifacts_are_not_scaffold_placeholders() {
     assert!(metrics.contains("RM"));
     assert!(metrics.contains("0/39"));
     assert!(metrics.contains("carried forward"));
+
+    let gate_results = read(&format!("{PACKAGE}/artifacts/gate-results.md"));
+    assert!(gate_results.contains("cargo clippy --workspace --all-targets -- -D warnings"));
+    assert!(gate_results.contains("cargo test --workspace"));
+    assert!(gate_results.contains("cargo deny check"));
+    assert!(gate_results.contains("exit status was `0`"));
+
+    let disposition = read(&format!("{PACKAGE}/artifacts/disposition.md"));
+    assert!(disposition.contains("Status: executed-hold"));
+    assert!(disposition.contains("Final disposition: `executed-hold`"));
+    assert!(!disposition.contains("Final disposition remains pending"));
+
+    let verification_b = read(&format!("{PACKAGE}/artifacts/verification_agent_b.md"));
+    assert!(verification_b.contains("Status: complete"));
+    assert!(verification_b.contains("Final verification: PASS"));
+    assert!(!verification_b.contains("Final verification: pending"));
+
+    let handoff = read(&format!("{PACKAGE}/artifacts/worker-handoff.md"));
+    assert!(handoff.contains("Status: complete"));
+    assert!(handoff.contains("None for HPHYS0314"));
 }

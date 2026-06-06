@@ -1,6 +1,6 @@
 # HPHYS0315 Hourly Snowfall Input Lineage Closure
 
-Status: queued
+Status: executed-hold
 
 ## Objective
 
@@ -33,6 +33,9 @@ authorized.
   unresolved harness surface.
 - Run full H1..H39 semantic metrics after any authorized correction or after
   recording `HOLD`.
+- When no production runtime code changes are authorized, record H1..H39
+  semantic metrics as a truthfully labeled static carry-forward from the latest
+  same-runtime fixed-baseline suite instead of implying a new behavioral rerun.
 
 ## Excluded Scope
 
@@ -41,6 +44,7 @@ authorized.
   compensation.
 - No production edit unless source-line, same-unit, same-lineage evidence
   proves an openWEPP-owned defect and contract authority is amended first.
+- No production Rust kernel edits from source-code resemblance alone.
 - No reuse of stale depth-vs-SWE HPHYS0298 verdicts.
 
 ## Deliverables
@@ -112,9 +116,26 @@ authorized.
   authority; otherwise the route remains `HARNESS-SURFACE-MISMATCH` or
   `UNRESOLVED`.
 - Full H1..H39 metrics are recorded.
+- No production Rust kernel edits are made unless the production checkpoint
+  proves openWEPP ownership.
 - No downstream compensation is authorized.
 - Evidence artifacts label truthfulness (`Static:` vs `Ran:`).
 - Dual review findings are dispositioned and dual verification is recorded.
+
+## Execution Notes
+
+HPHYS0315 amended canonical contract authority and added a contract-derived
+integration test. Static source-line inspection showed that openWEPP's
+SIMIMPL28 hourly precipitation helper mirrors the pinned baseline
+`stmtim.for:43-95` partition/distribution equations, but the package did not
+produce paired fixed-baseline/openWEPP values for `rain`, `stmdur`, `wntdur`,
+`wnttim`, `hrtemp`, and `rst` at 2013 day 11 hour 11. Therefore the H1/H7/H39
+spring-2014 rows remain `UNRESOLVED` under `forcing-input-surface-parity-hold`,
+owner `HPHYS0317`.
+
+No production Rust kernel edits were authorized or made. Full H1..H39 metrics
+are recorded as static carry-forward from the latest same-runtime
+fixed-baseline suite because no production runtime code changed in HPHYS0315.
 
 ## Security-Impact Gate
 

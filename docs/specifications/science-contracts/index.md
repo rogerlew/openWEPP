@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-06-05
+Last updated: 2026-06-06
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -31,7 +31,10 @@ continuations through `SC-SNOWFREEZE-001#INV-SNOWFREEZE-039` and
 `SC-WATBAL-001#INV-WATBAL-087`; HPHYS0314 extends that governance into the
 consolidated snow/`RM` route-ledger reclassification authority at
 `SC-SNOWFREEZE-001#INV-SNOWFREEZE-040` and
-`SC-WATBAL-001#INV-WATBAL-088`.
+`SC-WATBAL-001#INV-WATBAL-088`. HPHYS0315 extends that route by requiring
+paired hourly snowfall input-lineage proof before any producer or downstream
+water-balance edit at `SC-SNOWFREEZE-001#INV-SNOWFREEZE-041` and
+`SC-WATBAL-001#INV-WATBAL-089`.
 
 HPHYS0273 makes unit governance mandatory for science contracts, runtime
 boundary symbols, conversions, output metadata, and work-package gates.

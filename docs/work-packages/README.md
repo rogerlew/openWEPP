@@ -13,7 +13,11 @@
     the branch-gated hourly snowfall input lineage where fixed baseline records
     positive `hrsnow` but openWEPP records zero homologous snowfall for the
     H1/H7/H39 spring-2014 settling-route rows.
-  - Status: queued after HPHYS0314; no downstream compensation authorized.
+  - Status: executed-hold; HPHYS0315 preserved all `24` carried spring-2014
+    rows as `UNRESOLVED`/`forcing-input-surface-parity-hold`, assigned
+    follow-on closure to HPHYS0317, statically carried forward same-runtime
+    H1..H39 metrics because no production code changed, and authorized no
+    producer or downstream water-balance edits.
 - `20260606-hphys0316-2013-terminal-carry-recursion-closure-001/`
   - Purpose: recurse H1/H7/H39 spring-2016 year-start inherited snowpack rows
     into the 2013 terminal carry chain feeding 2014 day 1 hour 1 and classify
