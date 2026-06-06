@@ -34,7 +34,10 @@ consolidated snow/`RM` route-ledger reclassification authority at
 `SC-WATBAL-001#INV-WATBAL-088`. HPHYS0315 extends that route by requiring
 paired hourly snowfall input-lineage proof before any producer or downstream
 water-balance edit at `SC-SNOWFREEZE-001#INV-SNOWFREEZE-041` and
-`SC-WATBAL-001#INV-WATBAL-089`.
+`SC-WATBAL-001#INV-WATBAL-089`; HPHYS0316 extends the inherited spring-2016
+route by requiring 2013 terminal carry-recursion continuity and owned
+follow-on routing at `SC-SNOWFREEZE-001#INV-SNOWFREEZE-042` and
+`SC-WATBAL-001#INV-WATBAL-090`.
 
 HPHYS0273 makes unit governance mandatory for science contracts, runtime
 boundary symbols, conversions, output metadata, and work-package gates.

@@ -22,7 +22,11 @@
   - Purpose: recurse H1/H7/H39 spring-2016 year-start inherited snowpack rows
     into the 2013 terminal carry chain feeding 2014 day 1 hour 1 and classify
     the first material paired divergence before any production edit.
-  - Status: queued after HPHYS0314; no downstream compensation authorized.
+  - Status: executed-hold; HPHYS0316 routed all `33` carried spring-2016 rows
+    through the 2013 terminal carry state to the same 2013 day 11 hour 11
+    hourly snowfall input-surface blocker owned by HPHYS0317, statically
+    carried forward same-runtime H1..H39 metrics because no production code
+    changed, and authorized no producer or downstream water-balance edits.
 - `20260605-adr0017-comparator-distrust-ratification-001/`
   - Purpose: ratify ADR-0017 so the fixed comparator is enforced as an
     investigation flag rather than a target, with explicit like-for-like

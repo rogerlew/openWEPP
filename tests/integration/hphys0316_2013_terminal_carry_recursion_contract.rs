@@ -2,7 +2,7 @@ use std::fs;
 use std::path::Path;
 
 const PACKAGE: &str =
-    "docs/work-packages/20260606-hphys0315-hourly-snowfall-input-lineage-closure-001";
+    "docs/work-packages/20260606-hphys0316-2013-terminal-carry-recursion-closure-001";
 
 fn read(path: &str) -> String {
     fs::read_to_string(path).unwrap_or_else(|error| panic!("failed to read {path}: {error}"))
@@ -13,38 +13,37 @@ fn assert_contains(content: &str, token: &str) {
 }
 
 #[test]
-fn hphys0315_contract_authority_is_registered() {
+fn hphys0316_contract_authority_is_registered() {
     let snowfreeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    assert_contains(&snowfreeze, "contract_version:");
-    assert_contains(&snowfreeze, "INV-SNOWFREEZE-041");
+    assert_contains(&snowfreeze, "contract_version: 47");
+    assert_contains(&snowfreeze, "INV-SNOWFREEZE-042");
     assert_contains(
         &snowfreeze,
-        "HPHYS0315 hourly snowfall input-lineage invariant",
+        "HPHYS0316 2013 terminal carry-recursion invariant",
     );
-    assert_contains(&snowfreeze, "OBL-SNOWFREEZE-P-020");
-    assert_contains(&snowfreeze, "SC-WATBAL-001#INV-WATBAL-089");
-    assert_contains(&snowfreeze, "SC-CLIMATE-001#INV-CLIMATE-014");
-    assert_contains(&snowfreeze, "0.0007454545120708644 m");
-    assert_contains(&snowfreeze, "snow.hourly.snowfall_m_####");
+    assert_contains(&snowfreeze, "OBL-SNOWFREEZE-P-021");
+    assert_contains(&snowfreeze, "SC-WATBAL-001#INV-WATBAL-090");
+    assert_contains(&snowfreeze, "33` carried spring-2016 rows");
+    assert_contains(&snowfreeze, "2013 day 11 hour 11");
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert_contains(&watbal, "contract_version:");
-    assert_contains(&watbal, "INV-WATBAL-089");
+    assert_contains(&watbal, "contract_version: 140");
+    assert_contains(&watbal, "INV-WATBAL-090");
     assert_contains(
         &watbal,
-        "HPHYS0315 hourly snowfall input-lineage water-balance gate",
+        "HPHYS0316 2013 terminal carry-recursion water-balance gate",
     );
-    assert_contains(&watbal, "OBL-WATBAL-P-025");
-    assert_contains(&watbal, "SC-SNOWFREEZE-001#INV-SNOWFREEZE-041");
+    assert_contains(&watbal, "OBL-WATBAL-P-026");
+    assert_contains(&watbal, "SC-SNOWFREEZE-001#INV-SNOWFREEZE-042");
     assert_contains(&watbal, "WB13/WB17/WB18/WB19/WB12");
 
     let index = read("docs/specifications/science-contracts/index.md");
-    assert_contains(&index, "SC-SNOWFREEZE-001#INV-SNOWFREEZE-041");
-    assert_contains(&index, "SC-WATBAL-001#INV-WATBAL-089");
+    assert_contains(&index, "SC-SNOWFREEZE-001#INV-SNOWFREEZE-042");
+    assert_contains(&index, "SC-WATBAL-001#INV-WATBAL-090");
 }
 
 #[test]
-fn hphys0315_package_is_autonomous_and_scoped_to_no_production_edits() {
+fn hphys0316_package_is_autonomous_and_scoped_to_no_production_edits() {
     let package = read(&format!("{PACKAGE}/package.md"));
     assert_contains(&package, "Status: executed-hold");
     assert_contains(&package, "Contract-First Sequence");
@@ -55,7 +54,7 @@ fn hphys0315_package_is_autonomous_and_scoped_to_no_production_edits() {
     assert_contains(&package, "Dual review findings");
 
     let prompt = read(&format!(
-        "{PACKAGE}/prompts/active/20260606-hphys0315-hourly-snowfall-input-lineage-closure-001_kickoff_agent_prompt.md"
+        "{PACKAGE}/prompts/active/20260606-hphys0316-2013-terminal-carry-recursion-closure-001_kickoff_agent_prompt.md"
     ));
     assert_contains(&prompt, "Execution mode: package-end-to-end");
     assert_contains(&prompt, "Required reading");
@@ -64,60 +63,55 @@ fn hphys0315_package_is_autonomous_and_scoped_to_no_production_edits() {
 }
 
 #[test]
-fn hphys0315_ledger_preserves_all_spring_2014_rows_as_unresolved_hold() {
-    let ledger_path = format!("{PACKAGE}/artifacts/hourly-snowfall-input-lineage-ledger.md");
+fn hphys0316_ledger_routes_all_spring_2016_rows_to_hphys0317_hold() {
+    let ledger_path = format!("{PACKAGE}/artifacts/2013-terminal-carry-recursion-ledger.md");
     assert!(
         Path::new(&ledger_path).exists(),
-        "required HPHYS0315 lineage ledger artifact is missing"
+        "required HPHYS0316 recursion ledger artifact is missing"
     );
     let ledger = read(&ledger_path);
     assert!(!ledger.contains("Status: queued"));
     assert!(!ledger.contains("Evidence mode: not-run"));
     assert_contains(&ledger, "Evidence mode: Static");
-    assert_contains(&ledger, "Total carried rows: `24`");
+    assert_contains(&ledger, "Total carried rows: `33`");
     assert_contains(&ledger, "production_edit_authorized=false");
     assert_contains(&ledger, "owner: `HPHYS0317`");
     assert_contains(&ledger, "ADR0017 verdict: `UNRESOLVED`");
-    assert_contains(&ledger, "forcing-input-surface-parity-hold");
+    assert_contains(&ledger, "2013-hourly-snowfall-input-surface-parity-hold");
     assert_contains(&ledger, "0.0007454545120708644");
-    assert_contains(&ledger, "-0.0007454545120708644");
-    assert_contains(&ledger, "`snow.hourly.snowfall_m_0011`");
-    assert_contains(&ledger, "`stmtim.for:43-95`");
-    assert_contains(&ledger, "`snowd.for:166-172`");
+    assert_contains(&ledger, "`snow.hourly.snowfall_m_0011 = 0.0 m`");
+    assert_contains(&ledger, "`2013 day 11 hour 11`");
+    assert_contains(&ledger, "`2014 day 1 hour 1`");
     for token in [
-        "| H1 | spring-2014 | 8 |",
-        "| H7 | spring-2014 | 7 |",
-        "| H39 | spring-2014 | 9 |",
+        "| H1 | spring-2016 | 15 | 0.013144251023522513 | 0.013144251023522124 |",
+        "| H7 | spring-2016 | 9 | 0.015279465660242741 | 0.015279465660242408 |",
+        "| H39 | spring-2016 | 9 | 0.0147979087518893 | 0.014797908751889022 |",
     ] {
         assert_contains(&ledger, token);
     }
 }
 
 #[test]
-fn hphys0315_source_lineage_records_the_remaining_input_surface_gap() {
+fn hphys0316_source_lineage_records_terminal_carry_and_first_material_lane() {
     let lineage = read(&format!(
-        "{PACKAGE}/artifacts/hourly-snowfall-source-lineage.md"
+        "{PACKAGE}/artifacts/2013-terminal-carry-source-lineage.md"
     ));
     assert!(!lineage.contains("Status: queued"));
     assert_contains(&lineage, "Evidence mode: Static");
     for token in [
-        "`winter.for:366-367`",
-        "`winter.for:379`",
-        "`stmtim.for:35-38`",
-        "`stmtim.for:43-95`",
-        "`stmtim.for:77-95`",
+        "`winter.for:193`",
+        "`snowd.for:50-53`",
+        "`snowd.for:61-65`",
+        "`snowd.for:122-139`",
         "`snowd.for:166-172`",
-        "`06_simimpl28_hourly_forcing.rs:627-697`",
+        "`snowd.for:303-312`",
+        "`03_kernel_support_00_support_helpers.rs:3872-3877`",
+        "`03_kernel_support_00_support_helpers.rs:3901-3912`",
         "`03_kernel_support_00_support_helpers.rs:3914-3924`",
-        "`SC-CLIMATE-001#INV-CLIMATE-014`",
-        "`rain`",
-        "`stmdur`",
-        "`wntdur`",
-        "`wnttim`",
-        "`hrtemp`",
-        "`rst`",
-        "`hrsnow`",
-        "`hrrain`",
+        "`HPHYS0312`",
+        "`HPHYS0313`",
+        "`HPHYS0315`",
+        "`HPHYS0317`",
     ] {
         assert_contains(&lineage, token);
     }
@@ -126,7 +120,7 @@ fn hphys0315_source_lineage_records_the_remaining_input_surface_gap() {
 }
 
 #[test]
-fn hphys0315_artifacts_are_executed_and_gates_are_recorded() {
+fn hphys0316_artifacts_are_executed_and_gates_are_recorded() {
     for relative in [
         "artifacts/README.md",
         "artifacts/contract-implementation-evidence.md",
@@ -144,6 +138,9 @@ fn hphys0315_artifacts_are_executed_and_gates_are_recorded() {
         "artifacts/disposition.md",
         "artifacts/worker-handoff.md",
         "artifacts/full-39-suite-metrics.md",
+        "prompts/README.md",
+        "prompts/active/README.md",
+        "prompts/archived/README.md",
     ] {
         let content = read(&format!("{PACKAGE}/{relative}"));
         assert!(

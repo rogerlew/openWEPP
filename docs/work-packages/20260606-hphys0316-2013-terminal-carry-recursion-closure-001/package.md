@@ -1,6 +1,6 @@
 # HPHYS0316 2013 Terminal Carry Recursion Closure
 
-Status: queued
+Status: executed-hold
 
 ## Objective
 
@@ -31,11 +31,15 @@ WB12 edit is considered.
   snowfall input, density settling, retained liquid, negative-melt state loss,
   raw/routed melt, or unresolved paired-evidence gap.
 - Run full H1..H39 semantic metrics for continuation.
+- When no production runtime code changes are authorized, record H1..H39
+  semantic metrics as a truthfully labeled static carry-forward from the latest
+  same-runtime fixed-baseline suite instead of implying a new behavioral rerun.
 
 ## Excluded Scope
 
 - No production Rust kernel edits unless source-line and paired-state evidence
   proves an openWEPP-owned defect.
+- No production Rust kernel edits from inherited terminal carry alone.
 - No WB13, WB17, WB18, WB19, WB12, branch-predicate, or melt-term
   compensation.
 - No heuristic snowpack carry correction.
@@ -114,6 +118,23 @@ WB12 edit is considered.
 - Full H1..H39 metrics are recorded.
 - Evidence artifacts label truthfulness (`Static:` vs `Ran:`).
 - Dual review findings are dispositioned and dual verification is recorded.
+
+## Execution Notes
+
+HPHYS0316 amended canonical contract authority and added a contract-derived
+integration test. Static synthesis of the HPHYS0312 and HPHYS0313 ledgers shows
+that the H1/H7/H39 spring-2016 rows are already materially divergent at 2014
+day 1 hour 1 because they inherit the same hillslope 2013 terminal snowpack
+delta. That 2013 terminal delta was localized by the spring-2014 route to the
+2013 day 11 hour 11 positive-`hrsnow` snowing branch where baseline records
+`hrsnow = 0.0007454545120708644 m` and openWEPP records homologous snowfall
+depth `0.0 m`.
+
+The HPHYS0316 rows are therefore routed to
+`2013-hourly-snowfall-input-surface-parity-hold`, owner `HPHYS0317`. No
+production Rust kernel edits were authorized or made. Full H1..H39 metrics are
+recorded as static carry-forward from the latest same-runtime fixed-baseline
+suite because no production runtime code changed in HPHYS0316.
 
 ## Security-Impact Gate
 
