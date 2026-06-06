@@ -524,6 +524,10 @@ name = "hphys0310_prior_day_snow_carry_divergence_contract"
 path = "tests/integration/hphys0310_prior_day_snow_carry_divergence_contract.rs"
 
 [[test]]
+name = "hphys0311_snow_carry_source_line_parity_contract"
+path = "tests/integration/hphys0311_snow_carry_source_line_parity_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

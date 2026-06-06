@@ -1,0 +1,326 @@
+[
+  {
+    "affected_hphys0309_rows": 1,
+    "classification_reason": "baseline/openWEPP previous-hour states are near-identical, but H305_S_OUT exposes rounded post-hour depth/density and omits baseline wdayct; source-line equation defect is not proven",
+    "hillslope_id": 1,
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "fixed-observe-precision-hold",
+    "settling_state": {
+      "baseline_current_density_after_kg_m3": 145.94,
+      "baseline_current_depth_after_m": 0.2321,
+      "baseline_observe_mass_conserving_depth_m": 0.23159187474304513,
+      "baseline_observed_setf": 1.0046121016039098,
+      "baseline_previous_hour_density_after_kg_m3": 145.27,
+      "baseline_previous_hour_depth_after_m": 0.23266,
+      "depth_delta_openwepp_minus_baseline_m": -0.0007418650358088918,
+      "hour": 11,
+      "julian": 11,
+      "openwepp_density_after_kg_m3": 146.09040892677456,
+      "openwepp_density_before_kg_m3": 145.27122815441345,
+      "openwepp_depth_after_m": 0.2313581349641911,
+      "openwepp_depth_before_m": 0.23266275762140814,
+      "openwepp_mass_conserving_depth_m": 0.2313581349641911,
+      "openwepp_observed_setf": 1.005638974646035,
+      "openwepp_settle_day_count_after": 1.0,
+      "openwepp_settle_day_count_before": 1.0,
+      "previous_hour_density_delta_openwepp_minus_baseline_kg_m3": 0.0012281544134395972,
+      "previous_hour_density_tolerance_kg_m3": 0.01,
+      "previous_hour_depth_delta_openwepp_minus_baseline_m": 2.757621408139288e-06,
+      "previous_hour_depth_tolerance_m": 1e-05,
+      "previous_hour_state_near_identical": true,
+      "year": 2013
+    },
+    "source_hphys0310_route": "density-settling-carry-state-hold",
+    "source_line_findings": {
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_settling_equations": "snowd.for:122-139",
+      "missing_baseline_state": "fixed observe does not expose full-precision snodpt/densg or wdayct",
+      "openwepp_settling_equations": "03_kernel_support_00_support_helpers.rs:3872-3912"
+    },
+    "window": "first-abs-storage-ge-10mm",
+    "year": 2013
+  },
+  {
+    "affected_hphys0309_rows": 8,
+    "classification_reason": "day-1 h01 delta equals prior-year terminal delta; source-line carry-forward is parity and the residual is inherited from the prior-year terminal snowpack state",
+    "day1_carry_state": {
+      "baseline_density_after_kg_m3": 250.52,
+      "baseline_depth_after_m": 0.45469,
+      "density_delta_openwepp_minus_baseline_kg_m3": 0.4085001311336214,
+      "depth_delta_openwepp_minus_baseline_m": 0.013144251023522513,
+      "hour": 1,
+      "julian": 1,
+      "openwepp_density_after_kg_m3": 250.92850013113363,
+      "openwepp_depth_after_m": 0.4678342510235225,
+      "openwepp_depth_before_m": 0.4678342510235225,
+      "year": 2014
+    },
+    "hillslope_id": 1,
+    "inheritance_checks": {
+      "density_delta_inherited": true,
+      "density_delta_tolerance_kg_m3": 1e-12,
+      "depth_delta_inherited": true,
+      "depth_delta_tolerance_m": 1e-12
+    },
+    "previous_terminal_state": {
+      "baseline_density_after_kg_m3": 250.52,
+      "baseline_depth_after_m": 0.45469,
+      "density_delta_openwepp_minus_baseline_kg_m3": 0.4085001311336214,
+      "depth_delta_openwepp_minus_baseline_m": 0.013144251023522513,
+      "hour": 24,
+      "julian": 365,
+      "openwepp_runtime_density_kg_m3": 250.92850013113363,
+      "openwepp_runtime_depth_m": 0.4678342510235225,
+      "openwepp_runtime_swe_m": 0.11739294691930476,
+      "year": 2013
+    },
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "prior-year-terminal-state-hold",
+    "source_hphys0310_route": "initial-carry-state-projection-hold",
+    "source_line_findings": {
+      "baseline_day_start_copy": "winter.for:193",
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_hourly_init": "snowd.for:50-53",
+      "openwepp_runtime_aliases": "snow.runtime_depth_m/snow.runtime_density_kg_m3/snow.runtime_swe"
+    },
+    "window": "spring-2014",
+    "year": 2014
+  },
+  {
+    "affected_hphys0309_rows": 15,
+    "classification_reason": "day-1 h01 delta equals prior-year terminal delta; source-line carry-forward is parity and the residual is inherited from the prior-year terminal snowpack state",
+    "day1_carry_state": {
+      "baseline_density_after_kg_m3": 251.07,
+      "baseline_depth_after_m": 0.62648,
+      "density_delta_openwepp_minus_baseline_kg_m3": 0.0432225599202809,
+      "depth_delta_openwepp_minus_baseline_m": 0.00261135698911541,
+      "hour": 1,
+      "julian": 1,
+      "openwepp_density_after_kg_m3": 251.11322255992027,
+      "openwepp_depth_after_m": 0.6290913569891154,
+      "openwepp_depth_before_m": 0.6290913569891154,
+      "year": 2016
+    },
+    "hillslope_id": 1,
+    "inheritance_checks": {
+      "density_delta_inherited": true,
+      "density_delta_tolerance_kg_m3": 1e-12,
+      "depth_delta_inherited": true,
+      "depth_delta_tolerance_m": 1e-12
+    },
+    "previous_terminal_state": {
+      "baseline_density_after_kg_m3": 251.07,
+      "baseline_depth_after_m": 0.62648,
+      "density_delta_openwepp_minus_baseline_kg_m3": 0.0432225599202809,
+      "depth_delta_openwepp_minus_baseline_m": 0.00261135698911541,
+      "hour": 24,
+      "julian": 365,
+      "openwepp_runtime_density_kg_m3": 251.11322255992027,
+      "openwepp_runtime_depth_m": 0.6290913569891154,
+      "openwepp_runtime_swe_m": 0.15797315793813002,
+      "year": 2015
+    },
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "prior-year-terminal-state-hold",
+    "source_hphys0310_route": "initial-carry-state-projection-hold",
+    "source_line_findings": {
+      "baseline_day_start_copy": "winter.for:193",
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_hourly_init": "snowd.for:50-53",
+      "openwepp_runtime_aliases": "snow.runtime_depth_m/snow.runtime_density_kg_m3/snow.runtime_swe"
+    },
+    "window": "spring-2016",
+    "year": 2016
+  },
+  {
+    "affected_hphys0309_rows": 7,
+    "classification_reason": "day-1 h01 delta equals prior-year terminal delta; source-line carry-forward is parity and the residual is inherited from the prior-year terminal snowpack state",
+    "day1_carry_state": {
+      "baseline_density_after_kg_m3": 251.09,
+      "baseline_depth_after_m": 0.47369,
+      "density_delta_openwepp_minus_baseline_kg_m3": -0.7826171330456191,
+      "depth_delta_openwepp_minus_baseline_m": 0.015279465660242741,
+      "hour": 1,
+      "julian": 1,
+      "openwepp_density_after_kg_m3": 250.30738286695438,
+      "openwepp_depth_after_m": 0.48896946566024274,
+      "openwepp_depth_before_m": 0.48896946566024274,
+      "year": 2014
+    },
+    "hillslope_id": 7,
+    "inheritance_checks": {
+      "density_delta_inherited": true,
+      "density_delta_tolerance_kg_m3": 1e-12,
+      "depth_delta_inherited": true,
+      "depth_delta_tolerance_m": 1e-12
+    },
+    "previous_terminal_state": {
+      "baseline_density_after_kg_m3": 251.09,
+      "baseline_depth_after_m": 0.47369,
+      "density_delta_openwepp_minus_baseline_kg_m3": -0.7826171330456191,
+      "depth_delta_openwepp_minus_baseline_m": 0.015279465660242741,
+      "hour": 24,
+      "julian": 365,
+      "openwepp_runtime_density_kg_m3": 250.30738286695438,
+      "openwepp_runtime_depth_m": 0.48896946566024274,
+      "openwepp_runtime_swe_m": 0.12239266725126847,
+      "year": 2013
+    },
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "prior-year-terminal-state-hold",
+    "source_hphys0310_route": "initial-carry-state-projection-hold",
+    "source_line_findings": {
+      "baseline_day_start_copy": "winter.for:193",
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_hourly_init": "snowd.for:50-53",
+      "openwepp_runtime_aliases": "snow.runtime_depth_m/snow.runtime_density_kg_m3/snow.runtime_swe"
+    },
+    "window": "spring-2014",
+    "year": 2014
+  },
+  {
+    "affected_hphys0309_rows": 9,
+    "classification_reason": "day-1 h01 delta equals prior-year terminal delta; source-line carry-forward is parity and the residual is inherited from the prior-year terminal snowpack state",
+    "day1_carry_state": {
+      "baseline_density_after_kg_m3": 250.32,
+      "baseline_depth_after_m": 0.65523,
+      "density_delta_openwepp_minus_baseline_kg_m3": -0.04894675267172488,
+      "depth_delta_openwepp_minus_baseline_m": 0.0036033664795070974,
+      "hour": 1,
+      "julian": 1,
+      "openwepp_density_after_kg_m3": 250.27105324732827,
+      "openwepp_depth_after_m": 0.6588333664795071,
+      "openwepp_depth_before_m": 0.6588333664795071,
+      "year": 2016
+    },
+    "hillslope_id": 7,
+    "inheritance_checks": {
+      "density_delta_inherited": true,
+      "density_delta_tolerance_kg_m3": 1e-12,
+      "depth_delta_inherited": true,
+      "depth_delta_tolerance_m": 1e-12
+    },
+    "previous_terminal_state": {
+      "baseline_density_after_kg_m3": 250.32,
+      "baseline_depth_after_m": 0.65523,
+      "density_delta_openwepp_minus_baseline_kg_m3": -0.04894675267172488,
+      "depth_delta_openwepp_minus_baseline_m": 0.0036033664795070974,
+      "hour": 24,
+      "julian": 365,
+      "openwepp_runtime_density_kg_m3": 250.27105324732827,
+      "openwepp_runtime_depth_m": 0.6588333664795071,
+      "openwepp_runtime_swe_m": 0.16488692054330925,
+      "year": 2015
+    },
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "prior-year-terminal-state-hold",
+    "source_hphys0310_route": "initial-carry-state-projection-hold",
+    "source_line_findings": {
+      "baseline_day_start_copy": "winter.for:193",
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_hourly_init": "snowd.for:50-53",
+      "openwepp_runtime_aliases": "snow.runtime_depth_m/snow.runtime_density_kg_m3/snow.runtime_swe"
+    },
+    "window": "spring-2016",
+    "year": 2016
+  },
+  {
+    "affected_hphys0309_rows": 9,
+    "classification_reason": "day-1 h01 delta equals prior-year terminal delta; source-line carry-forward is parity and the residual is inherited from the prior-year terminal snowpack state",
+    "day1_carry_state": {
+      "baseline_density_after_kg_m3": 250.58,
+      "baseline_depth_after_m": 0.45901,
+      "density_delta_openwepp_minus_baseline_kg_m3": -0.47767666027880296,
+      "depth_delta_openwepp_minus_baseline_m": 0.0147979087518893,
+      "hour": 1,
+      "julian": 1,
+      "openwepp_density_after_kg_m3": 250.1023233397212,
+      "openwepp_depth_after_m": 0.4738079087518893,
+      "openwepp_depth_before_m": 0.4738079087518893,
+      "year": 2014
+    },
+    "hillslope_id": 39,
+    "inheritance_checks": {
+      "density_delta_inherited": true,
+      "density_delta_tolerance_kg_m3": 1e-12,
+      "depth_delta_inherited": true,
+      "depth_delta_tolerance_m": 1e-12
+    },
+    "previous_terminal_state": {
+      "baseline_density_after_kg_m3": 250.58,
+      "baseline_depth_after_m": 0.45901,
+      "density_delta_openwepp_minus_baseline_kg_m3": -0.47767666027880296,
+      "depth_delta_openwepp_minus_baseline_m": 0.0147979087518893,
+      "hour": 24,
+      "julian": 365,
+      "openwepp_runtime_density_kg_m3": 250.1023233397212,
+      "openwepp_runtime_depth_m": 0.4738079087518893,
+      "openwepp_runtime_swe_m": 0.11850045879558213,
+      "year": 2013
+    },
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "prior-year-terminal-state-hold",
+    "source_hphys0310_route": "initial-carry-state-projection-hold",
+    "source_line_findings": {
+      "baseline_day_start_copy": "winter.for:193",
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_hourly_init": "snowd.for:50-53",
+      "openwepp_runtime_aliases": "snow.runtime_depth_m/snow.runtime_density_kg_m3/snow.runtime_swe"
+    },
+    "window": "spring-2014",
+    "year": 2014
+  },
+  {
+    "affected_hphys0309_rows": 9,
+    "classification_reason": "day-1 h01 delta equals prior-year terminal delta; source-line carry-forward is parity and the residual is inherited from the prior-year terminal snowpack state",
+    "day1_carry_state": {
+      "baseline_density_after_kg_m3": 251.09,
+      "baseline_depth_after_m": 0.62813,
+      "density_delta_openwepp_minus_baseline_kg_m3": 0.15928829069693506,
+      "depth_delta_openwepp_minus_baseline_m": 0.0024898930853958223,
+      "hour": 1,
+      "julian": 1,
+      "openwepp_density_after_kg_m3": 251.24928829069694,
+      "openwepp_depth_after_m": 0.6306198930853958,
+      "openwepp_depth_before_m": 0.6306198930853958,
+      "year": 2016
+    },
+    "hillslope_id": 39,
+    "inheritance_checks": {
+      "density_delta_inherited": true,
+      "density_delta_tolerance_kg_m3": 1e-12,
+      "depth_delta_inherited": true,
+      "depth_delta_tolerance_m": 1e-12
+    },
+    "previous_terminal_state": {
+      "baseline_density_after_kg_m3": 251.09,
+      "baseline_depth_after_m": 0.62813,
+      "density_delta_openwepp_minus_baseline_kg_m3": 0.15928829069693506,
+      "depth_delta_openwepp_minus_baseline_m": 0.0024898930853958223,
+      "hour": 24,
+      "julian": 365,
+      "openwepp_runtime_density_kg_m3": 251.24928829069694,
+      "openwepp_runtime_depth_m": 0.6306198930853958,
+      "openwepp_runtime_swe_m": 0.15844279931966107,
+      "year": 2015
+    },
+    "production_edit_authorized": false,
+    "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, same-hour melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
+    "route": "prior-year-terminal-state-hold",
+    "source_hphys0310_route": "initial-carry-state-projection-hold",
+    "source_line_findings": {
+      "baseline_day_start_copy": "winter.for:193",
+      "baseline_hourly_carry_write": "snowd.for:303-312",
+      "baseline_hourly_init": "snowd.for:50-53",
+      "openwepp_runtime_aliases": "snow.runtime_depth_m/snow.runtime_density_kg_m3/snow.runtime_swe"
+    },
+    "window": "spring-2016",
+    "year": 2016
+  }
+]

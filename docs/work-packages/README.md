@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0311-snow-carry-source-line-parity-closure-001/`
+  - Purpose: execute the HPHYS0310 required continuation by comparing
+    fixed-comparator `snowd.for`/`winter.for` carry-state source lines against
+    openWEPP snow runtime projection and hourly snow-state update code for the
+    seven HPHYS0310 first-divergence groups.
+  - Status: executed-hold; diagnostics represented all `58` HPHYS0309 rows as
+    `7` HPHYS0310 groups, routing `6` to
+    `prior-year-terminal-state-hold`, `1` to
+    `fixed-observe-precision-hold`, and authorizing no production edits.
 - `20260605-hphys0310-prior-day-snow-carry-divergence-closure-001/`
   - Purpose: execute the HPHYS0309 required continuation by reconstructing the
     first prior-day/day-start snowpack carry-state divergence for affected
