@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260605-hphys0310-prior-day-snow-carry-divergence-closure-001/`
+  - Purpose: execute the HPHYS0309 required continuation by reconstructing the
+    first prior-day/day-start snowpack carry-state divergence for affected
+    H1/H7/H39 groups before any snow-producer, branch-predicate, or downstream
+    water-balance edit.
+  - Status: executed-hold; diagnostics represented all `58` HPHYS0309 rows as
+    `7` hillslope/window/year groups, routing `6` to
+    `initial-carry-state-projection-hold`, `1` to
+    `density-settling-carry-state-hold`, and authorizing no production edits.
 - `20260605-hphys0309-snow-carry-depletion-lineage-closure-001/`
   - Purpose: execute the HPHYS0308 required continuation by comparing
     fixed-comparator prior-day/hour snow carry state against openWEPP
