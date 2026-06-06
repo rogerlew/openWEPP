@@ -502,6 +502,27 @@ impl Wb11HydrologyKernel {
         Ok(Some(cumulative_infiltration))
     }
 
+    fn resolve_wb18_same_pass_infiltration_lineage(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let infiltration_symbol = BoundarySymbol::from(WB12_SYMBOL_INFILTRATION);
+        if let Some(infiltration) =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &infiltration_symbol)?
+        {
+            Self::require_state_range(
+                phase_class,
+                WB12_SYMBOL_INFILTRATION,
+                infiltration,
+                Some(0.0),
+                None,
+            )?;
+            return Ok(Some(infiltration));
+        }
+
+        Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_evapotranspiration(
         request: &HillslopeKernelRequest<'_>,
@@ -1843,7 +1864,7 @@ impl Wb11HydrologyKernel {
             .state_surface
             .contains_key(&BoundarySymbol::from("management.initial.params.tillay2_m"))
         {
-            Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)?
+            Self::resolve_wb18_same_pass_infiltration_lineage(request, phase_class)?
         } else {
             None
         };

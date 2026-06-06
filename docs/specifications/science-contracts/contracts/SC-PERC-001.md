@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 27
+contract_version: 29
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -134,6 +134,13 @@ WB18 mutates percolation boundary surfaces deterministically:
    - obtain same-pass WB14/WB12 infiltration from the same routed-snowmelt,
      residual direct-rain, irrigation, interception, and Green-Ampt lineage
      used by runoff partition,
+   - when the same-pass `wb12_infiltration` surface has already been
+     published by WB12/WB14, consume that finite non-negative value as the
+     authoritative WB18 `fin/xfin` ingress source rather than recomputing the
+     runoff/snow liquid partition inside WB18,
+   - if `wb12_infiltration` is absent, WB18 may reconstruct the same lineage
+     from the WB14/WB12 forcing surfaces and must preserve the snow-state
+     fail-closed guards owned by `SC-SNOWFREEZE-001`/`SC-RUNOFFPART-001`,
    - require finite non-negative infiltration,
    - distribute infiltrated water top-down into `st(i)`/`wb18_perc_theta_i`
      using `tillay(2)` where present; if `tillay(2) <= 0`, the first layer
@@ -648,6 +655,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-06` | `29` | `Codex` | WBVAL05 amendment: clarified WB18 same-pass ingress consumption order so an already-published finite non-negative `wb12_infiltration` surface is authoritative for percolation layer ingress and WB18 does not re-run WB14 snow/liquid partition validation solely because `tillay(2)` exists. |
 | `2026-06-05` | `28` | `Codex` | HPHYS0294 amendment: added post-ingress storage/percolation/lateral retention classifier requiring WB18 aggregate identity, `D=Pe`/`pei`, WB19 lateral lineage, and snow-excluded residual masks before WB18/WB19 ownership claims or production edits. |
 | `2026-06-04` | `27` | `Codex` | HPHYS0286 amendment: added baseline-authoritative post-ET lower-layer upper-limit redistribution (`watbal_hourly.for:564-590`) with `fin > 1e-6` frozen-water cap semantics before WB19 drainage/lateral consumers. |
 | `2026-06-04` | `26` | `Codex` | HPHYS0285 amendment: promoted local-liquid `fin/xfin` same-pass infiltration ingress authority so WB18 layer storage cannot be gated by active snow state when direct rain, irrigation, or routed melt infiltrates; hourly ingress uses baseline per-substep `xfin = fin/ui_LFtstpF` cadence. MOFE carry/runon ingress remains follow-up scope. |

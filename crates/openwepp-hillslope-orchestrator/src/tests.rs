@@ -431,6 +431,59 @@ fn hphys0246_wb18_percolation_requires_residual_storage_symbols_for_aggregate_wr
 }
 
 #[test]
+fn wbval05_wb18_percolation_consumes_published_zero_infiltration_without_snow_recompute() {
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("management.initial.params.tillay2_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_infiltration"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    state_surface.insert(
+        BoundarySymbol::from("wb12_rainfall_input"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(1.0e-6));
+    state_surface.insert(BoundarySymbol::from("dg"), BoundaryValue::scalar(0.10));
+    state_surface.insert(BoundarySymbol::from("thetdr"), BoundaryValue::scalar(0.05));
+    state_surface.insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(0.10));
+    state_surface.insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(0.0));
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_swe"),
+        BoundaryValue::scalar(-0.006_171_157_610_042_402),
+    );
+
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(
+        response.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001",
+        "WB18 must consume the already-published zero infiltration lineage without revalidating stale snow state as a percolation failure"
+    );
+    let infiltration_update =
+        state_update_scalar(&response.writeback.state_updates, "wb12_infiltration")
+            .expect("WB18 should preserve the consumed published infiltration lineage");
+    assert!(
+        infiltration_update.abs() < f64::EPSILON,
+        "published zero infiltration must remain zero"
+    );
+}
+
+#[test]
 fn hphys0264_pmet_evapotranspiration_consumes_evappm_components_without_pt_repartition() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(

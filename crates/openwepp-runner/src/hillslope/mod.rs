@@ -5193,6 +5193,7 @@ fn format_wb12_storage_terms(runtime_surface: &HillslopeWritebackSurface) -> Str
     )
 }
 
+#[allow(clippy::too_many_lines)]
 fn format_wb18_perc_guard_terms(runtime_surface: &HillslopeWritebackSurface) -> String {
     let mut layer_suffixes = runtime_surface
         .state_surface
@@ -5208,45 +5209,115 @@ fn format_wb18_perc_guard_terms(runtime_surface: &HillslopeWritebackSurface) -> 
         return "{layers=none}".to_string();
     }
 
+    let fmt_opt = |value: Option<f64>| {
+        value.map_or_else(|| "NA".to_string(), |observed| format!("{observed:.10}"))
+    };
+    let fmt_state = |symbol: &str| fmt_opt(runtime_surface_symbol_value(runtime_surface, symbol));
+
     let invalid_layers = layer_suffixes
         .iter()
         .filter_map(|suffix| {
-            let fc = runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_fc_{suffix}"))?;
-            let ul = runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_ul_{suffix}"))?;
+            let fc =
+                runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_fc_{suffix}"))?;
+            let ul =
+                runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_ul_{suffix}"))?;
             let theta =
                 runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_theta_{suffix}"))?;
+            let ssc =
+                runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_ssc_{suffix}"));
             let thetfc = runtime_surface_symbol_value(runtime_surface, &format!("thetfc_{suffix}"));
             let thetdr = runtime_surface_symbol_value(runtime_surface, &format!("thetdr_{suffix}"));
             let dg = runtime_surface_symbol_value(runtime_surface, &format!("dg_{suffix}"));
             let por = runtime_surface_symbol_value(runtime_surface, &format!("por_{suffix}"));
             let cpm = runtime_surface_symbol_value(runtime_surface, &format!("cpm_{suffix}"));
+            let frozen_depth = runtime_surface_symbol_value(
+                runtime_surface,
+                &format!("wb18_perc_frozen_depth_{suffix}"),
+            );
             let ratio = fc / ul;
             let stz = theta / ul;
             let dynamic_branch_active = stz.is_finite() && stz < 0.95;
             let ratio_domain_invalid = !ratio.is_finite() || ratio >= 1.0;
             let legacy_bi_zero_candidate = ratio.is_finite() && ratio <= 0.0;
-            if !ratio_domain_invalid && !legacy_bi_zero_candidate {
+
+            let mut flags = Vec::new();
+            if !ul.is_finite() || ul <= 0.0 {
+                flags.push("ul_nonpositive");
+            }
+            if !theta.is_finite() || theta < 0.0 {
+                flags.push("theta_invalid");
+            }
+            if ratio_domain_invalid {
+                flags.push("fc_ul_ratio_invalid");
+            }
+            if legacy_bi_zero_candidate {
+                flags.push("legacy_bi_zero_candidate");
+            }
+            if let Some(ssc_value) = ssc
+                && (!ssc_value.is_finite() || ssc_value <= 0.0)
+            {
+                flags.push("ssc_nonpositive");
+            }
+            if let Some(thetdr_value) = thetdr
+                && (!thetdr_value.is_finite() || !(0.0..=1.0).contains(&thetdr_value))
+            {
+                flags.push("thetdr_out_of_range");
+            }
+            if let Some(dg_value) = dg
+                && (!dg_value.is_finite() || dg_value <= 0.0)
+            {
+                flags.push("dg_nonpositive");
+            }
+            if let (Some(frozen_depth_value), Some(dg_value)) = (frozen_depth, dg)
+                && (!frozen_depth_value.is_finite()
+                    || frozen_depth_value < 0.0
+                    || frozen_depth_value > dg_value)
+            {
+                flags.push("frozen_depth_out_of_range");
+            }
+
+            let lower_ratio_summary = suffix
+                .parse::<usize>()
+                .ok()
+                .and_then(|index| {
+                    let lower_suffix = format!("{:04}", index + 1);
+                    let lower_theta = runtime_surface_symbol_value(
+                        runtime_surface,
+                        &format!("wb18_perc_theta_{lower_suffix}"),
+                    )?;
+                    let lower_ul = runtime_surface_symbol_value(
+                        runtime_surface,
+                        &format!("wb18_perc_ul_{lower_suffix}"),
+                    )?;
+                    Some(lower_theta / lower_ul)
+                })
+                .filter(|ratio| !ratio.is_finite() || *ratio < 0.0)
+                .map(|ratio| format!("lower_ratio={ratio:.10}"));
+            if lower_ratio_summary.is_some() {
+                flags.push("lower_ratio_invalid");
+            }
+
+            if flags.is_empty() {
                 return None;
             }
-            let fmt_opt = |value: Option<f64>| {
-                value.map_or_else(|| "NA".to_string(), |observed| format!("{observed:.10}"))
-            };
             Some(format!(
-                "L{}(fc={:.10},ul={:.10},theta={:.10},ratio={:.10},stz={:.10},dynamic_branch_active={},ratio_domain_invalid={},legacy_bi_zero_candidate={},thetfc={},thetdr={},dg={},por={},cpm={})",
+                "L{}(flags={},fc={:.10},ul={:.10},theta={:.10},ratio={:.10},stz={:.10},dynamic_branch_active={},ssc={},thetfc={},thetdr={},dg={},frozen_depth={},por={},cpm={}{})",
                 suffix,
+                flags.join("+"),
                 fc,
                 ul,
                 theta,
                 ratio,
                 stz,
                 dynamic_branch_active,
-                ratio_domain_invalid,
-                legacy_bi_zero_candidate,
+                fmt_opt(ssc),
                 fmt_opt(thetfc),
                 fmt_opt(thetdr),
                 fmt_opt(dg),
+                fmt_opt(frozen_depth),
                 fmt_opt(por),
                 fmt_opt(cpm),
+                lower_ratio_summary.map_or_else(String::new, |summary| format!(",{summary}")),
             ))
         })
         .collect::<Vec<_>>();
@@ -5258,8 +5329,14 @@ fn format_wb18_perc_guard_terms(runtime_surface: &HillslopeWritebackSurface) -> 
     };
 
     format!(
-        "{{layer_count={},invalid_ratio_layers={}}}",
+        "{{layer_count={},lane_substeps={},infiltration={},tillay2={},slflag={},kslast={},ui_bdrkth={},invalid_layers={}}}",
         layer_suffixes.len(),
+        fmt_state("wb18_perc_lane_substeps"),
+        fmt_state("wb12_infiltration"),
+        fmt_state("management.initial.params.tillay2_m"),
+        fmt_state("slflag"),
+        fmt_state("kslast"),
+        fmt_state("ui_bdrkth"),
         invalid_summary
     )
 }
