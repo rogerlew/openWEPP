@@ -1,5 +1,14 @@
 # Work Packages
 
+- `20260606-hphys0320-stmtim-start-time-source-line-closure-001/`
+  - Purpose: close the HPHYS0319 `stmtim-active-interval-divergence-hold` by
+    source-line classifying baseline `winter.for` storm-start normalization
+    against OpenWEPP SIMIMPL28 timing projection, then implementing and
+    validating the baseline-authoritative timing path if the proof holds.
+  - Status: queued; right-sized to include contract authority, source-line
+    classification, implementation/evidence generation, H1/H7/H39 trace
+    rerun, full carried-row disposition, dual review, and closure/handoff in
+    one autonomous package unless a hard blocker is proven.
 - `20260606-hphys0319-fixed-baseline-stmtim-observe-recovery-001/`
   - Purpose: recover fixed-baseline `stmtim.for` observe values for the 2013
     day 11 hour 11 H1/H7/H39 route, pair them with regenerated OpenWEPP
