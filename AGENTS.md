@@ -35,12 +35,33 @@
   actionable follow-through that can be completed autonomously.
 - Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
   self-containment, and observable validation expectations.
+- Defect-closure work must follow ADR-0018 and
+  `docs/defect_closure_execplans.md`. Use a Defect-Closure ExecPlan
+  (DC-ExecPlan) when the objective is to close an observed invariant violation,
+  a fail-closed event on valid input, or a conservation residual. Pure
+  validation/characterization packages may keep the standard work-package shape
+  only when they explicitly do not own correction.
+- DC-ExecPlans must declare a Correction Authority Envelope: defect IDs,
+  observed failures, in-scope contracts/source files, allowed edit classes,
+  validation surfaces, acceptance criteria, and protected boundaries.
+- If a DC-ExecPlan establishes a reproducible in-envelope root cause and the
+  expected behavior is supported by canonical `SC-*` authority, pinned-baseline
+  provenance, or a contract-authorized physical invariant, it must land the
+  contract-first correction in the same package. Do not close as `HOLD` merely
+  because more investigation is possible.
+- A DC-ExecPlan may close in `HOLD` only at a declared boundary: out-of-envelope
+  mechanism, missing or contradictory authority, invalid upstream input with a
+  correct typed guard, unavailable evidence, or a different process family /
+  contract authority. The handoff's first actionable item must be "close defect
+  `<id>`", not "inspect `<function>`" or "trace `<variable>`".
 - Every work package must require dual independent reviews with explicit
   finding disposition before closure. Each finding must be marked `accepted`,
   `rejected`, `deferred`, or `follow-up` with rationale; accepted findings must
   be fixed and verified, rejected findings must explain why no change is
   required, and deferred/follow-up findings must be linked from disposition and
   worker-handoff artifacts.
+- DC-ExecPlan reviews must also check `HOLD` legitimacy, envelope adequacy, and
+  protected-boundary integrity before disposition.
 - Prefer architectural work packages that implement, wire up, or complete
   baseline-parity functionality across process seams before narrow residual
   tuning. Residual-focused packages are appropriate after the authoritative
@@ -136,6 +157,8 @@ requirement, not optional package style guidance.
 - Status (`queued`), objective, rationale, included/excluded scope, explicit
   deliverables, dependencies, intended write set, phase plan, exit criteria,
   and security-impact gate.
+- For DC-ExecPlans, encode the Correction Authority Envelope, conversion rule,
+  seven-gate bar, `HOLD`-legitimacy boundaries, and defect-shaped handoff.
 - Explicitly encode autonomous execution intent: the package must contain enough
   context, sequencing, and validation detail for no-intervention execution.
 - Explicitly state contract-first sequence:
@@ -190,11 +213,16 @@ requirement, not optional package style guidance.
   "next steps" unless blocked.
 - Kickoff prompt must include an explicit end-to-end execution statement (use
   `Autonomy:` line) for the declared scope.
+- DC-ExecPlan kickoff prompts must say `Close defect <id> end-to-end`, include
+  the Correction Authority Envelope, require conversion to a contract-first fix
+  when the seven-gate bar is met, and prohibit relaying intermediate diagnostic
+  steps into a new package.
 - Kickoff prompt must include a `Required reading` section with explicit path
   references so onboarding/orientation does not require independent discovery.
   At minimum include:
   - `/workdir/openWEPP/AGENTS.md`
   - `/workdir/openWEPP/docs/codex_exec_plans.md`
+  - `/workdir/openWEPP/docs/defect_closure_execplans.md` for defect-closure packages
   - `/workdir/openWEPP/docs/work-packages/README.md`
   - the package-local `package.md`
   - `docs/specifications/science-contract-authoring-procedure.md`

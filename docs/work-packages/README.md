@@ -18,12 +18,16 @@ State as of `2026-06-06`:
 Active work sequence (each rung adds one mechanism on an already-closed
 foundation; boundaries are closure gates, not calendar phases):
 
-1. **WBVAL01** *(next pickup)* — validation/characterization of single-OFE
+1. **WBVAL01** *(executed-hold)* — validation/characterization of single-OFE
    water-balance **conservation closure** on a real CLIGEN daily (non-breakpoint)
-   Rocky Mountain run (`/wc1/runs/in/indispensable-presenter`, DRIGGS ID, 23
-   hillslopes). Grounds rung-2 on a real, independent surface instead of the
-   synthetic `unpalatable-rind` H1..H39 lane. Produces concrete single-OFE WB
-   closure targets.
+   Rocky Mountain run (`/wc1/runs/in/indispensable-presenter`, DRIGGS ID).
+   Execution discovered `22` single-OFE hillslopes plus `pw0` as a 9-OFE
+   observed-only surface. `12/22` single-OFE hillslopes emitted complete WAT
+   ledgers and all `12` are `conservation-break` for years `2..6`; `10/22`
+   failed closed before WAT publication (`CLIM-RUNTIME-E-017` or
+   `HKERNEL-WB11-PERC-E-003`). This grounds frost targets for emitted ledgers
+   while preserving a required follow-on unblocker for the domain-guarded
+   hillslopes and the missing year-1 initial-storage surface.
 2. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
    vertical balance, on single-OFE geometry with no routing to alias it.
 3. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already

@@ -6,6 +6,7 @@
 **Author of draft:** Claude Code (drafted at decider Roger Lew's direction; ratified by Codex package `20260605-adr0017-comparator-distrust-ratification-001`)
 **Amends:** [ADR-0016](0016-promote-260430-baseline-as-canonical-comparator-and-abandon-kernel-rewrite.md)
 **Reaffirms:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
+**Operationalized by:** [ADR-0018](0018-defect-closure-execplans-conversion-rule.md) — gives §6 "findings must resolve to a decision" an executable shape
 
 ## Context
 

@@ -1,6 +1,6 @@
 # WBVAL01 Rocky Mountain Daily-Climate Single-OFE Water-Balance Closure Validation
 
-Status: queued
+Status: executed-hold
 
 ## Objective
 
@@ -10,6 +10,16 @@ a per-hillslope closure ledger that names concrete single-OFE WB closure targets
 for the next roadmap rung (frost). This is a **validation/characterization**
 package: it measures where openWEPP stands and classifies conservation, it does
 not implement physics corrections.
+
+Execution summary (`2026-06-06`): WBVAL01 ran the release
+`openwepp-cli-hill` path against generated TOML wrappers for all `22`
+single-OFE hillslopes discovered in the run directory. `12` hillslopes emitted
+complete WAT ledgers and all `12` are `conservation-break` for years `2..6`
+against the package tolerance. `10` single-OFE hillslopes failed closed before
+WAT publication (`6` climate hourly-radiation domain guards, `4` WB11
+percolation domain guards). The package remains `executed-hold` because the
+acceptance ledger cannot truthfully cover every single-OFE hillslope and year 1
+has no pre-day-1 initial storage row in the published WAT surface.
 
 Run under validation: `/wc1/runs/in/indispensable-presenter` — DRIGGS ID
 (Teton valley, Rocky Mountains, elev. `1859 m`), CLIGEN v`5.323` daily climate,

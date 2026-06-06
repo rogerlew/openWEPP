@@ -24,6 +24,20 @@ verdict for unit or surface-pairing defects, must prohibit waiving independent
 correctness authority for openWEPP-defect labels, and must keep `HOLD` findings
 owned by a named follow-on gate rather than unscoped.
 
+ADR-0018 adds a required Defect-Closure ExecPlan (DC-ExecPlan) subtype for
+closing observed invariant violations, fail-closed events on valid input, and
+conservation residuals. A DC-ExecPlan must declare a Correction Authority
+Envelope, diagnose internally to a named mechanism, and, when the root cause is
+inside that envelope and the corrected behavior is backed by canonical `SC-*`
+authority, pinned-baseline provenance, or a contract-authorized physical
+invariant, proceed through contract amendment, contract-derived tests,
+pre-implementation gate, production edit, validation, dual review, and
+disposition in the same package. It may close in `HOLD` only at a declared
+boundary, and its handoff's first actionable item must be "close defect `<id>`",
+not a next inspection step. Reviews for DC-ExecPlans must check `HOLD`
+legitimacy, envelope adequacy, and protected-boundary integrity. Authoring
+details live in `docs/defect_closure_execplans.md`.
+
 ## `AGENTS.md`
 
 [`AGENTS.md`](https://github.com/openai/agents.md) is a simple format for guiding coding agents such as Codex. We describe a term that users can use as a shorthand and a simple rule for when to use planning documents. Here, we call it an "ExecPlan". Note that this is an arbitrary term, Codex has not been trained on it. This shorthand can then be used when prompting Codex to direct it to a particular definition of a plan.
