@@ -25,6 +25,14 @@
 - Work packages are autonomous execution specs: front-load planning and context
   so an agent can execute from kickoff through disposition without user
   intervention.
+- Work packages must be right-sized to amortize their required scaffolding,
+  evidence, review, verification, and gate overhead. Do not split work into
+  progressively smaller diagnostic-only packages that merely advance a `HOLD`
+  by one symbol, one row, or one observation unless a hard authority, safety,
+  validation-cost, or write-set boundary requires it. Prefer one coherent
+  package that carries a related seam through contracts, tests, implementation
+  or evidence generation, classification, disposition, and the immediately
+  actionable follow-through that can be completed autonomously.
 - Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
   self-containment, and observable validation expectations.
 - Every work package must require dual independent reviews with explicit
@@ -88,6 +96,18 @@ requirement, not optional package style guidance.
 
 1. Authorize and name the package
 - Confirm the package is authorized by the active queue/decision artifacts.
+- Before scaffolding, check that the package is neither too small nor too broad:
+  it should contain a coherent closure slice large enough to justify the
+  mandatory administrative artifacts and small enough for one agent to execute
+  end-to-end without intervention.
+- If the proposed package would only produce another narrow observe ledger,
+  route label, or single-surface diagnostic, widen it to include the adjacent
+  source-line classification, contract/test update, or implementation/evidence
+  step when those share the same authority domain and validation surface.
+- Split into a smaller package only when adjacent work crosses a distinct
+  canonical contract authority, touches unrelated write sets, requires
+  materially different validation, or is blocked by evidence that cannot be
+  produced in the same autonomous run.
 - Use directory format `YYYYMMDD-<slug>-001` under `docs/work-packages/`.
 - Add/update the entry in `docs/work-packages/README.md` so intent is
   discoverable.
