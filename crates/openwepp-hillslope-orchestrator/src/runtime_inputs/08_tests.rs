@@ -1821,7 +1821,46 @@ mod tests {
     }
 
     #[test]
-    fn climate_runtime_surface_with_context_rejects_physically_impossible_hourly_radiation() {
+    fn wbval02_rejects_daily_radiation_above_baseline_sunmap_potential() {
+        let wbval02_climate = VALID_CLIMATE
+            .replace(
+                "45.0 -120.0 1000.0 30 2000 1 CLIGEN 5.30 --seed 123",
+                "43.73 -111.12 1859.0 40 1990 100 CLIGEN 5.32300 --seed 0",
+            )
+            .replace(
+                "1 1 2000 10.0 2.0 0.25 3.0 12.0 2.0 200.0 3.0 180.0 -1.0",
+                "18 2 1990 0.0 0.0 0.0 0.0 -5.0 -20.6 486.0 2.9 347.0 -20.8",
+            )
+            .replace(
+                "2 1 2000 0.0 0.0 0.0 0.0 10.0 1.0 190.0 2.5 170.0 -2.0",
+                "19 2 1990 0.0 0.0 0.0 0.0 1.1 -19.4 503.0 2.4 59.0 -19.3",
+            );
+        let climate = parse_climate_from_str(&wbval02_climate, ClimateParserMode::Strict)
+            .expect("WBVAL02 source-radiation fixture should parse");
+        let context = simimpl28_winter_context(0.0);
+        let error =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect_err("daily source radiation above sunmap potential should fail closed");
+
+        match error {
+            ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
+                symbol,
+                value,
+                allowed,
+            } => {
+                assert_eq!(symbol, "radly");
+                assert!((value - 486.0).abs() < 1e-12);
+                assert!(
+                    allowed.contains("baseline sunmap horizontal daily potential"),
+                    "unexpected allowed domain {allowed}"
+                );
+            }
+            other => panic!("expected daily source-radiation guard error, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn climate_runtime_surface_with_context_rejects_physically_impossible_radiation() {
         let high_radiation_climate =
             VALID_CLIMATE.replace("12.0 2.0 200.0", "12.0 2.0 6000.0");
         let climate = parse_climate_from_str(&high_radiation_climate, ClimateParserMode::Strict)
@@ -1837,20 +1876,14 @@ mod tests {
                 value,
                 allowed,
             } => {
+                assert_eq!(symbol, "radly");
+                assert!((value - 6000.0).abs() < 1e-12);
                 assert!(
-                    symbol.starts_with("winter.hourly.rad_mj_m2_"),
-                    "unexpected symbol {symbol}"
-                );
-                assert!(
-                    value > 5.0,
-                    "overlarge finite radiation should trip the physical flux guard, got {value}"
-                );
-                assert!(
-                    allowed.contains("physical hourly extraterrestrial"),
+                    allowed.contains("baseline sunmap horizontal daily potential"),
                     "unexpected allowed domain {allowed}"
                 );
             }
-            other => panic!("expected physical hourly radiation guard error, got {other:?}"),
+            other => panic!("expected physical radiation guard error, got {other:?}"),
         }
     }
 

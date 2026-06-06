@@ -16,7 +16,9 @@ State as of `2026-06-06`:
   on a newly named source lane.
 
 Active work sequence (each rung adds one mechanism on an already-closed
-foundation; boundaries are closure gates, not calendar phases):
+foundation; boundaries are closure gates, not calendar phases). WBVAL02 and
+WBVAL03 are Defect-Closure ExecPlan unblockers created from WBVAL01 evidence;
+they are bounded defect closures, not a return to diagnostic relay packages:
 
 1. **WBVAL01** *(executed-hold)* — validation/characterization of single-OFE
    water-balance **conservation closure** on a real CLIGEN daily (non-breakpoint)
@@ -28,11 +30,27 @@ foundation; boundaries are closure gates, not calendar phases):
    `HKERNEL-WB11-PERC-E-003`). This grounds frost targets for emitted ledgers
    while preserving a required follow-on unblocker for the domain-guarded
    hillslopes and the missing year-1 initial-storage surface.
-2. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
+2. **WBVAL02-SIMIMPL28-RADBOUND** *(complete: validated invalid upstream input)* — closed defect
+   `WBVAL02-CLIM-RUNTIME-E-017-RADBOUND` for the six WBVAL01 radiation-bound
+   fail-closed single-OFE hillslopes (`p2`, `p4`, `p6`, `p9`, `p14`, `p17`).
+   The shared DRIGGS daily climate record is invalid at the active SIMIMPL28
+   source seam: on `1990-02-18`, `radly=486 Ly d^-1` exceeds baseline `sunmap`
+   horizontal potential `r3=453.068716 Ly d^-1`. WBVAL02 amended
+   `SC-CLIMATE-001`, added contract tests, and moved the fail-closed evidence
+   to typed source symbol `radly`; no radiation guard was loosened and no
+   snow/percolation compensation was authorized.
+3. **WBVAL03-SNOWMELT-WB-CLOSURE** *(queued DC-ExecPlan)* — close the four
+   WBVAL01 J-95 `HKERNEL-WB11-PERC-E-003` fail-closed hillslopes (`p7`, `p11`,
+   `p18`, `p20`) and attribute the emitted-ledger conservation residual using a
+   complete water-balance identity. Authority/write-set is
+   snowmelt/storage/percolation/WAT publication. The closure leak is
+   diagnostic-first only inside the package; it is not a diagnostic-only
+   package.
+4. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
    vertical balance, on single-OFE geometry with no routing to alias it.
-3. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
+5. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-gated.
-4. **snow** — seasonal forcing **magnitude** correctness (the suspended route
+6. **snow** — seasonal forcing **magnitude** correctness (the suspended route
    above), judged last against a fully closed, routed balance.
 
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
@@ -52,6 +70,24 @@ single-OFE fully settles it).
     evaluation, validated H1/H7/H39 trace closure, ran a 39/39 release-binary
     hillslope batch, closed the combined `57` timing-seam carried rows, and
     recorded dual review, verification, and handoff.
+- `20260606-wbval02-simimpl28-radbound-defect-closure-001/`
+  - Purpose: close the six WBVAL01 `CLIM-RUNTIME-E-017` radiation-bound
+    fail-closed single-OFE hillslopes as a Defect-Closure ExecPlan under the
+    climate/SIMIMPL28 authority envelope.
+  - Status: complete; WBVAL02 reclassified all six as invalid upstream daily
+    radiation with typed `radly` evidence, amended `SC-CLIMATE-001`, added
+    contract-derived regressions, validated the six wrappers against the
+    release CLI, and recorded dual review, verification, disposition, and an
+    upstream input-boundary handoff.
+- `20260606-wbval03-snowmelt-wb-closure-defect-closure-001/`
+  - Purpose: close the four WBVAL01 J-95 `HKERNEL-WB11-PERC-E-003`
+    fail-closed hillslopes and the emitted-ledger conservation residual as a
+    Defect-Closure ExecPlan under the snowmelt/percolation/water-balance
+    authority envelope.
+  - Status: queued; package scaffold declares correction authority envelope,
+    conversion rule, seven-gate bar, legitimate `HOLD` boundaries, symptom
+    existence gate for the closure leak, active kickoff prompt, and queued
+    artifacts.
 - `20260606-hphys0319-fixed-baseline-stmtim-observe-recovery-001/`
   - Purpose: recover fixed-baseline `stmtim.for` observe values for the 2013
     day 11 hour 11 H1/H7/H39 route, pair them with regenerated OpenWEPP
