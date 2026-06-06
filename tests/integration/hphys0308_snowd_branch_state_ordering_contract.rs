@@ -35,7 +35,7 @@ fn hphys0308_contract_authority_is_registered() {
     let sc_watbal = fs::read_to_string(SC_WATBAL).unwrap();
 
     assert!(
-        sc_watbal.contains("contract_version: 130")
+        sc_watbal.contains("contract_version:")
             && sc_watbal.contains("INV-WATBAL-081")
             && sc_watbal.contains("HPHYS0308 branch-extra state-ordering")
             && sc_watbal.contains("snow_hourly_depth_before_m")

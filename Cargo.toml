@@ -516,6 +516,10 @@ name = "hphys0308_snowd_branch_state_ordering_contract"
 path = "tests/integration/hphys0308_snowd_branch_state_ordering_contract.rs"
 
 [[test]]
+name = "hphys0309_snow_carry_depletion_lineage_contract"
+path = "tests/integration/hphys0309_snow_carry_depletion_lineage_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

@@ -1,5 +1,15 @@
 # Work Packages
 
+- `20260605-hphys0309-snow-carry-depletion-lineage-closure-001/`
+  - Purpose: execute the HPHYS0308 required continuation by comparing
+    fixed-comparator prior-day/hour snow carry state against openWEPP
+    day-start runtime and hourly before/after depletion timing for the `58`
+    baseline-extra snow-state carry holds before any branch-predicate,
+    melt-term, or downstream water-balance edit.
+  - Status: executed-hold; diagnostics classified all `58` HPHYS0308
+    snow-state carry holds as prior carry-state lineage (`45`
+    `pre-day-carry-deficit-hold`, `13` `prior-day-openwepp-meltout-hold`) and
+    authorized no production edits.
 - `20260605-hphys0308-snowd-branch-predicate-state-ordering-closure-001/`
   - Purpose: execute the HPHYS0307 required continuation by extracting exact
     branch-extra key state surfaces and predicate outcomes from fixed-baseline
