@@ -1,5 +1,42 @@
 # Work Packages
 
+## Current roadmap (read first)
+
+State as of `2026-06-06`:
+
+- HPHYS0320 **closed the SIMIMPL28 storm-start timing seam** (`wnttim < 1.0 -> 1.0`,
+  `INV-CLIMATE-018`). This was the first real forcing correction of the entire
+  HPHYS0298->0320 snow-comparator arc — and it was a **climate-forcing timing
+  defect, not snow physics**. The snow surface was only where the symptom showed.
+- The HPHYS0298->0320 snow/`RM` comparator route (the combined `57` carried rows)
+  is **SUSPENDED behind** `docs/backlog/20260605-snow-code-deferred-science-review.md`,
+  per ADR-0017 (comparator is a flag, not a target) and the agreed work sequence.
+  **Do not open HPHYS0321 to continue that route.** Reopening it requires the
+  backlog science review to be promoted first, or contradictory baseline evidence
+  on a newly named source lane.
+
+Active work sequence (each rung adds one mechanism on an already-closed
+foundation; boundaries are closure gates, not calendar phases):
+
+1. **WBVAL01** *(next pickup)* — validation/characterization of single-OFE
+   water-balance **conservation closure** on a real CLIGEN daily (non-breakpoint)
+   Rocky Mountain run (`/wc1/runs/in/indispensable-presenter`, DRIGGS ID, 23
+   hillslopes). Grounds rung-2 on a real, independent surface instead of the
+   synthetic `unpalatable-rind` H1..H39 lane. Produces concrete single-OFE WB
+   closure targets.
+2. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
+   vertical balance, on single-OFE geometry with no routing to alias it.
+3. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
+   vertically closed and frost-gated.
+4. **snow** — seasonal forcing **magnitude** correctness (the suspended route
+   above), judged last against a fully closed, routed balance.
+
+Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
+(is the forcing physically right) and not comparator-match. See memory
+`project-work-sequencing-wb-frost-mofe-snow` for the rationale and the two
+ladder invariants (single-before-MOFE hard dependency; frost is per-column so
+single-OFE fully settles it).
+
 - `20260606-hphys0320-stmtim-start-time-source-line-closure-001/`
   - Purpose: close the HPHYS0319 `stmtim-active-interval-divergence-hold` by
     source-line classifying baseline `winter.for` storm-start normalization
