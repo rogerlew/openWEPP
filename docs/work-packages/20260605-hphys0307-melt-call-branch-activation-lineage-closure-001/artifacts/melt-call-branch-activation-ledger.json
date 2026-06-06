@@ -1,0 +1,368 @@
+[
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 1,
+    "baseline_extra_examples": [
+      {
+        "hour": 2,
+        "julian": 126,
+        "year": 2013
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 1,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 241,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "first-abs-storage-ge-10mm"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 8,
+    "baseline_extra_examples": [
+      {
+        "hour": 13,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 14,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 15,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 16,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 17,
+        "julian": 145,
+        "year": 2014
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 1,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 564,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "spring-2014"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 15,
+    "baseline_extra_examples": [
+      {
+        "hour": 23,
+        "julian": 108,
+        "year": 2016
+      },
+      {
+        "hour": 24,
+        "julian": 108,
+        "year": 2016
+      },
+      {
+        "hour": 1,
+        "julian": 109,
+        "year": 2016
+      },
+      {
+        "hour": 2,
+        "julian": 109,
+        "year": 2016
+      },
+      {
+        "hour": 3,
+        "julian": 109,
+        "year": 2016
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 1,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 118,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "spring-2016"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 0,
+    "baseline_extra_examples": [],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 7,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 1,
+    "openwepp_extra_examples": [
+      {
+        "hour": 20,
+        "julian": 126,
+        "year": 2013
+      }
+    ],
+    "production_edit_authorized": false,
+    "required_next_action": "openWEPP published branch-active for at least one key absent from fixed-baseline melt.for observations; inspect state ordering and baseline snowd branch predicates before edits.",
+    "route": "openwepp-extra-melt-call-hold",
+    "shared_active_count": 259,
+    "source_classification": "openwepp-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "first-abs-storage-ge-10mm"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 7,
+    "baseline_extra_examples": [
+      {
+        "hour": 12,
+        "julian": 146,
+        "year": 2014
+      },
+      {
+        "hour": 13,
+        "julian": 146,
+        "year": 2014
+      },
+      {
+        "hour": 14,
+        "julian": 146,
+        "year": 2014
+      },
+      {
+        "hour": 15,
+        "julian": 146,
+        "year": 2014
+      },
+      {
+        "hour": 16,
+        "julian": 146,
+        "year": 2014
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 7,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 587,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "spring-2014"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 9,
+    "baseline_extra_examples": [
+      {
+        "hour": 6,
+        "julian": 111,
+        "year": 2016
+      },
+      {
+        "hour": 7,
+        "julian": 111,
+        "year": 2016
+      },
+      {
+        "hour": 8,
+        "julian": 111,
+        "year": 2016
+      },
+      {
+        "hour": 9,
+        "julian": 111,
+        "year": 2016
+      },
+      {
+        "hour": 10,
+        "julian": 111,
+        "year": 2016
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 7,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 173,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "spring-2016"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 0,
+    "baseline_extra_examples": [],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 39,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Branch-active masks match; open same-hour source-ordering work for cmelt/snodpt.",
+    "route": "same-hour-multi-source-hold",
+    "shared_active_count": 168,
+    "source_classification": "matched-branch-active-same-hour-multi-source",
+    "upstream_branch_active_status": "branch-active-mask-closed",
+    "upstream_first_divergent_source": "same-hour-multi-source:cmelt,snodpt",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "first-abs-storage-ge-10mm"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 9,
+    "baseline_extra_examples": [
+      {
+        "hour": 10,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 11,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 12,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 13,
+        "julian": 145,
+        "year": 2014
+      },
+      {
+        "hour": 14,
+        "julian": 145,
+        "year": 2014
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 39,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 561,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "spring-2014"
+  },
+  {
+    "baseline_branch_sources": [
+      "/workdir/wepp-forest_260430_baseline/src/winter.for",
+      "/workdir/wepp-forest_260430_baseline/src/snowd.for"
+    ],
+    "baseline_extra_count": 9,
+    "baseline_extra_examples": [
+      {
+        "hour": 10,
+        "julian": 109,
+        "year": 2016
+      },
+      {
+        "hour": 11,
+        "julian": 109,
+        "year": 2016
+      },
+      {
+        "hour": 12,
+        "julian": 109,
+        "year": 2016
+      },
+      {
+        "hour": 13,
+        "julian": 109,
+        "year": 2016
+      },
+      {
+        "hour": 14,
+        "julian": 109,
+        "year": 2016
+      }
+    ],
+    "fixed_comparator_commit": "47ac4c32faeea81bb99081f955a14c38b815ef4d",
+    "hillslope_id": 39,
+    "openwepp_branch_source": "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "openwepp_extra_count": 0,
+    "openwepp_extra_examples": [],
+    "production_edit_authorized": false,
+    "required_next_action": "Baseline reached melt.for for at least one key where openWEPP published snow_hourly_melt_branch_active=false; inspect and port baseline winter/snowd branch predicates before numeric term edits.",
+    "route": "baseline-extra-melt-call-hold",
+    "shared_active_count": 129,
+    "source_classification": "baseline-extra-melt-call",
+    "upstream_branch_active_status": "branch-active-mask-gap",
+    "upstream_first_divergent_source": "melt-call-mask",
+    "upstream_source_ledger": "HPHYS0306 branch-active melt-term ledger",
+    "window": "spring-2016"
+  }
+]

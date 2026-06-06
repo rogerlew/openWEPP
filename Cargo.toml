@@ -508,6 +508,14 @@ name = "hphys0306_baseline_melt_observe_semantics_contract"
 path = "tests/integration/hphys0306_baseline_melt_observe_semantics_contract.rs"
 
 [[test]]
+name = "hphys0307_melt_call_branch_activation_contract"
+path = "tests/integration/hphys0307_melt_call_branch_activation_contract.rs"
+
+[[test]]
+name = "hphys0308_snowd_branch_state_ordering_contract"
+path = "tests/integration/hphys0308_snowd_branch_state_ordering_contract.rs"
+
+[[test]]
 name = "auth03_level4_constitutive_gate_contract"
 path = "tests/integration/auth03_level4_constitutive_gate_contract.rs"
 

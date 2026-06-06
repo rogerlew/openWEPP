@@ -1,5 +1,24 @@
 # Work Packages
 
+- `20260605-hphys0308-snowd-branch-predicate-state-ordering-closure-001/`
+  - Purpose: execute the HPHYS0307 required continuation by extracting exact
+    branch-extra key state surfaces and predicate outcomes from fixed-baseline
+    `winter.for`/`snowd.for` observe data and openWEPP
+    `snow_hourly_melt_branch_active` traces before any melt-term or downstream
+    water-balance edit.
+  - Status: executed-hold; key-level diagnostics classified `58`
+    baseline-extra keys as `snow-state-carry-depletion-hold`, one H7
+    first-2013 openWEPP-extra key as `baseline-branch-instrumentation-hold`,
+    and authorized no production edits.
+- `20260605-hphys0307-melt-call-branch-activation-lineage-closure-001/`
+  - Purpose: execute the HPHYS0306 required continuation by comparing fixed
+    baseline `winter.for`/`snowd.for` melt-call branch activation against
+    openWEPP `snow_hourly_melt_branch_active` publication semantics before any
+    numeric melt-term correction or downstream compensation.
+  - Status: executed-hold; HPHYS0307 classified seven rows as
+    `baseline-extra-melt-call-hold`, one H7 first-2013 row as
+    `openwepp-extra-melt-call-hold`, and H39 first-2013 as
+    `same-hour-multi-source-hold`, with no production edit authorized.
 - `20260605-hphys0306-baseline-melt-term-observe-semantics-closure-001/`
   - Purpose: close the HPHYS0305 missing-`amelt` blocker by making
     branch-active/inactive fixed-baseline melt-term observe semantics explicit,
