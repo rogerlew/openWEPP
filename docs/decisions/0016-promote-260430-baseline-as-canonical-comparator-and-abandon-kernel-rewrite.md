@@ -5,6 +5,7 @@
 **Deciders:** Roger Lew, Codex
 **Author of draft:** Claude Code (disposition; deciders ratify Accepted)
 **Amends:** [ADR-0012](0012-legacy-wepp-260430-baseline-anchor.md)
+**Amended By:** [ADR-0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) (proposed) — re-pins operational distrust; comparator is a flag, not a target
 
 ## Context
 
