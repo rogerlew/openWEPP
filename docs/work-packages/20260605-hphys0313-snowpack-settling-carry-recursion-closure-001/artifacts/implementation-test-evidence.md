@@ -20,5 +20,5 @@ Ran:
   identity for H1/H7/H39, and emitted the split-route ledger/method/source
   artifacts.
 - Ledger result: `6` HPHYS0312 groups, `57` represented HPHYS0309 rows,
-  `3` `cold-driftg-addition-lineage-hold`, `3`
+  `3` `hourly-snowfall-input-lineage-hold`, `3`
   `recursive-year-start-inherited-state-hold`, `0` production edits authorized.

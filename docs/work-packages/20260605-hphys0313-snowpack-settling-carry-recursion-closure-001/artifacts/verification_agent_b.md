@@ -30,6 +30,7 @@ Findings and resolution:
     `.ruff_cache` entries.
 - VB-004: ledger/gate counts were internally consistent: `6` groups, `57`
   represented rows, split routes `3`/`3`, and `0` production edits authorized.
+  This remains true after C-001 route reclassification.
 
 Ran:
 

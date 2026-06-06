@@ -2,13 +2,13 @@
   {
     "affected_hphys0309_rows": 8,
     "hillslope_id": 1,
-    "hphys0313_route": "cold-driftg-addition-lineage-hold",
+    "hphys0313_route": "hourly-snowfall-input-lineage-hold",
     "production_edit_authorized": false,
     "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
     "recursive_scan": null,
     "scan_year": 2013,
     "settling_reconstruction": {
-      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane",
+      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta follows positive baseline hrsnow in the snowing M3 branch while openWEPP records zero hourly snowfall",
       "first_high_precision_material_divergence": {
         "baseline_density_after_kg_m3": 145.94224548339844,
         "baseline_depth_after_m": 0.23210395872592926,
@@ -35,23 +35,31 @@
           "expected_density_after_kg_m3": 146.09026762652482,
           "expected_depth_after_m": 0.23135849474733344,
           "expected_setf_from_wdayct": 1.005638974646035,
+          "final_depth_increment_m": 0.0007454603910446167,
           "hrsnow_m": 0.0007454545120708644,
-          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "m3_branch": "snowing",
           "setf": 1.0056389570236206,
           "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
           "wdayct": 1.0,
           "wdayct_at_setf": 1.0
         },
         "comparison": {
-          "baseline_driftg_final_addition_present": true,
-          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "baseline_final_depth_increment_m": 0.0007454603910446167,
+          "baseline_hrsnow_m": 0.0007454545120708644,
+          "baseline_m3_branch": "snowing",
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour",
           "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
           "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
-          "openwepp_matches_post_settling_before_driftg": true,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "no_snow_drift_lineage_candidate": false,
+          "openwepp_hourly_snowfall_depth_m": 0.0,
+          "openwepp_matches_post_settling_before_final_addition": true,
           "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
           "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
           "settling_equation_reconstruction_parity": true,
-          "source_owned_driftg_lineage_candidate": true
+          "snowfall_depth_delta_openwepp_minus_baseline_m": -0.0007454545120708644,
+          "snowfall_input_lineage_candidate": true
         },
         "key": {
           "hour": 11,
@@ -93,23 +101,31 @@
           "expected_density_after_kg_m3": 146.09026762652482,
           "expected_depth_after_m": 0.23135849474733344,
           "expected_setf_from_wdayct": 1.005638974646035,
+          "final_depth_increment_m": 0.0007454603910446167,
           "hrsnow_m": 0.0007454545120708644,
-          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "m3_branch": "snowing",
           "setf": 1.0056389570236206,
           "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
           "wdayct": 1.0,
           "wdayct_at_setf": 1.0
         },
         "comparison": {
-          "baseline_driftg_final_addition_present": true,
-          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "baseline_final_depth_increment_m": 0.0007454603910446167,
+          "baseline_hrsnow_m": 0.0007454545120708644,
+          "baseline_m3_branch": "snowing",
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour",
           "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
           "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
-          "openwepp_matches_post_settling_before_driftg": true,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "no_snow_drift_lineage_candidate": false,
+          "openwepp_hourly_snowfall_depth_m": 0.0,
+          "openwepp_matches_post_settling_before_final_addition": true,
           "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
           "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
           "settling_equation_reconstruction_parity": true,
-          "source_owned_driftg_lineage_candidate": true
+          "snowfall_depth_delta_openwepp_minus_baseline_m": -0.0007454545120708644,
+          "snowfall_input_lineage_candidate": true
         },
         "key": {
           "hour": 11,
@@ -146,7 +162,7 @@
         "year": 2013
       },
       "production_edit_authorized": false,
-      "route": "cold-driftg-addition-lineage-hold",
+      "route": "hourly-snowfall-input-lineage-hold",
       "source_owned_openwepp_defect_proven": false
     },
     "source_hphys0312_route": "settling-depth-update-hold",
@@ -162,7 +178,8 @@
         "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
       ],
       "03_kernel_support_00_support_helpers.rs:3914-3924": [
-        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3918"
       ],
       "snowd.for:122-139": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
@@ -185,6 +202,9 @@
       "snowd.for:145-146": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:166-172": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:167"
       ],
       "snowd.for:310-312": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
@@ -271,7 +291,8 @@
         "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
       ],
       "03_kernel_support_00_support_helpers.rs:3914-3924": [
-        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3918"
       ],
       "snowd.for:122-139": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
@@ -295,6 +316,9 @@
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
       ],
+      "snowd.for:166-172": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:167"
+      ],
       "snowd.for:310-312": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
       ],
@@ -312,13 +336,13 @@
   {
     "affected_hphys0309_rows": 7,
     "hillslope_id": 7,
-    "hphys0313_route": "cold-driftg-addition-lineage-hold",
+    "hphys0313_route": "hourly-snowfall-input-lineage-hold",
     "production_edit_authorized": false,
     "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
     "recursive_scan": null,
     "scan_year": 2013,
     "settling_reconstruction": {
-      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane",
+      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta follows positive baseline hrsnow in the snowing M3 branch while openWEPP records zero hourly snowfall",
       "first_high_precision_material_divergence": {
         "baseline_density_after_kg_m3": 145.67596435546875,
         "baseline_depth_after_m": 0.23611217737197876,
@@ -345,23 +369,31 @@
           "expected_density_after_kg_m3": 145.82062822127457,
           "expected_depth_after_m": 0.23536671392441494,
           "expected_setf_from_wdayct": 1.005638974646035,
+          "final_depth_increment_m": 0.0007454603910446167,
           "hrsnow_m": 0.0007454545120708644,
-          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "m3_branch": "snowing",
           "setf": 1.0056389570236206,
           "settling_depth_reconstruction_residual_m": -3.0565192044029743e-09,
           "wdayct": 1.0,
           "wdayct_at_setf": 1.0
         },
         "comparison": {
-          "baseline_driftg_final_addition_present": true,
-          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "baseline_final_depth_increment_m": 0.0007454603910446167,
+          "baseline_hrsnow_m": 0.0007454545120708644,
+          "baseline_m3_branch": "snowing",
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour",
           "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14468522545868723,
           "final_depth_delta_openwepp_minus_baseline_m": -0.0007457325136988602,
-          "openwepp_matches_post_settling_before_driftg": true,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "no_snow_drift_lineage_candidate": false,
+          "openwepp_hourly_snowfall_depth_m": 0.0,
+          "openwepp_matches_post_settling_before_final_addition": true,
           "settling_density_delta_openwepp_minus_baseline_kg_m3": 1.664635712472773e-05,
           "settling_depth_delta_openwepp_minus_baseline_m": -2.721226542434785e-07,
           "settling_equation_reconstruction_parity": true,
-          "source_owned_driftg_lineage_candidate": true
+          "snowfall_depth_delta_openwepp_minus_baseline_m": -0.0007454545120708644,
+          "snowfall_input_lineage_candidate": true
         },
         "key": {
           "hour": 11,
@@ -403,23 +435,31 @@
           "expected_density_after_kg_m3": 145.82062822127457,
           "expected_depth_after_m": 0.23536671392441494,
           "expected_setf_from_wdayct": 1.005638974646035,
+          "final_depth_increment_m": 0.0007454603910446167,
           "hrsnow_m": 0.0007454545120708644,
-          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "m3_branch": "snowing",
           "setf": 1.0056389570236206,
           "settling_depth_reconstruction_residual_m": -3.0565192044029743e-09,
           "wdayct": 1.0,
           "wdayct_at_setf": 1.0
         },
         "comparison": {
-          "baseline_driftg_final_addition_present": true,
-          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "baseline_final_depth_increment_m": 0.0007454603910446167,
+          "baseline_hrsnow_m": 0.0007454545120708644,
+          "baseline_m3_branch": "snowing",
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour",
           "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14468522545868723,
           "final_depth_delta_openwepp_minus_baseline_m": -0.0007457325136988602,
-          "openwepp_matches_post_settling_before_driftg": true,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "no_snow_drift_lineage_candidate": false,
+          "openwepp_hourly_snowfall_depth_m": 0.0,
+          "openwepp_matches_post_settling_before_final_addition": true,
           "settling_density_delta_openwepp_minus_baseline_kg_m3": 1.664635712472773e-05,
           "settling_depth_delta_openwepp_minus_baseline_m": -2.721226542434785e-07,
           "settling_equation_reconstruction_parity": true,
-          "source_owned_driftg_lineage_candidate": true
+          "snowfall_depth_delta_openwepp_minus_baseline_m": -0.0007454545120708644,
+          "snowfall_input_lineage_candidate": true
         },
         "key": {
           "hour": 11,
@@ -456,7 +496,7 @@
         "year": 2013
       },
       "production_edit_authorized": false,
-      "route": "cold-driftg-addition-lineage-hold",
+      "route": "hourly-snowfall-input-lineage-hold",
       "source_owned_openwepp_defect_proven": false
     },
     "source_hphys0312_route": "settling-depth-update-hold",
@@ -472,7 +512,8 @@
         "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
       ],
       "03_kernel_support_00_support_helpers.rs:3914-3924": [
-        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3918"
       ],
       "snowd.for:122-139": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
@@ -495,6 +536,9 @@
       "snowd.for:145-146": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:166-172": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:167"
       ],
       "snowd.for:310-312": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
@@ -581,7 +625,8 @@
         "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
       ],
       "03_kernel_support_00_support_helpers.rs:3914-3924": [
-        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3918"
       ],
       "snowd.for:122-139": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
@@ -605,6 +650,9 @@
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
       ],
+      "snowd.for:166-172": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:167"
+      ],
       "snowd.for:310-312": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
       ],
@@ -622,13 +670,13 @@
   {
     "affected_hphys0309_rows": 9,
     "hillslope_id": 39,
-    "hphys0313_route": "cold-driftg-addition-lineage-hold",
+    "hphys0313_route": "hourly-snowfall-input-lineage-hold",
     "production_edit_authorized": false,
     "prohibited_compensation_note": "No downstream compensation is authorized; branch-predicate, melt-term, WB13, WB17, WB18, WB19, and WB12 edits remain invalid.",
     "recursive_scan": null,
     "scan_year": 2013,
     "settling_reconstruction": {
-      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane",
+      "classification_reason": "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta follows positive baseline hrsnow in the snowing M3 branch while openWEPP records zero hourly snowfall",
       "first_high_precision_material_divergence": {
         "baseline_density_after_kg_m3": 145.94224548339844,
         "baseline_depth_after_m": 0.23210395872592926,
@@ -655,23 +703,31 @@
           "expected_density_after_kg_m3": 146.09026762652482,
           "expected_depth_after_m": 0.23135849474733344,
           "expected_setf_from_wdayct": 1.005638974646035,
+          "final_depth_increment_m": 0.0007454603910446167,
           "hrsnow_m": 0.0007454545120708644,
-          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "m3_branch": "snowing",
           "setf": 1.0056389570236206,
           "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
           "wdayct": 1.0,
           "wdayct_at_setf": 1.0
         },
         "comparison": {
-          "baseline_driftg_final_addition_present": true,
-          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "baseline_final_depth_increment_m": 0.0007454603910446167,
+          "baseline_hrsnow_m": 0.0007454545120708644,
+          "baseline_m3_branch": "snowing",
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour",
           "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
           "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
-          "openwepp_matches_post_settling_before_driftg": true,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "no_snow_drift_lineage_candidate": false,
+          "openwepp_hourly_snowfall_depth_m": 0.0,
+          "openwepp_matches_post_settling_before_final_addition": true,
           "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
           "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
           "settling_equation_reconstruction_parity": true,
-          "source_owned_driftg_lineage_candidate": true
+          "snowfall_depth_delta_openwepp_minus_baseline_m": -0.0007454545120708644,
+          "snowfall_input_lineage_candidate": true
         },
         "key": {
           "hour": 11,
@@ -713,23 +769,31 @@
           "expected_density_after_kg_m3": 146.09026762652482,
           "expected_depth_after_m": 0.23135849474733344,
           "expected_setf_from_wdayct": 1.005638974646035,
+          "final_depth_increment_m": 0.0007454603910446167,
           "hrsnow_m": 0.0007454545120708644,
-          "inferred_driftg_addition_m": 0.0007454603910446167,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "m3_branch": "snowing",
           "setf": 1.0056389570236206,
           "settling_depth_reconstruction_residual_m": -3.58755120055676e-09,
           "wdayct": 1.0,
           "wdayct_at_setf": 1.0
         },
         "comparison": {
-          "baseline_driftg_final_addition_present": true,
-          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth",
+          "baseline_final_depth_increment_m": 0.0007454603910446167,
+          "baseline_hrsnow_m": 0.0007454545120708644,
+          "baseline_m3_branch": "snowing",
+          "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour",
           "final_density_delta_openwepp_minus_baseline_kg_m3": 0.14816344337612009,
           "final_depth_delta_openwepp_minus_baseline_m": -0.0007458237617381513,
-          "openwepp_matches_post_settling_before_driftg": true,
+          "inferred_driftf_plus_driftg_m": 5.878973752260208e-09,
+          "no_snow_drift_lineage_candidate": false,
+          "openwepp_hourly_snowfall_depth_m": 0.0,
+          "openwepp_matches_post_settling_before_final_addition": true,
           "settling_density_delta_openwepp_minus_baseline_kg_m3": 0.0001379306808075853,
           "settling_depth_delta_openwepp_minus_baseline_m": -3.633706935346481e-07,
           "settling_equation_reconstruction_parity": true,
-          "source_owned_driftg_lineage_candidate": true
+          "snowfall_depth_delta_openwepp_minus_baseline_m": -0.0007454545120708644,
+          "snowfall_input_lineage_candidate": true
         },
         "key": {
           "hour": 11,
@@ -766,7 +830,7 @@
         "year": 2013
       },
       "production_edit_authorized": false,
-      "route": "cold-driftg-addition-lineage-hold",
+      "route": "hourly-snowfall-input-lineage-hold",
       "source_owned_openwepp_defect_proven": false
     },
     "source_hphys0312_route": "settling-depth-update-hold",
@@ -782,7 +846,8 @@
         "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
       ],
       "03_kernel_support_00_support_helpers.rs:3914-3924": [
-        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3918"
       ],
       "snowd.for:122-139": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
@@ -805,6 +870,9 @@
       "snowd.for:145-146": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:166-172": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:167"
       ],
       "snowd.for:310-312": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"
@@ -891,7 +959,8 @@
         "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3911"
       ],
       "03_kernel_support_00_support_helpers.rs:3914-3924": [
-        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914"
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3914",
+        "/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3918"
       ],
       "snowd.for:122-139": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:122"
@@ -914,6 +983,9 @@
       "snowd.for:145-146": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:145",
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:146"
+      ],
+      "snowd.for:166-172": [
+        "/workdir/wepp-forest_260430_baseline/src/snowd.for:167"
       ],
       "snowd.for:310-312": [
         "/workdir/wepp-forest_260430_baseline/src/snowd.for:311"

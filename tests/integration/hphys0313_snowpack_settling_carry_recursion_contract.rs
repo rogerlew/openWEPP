@@ -12,7 +12,7 @@ fn read(path: &str) -> String {
 #[test]
 fn hphys0313_contract_authority_is_registered() {
     let snowfreeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    assert!(snowfreeze.contains("contract_version: 42"));
+    assert!(snowfreeze.contains("contract_version: 43"));
     assert!(snowfreeze.contains("INV-SNOWFREEZE-038"));
     assert!(
         snowfreeze.contains("HPHYS0313 split-route snowpack settling/carry recursion invariant")
@@ -21,7 +21,7 @@ fn hphys0313_contract_authority_is_registered() {
     assert!(snowfreeze.contains("SC-WATBAL-001#INV-WATBAL-086"));
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert!(watbal.contains("contract_version: 135"));
+    assert!(watbal.contains("contract_version: 136"));
     assert!(watbal.contains("INV-WATBAL-086"));
     assert!(watbal.contains("HPHYS0313 split-route snowpack water-balance invariant"));
     assert!(watbal.contains("rounded observe output"));
@@ -100,8 +100,10 @@ fn hphys0313_executed_ledger_is_complete_and_hold_gated() {
     assert!(ledger.contains("recursive_scan"));
     assert!(ledger.contains("production_edit_authorized"));
     assert!(ledger.contains("false"));
-    assert!(ledger.contains("cold-driftg-addition-lineage-hold"));
+    assert!(ledger.contains("hourly-snowfall-input-lineage-hold"));
     assert!(ledger.contains("hphys0312_candidate_material_after_high_precision"));
+    assert!(ledger.contains("snowfall_input_lineage_candidate"));
+    assert!(ledger.contains("inferred_driftf_plus_driftg_m"));
     assert!(ledger.contains("recursive-"));
 
     let value: serde_json::Value = serde_json::from_str(&ledger).expect("valid ledger json");
@@ -127,6 +129,21 @@ fn hphys0313_executed_ledger_is_complete_and_hold_gated() {
         .count();
     assert_eq!(settling, 3);
     assert_eq!(recursion, 3);
+    let snowfall_lineage = rows
+        .iter()
+        .filter(|row| row["hphys0313_route"] == "hourly-snowfall-input-lineage-hold")
+        .count();
+    let recursive_year_start = rows
+        .iter()
+        .filter(|row| row["hphys0313_route"] == "recursive-year-start-inherited-state-hold")
+        .count();
+    let cold_driftg = rows
+        .iter()
+        .filter(|row| row["hphys0313_route"] == "cold-driftg-addition-lineage-hold")
+        .count();
+    assert_eq!(snowfall_lineage, 3);
+    assert_eq!(recursive_year_start, 3);
+    assert_eq!(cold_driftg, 0);
 }
 
 #[test]
@@ -141,6 +158,7 @@ fn hphys0313_source_lineage_and_patch_artifacts_verify_requirements() {
     assert!(lineage.contains("snowd.for:61-65"));
     assert!(lineage.contains("snowd.for:122-139"));
     assert!(lineage.contains("snowd.for:145-146"));
+    assert!(lineage.contains("snowd.for:166-172"));
     assert!(lineage.contains("snowd.for:310-312"));
     assert!(lineage.contains("03_kernel_support_00_support_helpers.rs:3872-3924"));
 

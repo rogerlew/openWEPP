@@ -26,3 +26,16 @@ Findings:
 Ran:
 
 - Reviewer performed static review only and did not rerun validation gates.
+
+Post-review correction review:
+
+- Reviewer: `rust_qa_reviewer`.
+- Scope: read-only QA verification of the C-001 correction for
+  `review_claude_settling_route_misattribution.md`.
+- Status: pass.
+- Finding: non-blocking debt only; focused Rust test should explicitly count
+  `hphys0313_route` values.
+- Resolution: accepted and implemented by adding explicit route-count
+  assertions for `hourly-snowfall-input-lineage-hold`,
+  `recursive-year-start-inherited-state-hold`, and absence of
+  `cold-driftg-addition-lineage-hold`.

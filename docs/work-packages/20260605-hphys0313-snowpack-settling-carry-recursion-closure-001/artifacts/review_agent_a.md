@@ -26,3 +26,16 @@ Findings:
 Ran:
 
 - Reviewer performed static review only and did not rerun validation gates.
+
+Post-review correction review:
+
+- Reviewer: `rust_code_reviewer`.
+- Scope: read-only verification of the C-001 correction for
+  `review_claude_settling_route_misattribution.md`.
+- Status: pass.
+- Finding: none.
+- Verified that C-001 is accepted and resolved, the runner branch-gates on
+  `hrsnow_m`, positive-`hrsnow` rows route to
+  `hourly-snowfall-input-lineage-hold`, contracts and handoff point to hourly
+  snowfall input lineage rather than drift migration, and the corrected ledger
+  remains `6` groups / `57` rows / `3`+`3` routes / `0` production edits.

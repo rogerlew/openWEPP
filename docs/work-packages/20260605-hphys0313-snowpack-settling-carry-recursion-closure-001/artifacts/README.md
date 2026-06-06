@@ -12,5 +12,6 @@ Evidence mode: static
 - Owned-file manifest: complete.
 - Gate results: complete.
 - Review artifacts: complete.
+- Claude settling-route misattribution review: complete.
 - Verification artifacts: complete.
 - Disposition and worker handoff: complete.

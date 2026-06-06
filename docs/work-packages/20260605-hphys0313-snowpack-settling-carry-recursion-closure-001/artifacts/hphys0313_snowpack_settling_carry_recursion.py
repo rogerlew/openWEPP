@@ -55,6 +55,7 @@ SOURCE_LINE_REQUIREMENTS = [
     (BASELINE_REPO / "src/snowd.for", 139, "snodpt(iplane) = snodpt(iplane) * densgy/ densgt", "snowd.for:139"),
     (BASELINE_REPO / "src/snowd.for", 145, "if (hrsnow(hour) .le. 0.0) then", "snowd.for:145-146"),
     (BASELINE_REPO / "src/snowd.for", 146, "snodep = snodpt(iplane) + driftg", "snowd.for:145-146"),
+    (BASELINE_REPO / "src/snowd.for", 167, "snodep = snodpt(iplane) + hrsnow(hour)+driftf+driftg", "snowd.for:166-172"),
     (BASELINE_REPO / "src/winter.for", 366, "call snowd(iresd(1,iplane)", "winter.for:366-367"),
     (BASELINE_REPO / "src/snowd.for", 311, "snodpy(iplane) = snodep", "snowd.for:310-312"),
     (REPO / "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs", 3872, "if hour == 1", "03_kernel_support_00_support_helpers.rs:3872-3877"),
@@ -62,6 +63,7 @@ SOURCE_LINE_REQUIREMENTS = [
     (REPO / "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs", 3906, "densgt = dens * setf", "03_kernel_support_00_support_helpers.rs:3906-3912"),
     (REPO / "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs", 3911, "snodpt = snodpt * dens / densgt", "03_kernel_support_00_support_helpers.rs:3906-3912"),
     (REPO / "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs", 3914, "if hrsnow <= WB11_ZERO_THRESHOLD", "03_kernel_support_00_support_helpers.rs:3914-3924"),
+    (REPO / "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs", 3918, "snodep = snodpt + hrsnow", "03_kernel_support_00_support_helpers.rs:3914-3924"),
 ]
 COMMAND_LOG: list[dict[str, Any]] = []
 
@@ -585,12 +587,27 @@ def reconstruct_settling_key(
     )
     baseline_final_depth = record.get("depth_after_cold_branch_m", record["depth_after_settling_m"])
     baseline_final_density = record.get("density_after_cold_branch_kg_m3", record["densgt_after_kg_m3"])
-    inferred_driftg_addition = baseline_final_depth - record["depth_after_settling_m"]
+    baseline_final_increment = baseline_final_depth - record["depth_after_settling_m"]
+    baseline_m3_branch = "snowing" if record["hrsnow_m"] > 0.0 else "no_snow"
+    inferred_driftf_plus_driftg = (
+        baseline_final_increment - record["hrsnow_m"]
+        if baseline_m3_branch == "snowing"
+        else baseline_final_increment
+    )
+    open_snowfall_depth = hour_value(row, "snow_hourly_snowfall_depth_m", key[2])
+    snowfall_delta = open_snowfall_depth - record["hrsnow_m"]
     final_depth_delta = open_depth_after - baseline_final_depth
     final_density_delta = open_density_after - baseline_final_density
-    source_owned = (
+    snowfall_input_lineage = (
         settling_equation_parity
-        and abs(inferred_driftg_addition) > MATERIAL_DEPTH_TOL_M
+        and baseline_m3_branch == "snowing"
+        and abs(snowfall_delta) > MATERIAL_DEPTH_TOL_M
+        and abs(open_residual) <= SETTLING_RECON_TOL
+    )
+    no_snow_drift_lineage = (
+        settling_equation_parity
+        and baseline_m3_branch == "no_snow"
+        and abs(inferred_driftf_plus_driftg) > MATERIAL_DEPTH_TOL_M
         and abs(open_residual) <= SETTLING_RECON_TOL
     )
     return {
@@ -605,7 +622,9 @@ def reconstruct_settling_key(
             "settling_depth_reconstruction_residual_m": baseline_residual,
             "depth_after_cold_branch_m": baseline_final_depth,
             "density_after_cold_branch_kg_m3": baseline_final_density,
-            "inferred_driftg_addition_m": inferred_driftg_addition,
+            "m3_branch": baseline_m3_branch,
+            "final_depth_increment_m": baseline_final_increment,
+            "inferred_driftf_plus_driftg_m": inferred_driftf_plus_driftg,
         },
         "openwepp": {
             "settle_day_count_used": open_settle_day_count,
@@ -617,7 +636,7 @@ def reconstruct_settling_key(
             "expected_depth_after_m": open_expected_depth,
             "depth_after_m": open_depth_after,
             "settling_depth_reconstruction_residual_m": open_residual,
-            "snowfall_depth_m": hour_value(row, "snow_hourly_snowfall_depth_m", key[2]),
+            "snowfall_depth_m": open_snowfall_depth,
             "raw_melt_m": hour_value(row, "snow_hourly_melt_raw_m", key[2]),
         },
         "comparison": {
@@ -628,13 +647,24 @@ def reconstruct_settling_key(
             "final_depth_delta_openwepp_minus_baseline_m": final_depth_delta,
             "final_density_delta_openwepp_minus_baseline_kg_m3": final_density_delta,
             "settling_equation_reconstruction_parity": settling_equation_parity,
-            "baseline_driftg_final_addition_present": abs(inferred_driftg_addition)
-            > MATERIAL_DEPTH_TOL_M,
-            "openwepp_matches_post_settling_before_driftg": abs(open_residual) <= SETTLING_RECON_TOL,
-            "source_owned_driftg_lineage_candidate": source_owned,
-            "classification_reason": "baseline and openWEPP settling equations reconstruct internally through post-settling depth, then baseline adds driftg in the cold no-snow branch while openWEPP remains at post-settling depth"
-            if source_owned
-            else "settling/driftg reconstruction remains unresolved",
+            "baseline_m3_branch": baseline_m3_branch,
+            "baseline_final_depth_increment_m": baseline_final_increment,
+            "baseline_hrsnow_m": record["hrsnow_m"],
+            "openwepp_hourly_snowfall_depth_m": open_snowfall_depth,
+            "snowfall_depth_delta_openwepp_minus_baseline_m": snowfall_delta,
+            "inferred_driftf_plus_driftg_m": inferred_driftf_plus_driftg,
+            "no_snow_drift_lineage_candidate": no_snow_drift_lineage,
+            "snowfall_input_lineage_candidate": snowfall_input_lineage,
+            "openwepp_matches_post_settling_before_final_addition": abs(open_residual) <= SETTLING_RECON_TOL,
+            "classification_reason": (
+                "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the snowing M3 branch at snowd.for:167 with positive hrsnow, while openWEPP records zero hourly snowfall at the homologous hour"
+                if snowfall_input_lineage
+                else (
+                    "baseline and openWEPP settling equations reconstruct internally through post-settling depth; baseline then executes the no-snow M3 drift branch at snowd.for:145-146"
+                    if no_snow_drift_lineage
+                    else "branch-aware settling/snowfall reconstruction remains unresolved"
+                )
+            ),
         },
     }
 
@@ -698,9 +728,13 @@ def settling_reconstruction(
     )
     first_reconstruction = reconstruct_settling_key(first_key, h313, traces)
     route = (
-        "cold-driftg-addition-lineage-hold"
-        if first_reconstruction["comparison"]["source_owned_driftg_lineage_candidate"]
-        else "settling-high-precision-reconstruction-residual-hold"
+        "hourly-snowfall-input-lineage-hold"
+        if first_reconstruction["comparison"]["snowfall_input_lineage_candidate"]
+        else (
+            "cold-drift-addition-lineage-hold"
+            if first_reconstruction["comparison"]["no_snow_drift_lineage_candidate"]
+            else "settling-high-precision-reconstruction-residual-hold"
+        )
     )
     hphys0312_candidate_material = (
         abs(hphys0312_candidate["comparison"]["settling_depth_delta_openwepp_minus_baseline_m"])
@@ -723,9 +757,13 @@ def settling_reconstruction(
         "last_high_precision_within_tolerance_state_before_first_divergence": previous_high_precision,
         "first_high_precision_reconstruction": first_reconstruction,
         "classification_reason": (
-            "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta is the baseline cold no-snow driftg addition absent from openWEPP's homologous final-depth lane"
-            if first_reconstruction["comparison"]["source_owned_driftg_lineage_candidate"]
-            else "high-precision H313 evidence keeps the first material settling/driftg divergence unresolved"
+            "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta follows positive baseline hrsnow in the snowing M3 branch while openWEPP records zero hourly snowfall"
+            if first_reconstruction["comparison"]["snowfall_input_lineage_candidate"]
+            else (
+                "high-precision H313 evidence shows the post-settling equation itself reconstructs in both implementations; the material final-state delta follows the baseline no-snow drift branch"
+                if first_reconstruction["comparison"]["no_snow_drift_lineage_candidate"]
+                else "high-precision H313 evidence keeps the first material settling/snowfall branch divergence unresolved"
+            )
         ),
     }
 
@@ -856,7 +894,7 @@ def write_markdown_artifacts(ledger: list[dict[str, Any]], identity: dict[str, A
         "Evidence mode: ran\n\n"
         "Static:\n\n"
         "- Input ledger: HPHYS0312 prior-year terminal snowpack lineage ledger.\n"
-        "- Settling route: temporary fixed-comparator instrumentation added high-precision `H313_*` observe tags in `snowd.for`, including post-settling and final cold-branch depth.\n"
+        "- Settling route: temporary fixed-comparator instrumentation added high-precision `H313_*` observe tags in `snowd.for`, including post-settling, branch input, and final cold-branch depth.\n"
         "- Carry recursion route: existing HPHYS0305 fixed observe and openWEPP traces were scanned across calendar year 2014.\n"
         "- Material thresholds remained `0.0005 m` depth and `0.5 kg m^-3` density.\n"
         "- Instrumented observe tags are diagnostic evidence only; canonical source authority remains `/workdir/wepp-forest_260430_baseline`.\n\n"
@@ -875,6 +913,7 @@ def write_markdown_artifacts(ledger: list[dict[str, Any]], identity: dict[str, A
         "- Baseline settle-day count: `/workdir/wepp-forest_260430_baseline/src/snowd.for:61-65`.",
         "- Baseline cold settling equation: `/workdir/wepp-forest_260430_baseline/src/snowd.for:122-139`.",
         "- Baseline cold no-snow `driftg` final-depth addition: `/workdir/wepp-forest_260430_baseline/src/snowd.for:145-146`.",
+        "- Baseline cold snowing branch fresh-snow/depth update: `/workdir/wepp-forest_260430_baseline/src/snowd.for:166-172`.",
         "- Baseline carry writeback: `/workdir/wepp-forest_260430_baseline/src/snowd.for:310-312`.",
         "- openWEPP settle-day count and settling equations: `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs:3872-3924`.",
         "- Temporary diagnostic instrumentation patch: `fixed-baseline-settling-instrumentation.patch`.",

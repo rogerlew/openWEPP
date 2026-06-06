@@ -26,8 +26,9 @@ Findings and resolution:
   absence now fails closed through explicit `exists()` assertions in
   `tests/integration/hphys0313_snowpack_settling_carry_recursion_contract.rs`.
 - VA-004: technical `HOLD` posture remains coherent: no production kernel
-  edits were made, and next work remains drift migration plus earlier carry
-  recursion.
+  edits were made. This verification point is superseded by C-001 for next-work
+  targeting; corrected next work is hourly snowfall input lineage plus earlier
+  carry recursion, not drift migration.
 
 Ran:
 

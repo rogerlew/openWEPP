@@ -18,8 +18,8 @@ Static:
 - Typed/fail-closed posture: complete for the diagnostic runner; missing
   required source lines and paired evidence fail closed.
 - Production edit gate: complete; no production edit was authorized or made.
-- Disposition posture: `HOLD`; source-owned drift migration and recursive
-  earlier-year carry lineage remain follow-up work.
+- Disposition posture: `HOLD`; branch-gated hourly snowfall input lineage and
+  recursive earlier-year carry lineage remain follow-up work.
 
 Ran:
 
