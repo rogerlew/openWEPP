@@ -1721,10 +1721,34 @@ mod tests {
                 )))
                 .expect("hourly snowfall symbol should exist")
                 .as_f64();
+            let stmtim_rain = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.rain_m_{hour:04}"
+                )))
+                .expect("stmtim rain control symbol should exist")
+                .as_f64();
+            let stmtim_hrrain = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.hrrain_m_{hour:04}"
+                )))
+                .expect("stmtim hrrain output symbol should exist")
+                .as_f64();
+            let stmtim_hrsnow = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.hrsnow_m_{hour:04}"
+                )))
+                .expect("stmtim hrsnow output symbol should exist")
+                .as_f64();
 
             assert!(rad.is_finite());
             assert!(temp.is_finite());
             assert!((0.0..=1.0).contains(&cloud));
+            assert!(stmtim_rain >= 0.0);
+            assert!((stmtim_hrrain - rain).abs() < 1.0e-12);
+            assert!((stmtim_hrsnow - snow).abs() < 1.0e-12);
             assert!(rain >= 0.0);
             assert!(snow >= 0.0);
             rain_total += rain;
@@ -1892,6 +1916,144 @@ mod tests {
         assert!(warm_snow.abs() < 1e-12);
         assert!(cold_snow > 0.0);
         assert!(cold_rain.abs() < 1e-12);
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn hphys0318_stmtim_control_surfaces_publish_branch_inputs_and_outputs() {
+        let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
+            .expect("strict climate fixture should parse");
+        let context = simimpl28_winter_context(100.0);
+        let surface =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect("cold-context climate surface should build");
+        let prcp = surface
+            .state_surface
+            .get(&BoundarySymbol::from("prcp"))
+            .expect("daily prcp should exist")
+            .as_f64();
+        let stmdur = surface
+            .state_surface
+            .get(&BoundarySymbol::from("stmdur"))
+            .expect("daily stmdur should exist")
+            .as_f64();
+
+        let mut active_count = 0;
+        let mut snowfall_total = 0.0;
+        let mut stmtim_hrsnow_total = 0.0;
+        for hour in 1..=24 {
+            let suffix = format!("{hour:04}");
+            let hourly_rain = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!("snow.hourly.rain_m_{suffix}")))
+                .expect("hourly rain should exist")
+                .as_f64();
+            let hourly_snow = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.snowfall_m_{suffix}"
+                )))
+                .expect("hourly snowfall should exist")
+                .as_f64();
+            let hourly_temp = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "winter.hourly.air_temp_c_{suffix}"
+                )))
+                .expect("hourly air temperature should exist")
+                .as_f64();
+            let stmtim_rain = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.rain_m_{suffix}"
+                )))
+                .expect("stmtim rain should exist")
+                .as_f64();
+            let stmtim_stmdur = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.stmdur_s_{suffix}"
+                )))
+                .expect("stmtim stmdur should exist")
+                .as_f64();
+            let stmtim_hrtemp = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.hrtemp_c_{suffix}"
+                )))
+                .expect("stmtim hrtemp should exist")
+                .as_f64();
+            let stmtim_rst = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.rst_c_{suffix}"
+                )))
+                .expect("stmtim rst should exist")
+                .as_f64();
+            let stmtim_hrrain = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.hrrain_m_{suffix}"
+                )))
+                .expect("stmtim hrrain should exist")
+                .as_f64();
+            let stmtim_hrsnow = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.hrsnow_m_{suffix}"
+                )))
+                .expect("stmtim hrsnow should exist")
+                .as_f64();
+            let active_interval = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.active_interval_{suffix}"
+                )))
+                .expect("stmtim active flag should exist")
+                .as_f64();
+            let rain_branch = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.rain_branch_{suffix}"
+                )))
+                .expect("stmtim rain branch flag should exist")
+                .as_f64();
+            let snow_branch = surface
+                .state_surface
+                .get(&BoundarySymbol::from(format!(
+                    "snow.hourly.stmtim.snow_branch_{suffix}"
+                )))
+                .expect("stmtim snow branch flag should exist")
+                .as_f64();
+
+            assert!((stmtim_rain - prcp).abs() < 1.0e-12);
+            assert!((stmtim_stmdur - stmdur).abs() < 1.0e-12);
+            assert!((stmtim_hrtemp - hourly_temp).abs() < 1.0e-12);
+            assert!((stmtim_rst - 100.0).abs() < 1.0e-12);
+            assert!((stmtim_hrrain - hourly_rain).abs() < 1.0e-12);
+            assert!((stmtim_hrsnow - hourly_snow).abs() < 1.0e-12);
+            let active_interval_is_one = (active_interval - 1.0).abs() < 1.0e-12;
+            let snow_branch_is_one = (snow_branch - 1.0).abs() < 1.0e-12;
+            assert!(active_interval.abs() < 1.0e-12 || active_interval_is_one);
+            assert!(rain_branch.abs() < 1.0e-12);
+            assert!(snow_branch.abs() < 1.0e-12 || snow_branch_is_one);
+
+            if active_interval_is_one {
+                active_count += 1;
+                assert!(snow_branch_is_one);
+                assert!(stmtim_hrsnow > 0.0);
+            } else {
+                assert!(snow_branch.abs() < 1.0e-12);
+                assert!(stmtim_hrrain.abs() < 1.0e-12);
+                assert!(stmtim_hrsnow.abs() < 1.0e-12);
+            }
+
+            snowfall_total += hourly_snow;
+            stmtim_hrsnow_total += stmtim_hrsnow;
+        }
+
+        assert!(active_count > 0);
+        assert!((stmtim_hrsnow_total - snowfall_total).abs() < 1.0e-12);
     }
 
     #[test]

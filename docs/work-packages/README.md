@@ -1,5 +1,15 @@
 # Work Packages
 
+- `20260606-hphys0318-stmtim-control-surface-instrumentation-001/`
+  - Purpose: add contract-backed OpenWEPP SIMIMPL28 `stmtim` control-surface
+    diagnostics for the 2013 day 11 hour 11 positive-`hrsnow` route while
+    preserving the HPHYS0317 no-production-edit hold.
+  - Status: executed-hold; HPHYS0318 implements OpenWEPP-side
+    `snow.hourly.stmtim.*` runtime and HPHYS0245 trace instrumentation,
+    preserves the combined `57` carried rows, records fixed-baseline paired
+    `stmtim` observe as still unavailable, assigns that recovery to HPHYS0319,
+    and authorizes no precipitation-phase, snow-producer, or downstream
+    water-balance edit.
 - `20260606-hphys0317-paired-hourly-snowfall-input-surface-parity-001/`
   - Purpose: join the HPHYS0315 spring-2014 `24` rows and HPHYS0316
     spring-2016 `33` rows under the 2013 day 11 hour 11 positive-`hrsnow`

@@ -552,6 +552,10 @@ name = "hphys0317_hourly_snowfall_input_surface_parity_contract"
 path = "tests/integration/hphys0317_hourly_snowfall_input_surface_parity_contract.rs"
 
 [[test]]
+name = "hphys0318_stmtim_control_surface_instrumentation_contract"
+path = "tests/integration/hphys0318_stmtim_control_surface_instrumentation_contract.rs"
+
+[[test]]
 name = "adr0017_comparator_distrust_ratification_contract"
 path = "tests/integration/adr0017_comparator_distrust_ratification_contract.rs"
 

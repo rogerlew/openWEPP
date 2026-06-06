@@ -29,6 +29,17 @@ struct Simimpl28SunmapResult {
     cloud_fraction: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct Simimpl28StmtimHourlyPartition {
+    hrrain_m: f64,
+    hrsnow_m: f64,
+    wntdur_h: f64,
+    wnttim_h: f64,
+    active_interval: bool,
+    rain_branch: bool,
+    snow_branch: bool,
+}
+
 #[allow(clippy::too_many_lines)]
 fn build_simimpl28_hourly_winter_forcing_symbols(
     forcing: &HillslopeClimateDailyForcing,
@@ -145,7 +156,7 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
                 allowed: "1..=24",
             }
         })?;
-        let (hrrain_m, hrsnow_m) = simimpl28_stmtim_hourly_partition(
+        let partition = simimpl28_stmtim_hourly_partition(
             rain_m,
             stmdur_s,
             f64::from(hour_u32),
@@ -183,7 +194,7 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
             climate_boundary_value(
                 "snow.hourly.rain_m",
                 ">= 0",
-                BoundaryValue::water_depth_meters(hrrain_m),
+                BoundaryValue::water_depth_meters(partition.hrrain_m),
             )?,
         );
         symbols.insert(
@@ -191,7 +202,89 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
             climate_boundary_value(
                 "snow.hourly.snowfall_m",
                 ">= 0",
-                BoundaryValue::water_depth_meters(hrsnow_m),
+                BoundaryValue::water_depth_meters(partition.hrsnow_m),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.rain_m", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.rain_m",
+                ">= 0",
+                BoundaryValue::water_depth_meters(rain_m),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.stmdur_s", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.stmdur_s",
+                ">= 0",
+                BoundaryValue::elapsed_time_seconds(stmdur_s),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.wntdur_h", hour),
+            BoundaryValue::scalar(partition.wntdur_h),
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.wnttim_h", hour),
+            BoundaryValue::scalar(partition.wnttim_h),
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.hrtemp_c", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.hrtemp_c",
+                "finite",
+                BoundaryValue::temperature_celsius(hrtemp_c),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.rst_c", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.rst_c",
+                "finite",
+                BoundaryValue::temperature_celsius(rst),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.hrrain_m", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.hrrain_m",
+                ">= 0",
+                BoundaryValue::water_depth_meters(partition.hrrain_m),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.hrsnow_m", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.hrsnow_m",
+                ">= 0",
+                BoundaryValue::water_depth_meters(partition.hrsnow_m),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.active_interval", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.active_interval",
+                "0..=1",
+                BoundaryValue::fraction_unit_interval(simimpl28_bool_flag(
+                    partition.active_interval,
+                )),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.rain_branch", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.rain_branch",
+                "0..=1",
+                BoundaryValue::fraction_unit_interval(simimpl28_bool_flag(partition.rain_branch)),
+            )?,
+        );
+        symbols.insert(
+            simimpl28_hourly_symbol("snow.hourly.stmtim.snow_branch", hour),
+            climate_boundary_value(
+                "snow.hourly.stmtim.snow_branch",
+                "0..=1",
+                BoundaryValue::fraction_unit_interval(simimpl28_bool_flag(partition.snow_branch)),
             )?,
         );
     }
@@ -237,6 +330,10 @@ fn is_binary_flag(value: f64) -> bool {
 
 fn simimpl28_hourly_symbol(root: &str, hour: usize) -> BoundarySymbol {
     BoundarySymbol::from(format!("{root}_{hour:04}"))
+}
+
+const fn simimpl28_bool_flag(value: bool) -> f64 {
+    if value { 1.0 } else { 0.0 }
 }
 
 fn simimpl28_day_of_year(day: i32, mon: i32, year: i32) -> Result<i32, ClimateRuntimeInputError> {
@@ -631,7 +728,7 @@ fn simimpl28_stmtim_hourly_partition(
     mut wnttim: f64,
     rst: f64,
     hrtemp_c: f64,
-) -> Result<(f64, f64), ClimateRuntimeInputError> {
+) -> Result<Simimpl28StmtimHourlyPartition, ClimateRuntimeInputError> {
     if !rain_m.is_finite() {
         return Err(ClimateRuntimeInputError::NonFiniteField {
             field: "prcp",
@@ -645,7 +742,15 @@ fn simimpl28_stmtim_hourly_partition(
         });
     }
     if rain_m <= 0.0001 {
-        return Ok((0.0, 0.0));
+        return Ok(Simimpl28StmtimHourlyPartition {
+            hrrain_m: 0.0,
+            hrsnow_m: 0.0,
+            wntdur_h: 0.0,
+            wnttim_h: wnttim,
+            active_interval: false,
+            rain_branch: false,
+            snow_branch: false,
+        });
     }
     let tmpvr3 = openwepp_unit_boundary::conversions::seconds_to_legacy_stmtim_hours(stmdur_s)
         .map_err(|error| match error {
@@ -685,14 +790,39 @@ fn simimpl28_stmtim_hourly_partition(
         });
     }
 
-    if (hour >= wnttim) && (hour < (wnttim + wntdur)) {
+    let active_interval = (hour >= wnttim) && (hour < (wnttim + wntdur));
+    if active_interval {
         if hrtemp_c > rst {
-            Ok((rain_m / wntdur, 0.0))
+            Ok(Simimpl28StmtimHourlyPartition {
+                hrrain_m: rain_m / wntdur,
+                hrsnow_m: 0.0,
+                wntdur_h: wntdur,
+                wnttim_h: wnttim,
+                active_interval,
+                rain_branch: true,
+                snow_branch: false,
+            })
         } else {
-            Ok((0.0, rain_m / wntdur * 10.0))
+            Ok(Simimpl28StmtimHourlyPartition {
+                hrrain_m: 0.0,
+                hrsnow_m: rain_m / wntdur * 10.0,
+                wntdur_h: wntdur,
+                wnttim_h: wnttim,
+                active_interval,
+                rain_branch: false,
+                snow_branch: true,
+            })
         }
     } else {
-        Ok((0.0, 0.0))
+        Ok(Simimpl28StmtimHourlyPartition {
+            hrrain_m: 0.0,
+            hrsnow_m: 0.0,
+            wntdur_h: wntdur,
+            wnttim_h: wnttim,
+            active_interval,
+            rain_branch: false,
+            snow_branch: false,
+        })
     }
 }
 

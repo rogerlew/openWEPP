@@ -375,6 +375,17 @@ struct Hphys0245TraceRow {
     snow_hourly_melt_sum_m: Option<f64>,
     snow_hourly_rain_m: BTreeMap<String, f64>,
     snow_hourly_snowfall_depth_m: BTreeMap<String, f64>,
+    snow_hourly_stmtim_rain_m: BTreeMap<String, f64>,
+    snow_hourly_stmtim_stmdur_s: BTreeMap<String, f64>,
+    snow_hourly_stmtim_wntdur_h: BTreeMap<String, f64>,
+    snow_hourly_stmtim_wnttim_h: BTreeMap<String, f64>,
+    snow_hourly_stmtim_hrtemp_c: BTreeMap<String, f64>,
+    snow_hourly_stmtim_rst_c: BTreeMap<String, f64>,
+    snow_hourly_stmtim_hrrain_m: BTreeMap<String, f64>,
+    snow_hourly_stmtim_hrsnow_m: BTreeMap<String, f64>,
+    snow_hourly_stmtim_active_interval: BTreeMap<String, f64>,
+    snow_hourly_stmtim_rain_branch: BTreeMap<String, f64>,
+    snow_hourly_stmtim_snow_branch: BTreeMap<String, f64>,
     snow_hourly_depth_before_m: BTreeMap<String, f64>,
     snow_hourly_depth_available_m: BTreeMap<String, f64>,
     snow_hourly_depth_after_m: BTreeMap<String, f64>,
@@ -522,7 +533,7 @@ const WB16_EALPHA_SEED_POLICY_RUNTIME_PROVIDED: &str = "runtime_provided";
 const WB16_EALPHA_SEED_POLICY_COMPATIBILITY: &str = "compatibility_seed_1p0";
 const WB16_EALPHA_SEED_WARNING_ID: &str = "SIMPIPE-W-003";
 const HPHYS0245_TRACE_SCHEMA: &str =
-    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v16";
+    "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v17";
 const HPHYS0245_TRACE_PATH_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_PATH";
 const HPHYS0245_TRACE_MAX_DAYS_ENV: &str = "OPENWEPP_HPHYS0245_TRACE_MAX_DAYS";
 const MOFE_HOURLY_CARRY_POLICY: &str = "baseline-wathour-24-slot-copy-forward";
@@ -4550,6 +4561,50 @@ fn build_hphys0245_trace_row(
         &runtime_surface.state_surface,
         "snow.hourly.snowfall_m_",
     );
+    let snow_hourly_stmtim_rain_m = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.rain_m_",
+    );
+    let snow_hourly_stmtim_stmdur_s = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.stmdur_s_",
+    );
+    let snow_hourly_stmtim_wntdur_h = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.wntdur_h_",
+    );
+    let snow_hourly_stmtim_wnttim_h = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.wnttim_h_",
+    );
+    let snow_hourly_stmtim_hrtemp_c = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.hrtemp_c_",
+    );
+    let snow_hourly_stmtim_rst_c = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.rst_c_",
+    );
+    let snow_hourly_stmtim_hrrain_m = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.hrrain_m_",
+    );
+    let snow_hourly_stmtim_hrsnow_m = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.hrsnow_m_",
+    );
+    let snow_hourly_stmtim_active_interval = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.active_interval_",
+    );
+    let snow_hourly_stmtim_rain_branch = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.rain_branch_",
+    );
+    let snow_hourly_stmtim_snow_branch = hphys0245_prefixed_surface_values(
+        &runtime_surface.state_surface,
+        "snow.hourly.stmtim.snow_branch_",
+    );
     let snow_hourly_depth_before_m = hphys0245_prefixed_surface_values(
         &runtime_surface.state_surface,
         "snow.hourly.depth_before_m_",
@@ -4784,6 +4839,17 @@ fn build_hphys0245_trace_row(
         snow_hourly_melt_sum_m,
         snow_hourly_rain_m,
         snow_hourly_snowfall_depth_m,
+        snow_hourly_stmtim_rain_m,
+        snow_hourly_stmtim_stmdur_s,
+        snow_hourly_stmtim_wntdur_h,
+        snow_hourly_stmtim_wnttim_h,
+        snow_hourly_stmtim_hrtemp_c,
+        snow_hourly_stmtim_rst_c,
+        snow_hourly_stmtim_hrrain_m,
+        snow_hourly_stmtim_hrsnow_m,
+        snow_hourly_stmtim_active_interval,
+        snow_hourly_stmtim_rain_branch,
+        snow_hourly_stmtim_snow_branch,
         snow_hourly_depth_before_m,
         snow_hourly_depth_available_m,
         snow_hourly_depth_after_m,
@@ -10238,6 +10304,17 @@ mod tests {
             snow_hourly_melt_sum_m: Some(0.003),
             snow_hourly_rain_m: BTreeMap::from([("0001".to_string(), 0.001)]),
             snow_hourly_snowfall_depth_m: BTreeMap::from([("0001".to_string(), 0.010)]),
+            snow_hourly_stmtim_rain_m: BTreeMap::from([("0001".to_string(), 0.012)]),
+            snow_hourly_stmtim_stmdur_s: BTreeMap::from([("0001".to_string(), 10_800.0)]),
+            snow_hourly_stmtim_wntdur_h: BTreeMap::from([("0001".to_string(), 3.0)]),
+            snow_hourly_stmtim_wnttim_h: BTreeMap::from([("0001".to_string(), 1.0)]),
+            snow_hourly_stmtim_hrtemp_c: BTreeMap::from([("0001".to_string(), -2.0)]),
+            snow_hourly_stmtim_rst_c: BTreeMap::from([("0001".to_string(), 0.0)]),
+            snow_hourly_stmtim_hrrain_m: BTreeMap::from([("0001".to_string(), 0.0)]),
+            snow_hourly_stmtim_hrsnow_m: BTreeMap::from([("0001".to_string(), 0.040)]),
+            snow_hourly_stmtim_active_interval: BTreeMap::from([("0001".to_string(), 1.0)]),
+            snow_hourly_stmtim_rain_branch: BTreeMap::from([("0001".to_string(), 0.0)]),
+            snow_hourly_stmtim_snow_branch: BTreeMap::from([("0001".to_string(), 1.0)]),
             snow_hourly_depth_before_m: BTreeMap::from([("0001".to_string(), 1.10)]),
             snow_hourly_depth_available_m: BTreeMap::from([("0001".to_string(), 1.09)]),
             snow_hourly_depth_after_m: BTreeMap::from([("0001".to_string(), 1.08)]),
@@ -10370,6 +10447,17 @@ mod tests {
         assert_eq!(document["snow_hourly_rain_released_sum_m"], 0.0);
         assert_eq!(document["snow_hourly_rain_m"]["0001"], 0.001);
         assert_eq!(document["snow_hourly_snowfall_depth_m"]["0001"], 0.010);
+        assert_eq!(document["snow_hourly_stmtim_rain_m"]["0001"], 0.012);
+        assert_eq!(document["snow_hourly_stmtim_stmdur_s"]["0001"], 10_800.0);
+        assert_eq!(document["snow_hourly_stmtim_wntdur_h"]["0001"], 3.0);
+        assert_eq!(document["snow_hourly_stmtim_wnttim_h"]["0001"], 1.0);
+        assert_eq!(document["snow_hourly_stmtim_hrtemp_c"]["0001"], -2.0);
+        assert_eq!(document["snow_hourly_stmtim_rst_c"]["0001"], 0.0);
+        assert_eq!(document["snow_hourly_stmtim_hrrain_m"]["0001"], 0.0);
+        assert_eq!(document["snow_hourly_stmtim_hrsnow_m"]["0001"], 0.040);
+        assert_eq!(document["snow_hourly_stmtim_active_interval"]["0001"], 1.0);
+        assert_eq!(document["snow_hourly_stmtim_rain_branch"]["0001"], 0.0);
+        assert_eq!(document["snow_hourly_stmtim_snow_branch"]["0001"], 1.0);
         assert_eq!(document["snow_hourly_depth_before_m"]["0001"], 1.10);
         assert_eq!(document["snow_hourly_depth_available_m"]["0001"], 1.09);
         assert_eq!(document["snow_hourly_depth_after_m"]["0001"], 1.08);
@@ -10791,6 +10879,55 @@ mod tests {
         assert_eq!(document["winter_hourly_cloud_fraction"]["0001"], 0.5);
         assert_eq!(document["winter_hourly_dewpoint_c"]["0001"], -1.0);
         assert_eq!(document["winter_hourly_wind_m_s"]["0001"], 2.0);
+    }
+
+    #[test]
+    fn hphys0318_trace_row_captures_stmtim_control_surfaces() {
+        let mut surface = HillslopeWritebackSurface::default();
+        for (symbol, value) in [
+            ("snow.hourly.stmtim.rain_m_0011", 0.0024),
+            ("snow.hourly.stmtim.stmdur_s_0011", 10_800.0),
+            ("snow.hourly.stmtim.wntdur_h_0011", 3.0),
+            ("snow.hourly.stmtim.wnttim_h_0011", 10.0),
+            ("snow.hourly.stmtim.hrtemp_c_0011", -1.5),
+            ("snow.hourly.stmtim.rst_c_0011", 0.0),
+            ("snow.hourly.stmtim.hrrain_m_0011", 0.0),
+            ("snow.hourly.stmtim.hrsnow_m_0011", 0.008),
+            ("snow.hourly.stmtim.active_interval_0011", 1.0),
+            ("snow.hourly.stmtim.rain_branch_0011", 0.0),
+            ("snow.hourly.stmtim.snow_branch_0011", 1.0),
+        ] {
+            surface
+                .state_surface
+                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        }
+
+        let row = build_hphys0245_trace_row(
+            "H1",
+            1,
+            11,
+            2013,
+            11,
+            "post_simimpl28",
+            None,
+            &surface,
+            None,
+            None,
+        );
+        let document = serde_json::to_value(&row).expect("trace row should serialize");
+
+        assert_eq!(document["schema"], HPHYS0245_TRACE_SCHEMA);
+        assert_eq!(document["snow_hourly_stmtim_rain_m"]["0011"], 0.0024);
+        assert_eq!(document["snow_hourly_stmtim_stmdur_s"]["0011"], 10_800.0);
+        assert_eq!(document["snow_hourly_stmtim_wntdur_h"]["0011"], 3.0);
+        assert_eq!(document["snow_hourly_stmtim_wnttim_h"]["0011"], 10.0);
+        assert_eq!(document["snow_hourly_stmtim_hrtemp_c"]["0011"], -1.5);
+        assert_eq!(document["snow_hourly_stmtim_rst_c"]["0011"], 0.0);
+        assert_eq!(document["snow_hourly_stmtim_hrrain_m"]["0011"], 0.0);
+        assert_eq!(document["snow_hourly_stmtim_hrsnow_m"]["0011"], 0.008);
+        assert_eq!(document["snow_hourly_stmtim_active_interval"]["0011"], 1.0);
+        assert_eq!(document["snow_hourly_stmtim_rain_branch"]["0011"], 0.0);
+        assert_eq!(document["snow_hourly_stmtim_snow_branch"]["0011"], 1.0);
     }
 
     fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {

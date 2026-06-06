@@ -41,7 +41,11 @@ follow-on routing at `SC-SNOWFREEZE-001#INV-SNOWFREEZE-042` and
 spring-2016 carried routes under paired hourly snowfall input-surface parity
 authority at `SC-CLIMATE-001#INV-CLIMATE-015`,
 `SC-SNOWFREEZE-001#INV-SNOWFREEZE-043`, and
-`SC-WATBAL-001#INV-WATBAL-091`.
+`SC-WATBAL-001#INV-WATBAL-091`; HPHYS0318 adds OpenWEPP `stmtim`
+control-surface trace authority while preserving the fixed-baseline paired-
+observe hold at `SC-CLIMATE-001#INV-CLIMATE-016`,
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-044`, and
+`SC-WATBAL-001#INV-WATBAL-092`.
 
 HPHYS0273 makes unit governance mandatory for science contracts, runtime
 boundary symbols, conversions, output metadata, and work-package gates.
