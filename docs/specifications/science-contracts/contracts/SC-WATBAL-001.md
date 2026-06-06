@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 137
+contract_version: 138
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -270,6 +270,7 @@ lateral/drainage).
 | INV-WATBAL-085 | HPHYS0312 prior-year terminal snowpack water-balance invariant: before routing inherited prior-year terminal snowpack deltas to melt terms, branch predicates, WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, or WB12 runoff, water-balance continuation must consume a prior-calendar-year lineage ledger for each HPHYS0311 `prior-year-terminal-state-hold` group. The ledger must identify the first material paired snowpack divergence within the scanned year or explicitly classify the divergence as already present at year-start, preserve material depth/density tolerances, cite baseline/openWEPP source-line lanes for the classified process, and keep downstream compensation invalid unless a source-line-owned openWEPP snow carry-state defect is proven. | governance-hold | INV-WATBAL-084, INV-WATBAL-083, SC-SNOWFREEZE-001#INV-SNOWFREEZE-037 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-086 | HPHYS0313 split-route snowpack water-balance invariant: water-balance continuation after HPHYS0312 must separately consume evidence for the settling/depth-update route and the earlier carry-state route before assigning ownership to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, melt terms, or branch predicates. Settling-route evidence must include full-precision pinned-baseline `wdayct`, `densgy`, `setf`, `densgt`, post-settling depth, actual M3 branch selection from `hrsnow`, branch final depth, and branch input terms at the first material 2013 day 11 hour 11 divergence. If `hrsnow > 0`, evidence must cite the snowing branch at `snowd.for:166-172` and compare pinned-baseline `hrsnow` to homologous openWEPP hourly snowfall before assigning water-balance ownership; if `hrsnow <= 0`, evidence may cite the no-snow `driftg` branch at `snowd.for:145-146` only with branch-gated proof. Year-start-route evidence must recurse into the 2014 terminal carry-state chain feeding 2015 day 1 hour 1 and classify the first material paired divergence. Aggregate water-balance improvement, rounded observe output, or compensation through downstream stores is invalid while either route remains source-line `HOLD`. | governance-hold | INV-WATBAL-085, INV-WATBAL-084, SC-SNOWFREEZE-001#INV-SNOWFREEZE-038 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-087 | ADR0017 water-balance comparator verdict invariant: H1/H7/H39 water-balance comparator and ledger continuations must treat comparator agreement as an investigation flag, not a target. `OPENWEPP-DEFECTIVE` requires same-quantity unit proof, lineage-stage proof, and independent correctness authority before assigning ownership to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow producer, or branch-predicate paths. Depth-vs-SWE, raw-vs-released, absent-key/default, branch-mask, or other surface mismatches must be classified as `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`; criterion C may not be waived. `HOLD` rows must identify owner, scope, and follow-on gate, and invalidated prior verdicts must be superseded or retracted before continuation. | governance-hold | ADR-0017, INV-WATBAL-074, INV-WATBAL-086, SC-SNOWFREEZE-001#INV-SNOWFREEZE-039 | `[INFERENCE][Static]` |
+| INV-WATBAL-088 | HPHYS0314 ADR0017 snow/`RM` water-balance route-ledger reclassification invariant: water-balance continuation must consume a single ADR0017 reclassification ledger for HPHYS0298-HPHYS0313 H1/H7/H39 snow/`RM` findings before any WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow-producer, melt-term, or branch-predicate edit proceeds. The ledger must preserve the HPHYS0313 split (`3` `hourly-snowfall-input-lineage-hold` rows representing `24` carried rows and `3` `recursive-year-start-inherited-state-hold` rows representing `33` carried rows), supersede stale HPHYS0298 `OPENWEPP-DEFECTIVE` labels, and assign ADR0017 verdict plus owner/follow-on package for each row. `UNRESOLVED` rows remain failing/owned `HOLD`; production water-balance compensation is invalid without same-unit/same-lineage proof and independent correctness authority. | governance-hold | INV-WATBAL-087, INV-WATBAL-086, SC-SNOWFREEZE-001#INV-SNOWFREEZE-040 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Water-Balance Disposition Addendum
 
@@ -281,6 +282,9 @@ snow/`RM` verdict now requires `SC-SNOWFREEZE-001#INV-SNOWFREEZE-039` and
 `INV-WATBAL-087`: same-quantity unit proof, lineage-stage proof, independent
 correctness authority, and a symmetric verdict taxonomy that includes
 `HARNESS-SURFACE-MISMATCH`.
+The retained unresolved lane is producer-side hourly precipitation-phase partition
+evidence anchored to `winter.for:410-412`, not as downstream storage or
+water-balance compensation authority.
 
 ### ADR0017 Comparator-Flag Water-Balance Addendum
 
@@ -503,6 +507,7 @@ openWEPP evaluates the same baseline state on the wrong condition. Otherwise:
 | `INV-WATBAL-085` | governance | HPHYS0312 prior-year terminal snowpack lineage ledger identifying first material inherited terminal-state divergence within each scanned prior calendar year | Explicit `HOLD` when divergence is year-start inherited, settling/depth update without full-precision reconstruction, source-line proof is absent, or downstream compensation is asserted | HPHYS0312 prior-year terminal snowpack water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-086` | governance | HPHYS0313 split-route snowpack settling/carry recursion ledger covering full-precision settling reconstruction, branch-gated hourly snowfall/drift lineage, and 2014 terminal carry-state recursion | Explicit `HOLD` when settling reconstruction lacks source-owned proof, branch-gated snowfall/drift lineage is unresolved, earlier carry-state inheritance remains unresolved, rounded observe output is treated as sufficient, or downstream compensation is asserted | HPHYS0313 split-route snowpack water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-087` | governance | ADR0017 comparator-verdict gate for water-balance ledgers requiring same-quantity units, lineage-stage pairing, independent correctness authority, symmetric verdict taxonomy, owned `HOLD`, and supersession/retraction of invalidated verdicts | Explicit `HOLD` when `OPENWEPP-DEFECTIVE` is asserted from comparator disagreement alone, criterion C is waived, unit/stage mismatches are not classified as `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, or `HOLD` lacks owner/follow-on gate | ADR0017 comparator-flag water-balance ratification gate | `[INFERENCE][Static]` |
+| `INV-WATBAL-088` | governance | HPHYS0314 water-balance consumption of consolidated ADR0017 route ledger preserving HPHYS0313 route counts, row ownership, follow-on gates, and stale-verdict supersession before downstream edits | Explicit `HOLD` when any carried row is omitted, stale `OPENWEPP-DEFECTIVE` labels remain authoritative, `HOLD` lacks owner/follow-on package, or WB13/WB17/WB18/WB19/WB12 compensation is asserted from reclassification alone | HPHYS0314 ADR0017 water-balance route-ledger gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -731,6 +736,11 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   and supersession/retraction references for invalidated prior verdicts before
   labeling a row `OPENWEPP-DEFECTIVE` or authorizing WB13/WB17/WB18/WB19/WB12
   production edits. `[INFERENCE][Static]`
+- OBL-WATBAL-P-024: HPHYS0314 and later water-balance ledger producers must
+  consume the consolidated ADR0017 snow/`RM` route ledger, preserve HPHYS0313
+  route counts and affected-row totals, and keep WB13/WB17/WB18/WB19/WB12 edits
+  in `HOLD` until each unresolved row has an owner, follow-on gate, and
+  independent correctness authority. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -2289,6 +2299,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-06` | `138` | `Codex` | HPHYS0314 amendment: added consolidated ADR0017 snow/`RM` water-balance route-ledger authority (`INV-WATBAL-088`) with HPHYS0313 route-count preservation, stale-verdict supersession, and owned HPHYS0315/HPHYS0316 continuation gates. |
 | `2026-06-05` | `137` | `Codex` | ADR0017 ratification amendment: added comparator-flag verdict governance (`INV-WATBAL-087`) with same-unit/same-lineage proof, independent correctness authority, `HARNESS-SURFACE-MISMATCH`, and owned `HOLD` requirements. |
 | `2026-06-05` | `136` | `Codex` | HPHYS0313 correction: branch-gated the settling-route water-balance lineage and reclassified the material 2013 day 11 hour 11 route from no-snow `driftg` to positive-`hrsnow` hourly snowfall input lineage. |
 | `2026-06-05` | `135` | `Codex` | HPHYS0313 amendment: added split-route snowpack settling/carry recursion water-balance authority (`INV-WATBAL-086`) before downstream ownership or compensation. |

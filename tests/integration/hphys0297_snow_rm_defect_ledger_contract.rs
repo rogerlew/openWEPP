@@ -36,7 +36,7 @@ fn hphys0297_contracts_require_defect_ledger_reconstruction() {
             && watbal.contains("defect-ledger water-balance invariant")
             && watbal.contains("reconstructed `/workdir/wepp-forest_260430_baseline` branch `RM`")
             && watbal.contains(
-                "Rows with reconstruction residual outside tolerance remain failing/HOLD"
+                "Rows with reconstruction residual outside tolerance remain failing/owned `HOLD`"
             ),
         "SC-WATBAL must keep failed reconstructions in semantic accounting"
     );

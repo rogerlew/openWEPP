@@ -1,5 +1,24 @@
 # Work Packages
 
+- `20260606-hphys0314-adr0017-snow-rm-reclassification-route-ledger-001/`
+  - Purpose: reclassify HPHYS0298-HPHYS0313 H1/H7/H39 snow/`RM` and
+    water-balance findings under ADR0017, consolidate the current route ledger,
+    record full H1..H39 metrics, and publish owned continuation order before
+    any implementation package proceeds.
+  - Status: executed-hold; route ledger reclassifies all `57` carried rows,
+    statically carries forward same-runtime metrics because no production code
+    changed, and authorizes no production physics edits.
+- `20260606-hphys0315-hourly-snowfall-input-lineage-closure-001/`
+  - Purpose: diagnose and, only if source-line evidence authorizes it, correct
+    the branch-gated hourly snowfall input lineage where fixed baseline records
+    positive `hrsnow` but openWEPP records zero homologous snowfall for the
+    H1/H7/H39 spring-2014 settling-route rows.
+  - Status: queued after HPHYS0314; no downstream compensation authorized.
+- `20260606-hphys0316-2013-terminal-carry-recursion-closure-001/`
+  - Purpose: recurse H1/H7/H39 spring-2016 year-start inherited snowpack rows
+    into the 2013 terminal carry chain feeding 2014 day 1 hour 1 and classify
+    the first material paired divergence before any production edit.
+  - Status: queued after HPHYS0314; no downstream compensation authorized.
 - `20260605-adr0017-comparator-distrust-ratification-001/`
   - Purpose: ratify ADR-0017 so the fixed comparator is enforced as an
     investigation flag rather than a target, with explicit like-for-like
