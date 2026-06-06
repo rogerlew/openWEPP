@@ -1,11 +1,24 @@
 # Verification Agent A
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: mixed `Static:` and `Ran:`
 
-Not-run:
+Static:
 
-Verify technical gates, validation claims, complete-balance claims, and review
-disposition. Confirm the final state satisfies the DC-ExecPlan conversion rule
-or a legitimate boundary.
+- Verified DC-ExecPlan conversion rule:
+  - Reproduction: true by WBVAL01 static evidence and current earlier-blocker
+    reproduction.
+  - Mechanism: current executable mechanism is upstream invalid daily radiation.
+  - Ownership: current blocker is outside WBVAL03 authority.
+  - Authority: `SC-CLIMATE-001` governs the current blocker; WBVAL03 contracts
+    are not currently reachable.
+  - Safety: no guard loosening or compensation attempted.
+  - Testability: WBVAL03 tests are invalid until the upstream climate boundary
+    is closed.
+  - Validation: false for WBVAL03 surfaces under current inputs.
+- Therefore legitimate `HOLD` is valid.
+
+Ran:
+
+- Checked `review-disposition.md`; `A-001` and `B-001` are dispositioned.

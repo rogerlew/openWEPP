@@ -1,11 +1,16 @@
 # Review Disposition
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: `Static`
 
-Not-run:
+Static:
 
-Record every finding from `review_agent_a.md` and `review_agent_b.md`, its final
-disposition, and the evidence proving accepted findings were fixed or rejected
-findings need no change. No finding may remain undispositioned at closure.
+- No review finding remains undispositioned.
+
+Findings:
+
+| Finding | Disposition | Resolution evidence |
+|---|---|---|
+| `A-001` | accepted | Package status and `disposition.md` record executed-hold, not completed correction. |
+| `B-001` | accepted | `complete-balance-identity-audit.md` preserves the real WAT residual finding while routing current execution to WBVAL04. |

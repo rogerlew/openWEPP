@@ -1,6 +1,6 @@
 # WBVAL03 Prompts
 
-Status: queued
+Status: executed-hold
 
-Use `active/` for the current kickoff prompt and move superseded prompts to
-`archived/` with a short note when execution changes shape.
+The active kickoff prompt was executed until the upstream climate source
+boundary blocked WBVAL03 validation.

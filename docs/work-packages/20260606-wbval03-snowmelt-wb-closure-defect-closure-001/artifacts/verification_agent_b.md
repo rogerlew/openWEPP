@@ -1,10 +1,17 @@
 # Verification Agent B
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: mixed `Static:` and `Ran:`
 
-Not-run:
+Static:
 
-Independently verify WBVAL03 closure claims, truthfulness labels, and that no
-review findings remain undispositioned.
+- Verified that no WBVAL03 production files, contracts, or tests were modified.
+- Verified that the handoff names a defect target and not a diagnostic step.
+- Verified that WBVAL03 remains resumable after WBVAL04 closes.
+
+Ran:
+
+- Reviewed `gate-results.md`, `j95-percolation-attribution-ledger.md`,
+  `complete-balance-identity-audit.md`, `wbval03-validation-ledger.md`, and
+  `worker-handoff.md`.

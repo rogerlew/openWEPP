@@ -1,23 +1,23 @@
 # Review Agent A
 
-Status: queued
+Status: complete
 
-Evidence mode: not-run
+Evidence mode: mixed `Static:` and `Ran:`
 
-Not-run:
+Static:
 
-Review scope:
+- Review focus: whether WBVAL03 incorrectly deferred an in-envelope
+  snowmelt/percolation/WAT fix.
+- Finding: no in-envelope production correction is currently authorized because
+  the acceptance surfaces fail earlier at the upstream climate source boundary.
 
-- Package objective, correction authority envelope, conversion rule, seven-gate
-  bar, implementation, tests, validation, and disposition.
-- DC-ExecPlan checks: `HOLD` legitimacy, envelope adequacy, and
-  protected-boundary integrity.
-- Symptom-existence gate for the conservation residual.
+Ran:
 
-Findings template:
+- Reviewed current reproduction evidence, complete identity audit, disposition,
+  and worker handoff.
+
+Findings:
 
 | ID | Severity | Finding | Disposition | Rationale / evidence |
 |---|---|---|---|---|
-| A-001 | queued | queued | queued | queued |
-
-Allowed dispositions: `accepted`, `rejected`, `deferred`, `follow-up`.
+| A-001 | medium | WBVAL03 must not be reported as completed correction; it is a legitimate `HOLD`. | accepted | `disposition.md`, `wbval03-validation-ledger.md`, and package status all state executed-hold behind WBVAL04. |

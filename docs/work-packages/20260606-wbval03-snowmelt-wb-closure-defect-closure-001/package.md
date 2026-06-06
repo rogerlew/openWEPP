@@ -1,6 +1,6 @@
 # WBVAL03 Snowmelt Water-Balance Closure Defect Closure
 
-Status: queued
+Status: executed-hold - blocked by upstream climate source boundary
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
