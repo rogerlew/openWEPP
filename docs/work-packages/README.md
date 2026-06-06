@@ -1,5 +1,17 @@
 # Work Packages
 
+- `20260606-hphys0319-fixed-baseline-stmtim-observe-recovery-001/`
+  - Purpose: recover fixed-baseline `stmtim.for` observe values for the 2013
+    day 11 hour 11 H1/H7/H39 route, pair them with regenerated OpenWEPP
+    `snow.hourly.stmtim.*` traces, and classify source ownership before any
+    production precipitation-phase or downstream water-balance edit.
+  - Status: executed-hold; HPHYS0319 recovers fixed-baseline H1/H7/H39
+    `stmtim` observe values, pairs them with regenerated OpenWEPP
+    `snow.hourly.stmtim.*_0011` traces, classifies the divergence as
+    `stmtim-active-interval-divergence-hold` caused by baseline adjusted
+    `wnttim = 1` versus OpenWEPP `wnttim = 0`, preserves the combined `57`
+    carried rows, assigns source-line classification to HPHYS0320, and
+    authorizes no production physics or downstream water-balance edit.
 - `20260606-hphys0318-stmtim-control-surface-instrumentation-001/`
   - Purpose: add contract-backed OpenWEPP SIMIMPL28 `stmtim` control-surface
     diagnostics for the 2013 day 11 hour 11 positive-`hrsnow` route while

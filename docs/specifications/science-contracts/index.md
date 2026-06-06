@@ -45,7 +45,12 @@ authority at `SC-CLIMATE-001#INV-CLIMATE-015`,
 control-surface trace authority while preserving the fixed-baseline paired-
 observe hold at `SC-CLIMATE-001#INV-CLIMATE-016`,
 `SC-SNOWFREEZE-001#INV-SNOWFREEZE-044`, and
-`SC-WATBAL-001#INV-WATBAL-092`.
+`SC-WATBAL-001#INV-WATBAL-092`; HPHYS0319 requires fixed-baseline
+`stmtim` observe recovery paired with regenerated OpenWEPP `stmtim` traces
+before producer or water-balance ownership changes at
+`SC-CLIMATE-001#INV-CLIMATE-017`,
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-045`, and
+`SC-WATBAL-001#INV-WATBAL-093`.
 
 HPHYS0273 makes unit governance mandatory for science contracts, runtime
 boundary symbols, conversions, output metadata, and work-package gates.

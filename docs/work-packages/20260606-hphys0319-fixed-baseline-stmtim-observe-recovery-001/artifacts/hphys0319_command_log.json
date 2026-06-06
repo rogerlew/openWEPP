@@ -1,0 +1,171 @@
+[
+  {
+    "args": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "worktree",
+      "prune"
+    ],
+    "cwd": null,
+    "name": "baseline_worktree_prune_pre",
+    "rc": 0,
+    "seconds": 0.021,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  },
+  {
+    "args": [
+      "git",
+      "-C",
+      "/workdir/wepp-forest_260430_baseline",
+      "worktree",
+      "add",
+      "--detach",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe",
+      "dac3c950d8b16cc73774bf5ce2e7e11f80baac70"
+    ],
+    "cwd": null,
+    "name": "baseline_worktree_add",
+    "rc": 0,
+    "seconds": 190.469,
+    "stderr_tail": "5)\rUpdating files:  61% (33761/55345)\rUpdating files:  61% (33838/55345)\rUpdating files:  61% (34126/55345)\rUpdating files:  62% (34314/55345)\rUpdating files:  62% (34392/55345)\rUpdating files:  62% (34582/55345)\rUpdating files:  62% (34810/55345)\rUpdating files:  63% (34868/55345)\rUpdating files:  63% (35152/55345)\rUpdating files:  64% (35421/55345)\rUpdating files:  64% (35475/55345)\rUpdating files:  64% (35741/55345)\rUpdating files:  65% (35975/55345)\rUpdating files:  65% (36196/55345)\rUpdating files:  65% (36389/55345)\rUpdating files:  66% (36528/55345)\rUpdating files:  66% (36709/55345)\rUpdating files:  66% (36921/55345)\rUpdating files:  67% (37082/55345)\rUpdating files:  67% (37282/55345)\rUpdating files:  67% (37523/55345)\rUpdating files:  68% (37635/55345)\rUpdating files:  68% (37738/55345)\rUpdating files:  68% (37966/55345)\rUpdating files:  69% (38189/55345)\rUpdating files:  69% (38213/55345)\rUpdating files:  69% (38514/55345)\rUpdating files:  70% (38742/55345)\rUpdating files:  70% (38858/55345)\rUpdating files:  70% (39146/55345)\rUpdating files:  71% (39295/55345)\rUpdating files:  71% (39527/55345)\rUpdating files:  71% (39773/55345)\rUpdating files:  72% (39849/55345)\rUpdating files:  72% (40001/55345)\rUpdating files:  72% (40363/55345)\rUpdating files:  73% (40402/55345)\rUpdating files:  73% (40685/55345)\rUpdating files:  73% (40932/55345)\rUpdating files:  74% (40956/55345)\rUpdating files:  74% (41238/55345)\rUpdating files:  74% (41371/55345)\rUpdating files:  75% (41509/55345)\rUpdating files:  75% (41618/55345)\rUpdating files:  75% (41979/55345)\rUpdating files:  76% (42063/55345)\rUpdating files:  76% (42321/55345)\rUpdating files:  76% (42536/55345)\rUpdating files:  77% (42616/55345)\rUpdating files:  77% (42774/55345)\rUpdating files:  78% (43170/55345)\rUpdating files:  78% (43214/55345)\rUpdating files:  78% (43442/55345)\rUpdating files:  79% (43723/55345)\rUpdating files:  79% (43767/55345)\rUpdating files:  79% (44090/55345)\rUpdating files:  80% (44276/55345)\rUpdating files:  80% (44334/55345)\rUpdating files:  80% (44699/55345)\rUpdating files:  81% (44830/55345)\rUpdating files:  81% (44927/55345)\rUpdating files:  81% (45116/55345)\rUpdating files:  82% (45383/55345)\rUpdating files:  82% (45401/55345)\rUpdating files:  82% (45572/55345)\rUpdating files:  82% (45895/55345)\rUpdating files:  83% (45937/55345)\rUpdating files:  83% (46106/55345)\rUpdating files:  83% (46315/55345)\rUpdating files:  84% (46490/55345)\rUpdating files:  84% (46714/55345)\rUpdating files:  84% (47037/55345)\rUpdating files:  85% (47044/55345)\rUpdating files:  85% (47303/55345)\rUpdating files:  85% (47531/55345)\rUpdating files:  86% (47597/55345)\rUpdating files:  86% (47721/55345)\rUpdating files:  86% (48020/55345)\rUpdating files:  87% (48151/55345)\rUpdating files:  87% (48231/55345)\rUpdating files:  87% (48503/55345)\rUpdating files:  88% (48704/55345)\rUpdating files:  88% (48863/55345)\rUpdating files:  88% (48996/55345)\rUpdating files:  89% (49258/55345)\rUpdating files:  89% (49281/55345)\rUpdating files:  89% (49567/55345)\rUpdating files:  90% (49811/55345)\rUpdating files:  90% (49832/55345)\rUpdating files:  90% (49965/55345)\rUpdating files:  90% (50269/55345)\rUpdating files:  91% (50364/55345)\rUpdating files:  91% (50529/55345)\rUpdating files:  91% (50847/55345)\rUpdating files:  92% (50918/55345)\rUpdating files:  92% (51069/55345)\rUpdating files:  92% (51297/55345)\rUpdating files:  93% (51471/55345)\rUpdating files:  93% (51658/55345)\rUpdating files:  93% (51791/55345)\rUpdating files:  94% (52025/55345)\rUpdating files:  94% (52114/55345)\rUpdating files:  94% (52304/55345)\rUpdating files:  95% (52578/55345)\rUpdating files:  95% (52703/55345)\rUpdating files:  95% (52988/55345)\rUpdating files:  96% (53132/55345)\rUpdating files:  96% (53199/55345)\rUpdating files:  97% (53685/55345)\rUpdating files:  97% (54147/55345)\rUpdating files:  98% (54239/55345)\rUpdating files:  99% (54792/55345)\rUpdating files: 100% (55345/55345)\rUpdating files: 100% (55345/55345), done.\n",
+    "stdout_tail": "HEAD is now at dac3c950 Fix wshpas leap-day truncation and re-release wepp_260430\n"
+  },
+  {
+    "args": [
+      "git",
+      "-C",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe",
+      "diff",
+      "--",
+      "src/stmtim.for",
+      "src/winter.for"
+    ],
+    "cwd": null,
+    "name": "baseline_instrumentation_diff",
+    "rc": 0,
+    "seconds": 0.029,
+    "stderr_tail": "",
+    "stdout_tail": "diff --git a/src/stmtim.for b/src/stmtim.for\nindex c33ee281..c8159c63 100755\n--- a/src/stmtim.for\n+++ b/src/stmtim.for\n@@ -1,12 +1,13 @@\n       subroutine stmtim(rain,stmdur,hour,wnttim,rans,\n-     1                  snodpt,rnhrs,snohrs, daytmin)\n+     1                  snodpt,rnhrs,snohrs, daytmin,iplane,\n+     2                  obs_year,obs_sdate)\n c     +++ PURPOSE +++\n c     This subroutine handles winter storm time and duration calculations.\n c     It was originally incorporated into WINTER, but was split out\n c     by Charles R. Meyer 6/6/96 to reduce code complexity.\n c\n c     +++ ARGUMENT DECLARATIONS +++\n-      integer hour,rnhrs,snohrs\n+      integer hour,rnhrs,snohrs,iplane,obs_year,obs_sdate\n       real    rain,stmdur,wnttim,snodpt\n       real    rans, daytmin\n c\n@@ -20,7 +21,7 @@ c     +++COMMON BLOCKS+++\n       include  'cclim.inc'\n c\n c     +++LOCAL VARIABLES+++\n-      real denwat,tmpvr3\n+      real denwat,tmpvr3,active_flag,branch_code\n       integer wntdur\n c\n c     +++LOCAL DEFINITIONS+++\n@@ -35,6 +36,9 @@ c\n       denwat = 1000.0\n       hrrain(hour) = 0.0\n       hrsnow(hour) = 0.0\n+      wntdur = 0\n+      active_flag = 0.0\n+      branch_code = 0.0\n c\n c --------------------------\n c -- Winter storm time and duration calculations...\n@@ -62,6 +66,7 @@ CAS\n c\n c       condtion L2\n         if ((hour.ge.wnttim) .and. (hour.lt.(wnttim+wntdur))) then\n+          active_flag = 1.0\n c\n c       condition L3\n CAS Switching off rain-snow partitioning based on dew point temp.\n@@ -79,6 +84,7 @@ c -- In this case, we convert units of precip to meters.\n c\n             hrrain(hour) = rain / wntdur\n             hrsnow(hour) = 0.0\n+            branch_code = 1.0\n c           if (snodpt .gt. 0.001)then\n c            krs=krs+1\n c            ras=ras+hrrain\n@@ -93,6 +99,7 @@ c -- Otherwise, we're talking snowfall...\n c -- Note that 10.0 is a conversion factor from rain to snow.\n             hrsnow(hour) = rain / wntdur * 10.0\n             hrrain(hour) = 0.0\n+            branch_code = 2.0\n c           if (snodpt .gt. 0.001)then\n c            kss=kss+1\n c            snsn=snsn+hrsnow\n@@ -141,5 +148,15 @@ c\n c\n       endif\n c\n+      call wepp_observe('STM_RAIN_STMDUR',obs_year,obs_sdate,\n+     1                  iplane,0,hour,rain,stmdur)\n+      call wepp_observe('STM_WNTDUR_WNTTIM',obs_year,obs_sdate,\n+     1                  iplane,0,hour,float(wntdur),wnttim)\n+      call wepp_observe('STM_TEMP_RST',obs_year,obs_sdate,iplane,\n+     1                  0,hour,hrtemp,rst)\n+      call wepp_observe('STM_OUT_RAIN_SNOW',obs_year,obs_sdate,\n+     1                  iplane,0,hour,hrrain(hour),hrsnow(hour))\n+      call wepp_observe('STM_ACTIVE_BRANCH',obs_year,obs_sdate,\n+     1                  iplane,0,hour,active_flag,branch_code)\n       return\n       end\ndiff --git a/src/winter.for b/src/winter.for\nindex 6ee33628..65f02ece 100755\n--- a/src/winter.for\n+++ b/src/winter.for\n@@ -295,7 +295,8 @@ c\n \n         call stmtim(rain(iplane),stmdur,hour,wnttim,rans,\n c     1              hrrain(hour),hrsnow(hour),hrtemp,\n-     2              snodpt(iplane),rnhrs,snohrs,tmin)\n+     2              snodpt(iplane),rnhrs,snohrs,tmin,iplane,\n+     3              year,sdate)\n c\n         snow = snow + hrsnow(hour)\n \n"
+  },
+  {
+    "args": [
+      "bash",
+      "tools/build_wepp_dated_release.sh"
+    ],
+    "cwd": "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe",
+    "name": "build_fixed_baseline_observe_hill",
+    "rc": 0,
+    "seconds": 78.51,
+    "stderr_tail": " REAL array index at (1)\nwshdrv.for:533:17:\n\n  533 |           tmpscp(m) = scp ! Sediment concentration (mg/kg)\n      |                 1\nWarning: Legacy Extension: REAL array index at (1)\nwshdrv.for:529:16:\n\n  529 |           do 225 m = 1, nhill\n      |                1\nWarning: Deleted feature: Loop variable at (1) must be integer\nhdreng.for:27:11:\n\n   27 |      1    '{Hillslope: Sediment Leaving Profile (lbs/ft)}',\n      |           1\nWarning: Initialization string at (1) was truncated to fit the variable (45/46)\nfrostn.for:255:72:\n\n  255 |                  do 10 j = 1, nfine(i)\n      |                                                                        1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 10 at (1)\nfrostn.for:290:72:\n\n  290 |                 do 11 j = 1, jend\n      |                                                                        1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 11 at (1)\nfrostn.for:323:72:\n\n  323 |                 do 12 j = jstart, nfine(i)\n      |                                                                        1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 12 at (1)\ninidat.for:801:19:\n\n  791 |       do 210 i = 1, mxtlsq\n      |                                                                        2\n......\n  801 |           frmove(j,i) = 0.0\n      |                   1\nWarning: Array reference at (1) out of bounds (30 > 20) in loop beginning at (2)\ninidat.for:802:19:\n\n  791 |       do 210 i = 1, mxtlsq\n      |                                                                        2\n......\n  802 |           jdmove(j,i) = 0\n      |                   1\nWarning: Array reference at (1) out of bounds (30 > 20) in loop beginning at (2)\ninidat.for:801:72:\n\n  801 |           frmove(j,i) = 0.0\n      |                                                                        ^\nWarning: iteration 20 invokes undefined behavior [-Waggressive-loop-optimizations]\ninidat.for:791:16:\n\n  791 |       do 210 i = 1, mxtlsq\n      |                ^\nnote: within this loop\nmain.for:324:72:\n\n  324 |                 do 95 j = 1,366\n      |                                                                               1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 95 at (1)\nwshdrv.for:530:17:\n\n  530 |           tmpsrp(m) = srp ! Surface runoff concentration (mg/l)\n      |                 1\nWarning: Legacy Extension: REAL array index at (1)\nwshdrv.for:531:18:\n\n  531 |           tmpslfp(m) = slfp ! Subsurface lateral flow concentration (mg/l)\n      |                  1\nWarning: Legacy Extension: REAL array index at (1)\nwshdrv.for:532:17:\n\n  532 |           tmpbfp(m) = bfp ! Baseflow concentration (mg/l)\n      |                 1\nWarning: Legacy Extension: REAL array index at (1)\nwshdrv.for:533:17:\n\n  533 |           tmpscp(m) = scp ! Sediment concentration (mg/kg)\n      |                 1\nWarning: Legacy Extension: REAL array index at (1)\nwshdrv.for:529:16:\n\n  529 |           do 225 m = 1, nhill\n      |                1\nWarning: Deleted feature: Loop variable at (1) must be integer\nhdreng.for:27:11:\n\n   27 |      1    '{Hillslope: Sediment Leaving Profile (lbs/ft)}',\n      |           1\nWarning: Initialization string at (1) was truncated to fit the variable (45/46)\nfrostn.for:255:72:\n\n  255 |                  do 10 j = 1, nfine(i)\n      |                                                                        1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 10 at (1)\nfrostn.for:290:72:\n\n  290 |                 do 11 j = 1, jend\n      |                                                                        1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 11 at (1)\nfrostn.for:323:72:\n\n  323 |                 do 12 j = jstart, nfine(i)\n      |                                                                        1\nWarning: Fortran 2018 deleted feature: Shared DO termination label 12 at (1)\n",
+    "stdout_tail": "pflo_hill.o imphnw_hill.o impint_hill.o impmai_hill.o impmon_hill.o imppol_hill.o imppow_hill.o imppro_hill.o impreg_hill.o impris_hill.o impsvb_hill.o impsvd_hill.o impyr_hill.o infile_hill.o infpar_hill.o inidat_hill.o init1_hill.o initd_hill.o initgr_hill.o input_hill.o intrpl_hill.o irflow_hill.o irinpt_hill.o irprnt_hill.o irrig_hill.o irs_hill.o kostia_hill.o main_hill.o melt_hill.o monchn_hill.o monout_hill.o mxint_hill.o mxreal_hill.o newrap_hill.o newtil_hill.o newton_hill.o nowup_hill.o open_hill.o outfil_hill.o param_hill.o patrib_hill.o peak_hill.o perc_hill.o phi_hill.o print_hill.o profil_hill.o prtcmp_hill.o psiinv_hill.o psis_hill.o ptgra_hill.o ptgrp_hill.o purk_hill.o qinf_hill.o radcur_hill.o rand_hill.o range_hill.o rburn_hill.o rdat_hill.o readin_hill.o reid_hill.o res_dp_hill.o resup_hill.o rgraze_hill.o rgrcur_hill.o rherb_hill.o rngint_hill.o rochek_hill.o root_hill.o route_hill.o rtpart_hill.o runge_hill.o runout_hill.o scenhd_hill.o scon_hill.o scurv_hill.o seddia_hill.o sedia_hill.o sedist_hill.o sedmax_hill.o sedout_hill.o sedseg_hill.o sedsta_hill.o shdist_hill.o shear_hill.o shears_hill.o shield_hill.o sint_hill.o sintdp_hill.o sloss_hill.o sndrft_hill.o snowd_hill.o soil_hill.o spread_hill.o stmget_hill.o stmtim_hill.o strip_hill.o strout_hill.o sumfrc_hill.o sumrnf_hill.o sumrun_hill.o sunmap_hill.o swu_hill.o table_hill.o tfail_hill.o tilage_hill.o tmpadj_hill.o trcoef_hill.o trncap_hill.o trnlos_hill.o undflo_hill.o unifor_hill.o useout_hill.o verchk_hill.o watbal_hill.o winit_hill.o winter_hill.o winthd_hill.o wshcqi_hill.o wshdrv_hill.o wshimp_hill.o wshini_hill.o wshinp_hill.o wshiqi_hill.o wshirs_hill.o wshout_hill.o wshpas_hill.o wshpek_hill.o wshred_hill.o wshrun_hill.o wshscs_hill.o wshtc_hill.o xcrit_hill.o xinflo_hill.o xmonth_hill.o yalin_hill.o yldopt_hill.o pmetcoef_hill.o evappm_hill.o outeng_hill.o hdreng_hill.o frsoil_hill.o psolr_hill.o tmpcft_hill.o saxpar_hill.o frostn_hill.o saxfun_hill.o tmpfun_hill.o locate_hill.o frwatc_hill.o frzng_hill.o mltbtm_hill.o watdst_hill.o mlttp_hill.o frznw_hill.o sheart_hill.o wshchr_hill.o mann_hill.o chrqin_hill.o wepp_observe_hill.o watbal_hourly_hill.o watbalprint_hill.o writeyearlylossbypoint_hill.o getfreezecond_hill.o -mcmodel=medium -no-pie -o wepp_hill\n\n== wepp_hphys0319 ==\nc0a2427adf39fbd341a67011ff4c908ed44fd064988cd2e42c4a63f3575e3695  /tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319\n\nString dump of section '.comment':\n  [     0]  GCC: (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\n\n\tlinux-vdso.so.1 (0x00007ffe6a5a8000)\n\tlibgfortran.so.5 => /lib/x86_64-linux-gnu/libgfortran.so.5 (0x000076b831400000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x000076b831317000)\n\tlibmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x000076b83121e000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x000076b831000000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x000076b83174d000)\n\t/lib64/ld-linux-x86-64.so.2 (0x000076b83179a000)\n\n== wepp_hphys0319_hill ==\n794a542177093b00f1ef8e5864d4644f9ebff0c3c4735cbf116a1d3c55842f37  /tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319_hill\n\nString dump of section '.comment':\n  [     0]  GCC: (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0\n\n\tlinux-vdso.so.1 (0x00007ffc72db2000)\n\tlibgfortran.so.5 => /lib/x86_64-linux-gnu/libgfortran.so.5 (0x00007816b4a00000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007816b4e29000)\n\tlibmvec.so.1 => /lib/x86_64-linux-gnu/libmvec.so.1 (0x00007816b4d30000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007816b4600000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007816b49d2000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007816b4f31000)\n\nBuild complete:\n  /tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319\n  /tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319_hill\n"
+  },
+  {
+    "args": [
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319_hill"
+    ],
+    "cwd": "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/fixed_baseline/H1/runs",
+    "name": "H1_fixed_baseline_stmtim_observe",
+    "rc": 0,
+    "seconds": 2.04,
+    "stderr_tail": "",
+    "stdout_tail": "                      \n\n file name read in: ../output/H1.pass.dat                                                                                          \n\n Soil loss output options for continuous simulation\n ---- ---- ------ ------- --- ---------- ----------\n [1] - Abbreviated annual\n  2  - Detailed annual\n  3  - Abbreviated event by event\n  4  - Detailed event by event\n  5  - Monthly\n --------------------------------------------------\n Enter Soil Loss output option [1]\n\n\n Do you want initial condition scenario output (Y/N)? [N] --> \n\n  Enter file name for soil loss output -->                         \n\n file name read in: ../output/H1.loss.dat                                                                                          \n\n Do you want water balance output (Y/N)? [N] --> \n\n  Enter file name for water balance output -->                     \n\n file name read in: ../output/H1.wat.dat                                                                                           \n\n Do you want crop output (Y/N)? [N] --> \n\n Do you want soil output (Y/N)? [N] --> \n\n  Enter file name for soil output -->                              \n\n file name read in: ../output/H1.soil.dat                                                                                          \n\n Do you want distance and sediment loss output (Y/N)? [N] --> \n\n  Enter file name for plotting output -->                          \n\n file name read in: ../output/H1.plot.dat                                                                                          \n\n Do you want large graphics output (Y/N)? [N] --> \n\n Do you want event by event output (Y/N)? [N] --> \n\n  Enter file name for event by event summary -->                   \n\n file name read in: ../output/H1.ebe.dat                                                                                           \n\n Do you want element output (Y/N)? [N] --> \n\n  Enter file name for variable OFE line summary -->                \n\n file name read in: ../output/H1.element.dat                                                                                       \n\n Do you want final summary output (Y/N)? [N] --> \n\n Do you want daily winter output (Y/N)? [N] --> \n\n Do you want plant yield output (Y/N)? [N] --> \n\n  Enter name of file containing management data -->                \n\n file name read in: p1.man                                                                                                         \n FAO Penman-Monteith ET Method Implemented\n   9.99999975E-06   9.99999975E-06  0.500000000    \n\n  Enter name of file containing slope data -->                     \n\n file name read in: p1.slp                                                                                                         \n\n  Enter name of file containing storm data -->                     \n\n file name read in: p1.cli                                                                                                         \n\n  Enter name of file containing soil data -->                      \n\n file name read in: p1.sol                                                                                                         \n Please enter the irrigation option\n ----------------------------------\n [0] no irrigation\n  1  sprinkler, fixed date\n  2  sprinkler, depletion level\n  3  sprinkler, combination\n  4  furrow,    fixed date\n  5  furrow,    depletion\n  6  furrow,    combination\n -----------------------------------\n Enter irrigation option [0]\n\n\n NO IRRIGATION SELECTED.\n\n\n  Enter number of years to simulate --> \n\n  To bypass erosion calculations for very small events, enter 1\n  Otherwise, to route all events enter 0   (Small events have\n  runoff less than 10 mm and peak runoff less than 10 mm/hr) [0] -->\n\n     \n SIMULATION YEAR =           1\n     \n SIMULATION YEAR =           2\n     \n SIMULATION YEAR =           3\n     \n SIMULATION YEAR =           4\n\n Hillslope SUCCESSFUL simulation - returning to DOS\n\n\n WEPP COMPLETED HILLSLOPE SIMULATION SUCCESSFULLY\n"
+  },
+  {
+    "args": [
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319_hill"
+    ],
+    "cwd": "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/fixed_baseline/H7/runs",
+    "name": "H7_fixed_baseline_stmtim_observe",
+    "rc": 0,
+    "seconds": 1.993,
+    "stderr_tail": "",
+    "stdout_tail": "                      \n\n file name read in: ../output/H7.pass.dat                                                                                          \n\n Soil loss output options for continuous simulation\n ---- ---- ------ ------- --- ---------- ----------\n [1] - Abbreviated annual\n  2  - Detailed annual\n  3  - Abbreviated event by event\n  4  - Detailed event by event\n  5  - Monthly\n --------------------------------------------------\n Enter Soil Loss output option [1]\n\n\n Do you want initial condition scenario output (Y/N)? [N] --> \n\n  Enter file name for soil loss output -->                         \n\n file name read in: ../output/H7.loss.dat                                                                                          \n\n Do you want water balance output (Y/N)? [N] --> \n\n  Enter file name for water balance output -->                     \n\n file name read in: ../output/H7.wat.dat                                                                                           \n\n Do you want crop output (Y/N)? [N] --> \n\n Do you want soil output (Y/N)? [N] --> \n\n  Enter file name for soil output -->                              \n\n file name read in: ../output/H7.soil.dat                                                                                          \n\n Do you want distance and sediment loss output (Y/N)? [N] --> \n\n  Enter file name for plotting output -->                          \n\n file name read in: ../output/H7.plot.dat                                                                                          \n\n Do you want large graphics output (Y/N)? [N] --> \n\n Do you want event by event output (Y/N)? [N] --> \n\n  Enter file name for event by event summary -->                   \n\n file name read in: ../output/H7.ebe.dat                                                                                           \n\n Do you want element output (Y/N)? [N] --> \n\n  Enter file name for variable OFE line summary -->                \n\n file name read in: ../output/H7.element.dat                                                                                       \n\n Do you want final summary output (Y/N)? [N] --> \n\n Do you want daily winter output (Y/N)? [N] --> \n\n Do you want plant yield output (Y/N)? [N] --> \n\n  Enter name of file containing management data -->                \n\n file name read in: p7.man                                                                                                         \n FAO Penman-Monteith ET Method Implemented\n   9.99999975E-06   9.99999975E-06  0.500000000    \n\n  Enter name of file containing slope data -->                     \n\n file name read in: p7.slp                                                                                                         \n\n  Enter name of file containing storm data -->                     \n\n file name read in: p7.cli                                                                                                         \n\n  Enter name of file containing soil data -->                      \n\n file name read in: p7.sol                                                                                                         \n Please enter the irrigation option\n ----------------------------------\n [0] no irrigation\n  1  sprinkler, fixed date\n  2  sprinkler, depletion level\n  3  sprinkler, combination\n  4  furrow,    fixed date\n  5  furrow,    depletion\n  6  furrow,    combination\n -----------------------------------\n Enter irrigation option [0]\n\n\n NO IRRIGATION SELECTED.\n\n\n  Enter number of years to simulate --> \n\n  To bypass erosion calculations for very small events, enter 1\n  Otherwise, to route all events enter 0   (Small events have\n  runoff less than 10 mm and peak runoff less than 10 mm/hr) [0] -->\n\n     \n SIMULATION YEAR =           1\n     \n SIMULATION YEAR =           2\n     \n SIMULATION YEAR =           3\n     \n SIMULATION YEAR =           4\n\n Hillslope SUCCESSFUL simulation - returning to DOS\n\n\n WEPP COMPLETED HILLSLOPE SIMULATION SUCCESSFULLY\n"
+  },
+  {
+    "args": [
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/wepp_260430_stmtim_observe/release/wepp_hphys0319_hill"
+    ],
+    "cwd": "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/fixed_baseline/H39/runs",
+    "name": "H39_fixed_baseline_stmtim_observe",
+    "rc": 0,
+    "seconds": 2.014,
+    "stderr_tail": "",
+    "stdout_tail": "                      \n\n file name read in: ../output/H39.pass.dat                                                                                         \n\n Soil loss output options for continuous simulation\n ---- ---- ------ ------- --- ---------- ----------\n [1] - Abbreviated annual\n  2  - Detailed annual\n  3  - Abbreviated event by event\n  4  - Detailed event by event\n  5  - Monthly\n --------------------------------------------------\n Enter Soil Loss output option [1]\n\n\n Do you want initial condition scenario output (Y/N)? [N] --> \n\n  Enter file name for soil loss output -->                         \n\n file name read in: ../output/H39.loss.dat                                                                                         \n\n Do you want water balance output (Y/N)? [N] --> \n\n  Enter file name for water balance output -->                     \n\n file name read in: ../output/H39.wat.dat                                                                                          \n\n Do you want crop output (Y/N)? [N] --> \n\n Do you want soil output (Y/N)? [N] --> \n\n  Enter file name for soil output -->                              \n\n file name read in: ../output/H39.soil.dat                                                                                         \n\n Do you want distance and sediment loss output (Y/N)? [N] --> \n\n  Enter file name for plotting output -->                          \n\n file name read in: ../output/H39.plot.dat                                                                                         \n\n Do you want large graphics output (Y/N)? [N] --> \n\n Do you want event by event output (Y/N)? [N] --> \n\n  Enter file name for event by event summary -->                   \n\n file name read in: ../output/H39.ebe.dat                                                                                          \n\n Do you want element output (Y/N)? [N] --> \n\n  Enter file name for variable OFE line summary -->                \n\n file name read in: ../output/H39.element.dat                                                                                      \n\n Do you want final summary output (Y/N)? [N] --> \n\n Do you want daily winter output (Y/N)? [N] --> \n\n Do you want plant yield output (Y/N)? [N] --> \n\n  Enter name of file containing management data -->                \n\n file name read in: p39.man                                                                                                        \n FAO Penman-Monteith ET Method Implemented\n   9.99999975E-06   9.99999975E-06  0.500000000    \n\n  Enter name of file containing slope data -->                     \n\n file name read in: p39.slp                                                                                                        \n\n  Enter name of file containing storm data -->                     \n\n file name read in: p39.cli                                                                                                        \n\n  Enter name of file containing soil data -->                      \n\n file name read in: p39.sol                                                                                                        \n Please enter the irrigation option\n ----------------------------------\n [0] no irrigation\n  1  sprinkler, fixed date\n  2  sprinkler, depletion level\n  3  sprinkler, combination\n  4  furrow,    fixed date\n  5  furrow,    depletion\n  6  furrow,    combination\n -----------------------------------\n Enter irrigation option [0]\n\n\n NO IRRIGATION SELECTED.\n\n\n  Enter number of years to simulate --> \n\n  To bypass erosion calculations for very small events, enter 1\n  Otherwise, to route all events enter 0   (Small events have\n  runoff less than 10 mm and peak runoff less than 10 mm/hr) [0] -->\n\n     \n SIMULATION YEAR =           1\n     \n SIMULATION YEAR =           2\n     \n SIMULATION YEAR =           3\n     \n SIMULATION YEAR =           4\n\n Hillslope SUCCESSFUL simulation - returning to DOS\n\n\n WEPP COMPLETED HILLSLOPE SIMULATION SUCCESSFULLY\n"
+  },
+  {
+    "args": [
+      "cargo",
+      "build",
+      "--release",
+      "-p",
+      "openwepp-runner",
+      "--bin",
+      "openwepp-cli-hill"
+    ],
+    "cwd": "/home/workdir/openWEPP",
+    "name": "cargo_build_release_openwepp_cli_hill",
+    "rc": 0,
+    "seconds": 48.615,
+    "stderr_tail": "   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)\n   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)\n   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)\n   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)\n   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)\n   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)\n   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)\n   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)\n   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)\n    Finished `release` profile [optimized] target(s) in 48.52s\n",
+    "stdout_tail": ""
+  },
+  {
+    "args": [
+      "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+      "--run-dir",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/openwepp/runs",
+      "--run-file",
+      "p1_openwepp.run",
+      "--output-dir",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/openwepp/hillslope_output",
+      "--policy",
+      "compat"
+    ],
+    "cwd": "/home/workdir/openWEPP",
+    "name": "H1_openwepp_hphys0319_trace",
+    "rc": 0,
+    "seconds": 22.304,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  },
+  {
+    "args": [
+      "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+      "--run-dir",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/openwepp/runs",
+      "--run-file",
+      "p7_openwepp.run",
+      "--output-dir",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/openwepp/hillslope_output",
+      "--policy",
+      "compat"
+    ],
+    "cwd": "/home/workdir/openWEPP",
+    "name": "H7_openwepp_hphys0319_trace",
+    "rc": 0,
+    "seconds": 22.369,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  },
+  {
+    "args": [
+      "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+      "--run-dir",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/openwepp/runs",
+      "--run-file",
+      "p39_openwepp.run",
+      "--output-dir",
+      "/tmp/hphys0319_fixed_stmtim_observe_20260606T000000Z/openwepp/hillslope_output",
+      "--policy",
+      "compat"
+    ],
+    "cwd": "/home/workdir/openWEPP",
+    "name": "H39_openwepp_hphys0319_trace",
+    "rc": 0,
+    "seconds": 22.359,
+    "stderr_tail": "",
+    "stdout_tail": ""
+  }
+]

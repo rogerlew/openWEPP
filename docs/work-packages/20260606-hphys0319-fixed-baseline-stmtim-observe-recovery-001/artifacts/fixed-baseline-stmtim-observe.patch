@@ -1,0 +1,92 @@
+diff --git a/src/stmtim.for b/src/stmtim.for
+index c33ee281..c8159c63 100755
+--- a/src/stmtim.for
++++ b/src/stmtim.for
+@@ -1,12 +1,13 @@
+       subroutine stmtim(rain,stmdur,hour,wnttim,rans,
+-     1                  snodpt,rnhrs,snohrs, daytmin)
++     1                  snodpt,rnhrs,snohrs, daytmin,iplane,
++     2                  obs_year,obs_sdate)
+ c     +++ PURPOSE +++
+ c     This subroutine handles winter storm time and duration calculations.
+ c     It was originally incorporated into WINTER, but was split out
+ c     by Charles R. Meyer 6/6/96 to reduce code complexity.
+ c
+ c     +++ ARGUMENT DECLARATIONS +++
+-      integer hour,rnhrs,snohrs
++      integer hour,rnhrs,snohrs,iplane,obs_year,obs_sdate
+       real    rain,stmdur,wnttim,snodpt
+       real    rans, daytmin
+ c
+@@ -20,7 +21,7 @@ c     +++COMMON BLOCKS+++
+       include  'cclim.inc'
+ c
+ c     +++LOCAL VARIABLES+++
+-      real denwat,tmpvr3
++      real denwat,tmpvr3,active_flag,branch_code
+       integer wntdur
+ c
+ c     +++LOCAL DEFINITIONS+++
+@@ -35,6 +36,9 @@ c
+       denwat = 1000.0
+       hrrain(hour) = 0.0
+       hrsnow(hour) = 0.0
++      wntdur = 0
++      active_flag = 0.0
++      branch_code = 0.0
+ c
+ c --------------------------
+ c -- Winter storm time and duration calculations...
+@@ -62,6 +66,7 @@ CAS
+ c
+ c       condtion L2
+         if ((hour.ge.wnttim) .and. (hour.lt.(wnttim+wntdur))) then
++          active_flag = 1.0
+ c
+ c       condition L3
+ CAS Switching off rain-snow partitioning based on dew point temp.
+@@ -79,6 +84,7 @@ c -- In this case, we convert units of precip to meters.
+ c
+             hrrain(hour) = rain / wntdur
+             hrsnow(hour) = 0.0
++            branch_code = 1.0
+ c           if (snodpt .gt. 0.001)then
+ c            krs=krs+1
+ c            ras=ras+hrrain
+@@ -93,6 +99,7 @@ c -- Otherwise, we're talking snowfall...
+ c -- Note that 10.0 is a conversion factor from rain to snow.
+             hrsnow(hour) = rain / wntdur * 10.0
+             hrrain(hour) = 0.0
++            branch_code = 2.0
+ c           if (snodpt .gt. 0.001)then
+ c            kss=kss+1
+ c            snsn=snsn+hrsnow
+@@ -141,5 +148,15 @@ c
+ c
+       endif
+ c
++      call wepp_observe('STM_RAIN_STMDUR',obs_year,obs_sdate,
++     1                  iplane,0,hour,rain,stmdur)
++      call wepp_observe('STM_WNTDUR_WNTTIM',obs_year,obs_sdate,
++     1                  iplane,0,hour,float(wntdur),wnttim)
++      call wepp_observe('STM_TEMP_RST',obs_year,obs_sdate,iplane,
++     1                  0,hour,hrtemp,rst)
++      call wepp_observe('STM_OUT_RAIN_SNOW',obs_year,obs_sdate,
++     1                  iplane,0,hour,hrrain(hour),hrsnow(hour))
++      call wepp_observe('STM_ACTIVE_BRANCH',obs_year,obs_sdate,
++     1                  iplane,0,hour,active_flag,branch_code)
+       return
+       end
+diff --git a/src/winter.for b/src/winter.for
+index 6ee33628..65f02ece 100755
+--- a/src/winter.for
++++ b/src/winter.for
+@@ -295,7 +295,8 @@ c
+
+         call stmtim(rain(iplane),stmdur,hour,wnttim,rans,
+ c     1              hrrain(hour),hrsnow(hour),hrtemp,
+-     2              snodpt(iplane),rnhrs,snohrs,tmin)
++     2              snodpt(iplane),rnhrs,snohrs,tmin,iplane,
++     3              year,sdate)
+ c
+         snow = snow + hrsnow(hour)
