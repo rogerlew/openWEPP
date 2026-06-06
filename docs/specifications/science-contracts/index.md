@@ -37,7 +37,11 @@ water-balance edit at `SC-SNOWFREEZE-001#INV-SNOWFREEZE-041` and
 `SC-WATBAL-001#INV-WATBAL-089`; HPHYS0316 extends the inherited spring-2016
 route by requiring 2013 terminal carry-recursion continuity and owned
 follow-on routing at `SC-SNOWFREEZE-001#INV-SNOWFREEZE-042` and
-`SC-WATBAL-001#INV-WATBAL-090`.
+`SC-WATBAL-001#INV-WATBAL-090`; HPHYS0317 joins the spring-2014 and
+spring-2016 carried routes under paired hourly snowfall input-surface parity
+authority at `SC-CLIMATE-001#INV-CLIMATE-015`,
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-043`, and
+`SC-WATBAL-001#INV-WATBAL-091`.
 
 HPHYS0273 makes unit governance mandatory for science contracts, runtime
 boundary symbols, conversions, output metadata, and work-package gates.

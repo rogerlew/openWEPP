@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 140
+contract_version: 141
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -273,6 +273,7 @@ lateral/drainage).
 | INV-WATBAL-088 | HPHYS0314 ADR0017 snow/`RM` water-balance route-ledger reclassification invariant: water-balance continuation must consume a single ADR0017 reclassification ledger for HPHYS0298-HPHYS0313 H1/H7/H39 snow/`RM` findings before any WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow-producer, melt-term, or branch-predicate edit proceeds. The ledger must preserve the HPHYS0313 split (`3` `hourly-snowfall-input-lineage-hold` rows representing `24` carried rows and `3` `recursive-year-start-inherited-state-hold` rows representing `33` carried rows), supersede stale HPHYS0298 `OPENWEPP-DEFECTIVE` labels, and assign ADR0017 verdict plus owner/follow-on package for each row. `UNRESOLVED` rows remain failing/owned `HOLD`; production water-balance compensation is invalid without same-unit/same-lineage proof and independent correctness authority. | governance-hold | INV-WATBAL-087, INV-WATBAL-086, SC-SNOWFREEZE-001#INV-SNOWFREEZE-040 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-089 | HPHYS0315 hourly snowfall input-lineage water-balance gate: WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, melt-term, and branch-predicate continuations must consume the HPHYS0315 hourly snowfall input-lineage ledger before any downstream edit. The ledger must pair fixed-baseline `stmtim.for` `hrsnow` snowfall depth with openWEPP `snow.hourly.snowfall_m_####` and also prove the controlling input surfaces (`rain`, `stmdur`, `wntdur`, `wnttim`, `hrtemp`, `rst`, `hrrain`, active interval, branch choice) on both sides. The known H1/H7/H39 spring-2014 rows remain `UNRESOLVED`/owned `HOLD` when that paired input-surface proof is absent, even though baseline `hrsnow = 0.0007454545120708644 m` and openWEPP snowfall depth is `0.0 m` at 2013 day 11 hour 11. Water-balance compensation is invalid from this unresolved snowfall-input mismatch alone. | governance-hold | INV-WATBAL-088, INV-WATBAL-086, SC-SNOWFREEZE-001#INV-SNOWFREEZE-041, SC-CLIMATE-001#INV-CLIMATE-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-090 | HPHYS0316 2013 terminal carry-recursion water-balance gate: water-balance continuation for H1/H7/H39 spring-2016 snow/`RM` rows must consume a 2013 terminal carry-recursion ledger before any WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow-producer, branch-predicate, or melt-term edit. The ledger must preserve the `33` carried rows, prove continuity from 2014 day 1 hour 1 to the same hillslope 2013 terminal state, and connect the inherited terminal delta to the 2013 day 11 hour 11 hourly snowfall input-surface blocker or identify a different paired source-line lane. If paired source-line ownership is still absent, the rows remain `UNRESOLVED`/owned `HOLD` under HPHYS0317 and water-balance compensation remains invalid. | governance-hold | INV-WATBAL-089, INV-WATBAL-088, INV-WATBAL-086, SC-SNOWFREEZE-001#INV-SNOWFREEZE-042 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-091 | HPHYS0317 paired hourly snowfall input-surface water-balance gate: water-balance continuation must consume the combined HPHYS0315/HPHYS0316 `57`-row paired input-surface ledger for the 2013 day 11 hour 11 positive-`hrsnow` route before any WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow-producer, branch-predicate, or melt-term edit. The ledger must publish same-unit same-lineage fixed-baseline/openWEPP values for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrsnow`, `hrrain`, active interval membership, and branch choice. If any controlling surface is absent or not paired, the rows remain ADR0017 `UNRESOLVED` under `paired-input-surface-instrumentation-hold`, and water-balance compensation remains invalid. | governance-hold | INV-WATBAL-090, INV-WATBAL-089, INV-WATBAL-088, SC-SNOWFREEZE-001#INV-SNOWFREEZE-043, SC-CLIMATE-001#INV-CLIMATE-015 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ### HPHYS0298 Water-Balance Disposition Addendum
 
@@ -512,6 +513,7 @@ openWEPP evaluates the same baseline state on the wrong condition. Otherwise:
 | `INV-WATBAL-088` | governance | HPHYS0314 water-balance consumption of consolidated ADR0017 route ledger preserving HPHYS0313 route counts, row ownership, follow-on gates, and stale-verdict supersession before downstream edits | Explicit `HOLD` when any carried row is omitted, stale `OPENWEPP-DEFECTIVE` labels remain authoritative, `HOLD` lacks owner/follow-on package, or WB13/WB17/WB18/WB19/WB12 compensation is asserted from reclassification alone | HPHYS0314 ADR0017 water-balance route-ledger gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-089` | governance | HPHYS0315 water-balance consumer gate requiring paired hourly snowfall input-lineage proof before WB13/WB17/WB18/WB19/WB12, melt-term, branch-predicate, or snow-producer edits | Explicit `HOLD` when controlling hourly precipitation input surfaces are incomplete, the snowfall mismatch is unresolved, or water-balance compensation is asserted without source-line-owned producer proof | HPHYS0315 hourly snowfall input-lineage water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-090` | governance | HPHYS0316 water-balance consumer gate requiring 2013 terminal carry-recursion continuity and owner/follow-on routing for spring-2016 inherited rows before downstream edits | Explicit `HOLD` when 2014 day-1 to 2013 terminal continuity is missing, the first-material-2013 source lane is unowned, carried-row totals are incomplete, or WB13/WB17/WB18/WB19/WB12 compensation is asserted from inherited terminal carry alone | HPHYS0316 2013 terminal carry-recursion water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-091` | governance | HPHYS0317 water-balance consumer gate requiring paired hourly snowfall input-surface closure for the combined `57` carried spring rows before downstream edits | Explicit `HOLD` when any controlling input surface is missing, row totals are incomplete, source-code resemblance is treated as proof, or WB13/WB17/WB18/WB19/WB12 compensation is asserted before upstream source-line-owned producer proof | HPHYS0317 paired hourly snowfall input-surface water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -757,6 +759,12 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   for unresolved source lanes, and keep WB13/WB17/WB18/WB19/WB12 edits in
   `HOLD` until source-line-owned producer proof and independent correctness
   authority exist. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-027: HPHYS0317 and later water-balance continuation producers
+  must consume the combined paired hourly snowfall input-surface ledger,
+  preserve the `57` carried-row route, and keep WB13/WB17/WB18/WB19/WB12 edits
+  in `HOLD` unless fixed-baseline/openWEPP controlling `stmtim` surfaces prove
+  source-line-owned upstream producer authority.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -2315,6 +2323,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-06` | `141` | `Codex` | HPHYS0317 amendment: added paired hourly snowfall input-surface water-balance gate (`INV-WATBAL-091`) for the combined 57 carried-row route before downstream compensation or producer edits. |
 | `2026-06-06` | `140` | `Codex` | HPHYS0316 amendment: added 2013 terminal carry-recursion water-balance gate (`INV-WATBAL-090`) requiring inherited spring-2016 rows to route through owned source-line evidence before downstream compensation or producer edits. |
 | `2026-06-06` | `139` | `Codex` | HPHYS0315 amendment: added hourly snowfall input-lineage water-balance gate (`INV-WATBAL-089`) requiring paired precipitation forcing surfaces before downstream compensation or producer edits. |
 | `2026-06-06` | `138` | `Codex` | HPHYS0314 amendment: added consolidated ADR0017 snow/`RM` water-balance route-ledger authority (`INV-WATBAL-088`) with HPHYS0313 route-count preservation, stale-verdict supersession, and owned HPHYS0315/HPHYS0316 continuation gates. |

@@ -1,5 +1,15 @@
 # Work Packages
 
+- `20260606-hphys0317-paired-hourly-snowfall-input-surface-parity-001/`
+  - Purpose: join the HPHYS0315 spring-2014 `24` rows and HPHYS0316
+    spring-2016 `33` rows under the 2013 day 11 hour 11 positive-`hrsnow`
+    hourly snowfall input-surface blocker and classify ownership before any
+    production edit.
+  - Status: executed-hold; HPHYS0317 preserves all `57` carried rows as
+    `paired-input-surface-instrumentation-hold`, assigns paired controlling
+    surface instrumentation to HPHYS0318, statically carries forward same-
+    runtime H1..H39 metrics because no production code changed, and authorizes
+    no producer or downstream water-balance edits.
 - `20260606-hphys0314-adr0017-snow-rm-reclassification-route-ledger-001/`
   - Purpose: reclassify HPHYS0298-HPHYS0313 H1/H7/H39 snow/`RM` and
     water-balance findings under ADR0017, consolidate the current route ledger,

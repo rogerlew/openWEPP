@@ -548,6 +548,10 @@ name = "hphys0316_2013_terminal_carry_recursion_contract"
 path = "tests/integration/hphys0316_2013_terminal_carry_recursion_contract.rs"
 
 [[test]]
+name = "hphys0317_hourly_snowfall_input_surface_parity_contract"
+path = "tests/integration/hphys0317_hourly_snowfall_input_surface_parity_contract.rs"
+
+[[test]]
 name = "adr0017_comparator_distrust_ratification_contract"
 path = "tests/integration/adr0017_comparator_distrust_ratification_contract.rs"
 
