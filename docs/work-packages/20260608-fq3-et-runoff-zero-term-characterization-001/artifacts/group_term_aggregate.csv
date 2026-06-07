@@ -1,0 +1,13 @@
+management_group,term,prefix_count,openwepp_sum_total,legacy_sum_total,defect_prefixes_count,expected_zero_prefixes_count,both_nonzero_prefixes_count,openwepp_nonzero_legacy_zero_count,legacy_unavailable_prefixes_count,openwepp_unavailable_prefixes_count
+Corn,Ep,36,0.0,65975.66,36,0,0,0,0,0
+Corn,Er,36,0.0,0.0,0,36,0,0,0,0
+Corn,Es,36,170418.78796399865,98054.99,0,0,36,0,0,0
+Corn,Interception,36,0.0,0.0,0,0,0,0,36,0
+Corn,Q,36,26.811884697477765,27021.753955927,29,0,7,0,0,0
+Corn,QOFE,36,26.811884697477765,27021.753955927,29,0,7,0,0,0
+Tah_4899,Ep,6,32774.09720680392,34722.37,0,0,6,0,0,0
+Tah_4899,Er,6,0.0,0.0,0,6,0,0,0,0
+Tah_4899,Es,6,127.53146366581821,169.36,0,0,6,0,0,0
+Tah_4899,Interception,6,3858.47693257437,0.0,0,0,0,0,6,0
+Tah_4899,Q,6,1.7829840251795681e-12,1067.98787715,6,0,0,0,0,0
+Tah_4899,QOFE,6,1.7829840251795681e-12,1067.98787715,6,0,0,0,0,0

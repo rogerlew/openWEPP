@@ -1,0 +1,11 @@
+{
+  "prefix_count":42,
+  "management_counts":{
+    "Corn":36,
+    "Tah_4899":6
+  },
+  "annual_crop_ep_zero_defect_count":36,
+  "annual_crop_interception_legacy_unavailable_count":36,
+  "q_defect_count":35,
+  "qofe_defect_count":35
+}
