@@ -75,12 +75,13 @@ tracked and ready.
 Frost depth note: the **kfactor conductivity magnitude is legacy-faithful** (openWEPP
 uses the documented WEPP defaults; annual crops get the near-impermeable "concrete
 frost" coefficient). The deferred gap is the **depth model** only — when frost forms,
-how deep, the 0.20 m cap — which governs frost timing/extent. The **sizing gate** is the
-comparator characterization
-[`work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001`](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/)
-(`wepp_260606_hill` frost depth/duration vs the proxy on the frost-active
-`algebraic-radium` substrate); its verdict drives the backlog promotion decision
-(heat-flow parity DC vs sanctioning the proxy by contract).
+how deep, the 0.20 m cap — which governs frost timing/extent. The **sizing gate is
+complete** ([FDMC01 characterization](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/)):
+verdict **materially off** — openWEPP capped at 200 mm vs legacy 240–503 mm (depth-series
+correlation 0.13) and frozen-duration +258 days (the proxy ratchets and over-persists) →
+target = heat-flow parity (not contract-sanction the proxy). **Execution still deferred
+to Stage-2 (post-MOFE)** per the staging principle; MOFE runs `ksflag` off so the proxy
+does not touch rung-3.
 
 ---
 

@@ -1,6 +1,6 @@
 # FDMC01 — Frost Depth Model Comparator Characterization
 
-Status: scaffolded
+Status: complete
 
 Package type: **Characterization** (validation/characterization shape — NOT a
 Defect-Closure ExecPlan; this package lands no production or contract change).

@@ -1,0 +1,87 @@
+{
+  "prefix_count": 43,
+  "legacy_max_depth_mm_min": 240.0,
+  "legacy_max_depth_mm_max": 503.2,
+  "legacy_max_depth_mm_mean": 414.22093023255815,
+  "open_max_depth_mm_min": 200.0,
+  "open_max_depth_mm_max": 200.0,
+  "open_max_depth_mm_mean": 200.0,
+  "max_depth_delta_mm_mean_open_minus_legacy": -214.22093023255815,
+  "max_depth_delta_mm_min_open_minus_legacy": -303.2,
+  "max_depth_delta_mm_max_open_minus_legacy": -40.0,
+  "depth_mae_mm_mean": 123.81301172113048,
+  "depth_rmse_mm_mean": 146.43828392345057,
+  "depth_corr_median": 0.13332765680932177,
+  "legacy_frozen_days_wat_mean": 759.3720930232558,
+  "open_frozen_days_wat_mean": 1017.0,
+  "frozen_days_delta_mean_open_minus_legacy": 257.6279069767442,
+  "onset_delta_days_median_open_minus_legacy": 0.0,
+  "thaw_delta_days_median_open_minus_legacy": 0.0,
+  "prefixes_with_open_cap_bind_any": 43,
+  "open_cap_bind_days_total": 36421,
+  "legacy_prefixes_exceed_200mm": 43,
+  "largest_underdepth_prefixes": [
+    {
+      "prefix": "p11",
+      "max_depth_delta_mm_open_minus_legacy": -303.2,
+      "legacy_max_depth_mm": 503.2,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p9",
+      "max_depth_delta_mm_open_minus_legacy": -260.0,
+      "legacy_max_depth_mm": 460.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p14",
+      "max_depth_delta_mm_open_minus_legacy": -260.0,
+      "legacy_max_depth_mm": 460.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p8",
+      "max_depth_delta_mm_open_minus_legacy": -240.0,
+      "legacy_max_depth_mm": 440.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p28",
+      "max_depth_delta_mm_open_minus_legacy": -240.0,
+      "legacy_max_depth_mm": 440.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    }
+  ],
+  "largest_overdepth_prefixes": [
+    {
+      "prefix": "p4",
+      "max_depth_delta_mm_open_minus_legacy": -40.0,
+      "legacy_max_depth_mm": 240.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p2",
+      "max_depth_delta_mm_open_minus_legacy": -80.0,
+      "legacy_max_depth_mm": 280.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p20",
+      "max_depth_delta_mm_open_minus_legacy": -174.3,
+      "legacy_max_depth_mm": 374.3,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p3",
+      "max_depth_delta_mm_open_minus_legacy": -184.5,
+      "legacy_max_depth_mm": 384.5,
+      "openwepp_proxy_max_depth_mm": 200.0
+    },
+    {
+      "prefix": "p21",
+      "max_depth_delta_mm_open_minus_legacy": -187.0,
+      "legacy_max_depth_mm": 387.0,
+      "openwepp_proxy_max_depth_mm": 200.0
+    }
+  ]
+}

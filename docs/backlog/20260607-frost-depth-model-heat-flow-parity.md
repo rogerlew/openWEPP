@@ -7,8 +7,13 @@
 - `relates`: [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md),
   [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md),
   [ROADMAP.md](../ROADMAP.md) (queue item 2, Stage-2)
-- `sizing gate`: comparator characterization WP
+- `sizing gate`: ✅ **COMPLETE** — comparator characterization WP
   `docs/work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/`
+- `sizing verdict`: **materially off** → target (1) heat-flow parity selected (do not
+  sanction the proxy by contract). Evidence: openWEPP depth capped 200 mm vs legacy
+  240–503 mm (43/43 exceed cap), depth-series median correlation 0.13, **and** openWEPP
+  frozen-water duration +258 days (~34% longer — the proxy ratchets and over-persists).
+  `execution still deferred to Stage-2 (post-MOFE) per ROADMAP staging.`
 - `sibling`: [snow physics-magnitude (Stage 2)](20260605-snow-code-deferred-science-review.md)
 
 ## Why this is deferred, not now
