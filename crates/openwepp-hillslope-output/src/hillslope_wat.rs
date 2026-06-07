@@ -14,7 +14,7 @@ use parquet::file::properties::WriterProperties;
 
 /// Default interchange dataset version aligned to WEPPpy/WEPPpyo3.
 pub const DEFAULT_DATASET_VERSION_MAJOR: u32 = 1;
-pub const DEFAULT_DATASET_VERSION_MINOR: u32 = 2;
+pub const DEFAULT_DATASET_VERSION_MINOR: u32 = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct InterchangeVersion {
@@ -73,6 +73,7 @@ pub struct HillslopeWatRow {
     pub profile_porosity_cap: Option<f64>,
     pub profile_fc_store: Option<f64>,
     pub profile_wp_store: Option<f64>,
+    pub interception: Option<f64>,
     pub interception_storage: Option<f64>,
 }
 
@@ -329,6 +330,15 @@ pub fn hillslope_wat_schema(
                 ),
             ),
             field_with_meta(
+                "Interception",
+                DataType::Float64,
+                true,
+                Some("mm"),
+                Some(
+                    "Daily canopy/residue interception flux I, optional producer-authoritative term",
+                ),
+            ),
+            field_with_meta(
                 "InterceptionStorage",
                 DataType::Float64,
                 true,
@@ -462,6 +472,7 @@ fn hillslope_wat_rows_to_batch(
     let mut profile_porosity_cap = Vec::with_capacity(rows.len());
     let mut profile_fc_store = Vec::with_capacity(rows.len());
     let mut profile_wp_store = Vec::with_capacity(rows.len());
+    let mut interception = Vec::with_capacity(rows.len());
     let mut interception_storage = Vec::with_capacity(rows.len());
 
     for row in rows {
@@ -496,6 +507,7 @@ fn hillslope_wat_rows_to_batch(
         profile_porosity_cap.push(row.profile_porosity_cap);
         profile_fc_store.push(row.profile_fc_store);
         profile_wp_store.push(row.profile_wp_store);
+        interception.push(row.interception);
         interception_storage.push(row.interception_storage);
     }
 
@@ -531,6 +543,7 @@ fn hillslope_wat_rows_to_batch(
         Arc::new(Float64Array::from(profile_porosity_cap)),
         Arc::new(Float64Array::from(profile_fc_store)),
         Arc::new(Float64Array::from(profile_wp_store)),
+        Arc::new(Float64Array::from(interception)),
         Arc::new(Float64Array::from(interception_storage)),
     ];
 
@@ -579,6 +592,7 @@ mod tests {
             profile_porosity_cap: Some(400.0),
             profile_fc_store: Some(300.0),
             profile_wp_store: Some(150.0),
+            interception: Some(0.25),
             interception_storage: None,
         }
     }
@@ -632,6 +646,23 @@ mod tests {
                 .is_some_and(|value| value.contains("optional producer-authoritative term")),
             "InterceptionStorage description should include optional producer-authoritative note"
         );
+
+        let interception_flux_field = schema
+            .fields
+            .iter()
+            .find(|field| field.name() == "Interception")
+            .expect("Interception field should exist");
+        let interception_flux_meta = interception_flux_field.metadata();
+        assert_eq!(
+            interception_flux_meta.get("units").map(String::as_str),
+            Some("mm")
+        );
+        assert!(
+            interception_flux_meta
+                .get("description")
+                .is_some_and(|value| value.contains("interception flux I")),
+            "Interception description should identify the daily I flux"
+        );
     }
 
     #[test]
@@ -657,6 +688,12 @@ mod tests {
         let schema = builder.schema();
 
         assert!(schema.metadata().contains_key("dataset_version"));
+        assert!(
+            schema
+                .fields()
+                .iter()
+                .any(|field| field.name() == "Interception")
+        );
         assert!(
             schema
                 .fields()

@@ -1,5 +1,5 @@
 # Archived Prompts
 
-Status: queued
+Status: executed
 
 No archived prompts yet.

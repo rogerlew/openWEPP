@@ -50,7 +50,7 @@ winter unit governance:
   `UpStrmQ`, `SubRIn`, `latqcc`, `Total-Soil`, `frozwt`, `Snow-Water`,
   `QOFE`, `Tile`, `Irr`, `SoilWaterTotal`, `ProfileDepth`,
   `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`, and
-  `InterceptionStorage`.
+  `Interception` / `InterceptionStorage`.
 - EVAPPM PMET runtime storage-return depth: `pmet.es_storage_return_m`.
 - WAT publication area column: `Area`.
 - Climate runtime aliases: `prcp`, `rad`, `tmax`, `tmin`, `tdpt`, `wind`

@@ -74,8 +74,8 @@ Canonical runner identifier for this contract surface: `open_wepp_runner`
       `/workdir/wepp-forest_260430_baseline` at
       `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`,
     - WAT output semantics for consumer parity (including optional
-      `InterceptionStorage`) follow post-`wepp_260430` `wepp-forest`/WEPPpy
-      lineage per CLI04 stakeholder authority.
+      `Interception` and `InterceptionStorage`) follow post-`wepp_260430`
+      `wepp-forest`/WEPPpy lineage per CLI04 stakeholder authority.
 
 `release lint` requirements:
 

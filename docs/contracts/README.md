@@ -83,8 +83,8 @@ WAT authority exception for CLI04:
   `/workdir/wepp-forest_260430_baseline` at
   `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`,
 - WAT output semantics required for consumer closure (including optional
-  `InterceptionStorage`) follow post-`wepp_260430` `wepp-forest`/WEPPpy
-  lineage per stakeholder authority.
+  `Interception` and `InterceptionStorage`) follow post-`wepp_260430`
+  `wepp-forest`/WEPPpy lineage per stakeholder authority.
 
 CLI03 output posture:
 - required: `.run` `outputs.pass` (`.hbp`), `.run` `outputs.loss` (`.json`)

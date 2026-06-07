@@ -25,6 +25,7 @@ fn canonical_registry_contains_hydrology_et_percolation_publication_units() {
         ("hillslope_wat.Total-Soil", "mm", DimensionClass::Depth),
         ("hillslope_wat.SoilWaterTotal", "mm", DimensionClass::Depth),
         ("hillslope_wat.Snow-Water", "mm", DimensionClass::Depth),
+        ("hillslope_wat.Interception", "mm", DimensionClass::Depth),
         ("hillslope_wat.Area", "m^2", DimensionClass::Area),
     ] {
         let entry = registry

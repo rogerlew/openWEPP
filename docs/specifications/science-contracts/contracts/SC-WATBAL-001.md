@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 145
+contract_version: 146
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -532,7 +532,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 |---|---|---|---|---|
 | `Θ` | `Θ` (identity) | root-zone daily state surface | `m` -> `m` | `[DIRECT][Static]` |
 | `Θin` | `Θin` (identity) | root-zone daily initial-state surface | `m` -> `m` | `[DIRECT][Static]` |
-| `P`, `I`, `S`, `Q`, `ET`, `D`, `Qd` | identity names; WAT aliases `hillslope_wat.P`, `hillslope_wat.P:mm`, `hillslope_wat.Q`, `hillslope_wat.Q:mm` | daily closure terms and WB13/WAT publication terms | closure `m` preserved; WAT `P`/`Q` publication uses `mm` | `[DIRECT][Static]` |
+| `P`, `I`, `S`, `Q`, `ET`, `D`, `Qd` | identity names; WAT aliases `hillslope_wat.P`, `hillslope_wat.P:mm`, `hillslope_wat.Interception`, `hillslope_wat.Interception:mm`, `hillslope_wat.Q`, `hillslope_wat.Q:mm` | daily closure terms and WB13/WAT publication terms | closure `m` preserved; WAT `P`/`I`/`Q` publication uses `mm` | `[DIRECT][Static]` |
 | `Q` (typed runoff flux alias) | `HillslopeProductionFluxSymbol::Wb12RunoffQ -> Q`; WAT aliases `hillslope_wat.Q`, `hillslope_wat.Q:mm` | runoff-depth coupling surface exported to runoff/erosion consumers | closure `m` preserved; WAT publication uses `mm` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `wb20_forward_solver_lane_enabled` | `wb20_forward_solver_lane_enabled` | WB20 parity-lane selector (`1` forward-solver lane, `0` compatibility lane) for WB12 closure-delta semantics | scalar in `{0,1}` preserved | `[INFERENCE][Static]` |
 | `Eu` | `wb11_et_demand` | WB17 ET demand input consumed by partition runtime | `m d^-1` -> `m d^-1` | `[DIRECT][Static]` |
@@ -556,6 +556,7 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
 | `Total-Soil`, `SoilWaterTotal`, `frozwt` | `hillslope_wat.Total-Soil`, `hillslope_wat.Total-Soil:mm`, `hillslope_wat.SoilWaterTotal`, `hillslope_wat.SoilWaterTotal:mm`, `hillslope_wat.frozwt`, `hillslope_wat.frozwt:mm` | WB13/WAT aggregate storage publication terms | `mm` publication units preserve declared depth-conversion semantics | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `Area` | `hillslope_wat.Area`, `hillslope_wat.Area:m^2` | WB13/WAT contributing-area publication term | `m^2` publication units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ProfilePorosityCap`, `ProfileFCStore`, `ProfileWPStore`, `wb13_profile_fc_tail_mm` | `hillslope_wat.ProfilePorosityCap`, `wb13_profile_porosity_cap_mm`, `hillslope_wat.ProfilePorosityCap:mm`, `hillslope_wat.ProfileFCStore`, `wb13_profile_fc_store_mm`, `hillslope_wat.ProfileFCStore:mm`, `hillslope_wat.ProfileWPStore`, `wb13_profile_wp_store_mm`, `hillslope_wat.ProfileWPStore:mm` | WB13 profile-storage publication and diagnostic surfaces | `mm` publication units preserve declared depth-conversion semantics | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `I` | `hillslope_wat.Interception`, `hillslope_wat.Interception:mm` | WB13/WAT daily canopy/residue interception flux publication term | runtime `I` closure depth in `m` converted to WAT publication depth `mm` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `InterceptionStorage` | `hillslope_wat.InterceptionStorage`, `hillslope_wat.InterceptionStorage:mm` | WB13/WAT interception-storage publication term | `mm` publication units preserved | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_SUrunf(ii)` | `ui_SUrunf_{hour:04}` state symbol | MOFE hourly upstream saturation-runoff carry consumed at WB12/WB14 runoff reconciliation | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ui_SCrunf(ii)` | `ui_SCrunf_{hour:04}` state symbol | MOFE hourly current-OFE saturation-runoff carry published for copy-forward | `m` preserved; `hour=1..24` | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -1127,7 +1128,10 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    - `Q = wb14_hyetograph_liquid_after_interception + S + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
 7. Daily storage closure consumes interception as an explicit Chapter-5 term:
    - `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - I - Q - ET - D - Qd`
-8. Missing/non-finite/out-of-domain canopy interception symbols are hard-fail
+8. WB13/WAT parquet publication exposes the daily interception flux as
+   `hillslope_wat.Interception` in `mm`; this flux is distinct from optional
+   carryover `InterceptionStorage`.
+9. Missing/non-finite/out-of-domain canopy interception symbols are hard-fail
    invalid states. No fallback/default/clamp behavior is allowed.
 
 ### WB15 Guard Codes
@@ -2381,6 +2385,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 | `2026-06-05` | `115` | `Codex` | HPHYS0295 amendment: added cumulative row-to-row storage-budget ownership authority requiring ET/percolation/lateral/snow-mask accounting before WB17/WB18/WB19/WB13 production edits. |
 | `2026-06-05` | `114` | `Codex` | HPHYS0294 amendment: added post-ingress storage/percolation/lateral attribution authority requiring WB18/WB19 trace-grade magnitude accounting and snow-excluded residual masks before production edits. |
 | `2026-06-05` | `110` | `Codex` | HPHYS0291 amendment: added same-day snow publication lifecycle authority from runoff producer fluxes through WB13 and required trace evidence before assigning remaining residual ownership. |
+| `2026-06-07` | `146` | `Codex` | WBVAL06 amendment: exposed daily interception flux `I` as optional WAT parquet alias `hillslope_wat.Interception` while preserving `InterceptionStorage` as carryover storage, enabling complete annual closure identity audits without overloading storage semantics. |
 | `2026-06-05` | `109` | `Codex` | HPHYS0290 amendment: required WB13 `RM` to consume explicit `snow.post_winter_rain_m` rather than inferring post-winter rain from raw precipitation, SWE, or snow-active state. |
 | `2026-06-04` | `108` | `Codex` | HPHYS0289 amendment: superseded raw-precipitation/SWE-delta WB13 `RM` proxy wording with baseline publication authority `RM = post-winter rain + wmelt + irrigation` and `Snow-Water = runtime snowpack storage`. |
 | `2026-06-04` | `107` | `Codex` | HPHYS0288 amendment: added rain-on-snow `RM`/storage-forcing authority requiring residual rain released from snowpack holding capacity to flow through `hrmlt`/`wmelt` and be excluded from direct-rain double counting. |

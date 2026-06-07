@@ -82,10 +82,22 @@ publication-safe Daymet CLI audit:
    physics-magnitude change or silent clamp. Post-review gates ran
    `cargo test --workspace`, workspace clippy, `cargo deny check`, fresh
    H1..H39 release/semantic validation, and WBVAL06 before/after residual
-   measurement. WBVAL06 annual residual attribution remains owned by
+   measurement. WBVAL06 annual residual attribution was closed by
    `20260606-wbval06-single-ofe-wat-conservation-residual-defect-closure-001/`.
    Package:
    `20260606-snowsci-stage1-snow-mass-conservation-closure-001/`.
+6a. **totalwatsed3 interception-flux audit companion** *(next WP, wepppy-side —
+   gates rung-1 completion)* — WBVAL06 publishes the daily interception flux as
+   `H.wat.Interception`, but openWEPP closure was shown only under its own
+   identity audit. The acceptance surface is the **totalwatsed3** WB audit, which
+   closes `P - (Runoff + Lateral + ET + Percolation) - ΔStorage` and does not yet
+   consume an interception flux. This WP adds `Interception` as a first-class
+   outflow in `wepppy/wepp/interchange/totalwatsed3.py` and
+   `tools/totalwatsed3_daily_closure_audit.py` and validates closure on openWEPP
+   post-WBVAL06 output. **Hard constraint: do not change ET** (`Ep`/`Es`/`Er`) —
+   producer-authoritative physics; interception is a separate outflow. Single-OFE
+   rung-1 closure is complete only when the totalwatsed3 audit closes on openWEPP
+   output (years `2..6`).
 7. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
    vertical balance, on single-OFE geometry with no routing to alias it.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
@@ -158,10 +170,11 @@ single-OFE fully settles it).
   - Purpose: close defect `WBVAL06-SINGLE-OFE-WAT-CONSERVATION-RESIDUAL` for
     the current `18` WBVAL04 WAT emitters whose years `2..6` complete-identity
     annual residuals exceed `1.0 mm/year`.
-  - Status: queued; package scaffold declares the WAT publication/water-balance
-    closure Correction Authority Envelope, conversion rule, seven-gate bar,
-    legitimate `HOLD` boundaries, active kickoff prompt, and queued evidence,
-    review, verification, gate, disposition, and handoff artifacts.
+  - Status: corrected; post-SNOWSCI WAT validation identified omitted daily
+    interception flux publication as the in-envelope mechanism. `SC-WATBAL-001`
+    v146 and WAT schema/unit contracts now require `hillslope_wat.Interception`;
+    22/22 current WAT emitters close with max annual residual
+    `0.000001037 mm` when `Interception` is included.
 - `20260606-snowsci-stage1-snow-mass-conservation-closure-001/`
   - Purpose: close defect `SNOWSCI-S1-SNOW-MASS-NONCONSERVATION` by making
     routed snowpack melt and runtime SWE storage share the post-hourly
@@ -172,7 +185,8 @@ single-OFE fully settles it).
     independent SWE debit. Release `p7`, `p11`, `p18`, and `p20` now publish;
     post-review gates ran, and WBVAL06 max annual R fell from `94.433070 mm`
     to `26.790809 mm` on the 18 WBVAL04 status-valid emitters. WBVAL06 annual
-    residual attribution remains with the queued WBVAL06 package.
+    residual attribution was closed by the WBVAL06 package as omitted
+    interception publication.
 - `20260606-hphys0319-fixed-baseline-stmtim-observe-recovery-001/`
   - Purpose: recover fixed-baseline `stmtim.for` observe values for the 2013
     day 11 hour 11 H1/H7/H39 route, pair them with regenerated OpenWEPP

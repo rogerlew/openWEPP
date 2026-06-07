@@ -1,16 +1,22 @@
 # WBVAL06 Single-OFE WAT Conservation Residual Defect Closure
 
-Status: queued
+Status: corrected
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective
 
 Close defect `WBVAL06-SINGLE-OFE-WAT-CONSERVATION-RESIDUAL` end-to-end: under
-the WBVAL04 publication-safe climate, all `18` WAT-emitting Rocky Mountain
-single-OFE hillslopes have annual complete-identity residuals above
-`1.0 mm/year` for years `2..6`; the maximum current residual is `94.433 mm`
-on `p4`, year `5`.
+the WBVAL04 publication-safe climate, the Rocky Mountain single-OFE WAT emitters
+retain an annual complete-identity residual above `1.0 mm/year` for years `2..6`
+after the upstream snow-conservation fix.
+
+Re-baseline note (2026-06-07): SNOWSCI-S1 (`9456e4b`) closed the dominant snow
+mass-conservation leak and cut the maximum annual residual from `94.433 mm`
+(pre-fix, `p4` year 5) to `26.791 mm`. The figures below are the pre-SNOWSCI
+WBVAL04 baseline; Milestone 1 must re-measure the residual on the post-SNOWSCI
+`9456e4b` binary (max residual, and how many of the 18 emitters still exceed
+`1.0 mm/year`) before any attribution.
 
 This package owns the WAT publication and complete-identity water-balance
 closure envelope. If the root cause is in-envelope and authority-backed, this
@@ -27,9 +33,18 @@ boundary.
 
 WBVAL06 is split from WBVAL05 because the remaining J-95 percolation blockers
 do not emit WAT, while the residual evidence lives on emitted WAT publication
-and annual accounting surfaces. WBVAL06 may consume WBVAL05 outputs if they are
-available, but its required acceptance surface is the current 18-emitter
-population from WBVAL04.
+and annual accounting surfaces.
+
+SNOWSCI-S1 has since landed and resolved the dominant cause (the snow signed-melt
+double-debit; ~72% of the worst-case residual). The WBVAL06 remainder is
+therefore a smaller, different question, and its leading risk is that part of it
+is a *measurement/identity* artifact rather than a second physical leak:
+SNOWSCI-S1 and the Claude WBVAL01 review (B1) both flagged that the WAT residual
+identity needs a term/unit audit (e.g. `InterceptionStorage`, `Tile`,
+`UpStrmQ`/`SubRIn`, sign/lineage). So WBVAL06 must prove the residual is real
+under a complete, contract-authorized identity before attributing it to any
+mechanism; if the remainder dissolves under the corrected identity, that is a
+valid `validated non-defect` close, not a failure.
 
 ## Correction Authority Envelope
 
@@ -38,11 +53,16 @@ population from WBVAL04.
 - `WBVAL06-SINGLE-OFE-WAT-CONSERVATION-RESIDUAL`
   - Observable failure: `p1`, `p2`, `p3`, `p4`, `p5`, `p6`, `p8`, `p9`,
     `p10`, `p12`, `p13`, `p14`, `p15`, `p16`, `p17`, `p19`, `p21`, and `p22`
-    emit WAT ledgers and all exceed the `1.0 mm/year` conservation tolerance
-    for years `2..6`.
-  - Maximum current residual: `94.433 mm` (`p4`, year `5`) in WBVAL04.
-  - Current substrate: WBVAL04 WAT outputs under
-    `/tmp/wbval04_rocky_mountain_20260606T000000Z/outputs/`.
+    emit WAT ledgers and exceeded the `1.0 mm/year` conservation tolerance for
+    years `2..6` at the pre-SNOWSCI WBVAL04 baseline.
+  - Pre-SNOWSCI baseline maximum residual: `94.433 mm` (`p4`, year `5`).
+  - Post-SNOWSCI-S1 (`9456e4b`) maximum residual: `26.791 mm`; Milestone 1
+    re-measures the current per-emitter residual and the count still above
+    tolerance on the post-fix binary before attribution.
+  - Substrate: regenerate WAT on the post-SNOWSCI `9456e4b` release binary; the
+    pre-fix WBVAL04 outputs under
+    `/tmp/wbval04_rocky_mountain_20260606T000000Z/outputs/` must not be used as
+    the acceptance surface.
   - Fixture input root:
     `/wc1/runs/in/indispensable-presenter/wepp/runs/`.
 
@@ -92,6 +112,14 @@ population from WBVAL04.
 - Do not use comparator magnitude agreement as acceptance.
 - Do not tune snow, ET, percolation, runoff, or storage magnitudes with
   empirical compensation.
+- **Snow physics-magnitude is a protected Stage-2 boundary.** Snow mass
+  *conservation* is already closed by SNOWSCI-S1. If the residual attributes to
+  snow-pack mass-loss, melt/settling/density magnitude, or any `snowd.for`
+  physics question, STOP and route it to the Stage-2 snow science review
+  (`docs/backlog/20260605-snow-code-deferred-science-review.md`) — do not fix
+  snow in-package. `SC-SNOWFREEZE-001` and `04_snow_frost_irrigation.rs` are
+  in-scope here only for `Snow-Water` publication-lineage *accounting*
+  (conservation/single-source consistency), never for magnitude.
 - Do not close `p7`, `p11`, `p18`, or `p20` J-95 percolation blockers; WBVAL05
   owns that envelope.
 - Do not silently add or omit terms from the identity without canonical
@@ -239,8 +267,12 @@ Forbidden grind-HOLD examples:
 
 ## Phase Plan
 
-1. Reproduce and audit the current 18-emitter annual residuals under the
-   complete declared identity.
+1. Symptom-existence gate: regenerate WAT on the post-SNOWSCI `9456e4b` binary,
+   re-measure the per-emitter annual residual (max and count above tolerance),
+   and audit the complete declared identity for omitted/mis-signed terms
+   (`InterceptionStorage`, `Tile`, `UpStrmQ`/`SubRIn`, frozen/snow storage). If
+   the residual dissolves under the corrected complete identity, close as a
+   validated non-defect; otherwise carry the proven-real residual forward.
 2. Confirm or amend canonical `SC-*` authority for the named mechanism.
 3. Add contract-derived regression tests and record pre-implementation failing
    evidence.

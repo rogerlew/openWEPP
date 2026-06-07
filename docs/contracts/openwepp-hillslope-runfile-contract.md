@@ -167,7 +167,7 @@ Optional outputs:
   `dataset_version_major`, `dataset_version_minor`, and `schema_version`;
 - authoritative WAT projection is WB13 canonical daily schema with explicit
   post-`wepp_260430` consumer-lineage extension allowance for optional
-  producer-authoritative `InterceptionStorage`.
+  producer-authoritative `Interception` and `InterceptionStorage`.
 
 `crop` output is intentionally excluded from this contract revision because its
 columnar/output authority is not yet ratified.

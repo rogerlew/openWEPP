@@ -238,6 +238,7 @@ struct HillslopeHydoutEquivalentCouplingProvenance {
 #[derive(Debug, Clone)]
 struct SimulationOwnedWb13Row {
     wb13_row: Wb13DailyWaterBalanceRow,
+    interception_mm: f64,
     month: i8,
     day_of_month: i8,
     water_year: i16,
@@ -6265,6 +6266,7 @@ fn build_hillslope_wat_row(
         profile_porosity_cap: Some(wb13_row.wb13_row.profile_porosity_cap),
         profile_fc_store: Some(wb13_row.wb13_row.profile_fc_store),
         profile_wp_store: Some(wb13_row.wb13_row.profile_wp_store),
+        interception: Some(wb13_row.interception_mm),
         interception_storage: None,
     })
 }
@@ -6509,6 +6511,14 @@ fn build_simulation_owned_wb13_row(
     let rm = rm_m * 1_000.0;
     let irrigation_mm = irrigation_m * 1_000.0;
 
+    let interception_i_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "I")?;
+    if interception_i_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "I must be >= 0.0, observed {interception_i_m}"
+        )));
+    }
+    let interception_mm = interception_i_m * 1_000.0;
+
     let q_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "Q")?;
     if q_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -6653,6 +6663,7 @@ fn build_simulation_owned_wb13_row(
 
     Ok(SimulationOwnedWb13Row {
         wb13_row,
+        interception_mm,
         month: month_i8,
         day_of_month: day_of_month_i8,
         water_year: water_year_i16,
@@ -9709,6 +9720,9 @@ mod tests {
             .flux_surface
             .insert(BoundarySymbol::from("S"), BoundaryValue::scalar(0.0));
         runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("I"), BoundaryValue::scalar(0.0));
+        runtime_surface
             .state_surface
             .insert(BoundarySymbol::from("Irr"), BoundaryValue::scalar(0.0));
         runtime_surface
@@ -10653,6 +10667,7 @@ mod tests {
                 profile_fc_store: 220.0,
                 profile_wp_store: 120.0,
             },
+            interception_mm: 0.25,
             month: 4,
             day_of_month: 9,
             water_year: 1,
@@ -10699,6 +10714,50 @@ mod tests {
         assert!((row.wb13_p_mm.expect("WB13 P") - 10.0).abs() < 1.0e-12);
         assert!((row.wb13_rm_mm.expect("WB13 RM") - 12.0).abs() < 1.0e-12);
         assert!((row.wb13_snow_water_mm.expect("WB13 Snow-Water") - 120.0).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn wbval06_hillslope_wat_row_publishes_daily_interception_flux() {
+        let wb13_row = SimulationOwnedWb13Row {
+            wb13_row: Wb13DailyWaterBalanceRow {
+                ofe: 1,
+                julian_day: 42,
+                year: 2,
+                p: 5.0,
+                rm: 4.25,
+                q: 0.0,
+                ep: 0.5,
+                es: 0.1,
+                er: 0.0,
+                dp: 0.05,
+                upstrmq: 0.0,
+                subrin: 0.0,
+                latqcc: 0.0,
+                total_soil: 200.0,
+                frozwt: 0.0,
+                snow_water: 0.0,
+                qofe: 0.0,
+                tile: 0.0,
+                irr: 0.0,
+                area: 10_000.0,
+                soil_water_total: 200.0,
+                profile_depth: 1_000.0,
+                profile_porosity_cap: 300.0,
+                profile_fc_store: 220.0,
+                profile_wp_store: 120.0,
+            },
+            interception_mm: 0.75,
+            month: 2,
+            day_of_month: 11,
+            water_year: 2,
+            sim_day_index: 407,
+        };
+
+        let wat_row =
+            build_hillslope_wat_row(&wb13_row).expect("valid WB13 row should publish WAT row");
+
+        assert_eq!(wat_row.interception, Some(0.75));
+        assert_eq!(wat_row.interception_storage, None);
     }
 
     #[test]

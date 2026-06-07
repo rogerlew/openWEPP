@@ -1,6 +1,6 @@
 # Prompts
 
-Status: queued
+Status: executed
 
-- `active/` contains the kickoff prompt for package execution.
+- `active/` contains the kickoff prompt used for package execution.
 - `archived/` is reserved for completed or superseded prompts.

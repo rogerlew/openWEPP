@@ -33,6 +33,7 @@ fn cli04_contract_surface_declares_wat_metadata_parity_and_dependency_posture() 
         "arrow2",
         "arrow-array",
         "arrow-schema",
+        "Interception",
         "InterceptionStorage",
     ] {
         assert!(
@@ -104,14 +105,30 @@ wat = "output/H1.wat.parquet"
     );
 
     let interception_metadata = field_metadata
-        .get("InterceptionStorage")
-        .expect("InterceptionStorage field metadata should exist");
+        .get("Interception")
+        .expect("Interception field metadata should exist");
     assert_eq!(
         interception_metadata.get("units").map(String::as_str),
         Some("mm")
     );
     assert!(
         interception_metadata
+            .get("description")
+            .is_some_and(|value| value.contains("interception flux I")),
+        "Interception description should document daily I flux semantics"
+    );
+
+    let interception_storage_metadata = field_metadata
+        .get("InterceptionStorage")
+        .expect("InterceptionStorage field metadata should exist");
+    assert_eq!(
+        interception_storage_metadata
+            .get("units")
+            .map(String::as_str),
+        Some("mm")
+    );
+    assert!(
+        interception_storage_metadata
             .get("description")
             .is_some_and(|value| value.contains("optional producer-authoritative term")),
         "InterceptionStorage description should document producer-authoritative optional semantics"

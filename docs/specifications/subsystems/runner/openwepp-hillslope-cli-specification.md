@@ -155,7 +155,8 @@ Optional parquet outputs when configured in `.run`:
    `dataset_version_minor`, and `schema_version`.
 3. WAT schema authority is WB13 canonical 25-column projection with explicit
    post-`wepp_260430` lineage exception for optional
-   producer-authoritative `InterceptionStorage`.
+   producer-authoritative `Interception` and `InterceptionStorage` parquet
+   terms.
 
 `crop` output is intentionally out of scope for this revision until its
 columnar/output contract authority is defined.
@@ -265,7 +266,7 @@ Sidecar constraints:
 | `RUNNER-HILL-INV-008` | openWEPP hillslope `.run` unit system is metric-only (`unit_system = "metric"`); non-metric unit selections are rejected. | hard-fail |
 | `RUNNER-HILL-INV-009` | Output-family serialization/validation logic is implemented via dedicated shared outputs crate boundary (`crates/openwepp-output/` target; `crates/openwepp-hillslope-output/` transition-only predecessor) with crate-owned tests. | hard-fail + package hold |
 | `RUNNER-HILL-INV-010` | When configured, `outputs.wat` emission preserves WEPPpy/WEPPpyo3 metadata parity (`units`/`description` field metadata + required dataset metadata version keys). | hard-fail |
-| `RUNNER-HILL-INV-011` | `outputs.wat` schema authority preserves WB13 canonical daily projection and permits optional producer-authoritative `InterceptionStorage` term per post-`wepp_260430` consumer-lineage authority. | hard-fail + review hold |
+| `RUNNER-HILL-INV-011` | `outputs.wat` schema authority preserves WB13 canonical daily projection and permits optional producer-authoritative `Interception` and `InterceptionStorage` terms per post-`wepp_260430` consumer-lineage authority. | hard-fail + review hold |
 | `RUNNER-HILL-INV-012` | New CLI04 parquet implementation work uses `arrow-rs` crate stack (`parquet`, `arrow-array`, `arrow-schema`) and does not adopt `arrow2`. | hard-fail + package hold |
 
 ## Implementation Sequencing Requirement
@@ -296,7 +297,7 @@ For CLI03/CLI04 code-authoring work where contract authority applies:
    - schema metadata keys: `dataset_version`, `dataset_version_major`,
      `dataset_version_minor`, `schema_version`.
 7. WAT schema parity tests validate canonical WB13 projection compatibility and
-   optional `InterceptionStorage` handling.
+   optional `Interception` / `InterceptionStorage` handling.
 8. CLI04 dependency posture tests/static gates enforce shared-boundary parquet
    stack policy (`parquet`, `arrow-array`, `arrow-schema`) and reject new
    `arrow2` adoption.
