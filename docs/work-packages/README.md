@@ -154,6 +154,21 @@ publication-safe Daymet CLI audit:
    closes the Corn engagement defect for `Ep`/canopy interception and records
    the original `Er` wording as an overclaim, not an unresolved defect. Package:
    `20260608-fq3dc-et-corn-engagement-closure-001/`.
+7d. **FQ-4 ksflag frost activation + closure** *(scaffolded — the rung-2 target,
+   READ NEXT)* — DC-ExecPlan to close `FQ4-FROST-KSFLAG-ACTIVATION-001`: standard
+   `ksflag` frost does not engage on algebraic-radium (frost depth `frdp_m`/`dfrost`
+   and frozen water `ws_frz`/`frozwt` stay 0, so `infcap_frz` never bites and ksflag
+   on/off runs are identical) at a freezing agricultural site (PRESTON MN,
+   `lanuse=1` → `ksflag=1`, frost-enabled per `SC-SNOWFREEZE-001#INV-SNOWFREEZE-014`).
+   The two confounders are now cleared (FQ-1 soil `1faf0be`, runoff DC `11c4e40`,
+   corn-ET DC `ab809e8`), so frost is assessable in isolation. M1 folds in the FQ-2
+   ledger fix, re-runs the ksflag on/off activation pass on the repaired
+   ~42-runnable population (FROSTVAL01 had only 6), and disambiguates the mechanism
+   (temp-input wiring vs the freeze-index proxy vs frozen-water derivation; the proxy
+   diverges from the `SC-SNOWFREEZE-001` heat-flow authority, `INV-SNOWFREEZE-006`/
+   `012`). Acceptance = contract-correct activation with closure still holding under
+   frost, OR a comparator+temperature-proven legitimate frost-inactive exclusion.
+   Package: `20260608-fq4-ksflag-frost-activation-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-gated.
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
