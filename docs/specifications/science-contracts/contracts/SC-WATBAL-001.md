@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 146
+contract_version: 147
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-06
+last_reviewed: 2026-06-07
 supersedes: []
 superseded_by: []
 ---
@@ -54,6 +54,7 @@ Out of scope:
 |---|---|---|---|
 | REF-WATBAL-CH5-BAL | `references/50201000/chap5.pdf` §5.1, Eq. [5.1.1] | Daily continuous water-balance equation and required closure terms (`Θ`, `Θin`, `P`, `I`, `S`, `Q`, `ET`, `D`, `Qd`). | `[DIRECT][Static]` |
 | REF-WATBAL-CH5-INTERCEPT | `chap5.pdf` §5.1, Eq. [5.1.2] | Biomass-driven interception term semantics and sign/domain expectations. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-IDAT-INTERCEPT | `/workdir/wepp-forest_260430_baseline/src/idat.for:286-291` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline canopy/residue interception equation-input bound: live/dead mass is limited to `8000 kg ha^-1` before evaluating the second-order interception equation; the plant biomass state itself is not rejected by this cap. | `[DIRECT][Static]` |
 | REF-WATBAL-CH5-SNOW | `chap5.pdf` §5.1 text (rain/snow partition and melt treatment) | Snow accumulation/melt contribution sign convention in Eq. [5.1.1]. | `[DIRECT][Static]` |
 | REF-WATBAL-CH5-ETDIST | `chap5.pdf` §5.3, Eq. [5.3.1]-[5.3.4] | Soil-evaporation depth distribution, root-zone uptake distribution, and water-deficit adjustment semantics. | `[DIRECT][Static]` |
 | REF-WATBAL-CH5-PERC | `chap5.pdf` §5.4, Eq. [5.4.1]-[5.4.5] | Percolation eligibility at field capacity, conductivity adjustment, and lower-layer restriction semantics. | `[DIRECT][Static]` |
@@ -1107,8 +1108,10 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 
 1. Canopy interception is computed before runoff/infiltration reconciliation
    and before daily storage closure acceptance.
-2. Biomass context for interception uses live above-ground biomass proxy:
-   - `VE = vdmt * 10000` (`kg ha^-1`)
+2. Biomass context for interception uses live above-ground biomass proxy and
+   the pinned-baseline interception equation-input cap:
+   - `VE_raw = vdmt * 10000` (`kg ha^-1`)
+   - `VE = min(VE_raw, 8000)` for Eq. [5.1.2] evaluation only
 3. Canopy-interception potential follows Chapter-5 Eq. [5.1.2] lineage:
    - `Ipot = cancov * ((0.000627 * VE - 3.73349e-8 * VE^2) / 1000)` (`m`)
 4. Runtime interception is bounded by available hyetograph rainfall:
@@ -1122,7 +1125,8 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 5. Domain requirements are hard-fail:
    - `0 <= cancov <= 0.999`
    - `lai >= 0`
-   - `0 <= vdmt <= 0.8` (`kg m^-2`) so `0 <= VE <= 8000` (`kg ha^-1`)
+   - `vdmt >= 0` (`kg m^-2`) and finite so `VE = vdmt * 10000` remains
+     finite and non-negative
 6. Runoff/infiltration reconciliation consumes interception explicitly:
    - `wb14_hyetograph_liquid_after_interception = wb14_hyetograph_rainfall - I`
    - `Q = wb14_hyetograph_liquid_after_interception + S + runoff_carryover - wb12_infiltration - wb12_depression_storage_delta`
@@ -1149,7 +1153,8 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    hard-fails with `HKERNEL-WB14-RUNOFF-E-001`.
 3. Non-finite canopy interception input hard-fails with
    `HKERNEL-WB14-RUNOFF-E-002`.
-4. Out-of-domain canopy interception input (`cancov`, `lai`, `vdmt`) or
+4. Out-of-domain canopy interception input (`cancov`, `lai`, negative/non-finite
+   `vdmt`) or
    coupled closure overflow hard-fails with `HKERNEL-WB14-RUNOFF-E-003` or
    `HKERNEL-WB12-STORAGE-E-003` at the affected phase.
 5. Within-tolerance negative interception/liquid values caused by finite
@@ -2386,6 +2391,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 | `2026-06-05` | `114` | `Codex` | HPHYS0294 amendment: added post-ingress storage/percolation/lateral attribution authority requiring WB18/WB19 trace-grade magnitude accounting and snow-excluded residual masks before production edits. |
 | `2026-06-05` | `110` | `Codex` | HPHYS0291 amendment: added same-day snow publication lifecycle authority from runoff producer fluxes through WB13 and required trace evidence before assigning remaining residual ownership. |
 | `2026-06-07` | `146` | `Codex` | WBVAL06 amendment: exposed daily interception flux `I` as optional WAT parquet alias `hillslope_wat.Interception` while preserving `InterceptionStorage` as carryover storage, enabling complete annual closure identity audits without overloading storage semantics. |
+| `2026-06-07` | `147` | `Codex` | FQ3-DC ET Corn amendment: aligned WB15 plant-biomass consumer domain with `SC-PLANT-001`; `vdmt` is finite non-negative live biomass and is not rejected above 0.8 kg m^-2, while Eq. [5.1.2] interception uses the pinned-baseline `8000 kg ha^-1` mass-input cap. |
 | `2026-06-05` | `109` | `Codex` | HPHYS0290 amendment: required WB13 `RM` to consume explicit `snow.post_winter_rain_m` rather than inferring post-winter rain from raw precipitation, SWE, or snow-active state. |
 | `2026-06-04` | `108` | `Codex` | HPHYS0289 amendment: superseded raw-precipitation/SWE-delta WB13 `RM` proxy wording with baseline publication authority `RM = post-winter rain + wmelt + irrigation` and `Snow-Water = runtime snowpack storage`. |
 | `2026-06-04` | `107` | `Codex` | HPHYS0288 amendment: added rain-on-snow `RM`/storage-forcing authority requiring residual rain released from snowpack holding capacity to flow through `hrmlt`/`wmelt` and be excluded from direct-rain double counting. |

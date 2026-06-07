@@ -350,6 +350,7 @@ algorithm.
 | INV-PLANT-023 | SIMIMPL21 root-uptake stress-lineage invariant: plant growth stress coupling must consume ET stress (`Ws`) and root-depth/uptake lineage (`Rd`/`rtd`, `UPi`, `Ui`) derived from canonical WB11 `swu` semantics; synthetic stress substitution detached from layer-uptake lineage is invalid. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-SWU, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-024 | Legacy `gddmax` sentinel closure: projected `gddmax<=0` must resolve through `yldopt/gdmax`-authoritative monthly-climate integration (`obmaxt`, `obmint`, `btemp`, management day controls) to a finite strictly positive `gddmax_eff` before phenology equations execute. | hard-fail | REF-PLANT-LEGACY-YLDOPT, REF-PLANT-LEGACY-GDMAX, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-025 | Initial live-canopy assimilation: cropland initial-condition `cancov` must initialize primary live plant state before daily growth/ET. For established perennial crops (`imngmt=2`, `jdplt=0`), projection must seed `rtd` from the `rdmax` envelope, `rtmass=rtmmax`, and `vdmt`/`lai` through legacy `initgr` equations when `cancov>0`; `sumgdd` must be initialized through `initgr` when `gddmax` is already resolved or at the first growth update after `gddmax_eff` sentinel resolution. It must not leave live-canopy state at unconditional zero when initial canopy cover is present. | hard-fail | REF-PLANT-LEGACY-INIT1, REF-PLANT-LEGACY-INITGR, REF-PLANT-LEGACY-INFILE, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-026 | Annual PL activation persistence invariant: when an annual/fallow crop is outside its active `jdplt..jdharv` window, scheduler suppression may be day-local only. Management-derived PL schedule/runtime sentinel surfaces must be preserved for the next daily activation decision so the same annual crop can enter PL16 growth after `jdplt`; deleting the activation sentinel from carried runtime state and thereby suppressing all later annual growth is invalid. | hard-fail | REF-PLANT-LEGACY-PTGRA, REF-PLANT-LEGACY-INFILE, INV-PLANT-018, SC-EVAP-001#INV-EVAP-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -444,6 +445,7 @@ algorithm.
 | `INV-PLANT-023` | runtime + governance | ET stress/root-uptake lineage validator for coupled growth regulation | Typed hard error / explicit `HOLD` when `Ws` and root-uptake lineage are not traceable to WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-024` | runtime | Legacy `gddmax` sentinel resolver (`yldopt/gdmax` branch) | Typed hard error on missing/non-finite monthly climate vectors or non-positive resolved `gddmax_eff` | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-025` | runtime | Initial-condition projection for primary live plant state (`cancov`, `vdmt`, `lai`, `sumgdd`, `rtmass`, `rtd`) | Typed hard error on missing/non-finite/out-of-domain assimilation inputs; zero live-state publication is invalid when established perennial initial cover is present | Tier-A gate for WB17 Ep lineage closure | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-026` | runtime | Runner PL activation lifecycle across inactive-to-active annual windows | Preserve schedule/runtime sentinel surfaces across day boundaries while allowing day-local PL phase skip before `jdplt`; hard error or explicit defect hold when a valid annual crop cannot re-activate after planting | FQ3-DC Corn ET engagement closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -600,6 +602,11 @@ Minimum required scenario families for contract conformance:
      `gddmax_eff` from `gdmax(1,365)`;
    - missing/non-finite monthly vectors or non-positive resolved `gddmax_eff`
      hard-fail with typed boundary status.
+15. Annual inactive-to-active lifecycle vectors:
+   - pre-plant day (`day < jdplt`) may skip PL growth for that day without
+     mutating carried management schedule sentinels;
+   - later in-window day (`jdplt < day < jdharv`) must re-activate the same
+     annual crop slot and execute the PL16 equation path from carried state.
 
 ## WB15 Plant-to-Interception Coupling Addendum
 
@@ -705,3 +712,4 @@ Minimum required scenario families for contract conformance:
 | `2026-05-25` | `15` | `Codex` | MOFE11 amendment: added legacy `oratea/orater` domain authority (`infile.for` direct read + `decomp.for` exponential usage), revised PL17 decomposition-rate domain from positive to non-negative (`zero` as explicit no-decay), and updated guards/test vectors to reject negative constants while preserving typed fail-closed posture. |
 | `2026-06-02` | `16` | `Codex` | HPHYS0250 amendment: added initial live-canopy assimilation authority from baseline `init1/initgr`, introduced `INV-PLANT-025`, and tied established-perennial initial state to WB17 Ep lineage closure. |
 | `2026-06-02` | `17` | `Codex` | HPHYS0250 review disposition: disclosed `CANCOV_MAX=0.999` as an openWEPP finite-domain guard for initial live-canopy assimilation and named the corresponding production constants at the code site. |
+| `2026-06-07` | `18` | `Codex` | FQ3-DC Corn ET amendment: added `INV-PLANT-026` requiring day-local annual PL activation skips to preserve carried schedule sentinels so pre-plant annual days do not suppress post-plant growth and ET engagement. |

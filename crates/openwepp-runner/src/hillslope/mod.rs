@@ -3874,10 +3874,8 @@ fn execute_scheduler_kernel_lifecycle(
 ) -> Result<DailyExecutionResult, HillslopeCliError> {
     let mut runtime_surface = runtime_surface;
     seed_wb11_runtime_surface_inputs(&mut runtime_surface, context.execution_lane)?;
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("year"),
-        BoundaryValue::scalar(f64::from(context.simulation_year)),
-    );
+    seed_scheduler_calendar_symbols(&mut runtime_surface, &context);
+    let pl_activation_sentinel = pl_runtime_activation_sentinel_value(&runtime_surface);
     prepare_pl_runtime_activation_for_scheduler(&mut runtime_surface)?;
     let trace_day = context
         .hphys0245_trace_config
@@ -4003,6 +4001,12 @@ fn execute_scheduler_kernel_lifecycle(
         });
     }
 
+    let mut writeback_surface = execution_report.writeback_surface.clone();
+    restore_pl_runtime_activation_sentinel_for_next_day(
+        &mut writeback_surface,
+        pl_activation_sentinel,
+    );
+
     if trace_day {
         hphys0245_trace_rows.push(build_hphys0245_trace_row(
             context.run_name,
@@ -4012,14 +4016,14 @@ fn execute_scheduler_kernel_lifecycle(
             context.calendar_day.julian_day,
             "post_scheduler",
             None,
-            &execution_report.writeback_surface,
+            &writeback_surface,
             None,
             snow_runtime_before,
         ));
     }
 
     let wb13_row = build_simulation_owned_wb13_row(
-        &execution_report.writeback_surface,
+        &writeback_surface,
         context.publication_area_m2,
         context.simulation_year,
         context.sim_day_index,
@@ -4035,13 +4039,13 @@ fn execute_scheduler_kernel_lifecycle(
             context.calendar_day.julian_day,
             "post_wb13",
             None,
-            &execution_report.writeback_surface,
+            &writeback_surface,
             Some(&wb13_row),
             snow_runtime_before,
         ));
     }
     let coupling_vectors =
-        build_simimpl10_coupling_vector_provenance(&execution_report.writeback_surface, &wb13_row)?;
+        build_simimpl10_coupling_vector_provenance(&writeback_surface, &wb13_row)?;
     let kernel_phase_message_ids = execution_report
         .phase_reports
         .iter()
@@ -4063,11 +4067,46 @@ fn execute_scheduler_kernel_lifecycle(
             .to_string(),
         coupling_vectors,
         wb13_row,
-        runtime_surface: execution_report.writeback_surface,
+        runtime_surface: writeback_surface,
         kernel_phase_message_ids,
         erod14_wave2_kernel_status_seen,
         hphys0245_trace_rows,
     })
+}
+
+fn pl_runtime_activation_sentinel_value(
+    runtime_surface: &HillslopeWritebackSurface,
+) -> Option<BoundaryValue> {
+    runtime_surface
+        .state_surface
+        .get(&BoundarySymbol::from("pl_schedule_slot_count"))
+        .copied()
+}
+
+fn seed_scheduler_calendar_symbols(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    context: &SchedulerLifecycleContext<'_>,
+) {
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("year"),
+        BoundaryValue::scalar(f64::from(context.simulation_year)),
+    );
+    runtime_surface.state_surface.insert(
+        BoundarySymbol::from("day"),
+        BoundaryValue::scalar(f64::from(context.calendar_day.julian_day)),
+    );
+}
+
+fn restore_pl_runtime_activation_sentinel_for_next_day(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    sentinel_value: Option<BoundaryValue>,
+) {
+    if let Some(value) = sentinel_value {
+        runtime_surface
+            .state_surface
+            .entry(BoundarySymbol::from("pl_schedule_slot_count"))
+            .or_insert(value);
+    }
 }
 
 fn prepare_pl_runtime_activation_for_scheduler(
@@ -7758,6 +7797,104 @@ mod tests {
         assert!(
             !source.contains(&forbidden_fragment),
             "runner scheduler lifecycle must not strip {sentinel}; PL growth must remain active so rtd can feed final Ep lineage"
+        );
+    }
+
+    #[test]
+    fn fq3dc_annual_preplant_skip_preserves_pl_sentinel_for_later_activation() {
+        let mut runtime_surface = HillslopeWritebackSurface {
+            state_surface: BTreeMap::new(),
+            flux_surface: BTreeMap::new(),
+        };
+        for (symbol, value) in [
+            ("pl_schedule_slot_count", 1.0),
+            ("pl_schedule_rotation_years", 7.0),
+            ("pl_schedule_rotation_repeats", 1.0),
+            ("year", 1.0),
+            ("day", 1.0),
+            ("pl_schedule_slot_0001_ofe_index", 1.0),
+            ("pl_schedule_slot_0001_year_in_rotation", 1.0),
+            ("pl_schedule_slot_0001_rotation_index", 1.0),
+            ("pl_schedule_slot_0001_crop_slots", 1.0),
+            ("pl_schedule_slot_0001_crop_0001_imngmt", 1.0),
+            ("pl_growth_slot_0001_crop_0001_jdplt", 130.0),
+            ("pl_growth_slot_0001_crop_0001_jdharv", 288.0),
+        ] {
+            runtime_surface
+                .state_surface
+                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+        }
+
+        let sentinel_value = pl_runtime_activation_sentinel_value(&runtime_surface);
+        prepare_pl_runtime_activation_for_scheduler(&mut runtime_surface)
+            .expect("pre-plant annual day should be a day-local scheduler skip");
+        assert!(
+            !runtime_surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("pl_schedule_slot_count")),
+            "pre-plant day should suppress PL phases for that day"
+        );
+
+        restore_pl_runtime_activation_sentinel_for_next_day(&mut runtime_surface, sentinel_value);
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("day"), BoundaryValue::scalar(153.0));
+
+        prepare_pl_runtime_activation_for_scheduler(&mut runtime_surface)
+            .expect("post-plant annual day should re-evaluate the carried PL schedule");
+        assert!(
+            runtime_surface
+                .state_surface
+                .contains_key(&BoundarySymbol::from("pl_schedule_slot_count")),
+            "carried annual schedule sentinel must be available after jdplt so Corn growth can engage ET"
+        );
+    }
+
+    #[test]
+    fn fq3dc_scheduler_calendar_day_symbol_uses_julian_day_for_pl_activation() {
+        let mut runtime_surface = HillslopeWritebackSurface {
+            state_surface: BTreeMap::new(),
+            flux_surface: BTreeMap::new(),
+        };
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("day"), BoundaryValue::scalar(2.0));
+        runtime_surface
+            .state_surface
+            .insert(BoundarySymbol::from("year"), BoundaryValue::scalar(1990.0));
+        let calendar_day = ClimateDayProjection {
+            year: 1990,
+            month: 6,
+            day_of_month: 2,
+            julian_day: 153,
+            precipitation_mm: 0.0,
+        };
+
+        seed_scheduler_calendar_symbols(
+            &mut runtime_surface,
+            &SchedulerLifecycleContext {
+                run_name: "calendar-probe",
+                execution_lane: ExecutionLane::Hourly,
+                publication_area_m2: 1.0,
+                simulation_year: 1,
+                sim_day_index: 153,
+                calendar_day: &calendar_day,
+                runtime_swe_before_m: 0.0,
+                hphys0245_trace_config: None,
+            },
+        );
+
+        let day = require_runtime_surface_scalar(&runtime_surface, "day")
+            .expect("scheduler day symbol should exist");
+        assert!(
+            (day - 153.0).abs() < f64::EPSILON,
+            "PL activation must consume Julian day, not day-of-month"
+        );
+        let year = require_runtime_surface_scalar(&runtime_surface, "year")
+            .expect("scheduler year symbol should exist");
+        assert!(
+            (year - 1.0).abs() < f64::EPSILON,
+            "PL activation must consume simulation year within the rotation"
         );
     }
 

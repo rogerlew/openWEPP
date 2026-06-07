@@ -141,6 +141,19 @@ publication-safe Daymet CLI audit:
    `Q/QOFE` on all `42/42` runnable prefixes while preserving annual WAT closure
    at numerical noise (`max_abs=2.81e-11 mm`). Package:
    `20260608-fq3dc-runoffpart-q-qofe-closure-001/`.
+7c. **FQ-3 Corn annual ET/canopy engagement** *(complete)* — closed
+   `FQ3-DC-ET-CORN-ENGAGEMENT-001` for the post-FQ1 algebraic-radium Corn
+   population. The annual PL activation sentinel was being deleted on pre-plant
+   days and the scheduler calendar `day` symbol was day-of-month instead of
+   Julian day, so annual Corn never reached its `jdplt` activation path.
+   `SC-PLANT-001` v18 and `SC-EVAP-001` v26 now require annual pre-plant skips
+   to be day-local and preserve PL schedule sentinels. Validation over all
+   `36/36` Corn prefixes produced nonzero `Ep` and `Interception` with annual
+   closure at numerical noise (`max_abs=3.16e-11 mm`). Upstream FQ-3 evidence
+   classified `Er=0` as expected-config-zero (`legacy=0`), so this package
+   closes the Corn engagement defect for `Ep`/canopy interception and records
+   the original `Er` wording as an overclaim, not an unresolved defect. Package:
+   `20260608-fq3dc-et-corn-engagement-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-gated.
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`

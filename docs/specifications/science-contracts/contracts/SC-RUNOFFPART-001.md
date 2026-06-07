@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 39
+contract_version: 40
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -68,6 +68,7 @@ Out of scope:
 | REF-RUNOFFPART-LEGACY-WMELT-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for` lines 342-345 and `/workdir/wepp-forest_260430_baseline/src/grna.for` lines 267-269, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Snowmelt (`wmelt`) is part of the same event water supply used by infiltration and runoff partition: `fin` includes `wmelt`, and Green-Ampt snowmelt forcing derives `smrate = wmelt / dur`. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-LEGACY-WB13-RM | `/workdir/wepp-forest_260430_baseline/src/contin.for:847-880`, `/workdir/wepp-forest_260430_baseline/src/watbalprint.for:84-106`, and `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1082-1142`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | WB13 `RM` consumes post-winter `rain(iplane)` and daily routed `wmelt(iplane)` from the same runoff/infiltration lineage. Winter-active days clear `rain(iplane)` except the warm-rain/no-snow restoration branch, so publication must not reconstruct `RM` from raw precipitation when routed `wmelt` is available. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-LEGACY-FIN-INFIL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,471-479,494-516,520-524`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Same-pass local `fin/xfin` liquid supply includes direct rain after interception, routed snowmelt, and irrigation before infiltration/runoff closure and layer-storage ingress; MOFE carry/runon arrays are governed by `REF-RUNOFFPART-LEGACY-HOURLY-CARRY` and require separate promotion for storage-ingress closure. | `[DIRECT][Static]` |
+| REF-RUNOFFPART-LEGACY-IDAT-INTERCEPT | `/workdir/wepp-forest_260430_baseline/src/idat.for:286-291`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline canopy/residue interception equation-input bound: live/dead mass is limited to `8000 kg ha^-1` before evaluating the second-order interception equation; the plant biomass state itself is not rejected by this cap. | `[DIRECT][Static]` |
 | REF-RUNOFFPART-CH11-COUPLING | `references/50201000/chap11.pdf` chapter context + `chap4.pdf` §4.4.4 | Erosion continuity uses peak runoff and effective duration surfaces from runoff partition domain. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-RUNOFFPART-PHYS-BOUNDS | Physical/common-sense invariant class | Non-negative depth/volume/rate magnitudes (except explicitly signed intermediary comparisons) and bounded branch domains. | `[INFERENCE][Static]` |
 
@@ -495,7 +496,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 1. Compute hyetograph rainfall first (`wb14_hyetograph_rainfall`) from subdaily
    forcing.
 2. Compute canopy interception from plant runtime state using Eq. [5.1.2]
-   lineage (Chapter-5 coupling) with biomass proxy `VE = vdmt * 10000`:
+   lineage (Chapter-5 coupling) with biomass proxy
+   `VE_raw = vdmt * 10000`, capped to `VE = min(VE_raw, 8000)` for
+   interception-equation evaluation only:
    - `Ipot = cancov * ((0.000627 * VE - 3.73349e-8 * VE^2) / 1000)`
 3. Apply interception-before-infiltration coupling:
    - `I = min(Ipot, wb14_hyetograph_rainfall)` for `lai > 0` and `cancov > 0`
@@ -506,7 +509,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 5. Canopy-state domain policy is hard-fail:
    - `0 <= cancov <= 0.999`
    - `lai >= 0`
-   - `0 <= vdmt <= 0.8` (`kg m^-2`; `VE <= 8000 kg ha^-1`)
+   - `vdmt >= 0` (`kg m^-2`) and finite so `VE = vdmt * 10000` remains
+     finite and non-negative
 6. Missing/non-finite/out-of-domain canopy symbols are invalid runoff states.
    Silent defaults/clamps are prohibited.
 
@@ -526,7 +530,8 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    with `HKERNEL-WB14-RUNOFF-E-001`.
 3. Non-finite canopy interception symbol hard-fails with
    `HKERNEL-WB14-RUNOFF-E-002`.
-4. Out-of-domain canopy interception symbol or coupled runoff-closure overflow
+4. Out-of-domain canopy interception symbol (`cancov`, `lai`, negative/non-finite
+   `vdmt`) or coupled runoff-closure overflow
    hard-fails with `HKERNEL-WB14-RUNOFF-E-003`.
 
 ## IRRIG10 Irrigation Runtime Coupling Addendum
@@ -862,6 +867,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-07` | `40` | `Codex` | FQ3-DC ET Corn amendment: aligned WB15 interception biomass-domain guard with plant authority; finite non-negative `vdmt` is valid even above the prior 0.8 kg m^-2 consumer cap, while the interception equation uses the pinned-baseline `8000 kg ha^-1` mass-input cap. |
 | `2026-06-05` | `38` | `Codex` | HPHYS0298 amendment: added runoff-consumer paired-partition authority requiring closed downstream identities to remain tied to ordered first-divergent cut-point evidence and forbidding compensation when snow/`RM` ownership remains upstream or unresolved. |
 | `2026-06-05` | `37` | `Codex` | HPHYS0297 amendment: added runoff-consumer defect-ledger authority requiring closed `Q` and producer-consumer identity to remain tied to snow/`RM` reconstruction verdicts without authorizing WB12/WB14/WB13 compensation. |
 | `2026-06-07` | `38` | `Codex` | SNOWSCI-S1 review disposition: added `TOL-RUNOFFPART-007`, a bounded WB14 interval-infiltration roundoff tolerance for Green-Ampt boundary solves, with material over-infiltration still fail-closed. |

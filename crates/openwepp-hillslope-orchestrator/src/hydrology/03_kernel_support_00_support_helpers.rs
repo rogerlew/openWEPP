@@ -119,6 +119,36 @@ mod tests {
         assert!(liquid_after_interception.abs() < f64::EPSILON);
         assert!(rainfall_scale.abs() < f64::EPSILON);
     }
+
+    #[test]
+    fn fq3dc_wb15_accepts_finite_non_negative_corn_vdmt_above_legacy_cap() {
+        let mut state_surface = std::collections::BTreeMap::new();
+        let flux_surface = std::collections::BTreeMap::new();
+        state_surface.insert(BoundarySymbol::from("cancov"), BoundaryValue::scalar(0.72));
+        state_surface.insert(BoundarySymbol::from("lai"), BoundaryValue::scalar(2.4));
+        state_surface.insert(
+            BoundarySymbol::from("vdmt"),
+            BoundaryValue::scalar(2.4),
+        );
+        let request = HillslopeKernelRequest::with_phase_context(
+            "runoff_reconciliation",
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            &state_surface,
+            &flux_surface,
+        );
+
+        let interception = Wb11HydrologyKernel::compute_canopy_interception_depth(
+            &request,
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            0.004,
+        )
+        .expect("finite non-negative plant biomass should be valid WB15 input");
+
+        assert!(interception.is_finite());
+        assert!(interception > 0.0);
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -4336,7 +4366,7 @@ impl Wb11HydrologyKernel {
             WB15_SYMBOL_PLANT_VDMT,
             vdmt,
             Some(0.0),
-            Some(WB15_VDMT_MAX),
+            None,
         )?;
 
         if cancov <= WB11_ZERO_THRESHOLD || lai <= WB11_ZERO_THRESHOLD {
@@ -4350,13 +4380,14 @@ impl Wb11HydrologyKernel {
                 symbol: BoundarySymbol::from(WB15_SYMBOL_PLANT_VDMT),
                 value: biomass_kg_ha,
                 minimum: Some(0.0),
-                maximum: Some(WB15_VDMT_MAX * WB15_BIOMASS_TO_KG_HA),
+                maximum: None,
             });
         }
 
+        let interception_biomass_kg_ha = biomass_kg_ha.min(WB15_INTERCEPT_BIOMASS_MAX_KG_HA);
         let potential_interception = cancov
-            * ((WB15_INTERCEPT_LINEAR_COEFF * biomass_kg_ha
-                - WB15_INTERCEPT_QUADRATIC_COEFF * biomass_kg_ha.powi(2))
+            * ((WB15_INTERCEPT_LINEAR_COEFF * interception_biomass_kg_ha
+                - WB15_INTERCEPT_QUADRATIC_COEFF * interception_biomass_kg_ha.powi(2))
                 / WB15_INTERCEPT_MM_TO_M);
         Self::require_flux_range(
             phase_class,

@@ -250,8 +250,8 @@ pub(crate) const WB15_SYMBOL_PLANT_LAI: HillslopeProductionStateSymbol =
 pub(crate) const WB15_SYMBOL_PLANT_VDMT: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb15PlantVdmt;
 pub(crate) const WB15_CANCOV_MAX: f64 = 0.999;
-pub(crate) const WB15_VDMT_MAX: f64 = 0.8;
 pub(crate) const WB15_BIOMASS_TO_KG_HA: f64 = 10_000.0;
+pub(crate) const WB15_INTERCEPT_BIOMASS_MAX_KG_HA: f64 = 8_000.0;
 pub(crate) const WB15_INTERCEPT_LINEAR_COEFF: f64 = 0.000_627;
 pub(crate) const WB15_INTERCEPT_QUADRATIC_COEFF: f64 = 3.733_49e-8;
 pub(crate) const WB15_INTERCEPT_MM_TO_M: f64 = 1000.0;
