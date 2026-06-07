@@ -2890,45 +2890,45 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<bool, Wb11HydrologyKernelGuardError> {
-        let key = BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT);
-        let Some(value) = request.state_surface.get(&key) else {
+        if let Some(value) = request
+            .state_surface
+            .get(&BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT))
+        {
+            let scalar = value.as_f64();
+            if !scalar.is_finite() {
+                return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT),
+                    value: scalar,
+                });
+            }
+            if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&scalar) {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT),
+                    value: scalar,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+
+            let rounded = scalar.round();
+            if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT),
+                    value: scalar,
+                    minimum: Some(0.0),
+                    maximum: Some(1.0),
+                });
+            }
+        }
+
+        let Some(wint_red) =
+            Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_FROST_WINT_RED)?
+        else {
             return Ok(false);
         };
-
-        let scalar = value.as_f64();
-        if !scalar.is_finite() {
-            return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
-                phase_class,
-                symbol: key,
-                value: scalar,
-            });
-        }
-        if !(-WB11_ZERO_THRESHOLD..=1.0 + WB11_ZERO_THRESHOLD).contains(&scalar) {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT),
-                value: scalar,
-                minimum: Some(0.0),
-                maximum: Some(1.0),
-            });
-        }
-
-        let rounded = scalar.round();
-        if (scalar - rounded).abs() > WB11_ZERO_THRESHOLD {
-            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
-                phase_class,
-                symbol: BoundarySymbol::from(WB14_SYMBOL_FROST_FILE_PRESENT),
-                value: scalar,
-                minimum: Some(0.0),
-                maximum: Some(1.0),
-            });
-        }
-        if rounded < 1.0 - WB11_ZERO_THRESHOLD {
-            return Ok(false);
-        }
-
-        let wint_red =
-            Self::require_state_scalar(request, phase_class, WB14_SYMBOL_FROST_WINT_RED)?;
         Self::require_state_range(
             phase_class,
             WB14_SYMBOL_FROST_WINT_RED,

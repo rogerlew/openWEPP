@@ -254,7 +254,7 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
 
     state_surface.insert(
         BoundarySymbol::from("frost.options.wintRed"),
-        BoundaryValue::scalar(1.0),
+        BoundaryValue::scalar(if active_frost { 1.0 } else { 0.0 }),
     );
     state_surface.insert(
         BoundarySymbol::from("frost.options.fineTop"),
@@ -761,4 +761,25 @@ fn simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_c
     ] {
         let _ = require_state_scalar(&report, symbol);
     }
+}
+
+#[test]
+fn fq4_contract_default_frost_controls_activate_without_frost_sidecar_presence() {
+    let mut surface = seeded_clim06_surface(false);
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.options.wintRed"),
+        BoundaryValue::scalar(1.0),
+    );
+
+    let report = execute_clim06_surface(surface);
+    assert!(report.scheduler_report.is_success());
+
+    assert!(require_state_scalar(&report, "frost.runtime_dfrost") > CLIM06_TEST_TOLERANCE);
+    assert!(require_state_scalar(&report, "frost.runtime_ws_frz") > CLIM06_TEST_TOLERANCE);
+    let infcap = require_state_scalar(&report, "frost.runtime_infcap_frz");
+    let ssc = require_state_scalar(&report, "ssc");
+    assert!(
+        infcap + CLIM06_TEST_TOLERANCE < ssc,
+        "defaulted frost controls with wintRed=1 should reduce conductivity even when frost_file_present=0"
+    );
 }

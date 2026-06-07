@@ -1,6 +1,6 @@
 # FQ-4 ksflag Frost Activation + Closure (the rung-2 target)
 
-Status: scaffolded
+Status: complete
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

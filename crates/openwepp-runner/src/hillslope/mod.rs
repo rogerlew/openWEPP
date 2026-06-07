@@ -5476,7 +5476,7 @@ fn build_simimpl10_coupling_vector_provenance(
         )));
     }
 
-    let frsoil_active = frost_file_present && wint_red_enabled;
+    let frsoil_active = wint_red_enabled;
     let frsoil = HillslopeFrozenSoilCouplingProvenance {
         active: frsoil_active,
         frost_file_present,
