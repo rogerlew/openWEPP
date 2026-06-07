@@ -132,6 +132,15 @@ publication-safe Daymet CLI audit:
    protected percolation boundary with `HKERNEL-WB11-PERC-E-003` on `1990-162`.
    Handoff: `FQ1-P11-HKERNEL-WB11-PERC-E-003-J162`. Package:
    `20260608-fq1-soil-corrected-layer-coverage-closure-001/`.
+7b. **FQ-3 runoff `Q/QOFE` underproduction** *(complete)* — closed
+   `FQ3-DC-RUNOFFPART-QQOFE-001` for the post-FQ1 algebraic-radium single-OFE
+   population. `SC-RUNOFFPART-001` v39 now requires WB12/WB14 to apply the
+   top-two-layer storage limit before same-pass infiltration publication and to
+   consume the WB18/percolation-produced infiltration value when it already
+   owns the same-pass storage update. Post-fix validation produced nonzero
+   `Q/QOFE` on all `42/42` runnable prefixes while preserving annual WAT closure
+   at numerical noise (`max_abs=2.81e-11 mm`). Package:
+   `20260608-fq3dc-runoffpart-q-qofe-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-gated.
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`

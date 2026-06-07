@@ -577,6 +577,97 @@ fn wb14_contract_conformance_computes_infiltration_from_hyetograph() {
 }
 
 #[test]
+fn wb14_contract_conformance_storage_limit_routes_excess_to_runoff() {
+    let mut surface = seeded_wb14_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0001"),
+        BoundaryValue::scalar(8.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(8.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_rainfall_input"),
+        BoundaryValue::scalar(0.0246),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runon_input"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_depression_storage_delta"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(0.0246),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_storage_closure_tolerance"),
+        BoundaryValue::scalar(1.0),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("ninten"), BoundaryValue::scalar(2.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("timem_0001"),
+        BoundaryValue::scalar(0.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("timem_0002"),
+        BoundaryValue::scalar(12_240.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("intsty_0001"),
+        BoundaryValue::scalar(0.0246 / 12_240.0),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("intsty_0002"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let (infiltration, q_runoff) = run_wb14_runoff_phase_outputs(surface);
+
+    assert!(
+        infiltration <= WB14_TEST_TOLERANCE,
+        "storage-saturated top layers must not absorb event liquid; infiltration={infiltration}"
+    );
+    assert!(
+        (q_runoff - 0.0246).abs() <= WB14_TEST_TOLERANCE,
+        "rainfall excess must publish as runoff when top-two-layer storage is full; q={q_runoff}"
+    );
+}
+
+#[test]
+fn wb14_contract_conformance_uses_percolation_published_infiltration() {
+    let mut surface = seeded_wb14_surface();
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_infiltration"),
+        BoundaryValue::scalar(1.25),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb12_runoff_observed"),
+        BoundaryValue::scalar(1.95),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("management.initial.params.tillay2_m"),
+        BoundaryValue::scalar(0.1),
+    );
+    surface
+        .flux_surface
+        .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.0));
+
+    let (infiltration, q_runoff) = run_wb14_runoff_phase_outputs(surface);
+
+    assert!((infiltration - 1.25).abs() <= WB14_TEST_TOLERANCE);
+    assert!(
+        (q_runoff - 1.95).abs() <= WB14_TEST_TOLERANCE,
+        "runoff must consume percolation producer infiltration; q={q_runoff}"
+    );
+}
+
+#[test]
 fn hphys0242_contract_wb14_runoff_includes_current_saturation_carry_addback() {
     let mut baseline_surface = seeded_wb14_surface();
     enable_mofe_current_saturation_carry(&mut baseline_surface, 0.0);

@@ -493,6 +493,11 @@ impl Wb11HydrologyKernel {
             irrigation_rate_m_per_s,
             irrigation_duration_s,
         )?;
+        let cumulative_infiltration = Self::apply_wb14_storage_limit_to_infiltration(
+            request,
+            phase_class,
+            cumulative_infiltration,
+        )?;
         Self::require_state_range(
             phase_class,
             WB12_SYMBOL_INFILTRATION,
@@ -4087,18 +4092,30 @@ impl Wb11HydrologyKernel {
                 hyetograph_liquid_input,
                 interception,
             )?;
-        let cumulative_infiltration = Self::compute_coupled_infiltration_depth(
-            phase_class,
-            infiltration_conductivity,
-            matric_potential,
-            &times,
-            &intensities,
-            rainfall_scale,
-            runoff_snow_term,
-            &snow_coupling.hourly_state,
-            irrigation_rate_m_per_s,
-            irrigation_duration_s,
-        )?;
+        let cumulative_infiltration =
+            if let Some(producer_published_infiltration) =
+                Self::resolve_wb14_producer_published_infiltration(request, phase_class)?
+            {
+                producer_published_infiltration
+            } else {
+                let computed_infiltration = Self::compute_coupled_infiltration_depth(
+                    phase_class,
+                    infiltration_conductivity,
+                    matric_potential,
+                    &times,
+                    &intensities,
+                    rainfall_scale,
+                    runoff_snow_term,
+                    &snow_coupling.hourly_state,
+                    irrigation_rate_m_per_s,
+                    irrigation_duration_s,
+                )?;
+                Self::apply_wb14_storage_limit_to_infiltration(
+                    request,
+                    phase_class,
+                    computed_infiltration,
+                )?
+            };
         let liquid_after_interception = hyetograph_liquid_after_interception + irrigation_depth_m;
         if !liquid_after_interception.is_finite()
             || liquid_after_interception < -WB11_ZERO_THRESHOLD

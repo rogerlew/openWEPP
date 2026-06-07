@@ -4566,6 +4566,131 @@ impl Wb11HydrologyKernel {
         Ok(cumulative_infiltration)
     }
 
+    fn resolve_wb14_top_two_layer_storage_available(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        let nsl_symbol = if request
+            .state_surface
+            .contains_key(&BoundarySymbol::from("wb11_nsl"))
+        {
+            BoundarySymbol::from("wb11_nsl")
+        } else {
+            BoundarySymbol::from("nsl")
+        };
+        let nsl = Self::optional_state_scalar_for_symbol(
+            request,
+            phase_class,
+            &nsl_symbol,
+        )?
+        .unwrap_or(2.0);
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &nsl_symbol,
+            nsl,
+            Some(1.0),
+            None,
+        )?;
+
+        let inspected_layers = if nsl < 1.5 { 1 } else { 2 };
+        let mut available = 0.0_f64;
+        let mut saw_layer = false;
+        for layer_index in 1..=inspected_layers {
+            let theta_symbol = Self::wb18_perc_state_symbol("theta", layer_index);
+            let upper_limit_symbol = Self::wb18_perc_state_symbol("ul", layer_index);
+            let theta = Self::optional_state_scalar_for_symbol(request, phase_class, &theta_symbol)?;
+            let upper_limit =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &upper_limit_symbol)?;
+            match (theta, upper_limit) {
+                (Some(theta), Some(upper_limit)) => {
+                    Self::require_state_range_for_symbol(
+                        phase_class,
+                        &theta_symbol,
+                        theta,
+                        Some(0.0),
+                        None,
+                    )?;
+                    Self::require_state_range_for_symbol(
+                        phase_class,
+                        &upper_limit_symbol,
+                        upper_limit,
+                        Some(0.0),
+                        None,
+                    )?;
+                    saw_layer = true;
+                    available += (upper_limit - theta).max(0.0);
+                }
+                (None, None) if !saw_layer => return Ok(None),
+                (None, None) => {}
+                (Some(_), None) => {
+                    return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                        phase_class,
+                        symbol: upper_limit_symbol,
+                    });
+                }
+                (None, Some(_)) => {
+                    return Err(Wb11HydrologyKernelGuardError::MissingRequiredStateSymbol {
+                        phase_class,
+                        symbol: theta_symbol,
+                    });
+                }
+            }
+        }
+
+        if !available.is_finite() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("wb18_perc_ul_agg_0001_0002"),
+                value: available,
+                minimum: Some(0.0),
+                maximum: None,
+            });
+        }
+        Ok(Some(available))
+    }
+
+    fn apply_wb14_storage_limit_to_infiltration(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        cumulative_infiltration: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let Some(available_storage) =
+            Self::resolve_wb14_top_two_layer_storage_available(request, phase_class)?
+        else {
+            return Ok(cumulative_infiltration);
+        };
+        Ok(cumulative_infiltration.min(available_storage))
+    }
+
+    fn resolve_wb14_producer_published_infiltration(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        if !request
+            .state_surface
+            .contains_key(&BoundarySymbol::from("management.initial.params.tillay2_m"))
+        {
+            return Ok(None);
+        }
+        if !request
+            .flux_surface
+            .contains_key(&BoundarySymbol::from(WB11_SYMBOL_PERC_LOSS_D))
+        {
+            return Ok(None);
+        }
+
+        let infiltration =
+            Self::require_state_scalar(request, phase_class, WB12_SYMBOL_INFILTRATION)?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_INFILTRATION,
+            infiltration,
+            Some(0.0),
+            None,
+        )?;
+        Ok(Some(infiltration))
+    }
+
     fn resolve_interception_rainfall_scale(
         phase_class: HillslopeKernelPhaseClass,
         hyetograph_rainfall: f64,
