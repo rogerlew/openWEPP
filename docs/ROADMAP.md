@@ -70,14 +70,17 @@ tracked and ready.
 | Item | What | Provenance | Backlog |
 |---|---|---|---|
 | Snow magnitude | `snowd.for` melt/settling/density/partition equation fidelity (CRM Ch. 3.7) | legacy physics adjudication | [backlog/20260605-snow-code-deferred-science-review.md](backlog/20260605-snow-code-deferred-science-review.md) (Stage 2) |
-| Frost depth model | openWEPP uses a freeze-index proxy (`frdp = 0.20·clamp(−mean_temp/6)`, capped 0.20 m); legacy `frostn.for` uses a layered energy-balance **heat-flow** model (Dun-2008 fine sublayers, `frdp ≤ 1.0 m`) per `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-006`/`-012`, `GAP-SNOWFREEZE-002` | **openWEPP-introduced** simplification; activation + conservation are correct, depth *fidelity* is openWEPP's own | _pending — promote a defect-shaped backlog entry_ |
+| Frost depth model | openWEPP uses a freeze-index proxy (`frdp = 0.20·clamp(−mean_temp/6)`, capped 0.20 m); legacy `frostn.for` uses a layered energy-balance **heat-flow** model (Dun-2008 fine sublayers, `frdp ≤ 1.0 m`) per `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-006`/`-012`, `GAP-SNOWFREEZE-002` | **openWEPP-introduced** simplification; activation + conservation are correct, depth *fidelity* is openWEPP's own | [backlog/20260607-frost-depth-model-heat-flow-parity.md](backlog/20260607-frost-depth-model-heat-flow-parity.md) |
 
 Frost depth note: the **kfactor conductivity magnitude is legacy-faithful** (openWEPP
 uses the documented WEPP defaults; annual crops get the near-impermeable "concrete
 frost" coefficient). The deferred gap is the **depth model** only — when frost forms,
-how deep, the 0.20 m cap — which governs frost timing/extent. A comparator
-characterization (`wepp_260606_hill` frost depth/duration vs the proxy) should size the
-gap before a parity package is scoped.
+how deep, the 0.20 m cap — which governs frost timing/extent. The **sizing gate** is the
+comparator characterization
+[`work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001`](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/)
+(`wepp_260606_hill` frost depth/duration vs the proxy on the frost-active
+`algebraic-radium` substrate); its verdict drives the backlog promotion decision
+(heat-flow parity DC vs sanctioning the proxy by contract).
 
 ---
 
