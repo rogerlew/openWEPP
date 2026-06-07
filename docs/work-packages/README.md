@@ -9,11 +9,16 @@ State as of `2026-06-06`:
   HPHYS0298->0320 snow-comparator arc — and it was a **climate-forcing timing
   defect, not snow physics**. The snow surface was only where the symptom showed.
 - The HPHYS0298->0320 snow/`RM` comparator route (the combined `57` carried rows)
-  is **SUSPENDED behind** `docs/backlog/20260605-snow-code-deferred-science-review.md`,
-  per ADR-0017 (comparator is a flag, not a target) and the agreed work sequence.
-  **Do not open HPHYS0321 to continue that route.** Reopening it requires the
-  backlog science review to be promoted first, or contradictory baseline evidence
-  on a newly named source lane.
+  remains retired per ADR-0017 (comparator is a flag, not a target). **Do not open
+  HPHYS0321 to continue that route.**
+- The snow science review (`docs/backlog/20260605-snow-code-deferred-science-review.md`)
+  is now **promoted and split into two stages** (static analysis of the J-95
+  negative-SWE site, 2026-06-06): **Stage 1 = snow mass conservation /
+  single-sourcing** — an architecture/conservation hard gate that sits on rung-1's
+  closure gate, so it is **active now** (see the SNOWSCI Stage-1 package below);
+  **Stage 2 = snow physics-magnitude** — the `snowd.for` equation adjudication,
+  which **stays deferred behind the protected boundary.** Snow *conservation* is no
+  longer suspended; snow *magnitude* still is.
 
 Active work sequence (each rung adds one mechanism on an already-closed
 foundation; boundaries are closure gates, not calendar phases). WBVAL02 and
@@ -60,24 +65,34 @@ publication-safe Daymet CLI audit:
    fail closed at J-95 with `HKERNEL-WB11-PERC-E-003`. WBVAL04 routes two
    defect-shaped follow-ons: `WBVAL05-J95-HKERNEL-WB11-PERC-E-003` and
    `WBVAL06-SINGLE-OFE-WAT-CONSERVATION-RESIDUAL`.
-5. **WBVAL05-J95-PERCOLATION** *(queued DC-ExecPlan)* — close the four
-   valid-climate J-95 `HKERNEL-WB11-PERC-E-003` fail-closed hillslopes
-   (`p7`, `p11`, `p18`, `p20`) under the percolation/deep-seepage authority
-   envelope. This package owns percolation guard closure only; it must land a
-   contract-first correction if the seven-gate bar is met, or hold only at a
-   declared authority/input/process-family boundary.
-6. **WBVAL06-WAT-CONSERVATION-RESIDUAL** *(queued DC-ExecPlan)* — close the
-   current WBVAL04 `18`-emitter annual WAT conservation residual under the WAT
-   publication/water-balance closure authority envelope. This package owns the
-   complete identity, publication, and storage/flux accounting class; it may
-   consume WBVAL05 outputs if available but is scoped to the current
-   WBVAL04-emitting population.
+5. **WBVAL05-J95-PERCOLATION** *(executed, hold-boundary)* — landed a
+   contract-first WB18 fix (`SC-PERC-001` v29: WB18 consumes a published
+   `wb12_infiltration` instead of recomputing the WB14/WB12 snow-liquid partition
+   and re-validating snow state it does not own); no guard loosening. This cleared
+   `HKERNEL-WB11-PERC-E-003` but relocated the fail-closed to
+   `HKERNEL-WB14-RUNOFF-E-003`, exposing the true root cause: **negative
+   `snow.runtime_swe = -0.006171`**. Legitimately held at the snow boundary; its
+   negative-SWE follow-on is folded into SNOWSCI Stage 1.
+6. **SNOWSCI Stage 1 — snow mass conservation / single-sourcing**
+   *(queued DC-ExecPlan — next pickup)* — close
+   `SNOWSCI-S1-SNOW-MASS-NONCONSERVATION`: single-source the snow store so
+   `SWE >= 0` holds by construction and `in = out + ΔStorage` closes; promote the
+   instrumented `snow_runtime_swe_closure_error_m` to an enforced gate. **Subsumes
+   the WBVAL05 negative-SWE follow-on and the former WBVAL06 WAT-conservation
+   residual** (plausibly one snow mass-balance defect; common cause is confirmed in
+   the package's Milestone 1). Protected boundary: **no snow physics-magnitude
+   change** (that is Stage 2) and **no silent clamp** of negative SWE. This is the
+   rung-1 conservation unblocker; package
+   `20260606-snowsci-stage1-snow-mass-conservation-closure-001/`.
 7. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
    vertical balance, on single-OFE geometry with no routing to alias it.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-gated.
-9. **snow** — seasonal forcing **magnitude** correctness (the suspended route
-   above), judged last against a fully closed, routed balance.
+9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
+   melt/settling/density/partition equation adjudication against external authority
+   (CRM Ch. 3.7, WEPP User Doc), behind the protected boundary. Distinct from snow
+   *conservation* (Stage 1, item 6, done now); judged last against a fully closed,
+   routed balance.
 
 Acceptance target at each rung is **closure** (does it conserve), not **magnitude**
 (is the forcing physically right) and not comparator-match. See memory

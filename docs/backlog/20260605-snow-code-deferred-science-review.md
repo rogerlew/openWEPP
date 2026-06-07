@@ -1,33 +1,109 @@
-# Snow Code Deferred Science Review
+# Snow Code Science Review (Two-Stage)
 
 ## Status
 
-- `state`: backlog
-- `maturity`: concept / planning only
-- `default_path`: not eligible
-- `date`: 2026-06-05
-- `relates`: [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md),
-  [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
+- `state`: **promoted (staged)** — Stage 1 active; Stage 2 backlog
+- `date`: 2026-06-05 (created); 2026-06-06 (promoted and split into two stages)
+- `relates`: [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md),
+  [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md),
+  [ADR-0018](../decisions/0018-defect-closure-execplans-conversion-rule.md)
+- Stage 1 work package:
+  `docs/work-packages/20260606-snowsci-stage1-snow-mass-conservation-closure-001/`
+- Stage 2: remains backlog, `default_path: not eligible`, behind the snow
+  physics-magnitude protected boundary.
 
-## Purpose
+## Why this is now two stages
 
-Capture a deferred science-review need for legacy snow routines before
-openWEPP treats their behavior as trusted process authority.
+This note began as a single deferred dossier. Static analysis of the J-95
+negative-SWE site (2026-06-06) showed the snow problem actually separates into
+two questions with different authority, urgency, and risk:
 
-The HPHYS0298-0313 arc showed that the snow/`RM` lineage is not just a porting
-problem. The legacy snow routines contain in-source uncertainty markers,
-undocumented terms, and explicit comments that some implemented equations
-diverge from published WEPP documentation. Those markers are load-bearing for
-the same surfaces now used in openWEPP semantic-parity diagnostics:
-`snodpt`, `densgt`, `hrsnow`, `driftg`, `wmelt`, `RM`, and `Snow-Water`.
+1. **Snow mass conservation (Stage 1, a hard gate, now).** The snow store is
+   multi-represented (`snow.runtime_swe`, `snow.runtime_depth_m`,
+   `snow.runtime_density_kg_m3`, `snow.runtime_settle_day_count` are carried as
+   separate, separately-guarded quantities and reconciled across the
+   projection → WB14 redistribution → WB13 publication → next-day carry chain).
+   The mass balance does not close by construction — the runner already
+   instruments a `snow_runtime_swe_closure_error_m`, and negative SWE
+   (`-0.006171 m` at J-95) is defended by four accreted `>= 0` guards at the
+   consumers rather than prevented at the source. This is an
+   **accounting/architecture** defect: it drives `SWE < 0` and is the leading
+   candidate cause of the WBVAL06 conservation residual (`R > 0`, water
+   vanishing). Conservation/bounds are hard gates (ADR-0011 + correctness
+   re-anchoring), and this one sits **on** rung-1's water-balance closure gate,
+   so it cannot be deferred past the gate it blocks.
 
-This backlog item proposes a documented science review of `snowd.for` and the
-`winter.for` forcing/state surfaces it consumes. The output should be a
-contract-grade evidence package that either reconciles the legacy implementation
-against external authority or records owned scientific questions before any
-production snow-kernel correction is authorized.
+2. **Snow physics magnitude (Stage 2, deferred).** Whether the implemented
+   `snowd.for` melt/settling/density/partition *equations* are physically
+   correct against external authority (CRM Chapter 3.7, WEPP User Doc) — the
+   `XXX` markers, blank `driftf`/`driftg` definitions, the
+   daily-temperature-in-an-hourly-loop threshold, and the Eq. 3.7.5
+   code-vs-documentation divergence. This is a **magnitude/correctness** question,
+   not a closure question. It stays behind the protected boundary and trails
+   Stage 1.
 
-## Legacy Evidence
+The dividing line is the Stage-1 protected boundary: **Stage 1 makes the snow
+store conserve and single-source by construction; it does not change any snow
+physics-magnitude equation.** If conservation cannot be achieved without changing
+a physics-magnitude equation, Stage 1 stops at that boundary and escalates the
+specific equation to Stage 2 — that escalation is a success (it proves
+separability is false for that term), not a failure.
+
+This split is what keeps "do the review now" from meaning "halt rung-1 until the
+entire 19-years-deferred physics dossier is done." Stage 1 is bounded, has a
+crisp conservation acceptance, and unblocks rung-1; Stage 2 remains the deferred
+science.
+
+## Stage 1 — Snow Mass Conservation and Single-Sourcing (promoted)
+
+Owner package:
+`docs/work-packages/20260606-snowsci-stage1-snow-mass-conservation-closure-001/`
+(Defect-Closure ExecPlan).
+
+Scope (summary; full envelope in the package):
+
+- Single-source the snow store so `SWE >= 0` holds by construction and
+  `in = out + ΔStorage` closes within a named tolerance; depth/density are
+  derived from or reconciled to the authoritative store rather than carried as
+  independent quantities that can drift negative.
+- Make the existing `snow_runtime_swe_closure_error_m` an enforced gate that
+  reads ~0 on valid runs; the four `>= 0` snow-state guards become assertions
+  that never fire rather than failure points.
+- Subsumes the WBVAL05 negative-SWE follow-on
+  (`HKERNEL-WB14-RUNOFF-E-003` on `snow.runtime_swe = -0.006171` for
+  `p7`/`p11`/`p18`/`p20`) and `WBVAL06-SINGLE-OFE-WAT-CONSERVATION-RESIDUAL`,
+  pending the package's own common-cause confirmation.
+
+Authority: conservation/physical invariants + `SC-SNOWFREEZE-001` /
+`SC-WATBAL-001` contract text — **not** legacy-baseline replication (the legacy
+snow physics is exactly what Stage 2 adjudicates).
+
+Protected boundary: no snow physics-magnitude change, and no silent clamp of
+negative SWE to zero (a clamp converts the visible fail-closed into the invisible
+WBVAL06 leak — forbidden by ADR-0018).
+
+Provenance (2026-06-06 upstream check): the negative SWE is **openWEPP-introduced,
+not inherited**. The pinned baseline, the newer wepp-forest tip (its only snow diff
+is `watbal_process_probe` instrumentation), `jimf-wepp-2023` (mainline),
+`wepp-forest-wb61`, and `wepp-forest-revegetation` all carry the identical
+`snowd.for` negative-pack guard (`if (snodep .le. 0.0) then
+wmelt = snodpt*densg*0.001; snodep = 0.0; densgt = 0.0`). Legacy is
+depth-authoritative and conserving by construction — it never produces negative
+pack — so there was nothing to patch upstream. openWEPP's SWE-centric multi-carry
+is the regression. This **lowers Stage-1 separability risk**: legacy proves a
+conserving snow accounting exists without resolving any Stage-2 physics question,
+and its depth-authoritative clamp is a conservation reference pattern (corroborating
+evidence, not a magnitude oracle, per ADR-0017) for Milestone 1's localization.
+
+## Stage 2 — Snow Physics-Magnitude Science Review (deferred)
+
+`state`: backlog, `default_path: not eligible`. Remains behind the snow
+physics-magnitude protected boundary until Stage 1 closes and a promotion
+decision is made. Produces a contract-grade dossier that reconciles the legacy
+`snowd.for` implementation against external authority or records owned scientific
+questions before any production snow-physics-magnitude correction is authorized.
+
+### Legacy Evidence (Stage 2 material)
 
 All source citations refer to pinned baseline
 `/workdir/wepp-forest_260430_baseline/src/snowd.for` unless stated otherwise.
@@ -41,98 +117,60 @@ All source citations refer to pinned baseline
 | Density threshold/cap was edited in place | `:128-129` — prior `if(densgy.gt.250) setf = 1` commented and replaced with `if(densgy.gt.ssd) setf = 1` | The source preserves provenance of a threshold change, but not a contract-grade rationale or authority citation. |
 | External snow-equation authority is cited | `:124`, `:137`, `:168`, `:182`, `:294` — CRM Eq. 3.7.1 / 3.7.2 / 3.7.3 / 3.7.5 | The source points to reviewable external authority. The missing work is reconciliation, not discovery. |
 
-These are not style findings. They are unresolved process questions in the
-legacy code path that controls snowpack state, density mixing, melt routing,
-and water-balance publication surfaces.
+These are not style findings. They are unresolved process questions in the legacy
+code path that controls snowpack state, density mixing, melt routing, and
+water-balance publication surfaces.
 
-## Governance Interpretation
+### Stage 2 Proposed Review Scope
 
-This is an institutional maintenance gap, not a contributor-blame finding.
-The dated S. Dun 2007 edits are useful because they preserve authorship,
-intent, old behavior, and unresolved uncertainty in source comments. The
-deferred work is the custodian-side obligation to convert those uncertainty
-markers into documented decisions.
+A future Stage-2 work package should produce a snow science-review dossier
+covering: (1) an **evidence ledger** enumerating every snow `XXX`, dated edit,
+blank definition, and documentation-divergence marker with file/line/symbol/
+branch/affected surface; (2) a **dimensional audit** declaring units for
+`snodpt`, `densg/densgt/densgy`, `hrsnow`, `hrmlt`, `driftf`, `driftg`, `wmelt`,
+and density-settling terms, separating daily/hourly/state/publication surfaces;
+(3) a **regime audit** of branch predicates and time-base assumptions, especially
+the daily-mean-temperature condition inside hourly processing; (4)
+**external-authority reconciliation** against CRM Chapter 3.7 and the WEPP User
+Documentation, classifying each discrepancy as documented correction, legacy
+defect, ambiguous scientific question, or intentionally replicated legacy wobble;
+and (5) **contract-grade disposition** producing proposed `SC-SNOWFREEZE-001`
+amendments or explicit `HOLD` artifacts.
 
-ADR-0017 makes this especially important: comparator agreement is a flag, not a
-target. A legacy source comment such as "differs from the User Doc" is not
-itself proof that openWEPP should replicate or reject the implementation. It is
-a trigger for contract-first adjudication using source provenance, dimensional
-checks, external snow equations, and conservation constraints.
-
-## Proposed Review Scope
-
-A future work package should produce a snow science-review dossier covering:
-
-1. **Evidence ledger**
-   - Enumerate every snow `XXX`, dated edit, blank definition, and
-     documentation-divergence marker with file, line, symbol, branch, and
-     affected openWEPP surface.
-2. **Dimensional audit**
-   - Declare units for `snodpt`, `densg/densgt/densgy`, `hrsnow`, `hrmlt`,
-     `driftf`, `driftg`, `wmelt`, and density-settling terms.
-   - Separate daily, hourly, state, and publication surfaces.
-3. **Regime audit**
-   - Identify branch predicates and time-base assumptions, especially the
-     daily-mean-temperature condition used inside hourly snow processing.
-4. **External-authority reconciliation**
-   - Compare implementation lines against CRM Chapter 3.7 equations and WEPP
-     User Documentation.
-   - Record whether each discrepancy is documented correction, legacy defect,
-     ambiguous scientific question, or intentionally replicated legacy wobble.
-5. **Contract-grade disposition**
-   - Produce proposed `SC-SNOWFREEZE-001` amendments or an explicit `HOLD`
-     artifact for unresolved questions.
-
-## Non-Goals
-
-- No production snow-kernel edits from this backlog note.
-- No silent adoption of legacy behavior as correct without external authority.
-- No empirical compensation in WB13/WB17/WB18/WB19/WB12 for unresolved snow
-  defects.
-- No personal blame assignment for historical comments or edits.
-
-## Governing Constraints
-
-- Correctness authority remains ADR-0011 + canonical `SC-*` contracts +
-  conservation and external physics authority.
-- Legacy source is evidence of implementation and intent, not a correctness
-  oracle.
-- Any resulting physics change must be contract-first:
-  1. canonical `SC-*` amendment,
-  2. contract-derived tests,
-  3. pre-implementation gate evidence,
-  4. production implementation.
-- Comparator deltas caused by reviewed snow behavior must be classified under
-  ADR-0017: `HARNESS-SURFACE-MISMATCH`, `LEGACY-DEFECTIVE`,
-  `OPENWEPP-DEFECTIVE`, or `UNRESOLVED`.
-- Any accepted legacy wobble must be explicitly named, justified, and owned so
-  it cannot silently become target physics.
-
-## Promotion Criteria
-
-This backlog item becomes eligible for a work package only when the package can
-name its authority set and validation gates. Minimum gates:
-
-1. **Pinned source ledger:** all relevant `snowd.for` / `winter.for` lines
-   enumerated with symbols, units, and affected surfaces.
-2. **External references:** CRM Chapter 3.7 and WEPP User Documentation
-   citations available with exact equation/section references.
-3. **Contract target:** specific `SC-SNOWFREEZE-001` invariants/obligations to
-   amend or create.
-4. **No production-edit shortcut:** package starts with review/specification;
-   implementation follows only after contract authority is accepted.
-5. **Owned unresolveds:** each unresolved scientific question carries owner,
-   next evidence gate, and follow-on package trigger.
-
-## Open Questions
+### Stage 2 Open Questions
 
 - Is the Eq. 3.7.5 / User Documentation divergence at `snowd.for:295` a legacy
   implementation defect, an undocumented correction, or a documentation error?
 - Does density mixing in the flagged branches use current-hour snow depth or
   prior-day snow depth, and what does CRM Eq. 3.7.3 require?
-- What are `driftf` and `driftg` physically and dimensionally? Are they active
-  in the forest configuration or dead inputs?
-- Is the daily-mean-temperature condition inside hourly processing defensible
-  as a regime proxy, or does it require re-derivation?
-- Which reviewed behavior, if any, should be preserved as documented legacy
-  wobble rather than corrected physics?
+- What are `driftf` and `driftg` physically and dimensionally? Are they active in
+  the forest configuration or dead inputs?
+- Is the daily-mean-temperature condition inside hourly processing defensible as a
+  regime proxy, or does it require re-derivation?
+- Which reviewed behavior, if any, should be preserved as documented legacy wobble
+  rather than corrected physics?
+
+### Stage 2 Promotion Criteria
+
+Stage 2 becomes eligible for a work package only when it can name its authority
+set and validation gates: a pinned `snowd.for`/`winter.for` source ledger; exact
+CRM Chapter 3.7 and WEPP User Documentation references; specific
+`SC-SNOWFREEZE-001` invariants/obligations to amend or create; review/specification
+before implementation; and each unresolved scientific question carrying an owner,
+next evidence gate, and follow-on trigger.
+
+## Governance (both stages)
+
+- Correctness authority remains ADR-0011 + canonical `SC-*` contracts +
+  conservation and external physics authority. Legacy source is evidence of
+  implementation and intent, not a correctness oracle.
+- Any resulting change must be contract-first: canonical `SC-*` amendment →
+  contract-derived tests → pre-implementation gate evidence → production
+  implementation.
+- This is an institutional maintenance gap, not a contributor-blame finding. The
+  dated S. Dun 2007 edits are valuable because they preserve authorship, intent,
+  prior behavior, and uncertainty in source comments; the deferred work is the
+  custodian-side obligation to convert those markers into documented decisions.
+- Non-goals: no silent adoption of legacy behavior as correct without external
+  authority; no empirical compensation in WB13/WB17/WB18/WB19/WB12 for unresolved
+  snow defects; no personal blame for historical comments or edits.
