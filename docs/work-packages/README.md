@@ -1,8 +1,14 @@
 # Work Packages
 
-## Current roadmap (read first)
+> **Canonical roadmap: [../ROADMAP.md](../ROADMAP.md).** That document is the
+> authoritative rung ladder, current position, and Stage-2 deferral register. The
+> section below is the **per-package execution log** under that roadmap — package
+> status and commits, not the strategic source of truth. If the two disagree,
+> `ROADMAP.md` wins; update it on every rung transition.
 
-State as of `2026-06-06`:
+## Current roadmap execution log
+
+State as of `2026-06-07`:
 
 - HPHYS0320 **closed the SIMIMPL28 storm-start timing seam** (`wnttim < 1.0 -> 1.0`,
   `INV-CLIMATE-018`). This was the first real forcing correction of the entire

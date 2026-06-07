@@ -2,6 +2,7 @@
 
 | Doc | Audience | Purpose |
 |---|---|---|
+| [ROADMAP.md](ROADMAP.md) | All | **Canonical** engine roadmap: rung ladder, current position, Stage-2 deferral register |
 | [architecture/README.md](architecture/README.md) | All | Runtime topology, process model, data flow |
 | [specifications/README.md](specifications/README.md) | All | Science-contract authority model and source hierarchy |
 | [specifications/subsystems/README.md](specifications/subsystems/README.md) | Maintainers | Canonical subsystem specification authority and promotion model |
