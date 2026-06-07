@@ -247,7 +247,8 @@ impl Wb11HydrologyKernel {
 
         if !interval_infiltration.is_finite()
             || interval_infiltration < -WB11_ZERO_THRESHOLD
-            || interval_infiltration > interval_rainfall_depth + WB11_ZERO_THRESHOLD
+            || interval_infiltration
+                > interval_rainfall_depth + WB14_INTERVAL_INFILTRATION_ROUNDOFF_TOLERANCE_M
         {
             return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
                 phase_class,
@@ -506,6 +507,12 @@ impl Wb11HydrologyKernel {
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
+        if Self::wb18_should_reconstruct_same_pass_infiltration_lineage(request, phase_class)? {
+            return Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class);
+        }
+
+        Self::validate_runtime_snow_state_domains(request, phase_class)?;
+
         let infiltration_symbol = BoundarySymbol::from(WB12_SYMBOL_INFILTRATION);
         if let Some(infiltration) =
             Self::optional_state_scalar_for_symbol(request, phase_class, &infiltration_symbol)?
@@ -520,7 +527,49 @@ impl Wb11HydrologyKernel {
             return Ok(Some(infiltration));
         }
 
-        Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class)
+        Ok(None)
+    }
+
+    fn wb18_should_reconstruct_same_pass_infiltration_lineage(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        if let Some(rainfall_input) =
+            Self::optional_state_scalar(request, phase_class, WB12_SYMBOL_RAINFALL_INPUT)?
+        {
+            Self::require_state_range(
+                phase_class,
+                WB12_SYMBOL_RAINFALL_INPUT,
+                rainfall_input,
+                Some(0.0),
+                None,
+            )?;
+            if rainfall_input > WB11_ZERO_THRESHOLD {
+                return Ok(true);
+            }
+        }
+
+        let runtime_swe_symbol = BoundarySymbol::from("snow.runtime_swe");
+        if let Some(runtime_swe) =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &runtime_swe_symbol)?
+        {
+            if runtime_swe > WB11_ZERO_THRESHOLD {
+                return Ok(true);
+            }
+        }
+
+        let irrigation_input =
+            Self::optional_flux_scalar(request, phase_class, IRRIG_SYMBOL_DAILY_IRRIGATION)?
+                .unwrap_or(0.0);
+        Self::require_flux_range(
+            phase_class,
+            IRRIG_SYMBOL_DAILY_IRRIGATION,
+            irrigation_input,
+            Some(0.0),
+            None,
+        )?;
+
+        Ok(irrigation_input > WB11_ZERO_THRESHOLD)
     }
 
     #[allow(clippy::too_many_lines)]

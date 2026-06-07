@@ -31,7 +31,7 @@ fn adr0017_is_accepted_and_registered_as_ratified_governance() {
         "**Amended By:** [ADR-0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) (accepted)"
     ));
     assert!(decisions.contains(
-        "| [0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) | Re-pin operational distrust — the fixed comparator is a flag, not a target | Accepted |"
+        "| [0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) | Re-pin operational distrust — the fixed comparator is a flag, not a target | Accepted"
     ));
     assert!(work_packages.contains("20260605-adr0017-comparator-distrust-ratification-001"));
 }

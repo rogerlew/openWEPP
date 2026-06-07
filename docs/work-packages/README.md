@@ -74,15 +74,17 @@ publication-safe Daymet CLI audit:
    `snow.runtime_swe = -0.006171`**. Legitimately held at the snow boundary; its
    negative-SWE follow-on is folded into SNOWSCI Stage 1.
 6. **SNOWSCI Stage 1 — snow mass conservation / single-sourcing**
-   *(queued DC-ExecPlan — next pickup)* — close
-   `SNOWSCI-S1-SNOW-MASS-NONCONSERVATION`: single-source the snow store so
-   `SWE >= 0` holds by construction and `in = out + ΔStorage` closes; promote the
-   instrumented `snow_runtime_swe_closure_error_m` to an enforced gate. **Subsumes
-   the WBVAL05 negative-SWE follow-on and the former WBVAL06 WAT-conservation
-   residual** (plausibly one snow mass-balance defect; common cause is confirmed in
-   the package's Milestone 1). Protected boundary: **no snow physics-magnitude
-   change** (that is Stage 2) and **no silent clamp** of negative SWE. This is the
-   rung-1 conservation unblocker; package
+   *(closed-with-follow-up-postreview)* — closed
+   `SNOWSCI-S1-SNOW-MASS-NONCONSERVATION` for the observed J-95 negative-SWE
+   fail-closed mechanism by single-sourcing routed snowpack melt to the
+   authoritative post-hourly depth/density store. The fix removed the WBVAL05
+   publication blocker for `p7`, `p11`, `p18`, and `p20` without a snow
+   physics-magnitude change or silent clamp. Post-review gates ran
+   `cargo test --workspace`, workspace clippy, `cargo deny check`, fresh
+   H1..H39 release/semantic validation, and WBVAL06 before/after residual
+   measurement. WBVAL06 annual residual attribution remains owned by
+   `20260606-wbval06-single-ofe-wat-conservation-residual-defect-closure-001/`.
+   Package:
    `20260606-snowsci-stage1-snow-mass-conservation-closure-001/`.
 7. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
    vertical balance, on single-OFE geometry with no routing to alias it.
@@ -160,6 +162,17 @@ single-OFE fully settles it).
     closure Correction Authority Envelope, conversion rule, seven-gate bar,
     legitimate `HOLD` boundaries, active kickoff prompt, and queued evidence,
     review, verification, gate, disposition, and handoff artifacts.
+- `20260606-snowsci-stage1-snow-mass-conservation-closure-001/`
+  - Purpose: close defect `SNOWSCI-S1-SNOW-MASS-NONCONSERVATION` by making
+    routed snowpack melt and runtime SWE storage share the post-hourly
+    depth/density store as the single accounting source, while preserving the
+    protected boundary against snow physics-magnitude edits and silent clamps.
+  - Status: closed-with-follow-up-postreview; contracts, red/green test, and production
+    accounting were updated so mixed signed raw melt can no longer create an
+    independent SWE debit. Release `p7`, `p11`, `p18`, and `p20` now publish;
+    post-review gates ran, and WBVAL06 max annual R fell from `94.433070 mm`
+    to `26.790809 mm` on the 18 WBVAL04 status-valid emitters. WBVAL06 annual
+    residual attribution remains with the queued WBVAL06 package.
 - `20260606-hphys0319-fixed-baseline-stmtim-observe-recovery-001/`
   - Purpose: recover fixed-baseline `stmtim.for` observe values for the 2013
     day 11 hour 11 H1/H7/H39 route, pair them with regenerated OpenWEPP

@@ -52,6 +52,59 @@ struct SnowMeltComputation {
 mod tests {
     use super::*;
 
+    fn snowsci_stage1_hourly_state(melt_m: f64) -> SnowHourlyState {
+        SnowHourlyState {
+            hour: 1,
+            depth_before_m: 0.0,
+            depth_available_m: 0.0,
+            density_before_kg_m3: 0.0,
+            depth_after_m: 0.0,
+            density_after_kg_m3: 0.0,
+            rain_retained_m: 0.0,
+            rain_released_m: 0.0,
+            melt_raw_m: melt_m,
+            melt_m,
+            melt_amelt_in: 0.0,
+            melt_bmelt_in: 0.0,
+            melt_cmelt_in: 0.0,
+            melt_dmelt_in: 0.0,
+            melt_hrtef_f: 0.0,
+            melt_hrdtf_f: 0.0,
+            melt_vwmph: 0.0,
+            melt_rainin: 0.0,
+            melt_wind_adjustment: 0.0,
+            melt_branch_active: 1.0,
+            dewpoint_c: 0.0,
+            wind_m_s: 0.0,
+        }
+    }
+
+    #[test]
+    fn snowsci_stage1_mixed_signed_melt_routes_authoritative_pack_loss() {
+        let positive_pack_loss_m = 0.007_376_104_224;
+        let negative_raw_melt_m = -0.006_171_157_610;
+        let mut hourly_state = [
+            snowsci_stage1_hourly_state(positive_pack_loss_m),
+            snowsci_stage1_hourly_state(negative_raw_melt_m),
+        ];
+
+        let redistribution =
+            Wb11HydrologyKernel::redistribute_daily_signed_snowmelt(&mut hourly_state);
+        let routed_hourly_sum_m = hourly_state
+            .iter()
+            .map(|hourly| hourly.melt_m)
+            .sum::<f64>();
+
+        assert!(
+            (redistribution.routed_melt_total_m - positive_pack_loss_m).abs() <= 1.0e-12
+        );
+        assert!(
+            (redistribution.snowpack_state_loss_m - positive_pack_loss_m).abs() <= 1.0e-12
+        );
+        assert!((routed_hourly_sum_m - positive_pack_loss_m).abs() <= 1.0e-12);
+        assert!(hourly_state.iter().all(|hourly| hourly.melt_m >= 0.0));
+    }
+
     #[test]
     fn hphys0250_wb15_interception_scale_canonicalizes_near_zero_liquid_roundoff() {
         let (liquid_after_interception, rainfall_scale) =
@@ -217,6 +270,7 @@ const SIMIMPL29_SNOWPACK_SETTLE_BASE: f64 = 0.041_666_7;
 const SIMIMPL29_CANOPY_FACTOR: f64 = 1.0;
 const SIMIMPL29_WIND_MEASUREMENT_HEIGHT_M: f64 = 10.0;
 const SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M: f64 = 0.005;
+const WB14_INTERVAL_INFILTRATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-9;
 // UNIT-CONVERSION-ALLOW: mm_m_scale legacy minimum snow-depth threshold in meters, not conversion.
 const SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M: f64 = 0.001;
 
@@ -4231,18 +4285,16 @@ impl Wb11HydrologyKernel {
     fn redistribute_daily_signed_snowmelt(
         hourly_state: &mut [SnowHourlyState],
     ) -> SnowMeltRedistributionOutcome {
+        // SNOWSCI-S1: runtime snow storage is single-sourced from the depth/density
+        // store, so routed snowpack melt must match the positive water-equivalent
+        // loss already applied to that store. Negative raw melt remains available
+        // through `melt_raw_m` diagnostics, but it cannot create a second SWE debit.
         let positive_melt_total_m = hourly_state
             .iter()
             .map(|hourly| hourly.melt_m.max(0.0))
             .sum::<f64>();
-        let negative_melt_total_m = hourly_state
-            .iter()
-            .map(|hourly| hourly.melt_m.min(0.0))
-            .sum::<f64>();
 
-        if positive_melt_total_m <= WB11_ZERO_THRESHOLD
-            || negative_melt_total_m >= -WB11_ZERO_THRESHOLD
-        {
+        if positive_melt_total_m <= WB11_ZERO_THRESHOLD {
             for hourly in hourly_state {
                 hourly.melt_m = hourly.melt_m.max(0.0);
             }
@@ -4252,28 +4304,12 @@ impl Wb11HydrologyKernel {
             };
         }
 
-        let net_melt_m = positive_melt_total_m + negative_melt_total_m;
-        if net_melt_m <= WB11_ZERO_THRESHOLD {
-            for hourly in hourly_state {
-                hourly.melt_m = 0.0;
-            }
-            return SnowMeltRedistributionOutcome {
-                routed_melt_total_m: 0.0,
-                snowpack_state_loss_m: 0.0,
-            };
-        }
-
-        let redistribution_scale = net_melt_m / positive_melt_total_m;
         for hourly in hourly_state {
-            hourly.melt_m = if hourly.melt_m > WB11_ZERO_THRESHOLD {
-                hourly.melt_m * redistribution_scale
-            } else {
-                0.0
-            };
+            hourly.melt_m = hourly.melt_m.max(0.0);
         }
         SnowMeltRedistributionOutcome {
-            routed_melt_total_m: net_melt_m,
-            snowpack_state_loss_m: positive_melt_total_m - negative_melt_total_m,
+            routed_melt_total_m: positive_melt_total_m,
+            snowpack_state_loss_m: positive_melt_total_m,
         }
     }
 

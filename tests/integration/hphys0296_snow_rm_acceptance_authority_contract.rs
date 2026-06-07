@@ -79,22 +79,22 @@ fn hphys0296_runner_trace_preserves_snow_rm_acceptance_surfaces() {
 }
 
 #[test]
-fn hphys0296_preserves_corrected_negative_melt_not_baseline_bug_compatibility() {
+fn hphys0296_preserves_single_source_negative_melt_boundary_not_bug_compatibility() {
     let helpers =
         fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
     let snow = fs::read_to_string(SC_SNOWFREEZE).expect("snow contract should be readable");
 
     assert!(
         helpers.contains("fn redistribute_daily_signed_snowmelt")
-            && helpers.contains("routed_melt_total_m: net_melt_m")
-            && helpers
-                .contains("snowpack_state_loss_m: positive_melt_total_m - negative_melt_total_m")
+            && helpers.contains("routed_melt_total_m: positive_melt_total_m")
+            && helpers.contains("snowpack_state_loss_m: positive_melt_total_m")
             && helpers.contains("SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M"),
-        "HPHYS0296 acceptance must preserve corrected negative-melt routed/state-loss authority"
+        "HPHYS0296 acceptance must preserve the SNOWSCI-S1 single-source routed/state-loss authority"
     );
     assert!(
         snow.contains("corrected-fix derivation/provenance")
+            && snow.contains("SNOWSCI-S1")
             && snow.contains("/workdir/wepp-forest_260430_baseline"),
-        "HPHYS0296 contract authority must distinguish corrected semantic parity from bug-compatible baseline reproduction"
+        "HPHYS0296 contract authority must distinguish SNOWSCI-S1 conservation from bug-compatible baseline reproduction"
     );
 }

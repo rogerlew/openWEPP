@@ -61,16 +61,15 @@ fn hphys0297_package_is_defect_ledger_not_acceptance_bucket() {
 }
 
 #[test]
-fn hphys0297_preserves_corrected_openwepp_negative_melt_source_lineage() {
+fn hphys0297_preserves_snowsci_single_source_openwepp_negative_melt_lineage() {
     let helpers =
         fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
 
     assert!(
         helpers.contains("fn redistribute_daily_signed_snowmelt")
-            && helpers.contains("routed_melt_total_m: net_melt_m")
-            && helpers
-                .contains("snowpack_state_loss_m: positive_melt_total_m - negative_melt_total_m")
+            && helpers.contains("routed_melt_total_m: positive_melt_total_m")
+            && helpers.contains("snowpack_state_loss_m: positive_melt_total_m")
             && helpers.contains("SIMIMPL29_SNOWPACK_STATE_LOSS_OVERDRAW_TOLERANCE_M"),
-        "HPHYS0297 must compare against corrected openWEPP negative-melt lineage, not replace it"
+        "HPHYS0297 must compare against corrected SNOWSCI-S1 OpenWEPP negative-melt lineage, not replace it"
     );
 }

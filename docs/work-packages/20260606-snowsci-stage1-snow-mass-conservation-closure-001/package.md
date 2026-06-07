@@ -1,6 +1,6 @@
 # SNOWSCI Stage 1 — Snow Mass Conservation and Single-Sourcing Closure
 
-Status: queued
+Status: closed-with-follow-up-postreview
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
@@ -18,6 +18,12 @@ and the four accreted `>= 0` snow-state guards become assertions that never fire
 on valid runs. This is an **accounting/architecture** closure. It explicitly does
 **not** adjudicate snow physics-magnitude equations — that is Stage 2, behind the
 protected boundary.
+
+Post-review boundary clarification: SNOWSCI-S1 supersedes the earlier
+`INV-SNOWFREEZE-019` openWEPP/wepp-forest negative-melt carry-state
+interpretation for Stage-1 accounting. Negative raw melt is diagnostic-only for
+this package's conservation-first storage/routing rule. Physical ratification of
+whether negative melt has any independent pack/routing role remains Stage 2.
 
 This package owns correction inside the snow mass-conservation envelope. If the
 root cause is in-envelope and authority-backed, it must land the contract-first

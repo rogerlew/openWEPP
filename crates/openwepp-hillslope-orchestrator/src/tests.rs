@@ -431,7 +431,7 @@ fn hphys0246_wb18_percolation_requires_residual_storage_symbols_for_aggregate_wr
 }
 
 #[test]
-fn wbval05_wb18_percolation_consumes_published_zero_infiltration_without_snow_recompute() {
+fn wbval05_wb18_percolation_rejects_invalid_projected_snow_state_before_zero_infiltration() {
     let mut state_surface = hphys0246_wb18_aggregate_state_surface();
     state_surface.insert(
         BoundarySymbol::from("management.initial.params.tillay2_m"),
@@ -471,16 +471,10 @@ fn wbval05_wb18_percolation_consumes_published_zero_infiltration_without_snow_re
 
     assert_eq!(
         response.status.message_id(),
-        "HKERNEL-WB11-PERC-OK-001",
-        "WB18 must consume the already-published zero infiltration lineage without revalidating stale snow state as a percolation failure"
+        "HKERNEL-WB11-PERC-E-003",
+        "WB18 must fail closed on invalid projected snow state before consuming compatibility infiltration"
     );
-    let infiltration_update =
-        state_update_scalar(&response.writeback.state_updates, "wb12_infiltration")
-            .expect("WB18 should preserve the consumed published infiltration lineage");
-    assert!(
-        infiltration_update.abs() < f64::EPSILON,
-        "published zero infiltration must remain zero"
-    );
+    assert!(response.writeback.state_updates.is_empty());
 }
 
 #[test]

@@ -149,6 +149,13 @@ amendments or explicit `HOLD` artifacts.
   regime proxy, or does it require re-derivation?
 - Which reviewed behavior, if any, should be preserved as documented legacy wobble
   rather than corrected physics?
+- **Negative-melt pack/routing semantics (routed in from SNOWSCI-S1).** SNOWSCI-S1
+  superseded the prior `INV-SNOWFREEZE-019` wepp-forest-negmelt-fix interpretation
+  with a conservation-first treatment in which negative raw melt is diagnostic-only
+  (no SWE debit, no routed-melt or pack effect). Stage 2 must physically ratify
+  whether negative melt truly has no independent pack/routing role, or whether the
+  wepp-forest negmelt-fix intended a real refreeze/sublimation pack term — and if
+  the latter, reconcile it with the Stage-1 conservation rule.
 
 ### Stage 2 Promotion Criteria
 

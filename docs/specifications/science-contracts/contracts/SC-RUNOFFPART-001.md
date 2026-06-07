@@ -4,7 +4,7 @@ title: Surface Runoff Partition Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 34
+contract_version: 38
 producer_scope:
   - Event-scale infiltration accounting and rainfall-excess partition surfaces
   - Depression-storage satisfaction/release and runoff onset transition surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Erosion/hydraulics consumers requiring runoff duration, volume, and peak discharge
   - Comparator/replay surfaces using Tier-A single-OFE runoff acceptance signals
 evidence_level: static
-last_reviewed: 2026-06-04
+last_reviewed: 2026-06-07
 supersedes: []
 superseded_by: []
 ---
@@ -299,6 +299,7 @@ bit-for-bit parity). Contract-level tolerance declarations:
 | TOL-RUNOFFPART-004 | Non-negative-domain tolerance for peak runoff rate (`qp`) | lower bound `>= -1e-12 m^2 s^-1` | No silent clamping in runtime path. |
 | TOL-RUNOFFPART-005 | Multi-OFE branch threshold tolerance around `Fh - Fp` case boundary | `abs(Fh - Fp) <= 1e-12 m^3 m^-1` treated as case-four boundary | Prevents numerical jitter from toggling case-three/case-four branch outcomes. |
 | TOL-RUNOFFPART-006 | WB12/WB14 reconciled runoff near-zero canonicalization tolerance (`Q`, `wb12_runoff_reconciled`) | normalize to `0` when `-1e-12 m <= value < 0` before writeback/publication; `value < -1e-12 m` is domain-invalid | Explicit roundoff canonicalization only; not a fallback for material negative runoff. |
+| TOL-RUNOFFPART-007 | WB14 interval infiltration upper-bound roundoff tolerance | `ΔFj <= Rj + 1e-9 m`; accepted values are normalized to `min(ΔFj, Rj)` before accumulation | Bounded floating-point allowance for Green-Ampt interval solves at the ponding/no-ponding boundary; material over-infiltration remains invalid. |
 
 ## WB12 Runoff Reconciliation Addendum
 
@@ -423,6 +424,9 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 7. Event totals are:
    - `wb14_hyetograph_rainfall = Σ Rj`
    - `wb12_infiltration = Σ ΔFj`
+   - interval infiltration values may exceed `Rj` only within
+     `TOL-RUNOFFPART-007` and are normalized to `Rj` before accumulation;
+     larger over-infiltration remains a typed domain failure.
 8. `wb14_hyetograph_rainfall` and `wb12_rainfall_input` must agree within
    `wb12_runoff_closure_tolerance`; mismatch is an invalid state.
 9. Reconciled runoff is:
@@ -858,6 +862,7 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
 |---|---|---|---|
 | `2026-06-05` | `38` | `Codex` | HPHYS0298 amendment: added runoff-consumer paired-partition authority requiring closed downstream identities to remain tied to ordered first-divergent cut-point evidence and forbidding compensation when snow/`RM` ownership remains upstream or unresolved. |
 | `2026-06-05` | `37` | `Codex` | HPHYS0297 amendment: added runoff-consumer defect-ledger authority requiring closed `Q` and producer-consumer identity to remain tied to snow/`RM` reconstruction verdicts without authorizing WB12/WB14/WB13 compensation. |
+| `2026-06-07` | `38` | `Codex` | SNOWSCI-S1 review disposition: added `TOL-RUNOFFPART-007`, a bounded WB14 interval-infiltration roundoff tolerance for Green-Ampt boundary solves, with material over-infiltration still fail-closed. |
 | `2026-06-05` | `36` | `Codex` | HPHYS0296 review disposition: tightened runoff-consumer acceptance so closed `Q` and closed `RM` producer-consumer identity are necessary but not sufficient; snow/`RM` residual re-tiering now requires the per-window defective-model verdict gate. |
 | `2026-06-05` | `35` | `Codex` | HPHYS0296 amendment: added runoff-consumer acceptance classifier requiring closed `RM` producer-consumer identity and closed `Q` before routing residuals to snow/winter producer acceptance or hold. |
 | `2026-06-05` | `34` | `Codex` | HPHYS0291 amendment: required runoff reconciliation to publish same-day snow publication fluxes before WB13 and prohibited state/default substitutes for absent producer fluxes. |

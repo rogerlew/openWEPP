@@ -221,7 +221,7 @@ fn hphys0284_large_negative_melt_state_overdraw_fails_closed() {
 }
 
 #[test]
-fn hphys0284_negative_melt_state_uses_corrected_legacy_depth_adjustment() {
+fn hphys0284_negative_melt_state_uses_single_source_storage_loss() {
     let report = execute_surface(mixed_positive_negative_melt_surface(12));
     let (raw_positive_melt, raw_negative_melt, routed_melt) = melt_totals(&report);
     let snow_flux = report
@@ -238,8 +238,8 @@ fn hphys0284_negative_melt_state_uses_corrected_legacy_depth_adjustment() {
     assert!(raw_negative_melt < 0.0);
     assert!(raw_positive_melt + raw_negative_melt > 0.0);
 
-    let expected_routed_melt = raw_positive_melt + raw_negative_melt;
-    let expected_state_loss = raw_positive_melt - raw_negative_melt;
+    let expected_routed_melt = raw_positive_melt;
+    let expected_state_loss = raw_positive_melt;
     let expected_runtime_swe = 0.350 - expected_state_loss;
 
     assert!((routed_melt - expected_routed_melt).abs() <= TOL);
@@ -248,12 +248,12 @@ fn hphys0284_negative_melt_state_uses_corrected_legacy_depth_adjustment() {
     assert!((runtime_density - 350.0).abs() <= TOL);
     assert!(
         (runtime_swe - expected_runtime_swe).abs() <= TOL,
-        "runtime SWE must apply corrected legacy carried-depth state loss; runtime_swe={runtime_swe}, expected={expected_runtime_swe}, routed_melt={routed_melt}, raw_positive={raw_positive_melt}, raw_negative={raw_negative_melt}"
+        "runtime SWE must follow the authoritative depth/density storage loss without a second negative-melt debit; runtime_swe={runtime_swe}, expected={expected_runtime_swe}, routed_melt={routed_melt}, raw_positive={raw_positive_melt}, raw_negative={raw_negative_melt}"
     );
 }
 
 #[test]
-fn hphys0284_negative_melt_state_undoes_positive_loss_when_daily_net_is_nonpositive() {
+fn hphys0284_negative_melt_state_does_not_undo_positive_loss_when_daily_net_is_nonpositive() {
     let report = execute_surface(mixed_positive_negative_melt_surface(1));
     let (raw_positive_melt, raw_negative_melt, routed_melt) = melt_totals(&report);
     let snow_flux = report
@@ -269,9 +269,9 @@ fn hphys0284_negative_melt_state_undoes_positive_loss_when_daily_net_is_nonposit
     assert!(raw_positive_melt > 0.0);
     assert!(raw_negative_melt < 0.0);
     assert!(raw_positive_melt + raw_negative_melt <= TOL);
-    assert!(routed_melt.abs() <= TOL);
-    assert!(snow_flux.abs() <= TOL);
-    assert!((runtime_swe - 0.350).abs() <= TOL);
-    assert!((runtime_depth - 1.0).abs() <= TOL);
+    assert!((routed_melt - raw_positive_melt).abs() <= TOL);
+    assert!((snow_flux - raw_positive_melt).abs() <= TOL);
+    assert!((runtime_swe - (0.350 - raw_positive_melt)).abs() <= TOL);
+    assert!((runtime_depth - ((0.350 - raw_positive_melt) * 1000.0 / 350.0)).abs() <= TOL);
     assert!((runtime_density - 350.0).abs() <= TOL);
 }

@@ -75,7 +75,7 @@ fn hphys0293_runner_trace_preserves_term_level_snow_depletion_evidence() {
 }
 
 #[test]
-fn hphys0293_preserves_corrected_negative_melt_state_authority() {
+fn hphys0293_preserves_single_source_negative_melt_boundary() {
     let helpers =
         fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
     let hphys0284_test =
@@ -83,15 +83,14 @@ fn hphys0293_preserves_corrected_negative_melt_state_authority() {
 
     assert!(
         helpers.contains("fn redistribute_daily_signed_snowmelt")
-            && helpers.contains("routed_melt_total_m: net_melt_m")
-            && helpers
-                .contains("snowpack_state_loss_m: positive_melt_total_m - negative_melt_total_m"),
-        "snow redistribution must keep corrected negative-melt state authority separate from routed liquid"
+            && helpers.contains("routed_melt_total_m: positive_melt_total_m")
+            && helpers.contains("snowpack_state_loss_m: positive_melt_total_m"),
+        "snow redistribution must single-source routed liquid and pack loss from authoritative positive storage loss"
     );
     assert!(
-        hphys0284_test.contains("expected_state_loss = raw_positive_melt - raw_negative_melt")
-            || hphys0284_test.contains("positive_melt_total_m - negative_melt_total_m"),
-        "HPHYS0284 regression authority must continue documenting corrected negative-melt state loss"
+        hphys0284_test.contains("expected_state_loss = raw_positive_melt")
+            && hphys0284_test.contains("does_not_undo_positive_loss_when_daily_net_is_nonpositive"),
+        "HPHYS0284 regression authority must document the SNOWSCI-S1 negative-melt boundary"
     );
 }
 

@@ -649,6 +649,10 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
     surface
         .state_surface
         .insert(BoundarySymbol::from("tdpt"), BoundaryValue::scalar(-1.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
 
     for hour in 1..=24 {
         surface.state_surface.insert(
@@ -676,10 +680,16 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
         .expect("negative-melt snow execution should return typed report");
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation);
     assert!(
         report.scheduler_report.is_success(),
-        "scheduler halted at {:?}",
-        report.scheduler_report.halted_phase
+        "scheduler halted at {:?}, message_id={:?}, boundary={:?}",
+        report.scheduler_report.halted_phase,
+        runoff_phase.map(|phase| phase.decision_status.message_id()),
+        runoff_phase.map(|phase| phase.decision_status.boundary_class())
     );
 
     let raw_positive_melt = (1..=24)
@@ -733,10 +743,11 @@ fn hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_dail
         .expect("runtime SWE should be present")
         .as_f64();
 
-    let expected_state_loss = raw_positive_melt - raw_negative_melt;
+    let expected_state_loss = raw_positive_melt;
 
     assert!(raw_positive_melt > 0.0);
     assert!(raw_negative_melt < 0.0);
+    assert!((redistributed_melt_sum - raw_positive_melt).abs() <= CLIM05_TEST_TOLERANCE);
     assert!((redistributed_melt_sum - snow_flux).abs() <= CLIM05_TEST_TOLERANCE);
     assert!((runtime_swe - (0.350 - expected_state_loss)).abs() <= CLIM05_TEST_TOLERANCE);
 }
@@ -774,6 +785,10 @@ fn hphys0271_contract_conformance_records_melt_terms_and_hourly_forcing() {
     surface
         .state_surface
         .insert(BoundarySymbol::from("tdpt"), BoundaryValue::scalar(-1.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb20_forward_solver_lane_enabled"),
+        BoundaryValue::scalar(1.0),
+    );
 
     for hour in 1..=24 {
         surface.state_surface.insert(
@@ -801,10 +816,16 @@ fn hphys0271_contract_conformance_records_melt_terms_and_hourly_forcing() {
     let report = scheduler
         .execute_with_kernel(&topology_report, &mut kernel, surface)
         .expect("melt-term snow execution should return typed report");
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation);
     assert!(
         report.scheduler_report.is_success(),
-        "scheduler halted at {:?}",
-        report.scheduler_report.halted_phase
+        "scheduler halted at {:?}, message_id={:?}, boundary={:?}",
+        report.scheduler_report.halted_phase,
+        runoff_phase.map(|phase| phase.decision_status.message_id()),
+        runoff_phase.map(|phase| phase.decision_status.boundary_class())
     );
 
     let hour_value = |symbol: &str| {
