@@ -1,10 +1,10 @@
 # Work Packages
 
-> **Canonical roadmap: [../ROADMAP.md](../ROADMAP.md).** That document is the
-> authoritative rung ladder, current position, and Stage-2 deferral register. The
-> section below is the **per-package execution log** under that roadmap — package
-> status and commits, not the strategic source of truth. If the two disagree,
-> `ROADMAP.md` wins; update it on every rung transition.
+> **Canonical roadmap: [../ROADMAP.md](../ROADMAP.md)** — a **forward-only planning
+> queue** (what is next and deferred). The section below is this roadmap's
+> **execution log**: the home for **completed** work — package status, detail, and
+> commits. When a queue item closes it is removed from `ROADMAP.md` and recorded
+> here. If the two disagree on what is next, `ROADMAP.md` wins.
 
 ## Current roadmap execution log
 

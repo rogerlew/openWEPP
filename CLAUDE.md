@@ -129,7 +129,7 @@ When proactively scanning openWEPP for vulnerabilities:
 | `CLAUDE.md` (this file) | Claude Code | Operating guide |
 | `AGENTS.md` | Codex | Conventions, validation gates |
 | `README.md` | All | Project identity, scope |
-| `docs/ROADMAP.md` | All | **Canonical** engine roadmap: rung ladder, current position, Stage-2 deferral register |
+| `docs/ROADMAP.md` | All | **Canonical** engine roadmap: forward-only planning queue (next + deferred); completed work lives in `docs/work-packages/` |
 | `docs/architecture/` | All contributors | Runtime topology |
 | `docs/specifications/` | All | Science-contract authority model; `SC-*` registry |
 | `docs/contracts/` | All | Interface contracts |
