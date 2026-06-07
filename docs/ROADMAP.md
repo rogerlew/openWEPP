@@ -35,7 +35,9 @@ adds **one mechanism** on an already-closed foundation. Boundaries are **closure
 not calendar phases**.
 
 **Current position:** single-OFE water-balance closure and the frost
-activation/conservation gate are closed; the next active mechanism is **MOFE routing**.
+activation/conservation gate are closed; the next active mechanism is **frost-depth
+heat-flow parity on single-OFE** (completing the vertical frost mechanism before
+routing), then **MOFE routing**.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
 
 ---
@@ -44,44 +46,60 @@ activation/conservation gate are closed; the next active mechanism is **MOFE rou
 
 | # | Item | Mechanism | Acceptance target | State |
 |---|---|---|---|---|
-| 1 | **MOFE inter-OFE routing** | Run-on/run-off routing across OFEs on a vertically-closed, frost-gated per-element balance | **Routing closure** (conservation across elements) on the 17-OFE `pw0` surface + watershed outputs | ⏭️ **Next** |
-| 2 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
+| 1 | **Frost-depth heat-flow parity (single-OFE)** | Replace the freeze-index depth proxy with the legacy-lineage energy-balance heat-flow model, on single-OFE | Frost depth/duration matches `INV-SNOWFREEZE-006`/`-012` heat-flow (comparator as flag); conservation still closes | ⏭️ **Next** |
+| 2 | **MOFE inter-OFE routing** | Run-on/run-off routing across OFEs on a vertically-closed, frost-settled per-element balance | **Routing closure** (conservation across elements) on the 17-OFE `pw0` surface + watershed outputs | ▶️ After item 1 |
+| 3 | **Stage-2 physics-magnitude** | Fidelity of deferred magnitudes vs external authority | Magnitude correctness, judged against the closed + routed balance with comparator as flag | ⏸️ **Deferred** |
 
 ---
 
-### 1. MOFE inter-OFE routing ⏭️ (next)
+### 1. Frost-depth heat-flow parity (single-OFE) ⏭️ (next)
+
+Frost is a per-column **vertical** mechanism, and the ladder settles vertical mechanisms
+on single-OFE **before** routing so their error is not aliased into routing error. FQ-4
+settled frost *activation* that way; this item finishes the job by settling the frost
+*depth model* on single-OFE before MOFE. Replace the freeze-index proxy
+(`frdp = 0.20·clamp(−mean_temp/6)`, capped 0.20 m) with the energy-balance heat-flow
+model the contract already mandates (`INV-SNOWFREEZE-006`/`-012`, legacy `frostn`
+lineage, CRM Ch. 3.8 / Dun et al. 2010), closing `GAP-SNOWFREEZE-002`.
+
+Why before MOFE (the re-sequence, 2026-06-07): FDMC01 sized the proxy as **materially
+off** (depth capped 200 mm vs legacy 240–503; depth-series correlation 0.13; frozen
+duration +258 days from the ratchet). Building MOFE on the proxy and fixing depth later
+means re-validating MOFE under frost; doing it now means MOFE is built once on a faithful
+frost foundation, and the heat-flow physics is debugged in isolation (one column, no
+routing). This completes the vertical frost mechanism, not a magnitude footnote.
+
+In scope: standard `ksflag` frost depth model on the frost-active single-OFE substrate
+`/wc1/runs/al/algebraic-radium` (`ksflag=1`). Out of scope: kfactor conductivity
+magnitude (legacy-faithful), forest `ksatadj`, frost activation (closed), MOFE/17-OFE
+(item 2), snow magnitude (item 3). Conservation must still close (`frozwt` in storage).
+
+DC-ExecPlan: `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
+Sized by [FDMC01](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/);
+authority [backlog/20260607-frost-depth-model-heat-flow-parity.md](backlog/20260607-frost-depth-model-heat-flow-parity.md).
+
+### 2. MOFE inter-OFE routing ▶️ (after item 1)
 
 Layer run-on/run-off routing onto a per-element balance that is already vertically
-closed and frost-gated. MOFE = single-OFE + routing — frost (a per-column vertical
-mechanism) was settled first so its error is not aliased into routing error. Target is
-**routing closure** (conservation across elements), not magnitude: snow and frost-depth
-magnitude remain deferred (item 2) and are judged after this closes. The active
-work-package handoff must name MOFE as its next item for this to bind.
+closed and frost-settled (depth model at parity, not just the gate). Target is
+**routing closure** (conservation across elements), not magnitude: snow magnitude
+remains deferred (item 3) and is judged after this closes. The active work-package
+handoff must name MOFE as its next item for this to bind.
 
 Surface: `docs/work-packages/20260502_mofe_flagged_hillslope_triage`.
 
-### 2. Stage-2 physics-magnitude ⏸️ (deferred — judged last)
+### 3. Stage-2 physics-magnitude ⏸️ (deferred — judged last)
 
-Fidelity questions, deferred by the closure-not-magnitude principle until the structure
-is closed and routed so the comparator can attribute error cleanly. They do **not**
-block item 1. Promote a defect-shaped backlog entry per item when deferring, so each is
-tracked and ready.
+Fidelity questions deferred by the closure-not-magnitude principle until the structure is
+closed and routed so the comparator can attribute error cleanly. They do **not** block
+items 1–2.
 
 | Item | What | Provenance | Backlog |
 |---|---|---|---|
 | Snow magnitude | `snowd.for` melt/settling/density/partition equation fidelity (CRM Ch. 3.7) | legacy physics adjudication | [backlog/20260605-snow-code-deferred-science-review.md](backlog/20260605-snow-code-deferred-science-review.md) (Stage 2) |
-| Frost depth model | openWEPP uses a freeze-index proxy (`frdp = 0.20·clamp(−mean_temp/6)`, capped 0.20 m); legacy `frostn.for` uses a layered energy-balance **heat-flow** model (Dun-2008 fine sublayers, `frdp ≤ 1.0 m`) per `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-006`/`-012`, `GAP-SNOWFREEZE-002` | **openWEPP-introduced** simplification; activation + conservation are correct, depth *fidelity* is openWEPP's own | [backlog/20260607-frost-depth-model-heat-flow-parity.md](backlog/20260607-frost-depth-model-heat-flow-parity.md) |
 
-Frost depth note: the **kfactor conductivity magnitude is legacy-faithful** (openWEPP
-uses the documented WEPP defaults; annual crops get the near-impermeable "concrete
-frost" coefficient). The deferred gap is the **depth model** only — when frost forms,
-how deep, the 0.20 m cap — which governs frost timing/extent. The **sizing gate is
-complete** ([FDMC01 characterization](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/)):
-verdict **materially off** — openWEPP capped at 200 mm vs legacy 240–503 mm (depth-series
-correlation 0.13) and frozen-duration +258 days (the proxy ratchets and over-persists) →
-target = heat-flow parity (not contract-sanction the proxy). **Execution still deferred
-to Stage-2 (post-MOFE)** per the staging principle; MOFE runs `ksflag` off so the proxy
-does not touch rung-3.
+(Frost depth was a Stage-2 candidate; the FDMC01 verdict + the settle-vertical-before-routing
+principle promoted it to active queue item 1 on 2026-06-07.)
 
 ---
 

@@ -2,7 +2,12 @@
 
 ## Status
 
-- `state`: **backlog (deferred)** — Stage-2 physics-magnitude tier; `default_path: not eligible`
+- `state`: **PROMOTED → active (2026-06-07)** — re-sequenced ahead of MOFE as ROADMAP
+  queue item 1 (frost-depth heat-flow parity on single-OFE). Rationale: settle the
+  vertical frost mechanism on single-OFE before routing (so its error is not aliased into
+  MOFE) + the FDMC01 sizing verdict (materially off). DC-ExecPlan:
+  `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
+  (Was: Stage-2 deferred physics-magnitude.)
 - `date`: 2026-06-07 (created)
 - `relates`: [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md),
   [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md),
