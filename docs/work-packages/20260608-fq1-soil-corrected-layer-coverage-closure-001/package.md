@@ -1,6 +1,6 @@
 # FQ1 Soil Corrected-Layer Coverage Closure (HS-RUNTIME-E-062)
 
-Status: queued
+Status: executed-hold-boundary
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
@@ -208,3 +208,14 @@ validation, dual review/verification, disposition, defect-shaped handoff — wit
 asking for direction on intermediate diagnostic steps. Ask only if hard-blocked by
 a proven boundary (authority missing, a genuinely-invalid soil, or a mechanism
 outside the soil envelope).
+
+## Execution Result
+
+The soil corrected-layer mapping defect was corrected in-envelope: the `37/43`
+pre-fix `HS-RUNTIME-E-062` cases no longer fail on soil coverage, and all 43
+prefixes parse soil. Post-fix CLI validation produced `H.wat.parquet` + `H.hbp`
+for `42/43` prefixes. `p11` now advances past soil/runtime mapping and fails
+deterministically at the protected percolation boundary with
+`HKERNEL-WB11-PERC-E-003` on `1990` Julian day `162`; no soil or frost/runoff/
+snow/hydrology-kernel guard was loosened. See `artifacts/disposition.md` and
+`artifacts/worker-handoff.md`.

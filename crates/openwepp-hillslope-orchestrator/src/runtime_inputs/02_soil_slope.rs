@@ -895,9 +895,21 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
 
     let mut normalized_intervals = Vec::with_capacity(normalized_corrected_layers.len());
     let mut normalized_top_mm = 0.0_f64;
-    for corrected_layer in normalized_corrected_layers {
+    let parser_profile_depth_mm = ofe
+        .layers
+        .last()
+        .map_or(0.0_f64, |layer| layer.depth_mm);
+    for (layer_position, corrected_layer) in normalized_corrected_layers.iter().enumerate() {
         let normalized_bottom_mm = normalized_top_mm + WB13_PROFILE_LAYER_THICKNESS_M * 1_000.0;
-        normalized_intervals.push((normalized_top_mm, normalized_bottom_mm, *corrected_layer));
+        let mapped_bottom_mm = if layer_position + 1 == normalized_corrected_layers.len()
+            && parser_profile_depth_mm.is_finite()
+            && parser_profile_depth_mm > normalized_bottom_mm
+        {
+            parser_profile_depth_mm
+        } else {
+            normalized_bottom_mm
+        };
+        normalized_intervals.push((normalized_top_mm, mapped_bottom_mm, *corrected_layer));
         normalized_top_mm = normalized_bottom_mm;
     }
 
@@ -1363,6 +1375,126 @@ fn legacy_accumulate_weighted_layer(
     target.orgmat += source.orgmat * weight;
     target.cec += source.cec * weight;
     target.rfg += source.rfg * weight;
+}
+
+#[cfg(test)]
+mod fq1_soil_corrected_layer_coverage_tests {
+    use super::*;
+    use openwepp_input_contract::parsers::soil::{SoilLayer, SoilOfe};
+
+    fn test_corrected_layer(value: f64) -> CorrectedLayerRuntimeSymbols {
+        CorrectedLayerRuntimeSymbols {
+            porosity: value,
+            cpm: value + 0.01,
+            coca: value + 0.02,
+            thetfc: value + 0.03,
+            thetdr: value + 0.04,
+        }
+    }
+
+    fn test_soil_layer(depth_mm: f64) -> SoilLayer {
+        SoilLayer {
+            depth_mm,
+            sand_pct: 0.0,
+            clay_pct: 0.0,
+            orgmat_pct: 0.0,
+            cec_meq_100g: 0.0,
+            rock_frag_pct: 0.0,
+            bulk_density_g_cm3: None,
+            ksat_mm_h: None,
+            anisotropy_ratio: None,
+            fc_measured: None,
+            wp_measured: None,
+            theta_r_rosetta: None,
+            theta_s_rosetta: None,
+            alpha_vg: None,
+            npar_vg: None,
+            ks_rosetta_cm_d: None,
+            wp_rosetta: None,
+            fc_rosetta: None,
+        }
+    }
+
+    fn test_soil_ofe(depths_mm: &[f64]) -> SoilOfe {
+        SoilOfe {
+            slid: "test".to_string(),
+            texid: "SIL".to_string(),
+            nsl: depths_mm.len(),
+            salb: 0.0,
+            sat: 0.0,
+            ki: 0.0,
+            kr: 0.0,
+            shcrit: 0.0,
+            avke: 0.0,
+            policy: None,
+            layers: depths_mm
+                .iter()
+                .copied()
+                .map(test_soil_layer)
+                .collect(),
+        }
+    }
+
+    fn test_normalized_layers(count: usize) -> Vec<CorrectedLayerRuntimeSymbols> {
+        let mut value = 0.01_f64;
+        (0..count)
+            .map(|_| {
+                let layer = test_corrected_layer(value);
+                value += 0.01;
+                layer
+            })
+            .collect()
+    }
+
+    #[test]
+    fn fq1_maps_valid_parser_tail_below_legacy_normalized_cap_from_deepest_corrected_layer() {
+        let ofe = test_soil_ofe(&[200.0, 280.0, 580.0, 800.0, 1100.0, 2000.0]);
+        let normalized_layers = test_normalized_layers(9);
+
+        let mapped =
+            map_corrected_layer_runtime_symbols_to_parser_layers(&ofe, &normalized_layers, 1)
+                .expect("valid p1-shaped parser profile should map through 2000 mm");
+
+        assert_eq!(mapped.len(), 6);
+        assert!(
+            (mapped[5].porosity - 0.08).abs() < 1.0e-12,
+            "1100..2000 mm parser tail should include 1800..2000 mm extension from deepest normalized corrected layer"
+        );
+    }
+
+    #[test]
+    fn fq1_runnable_control_mapping_within_normalized_depth_is_unchanged() {
+        let ofe = test_soil_ofe(&[200.0, 430.0, 990.0, 1600.0]);
+        let normalized_layers = test_normalized_layers(9);
+
+        let mapped =
+            map_corrected_layer_runtime_symbols_to_parser_layers(&ofe, &normalized_layers, 1)
+                .expect("valid p8-shaped parser profile should map within normalized depth");
+
+        assert_eq!(mapped.len(), 4);
+        assert!(
+            (mapped[3].porosity - 0.069_672_131_147_541).abs() < 1.0e-12,
+            "990..1600 mm control layer should remain the same depth-weighted overlap mapping"
+        );
+    }
+
+    #[test]
+    fn fq1_mapping_still_fails_closed_for_nonmonotone_parser_layer() {
+        let ofe = test_soil_ofe(&[200.0, 150.0]);
+        let normalized_layers = test_normalized_layers(9);
+
+        let error =
+            map_corrected_layer_runtime_symbols_to_parser_layers(&ofe, &normalized_layers, 1)
+                .expect_err("nonmonotone parser profile must remain fail-closed");
+
+        assert!(matches!(
+            error,
+            HillslopeRuntimeInputError::CorrectedLayerMappingIncomplete {
+                layer_index: 2,
+                ..
+            }
+        ));
+    }
 }
 
 /// Runtime-surface options for slope parser projection.

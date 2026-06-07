@@ -4,7 +4,7 @@ title: Soil State and Erodibility Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 23
 producer_scope:
   - Soil-state evolution surfaces (roughness, ridge state, bulk density, porosity)
   - Infiltration-facing conductivity parameter surfaces (effective and saturated conductivity)
@@ -101,6 +101,7 @@ Out of scope:
 | INV-SOIL-014 | AUTH03 constitutive FC/WP invariant: authoritative layer constitutive symbols must satisfy `por_i >= thetfc_i(-33kPa) >= thetdr_i(-1500kPa) >= 0` for every emitted layer interval, and profile aggregates (`Σ thetfc_i*dg_i`, `Σ thetdr_i*dg_i`) must remain finite and non-negative. | hard-fail | REF-SOIL-CH7-POR, REF-SOIL-CH7-INTRO, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-015 | HPHYS0254 normalized WB11 seed-grid invariant: hydrology-owned WB11/WB18/WB19 seed aliases must be emitted on the baseline-normalized corrected-layer grid used by `wb13_profile_depth_mm`/`wb13_profile_porosity_cap_mm`; parser-depth tail truncation or scalar tail compensation outside `st(i)` layer state is invalid, while generic constitutive `thetfc_####`/`thetdr_####` symbols retain AUTH03/AUTH05 authority. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH7-POR, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SOIL-016 | HPHYS0255 MOFE storage-scope invariant: multi-OFE soil projection must preserve OFE-qualified parser/corrected-layer provenance (`ofeN_*`) separately from unqualified WB11/WB18/WB19 hydrology seed aliases. Unqualified hydrology aliases describe the active single WB11 runtime storage state until a future per-OFE hydrology-state migration promotes OFE-qualified dynamic state vectors. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH7-POR, SC-WATBAL-001#INV-WATBAL-042 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SOIL-017 | FQ1 corrected parser-layer coverage invariant: when a valid parser soil profile extends deeper than the baseline-normalized corrected-layer grid, parser-layer diagnostic/constitutive corrected symbols must extend the deepest normalized corrected interval to the parser profile bottom using that deepest corrected lineage. The normalized WB11/WB18/WB19 hydrology seed grid remains governed by `INV-SOIL-015`; missing, non-finite, or nonmonotone parser layers remain typed fail-closed states. | hard-fail | REF-SOIL-LEGACY-WB11, REF-SOIL-CH7-POR, REF-SOIL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -359,6 +360,23 @@ bit-for-bit parity). `[DIRECT][Static]`
    state vectors separately from parser/corrected-layer diagnostics before any
    aggregate-storage publication claim can be promoted.
 
+## FQ1 Corrected Parser-Layer Coverage Addendum
+
+1. Disturbed/SURGO parser profiles may retain a valid deepest parser layer that
+   extends below the baseline-normalized corrected-layer grid produced by the
+   `scon.for`-equivalent preprocessing lineage.
+2. Generic parser-layer corrected diagnostic symbols (`thetfc_####`,
+   `thetdr_####`, `por_####`, `cpm_####`, `coca_####`) must cover every valid
+   parser layer by deterministic overlap mapping. When the parser profile
+   bottom exceeds the normalized grid bottom, the deepest normalized corrected
+   interval extends to the parser profile bottom.
+3. This extension is not hydrology seed-grid authority. WB11/WB18/WB19 seed
+   aliases remain on the baseline-normalized grid required by `INV-SOIL-015`.
+4. Missing normalized corrected lineage, non-finite parser depths, nonpositive
+   layer thickness, or nonmonotone parser depth still hard-fail with typed
+   runtime errors; FQ1 does not authorize silent defaults or coverage guard
+   loosening for invalid soils.
+
 ## HPHYS0209 ProfileWP Near-Closed Adjudication Addendum
 
 1. Soil authority for `ProfileWPStore` publication lineage remains the
@@ -484,6 +502,7 @@ promotes direct-theta cohort governance back to blocking Level-4 posture.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-07` | `23` | `Codex` | FQ1 amendment: added `INV-SOIL-017` requiring valid parser-layer corrected diagnostics to cover parser profile depth by extending the deepest normalized corrected interval, while preserving normalized hydrology seed-grid authority and fail-closed invalid-layer guards. |
 | `2026-06-02` | `22` | `Codex` | HPHYS0255 amendment: added `INV-SOIL-016` separating MOFE OFE-qualified soil provenance from unqualified active WB11 hydrology seed aliases and prohibiting static per-OFE storage synthesis. |
 | `2026-06-02` | `21` | `Codex` | HPHYS0254 amendment: added `INV-SOIL-015` requiring hydrology WB11/WB18/WB19 seed aliases to use the baseline-normalized corrected-layer grid while preserving AUTH03/AUTH05 generic constitutive FC/WP symbols. |
 | `2026-06-01` | `20` | `Codex` | AUTH12 follow-up amendment: expanded measured-FC/WP contract scope to all measured-theta datvers (`7777/7778/9002/9003/9005`) and grounded producer/runtime pairing authority to WEPPpy SSURGO producer equations plus runtime `cpm` application (legacy `scon.for` basis). |

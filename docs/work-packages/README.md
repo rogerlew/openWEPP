@@ -122,6 +122,16 @@ publication-safe Daymet CLI audit:
    characterization; **FQ-4** frost-activation closure. This exercises the standard
    `ksflag` gate, not the forest `ksatadj` model (separate concern). Package:
    `20260608-frostval01-ksflag-frost-single-ofe-closure-validation-001/`.
+7a. **FQ-1 soil corrected-layer coverage** *(executed-hold-boundary)* — closed
+   the population-scale `HS-RUNTIME-E-062` soil coverage blocker from
+   FROSTVAL01. `SC-SOIL-001` v23 now requires valid parser-layer corrected
+   diagnostics to extend the deepest normalized corrected interval to parser
+   profile bottom while preserving normalized WB11/WB18/WB19 seed-grid authority.
+   Post-fix algebraic-radium validation has zero `HS-RUNTIME-E-062` failures:
+   `42/43` prefixes emit `H.wat.parquet` + `H.hbp`; `p11` now fails later at the
+   protected percolation boundary with `HKERNEL-WB11-PERC-E-003` on `1990-162`.
+   Handoff: `FQ1-P11-HKERNEL-WB11-PERC-E-003-J162`. Package:
+   `20260608-fq1-soil-corrected-layer-coverage-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-gated.
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
