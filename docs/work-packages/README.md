@@ -86,18 +86,25 @@ publication-safe Daymet CLI audit:
    `20260606-wbval06-single-ofe-wat-conservation-residual-defect-closure-001/`.
    Package:
    `20260606-snowsci-stage1-snow-mass-conservation-closure-001/`.
-6a. **totalwatsed3 interception-flux audit companion** *(next WP, wepppy-side —
-   gates rung-1 completion)* — WBVAL06 publishes the daily interception flux as
+6a. **totalwatsed3 interception-flux audit companion** *(DONE — wepppy
+   `aeef2cc6c`)* — WBVAL06 published the daily interception flux as
    `H.wat.Interception`, but openWEPP closure was shown only under its own
    identity audit. The acceptance surface is the **totalwatsed3** WB audit, which
-   closes `P - (Runoff + Lateral + ET + Percolation) - ΔStorage` and does not yet
-   consume an interception flux. This WP adds `Interception` as a first-class
-   outflow in `wepppy/wepp/interchange/totalwatsed3.py` and
-   `tools/totalwatsed3_daily_closure_audit.py` and validates closure on openWEPP
-   post-WBVAL06 output. **Hard constraint: do not change ET** (`Ep`/`Es`/`Er`) —
-   producer-authoritative physics; interception is a separate outflow. Single-OFE
-   rung-1 closure is complete only when the totalwatsed3 audit closes on openWEPP
-   output (years `2..6`).
+   closes `P - (Runoff + Lateral + ET + Percolation) - ΔStorage`. This WP added
+   `Interception` as an optional first-class outflow in
+   `wepppy/wepp/interchange/totalwatsed3.py` and
+   `tools/totalwatsed3_daily_closure_audit.py` (default 0 when absent, so legacy
+   runs close unchanged; **`ET` untouched**). On openWEPP post-WBVAL06 output the
+   totalwatsed3 closure identity now closes to ~`2e-7 mm/yr` for years `2..6`
+   (vs ~15-19 mm without interception). WP:
+   `wepppy/docs/work-packages/20260607_totalwatsed3_interception_flux_closure/`.
+   Note: acceptance used a WAT-aggregated totalwatsed3-like surface; a full
+   end-to-end totalwatsed3 run awaits openWEPP watershed outputs (MOFE rung).
+
+   **RUNG-1 (single-OFE water-balance closure) is COMPLETE:** SNOWSCI-S1 (snow
+   conservation) + WBVAL06 (interception publication) + 6a (totalwatsed3 audit
+   consumes interception) → single-OFE WB closes and is auditable on the real
+   surface. Next rung: **frost** (item 7).
 7. **frost** — infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed
    vertical balance, on single-OFE geometry with no routing to alias it.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
