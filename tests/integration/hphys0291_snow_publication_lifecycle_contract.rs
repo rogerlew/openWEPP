@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 use std::fs;
+use std::path::Path;
 
 use openwepp_hillslope_orchestrator::{HillslopeWritebackSurface, Wb11HydrologyKernel};
 use openwepp_kernel_contract::{
@@ -7,13 +8,40 @@ use openwepp_kernel_contract::{
     HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
 };
 
-const RUNNER_SOURCE: &str = "crates/openwepp-runner/src/hillslope/mod.rs";
 const KERNEL_PHASE_SOURCE: &str =
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs";
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const SC_RUNOFFPART: &str = "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md";
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
 const TOL: f64 = 1.0e-9;
+
+fn read_runner_hillslope_sources() -> String {
+    let runner_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!(
+                    "runner source {} should be readable: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
 
 fn insert_state(surface: &mut HillslopeWritebackSurface, symbol: &str, value: f64) {
     surface
@@ -272,7 +300,7 @@ fn hphys0291_kernel_publishes_required_snow_fluxes_on_runoff_reconciliation() {
 
 #[test]
 fn hphys0291_wb13_requires_same_day_fluxes_without_state_default_masking() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
+    let runner = read_runner_hillslope_sources();
 
     assert!(
         runner.contains(
@@ -292,7 +320,7 @@ fn hphys0291_wb13_requires_same_day_fluxes_without_state_default_masking() {
 
 #[test]
 fn hphys0291_trace_preserves_snow_publication_lifecycle_surfaces() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
+    let runner = read_runner_hillslope_sources();
 
     assert!(
         runner.contains("snow_routed_melt_m")

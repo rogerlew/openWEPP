@@ -1,5 +1,6 @@
 use serde_json::Value;
 use std::fs;
+use std::path::Path;
 
 const PACKAGE: &str =
     "docs/work-packages/20260605-hphys0305-paired-melt-term-state-instrumentation-001/package.md";
@@ -7,7 +8,34 @@ const PROMPT: &str = "docs/work-packages/20260605-hphys0305-paired-melt-term-sta
 const RUNNER: &str = "docs/work-packages/20260605-hphys0305-paired-melt-term-state-instrumentation-001/artifacts/hphys0305_paired_melt_term_state.py";
 const LEDGER: &str = "docs/work-packages/20260605-hphys0305-paired-melt-term-state-instrumentation-001/artifacts/paired-melt-term-state-ledger.json";
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
-const RUNNER_MOD: &str = "crates/openwepp-runner/src/hillslope/mod.rs";
+
+fn read_runner_hillslope_sources() -> String {
+    let runner_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!(
+                    "runner source {} should be readable: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
 
 #[test]
 fn hphys0305_package_requires_paired_term_state_no_compensation_gate() {
@@ -47,7 +75,7 @@ fn hphys0305_package_requires_paired_term_state_no_compensation_gate() {
 #[test]
 fn hphys0305_contract_and_trace_aliases_are_registered() {
     let sc_watbal = fs::read_to_string(SC_WATBAL).unwrap();
-    let runner_mod = fs::read_to_string(RUNNER_MOD).unwrap();
+    let runner_mod = read_runner_hillslope_sources();
 
     assert!(
         sc_watbal.contains("INV-WATBAL-078")

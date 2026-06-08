@@ -1,10 +1,38 @@
 use std::fs;
+use std::path::Path;
 
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
 const SC_EVAP: &str = "docs/specifications/science-contracts/contracts/SC-EVAP-001.md";
 const SC_PERC: &str = "docs/specifications/science-contracts/contracts/SC-PERC-001.md";
 const SC_SUBHYD: &str = "docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md";
-const RUNNER_SOURCE: &str = "crates/openwepp-runner/src/hillslope/mod.rs";
+
+fn read_runner_hillslope_sources() -> String {
+    let runner_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!(
+                    "runner source {} should be readable: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
 
 #[test]
 fn hphys0295_contracts_define_cumulative_storage_budget_authority() {
@@ -33,7 +61,7 @@ fn hphys0295_contracts_define_cumulative_storage_budget_authority() {
 
 #[test]
 fn hphys0295_runner_trace_preserves_cumulative_budget_surfaces() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
+    let runner = read_runner_hillslope_sources();
 
     for required_field in [
         "wb13_total_soil_mm",

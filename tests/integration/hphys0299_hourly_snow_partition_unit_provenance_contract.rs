@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::Path;
 
 const SC_CLIMATE: &str = "docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md";
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
@@ -9,7 +10,34 @@ const RUNNER: &str = "docs/work-packages/20260605-hphys0299-hourly-snow-partitio
 const LEDGER: &str = "docs/work-packages/20260605-hphys0299-hourly-snow-partition-unit-provenance-closure-001/artifacts/corrected-partition-ledger.json";
 const OPENWEPP_FORCING: &str =
     "crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs";
-const OPENWEPP_RUNNER: &str = "crates/openwepp-runner/src/hillslope/mod.rs";
+
+fn read_runner_hillslope_sources() -> String {
+    let runner_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!(
+                    "runner source {} should be readable: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
 
 #[test]
 fn hphys0299_contracts_distinguish_hrsnow_depth_from_water_equivalent() {
@@ -134,8 +162,7 @@ fn hphys0299_ledger_routes_negative_melt_openwepp_defect_to_follow_on() {
 fn hphys0299_static_openwepp_sources_publish_depth_and_water_equiv_separately() {
     let forcing =
         fs::read_to_string(OPENWEPP_FORCING).expect("openWEPP forcing source should be readable");
-    let runner =
-        fs::read_to_string(OPENWEPP_RUNNER).expect("openWEPP runner source should be readable");
+    let runner = read_runner_hillslope_sources();
 
     assert!(
         forcing.contains("simimpl28_stmtim_hourly_partition")

@@ -12,6 +12,34 @@ fn assert_contains(content: &str, token: &str) {
     assert!(content.contains(token), "missing required token: {token}");
 }
 
+fn read_runner_hillslope_sources() -> String {
+    let runner_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!(
+                    "runner source {} should be readable: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[test]
 fn hphys0318_contract_authority_is_registered() {
     let climate = read("docs/specifications/science-contracts/contracts/SC-CLIMATE-001.md");
@@ -134,7 +162,7 @@ fn hphys0318_runtime_and_trace_symbols_are_registered() {
         assert_contains(&runtime, token);
     }
 
-    let runner = read("crates/openwepp-runner/src/hillslope/mod.rs");
+    let runner = read_runner_hillslope_sources();
     assert_contains(
         &runner,
         "openwepp-hphys0245-wb11-wb18-wb19-wb17-evappm-branch-trace-v17",

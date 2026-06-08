@@ -1,13 +1,41 @@
 use std::fs;
+use std::path::Path;
 
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const SC_RUNOFFPART: &str = "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md";
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
-const RUNNER_SOURCE: &str = "crates/openwepp-runner/src/hillslope/mod.rs";
 const KERNEL_HELPER_SOURCE: &str =
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
 const HPHYS0284_TEST_SOURCE: &str =
     "tests/integration/hphys0284_negative_melt_snowpack_state_contract.rs";
+
+fn read_runner_hillslope_sources() -> String {
+    let runner_dir =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!(
+                    "runner source {} should be readable: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
 
 #[test]
 fn hphys0293_contracts_define_snow_producer_depletion_attribution() {
@@ -39,7 +67,7 @@ fn hphys0293_contracts_define_snow_producer_depletion_attribution() {
 
 #[test]
 fn hphys0293_runner_trace_preserves_term_level_snow_depletion_evidence() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
+    let runner = read_runner_hillslope_sources();
 
     for required_field in [
         "snow_runtime_swe_before_m",
@@ -96,7 +124,7 @@ fn hphys0293_preserves_single_source_negative_melt_boundary() {
 
 #[test]
 fn hphys0293_preserves_wb14_exclusion_evidence_surfaces() {
-    let runner = fs::read_to_string(RUNNER_SOURCE).expect("runner source should be readable");
+    let runner = read_runner_hillslope_sources();
 
     for required_field in [
         "wb12_partition_liquid_supply_m",

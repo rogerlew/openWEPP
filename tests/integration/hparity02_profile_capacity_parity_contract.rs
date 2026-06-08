@@ -8,9 +8,34 @@ fn repo_file(path: &str) -> String {
         .unwrap_or_else(|error| panic!("expected readable file {}: {error}", full_path.display()))
 }
 
+fn runner_hillslope_sources() -> String {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let runner_dir = repo_root.join("crates/openwepp-runner/src/hillslope");
+    let mut files: Vec<_> = fs::read_dir(&runner_dir)
+        .expect("runner hillslope source directory should be readable")
+        .map(|entry| {
+            entry
+                .expect("runner hillslope source entry should be readable")
+                .path()
+        })
+        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
+        .collect();
+    files.sort();
+
+    files
+        .into_iter()
+        .map(|path| {
+            fs::read_to_string(&path).unwrap_or_else(|error| {
+                panic!("expected readable file {}: {error}", path.display())
+            })
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 #[test]
 fn hparity02_runner_profile_capacity_publication_uses_authoritative_lineage_symbols() {
-    let runner_mod = repo_file("crates/openwepp-runner/src/hillslope/mod.rs");
+    let runner_mod = runner_hillslope_sources();
 
     assert!(
         runner_mod.contains("wb13_profile_depth_mm")
