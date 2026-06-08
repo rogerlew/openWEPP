@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 
 use openwepp_hillslope_orchestrator::Wb11HydrologyKernel;
 use openwepp_kernel_contract::{
@@ -45,6 +46,39 @@ fn repo_json_fixture<T: for<'de> Deserialize<'de>>(path: &str) -> T {
     let text = repo_file(path);
     serde_json::from_str::<T>(&text)
         .unwrap_or_else(|error| panic!("failed to parse fixture {path} as JSON: {error}"))
+}
+
+fn collect_rust_sources(dir: &Path) -> Vec<PathBuf> {
+    let mut entries = Vec::new();
+    for item in fs::read_dir(dir).unwrap_or_else(|error| {
+        panic!("failed to read directory {}: {error}", dir.display())
+    }) {
+        let item = item.unwrap_or_else(|error| {
+            panic!("failed to read directory entry under {}: {error}", dir.display())
+        });
+        let path = item.path();
+        if path.is_dir() {
+            entries.extend(collect_rust_sources(&path));
+            continue;
+        }
+        if path.extension().is_some_and(|extension| extension == "rs") {
+            entries.push(path);
+        }
+    }
+    entries
+}
+
+fn repo_hydrology_sources() -> Vec<PathBuf> {
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let hydrology_root = repo_root.join("crates/openwepp-hillslope-orchestrator/src/hydrology");
+    collect_rust_sources(&hydrology_root)
+}
+
+fn repo_file_contains(path: &Path, pattern: &str) -> bool {
+    let text = fs::read_to_string(path).unwrap_or_else(|error| {
+        panic!("expected readable file {}: {error}", path.display())
+    });
+    text.contains(pattern)
 }
 
 #[allow(clippy::too_many_lines)]
@@ -353,19 +387,34 @@ fn hphys0225_cases_hold_withdrawal_behavior_constant_across_legacy_pool_perturba
 
 #[test]
 fn hphys0225_runtime_source_forbids_legacy_max_reconciliation() {
-    let source = repo_file(
-        "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs",
-    );
+    let forbidden_lateral = "layer_pool.max(drainable_storage_legacy + recharge_pe)";
+    let forbidden_drainage = "layer_pool.max(drainable_storage_legacy)";
+
+    let findings = repo_hydrology_sources()
+        .into_iter()
+        .filter(|path| {
+            repo_file_contains(path, forbidden_lateral)
+                || repo_file_contains(path, forbidden_drainage)
+        })
+        .map(|path| {
+            path.strip_prefix(env!("CARGO_MANIFEST_DIR"))
+                .unwrap_or(path.as_path())
+                .to_string_lossy()
+                .to_string()
+        })
+        .collect::<Vec<_>>();
+
     assert!(
-        !source.contains("layer_pool.max(drainable_storage_legacy + recharge_pe)"),
-        "HPHYS0225 must remove lateral legacy max-reconciliation path"
+        findings.is_empty(),
+        "HPHYS0225 must remove legacy max-reconciliation expressions from hydrology runtime sources; found {findings:?}",
     );
+
+    let allowed_state_sources = repo_hydrology_sources();
+    let has_layer_cap = allowed_state_sources
+        .iter()
+        .any(|path| repo_file_contains(path, "let available_pool = layer_pool;"));
     assert!(
-        !source.contains("layer_pool.max(drainable_storage_legacy)"),
-        "HPHYS0225 must remove drainage legacy max-reconciliation path"
-    );
-    assert!(
-        source.contains("let available_pool = layer_pool;"),
-        "HPHYS0225 must cap available pool from layer-derived state only"
+        has_layer_cap,
+        "HPHYS0225 must preserve available-pool cap assignment from layer-derived state"
     );
 }

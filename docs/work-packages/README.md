@@ -221,6 +221,11 @@ Recent mechanical refactor package authoring updates (for discoverability):
     into cohesive modules while preserving API/guard behavior intent and
     `.rs` line-count governance.
 
+- `20260608-hphys0225-wb19-layer-pool-source-scan-closeout-001/`
+  - Purpose: close out the HPHYS0225 integration blocker introduced by
+    REFACTOR015 module relocation by updating source-scan assertions to scan
+    refactored hydrology module files.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
