@@ -1,0 +1,135 @@
+FAIL docs/specifications/science-contracts/contracts/SC-WATBAL-001.md: 133 issue(s)
+- HPHYS0299-WATER-BALANCE-UNIT-PROVENANCE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0299-WATER-BALANCE-UNIT-PROVENANCE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0300-WATER-BALANCE-RAW-POST-RAW-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0300-WATER-BALANCE-RAW-POST-RAW-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0301-H39-RAIN-RELEASE-WATER-BALANCE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0301-H39-RAIN-RELEASE-WATER-BALANCE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0302-COMPARATOR-SURFACE-WATER-BALANCE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0302-COMPARATOR-SURFACE-WATER-BALANCE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0305-PAIRED-MELT-TERM-STATE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0305-PAIRED-MELT-TERM-STATE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0306-BRANCH-ACTIVE-MELT-TERM-OBSERVE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0306-BRANCH-ACTIVE-MELT-TERM-OBSERVE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0307-MELT-CALL-BRANCH-ACTIVATION-LINEAGE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0307-MELT-CALL-BRANCH-ACTIVATION-LINEAGE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0308-BRANCH-EXTRA-STATE-ORDERING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0308-BRANCH-EXTRA-STATE-ORDERING-ADDENDUM: undecidable binding status blocks consolidation
+- EROD12-CROSS-DOMAIN-OWNERSHIP-AND-GUARD-CLOSURE-ADDENDUM: active entry has no canonical binding IDs
+- EROD12-CROSS-DOMAIN-OWNERSHIP-AND-GUARD-CLOSURE-ADDENDUM: undecidable binding status blocks consolidation
+- WB12-RECONCILIATION-AUTHORITY-ADDENDUM: active entry has no canonical binding IDs
+- WB12-RECONCILIATION-AUTHORITY-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- WB12-DETERMINISTIC-RECONCILIATION-RULES: active entry has no canonical binding IDs
+- WB12-DETERMINISTIC-RECONCILIATION-RULES: unpromoted binding lacks promoted INV/OBL mapping
+- CLIM05-SNOW-COUPLED-RECONCILIATION-ADDENDUM: active entry has no canonical binding IDs
+- CLIM05-SNOW-COUPLED-RECONCILIATION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- CLIM05-REQUIRED-COUPLING-SURFACE: active entry has no canonical binding IDs
+- CLIM05-REQUIRED-COUPLING-SURFACE: unpromoted binding lacks promoted INV/OBL mapping
+- CLIM05-DETERMINISTIC-COUPLING-RULE: active entry has no canonical binding IDs
+- CLIM05-DETERMINISTIC-COUPLING-RULE: unpromoted binding lacks promoted INV/OBL mapping
+- CLIM06-FROZEN-SOIL-INFILTRATION-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- CLIM06-FROZEN-SOIL-INFILTRATION-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- CLIM06-REQUIRED-COUPLING-SURFACES: active entry has no canonical binding IDs
+- CLIM06-REQUIRED-COUPLING-SURFACES: unpromoted binding lacks promoted INV/OBL mapping
+- CLIM06-DETERMINISTIC-COUPLING-RULES: active entry has no canonical binding IDs
+- CLIM06-DETERMINISTIC-COUPLING-RULES: unpromoted binding lacks promoted INV/OBL mapping
+- WB14-INFILTRATION-AND-HYETOGRAPH-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- WB14-INFILTRATION-AND-HYETOGRAPH-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- WB14-REQUIRED-COUPLING-SURFACES: active entry has no canonical binding IDs
+- WB14-REQUIRED-COUPLING-SURFACES: unpromoted binding lacks promoted INV/OBL mapping
+- WB14-DETERMINISTIC-COUPLING-RULES: active entry has no canonical binding IDs
+- WB14-DETERMINISTIC-COUPLING-RULES: unpromoted binding lacks promoted INV/OBL mapping
+- WB15-CANOPY-INTERCEPTION-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- WB15-CANOPY-INTERCEPTION-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- WB15-REQUIRED-COUPLING-SURFACES: active entry has no canonical binding IDs
+- WB15-REQUIRED-COUPLING-SURFACES: unpromoted binding lacks promoted INV/OBL mapping
+- WB15-DETERMINISTIC-COUPLING-RULES: active entry has no canonical binding IDs
+- WB15-DETERMINISTIC-COUPLING-RULES: unpromoted binding lacks promoted INV/OBL mapping
+- IRRIG10-IRRIGATION-STORAGE-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- IRRIG10-IRRIGATION-STORAGE-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- IRRIG10-REQUIRED-COUPLING-SURFACES: active entry has no canonical binding IDs
+- IRRIG10-REQUIRED-COUPLING-SURFACES: unpromoted binding lacks promoted INV/OBL mapping
+- WB16-PEAK-RUNOFF-CLOSURE-DIAGNOSTICS-ADDENDUM: active entry has no canonical binding IDs
+- WB16-PEAK-RUNOFF-CLOSURE-DIAGNOSTICS-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- WB16-REQUIRED-COUPLING-SURFACES: undecidable binding status blocks consolidation
+- HPHYS0202-PROFILEFC-PROFILEWP-LAYER-AGGREGATION-LINEAGE-CLOSURE-HISTORIC: undecidable binding status blocks consolidation
+- HPHYS0205-CORRECTED-LAYER-AUTHORITY-CLOSURE-HISTORICAL: undecidable binding status blocks consolidation
+- HPHYS0206-CORRECTED-LAYER-NORMALIZATION-AND-MAPPING-CLOSURE-HISTORICAL: undecidable binding status blocks consolidation
+- HPHYS0207-FC-WP-DEPTH-AUTHORITY-AND-NORMALIZED-TAIL-CLOSURE: active entry has no canonical binding IDs
+- HPHYS0207-FC-WP-DEPTH-AUTHORITY-AND-NORMALIZED-TAIL-CLOSURE: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0216-PROFILEFC-LAYER-AUTHORITY-REALIGNMENT: undecidable binding status blocks consolidation
+- HPHYS0216D-PROFILEFC-LAYER-TAIL-AUTHORITY-RECONCILIATION: active entry has no canonical binding IDs
+- HPHYS0216D-PROFILEFC-LAYER-TAIL-AUTHORITY-RECONCILIATION: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0203-PHYSICS-ROBUSTNESS-VALIDATION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0203-PHYSICS-ROBUSTNESS-VALIDATION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0208-FC-THRESHOLD-COUPLED-RESIDUAL-CLOSURE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0208-FC-THRESHOLD-COUPLED-RESIDUAL-CLOSURE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- malformed index row: | `HPHYS0218-WB19-DRFC-EQUIVALENT-THRESHOLD-CLOSURE-ADDENDUM` | `lines 1655-1670` `HPHYS0218 WB19 `drfc`-Equivalent Threshold Closure Addend
+- HPHYS0221-WB19-WATER-YIELD-SATURATED-DEPTH-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0221-WB19-WATER-YIELD-SATURATED-DEPTH-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- malformed index row: | `HPHYS0222-WB19-SOLWPV-BRANCH-AUTHORITY-CORRECTION-ADDENDUM` | `lines 1695-1711` `HPHYS0222 WB19 `solwpv` Branch-Authority Correction Adde
+- HPHYS0224-WB19-REALIZED-WITHDRAWAL-SOIL-WATER-CAP-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0224-WB19-REALIZED-WITHDRAWAL-SOIL-WATER-CAP-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0225-WB19-LAYER-POOL-AVAILABLE-CAP-AUTHORITY-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0225-WB19-LAYER-POOL-AVAILABLE-CAP-AUTHORITY-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0226-WB19-LATERAL-SATURATED-THICKNESS-RESPONSE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0226-WB19-LATERAL-SATURATED-THICKNESS-RESPONSE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0227-WB19-FC-WP-COCA-WATER-YIELD-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0227-WB19-FC-WP-COCA-WATER-YIELD-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0234-WB13-SUBSURFACE-FLUX-AUTHORITY-ANTI-SHADOW-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0234-WB13-SUBSURFACE-FLUX-AUTHORITY-ANTI-SHADOW-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0235-WB18-HOURLY-ITERATIVE-LANE-REANCHORING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0235-WB18-HOURLY-ITERATIVE-LANE-REANCHORING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0248-WB18-HOURLY-RESTRICTIVE-BOTTOM-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0248-WB18-HOURLY-RESTRICTIVE-BOTTOM-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0209-PROFILEWP-NEAR-CLOSED-ADJUDICATION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0209-PROFILEWP-NEAR-CLOSED-ADJUDICATION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- MOFE04-MULTI-OFE-WB13-WAT-PUBLICATION-POLICY-ADDENDUM: active entry has no canonical binding IDs
+- MOFE04-MULTI-OFE-WB13-WAT-PUBLICATION-POLICY-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- ARCH22-TYPED-PRODUCTION-SURFACE-ADDENDUM: active entry has no canonical binding IDs
+- ARCH22-TYPED-PRODUCTION-SURFACE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- SIMIMPL03-PRODUCTION-EXECUTION-OWNERSHIP-AND-INTAKE-GUARDRAIL-ADDENDUM: active entry has no canonical binding IDs
+- SIMIMPL03-PRODUCTION-EXECUTION-OWNERSHIP-AND-INTAKE-GUARDRAIL-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- EROD13-WAVE-1-ACTIVE-PRODUCER-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- EROD13-WAVE-1-ACTIVE-PRODUCER-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- EROD14-WAVE-2-ACTIVE-PRODUCER-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- EROD14-WAVE-2-ACTIVE-PRODUCER-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- SIMIMPL14-CONTINUOUS-RUNNER-AND-WB13-SPAN-KEY-ADDENDUM: active entry has no canonical binding IDs
+- SIMIMPL14-CONTINUOUS-RUNNER-AND-WB13-SPAN-KEY-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- SIMIMPL15-REPLAY-COMPARATOR-TOOLING-ALIGNMENT-ADDENDUM: active entry has no canonical binding IDs
+- SIMIMPL15-REPLAY-COMPARATOR-TOOLING-ALIGNMENT-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- SIMIMPL16-REPLAY-CONTRACT-DERIVED-TEST-COVERAGE-CLOSURE-ADDENDUM: active entry has no canonical binding IDs
+- SIMIMPL16-REPLAY-CONTRACT-DERIVED-TEST-COVERAGE-CLOSURE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- SIMIMPL18-RAIN-SNOW-PARTITION-AND-STORAGE-STATE-MUTATION-CLOSURE-ADDENDU: active entry has no canonical binding IDs
+- SIMIMPL18-RAIN-SNOW-PARTITION-AND-STORAGE-STATE-MUTATION-CLOSURE-ADDENDU: unpromoted binding lacks promoted INV/OBL mapping
+- SIMIMPL21-WB11-ET-SOIL-WATER-BASELINE-ORDERING-AND-LINEAGE-ADDENDUM: active entry has no canonical binding IDs
+- SIMIMPL21-WB11-ET-SOIL-WATER-BASELINE-ORDERING-AND-LINEAGE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0238-WB19-HOURLY-ITERATIVE-LATERAL-DRAINAGE-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0238-WB19-HOURLY-ITERATIVE-LATERAL-DRAINAGE-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0239-WB19-WB12-WB13-ORDERING-AND-FLUX-AUTHORITY-HANDOFF-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0239-WB19-WB12-WB13-ORDERING-AND-FLUX-AUTHORITY-HANDOFF-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0240-HOURLY-RUNOFF-CARRYOVER-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0240-HOURLY-RUNOFF-CARRYOVER-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0241-MOFE-HOURLY-CARRY-ARRAY-ROUTING-CONTINUITY-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0241-MOFE-HOURLY-CARRY-ARRAY-ROUTING-CONTINUITY-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0242-WB14-WB12-HOURLY-CADENCE-AND-ORDERING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0242-WB14-WB12-HOURLY-CADENCE-AND-ORDERING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0250-WB13-FINAL-EP-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0250-WB13-FINAL-EP-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0251-SWU-UPTAKE-MAGNITUDE-COUPLING-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0251-SWU-UPTAKE-MAGNITUDE-COUPLING-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0252-WB19-STORAGE-AVAILABILITY-CONTINUATION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0252-WB19-STORAGE-AVAILABILITY-CONTINUATION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0254-WB11-INITIAL-STORAGE-PROJECTION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0254-WB11-INITIAL-STORAGE-PROJECTION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0255-MOFE-STORAGE-PROJECTION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0255-MOFE-STORAGE-PROJECTION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0256-WB19-LATQCC-LANE-BRANCH-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0256-WB19-LATQCC-LANE-BRANCH-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0258-WB19-REALIZED-LATERAL-PUBLICATION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0258-WB19-REALIZED-LATERAL-PUBLICATION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0259-WB19-TRACE-RESIDUAL-LOCALIZATION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0259-WB19-TRACE-RESIDUAL-LOCALIZATION-ADDENDUM: unpromoted binding lacks promoted INV/OBL mapping
+- HPHYS0260-WB17-WB18-STORAGE-TRACE-RESIDUAL-LOCALIZATION-ADDENDUM: active entry has no canonical binding IDs
+- HPHYS0260-WB17-WB18-STORAGE-TRACE-RESIDUAL-LOCALIZATION-ADDENDUM: undecidable binding status blocks consolidation
+lint_exit_code=1

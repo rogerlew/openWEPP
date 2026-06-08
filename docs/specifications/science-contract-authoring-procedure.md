@@ -1,308 +1,255 @@
 # Science Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-06-05
+Last updated: 2026-06-08
 Scope: openWEPP process-based science contracts (`SC-<DOMAIN>-<NNN>`)
 
 ## Purpose
 
-Define a reusable, mandatory workflow for writing and accepting openWEPP
-science contracts with:
+Define the mandatory workflow for authoring, reviewing, promoting, and changing
+openWEPP science contracts. Artifact structure is defined separately in
+`docs/specifications/science-contract-spec.md`; provenance sidecar structure and
+lifecycle are defined in
+`docs/specifications/science-contract-provenance-spec.md`.
 
-1. top-down scientific authority,
-2. required dual-agent review,
-3. explicit finding disposition,
-4. required agent verification of applied fixes.
-
-Principle: correctness over completion. Contract work must remain in `HOLD`
-until correctness criteria are satisfied; schedule pressure is not a valid
-reason to bypass invariant correctness.
+Principle: correctness over completion. Contract work remains in `HOLD` until
+correctness criteria, review disposition, and verification gates are satisfied.
+Schedule pressure is not a valid reason to bypass invariant correctness.
 
 This procedure is normative for contract promotion readiness and complements:
 
 - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
 - `docs/decisions/0003-parity-semantic-not-bit.md`
-- `docs/work-packages/README.md`
-- `docs/specifications/unit-governance.md`
-- `docs/specifications/science-contracts/README.md`
+- `docs/decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md`
+- `docs/specifications/science-contract-spec.md`
+- `docs/specifications/science-contract-provenance-spec.md`
 - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
+- `docs/specifications/unit-governance.md`
 - `docs/specifications/correctness-authority-model.md`
 - `docs/specifications/external-authority/README.md`
-
-## Canonical Contract Location (Normative)
-
-Canonical `SC-*` authority files must be stored in:
-
-- `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`
-
-Canonical contract lifecycle registry must be stored in:
-
-- `docs/specifications/science-contracts/index.md`
-
-Work-package artifacts are evidence and workflow records, not canonical
-authority location.
+- `docs/specifications/science-contracts/README.md`
 
 ## Authority and Evidence Rules
 
 1. Contract derivation order is fixed:
-   1. WEPP technical references (including `references/50201000`)
-   2. peer-reviewed literature invariants
-   3. physical/common-sense invariants
-   4. static legacy code inspection (secondary provenance only)
-2. Legacy static-code provenance default is the pinned baseline in
+   1. WEPP technical references, including `references/50201000`.
+   2. Peer-reviewed literature invariants.
+   3. Physical/common-sense invariants.
+   4. Static legacy code inspection as secondary provenance only.
+2. Legacy static-code provenance defaults to the pinned baseline in
    `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`:
-   - `/workdir/wepp-forest_260430_baseline`
-   - baseline commit:
-     `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`
-   Citations to a different legacy snapshot must include explicit commit SHA and
+   `/workdir/wepp-forest_260430_baseline` at commit
+   `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
+3. Citations to a different legacy snapshot must include explicit commit SHA and
    rationale in the contract gap/disposition register.
-3. Every non-trivial invariant must include explicit citation anchors.
-4. Evidence tags are required per claim:
-   - `[DIRECT]` for directly observed source/output facts
-   - `[INFERENCE]` for reasoned interpretation
-5. Evidence mode at document/review level must be explicit:
-   - `Static` for read/reasoned work
-   - `Ran` for executed-command/runtime evidence
-6. Every invariant must have an explicit guard mapping:
-   - runtime guard (hard error / typed failure / explicit branch), or
-   - governance guard (non-runtime promotion gate with explicit `HOLD` rule).
-   Invariants without guard mapping are incomplete and block promotion.
-7. Variable-symbol continuity is mandatory:
-   - canonical contract symbols default to `wepp-forest` / legacy WEPP names,
-   - if openWEPP boundary names differ, contracts must include explicit alias
-     mappings from canonical symbols to boundary/API field names.
-8. Legacy-migration process-physics fidelity is mandatory:
-   - production kernel/runtime implementations for in-scope migrated physics
-     must port baseline-authoritative behavior from
-     `/workdir/wepp-forest_260430_baseline`,
-   - surrogate/proxy/heuristic formulas are not promotable closure unless
-     explicitly documented as non-promotable research branches under `HOLD`.
-9. ADR-0017 comparator-distrust governance is mandatory for comparator/ledger contracts:
-   - comparator agreement is an investigation flag, not a target;
-   - `OPENWEPP-DEFECTIVE` verdicts require like-for-like unit and lineage-stage
-     proof plus independent correctness authority;
-   - independent correctness authority may not be waived for an
-     `OPENWEPP-DEFECTIVE` verdict;
-   - the peer `HARNESS-SURFACE-MISMATCH` verdict is required;
-   - depth-vs-water-equivalent, raw-vs-released, or lineage-stage mismatches
-     resolve to `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, not openWEPP
-     defects;
-   - `HOLD` is valid only when it records an owner/follow-on package, next
-     evidence gate, and reason closure is blocked.
+4. Every non-trivial invariant must include explicit citation anchors.
+5. Evidence tags are required per claim: `[DIRECT]` for directly observed facts
+   and `[INFERENCE]` for reasoned interpretation.
+6. Evidence mode at document/review level must be explicit: `Static` for
+   read/reasoned work and `Ran` for executed-command/runtime evidence.
+7. Every invariant must have an explicit guard mapping: runtime guard, typed
+   failure, explicit branch, or governance guard with an explicit `HOLD` rule.
+8. Variable-symbol continuity is mandatory: canonical contract symbols default
+   to WEPP/legacy names; differing openWEPP boundary names require explicit alias
+   mappings.
+9. Legacy-migration process-physics fidelity is mandatory: production
+   implementations for in-scope migrated physics must port baseline-authoritative
+   behavior. Surrogate/proxy/heuristic formulas are not promotable closure unless
+   explicitly documented as non-promotable research branches under `HOLD`.
 
-## Required File Layout Per Contract Cycle
+## Canonical Locations
 
-All review/disposition/verification artifacts must live under one work package.
+Canonical `SC-*` authority files must live in:
 
-Suggested layout:
+- `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`
 
-`docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/`
+Canonical lifecycle registry must live in:
 
-Required files:
+- `docs/specifications/science-contracts/index.md`
 
-1. `contract_ref.md` (path + commit SHA reference to canonical `SC-*.md` file)
-2. `review_agent_a.md`
-3. `review_agent_b.md`
-4. `disposition.md`
-5. `verification_agent_a.md`
-6. `verification_agent_b.md`
+Provenance sidecars, when used, must follow
+`docs/specifications/science-contract-provenance-spec.md`. Work-package artifacts
+are evidence and workflow records, not authority replacements.
 
-`disposition.md` must reference the canonical path and commit SHA under review.
+## Required Contract Cycle Layout
 
-## Contract Draft Requirements
+All review, disposition, and verification artifacts for a contract cycle must
+live under one work package. Suggested layout:
 
-A contract draft is review-ready only when it contains, at minimum:
+- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/contract_ref.md`
+- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/review_agent_a.md`
+- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/review_agent_b.md`
+- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/disposition.md`
+- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/verification_agent_a.md`
+- `docs/work-packages/<wp>/artifacts/science-contracts/<contract_id>/verification_agent_b.md`
 
-1. Stable ID and lifecycle metadata:
-   - `contract_id`, `title`, `status`, `maturity`, `owner`, `contract_version`
-2. Scientific scope and out-of-scope boundaries.
-3. Variable/units table for all externally relevant symbols.
-4. Invariant table with stable invariant IDs and citation anchors.
-5. Allowed degenerate states and invalid states.
-6. Producer obligations and consumer obligations.
-7. Boundary disposition definitions per invariant family.
-8. Tolerance statement or explicit link to tolerance authority.
-9. Gap register for unresolved science or evidence limits.
-10. Guard map table linking each invariant ID to its enforcement path
-    (runtime guard or governance guard), failure behavior, and gate impact.
-11. Symbol alias map table whenever canonical WEPP symbols and openWEPP
-    boundary/API names differ.
+`contract_ref.md` and `disposition.md` must reference the canonical contract path
+and commit SHA under review.
 
-The draft must exist in the canonical `SC-*` file path before dual-agent review
-begins.
+## Authoring Workflow
 
-## Kernel Profile Requirement (Normative)
+1. Confirm the work package authority envelope, protected boundaries, and
+   intended write set before editing canonical contracts.
+2. Amend canonical `SC-*` authority before production kernel/runtime edits when
+   contract authority is applicable.
+3. Add or update contract-derived tests before production kernel/runtime edits.
+4. Record pre-implementation contract-gate evidence before production edits.
+5. Modify production code only after the contract and test authority gates are
+   satisfied.
+6. Update work-package evidence truthfully using `Static:` and `Ran:` labels.
+7. Do not close a package while known invariant, closure, or contract violations
+   remain unresolved.
+
+## Binding Exposure Workflow
+
+Contracts with historical or package-local addenda must expose binding residue in
+the core contract before narrative can be moved to a provenance sidecar.
+
+1. Build or update the contract's `Binding Exposure Index` as defined in
+   `docs/specifications/science-contract-spec.md`.
+2. Classify each addendum or sidecar entry as `active`, `superseded`, or
+   `historical` using the provenance lifecycle rules.
+3. Map every binding addendum residue to canonical `INV-*` or `OBL-*` IDs.
+4. Treat any active binding residue without an existing canonical ID as a flagged
+   binding addition. It requires dual review, finding disposition, and
+   verification before promotion.
+5. Do not remove, weaken, or hide an invariant by relocating narrative. If the
+   binding set cannot be conserved without a science decision, keep the package
+   in `HOLD` and route a follow-on.
+6. Future addenda belong in the provenance sidecar by default; binding residue
+   must be promoted into core invariants/obligations and indexed.
+
+## ADR-0017 Comparator Governance
+
+Comparator agreement is an investigation flag, not an acceptance target.
+Comparator/ledger contract work must satisfy these rules before assigning defect
+ownership:
+
+1. `OPENWEPP-DEFECTIVE` verdicts require like-for-like unit and lineage-stage
+   proof plus independent correctness authority.
+2. Independent correctness authority may not be waived for an
+   `OPENWEPP-DEFECTIVE` verdict.
+3. `HARNESS-SURFACE-MISMATCH` is a peer verdict for unit or surface-pairing
+   defects.
+4. Depth-vs-water-equivalent, raw-vs-released, lineage-stage mismatch, or a
+   suspicious conversion-like ratio such as approximately `10x` or `1000x`
+   resolves to `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, not an openWEPP
+   defect.
+5. `HOLD` is valid only when it records an owner/follow-on package, next
+   evidence gate, and reason closure is blocked.
+
+## Symbol Alias and Unit Governance Workflow
+
+1. Apply `docs/specifications/unit-governance.md` before claiming promotion
+   readiness.
+2. Use canonical WEPP symbols as primary IDs in `Variables and Units`.
+3. Include alias mappings whenever external names differ across Rust structs,
+   JSON, CLI, sidecars, parquet columns, or publication names.
+4. Fail closed on missing unit declarations, ambiguous aliases, unguarded unit
+   conversions, or suspicious dimensional ratios until like-for-like evidence is
+   recorded.
+5. Unit conversions must be named, directional, provenance-backed, and tested.
+   Raw dimensional literals are non-compliant unless allowlisted with provenance
+   and follow-up disposition.
+6. Publication metadata must trace to the same unit authority as runtime symbols.
+
+## Kernel Profile Gate
 
 If a package changes production kernel behavior or runtime projection semantics
-that control kernel branch execution, the contract revision must also satisfy:
+that control kernel branch execution, the contract revision must satisfy:
 
 - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
 
-The kernel profile is an additional mandatory gate. Missing profile compliance
-keeps disposition in `HOLD`.
+Missing kernel-profile compliance keeps disposition in `HOLD`.
 
-## External Constitutive Suite Requirement (Normative)
+## External Constitutive Suite Gate
 
 For kernel-affecting packages that touch process families with external
 constitutive suites:
 
-1. Contract revisions must reference the applicable suite IDs and linked
-   invariant IDs (`SC-*#INV-*`).
-2. Contract-derived tests must include the suite-required fixture/tolerance
-   assertions before production code changes.
-3. Each referenced suite must include explicit:
-   - external citation provenance,
-   - units and tolerance declaration,
-   - lane class (`required`, `periodic`, `manual`),
-   - failure class (`hard-fail`, `investigation`).
-   Reference schema:
-   - `docs/specifications/external-authority/suite-schema.md`
-4. Legacy parity comparators may be included as investigation evidence, but may
-   not replace constitutive suite obligations for acceptance.
+1. Reference applicable suite IDs and linked invariant IDs (`SC-*#INV-*`).
+2. Add suite-required fixture/tolerance assertions before production code
+   changes.
+3. Ensure suite metadata conforms to
+   `docs/specifications/external-authority/suite-schema.md`.
+4. Treat legacy parity comparators as investigation evidence only; they may not
+   replace constitutive suite obligations for acceptance.
+5. Run required anti-evasion checks when touching suite posture, cohort fixtures,
+   or required-case bindings.
 
 ## Required Dual-Agent Review Gate
 
 Two independent agent reviews are mandatory for every contract revision.
 
-### Independence Requirements
+1. Agent A and Agent B receive independent prompts.
+2. Agent B is not primed with Agent A findings before submitting its first
+   review.
+3. Reviews include an evidence header (`Static` or `Ran`), severity-ranked
+   findings with file/line references, scientific/governance impact, proposed
+   disposition, and final recommendation: `GO`, `GO-WITH-AMENDMENTS`, or `HOLD`.
 
-1. Agent A and Agent B must receive independent review prompts.
-2. Agent B must not be primed with Agent A findings before submitting its own
-   first review.
-3. Reviews must include severity-ranked findings with file/line references.
+## Disposition Workflow
 
-### Review Output Requirements
+After both reviews land, produce `disposition.md` with one row per finding.
+Each row must include:
 
-Each reviewer output must include:
+- `finding_id`
+- `source` (`agent_a` or `agent_b`)
+- `severity`
+- `decision` (`accepted`, `amended`, `rejected`, `deferred`, or `follow-up`)
+- `action_taken`
+- `artifact_ref`
+- `rationale`
 
-1. Evidence header (`Static` or `Ran`).
-2. Findings ordered by severity.
-3. For each finding:
-   - severity,
-   - file path + line reference,
-   - issue statement,
-   - why it matters scientifically/governance-wise,
-   - proposed disposition (`accept`, `amend`, `reject`).
-4. Final recommendation:
-   - `GO`, `GO-WITH-AMENDMENTS`, or `HOLD`.
+`amended` is retained as a compatibility value for older contract-review artifacts and means accepted with an amended fix path. Accepted and amended findings must be fixed and verified. Rejected findings require rationale
+tied to contract authority. Deferred or follow-up findings must be linked from
+disposition and worker-handoff artifacts. No silent closure is allowed.
 
-## Disposition Workflow (Required)
+## Mandatory Verification Gate
 
-After both reviews land, the author must produce `disposition.md` with one row
-per finding.
+After fixes are applied, agent verification is a separate hard gate.
 
-Required disposition fields:
-
-1. `finding_id`
-2. `source` (`agent_a` or `agent_b`)
-3. `severity`
-4. `decision` (`accepted`, `amended`, `rejected`)
-5. `action_taken`
-6. `artifact_ref` (file/line or commit reference)
-7. `notes`
-
-Rules:
-
-1. Every high-severity finding requires explicit decision and action evidence.
-2. Rejected findings require rationale tied to contract authority.
-3. No silent closure of findings is allowed.
-
-## Fix Pass and Mandatory Agent Verification
-
-After fixes are applied, verification by agents is a separate hard gate.
-
-### Verification Requirements
-
-1. Agent A verifies closure of all accepted/amended findings.
+1. Agent A verifies closure of accepted findings.
 2. Agent B verifies no new regressions and validates rejected-finding rationale.
-3. Verification outputs are stored in:
-   - `verification_agent_a.md`
-   - `verification_agent_b.md`
-
-Each verification output must state:
-
-1. which findings are `closed` / `still-open`,
-2. whether fix implementation matches disposition claims,
-3. final verification verdict: `PASS`, `PASS-WITH-NOTES`, or `FAIL`.
+3. Each verification output states which findings are `closed` or `still-open`,
+   whether implementation matches disposition claims, and a verdict of `PASS`,
+   `PASS-WITH-NOTES`, or `FAIL`.
 
 ## Promotion Gate Logic
 
-Contract revision is promotable only if all conditions are true:
+A contract revision is promotable only if all conditions are true:
 
 1. Two independent reviews completed.
-2. Disposition file completed with no missing finding rows.
-3. All high-severity findings are closed or explicitly justified with accepted
-   authority rationale.
-4. Both verification agents return `PASS` or `PASS-WITH-NOTES`.
-5. Remaining open items are listed in the gap register with non-promotable
+2. Disposition completed with no missing finding rows.
+3. Accepted findings are fixed and verified.
+4. Rejected findings carry authority-backed rationale.
+5. Both verification agents return `PASS` or `PASS-WITH-NOTES`.
+6. Remaining open items are listed in the gap register with non-promotable
    labeling when applicable.
-6. No invariant is left without a declared guard mapping and enforcement path.
-7. For legacy migration packages, touched process-physics routines include
-   explicit provenance mapping evidence from baseline source
-   (file/function/line scope) to openWEPP implementation surfaces.
+7. No invariant is left without declared guard mapping and enforcement path.
+8. For legacy migration packages, touched process-physics routines include
+   baseline source-to-openWEPP provenance mapping evidence.
+9. Binding Exposure Index checks pass when contract addenda or provenance
+   sidecars are present.
 
 If any condition fails, disposition is `HOLD`.
-
-## Symbol Alias Rules (Normative)
-
-1. The `Variables and Units` section in each `SC-*` file must use canonical
-   WEPP symbol names (from references and/or `wepp-forest` provenance) as the
-   primary symbol IDs.
-2. When external names differ (Rust structs, JSON fields, CLI args, parquet
-   columns), include an alias map table with at least:
-   - canonical symbol,
-   - boundary/API name,
-   - scope (runtime surface),
-   - units check.
-3. Symbol substitution without alias documentation is non-compliant and blocks
-   promotion.
-
-## Unit Governance Rules (Normative)
-
-Contract authors must apply
-`docs/specifications/unit-governance.md` before claiming promotion readiness.
-
-1. Every externally relevant dimensional symbol must have an explicit unit in
-   the contract and, once implemented, a boundary-symbol registry entry.
-2. Alias maps must include unit checks whenever canonical WEPP symbols differ
-   from Rust, JSON, CLI, sidecar, or publication names.
-3. Dimensional runtime seams must use typed boundary values where wrappers
-   exist; otherwise, the contract or work-package disposition must record a
-   scalar exception and follow-up remediation.
-4. Unit conversions must be named, directional, provenance-backed, and tested.
-   Raw dimensional conversion literals are non-compliant unless explicitly
-   allowlisted with provenance and follow-up disposition.
-5. Publication metadata must trace to the same unit authority as runtime
-   symbols. Legacy publication names do not override canonical unit authority.
-6. Missing unit declarations, ambiguous aliases, or unguarded unit-conversion
-   seams keep disposition in `HOLD` for kernel-affecting work.
-
-Comparator/ledger packages must perform the unit check before assigning defect
-ownership. Unit ambiguity or a suspicious ratio consistent with a unit
-conversion, such as approximately `10x` for snow depth versus snow-water
-equivalent or `1000x` for meters versus millimetres, is a fail-closed
-`HARNESS-SURFACE-MISMATCH` / `UNRESOLVED` gate until like-for-like evidence is
-recorded.
-
-## Minimal Prompt Templates
-
-### Reviewer prompt (A/B)
-
-"Review `SC-...` contract for scientific authority alignment, invariant
-soundness, evidence-label correctness, and promotion-readiness. Return
-severity-ranked findings with file/line references and a final recommendation:
-GO / GO-WITH-AMENDMENTS / HOLD."
-
-### Verifier prompt (A/B)
-
-"Given `disposition.md` and updated `SC-...` contract, verify each accepted or
-amended finding is correctly resolved and check for regressions. Return closure
-status per finding and verdict: PASS / PASS-WITH-NOTES / FAIL."
 
 ## Change Management
 
 1. Any change to this procedure must update linked checklists/templates in the
-   same commit.
-2. If procedure requirements are intentionally bypassed for urgent research
+   same work package.
+2. Changes to artifact shape belong in `science-contract-spec.md`; changes to
+   sidecar lifecycle belong in `science-contract-provenance-spec.md`.
+3. If procedure requirements are intentionally bypassed for urgent research
    reasons, the bypass must be documented in the work-package disposition with
    explicit risk acceptance.
+
+## Minimal Prompt Templates
+
+Reviewer prompt:
+
+`Review SC-... for scientific authority alignment, invariant soundness, evidence-label correctness, Binding Exposure Index conservation, and promotion readiness. Return severity-ranked findings with file/line references and final recommendation: GO / GO-WITH-AMENDMENTS / HOLD.`
+
+Verifier prompt:
+
+`Given disposition.md and the updated SC-... contract, verify each accepted or rejected finding disposition and check for regressions. Return closure status per finding and verdict: PASS / PASS-WITH-NOTES / FAIL.`

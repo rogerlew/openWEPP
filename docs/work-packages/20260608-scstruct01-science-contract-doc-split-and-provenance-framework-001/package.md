@@ -1,6 +1,6 @@
 # SCSTRUCT01 — Science-Contract Doc Split + Provenance Framework
 
-Status: queued
+Status: phase2_hold_binding_exposure_mapping_required
 Created: 2026-06-08
 Series: `scstruct` (science-contract structure / context optimization)
 Execution mode: package-end-to-end (phased; declared stop-boundaries per phase)
