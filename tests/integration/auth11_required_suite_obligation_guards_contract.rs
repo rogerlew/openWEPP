@@ -213,10 +213,19 @@ fn auth11_obligations_schema_and_anchor_bindings_are_enforced() {
         }
     }
 
-    let queue_index = read_repo_file(&suite.closure_follow_on_queue_path);
-    assert!(
-        queue_index.contains(&suite.closure_follow_on_package_id),
-        "closure follow-on package id must be present in queue index"
+    let follow_on_package_dir = Path::new(&suite.closure_follow_on_package_path)
+        .parent()
+        .and_then(|parent| parent.file_name())
+        .and_then(|name| name.to_str())
+        .unwrap_or_else(|| {
+            panic!(
+                "invalid closure follow-on package path: {}",
+                suite.closure_follow_on_package_path
+            )
+        });
+    assert_eq!(
+        follow_on_package_dir, suite.closure_follow_on_package_id,
+        "closure follow-on package directory name must match package id"
     );
 }
 
