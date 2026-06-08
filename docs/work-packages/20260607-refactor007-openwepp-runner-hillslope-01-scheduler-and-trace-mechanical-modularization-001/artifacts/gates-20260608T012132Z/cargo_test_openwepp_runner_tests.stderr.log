@@ -1,0 +1,10 @@
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.54s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_runner-207e573fd20b2e5c)
+     Running unittests src/bin/open_wepp_runner.rs (target/debug/deps/open_wepp_runner-09e5c5ad41295d69)
+     Running unittests src/bin/openwepp-cli-hill.rs (target/debug/deps/openwepp_cli_hill-5ac9723f6fd4f0e2)
+     Running unittests src/bin/openwepp-cli-watershed.rs (target/debug/deps/openwepp_cli_watershed-b0e416039a684dfa)
+     Running tests/simimpl04_runner_kernel_execution_contract.rs (target/debug/deps/simimpl04_runner_kernel_execution_contract-44724ff057e2e101)
+     Running tests/simimpl04_wb13_publication_contract.rs (target/debug/deps/simimpl04_wb13_publication_contract-256921cc3b9fb7f8)
+     Running tests/simimpl04_wepp_ui_mode_closure_contract.rs (target/debug/deps/simimpl04_wepp_ui_mode_closure_contract-c158c28d850dc82f)
+     Running tests/watershed_cli_behavior_contract.rs (target/debug/deps/watershed_cli_behavior_contract-998ad09ba376479a)

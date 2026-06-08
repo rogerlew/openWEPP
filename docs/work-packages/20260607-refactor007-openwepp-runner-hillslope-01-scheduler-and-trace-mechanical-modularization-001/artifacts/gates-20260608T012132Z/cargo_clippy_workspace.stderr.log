@@ -1,0 +1,37 @@
+    Checking openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+    Checking openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+error: usage of wildcard import
+ --> crates/openwepp-runner/src/hillslope/scheduler_trace/mod.rs:1:5
+  |
+1 | use super::*;
+  |     ^^^^^^^^ help: try: `super::{HillslopeWritebackSurface, ExecutionLane, HillslopeCliError, runtime_surface_symbol_value, scalar_to_usize, require_runtime_surface_scalar, SIMPIPE_GUARD_ID, runtime_surface_ofe_count, BoundarySymbol, BoundaryValue, seed_mofe_hourly_carry_runtime_surface_inputs, usize_to_scalar, wb13_primary_layer_symbol, compute_wb11_et_demand_seed, publish_wb11_et_demand_seed, WB16_EALPHA_COMPATIBILITY_SEED_FLAG_SYMBOL, require_mofe03_runtime_surface_scalar, mofe03_wave2_seed_failure, parse_mofe03_binary_flag, require_mofe03_non_negative_seed_scalar, require_mofe03_positive_seed_scalar, seed_mofe03_wave2_class_symbol, SchedulerLifecycleContext, DailyExecutionResult, Hphys0245SnowRuntimeBeforeState, TopologyGraph, validate_pre_execution_topology, HillslopePhaseScheduler, Hphys0245TelemetryKernel, Wb11HydrologyKernel, build_simulation_owned_wb13_row, Hphys0245TraceConfig, HPHYS0245_TRACE_PATH_ENV, HPHYS0245_TRACE_MAX_DAYS_ENV, PathBuf, Hphys0245TraceRow, ensure_output_parent_directory, fs, HillslopeKernelRequest, KernelWritebackPayload, SimulationOwnedWb13Row, runtime_surface_symbol_value_prefer_flux, runtime_surface_flux_symbol_value, HPHYS0245_TRACE_SCHEMA, BTreeMap, HillslopeCouplingVectorProvenance, parse_simimpl10_binary_flag, require_simimpl10_coupling_scalar, simcoup_failure, HillslopeWinterCouplingProvenance, SIMIMPL10_FROST_MAX_DEPTH_M, HillslopeFrozenSoilCouplingProvenance, HillslopeSoilCouplingProvenance, SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM, HillslopeHydoutEquivalentCouplingProvenance, WB13_PUBLICATION_SOURCE_SIMULATION_OWNED, SIMCOUP_GUARD_ID, HillslopeWb13PublicationProvenance, wb13_simout_failure, SIMOUT_GUARD_ID, WB13_REPLAY_CANDIDATE_SURFACE_WAT, WB13_REPLAY_CANDIDATE_SURFACE_PASS, HillslopeMofeHourlyCarryProvenance, MOFE_HOURLY_UPSTREAM_SATURATION_RUNOFF_ROOT, MOFE_HOURLY_UPSTREAM_LATERAL_RUNOFF_ROOT, MOFE_HOURLY_CURRENT_SATURATION_RUNOFF_ROOT, MOFE_HOURLY_CURRENT_LATERAL_RUNOFF_ROOT, MOFE_HOURLY_CARRY_POLICY, MOFE_HOURLY_CARRY_ARRAY_COUNT, MOFE_HOURLY_REQUIRED_ARRAYS, mofe_hourly_carry_hour_symbol, mofe_hourly_carry_failure, require_mofe_hourly_carry_non_negative, SchedulerOutcomeClass, HillslopeWb13RowKeyProvenance}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+  = note: `-D clippy::wildcard-imports` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::wildcard_imports)]`
+
+error: this function has too many lines (129/100)
+ --> crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs:1:1
+  |
+1 | / pub(super) fn build_simimpl10_coupling_vector_provenance(
+2 | |     runtime_surface: &HillslopeWritebackSurface,
+3 | |     wb13_row: &SimulationOwnedWb13Row,
+4 | | ) -> Result<HillslopeCouplingVectorProvenance, HillslopeCliError> {
+  | |_________________________________________________________________^
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+  = note: `-D clippy::too-many-lines` implied by `-D warnings`
+  = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: usage of wildcard import
+ --> crates/openwepp-runner/src/hillslope/01_scheduler_and_trace.rs:2:5
+  |
+2 | use scheduler_trace::*;
+  |     ^^^^^^^^^^^^^^^^^^ help: try: `scheduler_trace::{hphys0245_surface_after_writeback, build_hphys0245_trace_row, hphys0245_trace_config_from_env, execute_scheduler_kernel_lifecycle, scheduler_outcome_class_as_str, build_wb13_publication_provenance, build_mofe_hourly_carry_provenance, write_hphys0245_trace_jsonl, HBP_DEFAULT_PARTICLE_DIAMETER_M, HBP_SUPPORTED_MAJOR_V1, HBP_DEFAULT_CALENDAR_YEAR, HBP_FOOTER_MAGIC, HBP_REQUIRED_STATE_IDS, HBP_MAGIC, HBP_DIM_NOFE, HBP_DIM_NOFE_LAYERS, HBP_DIM_SCALAR, HBP_SCALE_INV_I64, HBP_I64_MIN_F64, HBP_I64_MAX_F64, MOFE03_WAVE2_ENABLE_TOLERANCE}`
+  |
+  = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#wildcard_imports
+
+error: could not compile `openwepp-runner` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-runner` (lib test) due to 1 previous error

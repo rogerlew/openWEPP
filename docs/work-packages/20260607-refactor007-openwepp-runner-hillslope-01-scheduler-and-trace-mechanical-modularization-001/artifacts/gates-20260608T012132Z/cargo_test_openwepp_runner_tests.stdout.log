@@ -1,0 +1,131 @@
+
+running 73 tests
+test hillslope::tests::fq3dc_scheduler_calendar_day_symbol_uses_julian_day_for_pl_activation ... ok
+test hillslope::tests::fq3dc_annual_preplant_skip_preserves_pl_sentinel_for_later_activation ... ok
+test hillslope::tests::auth12_wb11_seed_applies_cpm_for_legacy_measured_theta_fcwp_lineage ... ok
+test hillslope::tests::hphys0203_wb13_dp_guard_rejects_negative_deep_percolation_source ... ok
+test hillslope::tests::auth12_wb11_seed_applies_cpm_for_disturbed_measured_fcwp_lineage ... ok
+test hillslope::tests::hillstab08_wb16_producer_single_ofe_projects_expected_alpha_lineage ... ok
+test hillslope::tests::hillstab08_wb16_producer_multiofe_projects_expected_equivalent_plane_alpha ... ok
+test hillslope::tests::hphys0203_wb13_latqcc_guard_rejects_negative_lateral_source ... ok
+test hillslope::tests::hphys0203_wb13_soil_water_total_closure_is_conservation_consistent ... ok
+test hillslope::tests::hphys0207_wb13_wp_storage_guard_is_exercised_by_direct_row_builder_probe ... ok
+test hillslope::tests::hphys0203_wb13_profile_storage_perturbation_is_stable ... ok
+test hillslope::tests::hphys0208_wb11_seed_hard_fails_missing_cpm_symbol ... ok
+test hillslope::tests::hphys0208_wb11_seed_uses_sat_por_cpm_layer_lineage ... ok
+test hillslope::tests::hphys0209_wb13_wp_storage_guard_rejects_missing_authoritative_symbol ... ok
+test hillslope::tests::hphys0212_wb13_subhyd_coupling_guard_rejects_qd_mismatch ... ok
+test hillslope::tests::hphys0212_wb11_seed_preserves_mutable_state_after_initialization ... ok
+test hillslope::tests::hphys0212_wb11_seed_rejects_enabled_drain_without_geometry ... ok
+test hillslope::tests::hphys0213_wb12_storage_reconciliation_accepts_realized_wb19_subsurface_flux ... ok
+test hillslope::tests::hphys0212_wb13_subhyd_publication_uses_qdd_and_subrin_lineage ... ok
+test hillslope::tests::hphys0213_wb19_drainage_withdrawal_publishes_realized_qdd_and_qd ... ok
+test hillslope::tests::hphys0216_wb13_fc_storage_guard_rejects_missing_layer_authority_symbol ... ok
+test hillslope::tests::hphys0213_wb19_lateral_withdrawal_publishes_realized_flux_and_updates_wb11_soil_water ... ok
+test hillslope::tests::hphys0216d_wb13_fc_storage_guard_rejects_missing_tail_symbol ... ok
+test hillslope::tests::hphys0216d_wb13_profile_fc_publication_uses_layer_plus_tail_authority ... ok
+test hillslope::tests::hphys0232_wb11_seed_daily_lane_sets_wb18_perc_lane_substeps_to_one ... ok
+test hillslope::tests::hphys0233_wb13_dp_publication_prefers_flux_surface_over_stale_state_surface ... ok
+test hillslope::tests::hphys0234_wb13_subhyd_publication_prefers_flux_surface_over_stale_state_surface ... ok
+test hillslope::tests::hphys0245_trace_config_limits_requested_days ... ok
+test hillslope::tests::hphys0232_wb11_seed_hourly_lane_sets_wb18_perc_lane_substeps_to_twenty_four ... ok
+test hillslope::tests::hphys0239_wb13_hydrology_publication_prefers_flux_surface_over_stale_state_surface ... ok
+test hillslope::tests::hphys0245_trace_row_captures_storage_and_percolation_symbols ... ok
+test hillslope::tests::hphys0250_pl_activation_keeps_zero_date_perennial_slots_active ... ok
+test hillslope::tests::hphys0250_scheduler_lifecycle_preserves_pl_runtime_sentinel_for_ep_lineage ... ok
+test hillslope::tests::hphys0250_wb13_ep_publication_consumes_final_root_uptake_flux ... ok
+test hillslope::tests::hphys0250_wb11_seed_initializes_neutral_water_stress_for_decomposition ... ok
+test hillslope::tests::hphys0259_trace_row_captures_wb19_lateral_diagnostics ... ok
+test hillslope::tests::hphys0260_trace_row_captures_wb17_wb18_storage_diagnostics ... ok
+test hillslope::tests::hphys0261_trace_row_captures_ep_initialization_magnitude_lineage ... ok
+test hillslope::tests::hphys0268_trace_row_captures_spring_snowpack_lineage ... ok
+test hillslope::tests::hphys0262_trace_row_captures_pmet_demand_seeding_lineage ... ok
+test hillslope::tests::hphys0263_wb11_seed_uses_evappm_branch_when_pmetpara_selects_pmet ... ok
+test hillslope::tests::hphys0262_projects_pmetpara_selected_crop_coefficients ... ok
+test hillslope::tests::hphys0270_trace_row_captures_pre_day_snowpack_state ... ok
+test hillslope::tests::hphys0281_wb13_publication_canonicalizes_roundoff_negative_es_without_evappm_clamp ... ok
+test hillslope::tests::hphys0289_wb13_rm_publication_rejects_negative_routed_wmelt ... ok
+test hillslope::tests::hphys0289_wb13_rm_publication_prefers_flux_routed_wmelt_over_stale_state ... ok
+test hillslope::tests::hphys0281_wb11_evappm_seed_publishes_condensation_storage_return ... ok
+test hillslope::tests::hphys0290_wb13_rm_publication_consumes_explicit_post_winter_rain ... ok
+test hillslope::tests::hphys0271_trace_row_captures_melt_term_hourly_forcing_maps ... ok
+test hillslope::tests::hphys0289_wb13_rm_publication_consumes_routed_wmelt_not_raw_prcp_swe_delta ... ok
+test hillslope::tests::hphys0290_wb13_rm_publication_rejects_negative_post_winter_rain ... ok
+test hillslope::tests::hphys0245_trace_writer_serializes_jsonl_rows ... ok
+test hillslope::tests::hphys0290_wb13_rm_publication_rejects_non_finite_post_winter_rain ... ok
+test hillslope::tests::hphys0290_wb13_rm_publication_rejects_state_only_post_winter_rain ... ok
+test hillslope::tests::hphys0289_wb13_rm_publication_preserves_warm_rain_without_snow_partition ... ok
+test hillslope::tests::hphys0290_wb13_rm_publication_requires_post_winter_rain_surface ... ok
+test hillslope::tests::hphys0291_wb13_rm_publication_rejects_state_only_routed_melt ... ok
+test hillslope::tests::simimpl09_lane_context_matches_mode_selection_tuple ... ok
+test hillslope::tests::hphys0288_trace_row_captures_rain_on_snow_release_without_snowpack_loss ... ok
+test hillslope::tests::hphys0289_wb13_rm_publication_requires_routed_wmelt_surface ... ok
+test hillslope::tests::simimpl09_timestep_policy_scaffolds_subhourly_without_physics_enablement ... ok
+test hillslope::tests::simimpl11_area_derives_from_aggregate_ofe_geometry ... ok
+test hillslope::tests::hphys0290_wb13_rm_publication_prefers_flux_post_winter_rain_over_stale_state ... ok
+test hillslope::tests::hphys0318_trace_row_captures_stmtim_control_surfaces ... ok
+test hillslope::tests::wbval06_hillslope_wat_row_publishes_daily_interception_flux ... ok
+test launch::tests::launch_argv_contains_required_explicit_args ... ok
+test release::tests::release_name_validator_accepts_expected_patterns ... ok
+test release::tests::release_name_validator_rejects_invalid_patterns ... ok
+test hillslope::tests::wshedimpl42_breakpoint_seed_uses_current_nbrkpt_not_stale_ninten ... ok
+test release::tests::write_release_sidecar_reuses_fresh_sidecar_without_rewrite ... ok
+test release::tests::write_release_sidecar_rewrites_when_binary_is_newer ... ok
+test hillslope::tests::simimpl14_contract_gate_continuous_wb13_span_and_keys ... ok
+test hillslope::tests::simimpl14_contract_gate_loss_output_is_run_span_truthful ... ok
+
+test result: ok. 73 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.38s
+
+
+running 2 tests
+test tests::release_sidecar_command_rejects_unsupported_role_value ... ok
+test tests::release_sidecar_command_writes_sidecar_for_requested_role ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 1 test
+test simimpl04_contract_requires_runner_kernel_execution_provenance_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.76s
+
+
+running 3 tests
+test simimpl14_contract_requires_continuous_wb13_span_and_simulation_year_row_keys ... ok
+test simimpl04_contract_requires_simulation_owned_wb13_publication_provenance ... ok
+test simimpl14_contract_requires_run_span_truthful_loss_output_summary ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 36.06s
+
+
+running 1 test
+test simimpl04_contract_requires_wepp_ui_requested_effective_lane_closure_manifest ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.77s
+
+
+running 11 tests
+test watershed_cli_emits_watershed_output_parquet_files ... ok
+test watershed_cli_legacy_discovery_matches_hillslope_unknown_sidecar_behavior ... ok
+test watershed_cli_mofe05_accepts_valid_multiofe_metadata_and_emits_outputs ... ok
+test watershed_cli_mofe05_rejects_multiofe_contributor_manifest_shape_violation ... ok
+test watershed_cli_mofe05_rejects_multiofe_contributor_without_manifest_metadata ... ok
+test watershed_cli_rejects_disallowed_perennial_stream_selector ... ok
+test watershed_cli_mofe05_rejects_multiofe_manifest_count_mismatch ... ok
+test watershed_cli_rejects_missing_applicability_selector_block ... ok
+test watershed_cli_rejects_negative_hbp_payload_via_ws10_domain_guards ... ok
+test wshed03_watershed_cli_end_to_end_vector_requires_non_stub_parquet_emission ... ok
+test wshedimpl14_baseline_authoritative_cli_lane_replays_baseline_ebe_signature ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.97s
+

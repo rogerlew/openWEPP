@@ -2179,6 +2179,11 @@ Authorized packages:
     `openwepp-runner/src/hillslope/mod.rs`, preserving public API/runtime
     behavior, and updating layout-coupled tests that currently assert
     monolithic source-file residency.
+- `20260607-refactor007-openwepp-runner-hillslope-01-scheduler-and-trace-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR007 by mechanically modularizing
+    `openwepp-runner/src/hillslope/01_scheduler_and_trace.rs`, splitting
+    scheduler/trace concerns into cohesive modules while preserving runtime/API
+    behavior and satisfying `.rs` line-count governance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

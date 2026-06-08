@@ -1,6 +1,6 @@
 use serde_json::Value;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 const PACKAGE: &str =
     "docs/work-packages/20260605-hphys0305-paired-melt-term-state-instrumentation-001/package.md";
@@ -9,18 +9,24 @@ const RUNNER: &str = "docs/work-packages/20260605-hphys0305-paired-melt-term-sta
 const LEDGER: &str = "docs/work-packages/20260605-hphys0305-paired-melt-term-state-instrumentation-001/artifacts/paired-melt-term-state-ledger.json";
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
 
+fn collect_runner_source_files(dir: &Path, files: &mut Vec<PathBuf>) {
+    for entry in fs::read_dir(dir).expect("runner hillslope source entry should be readable") {
+        let entry = entry.expect("runner hillslope source entry should be readable");
+        let path = entry.path();
+        if path.is_dir() {
+            collect_runner_source_files(&path, files);
+        } else if path.extension().and_then(|ext| ext.to_str()) == Some("rs") {
+            files.push(path);
+        }
+    }
+}
+
 fn read_runner_hillslope_sources() -> String {
     let runner_dir =
         Path::new(env!("CARGO_MANIFEST_DIR")).join("crates/openwepp-runner/src/hillslope");
-    let mut files: Vec<_> = fs::read_dir(&runner_dir)
-        .expect("runner hillslope source directory should be readable")
-        .map(|entry| {
-            entry
-                .expect("runner hillslope source entry should be readable")
-                .path()
-        })
-        .filter(|path| path.extension().and_then(|ext| ext.to_str()) == Some("rs"))
-        .collect();
+    let mut files: Vec<PathBuf> = Vec::new();
+
+    collect_runner_source_files(&runner_dir, &mut files);
     files.sort();
 
     files

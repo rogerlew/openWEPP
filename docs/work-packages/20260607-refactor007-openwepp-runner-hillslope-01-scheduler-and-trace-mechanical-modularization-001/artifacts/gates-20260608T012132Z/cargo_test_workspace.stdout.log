@@ -1,0 +1,517 @@
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test adr0017_is_accepted_and_registered_as_ratified_governance ... ok
+test ratification_package_is_autonomous_and_truthfulness_labeled ... ok
+test governance_docs_encode_comparator_flag_adjudication_gates ... ok
+test sc_contracts_carry_adr0017_invariants_obligations_and_versions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 6 tests
+test arch22_hillslope_dynamic_irrigation_symbol_projection_matches_authority ... ok
+test arch22_hillslope_static_symbol_projection_matches_authority ... ok
+test arch22_watershed_hillslope_payload_symbol_projection_matches_authority ... ok
+test arch22_watershed_node_scoped_symbol_projection_matches_authority ... ok
+test arch22_watershed_guard_accessor_signature_is_typed ... ok
+test arch22_hillslope_guard_accessor_signature_is_typed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test auth03_constitutive_symbol_missing_and_invalid_payloads_fail_closed ... ok
+test auth03_fc_wp_fixture_vectors_preserve_constitutive_ordering_and_storage_closure ... ok
+test auth03_relax_to_fc_kernel_vectors_cover_cutoff_and_positive_branch ... ok
+test auth03_package_and_contract_authority_sections_exist ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test auth04_workflow_exposes_periodic_and_manual_authority_lane_triggers ... ok
+test auth04_release_runbook_and_release_readme_document_authority_stack_outputs ... ok
+test auth04_package_and_authority_model_capture_lane_policy ... ok
+test auth04_release_gate_script_enforces_lane_and_failure_class_semantics ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test auth05_fc_wp_authority_comparator_rejects_underdrained_perturbation ... ok
+test auth05_relax_to_fc_requires_explicit_positive_branch_assertions ... ok
+test auth05_fc_wp_runtime_surface_matches_independent_authority_on_real_soils ... ok
+test auth05_suite_metadata_removes_legacy_as_constitutive_authority ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test auth06_schema_requires_fixture_hash_and_source_provenance_fields ... ok
+test auth06_release_gate_script_enforces_fixture_integrity_before_lane_execution ... ok
+boundary_case.json: OK
+invalid_missing_theta_fc.json: OK
+nominal_case.json: OK
+boundary_case.json: FAILED
+invalid_missing_theta_fc.json: OK
+nominal_case.json: OK
+test auth06_tamper_detection_rejects_modified_lock_hash ... ok
+boundary_case.json: OK
+invalid_wp_gt_fc.json: OK
+nominal_case.json: OK
+above_fc_positive.json: OK
+invalid_missing_theta.json: OK
+near_fc_cutoff.json: OK
+cohort_case.json: OK
+h1_high_rock_fc_authority.sol: OK
+h1_real_rocky_p1_authority.sol: OK
+h1_worked_example_source.md: OK
+valid_7778.sol: OK
+valid_9002.sol: OK
+withdrawal_soilwater_cap_cases.json: OK
+layer_pool_withdrawal_cap_cases.json: OK
+lateral_saturated_thickness_response_cases.json: OK
+wb19_fcwp_coca_watyld_cases.json: OK
+solwpv_fcdep_branch_cases.json: OK
+test auth06_active_level4_and_level3_suites_publish_fixture_hashes_and_provenance_sidecars ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 2 tests
+test auth07_package_and_suite_authority_sections_exist ... ok
+test auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test auth08_solwpv_branch_fixture_cases_enforce_fcdep_mutation_scope ... ok
+test auth08_suite_registry_and_contract_addendum_are_present ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+running 2 tests
+test auth11_registry_posture_and_protocol_guard_paths_exist ... ok
+test auth11_obligations_schema_and_anchor_bindings_are_enforced ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 6 tests
+test cli01_contract_surface_declares_release_sidecar_validation_fields ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_strict ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_compat ... ok
+test cli01_sidecar_contract_unknown_discovery_warns_in_compat ... ok
+test cli01_contract_surface_declares_runner_commands_and_error_ids ... ok
+test cli01_contract_surface_declares_required_hillslope_sidecars_and_manifest_schema ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test cli01_contract_conformance_runner_crate_declares_hillslope_watershed_and_runner_binaries ... ok
+test cli01_contract_conformance_generated_release_sidecar_is_schema_valid ... ok
+test cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest ... ok
+test cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.09s
+
+
+running 22 tests
+test cli03_contract_surface_declares_output_crate_layout ... ok
+test cli03_contract_surface_declares_metric_runfile_and_required_outputs ... ok
+test cli03_runner_crate_declares_hillslope_and_watershed_binary_targets ... ok
+test cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block ... ok
+test cli03_hphys0241_watershed_validator_requires_mofe_hourly_carry_metadata ... ok
+test cli03_runner_crate_wires_output_surface_dependency ... ok
+test cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag ... ok
+test cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance ... ok
+test cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums ... ok
+test cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides ... ok
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align ... ok
+test cli03_mofe02_rejects_full_triad_topology_mismatch ... ok
+test cli03_mofe02_rejects_management_soil_mismatch ... ok
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch ... ok
+test cli03_mofe03_multiofe_runfile_executes_wave2_without_manual_symbol_injection ... ok
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default ... ok
+test cli03_mofe04_multiofe_publication_uses_canonicalized_oferow_and_total_area has been running for over 60 seconds
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy has been running for over 60 seconds
+test cli03_runfile_validation_rejects_non_metric_unit_system has been running for over 60 seconds
+test cli03_runfile_validation_rejects_schema_mismatch has been running for over 60 seconds
+test cli03_runfile_validation_rejects_unresolved_required_input_paths has been running for over 60 seconds
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records has been running for over 60 seconds
+test cli03_mofe04_multiofe_publication_uses_canonicalized_oferow_and_total_area ... ok
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy ... ok
+test cli03_runfile_validation_rejects_non_metric_unit_system ... ok
+test cli03_runfile_validation_rejects_schema_mismatch ... ok
+test cli03_runfile_validation_rejects_unresolved_required_input_paths ... ok
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 81.15s
+
+
+running 2 tests
+test cli04_contract_surface_declares_wat_metadata_parity_and_dependency_posture ... ok
+test cli04_fixture_run_emits_valid_wat_parquet_with_required_metadata_keys ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.14s
+
+
+running 9 tests
+test clim05_contract_conformance_rejects_non_finite_active_snow_control_symbol ... ok
+test clim05_contract_conformance_rejects_invalid_active_snow_control_domain ... ok
+test clim05_contract_conformance_rejects_missing_active_snow_control_symbol ... ok
+test simimpl29_contract_conformance_rejects_missing_hourly_snow_kernel_symbol ... ok
+test clim05_contract_conformance_cold_trigger_runs_snow_without_sidecar_gate ... ok
+test clim05_contract_conformance_couples_snow_controls_into_hydrology_reconciliation ... ok
+test hphys0269_contract_conformance_records_signed_raw_melt_and_redistributes_daily_melt ... ok
+test hphys0269_contract_conformance_retains_rain_in_subthreshold_snowpack ... ok
+test hphys0271_contract_conformance_records_melt_terms_and_hourly_forcing ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 12 tests
+test clim06_contract_conformance_rejects_missing_active_frost_symbol ... ok
+test clim06_contract_conformance_rejects_out_of_domain_active_frost_symbol ... ok
+test clim06_contract_conformance_rejects_non_finite_active_frost_symbol ... ok
+test simimpl33_contract_conformance_rejects_missing_frost_runtime_residue_depth_symbol ... ok
+test simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_symbols ... ok
+test fq4_contract_default_frost_controls_activate_without_frost_sidecar_presence ... ok
+test simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_completeness ... ok
+test clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_capacity ... ok
+test simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission ... ok
+test simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect ... ok
+test simimpl32_contract_conductivity_lineage_vector_requires_land_use_dependent_kfactor_selection ... ok
+test simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test clim07_confidence_tier_routing_vectors_match_governance_policy ... ok
+test clim07_breakpoint_domain_violation_remains_typed_hard_fail ... ok
+test clim07_breakpoint_vector_projects_expected_runtime_surface ... ok
+test clim07_breakpoint_zero_cardinality_vector_projects_dry_day_surface ... ok
+test clim07_continuous_daily_vector_projects_expected_runtime_surface ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test candidate_source_class_policy_distinguishes_native_vs_conversion_dat ... ok
+test deterministic_tier_mapping_routes_hourly_and_watershed_to_investigation ... ok
+test deterministic_tier_mapping_routes_single_ofe_daily_to_higher_confidence ... ok
+test strict_lane_policy_mode_is_deterministic_by_candidate_extension ... ok
+test missing_required_single_ofe_metadata_is_typed_error ... ok
+test summary_constructor_rejects_invalid_routing_metadata ... ok
+test summary_rollups_propagate_routing_metadata ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test erod11_wave0_watershed_alias_projection_matches_authority ... ok
+test erod11_wave0_hillslope_alias_projection_matches_authority ... ok
+test erod11_peak_duration_alias_registry_entries_exist ... ok
+test erod11_contract_addenda_and_gap_posture_are_present ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test erod12_wave0_cross_domain_blockers_are_closed ... ok
+test erod12_cross_domain_addenda_are_present ... ok
+test erod12_non_wave0_posture_remains_explicit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test erod13_registry_updates_reference_wave1_authority ... ok
+test erod13_wave1_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test erod13_contract_vector_rejects_domain_violation ... ok
+test erod13_contract_vector_nominal_detachment_emits_core_outputs ... ok
+test erod13_contract_vector_deposition_branch_emits_negative_df ... ok
+test erod13_contract_vector_rejects_missing_required_symbol ... ok
+test erod13_contract_vector_rejects_continuity_residual_violation ... ok
+test erod13_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod13_contract_vector_threshold_branch_sets_zero_df ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 2 tests
+test erod14_registry_updates_reference_wave2_authority ... ok
+test erod14_wave2_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 14 tests
+test erod14_contract_vector_rejects_missing_required_symbol ... ok
+test erod14_contract_vector_accepts_all_class_sedmax_saturation ... ok
+test erod14_contract_vector_case_four_zero_outflow_emits_zero_class_fractions ... ok
+test erod14_contract_vector_rejects_case_classification_mismatch ... ok
+test erod14_contract_vector_rejects_non_finite_required_symbol ... ok
+test erod18_contract_route_topology_rejects_missing_required_symbol ... ok
+test erod14_contract_vector_nominal_multiofe_enrichment_emits_outputs ... ok
+test erod17_contract_route_branch_seam_vector_requires_core_publication_family ... ok
+test erod18_contract_route_topology_rejects_domain_violation ... ok
+test erod18_contract_route_topology_rejects_non_finite_required_symbol ... ok
+test erod17_contract_mshear_dispatch_vector_requires_segment_case_publication ... ok
+test erod17_contract_deposition_end_vector_requires_xdend_publication ... ok
+test erod17_contract_ndep_followup_vector_requires_post_detachment_deposition_path ... ok
+test erod17_contract_qostar_threshold_vector_requires_upper_boundary_branch_divergence ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test erod15_wave3_addenda_are_present_in_required_contracts ... ok
+test erod15_registry_updates_reference_wave3_authority ... ok
+test erod15_alias_registry_contains_hbp_payload_templates ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test phase_to_consumer_adapter_contract_remains_stable ... ok
+test missing_soil_consumer_symbol_fails_with_typed_missing_input_status ... ok
+test missing_runoff_slope_symbol_fails_at_runoff_reconciliation_boundary ... ok
+test consumer_adapter_boundaries_receive_runtime_seam_symbols ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test hparity01_closure_target_requires_zero_fail_counts ... ignored, HPARITY01 scaffold: expected to fail until HPARITY02-HPARITY05 production closure packages land and rerun evidence is refreshed
+test hparity01_baseline_residual_snapshot_covers_expected_column_set ... ok
+test hparity01_contract_authority_sections_exist ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 2 tests
+test hparity02_package_and_contract_authority_sections_exist ... ok
+test hparity02_runner_profile_capacity_publication_uses_authoritative_lineage_symbols ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 4 tests
+test hphys0202_invalid_layer_storage_state_hard_fails_runtime_surface ... ok
+test hphys0207_profile_storage_projection_differs_from_parser_layer_depth_aggregation ... ok
+test hphys0202_package_and_contract_authority_sections_exist ... ok
+test hphys0216d_profile_fc_layer_plus_tail_and_wp_projected_storage_authority ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.45s
+
+
+running 3 tests
+test hphys0203_profile_regression_fixture_perturbation_preserves_ordering_stability ... ok
+test hphys0203_package_and_contract_authority_sections_exist ... ok
+test hphys0203_fixture_wat_rows_preserve_targeted_publication_invariants ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.53s
+
+
+running 2 tests
+test hphys0208_package_and_contract_authority_sections_exist ... ok
+test hphys0208_sat_perturbation_changes_coupled_wb13_publications ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.79s
+
+
+running 2 tests
+test hphys0209_package_and_contract_authority_sections_exist ... ok
+test hphys0209_wp_authority_perturbation_changes_profile_wp_without_profile_geometry_regression ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.57s
+
+
+running 3 tests
+test hphys0219_wb19_lateral_rejects_domain_invalid_coca ... ok
+test hphys0219_wb19_lateral_withdrawal_uses_coca_adjusted_threshold ... ok
+test hphys0219_wb19_threshold_is_independent_of_cpm_when_coca_is_fixed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 4 tests
+test hphys0221_wb19_solwpv_lt_2006_rejects_non_positive_watyld ... ok
+test hphys0221_wb19_solwpv_ge_2006_does_not_update_fcdep_unsdep_from_watyld ... ok
+test hphys0221_wb19_solwpv_lt_2006_updates_fcdep_unsdep_from_watyld ... ok
+test hphys0221_wb19_hourly_solwpv_branch_uses_hphys0247_bottom_contiguous_saturation_selection ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test hphys0224_withdrawal_cases_enforce_wb19_soilwater_cap ... ok
+test hphys0224_suite_metadata_and_contract_addendum_are_present ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test hphys0225_cases_hold_withdrawal_behavior_constant_across_legacy_pool_perturbations ... ok
+test hphys0225_suite_metadata_and_contract_addendum_are_present ... ok
+test hphys0225_runtime_source_forbids_legacy_max_reconciliation ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 2 tests
+test hphys0226_lateral_flux_increases_with_saturated_thickness_under_fixed_drivers ... ok
+test hphys0226_suite_metadata_and_contract_addendum_are_present ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 2 tests
+test hphys0227_lateral_watyld_uses_fcwp_theta_lineage_and_preserves_coca_threshold_q ... ok
+test hphys0227_suite_metadata_and_contract_addendum_are_present ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test hphys0256_daily_solwpv_ge_2006_uses_daily_fzdrfc_branch_without_meblfc_gate ... ok
+test hphys0256_hourly_branch_retains_meblfc_gate_for_same_state ... ok
+test hphys0256_contract_authority_sections_exist ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test hphys0275_boundary_constructors_fail_closed_for_invalid_domains ... ok
+test hphys0275_breakpoint_climate_surface_publishes_selected_symbols_as_typed_values ... ok
+test hphys0275_daily_climate_surface_publishes_high_risk_symbols_as_typed_values ... ok
+test hphys0280_watershed_climate_surface_preserves_typed_units ... ok
+test hphys0275_winter_hourly_surface_publishes_high_risk_symbols_as_typed_values ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 5 tests
+test hphys0276_raw_unit_conversion_guard_rejects_unauthorized_literal ... ok
+test hphys0276_raw_unit_conversion_guard_accepts_helper_based_source ... ok
+test hphys0276_raw_unit_conversion_guard_accepts_documented_exception ... ok
+test hphys0276_raw_unit_conversion_guard_rejects_equivalent_rust_spellings ... ok
+test hphys0276_raw_unit_conversion_guard_does_not_overapply_allow_marker ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+
+running 9 tests
+test hphys0279_sc_unit_lint_fails_closed_when_registry_source_is_missing ... ok
+test hphys0279_sc_unit_lint_reports_empty_variables_table_against_registry ... ok
+test hphys0279_sc_unit_lint_cross_checks_registry_units ... ok
+test hphys0279_sc_unit_lint_requires_registered_alias_rows ... ok
+test hphys0279_sc_unit_lint_fails_closed_when_registry_source_is_unparseable ... ok
+test hphys0279_sc_unit_lint_requires_canonical_variables_coverage ... ok
+test hphys0279_sc_unit_lint_rejects_missing_variables_and_alias_sections ... ok
+test hphys0279_sc_unit_lint_rejects_missing_alias_units_check ... ok
+test hphys0279_sc_unit_lint_accepts_compliant_contract_fixture ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+running 1 test
+test hphys0283_contract_snowmelt_is_offered_to_infiltration_before_runoff ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test hphys0284_large_negative_melt_state_overdraw_fails_closed ... ok
+test hphys0284_negative_melt_state_uses_single_source_storage_loss ... ok
+test hphys0284_negative_melt_state_does_not_undo_positive_loss_when_daily_net_is_nonpositive ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test hphys0285_contract_direct_rain_infiltration_enters_profile_storage ... ok
+test hphys0285_contract_dry_cold_zero_snow_state_does_not_gate_percolation ... ok
+test hphys0285_contract_inactive_snow_options_do_not_gate_direct_rain_ingress ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 2 tests
+test hphys0286_contract_post_et_lower_layer_excess_moves_upward ... ok
+test hphys0286_contract_same_pass_water_uses_frozen_adjusted_upper_cap ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test hphys0287_material_negative_swe_fails_before_dry_cold_inactive_fallback ... ok
+test hphys0287_material_negative_swe_fails_before_direct_rain_partition ... ok
+test hphys0287_partial_runtime_state_vector_fails_before_direct_rain_partition ... ok
+test hphys0287_runtime_state_components_fail_before_dry_cold_inactive_fallback ... ok
+test hphys0287_runtime_state_components_fail_before_direct_rain_partition ... ok
+test hphys0287_absent_snow_projection_allows_direct_rain_partition ... ok
+test hphys0287_within_tolerance_negative_swe_allows_direct_rain_partition ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 3 tests
+test hphys0288_dense_snow_release_adds_to_positive_raw_melt ... ok
+test hphys0288_multi_hour_dense_release_keeps_direct_rain_out_of_snow_partition ... ok
+test hphys0288_partial_rain_on_snow_release_is_routed_as_wmelt ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 2 tests
+test hphys0289_contract_requires_kernel_to_publish_daily_routed_wmelt ... ok
+test hphys0289_contract_requires_wb13_rm_from_routed_wmelt_not_swe_delta_proxy ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 3 tests
+test hphys0290_contract_requires_kernel_to_publish_post_winter_rain ... ok
+test hphys0290_contract_requires_unit_registry_for_post_winter_rain ... ok
+test hphys0290_contract_requires_wb13_rm_from_explicit_post_winter_rain_surface ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 5 tests
+test hphys0291_kernel_source_uses_named_snow_publication_helper ... ok
+test hphys0291_wb13_requires_same_day_fluxes_without_state_default_masking ... ok
+test hphys0291_kernel_publishes_required_snow_fluxes_on_runoff_reconciliation ... ok
+test hphys0291_trace_preserves_snow_publication_lifecycle_surfaces ... FAILED
+test hphys0291_contracts_define_same_day_snow_publication_lifecycle ... ok
+
+failures:
+
+---- hphys0291_trace_preserves_snow_publication_lifecycle_surfaces stdout ----
+
+thread 'hphys0291_trace_preserves_snow_publication_lifecycle_surfaces' (3308056) panicked at tests/integration/hphys0291_snow_publication_lifecycle_contract.rs:325:5:
+trace schema must expose flux-only routed melt and post-winter rain lifecycle surfaces
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    hphys0291_trace_preserves_snow_publication_lifecycle_surfaces
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
