@@ -232,6 +232,20 @@ Recent mechanical refactor package authoring updates (for discoverability):
     preserving API behavior intent and reducing the source below the 2000-line
     warning threshold.
 
+- `20260608-refactor017-openwepp-runner-hillslope-tests03-publication-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `crates/openwepp-runner/src/hillslope/tests03/publication.rs` into cohesive
+    test modules under a `tests03/publication/` subtree while preserving test
+    intent and assertion strength and reducing the source below the 2000-line
+    warning threshold.
+
+- `20260608-refactor018-openwepp-input-contract-parsers-hbp-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `crates/openwepp-input-contract/src/parsers/hbp.rs` into cohesive modules
+    under `parsers/hbp/` (converting `hbp.rs` → `hbp/mod.rs`) while preserving
+    the public API surface and reducing the source below the 2000-line warning
+    threshold.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
