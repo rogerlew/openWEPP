@@ -317,6 +317,10 @@ shields an in-scope, authority-backed fix from the conversion rule (§4).
   evidence's most likely correction surface without a cited boundary (§3); and
   (c) **protected-boundary integrity** — that no negative boundary merely shields
   an in-scope fix from the conversion rule (§8).
+- **Line-count governance disposition.** Required. Review artifacts must
+   explicitly evaluate `.rs` file thresholds (2000=`WARN`, 3000=`required
+   refactor`) and disposition any exception. Any approved 3000+ generated/fixture
+   exception must include owner and sunset plan in package artifacts.
 - **Not every package is a DC-ExecPlan.** Pure validation/characterization passes
   (such as WBVAL01), architecture scaffolding, and audits keep their own shapes.
   The DC-ExecPlan is specifically for *closing an observed defect*.

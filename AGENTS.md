@@ -60,6 +60,15 @@
   be fixed and verified, rejected findings must explain why no change is
   required, and deferred/follow-up findings must be linked from disposition and
   worker-handoff artifacts.
+- Every work package must require explicit `.rs` line-count governance
+  disposition in review artifacts and checklist artifacts:
+  - files at or above `2000` lines are `WARN` and must include decomposition
+    rationale plus follow-on split intent,
+  - files at or above `3000` lines require refactor before closure unless an
+    approved generated/fixture exception is documented with owner and sunset
+    plan.
+  Package closure is blocked while any `3000+` non-exempt file remains
+  undispositioned.
 - DC-ExecPlan reviews must also check `HOLD` legitimacy, envelope adequacy, and
   protected-boundary integrity before disposition.
 - Prefer architectural work packages that implement, wire up, or complete
@@ -146,6 +155,7 @@ requirement, not optional package style guidance.
   - kernel-profile compliance checklist,
   - owned-file manifest,
   - gate results,
+  - line-count governance checklist,
   - disposition,
   - worker handoff,
   - dual review artifacts with mandatory finding disposition templates
@@ -168,6 +178,9 @@ requirement, not optional package style guidance.
   4. production code edits.
 - Explicitly require dual reviews, finding disposition, and verification that no
   review findings remain undispositioned before final package disposition.
+- Explicitly require line-count-governance disposition in review and checklist
+  artifacts, including owner/sunset metadata for any approved `3000+`
+  generated/fixture exception.
 - Require truthfulness labeling in evidence artifacts (`Static:` vs `Ran:`).
 
 4. Make physics authority explicit in canonical contracts

@@ -1,7 +1,7 @@
 # Rust Scientific Coding Standard
 
 - **Status:** Active
-- **Last updated:** 2026-05-20
+- **Last updated:** 2026-06-07
 - **Applies to:** all Rust crates in openWEPP
 
 ## 1) Purpose
@@ -161,6 +161,25 @@ See normative policy:
 Prefer many focused files over monoliths. A practical target is one primary
 kernel responsibility per file/module (for example infiltration, runoff,
 erosion detachment, channel routing adapter).
+
+### 5.1.1 `.rs` file line-count governance (required)
+
+Line count is governed through coding standards and code review (not CI signal
+quality alone):
+
+- `WARN threshold`: 2000 lines in a single `.rs` file.
+- `Required refactor threshold`: 3000 lines in a single `.rs` file.
+
+Review policy requirements:
+
+1. Files at or above 2000 lines must include an explicit decomposition note in
+   review/disposition artifacts describing current boundary rationale and
+   follow-on split intent.
+2. Files at or above 3000 lines must be split before closure/disposition unless
+   the file is generated data/code or fixture content explicitly marked as an
+   exception with rationale.
+3. Exception approvals for 3000+ non-generated files must be documented in
+   package artifacts with owner and sunset plan.
 
 ### 5.2 Keep orchestration thin
 

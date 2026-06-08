@@ -16,6 +16,14 @@ must explain why no change is required. Deferred or follow-up findings must be
 linked from the disposition and worker-handoff artifacts. Package closure is
 blocked while any review finding is undispositioned.
 
+ExecPlans must also require explicit `.rs` file line-count governance checks in
+review artifacts and checklists: files at or above 2000 lines are `WARN` and
+must carry a decomposition rationale plus follow-on split intent; files at or
+above 3000 lines require refactor before closure unless a generated/fixture
+exception is explicitly approved with owner and sunset plan. Review artifacts
+must record exception disposition, and package closure is blocked if any 3000+
+non-exempt file remains undispositioned.
+
 ADR-0017 makes comparator agreement a flag rather than a target for all
 comparator/ledger work packages. ExecPlans that classify legacy-comparator
 residuals must require like-for-like unit and lineage-stage proof before any
