@@ -13,3 +13,7 @@ config_file = "agents/rust_code_reviewer.toml"
 [agents.rust_qa_reviewer]
 description = "Secondary QA gate for Rust quality, tests, and maintainability."
 config_file = "agents/rust_qa_reviewer.toml"
+
+[agents.comparator_suite_runner]
+description = "Runs context-heavy validation/comparator suites (H1..H39, closure loop, release gates) on gpt-5.3-codex-spark and returns compact metrics, offloading premium reasoning agents."
+config_file = "agents/comparator_suite_runner.toml"
