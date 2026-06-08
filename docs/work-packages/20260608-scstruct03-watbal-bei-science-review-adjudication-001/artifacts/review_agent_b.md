@@ -1,6 +1,6 @@
-# review_agent_b.md
+# Review Agent B
 
 Evidence mode: not-run
-Status: queued
+Status: not-run; package closed as executed-HOLD
 
-SCSTRUCT03 is stopped at a science-steered batch boundary after batch 1. Full dual review and verification remain required before final package closure after remaining batches are adjudicated.
+No flagged binding additions were made. Full dual review remains required for follow-on packages that promote new `INV-*` / `OBL-*` rows or claim final consolidation.

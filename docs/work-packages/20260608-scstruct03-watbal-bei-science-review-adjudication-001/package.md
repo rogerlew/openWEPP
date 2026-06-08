@@ -1,6 +1,6 @@
 # SCSTRUCT03 — WATBAL Binding Exposure Index Science-Review Adjudication
 
-Status: in_progress_batch6_hold_promotion_required
+Status: executed-HOLD
 Created: 2026-06-08
 Series: `scstruct` (science-contract structure / context optimization)
 Closes: defect `SCSTRUCT02-WATBAL-BEI-SCIENCE-REVIEW` (routed from SCSTRUCT02 HOLD)
