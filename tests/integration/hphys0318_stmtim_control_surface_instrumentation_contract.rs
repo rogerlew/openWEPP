@@ -118,7 +118,7 @@ fn hphys0318_package_is_autonomous_and_scoped_to_instrumentation() {
 
 #[test]
 fn hphys0318_runtime_and_trace_symbols_are_registered() {
-    let units = read("crates/openwepp-sim-contract/src/units.rs");
+    let units = read("crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs");
     for token in [
         "snow_hourly_stmtim_rain",
         "snow.hourly.stmtim.rain_m_{idx4}",

@@ -13,7 +13,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CONTRACT_DIR = Path("docs/specifications/science-contracts/contracts")
-REGISTRY_SOURCE = Path("crates/openwepp-sim-contract/src/units.rs")
+REGISTRY_SOURCE = Path("crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs")
 
 PLACEHOLDER_RE = re.compile(
     r"^\s*(?:|[-—]+|tbd|todo|unknown|unspecified|not\s+specified|\?|n/?a)\s*$",

@@ -2201,6 +2201,12 @@ Authorized packages:
     monolithic orchestrator test surface into cohesive modules while
     preserving guard coverage, contract assertion intent, and `.rs`
     line-count governance.
+- `20260607-refactor011-openwepp-sim-contract-units-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR011 by mechanically modularizing
+    `openwepp-sim-contract/src/units.rs`, splitting the monolithic
+    unit-registry surface into cohesive modules while preserving API/authority
+    behavior intent, typed-boundary expectations, and `.rs` line-count
+    governance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

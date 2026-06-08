@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 const KERNEL_PHASE_SOURCE: &str =
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs";
-const UNIT_REGISTRY_SOURCE: &str = "crates/openwepp-sim-contract/src/units.rs";
+const UNIT_REGISTRY_SOURCE: &str = "crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs";
 
 fn collect_runner_source_files(dir: &Path, files: &mut Vec<PathBuf>) {
     for entry in fs::read_dir(dir).expect("runner hillslope source entry should be readable") {
