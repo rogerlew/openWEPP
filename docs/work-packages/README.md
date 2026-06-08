@@ -252,6 +252,11 @@ Recent mechanical refactor package authoring updates (for discoverability):
     into cohesive modules under `kernel_phases_mod/` while preserving kernel-phase
     behavior and reducing the source below the 2000-line warning threshold.
 
+- `20260608-refactor020-openwepp-hillslope-orchestrator-runtime-inputs-08-tests-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs`
+    into cohesive submodules while preserving test intent and behavior.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
