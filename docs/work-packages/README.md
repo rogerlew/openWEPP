@@ -226,6 +226,12 @@ Recent mechanical refactor package authoring updates (for discoverability):
     REFACTOR015 module relocation by updating source-scan assertions to scan
     refactored hydrology module files.
 
+- `20260608-refactor016-openwepp-kernel-contract-lib-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `crates/openwepp-kernel-contract/src/lib.rs` into cohesive modules while
+    preserving API behavior intent and reducing the source below the 2000-line
+    warning threshold.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
