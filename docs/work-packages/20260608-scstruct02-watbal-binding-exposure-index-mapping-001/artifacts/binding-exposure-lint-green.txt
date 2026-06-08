@@ -1,0 +1,2 @@
+PASS docs/specifications/science-contracts/contracts/SC-WATBAL-001.md: 75 binding exposure row(s), 69 science-review routed row(s)
+lint_exit_code=0

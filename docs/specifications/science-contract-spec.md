@@ -181,14 +181,47 @@ mechanism that proves consolidation preserves all binding obligations.
 
 ## Binding Exposure Lint Contract
 
-Automation that checks Binding Exposure Index conformance must fail when:
+Automation that checks Binding Exposure Index conformance must **fail** (hard
+violation) when:
 
-1. An `active` or `unpromoted-binding` entry has no canonical binding IDs.
+1. An `active` or `unpromoted-binding` entry has no canonical binding IDs **and is
+   not routed to `science-review-follow-on`** (see deferral rule below).
 2. The index references an `INV-*` or `OBL-*` ID absent from the core contract.
 3. A sidecar entry lacks required provenance fields.
 4. A sidecar entry marked `historical` or `superseded` is referenced as binding
    without canonical binding IDs.
 5. Required status vocabulary is violated.
+6. An `undecidable` entry is **not** routed to `science-review-follow-on`.
+
+### Science-review deferral (normative)
+
+A row whose `Review gate` is `science-review-follow-on` is a **deferral**, not a
+hard violation: the obligation is acknowledged as unresolved and parked for a
+science decision, with its narrative retained in the binding core (never
+relocated). Deferral is permitted because the binding residue is conserved — it
+is not dropped, only un-adjudicated. Deferral is **temporary and owned**: each
+deferred row must be tracked in a science-review follow-on queue with an owner and
+a next evidence gate; it is not a permanent parking state.
+
+A row routed to `science-review-follow-on` therefore does **not** trip rules 1 or
+6, but it does mean the contract is **not fully consolidated**.
+
+### Verdicts (normative)
+
+The lint reports exactly one verdict and exit code:
+
+| Verdict | Meaning | Exit (default) | Exit (`--strict`) |
+|---|---|---|---|
+| `FAIL` | one or more hard violations above | 1 | 1 |
+| `PASS-DEFERRED` | no hard violations, but ≥1 `science-review-follow-on` row remains (binding-safe, not fully consolidated) | 0 | 1 |
+| `PASS` | no hard violations and zero deferred rows (fully consolidated) | 0 | 0 |
+
+`PASS-DEFERRED` must be reported distinctly from `PASS` so a completion gate is not
+satisfied by deferral. Default exit `0` makes deferral **binding-safe** (it does
+not block unrelated work); `--strict` exit `1` lets a completion/promotion gate
+require full consolidation. Plain `PASS` is the only verdict that means a contract
+is actually consolidated.
 
 The lint is a package-precondition and promotion gate for contracts using
-sidecars or consolidated addenda.
+sidecars or consolidated addenda. Use default mode as a safety gate (nothing
+dropped) and `--strict` as a completion gate (consolidation done).

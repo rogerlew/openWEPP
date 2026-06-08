@@ -1,6 +1,6 @@
 # SCSTRUCT02 — WATBAL Binding Exposure Index Mapping + Consolidation
 
-Status: queued
+Status: executed-hold-science-review-follow-on
 Created: 2026-06-08
 Series: `scstruct` (science-contract structure / context optimization)
 Closes: defect `SCSTRUCT01-WATBAL-BEI-MAPPING` (routed from SCSTRUCT01 Phase 2 HOLD)
