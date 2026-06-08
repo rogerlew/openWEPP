@@ -257,6 +257,12 @@ Recent mechanical refactor package authoring updates (for discoverability):
     `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests.rs`
     into cohesive submodules while preserving test intent and behavior.
 
+- `20260608-refactor021-openwepp-tests-integration-parser-runtime-seam-integration-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `tests/integration/parser_runtime_seam_integration.rs` into cohesive
+    submodules under `tests/integration/parser_runtime_seam_integration/`
+    while preserving integration seam assertions and behavior.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
