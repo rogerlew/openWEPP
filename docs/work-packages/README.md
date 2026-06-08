@@ -2207,6 +2207,11 @@ Authorized packages:
     unit-registry surface into cohesive modules while preserving API/authority
     behavior intent, typed-boundary expectations, and `.rs` line-count
     governance.
+- `20260607-refactor012-openwepp-watershed-orchestrator-runtime-inputs-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR012 by mechanically modularizing
+    `openwepp-watershed-orchestrator/src/runtime_inputs.rs`, splitting the
+    monolithic runtime-input adaptation surface into cohesive modules while
+    preserving API/guard behavior intent and `.rs` line-count governance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
