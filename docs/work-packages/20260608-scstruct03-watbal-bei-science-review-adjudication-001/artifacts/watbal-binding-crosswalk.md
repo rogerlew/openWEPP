@@ -33,3 +33,21 @@ The remaining science-review-follow-on rows are not adjudicated by this batch. T
 - Narrative relocated: none.
 - HOLD rows: WB12 reconciliation and WB16 peak-runoff diagnostics remain in core with explicit owner/gate notes.
 - WB13 output-surface section remains in core because exact schema/order/guard/test-vector binding exposure is not complete.
+
+## Batch 4 conservation
+
+- Binding IDs removed: none.
+- Binding IDs added: none.
+- Binding IDs weakened: none.
+- Narrative relocated: none.
+- Rows resolved from deferral: CLIM05 addendum/required-surface/rule rows mapped to `INV-WATBAL-013`.
+- HOLD rows: CLIM06, WB14, WB15, and IRRIG10 remain in core with explicit owner/gate notes for promotion or exact mapping proof.
+
+## Batch 5 conservation
+
+- Binding IDs removed: none.
+- Binding IDs added: none.
+- Binding IDs weakened: none.
+- Narrative relocated: none.
+- Rows resolved from deferral: 14 WB19/WB18 hourly/handoff rows mapped to existing invariants.
+- HOLD rows: HPHYS0224/0225/0226/0227 remain in core with explicit owner/gate notes for promotion or exact mapping proof.

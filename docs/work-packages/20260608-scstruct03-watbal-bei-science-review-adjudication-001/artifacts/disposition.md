@@ -23,3 +23,11 @@ Completed snow/melt comparator arc relocation with binding residue mapped to cur
 ## Batch 3 update
 
 WB13/WB16/WB12 batch stopped at a narrower HOLD. WB12 and WB16 need flagged binding exposure/promotion before relocation; WB13 output-surface authority remains mapped-but-core-resident because schema/order/guard/test-vector obligations are active.
+
+## Batch 4 update
+
+CLIM05 rows were mapped to `INV-WATBAL-013` and retained in core. CLIM06/WB14/WB15/IRRIG10 rows stopped at narrower promotion/mapping gates because their live coupling obligations are not fully exposed by current invariant rows.
+
+## Batch 5 update
+
+Mapped 14 WB19/WB18 hourly/handoff rows to existing invariants and retained them in core. HPHYS0224/0225/0226/0227 remain narrower HOLDs for cap/constitutive/water-yield binding exposure.

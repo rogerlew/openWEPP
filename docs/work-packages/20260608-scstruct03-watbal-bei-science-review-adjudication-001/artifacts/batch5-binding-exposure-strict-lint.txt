@@ -1,0 +1,3 @@
+PASS-DEFERRED docs/specifications/science-contracts/contracts/SC-WATBAL-001.md: 75 binding exposure row(s), 39 science-review-follow-on row(s) not yet consolidated
+strict mode: deferred rows are not-consolidated; failing completion gate
+lint_exit_code=1
