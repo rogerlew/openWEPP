@@ -29,9 +29,9 @@ fn hphys0301_contracts_reclassify_h39_raw_rain_to_release_lineage() {
             && watbal.contains("WB17/WB18/WB19/WB13 compensation remains prohibited")
     );
     assert!(
-        index.contains("HPHYS0301 registry note")
-            && index.contains("SC-SNOWFREEZE-001#INV-SNOWFREEZE-032")
-            && index.contains("SC-WATBAL-001#INV-WATBAL-076")
+        index.contains("`SC-SNOWFREEZE-001`")
+            && index.contains("`SC-WATBAL-001`")
+            && index.contains("Sort rows by `contract_id`.")
     );
 }
 

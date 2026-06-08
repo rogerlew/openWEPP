@@ -31,18 +31,18 @@ fn erod15_wave3_addenda_are_present_in_required_contracts() {
 }
 
 #[test]
-fn erod15_registry_updates_reference_wave3_authority() {
+fn erod15_contract_references_wave3_authority() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let index = fs::read_to_string(format!(
-        "{repo_root}/docs/specifications/science-contracts/index.md"
+    let contract = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SED-001.md"
     ))
-    .expect("science-contract index should be readable");
+    .expect("SC-SED-001 should be readable");
 
     assert!(
-        index.contains("total_detachment_kg")
-            && index.contains("particle_flow_fraction")
-            && index.contains("hillslope-binary-pass-format.md"),
-        "index must reference EROD15 Wave-3 HBP routing-boundary authority"
+        contract.contains("total_detachment_kg")
+            && contract.contains("particle_flow_fraction")
+            && contract.contains("hillslope-binary-pass-format.md"),
+        "SC-SED-001 must reference EROD15 Wave-3 HBP routing-boundary authority"
     );
 }
 

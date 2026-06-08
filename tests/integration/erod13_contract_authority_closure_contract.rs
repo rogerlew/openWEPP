@@ -37,23 +37,17 @@ fn erod13_wave1_addenda_are_present_in_required_contracts() {
 }
 
 #[test]
-fn erod13_registry_updates_reference_wave1_authority() {
+fn erod13_contract_changelog_references_wave1_authority() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let index = fs::read_to_string(format!(
-        "{repo_root}/docs/specifications/science-contracts/index.md"
+    let contract = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SED-001.md"
     ))
-    .expect("science-contract index should be readable");
+    .expect("SC-SED-001 should be readable");
 
-    let last_updated = index
-        .lines()
-        .find_map(|line| line.strip_prefix("Last updated: ").map(str::trim))
-        .expect("science-contract index must include a Last updated line");
     assert!(
-        last_updated >= "2026-05-25",
-        "index must carry a post-EROD13 registry update stamp (found: {last_updated})"
-    );
-    assert!(
-        index.contains("HKERNEL-EROD13-CORE-E-001..003"),
-        "index must reference EROD13 guard family continuity"
+        contract.contains("HKERNEL-EROD13-CORE-E-001")
+            && contract.contains("HKERNEL-EROD13-CORE-E-002")
+            && contract.contains("HKERNEL-EROD13-CORE-E-003"),
+        "SC-SED-001 must reference EROD13 guard family continuity"
     );
 }

@@ -1,6 +1,6 @@
 # DOCOPT01 — Frequently-Loaded Doc Deduplication (index.md + AGENTS.md)
 
-Status: queued
+Status: complete
 Created: 2026-06-08
 Series: `docopt` (documentation context optimization)
 Execution mode: package-end-to-end (mechanical; full closure loop required)
@@ -51,8 +51,8 @@ Audited findings (Static, 2026-06-08):
 ### D2 — `AGENTS.md` procedure extraction (~24KB → ~13KB target)
 - Move **"Kernel Work-Package Preparation Procedure (Required)"** (lines ~125–248)
   and **"Prompt Wording Guidance (Required)"** (lines ~249–315) to dedicated docs
-  under `docs/standards/` (e.g. `kernel-work-package-preparation.md`,
-  `prompt-wording-guidance.md`).
+  under `docs/standards/kernel-work-package-preparation.md` and
+  `docs/standards/prompt-wording-guidance.md`.
 - Leave a **binding pointer** in AGENTS.md for each ("Required before preparing
   kernel WPs / authoring kickoff prompts: read `docs/standards/...`") so the
   obligation stays discoverable and normative — this is relocation, not deletion.
@@ -85,7 +85,7 @@ be path-checked). Treat this like a mechanical refactor:
 
 ### In-scope
 - `docs/specifications/science-contracts/index.md`
-- `AGENTS.md` + new `docs/standards/` procedure docs
+- `AGENTS.md` + new `docs/standards/kernel-work-package-preparation.md` and `docs/standards/prompt-wording-guidance.md` procedure docs
 - required-reading lists / cross-references pointing at the moved AGENTS.md content
 - any test files requiring reconciliation after the doc changes
 

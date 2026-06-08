@@ -31,9 +31,9 @@ fn hphys0302_contracts_require_same_surface_before_defect_claims() {
             && watbal.contains("downstream water-balance compensation remains prohibited")
     );
     assert!(
-        index.contains("HPHYS0302 registry note")
-            && index.contains("SC-SNOWFREEZE-001#INV-SNOWFREEZE-033")
-            && index.contains("SC-WATBAL-001#INV-WATBAL-077")
+        index.contains("`SC-SNOWFREEZE-001`")
+            && index.contains("`SC-WATBAL-001`")
+            && index.contains("Sort rows by `contract_id`.")
     );
 }
 

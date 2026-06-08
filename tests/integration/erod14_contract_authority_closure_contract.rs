@@ -60,23 +60,17 @@ fn erod14_wave2_addenda_are_present_in_required_contracts() {
 }
 
 #[test]
-fn erod14_registry_updates_reference_wave2_authority() {
+fn erod14_contract_changelog_references_wave2_authority() {
     let repo_root = env!("CARGO_MANIFEST_DIR");
-    let index = fs::read_to_string(format!(
-        "{repo_root}/docs/specifications/science-contracts/index.md"
+    let contract = fs::read_to_string(format!(
+        "{repo_root}/docs/specifications/science-contracts/contracts/SC-SED-001.md"
     ))
-    .expect("science-contract index should be readable");
+    .expect("SC-SED-001 should be readable");
 
-    let last_updated = index
-        .lines()
-        .find_map(|line| line.strip_prefix("Last updated: ").map(str::trim))
-        .expect("science-contract index must include a Last updated line");
     assert!(
-        last_updated >= "2026-05-25",
-        "index must retain a post-EROD14 authority update stamp (found: {last_updated})"
-    );
-    assert!(
-        index.contains("HKERNEL-EROD14-WAVE2-E-001..003"),
-        "index must reference EROD14 guard family continuity"
+        contract.contains("HKERNEL-EROD14-WAVE2-E-001")
+            && contract.contains("HKERNEL-EROD14-WAVE2-E-002")
+            && contract.contains("HKERNEL-EROD14-WAVE2-E-003"),
+        "SC-SED-001 must reference EROD14 guard family continuity"
     );
 }
