@@ -50,11 +50,14 @@ fn repo_json_fixture<T: for<'de> Deserialize<'de>>(path: &str) -> T {
 
 fn collect_rust_sources(dir: &Path) -> Vec<PathBuf> {
     let mut entries = Vec::new();
-    for item in fs::read_dir(dir).unwrap_or_else(|error| {
-        panic!("failed to read directory {}: {error}", dir.display())
-    }) {
+    for item in fs::read_dir(dir)
+        .unwrap_or_else(|error| panic!("failed to read directory {}: {error}", dir.display()))
+    {
         let item = item.unwrap_or_else(|error| {
-            panic!("failed to read directory entry under {}: {error}", dir.display())
+            panic!(
+                "failed to read directory entry under {}: {error}",
+                dir.display()
+            )
         });
         let path = item.path();
         if path.is_dir() {
@@ -75,9 +78,8 @@ fn repo_hydrology_sources() -> Vec<PathBuf> {
 }
 
 fn repo_file_contains(path: &Path, pattern: &str) -> bool {
-    let text = fs::read_to_string(path).unwrap_or_else(|error| {
-        panic!("expected readable file {}: {error}", path.display())
-    });
+    let text = fs::read_to_string(path)
+        .unwrap_or_else(|error| panic!("expected readable file {}: {error}", path.display()));
     text.contains(pattern)
 }
 
