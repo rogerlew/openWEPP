@@ -17,15 +17,15 @@ signal.
   four helper modules to match established local style constraints.
 
 ## Ran Evidence
-- Not run in this session.
+- `cargo fmt --check` — passed
+- `cargo clippy --workspace --all-targets -- -D warnings` — passed
+- `cargo test -p openwepp-runner --tests` — passed (`73` tests)
+- `cargo test --workspace` — passed
+- `cargo deny check` — passed with duplicate-lock-entry and unmatched-allowlist warnings
 
 ## Disposition decision
-- disposition: complete (documentation- and implementation-fidelity trail present; validation commands intentionally not executed).
+- disposition: complete (documentation- and implementation-fidelity trail present; all required gates executed; `cargo deny check` warning items documented).
 
 ## Residual items
-- Recommend executing package phase-D required gates before merge promotion:
-  - `cargo fmt --check`
-  - `cargo clippy --workspace --all-targets -- -D warnings`
-  - `cargo test -p openwepp-runner --tests`
-  - `cargo test --workspace`
-  - `cargo deny check`
+- Gate execution completed in this session (warnings noted in `cargo deny check`; see
+  gate-results artifact).

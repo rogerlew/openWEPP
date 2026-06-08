@@ -4,7 +4,7 @@ Status: complete
 Evidence mode: Static
 
 ## Scope
-Production/static evidence only; no validation commands were executed in this session.
+Validation gates were executed and passed in this session.
 
 ## Static
 - Contractual scope remained mechanical refactor only; no behavior or contract changes were added.
@@ -14,11 +14,10 @@ Production/static evidence only; no validation commands were executed in this se
   - Suppressed clippy wildcard import warnings in helper modules after preserving local style.
 
 ## Gates
-- `cargo fmt --check` — **not run**
-- `cargo clippy --workspace --all-targets -- -D warnings` — **not run**
-- `cargo test -p openwepp-runner --tests` — **not run**
-- `cargo test --workspace` — **not run**
-- `cargo deny check` — **not run**
-
-## Evidence mode note
-Static evidence only; no `Ran:` verification in this run.
+- `cargo fmt --check` — **passed**
+- `cargo clippy --workspace --all-targets -- -D warnings` — **passed**
+- `cargo test -p openwepp-runner --tests` — **passed** (`73` tests)
+- `cargo test --workspace` — **passed** (full workspace test matrix completed)
+- `cargo deny check` — **passed with warnings**:
+  - Duplicate crates: `getrandom`, `hashbrown`, `twox-hash`
+  - Unmatched license allowlist entries: `ISC`, `Unicode-DFS-2016`

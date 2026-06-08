@@ -11,4 +11,8 @@ Evidence mode: Static
   boundaries.
 
 ## Ran Evidence
-- Not run in this session.
+- `cargo fmt --check` — passed
+- `cargo clippy --workspace --all-targets -- -D warnings` — passed
+- `cargo test -p openwepp-runner --tests` — passed (`73` tests)
+- `cargo test --workspace` — passed
+- `cargo deny check` — passed with duplicate-lock-entry and unmatched-allowlist warnings

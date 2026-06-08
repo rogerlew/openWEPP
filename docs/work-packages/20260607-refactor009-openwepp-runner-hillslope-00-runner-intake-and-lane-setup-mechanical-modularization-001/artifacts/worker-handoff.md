@@ -16,11 +16,10 @@ next actions for validation.
 ## Verification state
 - Implementation evidence complete.
 - Dual review and verification records completed with no findings.
-- Required command gates not executed in this session.
+- Required command gates executed in this session.
 
 ## Recommended next step for caller
-- Run package phase-D verification commands listed in
-  `package.md` and `artifacts/gate-results.md` before merge or promotion:
+- Confirm whether to resolve `cargo deny check` warnings before merge:
   - `cargo fmt --check`
   - `cargo clippy --workspace --all-targets -- -D warnings`
   - `cargo test -p openwepp-runner --tests`
