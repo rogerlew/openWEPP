@@ -213,6 +213,14 @@ detail lives in each package's dated directory (`package.md` + `artifacts/`). Th
 are not summarized here; the canonical forward queue is
 [../ROADMAP.md](../ROADMAP.md).
 
+Recent mechanical refactor package authoring updates (for discoverability):
+
+- `20260608-refactor015-openwepp-hillslope-orchestrator-hydrology-kernel-phases-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs`
+    into cohesive modules while preserving API/guard behavior intent and
+    `.rs` line-count governance.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
