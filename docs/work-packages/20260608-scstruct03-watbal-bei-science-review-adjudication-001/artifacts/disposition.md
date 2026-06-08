@@ -31,3 +31,7 @@ CLIM05 rows were mapped to `INV-WATBAL-013` and retained in core. CLIM06/WB14/WB
 ## Batch 5 update
 
 Mapped 14 WB19/WB18 hourly/handoff rows to existing invariants and retained them in core. HPHYS0224/0225/0226/0227 remain narrower HOLDs for cap/constitutive/water-yield binding exposure.
+
+## Batch 6 update
+
+Mapped SIMIMPL03/14/15/16/18/21 rows to existing invariants and retained them in core. EROD12/MOFE04/ARCH22/EROD13/EROD14 remain narrower HOLDs for exact cross-domain binding exposure.

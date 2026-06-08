@@ -45,3 +45,12 @@ No reduction was attempted. The positive delta records CLIM05 mapping notes and 
 | Approx whitespace tokens | 37221 | 37184 | -37 |
 
 No reduction was attempted. The positive delta records mapping and narrower HOLD notes in the Binding Exposure Index.
+
+## Batch 6 measured delta
+
+| Metric | Before batch 6 | After batch 6 | Delta |
+|---|---:|---:|---:|
+| Bytes | 325056 | 325670 | +614 |
+| Approx whitespace tokens | 37184 | 37219 | +35 |
+
+No reduction was attempted. The positive delta records mapping and narrower HOLD notes in the Binding Exposure Index.

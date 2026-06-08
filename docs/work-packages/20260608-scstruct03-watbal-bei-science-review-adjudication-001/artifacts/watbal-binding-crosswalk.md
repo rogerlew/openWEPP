@@ -51,3 +51,12 @@ The remaining science-review-follow-on rows are not adjudicated by this batch. T
 - Narrative relocated: none.
 - Rows resolved from deferral: 14 WB19/WB18 hourly/handoff rows mapped to existing invariants.
 - HOLD rows: HPHYS0224/0225/0226/0227 remain in core with explicit owner/gate notes for promotion or exact mapping proof.
+
+## Batch 6 conservation
+
+- Binding IDs removed: none.
+- Binding IDs added: none.
+- Binding IDs weakened: none.
+- Narrative relocated: none.
+- Rows resolved from deferral: SIMIMPL03/14/15/16/18/21 mapped to existing invariants.
+- HOLD rows: EROD12, MOFE04, ARCH22, EROD13, and EROD14 remain in core with explicit owner/gate notes.
