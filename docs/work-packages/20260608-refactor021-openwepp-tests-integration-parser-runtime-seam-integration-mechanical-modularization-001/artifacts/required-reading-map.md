@@ -17,33 +17,26 @@ package disposition in HOLD until corrected.
 
 ## Reading Budget
 
-- local_required_bytes_total: queued
-- threshold_outcome: queued
+- local_required_bytes_total: 91289
+- threshold_outcome: OK (below 400000 bytes)
 - measurement_method: `wc -c` on Core required-reading paths
-- measured_at_utc: queued
+- measured_at_utc: 2026-06-08T23:39:12Z
 
 Thresholds:
 - Use the canonical thresholds defined in
   `docs/standards/kernel-work-package-preparation.md`.
 
-If threshold_outcome is REQUIRES-JUSTIFICATION, include explicit justification
-for each heavy pre-read and explain why it cannot be moved to On-demand.
-
 ## Map
 
 | Path | Tier | Why required | Trigger / applicability | Read timing | Owner / maintainer | Last verified UTC | Notes |
 |------|------|--------------|------------------------|-------------|--------------------|-------------------|-------|
-| /workdir/openWEPP/AGENTS.md | Core | Root governance for all package work | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/docs/work-packages/AGENTS.md | Core | Package governance and artifact requirements | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/docs/codex_exec_plans.md | Core | Work-package execution contract | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/docs/work-packages/README.md | Core | Package catalog and route-of-record conventions | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/docs/standards/mechanical-refactor-authoring-guide.md | Core | Mechanical refactor gates and required closure | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/docs/standards/kernel-work-package-preparation.md | Core | Scope, review, and disposition scaffolding requirements | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/docs/work-packages/20260608-refactor021-openwepp-tests-integration-parser-runtime-seam-integration-mechanical-modularization-001/package.md | Core | Package-local objective and constraints | Always | Pre-edit | Agent | queued | |
-| /workdir/openWEPP/tests/integration/parser_runtime_seam_integration.rs | Core | Target integration file for modularization | During Phase A | Pre-edit | Agent | queued | |
-
-## Change Log
-
-| UTC | Agent | Change |
-|-----|-------|--------|
-| 2026-06-08T00:00:00Z | Codex | Initial required-reading map scaffold created. |
+| /workdir/openWEPP/AGENTS.md | Core | Root governance for all package work | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/work-packages/AGENTS.md | Core | Work-package process and artifact requirements | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/codex_exec_plans.md | Core | Package execution contract | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/work-packages/README.md | Core | Package catalog and process conventions | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/standards/mechanical-refactor-authoring-guide.md | Core | Mechanical refactor execution requirements | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/standards/kernel-work-package-preparation.md | Core | Scope, phasing, and evidentiary expectations | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/prompt_templates/mechanical-refactor-kickoff-template.md | Core | Prompt structure and kickoff controls | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/prompt_templates/required-reading-map-template.md | Core | Required-reading-map control format | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/docs/work-packages/20260608-refactor021-openwepp-tests-integration-parser-runtime-seam-integration-mechanical-modularization-001/package.md | Core | Package-local objective, scope, and gates | Always | Pre-edit | Codex | 2026-06-08T23:39:12Z | |
+| /workdir/openWEPP/tests/integration/parser_runtime_seam_integration.rs | Core | Target monolith for mechanical modularization | Always / In-progress | Pre-edit / In-progress | Codex | 2026-06-08T23:39:12Z | 2,631 lines pre-scope |

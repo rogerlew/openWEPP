@@ -1,18 +1,21 @@
 # REFACTOR021 Disposition
 
-Status: queued
-Evidence mode: not-run
+Status: complete
+Evidence mode: Static/Ran
 
 Static:
-- queued
+- Declared mechanical refactor scope executed to completion.
+- All integration tests preserved and pass under the declared module-split architecture.
+- Required artifacts were completed and populated from scaffold state.
 
 Ran:
-- not run
+- 2026-06-08T23:39:12Z: validation and evidence artifacts completed and verified.
 
-## Findings Disposition (planned)
-- Accepted: queued
-- Rejected: queued
-- Deferred: queued
-- Follow-up: queued
+## Findings Disposition
+- Accepted: modularization-only completion, no behavior or contract changes.
+- Rejected: none
+- Deferred: none
+- Follow-up: none
 
-Decision: queued
+Decision:
+- `closed`
