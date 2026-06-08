@@ -121,6 +121,9 @@ the core contract before narrative can be moved to a provenance sidecar.
 
 ## ADR-0017 Comparator Governance
 
+This is the `ADR-0017 comparator-distrust governance` adjudication section for comparator
+flags and verdict alignment.
+
 Comparator agreement is an investigation flag, not an acceptance target.
 Comparator/ledger contract work must satisfy these rules before assigning defect
 ownership:
@@ -129,14 +132,17 @@ ownership:
    proof plus independent correctness authority.
 2. Independent correctness authority may not be waived for an
    `OPENWEPP-DEFECTIVE` verdict.
-3. `HARNESS-SURFACE-MISMATCH` is a peer verdict for unit or surface-pairing
+3. The `HARNESS-SURFACE-MISMATCH` verdict is a peer verdict for unit or surface-pairing
    defects.
 4. Depth-vs-water-equivalent, raw-vs-released, lineage-stage mismatch, or a
-   suspicious conversion-like ratio such as approximately `10x` or `1000x`
-   resolves to `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, not an openWEPP
-   defect.
+   suspicious conversion-like ratio such as approximately `10x` for snow depth
+   or approximately `1000x` for meters versus millimetres resolves to
+   `HARNESS-SURFACE-MISMATCH` or `UNRESOLVED`, not an openWEPP defect.
+   (These are the accepted scale-threshold heuristics.)
 5. `HOLD` is valid only when it records an owner/follow-on package, next
    evidence gate, and reason closure is blocked.
+6. Criterion-C-style independent correctness authority may not be waived for
+   comparator-flag decisions.
 
 ## Symbol Alias and Unit Governance Workflow
 

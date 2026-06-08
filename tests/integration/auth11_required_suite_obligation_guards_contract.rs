@@ -112,6 +112,7 @@ fn parse_registry_suite_fields(
     }
 }
 
+#[allow(clippy::too_many_lines)]
 #[test]
 fn auth11_obligations_schema_and_anchor_bindings_are_enforced() {
     let obligations: RequiredSuiteObligations =

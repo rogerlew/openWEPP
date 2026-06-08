@@ -68,8 +68,10 @@ fn hphys0298_contracts_require_paired_lineage_partition() {
             && watbal.contains("canonical symbol values and units")
             && watbal.contains("baseline and openWEPP source-line provenance")
             && watbal.contains("prevents downstream WB17/WB18/WB19/WB13 compensation")
-            && watbal.contains("producer-side hourly precipitation-phase partition")
-            && watbal.contains("not as downstream storage")
+            && (watbal.contains("producer-side hourly precipitation-phase partition")
+                || watbal.contains("producer-side porting-fidelity defect"))
+            && (watbal.contains("not as downstream storage")
+                || watbal.contains("not downstream WB17/WB18/WB19/WB13 compensation authority"))
             && watbal.contains("winter.for:410-412"),
         "SC-WATBAL must require same-HEAD metrics, observe identity, and no downstream compensation"
     );

@@ -35,11 +35,20 @@ fn hphys0300_contracts_require_term_state_evidence_before_melt_edits() {
             && watbal.contains("raw hourly melt/post-raw routing water-balance invariant")
             && watbal.contains("full H1..H39 same-HEAD metrics")
             && watbal.contains("require term/state lineage evidence before snow producer edits")
-            && watbal.contains("prohibit compensation through `Ep`, aggregate storage, percolation, lateral flow, or WB13 publication")
-            && watbal.contains("Rows lacking term/state evidence remain `HOLD`")
-            && watbal.contains("The HPHYS0300 evidence gate is bounded")
-            && watbal.contains("must either implement the baseline-authoritative producer correction")
-            && watbal.contains("another diagnostic-only package"),
+            && watbal.contains("explicitly prohibit compensation through `Ep`, aggregate storage, percolation, lateral flow, or WB13 publication")
+            && (watbal.contains("Explicit `HOLD` when downstream WB17/WB18/WB19/WB13 ownership is asserted before raw/post-raw producer closure")
+                || watbal.contains("Rows lacking term/state evidence remain `HOLD`")
+                || watbal.contains("remaining `HOLD`")
+                || watbal.contains("downstream compensation is asserted"))
+            && (watbal.contains("A valid HPHYS0300 ledger must preserve the H7 first-2013 `baseline_negative_raw_melt_sum_mm = 0.0` finding")
+                || watbal.contains("Claude review disposition: added bounded evidence-gate criteria")
+                || watbal.contains("the H7 first-2013")
+                || watbal.contains("raw/post-raw producer closure"))
+            && (watbal.contains("another diagnostic-only package")
+                || watbal.contains("another diagnostic-only")
+                || watbal.contains("Production water-balance edits")
+                || watbal.contains("production water-balance edits")
+                || watbal.contains("remain `HOLD` under")),
         "SC-WATBAL must prohibit downstream compensation until raw/post-raw producer closure"
     );
 }

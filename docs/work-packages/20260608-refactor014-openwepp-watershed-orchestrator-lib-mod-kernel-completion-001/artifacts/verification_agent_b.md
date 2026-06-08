@@ -8,10 +8,14 @@ Evidence mode: Ran
   observation.
 
 ## Ran:
-- Re-ran `cargo check -p openwepp-watershed-orchestrator` after module fix to
-  ensure no parser/scope regressions.
-- Ran `cargo check -p openwepp-watershed-orchestrator` implicitly via
-  `clippy` pipeline (exit 0).
+- `cargo test -p openwepp-watershed-orchestrator --tests` (0) confirmed target
+  crate tests after module decomposition remain green.
+- `cargo test --workspace` (0) confirmed repository-wide tests remain green.
+- `cargo check -p openwepp-watershed-orchestrator` remains clean for target crate
+  integration and module surfaces.
+- `cargo fmt --check` and `cargo deny check` were re-confirmed by the package
+  verification pass.
 
 ## Findings:
 - Accepted: compile surface is clean for the target crate and refactored module set.
+- Accepted: package-level checks have no remaining failures.

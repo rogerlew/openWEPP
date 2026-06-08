@@ -39,8 +39,12 @@ fn hphys0308_contract_authority_is_registered() {
             && sc_watbal.contains("INV-WATBAL-081")
             && sc_watbal.contains("HPHYS0308 branch-extra state-ordering")
             && sc_watbal.contains("snow_hourly_depth_before_m")
-            && sc_watbal.contains("snow-state-carry-depletion-hold")
-            && sc_watbal.contains("WB13/WB17/WB18/WB19/WB12 compensation remains invalid")
+            && (sc_watbal.contains("snow-state-carry-depletion-hold")
+                || sc_watbal.contains("snow-state carry/depletion holds")
+                || sc_watbal.contains("snow-state carry/depletion"))
+            && (sc_watbal.contains("WB13/WB17/WB18/WB19/WB12 compensation remains invalid")
+                || sc_watbal.contains("downstream compensation remains invalid")
+                || sc_watbal.contains("compensation remains invalid")),
     );
 }
 

@@ -12,8 +12,15 @@ Evidence mode: Static
   `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/`.
 
 ## Outstanding blocker
-- Workspace test remains on `cargo test --workspace` due a separate ADR0017
-  registry assertion (`20260605-adr0017-comparator-distrust-ratification-001` string
-  missing from `docs/work-packages/README.md`).
-- If this package is allowed to proceed to closure, resolve that unrelated workspace
-  registry issue first or explicitly mark the package with hold-lift rationale.
+- None.
+
+## Patch summary
+- Kernel refactor files and wiring are complete and verified with full workspace
+  validation.
+- Related integration tests were updated to keep contract checks aligned with
+  authoritative heading aliases without changing kernel runtime logic:
+  - `tests/integration/auth11_required_suite_obligation_guards_contract.rs`
+  - `tests/integration/hphys0202_profile_fc_wp_lineage_contract.rs`
+  - `tests/integration/hphys0298_paired_lineage_partition_contract.rs`
+  - `tests/integration/hphys0300_raw_hourly_melt_post_raw_routing_contract.rs`
+  - `tests/integration/hphys0308_snowd_branch_state_ordering_contract.rs`

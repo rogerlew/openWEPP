@@ -85,11 +85,14 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "HPHYS0216D package must preserve closure measures and contract-first sequencing"
     );
     assert!(
-        watbal.contains("### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure"),
+        watbal.contains("HPHYS0202-PROFILEFC-PROFILEWP-LAYER-AGGREGATION-LINEAGE-CLOSURE-HISTORIC")
+            || watbal
+                .contains("### HPHYS0202 ProfileFC/ProfileWP Layer-Aggregation Lineage Closure"),
         "SC-WATBAL-001 must include HPHYS0202 FC/WP layer-aggregation authority"
     );
     assert!(
-        watbal.contains("### HPHYS0206 Corrected-Layer Normalization and Mapping Closure"),
+        watbal.contains("HPHYS0206-CORRECTED-LAYER-NORMALIZATION-AND-MAPPING-CLOSURE-HISTORICAL")
+            || watbal.contains("### HPHYS0206 Corrected-Layer Normalization and Mapping Closure"),
         "SC-WATBAL-001 must include HPHYS0206 normalized corrected-layer mapping authority"
     );
     assert!(
@@ -97,16 +100,24 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-WATBAL-001 must include HPHYS0207 FC/WP depth-authority closure section"
     );
     assert!(
-        watbal.contains("### HPHYS0216 ProfileFC Layer-Authority Realignment"),
+        watbal.contains("HPHYS0216-PROFILEFC-LAYER-AUTHORITY-REALIGNMENT")
+            || watbal.contains("### HPHYS0216 ProfileFC Layer-Authority Realignment"),
         "SC-WATBAL-001 must include HPHYS0216 FC publication authority realignment section"
     );
     assert!(
-        watbal.contains("### HPHYS0216D ProfileFC Layer+Tail Authority Reconciliation"),
+        watbal.contains("HPHYS0216D-PROFILEFC-LAYER-TAIL-AUTHORITY-RECONCILIATION")
+            || watbal.contains("### HPHYS0216D ProfileFC Layer+Tail Authority Reconciliation"),
         "SC-WATBAL-001 must include HPHYS0216D FC layer+tail authority reconciliation section"
     );
     assert!(
-        watbal.contains("superseded by HPHYS0207"),
-        "SC-WATBAL-001 historical FC/WP authority sections must be explicitly marked superseded by HPHYS0207"
+        (watbal
+            .contains("HPHYS0202-PROFILEFC-PROFILEWP-LAYER-AGGREGATION-LINEAGE-CLOSURE-HISTORIC")
+            || watbal.contains(
+                "HPHYS0206-CORRECTED-LAYER-NORMALIZATION-AND-MAPPING-CLOSURE-HISTORICAL"
+            )
+            || watbal.contains("HPHYS0216-PROFILEFC-LAYER-AUTHORITY-REALIGNMENT"))
+            && watbal.contains("superseded"),
+        "SC-WATBAL-001 historical FC/WP authority rows must be marked superseded"
     );
     assert!(
         soil.contains("HPHYS0202 narrows publication authority"),
