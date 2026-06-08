@@ -1,10 +1,13 @@
 # Verification Agent A
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: Static + Ran
 
-Static:
-- queued
+## Ran
+- Ran `cargo fmt --check`.
+- Ran `cargo clippy --workspace --all-targets -- -D warnings`.
+- Ran `cargo test -p openwepp-kernel-contract --tests`.
+- Reviewed full package gate outputs.
 
-Ran:
-- not run
+## Findings
+- No verification defects introduced by this package.

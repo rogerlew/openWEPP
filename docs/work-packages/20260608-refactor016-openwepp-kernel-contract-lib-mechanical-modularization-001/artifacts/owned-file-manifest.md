@@ -1,16 +1,14 @@
 # Owned File Manifest
 
-Status: queued
-Evidence mode: not-run
+Status: completed
+Evidence mode: Static + Ran
 
-Static:
-- queued
+## Static
+- Owned package scope:
+  - `crates/openwepp-kernel-contract/src/lib.rs`
+  - `crates/openwepp-kernel-contract/src/lib_mod/core_types.rs`
+  - `crates/openwepp-kernel-contract/src/lib_mod/writeback.rs`
+  - `docs/work-packages/20260608-refactor016-openwepp-kernel-contract-lib-mechanical-modularization-001/artifacts/*`
 
-Ran:
-- not run
-
-Owned files (planned):
-- crates/openwepp-kernel-contract/src/lib.rs
-- crates/openwepp-kernel-contract/src/lib_mod/*.rs
-- docs/work-packages/20260608-refactor016-openwepp-kernel-contract-lib-mechanical-modularization-001/**
-- docs/work-packages/README.md
+## Ran
+- Artifact set updated to record execution, evidence, gates, and disposition.
