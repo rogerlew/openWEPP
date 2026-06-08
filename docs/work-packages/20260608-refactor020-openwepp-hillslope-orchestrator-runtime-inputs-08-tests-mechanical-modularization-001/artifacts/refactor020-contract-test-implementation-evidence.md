@@ -1,12 +1,11 @@
 # REFACTOR020 Contract Test Implementation Evidence
 
-Status: scaffolded
+Status: complete
 Evidence mode: Static/Ran
 
 Static:
-- No contract test additions are planned in scope.
-- Test surface stability will be preserved through mechanical extraction only.
+- Scope was mechanical only; no new contract tests were added.
+- Existing behavior-oriented tests were preserved by extraction to matching module chunks.
 
 Ran:
-- TBD
-
+- 2026-06-08T23:13:29Z: `cargo test -p openwepp-hillslope-orchestrator --tests` passed with all 107 tests in scope; no additional or removed test behavior observed.

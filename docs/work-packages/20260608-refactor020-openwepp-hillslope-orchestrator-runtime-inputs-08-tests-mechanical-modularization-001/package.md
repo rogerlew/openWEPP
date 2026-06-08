@@ -1,7 +1,7 @@
 # 20260608-refactor020-openwepp-hillslope-orchestrator-runtime-inputs-08-tests-mechanical-modularization-001
 
 ## Status
-- state: queued
+- state: complete
 - date: 2026-06-08
 - timezone: UTC
 
@@ -16,13 +16,13 @@ intent, guard semantics, and all observable behavior.
 2559-line mixed test module, above the `.rs` structural threshold that requires
 mechanical decomposition. The file combines unrelated test families and runtime
 input seam fixtures, which increases merge conflict risk and obscures test
-ownership. A focused refactor lowers review risk and makes future test maintenance
-safer.
+ownership. A focused refactor lowers review risk and makes future test
+maintenance safer.
 
 ## Scope
 ### Included
 - Move test blocks out of `runtime_inputs/08_tests.rs` into cohesive files under
-  a dedicated `runtime_inputs/08_tests/` module subtree.
+a dedicated `runtime_inputs/08_tests/` module subtree.
 - Replace `08_tests.rs` with a thin facading/wiring module that preserves module
   visibility and compile-time interfaces required by `runtime_inputs/mod.rs`.
 - Preserve all production symbols and test assertion intent; only mechanical
@@ -59,7 +59,7 @@ safer.
    - `artifacts/verification_agent_b.md`
 
 ## Autonomous Execution Intent (Required)
-This package is execution-ready and must proceed end-to-end through disposition
+This package is execution-ready and proceeds end-to-end through disposition
 without additional user direction unless hard-blocked.
 
 ## Truthfulness Labeling Requirement
@@ -109,12 +109,11 @@ authority edits, the package must follow the canonical sequence:
 3. pre-implementation contract gate
 4. production edits.
 
-Current scope is mechanical and contract-neutral; artifacts must explicitly
-record that determination before edits.
+Current scope remained mechanical and contract-neutral.
 
 ## Exit Criteria
 - `08_tests.rs` is decomposed into `runtime_inputs/08_tests/*.rs` with API and
-  test intent preserved.
+test intent preserved.
 - Required closure gates pass:
   1. `cargo fmt --check`
   2. `cargo clippy --workspace --all-targets -- -D warnings`
@@ -130,3 +129,6 @@ record that determination before edits.
 - rationale: internal test-module organization refactor in runtime-inputs domain, with
   no interface or trust-boundary change.
 
+## Completion
+- 2026-06-08: package executed to disposition with mechanical-only modularization and
+  all required gates passing.
