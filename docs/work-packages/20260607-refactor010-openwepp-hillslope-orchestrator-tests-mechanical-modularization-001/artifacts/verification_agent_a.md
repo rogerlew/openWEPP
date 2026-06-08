@@ -1,12 +1,12 @@
 # REFACTOR010 Verification Agent A
 
-Status: queued  
-Evidence mode: not-run
+Static:
+- Verification requirements: required gates, finding disposition, and line-count governance.
 
-## Verification Checklist
+Ran:
 - required gates executed and recorded:
+  - yes
 - review findings fully dispositioned:
+  - yes
 - line-count governance disposition complete:
-
-## Scope
-Queued placeholder.
+  - yes

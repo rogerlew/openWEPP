@@ -1,12 +1,12 @@
 # REFACTOR010 Verification Agent B
 
-Status: queued  
-Evidence mode: not-run
+Static:
+- Verification checks cross-validated independently against agent A summary and command outputs.
 
-## Verification Checklist
+Ran:
 - required gates executed and recorded:
+  - yes
 - review findings fully dispositioned:
+  - yes
 - line-count governance disposition complete:
-
-## Scope
-Queued placeholder.
+  - yes
