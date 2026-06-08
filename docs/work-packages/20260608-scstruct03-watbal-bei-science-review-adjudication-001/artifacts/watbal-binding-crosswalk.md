@@ -1,0 +1,26 @@
+# WATBAL Binding Crosswalk
+
+Evidence mode: Static
+Status: partial - batch 1 complete, remaining batches deferred
+
+## Batch 1 conservation
+
+- Binding IDs removed: none.
+- Binding IDs added: none.
+- Binding IDs weakened: none.
+- Narrative relocated: five ProfileFC/WP lineage sections.
+- Relocated rows map to existing binding IDs: `INV-WATBAL-041`, `INV-WATBAL-042`.
+- Retained core authority: HPARITY02 profile-capacity publication lineage closure remains in `SC-WATBAL-001`; relocated sidecar narrative is non-binding except through the BEI mapping.
+
+## Remaining work
+
+The remaining science-review-follow-on rows are not adjudicated by this batch. They remain in core and block full consolidation.
+
+## Batch 2 conservation
+
+- Binding IDs removed: none.
+- Binding IDs added: none.
+- Binding IDs weakened: none.
+- Narrative relocated: nine HPHYS0298-0308 snow/melt comparator sections.
+- Relocated rows map to existing binding IDs: `INV-WATBAL-073`, `INV-WATBAL-074`, `INV-WATBAL-075`, `INV-WATBAL-076`, `INV-WATBAL-077`, `INV-WATBAL-078`, `INV-WATBAL-079`, `INV-WATBAL-080`, `INV-WATBAL-081`, and `INV-WATBAL-087`.
+- ADR0017 comparator-governance posture remains in core through `INV-WATBAL-087`; no comparator re-tiering occurred.
