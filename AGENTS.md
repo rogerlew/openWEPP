@@ -35,6 +35,9 @@
   actionable follow-through that can be completed autonomously.
 - Work-package authoring must follow `docs/codex_exec_plans.md` for autonomy,
   self-containment, and observable validation expectations.
+- Mechanical refactor packages should also follow
+  `docs/standards/mechanical-refactor-authoring-guide.md` for explicit seam
+  definitions, tool usage, refactor patterns, and compile/test closure flow.
 - Defect-closure work must follow ADR-0018 and
   `docs/defect_closure_execplans.md`. Use a Defect-Closure ExecPlan
   (DC-ExecPlan) when the objective is to close an observed invariant violation,

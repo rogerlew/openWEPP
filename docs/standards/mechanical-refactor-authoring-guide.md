@@ -1,0 +1,219 @@
+# Mechanical Refactor Authoring Guide
+
+- **Status:** Active
+- **Last updated:** 2026-06-07
+- **Applies to:** work packages whose goal is structural/mechanical code reorganization with no intended behavior change
+
+## 1) Purpose
+
+This guide standardizes how openWEPP authors and executes mechanical refactor
+packages. It exists to make refactor work reproducible, reviewable, and safe,
+including when using smaller or more cost-effective coding models that need
+more explicit instructions.
+
+Use this guide in addition to:
+
+- `docs/codex_exec_plans.md`
+- `docs/work-packages/README.md`
+- `AGENTS.md`
+
+For defect closure packages, also follow:
+
+- `docs/defect_closure_execplans.md`
+
+## 2) What counts as a mechanical refactor
+
+A package is mechanical when all of the following are true:
+
+1. Objective is structure and readability (split files, move functions,
+   reorganize modules, isolate tests, reduce monolith size).
+2. Intended runtime behavior is unchanged for existing valid inputs.
+3. Public API shape is unchanged unless explicitly declared and approved.
+4. Scientific formulas, constants, contracts, and decision logic are not
+   altered except where needed for equivalent relocation.
+
+If the package changes process-physics behavior, contract authority,
+acceptance thresholds, or fail-closed logic, it is not mechanical-only and
+must be authored as a broader code-authoring package with contract-first
+governance.
+
+## 3) Authoring checklist for package.md and kickoff prompt
+
+Mechanical refactor packages should explicitly include:
+
+1. Refactor seam declaration:
+   - exact source file(s)
+   - intended destination file/module map
+   - declared non-goals (no behavior, no formula, no threshold changes)
+2. Public surface preservation declaration:
+   - list exported items expected to remain stable
+3. Deterministic validation plan:
+   - compile/lint/test command ladder (see Section 6)
+   - expected evidence files to update
+4. File line-count governance target:
+   - current line count of touched `.rs` files
+   - target post-refactor counts when splitting monoliths
+5. Required anti-drift rule:
+   - no opportunistic cleanup unrelated to the declared seam
+
+Kickoff prompts should include a strict write-set and explicit
+phase-by-phase steps so a stateless model can execute without independent
+repo archaeology.
+
+## 4) Tool usage guidance
+
+### 4.1 Discovery and sizing
+
+Use fast structural discovery before editing:
+
+- `rg --files crates`
+- `rg -n "^pub |^impl |^fn |^struct |^enum |^type " <file>`
+- `wc -l <file>`
+
+For monolith split planning, capture:
+
+1. symbol inventory (`pub`/`fn`/`impl`/`struct`)
+2. internal helper clusters
+3. test module boundaries
+4. import dependencies and circularity risks
+
+### 4.2 Edit discipline
+
+1. Preserve signatures and visibility unless the package explicitly authorizes
+   a surface change.
+2. Move code in coherent blocks; avoid line-by-line rewrites.
+3. Preserve comments, contract citations, and variable names.
+4. Keep formatting style consistent with the surrounding file.
+5. Avoid mixed mechanical + semantic edits in a single commit.
+
+### 4.3 Verification tools
+
+Use the command ladder in order:
+
+1. `cargo fmt --check`
+2. `cargo clippy --workspace --all-targets -- -D warnings`
+3. `cargo test --workspace`
+4. `cargo deny check`
+
+If a package touches only a narrow area, run focused tests first for fast
+feedback, then run full workspace gates before disposition.
+
+## 5) Mechanical refactor patterns
+
+### 5.1 Monolith to sectioned module pattern
+
+Recommended for very large files:
+
+1. Keep the original module file as a thin wiring surface.
+2. Split internals into ordered section files by responsibility.
+3. Preserve item order where practical to simplify review and provenance
+   comparison.
+4. Keep external imports and exports stable.
+5. Move tests into a dedicated section file when possible.
+
+### 5.2 Domain-seam extraction pattern
+
+When one module mixes concerns:
+
+1. define seam by behavior domain (for example intake, scheduler, output,
+   diagnostics)
+2. move one seam at a time
+3. compile/test after each seam
+4. record moved symbol list in artifacts
+
+### 5.3 Public API parity pattern
+
+For library-facing modules:
+
+1. capture pre-refactor exported symbol inventory
+2. perform split/move
+3. capture post-refactor inventory
+4. document parity or intentional deltas in a dedicated artifact
+
+## 6) Compile and test execution strategy
+
+### 6.1 Fast local loop
+
+Use a narrow loop while moving code:
+
+1. `cargo test -p <touched-crate> <focused-test-filter>`
+2. `cargo check -p <touched-crate>`
+
+### 6.2 Required closure loop
+
+Before package disposition, run and record:
+
+1. `cargo fmt --check`
+2. `cargo clippy --workspace --all-targets -- -D warnings`
+3. `cargo test --workspace`
+4. `cargo deny check`
+
+Evidence artifacts must label execution truthfully (`Static` vs `Ran`) and
+must not imply commands were run when they were only reasoned about.
+
+## 7) Low-cost model execution playbook
+
+When using a smaller model, reduce ambiguity aggressively.
+
+### 7.1 Prompt shape
+
+Include these sections in the kickoff prompt:
+
+1. Scope sentence: local repository flat-file edits only.
+2. Exact files in write-set.
+3. Exact non-goals (no behavior change, no formula edits, no threshold edits).
+4. Ordered tasks with concrete end states.
+5. Mandatory command list to run.
+6. Required artifact updates.
+7. Stop conditions (when to ask for help).
+
+Reusable starting point:
+
+- `docs/prompt_templates/mechanical-refactor-kickoff-template.md`
+
+### 7.2 Execution constraints
+
+1. Require edits to stay within declared files.
+2. Require one seam move per step with compile confirmation.
+3. Require explicit reporting of any unexpected diff outside write-set.
+4. Require final parity summary (exports, tests, line counts).
+
+### 7.3 Cost-control tactics
+
+1. Keep package scope single-seam and right-sized.
+2. Reuse existing package templates and artifact names.
+3. Use deterministic checklists and command ladders.
+4. Prefer mechanical moves over stylistic rewrites.
+
+## 8) Anti-patterns to avoid
+
+1. Mixing mechanical and behavioral edits in one package.
+2. Hiding semantic changes inside large move-only diffs.
+3. Closing packages without full gate evidence.
+4. Splitting into tiny diagnostic-only relays that cannot close a coherent seam.
+5. Using fallback logic to mask missing dependencies or invalid state.
+
+## 9) Required artifact set for mechanical refactor packages
+
+Unless superseded by package-specific authority requirements, include:
+
+1. modularization plan report
+2. public API surface parity report
+3. implementation and test evidence
+4. disposition and worker handoff
+5. dual reviews and dual verifications
+6. line-count governance checklist/disposition
+
+For kernel-affecting refactor packages, keep all kernel-profile and
+contract-first artifacts required by repo governance.
+
+## 10) Acceptance criteria
+
+A mechanical refactor package is complete only when:
+
+1. Declared seam is fully moved/reorganized.
+2. Public API parity is demonstrated or intentional deltas are documented.
+3. Required gates pass and evidence is recorded.
+4. `.rs` line-count governance is dispositioned.
+5. Review findings are fully dispositioned.
+6. No unresolved invariant or contract violations are left undispositioned.

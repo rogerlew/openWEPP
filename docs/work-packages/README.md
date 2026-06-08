@@ -642,6 +642,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   independently search onboarding context.
 - Work-package authoring must reference and follow:
   `docs/codex_exec_plans.md`.
+- Mechanical refactor packages should additionally follow:
+  `docs/standards/mechanical-refactor-authoring-guide.md`.
 
 ## Dual review and disposition (required)
 

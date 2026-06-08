@@ -24,6 +24,10 @@ exception is explicitly approved with owner and sunset plan. Review artifacts
 must record exception disposition, and package closure is blocked if any 3000+
 non-exempt file remains undispositioned.
 
+Mechanical refactor packages should additionally follow
+`docs/standards/mechanical-refactor-authoring-guide.md` for explicit seam
+definition, tool usage, refactor patterns, and compile/test closure flow.
+
 ADR-0017 makes comparator agreement a flag rather than a target for all
 comparator/ledger work packages. ExecPlans that classify legacy-comparator
 residuals must require like-for-like unit and lineage-stage proof before any
