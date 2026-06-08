@@ -4,8 +4,10 @@ const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-
 const SC_RUNOFFPART: &str = "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md";
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
 const PACKAGE: &str = "docs/work-packages/20260605-hphys0297-snow-rm-defect-ledger-reconstruction-closure-001/package.md";
-const KERNEL_HELPER_SOURCE: &str =
-    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
+const KERNEL_HELPER_SOURCES: [&str; 2] = [
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+];
 
 #[test]
 fn hphys0297_contracts_require_defect_ledger_reconstruction() {
@@ -62,8 +64,13 @@ fn hphys0297_package_is_defect_ledger_not_acceptance_bucket() {
 
 #[test]
 fn hphys0297_preserves_snowsci_single_source_openwepp_negative_melt_lineage() {
-    let helpers =
-        fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
+    let helpers = KERNEL_HELPER_SOURCES
+        .iter()
+        .map(|path| {
+            fs::read_to_string(path)
+                .unwrap_or_else(|_| panic!("kernel helper source {path} should be readable"))
+        })
+        .collect::<String>();
 
     assert!(
         helpers.contains("fn redistribute_daily_signed_snowmelt")

@@ -7,8 +7,10 @@ use openwepp_kernel_contract::{
     HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
 };
 
-const KERNEL_HELPER_SOURCE: &str =
-    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
+const KERNEL_HELPER_SOURCES: [&str; 2] = [
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+];
 const KERNEL_PHASE_SOURCE: &str =
     "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs";
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
@@ -223,8 +225,13 @@ fn hphys0292_contracts_define_spring_snowmelt_capacity_localization() {
 
 #[test]
 fn hphys0292_source_preserves_wmelt_infiltration_before_residual_q() {
-    let helpers =
-        fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
+    let helpers = KERNEL_HELPER_SOURCES
+        .iter()
+        .map(|path| {
+            fs::read_to_string(path)
+                .unwrap_or_else(|_| panic!("kernel helper source {path} should be readable"))
+        })
+        .collect::<String>();
     let phases =
         fs::read_to_string(KERNEL_PHASE_SOURCE).expect("kernel phase source should be readable");
 

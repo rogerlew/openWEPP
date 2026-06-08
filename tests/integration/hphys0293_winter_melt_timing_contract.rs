@@ -4,8 +4,10 @@ use std::path::{Path, PathBuf};
 const SC_SNOWFREEZE: &str = "docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md";
 const SC_RUNOFFPART: &str = "docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md";
 const SC_WATBAL: &str = "docs/specifications/science-contracts/contracts/SC-WATBAL-001.md";
-const KERNEL_HELPER_SOURCE: &str =
-    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs";
+const KERNEL_HELPER_SOURCES: [&str; 2] = [
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs",
+    "crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs",
+];
 const HPHYS0284_TEST_SOURCE: &str =
     "tests/integration/hphys0284_negative_melt_snowpack_state_contract.rs";
 
@@ -109,8 +111,13 @@ fn hphys0293_runner_trace_preserves_term_level_snow_depletion_evidence() {
 
 #[test]
 fn hphys0293_preserves_single_source_negative_melt_boundary() {
-    let helpers =
-        fs::read_to_string(KERNEL_HELPER_SOURCE).expect("kernel helper source should be readable");
+    let helpers = KERNEL_HELPER_SOURCES
+        .iter()
+        .map(|path| {
+            fs::read_to_string(path)
+                .unwrap_or_else(|_| panic!("kernel helper source {path} should be readable"))
+        })
+        .collect::<String>();
     let hphys0284_test =
         fs::read_to_string(HPHYS0284_TEST_SOURCE).expect("HPHYS0284 test should be readable");
 

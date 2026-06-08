@@ -2212,6 +2212,12 @@ Authorized packages:
     `openwepp-watershed-orchestrator/src/runtime_inputs.rs`, splitting the
     monolithic runtime-input adaptation surface into cohesive modules while
     preserving API/guard behavior intent and `.rs` line-count governance.
+- `20260607-refactor013-openwepp-hillslope-orchestrator-hydrology-support-helpers-mechanical-modularization-001/`
+  - Status: implemented (verification-gated pending in package artifacts).
+  - Purpose: execute REFACTOR013 by mechanically modularizing
+    `openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`,
+    splitting the monolithic helper surface into cohesive modules while
+    preserving API/guard behavior intent and `.rs` line-count governance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,
