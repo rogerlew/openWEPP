@@ -48,10 +48,8 @@ scope.
 
 3b. Record required-reading budget in kickoff prompts
 - Kickoff prompts must record local required-reading byte total and threshold
-  disposition:
-  - `OK`: `<=400000` bytes
-  - `WARN`: `>400000` bytes
-  - `REQUIRES-JUSTIFICATION`: `>800000` bytes
+  disposition using the canonical thresholds in
+  `docs/standards/kernel-work-package-preparation.md`.
 - For `REQUIRES-JUSTIFICATION`, include a short rationale for each heavy
   required pre-read and why it cannot move to `On-demand`.
 

@@ -261,10 +261,8 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Each package should include `artifacts/required-reading-map.md` documenting:
   path, tier, rationale, applicability trigger, and when it was read.
 - Kickoff prompts should record required-reading budget metrics for local-repo
-  files:
-  - `OK`: `<=400000` bytes
-  - `WARN`: `>400000` bytes
-  - `REQUIRES-JUSTIFICATION`: `>800000` bytes
+  files, using canonical thresholds defined in
+  `docs/standards/kernel-work-package-preparation.md`.
 - When `REQUIRES-JUSTIFICATION` is reached, author must explain why each heavy
   pre-read is mandatory and cannot be deferred to `On-demand`.
 - Work-package authoring must reference and follow:

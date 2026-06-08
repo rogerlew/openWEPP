@@ -26,9 +26,8 @@ package disposition in HOLD until corrected.
 - measured_at_utc: <YYYY-MM-DDTHH:MM:SSZ>
 
 Thresholds:
-- OK: <= 400000 bytes
-- WARN: > 400000 bytes
-- REQUIRES-JUSTIFICATION: > 800000 bytes
+- Use the canonical thresholds defined in
+  `docs/standards/kernel-work-package-preparation.md`.
 
 If threshold_outcome is REQUIRES-JUSTIFICATION, include explicit justification
 for each heavy required pre-read and explain why it cannot be moved to

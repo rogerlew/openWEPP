@@ -114,10 +114,13 @@ requirement, not optional package style guidance.
 - Require a package-local authority map artifact:
   - `artifacts/required-reading-map.md` with path, tier (Core/Conditional/
     On-demand), rationale, and applicability trigger.
-- Add required-reading budget guardrails (local-repo files only):
-  - `WARN` at `>400000` bytes of mandatory pre-edit reading.
-  - `REQUIRES-JUSTIFICATION` at `>800000` bytes, including why each heavy file
-    must be pre-read and what cannot be deferred to on-demand.
+- Canonical required-reading budget thresholds (single source of truth;
+  local-repo files only):
+  - `OK`: `<=400000` bytes.
+  - `WARN`: `>400000` bytes.
+  - `REQUIRES-JUSTIFICATION`: `>800000` bytes.
+  - For `REQUIRES-JUSTIFICATION`, include why each heavy file must be pre-read
+    and what cannot be deferred to on-demand.
 
 6. Enforce completion gates in the prepared prompt
 - Kickoff prompt must prohibit kernel code edits before contract + test + gate
