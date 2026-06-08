@@ -24,3 +24,12 @@ The remaining science-review-follow-on rows are not adjudicated by this batch. T
 - Narrative relocated: nine HPHYS0298-0308 snow/melt comparator sections.
 - Relocated rows map to existing binding IDs: `INV-WATBAL-073`, `INV-WATBAL-074`, `INV-WATBAL-075`, `INV-WATBAL-076`, `INV-WATBAL-077`, `INV-WATBAL-078`, `INV-WATBAL-079`, `INV-WATBAL-080`, `INV-WATBAL-081`, and `INV-WATBAL-087`.
 - ADR0017 comparator-governance posture remains in core through `INV-WATBAL-087`; no comparator re-tiering occurred.
+
+## Batch 3 conservation
+
+- Binding IDs removed: none.
+- Binding IDs added: none.
+- Binding IDs weakened: none.
+- Narrative relocated: none.
+- HOLD rows: WB12 reconciliation and WB16 peak-runoff diagnostics remain in core with explicit owner/gate notes.
+- WB13 output-surface section remains in core because exact schema/order/guard/test-vector binding exposure is not complete.
