@@ -16,6 +16,9 @@ Autonomy and completion requirement:
 - A package is incomplete until closure gates are run and recorded, required
    artifacts are updated, and review/verification placeholders are
    disposition-ready.
+- Running the required cargo gate commands is mandatory, not optional.
+- If any required cargo gate command is not executed, the package is not
+   disposition-ready unless a declared hard blocker is documented.
 - If a gate fails, attempt a mechanical-only fix and rerun gates.
 - Stop only when hard-blocked by declared stop conditions and record the
    blocker with exact command/file context.
@@ -75,6 +78,10 @@ Execution steps (perform in order):
      - `cargo clippy --workspace --all-targets -- -D warnings`
      - `cargo test --workspace`
      - `cargo deny check`
+    - These commands are required execution gates and must be run as shell
+       commands in this execution.
+    - Record each gate command with observed outcome (`pass`/`fail`) and
+       explicit exit code.
     - Do not exit early after a subset of these gates unless a hard blocker is
        encountered and documented.
 5. Parity and governance evidence
@@ -112,6 +119,8 @@ Outputs:
 Completion checklist (must be true before stopping):
 - All closure gates have been run and recorded (or blocker documented under
    stop conditions).
+- Each required cargo gate command has explicit command-level evidence with
+   observed result and exit status.
 - Artifact updates are complete for implementation, parity, line-count
    governance, review, verification, disposition, and handoff.
 - Remaining work (if any) is a blocker-shaped handoff, not an open-ended

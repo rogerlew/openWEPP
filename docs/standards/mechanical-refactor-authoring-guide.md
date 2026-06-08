@@ -36,6 +36,8 @@ Required posture:
    file/symbol context, and first actionable follow-up.
 5. Package closure or handoff must be blocker-shaped, never an open-ended
    "continue investigation" note for in-scope work.
+6. Required cargo closure commands are mandatory execution steps; reasoning
+   about expected outcomes is not a substitute for running them.
 
 ## 2) What counts as a mechanical refactor
 
@@ -163,6 +165,14 @@ Before package disposition, run and record:
 2. `cargo clippy --workspace --all-targets -- -D warnings`
 3. `cargo test --workspace`
 4. `cargo deny check`
+
+Mandatory execution rule:
+
+1. All four commands above must be executed in-shell for the current package
+   run; citing prior runs or inferred outcomes is insufficient.
+2. Each command must be recorded with observed result and exit status.
+3. If any required command is not executed, the package remains in-progress
+   unless a declared hard blocker is documented with command-level evidence.
 
 Completion rule:
 
