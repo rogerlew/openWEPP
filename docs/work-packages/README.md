@@ -27,7 +27,11 @@ State as of `2026-06-07`:
   longer suspended; snow *magnitude* still is.
 
 Active work sequence (each rung adds one mechanism on an already-closed
-foundation; boundaries are closure gates, not calendar phases). WBVAL02 and
+foundation; boundaries are closure gates, not calendar phases).
+
+[kernel refactor follow-on package-complete-with-hold] complete `lib_mod/kernel.rs` decomposition
+from `kernel_core.rs` into bounded modules before any bounded surface migration.
+ WBVAL02 and
 WBVAL03 are Defect-Closure ExecPlan unblockers created from WBVAL01 evidence;
 they are bounded defect closures, not a return to diagnostic relay packages.
 WBVAL04 is the right-sized post-climate-fix redo of WBVAL01, gated first by a

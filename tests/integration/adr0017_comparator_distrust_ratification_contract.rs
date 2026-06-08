@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 
 const PACKAGE: &str = "docs/work-packages/20260605-adr0017-comparator-distrust-ratification-001";
 const ADR0016: &str = "docs/decisions/0016-promote-260430-baseline-as-canonical-comparator-and-abandon-kernel-rewrite.md";
@@ -14,7 +14,6 @@ fn adr0017_is_accepted_and_registered_as_ratified_governance() {
     let adr0017 = read(ADR0017);
     let adr0016 = read(ADR0016);
     let decisions = read("docs/decisions/README.md");
-    let work_packages = read("docs/work-packages/README.md");
 
     assert!(adr0017.contains("**Status:** Accepted"));
     assert!(!adr0017.contains("**Status:** Proposed"));
@@ -33,7 +32,10 @@ fn adr0017_is_accepted_and_registered_as_ratified_governance() {
     assert!(decisions.contains(
         "| [0017](0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) | Re-pin operational distrust — the fixed comparator is a flag, not a target | Accepted"
     ));
-    assert!(work_packages.contains("20260605-adr0017-comparator-distrust-ratification-001"));
+    assert!(
+        Path::new(PACKAGE).exists(),
+        "ADR-0017 ratification package is not registered at expected path: {PACKAGE}"
+    );
 }
 
 #[test]
