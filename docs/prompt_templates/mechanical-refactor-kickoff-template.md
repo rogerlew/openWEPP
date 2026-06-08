@@ -39,12 +39,32 @@ Package:
 - Status target: from queued -> in-progress -> disposition-ready
 
 Required reading (read before edits):
-- /workdir/openWEPP/AGENTS.md
-- /workdir/openWEPP/docs/codex_exec_plans.md
-- /workdir/openWEPP/docs/work-packages/README.md
-- /workdir/openWEPP/docs/standards/mechanical-refactor-authoring-guide.md
-- /workdir/openWEPP/docs/work-packages/<id>/package.md
-- <add any contract/ADR files required by this package>
+- Core:
+   - /workdir/openWEPP/AGENTS.md
+   - /workdir/openWEPP/docs/codex_exec_plans.md
+   - /workdir/openWEPP/docs/work-packages/README.md
+   - /workdir/openWEPP/docs/standards/mechanical-refactor-authoring-guide.md
+   - /workdir/openWEPP/docs/work-packages/<id>/package.md
+- Conditional (read only when applicable):
+   - /workdir/openWEPP/docs/defect_closure_execplans.md (if package is defect-closure)
+   - docs/specifications/science-contract-authoring-procedure.md,
+      docs/specifications/science-contracts/kernel-process-contract-profile.md,
+      docs/specifications/science-contracts/index.md
+      (if refactor scope touches contract/kernel authority)
+   - docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md
+      (if legacy migration/parity scope applies)
+- On-demand (load only for touched mechanisms):
+   - <phase-relevant SC-* contracts>
+   - <queue/hold-lift/disposition artifacts>
+   - <baseline source files>
+
+Required-reading budget:
+- local_bytes_total: <value>
+- threshold: <OK|WARN|REQUIRES-JUSTIFICATION>
+- map artifact: artifacts/required-reading-map.md
+- map template (canonical): docs/prompt_templates/required-reading-map-template.md
+- if REQUIRES-JUSTIFICATION: explain why each heavy pre-read cannot be deferred
+   to On-demand.
 
 Write-set (strict):
 - <file path 1>

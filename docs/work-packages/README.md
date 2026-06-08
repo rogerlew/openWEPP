@@ -253,6 +253,20 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - Kickoff prompts must include a `Required reading` list with explicit path
   references to orientation and authority documents so agents do not need to
   independently search onboarding context.
+- Kickoff prompts must tier required-reading as `Core`, `Conditional`, and
+  `On-demand` to preserve authority while minimizing unnecessary pre-read load.
+- `Core` should remain small and stable (global governance + package-local
+  authority). Put large mechanism-specific authorities in `On-demand` unless
+  package scope requires them before edits.
+- Each package should include `artifacts/required-reading-map.md` documenting:
+  path, tier, rationale, applicability trigger, and when it was read.
+- Kickoff prompts should record required-reading budget metrics for local-repo
+  files:
+  - `OK`: `<=400000` bytes
+  - `WARN`: `>400000` bytes
+  - `REQUIRES-JUSTIFICATION`: `>800000` bytes
+- When `REQUIRES-JUSTIFICATION` is reached, author must explain why each heavy
+  pre-read is mandatory and cannot be deferred to `On-demand`.
 - Work-package authoring must reference and follow:
   `docs/codex_exec_plans.md`.
 - Mechanical refactor packages should additionally follow:

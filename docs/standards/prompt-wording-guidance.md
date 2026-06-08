@@ -31,6 +31,30 @@ scope.
 - Add an explicit `Required reading` list before task instructions so agents can
   load orientation context deterministically.
 
+3a. Tier required-reading to reduce context burn
+- Structure required-reading in three tiers:
+  - `Core` (always read before edits),
+  - `Conditional` (read only when package scope triggers it),
+  - `On-demand` (reference set for touched mechanisms only).
+- Keep governance/authority discoverable without requiring pre-read of every
+  large authority document.
+- Require a package-local authority map artifact (`artifacts/required-reading-map.md`)
+  and point to it from the kickoff prompt.
+- Canonical starter template for this artifact:
+  `docs/prompt_templates/required-reading-map-template.md`.
+- For mechanical-only refactor prompts, do not force full science-contract
+  authoring/profile documents as pre-edit reads unless the refactor touches
+  contract/kernel authority.
+
+3b. Record required-reading budget in kickoff prompts
+- Kickoff prompts must record local required-reading byte total and threshold
+  disposition:
+  - `OK`: `<=400000` bytes
+  - `WARN`: `>400000` bytes
+  - `REQUIRES-JUSTIFICATION`: `>800000` bytes
+- For `REQUIRES-JUSTIFICATION`, include a short rationale for each heavy
+  required pre-read and why it cannot move to `On-demand`.
+
 4. Preserve mandatory technical gates in every prompt
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
@@ -55,7 +79,12 @@ scope.
 - `Execution mode: package-end-to-end (default).`
 - `Phase plan: execute all phases in package.md sequentially through`
   `disposition.`
-- `Required reading (read before edits): <explicit path list>.`
+- `Required reading (read before edits):`
+  `Core: <explicit path list>.`
+  `Conditional: <path list + trigger>.`
+  `On-demand: <path list for touched mechanisms only>.`
+- `Required-reading budget: <local_bytes_total>,`
+  `<OK|WARN|REQUIRES-JUSTIFICATION>; map: artifacts/required-reading-map.md.`
 - `Files: <explicit path list>.`
 - `Task: execute package objective end-to-end for declared scope.`
 - `Constraints: contract-first sequencing; canonical SC authority;`

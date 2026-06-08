@@ -83,19 +83,41 @@ requirement, not optional package style guidance.
 - Preserve variable naming continuity with legacy WEPP symbols; when runtime
   names differ, record explicit alias mappings in the relevant `SC-*` files.
 
-5. Require baseline reference set in Dependencies
-- `/workdir/openWEPP/AGENTS.md`
-- `/workdir/openWEPP/docs/codex_exec_plans.md`
-- `docs/work-packages/README.md`
-- `docs/specifications/science-contract-authoring-procedure.md`
-- `docs/specifications/science-contracts/kernel-process-contract-profile.md`
-- `docs/specifications/science-contracts/index.md`
-- Kernel-relevant canonical contracts in
-  `docs/specifications/science-contracts/contracts/SC-*.md`
-- `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
-- `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md` for legacy
-  migration/parity packages
-- Upstream queue/hold-lift/disposition artifacts that authorize the package
+5. Require tiered reference set in Dependencies and prompt required-reading
+- Preserve full dependency traceability in `package.md`, but do not force all
+  dependencies into mandatory pre-edit reading.
+- Author kickoff required-reading in three tiers:
+  - Core (always required before edits):
+    - `/workdir/openWEPP/AGENTS.md`
+    - `/workdir/openWEPP/docs/codex_exec_plans.md`
+    - `docs/work-packages/README.md`
+    - package-local `package.md`
+  - Conditional (required when applicable):
+    - `docs/defect_closure_execplans.md` for defect-closure packages.
+    - `docs/specifications/science-contract-authoring-procedure.md`,
+      `docs/specifications/science-contracts/kernel-process-contract-profile.md`,
+      and `docs/specifications/science-contracts/index.md` when the package
+      edits canonical contracts, changes kernel decision logic, or introduces
+      new/updated invariant authority.
+    - `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md` plus pinned
+      baseline source files for legacy migration/parity packages.
+  - On-demand references (load only for touched mechanisms/surfaces):
+    - Kernel-relevant canonical contracts in
+      `docs/specifications/science-contracts/contracts/SC-*.md`
+    - `docs/decisions/0011-architecture-first-top-down-science-contracts.md`
+    - upstream queue/hold-lift/disposition artifacts.
+- Mechanical-only refactor carve-out:
+  - For behavior-preserving refactor packages with no intended contract or
+    kernel-semantic change, the science-contract authoring procedure/profile
+    and full SC corpus may remain conditional/on-demand (not mandatory pre-edit
+    reads) unless execution discovers an authority-touch condition.
+- Require a package-local authority map artifact:
+  - `artifacts/required-reading-map.md` with path, tier (Core/Conditional/
+    On-demand), rationale, and applicability trigger.
+- Add required-reading budget guardrails (local-repo files only):
+  - `WARN` at `>400000` bytes of mandatory pre-edit reading.
+  - `REQUIRES-JUSTIFICATION` at `>800000` bytes, including why each heavy file
+    must be pre-read and what cannot be deferred to on-demand.
 
 6. Enforce completion gates in the prepared prompt
 - Kickoff prompt must prohibit kernel code edits before contract + test + gate
@@ -117,13 +139,22 @@ requirement, not optional package style guidance.
   steps into a new package.
 - Kickoff prompt must include a `Required reading` section with explicit path
   references so onboarding/orientation does not require independent discovery.
-  At minimum include:
+  Structure this section as `Core`, `Conditional`, and `On-demand` lists.
+- At minimum, `Core` must include:
   - `/workdir/openWEPP/AGENTS.md`
   - `/workdir/openWEPP/docs/codex_exec_plans.md`
-  - `/workdir/openWEPP/docs/defect_closure_execplans.md` for defect-closure packages
   - `/workdir/openWEPP/docs/work-packages/README.md`
   - the package-local `package.md`
-  - `docs/specifications/science-contract-authoring-procedure.md`
-  - `docs/specifications/science-contracts/kernel-process-contract-profile.md`
-  - `docs/specifications/science-contracts/index.md`
-  - all phase-relevant canonical `SC-*` contracts and decision/queue artifacts.
+- `Conditional` must include, when applicable:
+  - `/workdir/openWEPP/docs/defect_closure_execplans.md` for defect-closure
+    packages.
+  - `docs/specifications/science-contract-authoring-procedure.md`,
+    `docs/specifications/science-contracts/kernel-process-contract-profile.md`,
+    and `docs/specifications/science-contracts/index.md` for contract/kernel
+    authority edits.
+- `On-demand` should contain phase-relevant canonical `SC-*` contracts and
+  decision/queue artifacts, loaded only for touched mechanisms.
+- Kickoff prompt must record required-reading budget metrics and disposition:
+  - local bytes total,
+  - `OK`/`WARN`/`REQUIRES-JUSTIFICATION` threshold outcome,
+  - pointer to `artifacts/required-reading-map.md`.
