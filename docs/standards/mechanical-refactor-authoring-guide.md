@@ -21,6 +21,22 @@ For defect closure packages, also follow:
 
 - `docs/defect_closure_execplans.md`
 
+## 1.1 End-to-End Execution Requirement (Required)
+
+Mechanical refactor packages are end-to-end executions, not partial edit
+sessions.
+
+Required posture:
+
+1. Continue from intake through code movement, validation, artifact updates,
+   review/verification readiness, and disposition readiness in one run.
+2. Do not stop after source edits while required gates remain unrun.
+3. If a gate fails, attempt a mechanical-only correction and rerun gates.
+4. Stop only at a declared hard blocker, and record exact command output,
+   file/symbol context, and first actionable follow-up.
+5. Package closure or handoff must be blocker-shaped, never an open-ended
+   "continue investigation" note for in-scope work.
+
 ## 2) What counts as a mechanical refactor
 
 A package is mechanical when all of the following are true:
@@ -148,6 +164,13 @@ Before package disposition, run and record:
 3. `cargo test --workspace`
 4. `cargo deny check`
 
+Completion rule:
+
+1. All closure gates above must be executed and recorded before marking the
+   package disposition-ready.
+2. Partial gate completion is insufficient unless a declared hard blocker is
+   documented with evidence.
+
 Evidence artifacts must label execution truthfully (`Static` vs `Ran`) and
 must not imply commands were run when they were only reasoned about.
 
@@ -217,3 +240,6 @@ A mechanical refactor package is complete only when:
 4. `.rs` line-count governance is dispositioned.
 5. Review findings are fully dispositioned.
 6. No unresolved invariant or contract violations are left undispositioned.
+7. End-to-end completion is demonstrated: code movement, full closure gates,
+   artifact updates, and disposition-ready review/verification surfaces are all
+   complete (or blocker-documented under declared stop conditions).

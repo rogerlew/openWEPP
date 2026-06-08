@@ -451,7 +451,7 @@ use super::*;
         )
         .expect("fixture pmetpara should parse");
 
-        let surface = build_hillslope_runtime_surface_from_pmetpara(
+        let surface = crate::hillslope::intake_lane_setup::build_hillslope_runtime_surface_from_pmetpara(
             &management,
             &mut pmetpara,
             SidecarPolicy::Compat.as_pmetpara_parse_mode(),

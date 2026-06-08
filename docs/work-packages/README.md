@@ -2189,6 +2189,18 @@ Authorized packages:
     `openwepp-runner/src/hillslope/03_tests.rs`, splitting the monolithic
     runner test surface into cohesive modules while preserving guard coverage,
     contract assertion intent, and `.rs` line-count governance.
+- `20260607-refactor009-openwepp-runner-hillslope-00-runner-intake-and-lane-setup-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR009 by mechanically modularizing
+    `openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`,
+    splitting intake/lane-setup concerns into cohesive modules while
+    preserving runtime/API behavior, typed guards, and `.rs` line-count
+    governance.
+- `20260607-refactor010-openwepp-hillslope-orchestrator-tests-mechanical-modularization-001/`
+  - Purpose: execute REFACTOR010 by mechanically modularizing
+    `openwepp-hillslope-orchestrator/src/tests.rs`, splitting the
+    monolithic orchestrator test surface into cohesive modules while
+    preserving guard coverage, contract assertion intent, and `.rs`
+    line-count governance.
 - `20260523-wb14-infiltration-and-subdaily-hyetograph-kernel-001/`
   - Purpose: implement production infiltration kernel authority and within-day
     hyetograph integration with contract-first sequencing (contract amendments,

@@ -735,14 +735,14 @@ pub fn execute_hillslope_run(
         }
     })?;
 
-    let run_file_path = resolve_run_file(&request.run_dir, &request.run_file);
+    let run_file_path = crate::hillslope::intake_lane_setup::resolve_run_file(&request.run_dir, &request.run_file);
     if !run_file_path.is_file() {
         return Err(HillslopeCliError::RunFileMissing {
             path: run_file_path,
         });
     }
 
-    let runfile = parse_runfile_execution_config(&run_file_path, request.legacy_sidecar_discovery)?;
+    let runfile = crate::hillslope::intake_lane_setup::parse_runfile_execution_config(&run_file_path, request.legacy_sidecar_discovery)?;
 
     let soil_path = runfile.soil_path.clone();
     let management_path = runfile.management_path.clone();
@@ -787,7 +787,7 @@ pub fn execute_hillslope_run(
             surface: "soil",
             detail: error.to_string(),
         })?;
-    validate_hillslope_ofe_topology_parity(slope.ofe_count, management.topology_count, soil.ntemp)?;
+    crate::hillslope::intake_lane_setup::validate_hillslope_ofe_topology_parity(slope.ofe_count, management.topology_count, soil.ntemp)?;
 
     let climate = parse_climate_file(
         &climate_path,
@@ -830,9 +830,9 @@ pub fn execute_hillslope_run(
                 .filter(|name| !name.is_empty()),
         );
 
-        let discovered_sidecars = discover_sidecars(&request.run_dir, &excluded_files)?;
+        let discovered_sidecars = crate::hillslope::intake_lane_setup::discover_sidecars(&request.run_dir, &excluded_files)?;
 
-        let sidecar_contracts = hillslope_sidecar_contracts(true)?;
+        let sidecar_contracts = crate::hillslope::intake_lane_setup::hillslope_sidecar_contracts(true)?;
         let sidecar_response = adapt_sidecar_bindings(&SidecarAdapterRequest {
             policy: request.sidecar_policy.as_legacy_bridge_policy(),
             contracts: sidecar_contracts,
@@ -852,13 +852,13 @@ pub fn execute_hillslope_run(
             .map(|warning| format!("{} {}", warning.code.message_id(), warning.detail))
             .collect();
 
-        let snow_path = optional_sidecar_binding_path(&sidecar_response.bindings, "snow")
+        let snow_path = crate::hillslope::intake_lane_setup::optional_sidecar_binding_path(&sidecar_response.bindings, "snow")
             .unwrap_or_else(|| request.run_dir.join("snow.txt"));
-        let frost_path = optional_sidecar_binding_path(&sidecar_response.bindings, "frost")
+        let frost_path = crate::hillslope::intake_lane_setup::optional_sidecar_binding_path(&sidecar_response.bindings, "frost")
             .unwrap_or_else(|| request.run_dir.join("frost.txt"));
-        let wepp_ui_path = optional_sidecar_binding_path(&sidecar_response.bindings, "wepp_ui")
+        let wepp_ui_path = crate::hillslope::intake_lane_setup::optional_sidecar_binding_path(&sidecar_response.bindings, "wepp_ui")
             .unwrap_or_else(|| request.run_dir.join("wepp_ui.txt"));
-        let pmetpara_path = optional_sidecar_binding_path(&sidecar_response.bindings, "pmetpara")
+        let pmetpara_path = crate::hillslope::intake_lane_setup::optional_sidecar_binding_path(&sidecar_response.bindings, "pmetpara")
             .unwrap_or_else(|| request.run_dir.join("pmetpara.txt"));
 
         if snow_path.is_file() {
@@ -925,7 +925,7 @@ pub fn execute_hillslope_run(
         (
             snow,
             frost,
-            build_mode_selection_provenance(&wepp_ui)?,
+            crate::hillslope::intake_lane_setup::build_mode_selection_provenance(&wepp_ui)?,
             pmetpara,
         )
     } else {
@@ -1015,12 +1015,12 @@ pub fn execute_hillslope_run(
                 .is_file()
                 .then_some(default_pmetpara_path)
         });
-        let pmetpara = if let Some(pmetpara_path) = pmetpara_path {
-            pmetpara_input_path = Some(pmetpara_path.clone());
+        let pmetpara = if let Some(pmetpara_path) = pmetpara_path.as_ref() {
+            pmetpara_input_path = Some(pmetpara_path.to_owned());
             resolved_sidecars.insert("pmetpara".to_string(), pmetpara_path.display().to_string());
 
             parse_pmetpara_file(
-                &pmetpara_path,
+                pmetpara_path,
                 PmetparaParseOptions {
                     mode: request.sidecar_policy.as_pmetpara_parse_mode(),
                     require_sidecar: true,
@@ -1031,13 +1031,13 @@ pub fn execute_hillslope_run(
                 detail: error.to_string(),
             })?
         } else {
-            absent_pmetpara_file()
+            crate::hillslope::intake_lane_setup::absent_pmetpara_file()
         };
 
         (
             snow,
             frost,
-            build_mode_selection_provenance(&wepp_ui)?,
+            crate::hillslope::intake_lane_setup::build_mode_selection_provenance(&wepp_ui)?,
             pmetpara,
         )
     };
@@ -1066,7 +1066,7 @@ pub fn execute_hillslope_run(
                 detail: error.to_string(),
             }
         })?;
-    let pmetpara_surface = build_hillslope_runtime_surface_from_pmetpara(
+    let pmetpara_surface = crate::hillslope::intake_lane_setup::build_hillslope_runtime_surface_from_pmetpara(
         &management,
         &mut pmetpara,
         request.sidecar_policy.as_pmetpara_parse_mode(),
@@ -1084,13 +1084,13 @@ pub fn execute_hillslope_run(
         }
     })?;
 
-    let static_runtime_surface = merge_runtime_surfaces(
-        merge_runtime_surfaces(
-            merge_runtime_surfaces(management_surface, soil_surface),
+    let static_runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+        crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+            crate::hillslope::intake_lane_setup::merge_runtime_surfaces(management_surface, soil_surface),
             slope_surface,
         ),
-        merge_runtime_surfaces(
-            merge_runtime_surfaces(snow_surface, frost_surface),
+        crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+            crate::hillslope::intake_lane_setup::merge_runtime_surfaces(snow_surface, frost_surface),
             pmetpara_surface,
         ),
     );
@@ -1101,9 +1101,9 @@ pub fn execute_hillslope_run(
         });
     }
 
-    let lane_context = build_execution_lane_context(&wepp_ui_mode_selection)?;
-    let timestep_policy = build_timestep_policy_provenance(&lane_context);
-    let adapter_boundary = build_adapter_boundary_provenance(&lane_context)?;
+    let lane_context = crate::hillslope::intake_lane_setup::build_execution_lane_context(&wepp_ui_mode_selection)?;
+    let timestep_policy = crate::hillslope::intake_lane_setup::build_timestep_policy_provenance(&lane_context);
+    let adapter_boundary = crate::hillslope::intake_lane_setup::build_adapter_boundary_provenance(&lane_context)?;
     let climate_span = build_climate_run_span_summary(&climate)?;
     let climate_request = build_hillslope_climate_runtime_request(&climate).map_err(|error| {
         HillslopeCliError::RuntimeSurfaceFailure {
@@ -1141,7 +1141,7 @@ pub fn execute_hillslope_run(
         }
         previous_climate_symbols.clear();
         previous_climate_symbols.extend(climate_surface.state_surface.keys().cloned());
-        runtime_surface = merge_runtime_surfaces(runtime_surface, climate_surface);
+        runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(runtime_surface, climate_surface);
 
         let simulation_year =
             simulation_year_from_calendar_year(day_projection.year, climate_span.first_day.year)?;
@@ -1250,7 +1250,7 @@ pub fn execute_hillslope_run(
         .chain(std::iter::once(&output_loss))
         .chain(optional_outputs.iter())
     {
-        ensure_output_parent_directory(path)?;
+        crate::hillslope::intake_lane_setup::ensure_output_parent_directory(path)?;
     }
 
     fs::write(&output_pass, pass_bytes).map_err(|source| HillslopeCliError::OutputWrite {
@@ -1314,7 +1314,7 @@ pub fn execute_hillslope_run(
         utc_now_rfc3339().map_err(|detail| HillslopeCliError::TimeFormat { detail })?;
 
     let mut input_checksums = BTreeMap::new();
-    let mut input_paths = vec![
+    let mut input_paths: Vec<&Path> = vec![
         run_file_path.as_path(),
         soil_path.as_path(),
         management_path.as_path(),
@@ -1420,1114 +1420,5 @@ pub fn execute_hillslope_run(
         optional_outputs,
         manifest_path,
         sidecar_warnings,
-    })
-}
-
-fn resolve_run_file(run_dir: &Path, run_file: &Path) -> PathBuf {
-    if run_file.is_absolute() {
-        run_file.to_path_buf()
-    } else {
-        run_dir.join(run_file)
-    }
-}
-#[allow(clippy::too_many_lines)]
-fn parse_runfile_execution_config(
-    run_file_path: &Path,
-    legacy_sidecar_discovery: bool,
-) -> Result<RunfileExecutionConfig, HillslopeCliError> {
-    let payload = fs::read_to_string(run_file_path).map_err(|source| HillslopeCliError::Io {
-        path: run_file_path.to_path_buf(),
-        source,
-    })?;
-
-    let runfile: HillslopeRunfileDocument =
-        toml::from_str(&payload).map_err(|error| HillslopeCliError::ParseFailure {
-            surface: "run_file",
-            detail: format!("invalid TOML in {}: {error}", run_file_path.display()),
-        })?;
-
-    if runfile.schema != HILLSLOPE_RUNFILE_SCHEMA_ID {
-        return Err(HillslopeCliError::ParseFailure {
-            surface: "run_file",
-            detail: format!(
-                "unsupported schema '{}' (expected '{}')",
-                runfile.schema, HILLSLOPE_RUNFILE_SCHEMA_ID
-            ),
-        });
-    }
-
-    if runfile.run_name.trim().is_empty() {
-        return Err(HillslopeCliError::ParseFailure {
-            surface: "run_file",
-            detail: "missing required non-empty run_name".to_string(),
-        });
-    }
-
-    if runfile.unit_system.trim() != "metric" {
-        return Err(HillslopeCliError::ParseFailure {
-            surface: "run_file",
-            detail: format!(
-                "unsupported unit_system '{}' (expected 'metric')",
-                runfile.unit_system
-            ),
-        });
-    }
-
-    let soil_path =
-        resolve_required_runfile_path(run_file_path, &runfile.inputs.soil, "inputs.soil")?;
-    let management_path = resolve_required_runfile_path(
-        run_file_path,
-        &runfile.inputs.management,
-        "inputs.management",
-    )?;
-    let slope_path =
-        resolve_required_runfile_path(run_file_path, &runfile.inputs.slope, "inputs.slope")?;
-    let climate_path =
-        resolve_required_runfile_path(run_file_path, &runfile.inputs.climate, "inputs.climate")?;
-
-    for (field, path) in [
-        ("inputs.soil", &soil_path),
-        ("inputs.management", &management_path),
-        ("inputs.slope", &slope_path),
-        ("inputs.climate", &climate_path),
-    ] {
-        if !path.is_file() {
-            return Err(HillslopeCliError::ParseFailure {
-                surface: "run_file",
-                detail: format!(
-                    "required {field} path '{}' is not a readable file",
-                    path.display()
-                ),
-            });
-        }
-    }
-
-    let output_config = HillslopeOutputConfig {
-        pass: resolve_required_runfile_path(run_file_path, &runfile.outputs.pass, "outputs.pass")?,
-        loss: resolve_required_runfile_path(run_file_path, &runfile.outputs.loss, "outputs.loss")?,
-        wat: resolve_optional_runfile_path(
-            run_file_path,
-            runfile.outputs.wat.as_deref(),
-            "outputs.wat",
-        )?,
-        soil: resolve_optional_runfile_path(
-            run_file_path,
-            runfile.outputs.soil.as_deref(),
-            "outputs.soil",
-        )?,
-        plot: resolve_optional_runfile_path(
-            run_file_path,
-            runfile.outputs.plot.as_deref(),
-            "outputs.plot",
-        )?,
-        ebe: resolve_optional_runfile_path(
-            run_file_path,
-            runfile.outputs.ebe.as_deref(),
-            "outputs.ebe",
-        )?,
-        element: resolve_optional_runfile_path(
-            run_file_path,
-            runfile.outputs.element.as_deref(),
-            "outputs.element",
-        )?,
-    };
-    validate_output_contract(&output_config).map_err(|error| HillslopeCliError::ParseFailure {
-        surface: "run_file",
-        detail: error.to_string(),
-    })?;
-
-    let pmetpara_path = resolve_optional_runfile_path(
-        run_file_path,
-        runfile.inputs.pmetpara.as_deref(),
-        "inputs.pmetpara",
-    )?;
-    if !legacy_sidecar_discovery
-        && let Some(path) = pmetpara_path.as_ref()
-        && !path.is_file()
-    {
-        return Err(HillslopeCliError::ParseFailure {
-            surface: "run_file",
-            detail: format!(
-                "optional inputs.pmetpara path '{}' is not a readable file",
-                path.display()
-            ),
-        });
-    }
-
-    Ok(RunfileExecutionConfig {
-        run_name: runfile.run_name,
-        soil_path,
-        management_path,
-        slope_path,
-        climate_path,
-        output_config,
-        sidecar_overrides: RunfileSidecarOverrides {
-            wepp_ui: runfile.inputs.wepp_ui,
-            pmetpara_path,
-            snow: runfile.inputs.snow,
-            frost: runfile.inputs.frost,
-        },
-    })
-}
-
-fn resolve_runfile_relative_path(run_file_path: &Path, candidate: &str) -> PathBuf {
-    let candidate_path = PathBuf::from(candidate);
-    if candidate_path.is_absolute() {
-        candidate_path
-    } else {
-        run_file_path
-            .parent()
-            .unwrap_or_else(|| Path::new("."))
-            .join(candidate_path)
-    }
-}
-
-fn resolve_required_runfile_path(
-    run_file_path: &Path,
-    candidate: &str,
-    field: &'static str,
-) -> Result<PathBuf, HillslopeCliError> {
-    let trimmed = candidate.trim();
-    if trimmed.is_empty() {
-        return Err(HillslopeCliError::ParseFailure {
-            surface: "run_file",
-            detail: format!("missing required non-empty {field}"),
-        });
-    }
-
-    Ok(resolve_runfile_relative_path(run_file_path, trimmed))
-}
-
-fn resolve_optional_runfile_path(
-    run_file_path: &Path,
-    candidate: Option<&str>,
-    field: &'static str,
-) -> Result<Option<PathBuf>, HillslopeCliError> {
-    candidate.map_or(Ok(None), |value| {
-        let trimmed = value.trim();
-        if trimmed.is_empty() {
-            Err(HillslopeCliError::ParseFailure {
-                surface: "run_file",
-                detail: format!("{field} cannot be an empty string"),
-            })
-        } else {
-            Ok(Some(resolve_runfile_relative_path(run_file_path, trimmed)))
-        }
-    })
-}
-
-fn ensure_output_parent_directory(path: &Path) -> Result<(), HillslopeCliError> {
-    let Some(parent) = path.parent() else {
-        return Ok(());
-    };
-    fs::create_dir_all(parent).map_err(|source| HillslopeCliError::OutputDirectoryCreate {
-        path: parent.to_path_buf(),
-        source,
-    })
-}
-
-fn discover_sidecars(
-    run_dir: &Path,
-    excluded_file_names: &[String],
-) -> Result<Vec<SidecarDiscovery>, HillslopeCliError> {
-    let mut discoveries = Vec::new();
-    let entries = fs::read_dir(run_dir).map_err(|source| HillslopeCliError::Io {
-        path: run_dir.to_path_buf(),
-        source,
-    })?;
-
-    for entry_result in entries {
-        let entry = entry_result.map_err(|source| HillslopeCliError::Io {
-            path: run_dir.to_path_buf(),
-            source,
-        })?;
-        let path = entry.path();
-        if !path.is_file() {
-            continue;
-        }
-
-        let file_name = file_name_string(&path);
-        if excluded_file_names
-            .iter()
-            .any(|excluded| excluded == &file_name)
-        {
-            continue;
-        }
-        if path_has_extension_case_insensitive(&path, "hbp") {
-            continue;
-        }
-
-        discoveries.push(SidecarDiscovery::new(file_name, path));
-    }
-
-    discoveries.sort_by(|left, right| left.file_name.cmp(&right.file_name));
-    Ok(discoveries)
-}
-
-fn hillslope_sidecar_contracts(
-    legacy_optional_core_sidecars: bool,
-) -> Result<Vec<SidecarContract>, HillslopeCliError> {
-    let core_sidecars = [
-        ("frost", "frost.txt"),
-        ("snow", "snow.txt"),
-        ("wepp_ui", "wepp_ui.txt"),
-        ("pmetpara", "pmetpara.txt"),
-    ];
-
-    let optional = [
-        ("irrigation_depletion", "irrigation_depletion.txt"),
-        ("irrigation_fixeddate", "irrigation_fixeddate.ifd"),
-        ("gwcoeff", "gwcoeff.txt"),
-        ("phosphorus", "phosphorus.txt"),
-        ("tc", "tc.txt"),
-        ("tcr", "tcr.txt"),
-        ("lcwb", "lcwb.txt"),
-        ("chaninp", "chan.inp"),
-    ];
-
-    let mut contracts = Vec::new();
-    for (id, file_name) in core_sidecars {
-        let requirement = if legacy_optional_core_sidecars {
-            SidecarRequirement::Optional
-        } else {
-            SidecarRequirement::Required
-        };
-        contracts.push(build_sidecar_contract(id, file_name, requirement)?);
-    }
-    for (id, file_name) in optional {
-        contracts.push(build_sidecar_contract(
-            id,
-            file_name,
-            SidecarRequirement::Optional,
-        )?);
-    }
-
-    Ok(contracts)
-}
-
-fn build_sidecar_contract(
-    id: &'static str,
-    file_name: &'static str,
-    requirement: SidecarRequirement,
-) -> Result<SidecarContract, HillslopeCliError> {
-    let sidecar_id =
-        SidecarId::new(id).map_err(|error| HillslopeCliError::SidecarContractInvalid {
-            detail: error.to_string(),
-        })?;
-
-    Ok(SidecarContract::new(
-        sidecar_id,
-        file_name,
-        Vec::new(),
-        requirement,
-    ))
-}
-
-fn optional_sidecar_binding_path(
-    bindings: &[SidecarBinding],
-    sidecar_id: &'static str,
-) -> Option<PathBuf> {
-    bindings
-        .iter()
-        .find(|binding| binding.sidecar_id.as_str() == sidecar_id)
-        .map(|binding| binding.resolved_path.clone())
-}
-
-fn merge_runtime_surfaces(
-    mut base: HillslopeWritebackSurface,
-    overlay: HillslopeWritebackSurface,
-) -> HillslopeWritebackSurface {
-    base.state_surface.extend(overlay.state_surface);
-    base.flux_surface.extend(overlay.flux_surface);
-    base
-}
-
-fn absent_pmetpara_file() -> PmetparaFile {
-    PmetparaFile {
-        sidecar_present: false,
-        iflget: 1,
-        record_count: 0,
-        line_count_closed: true,
-        records: Vec::new(),
-        warnings: Vec::new(),
-        lookup: PmetLookupState {
-            fallback_first_row_used: false,
-        },
-    }
-}
-
-fn build_hillslope_runtime_surface_from_pmetpara(
-    management: &ManagementParseOutput,
-    pmetpara: &mut PmetparaFile,
-    mode: PmetparaParseMode,
-) -> Result<HillslopeWritebackSurface, HillslopeCliError> {
-    let mut surface = HillslopeWritebackSurface::default();
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.mode.sidecar_present"),
-        BoundaryValue::scalar(if pmetpara.sidecar_present { 1.0 } else { 0.0 }),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.mode.iflget"),
-        BoundaryValue::scalar(f64::from(pmetpara.iflget)),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.record_count"),
-        BoundaryValue::scalar(usize_to_scalar(
-            "pmetpara.record_count",
-            pmetpara.record_count,
-        )?),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.line_count_closed"),
-        BoundaryValue::scalar(if pmetpara.line_count_closed { 1.0 } else { 0.0 }),
-    );
-
-    if !pmetpara.sidecar_present {
-        return Ok(surface);
-    }
-
-    let active_crop_name = active_management_crop_name(management)?;
-    let (kcb, rawp, line_index) = {
-        let record = pmetpara
-            .lookup_record(active_crop_name, mode)
-            .map_err(|error| HillslopeCliError::ParseFailure {
-                surface: "pmetpara",
-                detail: error.to_string(),
-            })?;
-        (record.kcb, record.rawp, record.line_index)
-    };
-
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.selected.kcb"),
-        BoundaryValue::scalar(kcb),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.selected.rawp"),
-        BoundaryValue::scalar(rawp),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.selected.line_index"),
-        BoundaryValue::scalar(f64::from(line_index)),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("pmetpara.lookup.fallback_first_row_used"),
-        BoundaryValue::scalar(if pmetpara.lookup.fallback_first_row_used {
-            1.0
-        } else {
-            0.0
-        }),
-    );
-
-    Ok(surface)
-}
-
-fn active_management_crop_name(
-    management: &ManagementParseOutput,
-) -> Result<&str, HillslopeCliError> {
-    let first_slot = management.schedule.slots.first().ok_or_else(|| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "pmetpara",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} management schedule has no slot for PMET crop lookup"
-            ),
-        }
-    })?;
-    let yearly_ref = first_slot.yearly_refs.first().copied().ok_or_else(|| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "pmetpara",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} management schedule slot has no yearly ref for PMET crop lookup"
-            ),
-        }
-    })?;
-    if yearly_ref == 0 || yearly_ref > management.registries.yearlies.len() {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "pmetpara",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} yearly ref {yearly_ref} out of range for PMET crop lookup"
-            ),
-        });
-    }
-
-    let yearly = &management.registries.yearlies[yearly_ref - 1];
-    let YearlyScenarioData::Cropland(cropland) = &yearly.data;
-    if cropland.itype == 0 || cropland.itype > management.registries.plants.len() {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "pmetpara",
-            detail: format!(
-                "{SIMPIPE_GUARD_ID} plant ref {} out of range for PMET crop lookup",
-                cropland.itype
-            ),
-        });
-    }
-
-    Ok(management.registries.plants[cropland.itype - 1]
-        .meta
-        .name
-        .as_str())
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Wb11EtDemandSeed {
-    demand_m: f64,
-    branch_evappm: bool,
-    diagnostics: Option<EvappmDemandDiagnostics>,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct EvappmDemandDiagnostics {
-    etorc_mm: f64,
-    rn_mj_m2: f64,
-    fwv_m_s: f64,
-    rhd_pct: f64,
-    kcbadj: f64,
-    kcbcon: f64,
-    etke: f64,
-    etkr: f64,
-    etks: f64,
-    tew_mm: f64,
-    rew_mm: f64,
-    wfevp_mm: f64,
-    taw_mm: f64,
-    raw_mm: f64,
-    wftrp_mm: f64,
-    es_m: f64,
-    es_storage_return_m: f64,
-    ep_m: f64,
-}
-
-fn wb11_seed_failure(detail: impl Into<String>) -> HillslopeCliError {
-    HillslopeCliError::RuntimeSurfaceFailure {
-        surface: "wb11_seed",
-        detail: format!("{SIMPIPE_GUARD_ID} {}", detail.into()),
-    }
-}
-
-fn compute_wb11_et_demand_seed(
-    runtime_surface: &HillslopeWritebackSurface,
-) -> Result<Wb11EtDemandSeed, HillslopeCliError> {
-    let iflget =
-        runtime_surface_symbol_value(runtime_surface, "pmetpara.mode.iflget").unwrap_or(1.0);
-    if !iflget.is_finite() {
-        return Err(wb11_seed_failure(format!(
-            "pmetpara.mode.iflget must be finite when present, observed {iflget}"
-        )));
-    }
-    if (iflget - 1.0).abs() <= 1.0e-12 {
-        return compute_priestley_taylor_wb11_et_demand(runtime_surface);
-    }
-    compute_evappm_wb11_et_demand(runtime_surface)
-}
-
-fn compute_priestley_taylor_wb11_et_demand(
-    runtime_surface: &HillslopeWritebackSurface,
-) -> Result<Wb11EtDemandSeed, HillslopeCliError> {
-    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
-    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
-    let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
-    if rad < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "rad must be >= 0.0, observed {rad}"
-        )));
-    }
-    let salb = require_runtime_surface_scalar(runtime_surface, "salb")?;
-    if !(0.0..=1.0).contains(&salb) {
-        return Err(wb11_seed_failure(format!(
-            "salb must be within [0,1], observed {salb}"
-        )));
-    }
-    let cancov = require_runtime_surface_scalar(runtime_surface, "cancov")?;
-    if cancov < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "cancov must be >= 0.0, observed {cancov}"
-        )));
-    }
-    let lai = require_runtime_surface_scalar(runtime_surface, "lai")?;
-    if lai < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "lai must be >= 0.0, observed {lai}"
-        )));
-    }
-
-    let tave = 0.5 * (tmax + tmin);
-    let tk = tave + 273.0;
-    if tk <= 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "derived tk must be > 0.0, observed {tk}"
-        )));
-    }
-    let delta = (21.255 - 5304.0 / tk).exp() * 5304.0 / (tk * tk);
-    let gamma = delta / (delta + 0.68);
-    let eaj = (-0.5 * (cancov + 0.1)).exp();
-    let alb = if lai > 0.0 {
-        0.23 * (1.0 - eaj) + salb * eaj
-    } else {
-        salb
-    };
-    let demand_m = (0.00128 * ((rad * (1.0 - alb)) / 58.3) * gamma).max(0.0);
-    if !demand_m.is_finite() {
-        return Err(wb11_seed_failure(format!(
-            "derived wb11_et_demand is non-finite ({demand_m})"
-        )));
-    }
-
-    Ok(Wb11EtDemandSeed {
-        demand_m,
-        branch_evappm: false,
-        diagnostics: None,
-    })
-}
-
-#[allow(clippy::manual_midpoint, clippy::similar_names, clippy::too_many_lines)]
-fn compute_evappm_wb11_et_demand(
-    runtime_surface: &HillslopeWritebackSurface,
-) -> Result<Wb11EtDemandSeed, HillslopeCliError> {
-    let tmax = require_runtime_surface_scalar(runtime_surface, "tmax")?;
-    let tmin = require_runtime_surface_scalar(runtime_surface, "tmin")?;
-    let tdpt = require_runtime_surface_scalar(runtime_surface, "tdpt")?;
-    let rad = require_runtime_surface_scalar(runtime_surface, "rad")?;
-    if rad < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "rad must be >= 0.0, observed {rad}"
-        )));
-    }
-    let radpot = evappm_radpot_ly(runtime_surface)?;
-    if radpot <= 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "radpot must be > 0.0 for EVAPPM demand, observed {radpot}"
-        )));
-    }
-    let vwind = require_runtime_surface_scalar(runtime_surface, "vwind")?;
-    if vwind < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "vwind must be >= 0.0 for EVAPPM demand, observed {vwind}"
-        )));
-    }
-    let elevm = require_runtime_surface_scalar(runtime_surface, "elevm")?;
-    if elevm >= 45_076.923_076_923_08 {
-        return Err(wb11_seed_failure(format!(
-            "elevm keeps legacy pressure base positive, observed {elevm}"
-        )));
-    }
-    let kcb = require_runtime_surface_scalar(runtime_surface, "pmetpara.selected.kcb")?;
-    let rawp = require_runtime_surface_scalar(runtime_surface, "pmetpara.selected.rawp")?;
-    let lai = require_runtime_surface_scalar(runtime_surface, "lai")?;
-    if lai < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "lai must be >= 0.0, observed {lai}"
-        )));
-    }
-    let canhgt = require_runtime_surface_scalar(runtime_surface, "canhgt")?;
-    if canhgt < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "canhgt must be >= 0.0, observed {canhgt}"
-        )));
-    }
-    let rtd = require_runtime_surface_scalar(runtime_surface, "rtd")?;
-    if rtd < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "rtd must be >= 0.0, observed {rtd}"
-        )));
-    }
-    let cancov = require_runtime_surface_scalar(runtime_surface, "cancov")?;
-    if cancov < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "cancov must be >= 0.0, observed {cancov}"
-        )));
-    }
-    let residue_interception =
-        require_runtime_surface_scalar(runtime_surface, "wb17_residue_interception")?;
-    if residue_interception < 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "wb17_residue_interception must be >= 0.0, observed {residue_interception}"
-        )));
-    }
-
-    let tave = 0.5 * (tmax + tmin);
-    let ed = saturation_vapor_pressure_kpa(tdpt);
-    let emaxt = saturation_vapor_pressure_kpa(tmax);
-    let emint = saturation_vapor_pressure_kpa(tmin);
-    let ee = 0.5 * (emaxt + emint);
-    if emaxt <= 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "derived emaxt must be > 0.0 for EVAPPM demand, observed {emaxt}"
-        )));
-    }
-    let ra = rad / 23.9;
-    let rso = radpot / 23.9;
-    if rso <= 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "derived rso must be > 0.0 for EVAPPM demand, observed {rso}"
-        )));
-    }
-    let rbo = (0.34 - 0.14 * ed.sqrt())
-        * 4.9e-9
-        * (((tmax + 273.2).powi(4) + (tmin + 273.2).powi(4)) / 2.0)
-        * (1.35 * (ra / rso) - 0.35);
-    let rn_mj_m2 = ra * 0.77 - rbo;
-    let fwv_m_s = vwind * 4.87 / (67.8_f64.mul_add(10.0, -5.42)).ln();
-    let dlt = 4098.0 / ((tave + 237.3) * (tave + 237.3)) * saturation_vapor_pressure_kpa(tave);
-    let pressure_base = 1.0 - 0.0065 * elevm / 293.0;
-    if pressure_base <= 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "legacy pressure base must be > 0.0 for EVAPPM demand, observed {pressure_base}"
-        )));
-    }
-    let pb = 101.3 * pressure_base.powf(5.26);
-    let gma = 0.000_665 * pb;
-    let denominator = dlt + gma * (1.0 + 0.34 * fwv_m_s);
-    if denominator <= 0.0 {
-        return Err(wb11_seed_failure(format!(
-            "EVAPPM etorc denominator must be > 0.0, observed {denominator}"
-        )));
-    }
-    let etorc_mm = (0.408 * dlt * rn_mj_m2 + gma * (900.0 / (tave + 273.0)) * (ee - ed) * fwv_m_s)
-        / denominator;
-    let rhd_pct = ed / emaxt * 100.0;
-    let height_factor = (canhgt / 3.0).powf(0.3);
-    let kcbadj = if lai > 0.0 && rtd > 0.0 {
-        kcb + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor
-    } else {
-        0.0
-    };
-    let kcbcon = kcbadj * (1.0 - (-0.45 * lai).exp());
-    let etke = if kcbadj > 0.0 {
-        kcbadj * (-0.45 * lai).exp()
-    } else {
-        1.2
-    };
-
-    let nsl = scalar_to_usize(
-        "wb11_nsl",
-        runtime_surface_symbol_value(runtime_surface, "wb11_nsl")
-            .or_else(|| runtime_surface_symbol_value(runtime_surface, "nsl"))
-            .ok_or_else(|| wb11_seed_failure("missing required runtime symbol wb11_nsl/nsl"))?,
-    )?;
-    let mut profile_depth_m = 0.0_f64;
-    for layer_index in 1..=nsl {
-        profile_depth_m += require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_dg")?;
-    }
-    if profile_depth_m <= 0.0 {
-        return Err(wb11_seed_failure(
-            "soil profile depth must be > 0.0 for EVAPPM demand",
-        ));
-    }
-
-    let epdp_m = 0.1_f64.min(profile_depth_m);
-    let mut tew_mm = 0.0_f64;
-    let mut rew_mm = 0.0_f64;
-    let mut wfevp_mm = 0.0_f64;
-    let mut cumulative_depth_m = 0.0_f64;
-    for layer_index in 1..=nsl {
-        let dg = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_dg")?;
-        let solthk = runtime_surface_symbol_value(
-            runtime_surface,
-            format!("wb19_solthk_{layer_index:04}").as_str(),
-        )
-        .unwrap_or(cumulative_depth_m + dg);
-        if solthk <= cumulative_depth_m {
-            return Err(wb11_seed_failure(format!(
-                "wb19_solthk_{layer_index:04} must increase with depth for EVAPPM demand"
-            )));
-        }
-        let thetfc = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetfc")?;
-        let thetdr = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetdr")?;
-        let theta_store =
-            require_evappm_layer_scalar(runtime_surface, layer_index, "wb18_perc_theta")?;
-        if thetdr > thetfc {
-            return Err(wb11_seed_failure(format!(
-                "wb19_thetdr_{layer_index:04} must be <= wb19_thetfc_{layer_index:04}"
-            )));
-        }
-        let layer_bottom_m = solthk;
-        let layer_fraction = if layer_bottom_m <= epdp_m {
-            1.0
-        } else if cumulative_depth_m < epdp_m {
-            (epdp_m - cumulative_depth_m) / (layer_bottom_m - cumulative_depth_m)
-        } else {
-            0.0
-        };
-        if layer_fraction > 0.0 {
-            tew_mm += (thetfc - 0.5 * thetdr) * dg * 1_000.0 * layer_fraction;
-            rew_mm += (thetfc - thetdr) * dg * 1_000.0 / 3.0 * layer_fraction;
-            wfevp_mm += theta_store * 1_000.0 * layer_fraction;
-        }
-        cumulative_depth_m = layer_bottom_m;
-        if cumulative_depth_m >= epdp_m {
-            break;
-        }
-    }
-    let wfevp_mm = wfevp_mm + residue_interception * 1_000.0;
-    let etkr = if (tew_mm - wfevp_mm) <= rew_mm {
-        1.0
-    } else {
-        let denominator = tew_mm - rew_mm;
-        if denominator <= 0.0 {
-            1.0
-        } else {
-            (wfevp_mm / denominator).powi(2)
-        }
-    };
-
-    let tpdp_m = rtd.min(profile_depth_m);
-    let mut taw_mm = 0.0_f64;
-    let mut wftrp_mm = 0.0_f64;
-    let mut cumulative_depth_m = 0.0_f64;
-    for layer_index in 1..=nsl {
-        let dg = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_dg")?;
-        let solthk = runtime_surface_symbol_value(
-            runtime_surface,
-            format!("wb19_solthk_{layer_index:04}").as_str(),
-        )
-        .unwrap_or(cumulative_depth_m + dg);
-        let thetfc = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetfc")?;
-        let thetdr = require_evappm_layer_scalar(runtime_surface, layer_index, "wb19_thetdr")?;
-        let theta_store =
-            require_evappm_layer_scalar(runtime_surface, layer_index, "wb18_perc_theta")?;
-        let layer_bottom_m = solthk;
-        if tpdp_m <= 0.0 {
-            break;
-        }
-        if layer_bottom_m <= tpdp_m {
-            taw_mm += (thetfc - thetdr) * dg * 1_000.0;
-            wftrp_mm += theta_store * 1_000.0;
-        } else if cumulative_depth_m < tpdp_m {
-            let layer_span_m = layer_bottom_m - cumulative_depth_m;
-            if layer_span_m <= 0.0 {
-                return Err(wb11_seed_failure(format!(
-                    "wb19_solthk_{layer_index:04} must increase with depth for EVAPPM demand"
-                )));
-            }
-            let fraction = (tpdp_m - cumulative_depth_m) / layer_span_m;
-            taw_mm += (thetfc - thetdr) * dg * 1_000.0 * fraction;
-            wftrp_mm = wfevp_mm + theta_store * 1_000.0 * fraction;
-            break;
-        }
-        cumulative_depth_m = layer_bottom_m;
-        if cumulative_depth_m >= tpdp_m {
-            break;
-        }
-    }
-
-    let etcsc = kcbadj * etorc_mm;
-    let rawpaj = rawp + 0.04 * (5.0 - etcsc);
-    let raw_mm = rawpaj * taw_mm;
-    let etksden = taw_mm - raw_mm;
-    let etks = if etksden <= 0.0 || (taw_mm - wftrp_mm) <= raw_mm {
-        1.0
-    } else {
-        wftrp_mm / etksden
-    };
-    let potes_m = etorc_mm * etke * 0.001;
-    let es_raw_m = if potes_m > residue_interception {
-        let bpotes_m = potes_m - residue_interception;
-        let eaj = (-0.5 * (cancov + 0.1)).exp();
-        let kcmax = 1.2 + (0.04 * (fwv_m_s - 2.0) - 0.004 * (rhd_pct - 45.0)) * height_factor;
-        let kecon = (etke * etkr).min(eaj * kcmax);
-        kecon * bpotes_m / etke + residue_interception
-    } else {
-        potes_m
-    };
-    let es_storage_return_m = if es_raw_m < 0.0 { -es_raw_m } else { 0.0 };
-    let es_m = if es_raw_m < 0.0 { 0.0 } else { es_raw_m };
-    let ep_raw_m = etorc_mm * etks * kcbcon * 0.001;
-    let ep_m = if ep_raw_m < 0.0 { 0.0 } else { ep_raw_m };
-
-    let diagnostics = EvappmDemandDiagnostics {
-        etorc_mm,
-        rn_mj_m2,
-        fwv_m_s,
-        rhd_pct,
-        kcbadj,
-        kcbcon,
-        etke,
-        etkr,
-        etks,
-        tew_mm,
-        rew_mm,
-        wfevp_mm,
-        taw_mm,
-        raw_mm,
-        wftrp_mm,
-        es_m,
-        es_storage_return_m,
-        ep_m,
-    };
-    for (name, value) in [
-        ("pmet.etorc_mm", diagnostics.etorc_mm),
-        ("pmet.rn_mj_m2", diagnostics.rn_mj_m2),
-        ("pmet.fwv_m_s", diagnostics.fwv_m_s),
-        ("pmet.rhd_pct", diagnostics.rhd_pct),
-        ("pmet.kcbadj", diagnostics.kcbadj),
-        ("pmet.kcbcon", diagnostics.kcbcon),
-        ("pmet.etke", diagnostics.etke),
-        ("pmet.etkr", diagnostics.etkr),
-        ("pmet.etks", diagnostics.etks),
-        ("pmet.tew_mm", diagnostics.tew_mm),
-        ("pmet.rew_mm", diagnostics.rew_mm),
-        ("pmet.wfevp_mm", diagnostics.wfevp_mm),
-        ("pmet.taw_mm", diagnostics.taw_mm),
-        ("pmet.raw_mm", diagnostics.raw_mm),
-        ("pmet.wftrp_mm", diagnostics.wftrp_mm),
-        ("pmet.es_m", diagnostics.es_m),
-        ("pmet.es_storage_return_m", diagnostics.es_storage_return_m),
-        ("pmet.ep_m", diagnostics.ep_m),
-    ] {
-        if !value.is_finite() {
-            return Err(wb11_seed_failure(format!(
-                "derived {name} must be finite, observed {value}"
-            )));
-        }
-    }
-
-    Ok(Wb11EtDemandSeed {
-        demand_m: ep_m,
-        branch_evappm: true,
-        diagnostics: Some(diagnostics),
-    })
-}
-
-fn saturation_vapor_pressure_kpa(temperature_c: f64) -> f64 {
-    0.6108 * (17.27 * temperature_c / (temperature_c + 237.3)).exp()
-}
-
-fn require_evappm_layer_scalar(
-    runtime_surface: &HillslopeWritebackSurface,
-    layer_index: usize,
-    root: &str,
-) -> Result<f64, HillslopeCliError> {
-    let symbol = wb13_primary_layer_symbol(root, layer_index);
-    let value = require_runtime_surface_scalar(runtime_surface, symbol.as_str())?;
-    if !value.is_finite() {
-        return Err(wb11_seed_failure(format!(
-            "{symbol} must be finite for EVAPPM demand, observed {value}"
-        )));
-    }
-    Ok(value)
-}
-
-fn evappm_radpot_ly(runtime_surface: &HillslopeWritebackSurface) -> Result<f64, HillslopeCliError> {
-    if let Some(radpot) = runtime_surface_symbol_value(runtime_surface, "radpot") {
-        if !radpot.is_finite() {
-            return Err(wb11_seed_failure(format!(
-                "radpot must be finite when present, observed {radpot}"
-            )));
-        }
-        return Ok(radpot);
-    }
-
-    let deglat = require_runtime_surface_scalar(runtime_surface, "deglat")?;
-    let year = require_runtime_surface_scalar(runtime_surface, "year")?;
-    let mon = require_runtime_surface_scalar(runtime_surface, "mon")?;
-    let day = require_runtime_surface_scalar(runtime_surface, "day")?;
-    let year = scalar_to_i32("year", year)?;
-    let mon = scalar_to_i32("mon", mon)?;
-    let day = scalar_to_i32("day", day)?;
-    let sdate = f64::from(day_of_year(year, mon, day)?);
-    Ok(legacy_sunmap_horizontal_radpot_ly(deglat, sdate))
-}
-
-fn legacy_sunmap_horizontal_radpot_ly(deglat: f64, sdate: f64) -> f64 {
-    let pi = std::f64::consts::PI;
-    let radlat = deglat * pi / 180.0;
-    let declination = 0.00698 - 0.4067 * ((sdate + 10.0) * 0.0172).cos();
-    let earth_sun_distance_factor = 1.0 - 0.0167 * ((sdate - 3.0) * 0.0172).cos();
-    let radiation_factor = (60.0 * 1.94) / (earth_sun_distance_factor * earth_sun_distance_factor);
-    let sunset_argument = -(radlat.tan() * declination.tan()).clamp(-1.0, 1.0);
-    let sunset_angle = sunset_argument.acos();
-    radiation_factor
-        * ((declination.sin() * radlat.sin() * (sunset_angle - -sunset_angle) * 12.0 / pi)
-            + (declination.cos()
-                * radlat.cos()
-                * (sunset_angle.sin() - (-sunset_angle).sin())
-                * 12.0
-                / pi))
-}
-
-fn publish_wb11_et_demand_seed(
-    runtime_surface: &mut HillslopeWritebackSurface,
-    seed: Wb11EtDemandSeed,
-) -> Result<(), HillslopeCliError> {
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("wb11_et_demand"),
-        BoundaryValue::scalar(seed.demand_m),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("wb11_et_seed_branch_priestley_taylor"),
-        BoundaryValue::scalar(if seed.branch_evappm { 0.0 } else { 1.0 }),
-    );
-    runtime_surface.state_surface.insert(
-        BoundarySymbol::from("wb11_et_seed_branch_evappm"),
-        BoundaryValue::scalar(if seed.branch_evappm { 1.0 } else { 0.0 }),
-    );
-    if let Some(diagnostics) = seed.diagnostics {
-        runtime_surface.state_surface.insert(
-            BoundarySymbol::from("pmet.es_storage_return_m"),
-            BoundaryValue::water_depth_meters(diagnostics.es_storage_return_m).map_err(|error| {
-                wb11_seed_failure(format!(
-                    "pmet.es_storage_return_m must be a non-negative finite water depth: {error}"
-                ))
-            })?,
-        );
-        for (symbol, value) in [
-            ("pmet.etorc_mm", diagnostics.etorc_mm),
-            ("pmet.rn_mj_m2", diagnostics.rn_mj_m2),
-            ("pmet.fwv_m_s", diagnostics.fwv_m_s),
-            ("pmet.rhd_pct", diagnostics.rhd_pct),
-            ("pmet.kcbadj", diagnostics.kcbadj),
-            ("pmet.kcbcon", diagnostics.kcbcon),
-            ("pmet.etke", diagnostics.etke),
-            ("pmet.etkr", diagnostics.etkr),
-            ("pmet.etks", diagnostics.etks),
-            ("pmet.tew_mm", diagnostics.tew_mm),
-            ("pmet.rew_mm", diagnostics.rew_mm),
-            ("pmet.wfevp_mm", diagnostics.wfevp_mm),
-            ("pmet.taw_mm", diagnostics.taw_mm),
-            ("pmet.raw_mm", diagnostics.raw_mm),
-            ("pmet.wftrp_mm", diagnostics.wftrp_mm),
-            ("pmet.es_m", diagnostics.es_m),
-            ("pmet.ep_m", diagnostics.ep_m),
-        ] {
-            runtime_surface
-                .state_surface
-                .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
-        }
-    }
-    Ok(())
-}
-
-fn validate_hillslope_ofe_topology_parity(
-    slope_ofe_count: usize,
-    management_topology_count: usize,
-    soil_topology_count: usize,
-) -> Result<(), HillslopeCliError> {
-    if slope_ofe_count == management_topology_count && slope_ofe_count == soil_topology_count {
-        return Ok(());
-    }
-
-    Err(HillslopeCliError::OfeTopologyMismatch {
-        slope_ofe_count,
-        management_topology_count,
-        soil_topology_count,
-    })
-}
-
-fn build_mode_selection_provenance(
-    wepp_ui: &WeppUiParseResult,
-) -> Result<HillslopeModeSelectionProvenance, HillslopeCliError> {
-    if !matches!(wepp_ui.ui_run_requested, 0 | 1) {
-        return Err(mode_selection_failure(format!(
-            "requested ui_run must be in {{0,1}}, observed {}",
-            wepp_ui.ui_run_requested
-        )));
-    }
-    if !matches!(wepp_ui.ui_run, 0 | 1) {
-        return Err(mode_selection_failure(format!(
-            "effective ui_run must be in {{0,1}}, observed {}",
-            wepp_ui.ui_run
-        )));
-    }
-
-    let expected_divergence = wepp_ui.ui_run_requested != wepp_ui.ui_run;
-    if wepp_ui.mode_divergence != expected_divergence {
-        return Err(mode_selection_failure(format!(
-            "mode_divergence mismatch: expected {} from requested/effective tuple ({}, {}), observed {}",
-            expected_divergence, wepp_ui.ui_run_requested, wepp_ui.ui_run, wepp_ui.mode_divergence
-        )));
-    }
-
-    let selected_lane = lane_name_from_effective_ui_run(wepp_ui.ui_run)?;
-
-    Ok(HillslopeModeSelectionProvenance {
-        wepp_ui: WeppUiModeSelectionProvenance {
-            requested: wepp_ui.ui_run_requested,
-            effective: wepp_ui.ui_run,
-            selected_lane: selected_lane.to_string(),
-            mode_divergence: wepp_ui.mode_divergence,
-            guard_id: WUI_MODE_GUARD_ID.to_string(),
-        },
-    })
-}
-
-fn lane_name_from_effective_ui_run(
-    effective_ui_run: i32,
-) -> Result<&'static str, HillslopeCliError> {
-    match effective_ui_run {
-        0 => Ok(DAILY_EXECUTION_LANE),
-        1 => Ok(HOURLY_EXECUTION_LANE),
-        _ => Err(mode_selection_failure(format!(
-            "effective ui_run must map to daily/hourly lane, observed {effective_ui_run}"
-        ))),
-    }
-}
-
-fn mode_name_from_ui_run(ui_run: i32) -> Result<&'static str, HillslopeCliError> {
-    match ui_run {
-        0 => Ok(DAILY_EXECUTION_LANE),
-        1 => Ok(HOURLY_EXECUTION_LANE),
-        _ => Err(timestep_policy_failure(format!(
-            "ui_run must map to daily/hourly mode, observed {ui_run}"
-        ))),
-    }
-}
-
-fn build_execution_lane_context(
-    mode_selection: &HillslopeModeSelectionProvenance,
-) -> Result<ExecutionLaneContext, HillslopeCliError> {
-    let requested_mode = mode_name_from_ui_run(mode_selection.wepp_ui.requested)?;
-    let effective_mode = mode_name_from_ui_run(mode_selection.wepp_ui.effective)?;
-    let lane = ExecutionLane::parse(mode_selection.wepp_ui.selected_lane.as_str())?;
-    if lane.as_str() != effective_mode {
-        return Err(timestep_policy_failure(format!(
-            "selected lane '{}' must match effective mode '{effective_mode}'",
-            lane.as_str()
-        )));
-    }
-
-    Ok(ExecutionLaneContext {
-        lane,
-        requested_mode,
-        effective_mode,
-        timestep_policy: TimestepPolicy::from_lane(lane),
-    })
-}
-
-fn build_timestep_policy_provenance(
-    lane_context: &ExecutionLaneContext,
-) -> HillslopeTimestepPolicyProvenance {
-    let subhourly_scaffold = TimestepPolicy::scaffold_subhourly(900);
-    HillslopeTimestepPolicyProvenance {
-        scheduler_mode: lane_context.timestep_policy.scheduler_mode().to_string(),
-        requested_mode: lane_context.requested_mode.to_string(),
-        effective_mode: lane_context.effective_mode.to_string(),
-        selected_lane: lane_context.lane.as_str().to_string(),
-        policy: lane_context.timestep_policy.policy_name().to_string(),
-        timestep_seconds: lane_context.timestep_policy.timestep_seconds(),
-        physics_enabled: lane_context.timestep_policy.physics_enabled(),
-        subhourly_scaffold_available: !subhourly_scaffold.physics_enabled(),
-        guard_id: SIMMODE_TIMESTEP_GUARD_ID.to_string(),
-    }
-}
-
-fn build_adapter_boundary_provenance(
-    lane_context: &ExecutionLaneContext,
-) -> Result<HillslopeAdapterBoundaryProvenance, HillslopeCliError> {
-    let reject_surfaces_excluded = true;
-    let defer_surfaces_excluded = true;
-    if !reject_surfaces_excluded || !defer_surfaces_excluded {
-        return Err(simcons_intake_failure(
-            "SIMIMPL09 requires reject/defer intake surfaces to remain excluded",
-        ));
-    }
-
-    Ok(HillslopeAdapterBoundaryProvenance {
-        selected_lane: lane_context.lane.as_str().to_string(),
-        scheduler_mode: lane_context.timestep_policy.scheduler_mode().to_string(),
-        requested_mode: lane_context.requested_mode.to_string(),
-        effective_mode: lane_context.effective_mode.to_string(),
-        adopt_profile: SIMIMPL09_ADOPT_PROFILE.to_string(),
-        reject_surfaces_excluded,
-        defer_surfaces_excluded,
-        guard_id: SIMCONS_INTAKE_GUARD_ID.to_string(),
     })
 }

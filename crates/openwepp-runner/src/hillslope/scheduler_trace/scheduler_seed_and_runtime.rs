@@ -506,8 +506,8 @@ pub(super) fn seed_wb11_runtime_surface_inputs(
         BoundaryValue::scalar(1.0),
     );
 
-    let wb11_et_seed = compute_wb11_et_demand_seed(runtime_surface)?;
-    publish_wb11_et_demand_seed(runtime_surface, wb11_et_seed)?;
+    let wb11_et_seed = crate::hillslope::intake_lane_setup::compute_wb11_et_demand_seed(runtime_surface)?;
+    crate::hillslope::intake_lane_setup::publish_wb11_et_demand_seed(runtime_surface, wb11_et_seed)?;
 
     if runtime_surface_symbol_value(runtime_surface, "efflen").is_none() {
         let slplen = require_runtime_surface_scalar(runtime_surface, "slplen")?;

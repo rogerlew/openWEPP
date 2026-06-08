@@ -63,7 +63,7 @@ pub(super) fn write_hphys0245_trace_jsonl(
     config: &Hphys0245TraceConfig,
     rows: &[Hphys0245TraceRow],
 ) -> Result<(), HillslopeCliError> {
-    ensure_output_parent_directory(&config.path)?;
+    crate::hillslope::intake_lane_setup::ensure_output_parent_directory(&config.path)?;
     let mut payload = String::new();
     for row in rows {
         let line = serde_json::to_string(row).map_err(|source| {

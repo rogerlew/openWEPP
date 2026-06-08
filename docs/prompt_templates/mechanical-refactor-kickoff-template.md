@@ -10,6 +10,16 @@ external connectivity.
 
 Execution mode: package-end-to-end (default).
 
+Autonomy and completion requirement:
+- Execute the package end-to-end through disposition-ready state.
+- Do not stop after code movement or partial validation.
+- A package is incomplete until closure gates are run and recorded, required
+   artifacts are updated, and review/verification placeholders are
+   disposition-ready.
+- If a gate fails, attempt a mechanical-only fix and rerun gates.
+- Stop only when hard-blocked by declared stop conditions and record the
+   blocker with exact command/file context.
+
 Objective:
 - Execute a mechanical refactor only (no intended behavior change).
 - Preserve public API unless an explicit delta is declared below.
@@ -60,11 +70,13 @@ Execution steps (perform in order):
      - `cargo check -p <touched-crate>`
      - `cargo test -p <touched-crate> <focused-filter>`
 4. Closure gates
-   - Run and record:
+    - Run and record in this order:
      - `cargo fmt --check`
      - `cargo clippy --workspace --all-targets -- -D warnings`
      - `cargo test --workspace`
      - `cargo deny check`
+    - Do not exit early after a subset of these gates unless a hard blocker is
+       encountered and documented.
 5. Parity and governance evidence
    - Capture post-refactor exported surface snapshot and parity decision.
    - Capture post-refactor line counts and line-count governance disposition.
@@ -96,3 +108,11 @@ Outputs:
 - Updated source files in declared seam.
 - Updated package artifacts with evidence and finding disposition.
 - Concise summary: moved seams, API parity result, line-count deltas, gate outcomes.
+
+Completion checklist (must be true before stopping):
+- All closure gates have been run and recorded (or blocker documented under
+   stop conditions).
+- Artifact updates are complete for implementation, parity, line-count
+   governance, review, verification, disposition, and handoff.
+- Remaining work (if any) is a blocker-shaped handoff, not an open-ended
+   "next investigation" note.
