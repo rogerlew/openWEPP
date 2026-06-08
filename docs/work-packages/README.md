@@ -246,6 +246,12 @@ Recent mechanical refactor package authoring updates (for discoverability):
     the public API surface and reducing the source below the 2000-line warning
     threshold.
 
+- `20260608-refactor019-openwepp-hillslope-orchestrator-hydrology-phase-storage-erosion-mechanical-modularization-001/`
+  - Purpose: mechanically modularize
+    `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_storage_erosion.rs`
+    into cohesive modules under `kernel_phases_mod/` while preserving kernel-phase
+    behavior and reducing the source below the 2000-line warning threshold.
+
 Initiative tracking convention inherited from wepp-palimpsest. Each work package lives in a dated directory under this tree.
 
 ## Directory naming
