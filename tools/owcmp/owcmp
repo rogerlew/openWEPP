@@ -5,15 +5,22 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Callable
 
 TOOL_DIR = Path(__file__).resolve().parent
+REPO_ROOT = TOOL_DIR.parents[1]
+VENV_PYTHON = REPO_ROOT / ".venv" / "bin" / "python"
+if VENV_PYTHON.is_file() and Path(sys.executable) != VENV_PYTHON:
+    os.execv(str(VENV_PYTHON), [str(VENV_PYTHON), str(Path(__file__).resolve()), *sys.argv[1:]])
+
 if str(TOOL_DIR) not in sys.path:
     sys.path.insert(0, str(TOOL_DIR))
 
 import pl14s_suite
+import batch_h1_h39
 import semantic_wat
 import summary
 
@@ -43,7 +50,7 @@ def _run_manifest(argv: list[str]) -> None:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        raise SystemExit("usage: owcmp <wat|pl14s|summarize|manifest> ...")
+        raise SystemExit("usage: owcmp <wat|pl14s|batch|summarize|manifest> ...")
 
     command = sys.argv[1]
     rest = sys.argv[2:]
@@ -58,6 +65,12 @@ def main() -> None:
         if not rest or rest[0] != "run":
             raise SystemExit("usage: owcmp pl14s run ...")
         _dispatch(pl14s_suite.main, rest[1:])
+        return
+
+    if command == "batch":
+        if not rest or rest[0] != "h1-h39-semantic":
+            raise SystemExit("usage: owcmp batch h1-h39-semantic ...")
+        _dispatch(batch_h1_h39.main, rest[1:])
         return
 
     if command == "summarize":

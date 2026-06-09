@@ -215,6 +215,11 @@ are not summarized here; the canonical forward queue is
 
 Recent mechanical refactor package authoring updates (for discoverability):
 
+- `20260609-owcmp03-agent-runner-h1-h39-validation-001/`
+  - Purpose: make `tools/owcmp` discoverable to Codex batch runners, add the
+    compact `owcmp batch h1-h39-semantic` surface, and validate H1-H39 execution
+    through `comparator_suite_runner`.
+
 - `20260609-owcmp02-legacy-suite-cutover-001/`
   - Purpose: cut active PL14S comparison references over to `tools/owcmp` and
     remove `tools/legacy_comparison_suite` after OWCMP01 proved the new

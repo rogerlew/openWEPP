@@ -8,6 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use std::os::unix::fs::PermissionsExt;
 
 const OWCMP_CLI: &str = include_str!("../../tools/owcmp/owcmp");
+const OWCMP_BATCH_H1_H39: &str = include_str!("../../tools/owcmp/batch_h1_h39.py");
 const OWCMP_SEMANTIC: &str = include_str!("../../tools/owcmp/semantic_wat.py");
 const OWCMP_PL14S: &str = include_str!("../../tools/owcmp/pl14s_suite.py");
 const OWCMP_SPEC: &str = include_str!("../../tools/owcmp/specification.md");
@@ -54,9 +55,25 @@ fn owcmp_declares_pl14s_contract_markers_and_deferred_observe_boundary() {
         &[
             "wat semantic",
             "pl14s run",
+            "batch h1-h39-semantic",
             "summarize",
             "manifest run",
+            "VENV_PYTHON",
+            "os.execv",
             "owcmp observe normalize is deferred",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_BATCH_H1_H39,
+        &[
+            "h1_h39_semantic_batch",
+            "--baseline-dir",
+            "--candidate-dir",
+            "--baseline-pattern",
+            "--candidate-pattern",
+            "semantic_pass_count",
+            "execution_verdict",
+            "command-log.json",
         ],
     ));
     assert!(contains_all(
@@ -96,6 +113,7 @@ fn owcmp_declares_pl14s_contract_markers_and_deferred_observe_boundary() {
         ],
     ));
     assert!(OWCMP_README.contains("tools/owcmp/owcmp wat semantic"));
+    assert!(OWCMP_README.contains("tools/owcmp/owcmp batch h1-h39-semantic"));
 }
 
 #[test]
@@ -199,6 +217,206 @@ fn owcmp_summarize_emits_compact_json_and_markdown() {
         fs::read_to_string(summary_root.join("summary.md")).expect("summary markdown exists");
     assert!(summary_md.contains("# owcmp Summary"));
     assert!(summary_md.contains("Verdict: `PASS`"));
+
+    let _ = fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn owcmp_batch_h1_h39_semantic_emits_compact_summary() {
+    let temp_dir = fixture_temp_dir("owcmp_h1_h39_batch");
+    let baseline_dir = temp_dir.join("baseline");
+    let candidate_dir = temp_dir.join("candidate");
+    let output_root = temp_dir.join("batch_output");
+    fs::create_dir_all(&baseline_dir).expect("baseline directory should be creatable");
+    fs::create_dir_all(&candidate_dir).expect("candidate directory should be creatable");
+
+    let h1_payload = format!("{}\n{}\n", dat_row(1, 1, 2008, 10), dat_row(1, 2, 2008, 20));
+    let h2_payload = format!("{}\n{}\n", dat_row(2, 1, 2008, 30), dat_row(2, 2, 2008, 40));
+    fs::write(baseline_dir.join("baseline_H1.wat.dat"), &h1_payload)
+        .expect("H1 baseline fixture should be writable");
+    fs::write(candidate_dir.join("H1.wat.dat"), &h1_payload)
+        .expect("H1 candidate fixture should be writable");
+    fs::write(baseline_dir.join("baseline_H2.wat.dat"), &h2_payload)
+        .expect("H2 baseline fixture should be writable");
+    fs::write(candidate_dir.join("H2.wat.dat"), &h2_payload)
+        .expect("H2 candidate fixture should be writable");
+
+    let batch_output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(repo_root().join("tools").join("owcmp").join("owcmp"))
+        .arg("batch")
+        .arg("h1-h39-semantic")
+        .arg("--baseline-dir")
+        .arg(&baseline_dir)
+        .arg("--candidate-dir")
+        .arg(&candidate_dir)
+        .arg("--output-root")
+        .arg(&output_root)
+        .arg("--start")
+        .arg("1")
+        .arg("--end")
+        .arg("2")
+        .arg("--baseline-pattern")
+        .arg("baseline_H{h}.wat.dat")
+        .arg("--candidate-pattern")
+        .arg("H{h}.wat.dat")
+        .arg("--candidate-year-offset")
+        .arg("0")
+        .output()
+        .expect("python3 should run owcmp H1-H39 batch");
+    assert!(
+        batch_output.status.success(),
+        "batch should pass; stderr={}",
+        String::from_utf8_lossy(&batch_output.stderr)
+    );
+
+    let stdout = String::from_utf8_lossy(&batch_output.stdout);
+    assert!(stdout.contains("\"semantic_pass_count\": \"2/2\""));
+    assert!(stdout.contains("\"execution_verdict\": \"PASS\""));
+
+    let summary_json =
+        fs::read_to_string(output_root.join("summary.json")).expect("summary json exists");
+    assert!(summary_json.contains("\"source_type\": \"h1_h39_semantic_batch\""));
+    assert!(summary_json.contains("\"semantic_pass_count\": \"2/2\""));
+    assert!(summary_json.contains("\"execution_verdict\": \"PASS\""));
+    assert!(summary_json.contains("\"command_log\""));
+    assert!(output_root.join("command-log.json").is_file());
+    assert!(
+        output_root
+            .join("reports")
+            .join("semantic")
+            .join("H1.semantic.json")
+            .is_file()
+    );
+    assert!(output_root.join("logs").join("H2.stderr.txt").is_file());
+
+    let summary_md =
+        fs::read_to_string(output_root.join("summary.md")).expect("summary markdown exists");
+    assert!(summary_md.contains("# owcmp H1-H39 Semantic Batch"));
+    assert!(summary_md.contains("Semantic pass count: `2/2`"));
+
+    let _ = fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn owcmp_batch_h1_h39_semantic_missing_inputs_emit_failure_artifacts() {
+    let temp_dir = fixture_temp_dir("owcmp_h1_h39_batch_missing");
+    let baseline_dir = temp_dir.join("baseline");
+    let candidate_dir = temp_dir.join("candidate");
+    let output_root = temp_dir.join("batch_output");
+    fs::create_dir_all(&baseline_dir).expect("baseline directory should be creatable");
+    fs::create_dir_all(&candidate_dir).expect("candidate directory should be creatable");
+
+    let batch_output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(repo_root().join("tools").join("owcmp").join("owcmp"))
+        .arg("batch")
+        .arg("h1-h39-semantic")
+        .arg("--baseline-dir")
+        .arg(&baseline_dir)
+        .arg("--candidate-dir")
+        .arg(&candidate_dir)
+        .arg("--output-root")
+        .arg(&output_root)
+        .arg("--start")
+        .arg("1")
+        .arg("--end")
+        .arg("1")
+        .arg("--baseline-pattern")
+        .arg("baseline_H{h}.wat.dat")
+        .arg("--candidate-pattern")
+        .arg("H{h}.wat.dat")
+        .output()
+        .expect("python3 should run owcmp H1-H39 batch");
+    assert!(
+        !batch_output.status.success(),
+        "missing input batch should fail closed"
+    );
+
+    let summary_json =
+        fs::read_to_string(output_root.join("summary.json")).expect("summary json exists");
+    assert!(summary_json.contains("\"execution_verdict\": \"FAIL\""));
+    assert!(summary_json.contains("\"semantic_verdict\": \"NOT_RUN\""));
+    assert!(summary_json.contains("\"summary_json\""));
+    assert!(summary_json.contains("\"summary_md\""));
+    assert!(summary_json.contains("\"command_log\""));
+    assert!(summary_json.contains("\"pass_hillslopes\""));
+    assert!(summary_json.contains("\"failed_hillslopes\""));
+    assert!(summary_json.contains("\"focus_columns\""));
+    assert!(summary_json.contains("\"first_divergent\""));
+    assert!(summary_json.contains("\"missing_inputs\""));
+    assert!(output_root.join("summary.md").is_file());
+    assert!(output_root.join("command-log.json").is_file());
+
+    let command_log =
+        fs::read_to_string(output_root.join("command-log.json")).expect("command log exists");
+    assert_eq!(command_log.trim(), "[]");
+
+    let _ = fs::remove_dir_all(&temp_dir);
+}
+
+#[test]
+fn owcmp_batch_h1_h39_semantic_command_failure_emits_failure_artifacts() {
+    let temp_dir = fixture_temp_dir("owcmp_h1_h39_batch_command_failure");
+    let baseline_dir = temp_dir.join("baseline");
+    let candidate_dir = temp_dir.join("candidate");
+    let output_root = temp_dir.join("batch_output");
+    fs::create_dir_all(&baseline_dir).expect("baseline directory should be creatable");
+    fs::create_dir_all(&candidate_dir).expect("candidate directory should be creatable");
+
+    let duplicate_baseline = format!("{}\n{}\n", dat_row(1, 1, 2008, 10), dat_row(1, 1, 2008, 20));
+    let candidate_payload = format!("{}\n", dat_row(1, 1, 2008, 10));
+    fs::write(baseline_dir.join("baseline_H1.wat.dat"), duplicate_baseline)
+        .expect("H1 baseline fixture should be writable");
+    fs::write(candidate_dir.join("H1.wat.dat"), candidate_payload)
+        .expect("H1 candidate fixture should be writable");
+
+    let batch_output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(repo_root().join("tools").join("owcmp").join("owcmp"))
+        .arg("batch")
+        .arg("h1-h39-semantic")
+        .arg("--baseline-dir")
+        .arg(&baseline_dir)
+        .arg("--candidate-dir")
+        .arg(&candidate_dir)
+        .arg("--output-root")
+        .arg(&output_root)
+        .arg("--start")
+        .arg("1")
+        .arg("--end")
+        .arg("1")
+        .arg("--baseline-pattern")
+        .arg("baseline_H{h}.wat.dat")
+        .arg("--candidate-pattern")
+        .arg("H{h}.wat.dat")
+        .arg("--candidate-year-offset")
+        .arg("0")
+        .output()
+        .expect("python3 should run owcmp H1-H39 batch");
+    assert!(
+        !batch_output.status.success(),
+        "duplicate row batch should fail closed"
+    );
+
+    let summary_json =
+        fs::read_to_string(output_root.join("summary.json")).expect("summary json exists");
+    assert!(summary_json.contains("\"execution_verdict\": \"FAIL\""));
+    assert!(summary_json.contains("\"semantic_verdict\": \"NOT_RUN\""));
+    assert!(summary_json.contains("\"summary_json\""));
+    assert!(summary_json.contains("\"summary_md\""));
+    assert!(summary_json.contains("\"command_log\""));
+    assert!(summary_json.contains("\"pass_hillslopes\""));
+    assert!(summary_json.contains("\"failed_hillslopes\""));
+    assert!(summary_json.contains("\"focus_columns\""));
+    assert!(summary_json.contains("\"first_divergent\""));
+    assert!(summary_json.contains("\"failed_hillslope\": 1"));
+    assert!(output_root.join("summary.md").is_file());
+    assert!(output_root.join("command-log.json").is_file());
+
+    let stderr =
+        fs::read_to_string(output_root.join("logs").join("H1.stderr.txt")).expect("stderr exists");
+    assert!(stderr.contains("duplicate row key"));
 
     let _ = fs::remove_dir_all(&temp_dir);
 }

@@ -312,6 +312,10 @@ name = "owcmp_cli_contract"
 path = "tests/integration/owcmp_cli_contract.rs"
 
 [[test]]
+name = "owcmp_agent_config_contract"
+path = "tests/integration/owcmp_agent_config_contract.rs"
+
+[[test]]
 name = "erod11_alias_boundary_ownership_contract"
 path = "tests/integration/erod11_alias_boundary_ownership_contract.rs"
 

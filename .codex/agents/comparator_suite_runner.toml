@@ -27,8 +27,13 @@ this list is complete or current, and do not invent scope):
   - `cargo test --workspace`
   - `cargo deny check`
 - Comparator / parity suites (examples):
-  - `python tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py`
-  - `python tools/legacy_comparison_suite/run_pl14s_legacy_suite.py`
+  - `tools/owcmp/owcmp wat semantic ...`
+  - `tools/owcmp/owcmp pl14s run ...`
+  - `tools/owcmp/owcmp summarize --input <report.json> --output-root <dir>`
+- Preferred H1-H39 semantic WAT batch:
+  - `tools/owcmp/owcmp batch h1-h39-semantic --baseline-dir <dir> --candidate-dir <dir> --candidate-year-offset 2012 --output-root <package-artifacts>/runner-h1-h39`
+  - Return `summary.json`, `summary.md`, `command-log.json`, and log/report
+    paths. Do not paste per-H semantic reports or raw logs into your reply.
 - Release gates (examples):
   - `bash tools/release/run_release_candidate_gates.sh`
   - `bash tools/release/run_hillstab_gate.sh`

@@ -75,11 +75,16 @@ the time. They are not active API references and do not block directory removal.
 migration. A Rust binary can replace or wrap it later if there is a concrete
 integration reason.
 
+Direct `tools/owcmp/owcmp` execution must prefer `.venv/bin/python` when the
+repo-local environment exists, so comparator agents get the same dependency
+surface as local tooling and parquet lanes can import `pyarrow`.
+
 Initial implementation commands:
 
 ```text
 tools/owcmp/owcmp wat semantic ...
 tools/owcmp/owcmp pl14s run ...
+tools/owcmp/owcmp batch h1-h39-semantic ...
 tools/owcmp/owcmp summarize ...
 tools/owcmp/owcmp manifest run ...
 ```
@@ -210,6 +215,45 @@ Compatibility mapping:
 
 - Replaces `tools/legacy_comparison_suite/run_pl14s_legacy_suite.py`.
 
+### `owcmp batch h1-h39-semantic`
+
+Runs the repeated H1 through H39 semantic WAT comparison as one agent-safe
+command.
+
+Required behavior:
+
+- Compose `owcmp wat semantic` behavior; do not duplicate comparison math.
+- Default to `baseline_H{h}.parquet` under `--baseline-dir` and
+  `H{h}.wat.parquet` under `--candidate-dir`.
+- Accept `--start`, `--end`, `--baseline-pattern`, and `--candidate-pattern` so
+  tests can run small local fixture ranges without parquet.
+- Default `--candidate-year-offset` to `2012` for the HPHYS H1-H39 replay
+  surface.
+- Write per-H semantic reports under `reports/semantic/`.
+- Redirect per-H stdout/stderr under `logs/`.
+- Write `command-log.json`, `summary.json`, and `summary.md`.
+- Fail closed on missing inputs or command failure with path-level evidence.
+- Print one compact JSON line with execution verdict, semantic pass count, and
+  summary paths.
+
+Required summary payload keys:
+
+- `source_type` set to `h1_h39_semantic_batch`.
+- `execution_verdict`, separating command success from semantic comparator
+  agreement.
+- `semantic_verdict` and `semantic_pass_count`.
+- `pass_hillslopes` and `failed_hillslopes`.
+- `structural_row_key_failures`.
+- `first_divergent` when available.
+- `focus_columns`, including hillslope fail count, total fail count, mean
+  absolute-difference mean, max absolute delta, max relative delta, and max key.
+- `command_status`, `raw_reports`, `logs`, `summary_json`, `summary_md`, and
+  `command_log`.
+
+This command is the preferred H1-H39 surface for `comparator_suite_runner`.
+Parent agents should consume `summary.json` or `summary.md` and leave raw reports
+and logs on disk.
+
 ### `owcmp summarize`
 
 Produces compact, parent-agent-safe summaries from one or more raw comparator
@@ -312,6 +356,8 @@ summary. The expected subagent contract is:
 - Do not read canonical science contracts unless the package explicitly asks.
 - Do not interpret physics or authorize production edits.
 - Return command status, compact metrics, verdict, and artifact paths.
+- Prefer `tools/owcmp/owcmp batch h1-h39-semantic` for H1-H39 semantic WAT
+  comparisons instead of historical package-local scripts.
 
 ## Compatibility and Deprecation
 
@@ -383,6 +429,25 @@ Exit criteria:
 - `cargo test --test pl14s_tier_a_candidate_emission_and_replay_contract`
   passes.
 - The root README no longer documents the legacy suite as active tooling.
+
+### Package 3: Agent Runner H1-H39 Validation
+
+Status: active by OWCMP03.
+
+Scope:
+
+- Add `owcmp batch h1-h39-semantic`.
+- Update `.codex` comparator runner configuration to name `tools/owcmp/owcmp`.
+- Add config compliance tests so active runner examples do not regress to the
+  retired legacy suite path.
+- Validate the H1-H39 batch through `comparator_suite_runner`.
+
+Exit criteria:
+
+- Focused `owcmp` batch and config tests pass.
+- The comparator runner returns compact H1-H39 metrics and artifact paths, or a
+  hard blocker with command-level evidence.
+- No active `.codex` runner config references `tools/legacy_comparison_suite`.
 
 ### Future Package: Observe Normalization
 
