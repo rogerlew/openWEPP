@@ -379,7 +379,7 @@ surfaces are:
 | TOL-SYSTEM-004 | Outflow-summation residual for Eq. [14.3.18] | `<= 1e-10 ft^3 s^-1` | Inactive-structure contribution remains exact zero by branch rule. | `[INFERENCE][Static]` |
 | TOL-SYSTEM-005 | Sediment continuity residual for Eq. [13.5.17] and Eq. [14.6.1] | `<= 1e-8` in native mass units | Unit-aware residual check by component (`lb` vs `kg` surfaces). | `[INFERENCE][Static]` |
 | TOL-SYSTEM-006 | Tier-A strict replay numeric tolerance for PL14 closeout lane | `abs_tol = 0`, `rel_tol = 0` | Comparator-lane authority is strict diff detection; residual disposition belongs to PL15. | `[DIRECT][Static] + [INFERENCE][Static]` |
-| TOL-SYSTEM-007 | Tier-A semantic replay tolerance profile for PL14S investigation lane | `default abs=0.1`, `default rel=0.02`, with per-column overrides from `tools/legacy_comparison_suite/configs/pl14s_wat_tolerances.json` | Investigation-grade semantic comparator tolerances are explicit evidence artifacts and do not replace strict-diff structural checks. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| TOL-SYSTEM-007 | Tier-A semantic replay tolerance profile for PL14S investigation lane | `default abs=0.1`, `default rel=0.02`, with per-column overrides from `tools/owcmp/configs/pl14s_wat_tolerances.json` | Investigation-grade semantic comparator tolerances are explicit evidence artifacts and do not replace strict-diff structural checks. | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## WS11 Channel-Routing Physics-Equivalence Integration Addendum
 

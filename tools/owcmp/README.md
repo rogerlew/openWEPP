@@ -1,8 +1,7 @@
 # owcmp
 
-`owcmp` is the openWEPP comparison CLI. OWCMP01 ports the active PL14S WAT
-semantic comparator and replay suite into this namespace while leaving
-`tools/legacy_comparison_suite` intact for the follow-on cutover package.
+`owcmp` is the openWEPP comparison CLI. It owns the active PL14S WAT semantic
+comparator and replay suite.
 
 ## Commands
 
@@ -27,3 +26,18 @@ to a later manifest package and must not be treated as complete for OWCMP02.
 - Suite provenance schema: `pl14s-legacy-suite-v2`
 - Default tolerance config: `tools/owcmp/configs/pl14s_wat_tolerances.json`
 - Optional parquet support uses `tools/owcmp/requirements.lock.txt`
+- Strict comparator is required when candidate input is `.dat`; parquet runs
+  are classified as `strict-equivalent-required` and must satisfy semantic-lane
+  equivalence checks.
+- `--candidate-surface-source-class` is required and must be one of
+  `native-runtime-dat`, `conversion-derived-dat`, or
+  `native-runtime-parquet`.
+- `conversion-derived-dat` evidence is tagged as non-promotable for final
+  Tier-A closeout claims and must satisfy row-consistency checks.
+- Semantic comparator evidence includes row-presence deltas, per-column
+  tolerance verdicts, top divergent rows, `Total-Soil` alias continuity,
+  observed row-width diagnostics, and baseline/candidate column disclosure.
+- Use `--candidate-partition-value` with the default `wepp_id` partition column
+  for multi-hillslope parquet inputs.
+- Use `--candidate-year-offset` when candidate rows use simulation-year keys and
+  baseline rows use calendar-year keys.

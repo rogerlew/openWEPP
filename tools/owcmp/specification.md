@@ -1,6 +1,6 @@
 # owcmp Specification
 
-Status: draft
+Status: implemented
 
 Evidence mode: Static
 
@@ -11,9 +11,9 @@ repeatable local execution for legacy WEPP versus openWEPP comparison lanes,
 structured summaries for agent and package consumption, and normalization of
 legacy observe output into explicit comparison artifacts.
 
-The immediate migration goal is to roll the active
-`tools/legacy_comparison_suite` behavior into `tools/owcmp` and then retire the
-legacy directory. The long-term goal is a stable comparator CLI that supports
+The migration rolled the former `tools/legacy_comparison_suite` behavior into
+`tools/owcmp` and retired the legacy directory. The long-term goal is a stable
+comparator CLI that supports
 manifest-driven suite execution without forcing parent agents to load raw
 per-run artifacts, logs, or package-specific diagnostic scripts into context.
 
@@ -40,11 +40,11 @@ The first `owcmp` implementation must preserve these active contracts from
   replay comparability.
 - Full keyed-span precipitation (`P`) parity readiness metadata.
 
-During Package 1, the active tolerance config and Python dependency lock must
-be copied or moved into `tools/owcmp`. During Package 2, canonical references
-must be updated to the new paths before `tools/legacy_comparison_suite` is
-deleted. The migration must prove the effective tolerance profile is unchanged
-by recording before/after hashes or an equivalent byte-for-byte identity check.
+During Package 1, the active tolerance config and Python dependency lock were
+copied into `tools/owcmp`. During Package 2, canonical references were updated
+to the new paths before `tools/legacy_comparison_suite` was deleted. The
+migration proved the effective tolerance profile unchanged by recording
+before/after hashes and byte-for-byte identity checks.
 
 The cutover must update active tests and canonical references that currently
 bind to `tools/legacy_comparison_suite`, including:
@@ -363,6 +363,8 @@ Exit criteria:
 - Tolerance config hash/effective profile is proven unchanged.
 
 ### Package 2: Cut Over and Remove Legacy Suite
+
+Status: complete by OWCMP02.
 
 Scope:
 

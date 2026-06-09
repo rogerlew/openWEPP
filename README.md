@@ -323,7 +323,7 @@ all roles (watershed, hillslope, replay). See:
 ├── crates/                # Engine workspace: orchestrators, typed contracts, I/O adapters
 ├── tools/
 │   ├── release/           # Release-candidate and anti-evasion gate scripts
-│   └── legacy_comparison_suite/   # Python legacy-comparison utilities
+│   └── owcmp/             # Python openWEPP comparison CLI utilities
 ├── docs/
 │   ├── README.md          # Doc index
 │   ├── decisions/         # Architecture decision records
@@ -344,20 +344,20 @@ list.
 
 ## Python Tooling Environment (uv)
 
-Some investigation tooling (for example legacy comparison utilities under
-`tools/legacy_comparison_suite/`) uses Python.
+Some investigation tooling (for example the `owcmp` comparison CLI under
+`tools/owcmp/`) uses Python.
 
 Set up a repo-local virtualenv in a fresh clone:
 
 ```bash
 uv venv .venv --python 3.12
 source .venv/bin/activate
-uv pip sync tools/legacy_comparison_suite/requirements.lock.txt
+uv pip sync tools/owcmp/requirements.lock.txt
 ```
 
 Dependency sources:
-- `tools/legacy_comparison_suite/requirements.in`
-- `tools/legacy_comparison_suite/requirements.lock.txt`
+- `tools/owcmp/requirements.in`
+- `tools/owcmp/requirements.lock.txt`
 
 ## License
 

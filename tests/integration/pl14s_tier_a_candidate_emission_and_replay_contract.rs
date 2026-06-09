@@ -14,11 +14,9 @@ use openwepp_runner::{HillslopeRunRequest, SidecarPolicy, execute_hillslope_run}
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 
-const PL14S_SEMANTIC_COMPARATOR_SCRIPT: &str =
-    include_str!("../../tools/legacy_comparison_suite/semantic_hillslope_wat_compare.py");
-const PL14S_REPLAY_SUITE_SCRIPT: &str =
-    include_str!("../../tools/legacy_comparison_suite/run_pl14s_legacy_suite.py");
-const PL14S_SUITE_README: &str = include_str!("../../tools/legacy_comparison_suite/README.md");
+const PL14S_SEMANTIC_COMPARATOR_SCRIPT: &str = include_str!("../../tools/owcmp/semantic_wat.py");
+const PL14S_REPLAY_SUITE_SCRIPT: &str = include_str!("../../tools/owcmp/pl14s_suite.py");
+const PL14S_SUITE_README: &str = include_str!("../../tools/owcmp/README.md");
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum StrictLaneMode {
@@ -231,14 +229,13 @@ fn pl14s_contract_conformance_rejects_duplicate_row_keys_in_semantic_lane_inputs
     fs::write(&baseline_wat, baseline_payload).expect("baseline fixture should be writable");
     fs::write(&candidate_wat, candidate_payload).expect("candidate fixture should be writable");
 
-    let script_path = repo_root()
-        .join("tools")
-        .join("legacy_comparison_suite")
-        .join("semantic_hillslope_wat_compare.py");
+    let script_path = repo_root().join("tools").join("owcmp").join("owcmp");
 
     let output = Command::new("python3")
         .current_dir(repo_root())
         .arg(script_path)
+        .arg("wat")
+        .arg("semantic")
         .arg("--baseline-wat")
         .arg(&baseline_wat)
         .arg("--candidate-wat")

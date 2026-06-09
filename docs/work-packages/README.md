@@ -215,6 +215,11 @@ are not summarized here; the canonical forward queue is
 
 Recent mechanical refactor package authoring updates (for discoverability):
 
+- `20260609-owcmp02-legacy-suite-cutover-001/`
+  - Purpose: cut active PL14S comparison references over to `tools/owcmp` and
+    remove `tools/legacy_comparison_suite` after OWCMP01 proved the new
+    comparator path in parallel.
+
 - `20260608-owcmp01-comparator-cli-implementation-001/`
   - Purpose: implement `tools/owcmp` as the first-class comparator CLI while
     preserving PL14S WAT semantic and replay-suite behavior currently housed in
