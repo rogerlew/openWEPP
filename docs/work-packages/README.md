@@ -215,6 +215,12 @@ are not summarized here; the canonical forward queue is
 
 Recent mechanical refactor package authoring updates (for discoverability):
 
+- `20260608-owcmp01-comparator-cli-implementation-001/`
+  - Purpose: implement `tools/owcmp` as the first-class comparator CLI while
+    preserving PL14S WAT semantic and replay-suite behavior currently housed in
+    `tools/legacy_comparison_suite`; prove the new path in parallel before a
+    follow-on cutover package retires the legacy directory.
+
 - `20260608-refactor015-openwepp-hillslope-orchestrator-hydrology-kernel-phases-mechanical-modularization-001/`
   - Purpose: mechanically modularize
     `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs`
