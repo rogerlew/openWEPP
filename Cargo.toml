@@ -308,6 +308,10 @@ name = "pl14s_tier_a_candidate_emission_and_replay_contract"
 path = "tests/integration/pl14s_tier_a_candidate_emission_and_replay_contract.rs"
 
 [[test]]
+name = "owcmp_cli_contract"
+path = "tests/integration/owcmp_cli_contract.rs"
+
+[[test]]
 name = "erod11_alias_boundary_ownership_contract"
 path = "tests/integration/erod11_alias_boundary_ownership_contract.rs"
 

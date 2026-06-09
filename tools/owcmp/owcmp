@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""openWEPP comparison CLI."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+from typing import Callable
+
+TOOL_DIR = Path(__file__).resolve().parent
+if str(TOOL_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOL_DIR))
+
+import pl14s_suite
+import semantic_wat
+import summary
+
+
+def _dispatch(module_main: Callable[[], None], argv: list[str]) -> None:
+    original_argv = sys.argv
+    sys.argv = [original_argv[0], *argv]
+    try:
+        module_main()
+    finally:
+        sys.argv = original_argv
+
+
+def _run_manifest(argv: list[str]) -> None:
+    parser = argparse.ArgumentParser(description="Run an owcmp manifest")
+    parser.add_argument("--manifest", type=Path, required=True)
+    args = parser.parse_args(argv)
+    manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
+    lane = manifest.get("lane")
+    command_args = manifest.get("args")
+    if lane not in {"pl14s", "pl14s-wat"}:
+        raise SystemExit(f"unsupported owcmp manifest lane: {lane!r}")
+    if not isinstance(command_args, list):
+        raise SystemExit("owcmp manifest requires an 'args' list")
+    _dispatch(pl14s_suite.main, [str(item) for item in command_args])
+
+
+def main() -> None:
+    if len(sys.argv) < 2:
+        raise SystemExit("usage: owcmp <wat|pl14s|summarize|manifest> ...")
+
+    command = sys.argv[1]
+    rest = sys.argv[2:]
+
+    if command == "wat":
+        if not rest or rest[0] != "semantic":
+            raise SystemExit("usage: owcmp wat semantic ...")
+        _dispatch(semantic_wat.main, rest[1:])
+        return
+
+    if command == "pl14s":
+        if not rest or rest[0] != "run":
+            raise SystemExit("usage: owcmp pl14s run ...")
+        _dispatch(pl14s_suite.main, rest[1:])
+        return
+
+    if command == "summarize":
+        _dispatch(summary.main, rest)
+        return
+
+    if command == "manifest":
+        if not rest or rest[0] != "run":
+            raise SystemExit("usage: owcmp manifest run --manifest <path>")
+        _run_manifest(rest[1:])
+        return
+
+    if command == "observe":
+        raise SystemExit("owcmp observe normalize is deferred to a separate observability package")
+
+    raise SystemExit(f"unknown owcmp command: {command}")
+
+
+if __name__ == "__main__":
+    main()

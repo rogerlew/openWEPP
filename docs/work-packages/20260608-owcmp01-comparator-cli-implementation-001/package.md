@@ -1,6 +1,6 @@
 # OWCMP01 Comparator CLI Implementation
 
-Status: queued
+Status: complete
 Created: 2026-06-08
 Series: `owcmp` (comparison tooling)
 Execution mode: package-end-to-end
@@ -175,3 +175,22 @@ record the rationale in `artifacts/gate-results.md`.
 Execute package-end-to-end without asking for direction. Ask or HOLD only at a
 declared boundary above. Do not expand scope into OWCMP02 cutover or observe
 normalization.
+
+## Outcome
+
+Completed on 2026-06-08.
+
+- Implemented `tools/owcmp/owcmp` with `wat semantic`, `pl14s run`,
+  `summarize`, and minimal PL14S manifest dispatch.
+- Ported the PL14S semantic comparator and replay-suite behavior into
+  `tools/owcmp` while leaving `tools/legacy_comparison_suite` untouched.
+- Copied the PL14S tolerance config and Python dependency files under
+  `tools/owcmp` and proved byte identity against the legacy files.
+- Added focused integration coverage for the `owcmp` CLI contract, duplicate
+  row-key hard failure, compact summaries, skipped and failed command
+  summaries, dynamic `pl14s run` provenance, and deferred observe boundary.
+- Ran all package-required gates successfully; see `artifacts/gate-results.md`.
+- OWCMP02 can start from the OWCMP01 side for active reference retargeting and
+  deletion of `tools/legacy_comparison_suite`. OWCMP02 must not treat full
+  manifest schema/identity validation as complete; OWCMP01 manifest dispatch is
+  intentionally limited to PL14S `args` pass-through.

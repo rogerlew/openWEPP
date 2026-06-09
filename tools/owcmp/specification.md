@@ -253,8 +253,11 @@ Manifest responsibilities:
 - Declare baseline-year policy and expected common-row count when the lane
   requires full-span comparability.
 
-Initial implementation may support only the PL14S WAT lane. The manifest format
-should not assume that all future lanes are WAT, daily, single-OFE, or PL14S.
+Initial implementation may support only the PL14S WAT lane. In Package 1,
+`manifest run` is limited to a PL14S lane plus an explicit `args` list that is
+forwarded to `owcmp pl14s run`; it does not yet validate the full manifest
+responsibility list above. The manifest format should not assume that all future
+lanes are WAT, daily, single-OFE, or PL14S.
 
 ### Deferred: `owcmp observe normalize`
 
