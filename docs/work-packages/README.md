@@ -215,6 +215,12 @@ are not summarized here; the canonical forward queue is
 
 Recent mechanical refactor package authoring updates (for discoverability):
 
+- `20260609-owcmp04-context-efficiency-suite-manifests-001/`
+  - Purpose: complete the OWCMP context-efficiency follow-up by adding
+    declarative suite manifests for the user-named validation cohorts,
+    `owcmp manifest` discovery, `owcmp env --manifest` preflight, comparator
+    runner prompt guidance, and compact artifact-retention policy.
+
 - `20260609-owcmp03-agent-runner-h1-h39-validation-001/`
   - Purpose: make `tools/owcmp` discoverable to Codex batch runners, add the
     compact `owcmp batch h1-h39-semantic` surface, and validate H1-H39 execution

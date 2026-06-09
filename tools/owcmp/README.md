@@ -10,7 +10,10 @@ tools/owcmp/owcmp wat semantic ...
 tools/owcmp/owcmp pl14s run ...
 tools/owcmp/owcmp batch h1-h39-semantic ...
 tools/owcmp/owcmp summarize --input <report.json> --output-root <dir>
+tools/owcmp/owcmp manifest list
+tools/owcmp/owcmp manifest show --manifest <manifest.json>
 tools/owcmp/owcmp manifest run --manifest <manifest.json>
+tools/owcmp/owcmp env --manifest <manifest.json>
 ```
 
 `owcmp observe normalize` is intentionally deferred to a separate observability
@@ -25,6 +28,9 @@ support from `tools/owcmp/requirements.lock.txt`.
 an explicit `args` list, then dispatches to `owcmp pl14s run`. Full manifest
 schema validation, identity-evidence validation, and promotability policy belong
 to a later manifest package and must not be treated as complete for OWCMP02.
+`cohort-inventory` manifests under `tools/owcmp/suites/` are preflight
+declarations; inspect them with `manifest show` and validate their paths with
+`env --manifest` before using them in a package.
 
 ## PL14S Compatibility
 
@@ -72,3 +78,29 @@ The command writes:
 Agents should report the execution verdict, semantic pass count, first divergent
 key when present, focus-column metrics, and artifact paths. They should not paste
 raw per-hillslope reports or logs into chat.
+
+## Suite Manifests
+
+Common validation cohorts live under `tools/owcmp/suites/`:
+
+- `n-idaho-single-ofe-ksflag0.json`
+- `minnesota-corn-ksflag1.json`
+- `wa-cascades-mofe-ksflag0.json`
+
+Use:
+
+```bash
+tools/owcmp/owcmp manifest list
+tools/owcmp/owcmp env --manifest tools/owcmp/suites/n-idaho-single-ofe-ksflag0.json
+```
+
+These manifests reduce prompt context by giving agents one stable path for a
+known run cohort. They do not by themselves declare a complete comparator pair
+unless their `lane` is executable.
+
+## Artifact Retention
+
+Routine comparator packages should commit compact handoff artifacts:
+`summary.json`, `summary.md`, and `command-log.json`. Raw logs, per-hillslope
+reports, and intermediate files stay local by default unless a package explicitly
+needs them for audit. See `tools/owcmp/artifact-retention.md`.

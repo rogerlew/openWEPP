@@ -30,6 +30,8 @@ this list is complete or current, and do not invent scope):
   - `tools/owcmp/owcmp wat semantic ...`
   - `tools/owcmp/owcmp pl14s run ...`
   - `tools/owcmp/owcmp summarize --input <report.json> --output-root <dir>`
+  - `tools/owcmp/owcmp manifest list`
+  - `tools/owcmp/owcmp env --manifest tools/owcmp/suites/<suite>.json`
 - Preferred H1-H39 semantic WAT batch:
   - `tools/owcmp/owcmp batch h1-h39-semantic --baseline-dir <dir> --candidate-dir <dir> --candidate-year-offset 2012 --output-root <package-artifacts>/runner-h1-h39`
   - Return `summary.json`, `summary.md`, `command-log.json`, and log/report
@@ -58,6 +60,9 @@ Output contract (compact):
   delta, tolerance band — not raw per-row dumps.
 - Absolute log paths for each run under the package `artifacts/`.
 - One-line verdict; hard blockers only, with command-level evidence and exit code.
+- Artifact retention default: commit or return compact `summary.json`,
+  `summary.md`, and `command-log.json`; keep raw logs/reports local unless the
+  package explicitly asks for audit preservation.
 
 Truthfulness:
 - Label `Ran:` only for commands actually executed this run; record real exit codes.

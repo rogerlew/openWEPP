@@ -11,8 +11,18 @@ const OWCMP_CLI: &str = include_str!("../../tools/owcmp/owcmp");
 const OWCMP_BATCH_H1_H39: &str = include_str!("../../tools/owcmp/batch_h1_h39.py");
 const OWCMP_SEMANTIC: &str = include_str!("../../tools/owcmp/semantic_wat.py");
 const OWCMP_PL14S: &str = include_str!("../../tools/owcmp/pl14s_suite.py");
+const OWCMP_SUITE_MANIFEST: &str = include_str!("../../tools/owcmp/suite_manifest.py");
 const OWCMP_SPEC: &str = include_str!("../../tools/owcmp/specification.md");
 const OWCMP_README: &str = include_str!("../../tools/owcmp/README.md");
+const OWCMP_SUITES_README: &str = include_str!("../../tools/owcmp/suites/README.md");
+const OWCMP_N_IDAHO_SUITE: &str =
+    include_str!("../../tools/owcmp/suites/n-idaho-single-ofe-ksflag0.json");
+const OWCMP_MINNESOTA_SUITE: &str =
+    include_str!("../../tools/owcmp/suites/minnesota-corn-ksflag1.json");
+const OWCMP_WA_SUITE: &str = include_str!("../../tools/owcmp/suites/wa-cascades-mofe-ksflag0.json");
+const OWCMP_ARTIFACT_RETENTION: &str = include_str!("../../tools/owcmp/artifact-retention.md");
+const OWCMP_RUNNER_GUIDANCE: &str =
+    include_str!("../../docs/prompt_templates/owcmp-comparator-runner-guidance.md");
 
 fn repo_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).to_path_buf()
@@ -57,7 +67,12 @@ fn owcmp_declares_pl14s_contract_markers_and_deferred_observe_boundary() {
             "pl14s run",
             "batch h1-h39-semantic",
             "summarize",
-            "manifest run",
+            "usage: owcmp manifest <list|show|run>",
+            "suite_manifest.list_main",
+            "suite_manifest.show_main",
+            "_run_manifest",
+            "env",
+            "suite_manifest",
             "VENV_PYTHON",
             "os.execv",
             "owcmp observe normalize is deferred",
@@ -110,10 +125,163 @@ fn owcmp_declares_pl14s_contract_markers_and_deferred_observe_boundary() {
             "Do not implement `owcmp observe normalize` in this package.",
             "Focused `owcmp` contract tests pass",
             "`pl14s_tier_a_candidate_emission_and_replay_contract` remains intact",
+            "owcmp-env-v1",
+            "owcmp manifest list",
+            "owcmp env --manifest",
         ],
     ));
     assert!(OWCMP_README.contains("tools/owcmp/owcmp wat semantic"));
     assert!(OWCMP_README.contains("tools/owcmp/owcmp batch h1-h39-semantic"));
+    assert!(OWCMP_README.contains("tools/owcmp/suites/n-idaho-single-ofe-ksflag0.json"));
+    assert!(contains_all(
+        OWCMP_SUITE_MANIFEST,
+        &[
+            "SCHEMA_VERSION = \"owcmp-suite-manifest-v1\"",
+            "ENV_SCHEMA_VERSION = \"owcmp-env-v1\"",
+            "pattern-range",
+            "pyarrow",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_SUITES_README,
+        &[
+            "tools/owcmp/owcmp manifest list",
+            "tools/owcmp/owcmp env --manifest",
+            "cohort-inventory",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_N_IDAHO_SUITE,
+        &[
+            "\"suite_id\": \"n-idaho-single-ofe-ksflag0\"",
+            "\"run_root\": \"/wc1/runs/un/unpalatable-rind\"",
+            "\"path_pattern\": \"/wc1/runs/un/unpalatable-rind/wepp/output/H{h}.plot.dat\"",
+            "\"end\": 39",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_MINNESOTA_SUITE,
+        &[
+            "\"suite_id\": \"minnesota-corn-ksflag1\"",
+            "\"run_root\": \"/wc1/runs/al/algebraic-radium\"",
+            "\"path_pattern\": \"/wc1/runs/al/algebraic-radium/wepp/output/H{h}.wat.dat\"",
+            "\"end\": 43",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_WA_SUITE,
+        &[
+            "\"suite_id\": \"wa-cascades-mofe-ksflag0\"",
+            "\"run_root\": \"/wc1/runs/ar/arboreal-dendrite\"",
+            "\"path_pattern\": \"/wc1/runs/ar/arboreal-dendrite/wepp/output/H{h}.wat.dat\"",
+            "\"end\": 36",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_ARTIFACT_RETENTION,
+        &[
+            "summary.json",
+            "summary.md",
+            "command-log.json",
+            "Local-Only by Default",
+        ],
+    ));
+    assert!(contains_all(
+        OWCMP_RUNNER_GUIDANCE,
+        &[
+            "comparator_suite_runner",
+            "tools/owcmp/owcmp manifest list",
+            "tools/owcmp/owcmp env --manifest",
+            "Do not paste raw logs",
+        ],
+    ));
+}
+
+#[test]
+fn owcmp_manifest_list_discovers_seeded_suites() {
+    let output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(repo_root().join("tools").join("owcmp").join("owcmp"))
+        .arg("manifest")
+        .arg("list")
+        .arg("--json")
+        .output()
+        .expect("python3 should run owcmp manifest list");
+
+    assert!(
+        output.status.success(),
+        "manifest list should pass; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"schema_version\": \"owcmp-suite-list-v1\""));
+    assert!(stdout.contains("\"suite_id\": \"n-idaho-single-ofe-ksflag0\""));
+    assert!(stdout.contains("\"suite_id\": \"minnesota-corn-ksflag1\""));
+    assert!(stdout.contains("\"suite_id\": \"wa-cascades-mofe-ksflag0\""));
+}
+
+#[test]
+fn owcmp_env_checks_temp_manifest_and_rejects_inventory_run() {
+    let temp_dir = fixture_temp_dir("owcmp_manifest_env");
+    let run_dir = temp_dir.join("run");
+    fs::create_dir_all(&run_dir).expect("run fixture directory should be creatable");
+    fs::write(run_dir.join("H1.wat.dat"), "fixture H1\n").expect("H1 fixture should be writable");
+    fs::write(run_dir.join("H2.wat.dat"), "fixture H2\n").expect("H2 fixture should be writable");
+
+    let manifest_path = temp_dir.join("suite.json");
+    let manifest_payload = r#"{
+  "schema_version": "owcmp-suite-manifest-v1",
+  "suite_id": "fixture-suite",
+  "title": "Fixture Suite",
+  "lane": "cohort-inventory",
+  "run_root": "run",
+  "checks": [
+    {"name": "run_root", "kind": "directory", "path": "run", "required": true},
+    {"name": "wat_outputs", "kind": "pattern-range", "path_pattern": "run/H{h}.wat.dat", "start": 1, "end": 2, "required": true}
+  ]
+}"#;
+    fs::write(&manifest_path, manifest_payload).expect("manifest fixture should be writable");
+
+    let env_output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(repo_root().join("tools").join("owcmp").join("owcmp"))
+        .arg("env")
+        .arg("--manifest")
+        .arg(&manifest_path)
+        .arg("--json")
+        .output()
+        .expect("python3 should run owcmp env");
+    assert!(
+        env_output.status.success(),
+        "env should pass for complete fixture manifest; stderr={}",
+        String::from_utf8_lossy(&env_output.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&env_output.stdout);
+    assert!(stdout.contains("\"schema_version\": \"owcmp-env-v1\""));
+    assert!(stdout.contains("\"suite_id\": \"fixture-suite\""));
+    assert!(stdout.contains("\"status\": \"PASS\""));
+    assert!(stdout.contains("\"name\": \"wat_outputs\""));
+
+    let run_output = Command::new("python3")
+        .current_dir(repo_root())
+        .arg(repo_root().join("tools").join("owcmp").join("owcmp"))
+        .arg("manifest")
+        .arg("run")
+        .arg("--manifest")
+        .arg(&manifest_path)
+        .output()
+        .expect("python3 should run owcmp manifest run");
+    assert!(
+        !run_output.status.success(),
+        "cohort-inventory manifests should not execute as comparisons"
+    );
+    assert!(
+        String::from_utf8_lossy(&run_output.stderr)
+            .contains("cohort inventory manifests are preflight declarations"),
+        "inventory manifest rejection should explain preflight-only behavior"
+    );
+
+    let _ = fs::remove_dir_all(&temp_dir);
 }
 
 #[test]

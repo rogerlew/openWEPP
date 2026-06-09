@@ -1,0 +1,59 @@
+{
+  "schema_version": "owcmp-suite-manifest-v1",
+  "suite_id": "n-idaho-single-ofe-ksflag0",
+  "title": "North Idaho single-OFE H1-H39 ksflag=0 validation cohort",
+  "lane": "cohort-inventory",
+  "run_root": "/wc1/runs/un/unpalatable-rind",
+  "description": "H1 through H39 single-OFE North Idaho WEPPcloud run with ksflag=0. This manifest declares the run-root surfaces used when preparing owcmp comparisons; it is not a complete baseline-vs-candidate comparison pair.",
+  "tags": [
+    "north-idaho",
+    "single-ofe",
+    "h1-h39",
+    "ksflag=0"
+  ],
+  "checks": [
+    {
+      "name": "run_root",
+      "kind": "directory",
+      "path": "/wc1/runs/un/unpalatable-rind",
+      "required": true
+    },
+    {
+      "name": "wepp_output_dir",
+      "kind": "directory",
+      "path": "/wc1/runs/un/unpalatable-rind/wepp/output",
+      "required": true
+    },
+    {
+      "name": "hillslope_plot_outputs",
+      "kind": "pattern-range",
+      "path_pattern": "/wc1/runs/un/unpalatable-rind/wepp/output/H{h}.plot.dat",
+      "start": 1,
+      "end": 39,
+      "required": true
+    },
+    {
+      "name": "interchange_wat",
+      "kind": "file",
+      "path": "/wc1/runs/un/unpalatable-rind/wepp/output/interchange/H.wat.parquet",
+      "required": true
+    }
+  ],
+  "artifact_policy": {
+    "commit": [
+      "summary.json",
+      "summary.md",
+      "command-log.json",
+      "review/disposition evidence"
+    ],
+    "local_only_by_default": [
+      "logs/",
+      "reports/",
+      "raw/"
+    ]
+  },
+  "agent_runner": {
+    "preferred_agent": "comparator_suite_runner",
+    "return": "compact metrics and artifact paths only"
+  }
+}

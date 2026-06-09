@@ -22,6 +22,7 @@ if str(TOOL_DIR) not in sys.path:
 import pl14s_suite
 import batch_h1_h39
 import semantic_wat
+import suite_manifest
 import summary
 
 
@@ -37,11 +38,25 @@ def _dispatch(module_main: Callable[[], None], argv: list[str]) -> None:
 def _run_manifest(argv: list[str]) -> None:
     parser = argparse.ArgumentParser(description="Run an owcmp manifest")
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path)
     args = parser.parse_args(argv)
     manifest = json.loads(args.manifest.read_text(encoding="utf-8"))
     lane = manifest.get("lane")
     command_args = manifest.get("args")
     if lane not in {"pl14s", "pl14s-wat"}:
+        if lane == "cohort-inventory":
+            raise SystemExit(
+                "owcmp cohort inventory manifests are preflight declarations; "
+                "use `owcmp env --manifest <path>` or `owcmp manifest show --manifest <path>`"
+            )
+        if lane in {"h1-h39-semantic", "h1-h39-semantic-batch"}:
+            batch_args = command_args
+            if not isinstance(batch_args, list):
+                raise SystemExit("h1-h39 semantic manifest requires an 'args' list")
+            if args.output_root is not None:
+                batch_args = [*batch_args, "--output-root", str(args.output_root)]
+            _dispatch(batch_h1_h39.main, [str(item) for item in batch_args])
+            return
         raise SystemExit(f"unsupported owcmp manifest lane: {lane!r}")
     if not isinstance(command_args, list):
         raise SystemExit("owcmp manifest requires an 'args' list")
@@ -50,7 +65,7 @@ def _run_manifest(argv: list[str]) -> None:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        raise SystemExit("usage: owcmp <wat|pl14s|batch|summarize|manifest> ...")
+        raise SystemExit("usage: owcmp <wat|pl14s|batch|summarize|manifest|env> ...")
 
     command = sys.argv[1]
     rest = sys.argv[2:]
@@ -78,9 +93,21 @@ def main() -> None:
         return
 
     if command == "manifest":
-        if not rest or rest[0] != "run":
-            raise SystemExit("usage: owcmp manifest run --manifest <path>")
-        _run_manifest(rest[1:])
+        if not rest:
+            raise SystemExit("usage: owcmp manifest <list|show|run> ...")
+        if rest[0] == "list":
+            suite_manifest.list_main(rest[1:])
+            return
+        if rest[0] == "show":
+            suite_manifest.show_main(rest[1:])
+            return
+        if rest[0] == "run":
+            _run_manifest(rest[1:])
+            return
+        raise SystemExit("usage: owcmp manifest <list|show|run> ...")
+
+    if command == "env":
+        suite_manifest.env_main(rest)
         return
 
     if command == "observe":

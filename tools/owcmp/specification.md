@@ -86,7 +86,10 @@ tools/owcmp/owcmp wat semantic ...
 tools/owcmp/owcmp pl14s run ...
 tools/owcmp/owcmp batch h1-h39-semantic ...
 tools/owcmp/owcmp summarize ...
+tools/owcmp/owcmp manifest list ...
+tools/owcmp/owcmp manifest show ...
 tools/owcmp/owcmp manifest run ...
+tools/owcmp/owcmp env ...
 ```
 
 Deferred command:
@@ -303,6 +306,40 @@ forwarded to `owcmp pl14s run`; it does not yet validate the full manifest
 responsibility list above. The manifest format should not assume that all future
 lanes are WAT, daily, single-OFE, or PL14S.
 
+### `owcmp manifest list` / `owcmp manifest show`
+
+Lists and displays suite manifests under `tools/owcmp/suites/`.
+
+Current suite manifest schema:
+
+- `schema_version`: `owcmp-suite-manifest-v1`.
+- `suite_id`: stable short identifier.
+- `lane`: either an executable lane such as `h1-h39-semantic` or a declaration
+  lane such as `cohort-inventory`.
+- `run_root`: external run root when the manifest describes a WEPPcloud cohort.
+- `checks`: required files, directories, and pattern ranges used by `owcmp env`.
+- `artifact_policy`: compact artifacts to commit and raw artifacts that stay
+  local by default.
+- `agent_runner`: intended runner and compact return contract.
+
+`cohort-inventory` manifests are not runnable comparison pairs. `manifest run`
+must fail closed for them and point the operator to `owcmp env --manifest` or
+`owcmp manifest show`.
+
+### `owcmp env`
+
+Checks the local `owcmp` execution environment and, optionally, a suite manifest.
+
+Required checks:
+
+- Python executable and repo-local `.venv/bin/python`.
+- Optional parquet dependency `pyarrow`.
+- Default tolerance config.
+- Declared manifest paths and pattern ranges when `--manifest` is supplied.
+
+The command emits schema `owcmp-env-v1` with `--json` and returns nonzero when a
+required environment or manifest check fails.
+
 ### Deferred: `owcmp observe normalize`
 
 Normalizes legacy observe evidence into structured records for comparison
@@ -358,6 +395,22 @@ summary. The expected subagent contract is:
 - Return command status, compact metrics, verdict, and artifact paths.
 - Prefer `tools/owcmp/owcmp batch h1-h39-semantic` for H1-H39 semantic WAT
   comparisons instead of historical package-local scripts.
+- Prefer `tools/owcmp/suites/*.json` manifests plus
+  `tools/owcmp/owcmp env --manifest <path>` for known validation cohorts.
+
+## Artifact Retention Policy
+
+Routine comparator packages should commit compact handoff artifacts:
+
+- `summary.json`
+- `summary.md`
+- `command-log.json`
+- package review, verification, and disposition evidence
+
+Raw logs, per-hillslope semantic reports, per-row dumps, and intermediate files
+should remain local by default under the declared output root. Commit raw reports
+only when a package explicitly needs them for audit or when the raw artifact is
+the asserted contract surface.
 
 ## Compatibility and Deprecation
 

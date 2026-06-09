@@ -34,6 +34,8 @@ Update all of these surfaces together:
 - `tools/owcmp/specification.md` for normative behavior, schemas, and artifact
   contracts.
 - `tools/owcmp/README.md` for the runnable command surface.
+- `tools/owcmp/suites/` for reusable suite manifests when the command or cohort
+  should be discoverable by agents.
 - Focused tests in `tests/integration/owcmp_cli_contract.rs` or a new
   integration test when the surface is large enough to justify separation.
 
@@ -60,6 +62,12 @@ When adding a new suite, define these first:
 Prefer composing existing commands instead of duplicating comparison math. For
 example, the H1-H39 batch composes the semantic WAT comparator and aggregates
 its reports.
+
+For validation cohorts that do not yet define a complete baseline-vs-candidate
+comparison pair, add an `owcmp-suite-manifest-v1` `cohort-inventory` manifest
+under `tools/owcmp/suites/`. It should declare the run root, expected surfaces,
+artifact policy, and `comparator_suite_runner` return contract. It should pass
+`tools/owcmp/owcmp env --manifest <path>` before being referenced in prompts.
 
 ## Artifact Contract
 
