@@ -185,11 +185,21 @@ freeze-only B boundary, before any thaw arm exists.
   freezing; guard trips fail-closed rather than clamping); an overflow
   conservation test (water routed to `watpdg`/`watbtm` stays in the
   identity).
+- Starter gate (from the C1a ledger, before the cohort): p43 and p1 pass
+  the day-94 capacity boundary with **zero** aggregate `frzw > ul` rows and
+  shadow `frwatc` residuals at numerical noise (the C1a baseline is a 33 m
+  accumulated ingress residual and 50 m ice overfill by day 93).
 - Gates: those tests green; 43/43 clean; years 2–6 closure at noise;
   capacity invariant never violated on the cohort (zero guard trips on
   valid input); freeze-arm directional metrics (de-pinning, decorrelation)
   not regressed vs the B boundary. Bit-identical outputs are NOT expected
   (redistribution is new physics on the freeze path) — declare deltas.
+- Watch expectation (not a gate): per the C1a unification — the runaway
+  fine ice is what drives the front to the profile bound — bounded ice
+  should pull **depth** materially below ~1782 mm already in this
+  increment, before any thaw arm. If depth does not move, the energy/
+  resistance side of the freeze arms has an independent defect; record it
+  rather than tuning.
 
 ## Increment C2 — thaw arms + sandwich geometry + D3 acceptance
 
