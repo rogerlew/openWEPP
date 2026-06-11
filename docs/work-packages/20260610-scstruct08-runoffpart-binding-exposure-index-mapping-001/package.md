@@ -1,6 +1,6 @@
 # SCSTRUCT08 — SC-RUNOFFPART Binding Exposure Index + Triage
 
-Status: queued
+Status: executed-deferred-science-review-follow-on
 Created: 2026-06-10
 Series: `scstruct` (science-contract structure / context optimization)
 Routes-to: defect `SCSTRUCT08-RUNOFFPART-BEI-SCIENCE-REVIEW` (adjudication follow-on SCSTRUCT09)
@@ -99,4 +99,4 @@ Do not relocate any narrative. Do not gate a row to `none` without a real
 ## Autonomy
 Execute end-to-end and conservatively. Route ambiguity to science review rather
 than guessing; relocate nothing. Hand the adjudication queue to SCSTRUCT09.
-Subagent requirement: none (docs-only triage; no heavy runs).
+Subagent authorization: none (docs-only triage; no heavy runs).

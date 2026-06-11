@@ -853,6 +853,36 @@ Closure delta beyond `wb12_runoff_closure_tolerance` is an invalid closure state
    malformed-current-array rejection, and a stale-state conflict where same-pass
    `Q` remains authoritative for storage closure.
 
+## Binding Exposure Index
+
+Status: `scstruct08-triage-deferred`
+Evidence mode: `Static`
+
+This index conserves binding residue during SC-RUNOFFPART context reduction.
+Rows mapped to existing IDs have a same-section `INV-RUNOFFPART-*` reference and
+are resolved only for mechanical exposure. Rows routed to
+`science-review-follow-on` remain in the binding core and are not sidecar-
+eligible until SCSTRUCT09 maps, promotes, or explicitly retains them with a
+narrower HOLD.
+
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `EROD12-CROSS-DOMAIN-OWNERSHIP-AND-GUARD-CLOSURE-ADDENDUM` | `SC-RUNOFFPART-001.md#erod12-cross-domain-ownership-and-guard-closure-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-007, INV-RUNOFFPART-008, INV-RUNOFFPART-009, INV-RUNOFFPART-011` | `none` | SCSTRUCT08 mechanical map: same-section table names RUNOFFPART producer ownership for runoff/peak-duration and multi-OFE handoff lanes through the cited invariants; cross-contract consumer details remain core-resident pending SCSTRUCT09 semantic review. |
+| `WB12-RUNOFF-RECONCILIATION-ADDENDUM` | `SC-RUNOFFPART-001.md#wb12-runoff-reconciliation-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: runoff reconciliation equations, carryover precedence, lane-specific closure deltas, typed guards, and vectors have no same-section RUNOFFPART binding ID. |
+| `WB13-DAILY-OUTPUT-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#wb13-daily-output-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: WB13 `Q`/`QOFE`/`UpStrmQ`/`RM`/`P` output and hard-fail requirements have no same-section RUNOFFPART binding ID. |
+| `WB14-INFILTRATION-AND-SUBDAILY-HYETOGRAPH-KERNEL-AUTHORITY-ADDENDUM` | `SC-RUNOFFPART-001.md#wb14-infiltration-and-subdaily-hyetograph-kernel-authority-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: hyetograph, disturbed-conductivity, Green-Ampt, runoff reconciliation, tolerance, guard, and vector obligations have no same-section RUNOFFPART binding ID. |
+| `WB15-CANOPY-INTERCEPTION-RUNTIME-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#wb15-canopy-interception-runtime-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: interception ordering, biomass equation-input cap, coupled runoff closure, guards, and vectors have no same-section RUNOFFPART binding ID. |
+| `IRRIG10-IRRIGATION-RUNTIME-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#irrig10-irrigation-runtime-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: irrigation schedule resolution, forcing-depth coupling, runoff equation, guard, and vector obligations have no same-section RUNOFFPART binding ID. |
+| `CLIM05-SNOW-RUNTIME-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#clim05-snow-runtime-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: snow control/state requirements, signed `S` liquid input coupling, runoff reconciliation, and guard/vector obligations have no same-section RUNOFFPART binding ID. |
+| `CLIM06-FROZEN-SOIL-RUNTIME-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#clim06-frozen-soil-runtime-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: frost controls, frozen-state domains, infiltration-capacity consumption, guard, and vector obligations have no same-section RUNOFFPART binding ID. |
+| `WB16-PEAK-RUNOFF-KERNEL-ADDENDUM` | `SC-RUNOFFPART-001.md#wb16-peak-runoff-kernel-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: peak-runoff branch equations, baseline near-zero behavior, `m`/`ealpha` producer authority, provenance policy, guards, and vectors have no same-section RUNOFFPART binding ID. |
+| `ARCH22-TYPED-PRODUCTION-SURFACE-ADDENDUM` | `SC-RUNOFFPART-001.md#arch22-typed-production-surface-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: typed symbol/accessor migration obligations and guard-preservation vectors have no same-section RUNOFFPART binding ID. |
+| `EROD13-WAVE-1-ACTIVE-PRODUCER-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#erod13-wave-1-active-producer-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: Wave-1 enabled-path mandatory producer surfaces and fallback prohibitions cite RUNOFFPART ownership but no same-section RUNOFFPART binding ID. |
+| `EROD14-WAVE-2-ACTIVE-PRODUCER-COUPLING-ADDENDUM` | `SC-RUNOFFPART-001.md#erod14-wave-2-active-producer-coupling-addendum` | `active` | `maps-to-existing-INV` | `INV-RUNOFFPART-007, INV-RUNOFFPART-008, INV-RUNOFFPART-009` | `none` | SCSTRUCT08 mechanical map: same-section text preserves continuity from `INV-RUNOFFPART-007..009` for multi-OFE routing-classification and producer-coupling surfaces; semantic completeness remains for SCSTRUCT09 before any relocation. |
+| `HPHYS0240-HOURLY-RUNOFF-CARRYOVER-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0240-hourly-runoff-carryover-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: same-pass carryover precedence, republished carryover, anti-shadow behavior, and malformed flux rejection have no same-section RUNOFFPART binding ID. |
+| `HPHYS0241-MOFE-HOURLY-CARRY-ARRAY-RUNOFF-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0241-mofe-hourly-carry-array-runoff-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: hourly array-authoritative upstream runon, aggregate anti-shadow, area-scaling provenance, and malformed-array rejection have no same-section RUNOFFPART binding ID. |
+| `HPHYS0242-SURFACE-SATURATION-RUNOFF-ADDBACK-ADDENDUM` | `SC-RUNOFFPART-001.md#hphys0242-surface-saturation-runoff-addback-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT08 conservative triage: `surdra` addback, same-pass `Q` closure, hidden-storage prohibition, and vector obligations have no same-section RUNOFFPART binding ID. |
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |

@@ -2,7 +2,7 @@
 
 Scope: local repository contract-structure task; flat-file reads/edits only.
 Execution mode: package-end-to-end (autonomous, conservative).
-Subagent requirement: none (docs-only triage; no heavy runs).
+Subagent authorization: none (docs-only triage; no heavy runs).
 
 Autonomy: build the SC-RUNOFFPART Binding Exposure Index, classify every addendum
 row, route ambiguity to science review, run the lint, author the handoff — without
@@ -34,8 +34,10 @@ relocation, no `INV-*`/`OBL-*` change, no kernel edit; no comparator re-tiering.
    section: classify `maps-to-existing-INV` (same-section `INV-RUNOFFPART-*` IDs,
    gate `none`) / `unpromoted-binding` / `undecidable` / `historical-or-superseded`;
    route everything not cleanly `maps-to-existing-INV` to `science-review-follow-on`.
-3. Run `python3 tools/check_sc_binding_exposure.py --strict docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md`;
-   confirm `PASS-DEFERRED`, 0 malformed rows, 0 gamed gate-flips. Record output.
+3. Run `python3 tools/check_sc_binding_exposure.py docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md`;
+   confirm `PASS-DEFERRED`, 0 malformed rows, 0 gamed gate-flips. Run `--strict`
+   as a not-consolidated signal; strict exits nonzero while deferred rows remain.
+   Record both outputs.
 4. Author `artifacts/runoffpart-addendum-classification.md` and
    `artifacts/science-review-followon-queue.md` (the SCSTRUCT09 input).
 5. Dual review/disposition/verification.
