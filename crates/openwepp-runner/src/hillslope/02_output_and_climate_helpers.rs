@@ -603,6 +603,7 @@ fn build_hillslope_wat_row(
         latqcc: wb13_row.wb13_row.latqcc,
         total_soil_water: wb13_row.wb13_row.total_soil,
         frozwt: wb13_row.wb13_row.frozwt,
+        frdp: wb13_row.frdp_mm,
         snow_water: wb13_row.wb13_row.snow_water,
         qofe: wb13_row.wb13_row.qofe,
         tile: wb13_row.wb13_row.tile,
@@ -822,6 +823,20 @@ fn build_simulation_owned_wb13_row(
     }
     let frozwt = frozwt_m * 1_000.0;
 
+    let frdp_m = require_runtime_surface_scalar(runtime_surface, "frost.runtime_frdp_m")?;
+    if frdp_m < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "frost.runtime_frdp_m must be >= 0.0, observed {frdp_m}"
+        )));
+    }
+    let profile_depth_m = profile_depth_mm / 1_000.0;
+    if frdp_m > profile_depth_m + 1.0e-9 {
+        return Err(wb13_simout_failure(format!(
+            "frost.runtime_frdp_m must be <= wb13_profile_depth_mm, observed {frdp_m} m > {profile_depth_m} m"
+        )));
+    }
+    let frdp_mm = frdp_m * 1_000.0;
+
     let runtime_swe_m = require_runtime_surface_scalar(runtime_surface, "snow.runtime_swe")?;
     if runtime_swe_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -959,6 +974,7 @@ fn build_simulation_owned_wb13_row(
         ("latqcc", latqcc),
         ("Total-Soil", total_soil),
         ("frozwt", frozwt),
+        ("frdp", frdp_mm),
         ("Snow-Water", snow_water),
         ("QOFE", q),
         ("Tile", tile),
@@ -1011,6 +1027,7 @@ fn build_simulation_owned_wb13_row(
     Ok(SimulationOwnedWb13Row {
         wb13_row,
         interception_mm,
+        frdp_mm,
         month: month_i8,
         day_of_month: day_of_month_i8,
         water_year: water_year_i16,
@@ -1587,4 +1604,3 @@ fn day_of_year(year: i32, month: i32, day: i32) -> Result<u16, HillslopeCliError
 fn is_leap_year(year: i32) -> bool {
     (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
 }
-

@@ -362,6 +362,10 @@ mod tests {
             BoundaryValue::scalar(0.0),
         );
         runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_frdp_m"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.state_surface.insert(
             BoundarySymbol::from("snow.runtime_swe"),
             BoundaryValue::scalar(0.0),
         );
@@ -420,6 +424,54 @@ mod tests {
             julian_day: 1,
             precipitation_mm: 4.0,
         }
+    }
+
+    #[test]
+    fn fdhp01_wb13_publication_converts_runtime_frdp_to_wat_mm() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_frdp_m"),
+            BoundaryValue::scalar(0.123),
+        );
+
+        let wb13_row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1.0,
+            2000,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 row should build from valid nonzero frost depth");
+        let wat_row =
+            build_hillslope_wat_row(&wb13_row).expect("WAT row should build from WB13 row");
+
+        assert!((wb13_row.frdp_mm - 123.0).abs() < 1.0e-12);
+        assert!((wat_row.frdp - 123.0).abs() < 1.0e-12);
+    }
+
+    #[test]
+    fn fdhp01_wb13_publication_rejects_frdp_beyond_profile_depth() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_frdp_m"),
+            BoundaryValue::scalar(0.300),
+        );
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1.0,
+            2000,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("WAT publication must reject frost depth beyond physical profile");
+
+        assert!(
+            error.to_string().contains("frost.runtime_frdp_m must be <="),
+            "unexpected error: {error}"
+        );
     }
 
     fn execute_fixture_run(prefix: &str) -> (HillslopeRunReport, PathBuf) {

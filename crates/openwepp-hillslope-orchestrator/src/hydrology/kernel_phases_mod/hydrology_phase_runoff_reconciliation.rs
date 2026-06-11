@@ -778,13 +778,13 @@ pub(crate) fn run_runoff_reconciliation(
                 WB14_SYMBOL_FROST_RUNTIME_DFROST,
                 frost_outcome.dfrost,
                 Some(0.0),
-                Some(WB14_FROST_MAX_DEPTH_M),
+                Some(frost_outcome.profile_depth_m),
             ));
             state_updates.push(WritebackField::bounded(
                 WB14_SYMBOL_FROST_RUNTIME_DTHAW,
                 frost_outcome.dthaw,
                 Some(0.0),
-                Some(WB14_FROST_MAX_DEPTH_M),
+                Some(frost_outcome.profile_depth_m),
             ));
             state_updates.push(WritebackField::bounded(
                 WB14_SYMBOL_FROST_RUNTIME_NFT,
@@ -808,25 +808,25 @@ pub(crate) fn run_runoff_reconciliation(
                 BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
                 frost_outcome.frdp_m,
                 Some(0.0),
-                Some(WB14_FROST_MAX_DEPTH_M),
+                Some(frost_outcome.profile_depth_m),
             ));
             state_updates.push(WritebackField::bounded(
                 BoundarySymbol::from(FROST_RUNTIME_THDP_M_SYMBOL),
                 frost_outcome.thdp_m,
                 Some(0.0),
-                Some(WB14_FROST_MAX_DEPTH_M),
+                Some(frost_outcome.profile_depth_m),
             ));
             state_updates.push(WritebackField::bounded(
                 BoundarySymbol::from(FROST_RUNTIME_TFRDP_M_SYMBOL),
                 frost_outcome.tfrdp_m,
                 Some(0.0),
-                Some(WB14_FROST_MAX_DEPTH_M),
+                Some(frost_outcome.profile_depth_m),
             ));
             state_updates.push(WritebackField::bounded(
                 BoundarySymbol::from(FROST_RUNTIME_TTHAWD_M_SYMBOL),
                 frost_outcome.tthawd_m,
                 Some(0.0),
-                Some(WB14_FROST_MAX_DEPTH_M),
+                Some(frost_outcome.profile_depth_m),
             ));
             state_updates.push(WritebackField::bounded(
                 BoundarySymbol::from(FROST_RUNTIME_FGTHWD_FLAG_SYMBOL),

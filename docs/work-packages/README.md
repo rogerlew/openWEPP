@@ -189,14 +189,17 @@ publication-safe Daymet CLI audit:
    settle-vertical-before-routing principle promoted frost-depth heat-flow
    parity to ROADMAP queue item 1 ahead of MOFE (2026-06-07). Package:
    `20260608-fdmc01-frost-depth-comparator-characterization-001/`.
-7f. **FDHP01 frost-depth heat-flow parity** *(scaffolded — ROADMAP item 1, next
-   to run)* — DC-ExecPlan to replace the freeze-index proxy with the
+7f. **FDHP01 frost-depth heat-flow parity** *(executed-hold — ROADMAP item 1
+   remains active)* — attempted to replace the freeze-index proxy with the
    energy-balance heat-flow depth model (`INV-SNOWFREEZE-006`/`-012`, legacy
-   `frostn` lineage, CRM Ch. 3.8, Dun et al. 2010), closing
-   `GAP-SNOWFREEZE-002` on the frost-active single-OFE substrate with
-   conservation still closing. Scaffold updated 2026-06-10 to current guidance
-   (post-refactor source localization, §4a subagent requirement, owcmp
-   comparator execution, tiered required reading). Package:
+   `frostn` lineage, CRM Ch. 3.8, Dun et al. 2010) and added WAT `frdp`
+   publication. Post-review cohort validation on 2026-06-11 failed closure:
+   `42/43` frost-on prefixes emitted WAT, `p2` failed before WAT publication at
+   `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual closure
+   residuals reached `75.439 mm`, and emitted-prefix depth metrics overreached
+   the FDMC01 legacy envelope (`open max depth mean 1782.267 mm`, median
+   correlation `-0.103`). `SC-SNOWFREEZE-001` v55 reopens
+   `GAP-SNOWFREEZE-002`; do not advance to MOFE until FDHP01 closes. Package:
    `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-settled (depth model at parity per item 7f, not

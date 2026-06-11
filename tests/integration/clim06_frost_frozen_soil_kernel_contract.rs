@@ -15,11 +15,8 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 ";
 
 const CLIM06_TEST_TOLERANCE: f64 = 1.0e-6;
-const EXPECTED_INF_CAP_FRZ: f64 = 0.1;
-const EXPECTED_DFROST: f64 = 0.2;
 const EXPECTED_DTHAW: f64 = 0.0;
 const EXPECTED_NFT: f64 = 1.0;
-const EXPECTED_WS_FRZ: f64 = 0.2;
 
 #[allow(clippy::too_many_lines)]
 fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
@@ -345,7 +342,14 @@ fn clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_cap
         .get(&BoundarySymbol::from("frost.runtime_dfrost"))
         .expect("frost.runtime_dfrost should be present")
         .as_f64();
-    assert!((dfrost - EXPECTED_DFROST).abs() <= CLIM06_TEST_TOLERANCE);
+    assert!(
+        dfrost > CLIM06_TEST_TOLERANCE,
+        "active cold frost coupling should publish positive Dfrost"
+    );
+    assert!(
+        dfrost <= 0.3 + CLIM06_TEST_TOLERANCE,
+        "Dfrost should remain bounded by the seeded physical profile depth"
+    );
 
     let dthaw = active_report
         .writeback_surface
@@ -369,7 +373,7 @@ fn clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_cap
         .get(&BoundarySymbol::from("frost.runtime_ws_frz"))
         .expect("frost.runtime_ws_frz should be present")
         .as_f64();
-    assert!((ws_frz - EXPECTED_WS_FRZ).abs() <= CLIM06_TEST_TOLERANCE);
+    assert!((ws_frz - dfrost).abs() <= CLIM06_TEST_TOLERANCE);
 
     let infcap_frz = active_report
         .writeback_surface
@@ -377,7 +381,16 @@ fn clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_cap
         .get(&BoundarySymbol::from("frost.runtime_infcap_frz"))
         .expect("frost.runtime_infcap_frz should be present")
         .as_f64();
-    assert!((infcap_frz - EXPECTED_INF_CAP_FRZ).abs() <= CLIM06_TEST_TOLERANCE);
+    let ssc = active_report
+        .writeback_surface
+        .state_surface
+        .get(&BoundarySymbol::from("ssc"))
+        .expect("ssc should be present")
+        .as_f64();
+    assert!(
+        infcap_frz + CLIM06_TEST_TOLERANCE < ssc,
+        "active frost should reduce infiltration capacity"
+    );
 
     let active_infiltration = active_report
         .writeback_surface
@@ -626,6 +639,24 @@ fn simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emiss
 }
 
 #[test]
+fn fdhp01_contract_heat_flow_publishes_separate_surface_and_unfrozen_fluxes() {
+    let active = execute_clim06_surface(seeded_clim06_surface(true));
+    assert!(active.scheduler_report.is_success());
+
+    let qsrf = require_state_scalar(&active, "frost.hourly.qsrf_w_m2_0001");
+    let quf = require_state_scalar(&active, "frost.hourly.quf_w_m2_0001");
+
+    assert!(
+        qsrf > CLIM06_TEST_TOLERANCE,
+        "cold-hour frost heat-flow must publish surface heat loss through the frozen path"
+    );
+    assert!(
+        quf > CLIM06_TEST_TOLERANCE,
+        "FDHP01 heat-flow must publish separate lower unfrozen-soil heat flow"
+    );
+}
+
+#[test]
 fn simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_effect() {
     let active = execute_clim06_surface(seeded_clim06_surface(true));
     let inactive = execute_clim06_surface(seeded_clim06_surface(false));
@@ -684,6 +715,146 @@ fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost
     assert!(
         severe_ws > mild_ws + CLIM06_TEST_TOLERANCE,
         "freeze-lineage closure requires stronger cold forcing to increase frozen-water accumulation"
+    );
+}
+
+#[test]
+fn fdhp01_contract_heat_flow_depth_can_exceed_retired_proxy_cap() {
+    let mut surface = seeded_clim06_surface(true);
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-8.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-16.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_frdp_m"),
+        BoundaryValue::scalar(0.19),
+    );
+
+    let report = execute_clim06_surface(surface);
+    assert!(report.scheduler_report.is_success());
+
+    let dfrost = require_state_scalar(&report, "frost.runtime_dfrost");
+    let frdp = require_state_scalar(&report, "frost.runtime_frdp_m");
+    assert!(
+        dfrost > 0.20 + CLIM06_TEST_TOLERANCE,
+        "FDHP01 requires heat-flow frost progression beyond the retired 0.20 m proxy cap"
+    );
+    assert!(
+        (frdp - dfrost).abs() <= CLIM06_TEST_TOLERANCE,
+        "published runtime frdp must match the active frost-front depth"
+    );
+}
+
+#[test]
+fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
+    let mut surface = seeded_clim06_surface(true);
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(8.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(2.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_frdp_m"),
+        BoundaryValue::scalar(0.30),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_dfrost"),
+        BoundaryValue::scalar(0.30),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_ws_frz"),
+        BoundaryValue::scalar(0.30),
+    );
+    let mut no_prior_storage_surface = surface.clone();
+    no_prior_storage_surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_ws_frz"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let report = execute_clim06_surface(surface);
+    let no_prior_storage_report = execute_clim06_surface(no_prior_storage_surface);
+    assert!(
+        report.scheduler_report.is_success(),
+        "prior physical frost depth above 0.20 m must not be rejected by the retired proxy cap"
+    );
+    assert!(no_prior_storage_report.scheduler_report.is_success());
+
+    let dfrost = require_state_scalar(&report, "frost.runtime_dfrost");
+    let dthaw = require_state_scalar(&report, "frost.runtime_dthaw");
+    let ws_frz = require_state_scalar(&report, "frost.runtime_ws_frz");
+    let soil_water = require_state_scalar(&report, "wb11_soil_water");
+    let no_prior_storage_soil_water =
+        require_state_scalar(&no_prior_storage_report, "wb11_soil_water");
+    assert!(
+        dfrost < 0.30 - CLIM06_TEST_TOLERANCE,
+        "warm heat flow should thaw prior deep frost"
+    );
+    assert!(
+        dthaw > CLIM06_TEST_TOLERANCE,
+        "warm heat flow should publish positive thaw depth"
+    );
+    assert!(
+        ws_frz < 0.30 - CLIM06_TEST_TOLERANCE,
+        "warm thaw should reduce frozen-water storage"
+    );
+    assert!(
+        soil_water > no_prior_storage_soil_water + 0.29,
+        "warm thaw should credit prior frozen water back to liquid wb11 soil-water"
+    );
+}
+
+#[test]
+fn fdhp01_contract_frozen_water_exchange_hard_fails_on_liquid_overdraw() {
+    let mut surface = seeded_clim06_surface(true);
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(0.001),
+    );
+    for symbol in [
+        "wb11_field_capacity",
+        "wb11_et_demand",
+        "wb12_rainfall_input",
+        "wb12_runon_input",
+    ] {
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(0.0));
+    }
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_frdp_m"),
+        BoundaryValue::scalar(0.29),
+    );
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("thetfc"), BoundaryValue::scalar(30.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-20.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-40.0));
+
+    let report = execute_clim06_surface(surface);
+
+    assert!(
+        !report.scheduler_report.is_success(),
+        "FDHP01 must hard-fail instead of silently creating frozen-water storage beyond available liquid soil water"
+    );
+    assert_eq!(
+        report.scheduler_report.halted_phase,
+        Some(HillslopePhase::RunoffReconciliation)
+    );
+    let runoff_phase = report
+        .phase_reports
+        .iter()
+        .find(|phase| phase.phase == HillslopePhase::RunoffReconciliation)
+        .expect("runoff phase report should exist");
+    assert_eq!(
+        runoff_phase.decision_status.boundary_class(),
+        BoundaryClass::DomainViolation
     );
 }
 

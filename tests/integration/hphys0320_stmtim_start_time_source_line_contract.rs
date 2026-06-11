@@ -29,7 +29,7 @@ fn hphys0320_contract_authority_is_registered() {
     assert_contains(&climate, "SC-WATBAL-001#INV-WATBAL-094");
 
     let snowfreeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    assert_contains(&snowfreeze, "contract_version: 53");
+    assert_contains(&snowfreeze, "contract_version: 55");
     assert_contains(&snowfreeze, "INV-SNOWFREEZE-046");
     assert_contains(&snowfreeze, "REF-SNOWFREEZE-LEGACY-WNTTIM-MIN");
     assert_contains(
@@ -42,7 +42,7 @@ fn hphys0320_contract_authority_is_registered() {
     assert_contains(&snowfreeze, "SC-WATBAL-001#INV-WATBAL-094");
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert_contains(&watbal, "contract_version: 147");
+    assert_contains(&watbal, "contract_version: 148");
     assert_contains(&watbal, "INV-WATBAL-094");
     assert_contains(&watbal, "HPHYS0320 `stmtim` start-time water-balance gate");
     assert_contains(&watbal, "OBL-WATBAL-P-030");

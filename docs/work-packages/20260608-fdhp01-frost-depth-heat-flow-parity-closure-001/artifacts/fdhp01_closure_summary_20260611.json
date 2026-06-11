@@ -1,0 +1,45 @@
+{
+  "acceptance_verdict": "HOLD: 43-prefix closure failed because p2 has no WAT output; emitted-prefix depth/duration metrics are diagnostic only",
+  "annual_closure_rows_emitted_prefixes": 252,
+  "baseline_frostval01_max_abs_annual_residual_mm": 3.2173375075217336e-11,
+  "clean_prefixes": 42,
+  "depth_corr_median_emitted": -0.10301692862035305,
+  "depth_mae_mm_mean_emitted": 539.4373953871185,
+  "depth_rmse_mm_mean_emitted": 756.3792673061726,
+  "failure_details": {
+    "p2": "HKERNEL-WB11-PERC-E-003 at sim_day_index=308, calendar_year=1990, julian_day=308; no WAT publication"
+  },
+  "failures": [
+    "p2"
+  ],
+  "fdmc01_baseline_depth_corr_median": 0.13332765680932177,
+  "fdmc01_baseline_frozen_days_delta_mean_open_minus_legacy": 257.6279069767442,
+  "frozen_days_delta_mean_open_minus_legacy_emitted": -27.61904761904762,
+  "frsoil_active_count_emitted_prefixes": 42,
+  "legacy_frozen_days_wat_mean_emitted": 759.8095238095239,
+  "legacy_max_depth_mm_mean_matched_emitted": 417.4166666666667,
+  "max_abs_annual_residual_emitted_prefixes_mm": 75.43917280313423,
+  "max_depth_delta_mm_mean_open_minus_legacy_emitted": 1364.850431367986,
+  "mean_abs_annual_residual_emitted_prefixes_mm": 32.995880074457276,
+  "nonzero_frozwt_prefixes_emitted": 42,
+  "open_frozen_days_wat_mean_emitted": 732.1904761904761,
+  "open_max_depth_mm_max_emitted": 1783.3684719591115,
+  "open_max_depth_mm_mean_emitted": 1782.2670980346527,
+  "open_max_depth_mm_min_emitted": 1780.5852693307895,
+  "prefix_count_requested": 43,
+  "prefixes_with_open_frdp_gt_200mm_emitted": 42,
+  "release_binary": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "run_root": "/tmp/fdhp01_closure_20260611T041333Z",
+  "wat_outputs": 42,
+  "worst_closure_emitted_prefixes": {
+    "abs_residual": 75.43917280313423,
+    "delta_soil_water_total": 148.74937537408556,
+    "final_soil_water_total": 652.0274815494322,
+    "initial_soil_water_total": 503.27810617534664,
+    "inputs": 1122.1926082966038,
+    "outputs": 1048.8824057256525,
+    "prefix": "p12",
+    "residual": -75.43917280313423,
+    "year": 4
+  }
+}

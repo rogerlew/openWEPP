@@ -48,6 +48,7 @@ pub(super) fn build_simimpl10_coupling_vector_provenance(
     let infcap_frz =
         require_simimpl10_coupling_scalar(runtime_surface, "frost.runtime_infcap_frz")?;
     let ssc = require_simimpl10_coupling_scalar(runtime_surface, "ssc")?;
+    let profile_depth_m = require_simimpl10_coupling_scalar(runtime_surface, "solthk")?;
     let tmax = require_simimpl10_coupling_scalar(runtime_surface, "tmax")?;
     let tmin = require_simimpl10_coupling_scalar(runtime_surface, "tmin")?;
     let winter_active =
@@ -62,14 +63,19 @@ pub(super) fn build_simimpl10_coupling_vector_provenance(
         runtime_swe,
     };
 
-    if !(0.0..=SIMIMPL10_FROST_MAX_DEPTH_M).contains(&dfrost) {
+    if profile_depth_m <= 0.0 {
         return Err(simcoup_failure(format!(
-            "frost.runtime_dfrost must be within [0.0,{SIMIMPL10_FROST_MAX_DEPTH_M}], observed {dfrost}"
+            "solthk must be > 0.0 for frozen-soil coupling depth bounds, observed {profile_depth_m}"
         )));
     }
-    if !(0.0..=SIMIMPL10_FROST_MAX_DEPTH_M).contains(&dthaw) {
+    if !(0.0..=profile_depth_m).contains(&dfrost) {
         return Err(simcoup_failure(format!(
-            "frost.runtime_dthaw must be within [0.0,{SIMIMPL10_FROST_MAX_DEPTH_M}], observed {dthaw}"
+            "frost.runtime_dfrost must be within [0.0,{profile_depth_m}], observed {dfrost}"
+        )));
+    }
+    if !(0.0..=profile_depth_m).contains(&dthaw) {
+        return Err(simcoup_failure(format!(
+            "frost.runtime_dthaw must be within [0.0,{profile_depth_m}], observed {dthaw}"
         )));
     }
     if nft < 0.0 {

@@ -1,0 +1,205 @@
+# Claude Review — FDHP01 closure status and missing cohort validation
+
+Status: executed; findings accepted; package held
+Reviewer: Claude Code
+Date: 2026-06-11
+Evidence mode: Static (read implementation diff, contract v54/v148, package
+artifacts, FDMC01/FROSTVAL01 evidence) — no commands run for this review.
+
+## What is solid (no findings)
+
+- Contract-first sequence held: `SC-SNOWFREEZE-001` v54 and `SC-WATBAL-001`
+  v148 amended before production code; red/green contract tests landed.
+- The mechanism is the right shape: freeze-index proxy and `0.20 m` model cap
+  retired; two-sided hourly signed heat flow (`Qsrf`/`Quf`); depth bounded by
+  physical profile depth (`solthk`); frozen-water exchange fails closed on
+  liquid overdraw and credits thaw back to liquid `wb11_soil_water`; `frdp`
+  published to WAT in `mm` (dataset 1.4) per the FDMC01 caveat.
+- Dual review functioned: Review A forced the separate `Quf` lower-front model;
+  Review B caught the comparator overclaim and schema/version drift. All
+  recorded findings were dispositioned.
+- Full Rust closure loop reported passed (fmt/clippy/test --workspace/deny).
+- Artifact-level truthfulness is good: the ledger and disposition explicitly
+  decline to claim FDMC01 cohort acceptance.
+
+## Findings
+
+### F1 (blocking) — `complete` status contradicts the package's own unmet,
+### unamended acceptance criteria
+
+`package.md` acceptance criteria still require, verbatim: the FDMC01 gap
+"materially closes — depth reaches the physical range (cap retired),
+depth-series correlation rises substantially, and the frozen-duration
+over-persistence (+258 days / ratchet) is eliminated", plus water-balance
+closure re-verified and FQ-4 activation non-regressed. The only edit to
+`package.md` was `Status: scaffolded` → `Status: complete`. None of the three
+cohort-level criteria were measured. Contract tests prove the mechanism; they
+do not measure depth/duration tracking on real forcing. The Branch-out rule
+permits a phased close **only if** the landed phase still closes the FDMC01
+depth+duration gap — currently unestablished, so the phase boundary's
+legitimacy is unestablished.
+
+### F2 (blocking) — the "unavailable evidence" rationale does not hold
+
+"No declared FDMC01 owcmp manifest exists" conflates *cannot rerun the exact
+suite* with *cannot measure the cohort*:
+
+- FDMC01 itself measured the cohort without owcmp; its legacy depth series
+  (`frost_depth_timeseries_pairs.csv`) and metrics are on disk — the legacy
+  side needs **no rerun**.
+- The FROSTVAL01 2026-06-11 rerun demonstrated the 43-prefix population
+  harness is cheap (`/tmp/frostval01_rerun_20260611T020951Z`).
+- FDHP01 now publishes `frdp` directly, making the openWEPP side *easier* to
+  measure than FDMC01 had it (no runtime reconstruction).
+
+DC HOLD legitimacy requires evidence to be genuinely unavailable, documented
+with evidence. This evidence is available.
+
+### F3 (blocking, highest risk) — conservation closure under the new depth
+### model is unmeasured on the substrate
+
+The change materially alters `frozwt` magnitude/timing and introduces a new
+liquid↔frozen storage exchange. The package requires the rung-1 identity
+(incl. `frozwt`) + totalwatsed3 audit to still close. `cargo test --workspace`
+covers synthetic fixtures, not the 43-prefix annual identity. The FROSTVAL01
+rerun provides an exact pre-change baseline (max abs residual
+`3.2173375075217336e-11 mm`). If the new exchange breaks closure, it would
+otherwise surface mid-MOFE aliased into routing error — exactly what the
+re-sequence exists to prevent.
+
+### F4 — closing obligations skipped
+
+- `docs/ROADMAP.md` queue item 1 not removed (canonical queue still says
+  FDHP01 is next while the package says complete — record is
+  self-contradictory).
+- `docs/work-packages/README.md` execution-log entry (7f) not updated.
+- `worker-handoff.md` does not name MOFE as the next ROADMAP item (milestone 7
+  required it).
+
+## Required to clear the findings
+
+1. Build the release `openwepp-cli-hill` from the working tree and run the
+   frost-on 43-prefix `algebraic-radium` population (the FROSTVAL01 rerun
+   harness shape is the template).
+2. Measure and record in `fdhp01-frost-depth-validation-ledger.md`:
+   a. annual closure residuals vs the `3.2e-11` baseline (rung-1 identity);
+   b. activation non-regression (43/43 `frsoil.active`, nonzero `frozwt`);
+   c. published `frdp` depth/duration statistics vs the stored FDMC01 legacy
+      series (cap retired in practice, correlation movement from 0.13,
+      duration over-persistence eliminated) — comparator as flag (ADR-0017),
+      envelope not millimetre match.
+3. Disposition on the evidence: if criteria hold, `complete` stands and the
+   F4 closing docs land (ROADMAP item removal, README 7f, handoff naming
+   MOFE); if not, the package re-enters defect closure with the measured
+   divergence — that is the package doing its job.
+4. Either way: the closure must land as a commit; the work currently exists
+   only in the uncommitted working tree.
+
+## Recommendation — install the frost-depth comparison as a declared owcmp suite
+
+Review B's finding 1 root cause is reproducibility infrastructure, not
+physics: the FDMC01 comparison was script-ad-hoc, so nobody could rerun it.
+Recommend a declared `tools/owcmp/suites/` frost-depth manifest that:
+
+- consumes the published WAT `frdp` column (no runtime reconstruction), and
+- compares against the **pinned FDMC01 legacy depth series as a fixture**
+  (with provenance), avoiding a live `wepp_260606_hill` rerun — deterministic,
+  cheap, and consistent with ADR-0017 (legacy is a characterization flag, not
+  a live acceptance oracle).
+
+This makes the FDMC01 metrics re-runnable for this closure, for MOFE-era
+non-regression, and for Stage-2 magnitude work.
+
+## Execution Result — 2026-06-11
+
+Ran:
+
+- `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass.
+- Fresh frost-on `algebraic-radium` `p1..p43` cohort:
+  `/tmp/fdhp01_closure_20260611T041333Z`.
+- Persisted compact reports in this artifact directory:
+  `fdhp01_closure_summary_20260611.json`,
+  `fdhp01_run_status_20260611.tsv`,
+  `fdhp01_activation_summary_20260611.csv`,
+  `fdhp01_annual_closure_residuals_20260611.csv`, and
+  `fdhp01_depth_metrics_20260611.csv`.
+
+Disposition:
+
+- F1/F2/F3 accepted. FDHP01 cannot remain `complete`.
+- Cohort run result: `42/43` clean exits; `p2` failed before WAT publication
+  with `HKERNEL-WB11-PERC-E-003` on `1990-308`.
+- Emitted-prefix annual closure max abs residual:
+  `75.43917280313423 mm`.
+- Emitted-prefix depth evidence overreaches the legacy envelope: max-depth mean
+  `1782.2670980346527 mm`; median depth correlation `-0.10301692862035305`.
+- `package.md`, `disposition.md`, `worker-handoff.md`, `docs/work-packages/README.md`,
+  and `SC-SNOWFREEZE-001` were updated to executed-hold / active-defect
+  posture. ROADMAP item 1 remains active; MOFE must not advance.
+
+## Addendum — Claude root-cause attribution of the cohort failures (2026-06-11)
+
+Evidence mode: Ran — duckdb over the fresh cohort WAT parquet at
+`/tmp/fdhp01_closure_20260611T041333Z/outputs/` (p1, p8, p20, p32, p39
+re-derivations of the annual identity).
+
+The HOLD verdict bundles what are actually **three separable defects**:
+
+### D1 — the conservation break is frozen-storage double-counting in published
+### `SoilWaterTotal`, not a flux leak (high confidence, measured)
+
+The annual residual tracks `−Δfrozwt` almost exactly. Re-deriving the identity
+with storage = `SoilWaterTotal − frozwt` collapses the max abs residual
+~30× on every prefix tested:
+
+| prefix | storage=`SWT` | storage=`SWT − frozwt` |
+|---|---|---|
+| p1 | 62.546 mm | 2.448 mm |
+| p8 | 70.038 mm | 2.467 mm |
+| p20 | 72.911 mm | 2.472 mm |
+| p32 | 72.844 mm | 2.473 mm |
+| p39 | 64.901 mm | 2.444 mm |
+
+(Adding `frozwt` instead *doubles* the residual — confirming the published
+storage already over-counts by exactly the frozen store.) Under the pre-FDHP01
+model the same plain-`SWT` identity closed at `3.2e-11` with nonzero `frozwt`
+(FROSTVAL01 rerun), so frozen water was previously counted exactly once. The
+new liquid↔frozen exchange added a second copy: either the freeze withdrawal
+debits a pool that is not the one summed into `SoilWaterTotal`, or `frozwt` is
+added on top of layer pools that were never debited. **Localization of the
+exact line is the follow-on's first task; the magnitude (~96% of the 75 mm
+residual) is this one seam.**
+
+### D2 — uniform ~2.45 mm secondary residual (measured, unattributed)
+
+After the D1 correction a residual of 2.44–2.47 mm remains, near-identical
+across all five prefixes (same climate). At a `1e-11` baseline this is a real
+second defect, plausibly an annual-boundary or guard-path term in the same
+exchange — much smaller, but must not be absorbed into D1's fix silently.
+
+### D3 — frost-depth runaway to the physical bound (measured symptom,
+### hypothesis-level cause)
+
+`open_max_depth_mm` is 1780.6–1783.4 across all 42 emitted prefixes —
+effectively constant at the `solthk` profile bound. The freeze front runs to
+the bottom of the profile on every hillslope and pins there (hence the
+negative depth correlation: openWEPP sits at a ceiling while legacy
+oscillates 240–503 mm). Hypothesis (unverified, for the follow-on): the
+heat-flow depth increment lacks the growing thermal resistance of the frozen
+layer and/or latent-heat content scaling that bounds front advance in the
+legacy `frostn` formulation — the signed balance almost always nets to
+freezing. Note the day-scale thaw works (frozen-days delta is now −27.6 vs
+legacy, the +258-day ratchet over-persistence is gone) — the defect is depth
+progression, not thaw dispatch.
+
+`p2`'s `HKERNEL-WB11-PERC-E-003` (J308) fail-closed is unattributed; given
+D1's mis-wired debit it plausibly belongs to the same exchange seam and should
+be re-tested after D1 lands rather than chased independently first.
+
+### Implication for the follow-on shape
+
+D1+D2 are conservation/accounting defects in one seam (cheap, hard-gate
+class); D3 is the genuine heat-flow physics defect (the actual rung). Fix and
+re-validate D1/D2 first so the closure gate is trustworthy again, then close
+D3 against the gate. Do not tune D3 to legacy depth numbers (ADR-0017);
+the acceptance remains the contract heat-flow envelope.

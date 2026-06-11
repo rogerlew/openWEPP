@@ -428,6 +428,17 @@ impl Wb11HydrologyKernel {
             });
         }
 
+        let profile_depth_symbol = BoundarySymbol::from(PL_GROWTH_SOIL_DEPTH_SYMBOL);
+        let profile_depth_m =
+            Self::require_state_scalar_for_symbol(request, phase_class, &profile_depth_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            profile_depth_symbol,
+            profile_depth_m,
+            Some(WB11_ZERO_THRESHOLD),
+            None,
+        )?;
+
         let snow_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_SNOW_DEPTH_SYMBOL);
         let snow_depth_m =
             Self::require_state_scalar_for_symbol(request, phase_class, &snow_depth_symbol)?;
@@ -465,7 +476,7 @@ impl Wb11HydrologyKernel {
             frost_depth_symbol.clone(),
             prior_frdp_m,
             Some(0.0),
-            Some(WB14_FROST_MAX_DEPTH_M),
+            Some(profile_depth_m),
         )?;
 
         let thaw_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_THDP_M_SYMBOL);
@@ -480,7 +491,7 @@ impl Wb11HydrologyKernel {
             thaw_depth_symbol.clone(),
             prior_thdp_m,
             Some(0.0),
-            Some(WB14_FROST_MAX_DEPTH_M),
+            Some(profile_depth_m),
         )?;
 
         let top_frost_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_TFRDP_M_SYMBOL);
@@ -495,7 +506,7 @@ impl Wb11HydrologyKernel {
             top_frost_depth_symbol.clone(),
             prior_top_frost_depth_m,
             Some(0.0),
-            Some(WB14_FROST_MAX_DEPTH_M),
+            Some(profile_depth_m),
         )?;
 
         let top_thaw_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_TTHAWD_M_SYMBOL);
@@ -510,7 +521,7 @@ impl Wb11HydrologyKernel {
             top_thaw_depth_symbol.clone(),
             prior_tthawd_m,
             Some(0.0),
-            Some(WB14_FROST_MAX_DEPTH_M),
+            Some(profile_depth_m),
         )?;
 
         let fgthwd_symbol = BoundarySymbol::from(FROST_RUNTIME_FGTHWD_FLAG_SYMBOL);
@@ -575,48 +586,13 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let freeze_active = tmin <= 0.0 + WB11_ZERO_THRESHOLD;
-        let daily_mean_temp_c = f64::midpoint(tmax, tmin);
-        let freeze_index = ((0.0 - daily_mean_temp_c) / FROST_RUNTIME_FREEZE_INDEX_SCALE_C)
-            .clamp(0.0, 1.0);
-        let thaw_index = (daily_mean_temp_c / FROST_RUNTIME_FREEZE_INDEX_SCALE_C).clamp(0.0, 1.0);
-
         let mut frdp_m = prior_frdp_m;
         let mut thdp_m = prior_thdp_m;
         let mut tfrdp_m = prior_top_frost_depth_m;
         let mut tthawd_m = prior_tthawd_m;
         let mut fgthwd_flag = prior_fgthwd_flag;
-        if freeze_active {
-            frdp_m = frdp_m.max(WB14_FROST_MAX_DEPTH_M * freeze_index);
-            if frdp_m > WB11_ZERO_THRESHOLD {
-                thdp_m = 0.0;
-                tthawd_m = 0.0;
-                tfrdp_m = 0.0;
-                fgthwd_flag = 0.0;
-            }
-        } else if frdp_m > WB11_ZERO_THRESHOLD {
-            let thaw_amount = WB14_FROST_MAX_DEPTH_M * thaw_index;
-            frdp_m = (frdp_m - thaw_amount).max(0.0);
-            thdp_m = (thdp_m + thaw_amount).min(WB14_FROST_MAX_DEPTH_M);
-            fgthwd_flag = if frdp_m <= WB11_ZERO_THRESHOLD { 1.0 } else { 0.0 };
-            if fgthwd_flag > 0.0 {
-                tfrdp_m = 0.0;
-                tthawd_m = 0.0;
-            }
-        }
-
-        let dfrost = frdp_m;
-        let dthaw = thdp_m;
-        let was_frozen = prior_frdp_m > WB11_ZERO_THRESHOLD;
-        let is_frozen = frdp_m > WB11_ZERO_THRESHOLD;
-        let nft = if freeze_active && is_frozen && !was_frozen {
-            prior_nft + 1.0
-        } else {
-            prior_nft
-        };
 
         let theta_active = (theta_field_capacity - theta_residual).max(WB11_ZERO_THRESHOLD);
-        let ws_frz = dfrost * theta_active;
         let prior_ws_frz = Self::optional_state_scalar(request, phase_class, WB14_SYMBOL_FROST_RUNTIME_WS_FRZ)?
             .unwrap_or(0.0);
         Self::require_state_range(
@@ -627,17 +603,6 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let frwatc_exchange = if ws_frz > prior_ws_frz + WB11_ZERO_THRESHOLD {
-            ws_frz - prior_ws_frz
-        } else {
-            0.0
-        };
-        let soil_water_after_frwatc = if frwatc_exchange > WB11_ZERO_THRESHOLD {
-            Some((soil_water - frwatc_exchange).max(0.0))
-        } else {
-            None
-        };
-
         let kfactor_selected = Self::resolve_frozen_soil_kfactor(
             request,
             phase_class,
@@ -645,12 +610,7 @@ impl Wb11HydrologyKernel {
             kfactor2,
             kfactor3,
         )?;
-        let freeze_fraction = (dfrost / WB14_FROST_MAX_DEPTH_M).clamp(0.0, 1.0);
-        let infcap_frz =
-            soil_conductivity * (1.0 - freeze_fraction + freeze_fraction * kfactor_selected);
 
-        let tilled_frozen_depth_m = frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
-        let untilled_frozen_depth_m = (frdp_m - tilled_frozen_depth_m).max(0.0);
         let conductivity_residue_w_m_k = FROST_RUNTIME_KRES_BASE_W_M_K * kresf;
 
         let snow_density_kg_m3 = Self::optional_state_scalar_for_symbol(
@@ -691,6 +651,8 @@ impl Wb11HydrologyKernel {
             0.0
         };
 
+        let latent_capacity_j_m3 = FROST_RUNTIME_LATENT_HEAT_WATER_J_M3 * theta_active;
+        let mut freeze_started = false;
         let mut hourly_state = std::array::from_fn(|hour_index| FrostHourlyState {
             hour: hour_index + 1,
             qsrf_w_m2: 0.0,
@@ -698,8 +660,8 @@ impl Wb11HydrologyKernel {
             ksrf_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
             snow_depth_m,
             residue_depth_m,
-            tilled_frozen_depth_m,
-            untilled_frozen_depth_m,
+            tilled_frozen_depth_m: 0.0,
+            untilled_frozen_depth_m: 0.0,
         });
         for hourly in &mut hourly_state {
             let hourly_air_temp_c = Self::resolve_frost_hourly_air_temperature_c(
@@ -717,6 +679,8 @@ impl Wb11HydrologyKernel {
                 hourly_air_temp_c
             };
 
+            let tilled_frozen_depth_before_m = frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
+            let untilled_frozen_depth_before_m = (frdp_m - tilled_frozen_depth_before_m).max(0.0);
             let mut resistance_m2_c_w = 0.0;
             if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
                 && snow_conductivity_w_m_k > WB11_ZERO_THRESHOLD
@@ -728,49 +692,116 @@ impl Wb11HydrologyKernel {
             {
                 resistance_m2_c_w += residue_depth_m / conductivity_residue_w_m_k;
             }
-            if tilled_frozen_depth_m > WB11_ZERO_THRESHOLD {
-                resistance_m2_c_w += tilled_frozen_depth_m / FROST_RUNTIME_KFTILL_W_M_K;
+            if tilled_frozen_depth_before_m > WB11_ZERO_THRESHOLD {
+                resistance_m2_c_w += tilled_frozen_depth_before_m / FROST_RUNTIME_KFTILL_W_M_K;
             }
-            if untilled_frozen_depth_m > WB11_ZERO_THRESHOLD {
-                resistance_m2_c_w += untilled_frozen_depth_m / FROST_RUNTIME_KFUTIL_W_M_K;
+            if untilled_frozen_depth_before_m > WB11_ZERO_THRESHOLD {
+                resistance_m2_c_w +=
+                    untilled_frozen_depth_before_m / FROST_RUNTIME_KFUTIL_W_M_K;
             }
 
             if resistance_m2_c_w <= WB11_ZERO_THRESHOLD {
                 resistance_m2_c_w = 0.5 / FROST_RUNTIME_KFTILL_W_M_K;
             }
 
-            let total_frozen_path_m =
-                snow_depth_m + residue_depth_m + tilled_frozen_depth_m + untilled_frozen_depth_m;
+            let total_frozen_path_m = snow_depth_m
+                + residue_depth_m
+                + tilled_frozen_depth_before_m
+                + untilled_frozen_depth_before_m;
             let ksrf_w_m_k = if resistance_m2_c_w > WB11_ZERO_THRESHOLD {
                 let path_m = total_frozen_path_m.max(0.005);
                 path_m / resistance_m2_c_w
             } else {
                 FROST_RUNTIME_KFUTIL_W_M_K
             };
-            let flux_w_m2 = surface_temp_c.abs() / resistance_m2_c_w;
-            if surface_temp_c <= 0.0 {
-                hourly.qsrf_w_m2 = flux_w_m2;
-                hourly.quf_w_m2 = 0.0;
+            let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
+            let unfrozen_conductivity_w_m_k =
+                (FROST_RUNTIME_KFUTIL_W_M_K * ksoilf).max(WB11_ZERO_THRESHOLD);
+            let lower_front_temp_c = FROST_RUNTIME_STABLE_SOIL_TEMP_C.max(f64::midpoint(tmax, tmin));
+            let lower_front_heat_w_m2 = if lower_front_temp_c > 0.0 {
+                unfrozen_conductivity_w_m_k * lower_front_temp_c
+                    / FROST_RUNTIME_UNFROZEN_HEAT_PATH_M
             } else {
-                hourly.qsrf_w_m2 = 0.0;
-                hourly.quf_w_m2 = flux_w_m2;
+                0.0
+            };
+            let signed_net_flux_w_m2 = signed_surface_flux_w_m2 + lower_front_heat_w_m2;
+            let depth_delta_m =
+                signed_net_flux_w_m2.abs() * FROST_RUNTIME_SECONDS_PER_HOUR / latent_capacity_j_m3;
+            hourly.qsrf_w_m2 = (-signed_surface_flux_w_m2).max(0.0);
+            hourly.quf_w_m2 = lower_front_heat_w_m2;
+            if signed_net_flux_w_m2 < -WB11_ZERO_THRESHOLD {
+                frdp_m = (frdp_m + depth_delta_m).min(profile_depth_m);
+                if frdp_m > WB11_ZERO_THRESHOLD {
+                    thdp_m = 0.0;
+                    tthawd_m = 0.0;
+                    tfrdp_m = 0.0;
+                    fgthwd_flag = 0.0;
+                    if prior_frdp_m <= WB11_ZERO_THRESHOLD {
+                        freeze_started = true;
+                    }
+                }
+            } else if signed_net_flux_w_m2 > WB11_ZERO_THRESHOLD && frdp_m > WB11_ZERO_THRESHOLD {
+                let thaw_amount_m = depth_delta_m.min(frdp_m);
+                frdp_m = (frdp_m - thaw_amount_m).max(0.0);
+                thdp_m = (thdp_m + thaw_amount_m).min(profile_depth_m);
+                fgthwd_flag = if frdp_m <= WB11_ZERO_THRESHOLD { 1.0 } else { 0.0 };
+                if fgthwd_flag > 0.0 {
+                    tfrdp_m = 0.0;
+                    tthawd_m = 0.0;
+                }
             }
             hourly.ksrf_w_m_k = ksrf_w_m_k.max(WB11_ZERO_THRESHOLD);
+            hourly.tilled_frozen_depth_m = frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
+            hourly.untilled_frozen_depth_m = (frdp_m - hourly.tilled_frozen_depth_m).max(0.0);
         }
+
+        let dfrost = frdp_m;
+        let dthaw = thdp_m;
+        let nft = if freeze_started { prior_nft + 1.0 } else { prior_nft };
+        let ws_frz = dfrost * theta_active;
+        let frwatc_freeze_exchange = if ws_frz > prior_ws_frz + WB11_ZERO_THRESHOLD {
+            ws_frz - prior_ws_frz
+        } else {
+            0.0
+        };
+        let frwatc_thaw_release = if prior_ws_frz > ws_frz + WB11_ZERO_THRESHOLD {
+            prior_ws_frz - ws_frz
+        } else {
+            0.0
+        };
+        if frwatc_freeze_exchange > soil_water + WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(WB11_SYMBOL_SOIL_WATER),
+                value: soil_water,
+                minimum: Some(frwatc_freeze_exchange),
+                maximum: None,
+            });
+        }
+        let soil_water_after_frwatc = if frwatc_freeze_exchange > WB11_ZERO_THRESHOLD {
+            Some(soil_water - frwatc_freeze_exchange)
+        } else if frwatc_thaw_release > WB11_ZERO_THRESHOLD {
+            Some(soil_water + frwatc_thaw_release)
+        } else {
+            None
+        };
+        let freeze_fraction = (dfrost / FROST_RUNTIME_TILLAGE_DEPTH_M).clamp(0.0, 1.0);
+        let infcap_frz =
+            soil_conductivity * (1.0 - freeze_fraction + freeze_fraction * kfactor_selected);
 
         Self::require_state_range(
             phase_class,
             WB14_SYMBOL_FROST_RUNTIME_DFROST,
             dfrost,
             Some(0.0),
-            Some(WB14_FROST_MAX_DEPTH_M),
+            Some(profile_depth_m),
         )?;
         Self::require_state_range(
             phase_class,
             WB14_SYMBOL_FROST_RUNTIME_DTHAW,
             dthaw,
             Some(0.0),
-            Some(WB14_FROST_MAX_DEPTH_M),
+            Some(profile_depth_m),
         )?;
         Self::require_state_range(
             phase_class,
@@ -805,6 +836,7 @@ impl Wb11HydrologyKernel {
             thdp_m: dthaw,
             tfrdp_m,
             tthawd_m,
+            profile_depth_m,
             fgthwd_flag,
             total_fine_layer_count: Self::diagnostic_count_to_f64(total_fine_layer_count),
             conductivity_tilled_w_m_k: FROST_RUNTIME_KFTILL_W_M_K,

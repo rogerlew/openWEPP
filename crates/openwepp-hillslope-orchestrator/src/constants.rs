@@ -311,7 +311,6 @@ pub(crate) const WB14_SYMBOL_TMAX: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb14Tmax;
 pub(crate) const WB14_SYMBOL_TMIN: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb14Tmin;
-pub(crate) const WB14_FROST_MAX_DEPTH_M: f64 = 0.20;
 pub(crate) const WB16_SYMBOL_EFFLEN: HillslopeProductionStateSymbol =
     HillslopeProductionStateSymbol::Wb16Efflen;
 pub(crate) const WB16_SYMBOL_EALPHA: HillslopeProductionStateSymbol =

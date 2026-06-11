@@ -27,7 +27,7 @@ fn hphys0319_contract_authority_is_registered() {
     assert_contains(&climate, "SC-WATBAL-001#INV-WATBAL-093");
 
     let snowfreeze = read("docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md");
-    assert_contains(&snowfreeze, "contract_version: 53");
+    assert_contains(&snowfreeze, "contract_version: 55");
     assert_contains(&snowfreeze, "INV-SNOWFREEZE-045");
     assert_contains(
         &snowfreeze,
@@ -39,7 +39,7 @@ fn hphys0319_contract_authority_is_registered() {
     assert_contains(&snowfreeze, "SC-WATBAL-001#INV-WATBAL-093");
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert_contains(&watbal, "contract_version: 147");
+    assert_contains(&watbal, "contract_version: 148");
     assert_contains(&watbal, "INV-WATBAL-093");
     assert_contains(
         &watbal,

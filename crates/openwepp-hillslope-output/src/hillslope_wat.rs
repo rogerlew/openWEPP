@@ -14,7 +14,7 @@ use parquet::file::properties::WriterProperties;
 
 /// Default interchange dataset version aligned to WEPPpy/WEPPpyo3.
 pub const DEFAULT_DATASET_VERSION_MAJOR: u32 = 1;
-pub const DEFAULT_DATASET_VERSION_MINOR: u32 = 3;
+pub const DEFAULT_DATASET_VERSION_MINOR: u32 = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct InterchangeVersion {
@@ -63,6 +63,7 @@ pub struct HillslopeWatRow {
     pub latqcc: f64,
     pub total_soil_water: f64,
     pub frozwt: f64,
+    pub frdp: f64,
     pub snow_water: f64,
     pub qofe: f64,
     pub tile: f64,
@@ -250,6 +251,13 @@ pub fn hillslope_wat_schema(
                 false,
                 Some("mm"),
                 Some("Frozen water in soil profile"),
+            ),
+            field_with_meta(
+                "frdp",
+                DataType::Float64,
+                false,
+                Some("mm"),
+                Some("Active frost-front depth"),
             ),
             field_with_meta(
                 "Snow-Water",
@@ -462,6 +470,7 @@ fn hillslope_wat_rows_to_batch(
     let mut latqcc = Vec::with_capacity(rows.len());
     let mut total_soil_water = Vec::with_capacity(rows.len());
     let mut frozwt = Vec::with_capacity(rows.len());
+    let mut frdp = Vec::with_capacity(rows.len());
     let mut snow_water = Vec::with_capacity(rows.len());
     let mut qofe = Vec::with_capacity(rows.len());
     let mut tile = Vec::with_capacity(rows.len());
@@ -497,6 +506,7 @@ fn hillslope_wat_rows_to_batch(
         latqcc.push(row.latqcc);
         total_soil_water.push(row.total_soil_water);
         frozwt.push(row.frozwt);
+        frdp.push(row.frdp);
         snow_water.push(row.snow_water);
         qofe.push(row.qofe);
         tile.push(row.tile);
@@ -533,6 +543,7 @@ fn hillslope_wat_rows_to_batch(
         Arc::new(Float64Array::from(latqcc)),
         Arc::new(Float64Array::from(total_soil_water)),
         Arc::new(Float64Array::from(frozwt)),
+        Arc::new(Float64Array::from(frdp)),
         Arc::new(Float64Array::from(snow_water)),
         Arc::new(Float64Array::from(qofe)),
         Arc::new(Float64Array::from(tile)),
@@ -582,6 +593,7 @@ mod tests {
             latqcc: 0.0,
             total_soil_water: 100.0,
             frozwt: 0.0,
+            frdp: 0.0,
             snow_water: 0.0,
             qofe: 0.0,
             tile: 0.0,
@@ -611,6 +623,10 @@ mod tests {
         ] {
             assert!(metadata.contains_key(key), "missing key: {key}");
         }
+        assert_eq!(
+            metadata.get("dataset_version").map(String::as_str),
+            Some("1.4")
+        );
     }
 
     #[test]

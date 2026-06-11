@@ -94,6 +94,11 @@ wat = "output/H1.wat.parquet"
             "missing dataset metadata key: {key}"
         );
     }
+    assert_eq!(
+        dataset_metadata.get("dataset_version").map(String::as_str),
+        Some("1.4"),
+        "FDHP01 frdp column requires WAT interchange dataset version 1.4"
+    );
 
     let p_metadata = field_metadata
         .get("P")
@@ -102,6 +107,17 @@ wat = "output/H1.wat.parquet"
     assert_eq!(
         p_metadata.get("description").map(String::as_str),
         Some("Precipitation")
+    );
+
+    let frdp_metadata = field_metadata
+        .get("frdp")
+        .expect("frdp field metadata should exist");
+    assert_eq!(frdp_metadata.get("units").map(String::as_str), Some("mm"));
+    assert!(
+        frdp_metadata
+            .get("description")
+            .is_some_and(|value| value.contains("frost-front depth")),
+        "frdp description should document frost-front depth semantics"
     );
 
     let interception_metadata = field_metadata

@@ -1,6 +1,15 @@
 # FDHP01 — Frost Depth Heat-Flow Parity (single-OFE)
 
-Status: scaffolded
+Status: executed-hold
+
+Closure status update, 2026-06-11: post-review cohort validation did not clear
+FDHP01. The release `openwepp-cli-hill` built from this working tree ran the
+`algebraic-radium` `p1..p43` frost-on population into
+`/tmp/fdhp01_closure_20260611T041333Z`; `p2` failed closed before WAT
+publication at `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual
+closure residuals reached `75.439 mm`, and emitted-prefix depth metrics
+overreached the FDMC01 legacy envelope. The package therefore re-enters defect
+closure rather than advancing MOFE.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
@@ -217,7 +226,11 @@ Grind-HOLD (forbidden): "tune the freeze-index scale," "raise the 0.20 m cap and
 
 - `docs/ROADMAP.md` (queue item 1), `docs/backlog/20260607-frost-depth-model-heat-flow-parity.md`
 - FDMC01 package + artifacts (the sized gap + metrics this must close)
-- FQ-4 package (activation — must stay non-regressed)
+- FQ-4 package (activation — must stay non-regressed). Substrate re-validated
+  2026-06-11 by the FROSTVAL01 rerun (43/43 frost-active, closure-under-frost at
+  `3.2e-11 mm`; frost-off paired runs also 43/43 clean — see
+  `../20260608-frostval01-ksflag-frost-single-ofe-closure-validation-001/artifacts/rerun-20260611-frostval01.md`).
+  That rerun is the activation/closure non-regression baseline for this package.
 - `AGENTS.md`, `docs/defect_closure_execplans.md`, ADR-0011/0017/0018
 - `docs/standards/kernel-work-package-preparation.md`,
   `docs/standards/prompt-wording-guidance.md` (§4a subagent requirement),

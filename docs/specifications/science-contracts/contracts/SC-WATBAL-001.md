@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 147
+contract_version: 148
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Runoff partition and infiltration antecedent-moisture consumers
   - Subsurface/lateral-flow and drainage consumers using daily loss-accounting surfaces
 evidence_level: static
-last_reviewed: 2026-06-07
+last_reviewed: 2026-06-11
 supersedes: []
 superseded_by: []
 ---
@@ -196,7 +196,7 @@ lateral/drainage).
 | INV-WATBAL-009 | WB17/WB18/WB19 production execution invariant: ET/percolation/lateral/drainage kernels must emit deterministic state/flux updates (`ET`, `Ws`, `Ep`, `Es`, `Er`, `wb18_perc_pei_####`, `D`, `Pe`, `q`, `Qdd`, `Qd`) and update owned state surfaces (`wb11_soil_water`, `wb18_perc_theta_####`, `wb11_drainable_storage`, `wb19_fcdep`, `wb19_unsdep`, `wb19_watyld`) with explicit WB19 branch semantics by `solwpv`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST, REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-010 | WB19 guard + routing invariant: unsupported hydrology phase classes and missing/non-finite/out-of-range WB19 lateral/drainage domains must surface typed hard failures (`HS-HYDRO-E-001`, `HKERNEL-WB11-*-E-*`) without silent reassignment/clamping/defaulting. | hard-fail | REF-WATBAL-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-WATBAL-011 | INT10 coupled lane-entry invariant: watbal/hydrology phases execute only after successful plant-lane decomposition/growth transition completion with valid ordering preconditions (`pl_order_growth_after_decomp = 1`, `pl_order_watbal_after_growth = 1`); ordering-symbol violations must hard-fail before watbal-lane completion. | hard-fail | REF-WATBAL-CH5-LINK, REF-WATBAL-CH8-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-012 | PL14 replay-candidate emission invariant: WB13 candidate rows staged for strict Tier-A replay must preserve canonical 25-column schema and deterministic `(Y, J, OFE)` ordering; missing required symbols/artifacts or schema/arity violations must hard-fail replay staging without truncation, padding, or legacy-surface substitution. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-012 | PL14 replay-candidate emission invariant: WB13 candidate rows staged for strict Tier-A replay must preserve canonical 25-column schema and deterministic `(Y, J, OFE)` ordering; additive interchange parquet extensions must be versioned and identified as non-canonical replay columns. Missing required symbols/artifacts or schema/arity violations must hard-fail replay staging without truncation, padding, or legacy-surface substitution. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-013 | CLIM05 snow-coupled closure invariant: when active snow coupling publishes signed `S`, WB12 storage reconciliation must use `wb12_storage_reconciled = wb12_storage_initial + wb12_precip_input + S - Q - ET - D - Qd` and hard-fail on missing/non-finite/domain-invalid `S`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-014 | PL14R replay rerun candidate-surface invariant: strict Tier-A rerun candidate staging must explicitly publish required interchange surfaces (`interchange/H.wat.parquet`, `interchange/H.pass.parquet`) from direct openWEPP candidate outputs; missing required surface coverage or synthetic/bootstrap fallback substitution must hard-fail rerun staging and keep disposition in `HOLD`. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-015 | PL15R schema-aligned replay supersession invariant: Tier-A `H.wat.parquet` residual classification must use canonical 25-column schema-aligned strict replay evidence and day-by-day keyed parity (`OFE,J,Y`) before declaring residual blockers. Schema-only pre-alignment failures are historical context once superseding strict-pass evidence is present. | governance-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -2213,6 +2213,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
 | `2026-06-06` | `145` | `Codex` | SNOWSCI-S1 amendment: bound WB13 `RM`/`S`/`Snow-Water` to the single-source snow storage-loss scalar from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-019` and prohibited separate SWE-debit water loss. |
+| `2026-06-11` | `148` | `Codex` | FDHP01 WAT interchange amendment: clarified that additive parquet extensions beyond canonical WB13 replay columns must be versioned, with dataset version `1.4` adding required `frdp` frost-front depth publication. |
 | `2026-06-06` | `144` | `Codex` | HPHYS0320 amendment: added `stmtim` start-time water-balance gate (`INV-WATBAL-094`) for source-line timing closure and residual rerouting without downstream compensation. |
 | `2026-06-06` | `143` | `Codex` | HPHYS0319 amendment: added fixed-baseline `stmtim` observe recovery water-balance gate (`INV-WATBAL-093`) before WB13/WB17/WB18/WB19/WB12 attribution or compensation. |
 | `2026-06-06` | `142` | `Codex` | HPHYS0318 amendment: added OpenWEPP `stmtim` control-surface water-balance gate (`INV-WATBAL-092`) while preserving fixed-baseline paired-observe `HOLD`. |

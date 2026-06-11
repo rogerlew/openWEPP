@@ -153,10 +153,11 @@ Optional parquet outputs when configured in `.run`:
 2. `outputs.wat` schema metadata must include
    `dataset_version`, `dataset_version_major`,
    `dataset_version_minor`, and `schema_version`.
-3. WAT schema authority is WB13 canonical 25-column projection with explicit
-   post-`wepp_260430` lineage exception for optional
-   producer-authoritative `Interception` and `InterceptionStorage` parquet
-   terms.
+3. WAT schema authority is the WB13 canonical projection plus coordinated
+   openWEPP/wepppyo3 interchange extensions. Dataset version `1.4` adds the
+   required `frdp` frost-front depth column in `mm`; earlier post-`wepp_260430`
+   lineage exceptions remain optional producer-authoritative `Interception` and
+   `InterceptionStorage` parquet terms.
 
 `crop` output is intentionally out of scope for this revision until its
 columnar/output contract authority is defined.

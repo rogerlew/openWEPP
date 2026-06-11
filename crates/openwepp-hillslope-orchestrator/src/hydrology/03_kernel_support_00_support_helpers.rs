@@ -182,6 +182,7 @@ pub(crate) struct FrostCouplingOutcome {
     thdp_m: f64,
     tfrdp_m: f64,
     tthawd_m: f64,
+    profile_depth_m: f64,
     fgthwd_flag: f64,
     total_fine_layer_count: f64,
     conductivity_tilled_w_m_k: f64,
@@ -291,7 +292,10 @@ const FROST_RUNTIME_TILLAGE_DEPTH_M: f64 = 0.20;
 const FROST_RUNTIME_KFTILL_W_M_K: f64 = 1.75;
 const FROST_RUNTIME_KFUTIL_W_M_K: f64 = 2.1;
 const FROST_RUNTIME_KRES_BASE_W_M_K: f64 = 0.05;
-const FROST_RUNTIME_FREEZE_INDEX_SCALE_C: f64 = 6.0;
+const FROST_RUNTIME_LATENT_HEAT_WATER_J_M3: f64 = 3.35e8;
+const FROST_RUNTIME_SECONDS_PER_HOUR: f64 = 3_600.0;
+const FROST_RUNTIME_UNFROZEN_HEAT_PATH_M: f64 = 1.0;
+const FROST_RUNTIME_STABLE_SOIL_TEMP_C: f64 = 7.0;
 
 const SIMIMPL29_HOURS_PER_DAY: usize = 24;
 const SIMIMPL29_SNOW_DENSITY_CAP_KG_M3: f64 = 522.0;
