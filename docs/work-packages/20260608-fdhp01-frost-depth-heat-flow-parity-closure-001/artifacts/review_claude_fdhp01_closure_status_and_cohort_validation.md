@@ -477,3 +477,29 @@ Disposition:
   `frost.runtime_frwatc_frozen_water_after_m`, then rerun the additive
   identity. D3 depth runaway and the independent `p2` fail-closed defect remain
   open.
+
+### Addendum 2e — code-level localization: the frozen store is slaved to depth
+### (Static: source read; closes the 2c hunt)
+
+`support_helpers_mod/coupling.rs:761`: `ws_frz = dfrost * theta_active`, with
+`theta_active = (theta_field_capacity − theta_residual)` (`:595`). The frozen
+water "store" is **defined** as `frdp × (θfc − θdr)` — it has no independent
+mass state. This is the measured per-soil constant (p1: profile-mean
+`θfc − θwp = 0.1480` vs ratio `0.149`; the five distinct cohort ratios
+0.1375/0.1431/0.149/0.152/0.155 are the soils' content parameters). The
+freeze/thaw exchange (`frwatc_freeze_exchange = Δws_frz`, `:762`) consumes
+deltas of the same derived quantity, which is why it is algebraically
+symmetric in-process while the store itself tracks the defective depth.
+
+Strategic consequence: **D2 and D3 converge on one implementation.** The
+remaining defect is not two fixes but one missing state model — legacy keeps
+per-fine-sublayer ice (`slsic`/`frzw`, `frwatc.for`) accumulated by the energy
+balance, with `soilw` recomputed from unfrozen sublayers; depth is then
+*bounded by* the layered state (frozen-layer resistance), and frozen water is
+*accumulated mass*, not `depth × constant`. Implementing the layered frost
+store (the Dun-2008 fine-sublayer structure the package's M1 scoping
+contemplated) simultaneously: (a) gives `frost.runtime_frwatc_frozen_water_after_m`
+a true store to carry (D2 dissolves), (b) supplies the per-layer thermal
+resistance that bounds depth progression (D3), and (c) is the natural seam to
+re-test `p2`. The scalar-`frdp` + derived-water model landed by the first
+FDHP01 pass cannot satisfy the v150/v151 audit identity by construction.
