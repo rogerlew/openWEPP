@@ -1,0 +1,85 @@
+{
+  "status": "failed-smoke",
+  "evidence_mode": "Ran",
+  "run_root": "/tmp/fdhp01_increment_c1_p43_aggregate_cap_20260611T225644Z",
+  "prefix": "p43",
+  "exit": 0,
+  "wat_output": "/tmp/fdhp01_increment_c1_p43_aggregate_cap_20260611T225644Z/outputs/p43/H.wat.parquet",
+  "purpose": "post-full-cohort aggregate-cap smoke after C1 storage blow-up localization",
+  "result": "profile overfill collapsed to ProfilePorosityCap, but annual closure still missed by 15.9-200.4 mm; C1 remains failed",
+  "max_abs_residual_mm": 200.39845415539014,
+  "max_storage_mm": 809.0776779996984,
+  "profile_porosity_cap_mm": 809.0776779996982,
+  "years": [
+    {
+      "year": 1,
+      "residual_mm": -200.39845415539014,
+      "abs_residual_mm": 200.39845415539014,
+      "delta_total_soil_plus_frozwt_mm": 86.0849030300061,
+      "max_storage_mm": 809.0776779996983,
+      "max_total_soil_mm": 809.0776779996982,
+      "max_frozwt_mm": 95.50646672013526,
+      "max_frdp_mm": 1201.4256981098251
+    },
+    {
+      "year": 2,
+      "residual_mm": 98.1393815170726,
+      "abs_residual_mm": 98.1393815170726,
+      "delta_total_soil_plus_frozwt_mm": 43.216048915509305,
+      "max_storage_mm": 806.1264981495254,
+      "max_total_soil_mm": 806.1264981495254,
+      "max_frozwt_mm": 98.13405585175896,
+      "max_frdp_mm": 383.6597538848318
+    },
+    {
+      "year": 3,
+      "residual_mm": -144.32169361176943,
+      "abs_residual_mm": 144.32169361176943,
+      "delta_total_soil_plus_frozwt_mm": 19.559519045673255,
+      "max_storage_mm": 809.0776779996983,
+      "max_total_soil_mm": 809.0776779996982,
+      "max_frozwt_mm": 97.40056698877844,
+      "max_frdp_mm": 393.2913782766814
+    },
+    {
+      "year": 4,
+      "residual_mm": 15.881486434365115,
+      "abs_residual_mm": 15.881486434365115,
+      "delta_total_soil_plus_frozwt_mm": -80.93228011452243,
+      "max_storage_mm": 806.1531416172088,
+      "max_total_soil_mm": 806.1531416172088,
+      "max_frozwt_mm": 91.87703799610513,
+      "max_frdp_mm": 389.24960598844524
+    },
+    {
+      "year": 5,
+      "residual_mm": -174.12222164403317,
+      "abs_residual_mm": 174.12222164403317,
+      "delta_total_soil_plus_frozwt_mm": 138.48505257696922,
+      "max_storage_mm": 809.0776779996983,
+      "max_total_soil_mm": 801.4706647969974,
+      "max_frozwt_mm": 195.97843625393193,
+      "max_frdp_mm": 984.2058932335949
+    },
+    {
+      "year": 6,
+      "residual_mm": -160.61500728894794,
+      "abs_residual_mm": 160.61500728894794,
+      "delta_total_soil_plus_frozwt_mm": -24.541823453976804,
+      "max_storage_mm": 809.0776779996984,
+      "max_total_soil_mm": 809.0639005728829,
+      "max_frozwt_mm": 88.17673618077588,
+      "max_frdp_mm": 574.5410197716675
+    },
+    {
+      "year": 7,
+      "residual_mm": -83.03103970416043,
+      "abs_residual_mm": 83.03103970416043,
+      "delta_total_soil_plus_frozwt_mm": -1.021115885458812,
+      "max_storage_mm": 809.0776779996984,
+      "max_total_soil_mm": 809.0776779996982,
+      "max_frozwt_mm": 223.38856085039708,
+      "max_frdp_mm": 992.4730788306717
+    }
+  ]
+}

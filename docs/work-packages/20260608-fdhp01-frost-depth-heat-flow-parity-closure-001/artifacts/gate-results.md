@@ -215,3 +215,26 @@ Increment C disposition: failed and backed out. The attempt proves thaw arms
 need capacity-aware `watdst` redistribution plus `watpdg`/`watbtm` overflow
 handling before `mlttp`/`mltbtm` can be retained. FDHP01 remains
 `executed-hold` at the Increment B boundary.
+
+## D3 Increment C1 Capacity/Redistribution Attempt Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user reported GPT-5.3-Codex-Spark weekly quota exhausted, so parent ran local cohort and metrics |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_increment_c1_ -- --nocapture` | Pass during attempted tree, 3 C1-focused tests |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass before cohort, 29 tests in attempted tree |
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass before cohort |
+| 43-prefix `algebraic-radium` frost-on cohort | Pass for process execution, `43/43` clean exits; run root `/tmp/fdhp01_increment_c1_capacity_fix_20260611T224555Z` |
+| Annual `Total-Soil + frozwt` closure, years 2-6 | Fail, max abs residual `16628.157022818832 mm`, mean abs residual `6238.80817440851 mm` |
+| Profile-bound pinning directional gate | Pass, `0/43` pinned prefixes |
+| `frozwt/frdp` not regressed vs Increment B | Fail, max correlation `0.9919091097937477` versus Increment B max `0.9861968090242198` |
+| p43 aggregate-cap localization smoke | Partial localization only: max storage collapsed to `809.0776779996984 mm` against `ProfilePorosityCap=809.0776779996982 mm`, but annual closure still missed by up to `200.39845415539014 mm` |
+| Production/contract/test landing | Backed out; C1 did not meet the D2 hard stop |
+| Post-backout `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, `26/26`, confirming return to the Increment B test boundary |
+| Post-backout `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, `5/5`, confirming `SC-SNOWFREEZE-001` v59 expectation restored |
+| Post-backout `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, `3/3`, confirming `SC-SNOWFREEZE-001` v59 expectation restored |
+
+Increment C1 disposition: failed and backed out. The attempt proves capacity
+enforcement is necessary but insufficient unless `watpdg`/`watbtm`
+redistribution is reconciled with the WAT balance identity. FDHP01 remains
+`executed-hold` at the Increment B boundary.

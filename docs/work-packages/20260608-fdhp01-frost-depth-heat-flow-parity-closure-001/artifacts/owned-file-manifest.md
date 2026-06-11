@@ -150,3 +150,12 @@ Date: 2026-06-11
 - `fdhp01_increment_c_depth_metrics_20260611.csv`
 - `fdhp01_increment_c_frozwt_frdp_ratio_20260611.csv`
 - `fdhp01_increment_c_activation_summary_20260611.csv`
+- `d3-increment-c1-capacity-redistribution-20260611.md`
+- `fdhp01_increment_c1_execution_summary_20260611.json`
+- `fdhp01_increment_c1_run_summary_20260611.json`
+- `fdhp01_increment_c1_run_status_20260611.tsv`
+- `fdhp01_increment_c1_annual_closure_residuals_20260611.csv`
+- `fdhp01_increment_c1_depth_metrics_20260611.csv`
+- `fdhp01_increment_c1_frozwt_frdp_ratio_20260611.csv`
+- `fdhp01_increment_c1_activation_summary_20260611.csv`
+- `fdhp01_increment_c1_p43_aggregate_cap_smoke_20260611.json`

@@ -1,0 +1,10 @@
+{
+  "run_root": "/tmp/fdhp01_increment_c1_capacity_fix_20260611T224555Z",
+  "output_root_actual": "/tmp/fdhp01_increment_c1_capacity_fix_20260611T224555Z/outputs",
+  "metrics_root": "/tmp/fdhp01_increment_c1_capacity_fix_20260611T224555Z/reports",
+  "prefix_total": 43,
+  "wat_outputs": 43,
+  "cohort_clean_exits": "43/43",
+  "release_binary": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "comparator_runner": "not used; user reported GPT-5.3-Codex-Spark weekly quota exhausted; parent ran local cohort and metrics"
+}

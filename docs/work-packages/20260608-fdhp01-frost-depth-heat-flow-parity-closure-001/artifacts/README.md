@@ -68,6 +68,22 @@ Evidence and disposition artifacts for
   `fdhp01_increment_c_activation_summary_20260611.csv`: generated Increment C
   failed-attempt reports copied from
   `/tmp/fdhp01_increment_c_thaw_20260611T215005Z/reports/`.
+- `d3-increment-c1-capacity-redistribution-20260611.md`: staged Increment C1
+  attempt evidence; records the failed capacity/redistribution attempt, the
+  `43/43` local cohort, the p43 aggregate-cap smoke, and the production
+  backout.
+- `fdhp01_increment_c1_execution_summary_20260611.json`,
+  `fdhp01_increment_c1_run_summary_20260611.json`,
+  `fdhp01_increment_c1_run_status_20260611.tsv`,
+  `fdhp01_increment_c1_annual_closure_residuals_20260611.csv`,
+  `fdhp01_increment_c1_depth_metrics_20260611.csv`,
+  `fdhp01_increment_c1_frozwt_frdp_ratio_20260611.csv`,
+  `fdhp01_increment_c1_activation_summary_20260611.csv`: generated Increment
+  C1 failed-attempt reports copied from
+  `/tmp/fdhp01_increment_c1_capacity_fix_20260611T224555Z/reports/`.
+- `fdhp01_increment_c1_p43_aggregate_cap_smoke_20260611.json`: targeted p43
+  smoke after the aggregate-cap localization; storage overfill collapsed to
+  `ProfilePorosityCap`, but annual closure still failed.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

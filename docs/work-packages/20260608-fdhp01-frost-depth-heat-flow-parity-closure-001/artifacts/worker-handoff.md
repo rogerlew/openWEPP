@@ -119,8 +119,24 @@ Increment C attempt result:
   `d3-increment-c-thaw-arms-20260611.md` and the
   `fdhp01_increment_c_*_20260611.*` reports.
 
-First actionable item: re-execute Increment C only after adding the missing
-capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow paths.
-Do not retain `mlttp`/`mltbtm` thaw arms or advance to MOFE until years 2-6
-conservation remains at noise, the cohort is `43/43`, and the full
-depth/duration acceptance gate passes without comparator tuning.
+Increment C1 attempt result:
+
+- Codex attempted capacity guards, downward fine-layer redistribution, and
+  `watpdg`/`watbtm` surfaces without the comparator subagent per user
+  direction.
+- The full local cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_c1_capacity_fix_20260611T224555Z`, but years 2-6
+  `Total-Soil + frozwt` closure failed with max abs residual
+  `16628.157022818832 mm`.
+- A p43 aggregate-cap smoke proved the profile-overfill part is localizable:
+  storage capped at `809.0776779996984 mm` against
+  `ProfilePorosityCap=809.0776779996982 mm`, but annual closure still missed
+  by up to `200.39845415539014 mm`.
+- The attempted production/contract/test edits were backed out.
+
+First actionable item: re-execute Increment C1 from the committed Increment B
+boundary, but first define the exact `watpdg`/`watbtm` accounting target across
+WB18/WB19/WAT outputs. Do not retain C1 capacity code, `mlttp`/`mltbtm` thaw
+arms, or advance to MOFE until years 2-6 conservation remains at noise, the
+cohort is `43/43`, and the full depth/duration acceptance gate passes without
+comparator tuning.

@@ -176,6 +176,27 @@ Ran:
 - The attempted production, contract, and test edits were backed out. The
   package remains at the Increment B boundary (`SC-SNOWFREEZE-001` v59).
 
+## Increment C1 Attempt Evidence
+
+- Persisted compact reports:
+  - `d3-increment-c1-capacity-redistribution-20260611.md`
+  - `fdhp01_increment_c1_execution_summary_20260611.json`
+  - `fdhp01_increment_c1_run_summary_20260611.json`
+  - `fdhp01_increment_c1_run_status_20260611.tsv`
+  - `fdhp01_increment_c1_annual_closure_residuals_20260611.csv`
+  - `fdhp01_increment_c1_depth_metrics_20260611.csv`
+  - `fdhp01_increment_c1_frozwt_frdp_ratio_20260611.csv`
+  - `fdhp01_increment_c1_activation_summary_20260611.csv`
+  - `fdhp01_increment_c1_p43_aggregate_cap_smoke_20260611.json`
+- The parent model ran C1 locally without the comparator subagent per user
+  direction. The full cohort ran `43/43` clean but failed the D2 hard stop:
+  years 2-6 max abs residual `16628.157022818832 mm`.
+- A p43 aggregate-cap smoke collapsed storage overfill to
+  `ProfilePorosityCap`, but annual closure still failed by up to
+  `200.39845415539014 mm`.
+- The attempted production, contract, and test edits were backed out. The
+  package remains at the Increment B boundary (`SC-SNOWFREEZE-001` v59).
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -202,5 +223,7 @@ audit identity by construction. The package still cannot be marked complete
 because D3 depth/duration parity is open. The first Increment C attempt shows
 the next pass must not reintroduce top/bottom thaw arms without first porting
 capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow handling.
-The years 2-6 conservation gate remains the hard stop before any depth/duration
-acceptance claim.
+The C1 attempt adds that capacity enforcement alone is insufficient unless the
+overflow surfaces are reconciled with the WAT balance identity. The years 2-6
+conservation gate remains the hard stop before any depth/duration acceptance
+claim.
