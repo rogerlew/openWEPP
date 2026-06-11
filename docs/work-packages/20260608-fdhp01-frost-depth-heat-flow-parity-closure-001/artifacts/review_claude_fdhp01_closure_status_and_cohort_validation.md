@@ -258,3 +258,86 @@ Disposition remains HOLD: D1 is accepted as a real improvement, but FDHP01 is
 not complete until `p2` runs clean, the remaining `~2.48 mm` closure residual
 returns to numerical noise, and D3 depth progression stops pinning at the
 profile bound.
+
+## Addendum 2 — Claude D2 localization on the D1-restored cohort (2026-06-11)
+
+Evidence mode: Ran — duckdb day-level analysis over
+`/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z/outputs/` (p1, p20;
+day-class regression of unexplained storage change `dSWT − flux` against
+`Δfrozwt`). Daily WAT semantics carry known timing offsets that cancel
+annually (verified on the old-model FROSTVAL01 run, which is daily-nonzero but
+annually exact), so per-day-subset *sums* are contaminated; the per-day
+*ratios* below are robust.
+
+Measured facts:
+
+1. **Freeze days debit published `SoilWaterTotal` 1:1.** On all 15 days per
+   prefix with `Δfrozwt > 1 mm`, `(dSWT − flux)/(−Δfrozwt) = +1.000`
+   (mean 0.992–0.994, std ≤ 0.031, both prefixes). When water freezes, the
+   published total drops by the full frozen amount beyond flux.
+2. **Thaw days do not credit it back symmetrically.** Across ~765–790 thaw
+   days the median ratio is `+0.018` (≈ no credit); isolated zero-flux thaw
+   events show a *partial* credit ≈ `0.17` of the thawed amount (two clean
+   events: 0.171, 0.163).
+3. **The annual D2 footprint is the net of this gross asymmetry.** Per-year
+   SWT-identity residuals are near-identical across prefixes
+   (`+1.81, 0.00, −2.45, −0.86, −0.30, +0.33` for p1/p8/p20/p39 within
+   ±0.03 mm), i.e. climate-driven freeze/thaw cycle structure, not
+   soil/slope-driven.
+
+Inference (for the follow-on to verify in-process, not established from
+outputs alone): the liquid↔frozen exchange is wired asymmetrically — the
+freeze branch debits the pool that feeds the published total, while the thaw
+branch returns water through a different path (or only partially, ~17%, into
+that pool). The ±2.48 mm annual residual is the small net of large
+near-cancelling gross errors over the freeze/thaw cycle, which means
+**within-year liquid storage is distorted by tens of mm even where the annual
+ledger looks nearly closed** — this also contaminates any D3 depth assessment
+that depends on liquid water availability at the freezing front. Codex's
+rejected writeback experiments (per the execution note above) are consistent
+with this being the right seam and the wiring being delicate.
+
+Contract question that must be settled before (or with) the D2 fix: the D1
+correction *redefined* published `SoilWaterTotal` (hydout-equivalent
+`Total-Soil`, `frozwt` separate). Whether the interchange `Total-Soil` column
+semantically **includes or excludes frozen soil water** is an ecosystem
+interface contract with wepppy/totalwatsed3 (the rung-1 acceptance surface
+consumes it for ΔStorage), not a free implementation choice. Fact 1 shows the
+new column behaves liquid-only at freeze; if legacy hydout `Total-Soil`
+includes frozen content, downstream totalwatsed3 closure will break by
+`Δfrozwt` on legacy-compatible consumers. `SC-WATBAL-001` v149 should pin the
+definition with provenance from the legacy `watbal`/`hydout` lineage, and the
+totalwatsed3 audit should be rerun against whichever definition is ratified.
+
+### Addendum 2b — legacy provenance for the `Total-Soil`/`frozwt` definition,
+### and a reconciliation caveat
+
+Static (legacy source read, pinned baseline):
+
+- `watbalprint.for:56-69` — the WAT line publishes `watcon = Σ soilw(i)`
+  (Total-Soil) and `frozwt = Σ soilf(i)` as separate columns.
+- `frwatc.for:80-137` (frost→water-balance handoff, `wbtofs=0`) — `soilw(i)`
+  is recomputed from the **unfrozen** fine-sublayer water only
+  (`slufdp = sublayer depth − frozen depth` gates the sum) plus `nwfrzz`
+  (unfrozen water within the frozen zone); sublayer ice goes to
+  `frzw(i) = sumice − thetdr·frozen`, excluded from `soilw`.
+
+So in the legacy lineage, **Total-Soil excludes frozen water when frost is
+active, and `frozwt` is separate-and-additive** — the v149 form (frozwt
+separate) is legacy-faithful, and the physically conserving storage term is
+`Total-Soil + frozwt`.
+
+Reconciliation caveat (important, unresolved): on the D1-restored cohort it is
+the `SWT`-only identity that closes (±2.5 mm) while `SWT + frozwt` breaks
+(±50–70 mm, tracking year-end `Δfrozwt`). If the openWEPP exchange debited and
+credited the published liquid pool 1:1 (as the legacy-faithful form implies,
+and as the freeze-onset days measurably do), the *additive* identity would be
+the closing one. These two output-level facts are mutually inconsistent under
+any single simple wiring, which means the exchange/publication structure has
+state the WAT surface does not expose. The ±2.5 mm "near-closure" of the
+SWT-only ledger may therefore be closing **for the wrong reason**. The D2
+follow-on should not trust either ledger variant until in-process diagnostics
+(freeze-day and thaw-day pool deltas at the exchange seam) establish which
+pools actually move; SC-WATBAL-001 v149 should then pin the Total-Soil
+definition with the `frwatc.for` provenance above and the closure identity's
+storage term should be ratified to match.
