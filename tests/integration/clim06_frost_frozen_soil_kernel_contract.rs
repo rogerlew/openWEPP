@@ -585,6 +585,13 @@ fn simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_s
     assert!(require_state_scalar(&report, "frost.runtime_kftill_w_m_k") > 0.0);
     assert!(require_state_scalar(&report, "frost.runtime_kfutil_w_m_k") > 0.0);
     assert!(require_state_scalar(&report, "frost.runtime_kres_w_m_k") > 0.0);
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_soil_water_before_m");
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_soil_water_after_m");
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_before_m");
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_after_m");
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_freeze_debit_m");
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_thaw_credit_m");
+    let _ = require_state_scalar(&report, "frost.runtime_frwatc_net_liquid_delta_m");
     let _ = require_state_scalar(&report, "frost.hourly.qsrf_w_m2_0001");
     let _ = require_state_scalar(&report, "frost.hourly.quf_w_m2_0001");
     let _ = require_state_scalar(&report, "frost.hourly.ksrf_w_m_k_0001");
@@ -617,6 +624,13 @@ fn require_state_scalar(
         .get(&BoundarySymbol::from(symbol))
         .unwrap_or_else(|| panic!("missing expected state symbol {symbol}"))
         .as_f64()
+}
+
+fn assert_close(actual: f64, expected: f64, context: &str) {
+    assert!(
+        (actual - expected).abs() <= CLIM06_TEST_TOLERANCE,
+        "{context}: expected {expected}, got {actual}"
+    );
 }
 
 #[test]
@@ -679,6 +693,57 @@ fn simimpl32_contract_handoff_direction_vector_requires_frozen_water_exchange_ef
     assert!(
         active_soil_water + CLIM06_TEST_TOLERANCE < inactive_soil_water,
         "frwatc-style ingress/egress handoff should reduce liquid wb11 soil-water under active frost"
+    );
+}
+
+#[test]
+fn fdhp01_d2_contract_frwatc_freeze_exchange_diagnostics_reconcile_liquid_and_frozen_storage() {
+    let report = execute_clim06_surface(seeded_clim06_surface(true));
+    assert!(report.scheduler_report.is_success());
+
+    let liquid_before = require_state_scalar(&report, "frost.runtime_frwatc_soil_water_before_m");
+    let liquid_after = require_state_scalar(&report, "frost.runtime_frwatc_soil_water_after_m");
+    let frozen_before = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_before_m");
+    let frozen_after = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_after_m");
+    let freeze_debit = require_state_scalar(&report, "frost.runtime_frwatc_freeze_debit_m");
+    let thaw_credit = require_state_scalar(&report, "frost.runtime_frwatc_thaw_credit_m");
+    let net_liquid_delta = require_state_scalar(&report, "frost.runtime_frwatc_net_liquid_delta_m");
+    let final_liquid = require_state_scalar(&report, "wb11_soil_water");
+    let ws_frz = require_state_scalar(&report, "frost.runtime_ws_frz");
+
+    assert!(
+        freeze_debit > CLIM06_TEST_TOLERANCE,
+        "cold freeze-onset vector must debit liquid water into frozen storage"
+    );
+    assert_close(
+        thaw_credit,
+        0.0,
+        "freeze-onset vector must not emit a thaw credit",
+    );
+    assert_close(
+        freeze_debit,
+        frozen_after - frozen_before,
+        "freeze debit must equal frozen-storage growth",
+    );
+    assert_close(
+        net_liquid_delta,
+        -freeze_debit,
+        "freeze net liquid delta must be the negative freeze debit",
+    );
+    assert_close(
+        liquid_after,
+        liquid_before + net_liquid_delta,
+        "freeze liquid after must reconcile to liquid before plus net exchange",
+    );
+    assert_close(
+        final_liquid,
+        liquid_after,
+        "WB11 liquid writeback must equal the diagnosed post-frwatc liquid state",
+    );
+    assert_close(
+        ws_frz,
+        frozen_after,
+        "runtime ws_frz must equal the diagnosed post-frwatc frozen storage",
     );
 }
 
@@ -786,6 +851,13 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
     let dthaw = require_state_scalar(&report, "frost.runtime_dthaw");
     let ws_frz = require_state_scalar(&report, "frost.runtime_ws_frz");
     let soil_water = require_state_scalar(&report, "wb11_soil_water");
+    let liquid_before = require_state_scalar(&report, "frost.runtime_frwatc_soil_water_before_m");
+    let liquid_after = require_state_scalar(&report, "frost.runtime_frwatc_soil_water_after_m");
+    let frozen_before = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_before_m");
+    let frozen_after = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_after_m");
+    let freeze_debit = require_state_scalar(&report, "frost.runtime_frwatc_freeze_debit_m");
+    let thaw_credit = require_state_scalar(&report, "frost.runtime_frwatc_thaw_credit_m");
+    let net_liquid_delta = require_state_scalar(&report, "frost.runtime_frwatc_net_liquid_delta_m");
     let no_prior_storage_soil_water =
         require_state_scalar(&no_prior_storage_report, "wb11_soil_water");
     assert!(
@@ -803,6 +875,40 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
     assert!(
         soil_water > no_prior_storage_soil_water + 0.29,
         "warm thaw should credit prior frozen water back to liquid wb11 soil-water"
+    );
+    assert_close(
+        freeze_debit,
+        0.0,
+        "warm thaw vector must not emit a freeze debit",
+    );
+    assert!(
+        thaw_credit > CLIM06_TEST_TOLERANCE,
+        "warm thaw vector must credit reduced frozen storage back to liquid water"
+    );
+    assert_close(
+        thaw_credit,
+        frozen_before - frozen_after,
+        "thaw credit must equal frozen-storage reduction",
+    );
+    assert_close(
+        net_liquid_delta,
+        thaw_credit,
+        "thaw net liquid delta must equal the thaw credit",
+    );
+    assert_close(
+        liquid_after,
+        liquid_before + net_liquid_delta,
+        "thaw liquid after must reconcile to liquid before plus net exchange",
+    );
+    assert_close(
+        soil_water,
+        liquid_after,
+        "WB11 liquid writeback must equal the diagnosed post-frwatc liquid state",
+    );
+    assert_close(
+        ws_frz,
+        frozen_after,
+        "runtime ws_frz must equal the diagnosed post-frwatc frozen storage",
     );
 }
 

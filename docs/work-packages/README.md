@@ -199,8 +199,12 @@ publication-safe Daymet CLI audit:
    WAT publication at `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix
    annual closure residuals reached `2.480 mm` after D1, and emitted-prefix
    depth metrics overreached the FDMC01 legacy envelope (`open max depth mean
-   1782.267 mm`, median correlation `-0.103`). `SC-SNOWFREEZE-001` v55 reopens
-   `GAP-SNOWFREEZE-002`; do not advance to MOFE until FDHP01 closes. Package:
+   1782.267 mm`, median correlation `-0.103`). D2 added in-process
+   `frwatc` diagnostics and `SC-WATBAL-001` v150 ratified
+   `Total-Soil + frozwt` as the frost-active storage audit term; the remaining
+   WAT residual must be audited against those diagnostics before D3 depth work.
+   `SC-SNOWFREEZE-001` v55 reopens `GAP-SNOWFREEZE-002`; do not advance to
+   MOFE until FDHP01 closes. Package:
    `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
    vertically closed and frost-settled (depth model at parity per item 7f, not

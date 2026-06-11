@@ -341,3 +341,44 @@ follow-on should not trust either ledger variant until in-process diagnostics
 pools actually move; SC-WATBAL-001 v149 should then pin the Total-Soil
 definition with the `frwatc.for` provenance above and the closure identity's
 storage term should be ratified to match.
+
+## Execution Result — D2 exchange diagnostics retained (2026-06-11)
+
+Evidence mode: Static + Ran.
+
+Static:
+
+- `SC-WATBAL-001` is now v150. It cites pinned-baseline
+  `frwatc.for:80-137` and `watbalprint.for:56-69`, ratifies
+  `SoilWaterTotal = Total-Soil` as the unfrozen `watcon` alias, and requires
+  frost-active storage audits to evaluate `Total-Soil + frozwt`.
+- The active frost exchange seam now publishes in-process diagnostics:
+  liquid soil water before/after, frozen water before/after, freeze debit,
+  thaw credit, and signed liquid delta.
+
+Ran:
+
+- `cargo fmt` applied formatting.
+- `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture`:
+  pass, 17 tests. New D2 vectors prove freeze-onset debits liquid 1:1 into
+  frozen storage and warm-thaw credits reduced frozen storage back to liquid
+  at the WB14/WB11 exchange seam.
+- `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract --
+  --nocapture`: pass, 5 tests after `SC-WATBAL-001` v150 update.
+- `cargo test --test hphys0320_stmtim_start_time_source_line_contract --
+  --nocapture`: pass, 3 tests after `SC-WATBAL-001` v150 update.
+- Final gates after the D2 diagnostics and documentation updates:
+  `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`, `cargo deny check`, and `wctl doc-lint --path docs`
+  all passed.
+
+Disposition:
+
+- D2 is no longer "shave 2.48 mm off the ledger." The retained change
+  establishes the exchange wiring observability required to judge the ledger.
+- The in-process exchange algebra is symmetric in the focused freeze and thaw
+  vectors; therefore any remaining WAT-level inconsistency must be audited
+  against these diagnostics before production hydrology or WB13 publication
+  semantics are changed again.
+- FDHP01 remains `executed-hold`: `p2`, the post-D1 `~2.48 mm` cohort
+  residual, and the D3 depth runaway remain open downstream gates.

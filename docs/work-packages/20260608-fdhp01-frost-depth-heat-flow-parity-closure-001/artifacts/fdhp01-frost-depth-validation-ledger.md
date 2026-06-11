@@ -46,7 +46,12 @@ Ran:
 - `cargo test --workspace` passes, preserving the broader rung-1/frost
   non-regression surface covered by the workspace suite.
 - Contract-version expectation tests now target `SC-SNOWFREEZE-001` v55 and
-  `SC-WATBAL-001` v149 front matter.
+  `SC-WATBAL-001` v150 front matter.
+- D2 exchange diagnostics now publish liquid soil water before/after, frozen
+  water before/after, freeze debit, thaw credit, and signed liquid delta at
+  the active frost exchange seam. The focused CLIM06 suite now includes
+  freeze-onset and warm-thaw vectors proving the in-process exchange algebra
+  reconciles on both signs.
 
 ## Post-Review Cohort Validation
 
@@ -92,9 +97,11 @@ Results:
 
 FDHP01 does not close the executable single-OFE model-depth implementation
 boundary. The WAT `frdp` publication surface exists, and D1 removed the dominant
-frozen-storage double count from `SoilWaterTotal`, but the cohort validation
-still failed required closure criteria and reopened `GAP-SNOWFREEZE-002` in
-`SC-SNOWFREEZE-001` v55.
+frozen-storage double count from `SoilWaterTotal`. D2 added the seam
+diagnostics needed to judge freeze/thaw exchange wiring and `SC-WATBAL-001`
+v150 ratifies that `Total-Soil + frozwt` is the frost-active storage audit
+term. The cohort validation still failed required closure criteria and
+reopened `GAP-SNOWFREEZE-002` in `SC-SNOWFREEZE-001` v55.
 
 The package remains in defect closure. The next actionable work is to fix
 FDHP01 so `p2` runs clean, annual closure returns from the remaining

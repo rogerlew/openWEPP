@@ -778,10 +778,12 @@ impl Wb11HydrologyKernel {
                 maximum: None,
             });
         }
-        let soil_water_after_frwatc = if frwatc_freeze_exchange > WB11_ZERO_THRESHOLD {
-            Some(soil_water - frwatc_freeze_exchange)
-        } else if frwatc_thaw_release > WB11_ZERO_THRESHOLD {
-            Some(soil_water + frwatc_thaw_release)
+        let frwatc_net_liquid_delta = frwatc_thaw_release - frwatc_freeze_exchange;
+        let frwatc_soil_water_after = soil_water + frwatc_net_liquid_delta;
+        let soil_water_after_frwatc = if frwatc_freeze_exchange > WB11_ZERO_THRESHOLD
+            || frwatc_thaw_release > WB11_ZERO_THRESHOLD
+        {
+            Some(frwatc_soil_water_after)
         } else {
             None
         };
@@ -832,6 +834,13 @@ impl Wb11HydrologyKernel {
             ws_frz,
             infcap_frz,
             soil_water_after_frwatc,
+            frwatc_soil_water_before: soil_water,
+            frwatc_soil_water_after,
+            frwatc_frozen_water_before: prior_ws_frz,
+            frwatc_frozen_water_after: ws_frz,
+            frwatc_freeze_debit: frwatc_freeze_exchange,
+            frwatc_thaw_credit: frwatc_thaw_release,
+            frwatc_net_liquid_delta,
             frdp_m: dfrost,
             thdp_m: dthaw,
             tfrdp_m,

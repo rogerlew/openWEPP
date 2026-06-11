@@ -178,6 +178,13 @@ pub(crate) struct FrostCouplingOutcome {
     ws_frz: f64,
     infcap_frz: f64,
     soil_water_after_frwatc: Option<f64>,
+    frwatc_soil_water_before: f64,
+    frwatc_soil_water_after: f64,
+    frwatc_frozen_water_before: f64,
+    frwatc_frozen_water_after: f64,
+    frwatc_freeze_debit: f64,
+    frwatc_thaw_credit: f64,
+    frwatc_net_liquid_delta: f64,
     frdp_m: f64,
     thdp_m: f64,
     tfrdp_m: f64,
@@ -285,6 +292,20 @@ const FROST_RUNTIME_LAYER_FINE_THICKNESS_ROOT: &str = "frost.runtime_fine_thickn
 const FROST_RUNTIME_CONDUCTIVITY_TILLED_SYMBOL: &str = "frost.runtime_kftill_w_m_k";
 const FROST_RUNTIME_CONDUCTIVITY_UNTILLED_SYMBOL: &str = "frost.runtime_kfutil_w_m_k";
 const FROST_RUNTIME_CONDUCTIVITY_RESIDUE_SYMBOL: &str = "frost.runtime_kres_w_m_k";
+const FROST_RUNTIME_FRWATC_SOIL_WATER_BEFORE_SYMBOL: &str =
+    "frost.runtime_frwatc_soil_water_before_m";
+const FROST_RUNTIME_FRWATC_SOIL_WATER_AFTER_SYMBOL: &str =
+    "frost.runtime_frwatc_soil_water_after_m";
+const FROST_RUNTIME_FRWATC_FROZEN_WATER_BEFORE_SYMBOL: &str =
+    "frost.runtime_frwatc_frozen_water_before_m";
+const FROST_RUNTIME_FRWATC_FROZEN_WATER_AFTER_SYMBOL: &str =
+    "frost.runtime_frwatc_frozen_water_after_m";
+const FROST_RUNTIME_FRWATC_FREEZE_DEBIT_SYMBOL: &str =
+    "frost.runtime_frwatc_freeze_debit_m";
+const FROST_RUNTIME_FRWATC_THAW_CREDIT_SYMBOL: &str =
+    "frost.runtime_frwatc_thaw_credit_m";
+const FROST_RUNTIME_FRWATC_NET_LIQUID_DELTA_SYMBOL: &str =
+    "frost.runtime_frwatc_net_liquid_delta_m";
 const FROST_RUNTIME_SNOW_DEPTH_SYMBOL: &str = "snow.runtime_depth_m";
 const FROST_RUNTIME_RESIDUE_DEPTH_SYMBOL: &str = "frost.runtime_residue_depth_m";
 const FROST_LANDUSE_CLASS_PROXY_SYMBOL: &str = "landuse.class_proxy";

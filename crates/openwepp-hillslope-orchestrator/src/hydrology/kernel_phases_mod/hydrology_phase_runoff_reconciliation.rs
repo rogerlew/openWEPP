@@ -805,6 +805,46 @@ pub(crate) fn run_runoff_reconciliation(
                 Some(soil_conductivity),
             ));
             state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_SOIL_WATER_BEFORE_SYMBOL),
+                frost_outcome.frwatc_soil_water_before,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_SOIL_WATER_AFTER_SYMBOL),
+                frost_outcome.frwatc_soil_water_after,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_FROZEN_WATER_BEFORE_SYMBOL),
+                frost_outcome.frwatc_frozen_water_before,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_FROZEN_WATER_AFTER_SYMBOL),
+                frost_outcome.frwatc_frozen_water_after,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_FREEZE_DEBIT_SYMBOL),
+                frost_outcome.frwatc_freeze_debit,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_THAW_CREDIT_SYMBOL),
+                frost_outcome.frwatc_thaw_credit,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::unbounded(
+                BoundarySymbol::from(FROST_RUNTIME_FRWATC_NET_LIQUID_DELTA_SYMBOL),
+                frost_outcome.frwatc_net_liquid_delta,
+            ));
+            state_updates.push(WritebackField::bounded(
                 BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
                 frost_outcome.frdp_m,
                 Some(0.0),

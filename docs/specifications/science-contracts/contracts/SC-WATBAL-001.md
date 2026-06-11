@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 149
+contract_version: 150
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -71,6 +71,7 @@ Out of scope:
 | REF-WATBAL-LEGACY-HOURLY-FIN | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,471-479,494-516,520-524`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline hourly local `fin/xfin` lineage includes direct rain after interception, routed snowmelt, and irrigation before top-down layer-storage ingress and final `watcon` recomputation; MOFE carry/runon arrays are governed separately by `REF-WATBAL-LEGACY-HOURLY-CARRY`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline aggregate root-zone water lineage from layer storage (`st`) through `soilw(i)` into `watcon`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WB13 | `/workdir/wepp-forest_260430_baseline/src/outfil.for:623-643` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline WB13 publication semantics for `Ep`, `Es`, `Er`, `Total-Soil`, and `SoilWaterTotal`. | `[DIRECT][Static]` |
+| REF-WATBAL-LEGACY-FROZEN-STORAGE | `/workdir/wepp-forest_260430_baseline/src/frwatc.for:80-137`, `/workdir/wepp-forest_260430_baseline/src/watbalprint.for:56-69`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline frost/water-balance exchange authority: `frwatc.for` recomputes `soilw(i)` from unfrozen fine-layer water plus `nwfrzz`, stores frozen water separately in `frzw(i)`, and `watbalprint.for` publishes `watcon = Σsoilw(i)` and `frozwt = Σsoilf(i)` as separate WB13/WAT columns. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-WB13-RM-SNOW | `/workdir/wepp-forest_260430_baseline/src/contin.for:847-880`, `/workdir/wepp-forest_260430_baseline/src/watbalprint.for:84-106`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1082-1142`, and `/workdir/wepp-forest_260430_baseline/src/outfil.for:621-630`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline WB13 `RM` and `Snow-Water` publication lineage: winter processing clears `rain(iplane)` except the warm-rain/no-snow restoration branch, `RM = rain(iplane) + wmelt(iplane) + irdept(iplane) + iraplo(iplane)`, and `Snow-Water = snodpy(iplane) * densg(iplane)`. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-HOURLY-ET-WATCON | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:547-560,978-1026` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly final-hour ET execution and immediate post-ET `watcon = Σsoilw(i)` recomputation from layer `st(i)` storage. | `[DIRECT][Static]` |
 | REF-WATBAL-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline hourly bottom-layer restrictive conductivity lineage for `Dp`/`Pe`: hourly bottom `meblfc` forces `fx=1`, bottom restrictive `kslast` plus `ui_bdrkth` thickness-weighted `sscz`, `sep/ui_LFtstp` state mutation, and `deepSeep` accumulation. | `[DIRECT][Static]` |
@@ -107,12 +108,12 @@ Out of scope:
 | `soilw(i)` | `m` | Baseline per-layer unfrozen-water intermediate: `st(i) + thetdr(i)*(dg(i)-frozen(i))`. | WB11 aggregate recomputation path | `watcon`/WB13 publication |
 | `watcon` | `m` | Baseline aggregate root-zone unfrozen water (`Σ soilw(i)`) used for closure/publication lineage. | WB11 aggregate recomputation path | WB13 `Total-Soil` lineage |
 | `UpStrmQ` | `mm` | WB13/hillslope WAT upstream runoff publication term. | watershed/hillslope carry publication | hillslope WAT output |
-| `Total-Soil` | `mm` | WB13/hydout aggregate soil-water publication term from `watcon` lineage. | WB11/WB13 publication | hillslope WAT output |
-| `frozwt` | `mm` | WB13/hillslope WAT frozen-water publication term. | frost/water-balance publication | hillslope WAT output |
+| `Total-Soil` | `mm` | WB13/hydout aggregate unfrozen soil-water publication term from `watcon` lineage; excludes separately published frozen water. | WB11/WB13 publication | hillslope WAT output |
+| `frozwt` | `mm` | WB13/hillslope WAT frozen-water publication term; additive to `Total-Soil` for frost-active storage audits. | frost/water-balance publication | hillslope WAT output |
 | `QOFE` | `mm` | WB13/hillslope WAT OFE runoff publication term. | runoff publication | hillslope WAT output |
 | `Irr` | `mm` | WB13/hillslope WAT irrigation publication term. | irrigation publication | hillslope WAT output |
 | `Area` | `m^2` | WB13/hillslope WAT contributing area publication term. | hillslope geometry publication | hillslope WAT output |
-| `SoilWaterTotal` | `mm` | Hydout-equivalent aggregate soil-water publication alias from `watcon` lineage. | WB11/WB13 publication | hillslope WAT output |
+| `SoilWaterTotal` | `mm` | Hydout-equivalent aggregate unfrozen soil-water publication alias from `watcon` lineage; it equals `Total-Soil` and excludes `frozwt`. | WB11/WB13 publication | hillslope WAT output |
 | `ProfilePorosityCap` | `mm` | WB13 profile porosity-capacity publication term. | soil/profile publication | hillslope WAT output |
 | `ProfileFCStore` | `mm` | WB13 profile field-capacity storage publication term. | soil/profile publication | hillslope WAT output |
 | `ProfileWPStore` | `mm` | WB13 profile wilting-point storage publication term. | soil/profile publication | hillslope WAT output |
@@ -213,7 +214,7 @@ lateral/drainage).
 | INV-WATBAL-026 | SIMIMPL18 day-key rain/snow partition and publication-source invariant: WB13 day-key `RM` must be derived from runtime liquid input (`rain + melt`) rather than direct precipitation passthrough, and published `Snow-Water`/hydout-equivalent snow storage values must derive from runtime snow state (`snow.runtime_swe`) instead of static sidecar controls (`snow.options.ssd`). | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-027 | SIMIMPL18 storage-state mutation invariant: published WB13 storage terms (`Total-Soil`, `frozwt`, `Snow-Water`, `SoilWaterTotal`) must be runtime-state-derived and mutable across multi-day forcing; invariant publication of the full storage tuple under non-zero forcing/thermal variation is invalid and indicates static-parameter publication leakage. | hard-fail | REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-SNOW, REF-WATBAL-CH3-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-028 | SIMIMPL21 baseline execution-order invariant: canonical WB11 authority preserves baseline ordering `purk -> evap/evappm -> drain/lateral -> swu -> watcon recompute`; ET transpiration uptake (`swu`) is not authoritative when executed ahead of drainage/lateral mutation. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-CH5-ETDIST | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-WATBAL-029 | SIMIMPL21 aggregate-lineage invariant: root-zone aggregate publication lineage must remain layer-authoritative such that `watcon = Σ soilw(i)` with `soilw(i)` derived from layer storage state and unfrozen-depth adjustment; WB13 `Total-Soil`/`SoilWaterTotal` values must trace to this lineage plus declared frozen/snow components. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, REF-WATBAL-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-029 | SIMIMPL21 aggregate-lineage invariant: root-zone aggregate publication lineage must remain layer-authoritative such that `watcon = Σ soilw(i)` with `soilw(i)` derived from layer storage state and unfrozen-depth adjustment; WB13 `Total-Soil`/`SoilWaterTotal` values must trace to this unfrozen-water lineage while `frozwt` remains separately published frozen water. | hard-fail | REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, REF-WATBAL-LEGACY-FROZEN-STORAGE, REF-WATBAL-CH5-BAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-030 | HPHYS0238 WB19 hourly iterative execution invariant: hourly lane execution must run WB19 lateral/drainage with explicit iterative substeps (`wb19_lateral_drain_lane_substeps=24`) and accumulated daily `q`/`Qdd`; divisor-only single-pass substitutions are non-authoritative for hourly closure claims. | hard-fail | REF-WATBAL-CH6-COUPLING, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-031 | HPHYS0239 WB19->WB12->WB13 handoff ordering invariant: promoted hydrology-tail execution must preserve deterministic same-pass ordering through `PercolationDeepSeepage`, `Evapotranspiration`, WB19 subsurface handoff, `RunoffReconciliation`, and `StorageReconciliation`; WB13 `Q`/`Ep`/`Es`/`Er` publication must consume flux-authoritative symbols under state/flux conflicts. HPHYS0242 `INV-WATBAL-034` is the controlling authority for hourly-lane WB19 drainage/lateral ordering. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS, INV-WATBAL-034 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-032 | HPHYS0240 hourly runoff-carryover invariant: WB12/WB14 runoff reconciliation must resolve incoming runoff carryover from same-pass `wb12_runoff_carryover` flux when present, publish the resolved carryover as a flux, and use `wb12_runon_input` only as a finite non-negative compatibility surface when the same-pass flux is absent. Malformed carryover fluxes are typed hard failures and cannot be silently replaced by stale state. | hard-fail | REF-WATBAL-LEGACY-ORDER, REF-WATBAL-CH5-BAL, REF-WATBAL-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -278,6 +279,7 @@ lateral/drainage).
 | INV-WATBAL-092 | HPHYS0318 `stmtim` control-surface water-balance gate: water-balance continuation must consume OpenWEPP `snow.hourly.stmtim.*_####` trace maps for `rain`, `stmdur`, rounded `wntdur`, adjusted `wnttim`, `hrtemp`, `rst`, `hrrain`, `hrsnow`, active interval membership, rain branch, and snow branch before attributing the 2013 day 11 hour 11 route to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow producer, branch predicate, or melt term. HPHYS0318 OpenWEPP instrumentation is necessary but not sufficient: if fixed-baseline paired `stmtim` observe values remain absent, the combined `57` carried rows remain ADR0017 `UNRESOLVED` under `paired-fixed-baseline-stmtim-observe-hold`, and water-balance compensation remains invalid. | governance-hold | INV-WATBAL-091, SC-SNOWFREEZE-001#INV-SNOWFREEZE-044, SC-CLIMATE-001#INV-CLIMATE-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-093 | HPHYS0319 fixed-baseline `stmtim` observe water-balance gate: before assigning the combined `57` carried rows to WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, WB12 runoff, snow producer, branch predicate, or melt terms, water-balance continuation must consume a paired H1/H7/H39 2013 day 11 hour 11 ledger that recovers fixed-baseline `stmtim` observe values from the pinned baseline and compares them with regenerated OpenWEPP `snow.hourly.stmtim.*_0011` diagnostics. The ledger must identify absent/extra active interval, rain-vs-snow branch, and same-unit magnitude deltas for `hrrain` and `hrsnow`, preserve the combined `57` carried rows, and mark production/downstream authorization as false unless source-line-owned OpenWEPP defect authority plus independent correctness authority are both present. Temporary observe instrumentation is evidence only; water-balance compensation from comparator disagreement, rounded output, or source-code resemblance remains invalid. | governance-hold | INV-WATBAL-092, SC-SNOWFREEZE-001#INV-SNOWFREEZE-045, SC-CLIMATE-001#INV-CLIMATE-017, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-95`, `/workdir/wepp-forest_260430_baseline/src/winter.for:292-300` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-WATBAL-094 | HPHYS0320 `stmtim` start-time water-balance gate: water-balance continuation may close the combined `57` carried rows for the timing seam only after source-line classification proves pinned-baseline `winter.for:206-235` normalizes finite `wnttim < 1.0` to `1.0` before `stmtim.for:43-64` active-interval evaluation and OpenWEPP SIMIMPL28 implements the same rule. Paired H1/H7/H39 reruns must prove `wntdur = 11`, `wnttim = 1`, active interval `1`, snow branch `1`, and `hrsnow ~= 0.00074545 m` at 2013 day 11 hour 11. WB13 `RM`/`Snow-Water`, WB17 ET, WB18 storage, WB19 lateral/percolation, and WB12 runoff compensation remains invalid; residual divergence must be routed to a named source lane. | governance-hold | INV-WATBAL-093, SC-SNOWFREEZE-001#INV-SNOWFREEZE-046, SC-CLIMATE-001#INV-CLIMATE-018, `/workdir/wepp-forest_260430_baseline/src/winter.for:206-235`, `/workdir/wepp-forest_260430_baseline/src/stmtim.for:43-64` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-WATBAL-095 | FDHP01 frost-active aggregate-storage invariant: WB13 `SoilWaterTotal` remains the hydout-equivalent `Total-Soil`/`watcon` alias and must exclude frozen water, while frost-active storage closure audits must evaluate the additive storage term `Total-Soil + frozwt`. D2 residual closure or defect ownership claims must consume in-process frost/water exchange diagnostics proving `soil_water_after = soil_water_before + thaw_credit - freeze_debit`, `freeze_debit = max(frozen_after - frozen_before, 0)`, and `thaw_credit = max(frozen_before - frozen_after, 0)` before changing WB13 publication or hydrology storage logic. | hard-fail | REF-WATBAL-LEGACY-FROZEN-STORAGE, REF-WATBAL-LEGACY-WATCON, REF-WATBAL-LEGACY-WB13, INV-WATBAL-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Binding Exposure Index
 
@@ -474,6 +476,7 @@ all `HOLD` dispositions must name a scoped owner and follow-on gate.
 | `INV-WATBAL-092` | runtime + governance | HPHYS0318 water-balance consumer gate consuming OpenWEPP `stmtim` trace maps and preserving fixed-baseline paired-observe hold | Explicit `HOLD` when OpenWEPP diagnostics are absent, fixed-baseline paired observe values remain unavailable, or WB13/WB17/WB18/WB19/WB12 compensation is asserted from instrumentation alone | HPHYS0318 `stmtim` control-surface water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-093` | governance | HPHYS0319 water-balance consumer gate consuming fixed-baseline `stmtim` observe recovery paired with regenerated OpenWEPP `stmtim` traces | Explicit `HOLD` when fixed-baseline observe recovery is absent, not same-key paired, lacks source-line ownership, or is used to authorize WB13/WB17/WB18/WB19/WB12 compensation without independent correctness authority | HPHYS0319 fixed-baseline `stmtim` observe water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-WATBAL-094` | governance | HPHYS0320 water-balance consumer gate consuming source-line classification, SIMIMPL28 start-time implementation, and paired H1/H7/H39 reruns | Explicit `HOLD` when timing closure evidence is absent, residual divergence is unowned, or WB13/WB17/WB18/WB19/WB12 compensation is asserted instead of source-line timing closure | HPHYS0320 `stmtim` start-time water-balance gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-WATBAL-095` | runtime + governance | FDHP01 frost-active aggregate-storage classifier separating unfrozen `Total-Soil`/`SoilWaterTotal` from additive `frozwt` and requiring in-process freeze/thaw exchange diagnostics before D2 residual ownership | Typed hard error / explicit `HOLD` when `SoilWaterTotal` is redefined to include frozen water, additive storage audits ignore `frozwt`, or freeze/thaw residual claims lack before/after exchange diagnostics | FDHP01 D2 frost/water exchange storage identity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -745,6 +748,13 @@ water-balance symbols retain existing canonical or explicitly typed mappings.
   HPHYS0319 fixed-baseline observe lane, and route any residual to a named
   follow-on source lane without WB13/WB17/WB18/WB19/WB12 compensation.
   `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-WATBAL-P-031: FDHP01 D2 closure producers must publish in-process
+  frost/water exchange diagnostics for every active frost coupling pass:
+  liquid soil water before/after exchange, frozen water before/after exchange,
+  freeze debit, thaw credit, and signed liquid delta. D2 closure evidence must
+  reconcile these diagnostics before changing WB13 `Total-Soil`,
+  `SoilWaterTotal`, or `frozwt` publication semantics.
+  `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -936,6 +946,7 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
 |---|---|
 | Parsed frost controls | `frost.options.wintRed`, `frost.options.fineTop`, `frost.options.fineBot`, `frost.options.kfactor1`, `frost.options.kfactor2`, `frost.options.kfactor3`, `frost.options.frost_file_present` |
 | Frozen-state runtime outputs | `frost.runtime_dfrost`, `frost.runtime_dthaw`, `frost.runtime_nft`, `frost.runtime_ws_frz`, `frost.runtime_infcap_frz` |
+| Frost/water exchange diagnostics | `frost.runtime_frwatc_soil_water_before_m`, `frost.runtime_frwatc_soil_water_after_m`, `frost.runtime_frwatc_frozen_water_before_m`, `frost.runtime_frwatc_frozen_water_after_m`, `frost.runtime_frwatc_freeze_debit_m`, `frost.runtime_frwatc_thaw_credit_m`, `frost.runtime_frwatc_net_liquid_delta_m` |
 | Runoff/storage reconciliation symbols | `wb12_infiltration`, `Q`, `wb12_runoff_closure_delta`, `wb12_runoff_reconciled`, `wb12_storage_reconciled` |
 
 ### CLIM06 Deterministic Coupling Rules
@@ -946,12 +957,19 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    frozen-soil effective infiltration-capacity term when active CLIM06 coupling
    is enabled.
 3. CLIM06 frozen-state domains are bounded and non-negative:
-   - `0 <= frost.runtime_dfrost <= 0.20`
-   - `0 <= frost.runtime_dthaw <= 0.20`
+   - `0 <= frost.runtime_dfrost <= profile_depth_m`
+   - `0 <= frost.runtime_dthaw <= profile_depth_m`
    - `frost.runtime_nft >= 0`
    - `frost.runtime_ws_frz >= 0`
    - `0 <= frost.runtime_infcap_frz <= ssc`
-4. Missing/non-finite/out-of-domain active-coupling frost symbols are
+4. Active frost exchange diagnostics must reconcile the liquid/frozen storage
+   transfer at the exchange seam:
+   - `freeze_debit = max(frozen_water_after - frozen_water_before, 0)`
+   - `thaw_credit = max(frozen_water_before - frozen_water_after, 0)`
+   - `net_liquid_delta = thaw_credit - freeze_debit`
+   - `soil_water_after = soil_water_before + net_liquid_delta`
+   - post-exchange `wb11_soil_water` equals `soil_water_after`.
+5. Missing/non-finite/out-of-domain active-coupling frost symbols are
    hard-fail states in WB14 reconciliation; no fallback/default branch is
    allowed.
 
@@ -971,6 +989,28 @@ Minimum WB17/WB18/WB19 hydrology production-kernel conformance vectors:
    `HKERNEL-WB14-RUNOFF-E-002`.
 4. Out-of-domain active-coupling frost symbol/state hard-fails with
    `HKERNEL-WB14-RUNOFF-E-003`.
+5. Freeze-onset and warm-thaw vectors prove the in-process exchange diagnostics
+   reconcile liquid and frozen storage on both signs before WB13/WAT residual
+   attribution proceeds.
+
+## FDHP01 Frost/Water Exchange Storage Identity Addendum
+
+1. Legacy `frwatc.for` `wbtofs=0` recomputes `soilw(i)` from unfrozen
+   fine-layer water plus `nwfrzz`; frozen water remains separately represented
+   by `frzw(i)`/`soilf(i)` rather than embedded in `soilw(i)`.
+2. Legacy `watbalprint.for` publishes `watcon = Σsoilw(i)` and
+   `frozwt = Σsoilf(i)` as separate WAT columns. Therefore WB13
+   `Total-Soil` and `SoilWaterTotal` are unfrozen/liquid storage aliases, not
+   frozen-inclusive totals.
+3. Frost-active storage closure audits must evaluate
+   `Total-Soil + frozwt` as the additive storage term. A ledger that closes on
+   `SoilWaterTotal` alone while the additive identity diverges is an exchange
+   wiring or downstream publication evidence defect until in-process
+   diagnostics prove where the transfer moved.
+4. D2 continuation must establish freeze/thaw exchange wiring from
+   `frost.runtime_frwatc_*` diagnostics before shaving residuals or changing
+   WB13 publication semantics. D3 depth-runaway and independent `p2` defects
+   remain downstream of this trustworthy D2 gate.
 
 ## WB14 Infiltration and Hyetograph Coupling Addendum
 
@@ -1384,8 +1424,8 @@ for follow-on closure packages.
 | `RM` | `snow.post_winter_rain_m + snow.routed_melt_m + Irr` | `SC-WATBAL-001` `INV-WATBAL-064/065`; `SC-RUNOFFPART-001` `INV-RUNOFFPART-019/020`; `SC-SNOWFREEZE-001` `INV-SNOWFREEZE-022/023` | `crates/openwepp-runner/src/hillslope/mod.rs` consumes explicit `snow.post_winter_rain_m` and `snow.routed_melt_m` flux surfaces -> `("RM", rm)` | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Snow-Water` | `snow.runtime_swe -> Snow-Water` | `SC-SNOWFREEZE-001` runtime-SWE publication authority; `SC-WATBAL-001` `INV-WATBAL-026/027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("snow.runtime_swe")` -> `("Snow-Water", snow_water)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `latqcc` | `q -> latqcc` (lateral contribution) | `SC-SUBHYD-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB19 lateral coupling | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar_prefer_flux("q")` -> `("latqcc", latqcc)`) | `HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `Total-Soil` | `wb11_soil_water -> Total-Soil` | `SC-SOIL-001` `INV-SOIL-013`; `SC-WATBAL-001` `INV-WATBAL-029`; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("wb11_soil_water")` -> `("Total-Soil", total_soil)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `SoilWaterTotal` | `Total-Soil -> SoilWaterTotal` | `SC-WATBAL-001` WB13 output invariants; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`soil_water_total = total_soil` -> `("SoilWaterTotal", soil_water_total)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `Total-Soil` | `wb11_soil_water -> Total-Soil` (unfrozen `watcon`) | `SC-SOIL-001` `INV-SOIL-013`; `SC-WATBAL-001` `INV-WATBAL-029/095`; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("wb11_soil_water")` -> `("Total-Soil", total_soil)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `SoilWaterTotal` | `Total-Soil -> SoilWaterTotal` (unfrozen alias; `frozwt` separate) | `SC-WATBAL-001` WB13 output invariants and `INV-WATBAL-095`; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`soil_water_total = total_soil` -> `("SoilWaterTotal", soil_water_total)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 
 Alias continuity policy for this family is explicit:
 1. Canonical publication symbol is `Total-Soil`.
@@ -1393,6 +1433,8 @@ Alias continuity policy for this family is explicit:
    canonical `Total-Soil`.
 3. `SoilWaterTotal` remains a hydout-equivalent aggregate alias of
    `Total-Soil`; `frozwt` is separately published frozen water.
+4. Frost-active storage closure audits use `Total-Soil + frozwt`; redefining
+   `SoilWaterTotal` to include `frozwt` is non-authoritative.
 
 ### HPARITY02 Profile-Capacity Publication Lineage Closure
 
@@ -1465,7 +1507,8 @@ that share domain authority with profile depth/capacity surfaces:
    - subsurface-loss family (`latqcc`, `Dp`).
 2. Robustness vectors must include all of:
    - conservation-consistent alias checks
-     (`SoilWaterTotal = Total-Soil`, with `frozwt` separate),
+     (`SoilWaterTotal = Total-Soil`, with frost-active storage audits using
+     `Total-Soil + frozwt`),
    - ordering/monotonic expectations
      (`ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`),
    - unit/domain guards for non-negative depth/flux publication magnitudes,
@@ -1888,7 +1931,9 @@ signals.
    as dynamic snow storage is invalid.
 3. Hydout-equivalent storage publication (`Total-Soil`, `frozwt`,
    `Snow-Water`, `SoilWaterTotal`) must originate from mutable runtime state
-   surfaces and preserve day-to-day mutation under varying forcing.
+   surfaces and preserve day-to-day mutation under varying forcing. In
+   frost-active rows, `Total-Soil`/`SoilWaterTotal` remain unfrozen-water
+   aliases and storage audits add the separately published `frozwt` term.
 4. Baseline/candidate parity closure artifacts must include explicit first-day
    partition diagnostics (`P`, `RM`, `Snow-Water`, `Total-Soil`, `frozwt`,
    `SoilWaterTotal`) plus multi-day storage mutation diagnostics to prevent
@@ -2214,6 +2259,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-11` | `150` | `Codex` | FDHP01 D2 amendment: ratified pinned-baseline frozen-storage provenance, kept `SoilWaterTotal = Total-Soil` as the unfrozen `watcon` alias, required `Total-Soil + frozwt` for frost-active storage audits, and added in-process `frwatc` freeze/thaw diagnostic obligations before D2 residual ownership. |
 | `2026-06-11` | `149` | `Codex` | FDHP01 closure amendment: corrected executable WB13/WAT invariant so `SoilWaterTotal` remains the hydout-equivalent `Total-Soil`/`watcon` alias while `frozwt` is separately published frozen water, avoiding frozen-storage double counting in annual storage closure. |
 | `2026-06-06` | `145` | `Codex` | SNOWSCI-S1 amendment: bound WB13 `RM`/`S`/`Snow-Water` to the single-source snow storage-loss scalar from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-019` and prohibited separate SWE-debit water loss. |
 | `2026-06-11` | `148` | `Codex` | FDHP01 WAT interchange amendment: clarified that additive parquet extensions beyond canonical WB13 replay columns must be versioned, with dataset version `1.4` adding required `frdp` frost-front depth publication. |

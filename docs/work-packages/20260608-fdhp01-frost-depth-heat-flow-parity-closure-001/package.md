@@ -14,6 +14,15 @@ residuals reached `2.4798612273409617 mm` rather than numerical noise, and
 emitted-prefix depth metrics still overreached the FDMC01 legacy envelope. The
 package therefore remains in defect closure rather than advancing MOFE.
 
+D2 update, 2026-06-11: `SC-WATBAL-001` v150 now pins the legacy
+`frwatc.for`/`watbalprint.for` provenance: `Total-Soil`/`SoilWaterTotal`
+exclude frozen water, and frost-active storage audits use
+`Total-Soil + frozwt`. The active frost exchange seam publishes
+`frost.runtime_frwatc_*` diagnostics, and focused freeze/thaw tests prove the
+in-process exchange algebra is symmetric. The cohort gate remains held until
+the WAT-level residual is audited against those diagnostics, `p2` runs clean,
+and D3 depth progression no longer pins at profile depth.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

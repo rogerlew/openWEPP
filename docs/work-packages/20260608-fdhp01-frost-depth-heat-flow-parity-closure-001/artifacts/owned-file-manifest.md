@@ -56,17 +56,19 @@ Date: 2026-06-11
 - `tests/integration/clim06_frost_frozen_soil_kernel_contract.rs`
   - Added FDHP01 heat-flow depth and warm-thaw contract tests; updated older
     CLIM06 assertions away from exact proxy expectations; added separate
-    `Qsrf`/`Quf` and frozen-water overdraw tests.
+    `Qsrf`/`Quf` and frozen-water overdraw tests. D2 added
+    `frost.runtime_frwatc_*` seam diagnostics and freeze/thaw reconciliation
+    assertions.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
   - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v149.
+    `SC-WATBAL-001` v150.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
   - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v149.
+    `SC-WATBAL-001` v150.
 
 ## Generated Cohort Evidence
 

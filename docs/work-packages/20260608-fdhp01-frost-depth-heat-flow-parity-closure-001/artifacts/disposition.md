@@ -26,6 +26,13 @@ Static:
 - WAT `SoilWaterTotal` was corrected back to the hydout-equivalent
   `Total-Soil` alias; `frozwt` remains separately published and is not folded
   into `SoilWaterTotal`.
+- `SC-WATBAL-001` v150 ratifies the pinned-baseline
+  `frwatc.for`/`watbalprint.for` provenance: `Total-Soil` and
+  `SoilWaterTotal` are unfrozen `watcon` aliases, while frost-active storage
+  audits use `Total-Soil + frozwt`.
+- Active frost exchange now publishes in-process `frwatc` diagnostics for
+  liquid before/after, frozen before/after, freeze debit, thaw credit, and
+  signed liquid delta.
 - `SC-SNOWFREEZE-001`, `SC-WATBAL-001`, and the runner CLI specification were
   updated to carry the new authority/versioning.
 
@@ -36,6 +43,10 @@ Ran:
 - `cargo test --workspace` passed.
 - `cargo deny check` passed.
 - `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` passed.
+- D2 focused diagnostics passed:
+  `cargo test --test clim06_frost_frozen_soil_kernel_contract --
+  --nocapture` (17 tests), plus the HPHYS0319/HPHYS0320
+  contract-version guards after `SC-WATBAL-001` v150.
 - Fresh 43-prefix `algebraic-radium` frost-on cohort run failed closure:
   `42/43` clean exits, `p2` failed before WAT publication at
   `HKERNEL-WB11-PERC-E-003` on `1990-308`.
@@ -60,10 +71,21 @@ Ran:
   legacy mean `417.4166666666667 mm`.
 - `SC-SNOWFREEZE-001` v55 reopens `GAP-SNOWFREEZE-002` as an active defect.
 
+## D2 Disposition
+
+D2 exchange wiring is now observable in process. Focused freeze-onset and
+warm-thaw vectors prove the exchange algebra is symmetric at the WB14/WB11
+seam. The remaining WAT-level inconsistency must be audited against those
+diagnostics before changing production hydrology or WB13 publication semantics
+again; the `SWT`-only annual near-closure remains non-authoritative as a
+completion claim.
+
 ## Review Closure
 
 Claude's post-closeout review findings are accepted. `complete` was incorrect;
 the package remains in defect closure. The next actionable item is to close
 `FDHP01-FROST-DEPTH-HEATFLOW-001` by fixing the cohort failure, restoring
-annual closure from the remaining `~2.48 mm` residual to numerical noise, and materially closing the FDMC01
-depth/duration gap.
+annual closure from the remaining `~2.48 mm` residual to numerical noise, and
+materially closing the FDMC01 depth/duration gap. D3 depth-runaway and the
+independent `p2` fail-closed defect remain downstream of the now-instrumented
+D2 gate.

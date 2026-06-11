@@ -73,6 +73,9 @@ In scope: standard `ksflag` frost depth model on the frost-active single-OFE sub
 `/wc1/runs/al/algebraic-radium` (`ksflag=1`). Out of scope: kfactor conductivity
 magnitude (legacy-faithful), forest `ksatadj`, frost activation (closed), MOFE/17-OFE
 (item 2), snow magnitude (item 3). Conservation must still close (`frozwt` in storage).
+For frost-active WAT audits, `SC-WATBAL-001` v150 defines that storage term as
+`Total-Soil + frozwt`, with `SoilWaterTotal = Total-Soil` as the unfrozen
+`watcon` alias.
 
 DC-ExecPlan: `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 Sized by [FDMC01](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/);
