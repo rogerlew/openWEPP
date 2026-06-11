@@ -35,6 +35,9 @@ Evidence and disposition artifacts for
   `fdhp01_d3_attempt_execution_summary_20260611.json`: trusted generated D3
   attempt reports copied from
   `/tmp/fdhp01_d3_layered_energy_20260611T085142Z/reports/`.
+- `d3-fine-sublayer-port-scope.md`: executed M1 scoping artifact for the D3
+  fine-sublayer port; source-traced legacy state/dispatch map, openWEPP alias
+  proposal, seam mapping, red-test list, and phase recommendation.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`: canonical contract edits.
 - `contract-test-implementation-evidence.md`: contract-derived tests.
