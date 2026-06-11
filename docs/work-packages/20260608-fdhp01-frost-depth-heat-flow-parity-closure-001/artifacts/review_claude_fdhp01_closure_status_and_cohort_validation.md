@@ -382,3 +382,45 @@ Disposition:
   semantics are changed again.
 - FDHP01 remains `executed-hold`: `p2`, the post-D1 `~2.48 mm` cohort
   residual, and the D3 depth runaway remain open downstream gates.
+
+### Addendum 2c — published `frozwt` is depth-derived, not the exchanged store
+### (high confidence, measured; resolves the 2b contradiction)
+
+Ran (duckdb, D1-restored cohort, p1): on all 793 frost-active days,
+`corr(frozwt, frdp) = 1.0` and `frozwt / frdp = 0.149` with **zero spread**
+(p10 = median = p90 = 0.149). Published `frozwt ≡ 0.149 × frdp` — a constant
+scale off the (D3-runaway) depth, not an accumulated frozen-water store.
+Year-end confirmation: `0.149 × frdp` at year boundaries (305.3, 0, 0, 403.3,
+519.6, 297.1, 459.0 mm) reproduces the year-end `frozwt` values (45.5, 0, 0,
+60.1, 77.4, 44.3, 68.4 mm) whose deltas are **exactly** the additive-identity
+annual residuals measured in Addendum 2 (e.g. −45.5 year 2, +60.1 year 4).
+
+This resolves the 2b contradiction: the in-process exchange can be perfectly
+symmetric (per the FDHP01-D2 instrumentation tests) while the *published*
+`frozwt` wanders with the defective depth — the `Total-Soil + frozwt` audit
+identity breaks by exactly the drift of the fictional store, and the
+`SWT`-only ledger's ±2.48 mm is plausibly the true exchanged store's year-end
+carryover (i.e. possibly not a defect at all, but expected frozen carryover).
+
+Consequences:
+
+1. The v150-ratified audit term (`Total-Soil + frozwt`) is correct in intent
+   but currently audits a fictional quantity. `frozwt` publication must source
+   the actual exchanged frozen store (the quantity the new WB14/WB11 seam
+   diagnostics track), not `0.149 × frdp`.
+2. The constant `0.149` needs provenance: it has zero soil/season dependence,
+   so it is a hard-coded scale somewhere in the frost publication path —
+   localize and retire (legacy `frozwt = Σ soilf` is a per-layer store, never
+   a constant fraction of depth).
+3. D2 likely dissolves once publication is fixed: with true-store `frozwt`,
+   the additive identity should close to noise and the residual ±2.48 mm
+   re-attributes to legitimate frozen carryover. Verify on the cohort.
+4. D3 remains the genuine physics defect and now also owns the `frozwt`
+   magnitude error (published frozen water is inflated by the runaway depth
+   through the 0.149 scale).
+5. Open verification for the instrumented binary (single prefix suffices):
+   compare the exchange-ledger freeze-debit/thaw-credit sums against
+   Δ(published `frozwt`) on real forcing — this directly separates the
+   exchange truth from the publication fiction; the Addendum 2 freeze-day
+   1:1 SWT debit suggests the freeze side may itself consume the
+   depth-derived increment, which the seam diagnostics will now show.
