@@ -107,11 +107,60 @@ redistribution or overflow routes recycles water into a positive feedback.
 The attempt's temporary pore-cap was the silent-clamp anti-pattern standing
 in for legacy's real constraints. Increment C therefore splits:
 
-## Increment C1 — capacity constraints + `watdst` redistribution + overflow surfaces
+## Increment C1a — seam accounting specification (diagnostic; added 2026-06-11)
+
+The first C1 pass also failed the D2 hard stop (years 2–6 max `16628 mm`;
+storage exceeding `ProfilePorosityCap` by metres; the follow-up aggregate cap
+collapsed overfill but closure still missed by up to `200 mm` —
+`d3-increment-c1-capacity-redistribution-20260611.md`). Two consecutive
+conservation failures in the same subsystem mean the next dispatch is
+**diagnosis, not a third implementation attempt** (per the C1 disposition's
+own "map the exact accounting target first").
+
+**Objective:** produce the seam accounting specification that any
+redistribution/overflow implementation must satisfy. No production physics
+edits; bounded instrumentation only.
+
+- Core question to answer: **liquid-water ownership over the day.** Legacy
+  protocol (scope §2/§4): between `frwatc(1)` and `frwatc(0)` the fine state
+  owns liquid; `frwatc(0)` *recomputes* coarse `st`/`soilw` wholesale from
+  fine state; WB-side mutations enter only as the `st − yst` delta at the
+  next ingress. Map openWEPP's actual daily ordering (which kernel phases
+  mutate coarse pools before/after the frost hourly loop and its writeback
+  in `hydrology_phase_runoff_reconciliation`) against that protocol, and
+  identify where the C/C1 attempts mutated both representations in the same
+  day.
+- Method: re-apply the backed-out C1 redistribution as a **diagnostic-only
+  branch/patch** (not landed), instrument a per-day double-entry ledger on
+  one failing prefix (p43): WB external fluxes, ingress delta, freeze
+  exchange, each redistribution motion, overflow routing, writeback values,
+  published totals. Locate the **first non-conserving day** and attribute
+  the leak to a specific motion (per the CLAUDE.md primary debugging lane —
+  single run, in-process state, no comparator needed).
+- Candidate failure classes to discriminate (from the C/C1 evidence):
+  (a) dual-ownership desync — fine and coarse liquid both mutated mid-day,
+  writeback overwrites or double-counts; (b) seed/writeback asymmetry —
+  fine state seeded from coarse pools at a different phase point than the
+  writeback targets; (c) overflow routed outside the closure identity
+  (`watpdg`/`watbtm` water leaving the books).
+- Deliverable: an accounting-specification section appended to the scope
+  artifact — the ownership timeline, the exact writeback semantics
+  (recompute vs delta), where `watdst` motions must be mirrored, and where
+  overflow enters the WAT identity — plus the failing-day ledger as
+  evidence. C1b implements **to that spec**.
+- Gates: first non-conserving day located and attributed; spec written with
+  code-point citations; no production edits landed; tree returns to the B
+  boundary.
+
+## Increment C1b — capacity constraints + `watdst` redistribution + overflow surfaces
 
 **Objective:** land the water-side infrastructure thaw needs, on the
 freeze-only B boundary, before any thaw arm exists.
 
+- Pre-condition: increment C1a committed; this increment implements **to the
+  C1a accounting specification** (ownership timeline, writeback semantics,
+  overflow identity routing). An implementation choice that contradicts the
+  spec requires amending the spec first, with evidence.
 - In scope:
   - Legacy capacity bound on ice formation: `frznw.for` limits new ice by
     `ul/dg·slfsd − slsic`; the freeze arms must respect pore capacity as
@@ -140,8 +189,8 @@ frost (`fgfrst=2/3`, `tfrdp`/`tthawd`), `fgthwd` thaw-through and early
 `frwatc(0)`, `watpdg`/`watbtm` overflow paths — and take the package's D3
 acceptance gate.
 
-- Pre-condition: increment C1 committed with gates green. Thaw melt must
-  route through the C1 redistribution/overflow paths — never directly
+- Pre-condition: increment C1b committed with gates green. Thaw melt must
+  route through the C1b redistribution/overflow paths — never directly
   accumulate into `slsw` beyond capacity (the backed-out attempt's failure
   mode).
 - Red tests first: scope tests 5 (bottom thaw), 6 (top thaw + `fgthwd`),
@@ -160,7 +209,7 @@ acceptance gate.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1|C2> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
