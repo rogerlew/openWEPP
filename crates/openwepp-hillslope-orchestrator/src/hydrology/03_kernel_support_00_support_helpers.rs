@@ -208,6 +208,7 @@ pub(crate) struct FrostCouplingOutcome {
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct FrostHourlyState {
     hour: usize,
+    frzflg: f64,
     qsrf_w_m2: f64,
     quf_w_m2: f64,
     ksrf_w_m_k: f64,
@@ -314,6 +315,7 @@ const FROST_HOURLY_SNOW_DEPTH_ROOT: &str = "frost.hourly.snow_depth_m";
 const FROST_HOURLY_RESIDUE_DEPTH_ROOT: &str = "frost.hourly.residue_depth_m";
 const FROST_HOURLY_TILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.tilled_frozen_depth_m";
 const FROST_HOURLY_UNTILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.untilled_frozen_depth_m";
+const FROST_HOURLY_FRZFLG_ROOT: &str = "frost.hourly.frzflg";
 const FROST_RUNTIME_FRDP_M_SYMBOL: &str = "frost.runtime_frdp_m";
 const FROST_RUNTIME_THDP_M_SYMBOL: &str = "frost.runtime_thdp_m";
 const FROST_RUNTIME_TFRDP_M_SYMBOL: &str = "frost.runtime_tfrdp_m";

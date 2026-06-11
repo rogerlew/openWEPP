@@ -13,7 +13,11 @@ Date: 2026-06-11
     `GAP-SNOWFREEZE-002` v57 D3 hold amendment prohibiting post-hoc scalar
     depth projection into layer stores. Increment A adds v58, pinning
     `frwatc(1)` to hour-1 daily ingress and authorizing shadow fine-state
-    aliases plus the internal handoff residual.
+    aliases plus the internal handoff residual. Increment B adds v59, promoting
+    fine-state-derived depth and freeze-arm mutation authority, adding
+    `frost.hourly.frzflg_####`, retiring scalar target-depth projection, and
+    authorizing threshold-bounded exchange-debit limiting at the
+    available-liquid handoff boundary.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -30,7 +34,10 @@ Date: 2026-06-11
     progression, separate lower-front `Quf`, fail-closed frozen-water
     exchange, and per-layer frozen-depth/`frzw` storage. Increment A adds
     behavior-preserving shadow `fgfrst`/`slfsd`/`slsic`/`slsw`/`sltime`/
-    `yst`/`nwfrzz` handoff state that does not drive active physics.
+    `yst`/`nwfrzz` handoff state. Increment B derives runtime depth from the
+    fine-state scan, mutates freeze-active `slfsd`/`slsic`/`slsw`/`nwfrzz`
+    through `frzng`/`frznw` lineage, and limits only threshold-sized exchange
+    debit overdraws at the available-liquid boundary.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
@@ -38,11 +45,12 @@ Date: 2026-06-11
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
   - Frost outcome/profile-depth fields, heat-flow constants, and layer frozen
     depth/`frzw` state fields. Increment A adds shadow fine-layer diagnostic
-    structs and symbol roots.
+    structs and symbol roots. Increment B adds hourly `frzflg` diagnostics.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
   - Frost writeback bounds now use physical profile depth and persist layer
     frozen-depth/`frzw` state. Increment A writes the shadow aggregate,
-    residual, `yst`/`nwfrzz`, and fine-layer diagnostic symbols.
+    residual, `yst`/`nwfrzz`, and fine-layer diagnostic symbols. Increment B
+    writes bounded hourly `frzflg` diagnostics.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/state_access.rs`
   - Added fine-layer frost diagnostic symbol formatting.
 - `crates/openwepp-hillslope-orchestrator/src/constants.rs`
@@ -86,16 +94,17 @@ Date: 2026-06-11
     `frost.runtime_frwatc_*` seam diagnostics and freeze/thaw reconciliation
     assertions. The layered continuation added scalar-store rejection and
     layer `frzw` update tests. Increment A adds shadow fine-state round-trip,
-    seam identity, and non-driving-output tests.
+    seam identity, and non-driving-output tests. Increment B adds dispatch,
+    fine-front energy, `frznw`, and `watdst` vectors.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v58 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v59 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v58 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v59 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
@@ -129,3 +138,8 @@ Date: 2026-06-11
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`
 - `fdhp01_increment_a_gates_latest_20260611.json`
+- `fdhp01_increment_b_execution_summary_20260611.json`
+- `fdhp01_increment_b_run_status_20260611.tsv`
+- `fdhp01_increment_b_annual_closure_residuals_20260611.csv`
+- `fdhp01_increment_b_depth_metrics_20260611.csv`
+- `fdhp01_increment_b_frozwt_frdp_ratio_20260611.csv`

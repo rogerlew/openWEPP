@@ -40,8 +40,14 @@ Primary landed behavior:
   `fgfrst`/`slfsd`/`slsic`/`slsw`/`sltime`/`yst`/`nwfrzz`. The shadow state is
   a handoff/conservation proof surface only and must not be treated as active
   depth authority until Increment B.
-- `SC-SNOWFREEZE-001` is now v58. `frwatc(1)` is pinned to active-day hour-1
-  ingress, not every-hour entry.
+- D3 Increment B now derives active frost depth from the fine-state
+  `fgfrst`/`slfsd` scan and mutates `slfsd`/`slsic`/`slsw`/`nwfrzz` in
+  freeze-active hours through `frzng`/`frznw` lineage.
+- `SC-SNOWFREEZE-001` is now v59. `frwatc(1)` is pinned to active-day hour-1
+  ingress, `frost.hourly.frzflg_####` is a required freeze/thaw branch
+  diagnostic, scalar target-depth projection is retired as production
+  authority, and threshold-bounded exchange-debit limiting is authorized only at
+  the available-liquid handoff boundary.
 
 Validation status before post-review cohort validation:
 
@@ -83,8 +89,24 @@ D3 attempt result:
 - `SC-SNOWFREEZE-001` v57 explicitly prohibits post-hoc scalar depth projection
   into layer stores; v58 adds the Increment A shadow handoff authority.
 
-First actionable item: execute Increment B of `d3-staged-increment-plan.md`.
-That increment derives depth from the fine state and lands the freeze arms
-while keeping years 2-6 conservation at noise and `43/43` cohort execution
-clean. Do not advance to MOFE until Increment C closes the full depth/duration
-acceptance gate without comparator tuning.
+Increment B result:
+
+- Clean `43/43` cohort execution. The copied wrappers wrote outputs under
+  `/tmp/frostval01_rerun_20260611T020951Z/outputs`; the CLI manifest root was
+  `/tmp/fdhp01_increment_b_final_20260611T193423Z/outputs`.
+- Years 2-6 `Total-Soil + frozwt` closure remains at numerical noise: max abs
+  `3.0880187296133954e-11 mm`. The year-7 boundary watch item remains tiny:
+  `1.2683569483584733e-07 mm`.
+- Profile-bound pinning directional gate passes: `0/43` prefixes pinned at
+  `ProfileDepth`, minimum margin `16.63152804088827 mm`.
+- `frozwt/frdp` scalar-signature gate passes: max per-prefix correlation
+  `0.9861968090242198`, below the rejected `0.9987` signature.
+- Depth magnitude remains near the profile bound: mean maximum depth
+  `1782.265765656973 mm`.
+
+First actionable item: execute Increment C of `d3-staged-increment-plan.md`.
+That increment ports top/bottom thaw arms, sandwich geometry, and thaw-through
+behavior while preserving years 2-6 conservation, `43/43` cohort execution, and
+the Increment B de-pinning/correlation gains. Do not advance to MOFE until
+Increment C closes the full depth/duration acceptance gate without comparator
+tuning.

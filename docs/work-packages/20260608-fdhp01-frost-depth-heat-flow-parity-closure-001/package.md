@@ -48,6 +48,22 @@ was clarified after execution because the clean pre baseline contains
 nondeterministic parquet `ARROW:schema` footers; decoded WAT is unchanged, and
 latest-source current/current WAT physical parity is now `43/43`.
 
+D3 Increment B, 2026-06-11: Codex landed the staged freeze-arm increment.
+`SC-SNOWFREEZE-001` v59 promotes the fine-layer frost state as active
+freeze-depth authority, adds `frost.hourly.frzflg_####`, derives
+`frdp`/`thdp`/sandwich depths from `fgfrst`/`slfsd`, retires scalar target-depth
+projection as production authority, and ratifies threshold-bounded
+exchange-debit limiting at the available-liquid handoff boundary. The required
+Rust gates and authority anti-evasion guards pass. A clean `43/43`
+`algebraic-radium` cohort keeps years 2-6 `Total-Soil + frozwt` closure at
+noise (max abs `3.0880187296133954e-11 mm`), preserves the tiny year-7 boundary
+watch item (`1.2683569483584733e-07 mm`), removes exact profile-bound pinning
+(`0/43` pinned; minimum margin `16.63152804088827 mm`), and keeps
+`frozwt/frdp` materially below the rejected scalar signature (max per-prefix
+correlation `0.9861968090242198` vs `0.9987`). D3 remains `executed-hold`
+because depth magnitude is still near the profile bound; Increment C owns
+top/bottom thaw arms, sandwich geometry, and final depth/duration acceptance.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

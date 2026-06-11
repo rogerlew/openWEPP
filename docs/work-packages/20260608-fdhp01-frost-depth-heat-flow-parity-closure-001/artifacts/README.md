@@ -46,6 +46,17 @@ Evidence and disposition artifacts for
   records the v58 hour-1 `frwatc(1)` amendment, shadow fine-state landing,
   behavior-preservation posture, local gates, and required bit-identical cohort
   gate.
+- `d3-increment-b-freeze-arms-20260611.md`: staged D3 Increment B evidence;
+  records the v59 fine-state depth authority, freeze-arm port, local/heavy
+  gates, 43-prefix cohort metrics, and remaining Increment C hold.
+- `fdhp01_increment_b_execution_summary_20260611.json`: compact Increment B
+  cohort summary with years 2-6 closure, year-7 watch item, de-pinning, and
+  `frozwt/frdp` correlation gates.
+- `fdhp01_increment_b_run_status_20260611.tsv`,
+  `fdhp01_increment_b_annual_closure_residuals_20260611.csv`,
+  `fdhp01_increment_b_depth_metrics_20260611.csv`,
+  `fdhp01_increment_b_frozwt_frdp_ratio_20260611.csv`: generated Increment B
+  reports from the clean `43/43` cohort.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

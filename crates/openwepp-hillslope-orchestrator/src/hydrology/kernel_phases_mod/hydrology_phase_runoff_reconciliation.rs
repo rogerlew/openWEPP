@@ -1057,6 +1057,12 @@ pub(crate) fn run_runoff_reconciliation(
             }
             for hourly in &frost_outcome.hourly_state {
                 state_updates.push(WritebackField::bounded(
+                    Self::hourly_symbol(FROST_HOURLY_FRZFLG_ROOT, hourly.hour),
+                    hourly.frzflg,
+                    Some(0.0),
+                    Some(4.0),
+                ));
+                state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(FROST_HOURLY_QSRF_ROOT, hourly.hour),
                     hourly.qsrf_w_m2,
                     Some(0.0),

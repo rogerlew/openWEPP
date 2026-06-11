@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 58
+contract_version: 59
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -807,7 +807,7 @@ SIMIMPL32 must implement contract-derived tests that demonstrate:
    frost runtime payloads consumed by `SC-SOIL-001`, `SC-RUNOFFPART-001`,
    `SC-WATBAL-001`, and `SC-SYSTEM-001` remain complete, finite, and typed.
 
-### FDHP01 Increment A Fine-State Shadow Aliases
+### FDHP01 Fine-State Aliases and Incremental Authority
 
 FDHP01 Increment A authorizes behavior-preserving shadow publication of the
 baseline fine-layer frost state before it drives depth or WAT publication. The
@@ -816,7 +816,7 @@ shadow state is a conservation and handoff proof surface only: active `frdp`,
 water-balance publication remain unchanged until the subsequent freeze/thaw
 increments rebind authority.
 
-| Legacy symbol | openWEPP shadow alias | Increment-A rule |
+| Legacy symbol | openWEPP alias | Incremental rule |
 |---|---|---|
 | `fgfrst(j,i)` | `frost.runtime_fgfrst_LLLL_FFFF` | Fine-layer frost flag, persisted as diagnostic state with integer domain `0..3`; it must not drive active depth in Increment A. |
 | `slfsd(j,i)` | `frost.runtime_slfsd_m_LLLL_FFFF` | Fine-layer frozen thickness in metres; aggregate shadow handoff must keep `0 <= slfsd <= dzfine`. |
@@ -825,12 +825,33 @@ increments rebind authority.
 | `sltime(j,i)` | `frost.runtime_sltime_s_LLLL_FFFF` | Hour-local redistribution timer; Increment A resets/publishes it as zero diagnostic state. |
 | `yst(i)` | `frost.runtime_yst_m_LLLL` | Prior day-end active storage for the next hour-1 `frwatc(1)` delta. |
 | `nwfrzz(i)` | `frost.runtime_nwfrzz_m_LLLL` | Liquid water residing in frozen zones before `frznw`; shadow handoff updates it without changing active stores. |
+| `frzflg` | `frost.hourly.frzflg_####` | Hourly branch diagnostic with legacy integer domain `0..4`; Increment B uses it to prove freeze/thaw arm selection before the full thaw-arm port. |
 
 Increment A must also publish an internal conservation residual proving the
 handoff seam:
 `Delta(fine liquid + nwfrzz + slsic) == st - yst` when no freeze/thaw arms are
 bound to the shadow state. Any residual beyond roundoff is an implementation
 hard stop before the state is allowed to drive depth or publication.
+
+FDHP01 Increment B rebinds active freeze-depth authority to this fine-layer
+state. During freeze-active hours, `frzng`/`frznw` semantics must mutate
+`slfsd`, `slsic`, `slsw`, and `nwfrzz` first; `frdp`, `thdp`, `tfrdp`, and
+`tthawd` are then derived by scanning `fgfrst`/`slfsd` equivalent to
+`watdst.for:300-511`. `frznw` must freeze liquid already held in frozen zones
+before ordinary front extension, respecting `ul/dg * slfsd - slsic` capacity
+and preserving total layer water. When exchange summation would debit more
+liquid than available by no more than the kernel zero threshold
+(`WB11_ZERO_THRESHOLD`, metres), the freeze debit may be limited to available
+liquid at the handoff boundary; larger overruns are hard domain violations.
+Production code must not advance scalar `frdp` and then project the target
+depth into layer mass. The former
+`apply_layered_frost_target` lineage is retained only as historical evidence
+for the D2 repair and is not production authority after Increment B.
+
+Increment B does not complete `mlttp`/`mltbtm` sandwich and thaw-through
+authority. Any surviving thaw behavior in this increment is a bounded
+carry-over/minimal retreat path and must remain recorded as incomplete until
+Increment C ports the top/bottom thaw arms and closes D3 acceptance.
 
 ## Known Gaps
 
@@ -846,6 +867,7 @@ hard stop before the state is allowed to drive depth or publication.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-11` | `59` | `Codex` | FDHP01 Increment B amendment: promoted fine-layer `frzng`/`frznw` freeze-arm state as active depth authority, added `frost.hourly.frzflg_####`, required `watdst`-style depth derivation from `fgfrst`/`slfsd`, allowed threshold-bounded exchange-debit limiting at the available-liquid handoff boundary, and retired scalar target-depth projection as production authority. |
 | `2026-06-11` | `58` | `Codex` | FDHP01 Increment A amendment: corrected `INV-SNOWFREEZE-012` from ambiguous hourly `frwatc(1)` ingress to pinned hour-1 daily ingress, and added fine-layer shadow-state aliases plus a required internal handoff conservation residual before the state may drive depth/publication. |
 | `2026-06-11` | `57` | `Codex` | FDHP01 D3 amendment: specified that hourly freeze/thaw energy must move the same layer frozen-depth/frozen-water state that `frwatc` publishes, prohibited post-hoc scalar depth projection into layer stores, and updated `GAP-SNOWFREEZE-002` to the Addendum 3 D3 depth/duration signature after D2/p2 closure. |
 | `2026-06-11` | `56` | `Codex` | FDHP01 layered-state amendment: required executable frost to carry per-layer frozen-depth/frozen-water state, derive aggregate `Ws_frz`/`frozwt` lineage from the legacy `soilf` layer sum, and reject scalar `frdp * theta` frozen-water surrogates as the shared D2/D3 defect. |

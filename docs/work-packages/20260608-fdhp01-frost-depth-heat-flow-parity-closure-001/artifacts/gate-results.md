@@ -160,5 +160,31 @@ by the old baseline's nondeterministic parquet footer, now fixed and proven by
 the current-vs-current `43/43` physical parity run. Full latest-source Rust
 gates pass.
 
+## D3 Increment B Freeze-Arm Gates
+
+| Command / Gate | Result |
+|---|---|
+| `cargo fmt --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, 2 tests |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 26 tests; includes Increment B dispatch, fine-front energy, `frznw`, and `watdst` vectors |
+| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v59 |
+| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v59 |
+| `cargo test -p openwepp --test pl14s_tier_a_candidate_emission_and_replay_contract -- --nocapture` | Pass, 8 tests after the threshold-bounded exchange-debit boundary fix |
+| 43-prefix `algebraic-radium` frost-on cohort | Pass, `43/43` clean exits; wrappers wrote outputs under `/tmp/frostval01_rerun_20260611T020951Z/outputs`, with CLI manifests under `/tmp/fdhp01_increment_b_final_20260611T193423Z/outputs` |
+| Annual `Total-Soil + frozwt` closure, years 2-6 | Pass, max abs residual `3.0880187296133954e-11 mm`, mean abs residual `1.2662284657486707e-11 mm` |
+| Year-7 boundary watch item | Still present at tiny magnitude, max abs residual `1.2683569483584733e-07 mm` |
+| Year-1 initialization residual | Recorded outside the staged gate, max abs residual `1.0505061950707386 mm` |
+| Profile-bound pinning directional gate | Pass, `0/43` prefixes pinned at `ProfileDepth`; minimum margin `16.63152804088827 mm` |
+| `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.9861968090242198`, median `0.9635362793734238`, below the rejected `0.9987` scalar signature |
+
+Increment B disposition: staged gates pass, but D3 remains `executed-hold`.
+Depth no longer pins exactly at the profile bound, but remains near it
+(mean max `1782.265765656973 mm`), so Increment C must port top/bottom thaw
+arms, sandwich geometry, and thaw-through behavior before package acceptance.
+
 Disposition: Rust gates and D2 storage closure pass, but package acceptance
 still fails on D3 frost-depth parity. FDHP01 is executed-hold.

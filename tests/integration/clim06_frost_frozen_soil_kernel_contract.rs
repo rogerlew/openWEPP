@@ -761,6 +761,22 @@ fn frozen_layer_frzw_sum(
         + require_state_scalar(report, "wb18_perc_frzw_0002")
 }
 
+fn response_fine_layer_sum(
+    response: &KernelRunResponse,
+    root: &str,
+    layer_index: usize,
+    fine_count: usize,
+) -> f64 {
+    (1..=fine_count)
+        .map(|fine_index| {
+            require_response_state_update(
+                response,
+                &fine_frost_symbol(root, layer_index, fine_index),
+            )
+        })
+        .sum()
+}
+
 fn layer_frozen_depth_sum(
     report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
 ) -> f64 {
@@ -801,6 +817,8 @@ fn assert_close(actual: f64, expected: f64, context: &str) {
 fn fdhp01_fine_sublayer_frwatc_round_trip_conserves_mass() {
     let mut surface = seeded_clim06_surface(true);
     seed_increment_a_shadow_fine_state(&mut surface, 0.0);
+    insert_state_scalar(&mut surface, "tmax", -0.252);
+    insert_state_scalar(&mut surface, "tmin", -0.252);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -889,7 +907,7 @@ fn fdhp01_fine_sublayer_shadow_seam_identity_tracks_wb_delta() {
 }
 
 #[test]
-fn fdhp01_fine_sublayer_shadow_state_does_not_drive_active_outputs() {
+fn fdhp01_fine_sublayer_state_drives_active_depth_outputs() {
     let mut shadow_surface = seeded_clim06_surface(true);
     seed_increment_a_shadow_fine_state(&mut shadow_surface, 0.003);
     let mut active_only_surface = shadow_surface.clone();
@@ -911,20 +929,156 @@ fn fdhp01_fine_sublayer_shadow_state_does_not_drive_active_outputs() {
     assert!(shadow_response.status.ok_flag());
     assert!(active_response.status.ok_flag());
 
-    for symbol in [
-        "frost.runtime_frdp_m",
-        "frost.runtime_frwatc_frozen_water_after_m",
-        "frost.runtime_frwatc_soil_water_after_m",
-        "wb11_soil_water",
-        "wb18_perc_frozen_depth_0001",
-        "wb18_perc_frzw_0001",
-    ] {
-        assert_close(
-            require_response_state_update(&shadow_response, symbol),
-            require_response_state_update(&active_response, symbol),
-            symbol,
-        );
-    }
+    let fine_driven_depth = require_response_state_update(&shadow_response, "frost.runtime_frdp_m");
+    let coarse_driven_depth =
+        require_response_state_update(&active_response, "frost.runtime_frdp_m");
+    assert!(
+        (fine_driven_depth - coarse_driven_depth).abs() > CLIM06_TEST_TOLERANCE,
+        "Increment B must bind active depth to the persisted fine-layer state"
+    );
+    assert_close(
+        fine_driven_depth,
+        response_fine_layer_sum(&shadow_response, "frost.runtime_slfsd_m", 1, 10)
+            + response_fine_layer_sum(&shadow_response, "frost.runtime_slfsd_m", 2, 10),
+        "runtime frdp must be derived from fine-layer frozen thickness",
+    );
+}
+
+#[test]
+fn fdhp01_frostn_dispatch_arms_match_inv_snowfreeze_012() {
+    let mut cold_new_surface = seeded_clim06_surface(true);
+    insert_state_scalar(
+        &mut cold_new_surface,
+        "wb12_runoff_closure_tolerance",
+        1000.0,
+    );
+    let cold_new = execute_clim06_runoff_phase(&cold_new_surface);
+    assert!(cold_new.status.ok_flag());
+    assert_close(
+        require_response_state_update(&cold_new, "frost.hourly.frzflg_0001"),
+        1.0,
+        "cold no-sandwich frost start must dispatch bottom/front freezing",
+    );
+
+    let mut sandwich_cold = seeded_clim06_surface(true);
+    insert_state_scalar(&mut sandwich_cold, "wb12_runoff_closure_tolerance", 1000.0);
+    seed_increment_a_shadow_fine_state(&mut sandwich_cold, 0.0);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_fgfrst_0001_0001", 3.0);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_slfsd_m_0001_0001", 0.005);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_slsic_m_0001_0001", 0.002);
+    let sandwich_cold = execute_clim06_runoff_phase(&sandwich_cold);
+    assert!(
+        sandwich_cold.status.ok_flag(),
+        "sandwich cold vector failed: status={:?}",
+        sandwich_cold.status
+    );
+    assert_close(
+        require_response_state_update(&sandwich_cold, "frost.hourly.frzflg_0001"),
+        2.0,
+        "cold sandwich state must dispatch top-freeze/bottom-thaw arm",
+    );
+
+    let mut balanced = seeded_clim06_surface(true);
+    insert_state_scalar(&mut balanced, "wb12_runoff_closure_tolerance", 1000.0);
+    insert_state_scalar(&mut balanced, "tmax", 0.0);
+    insert_state_scalar(&mut balanced, "tmin", 0.0);
+    let balanced = execute_clim06_runoff_phase(&balanced);
+    assert!(balanced.status.ok_flag());
+    assert_close(
+        require_response_state_update(&balanced, "frost.hourly.frzflg_0001"),
+        0.0,
+        "balanced no-frost state must expose the no-dispatch arm",
+    );
+}
+
+#[test]
+fn fdhp01_fine_sublayer_freeze_front_steps_by_energy_and_resistance() {
+    let mut surface = seeded_clim06_surface(true);
+    insert_state_scalar(&mut surface, "wb12_runoff_closure_tolerance", 1000.0);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.0);
+    insert_state_scalar(&mut surface, "tmax", -12.0);
+    insert_state_scalar(&mut surface, "tmin", -24.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(response.status.ok_flag());
+
+    let front_fine_depth =
+        require_response_state_update(&response, "frost.runtime_slfsd_m_0001_0004");
+    let front_fine_ice =
+        require_response_state_update(&response, "frost.runtime_slsic_m_0001_0004");
+    assert!(
+        front_fine_depth > CLIM06_TEST_TOLERANCE,
+        "freeze energy must advance the next fine layer before aggregate depth changes"
+    );
+    assert!(
+        front_fine_ice > CLIM06_TEST_TOLERANCE,
+        "front advance must accumulate fine-layer ice mass"
+    );
+
+    let prior_depth = 0.030;
+    let hour_1_depth =
+        require_response_state_update(&response, "frost.hourly.tilled_frozen_depth_m_0001");
+    let hour_2_depth =
+        require_response_state_update(&response, "frost.hourly.tilled_frozen_depth_m_0002");
+    assert!(
+        hour_2_depth - hour_1_depth <= hour_1_depth - prior_depth + CLIM06_TEST_TOLERANCE,
+        "increasing frozen-layer resistance should not accelerate the second hourly increment"
+    );
+}
+
+#[test]
+fn fdhp01_fine_sublayer_frznw_refreezes_nwfrzz_once() {
+    let mut surface = seeded_clim06_surface(true);
+    insert_state_scalar(&mut surface, "wb12_runoff_closure_tolerance", 1000.0);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.0);
+    insert_state_scalar(&mut surface, "frost.runtime_nwfrzz_m_0001", 0.002);
+    insert_state_scalar(&mut surface, "tmax", -12.0);
+    insert_state_scalar(&mut surface, "tmin", -24.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(response.status.ok_flag());
+
+    let nwfrzz_after = require_response_state_update(&response, "frost.runtime_nwfrzz_m_0001");
+    let fine_ice_after = response_fine_layer_sum(&response, "frost.runtime_slsic_m", 1, 10);
+    assert_close(
+        nwfrzz_after,
+        0.0,
+        "frznw must consume frozen-zone liquid before ordinary front extension",
+    );
+    assert!(
+        fine_ice_after >= 0.014 - CLIM06_TEST_TOLERANCE,
+        "frozen-zone liquid must be added to fine-layer ice exactly once before front motion"
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_frwatc_residual_m"),
+        0.0,
+        "frznw refreeze must preserve the fine-layer handoff mass identity",
+    );
+}
+
+#[test]
+fn fdhp01_watdst_mode_flags_update_depths_and_sltime() {
+    let mut surface = seeded_clim06_surface(true);
+    insert_state_scalar(&mut surface, "wb12_runoff_closure_tolerance", 1000.0);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.0);
+    insert_state_scalar(&mut surface, "frost.runtime_frdp_m", 0.20);
+    insert_state_scalar(&mut surface, "frost.runtime_sltime_s_0001_0004", 1800.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(response.status.ok_flag());
+
+    let fine_depth = response_fine_layer_sum(&response, "frost.runtime_slfsd_m", 1, 10)
+        + response_fine_layer_sum(&response, "frost.runtime_slfsd_m", 2, 10);
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_frdp_m"),
+        fine_depth,
+        "watdst mode 2 must recompute global depth from fine flags instead of seeded scalar frdp",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_sltime_s_0001_0004"),
+        0.0,
+        "hourly frost dispatch must reset sltime after watdst accounting",
+    );
 }
 
 #[test]

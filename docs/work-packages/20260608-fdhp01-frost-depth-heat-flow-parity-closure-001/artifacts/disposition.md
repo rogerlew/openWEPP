@@ -10,8 +10,9 @@ Date: 2026-06-11
 
 FDHP01 is executed but held. The D2 storage/publication defect is closed by the
 layered-state continuation. D3 Increment A has now landed the non-driving
-fine-sublayer shadow state and `frwatc` handoff proof surface, while D3
-depth/duration parity remains open under
+fine-sublayer shadow state and `frwatc` handoff proof surface. D3 Increment B
+has now landed fine-state-derived depth and the freeze arms, while D3
+depth/duration parity remains open for the thaw-arm pass under
 `SC-SNOWFREEZE-001#INV-SNOWFREEZE-006`.
 
 Static:
@@ -39,6 +40,15 @@ Static:
   shadow aliases for `fgfrst`/`slfsd`/`slsic`/`slsw`/`sltime`/`yst`/`nwfrzz`.
 - Increment A shadow state is written as diagnostics only. It does not drive
   active depth, conductivity, WAT publication, or freeze/thaw behavior.
+- `SC-SNOWFREEZE-001` v59 promotes the fine-layer state as active freeze-depth
+  authority, adds `frost.hourly.frzflg_####`, derives runtime
+  `frdp`/`thdp`/`tfrdp`/`tthawd` from `fgfrst`/`slfsd`, retires scalar
+  target-depth projection as production authority, and ratifies
+  threshold-bounded exchange-debit limiting at the available-liquid handoff
+  boundary.
+- Increment B mutates `slfsd`/`slsic`/`slsw`/`nwfrzz` for freeze-active hours
+  (`frzng`/`frznw` lineage) and aggregates per-layer frozen depth/water from
+  the same fine state.
 - WAT parquet physical bytes are now deterministic while preserving readable
   Arrow field metadata, so the Increment A bit-identical cohort gate can remain
   literal.
@@ -66,6 +76,10 @@ Ran:
   tests, and `cargo deny check` passed after final WAT footer minimization.
 - Fresh 43-prefix `algebraic-radium` frost-on cohort run:
   `/tmp/fdhp01_layered_store_20260611T080722Z`, `43/43` clean exits.
+- Increment B 43-prefix cohort execution was clean (`43/43`); copied wrappers
+  wrote WAT/HBP/loss outputs under
+  `/tmp/frostval01_rerun_20260611T020951Z/outputs`, with CLI manifests under
+  `/tmp/fdhp01_increment_b_final_20260611T193423Z/outputs`.
 
 ## Closure Evidence
 
@@ -118,6 +132,29 @@ Ran:
 - Latest current-vs-current physical bytes are `43/43` identical for
   `H.hbp`, `H.loss.json`, and `H.wat.parquet`; decoded WAT is also `43/43`.
 
+## Increment B Gate Evidence
+
+- Persisted compact reports:
+  - `fdhp01_increment_b_execution_summary_20260611.json`
+  - `fdhp01_increment_b_run_status_20260611.tsv`
+  - `fdhp01_increment_b_annual_closure_residuals_20260611.csv`
+  - `fdhp01_increment_b_depth_metrics_20260611.csv`
+  - `fdhp01_increment_b_frozwt_frdp_ratio_20260611.csv`
+- Years 2-6 `Total-Soil + frozwt` identity remains at numerical noise:
+  max abs residual `3.0880187296133954e-11 mm`, mean abs residual
+  `1.2662284657486707e-11 mm`.
+- Year 7 remains a tiny boundary watch item: max abs residual
+  `1.2683569483584733e-07 mm`. Year 1 initialization residual is recorded
+  separately outside the staged gate: max abs `1.0505061950707386 mm`.
+- Profile-bound pinning directional gate passes: `0/43` prefixes pin at
+  `ProfileDepth`; minimum margin to the profile bound is
+  `16.63152804088827 mm`.
+- `frozwt/frdp` no longer carries the scalar signature: maximum per-prefix
+  correlation `0.9861968090242198`, median `0.9635362793734238`, with
+  `36064` frost-active rows.
+- Depth magnitude is still a hold item: mean maximum depth
+  `1782.265765656973 mm`, median maximum depth `1782.454753408546 mm`.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -141,5 +178,6 @@ Claude's post-closeout review findings are accepted. The diagnostic conclusion
 from addendum 2e was correct: the scalar model could not satisfy the v150/v151
 audit identity by construction. The package still cannot be marked complete
 because D3 depth/duration parity is open. The next actionable item is Increment
-B from `d3-staged-increment-plan.md`: derive depth from the fine state and land
-the freeze arms while preserving years 2-6 conservation and cohort execution.
+C from `d3-staged-increment-plan.md`: port the top/bottom thaw arms, sandwich
+geometry, and thaw-through behavior while preserving the years 2-6 conservation
+gate and the Increment B de-pinning/correlation gains.
