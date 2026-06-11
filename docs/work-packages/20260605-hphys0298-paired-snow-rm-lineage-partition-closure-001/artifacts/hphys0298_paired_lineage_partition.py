@@ -98,15 +98,6 @@ def load_module(path: Path, name: str) -> Any:
     return module
 
 
-HPHYS0297 = load_module(HPHYS0297_SCRIPT, "hphys0297_defect_ledger")
-SEMANTIC_WAT = load_module(SEMANTIC_WAT_SCRIPT, "semantic_hillslope_wat_compare")
-HPHYS0295 = HPHYS0297.HPHYS0295
-HPHYS0291 = HPHYS0297.HPHYS0291
-HPHYS0265 = HPHYS0297.HPHYS0265
-TARGET_WINDOWS = HPHYS0297.TARGET_WINDOWS
-TARGET_HILLS = sorted(TARGET_WINDOWS)
-
-
 class UnitPairingEvidenceError(RuntimeError):
     """Raised when a canonical paired-lineage symbol maps to the wrong dimension."""
 
@@ -121,6 +112,15 @@ def validate_unit_pairings() -> None:
             "mapping are non-authoritative; use HPHYS0299 corrected depth-vs-depth "
             "evidence before assigning production migration authority."
         )
+
+
+HPHYS0297 = load_module(HPHYS0297_SCRIPT, "hphys0297_defect_ledger")
+SEMANTIC_WAT: Any | None = None
+HPHYS0295 = HPHYS0297.HPHYS0295
+HPHYS0291 = HPHYS0297.HPHYS0291
+HPHYS0265 = HPHYS0297.HPHYS0265
+TARGET_WINDOWS = HPHYS0297.TARGET_WINDOWS
+TARGET_HILLS = sorted(TARGET_WINDOWS)
 
 
 @dataclass
@@ -1179,12 +1179,14 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    global SEMANTIC_WAT
     args = parse_args()
     try:
         validate_unit_pairings()
     except UnitPairingEvidenceError as error:
         print(str(error), file=sys.stderr)
         return 2
+    SEMANTIC_WAT = load_module(SEMANTIC_WAT_SCRIPT, "semantic_hillslope_wat_compare")
     args.run_root.mkdir(parents=True, exist_ok=True)
     args.artifact_dir.mkdir(parents=True, exist_ok=True)
     if not args.skip_full_suite:

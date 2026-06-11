@@ -59,6 +59,7 @@ fn write_executable(path: &Path, payload: &str) {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn owcmp_declares_pl14s_contract_markers_and_deferred_observe_boundary() {
     assert!(contains_all(
         OWCMP_CLI,
@@ -704,8 +705,8 @@ fn owcmp_summarize_reports_failed_commands_as_failed_verdict() {
 #[test]
 fn owcmp_pl14s_run_emits_provenance_with_strict_and_semantic_lanes() {
     let temp_dir = fixture_temp_dir("owcmp_pl14s_run");
-    let baseline_run_dir = temp_dir.join("baseline_fixture");
-    let baseline_runs_dir = baseline_run_dir.join("runs");
+    let baseline_fixture_root = temp_dir.join("baseline_fixture");
+    let baseline_runs_dir = baseline_fixture_root.join("runs");
     let candidate_wat = temp_dir.join("candidate.wat.dat");
     let baseline_binary = temp_dir.join("fake_baseline.sh");
     let strict_comparator = temp_dir.join("fake_strict_comparator.py");
@@ -740,7 +741,7 @@ with open(out, "w", encoding="utf-8") as handle:
         .arg("pl14s")
         .arg("run")
         .arg("--baseline-run-dir")
-        .arg(&baseline_run_dir)
+        .arg(&baseline_fixture_root)
         .arg("--baseline-binary")
         .arg(&baseline_binary)
         .arg("--baseline-run-file")
