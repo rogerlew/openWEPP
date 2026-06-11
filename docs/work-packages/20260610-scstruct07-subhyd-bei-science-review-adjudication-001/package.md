@@ -1,6 +1,6 @@
 # SCSTRUCT07 — SC-SUBHYD Binding Exposure Index Science-Review Adjudication
 
-Status: queued
+Status: executed-map-in-core
 Created: 2026-06-10
 Series: `scstruct` (science-contract structure / context optimization)
 Closes: defect `SCSTRUCT06-SUBHYD-BEI-SCIENCE-REVIEW` (routed from SCSTRUCT06)

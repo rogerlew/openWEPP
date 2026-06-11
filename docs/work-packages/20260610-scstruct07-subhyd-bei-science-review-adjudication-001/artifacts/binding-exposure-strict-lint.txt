@@ -1,0 +1,8 @@
+Ran:
+$ python3 tools/check_sc_binding_exposure.py docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md
+PASS docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md: 22 binding exposure row(s) fully consolidated
+
+Ran:
+$ python3 tools/check_sc_binding_exposure.py --strict docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md
+PASS docs/specifications/science-contracts/contracts/SC-SUBHYD-001.md: 22 binding exposure row(s) fully consolidated
+strict_exit=0
