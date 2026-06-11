@@ -10,7 +10,8 @@ Date: 2026-06-11
 
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
   - FDHP01 heat-flow depth addendum, `frdp` alias authority, and
-    `GAP-SNOWFREEZE-002` v56 layered-store / D3 hold amendment.
+    `GAP-SNOWFREEZE-002` v57 D3 hold amendment prohibiting post-hoc scalar
+    depth projection into layer stores.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -75,10 +76,10 @@ Date: 2026-06-11
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v56 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v57 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v56 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v57 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
@@ -103,3 +104,9 @@ Date: 2026-06-11
 - `fdhp01_layered_depth_metrics_20260611.csv`
 - `fdhp01_layered_frozwt_frdp_ratio_20260611.csv`
 - `fdhp01_layered_execution_summary_20260611.json`
+- `fdhp01_d3_attempt_summary_20260611.json`
+- `fdhp01_d3_attempt_run_status_20260611.tsv`
+- `fdhp01_d3_attempt_activation_summary_20260611.csv`
+- `fdhp01_d3_attempt_depth_metrics_20260611.csv`
+- `fdhp01_d3_attempt_frozwt_frdp_ratio_20260611.csv`
+- `fdhp01_d3_attempt_execution_summary_20260611.json`

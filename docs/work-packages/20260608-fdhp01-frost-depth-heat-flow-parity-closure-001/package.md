@@ -24,6 +24,19 @@ complete the layered thermal-resistance/depth-progression port so depth
 advance is bounded by the layered frost state, then rerun the same additive
 identity and depth/duration cohort gates before MOFE.
 
+D3 execution attempt, 2026-06-11: Codex tested a coarse continuous per-layer
+energy-front implementation against the same 43-prefix population. The attempt
+ran `43/43` clean and reduced median maximum frost depth to `490.774886655666 mm`,
+but failed the package's phase boundary: mean max depth remained high
+(`643.2973898432339 mm` vs legacy `414.22093023255815 mm`), severe outliers
+still reached `1789.9130899451595 mm`, median depth correlation stayed negative
+(`-0.1876255663636445`), and frozen duration remained under-persistent by a
+median `-428` days. Static legacy inspection showed the missing structure is
+the full fine-sublayer `frostn`/`frzng`/`mltbtm`/`frwatc` state machine
+(`fgfrst`, `slfsd`, `slsic`, `slsw`, `nwfrzz`) rather than a coarse scalar or
+coarse per-layer front. The production/test experiment was backed out; only
+`SC-SNOWFREEZE-001` v57 and package evidence remain.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

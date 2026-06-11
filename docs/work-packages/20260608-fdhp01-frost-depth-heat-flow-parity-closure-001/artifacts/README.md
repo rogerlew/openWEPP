@@ -26,6 +26,15 @@ Evidence and disposition artifacts for
   `fdhp01_layered_execution_summary_20260611.json`: generated layered-store
   cohort reports copied from
   `/tmp/fdhp01_layered_store_20260611T080722Z/reports/`.
+- `fdhp01_d3_attempt_summary_20260611.json`: compact D3 attempted-hold
+  summary showing why the coarse-front experiment was backed out.
+- `fdhp01_d3_attempt_run_status_20260611.tsv`,
+  `fdhp01_d3_attempt_activation_summary_20260611.csv`,
+  `fdhp01_d3_attempt_depth_metrics_20260611.csv`,
+  `fdhp01_d3_attempt_frozwt_frdp_ratio_20260611.csv`,
+  `fdhp01_d3_attempt_execution_summary_20260611.json`: trusted generated D3
+  attempt reports copied from
+  `/tmp/fdhp01_d3_layered_energy_20260611T085142Z/reports/`.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`: canonical contract edits.
 - `contract-test-implementation-evidence.md`: contract-derived tests.

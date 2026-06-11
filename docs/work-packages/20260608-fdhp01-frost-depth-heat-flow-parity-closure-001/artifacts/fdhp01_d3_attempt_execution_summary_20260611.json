@@ -1,0 +1,19 @@
+{
+  "binary_sha256": "86a82da1f31780c27aacc4a7694193fba53363e0107f56360c10aa146412d160",
+  "clean_prefixes": 43,
+  "prefix_count_requested": 43,
+  "release_binary": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "reports": [
+    "execution_summary.json",
+    "fdhp01_activation_summary.csv",
+    "fdhp01_annual_closure_residuals.csv",
+    "fdhp01_closure_summary.json",
+    "fdhp01_depth_metrics.csv",
+    "fdhp01_frozwt_frdp_ratio.csv",
+    "run_status.tsv"
+  ],
+  "run_root": "/tmp/fdhp01_d3_layered_energy_20260611T085142Z",
+  "source_commit": "8d13ba898a111aeed97375cc997d0ca65d6b85b7",
+  "wat_outputs": 43,
+  "working_tree_dirty_at_run": true
+}

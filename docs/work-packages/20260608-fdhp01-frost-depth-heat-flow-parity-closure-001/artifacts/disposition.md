@@ -29,9 +29,9 @@ Static:
 - WAT `SoilWaterTotal` remains the hydout-equivalent unfrozen `Total-Soil`
   alias; frost-active storage audits use `Total-Soil + frozwt` under
   `SC-WATBAL-001` v152.
-- `SC-SNOWFREEZE-001` v56 rejects scalar `frdp * theta` frozen-water stores and
-  records that full depth parity still requires the layered thermal-resistance
-  port.
+- `SC-SNOWFREEZE-001` v57 rejects scalar `frdp * theta` frozen-water stores,
+  prohibits post-hoc scalar depth projection into layer stores, and records
+  that full depth parity still requires the fine-sublayer frost port.
 
 Ran:
 
@@ -43,7 +43,7 @@ Ran:
 - `cargo test --test clim06_frost_frozen_soil_kernel_contract --
   --nocapture` passed, `19` tests.
 - `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract --
-  --nocapture` passed after `SC-SNOWFREEZE-001` v56 /
+  --nocapture` passed after `SC-SNOWFREEZE-001` v57 /
   `SC-WATBAL-001` v152 updates.
 - `cargo test --test hphys0320_stmtim_start_time_source_line_contract --
   --nocapture` passed after the same version updates.
@@ -87,6 +87,23 @@ Ran:
   gone, but the depth progression is still not legacy-envelope faithful.
 - OpenWEPP frozen-day count is `518.5348837209302` days lower than legacy on
   average.
+
+## D3 Attempt Evidence
+
+- A coarse continuous per-layer energy-front attempt was run from dirty commit
+  `8d13ba898a111aeed97375cc997d0ca65d6b85b7` into
+  `/tmp/fdhp01_d3_layered_energy_20260611T085142Z`.
+- The attempt ran `43/43` clean and improved median maximum depth to
+  `490.774886655666 mm`, but did not meet the package phase boundary:
+  mean max depth remained `643.2973898432339 mm`, max depth remained
+  `1789.9130899451595 mm`, median correlation was `-0.1876255663636445`,
+  and median frozen-duration delta was `-428` days.
+- Static legacy inspection localized the missing behavior to the fine-sublayer
+  `frostn` state machine: `frostn.for:360-683`, `frzng.for:235-560`, and
+  `frwatc.for:89-137`.
+- The coarse-front production/test edit was backed out. `SC-SNOWFREEZE-001`
+  v57 remains as the active D3 authority amendment; no D3 production behavior
+  landed in this pass.
 
 ## Review Closure
 

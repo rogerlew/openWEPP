@@ -510,9 +510,9 @@ Evidence mode: Static + Ran.
 
 Static:
 
-- `SC-SNOWFREEZE-001` is now v56. It rejects scalar `frdp * theta`
-  frozen-water stores and requires active fine-layer frozen-depth/frozen-water
-  state behind the frost exchange diagnostics.
+- At the D2 layered-store pass, `SC-SNOWFREEZE-001` moved to v56. It rejects
+  scalar `frdp * theta` frozen-water stores and requires active fine-layer
+  frozen-depth/frozen-water state behind the frost exchange diagnostics.
 - `SC-WATBAL-001` is now v152. It binds WAT `frozwt` to the legacy
   `Σ soilf(i)` lineage:
   `Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)`.
@@ -610,3 +610,51 @@ alongside reproduces neither duration nor depth. Acceptance per the package
 stands: depth in the physical envelope, correlation rising from ~0.13,
 duration delta collapsing from |−518| toward zero, conservation years 2–6
 staying at noise, and the year-7 boundary effect explained or eliminated.
+
+## Addendum 4 — D3 coarse-front attempt does not satisfy the phase boundary
+
+Evidence mode: Static + Ran.
+
+Ran:
+
+- Codex built a coarse continuous per-layer energy-front experiment and ran a
+  fresh `43/43` prefix cohort at
+  `/tmp/fdhp01_d3_layered_energy_20260611T085142Z`.
+- Trusted reports copied into this package:
+  `fdhp01_d3_attempt_summary_20260611.json`,
+  `fdhp01_d3_attempt_depth_metrics_20260611.csv`,
+  `fdhp01_d3_attempt_frozwt_frdp_ratio_20260611.csv`,
+  `fdhp01_d3_attempt_activation_summary_20260611.csv`,
+  `fdhp01_d3_attempt_run_status_20260611.tsv`, and
+  `fdhp01_d3_attempt_execution_summary_20260611.json`.
+
+Result:
+
+- Median max depth improved from the Addendum 3 profile-bound run to
+  `490.774886655666 mm`, but this is not a close: mean max depth is still
+  `643.2973898432339 mm` versus legacy `414.22093023255815 mm`, max depth is
+  still `1789.9130899451595 mm`, median correlation is still negative
+  (`-0.1876255663636445`), and median frozen-duration delta remains
+  `-428` days.
+- The outliers are decisive dry-profile failures: p23 `1789.9130899451595 mm`,
+  p2 `1756.6037758327177 mm`, p3 `1639.9350755585738 mm`.
+- The provisional annual closure reconstruction from exposed WAT columns was
+  excluded from package evidence because its `outputs` field did not reproduce
+  the committed layered-store report definition. The D2 additive identity
+  remains governed by the committed `fdhp01_layered_*` reports.
+
+Static:
+
+- Pinned legacy `frostn.for:360-683`, `frzng.for:235-560`, and
+  `frwatc.for:89-137` show the missing implementation structure:
+  fine-sublayer flags/depth/ice/liquid state (`fgfrst`, `slfsd`, `slsic`,
+  `slsw`, `nwfrzz`) with remaining-hour stepping, migration-water freezing,
+  and bidirectional `frwatc` closure.
+
+Disposition:
+
+- The coarse-front production/test edit was backed out. It is a useful failed
+  experiment, not a landed phase.
+- D3 remains open on the same boundary: port the legacy fine-sublayer
+  `frostn`/`frzng`/`mltbtm`/`frwatc` coupling, then rerun the same cohort
+  depth/duration and D2 additive-identity gates.

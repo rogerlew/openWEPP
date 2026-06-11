@@ -1,0 +1,84 @@
+{
+  "status": "attempted-hold",
+  "date": "2026-06-11",
+  "run_root": "/tmp/fdhp01_d3_layered_energy_20260611T085142Z",
+  "source_commit": "8d13ba898a111aeed97375cc997d0ca65d6b85b7",
+  "working_tree_dirty_at_run": true,
+  "attempt_scope": "Coarse continuous per-layer energy-front experiment in support_helpers_mod/coupling.rs; production/test edits were backed out because the attempt did not satisfy D3 acceptance.",
+  "clean_prefixes": 43,
+  "prefix_count_requested": 43,
+  "trusted_reports": [
+    "fdhp01_d3_attempt_run_status_20260611.tsv",
+    "fdhp01_d3_attempt_activation_summary_20260611.csv",
+    "fdhp01_d3_attempt_depth_metrics_20260611.csv",
+    "fdhp01_d3_attempt_frozwt_frdp_ratio_20260611.csv",
+    "fdhp01_d3_attempt_execution_summary_20260611.json"
+  ],
+  "excluded_reports": [
+    {
+      "report": "fdhp01_annual_closure_residuals.csv",
+      "reason": "The committed layered-store annual closure report's outputs field was not reproducible from exposed WAT columns alone during this pass, so the provisional reconstruction is not package evidence."
+    },
+    {
+      "report": "fdhp01_closure_summary.json",
+      "reason": "Contains the excluded provisional annual closure reconstruction."
+    }
+  ],
+  "depth_metrics": {
+    "open_max_depth_mm_min": 429.03717485562566,
+    "open_max_depth_mm_median": 490.774886655666,
+    "open_max_depth_mm_mean": 643.2973898432339,
+    "open_max_depth_mm_max": 1789.9130899451595,
+    "legacy_max_depth_mm_mean": 414.22093023255815,
+    "max_depth_delta_mm_open_minus_legacy_median": 94.45547101517025,
+    "max_depth_delta_mm_open_minus_legacy_mean": 229.07645961067576,
+    "max_depth_delta_mm_open_minus_legacy_max": 1476.6037758327177,
+    "depth_corr_median": -0.1876255663636445,
+    "depth_corr_mean": -0.16615235699231728,
+    "depth_corr_max": 0.0940356301192317,
+    "depth_mae_mm_mean": 125.36370223757707,
+    "depth_rmse_mm_mean": 177.72999198322609,
+    "open_days_gt_200mm_mean": 120.27906976744185,
+    "legacy_days_gt_200mm_mean": 170.51162790697674
+  },
+  "duration_metrics": {
+    "legacy_frozen_days_mean": 891.7209302325581,
+    "open_frozen_days_mean": 476.51162790697674,
+    "frozen_days_delta_open_minus_legacy_mean": -415.2093023255814,
+    "frozen_days_delta_open_minus_legacy_median": -428.0
+  },
+  "outliers": [
+    {
+      "prefix": "p23",
+      "open_max_depth_mm": 1789.9130899451595,
+      "legacy_max_depth_mm": 440.0,
+      "depth_corr": 0.0713151555648903
+    },
+    {
+      "prefix": "p2",
+      "open_max_depth_mm": 1756.6037758327177,
+      "legacy_max_depth_mm": 280.0,
+      "depth_corr": -0.1232909691891663
+    },
+    {
+      "prefix": "p3",
+      "open_max_depth_mm": 1639.9350755585738,
+      "legacy_max_depth_mm": 384.5,
+      "depth_corr": -0.2905052901694626
+    }
+  ],
+  "frozwt_frdp_audit": {
+    "active_days": 20490,
+    "corr_min": 0.8600303344957513,
+    "corr_median": 0.9752408803745026,
+    "ratio_median_of_medians": 0.2544306928824316,
+    "ratio_std_max": 0.06411576480462432,
+    "max_frozwt_mm_mean": 156.82694952917592
+  },
+  "static_legacy_localization": {
+    "frostn_for": "Lines 360-683 select frzflg using qhtout/qdry, route to frzng/mltbtm/mlttp, and close with frwatc(0).",
+    "frzng_for": "Lines 235-560 advance the frost front fine-layer by fine-layer with a remaining-hour budget, migration water qwet, and slfsd/slsic state updates.",
+    "frwatc_for": "Lines 89-137 recompute frozen depth, frzw, st, and soilw from fine-layer slfsd/slsic/slsw state."
+  },
+  "verdict": "D3 remains open. The attempt improved median max depth relative to the profile-bound D2 run but did not close depth correlation or frozen-duration criteria and left severe dry-profile runaway outliers. The next implementation must port the legacy fine-sublayer state and bidirectional frostn/frzng/mltbtm/frwatc coupling rather than a coarse scalar or coarse per-layer front."
+}

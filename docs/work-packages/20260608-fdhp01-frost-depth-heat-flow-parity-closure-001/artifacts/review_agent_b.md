@@ -22,7 +22,7 @@ and identified three blocker findings plus one coverage note:
 
 | # | Finding | Disposition (accepted/rejected/deferred/follow-up) | Rationale |
 |---|---------|-----------------------------------------------------|-----------|
-| 1 | Comparator closure overclaim. | accepted; superseded by post-review cohort runs | The later Claude review correctly found that unavailable owcmp was not a valid substitute for cohort validation. The layered-store continuation now gives `43/43` clean exits and D2 additive storage closure, but `SC-SNOWFREEZE-001` v56 keeps `GAP-SNOWFREEZE-002` open for D3 depth/duration parity. |
+| 1 | Comparator closure overclaim. | accepted; superseded by post-review cohort runs | The later Claude review correctly found that unavailable owcmp was not a valid substitute for cohort validation. The layered-store continuation now gives `43/43` clean exits and D2 additive storage closure, but `SC-SNOWFREEZE-001` v57 keeps `GAP-SNOWFREEZE-002` open for D3 depth/duration parity. |
 | 2 | WAT schema/version coordination missing. | accepted | WAT dataset version `1.4` is implemented, documented in the runner spec, and referenced from `SC-WATBAL-001`; metadata tests pass. |
 | 3 | Missing WAT value publication test. | accepted | `fdhp01_wb13_publication_converts_runtime_frdp_to_wat_mm` verifies runtime meters are converted to WAT millimetres. |
 | 4 | Heat-flow equation coverage note. | accepted | `fdhp01_contract_heat_flow_publishes_separate_surface_and_unfrozen_fluxes` covers separate `Qsrf`/`Quf`; code review also confirmed the signed balance drives latent depth increments. |

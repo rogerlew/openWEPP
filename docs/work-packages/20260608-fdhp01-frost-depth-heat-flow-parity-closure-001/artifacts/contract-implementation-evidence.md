@@ -11,8 +11,10 @@ on 2026-06-11:
 
 - Added v54 FDHP01 revision-history entry for the attempted heat-flow
   implementation, v55 post-review amendment reopening
-  `GAP-SNOWFREEZE-002` after cohort validation failed, and v56 layered-store
-  amendment rejecting scalar `frdp * theta` frozen-water stores.
+  `GAP-SNOWFREEZE-002` after cohort validation failed, v56 layered-store
+  amendment rejecting scalar `frdp * theta` frozen-water stores, and v57 D3
+  amendment requiring freeze/thaw energy to move the same fine-layer state that
+  `frwatc` publishes.
 - Strengthened `INV-SNOWFREEZE-006` so executable frost-depth progression must
   derive from hourly signed heat flow and latent-heat increments, be bounded by
   physical soil profile depth, and must not use the retired
@@ -23,6 +25,9 @@ on 2026-06-11:
 - Re-scoped `GAP-SNOWFREEZE-002` to keep D3 active after the 2026-06-11
   layered-store cohort cleared D2 annual closure and `p2` but still failed
   depth/duration validation.
+- Re-stated `GAP-SNOWFREEZE-002` after the D3 coarse-front attempt: a coarse
+  scalar/per-layer front is insufficient; the remaining implementation must
+  port the legacy fine-sublayer `frostn`/`frzng`/`mltbtm`/`frwatc` coupling.
 - Updated `SC-WATBAL-001` on 2026-06-11 to clarify that additive WAT parquet
   extensions beyond canonical WB13 replay columns must be versioned. FDHP01
   assigns WAT dataset version `1.4` to the required `frdp` column.
@@ -56,3 +61,7 @@ Static:
   and cohort validation shows annual additive closure is restored. The
   implementation remains held pending D3 depth/duration parity because the
   layered thermal-resistance depth port is incomplete.
+- A D3 coarse-front production/test experiment was built and validated locally
+  but did not satisfy the package phase boundary; those production/test edits
+  were backed out. `SC-SNOWFREEZE-001` v57 is retained as authority for the
+  next implementation.

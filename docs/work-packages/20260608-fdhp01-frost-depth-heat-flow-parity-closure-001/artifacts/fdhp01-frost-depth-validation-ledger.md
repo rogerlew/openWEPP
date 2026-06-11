@@ -45,7 +45,7 @@ Ran:
   runner provenance bounds for `Dfrost`/`Dthaw` with physical `solthk` bounds.
 - `cargo test --workspace` passes, preserving the broader rung-1/frost
   non-regression surface covered by the workspace suite.
-- Contract-version expectation tests now target `SC-SNOWFREEZE-001` v56 and
+- Contract-version expectation tests now target `SC-SNOWFREEZE-001` v57 and
   `SC-WATBAL-001` v152 front matter.
 - D2 exchange diagnostics now publish liquid soil water before/after, frozen
   water before/after, freeze debit, thaw credit, and signed liquid delta at
@@ -124,3 +124,56 @@ thermal-resistance/depth-progression port so the frost front is bounded by the
 layered frost state rather than only by the physical profile, then rerun the
 same additive identity and depth/duration cohort gates without comparator
 tuning.
+
+## D3 Coarse-Front Attempt
+
+Ran, 2026-06-11:
+
+- A coarse continuous per-layer energy-front experiment was built locally from
+  commit `8d13ba898a111aeed97375cc997d0ca65d6b85b7` and run against a fresh
+  `43/43` `algebraic-radium` frost-on population:
+  `/tmp/fdhp01_d3_layered_energy_20260611T085142Z`.
+- Trusted package reports:
+  - `fdhp01_d3_attempt_summary_20260611.json`
+  - `fdhp01_d3_attempt_run_status_20260611.tsv`
+  - `fdhp01_d3_attempt_activation_summary_20260611.csv`
+  - `fdhp01_d3_attempt_depth_metrics_20260611.csv`
+  - `fdhp01_d3_attempt_frozwt_frdp_ratio_20260611.csv`
+  - `fdhp01_d3_attempt_execution_summary_20260611.json`
+
+Results:
+
+- Clean prefixes: `43/43`.
+- The median maximum frost depth moved into the legacy envelope:
+  `490.774886655666 mm` versus legacy median `420.0 mm`.
+- The phase boundary still failed: mean maximum frost depth
+  `643.2973898432339 mm` versus legacy mean `414.22093023255815 mm`, max
+  openWEPP depth `1789.9130899451595 mm`, median depth correlation
+  `-0.1876255663636445`, and mean frozen-duration delta
+  `-415.2093023255814` days open-minus-legacy.
+- Dry-profile outliers remained severe: p23 `1789.9130899451595 mm`, p2
+  `1756.6037758327177 mm`, p3 `1639.9350755585738 mm`.
+- The provisional annual closure reconstruction generated during this pass is
+  not package evidence: the committed layered-store report's `outputs` field
+  could not be reproduced from exposed WAT columns alone. D2 closure remains
+  governed by the committed layered-store reports above.
+
+Static:
+
+- `/workdir/wepp-forest_260430_baseline/src/frostn.for:360-683` selects
+  `frzflg` from `qhtout`/`qdry`, dispatches `frzng`, `mltbtm`, and `mlttp`,
+  and closes active hours with `frwatc(0)`.
+- `/workdir/wepp-forest_260430_baseline/src/frzng.for:235-560` advances the
+  frost front fine-layer by fine-layer with a remaining-hour budget, migration
+  water (`qwet`/`qwater`), and `slfsd`/`slsic` updates.
+- `/workdir/wepp-forest_260430_baseline/src/frwatc.for:89-137` recomputes
+  `frozen`, `frzw`, `st`, and `soilw` from fine-layer `slfsd`/`slsic`/`slsw`
+  state.
+
+Disposition:
+
+- The coarse-front production/test edit did not meet the package's legitimate
+  phase boundary and was backed out. It should not be repeated or promoted.
+- `SC-SNOWFREEZE-001` v57 remains as the active contract amendment: D3 closure
+  requires the same fine-layer state that `frwatc` publishes, with front
+  advance and thaw retreat coupled to that state.

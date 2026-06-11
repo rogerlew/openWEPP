@@ -65,3 +65,6 @@ Ran:
   equivalence and proving per-layer frozen depth/`frzw` updates with freezing.
 - WAT metadata tests pass for required `frdp` field metadata and dataset
   version `1.4`.
+- D3 coarse-front contract/test edits were backed out because the cohort attempt
+  failed the package's depth/duration phase boundary. No D3 production behavior
+  is represented as landed by this artifact.

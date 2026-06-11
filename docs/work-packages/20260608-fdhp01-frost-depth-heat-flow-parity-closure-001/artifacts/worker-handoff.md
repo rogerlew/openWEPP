@@ -59,13 +59,28 @@ Layered-store cohort result:
   `1782.0379909380451 mm` versus legacy `414.22093023255815 mm`, median depth
   correlation `-0.27756218032931956`, and open frozen-day count
   `518.5348837209302` days lower than legacy on average.
-- `SC-SNOWFREEZE-001` v56 keeps `GAP-SNOWFREEZE-002` open for the D3
+- `SC-SNOWFREEZE-001` v57 keeps `GAP-SNOWFREEZE-002` open for the D3
   depth/duration defect.
 
+D3 attempt result:
+
+- Codex attempted a coarse continuous per-layer energy-front implementation and
+  ran `/tmp/fdhp01_d3_layered_energy_20260611T085142Z` (`43/43` clean).
+- It improved median maximum frost depth to `490.774886655666 mm`, but failed
+  D3 acceptance: mean max depth `643.2973898432339 mm`, max depth
+  `1789.9130899451595 mm`, median correlation `-0.1876255663636445`, and
+  median frozen-duration delta `-428` days.
+- The attempted production/test edit was backed out. Do not restart from the
+  coarse-front approach; the next implementation needs the legacy fine-layer
+  `fgfrst`/`slfsd`/`slsic`/`slsw`/`nwfrzz` state machine and the
+  `frostn`/`frzng`/`mltbtm`/`frwatc` bidirectional coupling.
+- `SC-SNOWFREEZE-001` is now v57 and explicitly prohibits post-hoc scalar
+  depth projection into layer stores.
+
 First actionable item: close defect `FDHP01-FROST-DEPTH-HEATFLOW-001` by
-completing the layered thermal-resistance/depth-progression port. D2 additive
-storage and the prior `p2` fail-closed event are no longer the lead blockers.
-Do not advance to MOFE until the full 43-prefix cohort still runs clean,
-frost-active annual closure remains at numerical noise under the ratified
-storage term, and depth/duration evidence materially closes the FDMC01 gap
-without comparator tuning.
+porting the legacy fine-sublayer frost state and the bidirectional
+`frostn`/`frzng`/`mltbtm`/`frwatc` coupling. D2 additive storage and the prior
+`p2` fail-closed event are no longer the lead blockers. Do not advance to MOFE
+until the full 43-prefix cohort still runs clean, frost-active annual closure
+remains at numerical noise under the ratified storage term, and depth/duration
+evidence materially closes the FDMC01 gap without comparator tuning.
