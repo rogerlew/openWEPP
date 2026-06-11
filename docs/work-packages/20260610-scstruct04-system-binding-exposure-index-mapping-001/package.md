@@ -1,6 +1,6 @@
 # SCSTRUCT04 — SC-SYSTEM Binding Exposure Index + Triage
 
-Status: queued
+Status: executed-deferred-science-review-follow-on
 Created: 2026-06-10
 Series: `scstruct` (science-contract structure / context optimization)
 Routes-to: defect `SCSTRUCT04-SYSTEM-BEI-SCIENCE-REVIEW` (adjudication follow-on SCSTRUCT05)
