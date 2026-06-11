@@ -1,6 +1,6 @@
 # FROSTVAL01 ksflag Frost Single-OFE Closure Validation
 
-Status: executed-hold
+Status: complete-after-follow-ons
 
 Package type: validation/characterization work package
 
@@ -21,6 +21,14 @@ water-balance foundation. Confirm two things on the single-OFE hillslopes of
 This is a validation/characterization package: it measures and classifies, emits
 defect-shaped follow-ons for any frost activation or conservation defect, and
 makes **no production edits**.
+
+2026-06-11 rerun note: the original FROSTVAL01 execution held because 37/43
+single-OFE targets were blocked before frost evaluation and the original closure
+ledger was later reviewed as defective. After FQ-1/FQ-3/FQ-4 closed those
+blockers and folded in the corrected full-WAT ledger, FROSTVAL01 was rerun under
+`/tmp/frostval01_rerun_20260611T020951Z`. The rerun satisfied frost activation
+and closure-under-frost over all 43 single-OFE prefixes; see
+`artifacts/rerun-20260611-frostval01.md`.
 
 ## Run Under Validation
 

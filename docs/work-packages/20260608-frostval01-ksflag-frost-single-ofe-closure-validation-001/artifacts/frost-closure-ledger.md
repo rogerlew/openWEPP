@@ -1,7 +1,19 @@
 # Frost Closure Ledger
 
-Status: executed-hold
+Status: complete-after-follow-ons
 Evidence mode: Ran + Static
+
+2026-06-11 rerun status:
+- The historical ledger below records the original blocked run and defective
+  closure aggregation.
+- The fresh rerun after FQ-1/FQ-3/FQ-4 used the corrected full-WAT identity:
+  `RM + Irr - Interception - Q - Ep - Es - Er - Dp - latqcc - Tile - delta(SoilWaterTotal)`.
+- Current result: `258` annual rows, max abs residual
+  `3.2173375075217336e-11 mm`, worst row `p39` year `6`.
+- Current evidence: `artifacts/rerun-20260611-frostval01.md` and
+  `/tmp/frostval01_rerun_20260611T020951Z/reports/annual_closure_residuals.csv`.
+
+Historical original-run ledger:
 
 Scope coverage:
 - Full target set: 43 single-OFE hillslopes.

@@ -1,7 +1,30 @@
 # Gate Results
 
-Status: executed-hold
+Status: complete-after-follow-ons
 Evidence mode: Ran
+
+2026-06-11 rerun:
+- Built current release binary:
+  - `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`
+- Fresh run root:
+  - `/tmp/frostval01_rerun_20260611T020951Z`
+- Frost-on population:
+  - `43/43` single-OFE prefixes exited clean after serially rerunning transient
+    metadata-sidecar failure on `p4`.
+  - `43/43` emitted WAT outputs.
+  - `43/43` have `frsoil.active=true`.
+  - `43/43` have nonzero `frozwt`; max `frozwt` range
+    `27.499999999999993..31.000000000000007 mm`.
+- Frost-off paired population:
+  - `43/43` exited clean with explicit `[inputs.frost] wintRed = 0`.
+  - `43/43` show nonzero on/off `sum_frozwt` delta.
+  - `43/43` show nonzero on/off `Q` and `latqcc` deltas.
+- Corrected full-WAT closure ledger:
+  - `258` annual rows (`43` prefixes x years `2..7`).
+  - Max abs residual: `3.2173375075217336e-11 mm`.
+  - Worst row: `p39`, year `6`, residual `-3.2173375075217336e-11 mm`.
+
+Historical original run:
 
 Ran:
 - Full single-OFE execution census (43 targets) with TOML wrappers via:
@@ -27,6 +50,6 @@ Ran:
   - Installed `duckdb`, `pyarrow`, and `utm` into `/workdir/openWEPP/.venv`.
 
 Primary gate outcomes:
-- Milestone 1 (prove frost active over full target scope): not met.
-- Closure-under-frost over full target scope: not met.
+- Milestone 1 (prove frost active over full target scope): met by 2026-06-11 rerun.
+- Closure-under-frost over full target scope: met by 2026-06-11 rerun.
 - Truthful ledger completeness with explicit blocked accounting: met.

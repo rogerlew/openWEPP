@@ -115,21 +115,25 @@ publication-safe Daymet CLI audit:
    conservation) + WBVAL06 (interception publication) + 6a (totalwatsed3 audit
    consumes interception) → single-OFE WB closes and is auditable on the real
    surface. Next rung: **frost** (item 7).
-7. **frost** *(rung-2 — FROSTVAL01 executed-hold; follow-on queue scaffolded)* —
+7. **frost** *(rung-2 — FROSTVAL01 complete after follow-ons)* —
    infiltration/percolation gate (`ksflag`/`ksatadj`) on the closed single-OFE
-   vertical balance, with no routing to alias it. **FROSTVAL01** ran the
-   standard-WEPP `ksflag = 1` frost validation on `/wc1/runs/al/algebraic-radium`
-   (43 single-OFE; all lanuse=1→ksflag=1; gridmet daily; comparator `wepp_260606`)
-   and held. Findings (per Claude review): 37/43 blocked by `HS-RUNTIME-E-062`
-   (soil-coverage); the frost-closure ledger is broken (its ~10 mm inputs are a
-   tool-aggregation bug — openWEPP WAT `P` is verified correct/complete at
-   911 mm/yr — so the `frost-break` verdict is withdrawn); and openWEPP's own
-   output shows real zero-term anomalies on the runnable cohort (`Q`/`Ep`/`Er`/
-   `Interception` = 0) plus likely frost non-activation (`frozwt`=0 at a freezing
-   site with real water). Ordered follow-on queue in
-   `.../artifacts/frostval01-followon-queue.md`: **FQ-1** soil-coverage
-   (HS-RUNTIME-E-062) unblock; **FQ-2** ledger fix; **FQ-3** ET/runoff zero-term
-   characterization; **FQ-4** frost-activation closure. This exercises the standard
+   vertical balance, with no routing to alias it. **FROSTVAL01** originally ran
+   the standard-WEPP `ksflag = 1` frost validation on
+   `/wc1/runs/al/algebraic-radium` (43 single-OFE; all lanuse=1→ksflag=1; gridmet
+   daily; comparator `wepp_260606`) and held. Findings from that first run (per
+   Claude review): 37/43 blocked by `HS-RUNTIME-E-062` (soil-coverage); the
+   frost-closure ledger was broken (its ~10 mm inputs were a tool-aggregation bug
+   — openWEPP WAT `P` was verified correct/complete at 911 mm/yr — so the
+   `frost-break` verdict was withdrawn); and openWEPP's own output showed real
+   zero-term anomalies on the runnable cohort (`Q`/`Ep`/`Er`/`Interception` = 0)
+   plus likely frost non-activation (`frozwt`=0 at a freezing site with real
+   water). The ordered follow-ons closed those blockers: **FQ-1** soil-coverage
+   unblock; **FQ-2** ledger fix folded into FQ-4; **FQ-3** ET/runoff zero-term
+   characterization/closures; **FQ-4** frost-activation closure. A 2026-06-11
+   FROSTVAL01 rerun over all 43 single-OFE prefixes now satisfies activation and
+   closure-under-frost: `43/43` `frsoil.active=true`, `43/43` nonzero `frozwt`,
+   paired frost-off runs change hydrology on all prefixes, and annual closure
+   over 258 rows has max abs residual `3.22e-11 mm`. This exercises the standard
    `ksflag` gate, not the forest `ksatadj` model (separate concern). Package:
    `20260608-frostval01-ksflag-frost-single-ofe-closure-validation-001/`.
 7a. **FQ-1 soil corrected-layer coverage** *(executed-hold-boundary)* — closed

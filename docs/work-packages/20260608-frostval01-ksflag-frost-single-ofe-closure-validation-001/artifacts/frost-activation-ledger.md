@@ -1,7 +1,18 @@
 # Frost Activation Ledger
 
-Status: executed-hold
+Status: complete-after-follow-ons
 Evidence mode: Ran + Static
+
+2026-06-11 rerun status:
+- The historical ledger below records the original blocked/inactive run.
+- The fresh rerun after FQ-1/FQ-3/FQ-4 completed satisfied the activation gate:
+  `43/43` frost-on prefixes exited clean, `43/43` had `frsoil.active=true`,
+  `43/43` had nonzero `frozwt`, and paired frost-off runs produced nonzero
+  hydrology deltas on all prefixes.
+- Current evidence: `artifacts/rerun-20260611-frostval01.md` and
+  `/tmp/frostval01_rerun_20260611T020951Z/reports/activation_summary.csv`.
+
+Historical original-run ledger:
 
 Milestone 1 gate verdict:
 - Not satisfied for the full 43-single-OFE population.
