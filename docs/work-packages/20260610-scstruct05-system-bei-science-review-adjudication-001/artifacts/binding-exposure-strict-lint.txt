@@ -1,0 +1,9 @@
+Ran:
+$ python3 tools/check_sc_binding_exposure.py docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md
+PASS-DEFERRED docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md: 27 binding exposure row(s), 11 science-review-follow-on row(s) not yet consolidated
+
+Ran:
+$ python3 tools/check_sc_binding_exposure.py --strict docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md
+PASS-DEFERRED docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md: 27 binding exposure row(s), 11 science-review-follow-on row(s) not yet consolidated
+strict mode: deferred rows are not-consolidated; failing completion gate
+strict_exit=1

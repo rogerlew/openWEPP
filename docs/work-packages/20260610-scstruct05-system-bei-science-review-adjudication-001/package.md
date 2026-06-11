@@ -1,6 +1,6 @@
 # SCSTRUCT05 — SC-SYSTEM Binding Exposure Index Science-Review Adjudication
 
-Status: queued
+Status: executed-HOLD
 Created: 2026-06-10
 Series: `scstruct` (science-contract structure / context optimization)
 Closes: defect `SCSTRUCT04-SYSTEM-BEI-SCIENCE-REVIEW` (routed from SCSTRUCT04)

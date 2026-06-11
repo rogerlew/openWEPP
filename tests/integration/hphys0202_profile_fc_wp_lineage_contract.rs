@@ -53,6 +53,9 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
     let soil = repo_file("docs/specifications/science-contracts/contracts/SC-SOIL-001.md");
     let perc = repo_file("docs/specifications/science-contracts/contracts/SC-PERC-001.md");
     let system = repo_file("docs/specifications/science-contracts/contracts/SC-SYSTEM-001.md");
+    let system_provenance = repo_file(
+        "docs/specifications/science-contracts/contracts/provenance/SC-SYSTEM-001-provenance.md",
+    );
 
     assert!(
         package.contains("MEASURE-HP202-001")
@@ -152,12 +155,20 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-PERC-001 must include HPHYS0216D FC layer+tail authority reconciliation"
     );
     assert!(
-        system.contains("## HPHYS0202 WB13 Profile FC/WP Publication-Lineage Addendum"),
-        "SC-SYSTEM-001 must include HPHYS0202 system-boundary publication authority"
+        system.contains("HPHYS0202-WB13-PROFILE-FC-WP-PUBLICATION-LINEAGE-ADDENDUM-HISTORICAL")
+            && system.contains("INV-SYSTEM-027")
+            && system_provenance.contains(
+                "## HPHYS0202-WB13-PROFILE-FC-WP-PUBLICATION-LINEAGE-ADDENDUM-HISTORICAL"
+            ),
+        "SC-SYSTEM-001 must expose HPHYS0202 historical system-boundary residue through BEI and provenance"
     );
     assert!(
-        system.contains("## HPHYS0206 Normalized-Layer Mapping and Fail-Closed Addendum"),
-        "SC-SYSTEM-001 must include HPHYS0206 fail-closed normalized-layer boundary authority"
+        system.contains("HPHYS0206-NORMALIZED-LAYER-MAPPING-AND-FAIL-CLOSED-ADDENDUM-HISTORICAL")
+            && system.contains("INV-SYSTEM-027")
+            && system_provenance.contains(
+                "## HPHYS0206-NORMALIZED-LAYER-MAPPING-AND-FAIL-CLOSED-ADDENDUM-HISTORICAL"
+            ),
+        "SC-SYSTEM-001 must expose HPHYS0206 historical normalized-layer residue through BEI and provenance"
     );
     assert!(
         system.contains("## HPHYS0207 Normalized-Profile FC/WP Depth-Authority Addendum"),
@@ -168,8 +179,9 @@ fn hphys0202_package_and_contract_authority_sections_exist() {
         "SC-SYSTEM-001 must include HPHYS0216D system-boundary FC layer+tail authority addendum"
     );
     assert!(
-        system.contains("superseded by HPHYS0207"),
-        "SC-SYSTEM-001 historical FC/WP authority notes must be explicitly superseded by HPHYS0207"
+        system_provenance.contains("superseded_by: HPHYS0207")
+            && system.contains("HPHYS0207-NORMALIZED-PROFILE-FC-WP-DEPTH-AUTHORITY-ADDENDUM"),
+        "SC-SYSTEM-001 historical FC/WP authority notes must be explicitly superseded by HPHYS0207 through provenance"
     );
 }
 
