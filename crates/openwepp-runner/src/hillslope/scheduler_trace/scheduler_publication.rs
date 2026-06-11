@@ -120,11 +120,11 @@ pub(super) fn build_simimpl10_coupling_vector_provenance(
     let frozwt = wb13_row.wb13_row.frozwt;
     let snow_water = wb13_row.wb13_row.snow_water;
     let soil_water_total = wb13_row.wb13_row.soil_water_total;
-    let closure_delta = soil_water_total - (total_soil + frozwt);
+    let closure_delta = soil_water_total - total_soil;
     let closure_within_tolerance = closure_delta.abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM;
     if !closure_within_tolerance {
         return Err(simcoup_failure(format!(
-            "hydout-equivalent closure violated: SoilWaterTotal - (Total-Soil + frozwt) = {closure_delta} exceeds tolerance {SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM}",
+            "hydout-equivalent closure violated: SoilWaterTotal - Total-Soil = {closure_delta} exceeds tolerance {SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM}",
         )));
     }
 

@@ -39,7 +39,7 @@ fn hphys0319_contract_authority_is_registered() {
     assert_contains(&snowfreeze, "SC-WATBAL-001#INV-WATBAL-093");
 
     let watbal = read("docs/specifications/science-contracts/contracts/SC-WATBAL-001.md");
-    assert_contains(&watbal, "contract_version: 148");
+    assert_contains(&watbal, "contract_version: 149");
     assert_contains(&watbal, "INV-WATBAL-093");
     assert_contains(
         &watbal,

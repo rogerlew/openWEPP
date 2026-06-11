@@ -68,5 +68,6 @@ present.
 
 Post-review cohort validation supersedes the earlier "unavailable FDMC01
 manifest" caveat: direct measurement was available and was run. The cohort gate
-failed (`p2` no WAT, annual closure max residual `75.43917280313423 mm`, depth
-overreach), so this implementation remains held.
+failed (`p2` no WAT, annual closure max residual `2.4798612273409617 mm` after
+the D1 `SoilWaterTotal` fix, depth overreach), so this implementation remains
+held.

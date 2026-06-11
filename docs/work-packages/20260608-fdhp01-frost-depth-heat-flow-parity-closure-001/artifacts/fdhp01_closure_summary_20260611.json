@@ -1,13 +1,14 @@
 {
-  "acceptance_verdict": "HOLD: 43-prefix closure failed because p2 has no WAT output; emitted-prefix depth/duration metrics are diagnostic only",
+  "acceptance_verdict": "HOLD: 43-prefix closure failed because at least one prefix has no WAT output; emitted-prefix metrics are diagnostic only",
   "annual_closure_rows_emitted_prefixes": 252,
   "baseline_frostval01_max_abs_annual_residual_mm": 3.2173375075217336e-11,
+  "binary_sha256": "a053d7c0427be845cc1242802526fee929f537b030afd04892ff5a4986c4c83d",
   "clean_prefixes": 42,
   "depth_corr_median_emitted": -0.10301692862035305,
-  "depth_mae_mm_mean_emitted": 539.4373953871185,
-  "depth_rmse_mm_mean_emitted": 756.3792673061726,
+  "depth_mae_mm_mean_emitted": 539.4373953871184,
+  "depth_rmse_mm_mean_emitted": 756.3792673061724,
   "failure_details": {
-    "p2": "HKERNEL-WB11-PERC-E-003 at sim_day_index=308, calendar_year=1990, julian_day=308; no WAT publication"
+    "p2": "CLIHILL-E-011 runtime surface failure for execution_provenance: HS-SIMPIPE-E-001 scheduler lifecycle did not complete successfully (outcome_class=phase_failure, status_class=Failure, boundary_class=DOMAIN_VIOLATION, message_id=HKERNEL-WB11-PERC-E-003, last_phase=percolation_deep_seepage, last_kernel_message_id=HKERNEL-WB11-PERC-E-003, last_decision_outcome=Reject, last_decision_message_id=HKERNEL-WB11-PERC-E-003, wb18_guard_terms={layer_count=9,lane_substeps=1.0000000000,infiltration=0.0000000000,tillay2=0.0000000000,slflag=1.0000000000,kslast=0.0000000028,ui_bdrkth=10.0000000000,invalid_layers=none}) [sim_day_index=308, calendar_year=1990, julian_day=308]"
   },
   "failures": [
     "p2"
@@ -18,28 +19,29 @@
   "frsoil_active_count_emitted_prefixes": 42,
   "legacy_frozen_days_wat_mean_emitted": 759.8095238095239,
   "legacy_max_depth_mm_mean_matched_emitted": 417.4166666666667,
-  "max_abs_annual_residual_emitted_prefixes_mm": 75.43917280313423,
+  "max_abs_annual_residual_emitted_prefixes_mm": 2.4798612273409617,
   "max_depth_delta_mm_mean_open_minus_legacy_emitted": 1364.850431367986,
-  "mean_abs_annual_residual_emitted_prefixes_mm": 32.995880074457276,
+  "mean_abs_annual_residual_emitted_prefixes_mm": 0.9738853177643827,
   "nonzero_frozwt_prefixes_emitted": 42,
   "open_frozen_days_wat_mean_emitted": 732.1904761904761,
   "open_max_depth_mm_max_emitted": 1783.3684719591115,
-  "open_max_depth_mm_mean_emitted": 1782.2670980346527,
+  "open_max_depth_mm_mean_emitted": 1782.2670980346531,
   "open_max_depth_mm_min_emitted": 1780.5852693307895,
   "prefix_count_requested": 43,
   "prefixes_with_open_frdp_gt_200mm_emitted": 42,
+  "previous_max_abs_annual_residual_emitted_prefixes_mm": 75.43917280313423,
   "release_binary": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
-  "run_root": "/tmp/fdhp01_closure_20260611T041333Z",
+  "run_root": "/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z",
   "wat_outputs": 42,
   "worst_closure_emitted_prefixes": {
-    "abs_residual": 75.43917280313423,
-    "delta_soil_water_total": 148.74937537408556,
-    "final_soil_water_total": 652.0274815494322,
-    "initial_soil_water_total": 503.27810617534664,
-    "inputs": 1122.1926082966038,
-    "outputs": 1048.8824057256525,
-    "prefix": "p12",
-    "residual": -75.43917280313423,
+    "abs_residual": 2.4798612273409617,
+    "delta_soil_water_total": 72.7234301808819,
+    "final_soil_water_total": 574.7693178353759,
+    "initial_soil_water_total": 502.045887654494,
+    "inputs": 1122.3697325291914,
+    "outputs": 1052.1261635756505,
+    "prefix": "p10",
+    "residual": -2.4798612273409617,
     "year": 4
   }
 }

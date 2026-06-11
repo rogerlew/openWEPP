@@ -89,11 +89,13 @@ fn hphys0208_sat_perturbation_changes_coupled_wb13_publications() {
         ("Dp", baseline_dp),
         ("latqcc", baseline_latqcc),
         ("Total-Soil", baseline_total_soil),
+        ("frozwt", baseline_frozwt),
         ("SoilWaterTotal", baseline_soil_water_total),
         ("ProfileFCStore", perturbed_profile_fc),
         ("Dp", perturbed_dp),
         ("latqcc", perturbed_latqcc),
         ("Total-Soil", perturbed_total_soil),
+        ("frozwt", perturbed_frozwt),
         ("SoilWaterTotal", perturbed_soil_water_total),
     ] {
         assert!(
@@ -103,12 +105,12 @@ fn hphys0208_sat_perturbation_changes_coupled_wb13_publications() {
     }
 
     assert!(
-        (baseline_soil_water_total - (baseline_total_soil + baseline_frozwt)).abs() <= EPS,
-        "baseline row must satisfy SoilWaterTotal closure"
+        (baseline_soil_water_total - baseline_total_soil).abs() <= EPS,
+        "baseline row must satisfy hydout-equivalent SoilWaterTotal alias"
     );
     assert!(
-        (perturbed_soil_water_total - (perturbed_total_soil + perturbed_frozwt)).abs() <= EPS,
-        "perturbed row must satisfy SoilWaterTotal closure"
+        (perturbed_soil_water_total - perturbed_total_soil).abs() <= EPS,
+        "perturbed row must satisfy hydout-equivalent SoilWaterTotal alias"
     );
 
     let coupled_delta = (perturbed_total_soil - baseline_total_soil).abs();

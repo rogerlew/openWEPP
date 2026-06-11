@@ -1,44 +1,44 @@
 prefix	attempt	exit	wat	loss	hbp	elapsed_s	stderr_tail
-p1	1	0	True	True	True	4.703	
-p2	2	1	False	False	False	0.502	s_class=Failure, boundary_class=DOMAIN_VIOLATION, message_id=HKERNEL-WB11-PERC-E-003, last_phase=percolation_deep_seepage, last_kernel_message_id=HKERNEL-WB11-PERC-E-003, last_decision_outcome=Reject, last_decision_message_id=HKERNEL-WB11-PERC-E-003, wb18_guard_terms={layer_count=9,lane_substeps=24.0000000000,infiltration=0.0000000000,tillay2=0.0000000000,slflag=1.0000000000,kslast=0.0000000028,ui_bdrkth=10.0000000000,invalid_layers=none}) [sim_day_index=308, calendar_year=1990, julian_day=308] | 
-p3	1	0	True	True	True	4.849	
-p4	1	0	True	True	True	4.304	
-p5	1	0	True	True	True	4.279	
-p6	1	0	True	True	True	4.473	
-p7	1	0	True	True	True	4.481	
-p8	1	0	True	True	True	4.432	
-p9	1	0	True	True	True	4.143	
-p10	1	0	True	True	True	4.373	
-p11	1	0	True	True	True	4.784	
-p12	1	0	True	True	True	4.416	
-p13	1	0	True	True	True	4.424	
-p14	1	0	True	True	True	4.312	
-p15	1	0	True	True	True	4.381	
-p16	1	0	True	True	True	4.358	
-p17	1	0	True	True	True	4.389	
-p18	1	0	True	True	True	4.332	
-p19	1	0	True	True	True	4.265	
-p20	1	0	True	True	True	4.771	
-p21	1	0	True	True	True	4.706	
-p22	1	0	True	True	True	4.398	
-p23	1	0	True	True	True	4.385	
-p24	1	0	True	True	True	4.329	
-p25	1	0	True	True	True	4.349	
-p26	1	0	True	True	True	4.42	
-p27	1	0	True	True	True	4.37	
-p28	1	0	True	True	True	4.496	
-p29	1	0	True	True	True	4.371	
-p30	1	0	True	True	True	4.471	
-p31	1	0	True	True	True	4.322	
-p32	1	0	True	True	True	4.81	
-p33	1	0	True	True	True	4.331	
-p34	1	0	True	True	True	4.341	
-p35	1	0	True	True	True	4.413	
-p36	1	0	True	True	True	4.405	
-p37	1	0	True	True	True	4.409	
-p38	1	0	True	True	True	4.284	
-p39	1	0	True	True	True	4.368	
-p40	1	0	True	True	True	4.292	
-p41	1	0	True	True	True	4.336	
-p42	1	0	True	True	True	4.171	
-p43	1	0	True	True	True	4.024	
+p1	1	0	True	True	True	4.359	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p2	1	1	False	False	False	0.496	CLIHILL-E-011 runtime surface failure for execution_provenance: HS-SIMPIPE-E-001 scheduler lifecycle did not complete successfully (outcome_class=phase_failure, status_class=Failure, boundary_class=DOMAIN_VIOLATION, message_id=HKERNEL-WB11-PERC-E-003, last_phase=percolation_deep_seepage, last_kernel_message_id=HKERNEL-WB11-PERC-E-003, last_decision_outcome=Reject, last_decision_message_id=HKERNEL-WB11-PERC-E-003, wb18_guard_terms={layer_count=9,lane_substeps=1.0000000000,infiltration=0.0000000000,tillay2=0.0000000000,slflag=1.0000000000,kslast=0.0000000028,ui_bdrkth=10.0000000000,invalid_layers=none}) [sim_day_index=308, calendar_year=1990, julian_day=308]
+p3	1	0	True	True	True	4.219	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p4	1	0	True	True	True	3.808	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p5	1	0	True	True	True	3.78	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p6	1	0	True	True	True	3.778	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p7	1	0	True	True	True	3.942	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p8	1	0	True	True	True	3.887	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p9	1	0	True	True	True	4.028	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p10	1	0	True	True	True	3.845	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p11	1	0	True	True	True	4.168	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p12	1	0	True	True	True	3.797	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p13	1	0	True	True	True	3.896	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p14	1	0	True	True	True	3.911	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p15	1	0	True	True	True	3.922	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p16	1	0	True	True	True	3.818	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p17	1	0	True	True	True	3.842	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p18	1	0	True	True	True	3.881	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p19	1	0	True	True	True	3.83	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p20	1	0	True	True	True	4.235	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p21	1	0	True	True	True	4.276	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p22	1	0	True	True	True	3.831	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p23	1	0	True	True	True	3.872	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p24	1	0	True	True	True	3.971	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p25	1	0	True	True	True	3.968	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p26	1	0	True	True	True	3.852	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p27	1	0	True	True	True	4.011	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p28	1	0	True	True	True	3.86	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p29	1	0	True	True	True	3.874	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p30	1	0	True	True	True	4.01	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p31	1	0	True	True	True	3.848	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p32	1	0	True	True	True	4.305	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p33	1	0	True	True	True	3.89	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p34	1	0	True	True	True	3.848	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p35	1	0	True	True	True	3.911	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p36	1	0	True	True	True	3.873	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p37	1	0	True	True	True	3.909	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p38	1	0	True	True	True	3.86	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p39	1	0	True	True	True	3.852	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p40	1	0	True	True	True	3.797	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p41	1	0	True	True	True	3.839	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p42	1	0	True	True	True	3.839	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode
+p43	1	0	True	True	True	3.88	sidecar-warning: WUI-W-001 compatibility fallback: sentinel missing, defaulted to daily mode

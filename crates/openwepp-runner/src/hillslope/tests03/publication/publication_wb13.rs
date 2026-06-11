@@ -525,7 +525,7 @@ use super::super::*;
         );
     }
     #[test]
-    fn hphys0203_wb13_soil_water_total_closure_is_conservation_consistent() {
+    fn hphys0203_wb13_soil_water_total_preserves_watcon_alias() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("wb11_soil_water"),
@@ -546,11 +546,16 @@ use super::super::*;
         )
         .expect("valid WB13 probe surface should publish row");
 
-        let closure_delta =
-            row.wb13_row.soil_water_total - (row.wb13_row.total_soil + row.wb13_row.frozwt);
+        assert!(
+            (row.wb13_row.frozwt - 3.0).abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
+            "frozwt must remain separately published, observed {}",
+            row.wb13_row.frozwt
+        );
+
+        let closure_delta = row.wb13_row.soil_water_total - row.wb13_row.total_soil;
         assert!(
             closure_delta.abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
-            "SoilWaterTotal closure must remain conservation-consistent, observed delta={closure_delta}"
+            "SoilWaterTotal must remain a hydout-equivalent Total-Soil alias, observed delta={closure_delta}"
         );
     }
     #[test]

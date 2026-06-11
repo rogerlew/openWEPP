@@ -13,7 +13,7 @@ Evidence and disposition artifacts for
 - `fdhp01_run_status_20260611.tsv`, `fdhp01_activation_summary_20260611.csv`,
   `fdhp01_annual_closure_residuals_20260611.csv`,
   `fdhp01_depth_metrics_20260611.csv`: generated cohort reports copied from
-  `/tmp/fdhp01_closure_20260611T041333Z/reports/`.
+  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z/reports/`.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`: canonical contract edits.
 - `contract-test-implementation-evidence.md`: contract-derived tests.

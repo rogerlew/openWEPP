@@ -46,16 +46,17 @@ Ran:
 - `cargo test --workspace` passes, preserving the broader rung-1/frost
   non-regression surface covered by the workspace suite.
 - Contract-version expectation tests now target `SC-SNOWFREEZE-001` v55 and
-  `SC-WATBAL-001` v148 front matter.
+  `SC-WATBAL-001` v149 front matter.
 
 ## Post-Review Cohort Validation
 
 Ran, 2026-06-11:
 
 - `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass.
-- Fresh frost-on 43-prefix `algebraic-radium` population using generated
-  runfile wrappers and the release binary:
-  `/tmp/fdhp01_closure_20260611T041333Z`.
+- Fresh frost-on 43-prefix `algebraic-radium` population after the D1
+  `SoilWaterTotal` publication fix, using generated runfile wrappers and the
+  release binary:
+  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`.
 - Compact persisted reports:
   - `fdhp01_run_status_20260611.tsv`
   - `fdhp01_activation_summary_20260611.csv`
@@ -71,9 +72,11 @@ Results:
 - Emitted-prefix activation: `42/42 frsoil.active=true`, `42/42` nonzero
   `frozwt`.
 - Emitted-prefix annual closure rows: `252`.
-- Max absolute annual closure residual: `75.43917280313423 mm`
-  (baseline FROSTVAL01 rerun max was `3.2173375075217336e-11 mm`).
-- Mean absolute annual closure residual: `32.995880074457276 mm`.
+- Max absolute annual closure residual after D1: `2.4798612273409617 mm`
+  (baseline FROSTVAL01 rerun max was `3.2173375075217336e-11 mm`; pre-D1
+  post-review run max was `75.43917280313423 mm`).
+- Mean absolute annual closure residual after D1:
+  `0.9738853177643827 mm`.
 - Emitted-prefix frost depth max range:
   `1780.5852693307895..1783.3684719591115 mm`.
 - Emitted-prefix mean max depth: `1782.2670980346527 mm` versus matched
@@ -88,11 +91,12 @@ Results:
 ## Disposition
 
 FDHP01 does not close the executable single-OFE model-depth implementation
-boundary. The WAT `frdp` publication surface exists, but the cohort validation
-failed required closure criteria and reopened `GAP-SNOWFREEZE-002` in
+boundary. The WAT `frdp` publication surface exists, and D1 removed the dominant
+frozen-storage double count from `SoilWaterTotal`, but the cohort validation
+still failed required closure criteria and reopened `GAP-SNOWFREEZE-002` in
 `SC-SNOWFREEZE-001` v55.
 
 The package remains in defect closure. The next actionable work is to fix
-FDHP01 so the full 43-prefix cohort runs clean, annual closure returns to
-numerical noise, and depth/duration evidence materially closes the FDMC01 gap
-without comparator tuning.
+FDHP01 so `p2` runs clean, annual closure returns from the remaining
+`~2.48 mm` residual to numerical noise, and depth/duration evidence materially
+closes the FDMC01 gap without comparator tuning.

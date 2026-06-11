@@ -3,13 +3,16 @@
 Status: executed-hold
 
 Closure status update, 2026-06-11: post-review cohort validation did not clear
-FDHP01. The release `openwepp-cli-hill` built from this working tree ran the
-`algebraic-radium` `p1..p43` frost-on population into
-`/tmp/fdhp01_closure_20260611T041333Z`; `p2` failed closed before WAT
-publication at `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual
-closure residuals reached `75.439 mm`, and emitted-prefix depth metrics
-overreached the FDMC01 legacy envelope. The package therefore re-enters defect
-closure rather than advancing MOFE.
+FDHP01. Follow-on D1 corrected WAT `SoilWaterTotal` frozen-storage
+double-counting so the column is again the hydout-equivalent `Total-Soil`
+alias, with `frozwt` published separately. A fresh release
+`openwepp-cli-hill` run of the `algebraic-radium` `p1..p43` frost-on
+population into `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`
+still failed package acceptance: `p2` failed closed before WAT publication at
+`HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual closure
+residuals reached `2.4798612273409617 mm` rather than numerical noise, and
+emitted-prefix depth metrics still overreached the FDMC01 legacy envelope. The
+package therefore remains in defect closure rather than advancing MOFE.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

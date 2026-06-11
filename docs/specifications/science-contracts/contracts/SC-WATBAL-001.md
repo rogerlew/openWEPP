@@ -4,7 +4,7 @@ title: Water Balance Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 148
+contract_version: 149
 producer_scope:
   - Daily root-zone water balance accounting surfaces
   - Daily evapotranspiration distribution and percolation-routing accounting surfaces
@@ -1303,7 +1303,9 @@ canonical order:
 
 1. `QOFE = Q` for canonicalized WB13 daily rows, including MOFE multi-OFE
    publication contexts.
-2. `SoilWaterTotal = Total-Soil + frozwt` within `1e-6 mm`.
+2. `SoilWaterTotal = Total-Soil` within `1e-6 mm`; `frozwt` is a separate
+   frozen-water publication term and must not be folded into
+   `SoilWaterTotal`.
 3. `ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`.
 4. Required depth-like and storage-like columns in this WB13 surface are
    non-negative.
@@ -1383,14 +1385,14 @@ for follow-on closure packages.
 | `Snow-Water` | `snow.runtime_swe -> Snow-Water` | `SC-SNOWFREEZE-001` runtime-SWE publication authority; `SC-WATBAL-001` `INV-WATBAL-026/027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("snow.runtime_swe")` -> `("Snow-Water", snow_water)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `latqcc` | `q -> latqcc` (lateral contribution) | `SC-SUBHYD-001` WB13 Daily Output Coupling Addendum; `SC-WATBAL-001` WB19 lateral coupling | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar_prefer_flux("q")` -> `("latqcc", latqcc)`) | `HKERNEL-WB11-LAT-E-001..003`, `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 | `Total-Soil` | `wb11_soil_water -> Total-Soil` | `SC-SOIL-001` `INV-SOIL-013`; `SC-WATBAL-001` `INV-WATBAL-029`; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`require_runtime_surface_scalar("wb11_soil_water")` -> `("Total-Soil", total_soil)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
-| `SoilWaterTotal` | `Total-Soil + frozwt -> SoilWaterTotal` | `SC-WATBAL-001` WB13 output invariants; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`soil_water_total = total_soil + frozwt` -> `("SoilWaterTotal", soil_water_total)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
+| `SoilWaterTotal` | `Total-Soil -> SoilWaterTotal` | `SC-WATBAL-001` WB13 output invariants; `SC-SYSTEM-001` `INV-SYSTEM-027` | `crates/openwepp-runner/src/hillslope/mod.rs` (`soil_water_total = total_soil` -> `("SoilWaterTotal", soil_water_total)`) | `HKERNEL-WB13-HWAT-E-001..003`, `HS-SIMOUT-E-001` |
 
 Alias continuity policy for this family is explicit:
 1. Canonical publication symbol is `Total-Soil`.
 2. Legacy semantic alias `Total-Soil Water` is comparator-only and must map to
    canonical `Total-Soil`.
-3. `SoilWaterTotal` remains a distinct aggregate column with closure
-   `SoilWaterTotal = Total-Soil + frozwt`.
+3. `SoilWaterTotal` remains a hydout-equivalent aggregate alias of
+   `Total-Soil`; `frozwt` is separately published frozen water.
 
 ### HPARITY02 Profile-Capacity Publication Lineage Closure
 
@@ -1462,8 +1464,8 @@ that share domain authority with profile depth/capacity surfaces:
    - soil-water aggregate family (`Total-Soil`, `SoilWaterTotal`),
    - subsurface-loss family (`latqcc`, `Dp`).
 2. Robustness vectors must include all of:
-   - conservation-consistent closure checks
-     (`SoilWaterTotal = Total-Soil + frozwt`),
+   - conservation-consistent alias checks
+     (`SoilWaterTotal = Total-Soil`, with `frozwt` separate),
    - ordering/monotonic expectations
      (`ProfilePorosityCap >= ProfileFCStore >= ProfileWPStore`),
    - unit/domain guards for non-negative depth/flux publication magnitudes,
@@ -2212,6 +2214,7 @@ assigning post-HPHYS0259 residual ownership to publication or shadowing.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-11` | `149` | `Codex` | FDHP01 closure amendment: corrected executable WB13/WAT invariant so `SoilWaterTotal` remains the hydout-equivalent `Total-Soil`/`watcon` alias while `frozwt` is separately published frozen water, avoiding frozen-storage double counting in annual storage closure. |
 | `2026-06-06` | `145` | `Codex` | SNOWSCI-S1 amendment: bound WB13 `RM`/`S`/`Snow-Water` to the single-source snow storage-loss scalar from `SC-SNOWFREEZE-001#INV-SNOWFREEZE-019` and prohibited separate SWE-debit water loss. |
 | `2026-06-11` | `148` | `Codex` | FDHP01 WAT interchange amendment: clarified that additive parquet extensions beyond canonical WB13 replay columns must be versioned, with dataset version `1.4` adding required `frdp` frost-front depth publication. |
 | `2026-06-06` | `144` | `Codex` | HPHYS0320 amendment: added `stmtim` start-time water-balance gate (`INV-WATBAL-094`) for source-line timing closure and residual rerouting without downstream compensation. |

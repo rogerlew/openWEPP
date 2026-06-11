@@ -23,6 +23,9 @@ Static:
   storage back to liquid `wb11_soil_water`.
 - Runtime `frost.runtime_frdp_m` is now required and published to WAT as
   `frdp` in `mm`; WAT dataset version is `1.4`.
+- WAT `SoilWaterTotal` was corrected back to the hydout-equivalent
+  `Total-Soil` alias; `frozwt` remains separately published and is not folded
+  into `SoilWaterTotal`.
 - `SC-SNOWFREEZE-001`, `SC-WATBAL-001`, and the runner CLI specification were
   updated to carry the new authority/versioning.
 
@@ -39,7 +42,8 @@ Ran:
 
 ## Hold Evidence
 
-- Run root: `/tmp/fdhp01_closure_20260611T041333Z`.
+- Run root:
+  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`.
 - Persisted compact reports:
   - `fdhp01_closure_summary_20260611.json`
   - `fdhp01_run_status_20260611.tsv`
@@ -47,8 +51,9 @@ Ran:
   - `fdhp01_annual_closure_residuals_20260611.csv`
   - `fdhp01_depth_metrics_20260611.csv`
 - Emitted-prefix annual closure max abs residual:
-  `75.43917280313423 mm` versus the FROSTVAL01 baseline
-  `3.2173375075217336e-11 mm`.
+  `2.4798612273409617 mm` versus the FROSTVAL01 baseline
+  `3.2173375075217336e-11 mm`; the pre-D1 post-review residual was
+  `75.43917280313423 mm`.
 - Emitted-prefix median depth correlation: `-0.10301692862035305` versus
   FDMC01 pre-fix proxy median `0.13332765680932177`.
 - Emitted-prefix mean max depth: `1782.2670980346527 mm` versus matched
@@ -60,5 +65,5 @@ Ran:
 Claude's post-closeout review findings are accepted. `complete` was incorrect;
 the package remains in defect closure. The next actionable item is to close
 `FDHP01-FROST-DEPTH-HEATFLOW-001` by fixing the cohort failure, restoring
-annual closure to numerical noise, and materially closing the FDMC01
+annual closure from the remaining `~2.48 mm` residual to numerical noise, and materially closing the FDMC01
 depth/duration gap.

@@ -8,7 +8,7 @@ Date: 2026-06-11
 
 ## Handoff
 
-FDHP01 is not complete. No branch was created and no commit was made.
+FDHP01 is not complete. No branch was created for this closure pass.
 
 Primary landed behavior:
 
@@ -21,6 +21,9 @@ Primary landed behavior:
   `wb11_soil_water`.
 - WAT output now publishes `frdp` in `mm` from runtime
   `frost.runtime_frdp_m`; dataset version is `1.4`.
+- WAT `SoilWaterTotal` is now the hydout-equivalent `Total-Soil` alias again;
+  `frozwt` remains separately published to avoid frozen-storage double
+  counting.
 
 Validation status before post-review cohort validation:
 
@@ -32,11 +35,13 @@ Validation status before post-review cohort validation:
 Residual note:
 
 - Post-review cohort run root:
-  `/tmp/fdhp01_closure_20260611T041333Z`.
+  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`.
 - `42/43` frost-on prefixes exited clean; `p2` failed before WAT publication
   at `HKERNEL-WB11-PERC-E-003`, `1990-308`.
 - Emitted-prefix annual closure max abs residual is
-  `75.43917280313423 mm`; closure-under-frost is broken.
+  `2.4798612273409617 mm` after D1, down from the pre-D1 post-review
+  `75.43917280313423 mm`; closure-under-frost is still not restored to
+  numerical noise.
 - Emitted-prefix depth metrics overreach legacy heat-flow range
   (`open max depth mean 1782.2670980346527 mm`; median correlation
   `-0.10301692862035305`).
@@ -44,6 +49,6 @@ Residual note:
 
 First actionable item: close defect `FDHP01-FROST-DEPTH-HEATFLOW-001` on the
 current attempted heat-flow implementation. Do not advance to MOFE until the
-full 43-prefix cohort runs clean, annual closure returns to numerical noise,
-and depth/duration evidence materially closes the FDMC01 gap without comparator
-tuning.
+full 43-prefix cohort runs clean, annual closure returns from the remaining
+`~2.48 mm` residual to numerical noise, and depth/duration evidence materially
+closes the FDMC01 gap without comparator tuning.

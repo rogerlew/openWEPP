@@ -959,7 +959,7 @@ fn build_simulation_owned_wb13_row(
         )));
     }
     let area = publication_area_m2;
-    let soil_water_total = total_soil + frozwt;
+    let soil_water_total = total_soil;
 
     let row_surface = SummaryScalarSurface::from_pairs([
         ("P", precipitation_mm),

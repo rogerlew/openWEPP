@@ -117,7 +117,8 @@ Ran:
 - `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass.
 - Fresh frost-on `algebraic-radium` `p1..p43` cohort:
   `/tmp/fdhp01_closure_20260611T041333Z`.
-- Persisted compact reports in this artifact directory:
+- Initial compact reports were written for this run; the artifact report
+  filenames were later superseded by the D1-restored run described below:
   `fdhp01_closure_summary_20260611.json`,
   `fdhp01_run_status_20260611.tsv`,
   `fdhp01_activation_summary_20260611.csv`,
@@ -203,3 +204,57 @@ class); D3 is the genuine heat-flow physics defect (the actual rung). Fix and
 re-validate D1/D2 first so the closure gate is trustworthy again, then close
 D3 against the gate. Do not tune D3 to legacy depth numbers (ADR-0017);
 the acceptance remains the contract heat-flow envelope.
+
+## Execution Result — D1 retained, D2 rejected (2026-06-11)
+
+Ran:
+
+- Implemented D1 by correcting WAT `SoilWaterTotal` to remain the
+  hydout-equivalent `Total-Soil` alias; `frozwt` remains separately published.
+- Updated `SC-WATBAL-001` to v149 and updated WB13/WAT/summary accumulator
+  guards/tests to enforce `SoilWaterTotal = Total-Soil`.
+- `cargo fmt --check`: pass.
+- `cargo test -p openwepp-runner
+  hphys0203_wb13_soil_water_total_preserves_watcon_alias -- --nocapture`:
+  pass.
+- `cargo test -p openwepp-summary-accumulator --lib -- --nocapture`: pass.
+- `cargo test --test hphys0203_physics_robustness_contract -- --nocapture`:
+  pass.
+- `cargo test --test hphys0208_fc_threshold_coupled_residual_contract --
+  --nocapture`: pass.
+- `cargo test --test clim06_frost_frozen_soil_kernel_contract --
+  --nocapture`: pass, 16 tests.
+- `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass.
+- Fresh frost-on `algebraic-radium` `p1..p43` cohort using runfile-sidecar
+  overrides:
+  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`.
+
+D1 cohort result:
+
+- `42/43` clean exits; `p2` still failed before WAT publication with
+  `HKERNEL-WB11-PERC-E-003` on `1990-308`.
+- Emitted-prefix annual closure max abs residual improved from
+  `75.43917280313423 mm` to `2.4798612273409617 mm`; mean abs residual is
+  `0.9738853177643827 mm`.
+- Emitted-prefix depth evidence is unchanged and still fails the package
+  acceptance gate: max-depth mean `1782.2670980346531 mm`; median depth
+  correlation `-0.10301692862035305`.
+- The compact artifact report filenames now reflect this D1-restored run:
+  `fdhp01_closure_summary_20260611.json`,
+  `fdhp01_run_status_20260611.tsv`,
+  `fdhp01_activation_summary_20260611.csv`,
+  `fdhp01_annual_closure_residuals_20260611.csv`, and
+  `fdhp01_depth_metrics_20260611.csv`.
+
+D2 was investigated but not retained. Per-layer WB18 theta/frozen-water and
+frozen-depth writeback experiments either introduced a new `p4`
+`HKERNEL-WB11-PERC-E-003` failure under the correct cohort harness or
+overcorrected annual storage residuals. The worst rejected run,
+`/tmp/fdhp01_closure_after_d2_final_20260611T051531Z`, produced only `41/43`
+clean exits and max annual residual `294.942039464511 mm`, so the production
+diff was backed out to the D1-only correction.
+
+Disposition remains HOLD: D1 is accepted as a real improvement, but FDHP01 is
+not complete until `p2` runs clean, the remaining `~2.48 mm` closure residual
+returns to numerical noise, and D3 depth progression stops pinning at the
+profile bound.

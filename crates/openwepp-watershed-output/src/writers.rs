@@ -971,7 +971,7 @@ fn watershed_totalwatsed3_schema() -> Result<Schema, WatershedWriterError> {
                 "SoilWaterTotal",
                 DataType::Float64,
                 Some("mm"),
-                Some("Area-weighted full-profile soil water depth (watcon + frozwt)"),
+                Some("Area-weighted hydout-equivalent aggregate soil water depth"),
             ),
             field_with_meta(
                 "ProfileDepth",

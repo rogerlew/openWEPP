@@ -46,8 +46,9 @@ workspace test run.
 | Command / Gate | Result |
 |---|---|
 | `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass |
-| 43-prefix `algebraic-radium` frost-on cohort, `/tmp/fdhp01_closure_20260611T041333Z` | Fail, `42/43` clean exits; `p2` failed before WAT publication at `HKERNEL-WB11-PERC-E-003` |
-| Annual closure on emitted prefixes | Fail, max abs residual `75.43917280313423 mm` |
+| D1 focused gates: `cargo fmt --check`; WB13 runner unit; summary accumulator lib; HPHYS0203; HPHYS0208; CLIM06 frost suite | Pass |
+| 43-prefix `algebraic-radium` frost-on cohort, `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z` | Fail, `42/43` clean exits; `p2` failed before WAT publication at `HKERNEL-WB11-PERC-E-003` |
+| Annual closure on emitted prefixes | Fail, max abs residual `2.4798612273409617 mm` after D1; pre-D1 post-review residual was `75.43917280313423 mm` |
 | FDMC01 depth/duration movement on emitted prefixes | Fail, max-depth mean `1782.2670980346527 mm`, median correlation `-0.10301692862035305`; duration delta diagnostic only because closure failed |
 
 Disposition: Rust gates pass, but the package acceptance gate fails. FDHP01 is

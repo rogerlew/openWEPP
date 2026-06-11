@@ -38,5 +38,5 @@ Date: 2026-06-11
 
 All listed Rust gates passed on 2026-06-11. The later post-review
 `algebraic-radium` cohort gate failed (`p2` no WAT, annual closure residuals up
-to `75.43917280313423 mm`), so kernel-profile closure is held pending FDHP01
-correction.
+to `2.4798612273409617 mm` after the D1 `SoilWaterTotal` fix), so
+kernel-profile closure is held pending FDHP01 correction.

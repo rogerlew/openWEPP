@@ -193,12 +193,13 @@ publication-safe Daymet CLI audit:
    remains active)* — attempted to replace the freeze-index proxy with the
    energy-balance heat-flow depth model (`INV-SNOWFREEZE-006`/`-012`, legacy
    `frostn` lineage, CRM Ch. 3.8, Dun et al. 2010) and added WAT `frdp`
-   publication. Post-review cohort validation on 2026-06-11 failed closure:
-   `42/43` frost-on prefixes emitted WAT, `p2` failed before WAT publication at
-   `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual closure
-   residuals reached `75.439 mm`, and emitted-prefix depth metrics overreached
-   the FDMC01 legacy envelope (`open max depth mean 1782.267 mm`, median
-   correlation `-0.103`). `SC-SNOWFREEZE-001` v55 reopens
+   publication. Post-review follow-on D1 corrected WAT `SoilWaterTotal`
+   frozen-storage double counting, but cohort validation on 2026-06-11 still
+   failed closure: `42/43` frost-on prefixes emitted WAT, `p2` failed before
+   WAT publication at `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix
+   annual closure residuals reached `2.480 mm` after D1, and emitted-prefix
+   depth metrics overreached the FDMC01 legacy envelope (`open max depth mean
+   1782.267 mm`, median correlation `-0.103`). `SC-SNOWFREEZE-001` v55 reopens
    `GAP-SNOWFREEZE-002`; do not advance to MOFE until FDHP01 closes. Package:
    `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already

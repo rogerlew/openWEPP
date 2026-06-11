@@ -127,8 +127,8 @@ fn hphys0203_fixture_wat_rows_preserve_targeted_publication_invariants() {
             frozwt
         );
         assert!(
-            (soil_water_total - (total_soil + frozwt)).abs() <= EPS,
-            "row {} must satisfy SoilWaterTotal closure, observed SoilWaterTotal={}, Total-Soil={}, frozwt={}",
+            (soil_water_total - total_soil).abs() <= EPS,
+            "row {} must satisfy hydout-equivalent SoilWaterTotal alias, observed SoilWaterTotal={}, Total-Soil={}, frozwt={}",
             row_index + 1,
             soil_water_total,
             total_soil,

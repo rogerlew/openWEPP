@@ -63,10 +63,10 @@ Date: 2026-06-11
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
   - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v148.
+    `SC-WATBAL-001` v149.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
   - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v148.
+    `SC-WATBAL-001` v149.
 
 ## Generated Cohort Evidence
 

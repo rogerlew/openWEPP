@@ -299,9 +299,7 @@ pub fn hillslope_wat_schema(
                 DataType::Float64,
                 true,
                 Some("mm"),
-                Some(
-                    "Full-profile soil water depth (watcon + frozwt), optional producer-authoritative term",
-                ),
+                Some("Hydout-equivalent aggregate soil water depth from watcon lineage"),
             ),
             field_with_meta(
                 "ProfileDepth",

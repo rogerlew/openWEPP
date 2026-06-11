@@ -24,7 +24,8 @@ Final local verification:
 - Static: contract front matter reported `SC-SNOWFREEZE-001`
   `contract_version: 54` and `SC-WATBAL-001` `contract_version: 148` at this
   verification point; Claude's post-review cohort validation later reopened
-  `GAP-SNOWFREEZE-002` and advanced `SC-SNOWFREEZE-001` to v55.
+  `GAP-SNOWFREEZE-002` and advanced `SC-SNOWFREEZE-001` to v55. The later D1
+  `SoilWaterTotal` closure correction advanced `SC-WATBAL-001` to v149.
 - Ran: `cargo test --workspace` passed after the contract-version expectation
   tests were updated.
 

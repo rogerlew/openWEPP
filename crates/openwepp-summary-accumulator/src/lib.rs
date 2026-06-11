@@ -283,7 +283,7 @@ impl Wb13DailyWaterBalanceRow {
             });
         }
 
-        let expected_soil_water_total = total_soil + frozwt;
+        let expected_soil_water_total = total_soil;
         if (soil_water_total - expected_soil_water_total).abs() > 1.0e-6 {
             return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
                 symbol: "SoilWaterTotal".to_string(),
