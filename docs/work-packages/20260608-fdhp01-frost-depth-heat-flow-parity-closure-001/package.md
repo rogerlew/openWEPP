@@ -60,9 +60,19 @@ noise (max abs `3.0880187296133954e-11 mm`), preserves the tiny year-7 boundary
 watch item (`1.2683569483584733e-07 mm`), removes exact profile-bound pinning
 (`0/43` pinned; minimum margin `16.63152804088827 mm`), and keeps
 `frozwt/frdp` materially below the rejected scalar signature (max per-prefix
-correlation `0.9861968090242198` vs `0.9987`). D3 remains `executed-hold`
-because depth magnitude is still near the profile bound; Increment C owns
-top/bottom thaw arms, sandwich geometry, and final depth/duration acceptance.
+correlation `0.9861968090242198` vs `0.9987`).
+
+D3 Increment C attempt, 2026-06-11: Codex implemented top/bottom thaw arms and
+ran the required local/heavy gates in the attempted tree. The first cohort run
+failed on p1 because `wb18_perc_frzw_0001` exceeded pore capacity; after adding
+a source cap the `43/43` cohort ran clean, but the attempt hit the D2 hard
+stop: years 2-6 `Total-Soil + frozwt` residuals blew up to max abs
+`2325832826960980.0 mm`, year 7 blew up to
+`2203549546983243.5 mm`, and depth/duration parity still failed. The production
+and contract/test edits were backed out, leaving FDHP01 at the Increment B
+boundary. The next D3 pass must port capacity-aware `watdst` redistribution and
+`watpdg`/`watbtm` overflow handling before `mlttp`/`mltbtm` thaw arms can be
+retained.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

@@ -65,5 +65,6 @@ Static:
   layered thermal-resistance depth port is incomplete.
 - A D3 coarse-front production/test experiment was built and validated locally
   but did not satisfy the package phase boundary; those production/test edits
-  were backed out. `SC-SNOWFREEZE-001` v57 remains the D3 hold amendment, and
-  v58 is the current Increment A authority for shadow `frwatc` handoff state.
+  were backed out. `SC-SNOWFREEZE-001` v57 remains the D3 hold amendment, v58
+  is the Increment A authority for shadow `frwatc` handoff state, and v59 is
+  the current Increment B authority for active freeze arms.

@@ -104,9 +104,23 @@ Increment B result:
 - Depth magnitude remains near the profile bound: mean maximum depth
   `1782.265765656973 mm`.
 
-First actionable item: execute Increment C of `d3-staged-increment-plan.md`.
-That increment ports top/bottom thaw arms, sandwich geometry, and thaw-through
-behavior while preserving years 2-6 conservation, `43/43` cohort execution, and
-the Increment B de-pinning/correlation gains. Do not advance to MOFE until
-Increment C closes the full depth/duration acceptance gate without comparator
-tuning.
+Increment C attempt result:
+
+- Codex attempted top/bottom thaw arms, sandwich geometry, and thaw-through
+  behavior. The production/contract/test edits were backed out.
+- First cohort failure: `p1` at 1990 day 45 rejected
+  `wb18_perc_frzw_0001=0.06135293352005228` against
+  `wb18_perc_ul_0001=0.05875247947169813`.
+- A source cap made the attempted tree run `43/43`, but years 2-6
+  `Total-Soil + frozwt` closure failed catastrophically: max abs residual
+  `2325832826960980.0 mm`; `p1` year-4 `Total-Soil` reached
+  `1.558719e+35 mm`.
+- The failed attempt is recorded in
+  `d3-increment-c-thaw-arms-20260611.md` and the
+  `fdhp01_increment_c_*_20260611.*` reports.
+
+First actionable item: re-execute Increment C only after adding the missing
+capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow paths.
+Do not retain `mlttp`/`mltbtm` thaw arms or advance to MOFE until years 2-6
+conservation remains at noise, the cohort is `43/43`, and the full
+depth/duration acceptance gate passes without comparator tuning.

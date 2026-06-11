@@ -96,15 +96,59 @@ accumulating `slsic`.
   materially below the 0.9987 scalar signature. Depth/duration *acceptance*
   is NOT this increment's gate; conservation and de-pinning are.
 
-## Increment C — thaw arms + sandwich geometry + D3 acceptance
+## Increment C — SPLIT (2026-06-11, after the backed-out thaw attempt)
+
+The first increment C pass failed the D2 hard stop catastrophically
+(years 2–6 max residual `2.33e15 mm`; `Total-Soil` reaching `1.6e35 mm` by
+p1 year 4 — geometric amplification per freeze/thaw cycle) and was backed
+out (`d3-increment-c-thaw-arms-20260611.md`). Root cause per the attempt
+evidence: melting `slsic` into fine-layer liquid without capacity-aware
+redistribution or overflow routes recycles water into a positive feedback.
+The attempt's temporary pore-cap was the silent-clamp anti-pattern standing
+in for legacy's real constraints. Increment C therefore splits:
+
+## Increment C1 — capacity constraints + `watdst` redistribution + overflow surfaces
+
+**Objective:** land the water-side infrastructure thaw needs, on the
+freeze-only B boundary, before any thaw arm exists.
+
+- In scope:
+  - Legacy capacity bound on ice formation: `frznw.for` limits new ice by
+    `ul/dg·slfsd − slsic`; the freeze arms must respect pore capacity as
+    **contract-authorized legacy behavior with provenance** — replacing the
+    backed-out attempt's ad-hoc cap. A typed fail-closed guard (not a
+    silent clamp) for `frzw > ul`-class violations.
+  - Saxton–Rawls `watdst` liquid redistribution (modes 0/1/2, `sltime`
+    semantics) for unfrozen fine layers under a front.
+  - `watpdg`/`watbtm` overflow surfaces (state + publication plumbing),
+    even though only freeze-side flows can reach them pre-thaw.
+- Red tests first: scope test 7 (`watdst` mode flags); a capacity-invariant
+  test (no fine layer's `slsic` exceeds pore capacity under sustained
+  freezing; guard trips fail-closed rather than clamping); an overflow
+  conservation test (water routed to `watpdg`/`watbtm` stays in the
+  identity).
+- Gates: those tests green; 43/43 clean; years 2–6 closure at noise;
+  capacity invariant never violated on the cohort (zero guard trips on
+  valid input); freeze-arm directional metrics (de-pinning, decorrelation)
+  not regressed vs the B boundary. Bit-identical outputs are NOT expected
+  (redistribution is new physics on the freeze path) — declare deltas.
+
+## Increment C2 — thaw arms + sandwich geometry + D3 acceptance
 
 **Objective:** complete the state machine — `mlttp`/`mltbtm`, sandwich
 frost (`fgfrst=2/3`, `tfrdp`/`tthawd`), `fgthwd` thaw-through and early
 `frwatc(0)`, `watpdg`/`watbtm` overflow paths — and take the package's D3
 acceptance gate.
 
+- Pre-condition: increment C1 committed with gates green. Thaw melt must
+  route through the C1 redistribution/overflow paths — never directly
+  accumulate into `slsw` beyond capacity (the backed-out attempt's failure
+  mode).
 - Red tests first: scope tests 5 (bottom thaw), 6 (top thaw + `fgthwd`),
-  8 (multi-day additive closure), 9 (cohort gate).
+  8 (multi-day additive closure), 9 (cohort gate); plus a multi-cycle
+  amplification test (repeated freeze/thaw cycles on one profile leave
+  total water non-increasing absent external input — the `1.6e35`
+  signature's regression test).
 - Gates (the package acceptance, per scope §6 and addendum 3): 43/43
   clean; depth cap-free and inside the heat-flow envelope (FDMC01/legacy
   240–503 mm range as flag, not target); depth correlation rises materially
@@ -116,7 +160,7 @@ acceptance gate.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C> of
+Each Codex dispatch is: *"Execute increment <A|B|C1|C2> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 

@@ -183,8 +183,35 @@ gates pass.
 
 Increment B disposition: staged gates pass, but D3 remains `executed-hold`.
 Depth no longer pins exactly at the profile bound, but remains near it
-(mean max `1782.265765656973 mm`), so Increment C must port top/bottom thaw
-arms, sandwich geometry, and thaw-through behavior before package acceptance.
+(mean max `1782.265765656973 mm`). The first Increment C thaw-arm attempt is
+recorded below; the next D3 pass must add capacity-aware `watdst`
+redistribution plus `watpdg`/`watbtm` overflow handling before retaining
+top/bottom thaw arms.
 
 Disposition: Rust gates and D2 storage closure pass, but package acceptance
 still fails on D3 frost-depth parity. FDHP01 is executed-hold.
+
+## D3 Increment C Thaw-Arm Attempt Gates
+
+| Command / Gate | Result |
+|---|---|
+| Required comparator-suite runner | Unavailable; spawned subagent errored due GPT-5.3-Codex-Spark usage limit, so heavy gates were run locally |
+| `cargo fmt --check` / `git diff --check` | Pass before cohort failure disposition |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass after test-helper cleanup |
+| `cargo test --workspace` | Pass before cohort failure disposition |
+| `cargo deny check` | Pass |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, 2 tests |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 30 tests in the attempted tree after adding a pore-cap regression |
+| First cohort attempt | Failed on `p1`, 1990 day 45: `wb18_perc_frzw_0001=0.06135293352005228` exceeded `wb18_perc_ul_0001=0.05875247947169813` |
+| Post-cap 43-prefix cohort | Pass for process execution, `43/43` clean exits |
+| Annual `Total-Soil + frozwt` closure, years 2-6 | Fail, max abs residual `2325832826960980.0 mm`, mean abs residual `863664411656061.6 mm` |
+| Year-7 boundary watch item | Fails as a real storage blow-up, max abs residual `2203549546983243.5 mm` |
+| Profile-bound pinning directional gate | Directionally unpinned, `0/43` pinned, but still near the profile bound: mean max `1794.0628184427708 mm`, minimum margin `5.350358610292005 mm` |
+| Depth correlation | Fail, median `-0.4265170275507577` |
+| Frozen duration | Fail for acceptance shape: median open-minus-legacy delta `+382` days |
+
+Increment C disposition: failed and backed out. The attempt proves thaw arms
+need capacity-aware `watdst` redistribution plus `watpdg`/`watbtm` overflow
+handling before `mlttp`/`mltbtm` can be retained. FDHP01 remains
+`executed-hold` at the Increment B boundary.

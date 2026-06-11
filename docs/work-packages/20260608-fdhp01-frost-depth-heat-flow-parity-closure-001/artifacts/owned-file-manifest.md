@@ -143,3 +143,10 @@ Date: 2026-06-11
 - `fdhp01_increment_b_annual_closure_residuals_20260611.csv`
 - `fdhp01_increment_b_depth_metrics_20260611.csv`
 - `fdhp01_increment_b_frozwt_frdp_ratio_20260611.csv`
+- `d3-increment-c-thaw-arms-20260611.md`
+- `fdhp01_increment_c_execution_summary_20260611.json`
+- `fdhp01_increment_c_run_status_20260611.tsv`
+- `fdhp01_increment_c_annual_closure_residuals_20260611.csv`
+- `fdhp01_increment_c_depth_metrics_20260611.csv`
+- `fdhp01_increment_c_frozwt_frdp_ratio_20260611.csv`
+- `fdhp01_increment_c_activation_summary_20260611.csv`

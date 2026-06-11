@@ -155,6 +155,27 @@ Ran:
 - Depth magnitude is still a hold item: mean maximum depth
   `1782.265765656973 mm`, median maximum depth `1782.454753408546 mm`.
 
+## Increment C Attempt Evidence
+
+- Persisted compact reports:
+  - `d3-increment-c-thaw-arms-20260611.md`
+  - `fdhp01_increment_c_execution_summary_20260611.json`
+  - `fdhp01_increment_c_run_status_20260611.tsv`
+  - `fdhp01_increment_c_annual_closure_residuals_20260611.csv`
+  - `fdhp01_increment_c_depth_metrics_20260611.csv`
+  - `fdhp01_increment_c_frozwt_frdp_ratio_20260611.csv`
+  - `fdhp01_increment_c_activation_summary_20260611.csv`
+- The first thaw-arm attempt failed on `p1` at 1990 day 45 with
+  `wb18_perc_frzw_0001=0.06135293352005228` exceeding
+  `wb18_perc_ul_0001=0.05875247947169813`.
+- A source cap made the cohort execute cleanly (`43/43`), but the D2 hard
+  stop failed: years 2-6 `Total-Soil + frozwt` max abs residual was
+  `2325832826960980.0 mm`.
+- The attempted tree produced catastrophic `Total-Soil` amplification during
+  freeze/thaw cycles; for `p1`, year 4 reached `1.558719e+35 mm`.
+- The attempted production, contract, and test edits were backed out. The
+  package remains at the Increment B boundary (`SC-SNOWFREEZE-001` v59).
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -169,15 +190,17 @@ Ran:
   `frostn` state machine: `frostn.for:360-683`, `frzng.for:235-560`, and
   `frwatc.for:89-137`.
 - The coarse-front production/test edit was backed out. `SC-SNOWFREEZE-001`
-  v57 remains as the D3 hold amendment; v58 supersedes it for Increment A
-  shadow-state handoff authority.
+  v57 remains as the D3 hold amendment, v58 supersedes it for Increment A
+  shadow-state handoff authority, and v59 supersedes it for Increment B active
+  freeze-arm authority.
 
 ## Review Closure
 
 Claude's post-closeout review findings are accepted. The diagnostic conclusion
 from addendum 2e was correct: the scalar model could not satisfy the v150/v151
 audit identity by construction. The package still cannot be marked complete
-because D3 depth/duration parity is open. The next actionable item is Increment
-C from `d3-staged-increment-plan.md`: port the top/bottom thaw arms, sandwich
-geometry, and thaw-through behavior while preserving the years 2-6 conservation
-gate and the Increment B de-pinning/correlation gains.
+because D3 depth/duration parity is open. The first Increment C attempt shows
+the next pass must not reintroduce top/bottom thaw arms without first porting
+capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow handling.
+The years 2-6 conservation gate remains the hard stop before any depth/duration
+acceptance claim.

@@ -48,7 +48,7 @@ Evidence and disposition artifacts for
   gate.
 - `d3-increment-b-freeze-arms-20260611.md`: staged D3 Increment B evidence;
   records the v59 fine-state depth authority, freeze-arm port, local/heavy
-  gates, 43-prefix cohort metrics, and remaining Increment C hold.
+  gates, 43-prefix cohort metrics, and pre-thaw-arm hold.
 - `fdhp01_increment_b_execution_summary_20260611.json`: compact Increment B
   cohort summary with years 2-6 closure, year-7 watch item, de-pinning, and
   `frozwt/frdp` correlation gates.
@@ -57,6 +57,17 @@ Evidence and disposition artifacts for
   `fdhp01_increment_b_depth_metrics_20260611.csv`,
   `fdhp01_increment_b_frozwt_frdp_ratio_20260611.csv`: generated Increment B
   reports from the clean `43/43` cohort.
+- `d3-increment-c-thaw-arms-20260611.md`: staged Increment C attempt evidence;
+  records the backed-out top/bottom thaw-arm implementation, the local fallback
+  gates, the `43/43` post-cap cohort run, and the D2 hard-stop failure.
+- `fdhp01_increment_c_execution_summary_20260611.json`,
+  `fdhp01_increment_c_run_status_20260611.tsv`,
+  `fdhp01_increment_c_annual_closure_residuals_20260611.csv`,
+  `fdhp01_increment_c_depth_metrics_20260611.csv`,
+  `fdhp01_increment_c_frozwt_frdp_ratio_20260611.csv`,
+  `fdhp01_increment_c_activation_summary_20260611.csv`: generated Increment C
+  failed-attempt reports copied from
+  `/tmp/fdhp01_increment_c_thaw_20260611T215005Z/reports/`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

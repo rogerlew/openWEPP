@@ -178,4 +178,10 @@ Disposition:
   the same fine-layer state that `frwatc` publishes, with front advance and
   thaw retreat coupled to that state. v58 supersedes it for Increment A by
   pinning hour-1 `frwatc(1)` ingress and authorizing the non-driving shadow
-  state.
+  state; v59 supersedes it for Increment B by making the fine-state freeze
+  arms active production authority.
+- The first Increment C thaw-arm attempt was executed and backed out. Its
+  43-prefix post-cap cohort ran clean but violated the D2 storage hard stop by
+  catastrophic `Total-Soil + frozwt` residuals, so thaw arms must not be
+  retained until capacity-aware `watdst` redistribution and `watpdg`/`watbtm`
+  overflow handling are ported.
