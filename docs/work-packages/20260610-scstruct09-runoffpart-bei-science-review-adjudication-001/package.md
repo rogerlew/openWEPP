@@ -1,6 +1,6 @@
 # SCSTRUCT09 — SC-RUNOFFPART Binding Exposure Index Science-Review Adjudication
 
-Status: queued
+Status: executed-map-in-core
 Created: 2026-06-10
 Series: `scstruct` (science-contract structure / context optimization)
 Closes: defect `SCSTRUCT08-RUNOFFPART-BEI-SCIENCE-REVIEW` (routed from SCSTRUCT08)
@@ -78,7 +78,8 @@ the moved content. Per batch that relocates narrative:
 2. **Reconcile** any contract-derived test referencing relocated narrative
    (path/structure only; assertions should *strengthen* to verify BEI + mapped INV
    + sidecar provenance, never weaken). Record breakage + fix.
-3. **Subagent requirement (mandatory): spawn `comparator_suite_runner`
+3. **Subagent authorization (mandatory): this package explicitly authorizes
+   subagent spawning/delegation to `comparator_suite_runner`
    (gpt-5.3-codex-spark) for the closure loop and any comparator/population runs.
    Do NOT run them on the parent model unless the subagent is unavailable, in
    which case record command-level evidence.** Consume only its compact metrics +

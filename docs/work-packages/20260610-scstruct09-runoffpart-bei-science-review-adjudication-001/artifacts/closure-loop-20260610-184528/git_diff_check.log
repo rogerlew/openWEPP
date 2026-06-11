@@ -1,0 +1,3 @@
+[START] git diff --check
+__EXIT_CODE__:0
+PASSED git_diff_check

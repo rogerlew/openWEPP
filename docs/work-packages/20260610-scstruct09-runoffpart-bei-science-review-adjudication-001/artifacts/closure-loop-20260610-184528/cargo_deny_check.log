@@ -1,0 +1,4 @@
+[START] cargo deny check
+advisories ok, bans ok, licenses ok, sources ok
+__EXIT_CODE__:0
+PASSED cargo_deny_check

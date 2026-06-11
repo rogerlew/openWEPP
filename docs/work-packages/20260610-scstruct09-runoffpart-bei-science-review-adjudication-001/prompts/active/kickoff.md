@@ -2,13 +2,14 @@
 
 Execution mode: **science-steered**, batched (not autonomous).
 
-Subagent requirement (REQUIRED, not optional): spawn the `comparator_suite_runner`
+Subagent authorization (REQUIRED, not optional): this prompt explicitly
+authorizes subagent spawning/delegation to `comparator_suite_runner`. Spawn the
 subagent (gpt-5.3-codex-spark) for the closure loop (`cargo test --workspace`,
 clippy, deny) and any comparator/population runs. **Do NOT run heavy batch/closure
 work on the parent model** unless the subagent is unavailable, in which case record
-command-level evidence as justification. This prompt explicitly authorizes subagent
-spawning/delegation to `comparator_suite_runner`; it returns compact metrics + log
-paths only (no source/contract edits). See `docs/standards/prompt-wording-guidance.md` §4a.
+command-level evidence as justification. It returns compact metrics + log paths
+only (no source/contract edits). See `docs/standards/prompt-wording-guidance.md`
+§4a.
 
 Autonomy: within a batch, execute the mechanics autonomously — resolve rows to
 cited outcomes, relocate historical narrative, run the lint, **spawn
