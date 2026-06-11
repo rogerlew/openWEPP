@@ -19,9 +19,12 @@ D2 update, 2026-06-11: `SC-WATBAL-001` v150 now pins the legacy
 exclude frozen water, and frost-active storage audits use
 `Total-Soil + frozwt`. The active frost exchange seam publishes
 `frost.runtime_frwatc_*` diagnostics, and focused freeze/thaw tests prove the
-in-process exchange algebra is symmetric. The cohort gate remains held until
-the WAT-level residual is audited against those diagnostics, `p2` runs clean,
-and D3 depth progression no longer pins at profile depth.
+in-process exchange algebra is symmetric. Addendum 2c then localized the
+WAT-level contradiction to `frozwt` publication: emitted `frozwt` is
+`0.149 * frdp` over the measured frost-active days, not the exchanged frozen
+store. The next D2 pass must source published `frozwt` from the true exchanged
+store and retire the depth scale before D3 depth progression is trusted; `p2`
+remains an independent fail-closed defect.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

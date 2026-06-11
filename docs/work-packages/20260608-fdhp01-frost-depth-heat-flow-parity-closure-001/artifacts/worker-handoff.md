@@ -52,15 +52,18 @@ Residual note:
   (`open max depth mean 1782.2670980346527 mm`; median correlation
   `-0.10301692862035305`).
 - Focused D2 diagnostics now prove symmetric freeze/thaw exchange algebra at
-  the WB14/WB11 seam. The WAT-level residual must be audited against those
-  diagnostics before another storage/publication fix is attempted.
+  the WB14/WB11 seam. Addendum 2c then localized the WAT contradiction to
+  publication: emitted `frozwt` is `0.149 * frdp` over measured frost-active
+  days, not the exchanged frozen store.
 - `SC-SNOWFREEZE-001` v55 reopens `GAP-SNOWFREEZE-002`.
 
 First actionable item: close defect `FDHP01-FROST-DEPTH-HEATFLOW-001` on the
-current attempted heat-flow implementation. Sequence the next pass as:
-diagnose the remaining cohort/WAT residual using the new `frwatc` diagnostics,
-then address D3 depth runaway against a trustworthy gate; keep the `p2`
+current attempted heat-flow implementation. Sequence the next pass as: fix
+`frozwt` publication to source the true exchanged store tracked by the
+`frwatc` diagnostics and retire the `0.149 * frdp` scale; rerun the additive
+identity on the cohort to confirm whether D2 dissolves; then address D3 depth
+runaway against the corrected storage gate. Keep the `p2`
 `HKERNEL-WB11-PERC-E-003` fail-closed defect tracked separately. Do not advance
-to MOFE until the full 43-prefix cohort runs clean, annual closure returns from
-the remaining `~2.48 mm` residual to numerical noise, and depth/duration
+to MOFE until the full 43-prefix cohort runs clean, frost-active annual closure
+returns to numerical noise under the ratified storage term, and depth/duration
 evidence materially closes the FDMC01 gap without comparator tuning.

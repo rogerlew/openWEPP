@@ -100,10 +100,14 @@ boundary. The WAT `frdp` publication surface exists, and D1 removed the dominant
 frozen-storage double count from `SoilWaterTotal`. D2 added the seam
 diagnostics needed to judge freeze/thaw exchange wiring and `SC-WATBAL-001`
 v150 ratifies that `Total-Soil + frozwt` is the frost-active storage audit
-term. The cohort validation still failed required closure criteria and
-reopened `GAP-SNOWFREEZE-002` in `SC-SNOWFREEZE-001` v55.
+term. Addendum 2c then localized the remaining WAT contradiction to `frozwt`
+publication: emitted `frozwt` is `0.149 * frdp` over measured frost-active
+days, so the current additive audit uses a depth-derived quantity rather than
+the exchanged frozen store. The cohort validation still failed required
+closure criteria and reopened `GAP-SNOWFREEZE-002` in `SC-SNOWFREEZE-001` v55.
 
 The package remains in defect closure. The next actionable work is to fix
-FDHP01 so `p2` runs clean, annual closure returns from the remaining
-`~2.48 mm` residual to numerical noise, and depth/duration evidence materially
-closes the FDMC01 gap without comparator tuning.
+FDHP01 by publishing the true exchanged frozen store as `frozwt`, rerunning the
+cohort additive identity, keeping the independent `p2` fail-closed defect
+tracked separately, and then closing the D3 depth/duration gap without
+comparator tuning.

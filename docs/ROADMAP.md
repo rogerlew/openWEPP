@@ -75,7 +75,9 @@ magnitude (legacy-faithful), forest `ksatadj`, frost activation (closed), MOFE/1
 (item 2), snow magnitude (item 3). Conservation must still close (`frozwt` in storage).
 For frost-active WAT audits, `SC-WATBAL-001` v150 defines that storage term as
 `Total-Soil + frozwt`, with `SoilWaterTotal = Total-Soil` as the unfrozen
-`watcon` alias.
+`watcon` alias. FDHP01 Addendum 2c localized the current additive-audit break
+to publication: emitted `frozwt` is `0.149 * frdp`, not the exchanged frozen
+store, so publication must be fixed before D3 depth evidence is trusted.
 
 DC-ExecPlan: `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 Sized by [FDMC01](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/);

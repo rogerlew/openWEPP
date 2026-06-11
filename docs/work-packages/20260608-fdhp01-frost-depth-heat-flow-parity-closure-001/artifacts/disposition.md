@@ -75,17 +75,20 @@ Ran:
 
 D2 exchange wiring is now observable in process. Focused freeze-onset and
 warm-thaw vectors prove the exchange algebra is symmetric at the WB14/WB11
-seam. The remaining WAT-level inconsistency must be audited against those
-diagnostics before changing production hydrology or WB13 publication semantics
-again; the `SWT`-only annual near-closure remains non-authoritative as a
-completion claim.
+seam. Addendum 2c localizes the WAT-level contradiction to publication:
+published `frozwt` is exactly `0.149 * frdp` on the measured frost-active
+days, so the `Total-Soil + frozwt` audit is currently consuming a
+depth-derived fiction rather than the exchanged frozen store. The next D2 pass
+should fix `frozwt` publication to source the true exchanged store, then rerun
+the additive identity before treating the remaining `SWT`-only near-closure as
+a defect.
 
 ## Review Closure
 
 Claude's post-closeout review findings are accepted. `complete` was incorrect;
 the package remains in defect closure. The next actionable item is to close
-`FDHP01-FROST-DEPTH-HEATFLOW-001` by fixing the cohort failure, restoring
-annual closure from the remaining `~2.48 mm` residual to numerical noise, and
-materially closing the FDMC01 depth/duration gap. D3 depth-runaway and the
-independent `p2` fail-closed defect remain downstream of the now-instrumented
-D2 gate.
+`FDHP01-FROST-DEPTH-HEATFLOW-001` by fixing `frozwt` publication to the true
+store, rerunning the cohort additive identity, then materially closing the
+FDMC01 depth/duration gap. D3 depth-runaway now also owns the inflated
+published `frozwt` magnitude through the `0.149 * frdp` scale; the independent
+`p2` fail-closed defect remains separately open.
