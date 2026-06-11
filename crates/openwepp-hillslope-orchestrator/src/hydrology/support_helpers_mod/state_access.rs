@@ -1216,6 +1216,14 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("{root}_{layer_index:04}"))
     }
 
+    pub(crate) fn frost_fine_layer_symbol(
+        root: &str,
+        layer_index: usize,
+        fine_index: usize,
+    ) -> BoundarySymbol {
+        BoundarySymbol::from(format!("{root}_{layer_index:04}_{fine_index:04}"))
+    }
+
     pub(crate) fn resolve_frozen_soil_kfactor(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,

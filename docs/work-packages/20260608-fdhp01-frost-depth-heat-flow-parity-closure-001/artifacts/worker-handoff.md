@@ -36,6 +36,12 @@ Primary landed behavior:
 - WAT `frozwt` publication now resolves the layer-state legacy store
   `Σ soilf(i) = Σ(wb18_perc_frzw_#### + thetdr_#### *
   wb18_perc_frozen_depth_####)` instead of scalar `frdp * theta`.
+- D3 Increment A now publishes non-driving shadow fine-state diagnostics for
+  `fgfrst`/`slfsd`/`slsic`/`slsw`/`sltime`/`yst`/`nwfrzz`. The shadow state is
+  a handoff/conservation proof surface only and must not be treated as active
+  depth authority until Increment B.
+- `SC-SNOWFREEZE-001` is now v58. `frwatc(1)` is pinned to active-day hour-1
+  ingress, not every-hour entry.
 
 Validation status before post-review cohort validation:
 
@@ -74,13 +80,11 @@ D3 attempt result:
   coarse-front approach; the next implementation needs the legacy fine-layer
   `fgfrst`/`slfsd`/`slsic`/`slsw`/`nwfrzz` state machine and the
   `frostn`/`frzng`/`mltbtm`/`frwatc` bidirectional coupling.
-- `SC-SNOWFREEZE-001` is now v57 and explicitly prohibits post-hoc scalar
-  depth projection into layer stores.
+- `SC-SNOWFREEZE-001` v57 explicitly prohibits post-hoc scalar depth projection
+  into layer stores; v58 adds the Increment A shadow handoff authority.
 
-First actionable item: close defect `FDHP01-FROST-DEPTH-HEATFLOW-001` by
-porting the legacy fine-sublayer frost state and the bidirectional
-`frostn`/`frzng`/`mltbtm`/`frwatc` coupling. D2 additive storage and the prior
-`p2` fail-closed event are no longer the lead blockers. Do not advance to MOFE
-until the full 43-prefix cohort still runs clean, frost-active annual closure
-remains at numerical noise under the ratified storage term, and depth/duration
-evidence materially closes the FDMC01 gap without comparator tuning.
+First actionable item: execute Increment B of `d3-staged-increment-plan.md`.
+That increment derives depth from the fine state and lands the freeze arms
+while keeping years 2-6 conservation at noise and `43/43` cohort execution
+clean. Do not advance to MOFE until Increment C closes the full depth/duration
+acceptance gate without comparator tuning.

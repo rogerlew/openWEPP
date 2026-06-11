@@ -1,0 +1,22 @@
+{
+  "hbp_byte_equal": 43,
+  "hbp_first_mismatch": null,
+  "hbp_mismatch_count": 0,
+  "loss_byte_equal": 43,
+  "loss_first_mismatch": null,
+  "loss_mismatch_count": 0,
+  "run_root_post": "/tmp/fdhp01_increment_a_current_pre_like_pre_2_20260611T181018Z",
+  "run_root_pre": "/tmp/fdhp01_increment_a_current_pre_like_pre_1_20260611T181018Z",
+  "warnings_first_run_diff": null,
+  "warnings_mismatch_runs": 0,
+  "warnings_post_runs": 43,
+  "warnings_post_total": 43,
+  "warnings_pre_runs": 43,
+  "warnings_pre_total": 43,
+  "wat_byte_equal": 43,
+  "wat_byte_mismatch_count": 0,
+  "wat_decoded_equal": 43,
+  "wat_decoded_mismatch_count": 0,
+  "wat_first_byte_mismatch": null,
+  "wat_first_decoded_diff": null
+}

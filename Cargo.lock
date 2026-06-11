@@ -741,7 +741,10 @@ name = "openwepp-hillslope-output"
 version = "0.1.0"
 dependencies = [
  "arrow-array",
+ "arrow-ipc",
  "arrow-schema",
+ "base64",
+ "flatbuffers",
  "openwepp-sim-contract",
  "parquet",
 ]

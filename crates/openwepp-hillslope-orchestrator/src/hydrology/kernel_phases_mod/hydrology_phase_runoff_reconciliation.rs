@@ -898,6 +898,26 @@ pub(crate) fn run_runoff_reconciliation(
                 Some(WB11_ZERO_THRESHOLD),
                 None,
             ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_SHADOW_TOTAL_WATER_BEFORE_SYMBOL),
+                frost_outcome.shadow_total_water_before_m,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_SHADOW_TOTAL_WATER_AFTER_SYMBOL),
+                frost_outcome.shadow_total_water_after_m,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::unbounded(
+                BoundarySymbol::from(FROST_RUNTIME_SHADOW_WB_DELTA_SYMBOL),
+                frost_outcome.shadow_wb_delta_m,
+            ));
+            state_updates.push(WritebackField::unbounded(
+                BoundarySymbol::from(FROST_RUNTIME_SHADOW_FRWATC_RESIDUAL_SYMBOL),
+                frost_outcome.shadow_frwatc_residual_m,
+            ));
             for layer in &frost_outcome.layer_topology_state {
                 state_updates.push(WritebackField::bounded(
                     Self::frost_layer_symbol(FROST_RUNTIME_LAYER_FINE_COUNT_ROOT, layer.layer_index),
@@ -931,6 +951,108 @@ pub(crate) fn run_runoff_reconciliation(
                     layer.frzw_m,
                     Some(0.0),
                     None,
+                ));
+            }
+            for layer in &frost_outcome.shadow_layer_state {
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(FROST_RUNTIME_SHADOW_ST_ROOT, layer.layer_index),
+                    layer.st_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(
+                        FROST_RUNTIME_SHADOW_SOIL_WATER_ROOT,
+                        layer.layer_index,
+                    ),
+                    layer.soil_water_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(
+                        FROST_RUNTIME_SHADOW_FROZEN_DEPTH_ROOT,
+                        layer.layer_index,
+                    ),
+                    layer.frozen_depth_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(FROST_RUNTIME_SHADOW_FRZW_ROOT, layer.layer_index),
+                    layer.frzw_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(FROST_RUNTIME_SHADOW_SOILF_ROOT, layer.layer_index),
+                    layer.soilf_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index),
+                    layer.yst_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index),
+                    layer.nwfrzz_m,
+                    Some(0.0),
+                    None,
+                ));
+            }
+            for fine in &frost_outcome.fine_layer_state {
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_FGFRST_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    ),
+                    fine.fgfrst,
+                    Some(0.0),
+                    Some(3.0),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    ),
+                    fine.slfsd_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    ),
+                    fine.slsic_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    ),
+                    fine.slsw_theta,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::frost_fine_layer_symbol(
+                        FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                        fine.layer_index,
+                        fine.fine_index,
+                    ),
+                    fine.sltime_s,
+                    Some(0.0),
+                    Some(FROST_RUNTIME_SECONDS_PER_HOUR),
                 ));
             }
             for hourly in &frost_outcome.hourly_state {

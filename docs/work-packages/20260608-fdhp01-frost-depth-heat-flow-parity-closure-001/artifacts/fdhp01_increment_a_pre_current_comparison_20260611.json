@@ -1,0 +1,20 @@
+{
+  "current_arrow_schema_unique": 1,
+  "current_fallback_warnings": 43,
+  "current_root": "/tmp/fdhp01_increment_a_current_pre_like_pre_1_20260611T181018Z",
+  "fallback_warning_mismatches": 0,
+  "first_wat_physical_diff": {
+    "current_path": "/tmp/fdhp01_increment_a_current_pre_like_pre_1_20260611T181018Z/outputs/p1/H.wat.parquet",
+    "current_sha": "bb00af3f54453222d4b78f6120551a8929e5207731cbfde5787a0c5c89bf9ca2",
+    "pre_path": "/tmp/fdhp01_increment_a_pre_20260611T164115Z/outputs/p1/H.wat.parquet",
+    "pre_sha": "c62c2918d6543c865c6d1ce238637217184f8b7704110f37f8a4776250b0bf40",
+    "prefix": "p1"
+  },
+  "hbp_byte_equal": 43,
+  "loss_json_byte_equal": 43,
+  "pre_arrow_schema_unique": 43,
+  "pre_fallback_warnings": 43,
+  "pre_root": "/tmp/fdhp01_increment_a_pre_20260611T164115Z",
+  "wat_decoded_equal": 43,
+  "wat_physical_byte_equal": 0
+}

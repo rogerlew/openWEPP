@@ -42,6 +42,16 @@ Evidence and disposition artifacts for
   fine-sublayer implementation attempt; records the current-tree `43/43`
   cohort, D2 conservation regression, p22 debug probes, and post-backout
   focused test pass.
+- `d3-increment-a-shadow-state-20260611.md`: staged D3 Increment A evidence;
+  records the v58 hour-1 `frwatc(1)` amendment, shadow fine-state landing,
+  behavior-preservation posture, local gates, and required bit-identical cohort
+  gate.
+- `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
+  vs latest-current comparison summary.
+- `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact
+  latest-current vs latest-current physical parity summary.
+- `fdhp01_increment_a_gates_latest_20260611.json`: compact latest-source full
+  Rust gate summary from the required comparator runner.
 - `fdhp01_d3_fine_sublayer_attempt_*_20260611.*`: compact generated reports
   copied from `/tmp/fdhp01_d3_fine_sublayer_20260611T160601Z/reports/`.
 - `required-reading-map.md`: tiered authority map (living artifact).

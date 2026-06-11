@@ -1,7 +1,10 @@
 use openwepp_hillslope_orchestrator::{
     HillslopePhase, HillslopePhaseScheduler, HillslopeWritebackSurface, Wb11HydrologyKernel,
 };
-use openwepp_kernel_contract::{BoundarySymbol, BoundaryValue};
+use openwepp_kernel_contract::{
+    BoundarySymbol, BoundaryValue, HillslopeConsumerAdapter, HillslopeKernel,
+    HillslopeKernelPhaseClass, HillslopeKernelRequest, KernelRunResponse,
+};
 use openwepp_sim_contract::status::BoundaryClass;
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 
@@ -614,6 +617,19 @@ fn execute_clim06_surface(
         .expect("CLIM06 execution should return typed report")
 }
 
+fn execute_clim06_runoff_phase(surface: &HillslopeWritebackSurface) -> KernelRunResponse {
+    let request = HillslopeKernelRequest::with_phase_context(
+        "runoff_reconciliation",
+        HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+        HillslopeConsumerAdapter::Runoff,
+        None,
+        &surface.state_surface,
+        &surface.flux_surface,
+    );
+    let mut kernel = Wb11HydrologyKernel;
+    kernel.run_hillslope_phase(&request)
+}
+
 fn require_state_scalar(
     report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
     symbol: &str,
@@ -626,10 +642,116 @@ fn require_state_scalar(
         .as_f64()
 }
 
+fn require_response_state_update(response: &KernelRunResponse, symbol: &str) -> f64 {
+    response
+        .writeback
+        .state_updates
+        .iter()
+        .find(|field| field.symbol == BoundarySymbol::from(symbol))
+        .unwrap_or_else(|| panic!("missing expected state update {symbol}"))
+        .value
+        .as_f64()
+}
+
 fn insert_state_scalar(surface: &mut HillslopeWritebackSurface, symbol: &str, value: f64) {
     surface
         .state_surface
         .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+}
+
+fn remove_state_prefixes(surface: &mut HillslopeWritebackSurface, prefixes: &[&str]) {
+    surface.state_surface.retain(|symbol, _| {
+        !prefixes
+            .iter()
+            .any(|prefix| symbol.as_str().starts_with(prefix))
+    });
+}
+
+fn fine_frost_symbol(root: &str, layer_index: usize, fine_index: usize) -> String {
+    format!("{root}_{layer_index:04}_{fine_index:04}")
+}
+
+#[allow(clippy::too_many_lines)]
+fn seed_increment_a_shadow_fine_state(surface: &mut HillslopeWritebackSurface, yst_offset_m: f64) {
+    insert_state_scalar(surface, "wb11_et_demand", 0.0);
+    insert_state_scalar(surface, "wb11_perc_fraction", 0.5);
+    insert_state_scalar(surface, "wb11_field_capacity", 12.0);
+    insert_state_scalar(surface, "wb18_perc_fc_0001", 10.0);
+    insert_state_scalar(surface, "wb18_perc_fc_0002", 10.0);
+    insert_state_scalar(surface, "wb18_perc_ul_0001", 20.0);
+    insert_state_scalar(surface, "wb18_perc_ul_0002", 20.0);
+    insert_state_scalar(surface, "wb19_drain_enabled", 0.0);
+    insert_state_scalar(surface, "wb11_lateral_fraction", 0.0);
+    insert_state_scalar(surface, "wb11_drainage_fraction", 0.0);
+    insert_state_scalar(surface, "wb12_rainfall_input", 0.0);
+    insert_state_scalar(surface, "wb12_runon_input", 0.0);
+    insert_state_scalar(surface, "wb12_precip_input", 0.0);
+    insert_state_scalar(surface, "frost.runtime_ws_frz", 0.012);
+    insert_state_scalar(surface, "frost.runtime_dfrost", 0.030);
+    insert_state_scalar(surface, "frost.runtime_frdp_m", 0.030);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0001", 0.030);
+    insert_state_scalar(surface, "wb18_perc_frzw_0001", 0.012);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0002", 0.0);
+    insert_state_scalar(surface, "wb18_perc_frzw_0002", 0.0);
+    insert_state_scalar(surface, "frost.runtime_yst_m_0001", 5.0 - yst_offset_m);
+    insert_state_scalar(surface, "frost.runtime_yst_m_0002", 5.0);
+    insert_state_scalar(surface, "frost.runtime_nwfrzz_m_0001", 0.0);
+    insert_state_scalar(surface, "frost.runtime_nwfrzz_m_0002", 0.0);
+
+    for fine_index in 1..=10 {
+        let layer_1_frozen = fine_index <= 3;
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_fgfrst", 1, fine_index),
+            if layer_1_frozen { 1.0 } else { 0.0 },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slfsd_m", 1, fine_index),
+            if layer_1_frozen { 0.010 } else { 0.0 },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsic_m", 1, fine_index),
+            if layer_1_frozen { 0.004 } else { 0.0 },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsw_theta", 1, fine_index),
+            if layer_1_frozen { 0.0 } else { 0.2 },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_sltime_s", 1, fine_index),
+            0.0,
+        );
+
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_fgfrst", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slfsd_m", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsic_m", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsw_theta", 2, fine_index),
+            0.15,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_sltime_s", 2, fine_index),
+            0.0,
+        );
+    }
 }
 
 fn frozen_layer_frzw_sum(
@@ -673,6 +795,136 @@ fn assert_close(actual: f64, expected: f64, context: &str) {
         (actual - expected).abs() <= CLIM06_TEST_TOLERANCE,
         "{context}: expected {expected}, got {actual}"
     );
+}
+
+#[test]
+fn fdhp01_fine_sublayer_frwatc_round_trip_conserves_mass() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "Increment A shadow fine-state vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_frwatc_residual_m"),
+        0.0,
+        "shadow frwatc round-trip residual must stay at numerical zero",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_st_m_0001"),
+        0.014,
+        "shadow layer-1 active storage must round-trip",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_soil_water_m_0001"),
+        0.014,
+        "shadow layer-1 liquid soil water must round-trip",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_frozen_depth_m_0001"),
+        0.030,
+        "shadow layer-1 frozen depth must round-trip",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_frzw_m_0001"),
+        0.012,
+        "shadow layer-1 frzw must round-trip",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_soilf_m_0001"),
+        0.012,
+        "shadow layer-1 soilf must round-trip",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_slsic_m_0001_0001"),
+        0.004,
+        "shadow fine-layer ice must remain present",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_slsw_theta_0001_0004"),
+        0.2,
+        "shadow unfrozen fine-layer liquid theta must remain present",
+    );
+}
+
+#[test]
+fn fdhp01_fine_sublayer_shadow_seam_identity_tracks_wb_delta() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.003);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "Increment A shadow seam identity vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    let total_before =
+        require_response_state_update(&response, "frost.runtime_shadow_total_water_before_m");
+    let total_after =
+        require_response_state_update(&response, "frost.runtime_shadow_total_water_after_m");
+    let wb_delta = require_response_state_update(&response, "frost.runtime_shadow_wb_delta_m");
+    let residual =
+        require_response_state_update(&response, "frost.runtime_shadow_frwatc_residual_m");
+
+    assert_close(
+        wb_delta,
+        0.003,
+        "shadow handoff must expose the daily st-yst delta",
+    );
+    assert_close(
+        total_after - total_before,
+        wb_delta,
+        "shadow total fine water change must equal the water-balance delta",
+    );
+    assert_close(
+        residual,
+        0.0,
+        "shadow seam conservation residual must close",
+    );
+}
+
+#[test]
+fn fdhp01_fine_sublayer_shadow_state_does_not_drive_active_outputs() {
+    let mut shadow_surface = seeded_clim06_surface(true);
+    seed_increment_a_shadow_fine_state(&mut shadow_surface, 0.003);
+    let mut active_only_surface = shadow_surface.clone();
+    remove_state_prefixes(
+        &mut active_only_surface,
+        &[
+            "frost.runtime_fgfrst_",
+            "frost.runtime_slfsd_m_",
+            "frost.runtime_slsic_m_",
+            "frost.runtime_slsw_theta_",
+            "frost.runtime_sltime_s_",
+            "frost.runtime_yst_m_",
+            "frost.runtime_nwfrzz_m_",
+        ],
+    );
+
+    let shadow_response = execute_clim06_runoff_phase(&shadow_surface);
+    let active_response = execute_clim06_runoff_phase(&active_only_surface);
+    assert!(shadow_response.status.ok_flag());
+    assert!(active_response.status.ok_flag());
+
+    for symbol in [
+        "frost.runtime_frdp_m",
+        "frost.runtime_frwatc_frozen_water_after_m",
+        "frost.runtime_frwatc_soil_water_after_m",
+        "wb11_soil_water",
+        "wb18_perc_frozen_depth_0001",
+        "wb18_perc_frzw_0001",
+    ] {
+        assert_close(
+            require_response_state_update(&shadow_response, symbol),
+            require_response_state_update(&active_response, symbol),
+            symbol,
+        );
+    }
 }
 
 #[test]

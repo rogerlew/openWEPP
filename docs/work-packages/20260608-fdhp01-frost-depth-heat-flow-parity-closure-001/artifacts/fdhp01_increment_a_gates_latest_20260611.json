@@ -1,0 +1,26 @@
+{
+  "artifact_dir": "not retained; compacted into this package artifact",
+  "commands": [
+    {
+      "command": "cargo fmt --check",
+      "exit_code": 0,
+      "name": "fmt"
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets -- -D warnings",
+      "exit_code": 0,
+      "name": "clippy"
+    },
+    {
+      "command": "cargo test --workspace",
+      "exit_code": 0,
+      "name": "test_workspace"
+    },
+    {
+      "command": "cargo deny check",
+      "exit_code": 0,
+      "name": "deny"
+    }
+  ],
+  "status": "PASS"
+}

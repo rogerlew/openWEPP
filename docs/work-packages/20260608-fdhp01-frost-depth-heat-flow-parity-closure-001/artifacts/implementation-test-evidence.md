@@ -36,6 +36,13 @@ Static:
   `wb18_perc_frozen_depth_####` and `wb18_perc_frzw_####` state. WAT `frozwt`
   now resolves the legacy `Σ soilf(i)` store from active layer state:
   `Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)`.
+- Added D3 Increment A shadow fine-state diagnostics for the legacy
+  `fgfrst`/`slfsd`/`slsic`/`slsw`/`sltime`/`yst`/`nwfrzz` handoff seam. The
+  shadow state is written only as diagnostics and does not drive active depth,
+  conductivity, publication, or freeze/thaw behavior.
+- Made WAT parquet physical bytes deterministic by writing a sorted
+  `ARROW:schema` footer. Required Arrow field metadata is still preserved for
+  file readers.
 - Removed stale runner/orchestrator constants that represented the retired
   model-depth cap.
 
@@ -44,8 +51,9 @@ Static:
 Ran:
 
 - `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture`
-  - Result: passed, 19 tests, including layered-store rejection of scalar
-    frozen-water equivalence and per-layer freeze update coverage.
+  - Result: passed, 22 tests, including layered-store rejection of scalar
+    frozen-water equivalence, per-layer freeze update coverage, and Increment A
+    shadow-state round-trip/identity/non-driving tests.
 - `cargo test --test cli04_runner_wat_parquet_contract_derived_tests -- --nocapture`
   - Result: passed, 2 tests.
 - `cargo test --test sim_contract_boundary_unit_registry -- --nocapture`
@@ -61,6 +69,11 @@ Ran:
     `runtime_ws_frz`.
 - `cargo test -p openwepp-hillslope-output schema_includes_required_dataset_metadata_keys -- --nocapture`
   - Result: passed, 1 test.
+- `cargo test -p openwepp-hillslope-output hillslope_wat -- --nocapture`
+  - Result: passed, 4 tests, including deterministic WAT bytes and file-level
+    field metadata preservation.
+- `cargo clippy -p openwepp-hillslope-output --all-targets -- -D warnings`
+  - Result: passed.
 
 ## Workspace Gates
 

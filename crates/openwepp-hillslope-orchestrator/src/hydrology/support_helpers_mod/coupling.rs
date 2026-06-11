@@ -14,6 +14,41 @@ struct FrostLayerWaterState {
     frzw_m: f64,
 }
 
+#[derive(Debug, Clone)]
+struct FrostFineLayerState {
+    layer_index: usize,
+    fine_index: usize,
+    fine_layer_thickness_m: f64,
+    fgfrst: f64,
+    slfsd_m: f64,
+    slsic_m: f64,
+    slsw_theta: f64,
+    sltime_s: f64,
+}
+
+#[derive(Debug, Clone)]
+struct FrostLayerExchangeState {
+    layer_index: usize,
+    thetdr: f64,
+    st_m: f64,
+    yst_m: f64,
+    nwfrzz_m: f64,
+    frozen_m: f64,
+    frzw_m: f64,
+    soilf_m: f64,
+    soil_water_m: f64,
+}
+
+#[derive(Debug, Clone)]
+struct FrostFineShadowState {
+    fine_layers: Vec<FrostFineLayerState>,
+    layer_state: Vec<FrostLayerExchangeState>,
+    total_water_before_m: f64,
+    total_water_after_m: f64,
+    wb_delta_m: f64,
+    residual_m: f64,
+}
+
 impl Wb11HydrologyKernel {
     pub(crate) fn interval_overlap_duration(
         interval_start: f64,
@@ -54,6 +89,371 @@ impl Wb11HydrologyKernel {
             .iter()
             .map(|layer| layer.theta_m + layer.thetdr * (layer.dg_m - layer.frozen_depth_m))
             .sum()
+    }
+
+    fn fine_layer_total_water(fine_layers: &[FrostFineLayerState], nwfrzz_m: f64) -> f64 {
+        fine_layers
+            .iter()
+            .map(|fine| {
+                let unfrozen_depth_m =
+                    (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
+                fine.slsic_m + fine.slsw_theta * unfrozen_depth_m
+            })
+            .sum::<f64>()
+            + nwfrzz_m
+    }
+
+    fn default_fine_layer_from_coarse(
+        layer: &FrostLayerWaterState,
+        fine_index: usize,
+        remaining_frozen_depth_m: &mut f64,
+    ) -> FrostFineLayerState {
+        let slfsd_m = remaining_frozen_depth_m
+            .min(layer.fine_layer_thickness_m)
+            .max(0.0);
+        *remaining_frozen_depth_m = (*remaining_frozen_depth_m - slfsd_m).max(0.0);
+        let fgfrst = if slfsd_m >= layer.fine_layer_thickness_m - WB11_ZERO_THRESHOLD {
+            1.0
+        } else if slfsd_m > WB11_ZERO_THRESHOLD {
+            2.0
+        } else {
+            0.0
+        };
+        let soilf_m = layer.frzw_m + layer.thetdr * layer.frozen_depth_m;
+        let ice_per_frozen_m = if layer.frozen_depth_m > WB11_ZERO_THRESHOLD {
+            soilf_m / layer.frozen_depth_m
+        } else {
+            0.0
+        };
+        let unfrozen_depth_m = (layer.dg_m - layer.frozen_depth_m).max(0.0);
+        let slsw_theta = if unfrozen_depth_m > WB11_ZERO_THRESHOLD {
+            layer.thetdr + layer.theta_m / unfrozen_depth_m
+        } else {
+            layer.thetdr
+        };
+
+        FrostFineLayerState {
+            layer_index: layer.layer_index,
+            fine_index,
+            fine_layer_thickness_m: layer.fine_layer_thickness_m,
+            fgfrst,
+            slfsd_m,
+            slsic_m: ice_per_frozen_m * slfsd_m,
+            slsw_theta,
+            sltime_s: 0.0,
+        }
+    }
+
+    fn require_shadow_fine_state_domains(
+        phase_class: HillslopeKernelPhaseClass,
+        fine: &FrostFineLayerState,
+        thetdr: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        Self::require_dynamic_state_range(
+            phase_class,
+            Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_FGFRST_ROOT,
+                fine.layer_index,
+                fine.fine_index,
+            ),
+            fine.fgfrst,
+            Some(0.0),
+            Some(3.0),
+        )?;
+        let rounded = fine.fgfrst.round();
+        if (fine.fgfrst - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: Self::frost_fine_layer_symbol(
+                    FROST_RUNTIME_FINE_FGFRST_ROOT,
+                    fine.layer_index,
+                    fine.fine_index,
+                ),
+                value: fine.fgfrst,
+                minimum: Some(0.0),
+                maximum: Some(3.0),
+            });
+        }
+        Self::require_dynamic_state_range(
+            phase_class,
+            Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                fine.layer_index,
+                fine.fine_index,
+            ),
+            fine.slfsd_m,
+            Some(0.0),
+            Some(fine.fine_layer_thickness_m),
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                fine.layer_index,
+                fine.fine_index,
+            ),
+            fine.slsic_m,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                fine.layer_index,
+                fine.fine_index,
+            ),
+            fine.slsw_theta,
+            Some(thetdr),
+            None,
+        )?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                fine.layer_index,
+                fine.fine_index,
+            ),
+            fine.sltime_s,
+            Some(0.0),
+            Some(FROST_RUNTIME_SECONDS_PER_HOUR),
+        )
+    }
+
+    fn read_or_default_shadow_fine_state(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer: &FrostLayerWaterState,
+    ) -> Result<Vec<FrostFineLayerState>, Wb11HydrologyKernelGuardError> {
+        let mut remaining_frozen_depth_m = layer.frozen_depth_m;
+        let mut fine_layers = Vec::with_capacity(layer.fine_layer_count);
+        for fine_index in 1..=layer.fine_layer_count {
+            let default =
+                Self::default_fine_layer_from_coarse(layer, fine_index, &mut remaining_frozen_depth_m);
+            let fgfrst_symbol = Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_FGFRST_ROOT,
+                layer.layer_index,
+                fine_index,
+            );
+            let slfsd_symbol = Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                layer.layer_index,
+                fine_index,
+            );
+            let slsic_symbol = Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLSIC_M_ROOT,
+                layer.layer_index,
+                fine_index,
+            );
+            let slsw_symbol = Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLSW_THETA_ROOT,
+                layer.layer_index,
+                fine_index,
+            );
+            let sltime_symbol = Self::frost_fine_layer_symbol(
+                FROST_RUNTIME_FINE_SLTIME_S_ROOT,
+                layer.layer_index,
+                fine_index,
+            );
+
+            let fine = FrostFineLayerState {
+                layer_index: layer.layer_index,
+                fine_index,
+                fine_layer_thickness_m: layer.fine_layer_thickness_m,
+                fgfrst: Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &fgfrst_symbol,
+                )?
+                .unwrap_or(default.fgfrst),
+                slfsd_m: Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &slfsd_symbol,
+                )?
+                .unwrap_or(default.slfsd_m),
+                slsic_m: Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &slsic_symbol,
+                )?
+                .unwrap_or(default.slsic_m),
+                slsw_theta: Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &slsw_symbol,
+                )?
+                .unwrap_or(default.slsw_theta),
+                sltime_s: Self::optional_state_scalar_for_symbol(
+                    request,
+                    phase_class,
+                    &sltime_symbol,
+                )?
+                .unwrap_or(0.0),
+            };
+            Self::require_shadow_fine_state_domains(phase_class, &fine, layer.thetdr)?;
+            fine_layers.push(fine);
+        }
+        Ok(fine_layers)
+    }
+
+    fn apply_shadow_frwatc_ingress(
+        fine_layers: &mut [FrostFineLayerState],
+        layer: &mut FrostLayerExchangeState,
+    ) {
+        let mut remaining_delta_m = layer.st_m - layer.yst_m;
+        if remaining_delta_m > WB11_ZERO_THRESHOLD {
+            if layer.frozen_m > WB11_ZERO_THRESHOLD {
+                let frozen_zone_capacity_m =
+                    (layer.soilf_m + (layer.st_m - layer.nwfrzz_m).max(0.0)
+                        - layer.nwfrzz_m)
+                        .max(0.0);
+                let into_frozen_zone_m = remaining_delta_m.min(frozen_zone_capacity_m);
+                layer.nwfrzz_m += into_frozen_zone_m;
+                remaining_delta_m -= into_frozen_zone_m;
+            }
+            let unfrozen_depth_m = fine_layers
+                .iter()
+                .map(|fine| (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0))
+                .sum::<f64>();
+            if remaining_delta_m > WB11_ZERO_THRESHOLD
+                && unfrozen_depth_m > WB11_ZERO_THRESHOLD
+            {
+                let theta_increment = remaining_delta_m / unfrozen_depth_m;
+                for fine in fine_layers {
+                    if fine.fine_layer_thickness_m > fine.slfsd_m + WB11_ZERO_THRESHOLD {
+                        fine.slsw_theta += theta_increment;
+                    }
+                }
+            }
+        } else if remaining_delta_m < -WB11_ZERO_THRESHOLD {
+            let mut remaining_drain_m = -remaining_delta_m;
+            let drain_nwfrzz_m = layer.nwfrzz_m.min(remaining_drain_m);
+            layer.nwfrzz_m -= drain_nwfrzz_m;
+            remaining_drain_m -= drain_nwfrzz_m;
+            let available_liquid_m = fine_layers
+                .iter()
+                .map(|fine| {
+                    let unfrozen_depth_m =
+                        (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
+                    (fine.slsw_theta - layer.thetdr).max(0.0) * unfrozen_depth_m
+                })
+                .sum::<f64>();
+            if remaining_drain_m > WB11_ZERO_THRESHOLD
+                && available_liquid_m > WB11_ZERO_THRESHOLD
+            {
+                let drain_fraction = (remaining_drain_m / available_liquid_m).min(1.0);
+                for fine in fine_layers {
+                    let unfrozen_depth_m =
+                        (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
+                    if unfrozen_depth_m > WB11_ZERO_THRESHOLD {
+                        let available_m =
+                            (fine.slsw_theta - layer.thetdr).max(0.0) * unfrozen_depth_m;
+                        fine.slsw_theta -= (available_m * drain_fraction) / unfrozen_depth_m;
+                        fine.slsw_theta = fine.slsw_theta.max(layer.thetdr);
+                    }
+                }
+            }
+        }
+    }
+
+    fn aggregate_shadow_layer(
+        fine_layers: &[FrostFineLayerState],
+        layer: &mut FrostLayerExchangeState,
+    ) {
+        let mut frozen_m = 0.0;
+        let mut soilf_m = 0.0;
+        let mut soil_water_m = 0.0;
+        let mut st_m = 0.0;
+        for fine in fine_layers {
+            let unfrozen_depth_m = (fine.fine_layer_thickness_m - fine.slfsd_m).max(0.0);
+            frozen_m += fine.slfsd_m;
+            soilf_m += fine.slsic_m;
+            soil_water_m += fine.slsw_theta * unfrozen_depth_m;
+            st_m += (fine.slsw_theta - layer.thetdr).max(0.0) * unfrozen_depth_m;
+        }
+        if frozen_m < 0.001 {
+            layer.nwfrzz_m = 0.0;
+            soilf_m = 0.0;
+        }
+        layer.frozen_m = frozen_m;
+        layer.soilf_m = soilf_m;
+        layer.frzw_m = (soilf_m - layer.thetdr * frozen_m).max(0.0);
+        layer.soil_water_m = soil_water_m + layer.nwfrzz_m;
+        layer.st_m = st_m + layer.nwfrzz_m;
+        layer.yst_m = layer.st_m;
+    }
+
+    fn compute_shadow_fine_state(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layers: &[FrostLayerWaterState],
+    ) -> Result<FrostFineShadowState, Wb11HydrologyKernelGuardError> {
+        let mut all_fine_layers = Vec::new();
+        let mut shadow_layers = Vec::with_capacity(layers.len());
+        let mut total_water_before_m = 0.0;
+        let mut total_water_after_m = 0.0;
+        let mut wb_delta_m = 0.0;
+
+        for layer in layers {
+            let mut fine_layers =
+                Self::read_or_default_shadow_fine_state(request, phase_class, layer)?;
+            let yst_symbol = Self::frost_layer_symbol(FROST_RUNTIME_LAYER_YST_M_ROOT, layer.layer_index);
+            let nwfrzz_symbol =
+                Self::frost_layer_symbol(FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT, layer.layer_index);
+            let nwfrzz_m =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &nwfrzz_symbol)?
+                    .unwrap_or(0.0);
+            Self::require_dynamic_state_range(
+                phase_class,
+                nwfrzz_symbol,
+                nwfrzz_m,
+                Some(0.0),
+                None,
+            )?;
+            let st_m = layer.theta_m + nwfrzz_m;
+            let yst_m = Self::optional_state_scalar_for_symbol(request, phase_class, &yst_symbol)?
+                .unwrap_or(st_m);
+            Self::require_dynamic_state_range(
+                phase_class,
+                yst_symbol,
+                yst_m,
+                Some(0.0),
+                None,
+            )?;
+            let soilf_m = layer.frzw_m + layer.thetdr * layer.frozen_depth_m;
+            let mut shadow_layer = FrostLayerExchangeState {
+                layer_index: layer.layer_index,
+                thetdr: layer.thetdr,
+                st_m,
+                yst_m,
+                nwfrzz_m,
+                frozen_m: layer.frozen_depth_m,
+                frzw_m: layer.frzw_m,
+                soilf_m,
+                soil_water_m: layer.theta_m
+                    + layer.thetdr * (layer.dg_m - layer.frozen_depth_m).max(0.0)
+                    + nwfrzz_m,
+            };
+            let before_m = Self::fine_layer_total_water(&fine_layers, shadow_layer.nwfrzz_m);
+            wb_delta_m += shadow_layer.st_m - shadow_layer.yst_m;
+            Self::apply_shadow_frwatc_ingress(&mut fine_layers, &mut shadow_layer);
+            Self::aggregate_shadow_layer(&fine_layers, &mut shadow_layer);
+            let after_m = Self::fine_layer_total_water(&fine_layers, shadow_layer.nwfrzz_m);
+            total_water_before_m += before_m;
+            total_water_after_m += after_m;
+            shadow_layers.push(shadow_layer);
+            all_fine_layers.extend(fine_layers);
+        }
+
+        Ok(FrostFineShadowState {
+            fine_layers: all_fine_layers,
+            layer_state: shadow_layers,
+            total_water_before_m,
+            total_water_after_m,
+            wb_delta_m,
+            residual_m: total_water_after_m - total_water_before_m - wb_delta_m,
+        })
     }
 
     fn apply_layered_frost_target(
@@ -628,6 +1028,8 @@ impl Wb11HydrologyKernel {
         let prior_layer_frozen_store_m = Self::frost_layer_soilf_sum(&layer_water_state);
         let prior_layer_state_active = prior_layer_frozen_depth_m > WB11_ZERO_THRESHOLD
             || prior_layer_frozen_store_m > WB11_ZERO_THRESHOLD;
+        let shadow_fine_state =
+            Self::compute_shadow_fine_state(request, phase_class, &layer_water_state)?;
 
         let snow_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_SNOW_DEPTH_SYMBOL);
         let snow_depth_m =
@@ -1063,6 +1465,10 @@ impl Wb11HydrologyKernel {
             conductivity_tilled_w_m_k: FROST_RUNTIME_KFTILL_W_M_K,
             conductivity_untilled_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
             conductivity_residue_w_m_k,
+            shadow_total_water_before_m: shadow_fine_state.total_water_before_m,
+            shadow_total_water_after_m: shadow_fine_state.total_water_after_m,
+            shadow_wb_delta_m: shadow_fine_state.wb_delta_m,
+            shadow_frwatc_residual_m: shadow_fine_state.residual_m,
             hourly_state,
             layer_topology_state: layer_water_state
                 .into_iter()
@@ -1074,6 +1480,33 @@ impl Wb11HydrologyKernel {
                     theta_after_m: layer.theta_m,
                     frozen_depth_m: layer.frozen_depth_m,
                     frzw_m: layer.frzw_m,
+                })
+                .collect(),
+            shadow_layer_state: shadow_fine_state
+                .layer_state
+                .into_iter()
+                .map(|layer| FrostLayerShadowState {
+                    layer_index: layer.layer_index,
+                    st_m: layer.st_m,
+                    soil_water_m: layer.soil_water_m,
+                    frozen_depth_m: layer.frozen_m,
+                    frzw_m: layer.frzw_m,
+                    soilf_m: layer.soilf_m,
+                    yst_m: layer.yst_m,
+                    nwfrzz_m: layer.nwfrzz_m,
+                })
+                .collect(),
+            fine_layer_state: shadow_fine_state
+                .fine_layers
+                .into_iter()
+                .map(|fine| FrostFineLayerDiagnosticState {
+                    layer_index: fine.layer_index,
+                    fine_index: fine.fine_index,
+                    fgfrst: fine.fgfrst,
+                    slfsd_m: fine.slfsd_m,
+                    slsic_m: fine.slsic_m,
+                    slsw_theta: fine.slsw_theta,
+                    sltime_s: fine.sltime_s,
                 })
                 .collect(),
         })

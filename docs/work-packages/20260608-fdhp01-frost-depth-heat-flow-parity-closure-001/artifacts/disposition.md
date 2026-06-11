@@ -9,8 +9,10 @@ Date: 2026-06-11
 ## Outcome
 
 FDHP01 is executed but held. The D2 storage/publication defect is closed by the
-layered-state continuation, while the D3 frost-depth parity defect remains
-open under `SC-SNOWFREEZE-001#INV-SNOWFREEZE-006`.
+layered-state continuation. D3 Increment A has now landed the non-driving
+fine-sublayer shadow state and `frwatc` handoff proof surface, while D3
+depth/duration parity remains open under
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-006`.
 
 Static:
 
@@ -32,6 +34,14 @@ Static:
 - `SC-SNOWFREEZE-001` v57 rejects scalar `frdp * theta` frozen-water stores,
   prohibits post-hoc scalar depth projection into layer stores, and records
   that full depth parity still requires the fine-sublayer frost port.
+- `SC-SNOWFREEZE-001` v58 corrects `INV-SNOWFREEZE-012` so `frwatc(1)` runs at
+  active-day hour-1 ingress (`frostn.for:335-337`), and authorizes Increment A
+  shadow aliases for `fgfrst`/`slfsd`/`slsic`/`slsw`/`sltime`/`yst`/`nwfrzz`.
+- Increment A shadow state is written as diagnostics only. It does not drive
+  active depth, conductivity, WAT publication, or freeze/thaw behavior.
+- WAT parquet physical bytes are now deterministic while preserving readable
+  Arrow field metadata, so the Increment A bit-identical cohort gate can remain
+  literal.
 
 Ran:
 
@@ -41,13 +51,19 @@ Ran:
 - `cargo deny check` passed.
 - `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` passed.
 - `cargo test --test clim06_frost_frozen_soil_kernel_contract --
-  --nocapture` passed, `19` tests.
+  --nocapture` passed, `22` tests.
 - `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract --
-  --nocapture` passed after `SC-SNOWFREEZE-001` v57 /
+  --nocapture` passed after `SC-SNOWFREEZE-001` v58 /
   `SC-WATBAL-001` v152 updates.
 - `cargo test --test hphys0320_stmtim_start_time_source_line_contract --
   --nocapture` passed after the same version updates.
 - `cargo test -p openwepp-runner --lib fdhp01_wb13 -- --nocapture` passed.
+- `cargo test -p openwepp-hillslope-output hillslope_wat -- --nocapture`
+  passed, `4` tests.
+- `cargo clippy -p openwepp-hillslope-output --all-targets -- -D warnings`
+  passed.
+- Latest-source `cargo fmt --check`, full workspace clippy, full workspace
+  tests, and `cargo deny check` passed after final WAT footer minimization.
 - Fresh 43-prefix `algebraic-radium` frost-on cohort run:
   `/tmp/fdhp01_layered_store_20260611T080722Z`, `43/43` clean exits.
 
@@ -88,6 +104,20 @@ Ran:
 - OpenWEPP frozen-day count is `518.5348837209302` days lower than legacy on
   average.
 
+## Increment A Output Gate Evidence
+
+- Clean pre baseline root: `/tmp/fdhp01_increment_a_pre_20260611T164115Z`.
+- Latest current root:
+  `/tmp/fdhp01_increment_a_current_pre_like_pre_1_20260611T181018Z`,
+  `43/43` clean exits.
+- Pre vs current `H.hbp` and `H.loss.json` physical bytes are `43/43`
+  identical.
+- Pre vs current WAT decoded rows/columns are `43/43` identical.
+- Pre vs current WAT physical bytes are `0/43` identical because the clean pre
+  baseline has `43` unique nondeterministic `ARROW:schema` footer hashes.
+- Latest current-vs-current physical bytes are `43/43` identical for
+  `H.hbp`, `H.loss.json`, and `H.wat.parquet`; decoded WAT is also `43/43`.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -102,17 +132,14 @@ Ran:
   `frostn` state machine: `frostn.for:360-683`, `frzng.for:235-560`, and
   `frwatc.for:89-137`.
 - The coarse-front production/test edit was backed out. `SC-SNOWFREEZE-001`
-  v57 remains as the active D3 authority amendment; no D3 production behavior
-  landed in this pass.
+  v57 remains as the D3 hold amendment; v58 supersedes it for Increment A
+  shadow-state handoff authority.
 
 ## Review Closure
 
 Claude's post-closeout review findings are accepted. The diagnostic conclusion
 from addendum 2e was correct: the scalar model could not satisfy the v150/v151
-audit identity by construction. This pass landed the first legitimate phase
-line: a layered frozen store with clean additive storage closure and full
-43-prefix execution. The package still cannot be marked complete because D3
-depth/duration parity is open. The next actionable item is to close
-`FDHP01-FROST-DEPTH-HEATFLOW-001` by completing the layered
-thermal-resistance/depth-progression port, then rerunning the same cohort and
-identity gates.
+audit identity by construction. The package still cannot be marked complete
+because D3 depth/duration parity is open. The next actionable item is Increment
+B from `d3-staged-increment-plan.md`: derive depth from the fine state and land
+the freeze arms while preserving years 2-6 conservation and cohort execution.

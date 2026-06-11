@@ -19,15 +19,15 @@ Date: 2026-06-11
 
 | Command | Result |
 |---|---|
-| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 19 tests after layered-store diagnostics |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 22 tests after Increment A shadow-state diagnostics |
 | `cargo test --test cli04_runner_wat_parquet_contract_derived_tests -- --nocapture` | Pass, 2 tests |
 | `cargo test --test sim_contract_boundary_unit_registry -- --nocapture` | Pass, 14 tests |
 | `cargo test -p openwepp --test pl14s_tier_a_candidate_emission_and_replay_contract -- --nocapture` | Pass, 8 tests |
 | `cargo test -p openwepp-runner --lib fdhp01_wb13 -- --nocapture` | Pass, 3 tests |
 | `cargo test -p openwepp-runner --lib hphys0203_wb13_soil_water_total_preserves_watcon_alias -- --nocapture` | Pass, 1 test |
 | `cargo test -p openwepp-hillslope-output schema_includes_required_dataset_metadata_keys -- --nocapture` | Pass, 1 test |
-| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v57 / `SC-WATBAL-001` v152 updates |
-| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v57 / `SC-WATBAL-001` v152 updates |
+| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v58 / `SC-WATBAL-001` v152 updates |
+| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v58 / `SC-WATBAL-001` v152 updates |
 
 ## Dependency / Authority Guards
 
@@ -115,7 +115,7 @@ workspace test run.
 | 43-prefix `algebraic-radium` frost-on cohort, `/tmp/fdhp01_d3_layered_energy_20260611T085142Z` | Pass for execution, `43/43` clean exits |
 | FDMC01 depth/duration movement | Fail, median max depth improved to `490.774886655666 mm` but mean max depth remained `643.2973898432339 mm`, max depth `1789.9130899451595 mm`, median depth correlation `-0.1876255663636445`, and median frozen-day delta `-428` |
 | Annual closure reconstruction | Excluded from package evidence; the committed layered-store report's `outputs` field was not reproducible from exposed WAT columns alone during this pass |
-| Production/test landing | Backed out; only `SC-SNOWFREEZE-001` v57 and D3 attempt artifacts remain |
+| Production/test landing | Backed out; at that attempt boundary only `SC-SNOWFREEZE-001` v57 and D3 attempt artifacts remained |
 
 ## D3 Fine-Sublayer Attempt Gates
 
@@ -130,6 +130,35 @@ workspace test run.
 | Direct fine-liquid egress probe | Failed focused thaw diagnostic: expected `8.109464696602291`, observed `0.011923545603720697` |
 | Post-backout `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, `19/19` |
 | Production/test landing | Backed out; no D3 fine-sublayer production behavior landed |
+
+## D3 Increment A Shadow-State Gates
+
+| Command / Gate | Result |
+|---|---|
+| `cargo fmt --check` | Pass |
+| `cargo test -p openwepp-hillslope-output hillslope_wat -- --nocapture` | Pass, 4 tests; deterministic WAT bytes and file field metadata both preserved |
+| `cargo clippy -p openwepp-hillslope-output --all-targets -- -D warnings` | Pass |
+| `cargo test --test cli04_runner_wat_parquet_contract_derived_tests -- --nocapture` | Pass, 2 tests |
+| `cargo test --test sim_contract_boundary_unit_registry -- --nocapture` | Pass, 14 tests |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 22 tests; includes Increment A shadow fine-state vectors |
+| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v58 |
+| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v58 |
+| Corrected 43-prefix latest current cohort | Pass, `43/43` clean exits at `/tmp/fdhp01_increment_a_current_pre_like_pre_1_20260611T181018Z`; release binary SHA `cd3a2318550e641c94d3c54a8dc7bf5dacf42cc80d57178e521b4215ae75c12b` |
+| Pre vs current `H.hbp` physical byte equality | Pass, `43/43` |
+| Pre vs current `H.loss.json` physical byte equality | Pass, `43/43` |
+| Pre vs current WAT decoded row/column equality | Pass, `43/43` |
+| Pre vs current fallback warning counts | Pass, `43` vs `43`, mismatch runs `0` |
+| Pre vs current `H.wat.parquet` physical byte equality | Fail, `0/43`; isolated to preexisting nondeterministic `ARROW:schema` footer bytes in the clean pre baseline |
+| Current-vs-current `H.hbp`, `H.loss.json`, and `H.wat.parquet` physical byte equality | Pass, `43/43` for all three surfaces across `/tmp/fdhp01_increment_a_current_pre_like_pre_1_20260611T181018Z` and `/tmp/fdhp01_increment_a_current_pre_like_pre_2_20260611T181018Z` |
+| Current-vs-current decoded WAT equality and fallback warning counts | Pass, decoded `43/43`; warnings `43` vs `43`, mismatch runs `0` |
+| Full workspace gates after final WAT footer minimization | Pass: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`; compact summary `fdhp01_increment_a_gates_latest_20260611.json` |
+
+Increment A disposition: local contract and metadata gates pass, non-WAT
+outputs are byte-identical to the clean pre baseline, and WAT decoded payloads
+are identical. The literal pre-vs-current physical WAT byte gate is invalidated
+by the old baseline's nondeterministic parquet footer, now fixed and proven by
+the current-vs-current `43/43` physical parity run. Full latest-source Rust
+gates pass.
 
 Disposition: Rust gates and D2 storage closure pass, but package acceptance
 still fails on D3 frost-depth parity. FDHP01 is executed-hold.

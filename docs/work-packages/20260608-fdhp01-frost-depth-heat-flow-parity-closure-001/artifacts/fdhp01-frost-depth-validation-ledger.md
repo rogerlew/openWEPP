@@ -174,6 +174,8 @@ Disposition:
 
 - The coarse-front production/test edit did not meet the package's legitimate
   phase boundary and was backed out. It should not be repeated or promoted.
-- `SC-SNOWFREEZE-001` v57 remains as the active contract amendment: D3 closure
-  requires the same fine-layer state that `frwatc` publishes, with front
-  advance and thaw retreat coupled to that state.
+- `SC-SNOWFREEZE-001` v57 remains the D3 hold amendment: D3 closure requires
+  the same fine-layer state that `frwatc` publishes, with front advance and
+  thaw retreat coupled to that state. v58 supersedes it for Increment A by
+  pinning hour-1 `frwatc(1)` ingress and authorizing the non-driving shadow
+  state.

@@ -14,7 +14,9 @@ on 2026-06-11:
   `GAP-SNOWFREEZE-002` after cohort validation failed, v56 layered-store
   amendment rejecting scalar `frdp * theta` frozen-water stores, and v57 D3
   amendment requiring freeze/thaw energy to move the same fine-layer state that
-  `frwatc` publishes.
+  `frwatc` publishes. Increment A added v58, correcting `frwatc(1)` from
+  ambiguous hourly entry to active-day hour-1 ingress and authorizing the
+  behavior-preserving fine-state shadow aliases.
 - Strengthened `INV-SNOWFREEZE-006` so executable frost-depth progression must
   derive from hourly signed heat flow and latent-heat increments, be bounded by
   physical soil profile depth, and must not use the retired
@@ -63,5 +65,5 @@ Static:
   layered thermal-resistance depth port is incomplete.
 - A D3 coarse-front production/test experiment was built and validated locally
   but did not satisfy the package phase boundary; those production/test edits
-  were backed out. `SC-SNOWFREEZE-001` v57 is retained as authority for the
-  next implementation.
+  were backed out. `SC-SNOWFREEZE-001` v57 remains the D3 hold amendment, and
+  v58 is the current Increment A authority for shadow `frwatc` handoff state.

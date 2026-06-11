@@ -195,8 +195,14 @@ pub(crate) struct FrostCouplingOutcome {
     conductivity_tilled_w_m_k: f64,
     conductivity_untilled_w_m_k: f64,
     conductivity_residue_w_m_k: f64,
+    shadow_total_water_before_m: f64,
+    shadow_total_water_after_m: f64,
+    shadow_wb_delta_m: f64,
+    shadow_frwatc_residual_m: f64,
     hourly_state: [FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
     layer_topology_state: Vec<FrostLayerTopologyState>,
+    shadow_layer_state: Vec<FrostLayerShadowState>,
+    fine_layer_state: Vec<FrostFineLayerDiagnosticState>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -220,6 +226,29 @@ pub(crate) struct FrostLayerTopologyState {
     theta_after_m: f64,
     frozen_depth_m: f64,
     frzw_m: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct FrostLayerShadowState {
+    layer_index: usize,
+    st_m: f64,
+    soil_water_m: f64,
+    frozen_depth_m: f64,
+    frzw_m: f64,
+    soilf_m: f64,
+    yst_m: f64,
+    nwfrzz_m: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct FrostFineLayerDiagnosticState {
+    layer_index: usize,
+    fine_index: usize,
+    fgfrst: f64,
+    slfsd_m: f64,
+    slsic_m: f64,
+    slsw_theta: f64,
+    sltime_s: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -293,6 +322,25 @@ const FROST_RUNTIME_FGTHWD_FLAG_SYMBOL: &str = "frost.runtime_fgthwd_flag";
 const FROST_RUNTIME_TOTAL_FINE_LAYER_COUNT_SYMBOL: &str = "frost.runtime_total_fine_layer_count";
 const FROST_RUNTIME_LAYER_FINE_COUNT_ROOT: &str = "frost.runtime_nfine";
 const FROST_RUNTIME_LAYER_FINE_THICKNESS_ROOT: &str = "frost.runtime_fine_thickness_m";
+const FROST_RUNTIME_FINE_FGFRST_ROOT: &str = "frost.runtime_fgfrst";
+const FROST_RUNTIME_FINE_SLFSD_M_ROOT: &str = "frost.runtime_slfsd_m";
+const FROST_RUNTIME_FINE_SLSIC_M_ROOT: &str = "frost.runtime_slsic_m";
+const FROST_RUNTIME_FINE_SLSW_THETA_ROOT: &str = "frost.runtime_slsw_theta";
+const FROST_RUNTIME_FINE_SLTIME_S_ROOT: &str = "frost.runtime_sltime_s";
+const FROST_RUNTIME_LAYER_YST_M_ROOT: &str = "frost.runtime_yst_m";
+const FROST_RUNTIME_LAYER_NWFRZZ_M_ROOT: &str = "frost.runtime_nwfrzz_m";
+const FROST_RUNTIME_SHADOW_TOTAL_WATER_BEFORE_SYMBOL: &str =
+    "frost.runtime_shadow_total_water_before_m";
+const FROST_RUNTIME_SHADOW_TOTAL_WATER_AFTER_SYMBOL: &str =
+    "frost.runtime_shadow_total_water_after_m";
+const FROST_RUNTIME_SHADOW_WB_DELTA_SYMBOL: &str = "frost.runtime_shadow_wb_delta_m";
+const FROST_RUNTIME_SHADOW_FRWATC_RESIDUAL_SYMBOL: &str =
+    "frost.runtime_shadow_frwatc_residual_m";
+const FROST_RUNTIME_SHADOW_ST_ROOT: &str = "frost.runtime_shadow_st_m";
+const FROST_RUNTIME_SHADOW_SOIL_WATER_ROOT: &str = "frost.runtime_shadow_soil_water_m";
+const FROST_RUNTIME_SHADOW_FROZEN_DEPTH_ROOT: &str = "frost.runtime_shadow_frozen_depth_m";
+const FROST_RUNTIME_SHADOW_FRZW_ROOT: &str = "frost.runtime_shadow_frzw_m";
+const FROST_RUNTIME_SHADOW_SOILF_ROOT: &str = "frost.runtime_shadow_soilf_m";
 const FROST_RUNTIME_CONDUCTIVITY_TILLED_SYMBOL: &str = "frost.runtime_kftill_w_m_k";
 const FROST_RUNTIME_CONDUCTIVITY_UNTILLED_SYMBOL: &str = "frost.runtime_kfutil_w_m_k";
 const FROST_RUNTIME_CONDUCTIVITY_RESIDUE_SYMBOL: &str = "frost.runtime_kres_w_m_k";

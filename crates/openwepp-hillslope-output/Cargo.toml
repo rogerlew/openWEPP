@@ -12,6 +12,9 @@ workspace = true
 
 [dependencies]
 arrow-array = "54.3.1"
+arrow-ipc = "54.3.1"
 arrow-schema = "54.3.1"
+base64 = "0.22.1"
+flatbuffers = "24.3.25"
 openwepp-sim-contract = { path = "../openwepp-sim-contract", version = "0.1.0" }
 parquet = { version = "54.3.1", default-features = false, features = ["arrow", "snap"] }

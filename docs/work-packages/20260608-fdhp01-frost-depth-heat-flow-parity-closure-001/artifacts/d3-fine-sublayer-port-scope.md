@@ -2,8 +2,9 @@
 
 Status: executed (M1 scoping complete; no production code)
 Author: Claude Code, 2026-06-11
-Authority: `SC-SNOWFREEZE-001` v57 (`INV-SNOWFREEZE-006`/`-012`), FDHP01
-package envelope, addenda 2e/3 + the D3 coarse-front failed-attempt evidence.
+Authority: `SC-SNOWFREEZE-001` v57 (`INV-SNOWFREEZE-006`/`-012`), superseded
+for Increment A handoff wording by v58, FDHP01 package envelope, addenda 2e/3
+and the D3 coarse-front failed-attempt evidence.
 
 ## Phase framing
 

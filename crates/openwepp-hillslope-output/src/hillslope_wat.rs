@@ -7,9 +7,12 @@ use std::sync::Arc;
 
 use arrow_array::{ArrayRef, Float64Array, Int8Array, Int16Array, Int32Array, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64_STANDARD};
+use flatbuffers::{FlatBufferBuilder, ForwardsUOffset, UnionWIPOffset, Vector, WIPOffset};
 use openwepp_sim_contract::units::{OutputUnitRegistryError, validate_output_schema_unit};
-use parquet::arrow::ArrowWriter;
+use parquet::arrow::{ARROW_SCHEMA_META_KEY, ArrowWriter, arrow_writer::ArrowWriterOptions};
 use parquet::basic::Compression;
+use parquet::file::metadata::KeyValue as ParquetKeyValue;
 use parquet::file::properties::WriterProperties;
 
 /// Default interchange dataset version aligned to WEPPpy/WEPPpyo3.
@@ -38,6 +41,142 @@ impl Default for InterchangeVersion {
     fn default() -> Self {
         Self::new(DEFAULT_DATASET_VERSION_MAJOR, DEFAULT_DATASET_VERSION_MINOR)
     }
+}
+
+fn hillslope_wat_file_metadata(
+    schema: &Schema,
+) -> Result<Vec<ParquetKeyValue>, HillslopeWatParquetError> {
+    Ok(vec![ParquetKeyValue::new(
+        ARROW_SCHEMA_META_KEY.to_string(),
+        stable_encoded_arrow_schema(schema)?,
+    )])
+}
+
+struct StableIpcFieldType<'a> {
+    type_type: arrow_ipc::Type,
+    type_: WIPOffset<UnionWIPOffset>,
+    children: WIPOffset<Vector<'a, ForwardsUOffset<arrow_ipc::Field<'a>>>>,
+}
+
+fn stable_metadata_to_fb<'a>(
+    fbb: &mut FlatBufferBuilder<'a>,
+    metadata: &HashMap<String, String>,
+) -> WIPOffset<Vector<'a, ForwardsUOffset<arrow_ipc::KeyValue<'a>>>> {
+    let mut metadata_pairs = metadata.iter().collect::<Vec<_>>();
+    metadata_pairs.sort_unstable_by(|(left_key, _), (right_key, _)| left_key.cmp(right_key));
+    let custom_metadata = metadata_pairs
+        .into_iter()
+        .map(|(key, value)| {
+            let fb_key = fbb.create_string(key);
+            let fb_value = fbb.create_string(value);
+
+            let mut builder = arrow_ipc::KeyValueBuilder::new(fbb);
+            builder.add_key(fb_key);
+            builder.add_value(fb_value);
+            builder.finish()
+        })
+        .collect::<Vec<_>>();
+    fbb.create_vector(&custom_metadata)
+}
+
+fn stable_ipc_field_type<'a>(
+    fbb: &mut FlatBufferBuilder<'a>,
+    data_type: &DataType,
+) -> Result<StableIpcFieldType<'a>, HillslopeWatParquetError> {
+    let empty_fields: Vec<WIPOffset<arrow_ipc::Field<'_>>> = Vec::new();
+    let children = fbb.create_vector(&empty_fields);
+    match data_type {
+        DataType::Int8 | DataType::Int16 | DataType::Int32 => {
+            let mut builder = arrow_ipc::IntBuilder::new(fbb);
+            builder.add_is_signed(true);
+            match data_type {
+                DataType::Int8 => builder.add_bitWidth(8),
+                DataType::Int16 => builder.add_bitWidth(16),
+                DataType::Int32 => builder.add_bitWidth(32),
+                _ => {}
+            }
+            Ok(StableIpcFieldType {
+                type_type: arrow_ipc::Type::Int,
+                type_: builder.finish().as_union_value(),
+                children,
+            })
+        }
+        DataType::Float64 => {
+            let mut builder = arrow_ipc::FloatingPointBuilder::new(fbb);
+            builder.add_precision(arrow_ipc::Precision::DOUBLE);
+            Ok(StableIpcFieldType {
+                type_type: arrow_ipc::Type::FloatingPoint,
+                type_: builder.finish().as_union_value(),
+                children,
+            })
+        }
+        other => Err(HillslopeWatParquetError::parquet(format!(
+            "stable WAT arrow schema encoding does not support {other:?}"
+        ))),
+    }
+}
+
+fn stable_build_ipc_field<'a>(
+    fbb: &mut FlatBufferBuilder<'a>,
+    field: &Field,
+) -> Result<WIPOffset<arrow_ipc::Field<'a>>, HillslopeWatParquetError> {
+    let fb_metadata =
+        (!field.metadata().is_empty()).then(|| stable_metadata_to_fb(fbb, field.metadata()));
+    let fb_field_name = fbb.create_string(field.name().as_str());
+    let field_type = stable_ipc_field_type(fbb, field.data_type())?;
+
+    let mut builder = arrow_ipc::FieldBuilder::new(fbb);
+    builder.add_name(fb_field_name);
+    builder.add_type_type(field_type.type_type);
+    builder.add_nullable(field.is_nullable());
+    builder.add_children(field_type.children);
+    builder.add_type_(field_type.type_);
+
+    if let Some(fb_metadata) = fb_metadata {
+        builder.add_custom_metadata(fb_metadata);
+    }
+
+    Ok(builder.finish())
+}
+
+fn stable_encoded_arrow_schema(schema: &Schema) -> Result<String, HillslopeWatParquetError> {
+    let mut fbb = FlatBufferBuilder::new();
+    let schema_header = {
+        let fields = schema
+            .fields()
+            .iter()
+            .map(|field| stable_build_ipc_field(&mut fbb, field.as_ref()))
+            .collect::<Result<Vec<_>, _>>()?;
+        let fb_field_list = fbb.create_vector(&fields);
+        let fb_metadata_list = (!schema.metadata().is_empty())
+            .then(|| stable_metadata_to_fb(&mut fbb, schema.metadata()));
+
+        let mut builder = arrow_ipc::SchemaBuilder::new(&mut fbb);
+        builder.add_fields(fb_field_list);
+        if let Some(fb_metadata_list) = fb_metadata_list {
+            builder.add_custom_metadata(fb_metadata_list);
+        }
+        builder.finish().as_union_value()
+    };
+
+    let mut message = arrow_ipc::MessageBuilder::new(&mut fbb);
+    message.add_version(arrow_ipc::MetadataVersion::V5);
+    message.add_header_type(arrow_ipc::MessageHeader::Schema);
+    message.add_bodyLength(0);
+    message.add_header(schema_header);
+    let root = message.finish();
+    fbb.finish(root, None);
+
+    let schema_bytes = fbb.finished_data();
+    let schema_len = u32::try_from(schema_bytes.len()).map_err(|_| {
+        HillslopeWatParquetError::parquet("stable WAT arrow schema exceeds u32 length")
+    })?;
+    let mut length_prefixed_schema = Vec::with_capacity(schema_bytes.len() + 8);
+    length_prefixed_schema.extend_from_slice(&[255_u8, 255, 255, 255]);
+    length_prefixed_schema.extend_from_slice(&schema_len.to_le_bytes());
+    length_prefixed_schema.extend_from_slice(schema_bytes);
+
+    Ok(BASE64_STANDARD.encode(length_prefixed_schema))
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -374,9 +513,13 @@ pub fn write_hillslope_wat_parquet(
 
     let writer_properties = WriterProperties::builder()
         .set_compression(Compression::SNAPPY)
+        .set_key_value_metadata(Some(hillslope_wat_file_metadata(&schema)?))
         .build();
 
-    let mut writer = ArrowWriter::try_new(file, Arc::new(schema), Some(writer_properties))
+    let writer_options = ArrowWriterOptions::new()
+        .with_properties(writer_properties)
+        .with_skip_arrow_metadata(true);
+    let mut writer = ArrowWriter::try_new_with_options(file, Arc::new(schema), writer_options)
         .map_err(|error| HillslopeWatParquetError::parquet(error.to_string()))?;
     writer
         .write(&batch)
@@ -714,7 +857,50 @@ mod tests {
                 .iter()
                 .any(|field| field.name() == "InterceptionStorage")
         );
+        let p_field = schema
+            .fields()
+            .iter()
+            .find(|field| field.name() == "P")
+            .expect("P field should exist in parquet schema");
+        assert_eq!(
+            p_field.metadata().get("units").map(String::as_str),
+            Some("mm")
+        );
 
         let _ = fs::remove_file(output_path);
+    }
+
+    #[test]
+    fn writer_emits_byte_stable_parquet_for_identical_rows() {
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("unix epoch should be before now")
+            .as_nanos();
+        let output_path_a = std::env::temp_dir().join(format!(
+            "openwepp_hillslope_wat_writer_stable_a_{timestamp}.parquet"
+        ));
+        let output_path_b = std::env::temp_dir().join(format!(
+            "openwepp_hillslope_wat_writer_stable_b_{timestamp}.parquet"
+        ));
+
+        write_hillslope_wat_parquet(
+            &output_path_a,
+            &[sample_row()],
+            InterchangeVersion::default(),
+        )
+        .expect("first writer should emit parquet");
+        write_hillslope_wat_parquet(
+            &output_path_b,
+            &[sample_row()],
+            InterchangeVersion::default(),
+        )
+        .expect("second writer should emit parquet");
+
+        let first = fs::read(&output_path_a).expect("first parquet should be readable");
+        let second = fs::read(&output_path_b).expect("second parquet should be readable");
+        assert_eq!(first, second);
+
+        let _ = fs::remove_file(output_path_a);
+        let _ = fs::remove_file(output_path_b);
     }
 }

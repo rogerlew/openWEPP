@@ -58,10 +58,18 @@ the state **driving nothing**. Existing depth/freeze/thaw physics untouched.
   the fused-attempt disposition:
   `Δ(fine liquid + nwfrzz + slsic) == WB storage delta − external fluxes`.
 - Gates: round-trip ≤ 1e-12 m; internal-seam identity holds on a multi-day
-  freeze/thaw fixture; 19/19 `clim06` suite; full Rust closure loop;
+  freeze/thaw fixture; full `clim06` suite; full Rust closure loop;
   **cohort outputs bit-identical to the pre-increment baseline** (the
   engine is deterministic and the state drives nothing — any output drift
   is a wiring leak), which subsumes the years 2–6 noise gate.
+
+Execution clarification (2026-06-11): the WAT parquet physical-byte subgate was
+not executable against the clean `20a1e91f` pre baseline because that baseline
+emitted nondeterministic `ARROW:schema` footers (`43` unique footer hashes for
+`43` WAT files). Increment A therefore also fixes WAT footer determinism. The
+pre/post behavior-preservation gate is `H.hbp` and `H.loss.json` physical
+byte equality plus decoded WAT row/column equality; WAT physical-byte equality
+is enforced current-vs-current after the deterministic footer precondition.
 
 ## Increment B — depth derived from fine state + freeze arms
 

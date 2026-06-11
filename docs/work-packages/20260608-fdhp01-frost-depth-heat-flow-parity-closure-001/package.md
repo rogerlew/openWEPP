@@ -35,7 +35,18 @@ median `-428` days. Static legacy inspection showed the missing structure is
 the full fine-sublayer `frostn`/`frzng`/`mltbtm`/`frwatc` state machine
 (`fgfrst`, `slfsd`, `slsic`, `slsw`, `nwfrzz`) rather than a coarse scalar or
 coarse per-layer front. The production/test experiment was backed out; only
-`SC-SNOWFREEZE-001` v57 and package evidence remain.
+`SC-SNOWFREEZE-001` v57 and package evidence remained at that phase boundary.
+
+D3 Increment A, 2026-06-11: Codex landed the staged shadow-state increment from
+`artifacts/d3-staged-increment-plan.md`. `SC-SNOWFREEZE-001` v58 corrects the
+`INV-SNOWFREEZE-012` `frwatc(1)` wording to hour-1 daily ingress
+(`frostn.for:335-337`) and adds fine-sublayer shadow aliases plus a required
+internal handoff residual. The landed state drives no depth, conductivity, WAT
+publication, or freeze/thaw physics. This is a behavior-preserving seam proof
+for increments B/C, not D3 acceptance. The pre/post WAT physical-byte subgate
+was clarified after execution because the clean pre baseline contains
+nondeterministic parquet `ARROW:schema` footers; decoded WAT is unchanged, and
+latest-source current/current WAT physical parity is now `43/43`.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
