@@ -63,6 +63,28 @@ scope.
 - Autonomous execution expectation for the full assigned scope (no user
   intervention unless hard-blocked).
 
+4a. Explicitly authorize AND require subagent spawning for delegated/heavy work
+- If a prompt expects delegated review, verification, comparator execution, or
+  other subagent work, it must include the phrase
+  `explicitly authorizes subagent spawning/delegation`, name the authorized
+  role(s), scope, expected compact outputs/artifacts, and whether the role is
+  read-only or has a bounded package write set.
+- Wording such as `dispatch <role>` is not enough by itself; the explicit
+  authorization phrase is required so subagent tool policy ("spawn only when
+  explicitly requested by the user") is satisfied — the kickoff prompt IS that
+  explicit request.
+- **Required, not optional, for heavy batch/closure/comparator work.** When a
+  package runs the full closure loop (`cargo test --workspace`, clippy, deny),
+  comparator/parity suites, release gates, or population/cohort batches, the
+  prompt MUST *require* — not merely authorize — spawning the
+  `comparator_suite_runner` subagent (gpt-5.3-codex-spark) for those runs, with an
+  imperative directive (see the `Subagent requirement:` template line).
+- The parent agent **must not** execute heavy batch/closure runs on its own
+  premium model when the subagent is available. If the subagent is genuinely
+  unavailable (tool-policy block or spawn failure), record that with command-level
+  evidence as the justification before running locally.
+- If no subagents are required, state `Subagent requirement: none`.
+
 5. Required fallback when a false-positive block occurs
 - Retry with a shorter prompt that includes only:
   - scope sentence,
@@ -88,6 +110,12 @@ scope.
 - `Constraints: contract-first sequencing; canonical SC authority;`
   `baseline provenance (<if applicable>); typed guards; no silent defaults;`
   `no canonicalize-and-proceed for domain violations.`
+- `Subagent requirement: <none | REQUIRED: spawn comparator_suite_runner for all`
+  `heavy batch/closure/comparator runs (cargo test --workspace, suites, gates,`
+  `population batches); do NOT run them on the parent model unless the subagent is`
+  `unavailable, in which case record command-level evidence. This prompt`
+  `explicitly authorizes subagent spawning/delegation to <roles> for <scope>;`
+  `outputs: compact metrics + log paths; write access: <read-only|bounded>.>`
 - `Autonomy: execute package phases end-to-end and update required artifacts`
   `without requesting additional user direction unless hard-blocked.`
 - `Outputs: update package artifacts/disposition for all completed phases.`
