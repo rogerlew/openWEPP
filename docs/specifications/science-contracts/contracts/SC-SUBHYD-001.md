@@ -788,6 +788,43 @@ physics heuristically.
    continuation should shift to WB17 `Ep`, WB18 `Dp`, and aggregate storage
    reconciliation.
 
+## Binding Exposure Index
+
+Status: `scstruct06-triage-deferred`
+Evidence mode: `Static`
+
+This index conserves binding residue during SC-SUBHYD context reduction. Rows
+mapped to existing IDs have a same-section `INV-SUBHYD-*` reference and are
+resolved only for mechanical exposure; narrative remains core-resident until
+SCSTRUCT07 confirms semantic precision. Rows routed to
+`science-review-follow-on` remain in the binding core and are not sidecar-
+eligible.
+
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `WB12-RECONCILIATION-COUPLING-ADDENDUM` | `SC-SUBHYD-001.md#wb12-reconciliation-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: `Qd` storage-reconciliation consumption, carryover precedence, guard, and vector obligations have no same-section SUBHYD binding ID. |
+| `WB13-DAILY-OUTPUT-COUPLING-ADDENDUM` | `SC-SUBHYD-001.md#wb13-daily-output-coupling-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: WB13 `latqcc`/`Tile`/`SubRIn`/`Qd` publication, flux authority, ordering, and guard obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0203-SUBSURFACE-WB13-ROBUSTNESS-VALIDATION-ADDENDUM` | `SC-SUBHYD-001.md#hphys0203-subsurface-wb13-robustness-validation-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: robustness vectors and WB13 `latqcc`/`Dp` guard obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0234-WB13-SUBSURFACE-FLUX-AUTHORITY-ANTI-SHADOW-ADDENDUM` | `SC-SUBHYD-001.md#hphys0234-wb13-subsurface-flux-authority-anti-shadow-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: WB13 flux-over-state anti-shadow authority for `q`/`Qdd`/`Qd` has no same-section SUBHYD binding ID. |
+| `HPHYS0208-COUPLED-SUBSURFACE-RESIDUAL-CLOSURE-ADDENDUM` | `SC-SUBHYD-001.md#hphys0208-coupled-subsurface-residual-closure-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: coupled WB11/WB18 seed lineage and fail-closed residual-closure obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0218-WB19-DRFC-THRESHOLD-LINEAGE-ADDENDUM` | `SC-SUBHYD-001.md#hphys0218-wb19-drfc-threshold-lineage-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: WB19 `drfc`/`coca` threshold-lineage obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0221-WB19-WATER-YIELD-AND-SATURATED-DEPTH-COUPLING-ADDENDUM` | `SC-SUBHYD-001.md#hphys0221-wb19-water-yield-and-saturated-depth-coupling-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-024` | `none` | SCSTRUCT06 mechanical map: same-section text references HPHYS0247 baseline `meblfc` authority from `INV-SUBHYD-024`; SCSTRUCT07 must confirm whether remaining coupling residue needs additional mapping. |
+| `HPHYS0222-WB19-SOLWPV-BRANCH-AUTHORITY-CORRECTION-ADDENDUM` | `SC-SUBHYD-001.md#hphys0222-wb19-solwpv-branch-authority-correction-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-015, INV-SUBHYD-024` | `none` | SCSTRUCT06 mechanical map: same-section text links `solwpv` mutation authority to `INV-SUBHYD-015` and saturated-layer selection to `INV-SUBHYD-024`. |
+| `HPHYS0224-WB19-REALIZED-WITHDRAWAL-SOIL-WATER-CAP-ADDENDUM` | `SC-SUBHYD-001.md#hphys0224-wb19-realized-withdrawal-soil-water-cap-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-016` | `none` | SCSTRUCT06 mechanical map: same-section Level-4 suite linkage names `INV-SUBHYD-016`. |
+| `HPHYS0225-WB19-LAYER-POOL-AVAILABLE-CAP-AUTHORITY-ADDENDUM` | `SC-SUBHYD-001.md#hphys0225-wb19-layer-pool-available-cap-authority-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-017` | `none` | SCSTRUCT06 mechanical map: same-section Level-4 suite linkage names `INV-SUBHYD-017`. |
+| `HPHYS0226-WB19-LATERAL-SATURATED-THICKNESS-RESPONSE-ADDENDUM` | `SC-SUBHYD-001.md#hphys0226-wb19-lateral-saturated-thickness-response-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-018` | `none` | SCSTRUCT06 mechanical map: same-section Level-4 suite linkage names `INV-SUBHYD-018`. |
+| `HPHYS0227-WB19-FCWP-COCA-WATER-YIELD-COUPLING-ADDENDUM` | `SC-SUBHYD-001.md#hphys0227-wb19-fcwp-coca-water-yield-coupling-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-019` | `none` | SCSTRUCT06 mechanical map: same-section Level-4 suite linkage names `INV-SUBHYD-019`. |
+| `HPHYS0238-WB19-HOURLY-ITERATIVE-LATERALDRAINAGE-ADDENDUM` | `SC-SUBHYD-001.md#hphys0238-wb19-hourly-iterative-lateraldrainage-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: hourly iterative lane, cumulative cap, and divergence-vector obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0239-WB19-WB12WB13-HANDOFF-ORDERING-ADDENDUM` | `SC-SUBHYD-001.md#hphys0239-wb19-wb12wb13-handoff-ordering-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: WB19 same-pass handoff, flux-authority, and stale-state vector obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0240-HOURLY-RUNOFF-CARRYOVER-HANDOFF-ADDENDUM` | `SC-SUBHYD-001.md#hphys0240-hourly-runoff-carryover-handoff-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: same-pass carryover precedence and malformed-carryover rejection obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0242-HOURLY-DRAINAGELATERALSATURATION-TAIL-ADDENDUM` | `SC-SUBHYD-001.md#hphys0242-hourly-drainagelateralsaturation-tail-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: baseline hourly tail order, final `Qd`, MOFE carry, and vector obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0247-WB19-BASELINE-SATURATED-ZONE-CAPACITY-ADDENDUM` | `SC-SUBHYD-001.md#hphys0247-wb19-baseline-saturated-zone-capacity-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: hourly saturated-zone capacity, `meblfc`, `fffx`, and legacy multiplier obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0252-WB19-FROZEN-ADJUSTED-LATERAL-STORAGE-ADDENDUM` | `SC-SUBHYD-001.md#hphys0252-wb19-frozen-adjusted-lateral-storage-addendum` | `active` | `maps-to-existing-INV` | `INV-SUBHYD-024` | `none` | SCSTRUCT06 mechanical map: same-section text preserves unfrozen `drfc` conductivity weighting under `INV-SUBHYD-024`; SCSTRUCT07 must confirm frozen-storage residue mapping. |
+| `HPHYS0256-WB19-DAILY-LATERAL-LANE-BRANCH-ADDENDUM` | `SC-SUBHYD-001.md#hphys0256-wb19-daily-lateral-lane-branch-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: daily/hourly lane branch, conductivity, and test-vector obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0257-WB19-HOURLY-HORIZONTAL-CONDUCTIVITY-ADDENDUM` | `SC-SUBHYD-001.md#hphys0257-wb19-hourly-horizontal-conductivity-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: hourly `ui_ssh`/`wb19_lateral_ssh_####` lineage and fail-closed obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0258-WB19-HOURLY-CAPWITHDRAWAL-PUBLICATION-ADDENDUM` | `SC-SUBHYD-001.md#hphys0258-wb19-hourly-capwithdrawal-publication-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: potential/target/realized lateral publication diagnostics and cap-lineage vector obligations have no same-section SUBHYD binding ID. |
+| `HPHYS0259-WB19-TRACE-LOCALIZATION-ADDENDUM` | `SC-SUBHYD-001.md#hphys0259-wb19-trace-localization-addendum` | `active` | `unpromoted-binding` | `none` | `science-review-follow-on` | SCSTRUCT06 deferred: trace serialization and same-surface identity obligations have no same-section SUBHYD binding ID. |
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
