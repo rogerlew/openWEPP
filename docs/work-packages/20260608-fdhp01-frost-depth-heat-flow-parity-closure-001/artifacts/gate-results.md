@@ -117,5 +117,19 @@ workspace test run.
 | Annual closure reconstruction | Excluded from package evidence; the committed layered-store report's `outputs` field was not reproducible from exposed WAT columns alone during this pass |
 | Production/test landing | Backed out; only `SC-SNOWFREEZE-001` v57 and D3 attempt artifacts remain |
 
+## D3 Fine-Sublayer Attempt Gates
+
+| Command / Gate | Result |
+|---|---|
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass before cohort attempt; release binary SHA `e81e65713378f082fc5a49f6596a6809f756b65fc328d9bb90cabef10e78c9e7` |
+| 43-prefix `algebraic-radium` frost-on cohort, `/tmp/fdhp01_d3_fine_sublayer_20260611T160601Z` | Pass for execution, `43/43` clean exits |
+| Annual `Total-Soil + frozwt` closure | Fail, max abs residual `70.27250390582333 mm`; years 2-6 max residual also `70.27250390582333 mm` |
+| FDMC01 depth/duration movement | Fail, max-depth mean `1782.0386969356455 mm` versus legacy `414.22093023255815 mm`; median depth correlation `-0.275982943044058`; mean frozen-day delta `-520.953488372093` |
+| p22 mass-coupled helper probe, `/tmp/fdhp01_d3_mass_probe_20260611T162003Z` | Fail, max abs years 2-6 residual `86.995866585106 mm` |
+| p22 aggregate exchange probe, `/tmp/fdhp01_d3_exchange_probe_20260611T162312Z` | Fail, max abs years 2-6 residual `86.995866585106 mm` |
+| Direct fine-liquid egress probe | Failed focused thaw diagnostic: expected `8.109464696602291`, observed `0.011923545603720697` |
+| Post-backout `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, `19/19` |
+| Production/test landing | Backed out; no D3 fine-sublayer production behavior landed |
+
 Disposition: Rust gates and D2 storage closure pass, but package acceptance
 still fails on D3 frost-depth parity. FDHP01 is executed-hold.

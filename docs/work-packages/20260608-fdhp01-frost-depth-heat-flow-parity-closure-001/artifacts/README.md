@@ -38,6 +38,12 @@ Evidence and disposition artifacts for
 - `d3-fine-sublayer-port-scope.md`: executed M1 scoping artifact for the D3
   fine-sublayer port; source-traced legacy state/dispatch map, openWEPP alias
   proposal, seam mapping, red-test list, and phase recommendation.
+- `d3-fine-sublayer-implementation-attempt-20260611.md`: failed/backed-out
+  fine-sublayer implementation attempt; records the current-tree `43/43`
+  cohort, D2 conservation regression, p22 debug probes, and post-backout
+  focused test pass.
+- `fdhp01_d3_fine_sublayer_attempt_*_20260611.*`: compact generated reports
+  copied from `/tmp/fdhp01_d3_fine_sublayer_20260611T160601Z/reports/`.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`: canonical contract edits.
 - `contract-test-implementation-evidence.md`: contract-derived tests.
