@@ -815,10 +815,13 @@ fn build_simulation_owned_wb13_row(
     }
     let total_soil = wb11_soil_water_m * 1_000.0;
 
-    let frozwt_m = require_runtime_surface_scalar(runtime_surface, "frost.runtime_ws_frz")?;
+    let frozwt_m = require_runtime_surface_scalar(
+        runtime_surface,
+        "frost.runtime_frwatc_frozen_water_after_m",
+    )?;
     if frozwt_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "frost.runtime_ws_frz must be >= 0.0, observed {frozwt_m}"
+            "frost.runtime_frwatc_frozen_water_after_m must be >= 0.0, observed {frozwt_m}"
         )));
     }
     let frozwt = frozwt_m * 1_000.0;

@@ -24,12 +24,16 @@ Primary landed behavior:
 - WAT `SoilWaterTotal` is now the hydout-equivalent `Total-Soil` alias again;
   `frozwt` remains separately published to avoid frozen-storage double
   counting.
-- `SC-WATBAL-001` v150 pins the legacy `frwatc.for`/`watbalprint.for`
+- `SC-WATBAL-001` v151 pins the legacy `frwatc.for`/`watbalprint.for`
   definition: `Total-Soil`/`SoilWaterTotal` exclude frozen water, and
   frost-active storage audits use `Total-Soil + frozwt`.
 - Active frost exchange now publishes `frost.runtime_frwatc_*` diagnostics
   proving liquid/frozen before/after state, freeze debit, thaw credit, and
   signed liquid delta.
+- WAT `frozwt` publication now requires
+  `frost.runtime_frwatc_frozen_water_after_m`; a runner guard rejects a missing
+  exchange-store symbol and a WB13 fixture proves WAT consumes that diagnostic
+  instead of `runtime_ws_frz`.
 
 Validation status before post-review cohort validation:
 
@@ -41,7 +45,7 @@ Validation status before post-review cohort validation:
 Residual note:
 
 - Post-review cohort run root:
-  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`.
+  `/tmp/fdhp01_frozwt_publication_20260611T070334Z`.
 - `42/43` frost-on prefixes exited clean; `p2` failed before WAT publication
   at `HKERNEL-WB11-PERC-E-003`, `1990-308`.
 - Emitted-prefix annual closure max abs residual is
@@ -52,17 +56,19 @@ Residual note:
   (`open max depth mean 1782.2670980346527 mm`; median correlation
   `-0.10301692862035305`).
 - Focused D2 diagnostics now prove symmetric freeze/thaw exchange algebra at
-  the WB14/WB11 seam. Addendum 2c then localized the WAT contradiction to
-  publication: emitted `frozwt` is `0.149 * frdp` over measured frost-active
-  days, not the exchanged frozen store.
+  the WB14/WB11 seam. Addendum 2c localized the WAT contradiction to
+  publication, and the v151 source-binding pass moved WAT `frozwt` to
+  `frost.runtime_frwatc_frozen_water_after_m`; however, the fresh cohort still
+  shows exact per-prefix `frozwt/frdp` scalar ratios across `35297` frost-active
+  rows, so that diagnostic currently aliases the depth-derived store.
 - `SC-SNOWFREEZE-001` v55 reopens `GAP-SNOWFREEZE-002`.
 
 First actionable item: close defect `FDHP01-FROST-DEPTH-HEATFLOW-001` on the
-current attempted heat-flow implementation. Sequence the next pass as: fix
-`frozwt` publication to source the true exchanged store tracked by the
-`frwatc` diagnostics and retire the `0.149 * frdp` scale; rerun the additive
-identity on the cohort to confirm whether D2 dissolves; then address D3 depth
-runaway against the corrected storage gate. Keep the `p2`
+current attempted heat-flow implementation. Sequence the next pass as: separate
+the true exchanged frozen store from `runtime_ws_frz` / `dfrost * theta_active`
+behind `frost.runtime_frwatc_frozen_water_after_m`; rerun the additive identity
+on the cohort to confirm whether D2 dissolves; then address D3 depth runaway
+against the corrected storage gate. Keep the `p2`
 `HKERNEL-WB11-PERC-E-003` fail-closed defect tracked separately. Do not advance
 to MOFE until the full 43-prefix cohort runs clean, frost-active annual closure
 returns to numerical noise under the ratified storage term, and depth/duration

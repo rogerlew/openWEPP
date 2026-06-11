@@ -424,3 +424,56 @@ Consequences:
    exchange truth from the publication fiction; the Addendum 2 freeze-day
    1:1 SWT debit suggests the freeze side may itself consume the
    depth-derived increment, which the seam diagnostics will now show.
+
+### Addendum 2d — v151 source binding landed, but the diagnostic still aliases
+### the depth-derived store
+
+Evidence mode: Static + Ran.
+
+Static:
+
+- `SC-WATBAL-001` is now v151. It binds WAT `frozwt` publication to
+  `frost.runtime_frwatc_frozen_water_after_m` and rejects direct publication
+  from `frdp`, `frdp * scalar`, or `frost.runtime_ws_frz`.
+- WAT assembly now requires `frost.runtime_frwatc_frozen_water_after_m`.
+  Missing-symbol publication fails closed with the existing WB13 publication
+  error path. Initial frost runtime projection seeds the diagnostic to `0.0`
+  so frost-off rows do not depend on a missing symbol.
+
+Ran:
+
+- `cargo test -p openwepp-runner --lib fdhp01_wb13 -- --nocapture`: pass,
+  3 tests, including the missing exchange-store symbol guard.
+- `cargo test -p openwepp-runner --lib
+  hphys0203_wb13_soil_water_total_preserves_watcon_alias -- --nocapture`:
+  pass; the fixture sets `runtime_ws_frz !=
+  runtime_frwatc_frozen_water_after_m` and proves WAT `frozwt` follows the
+  latter.
+- `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass.
+- Fresh 43-prefix cohort run:
+  `/tmp/fdhp01_frozwt_publication_20260611T070334Z`.
+
+Cohort result:
+
+- Acceptance remains HOLD: `42/43` prefixes emitted WAT; `p2` still failed
+  before WAT publication at `HKERNEL-WB11-PERC-E-003`.
+- Emitted-prefix annual closure max abs residual remains
+  `2.4798612273409617 mm`, unchanged from the post-D1 floor.
+- Published `frozwt` still tracks `frdp` with exact per-prefix scalar ratios
+  over `35297` frost-active rows (minimum correlation
+  `0.9999999999999994`; p1 ratio `0.149`; median per-prefix median ratio
+  `0.15199999999999997`; maximum per-prefix ratio standard deviation
+  `3.2273877788806054e-17`).
+
+Disposition:
+
+- The v151 publication source map is correct and test-enforced, but it is
+  behaviorally neutral on the cohort because
+  `frost.runtime_frwatc_frozen_water_after_m` currently aliases the
+  depth-derived store (`dfrost * theta_active` / `runtime_ws_frz`) rather than
+  a true independent exchanged frozen-water store.
+- The next D2 action is therefore upstream of WAT publication: implement or
+  port the true `frwatc`/`soilf` exchanged store behind
+  `frost.runtime_frwatc_frozen_water_after_m`, then rerun the additive
+  identity. D3 depth runaway and the independent `p2` fail-closed defect remain
+  open.

@@ -46,12 +46,17 @@ Ran:
 - `cargo test --workspace` passes, preserving the broader rung-1/frost
   non-regression surface covered by the workspace suite.
 - Contract-version expectation tests now target `SC-SNOWFREEZE-001` v55 and
-  `SC-WATBAL-001` v150 front matter.
+  `SC-WATBAL-001` v151 front matter.
 - D2 exchange diagnostics now publish liquid soil water before/after, frozen
   water before/after, freeze debit, thaw credit, and signed liquid delta at
   the active frost exchange seam. The focused CLIM06 suite now includes
   freeze-onset and warm-thaw vectors proving the in-process exchange algebra
   reconciles on both signs.
+- WAT `frozwt` publication now requires
+  `frost.runtime_frwatc_frozen_water_after_m` instead of directly consuming
+  `frost.runtime_ws_frz`. A runner guard rejects a missing exchange-store
+  symbol, and the WB13 fixture proves `frozwt` follows that diagnostic when it
+  differs from `runtime_ws_frz`.
 
 ## Post-Review Cohort Validation
 
@@ -59,15 +64,17 @@ Ran, 2026-06-11:
 
 - `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass.
 - Fresh frost-on 43-prefix `algebraic-radium` population after the D1
-  `SoilWaterTotal` publication fix, using generated runfile wrappers and the
-  release binary:
-  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`.
+  `SoilWaterTotal` publication fix and the D2 `frozwt` source-symbol binding,
+  using generated runfile wrappers and the release binary:
+  `/tmp/fdhp01_frozwt_publication_20260611T070334Z`.
 - Compact persisted reports:
   - `fdhp01_run_status_20260611.tsv`
   - `fdhp01_activation_summary_20260611.csv`
   - `fdhp01_annual_closure_residuals_20260611.csv`
   - `fdhp01_depth_metrics_20260611.csv`
+  - `fdhp01_frozwt_frdp_ratio_20260611.csv`
   - `fdhp01_closure_summary_20260611.json`
+  - `fdhp01_execution_summary_20260611.json`
 
 Results:
 
@@ -81,7 +88,7 @@ Results:
   (baseline FROSTVAL01 rerun max was `3.2173375075217336e-11 mm`; pre-D1
   post-review run max was `75.43917280313423 mm`).
 - Mean absolute annual closure residual after D1:
-  `0.9738853177643827 mm`.
+  `0.9738853177644075 mm`.
 - Emitted-prefix frost depth max range:
   `1780.5852693307895..1783.3684719591115 mm`.
 - Emitted-prefix mean max depth: `1782.2670980346527 mm` versus matched
@@ -92,6 +99,12 @@ Results:
   (`-27.61904761904762` days mean open-minus-legacy, versus FDMC01
   `+257.6279069767442`), but this is diagnostic only because closure and the
   full 43-prefix run failed.
+- `frozwt/frdp` audit over emitted frost-active days remains depth-derived:
+  `35297` active rows, minimum per-prefix correlation
+  `0.9999999999999994`, median of per-prefix median ratios
+  `0.15199999999999997`, and maximum per-prefix ratio standard deviation
+  `3.2273877788806054e-17`. The p1 ratio remains exactly `0.149` over
+  `793` frost-active days.
 
 ## Disposition
 
@@ -99,15 +112,16 @@ FDHP01 does not close the executable single-OFE model-depth implementation
 boundary. The WAT `frdp` publication surface exists, and D1 removed the dominant
 frozen-storage double count from `SoilWaterTotal`. D2 added the seam
 diagnostics needed to judge freeze/thaw exchange wiring and `SC-WATBAL-001`
-v150 ratifies that `Total-Soil + frozwt` is the frost-active storage audit
-term. Addendum 2c then localized the remaining WAT contradiction to `frozwt`
-publication: emitted `frozwt` is `0.149 * frdp` over measured frost-active
-days, so the current additive audit uses a depth-derived quantity rather than
-the exchanged frozen store. The cohort validation still failed required
-closure criteria and reopened `GAP-SNOWFREEZE-002` in `SC-SNOWFREEZE-001` v55.
+v151 ratifies that `Total-Soil + frozwt` is the frost-active storage audit
+term and binds WAT `frozwt` to
+`frost.runtime_frwatc_frozen_water_after_m`. The fresh cohort shows that source
+binding is behaviorally neutral because the diagnostic itself currently aliases
+the depth-derived store; emitted `frozwt` remains an exact scalar function of
+`frdp` by prefix. The cohort validation still failed required closure criteria
+and reopened `GAP-SNOWFREEZE-002` in `SC-SNOWFREEZE-001` v55.
 
 The package remains in defect closure. The next actionable work is to fix
-FDHP01 by publishing the true exchanged frozen store as `frozwt`, rerunning the
-cohort additive identity, keeping the independent `p2` fail-closed defect
-tracked separately, and then closing the D3 depth/duration gap without
-comparator tuning.
+FDHP01 by separating the true exchanged frozen store from `runtime_ws_frz` /
+`dfrost * theta_active`, rerunning the cohort additive identity, keeping the
+independent `p2` fail-closed defect tracked separately, and then closing the D3
+depth/duration gap without comparator tuning.

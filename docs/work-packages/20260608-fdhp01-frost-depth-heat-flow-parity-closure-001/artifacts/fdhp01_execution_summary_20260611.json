@@ -1,0 +1,16 @@
+{
+  "binary_sha256": "c91003314d502eeb437c936837af1b3ffc17ced39b94c44c1063fdaf5db95444",
+  "clean_prefixes": 42,
+  "failure_details": {
+    "p2": "CLIHILL-E-011 runtime surface failure for execution_provenance: HS-SIMPIPE-E-001 scheduler lifecycle did not complete successfully (outcome_class=phase_failure, status_class=Failure, boundary_class=DOMAIN_VIOLATION, message_id=HKERNEL-WB11-PERC-E-003, last_phase=percolation_deep_seepage, last_kernel_message_id=HKERNEL-WB11-PERC-E-003, last_decision_outcome=Reject, last_decision_message_id=HKERNEL-WB11-PERC-E-003, wb18_guard_terms={layer_count=9,lane_substeps=1.0000000000,infiltration=0.000000000"
+  },
+  "failures": [
+    "p2"
+  ],
+  "prefix_count_requested": 43,
+  "release_binary": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "run_root": "/tmp/fdhp01_frozwt_publication_20260611T070334Z",
+  "source_commit": "b431c202907c4233cbcc1c2987aa272e6df57b34",
+  "wat_outputs": 42,
+  "working_tree_dirty_at_run": true
+}

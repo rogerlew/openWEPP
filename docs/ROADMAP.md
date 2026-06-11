@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-06-07
+Last updated: 2026-06-11
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -73,11 +73,13 @@ In scope: standard `ksflag` frost depth model on the frost-active single-OFE sub
 `/wc1/runs/al/algebraic-radium` (`ksflag=1`). Out of scope: kfactor conductivity
 magnitude (legacy-faithful), forest `ksatadj`, frost activation (closed), MOFE/17-OFE
 (item 2), snow magnitude (item 3). Conservation must still close (`frozwt` in storage).
-For frost-active WAT audits, `SC-WATBAL-001` v150 defines that storage term as
+For frost-active WAT audits, `SC-WATBAL-001` v151 defines that storage term as
 `Total-Soil + frozwt`, with `SoilWaterTotal = Total-Soil` as the unfrozen
-`watcon` alias. FDHP01 Addendum 2c localized the current additive-audit break
-to publication: emitted `frozwt` is `0.149 * frdp`, not the exchanged frozen
-store, so publication must be fixed before D3 depth evidence is trusted.
+`watcon` alias, and binds WAT `frozwt` to
+`frost.runtime_frwatc_frozen_water_after_m`. FDHP01 Addendum 2d showed this
+source binding is still behaviorally neutral because that diagnostic aliases
+the depth-derived store; the next pass must implement the true exchanged frozen
+store behind the diagnostic before D3 depth evidence is trusted.
 
 DC-ExecPlan: `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 Sized by [FDMC01](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/);

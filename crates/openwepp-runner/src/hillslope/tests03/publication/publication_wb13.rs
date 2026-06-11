@@ -533,6 +533,10 @@ use super::super::*;
         );
         runtime_surface.state_surface.insert(
             BoundarySymbol::from("frost.runtime_ws_frz"),
+            BoundaryValue::scalar(0.020),
+        );
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_frwatc_frozen_water_after_m"),
             BoundaryValue::scalar(0.003),
         );
 
@@ -548,7 +552,7 @@ use super::super::*;
 
         assert!(
             (row.wb13_row.frozwt - 3.0).abs() <= SIMIMPL10_SOIL_WATER_TOTAL_TOLERANCE_MM,
-            "frozwt must remain separately published, observed {}",
+            "frozwt must follow the exchanged-store diagnostic, observed {}",
             row.wb13_row.frozwt
         );
 

@@ -23,10 +23,11 @@ Date: 2026-06-11
 | `cargo test --test cli04_runner_wat_parquet_contract_derived_tests -- --nocapture` | Pass, 2 tests |
 | `cargo test --test sim_contract_boundary_unit_registry -- --nocapture` | Pass, 14 tests |
 | `cargo test -p openwepp --test pl14s_tier_a_candidate_emission_and_replay_contract -- --nocapture` | Pass, 8 tests |
-| `cargo test -p openwepp-runner --lib fdhp01_wb13_publication -- --nocapture` | Pass, 2 tests |
+| `cargo test -p openwepp-runner --lib fdhp01_wb13 -- --nocapture` | Pass, 3 tests |
+| `cargo test -p openwepp-runner --lib hphys0203_wb13_soil_water_total_preserves_watcon_alias -- --nocapture` | Pass, 1 test |
 | `cargo test -p openwepp-hillslope-output schema_includes_required_dataset_metadata_keys -- --nocapture` | Pass, 1 test |
-| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v55 update |
-| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v55 update |
+| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v55 / `SC-WATBAL-001` v151 updates |
+| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v55 / `SC-WATBAL-001` v151 updates |
 
 ## Dependency / Authority Guards
 
@@ -64,6 +65,25 @@ workspace test run.
 | `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-WATBAL-001` v150 update |
 | `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-WATBAL-001` v150 update |
 | `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+
+## D2 Frozwt Publication Source Gates
+
+| Command / Gate | Result |
+|---|---|
+| `cargo fmt --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass |
+| `cargo test -p openwepp-runner --lib fdhp01_wb13 -- --nocapture` | Pass, 3 tests; WAT `frozwt` requires `frost.runtime_frwatc_frozen_water_after_m` and rejects a missing exchange-store symbol |
+| `cargo test -p openwepp-runner --lib hphys0203_wb13_soil_water_total_preserves_watcon_alias -- --nocapture` | Pass, proves WAT `frozwt` follows the exchange diagnostic instead of `runtime_ws_frz` |
+| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-WATBAL-001` v151 update |
+| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-WATBAL-001` v151 update |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 17 tests |
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+| 43-prefix `algebraic-radium` frost-on cohort, `/tmp/fdhp01_frozwt_publication_20260611T070334Z` | Fail, `42/43` clean exits; `p2` failed before WAT publication at `HKERNEL-WB11-PERC-E-003` |
+| Annual closure on emitted prefixes | Fail, max abs residual `2.4798612273409617 mm`; unchanged from the post-D1 floor |
+| `frozwt/frdp` cohort ratio audit | Fail, `35297` frost-active days; min correlation `0.9999999999999994`, median ratio median `0.15199999999999997`, max ratio standard deviation `3.2273877788806054e-17` |
 
 Disposition: Rust gates pass, but the package acceptance gate fails. FDHP01 is
 executed-hold.

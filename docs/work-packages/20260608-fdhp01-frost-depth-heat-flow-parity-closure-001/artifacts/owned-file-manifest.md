@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: complete
+Status: executed-hold
 
 Evidence mode: Static
 
@@ -12,7 +12,9 @@ Date: 2026-06-11
   - FDHP01 heat-flow depth addendum, `frdp` alias authority, and
     `GAP-SNOWFREEZE-002` v55 reopening after cohort validation failed.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
-  - WAT additive-extension versioning clarification for required `frdp`.
+  - WAT additive-extension versioning clarification for required `frdp`,
+    pinned `Total-Soil + frozwt` storage authority, and v151 `frozwt`
+    publication source binding.
 - `docs/specifications/subsystems/runner/openwepp-hillslope-cli-specification.md`
   - WAT dataset version `1.4` and `frdp` extension posture.
 - `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/**`
@@ -24,6 +26,10 @@ Date: 2026-06-11
   - Replaced freeze-index proxy with hourly signed heat-flow frost-depth
     progression, separate lower-front `Quf`, and fail-closed frozen-water
     exchange.
+- `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
+  - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
+    `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
+    fail-closed source symbol before frost activation.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
   - Frost outcome/profile-depth fields and heat-flow constants.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
@@ -37,11 +43,13 @@ Date: 2026-06-11
   - Added owned row `frdp_mm` field and retired cap import.
 - `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
   - Required runtime `frost.runtime_frdp_m`, bounded it by profile depth, and
-    converted it to WAT `frdp`.
+    converted it to WAT `frdp`; WAT `frozwt` now requires
+    `frost.runtime_frwatc_frozen_water_after_m`.
 - `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs`
   - Replaced retired cap provenance bound with `solthk` profile bound.
 - `crates/openwepp-runner/src/hillslope/03_tests.rs`
-  - Seeded runner test runtime `frost.runtime_frdp_m`.
+  - Seeded runner test runtime `frost.runtime_frdp_m` and
+    `frost.runtime_frwatc_frozen_water_after_m`.
 - `crates/openwepp-runner/src/hillslope/tests03/trace.rs`
   - Added `frdp_mm` to runner trace fixtures.
 - `crates/openwepp-runner/src/constants.rs`
@@ -65,10 +73,16 @@ Date: 2026-06-11
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
   - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v150.
+    `SC-WATBAL-001` v151.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
   - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v150.
+    `SC-WATBAL-001` v151.
+- `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
+  - Proves WAT `frozwt` follows
+    `frost.runtime_frwatc_frozen_water_after_m`, not `runtime_ws_frz`.
+- `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13_guard.rs`
+  - Adds a fail-closed guard for missing
+    `frost.runtime_frwatc_frozen_water_after_m`.
 
 ## Generated Cohort Evidence
 
@@ -77,3 +91,5 @@ Date: 2026-06-11
 - `fdhp01_activation_summary_20260611.csv`
 - `fdhp01_annual_closure_residuals_20260611.csv`
 - `fdhp01_depth_metrics_20260611.csv`
+- `fdhp01_frozwt_frdp_ratio_20260611.csv`
+- `fdhp01_execution_summary_20260611.json`

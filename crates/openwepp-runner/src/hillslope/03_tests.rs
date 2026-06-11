@@ -362,6 +362,10 @@ mod tests {
             BoundaryValue::scalar(0.0),
         );
         runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_frwatc_frozen_water_after_m"),
+            BoundaryValue::scalar(0.0),
+        );
+        runtime_surface.state_surface.insert(
             BoundarySymbol::from("frost.runtime_frdp_m"),
             BoundaryValue::scalar(0.0),
         );

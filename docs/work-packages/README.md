@@ -200,11 +200,14 @@ publication-safe Daymet CLI audit:
    annual closure residuals reached `2.480 mm` after D1, and emitted-prefix
    depth metrics overreached the FDMC01 legacy envelope (`open max depth mean
    1782.267 mm`, median correlation `-0.103`). D2 added in-process
-   `frwatc` diagnostics and `SC-WATBAL-001` v150 ratified
-   `Total-Soil + frozwt` as the frost-active storage audit term. Addendum 2c
-   localized the remaining WAT contradiction to publication: emitted `frozwt`
-   is `0.149 * frdp`, not the exchanged frozen store. The next pass must fix
-   `frozwt` publication and rerun the additive identity before D3 depth work.
+   `frwatc` diagnostics and `SC-WATBAL-001` v151 ratified
+   `Total-Soil + frozwt` as the frost-active storage audit term while binding
+   WAT `frozwt` publication to `frost.runtime_frwatc_frozen_water_after_m`.
+   The v151 source binding is behaviorally neutral on the cohort: emitted
+   `frozwt` still tracks `frdp` with exact per-prefix scalar ratios, proving
+   the diagnostic currently aliases the depth-derived store. The next pass must
+   implement the true exchanged frozen store behind that diagnostic and rerun
+   the additive identity before D3 depth work.
    `SC-SNOWFREEZE-001` v55 reopens `GAP-SNOWFREEZE-002`; do not advance to
    MOFE until FDHP01 closes. Package:
    `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.

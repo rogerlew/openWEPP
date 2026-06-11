@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: complete
+Status: executed-hold
 
 Evidence mode: Static
 
@@ -24,6 +24,11 @@ on 2026-06-11:
 - Updated `SC-WATBAL-001` on 2026-06-11 to clarify that additive WAT parquet
   extensions beyond canonical WB13 replay columns must be versioned. FDHP01
   assigns WAT dataset version `1.4` to the required `frdp` column.
+- Added `SC-WATBAL-001` v150/v151 amendments: v150 pins the legacy
+  `Total-Soil + frozwt` storage term from `frwatc.for`/`watbalprint.for`;
+  v151 binds WAT `frozwt` publication to
+  `frost.runtime_frwatc_frozen_water_after_m` and rejects depth-derived
+  publication.
 
 ## Boundary
 
@@ -41,6 +46,10 @@ Static:
   publication use the same bound.
 - WAT `frdp` publication is required, unit-registered, versioned as dataset
   `1.4`, and profile-bound.
+- WAT `frozwt` publication requires
+  `frost.runtime_frwatc_frozen_water_after_m`. Cohort evidence shows this is
+  not yet sufficient for closure because that diagnostic aliases the
+  depth-derived store.
 - Frozen-water storage exchange is locally bidirectional in the runtime state,
   but cohort validation shows annual closure is not conserved; the
   implementation remains held pending FDHP01 correction.

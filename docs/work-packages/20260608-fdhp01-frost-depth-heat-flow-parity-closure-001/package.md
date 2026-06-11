@@ -7,24 +7,26 @@ FDHP01. Follow-on D1 corrected WAT `SoilWaterTotal` frozen-storage
 double-counting so the column is again the hydout-equivalent `Total-Soil`
 alias, with `frozwt` published separately. A fresh release
 `openwepp-cli-hill` run of the `algebraic-radium` `p1..p43` frost-on
-population into `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z`
-still failed package acceptance: `p2` failed closed before WAT publication at
+population into `/tmp/fdhp01_frozwt_publication_20260611T070334Z` still failed
+package acceptance: `p2` failed closed before WAT publication at
 `HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual closure
 residuals reached `2.4798612273409617 mm` rather than numerical noise, and
 emitted-prefix depth metrics still overreached the FDMC01 legacy envelope. The
 package therefore remains in defect closure rather than advancing MOFE.
 
-D2 update, 2026-06-11: `SC-WATBAL-001` v150 now pins the legacy
+D2 update, 2026-06-11: `SC-WATBAL-001` v151 now pins the legacy
 `frwatc.for`/`watbalprint.for` provenance: `Total-Soil`/`SoilWaterTotal`
 exclude frozen water, and frost-active storage audits use
 `Total-Soil + frozwt`. The active frost exchange seam publishes
 `frost.runtime_frwatc_*` diagnostics, and focused freeze/thaw tests prove the
-in-process exchange algebra is symmetric. Addendum 2c then localized the
-WAT-level contradiction to `frozwt` publication: emitted `frozwt` is
-`0.149 * frdp` over the measured frost-active days, not the exchanged frozen
-store. The next D2 pass must source published `frozwt` from the true exchanged
-store and retire the depth scale before D3 depth progression is trusted; `p2`
-remains an independent fail-closed defect.
+in-process exchange algebra is symmetric. The WAT publication source is now
+bound to `frost.runtime_frwatc_frozen_water_after_m`, but the cohort result is
+behaviorally neutral because that runtime diagnostic currently aliases the
+depth-derived store: emitted `frozwt` still tracks `frdp` with exact
+per-prefix scalar ratios. The next D2 pass must separate the true exchanged
+frozen store from `dfrost * theta_active`/`runtime_ws_frz`, then rerun the
+additive identity before D3 depth progression is trusted; `p2` remains an
+independent fail-closed defect.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

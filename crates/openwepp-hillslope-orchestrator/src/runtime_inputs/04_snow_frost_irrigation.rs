@@ -842,6 +842,17 @@ pub fn seed_hillslope_runtime_surface_from_frost(
         BoundarySymbol::from("frost.runtime_ws_frz"),
         BoundaryValue::scalar(0.0),
     );
+    for symbol in [
+        "frost.runtime_frwatc_soil_water_before_m",
+        "frost.runtime_frwatc_soil_water_after_m",
+        "frost.runtime_frwatc_frozen_water_before_m",
+        "frost.runtime_frwatc_frozen_water_after_m",
+        "frost.runtime_frwatc_freeze_debit_m",
+        "frost.runtime_frwatc_thaw_credit_m",
+        "frost.runtime_frwatc_net_liquid_delta_m",
+    ] {
+        state_surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(0.0));
+    }
     state_surface.insert(
         BoundarySymbol::from("frost.runtime_infcap_frz"),
         BoundaryValue::scalar(0.0),

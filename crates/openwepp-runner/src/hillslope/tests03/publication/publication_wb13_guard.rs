@@ -1,6 +1,40 @@
 use super::super::*;
 
     #[test]
+    fn fdhp01_wb13_frozwt_guard_rejects_missing_exchange_store_symbol() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .state_surface
+            .remove(&BoundarySymbol::from("frost.runtime_frwatc_frozen_water_after_m"));
+
+        let error = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect_err("missing exchanged frozen store must fail WB13 publication guard");
+
+        assert_eq!(error.code(), "CLIHILL-E-011");
+        match error {
+            HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+                assert_eq!(surface, "wb13_publication");
+                assert!(
+                    detail.contains("SIMOUT-E-001"),
+                    "expected SIMOUT-E-001 guard id, observed: {detail}"
+                );
+                assert!(
+                    detail.contains("missing required runtime symbol frost.runtime_frwatc_frozen_water_after_m"),
+                    "expected missing exchanged-store guard detail, observed: {detail}"
+                );
+            }
+            other => panic!("expected RuntimeSurfaceFailure, observed {other}"),
+        }
+    }
+
+    #[test]
     fn hphys0216_wb13_fc_storage_guard_rejects_missing_layer_authority_symbol() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface

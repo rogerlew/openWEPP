@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: complete
+Status: executed-hold
 
 Evidence mode: Static
 
@@ -17,6 +17,12 @@ Evidence mode: Static
 - `crates/openwepp-runner/src/hillslope/03_tests.rs`
   - `fdhp01_wb13_publication_converts_runtime_frdp_to_wat_mm`
   - `fdhp01_wb13_publication_rejects_frdp_beyond_profile_depth`
+- `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
+  - extended `hphys0203_wb13_soil_water_total_preserves_watcon_alias` so
+    `frozwt` follows `frost.runtime_frwatc_frozen_water_after_m` instead of
+    `frost.runtime_ws_frz`.
+- `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13_guard.rs`
+  - `fdhp01_wb13_frozwt_guard_rejects_missing_exchange_store_symbol`
 - `crates/openwepp-hillslope-output/src/hillslope_wat.rs`
   - extended schema metadata unit test to require default dataset version
     `1.4`.
@@ -35,6 +41,8 @@ production edits:
 - impossible frozen-water storage can be created by clamping liquid soil water;
 - WAT output lacks `frdp`;
 - WAT output does not version or bound `frdp`;
+- WAT `frozwt` can be published from a depth-derived proxy or missing exchange
+  store;
 - the unit registry lacks `hillslope_wat.frdp`.
 
 ## Post-Implementation Proof Points
@@ -45,6 +53,9 @@ Ran:
   `Qsrf`/`Quf`, warm-thaw reduction of prior deep frost, liquid-water thaw
   credit, and hard-fail frozen-water overdraw with `DomainViolation`.
 - Runner unit tests pass for runtime `frdp` to WAT `mm` conversion and
-  profile-bound rejection.
+  profile-bound rejection, plus fail-closed `frozwt` exchange-store symbol
+  enforcement.
+- Runner WB13 fixture passes for consuming
+  `frost.runtime_frwatc_frozen_water_after_m` rather than `runtime_ws_frz`.
 - WAT metadata tests pass for required `frdp` field metadata and dataset
   version `1.4`.

@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: complete
+Status: executed-hold
 
 Evidence and disposition artifacts for
 `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001`.
@@ -12,8 +12,10 @@ Evidence and disposition artifacts for
   showing FDHP01 executed-hold evidence.
 - `fdhp01_run_status_20260611.tsv`, `fdhp01_activation_summary_20260611.csv`,
   `fdhp01_annual_closure_residuals_20260611.csv`,
-  `fdhp01_depth_metrics_20260611.csv`: generated cohort reports copied from
-  `/tmp/fdhp01_closure_after_d1_restored_20260611T053545Z/reports/`.
+  `fdhp01_depth_metrics_20260611.csv`,
+  `fdhp01_frozwt_frdp_ratio_20260611.csv`,
+  `fdhp01_execution_summary_20260611.json`: generated cohort reports copied
+  from `/tmp/fdhp01_frozwt_publication_20260611T070334Z/reports/`.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`: canonical contract edits.
 - `contract-test-implementation-evidence.md`: contract-derived tests.
