@@ -568,3 +568,45 @@ Disposition:
 - FDHP01 remains `executed-hold` on D3 only. The next pass should complete the
   layered thermal-resistance/depth-progression port, then rerun the same
   additive identity and depth/duration cohort gates.
+
+## Addendum 3 — Claude verification of the layered-store closure (2026-06-11)
+
+Evidence mode: Ran — analysis of the committed layered cohort reports
+(`fdhp01_layered_*_20260611.*`).
+
+D2 verification — **closed, properly**:
+
+- The v152 additive identity (`Total-Soil + frozwt`) closes at true baseline
+  noise for years 2–6: max abs ≤ `3.1e-11 mm` across all 43 prefixes,
+  matching the FROSTVAL01 `3.2e-11` gate. The reported `1.268e-7 mm` max is
+  **year 7 only** (the final/partial simulation year, all 43 prefixes) — an
+  isolated end-of-run boundary effect, 4 orders above noise but confined to
+  the last identity window. Watch item for the D3 pass, not a closure
+  blocker.
+- `p2` clean and 43/43 emitted confirms the prior fail was the
+  scalar-exchange seam.
+
+D3 refinement — the defect now has a two-sided signature:
+
+- Depth remains pinned at the physical bound on all 43 prefixes
+  (1780.3–1783.4 mm): the layered store fixed the water books, but the
+  heat-flow depth advance is still not resisted by the frozen layers — the
+  accumulator landed without the resistance coupling, as anticipated.
+- **Frozen duration flipped from over- to under-persistence:** frozen-days
+  delta vs legacy is now median **−518 days** (was −28 on the scalar D1 run;
+  +258 originally). e.g. p1: 344 open frozen days vs 827 legacy. Meanwhile
+  depth-above-200mm days *overshoot* (median 346 vs legacy 185). Depth and
+  mass are decoupled: the front races to the bound while the layered ice
+  mass thaws far too fast.
+- Median depth correlation −0.278 — dominated by the pinned bound; not
+  meaningful until depth unbinds.
+
+Implication: the D3 fix is the bidirectional coupling legacy `frostn` has —
+the depth increment must **consume latent heat against the layered water
+content** (which both bounds advance and accumulates the ice mass) and be
+resisted by `Σ(dz/k)` through the frozen layers; thaw must retreat the front
+as the layer mass melts. Depth-as-independent-scalar with mass bookkeeping
+alongside reproduces neither duration nor depth. Acceptance per the package
+stands: depth in the physical envelope, correlation rising from ~0.13,
+duration delta collapsing from |−518| toward zero, conservation years 2–6
+staying at noise, and the year-7 boundary effect explained or eliminated.
