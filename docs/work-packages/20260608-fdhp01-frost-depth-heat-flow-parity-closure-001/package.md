@@ -2,31 +2,27 @@
 
 Status: executed-hold
 
-Closure status update, 2026-06-11: post-review cohort validation did not clear
-FDHP01. Follow-on D1 corrected WAT `SoilWaterTotal` frozen-storage
-double-counting so the column is again the hydout-equivalent `Total-Soil`
-alias, with `frozwt` published separately. A fresh release
+Closure status update, 2026-06-11: FDHP01 remains `executed-hold`, but the
+post-review D2 blocker is closed. The continuation implemented a per-layer
+frozen-depth/frozen-water state behind the `frwatc` diagnostics instead of the
+former scalar `frdp * (theta_fc - theta_dr)` store. A fresh release
 `openwepp-cli-hill` run of the `algebraic-radium` `p1..p43` frost-on
-population into `/tmp/fdhp01_frozwt_publication_20260611T070334Z` still failed
-package acceptance: `p2` failed closed before WAT publication at
-`HKERNEL-WB11-PERC-E-003` on `1990-308`, emitted-prefix annual closure
-residuals reached `2.4798612273409617 mm` rather than numerical noise, and
-emitted-prefix depth metrics still overreached the FDMC01 legacy envelope. The
-package therefore remains in defect closure rather than advancing MOFE.
+population into `/tmp/fdhp01_layered_store_20260611T080722Z` produced `43/43`
+clean exits, including the previously failing `p2`; the v152
+`Total-Soil + frozwt` annual identity closed to numerical noise
+(`1.2683574368566042e-07 mm` max abs residual), and `frozwt` no longer has an
+exact scalar ratio to `frdp`.
 
-D2 update, 2026-06-11: `SC-WATBAL-001` v151 now pins the legacy
-`frwatc.for`/`watbalprint.for` provenance: `Total-Soil`/`SoilWaterTotal`
-exclude frozen water, and frost-active storage audits use
-`Total-Soil + frozwt`. The active frost exchange seam publishes
-`frost.runtime_frwatc_*` diagnostics, and focused freeze/thaw tests prove the
-in-process exchange algebra is symmetric. The WAT publication source is now
-bound to `frost.runtime_frwatc_frozen_water_after_m`, but the cohort result is
-behaviorally neutral because that runtime diagnostic currently aliases the
-depth-derived store: emitted `frozwt` still tracks `frdp` with exact
-per-prefix scalar ratios. The next D2 pass must separate the true exchanged
-frozen store from `dfrost * theta_active`/`runtime_ws_frz`, then rerun the
-additive identity before D3 depth progression is trusted; `p2` remains an
-independent fail-closed defect.
+Remaining hold, 2026-06-11: the depth/duration physics gate still fails. The
+layered store stops the D2 publication fiction, but it is not the full
+Dun-2008/legacy layered heat-flow port. Cohort maximum frost depth remains near
+the profile bound (`1782.0379909380451 mm` mean openWEPP max versus
+`414.22093023255815 mm` matched legacy mean; median depth correlation
+`-0.27756218032931956`; open frozen-day count is `518.5348837209302` days
+lower than legacy on average). The next executable work is therefore D3:
+complete the layered thermal-resistance/depth-progression port so depth
+advance is bounded by the layered frost state, then rerun the same additive
+identity and depth/duration cohort gates before MOFE.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

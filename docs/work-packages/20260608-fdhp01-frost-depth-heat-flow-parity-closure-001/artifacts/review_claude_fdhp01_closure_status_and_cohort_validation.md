@@ -503,3 +503,68 @@ a true store to carry (D2 dissolves), (b) supplies the per-layer thermal
 resistance that bounds depth progression (D3), and (c) is the natural seam to
 re-test `p2`. The scalar-`frdp` + derived-water model landed by the first
 FDHP01 pass cannot satisfy the v150/v151 audit identity by construction.
+
+### Addendum 2f — layered frozen store landed; D2 and p2 clear, D3 remains
+
+Evidence mode: Static + Ran.
+
+Static:
+
+- `SC-SNOWFREEZE-001` is now v56. It rejects scalar `frdp * theta`
+  frozen-water stores and requires active fine-layer frozen-depth/frozen-water
+  state behind the frost exchange diagnostics.
+- `SC-WATBAL-001` is now v152. It binds WAT `frozwt` to the legacy
+  `Σ soilf(i)` lineage:
+  `Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)`.
+- Production frost exchange now persists layer `wb18_perc_frozen_depth_####`
+  and `wb18_perc_frzw_####` state. Freezing transfers active liquid into
+  `frzw`; thawing returns active ice to liquid.
+
+Ran:
+
+- `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture`:
+  pass, 19 tests. New layered-store vectors reject scalar-store equivalence and
+  prove layer `frzw` updates under freezing.
+- `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract --
+  --nocapture`: pass, 5 tests after v56/v152 contract updates.
+- `cargo test --test hphys0320_stmtim_start_time_source_line_contract --
+  --nocapture`: pass, 3 tests after v56/v152 contract updates.
+- `cargo test -p openwepp-runner --lib fdhp01_wb13 -- --nocapture`: pass,
+  3 tests.
+- `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`, and `cargo deny check`: pass.
+- `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`: pass,
+  release binary SHA
+  `b4cb18a728d1556c2ba50f28d3fe7671f306735a82aa5153682a40ad72c69c8e`.
+- Fresh 43-prefix cohort:
+  `/tmp/fdhp01_layered_store_20260611T080722Z`.
+
+Cohort result:
+
+- `43/43` prefixes exited clean; the prior `p2`
+  `HKERNEL-WB11-PERC-E-003` fail-closed event does not reproduce.
+- Annual `Total-Soil + frozwt` closure returns to numerical noise: max abs
+  residual `1.2683574368566042e-07 mm`, mean abs residual
+  `2.1277404919798806e-09 mm`.
+- Soil-only closure now fails as expected under the v152 additive storage
+  identity: max abs residual `119.04111532237937 mm`.
+- `frozwt/frdp` is no longer an exact scalar publication: `36064`
+  frost-active rows, minimum per-prefix correlation `0.8210678396408895`,
+  median correlation `0.963536279373424`, and maximum ratio standard
+  deviation `0.0700106996666242`.
+- D3 depth parity still fails materially: openWEPP max-depth mean
+  `1782.0379909380451 mm` versus matched legacy mean
+  `414.22093023255815 mm`; median depth correlation
+  `-0.27756218032931956`; open frozen-day count is lower than legacy by
+  `518.5348837209302` days on average.
+
+Disposition:
+
+- D2 is closed for the current package acceptance surface: the ratified
+  additive identity closes and the output no longer audits a fictional scalar
+  `frozwt`.
+- The earlier `p2` fail-closed event is not a standing blocker after the
+  layered-store pass.
+- FDHP01 remains `executed-hold` on D3 only. The next pass should complete the
+  layered thermal-resistance/depth-progression port, then rerun the same
+  additive identity and depth/duration cohort gates.

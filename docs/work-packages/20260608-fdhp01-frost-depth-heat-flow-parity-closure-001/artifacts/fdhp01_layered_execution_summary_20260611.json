@@ -1,0 +1,12 @@
+{
+  "binary_sha256": "b4cb18a728d1556c2ba50f28d3fe7671f306735a82aa5153682a40ad72c69c8e",
+  "clean_prefixes": 43,
+  "failure_details": {},
+  "failures": [],
+  "prefix_count_requested": 43,
+  "release_binary": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "run_root": "/tmp/fdhp01_layered_store_20260611T080722Z",
+  "source_commit": "b726c79e2d0d57452580db2f008a637e0d9dbf93",
+  "wat_outputs": 43,
+  "working_tree_dirty_at_run": true
+}

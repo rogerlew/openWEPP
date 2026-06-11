@@ -914,6 +914,24 @@ pub(crate) fn run_runoff_reconciliation(
                     Some(WB11_ZERO_THRESHOLD),
                     None,
                 ));
+                state_updates.push(WritebackField::bounded(
+                    Self::wb18_perc_state_symbol("theta", layer.layer_index),
+                    layer.theta_after_m,
+                    Some(0.0),
+                    None,
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::wb18_perc_state_symbol("frozen_depth", layer.layer_index),
+                    layer.frozen_depth_m,
+                    Some(0.0),
+                    Some(layer.dg_m),
+                ));
+                state_updates.push(WritebackField::bounded(
+                    Self::wb18_perc_state_symbol("frzw", layer.layer_index),
+                    layer.frzw_m,
+                    Some(0.0),
+                    None,
+                ));
             }
             for hourly in &frost_outcome.hourly_state {
                 state_updates.push(WritebackField::bounded(

@@ -216,6 +216,10 @@ pub(crate) struct FrostLayerTopologyState {
     layer_index: usize,
     fine_layer_count: usize,
     fine_layer_thickness_m: f64,
+    dg_m: f64,
+    theta_after_m: f64,
+    frozen_depth_m: f64,
+    frzw_m: f64,
 }
 
 #[derive(Debug, Clone, Copy)]

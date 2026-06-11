@@ -73,13 +73,14 @@ In scope: standard `ksflag` frost depth model on the frost-active single-OFE sub
 `/wc1/runs/al/algebraic-radium` (`ksflag=1`). Out of scope: kfactor conductivity
 magnitude (legacy-faithful), forest `ksatadj`, frost activation (closed), MOFE/17-OFE
 (item 2), snow magnitude (item 3). Conservation must still close (`frozwt` in storage).
-For frost-active WAT audits, `SC-WATBAL-001` v151 defines that storage term as
+For frost-active WAT audits, `SC-WATBAL-001` v152 defines that storage term as
 `Total-Soil + frozwt`, with `SoilWaterTotal = Total-Soil` as the unfrozen
-`watcon` alias, and binds WAT `frozwt` to
-`frost.runtime_frwatc_frozen_water_after_m`. FDHP01 Addendum 2d showed this
-source binding is still behaviorally neutral because that diagnostic aliases
-the depth-derived store; the next pass must implement the true exchanged frozen
-store behind the diagnostic before D3 depth evidence is trusted.
+`watcon` alias, and binds WAT `frozwt` to the layered legacy `Σ soilf(i)`
+store. FDHP01 Addendum 2f showed D2 additive storage closure on the full
+43-prefix cohort (`1.27e-7 mm` max annual residual) and cleared the prior `p2`
+fail-closed event, but depth/duration parity remains open: max depth still
+pins near `1.78 m` versus matched legacy near `0.41 m`. The next pass must
+complete the layered thermal-resistance/depth-progression port before MOFE.
 
 DC-ExecPlan: `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 Sized by [FDMC01](work-packages/20260608-fdmc01-frost-depth-comparator-characterization-001/);

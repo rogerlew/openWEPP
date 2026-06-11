@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 55
+contract_version: 56
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -138,7 +138,7 @@ Out of scope:
 | INV-SNOWFREEZE-003 | Snow depth-density domain bounds: `Dsold >= 0`, `Dsnew >= 0`, `ρsold >= 0`, `ρsnew >= 0`, and `ρsnew <= 522 kg m^-3`; when `Dsnew = 0`, `ρsnew = 0`. | hard-fail | REF-SNOWFREEZE-CH3-SNOWDENS, REF-SNOWFREEZE-CH3-SNOWDENS-LIM, REF-SNOWFREEZE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-004 | Active snow-update branch consistency: fresh snowfall contribution uses `100 kg m^-3` density and active depth/density updates follow Eq. [3.7.1]-[3.7.5] for settling, snowfall, melt, and melt+snowfall cases; drift-term equations remain governance-only while drift is inactive. | hard-fail | REF-SNOWFREEZE-CH3-SNOWDENS, REF-SNOWFREEZE-CH3-DRIFT-INACTIVE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-005 | Rain/snow partition consistency: precipitation phase partition follows daily temperature logic (`Tmax < 0` => all snow; `Tmin > 0` => all rain; mixed day uses hourly occurrence/diurnal temperature function). | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-HRPRECIP, REF-SNOWFREEZE-CH5-COUPLING | `[DIRECT][Static]` |
-| INV-SNOWFREEZE-006 | Frost heat-flow formulation consistency: frost/thaw bookkeeping uses explicit layered heat-flow relations (`Qsrf`, `Quf`) and harmonic-mean layered thermal conductivity per Eq. [3.8.1]-[3.8.4]. Executable frost-depth progression must derive from hourly signed heat flow and latent-heat depth increments, be bounded by the physical soil profile, and must not use the retired `0.20 m * clamp(mean-temperature / 6 degC)` freeze-index proxy or a `0.20 m` model cap. | hard-fail | REF-SNOWFREEZE-CH3-FROST | `[DIRECT][Static]` |
+| INV-SNOWFREEZE-006 | Frost heat-flow formulation consistency: frost/thaw bookkeeping uses explicit layered heat-flow relations (`Qsrf`, `Quf`) and harmonic-mean layered thermal conductivity per Eq. [3.8.1]-[3.8.4]. Executable frost-depth progression must derive from hourly signed heat flow, latent-heat increments, and the active fine-layer frozen-depth/frozen-water state (`wb18_perc_frozen_depth_####`, `wb18_perc_frzw_####`). Depth must be bounded by the physical soil profile and by the layer/fine-layer capacity exposed by that state; it must not use the retired `0.20 m * clamp(mean-temperature / 6 degC)` freeze-index proxy, a `0.20 m` model cap, or a scalar `frdp * theta` frozen-water surrogate. | hard-fail | REF-SNOWFREEZE-CH3-FROST | `[DIRECT][Static]` |
 | INV-SNOWFREEZE-007 | Winter coupling payload completeness: hourly winter outputs required for downstream consumers are emitted with valid units/domains, including `hrmelt`, `Dfrost`, `Dthaw`, `Nft`, `Ws_frz`, and `InfCap_frz`, and daily snow-water term `S` is consistently reflected in water balance semantics. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, REF-SNOWFREEZE-CH3-MELT, REF-SNOWFREEZE-CH3-FROST, REF-SNOWFREEZE-CH4-COUPLING, REF-SNOWFREEZE-CH5-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-008 | Snow drifting governance invariant: process claims requiring active drift transport equations are non-promotable until authority confirms an active drift implementation path for the target lineage. | governance-fail | REF-SNOWFREEZE-CH3-DRIFT-INACTIVE | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SNOWFREEZE-009 | Winter-routine activation branch is explicit: winter hourly processing is invoked when at least one trigger condition is true (existing snowpack, existing soil frost layer, or average daily temperature below `0 degC`), with no silent bypass. Activation depends on runtime state/forcing triggers, not snow-sidecar or frost-sidecar presence alone; parsed default snow/frost controls are valid controls when the missing-file branch has explicitly set defaults. For standard `ksflag` frost, `frost.options.frost_file_present` is provenance only and must not suppress the frozen-soil routine when `frost.options.wintRed=1` and thermal/runtime frost triggers are active. | hard-fail | REF-SNOWFREEZE-CH3-INTRO, INV-SNOWFREEZE-012, INV-SNOWFREEZE-013 | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -603,7 +603,18 @@ boundary. The requirements below remain active correction authority:
    in production frost-depth publication paths.
 4. WAT publication must expose `frdp` in `mm` from the runtime frost-front
    depth state. `frozwt` remains frozen-water storage, not frost depth.
-5. This phase does not authorize changing `kfactor` magnitude, forest
+5. The executable frost state must carry per-layer frozen depth and frozen
+   water as first-class runtime state (`wb18_perc_frozen_depth_####` and
+   `wb18_perc_frzw_####`). Aggregate `Ws_frz` and downstream `frozwt` lineage
+   are sums of the legacy `soilf` layer store
+   `wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####`.
+   Defining frozen storage as `frdp * scalar`, including
+   `frdp * (theta_field_capacity - theta_residual)`, is invalid.
+6. The depth update must consume the same layered state for resistance/capacity
+   bookkeeping: a layer cannot freeze beyond its depth, frozen water cannot
+   exceed the layer's active storage capacity, and frost-front advance must stop
+   when no valid layer capacity remains.
+7. This phase does not authorize changing `kfactor` magnitude, forest
    `ksatadj`, snow/radiation/ET/runoff production, `p11`, or MOFE routing.
    Full fine-layer water redistribution and heat-flow depth calibration remain
    active FDHP01 closure evidence items unless focused validation proves they
@@ -797,7 +808,7 @@ SIMIMPL32 must implement contract-derived tests that demonstrate:
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Frost-depth heat-flow executable parity remains open after FDHP01 cohort validation. The first FDHP01 implementation retired the freeze-index cap and published WAT `frdp`, but the 2026-06-11 `algebraic-radium` cohort run failed `p2` before WAT publication (`HKERNEL-WB11-PERC-E-003`), emitted-prefix annual closure residuals reached `75.439 mm`, and emitted-prefix depth metrics overreached legacy heat-flow range (`open max depth mean 1782.267 mm`, median correlation `-0.103`). | Blocks frost-depth heat-flow closure and MOFE advancement until the single-OFE cohort runs 43/43, annual closure returns to numerical noise, and depth/duration evidence materially closes the FDMC01 gap without comparator tuning. | active-defect | `[DIRECT][Ran] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | Frost-depth heat-flow executable parity remains open after FDHP01 cohort validation. The first FDHP01 implementation retired the freeze-index cap and published WAT `frdp`, but the 2026-06-11 `algebraic-radium` cohort still failed `p2` before WAT publication (`HKERNEL-WB11-PERC-E-003`), emitted-prefix annual closure residuals remained at `2.4798612273409617 mm` after D1/D2 source-binding, and emitted-prefix depth metrics overreached legacy heat-flow range (`open max depth mean 1782.267 mm`, median correlation `-0.103`). Addendum 2e localized the shared D2/D3 root cause: frozen storage is slaved to `frdp * (theta_field_capacity - theta_residual)` instead of a layered `frwatc`/`soilf` store. | Blocks frost-depth heat-flow closure and MOFE advancement until the single-OFE cohort runs 43/43, annual closure returns to numerical noise, and depth/duration evidence materially closes the FDMC01 gap without comparator tuning. | active-defect | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
 | GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is explicit, but executable cross-contract comparator vectors for frost-hourly internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled frost vectors remains limited pending SIMIMPL32 and SIMIMPL35. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`) and SIMIMPL29 emits the hourly family, but comparator-tier depth/density/melt vector breadth remains limited for broad climate regimes. | Residual risk is evidence-depth, not missing alias/state publication. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -806,6 +817,7 @@ SIMIMPL32 must implement contract-derived tests that demonstrate:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-11` | `56` | `Codex` | FDHP01 layered-state amendment: required executable frost to carry per-layer frozen-depth/frozen-water state, derive aggregate `Ws_frz`/`frozwt` lineage from the legacy `soilf` layer sum, and reject scalar `frdp * theta` frozen-water surrogates as the shared D2/D3 defect. |
 | `2026-06-11` | `55` | `Codex` | FDHP01 post-review cohort validation amendment: reopened `GAP-SNOWFREEZE-002` after the 43-prefix `algebraic-radium` run failed `p2`, annual closure residuals reached `75.439 mm` on emitted prefixes, and frost-depth metrics overreached the physical legacy envelope. |
 | `2026-06-06` | `52` | `Codex` | SNOWSCI-S1 amendment: made runtime SWE derived from the authoritative depth/density store and bound routed snowpack melt to the same storage-loss scalar under `INV-SNOWFREEZE-019`/`TOL-SNOWFREEZE-006`. |
 | `2026-06-11` | `54` | `Codex` | FDHP01 amendment: retired the frost-depth freeze-index proxy and `0.20 m` model cap under `INV-SNOWFREEZE-006`, bound executable depth to hourly heat flow and physical profile depth, added WAT `frdp` publication authority, and closed/re-scoped `GAP-SNOWFREEZE-002`. |

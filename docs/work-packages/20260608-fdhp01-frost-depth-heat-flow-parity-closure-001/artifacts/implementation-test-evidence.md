@@ -32,6 +32,10 @@ Static:
   `frost.runtime_frwatc_frozen_water_after_m`, added initial projection of
   the `frost.runtime_frwatc_*` diagnostics, and added a guard so missing
   exchange-store publication fails closed.
+- Replaced the scalar `frdp * theta_active` frozen-water store with per-layer
+  `wb18_perc_frozen_depth_####` and `wb18_perc_frzw_####` state. WAT `frozwt`
+  now resolves the legacy `Σ soilf(i)` store from active layer state:
+  `Σ(wb18_perc_frzw_#### + thetdr_#### * wb18_perc_frozen_depth_####)`.
 - Removed stale runner/orchestrator constants that represented the retired
   model-depth cap.
 
@@ -40,7 +44,8 @@ Static:
 Ran:
 
 - `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture`
-  - Result: passed, 17 tests.
+  - Result: passed, 19 tests, including layered-store rejection of scalar
+    frozen-water equivalence and per-layer freeze update coverage.
 - `cargo test --test cli04_runner_wat_parquet_contract_derived_tests -- --nocapture`
   - Result: passed, 2 tests.
 - `cargo test --test sim_contract_boundary_unit_registry -- --nocapture`
@@ -72,14 +77,16 @@ The landed tests prove narrow contract-critical implementation boundaries:
 retired cap removed, separate `Qsrf`/`Quf` publication, warm heat-flow thaw
 accepted for deep prior frost, frozen-water overdraw fail-closed, WAT `frdp`
 value publication/profile bound/versioning, and unit registry authority
-present.
+present. The layered continuation adds tests proving the published frozen store
+is no longer the scalar `frdp * theta` quantity and that layer `frzw` changes
+with freeze/thaw.
 
 Post-review cohort validation supersedes the earlier "unavailable FDMC01
-manifest" caveat: direct measurement was available and was run. The cohort gate
-failed (`p2` no WAT, annual closure max residual `2.4798612273409617 mm` after
-the D1 `SoilWaterTotal` fix and the v151 `frozwt` source binding, depth
-overreach). The follow-on `frozwt/frdp` audit still shows exact per-prefix
-scalar ratios over `35297` frost-active rows, so
-`frost.runtime_frwatc_frozen_water_after_m` currently aliases the depth-derived
-store rather than a true independent exchanged frozen store. This
-implementation remains held.
+manifest" caveat: direct measurement was available and was run. The layered
+cohort gate at `/tmp/fdhp01_layered_store_20260611T080722Z` produced `43/43`
+clean exits, closed the annual `Total-Soil + frozwt` identity to numerical
+noise (`1.2683574368566042e-07 mm` max abs residual), and broke the exact
+`frozwt/frdp` scalar relation. This implementation remains held only on the D3
+depth/duration parity gate: max-depth mean `1782.0379909380451 mm` versus
+legacy `414.22093023255815 mm`, median depth correlation
+`-0.27756218032931956`.

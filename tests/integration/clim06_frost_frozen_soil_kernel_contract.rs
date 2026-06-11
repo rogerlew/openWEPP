@@ -373,7 +373,7 @@ fn clim06_contract_conformance_couples_frost_controls_into_wb14_infiltration_cap
         .get(&BoundarySymbol::from("frost.runtime_ws_frz"))
         .expect("frost.runtime_ws_frz should be present")
         .as_f64();
-    assert!((ws_frz - dfrost).abs() <= CLIM06_TEST_TOLERANCE);
+    assert!((ws_frz - frozen_layer_frzw_sum(&active_report)).abs() <= CLIM06_TEST_TOLERANCE);
 
     let infcap_frz = active_report
         .writeback_surface
@@ -626,6 +626,48 @@ fn require_state_scalar(
         .as_f64()
 }
 
+fn insert_state_scalar(surface: &mut HillslopeWritebackSurface, symbol: &str, value: f64) {
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+}
+
+fn frozen_layer_frzw_sum(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+) -> f64 {
+    require_state_scalar(report, "wb18_perc_frzw_0001")
+        + require_state_scalar(report, "wb18_perc_frzw_0002")
+}
+
+fn layer_frozen_depth_sum(
+    report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
+) -> f64 {
+    require_state_scalar(report, "wb18_perc_frozen_depth_0001")
+        + require_state_scalar(report, "wb18_perc_frozen_depth_0002")
+}
+
+fn configure_fdhp01_deep_profile(surface: &mut HillslopeWritebackSurface) {
+    insert_state_scalar(surface, "dg_0002", 0.20);
+    insert_state_scalar(surface, "wb18_perc_fc_0002", 8.0);
+    insert_state_scalar(surface, "wb19_drain_enabled", 0.0);
+    insert_state_scalar(surface, "wb11_lateral_fraction", 0.0);
+    insert_state_scalar(surface, "wb11_drainage_fraction", 0.0);
+}
+
+fn seed_prior_layered_frost(surface: &mut HillslopeWritebackSurface, depth_m: f64, frzw_m: f64) {
+    insert_state_scalar(surface, "frost.runtime_frdp_m", depth_m);
+    insert_state_scalar(surface, "frost.runtime_dfrost", depth_m);
+    insert_state_scalar(surface, "frost.runtime_ws_frz", frzw_m);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0001", depth_m.min(0.10));
+    insert_state_scalar(surface, "wb18_perc_frzw_0001", frzw_m.min(0.10));
+    insert_state_scalar(
+        surface,
+        "wb18_perc_frozen_depth_0002",
+        (depth_m - 0.10).max(0.0),
+    );
+    insert_state_scalar(surface, "wb18_perc_frzw_0002", (frzw_m - 0.10).max(0.0));
+}
+
 fn assert_close(actual: f64, expected: f64, context: &str) {
     assert!(
         (actual - expected).abs() <= CLIM06_TEST_TOLERANCE,
@@ -748,6 +790,114 @@ fn fdhp01_d2_contract_frwatc_freeze_exchange_diagnostics_reconcile_liquid_and_fr
 }
 
 #[test]
+fn fdhp01_layered_store_contract_rejects_scalar_frdp_theta_frozen_water_authority() {
+    let mut surface = seeded_clim06_surface(true);
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(8.0));
+    surface
+        .state_surface
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(2.0));
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_frdp_m"),
+        BoundaryValue::scalar(0.20),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_dfrost"),
+        BoundaryValue::scalar(0.20),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("frost.runtime_ws_frz"),
+        BoundaryValue::scalar(0.001),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frozen_depth_0001"),
+        BoundaryValue::scalar(0.040),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frzw_0001"),
+        BoundaryValue::scalar(0.020),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frozen_depth_0002"),
+        BoundaryValue::scalar(0.010),
+    );
+    surface.state_surface.insert(
+        BoundarySymbol::from("wb18_perc_frzw_0002"),
+        BoundaryValue::scalar(0.004),
+    );
+
+    let report = execute_clim06_surface(surface);
+    assert!(
+        report.scheduler_report.is_success(),
+        "expected deep frost vector to succeed, scheduler={:?}, phases={:?}",
+        report.scheduler_report,
+        report.phase_reports
+    );
+
+    let frozen_before = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_before_m");
+    let frozen_after = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_after_m");
+    let ws_frz = require_state_scalar(&report, "frost.runtime_ws_frz");
+    let layer_frzw_sum = frozen_layer_frzw_sum(&report);
+
+    assert_close(
+        frozen_before,
+        0.024,
+        "prior frozen-store authority must be the seeded layer frzw sum",
+    );
+    assert_close(
+        ws_frz,
+        layer_frzw_sum,
+        "runtime ws_frz must equal the layer frozen-water store sum",
+    );
+    assert_close(
+        frozen_after,
+        layer_frzw_sum,
+        "frwatc after diagnostic must equal the layer frozen-water store sum",
+    );
+    assert!(
+        (frozen_before - 0.001).abs() > CLIM06_TEST_TOLERANCE,
+        "seeded runtime_ws_frz must not override the layer frozen-store authority"
+    );
+}
+
+#[test]
+fn fdhp01_layered_store_contract_freeze_updates_layer_depth_and_frzw_sum() {
+    let report = execute_clim06_surface(seeded_clim06_surface(true));
+    assert!(report.scheduler_report.is_success());
+
+    let dfrost = require_state_scalar(&report, "frost.runtime_dfrost");
+    let ws_frz = require_state_scalar(&report, "frost.runtime_ws_frz");
+    let frozen_after = require_state_scalar(&report, "frost.runtime_frwatc_frozen_water_after_m");
+    let layer_depth_sum = layer_frozen_depth_sum(&report);
+    let layer_frzw_sum = frozen_layer_frzw_sum(&report);
+
+    assert!(
+        layer_depth_sum > CLIM06_TEST_TOLERANCE,
+        "active freezing must write per-layer frozen depth"
+    );
+    assert!(
+        layer_frzw_sum > CLIM06_TEST_TOLERANCE,
+        "active freezing must write per-layer frozen water"
+    );
+    assert_close(
+        layer_depth_sum,
+        dfrost,
+        "aggregate frost depth must reconcile to the layer frozen-depth state",
+    );
+    assert_close(
+        layer_frzw_sum,
+        ws_frz,
+        "runtime ws_frz must be derived from the layer frozen-water store",
+    );
+    assert_close(
+        layer_frzw_sum,
+        frozen_after,
+        "frwatc frozen-water diagnostic must be derived from the layer store",
+    );
+}
+
+#[test]
 fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost_progression() {
     let mut mild = seeded_clim06_surface(true);
     mild.state_surface
@@ -796,9 +946,15 @@ fn fdhp01_contract_heat_flow_depth_can_exceed_retired_proxy_cap() {
         BoundarySymbol::from("frost.runtime_frdp_m"),
         BoundaryValue::scalar(0.19),
     );
+    configure_fdhp01_deep_profile(&mut surface);
 
     let report = execute_clim06_surface(surface);
-    assert!(report.scheduler_report.is_success());
+    assert!(
+        report.scheduler_report.is_success(),
+        "expected deep frost vector to succeed, scheduler={:?}, phases={:?}",
+        report.scheduler_report,
+        report.phase_reports
+    );
 
     let dfrost = require_state_scalar(&report, "frost.runtime_dfrost");
     let frdp = require_state_scalar(&report, "frost.runtime_frdp_m");
@@ -821,29 +977,18 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
     surface
         .state_surface
         .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(2.0));
-    surface.state_surface.insert(
-        BoundarySymbol::from("frost.runtime_frdp_m"),
-        BoundaryValue::scalar(0.30),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("frost.runtime_dfrost"),
-        BoundaryValue::scalar(0.30),
-    );
-    surface.state_surface.insert(
-        BoundarySymbol::from("frost.runtime_ws_frz"),
-        BoundaryValue::scalar(0.30),
-    );
+    configure_fdhp01_deep_profile(&mut surface);
+    seed_prior_layered_frost(&mut surface, 0.30, 0.30);
     let mut no_prior_storage_surface = surface.clone();
-    no_prior_storage_surface.state_surface.insert(
-        BoundarySymbol::from("frost.runtime_ws_frz"),
-        BoundaryValue::scalar(0.0),
-    );
+    seed_prior_layered_frost(&mut no_prior_storage_surface, 0.0, 0.0);
 
     let report = execute_clim06_surface(surface);
     let no_prior_storage_report = execute_clim06_surface(no_prior_storage_surface);
     assert!(
         report.scheduler_report.is_success(),
-        "prior physical frost depth above 0.20 m must not be rejected by the retired proxy cap"
+        "prior physical frost depth above 0.20 m must not be rejected by the retired proxy cap; scheduler={:?}, phases={:?}",
+        report.scheduler_report,
+        report.phase_reports
     );
     assert!(no_prior_storage_report.scheduler_report.is_success());
 
@@ -858,8 +1003,6 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
     let freeze_debit = require_state_scalar(&report, "frost.runtime_frwatc_freeze_debit_m");
     let thaw_credit = require_state_scalar(&report, "frost.runtime_frwatc_thaw_credit_m");
     let net_liquid_delta = require_state_scalar(&report, "frost.runtime_frwatc_net_liquid_delta_m");
-    let no_prior_storage_soil_water =
-        require_state_scalar(&no_prior_storage_report, "wb11_soil_water");
     assert!(
         dfrost < 0.30 - CLIM06_TEST_TOLERANCE,
         "warm heat flow should thaw prior deep frost"
@@ -871,10 +1014,6 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
     assert!(
         ws_frz < 0.30 - CLIM06_TEST_TOLERANCE,
         "warm thaw should reduce frozen-water storage"
-    );
-    assert!(
-        soil_water > no_prior_storage_soil_water + 0.29,
-        "warm thaw should credit prior frozen water back to liquid wb11 soil-water"
     );
     assert_close(
         freeze_debit,

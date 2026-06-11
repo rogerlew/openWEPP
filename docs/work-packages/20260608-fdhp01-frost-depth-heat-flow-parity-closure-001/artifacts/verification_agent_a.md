@@ -26,6 +26,9 @@ Final local verification:
   verification point; Claude's post-review cohort validation later reopened
   `GAP-SNOWFREEZE-002` and advanced `SC-SNOWFREEZE-001` to v55. The later D1
   `SoilWaterTotal` closure correction advanced `SC-WATBAL-001` to v149.
+- Static: the layered-store continuation later advanced `SC-SNOWFREEZE-001` to
+  v56 and `SC-WATBAL-001` to v152, closing D2 additive storage and leaving D3
+  depth/duration parity open.
 - Ran: `cargo test --workspace` passed after the contract-version expectation
   tests were updated.
 

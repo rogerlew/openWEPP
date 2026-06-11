@@ -18,6 +18,8 @@ Date: 2026-06-11
 - Frozen-water exchange now fails closed when newly frozen storage would exceed
   available liquid `wb11_soil_water`; no clamp-to-zero liquid storage is used.
   Warm thaw returns prior frozen storage to liquid `wb11_soil_water`.
+- Active frost now carries per-layer frozen-depth and active ice state; scalar
+  `frdp * theta` frozen-water publication is not contract-authorized.
 - No `.unwrap()` or `.expect()` was added to production paths.
 - No `unsafe` code was added.
 - No fallback wrapper silently masks a missing required dependency. Runtime
@@ -36,7 +38,8 @@ Date: 2026-06-11
 - `cargo test --workspace`
 - `cargo deny check`
 
-All listed Rust gates passed on 2026-06-11. The later post-review
-`algebraic-radium` cohort gate failed (`p2` no WAT, annual closure residuals up
-to `2.4798612273409617 mm` after the D1 `SoilWaterTotal` fix), so
-kernel-profile closure is held pending FDHP01 correction.
+All listed Rust gates passed on 2026-06-11. The layered-store
+`algebraic-radium` cohort gate also ran `43/43` prefixes clean and restored
+the annual `Total-Soil + frozwt` identity to numerical noise
+(`1.2683574368566042e-07 mm` max abs residual). Kernel-profile closure is still
+held for D3 because depth/duration parity remains materially off.

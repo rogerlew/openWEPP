@@ -10,11 +10,11 @@ Date: 2026-06-11
 
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`
   - FDHP01 heat-flow depth addendum, `frdp` alias authority, and
-    `GAP-SNOWFREEZE-002` v55 reopening after cohort validation failed.
+    `GAP-SNOWFREEZE-002` v56 layered-store / D3 hold amendment.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
-    pinned `Total-Soil + frozwt` storage authority, and v151 `frozwt`
-    publication source binding.
+    pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
+    publication source binding, and v152 layered `Σ soilf(i)` store binding.
 - `docs/specifications/subsystems/runner/openwepp-hillslope-cli-specification.md`
   - WAT dataset version `1.4` and `frdp` extension posture.
 - `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/**`
@@ -24,16 +24,18 @@ Date: 2026-06-11
 
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling.rs`
   - Replaced freeze-index proxy with hourly signed heat-flow frost-depth
-    progression, separate lower-front `Quf`, and fail-closed frozen-water
-    exchange.
+    progression, separate lower-front `Quf`, fail-closed frozen-water
+    exchange, and per-layer frozen-depth/`frzw` storage.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
     fail-closed source symbol before frost activation.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
-  - Frost outcome/profile-depth fields and heat-flow constants.
+  - Frost outcome/profile-depth fields, heat-flow constants, and layer frozen
+    depth/`frzw` state fields.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
-  - Frost writeback bounds now use physical profile depth.
+  - Frost writeback bounds now use physical profile depth and persist layer
+    frozen-depth/`frzw` state.
 - `crates/openwepp-hillslope-orchestrator/src/constants.rs`
   - Removed retired model-depth cap constant.
 - `crates/openwepp-hillslope-output/src/hillslope_wat.rs`
@@ -66,17 +68,18 @@ Date: 2026-06-11
     CLIM06 assertions away from exact proxy expectations; added separate
     `Qsrf`/`Quf` and frozen-water overdraw tests. D2 added
     `frost.runtime_frwatc_*` seam diagnostics and freeze/thaw reconciliation
-    assertions.
+    assertions. The layered continuation added scalar-store rejection and
+    layer `frzw` update tests.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v151.
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v56 and
+    `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v55 and
-    `SC-WATBAL-001` v151.
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v56 and
+    `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
     `frost.runtime_frwatc_frozen_water_after_m`, not `runtime_ws_frz`.
@@ -93,3 +96,10 @@ Date: 2026-06-11
 - `fdhp01_depth_metrics_20260611.csv`
 - `fdhp01_frozwt_frdp_ratio_20260611.csv`
 - `fdhp01_execution_summary_20260611.json`
+- `fdhp01_layered_closure_summary_20260611.json`
+- `fdhp01_layered_run_status_20260611.tsv`
+- `fdhp01_layered_activation_summary_20260611.csv`
+- `fdhp01_layered_annual_closure_residuals_20260611.csv`
+- `fdhp01_layered_depth_metrics_20260611.csv`
+- `fdhp01_layered_frozwt_frdp_ratio_20260611.csv`
+- `fdhp01_layered_execution_summary_20260611.json`

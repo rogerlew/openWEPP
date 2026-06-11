@@ -7,7 +7,9 @@
   vertical frost mechanism on single-OFE before routing (so its error is not aliased into
   MOFE) + the FDMC01 sizing verdict (materially off). DC-ExecPlan:
   `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
-  (Was: Stage-2 deferred physics-magnitude.)
+  Current package status after the 2026-06-11 layered-store continuation is
+  `executed-hold`: D2 additive storage closure and the prior `p2` fail-closed
+  event are cleared, but D3 depth/duration parity remains open.
 - `date`: 2026-06-07 (created)
 - `relates`: [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md),
   [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md),
@@ -18,18 +20,18 @@
   sanction the proxy by contract). Evidence: openWEPP depth capped 200 mm vs legacy
   240–503 mm (43/43 exceed cap), depth-series median correlation 0.13, **and** openWEPP
   frozen-water duration +258 days (~34% longer — the proxy ratchets and over-persists).
-  `execution still deferred to Stage-2 (post-MOFE) per ROADMAP staging.`
+  FDHP01 retired the cap and added a layered frozen store, but the current D3 cohort still
+  pins near `1.78 m` versus matched legacy near `0.41 m`.
 - `sibling`: [snow physics-magnitude (Stage 2)](20260605-snow-code-deferred-science-review.md)
 
-## Why this is deferred, not now
+## Why this is active before MOFE
 
-Frost **activation** and **conservation** are closed (FQ-4: `ksflag` frost engages on
-the agricultural substrate, 43/43 prefixes, closure ~3.22e-11 mm). What remains is the
-**fidelity of the frost depth model** — and depth fidelity is a *magnitude* question,
-which the [closure-not-magnitude principle](../ROADMAP.md) defers to the Stage-2 tier,
-judged last against an already-closed and routed balance so depth-model error is not
-aliased with routing or other open magnitudes. Nothing earlier blocks on it: MOFE
-(rung-3) needs frost to *conserve* (done), not to be depth-faithful.
+Frost **activation** and single-OFE conservation are closed (FQ-4 plus FDHP01 D2 layered
+storage: 43/43 frost-active prefixes and annual `Total-Soil + frozwt` closure to
+`1.27e-7 mm`). What remains is the **fidelity of the frost depth model**. ROADMAP
+re-sequenced this item before MOFE so vertical frost depth/duration error is not aliased
+into routing validation. MOFE stays blocked until the D3 layered
+thermal-resistance/depth-progression gate closes.
 
 ## The gap
 

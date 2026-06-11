@@ -11,6 +11,8 @@ Evidence mode: Static
   - `fdhp01_contract_heat_flow_publishes_separate_surface_and_unfrozen_fluxes`
   - `fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost`
   - `fdhp01_contract_frozen_water_exchange_hard_fails_on_liquid_overdraw`
+  - `fdhp01_layered_store_contract_rejects_scalar_frdp_theta_frozen_water_authority`
+  - `fdhp01_layered_store_contract_freeze_updates_layer_depth_and_frzw_sum`
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - extended WAT parquet metadata test to require `frdp` in `mm` and dataset
     version `1.4`.
@@ -43,6 +45,8 @@ production edits:
 - WAT output does not version or bound `frdp`;
 - WAT `frozwt` can be published from a depth-derived proxy or missing exchange
   store;
+- the active frost exchange store can be a scalar `frdp * theta` proxy instead
+  of a layer-state legacy `Σ soilf(i)` store;
 - the unit registry lacks `hillslope_wat.frdp`.
 
 ## Post-Implementation Proof Points
@@ -57,5 +61,7 @@ Ran:
   enforcement.
 - Runner WB13 fixture passes for consuming
   `frost.runtime_frwatc_frozen_water_after_m` rather than `runtime_ws_frz`.
+- CLIM06 layered-store fixtures pass for rejecting scalar frozen-water
+  equivalence and proving per-layer frozen depth/`frzw` updates with freezing.
 - WAT metadata tests pass for required `frdp` field metadata and dataset
   version `1.4`.

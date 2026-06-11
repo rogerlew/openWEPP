@@ -16,6 +16,16 @@ Evidence and disposition artifacts for
   `fdhp01_frozwt_frdp_ratio_20260611.csv`,
   `fdhp01_execution_summary_20260611.json`: generated cohort reports copied
   from `/tmp/fdhp01_frozwt_publication_20260611T070334Z/reports/`.
+- `fdhp01_layered_closure_summary_20260611.json`: compact layered-store cohort
+  summary showing D2 additive storage closure and remaining D3 hold evidence.
+- `fdhp01_layered_run_status_20260611.tsv`,
+  `fdhp01_layered_activation_summary_20260611.csv`,
+  `fdhp01_layered_annual_closure_residuals_20260611.csv`,
+  `fdhp01_layered_depth_metrics_20260611.csv`,
+  `fdhp01_layered_frozwt_frdp_ratio_20260611.csv`,
+  `fdhp01_layered_execution_summary_20260611.json`: generated layered-store
+  cohort reports copied from
+  `/tmp/fdhp01_layered_store_20260611T080722Z/reports/`.
 - `required-reading-map.md`: tiered authority map (living artifact).
 - `contract-implementation-evidence.md`: canonical contract edits.
 - `contract-test-implementation-evidence.md`: contract-derived tests.
