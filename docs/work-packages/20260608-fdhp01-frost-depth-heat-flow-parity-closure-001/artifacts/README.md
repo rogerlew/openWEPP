@@ -84,6 +84,13 @@ Evidence and disposition artifacts for
 - `fdhp01_increment_c1_p43_aggregate_cap_smoke_20260611.json`: targeted p43
   smoke after the aggregate-cap localization; storage overfill collapsed to
   `ProfilePorosityCap`, but annual closure still failed.
+- `d3-increment-c1a-seam-accounting-20260611.md`: staged Increment C1a
+  diagnostic evidence; records the p43/p1 day-93/94 capacity-boundary failure,
+  the first fine-layer over-capacity rows, and the C1b accounting requirement.
+- `fdhp01_increment_c1a_seam_accounting_summary_20260611.json`,
+  `fdhp01_increment_c1a_seam_ledger_excerpt_20260611.csv`: generated C1a
+  ledger summary/excerpt from
+  `/tmp/fdhp01_increment_c1a_diagnostic_20260611T231749Z`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

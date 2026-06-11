@@ -134,9 +134,24 @@ Increment C1 attempt result:
   by up to `200.39845415539014 mm`.
 - The attempted production/contract/test edits were backed out.
 
-First actionable item: re-execute Increment C1 from the committed Increment B
-boundary, but first define the exact `watpdg`/`watbtm` accounting target across
-WB18/WB19/WAT outputs. Do not retain C1 capacity code, `mlttp`/`mltbtm` thaw
-arms, or advance to MOFE until years 2-6 conservation remains at noise, the
-cohort is `43/43`, and the full depth/duration acceptance gate passes without
-comparator tuning.
+Increment C1a diagnostic result:
+
+- Codex ran the seam-accounting diagnostic without the comparator subagent.
+  The temporary ledger patch was removed before commit.
+- p43 and p1 both failed at `HKERNEL-WB14-RUNOFF-E-003` on simulation day 94;
+  the day-93 write exceeded aggregate `ul` by about `50 m`, and the first
+  fine-layer capacity excess was already present on day 1.
+- The appended C1a spec in `d3-fine-sublayer-port-scope.md` is now binding
+  for the next implementation increment: single daily ingress, fine-state
+  ownership until egress, capacity-bound freezing, explicit
+  `watpdg`/`watbtm` identity routing, and wholesale coarse-state recomputation
+  at egress.
+
+First actionable item: execute Increment C1b from the committed boundary to the
+C1a accounting specification. Its first gate is passing the p43/p1 day-94
+capacity boundary with no aggregate `frzw > ul` rows and shadow `frwatc`
+residuals at numerical noise; only then re-run the years 2-6 conservation
+cohort. Do not retain prior C1 capacity code, `mlttp`/`mltbtm` thaw arms, or
+advance to MOFE until years 2-6 conservation remains at noise, the cohort is
+`43/43`, and the full depth/duration acceptance gate passes without comparator
+tuning.

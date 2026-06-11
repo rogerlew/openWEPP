@@ -385,3 +385,69 @@ citations against the pinned baseline); the legacy↔openWEPP alias table
 present; the test list concrete enough to write red tests directly; sizing
 recommendation stated. No production code edits. On completion, this
 artifact becomes required-reading item 1 for the implementation pass.
+
+## Addendum C1a — seam accounting specification (2026-06-11)
+
+Evidence: Ran + Static. Diagnostic production edits: none retained.
+
+Increment C1a ran a temporary env-gated ledger on the current B-boundary source
+without the comparator subagent. The targeted p43 and p1 runs both stopped at
+`HKERNEL-WB14-RUNOFF-E-003` on simulation day 94 (`1990-04-04`). The first
+illegal write is the previous runoff-reconciliation frost pass on day 93
+(`1990-04-03`):
+
+| Prefix | Day-93 aggregate `frzw` | Aggregate `ul` | `frzw - ul` excess | Fine `slsic` capacity excess |
+|---|---:|---:|---:|---:|
+| p43 | `50.58972525883585 m` | `0.543517677999698 m` | `50.049070656902806 m` | `50.324510845402415 m` |
+| p1 | `51.18301848887181 m` | `0.543517677999698 m` | `50.644102740198335 m` | `50.91552839450165 m` |
+
+The first fine-layer capacity excess was already present on day 1:
+`0.041949772970434 m` for p43 and `0.042174177930601 m` for p1. The largest
+observed shadow `frwatc(1)` residual before the day-93 re-freeze was
+`33.4009943366675 m` for p43 and `33.79382883453257 m` for p1. The archived C1
+p43 aggregate-cap smoke still matters: it collapsed published storage to
+`ProfilePorosityCap`, but annual closure still missed by up to
+`200.39845415539014 mm`, so an aggregate clamp after the handoff is not a valid
+accounting repair.
+
+Static attribution:
+
+- `apply_shadow_frwatc_ingress` applies `st - yst` into fine state
+  (`coupling.rs:301`).
+- `aggregate_shadow_layer` recomputes the shadow coarse state and sets `yst`
+  (`coupling.rs:361`).
+- The read side correctly rejects `frzw > ul` (`coupling.rs:1228`).
+- `freeze_fine_front` adds `slsw_theta * dz` to `slsic` without the legacy
+  remaining-capacity bound `ul/dg * slfsd - slsic` (`coupling.rs:672`).
+- Runoff writeback writes aggregate `frzw` and the fine shadow arrays as
+  separate surfaces (`hydrology_phase_runoff_reconciliation.rs:949` and
+  `:1006`).
+
+Accounting specification for C1b:
+
+1. **Single daily ingress.** Apply `st - yst` once at the day ingress point
+   corresponding to legacy `frwatc(1)`. Non-owning diagnostic calls must not
+   re-apply the handoff.
+2. **Fine-state ownership.** From ingress until egress, fine state owns liquid
+   and ice. Coarse `theta`/`frzw`/`frozen_depth` are derived outputs, not
+   independently mutable stores.
+3. **Capacity-bound freeze.** `frzng`/`frznw` moves liquid to ice only up to
+   `ul/dg * slfsd - slsic` for each fine layer, debiting `slsw` or `nwfrzz`
+   in the same ledger entry and carrying unused energy forward without creating
+   ice beyond capacity.
+4. **Thaw and redistribution double-entry.** `mlttp`, `mltbtm`, and `watdst`
+   convert `slsic` to fine-layer liquid, redistribute within capacity, and
+   route any overflow to named `watpdg`/`watbtm` surfaces. Those surfaces must
+   enter the WAT identity explicitly; they cannot disappear outside
+   `Total-Soil + frozwt`.
+5. **Wholesale egress.** The egress corresponding to legacy `frwatc(0)`
+   recomputes coarse `theta`, `frzw`, `frozen_depth`, `soil_water`, `st`,
+   `yst`, and `nwfrzz` from the fine state. It must not patch a scalar delta
+   on top of a separately mutated coarse pool.
+6. **Writeback guards.** Egress writebacks must enforce `frzw <= ul` and
+   `slsic <= ul/dg * slfsd`; any valid overflow path must be named and balanced
+   before the read-side guard sees the next day.
+
+C1b acceptance starts by passing the day-94 p43 and p1 boundary with zero
+aggregate `frzw > ul` rows and shadow `frwatc` residuals at numerical noise.
+Only then should the full years-2-6 additive-identity cohort gate be re-run.

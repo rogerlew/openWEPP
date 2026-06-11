@@ -159,3 +159,6 @@ Date: 2026-06-11
 - `fdhp01_increment_c1_frozwt_frdp_ratio_20260611.csv`
 - `fdhp01_increment_c1_activation_summary_20260611.csv`
 - `fdhp01_increment_c1_p43_aggregate_cap_smoke_20260611.json`
+- `d3-increment-c1a-seam-accounting-20260611.md`
+- `fdhp01_increment_c1a_seam_accounting_summary_20260611.json`
+- `fdhp01_increment_c1a_seam_ledger_excerpt_20260611.csv`

@@ -152,6 +152,15 @@ edits; bounded instrumentation only.
   code-point citations; no production edits landed; tree returns to the B
   boundary.
 
+**Execution result (2026-06-11):** executed-hold diagnostic complete. See
+`d3-increment-c1a-seam-accounting-20260611.md`,
+`fdhp01_increment_c1a_seam_accounting_summary_20260611.json`, and the C1a
+addendum appended to `d3-fine-sublayer-port-scope.md`. The first hard boundary
+is day 93/94 on both p43 and p1: the freeze path writes aggregate `frzw` about
+`50 m` above `ul`, after shadow `frwatc(1)` residuals reach about `33 m`.
+C1b must implement the C1a single-owner, capacity-bound handoff specification
+before any cohort acceptance run.
+
 ## Increment C1b — capacity constraints + `watdst` redistribution + overflow surfaces
 
 **Objective:** land the water-side infrastructure thaw needs, on the

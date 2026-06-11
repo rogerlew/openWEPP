@@ -197,6 +197,24 @@ Ran:
 - The attempted production, contract, and test edits were backed out. The
   package remains at the Increment B boundary (`SC-SNOWFREEZE-001` v59).
 
+## Increment C1a Diagnostic Evidence
+
+- Persisted compact reports:
+  - `d3-increment-c1a-seam-accounting-20260611.md`
+  - `fdhp01_increment_c1a_seam_accounting_summary_20260611.json`
+  - `fdhp01_increment_c1a_seam_ledger_excerpt_20260611.csv`
+- C1a ran without the comparator subagent per user quota direction. A
+  temporary env-gated ledger patch was removed before commit.
+- Both p43 and p1 failed at `HKERNEL-WB14-RUNOFF-E-003` on simulation day 94;
+  the day-93 write already exceeded aggregate `ul` by `50.049070656902806 m`
+  on p43 and `50.644102740198335 m` on p1.
+- The first fine-layer capacity excess was present on day 1, and shadow
+  `frwatc(1)` residuals reached about `33 m` before the day-93 re-freeze.
+- C1b is bound to the appended C1a seam accounting specification in
+  `d3-fine-sublayer-port-scope.md`: single daily ingress, fine-state
+  ownership until egress, capacity-bound freezing, explicit `watpdg`/`watbtm`
+  identity routing, and wholesale coarse-state recomputation at egress.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
