@@ -176,8 +176,27 @@ publication-safe Daymet CLI audit:
    noise (`max_abs=3.22e-11 mm`). The old FROSTVAL01 `frost-break` verdict is
    withdrawn as a defective ledger artifact. Package:
    `20260608-fq4-ksflag-frost-activation-closure-001/`.
+7e. **FDMC01 frost-depth comparator characterization** *(complete)* — sized the
+   frost depth-model gap left open by FQ-4: openWEPP's freeze-index proxy
+   (`frdp = 0.20·clamp(−mean_temp/6)`, capped 0.20 m) vs legacy heat-flow.
+   Verdict **materially off** — depth capped 200 mm vs legacy 240–503 mm
+   (43/43 exceed the cap), depth-series median correlation 0.13, frozen
+   duration +258 days (ratchet over-persistence). This verdict + the
+   settle-vertical-before-routing principle promoted frost-depth heat-flow
+   parity to ROADMAP queue item 1 ahead of MOFE (2026-06-07). Package:
+   `20260608-fdmc01-frost-depth-comparator-characterization-001/`.
+7f. **FDHP01 frost-depth heat-flow parity** *(scaffolded — ROADMAP item 1, next
+   to run)* — DC-ExecPlan to replace the freeze-index proxy with the
+   energy-balance heat-flow depth model (`INV-SNOWFREEZE-006`/`-012`, legacy
+   `frostn` lineage, CRM Ch. 3.8, Dun et al. 2010), closing
+   `GAP-SNOWFREEZE-002` on the frost-active single-OFE substrate with
+   conservation still closing. Scaffold updated 2026-06-10 to current guidance
+   (post-refactor source localization, §4a subagent requirement, owcmp
+   comparator execution, tiered required reading). Package:
+   `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
-   vertically closed and frost-gated.
+   vertically closed and frost-settled (depth model at parity per item 7f, not
+   just the FQ-4 gate).
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
    melt/settling/density/partition equation adjudication against external authority
    (CRM Ch. 3.7, WEPP User Doc), behind the protected boundary. Distinct from snow
@@ -203,8 +222,9 @@ archival per-package detail.
 | SNOWSCI | `snowsci-stage1` (2026-06-06) | Stage 1 (conservation) **closed**; Stage 2 (magnitude) deferred | [series/snowsci.md](series/snowsci.md) |
 | Governance / ADR | `adr0017` (2026-06-05) | comparator-distrust ratified | [series/governance.md](series/governance.md) |
 
-**Frost (FROSTVAL / FQ):** the recent rung-2 frost packages are logged inline in the
-active-work-sequence narrative above (items 7, 7a–7d), not in a separate series doc.
+**Frost (FROSTVAL / FQ / FDMC / FDHP):** the recent rung-2 frost packages are logged
+inline in the active-work-sequence narrative above (items 7, 7a–7f), not in a
+separate series doc.
 
 **Other / historical series** (`auth`, `soilauth`, `infile`, `inspec`, `sci`,
 `simimpl`, `wshedimpl`, `inimpl`, `arch`, `pl`, `clim`, `erod`, `wb`, `mofe`,

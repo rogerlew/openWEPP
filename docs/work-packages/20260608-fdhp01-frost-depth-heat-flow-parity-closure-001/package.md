@@ -70,20 +70,29 @@ open ~34% longer than legacy.
     implementation spec as needed, **close `GAP-SNOWFREEZE-002`**).
   - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md` (downstream:
     closure must still hold with the new `frozwt` magnitude/timing).
-- Production/test files:
+- Production/test files (localization re-verified 2026-06-10 after REFACTOR015/019–021
+  split the hydrology modules; cite symbols, not pre-refactor line numbers):
+  - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/coupling.rs`
+    — **the proxy-replacement seam.** Holds the freeze-index proxy
+    (`freeze_index`/`thaw_index` over `FROST_RUNTIME_FREEZE_INDEX_SCALE_C`, the
+    `frdp_m.max(WB14_FROST_MAX_DEPTH_M * freeze_index)` ratchet), the hourly
+    `qsrf_w_m2`/`quf_w_m2` heat-flux block, `kfactor1..3` selection
+    (`resolve_frozen_soil_kfactor`), and `resolve_active_frost_coupling` /
+    `compute_active_frost_coupling`. The heat-flow model replaces the proxy here.
   - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
-    (the freeze-index proxy `:3290`–`:3335`, `frdp_m`/`dfrost`/`ws_frz`, the `qsrf`/`quf`
-    heat-flux + resistance block `:3455`–`:3490`, `kfactor` selection — the proxy is
-    replaced by the heat-flow model here).
-  - `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_01_kernel_phases.rs`
-    (frost outcome → soil conductivity `:345`/`:3925`/`:4672`, harmonic-mean conductivity
-    `:2112`).
-  - `crates/openwepp-hillslope-orchestrator/src/constants.rs` (`WB14_FROST_MAX_DEPTH_M`,
-    `FROST_RUNTIME_FREEZE_INDEX_SCALE_C`, fine-layer/conductivity constants — retire the
-    proxy constants, add heat-flow constants with provenance).
-  - `crates/openwepp-runner/src/hillslope/mod.rs` (frost publication — **publish `frdp`**
-    to the WAT/output surface per the FDMC01 caveat so future comparisons read actual
-    runtime state, not a reconstruction).
+    — frost runtime state and symbols (`frdp_m`/`tfrdp_m` fields,
+    `FROST_RUNTIME_FRDP_M_SYMBOL`, `FROST_RUNTIME_FREEZE_INDEX_SCALE_C` — this
+    constant lives here post-refactor, not in `constants.rs`).
+  - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/`
+    — frost outcome → soil conductivity consumption
+    (`hydrology_phase_infiltration_evap.rs`, `hydrology_phase_runoff_reconciliation.rs`)
+    and harmonic-mean layered conductivity (`hydrology_phase_plant_percolation.rs`).
+  - `crates/openwepp-hillslope-orchestrator/src/constants.rs` (`WB14_FROST_MAX_DEPTH_M` —
+    retire the proxy cap, add heat-flow constants with provenance).
+  - `crates/openwepp-runner/src/hillslope/` publication helpers
+    (`02_output_and_climate_helpers.rs`, `00_runner_intake_and_lane_setup.rs` — **publish
+    `frdp`** to the WAT/output surface per the FDMC01 caveat so future comparisons read
+    actual runtime state, not a reconstruction).
   - `tests/integration/**frost**.rs`, `**snowfreeze**.rs`, `**watbal**.rs`,
     `clim06_frost_frozen_soil_kernel_contract.rs`.
   - `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/**`,
@@ -161,8 +170,8 @@ boundary) and land the gap-closing phase.
 2. **Scope the implementation**: confirm the heat-flow depth model extent to port (full
    `frostn`/`frzng`/`frznw` layered energy balance with Dun-2008 fine sublayers vs a
    faithful energy-balance subset that closes the gap), and localize the proxy-replacement
-   seam in `03_kernel_support_00`. Declare a phased boundary here if warranted (per
-   Branch-out).
+   seam in `support_helpers_mod/coupling.rs`. Declare a phased boundary here if warranted
+   (per Branch-out).
 3. Ownership: contract `INV-SNOWFREEZE-006`/`-012` already mandate heat-flow; the proxy is
    the openWEPP divergence (`GAP-SNOWFREEZE-002`). openWEPP defect, in-envelope.
 
@@ -197,7 +206,12 @@ Grind-HOLD (forbidden): "tune the freeze-index scale," "raise the 0.20 m cap and
 - `artifacts/frost-depth-heatflow-localization.md` (M1 scope + seam + ownership).
 - `artifacts/fdhp01-frost-depth-validation-ledger.md` (post-fix depth/duration vs legacy +
   FDMC01-metric improvement + conservation preservation + activation non-regression).
-- Standard contract, gate, dual-review, verification, disposition, handoff.
+- `artifacts/required-reading-map.md` (tiered authority map, living artifact).
+- Standard DC artifact set: contract implementation evidence, contract-test
+  implementation evidence, pre-implementation contract gate, implementation/test
+  evidence, kernel-profile compliance checklist, owned-file manifest, gate results,
+  line-count governance, dual review with finding disposition, dual verification,
+  disposition, worker handoff.
 
 ## Dependencies
 
@@ -205,11 +219,49 @@ Grind-HOLD (forbidden): "tune the freeze-index scale," "raise the 0.20 m cap and
 - FDMC01 package + artifacts (the sized gap + metrics this must close)
 - FQ-4 package (activation — must stay non-regressed)
 - `AGENTS.md`, `docs/defect_closure_execplans.md`, ADR-0011/0017/0018
+- `docs/standards/kernel-work-package-preparation.md`,
+  `docs/standards/prompt-wording-guidance.md` (§4a subagent requirement),
+  `docs/prompt_templates/owcmp-comparator-runner-guidance.md` + `tools/owcmp/`
 - `docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md`, `SC-WATBAL-001.md`
 - Legacy reference: `/workdir/wepp-forest_260430_baseline/src/frostn.for`, `frzng.for`,
   `frznw.for`, `frsoil.for`; CRM Ch. 3.8; Dun et al. 2010
 - Comparator `/home/workdir/wepppy/wepp_runner/bin/wepp_260606_hill`; substrate
   `/wc1/runs/al/algebraic-radium/wepp/runs/` (single-OFE, `ksflag=1`)
+
+## Subagent Requirement
+
+Subagent requirement: REQUIRED, not optional. This package explicitly authorizes
+subagent spawning/delegation to:
+
+- `comparator_suite_runner` (gpt-5.3-codex-spark) for **all heavy batch/closure/
+  comparator runs** — `cargo test --workspace`, clippy/deny closure loops, `owcmp`
+  comparator suites, and the 43-prefix `algebraic-radium` population validation runs.
+  Outputs: compact metrics + log/artifact paths only (no source/contract edits);
+  write access: read-only plus package `artifacts/` logs. **Do NOT run heavy
+  batch/closure work on the parent model** unless the subagent is unavailable, in
+  which case record command-level evidence as justification
+  (`docs/standards/prompt-wording-guidance.md` §4a).
+- review/verification subagents for the dual review (`review_agent_a/b`) and dual
+  verification (`verification_agent_a/b`) artifacts. Outputs: the named artifacts
+  with finding dispositions; write access: bounded to package `artifacts/`.
+
+## Comparator Execution
+
+Comparator/cohort work goes through the `owcmp` CLI per
+`docs/prompt_templates/owcmp-comparator-runner-guidance.md`: discover suites with
+`tools/owcmp/owcmp manifest list`, prefer a manifest under `tools/owcmp/suites/` +
+`tools/owcmp/owcmp env --manifest <path>`, and return only compact metrics and
+artifact paths (`summary.json`, `summary.md`, `command-log.json`). Do not paste raw
+per-hillslope reports into chat. The raw `wepp_260606_hill` binary remains the
+underlying comparator (a flag, per ADR-0017), invoked via the suite tooling.
+
+## Security-Impact Gate
+
+No new input-parsing surfaces, no subprocess/argument-construction changes, no
+network egress, no `unsafe`. The package touches kernel frost physics, constants,
+and output publication only. Publishing `frdp` adds one column to the existing
+parquet/WAT output writer. If execution discovers it must touch a parser or
+subprocess boundary, stop and record the scope change before proceeding.
 
 ## Autonomy
 
