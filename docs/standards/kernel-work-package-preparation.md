@@ -63,6 +63,10 @@ requirement, not optional package style guidance.
   4. production code edits.
 - Explicitly require dual reviews, finding disposition, and verification that no
   review findings remain undispositioned before final package disposition.
+- If dual review/verification, comparator execution, or other package-required
+  work depends on delegated agents, explicitly authorize subagent
+  spawning/delegation. Name the role(s), scope, expected compact outputs, and
+  read/write limits; `dispatch <role>` alone is not sufficient.
 - Explicitly require line-count-governance disposition in review and checklist
   artifacts, including owner/sunset metadata for any approved `3000+`
   generated/fixture exception.
@@ -136,6 +140,10 @@ requirement, not optional package style guidance.
   "next steps" unless blocked.
 - Kickoff prompt must include an explicit end-to-end execution statement (use
   `Autonomy:` line) for the declared scope.
+- Kickoff prompt must include a `Subagent authorization:` line. Use `none` when
+  no delegated work is required. When delegated work is required, the line must
+  say the prompt explicitly authorizes subagent spawning/delegation and must
+  list authorized role(s), scope, expected outputs, and read/write limits.
 - DC-ExecPlan kickoff prompts must say `Close defect <id> end-to-end`, include
   the Correction Authority Envelope, require conversion to a contract-first fix
   when the seven-gate bar is met, and prohibit relaying intermediate diagnostic

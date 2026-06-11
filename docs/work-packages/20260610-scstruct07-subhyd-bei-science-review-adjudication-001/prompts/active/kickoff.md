@@ -8,6 +8,12 @@ loop to the `comparator_suite_runner` subagent — but **stop and surface any ro
 whose binding status needs an authority decision**. Capture early reduction on the
 low-risk batch first; do not grind the live-authority cohort without science input.
 
+Subagent authorization: this prompt explicitly authorizes subagent
+spawning/delegation to `comparator_suite_runner` for heavy closure/comparator
+runs only. The runner must return compact metrics and log/artifact paths; write
+access is limited to package-owned comparator artifact summaries/log-path records
+when explicitly instructed.
+
 ## What and why
 
 SCSTRUCT06 added the SC-SUBHYD Binding Exposure Index and routed unresolved rows to
@@ -41,7 +47,8 @@ legacy is not authority; no forced calls; no kernel edits.**
 3. `promote` → author the new `INV-SUBHYD-*`/`OBL-SUBHYD-*` with guard map (and
    Level-4 suite linkage where the addendum carries one) through the full gate.
 4. **Run the closure loop and reconcile any contract-derived test breakage** —
-   dispatch heavy runs to `comparator_suite_runner`; consume only compact metrics.
+   dispatch heavy runs to `comparator_suite_runner` under the explicit subagent
+   authorization above; consume only compact metrics.
    Reconcile path/structure only; assertions should *strengthen* (verify BEI +
    mapped INV + sidecar), never weaken. Confirm any failing gate is pre-existing
    and unrelated (diff scope + cross-reference) before treating it as a blocker.

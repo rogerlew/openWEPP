@@ -18,7 +18,9 @@ Date: 2026-06-11
 
 ## Subagent Note
 
-The package requested `comparator_suite_runner` dispatch for heavy closure runs,
-but no subagent was spawned because the active tool policy allows spawning only
-when the user explicitly requests sub-agents or delegation. The closure loop was
-run locally instead.
+At execution time, no subagent was spawned because the package wording used
+`dispatch` but did not contain the explicit user-facing authorization phrase
+required by active tool policy. The closure loop was run locally instead.
+Follow-up documentation in this changeset adds explicit authorization wording to
+SCSTRUCT07 and the work-package standards for future runs; no retroactive
+subagent evidence is claimed.

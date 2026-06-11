@@ -27,11 +27,18 @@
 5. Update artifacts truthfully as work proceeds; label `Static:` vs `Ran:` evidence.
 6. Complete dual independent reviews, explicit finding disposition, dual verification, line-count governance, and final disposition before closure.
 
+## Subagent Delegation Authorization
+- Work packages that require delegated review, verification, comparator execution, or parallel agent work must explicitly authorize subagent spawning/delegation in `package.md` and the active kickoff prompt.
+- Use direct wording: `Subagent authorization: this package explicitly authorizes spawning/delegating to <role> subagents for <scope>; expected outputs are <artifacts>; write access is <read-only|bounded write-set>.`
+- Naming a role, saying `dispatch`, or listing an agent config path is not sufficient; include `explicitly authorizes subagent spawning/delegation` so tool policies can recognize user-approved delegation.
+- If a package lacks explicit authorization, do not claim delegated work occurred. Either run the gate locally when equivalent, or record the missing authorization as a package-documentation defect/blocker and update the package before delegated closure.
+
 ## Work-Package Authoring Requirements
 - Use directory format `YYYYMMDD-<slug>-001` under `docs/work-packages/`.
 - Add or update `docs/work-packages/README.md` so intent is discoverable.
 - Scaffold `package.md`, `prompts/active/`, `prompts/archived/`, and `artifacts/` with queued placeholders.
 - Encode status, objective, rationale, included/excluded scope, deliverables, dependencies, intended write set, phase plan, exit criteria, and security-impact gate.
+- Encode explicit subagent authorization when package-required work depends on delegated reviewers, verifiers, comparator runners, or other role agents.
 - Require dual reviews with finding disposition: `accepted`, `rejected`, `deferred`, or `follow-up`.
 - Require `.rs` line-count governance: 2000+ lines is `WARN`; 3000+ non-exempt files require refactor before closure.
 

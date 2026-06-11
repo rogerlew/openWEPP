@@ -5,7 +5,9 @@ metric, or cohort validation work.
 
 ```text
 Comparator execution:
-- Delegate context-heavy `owcmp` comparisons to `comparator_suite_runner`.
+- Subagent authorization: this prompt explicitly authorizes subagent
+  spawning/delegation to `comparator_suite_runner` for context-heavy `owcmp`
+  comparisons only.
 - Discover suites with `tools/owcmp/owcmp manifest list`.
 - Prefer a manifest path under `tools/owcmp/suites/` plus `tools/owcmp/owcmp env --manifest <path>` before running a suite.
 - The runner must return only compact metrics and artifact paths: command, exit

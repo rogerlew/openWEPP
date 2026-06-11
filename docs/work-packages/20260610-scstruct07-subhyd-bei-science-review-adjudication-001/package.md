@@ -77,8 +77,11 @@ the moved content. Per batch that relocates narrative:
 2. **Reconcile** any contract-derived test referencing relocated narrative
    (path/structure only; assertions should *strengthen* to verify BEI + mapped INV
    + sidecar provenance, never weaken). Record breakage + fix.
-3. **Dispatch the heavy closure/comparator runs to the `comparator_suite_runner`
-   subagent** (gpt-5.3-codex-spark); consume only its compact metrics + log paths.
+3. **Subagent authorization:** this package explicitly authorizes subagent
+   spawning/delegation to the `comparator_suite_runner` subagent
+   (gpt-5.3-codex-spark) for heavy closure/comparator runs only; consume only
+   its compact metrics + log paths. Write access is limited to package-owned
+   comparator artifact summaries/log-path records when explicitly instructed.
 
 ## Authority Envelope
 
@@ -131,6 +134,7 @@ the moved content. Per batch that relocates narrative:
 ## Autonomy
 **Science-steered, not end-to-end autonomous.** Within a batch, execute the
 mechanics autonomously (resolve rows to cited outcomes, relocate, run the lint,
-dispatch the closure loop to `comparator_suite_runner`), but stop and surface any
-row needing an authority decision. Proceed lowest-risk batch first. Reusable for
-the remaining SC-* contracts (RUNOFFPART, …) after SC-SUBHYD closes.
+dispatch the closure loop to `comparator_suite_runner` under the explicit
+subagent authorization above), but stop and surface any row needing an authority
+decision. Proceed lowest-risk batch first. Reusable for the remaining SC-*
+contracts (RUNOFFPART, …) after SC-SUBHYD closes.

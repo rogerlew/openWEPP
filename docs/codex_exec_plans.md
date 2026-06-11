@@ -16,6 +16,13 @@ must explain why no change is required. Deferred or follow-up findings must be
 linked from the disposition and worker-handoff artifacts. Package closure is
 blocked while any review finding is undispositioned.
 
+When an ExecPlan expects delegated reviewers, verifiers, comparator runners, or
+other role agents, it must explicitly authorize subagent spawning/delegation in
+both the package body and kickoff prompt. The authorization must name the
+role(s), scope, expected compact outputs/artifacts, and read/write limits.
+Phrases such as "dispatch `<role>`" or references to agent config files are not
+sufficient unless paired with explicit authorization wording.
+
 ExecPlans must also require explicit `.rs` file line-count governance checks in
 review artifacts and checklists: files at or above 2000 lines are `WARN` and
 must carry a decomposition rationale plus follow-on split intent; files at or
