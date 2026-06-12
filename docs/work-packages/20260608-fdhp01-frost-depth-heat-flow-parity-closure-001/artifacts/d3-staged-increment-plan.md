@@ -485,7 +485,7 @@ production returned to Db/`SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
@@ -678,3 +678,44 @@ days. De improves the controlled residual but does not certify D3: `0/43`
 prefixes enter the legacy `240..503.2 mm` maximum-depth envelope. The next
 increment remains frost-side under the De forced-snow setup and must locate the
 first remaining hourly front/flux divergence after content-dependent `Qdry`.
+
+## De outcome (2026-06-12, `4d4b56cf`) — landed; residual ~1.6× on depth
+
+De landed (not backed out): SC-SNOWFREEZE-001 v65, content-dependent
+harmonic Qdry conductivity (frostn.for:430-458 authority), bulk-density
+runtime surface, bottom-thaw reuse. The staged loop is now monotonically
+converging on the forced-snow cohort: mean max depth 857 → 656 mm,
+median correlation 0.66 → 0.770, duration residual +502 → +186 days,
+closure texture improved (6.5e-7 → 4.4e-7). Native cohort: 705.5 mm /
++288 days. Still 0/43 inside the 240–503.2 mm envelope: a ~1.6× depth
+residual remains after F1/F2/F4/F5.
+
+## Increment Df — paired hourly front/flux localization (diagnostic)
+
+The Da single-sided trace found F5's predecessor; Df pairs it against
+legacy directly. Legacy `H*.winter.dat` is **hourly** (snowfall, rain,
+ground, falling, melt, snow depth, snow density, frost depth, thaw depth,
+frost, residue — on disk for all 43 prefixes), so the paired series costs
+nothing on the legacy side.
+
+- Method: env-gated openWEPP hourly trace (Da pattern, not landed) on
+  2–3 prefixes under the **De + forced-legacy-snow** setup; align hour-by-
+  hour against `H*.winter.dat`; locate the divergent hours and attribute
+  each to a term. Candidate discriminations, in likelihood order:
+  (a) **hourly surface-temperature synthesis** — openWEPP's tmax/tmin →
+  hourly series vs legacy `winthd` (freezing-degree-hours delta integrates
+  directly into depth; the winter.dat `ground` column may expose legacy's
+  effective surface/interface temperature — verify its meaning against
+  `winthd.for`/`frostn.for` first);
+  (b) positive-surface-temperature capping under snow (legacy caps
+  `surtmp` at 0 under snow on the freeze path — affects both freeze
+  energy and top-thaw availability);
+  (c) `kftill` tilled-path conductivity (openWEPP constant vs legacy
+  computed) and residue path;
+  (d) freeze-arm net-flux composition (arm ≠ 2 net of qdry) and arm
+  selection frequency vs legacy `frzflg` occupancy.
+- Deliverable: per-term attribution with the measured share of the
+  remaining ~1.6× depth gap; the dominant term becomes increment Dg's
+  bounded fix (same shape as F5 → De).
+- Gates: no production edits; trace removed before commit; evidence
+  artifacts + plan update.
