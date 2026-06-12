@@ -379,9 +379,98 @@ increment must target seasonal freeze/thaw persistence and timing under the
 fine-layer state, while preserving the Db/C1b/C2 conservation and capacity
 guards.
 
+## Increment Dc — seasonal lower-front heat + thaw-arm dynamics (added 2026-06-12)
+
+Source: Claude code review of the post-Db tree (Static, code- and
+legacy-cited; supersedes the diagnostics-only thaw hypothesis). The
+remaining D3 failures (median depth correlation `-0.053`, median frozen
+duration `-452` days) are attributed to two production defects plus one
+acceptance hazard:
+
+**F1 (dominant) — `qdry` is synthetic, not the legacy soil-heat reservoir.**
+`coupling.rs:1988-1994`: `lower_front_temp_c = max(7.0 °C,
+midpoint(tmax, tmin))` (an air-temperature midpoint with a 7 °C floor —
+`FROST_RUNTIME_STABLE_SOIL_TEMP_C`), times fixed
+`FROST_RUNTIME_KFUTIL_W_M_K = 2.1` over fixed
+`FROST_RUNTIME_UNFROZEN_HEAT_PATH_M = 1.0` → **≥ 14.7 W/m² of bottom melt
+every hour of the year** (the constant `qdry = 14.7` in every Da trace
+row; ≈ 25 mm/day at `θ_ice ≈ 0.15` — a 400 mm pack gone in ~16 days).
+Legacy authority: `tmpbl = YavgT + YampT·exp(−tmpdp/2)·
+sin(2π/365·(sdate − YpshfT) − tmpdp/2)` evaluated at `frdp + 1.0 m`
+(`frostn.for:384-386`; same form `mltbtm.for:283-284`), **zero-gated**
+(`tmpbl ≤ 0 → qdry = 0`, `frostn.for:396-397`), conductivity from the
+content-dependent harmonic mean over fine layers (Saxton-style polynomial,
+fallback `0.2`, `frostn.for:430-458`). Wave parameters are fitted from the
+climate file's 12 monthly mean temperatures in `tmpcft.for:69-100`
+(`YavgT` = mean of monthly midpoints, `YampT` = half the monthly range,
+`YpshfT` Newton-fitted) — inputs openWEPP already parses.
+
+**F2 — thaw arms carry the Db-class defect, mirrored, plus a wrong
+resistance path.** `thaw_fine_bottom` (`coupling.rs:1055`) and
+`thaw_fine_top` (`:1120`) spend `flux × 3600` across all sublayers in one
+pass — no in-loop resistance growth, no time debit (contrast the landed
+`freeze_fine_front_with_resistance_feedback`, `:948`, which steps one
+sublayer per iteration). Additionally the top-thaw energy (`:2044-2045`)
+uses `frost_surface_heat_path(depth_before.frdp, …)` — the full
+frozen-depth path — whereas legacy `mlttp.for:187-247` computes the
+surface-to-**thaw-front** resistance through residue and the already-
+thawed fine layers, re-estimated as the thaw front advances.
+
+**F3 — acceptance hazard: Db's depth result is partly error cancellation.**
+The 14.7 W/m² floor also enters `signed_net_flux` and the arm-1/4 freeze
+budget (`:976`, `:995`), damping freezing year-round. Removing it (F1)
+will increase net freeze energy, so **depth will likely overshoot the
+240–503 mm envelope until F2's faster-correct thaw dynamics land.** F1 and
+F2 therefore land in ONE increment with depth/duration/correlation
+re-evaluated jointly. Do not protect the current `409 mm` mean by
+rejecting or tuning down the `qdry` fix — that would be comparator-match
+tuning against a known-wrong term.
+
+In scope:
+- Implement the `tmpcft` monthly-mean wave fit (`YavgT`/`YampT`/`YpshfT`)
+  from the parsed climate record; replace the `lower_front_temp_c`
+  floor/air-midpoint with the damped-wave `tmpbl` at `frdp + 1.0 m`,
+  zero-gated; replace the fixed `2.1` with the legacy harmonic-mean
+  content-dependent conductivity (fallback `0.2`).
+- Rebuild `thaw_fine_top`/`thaw_fine_bottom` on the
+  `..._with_resistance_feedback` pattern: one sublayer per iteration,
+  re-derive the path resistance (top thaw: surface→thaw-front through
+  thawed layers per `mlttp.for:187-247`), debit `remaining_seconds`,
+  loop until the hour or the energy is exhausted.
+- Retire `FROST_RUNTIME_STABLE_SOIL_TEMP_C` and the air-midpoint coupling
+  as production authority (with provenance note).
+- Contract: amend `SC-SNOWFREEZE-001` for the `tmpbl` wave (cite
+  `tmpcft.for`/`frostn.for`/`mltbtm.for`) and the thaw-path semantics.
+
+Red tests first:
+- Winter zero-gating: a mid-winter day (wave phase ≤ 0 at depth) produces
+  `qdry = 0` — no bottom melt; the current code's `14.7 W/m²` is the red
+  fixture.
+- Seasonal wave values: `tmpbl` at known `(sdate, depth)` matches the
+  legacy expression for fitted `YavgT`/`YampT`/`YpshfT` on the
+  algebraic-radium climate.
+- Within-hour thaw (mirror of the Db freeze test): one hour of warm
+  forcing on a deep-frost profile thaws a bounded, resistance-limited
+  number of sublayers; `|flux|` decays as the thawed path grows.
+- Top-thaw path: thaw flux computed through thawed-layer + residue path,
+  not the frozen-depth path; sandwich geometry preserved.
+- Multi-cycle amplification and C1b capacity/conservation tests stay
+  green (no regression of the landed guards).
+
+Gates: red tests green; full Rust closure loop; 43/43 clean; independent
+years 2–6 ledger at the accepted WAT-publication texture (`~2e-7` grade or
+better — record any improvement); then the **full package D3 acceptance
+gate evaluated jointly** (depth envelope as flag, correlation rising
+materially from 0.13, duration residual collapsing from −452 toward zero,
+FQ-4 activation non-regressed). On pass: FDHP01 disposition to complete,
+`GAP-SNOWFREEZE-002` closed, ROADMAP item 1 removed, README 7f updated,
+handoff names MOFE. On fail: back out per the increment rules, record
+which of F1/F2 survived, and the residual becomes the next scoped
+increment — not a tuning pass.
+
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
