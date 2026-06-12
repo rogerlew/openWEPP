@@ -394,11 +394,30 @@ Increment Dg result:
   production rebuild. Clean-source release binary SHA:
   `3275db431339402596a27a28d7976062eb4655771e9e159fdf929fa1410883ad`.
 
+Dh result:
+
+- Codex executed the proposed per-soil frozen-path conductivity increment
+  without the comparator subagent per user quota direction.
+- Static pinned-source inspection refuted the implementation premise before
+  production edits: `frostn.for:188-193` sets fixed `kftill = 1.75` and
+  `kfutil = 2.1`; `frostn`/`frzng`/`frznw` consume those constants in the
+  frozen surface path.
+- The soil-property-dependent `bdcons`/`slsw`/`ksoilf` expression is the
+  lower-front unfrozen `kufzfl` path already handled by Increment De, not a
+  per-soil replacement for frozen-path `kftill`/`kfutil`.
+- `SC-SNOWFREEZE-001` is now v67 with
+  `REF-SNOWFREEZE-LEGACY-FROZEN-PATH-KF`, and a contract regression test
+  prevents replacing fixed `kftill`/`kfutil` with per-soil frozen-path
+  conductivity absent superseding authority.
+- No production physics was changed. FDHP01 remains `executed-hold`; the Dg
+  forced-snow outlier set remains the active residual.
+
 Updated first actionable item: localize the residual D3 divergence on the Dg
 forced-snow outlier set (`p1`, `p2`, `p3`, `p8`, `p11`, `p13`, `p20`, `p21`,
-`p22`, `p23`, `p26`, `p28`, `p32`). Compare paired hourly openWEPP and legacy
-front/flux trajectories after Dg, focusing on surface heat, lower-front heat,
-residue/snow/frozen-path resistance, within-hour front advance/retreat, and
-fine-layer ice/liquid movement. Do not retune snow density/depth, kfactor,
-latent heat, WAT publication, D2 storage, residue depth, or the `dpfsfl`
-resistance terms.
+`p22`, `p23`, `p26`, `p28`, `p32`) with `kftill`/`kfutil` treated as fixed
+and out of scope. Compare paired hourly openWEPP and legacy front/flux
+trajectories after Dg, focusing on source-line-owned differences in branch
+selection, surface temperature generation, snow/residue inputs, lower-front
+heat, within-hour front advance/retreat, and fine-layer ice/liquid movement.
+Do not retune snow density/depth, kfactor, latent heat, WAT publication, D2
+storage, residue depth, `dpfsfl`, or fixed `kftill`/`kfutil`.

@@ -222,6 +222,19 @@ median duration residual improved `+186 -> +73` days. Dg passes its
 directional gate but FDHP01 remains executed-hold because `13/43`
 forced-snow prefixes still exceed the `503.2 mm` upper envelope bound.
 
+D3 Increment Dh, 2026-06-12: Codex executed the proposed per-soil frozen-path
+conductivity increment without the comparator subagent and found the
+implementation premise false before production edits. Pinned baseline source
+sets `kftill = 1.75` and `kfutil = 2.1` as fixed frozen surface-path
+conductivities (`frostn.for:188-193`) and consumes those constants in the
+active `frostn`/`frzng`/`frznw` path. The soil-property-dependent
+`bdcons`/`slsw`/`ksoilf` expression belongs to the lower-front unfrozen
+`kufzfl` path already handled by De. `SC-SNOWFREEZE-001` is now v67 to bind
+the fixed legacy constants and reject per-soil frozen-path replacement absent
+superseding authority. No production physics changed; FDHP01 remains
+executed-hold with the same Dg forced-snow outlier set requiring a new
+source-line localization.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

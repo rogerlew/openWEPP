@@ -636,6 +636,28 @@ fn simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_s
     let _ = require_state_scalar(&report, "frost.hourly.untilled_frozen_depth_m_0001");
 }
 
+#[test]
+fn fdhp01_dh_frozen_path_conductivity_uses_pinned_legacy_constants() {
+    let mut surface = seeded_clim06_surface(true);
+    insert_state_scalar(&mut surface, "frost.options.ksoilf", 10.0);
+    insert_state_scalar(&mut surface, "wb18_perc_ssc_0001", 9.0e-6);
+    insert_state_scalar(&mut surface, "wb18_perc_ssc_0002", 1.0e-7);
+
+    let report = execute_clim06_surface(surface);
+    assert!(report.scheduler_report.is_success());
+
+    assert_close(
+        require_state_scalar(&report, "frost.runtime_kftill_w_m_k"),
+        1.75,
+        "Dh source audit: frozen tilled conductivity is the pinned frostn kftill constant, not a ksoilf/soil-property function",
+    );
+    assert_close(
+        require_state_scalar(&report, "frost.runtime_kfutil_w_m_k"),
+        2.1,
+        "Dh source audit: frozen untilled conductivity is the pinned frostn kfutil constant, not a ksoilf/soil-property function",
+    );
+}
+
 fn execute_clim06_surface(
     surface: HillslopeWritebackSurface,
 ) -> openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport {

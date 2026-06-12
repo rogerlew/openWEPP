@@ -824,3 +824,16 @@ HKERNEL-WB11 history).
   then — if 43/43 or the residual is attributable solely to F4/p2-class
   items — proceed to the package certification decision per the Dd/De
   declared-boundary path.
+
+**Execution result (2026-06-12):** Dh was executed as a refutation, not a
+production physics edit. Static pinned-source inspection showed the method's
+implementation premise was false: `frostn.for:188-193` assigns fixed
+`kftill = 1.75` and `kfutil = 2.1`, and the active `frostn`/`frzng`/`frznw`
+surface path consumes those constants. The soil-property-dependent
+`bdcons`/`slsw`/`ksoilf` expression belongs to the lower-front unfrozen
+`kufzfl` path already handled by De, not to frozen-path `kftill`/`kfutil`.
+`SC-SNOWFREEZE-001` v67 now binds the fixed frozen-path constants and a
+regression test prevents replacing them with per-soil conductivity absent
+superseding authority. Dg forced-snow outliers remain real, but the Dh
+mechanism is eliminated as source-line-owned scope; FDHP01 stays
+`executed-hold` pending the next residual localization.
