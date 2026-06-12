@@ -485,7 +485,7 @@ production returned to Db/`SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df|Dg|Dh> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df|Dg|Dh|Di> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
@@ -837,3 +837,36 @@ regression test prevents replacing them with per-soil conductivity absent
 superseding authority. Dg forced-snow outliers remain real, but the Dh
 mechanism is eliminated as source-line-owned scope; FDHP01 stays
 `executed-hold` pending the next residual localization.
+
+## Increment Di — paired re-localization on the post-Dg boundary
+
+The Dh mechanism is refuted (fixed constants are legacy-faithful), but the
+Dg plateau fact still demands explanation: seven prefixes share open maxima
+within 0.9 mm (529.8–530.7) and five within 2.3 mm (574.0–576.3) — too
+tight for coincidence; something shared and discrete bounds those fronts.
+Scoping note: the Dh premise error came from over-reading a symbol-map
+citation without reading the cited lines (Claude); Di therefore carries
+**no fix premise** — it re-localizes first.
+
+- Method: Df paired-trace harness on plateau representatives (p8 group A,
+  p20 group B, p2 outlier) under the post-Dg forced-snow binary; find the
+  now-dominant divergent hours in the deep-front regime (the Dg fixes
+  unmasked whatever is second-order).
+- Candidate observations to discriminate (not premises):
+  (a) hourly surface-temperature synthesis vs legacy `winthd`
+  (Df's original candidate (a), masked then by the 899× resistance term);
+  (b) discretization/topology quantization — check whether 530/575 mm
+  coincide with cumulative soil-layer (`dg`) or fine-layer boundaries or
+  the `tilld` 0.2 m seam, i.e. whether the front stalls at a structural
+  boundary in openWEPP but not legacy;
+  (c) deep-layer water content (latent cost per mm at depth — differing
+  moisture states change advance cost even with identical fluxes);
+  (d) p2-specific attribution (ratio 2.18, legacy 280 — outside the soil
+  pattern; prior distinct hydrology).
+- Deliverable: measured attribution of the remaining 13-prefix overshoot
+  with the dominant term's share; the fix increment (Dj) is scoped only
+  from that evidence.
+- Gates: no production edits; trace removed before commit; evidence +
+  plan update. If the attribution lands on F4-coupled or
+  legacy-defect-class items rather than openWEPP terms, route to the
+  certification decision instead of another fix increment.
