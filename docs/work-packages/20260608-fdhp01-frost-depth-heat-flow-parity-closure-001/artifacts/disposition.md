@@ -361,6 +361,33 @@ Ran:
   `-0.05296014769462692`, and frozen duration under-persists with median
   open-minus-legacy `-452` days.
 
+## Increment Dc Attempt Evidence
+
+- Persisted compact reports:
+  - `d3-increment-dc-seasonal-thaw-20260612.md`
+  - `fdhp01_increment_dc_execution_summary_20260612.json`
+  - `fdhp01_increment_dc_run_status_20260612.tsv`
+  - `fdhp01_increment_dc_annual_closure_residuals_20260612.csv`
+  - `fdhp01_increment_dc_depth_metrics_20260612.csv`
+  - `fdhp01_increment_dc_frozwt_frdp_ratio_20260612.csv`
+  - `fdhp01_increment_dc_activation_summary_20260612.csv`
+- Dc ran without the comparator subagent per user quota direction. The local
+  cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_dc_cohort_20260612T062840Z`.
+- Dc failed the D2 hard stop: years 2-6 independent WAT flux versus
+  `Total-Soil + frozwt` storage regressed to max abs
+  `0.2706094484356498 mm`; p43 year 2 regressed to
+  `-0.24479853886504088 mm`.
+- D3 depth/duration also regressed: mean maximum depth
+  `1062.5086535449198 mm`, one prefix pinned at the profile bound, `0/43`
+  prefixes inside the `240..503.2 mm` maximum-depth envelope, and median
+  open-minus-legacy frozen duration `+751` days.
+- The only acceptance-direction movement was depth correlation, which improved
+  to median `0.6595441080376998`; that result is evidence for the next scoped
+  split, not an acceptance claim because conservation and depth fail.
+- The Dc production, contract, and test edits were backed out. The accepted
+  production boundary remains Increment Db / `SC-SNOWFREEZE-001` v63.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit

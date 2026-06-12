@@ -376,3 +376,31 @@ energy as the primary root cause.
 Increment Db disposition: landed at `executed-hold`. Db closes the stale
 within-hour freeze-resistance defect and fixes the maximum-depth envelope, but
 D3 remains open because correlation and frozen-duration acceptance still fail.
+
+## D3 Increment Dc Seasonal Heat/Thaw Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/DuckDB/PyArrow comparisons. |
+| Pre-fix Dc red tests | Failed as intended: synthetic lower-front heat produced `14.7 W/m2` where seasonal `tmpbl` should zero-gate; one-hour thaw advanced too far. |
+| `cargo fmt --check` after Dc implementation | Pass |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_dc_ -- --nocapture` after Dc implementation | Pass, 3 tests |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` after Dc implementation | Pass, 37 tests |
+| Release CLI build for failed attempt | Pass, failed-attempt binary SHA `772b5778f710619c7e1a99da82c69417d67c8ee15a3ff0a9bb44afe2886e3e21`. |
+| p35 focused guard rerun | Pass after bounded fine-theta boundary canonicalization in the failed attempt. |
+| 43-prefix `algebraic-radium` hourly frost-on cohort | Pass execution, `43/43` clean exits; run root `/tmp/fdhp01_increment_dc_cohort_20260612T062840Z`. |
+| WAT outputs | Pass execution, `43/43`. |
+| Independent annual `Total-Soil + frozwt` closure, years 2-6 | **Fail**, max abs residual `0.2706094484356498 mm` (`p34`, year 2), above the accepted Db `~2e-7 mm` WAT-publication texture. |
+| p1/p20/p43 closure spot checks | Fail/regressed: p1 max abs `0.022261272887243777 mm`; p20 max abs `0.023365382872134077 mm`; p43 year 2 `-0.24479853886504088 mm`. |
+| Profile-bound pinning | Fail/regressed, `1/43` prefixes pinned; minimum margin `2.2737367544323206e-13 mm`. |
+| D3 depth envelope acceptance | Fail/regressed, `0/43` maximum depths inside the legacy `240..503.2 mm` envelope; mean max `1062.5086535449198 mm`, median max `1044.4140627263175 mm`, range `763.4002205550781..1799.9999999999998 mm`. |
+| `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.7044204014819017`, median `0.6225055509763039`. |
+| D3 depth-correlation acceptance | Directionally improved, median `0.6595441080376998`, but not accepted because D2 and depth-envelope gates fail. |
+| D3 frozen-duration acceptance | Fail/regressed, open-minus-legacy median `+751` days, mean `+749.3720930232558` days, range `+724..+794` days. |
+| Days above `200 mm` watch | Fail/regressed, full-WAT median `1306` days. |
+
+Increment Dc disposition: failed and backed out. Dc proves the F1/F2 one-pass
+change can improve timing correlation, but it reopens additive storage and
+depth/duration defects. The production boundary remains Db; the next increment
+must split seasonal lower-front heat from thaw-timing dynamics and preserve the
+Db independent WAT ledger floor before any D3 acceptance claim.

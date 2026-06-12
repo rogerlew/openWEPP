@@ -468,6 +468,21 @@ handoff names MOFE. On fail: back out per the increment rules, record
 which of F1/F2 survived, and the residual becomes the next scoped
 increment — not a tuning pass.
 
+**Dc execution result (2026-06-12):** failed and backed out. The local parent
+run honored the no-subagent quota direction and produced a clean `43/43` cohort
+at `/tmp/fdhp01_increment_dc_cohort_20260612T062840Z`, but the gates failed
+materially: years 2-6 independent additive-storage residual regressed to
+`0.2706094484356498 mm` (`p34`, year 2), p43 year 2 regressed to
+`-0.24479853886504088 mm`, mean maximum depth jumped to
+`1062.5086535449198 mm`, one prefix pinned at the profile bound, `0/43`
+prefixes remained inside the `240..503.2 mm` maximum-depth envelope, and frozen
+duration over-persisted by median `+751` days. Depth correlation improved to
+median `0.6595441080376998`, but that improvement is not acceptable while D2
+closure and the depth envelope fail. See
+`d3-increment-dc-seasonal-thaw-20260612.md` and the
+`fdhp01_increment_dc_*_20260612` reports. The accepted production boundary
+remains Db/`SC-SNOWFREEZE-001` v63.
+
 ## Dispatch instructions
 
 Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc> of

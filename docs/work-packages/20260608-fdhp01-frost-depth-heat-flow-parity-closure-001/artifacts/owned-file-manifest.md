@@ -237,3 +237,10 @@ Date: 2026-06-12
 - `fdhp01_increment_db_depth_metrics_20260612.csv`
 - `fdhp01_increment_db_frozwt_frdp_ratio_20260612.csv`
 - `fdhp01_increment_db_activation_summary_20260612.csv`
+- `d3-increment-dc-seasonal-thaw-20260612.md`
+- `fdhp01_increment_dc_execution_summary_20260612.json`
+- `fdhp01_increment_dc_run_status_20260612.tsv`
+- `fdhp01_increment_dc_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_dc_depth_metrics_20260612.csv`
+- `fdhp01_increment_dc_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_dc_activation_summary_20260612.csv`

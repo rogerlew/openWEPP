@@ -227,9 +227,26 @@ Increment Db result:
 - D3 remains open: median depth correlation is `-0.05296014769462692`, and
   frozen duration under-persists with median open-minus-legacy `-452` days.
 
-First actionable item: target freeze/thaw seasonal persistence and timing
-under the fine-layer heat-flow state. Do not loosen the Db/C1b/C2 capacity,
-overflow, publication, or conservation guards. Do not advance to MOFE until
-years 2-6 conservation remains at the repaired independent ledger noise floor,
-the cohort is `43/43`, the year-7 boundary item stays explained or eliminated,
-and the full depth/duration acceptance gate passes without comparator tuning.
+Increment Dc result:
+
+- Codex attempted the combined seasonal lower-front heat plus thaw-resistance
+  pass without the comparator subagent per user quota direction.
+- The fresh Dc cohort at `/tmp/fdhp01_increment_dc_cohort_20260612T062840Z`
+  ran `43/43` clean, but failed the D2 hard stop and D3 envelope.
+- Years 2-6 independent WAT ledger regressed to max abs
+  `0.2706094484356498 mm`; p43 year 2 regressed to
+  `-0.24479853886504088 mm`.
+- Depth correlation improved to median `0.6595441080376998`, but depth and
+  duration regressed: mean max depth `1062.5086535449198 mm`, one profile pin,
+  `0/43` prefixes inside the `240..503.2 mm` envelope, and median frozen
+  duration `+751` days versus legacy.
+- The Dc production, contract, and test edits were backed out. The accepted
+  production boundary remains Db / `SC-SNOWFREEZE-001` v63.
+
+First actionable item: split Dc. Reintroduce seasonal lower-front heat as an
+accounting-preserving increment before changing thaw timing again, and do not
+advance unless years 2-6 conservation remains at the repaired independent
+ledger noise floor. Do not loosen the Db/C1b/C2 capacity, overflow,
+publication, or conservation guards. Do not advance to MOFE until the cohort is
+`43/43`, the year-7 boundary item stays explained or eliminated, and the full
+depth/duration acceptance gate passes without comparator tuning.
