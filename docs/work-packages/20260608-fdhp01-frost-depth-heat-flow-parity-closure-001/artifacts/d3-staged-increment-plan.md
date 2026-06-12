@@ -201,6 +201,26 @@ freeze-only B boundary, before any thaw arm exists.
   resistance side of the freeze arms has an independent defect; record it
   rather than tuning.
 
+**C1b outcome (2026-06-11, `1ee1e171`): landed; watch expectation FIRED.**
+Conservation is the cleanest of the arc — years 2–6 at `1.53e-12 mm`, and
+the long-standing year-7 boundary item is **resolved** (`6.96e-13`, was
+`1.27e-7`). Zero capacity-guard trips. But depth did not move: mean max
+`1791.97 mm` (marginally deeper than B's `1782.27` — mechanistically
+consistent: capacity-bounded layers hold less water, so each mm of advance
+costs less latent heat). The C1a unification claim ("runaway ice drives
+depth") is therefore **refuted as stated**. Two readings remain:
+(1) the freeze-arm energetics carry an independent defect (resistance not
+growing with the frozen path, or `qdry` opposing heat too weak); or
+(2) depth-near-bound is *expected* without bottom thaw — in legacy the
+240–503 mm equilibrium is the freeze/thaw **balance**, with `mltbtm`
+(driven by `qdry > 0`, including in winter arm 2) arresting and retreating
+the front; absent any thaw arm, a correct freeze arm still deepens
+monotonically all winter. **C2 is the discriminating experiment:** if the
+thaw arms bring depth into the envelope, reading 2 holds and the port
+closes; if depth still rides the bound after `mltbtm`/`mlttp`, reading 1
+is established and the freeze-arm energy/resistance becomes a scoped
+defect with the C2 evidence as its localization.
+
 **Execution result (2026-06-12):** C1b landed and passed its water-side gates.
 See `d3-increment-c1b-capacity-overflow-20260612.md` and
 `fdhp01_increment_c1b_execution_summary_20260612.json`. The parent model ran
