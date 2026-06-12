@@ -28,11 +28,14 @@ WB → frost → MOFE → snow ladder).
 
 ## Comparator posture — stronger distrust than the ADR-0017 default
 
-**Legacy WEPP has known water-balance defects that grow with OFE count**
-(operator knowledge, 2026-06-12; corroborated by the legacy-replay MOFE
-closure-audit triage at wepppy
+**Legacy WEPP has known water-balance defects that grow with OFE count,
+typically appearing above ~10 OFEs** (operator knowledge, 2026-06-12;
+corroborated by the legacy-replay MOFE closure-audit triage at wepppy
 `docs/work-packages/20260502_mofe_flagged_hillslope_triage/`, which built a
-defect-family taxonomy from legacy's own flagged hillslopes). Consequences:
+defect-family taxonomy from legacy's own flagged hillslopes). The 1–5-OFE
+development ladder is therefore **expected legacy-clean** — M-A verifies
+this rather than assumes it — while the 15-OFE hillslope is the
+**expected-defective far point**. Consequences:
 
 - Legacy is a weak flag at low OFE counts and progressively untrustworthy as
   OFE count rises — in exactly the dimension this package builds.
@@ -41,10 +44,15 @@ defect-family taxonomy from legacy's own flagged hillslopes). Consequences:
   transfer accounting (run-on received ≡ run-off sent), and hillslope-total
   identity, all at the noise floor established by the FDHP01 arc.
 - The characterization increment must **measure** legacy's per-OFE-count
-  closure defect from the on-disk outputs, so comparator trust is calibrated
-  with evidence per count rather than assumed. Where legacy fails its own
-  closure, divergence from legacy is *expected* and is not a finding against
-  openWEPP.
+  closure from the on-disk outputs, so comparator trust is calibrated with
+  evidence per count rather than assumed. Expected shape: clean at 1–5
+  (making legacy a usable flag on the development ladder), defective at the
+  15-OFE far point. Where legacy fails its own closure, divergence from
+  legacy is *expected* and is not a finding against openWEPP.
+- **The differentiating target**: once the 1–5 ladder closes, openWEPP
+  holding the three identities at high OFE counts (the 15-OFE hillslope,
+  then larger surfaces) where legacy demonstrably cannot is the rung's
+  headline result — openWEPP exceeding, not matching, the legacy ceiling.
 - A legacy-vs-openWEPP divergence may still flag an openWEPP defect — but
   only the conservation identities adjudicate.
 
