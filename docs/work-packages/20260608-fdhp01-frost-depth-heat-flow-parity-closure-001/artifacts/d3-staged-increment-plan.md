@@ -916,3 +916,50 @@ below-freezing hourly air temperature.
   Dg forced-snow representatives de-plateau in the expected direction; the
   forced-snow cohort materially improves the `13/43` outlier set without
   duration regression; native cohort remains non-regressed.
+
+## Dj outcome (2026-06-12, `90265f80`) + outlier-composition analysis
+
+Dj landed the `tmpadj`/`hr_tmp` surface-temperature synthesis (v68) at
+`executed-hold`: conservation at noise, duration improved again, but
+forced-snow mean max regressed slightly (490.09 → 501.36) with the **same
+13 outliers** — now stable across three increments (Dg/Dh/Dj).
+
+**Claude composition analysis (Ran, legacy `H*.winter.dat` midwinter
+residue per prefix):** the 13 are a mixture, not one cause —
+
+- all 30 in-envelope prefixes: legacy residue exactly `28.5 mm` (the Corn
+  management class);
+- 6 outliers at `23.0 mm` legacy residue (p1 p2 p3 p20 p21 p32) — a
+  distinct lower-residue management (plateau B/C);
+- 6 outliers at `28.5 mm` (p8 p13 p22 p23 p26 p28) — same residue as the
+  healthy 30; separator is the **soil** (plateau A = the θfc−θdr 0.152
+  soil group from addendum 2c);
+- p11 at `110 mm` residue, ratio 1.05 (borderline).
+
+## Decision point — continue localization vs certification evaluation
+
+The package's written acceptance criteria are now met or near-met in
+substance: depth in the physical range with the cap retired (490–530 mm vs
+legacy 374–436 on the residual set — within ~25% everywhere except p2),
+correlation risen 0.13 → 0.77, duration over-persistence +258 → +73 days.
+The 240–503.2 mm envelope is a comparator **flag** (ADR-0017), not a
+millimetre target; with the outlier set now known to be a management/soil
+mixture rather than one openWEPP term, further per-subset chasing risks
+crossing into comparator-match tuning — the package's own protected
+boundary.
+
+Routes (operator decision):
+
+- **Route A — one bounded pre-check, then certify:** verify openWEPP's own
+  `frost.runtime_residue_depth_m` per management against legacy `resdep`
+  (the 23.0-mm-management subgroup overshoots *more* than its lower legacy
+  insulation explains only if openWEPP's residue producer undervalues
+  those managements — a real producer defect if so, one comparison to
+  check). If clean (or after a bounded fix), proceed to Route B.
+- **Route B — certification evaluation now:** judge the cohort against the
+  package acceptance criteria as written + ADR-0017; close FDHP01 at the
+  declared boundary with the F4 snow-density handoff (priced by
+  native-vs-forced), a p2 individual-attribution item (ratio 2.18,
+  outside all patterns), and the residual ~25% subset deltas recorded as
+  characterized model difference unless future evidence reclassifies
+  them. ROADMAP item 1 retires; MOFE unblocks.
