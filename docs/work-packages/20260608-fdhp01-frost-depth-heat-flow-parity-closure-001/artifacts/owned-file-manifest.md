@@ -1,6 +1,6 @@
 # Owned File Manifest
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static
 
@@ -32,7 +32,8 @@ Date: 2026-06-12
     Increment Dg adds v66 for legacy `resdep/kres` surface resistance and the
     below-freezing `dpfsfl` floor. Increment Dh adds v67 for fixed legacy
     `kftill`/`kfutil`. Increment Dj adds v68 for legacy `hr_tmp`/`tmpadj`
-    adjusted surface-temperature synthesis.
+    adjusted surface-temperature synthesis. Increment Dk adds v69, closing/
+    re-stating `GAP-SNOWFREEZE-002` and unblocking MOFE under ADR-0017.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -341,3 +342,7 @@ Date: 2026-06-12
 - `fdhp01_increment_dj_forced_snow_depth_metrics_20260612.csv`
 - `fdhp01_increment_dj_forced_snow_frozwt_frdp_ratio_20260612.csv`
 - `fdhp01_increment_dj_forced_snow_activation_summary_20260612.csv`
+- `d3-increment-dk-residue-precheck-certification-20260612.md`
+- `fdhp01_increment_dk_residue_precheck_20260612.csv`
+- `fdhp01_increment_dk_residue_precheck_summary_20260612.json`
+- `fdhp01_increment_dk_certification_summary_20260612.json`

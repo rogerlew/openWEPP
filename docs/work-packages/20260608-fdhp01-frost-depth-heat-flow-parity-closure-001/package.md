@@ -1,6 +1,13 @@
 # FDHP01 — Frost Depth Heat-Flow Parity (single-OFE)
 
-Status: executed-hold
+Status: complete
+
+Certification update, 2026-06-12: Increment Dk closes FDHP01 at the declared
+single-OFE ADR-0017 boundary. The Route A residue pre-check found no
+in-envelope static frost projection defect, Dk made no production runtime code
+change, and certification consumes the latest clean Dj native and forced-snow
+cohorts. `SC-SNOWFREEZE-001` v69 closes/re-states `GAP-SNOWFREEZE-002`, removes
+the FDHP01 block from the ROADMAP, and unblocks MOFE as the next mechanism.
 
 Closure status update, 2026-06-11: FDHP01 remains `executed-hold`, but the
 post-review D2 blocker is closed. The continuation implemented a per-layer
@@ -280,6 +287,29 @@ but FDHP01 remains `executed-hold`; the next step must localize the post-Dj
 maximum-depth regression/residual against direct legacy `tmpadj`/`frostn`
 surface-temperature and flux evidence, not retune snow, WAT/D2, residue,
 `dpfsfl`, fixed `kftill`/`kfutil`, or lower-front `Qdry`.
+
+D3 Increment Dk, 2026-06-12: Codex executed Route A without the comparator
+subagent per user quota direction. The bounded residue pre-check compared the
+current management-derived `frost.runtime_residue_depth_m` against pinned
+legacy `H*.winter.dat` `resdep`. The current static initial projection matches
+the legacy first winter row for `43/43` prefixes within winter-output rounding
+(max abs `0.0358593951535795 mm`, zero mismatches above `0.1 mm`), and the
+lower-residue outlier subgroup (`p1`, `p2`, `p3`, `p20`, `p21`, `p32`) is not
+undervalued (`23.025850929940454 mm` openWEPP versus `23.0 mm` legacy). The
+remaining residue discrepancy is dynamic residue/decomposition lifecycle:
+legacy frost consumes daily `resdep`, while openWEPP's frost seam currently
+consumes the static initial projection. That is recorded as an out-of-envelope
+producer handoff, not a Dk frost projection fix. Because Dk made no production
+code change, certification consumes the latest clean Dj native and forced-snow
+cohorts. Under ADR-0017, FDHP01 is complete at the declared single-OFE
+boundary: the proxy cap is retired, profile-bound pinning is gone (`0/43`),
+years 2-6 additive storage closure remains at WAT-publication noise
+(`5.09157033201646e-07 mm` forced snow), median depth correlation rose from
+`0.13` to `0.7635554124345166`, and forced-snow frozen-duration residual
+collapsed from `+258` to `+61` days. The stable upper-envelope outliers are
+recorded as characterized handoffs rather than comparator-match tuning targets.
+`GAP-SNOWFREEZE-002` is closed/re-stated in `SC-SNOWFREEZE-001` v69, ROADMAP
+item 1 is removed, and MOFE is unblocked as the next mechanism.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

@@ -1001,3 +1001,14 @@ On certification:
   the next ROADMAP item.
 - Final gates: full Rust closure loop; doc-lint; the certification
   evidence ledger (native + forced cohorts) committed with the closure.
+
+**Execution result (2026-06-12):** complete. Dk's residue pre-check found no
+in-envelope frost projection defect: current static initial
+`frost.runtime_residue_depth_m` matches the legacy first winter `resdep` row
+for `43/43` prefixes within output rounding, and the lower-residue outlier
+subgroup is not undervalued. The remaining daily `resdep` lifecycle mismatch
+belongs to residue/decomposition producer scope. Because Dk changed no
+production behavior, certification consumed the latest clean Dj native and
+forced-snow cohorts. Under ADR-0017, FDHP01 closes at the single-OFE boundary;
+`GAP-SNOWFREEZE-002` is closed/re-stated in `SC-SNOWFREEZE-001` v69, ROADMAP
+item 1 is removed, and MOFE is the next ROADMAP mechanism.

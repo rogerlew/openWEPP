@@ -189,26 +189,29 @@ publication-safe Daymet CLI audit:
    settle-vertical-before-routing principle promoted frost-depth heat-flow
    parity to ROADMAP queue item 1 ahead of MOFE (2026-06-07). Package:
    `20260608-fdmc01-frost-depth-comparator-characterization-001/`.
-7f. **FDHP01 frost-depth heat-flow parity** *(executed-hold — ROADMAP item 1
-   remains active)* — attempted to replace the freeze-index proxy with the
-   energy-balance heat-flow depth model (`INV-SNOWFREEZE-006`/`-012`, legacy
-   `frostn` lineage, CRM Ch. 3.8, Dun et al. 2010) and added WAT `frdp`
-   publication. Post-review follow-on D1 corrected WAT `SoilWaterTotal`
-   frozen-storage double counting, and the D2 layered-store continuation
-   replaced scalar `frdp * theta` frozen water with per-layer frozen-depth and
-   `frzw` state. Cohort validation on 2026-06-11 now gives `43/43` clean
-   frost-on prefixes, clears the prior `p2` fail-closed event, restores the
-   v152 `Total-Soil + frozwt` annual identity to numerical noise
-   (`1.27e-7 mm` max abs residual), and breaks the exact `frozwt/frdp` scalar
-   relation. The package remains held because D3 depth/duration parity still
-   fails (`open max depth mean 1782.038 mm` versus matched legacy
-   `414.221 mm`, median correlation `-0.278`). `SC-SNOWFREEZE-001` v56 keeps
-   `GAP-SNOWFREEZE-002` open for the layered thermal-resistance/depth port; do
-   not advance to MOFE until FDHP01 closes. Package:
+7f. **FDHP01 frost-depth heat-flow parity** *(complete)* — replaced the
+   freeze-index proxy with the single-OFE fine-sublayer heat-flow frost state
+   machine (`INV-SNOWFREEZE-006`/`-012`, legacy `frostn` lineage, CRM Ch. 3.8,
+   Dun et al. 2010), added WAT `frdp` publication, restored WAT
+   `SoilWaterTotal` as the unfrozen `Total-Soil` alias, and bound WAT `frozwt`
+   to the layered `Σ soilf(i)` store. The D3 staged arc landed daily
+   `frwatc` handoffs, fine-layer freeze/thaw arms, capacity/overflow
+   ownership, in-hour resistance feedback, seasonal lower-front heat,
+   residue/shallow-front resistance, fixed frozen-path conductivity authority,
+   and legacy `hr_tmp`/`tmpadj` surface-temperature synthesis. Dk certified the
+   package at the declared ADR-0017 boundary: the Dj/Dk forced-snow cohort is
+   `43/43` clean, years 2-6 independent `Total-Soil + frozwt` closure is
+   `5.09e-7 mm`, profile-bound pinning is gone (`0/43`), mean/median max depth
+   are `501.36/492.36 mm`, median depth correlation rose from the FDMC01
+   `0.13` baseline to `0.764`, and frozen-duration residual collapsed from
+   `+258` to `+61` days. Residual items are handoffs, not blockers: F4 snow
+   density/depth-split magnitude, `p2` individual attribution, dynamic
+   residue/decomposition `resdep` lifecycle exposure, and characterized
+   upper-envelope subgroup deltas. `SC-SNOWFREEZE-001` v69 closes/re-states
+   `GAP-SNOWFREEZE-002`; MOFE is now the next ROADMAP item. Package:
    `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
 8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
-   vertically closed and frost-settled (depth model at parity per item 7f, not
-   just the FQ-4 gate).
+   vertically closed and frost-settled.
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
    melt/settling/density/partition equation adjudication against external authority
    (CRM Ch. 3.7, WEPP User Doc), behind the protected boundary. Distinct from snow

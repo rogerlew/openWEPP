@@ -1,6 +1,6 @@
 # Contract Test Implementation Evidence
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static
 
@@ -68,3 +68,7 @@ Ran:
 - D3 coarse-front contract/test edits were backed out because the cohort attempt
   failed the package's depth/duration phase boundary. No D3 production behavior
   is represented as landed by this artifact.
+- Dk adds no production runtime code and no new contract-derived test vectors.
+  It updates the two `SC-SNOWFREEZE-001` version guard tests to v69 and uses
+  the already-landed Dj/Dk evidence to certify FDHP01 complete at the declared
+  single-OFE ADR-0017 boundary.

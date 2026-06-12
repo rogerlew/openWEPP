@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Ran
 
@@ -611,3 +611,32 @@ bounded increment must localize the post-Dj max-depth residual with direct
 legacy `tmpadj`/`frostn` surface-temperature and top-flux evidence, not retune
 snow, WAT/D2, residue, `dpfsfl`, fixed `kftill`/`kfutil`, or lower-front
 `Qdry`.
+
+## D3 Increment Dk Residue Pre-Check and Certification Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local source, Python, DuckDB, PyArrow, and docs comparisons. |
+| Residue pre-check | Pass; current openWEPP static `frost.runtime_residue_depth_m` matches legacy first-winter `resdep` within output rounding for `43/43` prefixes. Max abs delta `0.0358593951535795 mm`; mismatches above `0.1 mm`: `0`. |
+| Lower-residue subgroup check | Pass; `p1`, `p2`, `p3`, `p20`, `p21`, and `p32` use `23.025850929940454 mm` in openWEPP versus legacy `23.0 mm`, so the residual is not a static projection undervaluation defect. |
+| Legacy width-default what-if | Pass/no effect for this cohort; applying legacy `infile.for` width defaults produced `0` nonzero residue-depth diffs. |
+| Dk source disposition | Pass; no production runtime code edit. Current management projection already seeds `inrcov` from `initial_data.base_line[5]`; the remaining daily `resdep` lifecycle is residue/decomposition producer scope, not a frost projection fix. |
+| Certification basis, native cohort | Pass from latest clean Dj cohort `/tmp/fdhp01_increment_dj_native_cohort_20260612T205827Z`: `43/43` clean, years 2-6 additive closure max abs `6.17207992173463e-07 mm`, `0/43` pinned, mean max depth `506.7933035417255 mm`, median correlation `0.7630792145889135`, median frozen-duration residual `+72` days. |
+| Certification basis, forced-snow cohort | Pass from latest clean Dj cohort `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`: `43/43` clean, years 2-6 additive closure max abs `5.09157033201646e-07 mm`, `0/43` pinned, mean max depth `501.3624240499244 mm`, median max depth `492.3588252690888 mm`, median correlation `0.7635554124345166`, median frozen-duration residual `+61` days. |
+| ADR-0017 certification judgement | Pass; FDHP01 is complete at the declared single-OFE boundary. Residuals are routed to follow-on handoffs: F4 snow density/depth-split magnitude review, `p2` individual attribution, dynamic residue/decomposition `resdep` lifecycle exposure, and characterized upper-envelope subgroup deltas reopenable on new source-line evidence. |
+| Contract amendment | Pass; `SC-SNOWFREEZE-001` v69 closes/re-states `GAP-SNOWFREEZE-002` and records the Dk residue pre-check disposition. |
+| ROADMAP / README / package disposition | Pass; FDHP01 item 7f is complete and MOFE is unblocked as the next roadmap mechanism. |
+| `cargo fmt --check` | Pass |
+| `git diff --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass, `advisories ok, bans ok, licenses ok, sources ok` |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, `2/2` |
+| Contract-version guard tests | Pass, `cargo test -p openwepp --test hphys0319_fixed_baseline_stmtim_observe_contract --test hphys0320_stmtim_start_time_source_line_contract`, `8/8` after `SC-SNOWFREEZE-001` v69. |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+
+Increment Dk disposition: certified complete. Dk performs no production frost
+physics change; it corrects the residue-precheck attribution, closes
+`GAP-SNOWFREEZE-002` at the declared single-OFE ADR-0017 boundary, records the
+residual handoffs, and unblocks MOFE.

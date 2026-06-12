@@ -1,6 +1,6 @@
 # worker handoff
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static + Ran
 
@@ -8,7 +8,9 @@ Date: 2026-06-12
 
 ## Handoff
 
-FDHP01 is not complete. No branch was created for this closure pass.
+FDHP01 is complete at the declared single-OFE ADR-0017 boundary. No branch was
+created for this closure pass. MOFE inter-OFE routing is the next ROADMAP
+mechanism.
 
 Primary landed behavior:
 
@@ -59,6 +61,36 @@ Primary landed behavior:
   lower-front heat, in-hour thaw resistance feedback, and bounded fine-theta
   lower-bound roundoff canonicalization are contract-authorized. The stable
   lower-front heat surrogate remains retired.
+- `SC-SNOWFREEZE-001` is now v69 after Dk. `GAP-SNOWFREEZE-002` is
+  closed/re-stated, the residue pre-check refutes an in-envelope frost
+  projection defect, and remaining residue lifecycle behavior is routed to
+  residue/decomposition producer scope.
+
+Dk certification result:
+
+- Residue pre-check:
+  `fdhp01_increment_dk_residue_precheck_summary_20260612.json`.
+- Current static initial `frost.runtime_residue_depth_m` projection matches
+  legacy first winter `resdep` for `43/43` prefixes within output rounding
+  (max abs `0.0358593951535795 mm`, zero mismatches above `0.1 mm`).
+- Lower-residue outliers (`p1`, `p2`, `p3`, `p20`, `p21`, `p32`) are not
+  undervalued: `23.025850929940454 mm` openWEPP vs `23.0 mm` legacy.
+- Certification consumes the latest clean Dj forced-snow cohort because Dk made
+  no production code change: `43/43` clean at
+  `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`, years 2-6
+  additive closure `5.09157033201646e-07 mm`, `0/43` profile-bound pinned,
+  mean/median max depth `501.3624240499244/492.3588252690888 mm`, median depth
+  correlation `0.7635554124345166`, and median frozen-duration residual
+  `+61 days`.
+
+Follow-up handoffs:
+
+- F4 snow density/depth-split magnitude review.
+- `p2` individual attribution.
+- Dynamic daily `resdep` lifecycle exposure under residue/decomposition
+  producer authority.
+- Characterized upper-envelope subgroup deltas, reopenable only on new
+  source-line evidence.
 
 Validation status before post-review cohort validation:
 

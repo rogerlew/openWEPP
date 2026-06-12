@@ -1,6 +1,6 @@
 # disposition
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static + Ran
 
@@ -8,15 +8,18 @@ Date: 2026-06-12
 
 ## Outcome
 
-FDHP01 is executed but held. The D2 storage/publication defect is closed by the
-layered-state continuation. D3 Increments A/B/C1b/C2/Da/Db/Dc1 landed the
-fine-sublayer state, freeze arms, capacity/overflow ownership, thaw arms,
-energy localization, in-hour freeze-resistance feedback, seasonal lower-front
-heat, and in-hour thaw resistance feedback. Db fixed the profile-depth runaway
-under its surrogate lower-front heat; Dc1 restores seasonal heat and repairs
-the Dc accounting leak, but D3 depth/duration parity remains open under
-`SC-SNOWFREEZE-001#INV-SNOWFREEZE-006` because depth envelope, profile pinning,
-and frozen-duration acceptance are red again under the F4 snow-insulation seam.
+FDHP01 is complete at the declared single-OFE ADR-0017 boundary. The D2
+storage/publication defect is closed by the layered-state continuation. The D3
+staged arc landed the fine-sublayer state, freeze/thaw arms,
+capacity/overflow ownership, in-hour freeze/thaw resistance feedback,
+seasonal lower-front heat, residue/shallow-front resistance, fixed
+frozen-path conductivity authority, and legacy `hr_tmp`/`tmpadj`
+surface-temperature synthesis. Dk's bounded residue pre-check found no
+in-envelope frost projection defect, so the latest clean Dj native and
+forced-snow cohorts certify the package: conservation remains closed,
+profile-bound pinning is gone, depth/duration moved into the physical
+heat-flow range, and remaining subgroup deltas are handoffs rather than
+comparator-match tuning targets.
 
 Static:
 
@@ -61,6 +64,9 @@ Static:
   favor of legacy seasonal `tmpbl`/`Qdry`, requires in-hour thaw resistance
   feedback, and authorizes only bounded fine-theta lower-bound roundoff
   canonicalization.
+- `SC-SNOWFREEZE-001` v69 closes/re-states `GAP-SNOWFREEZE-002` after Dk:
+  the clean residue pre-check refutes an in-envelope frost projection defect,
+  and FDHP01 no longer blocks MOFE.
 - Increment B mutates `slfsd`/`slsic`/`slsw`/`nwfrzz` for freeze-active hours
   (`frzng`/`frznw` lineage) and aggregates per-layer frozen depth/water from
   the same fine state.
@@ -108,6 +114,13 @@ Ran:
 - Increment Dc1 43-prefix cohort execution was clean (`43/43`) at
   `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z`; the parent ran
   comparisons locally without the comparator subagent per user quota direction.
+- Increment Dk residue pre-check ran locally without the comparator subagent.
+  The current static initial `frost.runtime_residue_depth_m` projection matched
+  the legacy first winter `resdep` row for `43/43` prefixes within output
+  rounding: max abs `0.0358593951535795 mm`, zero mismatches above `0.1 mm`.
+- The Dj forced-snow certification cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`, with years
+  2-6 additive storage closure max abs `5.09157033201646e-07 mm`.
 
 ## Closure Evidence
 
@@ -133,18 +146,28 @@ Ran:
   `0.963536279373424`, maximum ratio standard deviation
   `0.0700106996666242`.
 
-## Hold Evidence
+## Certification Evidence
 
-- OpenWEPP maximum frost depth remains near the physical profile bound:
-  mean `1782.0379909380451 mm`, range
-  `1780.3226093850215..1783.3684719591117 mm`.
-- Matched legacy mean maximum frost depth is `414.22093023255815 mm`; mean
-  open-minus-legacy max-depth delta is `1367.8170607054872 mm`.
-- Median depth correlation is `-0.27756218032931956`.
-- All `43/43` prefixes exceed `200 mm`; this proves the retired proxy cap is
-  gone, but the depth progression is still not legacy-envelope faithful.
-- OpenWEPP frozen-day count is `518.5348837209302` days lower than legacy on
-  average.
+- Dk certification summary:
+  `fdhp01_increment_dk_certification_summary_20260612.json`.
+- Forced-snow cohort root:
+  `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`.
+- Clean exits and WAT outputs: `43/43`.
+- Profile-bound pinning: `0/43`; minimum margin to profile
+  `1191.8292651469587 mm`.
+- Maximum depth: mean `501.3624240499244 mm`, median
+  `492.3588252690888 mm`; `30/43` prefixes inside the legacy
+  `240..503.2 mm` flag envelope.
+- Median depth correlation: `0.7635554124345166`, up from the FDMC01
+  baseline `0.13`.
+- Median frozen-duration residual: `+61 days`, down from the FDMC01
+  baseline `+258 days`.
+- Years 2-6 independent `Total-Soil + frozwt` closure: max abs
+  `5.09157033201646e-07 mm`.
+- Residual handoffs: F4 snow density/depth-split magnitude, `p2` individual
+  attribution, dynamic daily `resdep` lifecycle exposure in the
+  residue/decomposition producer, and characterized upper-envelope subgroup
+  deltas.
 
 ## Increment A Output Gate Evidence
 

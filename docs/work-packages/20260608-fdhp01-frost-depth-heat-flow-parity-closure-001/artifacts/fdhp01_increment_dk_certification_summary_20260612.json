@@ -1,0 +1,88 @@
+{
+  "acceptance_judgement": {
+    "adr0017_basis": "Legacy envelope is a flag/reference, not a millimetre target. Dk certifies the single-OFE frost state machine and energetics because conservation is closed, profile pinning is retired, depth is in the physical heat-flow range for the cohort median/mean, correlation rose materially from 0.13 to 0.76, and frozen-duration residual collapsed from +258 days to +61 days under forced-snow control.",
+    "fdhp01_complete": true,
+    "handoffs": [
+      "F4 snow density/depth-split magnitude review, priced by native-vs-forced cohort gap",
+      "p2 individual attribution, ratio 2.18 and outside the subgroup patterns",
+      "dynamic residue/decomposition lifecycle surface: frost consumes static initial resdep while legacy frost consumes daily dynamic resdep; not an in-package frost projection fix",
+      "residual ~25% subgroup depth deltas recorded as characterized model difference, reopenable on new source-line evidence"
+    ],
+    "next_roadmap_item": "MOFE inter-OFE routing"
+  },
+  "code_changed": false,
+  "cohort_reuse_rationale": "Dk residue pre-check landed no production code and found no in-envelope frost-seam projection fix, so certification consumes the latest clean Dj native and forced-snow cohorts.",
+  "comparison_mode": "local Python/CSV/JSON; comparator subagent not used per user quota direction",
+  "evidence_mode": "Ran",
+  "forced_snow_cohort": {
+    "clean_exits": "43/43",
+    "depth_corr_median": 0.7635554124345166,
+    "depth_max_mean_mm": 501.3624240499244,
+    "depth_max_median_mm": 492.3588252690888,
+    "frozen_days_delta_median_open_minus_legacy": 61.0,
+    "inside_legacy_flag_count": 30,
+    "outlier_count_above_503_2mm": 13,
+    "outliers_above_503_2mm": [
+      "p1",
+      "p2",
+      "p3",
+      "p8",
+      "p11",
+      "p13",
+      "p20",
+      "p21",
+      "p22",
+      "p23",
+      "p26",
+      "p28",
+      "p32"
+    ],
+    "profile_pinned_prefixes": 0,
+    "root": "/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z",
+    "years_2_to_6_closure_max_abs_mm": 5.09157033201646e-07
+  },
+  "increment": "Dk",
+  "native_cohort": {
+    "clean_exits": "43/43",
+    "depth_corr_median": 0.7630792145889135,
+    "depth_max_mean_mm": 506.7933035417255,
+    "depth_max_median_mm": 497.8858706468047,
+    "frozen_days_delta_median_open_minus_legacy": 72.0,
+    "inside_legacy_flag_count": 30,
+    "outlier_count_above_503_2mm": 13,
+    "profile_pinned_prefixes": 0,
+    "root": "/tmp/fdhp01_increment_dj_native_cohort_20260612T205827Z",
+    "years_2_to_6_closure_max_abs_mm": 6.17207992173463e-07
+  },
+  "residue_precheck": {
+    "current_static_vs_legacy_first_max_abs_mm": {
+      "abs_mm": 0.0358593951535795,
+      "prefix": "p4",
+      "value_mm": 0.0358593951535795
+    },
+    "current_static_vs_legacy_first_mismatch_count_abs_gt_0_1mm": 0,
+    "disposition": {
+      "dynamic_residue": "legacy frost consumes dynamic daily resdep; openWEPP frost.runtime_residue_depth_m is static initial projection, so p11 and many corn-management prefixes diverge from the frost-active winter mode. That producer/lifecycle gap is residue/decomposition authority, not a bounded Dk frost-seam projection fix.",
+      "initial_projection": "clean against legacy first winter resdep to winter-output rounding; no in-package frost-seam fix indicated",
+      "lower_residue_subgroup": "not undervalued by current openWEPP static projection; p1/p2/p3/p20/p21/p32 match the 23.0 mm legacy frost-active mode within winter output rounding"
+    },
+    "lower_residue_outlier_current_minus_frost_active_mode_mm_values": [
+      0.025850929940453682,
+      0.025850929940453682,
+      0.025850929940453682,
+      0.025850929940453682,
+      0.025850929940453682,
+      0.025850929940453682
+    ],
+    "lower_residue_outliers": [
+      "p1",
+      "p2",
+      "p3",
+      "p20",
+      "p21",
+      "p32"
+    ],
+    "row_count": 43
+  },
+  "status": "certified_complete"
+}

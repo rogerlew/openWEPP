@@ -1,6 +1,6 @@
 # Implementation Test Evidence
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static + Ran
 
@@ -155,3 +155,14 @@ radiation fail-closed behavior. Native and forced-snow cohorts both ran
 `43/43` clean with years 2-6 additive closure at WAT-publication texture, but
 the forced-snow maximum-depth gate did not improve, so FDHP01 remains
 `executed-hold`.
+
+Dk certification continuation: Codex ran the Route A residue pre-check and
+made no production code changes. The corrected local comparison shows the
+current static initial `frost.runtime_residue_depth_m` projection matches the
+legacy first winter `resdep` row for `43/43` prefixes within output rounding
+(max abs `0.0358593951535795 mm`, zero mismatches above `0.1 mm`), and the
+lower-residue outlier subgroup is not undervalued. Because Dk changed no
+runtime behavior, certification consumes the latest clean Dj native and
+forced-snow cohorts. Under ADR-0017, FDHP01 closes at the single-OFE boundary;
+remaining snow, `p2`, dynamic residue, and subgroup-delta items are routed as
+handoffs.

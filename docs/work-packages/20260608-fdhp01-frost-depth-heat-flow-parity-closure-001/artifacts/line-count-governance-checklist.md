@@ -1,6 +1,6 @@
 # Line Count Governance Checklist
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static
 
@@ -33,12 +33,10 @@ Representative post-edit line counts:
 
 ## Disposition
 
-No unrelated split/refactor was performed. `coupling.rs` now crosses the
-3000-line refactor-blocking threshold at 3052 lines, and the CLIM06
-contract-test file remains above the 2000-line WARN threshold at 2743 lines.
-Splitting either file inside Dj would cross the surface-temperature
-source-line port scope and increase review risk while the frost residual is
-still actively being localized. The threshold breach is accepted only as an
-executed-hold carry-forward item for the next frost-side increment: extract the
+No unrelated split/refactor was performed. Dk made no production Rust edits and
+therefore added no Rust surface area. `coupling.rs` remains above the
+3000-line refactor-blocking threshold from the Dj source-line port, and the
+CLIM06 contract-test file remains above the 2000-line WARN threshold. Because
+FDHP01 is now closed, any future frost expansion should first extract the
 legacy frost surface-temperature/thermal-resistance helpers or partition the
-FDHP01 contract-test vectors before adding another large production block.
+FDHP01 contract-test vectors under a separate refactor/feature scope.

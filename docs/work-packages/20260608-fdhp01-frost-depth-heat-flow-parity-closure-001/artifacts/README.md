@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: executed-hold
+Status: complete
 
 Evidence and disposition artifacts for
 `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001`.
@@ -247,6 +247,17 @@ Evidence and disposition artifacts for
   `fdhp01_increment_dj_forced_snow_frozwt_frdp_ratio_20260612.csv`,
   `fdhp01_increment_dj_forced_snow_activation_summary_20260612.csv`: generated
   Dj native and forced-snow cohort reports.
+- `d3-increment-dk-residue-precheck-certification-20260612.md`: Dk Route A
+  certification evidence; records the corrected residue pre-check, the
+  out-of-envelope dynamic residue/decomposition handoff, and the final FDHP01
+  ADR-0017 closure judgement.
+- `fdhp01_increment_dk_residue_precheck_20260612.csv`,
+  `fdhp01_increment_dk_residue_precheck_summary_20260612.json`: generated Dk
+  residue pre-check table and compact summary from
+  `/tmp/fdhp01_increment_dk_residue_precheck_20260612T214500Z`.
+- `fdhp01_increment_dk_certification_summary_20260612.json`: compact Dk
+  certification summary consuming the latest clean Dj native and forced-snow
+  cohorts because Dk changed no production code.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

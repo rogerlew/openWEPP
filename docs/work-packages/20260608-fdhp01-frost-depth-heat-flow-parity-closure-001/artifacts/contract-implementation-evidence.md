@@ -1,6 +1,6 @@
 # Contract Implementation Evidence
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static
 
@@ -39,6 +39,9 @@ on 2026-06-11:
   `frost.runtime_frwatc_frozen_water_after_m` and rejects depth-derived
   publication; v152 binds that diagnostic and WAT `frozwt` to the layered
   legacy `Σ soilf(i)` store.
+- Added `SC-SNOWFREEZE-001` v69 after Dk certification: `GAP-SNOWFREEZE-002`
+  is closed/re-stated, the residue pre-check is recorded as clean for the
+  frost projection seam, and MOFE is no longer blocked by FDHP01.
 
 ## Boundary
 
@@ -61,10 +64,8 @@ Static:
   per-layer frozen-depth/frozen-water state rather than scalar `frdp * theta`.
 - Frozen-water storage exchange is locally bidirectional in the runtime state,
   and cohort validation shows annual additive closure is restored. The
-  implementation remains held pending D3 depth/duration parity because the
-  layered thermal-resistance depth port is incomplete.
+  implementation is certified complete at the Dk single-OFE boundary.
 - A D3 coarse-front production/test experiment was built and validated locally
   but did not satisfy the package phase boundary; those production/test edits
-  were backed out. `SC-SNOWFREEZE-001` v57 remains the D3 hold amendment, v58
-  is the Increment A authority for shadow `frwatc` handoff state, and v59 is
-  the current Increment B authority for active freeze arms.
+  were backed out. Later staged increments superseded that hold, through
+  `SC-SNOWFREEZE-001` v69.

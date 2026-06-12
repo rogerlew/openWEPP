@@ -1,6 +1,6 @@
 # FDHP01 Frost Depth Validation Ledger
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static + Ran
 
@@ -108,22 +108,51 @@ Results:
 
 ## Disposition
 
-FDHP01 does not close the executable single-OFE model-depth implementation
-boundary. The WAT `frdp` publication surface exists, and D1 removed the dominant
-frozen-storage double count from `SoilWaterTotal`. D2 added the seam
-diagnostics needed to judge freeze/thaw exchange wiring and `SC-WATBAL-001`
-v152 ratifies that `Total-Soil + frozwt` is the frost-active storage audit
-term and binds WAT `frozwt` to the layered legacy `Σ soilf(i)` store. The fresh
-cohort shows D2 closure: the additive identity returns to numerical noise, the
-prior `p2` failure no longer reproduces, and `frozwt` is no longer an exact
-scalar function of `frdp`.
+Superseded by the Dk certification section below. The D1/D2 evidence in this
+ledger remains the storage/publication baseline; the older D3 hold language is
+retained in historical increment sections only.
 
-The package remains in defect closure because D3 depth/duration parity still
-fails materially. The next actionable work is to complete the layered
-thermal-resistance/depth-progression port so the frost front is bounded by the
-layered frost state rather than only by the physical profile, then rerun the
-same additive identity and depth/duration cohort gates without comparator
-tuning.
+## Dk Certification
+
+Ran, 2026-06-12:
+
+- Route A residue pre-check at
+  `/tmp/fdhp01_increment_dk_residue_precheck_20260612T214500Z`, copied into
+  the package as `fdhp01_increment_dk_residue_precheck_20260612.csv` and
+  `fdhp01_increment_dk_residue_precheck_summary_20260612.json`.
+- Latest clean Dj native cohort:
+  `/tmp/fdhp01_increment_dj_native_cohort_20260612T205827Z`.
+- Latest clean Dj forced-snow cohort:
+  `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`.
+
+Results:
+
+- Current openWEPP static initial `frost.runtime_residue_depth_m` projection
+  matches legacy first-winter `resdep` for all `43/43` prefixes within output
+  rounding. Max abs delta is `0.0358593951535795 mm`; mismatches above
+  `0.1 mm`: `0`.
+- The lower-residue outlier subgroup (`p1`, `p2`, `p3`, `p20`, `p21`, `p32`)
+  is not undervalued: openWEPP uses `23.025850929940454 mm` versus legacy
+  `23.0 mm`.
+- Applying legacy `infile.for` width defaults has no effect in this cohort.
+- Native Dj certification surface: `43/43` clean, years 2-6 additive closure
+  max abs `6.17207992173463e-07 mm`, `0/43` pinned, mean max depth
+  `506.7933035417255 mm`, median correlation `0.7630792145889135`, median
+  frozen-duration residual `+72` days.
+- Forced-snow Dj certification surface: `43/43` clean, years 2-6 additive
+  closure max abs `5.09157033201646e-07 mm`, `0/43` pinned, mean max depth
+  `501.3624240499244 mm`, median max depth `492.3588252690888 mm`, median
+  correlation `0.7635554124345166`, median frozen-duration residual `+61`
+  days.
+
+Disposition:
+
+- No production runtime code changed for Dk.
+- `SC-SNOWFREEZE-001` v69 closes/re-states `GAP-SNOWFREEZE-002`.
+- FDHP01 is complete at the declared single-OFE ADR-0017 boundary. The
+  remaining snow density/depth-split, `p2`, dynamic `resdep` lifecycle, and
+  characterized upper-envelope subgroup items are follow-on handoffs rather
+  than FDHP01 blockers.
 
 ## D3 Coarse-Front Attempt
 

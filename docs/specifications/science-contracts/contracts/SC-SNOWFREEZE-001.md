@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 68
+contract_version: 69
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -983,12 +983,27 @@ it does not authorize retuning snow depth/density, residue resistance,
 `dpfsfl`, fixed `kftill`/`kfutil`, lower-front `Qdry`, D2 storage, or WAT
 publication surfaces.
 
+FDHP01 Increment Dk closes the single-OFE frost-depth heat-flow parity package
+at the declared ADR-0017 boundary. The bounded residue pre-check found the
+management-derived static initial `frost.runtime_residue_depth_m` clean against
+legacy first-row `resdep` for all 43 prefixes within winter-output rounding,
+and specifically refuted undervaluation of the lower-residue outlier subgroup.
+Any remaining daily `resdep` lifecycle mismatch is a residue/decomposition
+producer-surface handoff, not a frost projection defect. Certification consumes
+the clean Dj native and forced-snow cohorts: `43/43` clean, years 2-6
+`Total-Soil + frozwt` closure at WAT-publication texture, no profile-bound
+pinning, depth correlation materially improved from the FDMC01 `0.13` baseline
+to about `0.76`, and forced-snow frozen-duration residual collapsed from
+`+258` to `+61` days. The legacy depth envelope remains a comparator flag, not
+a millimetre target; the stable upper-envelope outlier set is a characterized
+handoff rather than an authorization for comparator tuning.
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Frost-depth heat-flow executable parity remains open after FDHP01 Increment Dj. The D2 layered-store continuation closed additive storage for years 2-6 on all 43 prefixes and cleared `p2`; Da/Db re-pinned the accepted gate to the independent WAT flux ledger at WAT-publication numerical texture. C1b/C2 landed fine-layer capacity/overflow and thaw-arm state-machine ownership without reopening D2. Db landed `frzng` in-hour surface-resistance feedback and temporarily put maximum depths inside the legacy envelope. Dc1 landed seasonal `tmpbl` lower-front heat, in-hour thaw resistance feedback, and fine-theta lower-bound roundoff handling while restoring independent years 2-6 `Total-Soil + frozwt` closure. De landed content-dependent lower-front `Qdry`; Dg restored legacy `resdep/kres` surface resistance and the below-freezing `dpfsfl` shallow-front floor; Dh refuted per-soil frozen-path conductivity because pinned legacy uses fixed `kftill`/`kfutil`; Dj ported legacy `hr_tmp`/`tmpadj` adjusted surface-temperature synthesis and required frost-enabled projection of hourly winter air/radiation/cloud forcing. The Dj cohorts stayed `43/43` clean and preserved years 2-6 additive closure at WAT-publication texture, but forced legacy-snow maximum depths regressed from Dg (`490.0923 mm` mean max to `501.3624 mm`) and the `13/43` forced-snow upper-envelope outlier set did not shrink, despite median frozen-duration residual improving from `+73` to `+61` days. The remaining defect is no longer frozen-water publication, capacity/overflow ownership, missing thaw-arm storage plumbing, unit conversion, stale in-hour resistance, seasonal lower-front heat wiring, thaw feedback, D2 accounting, constant lower-front conductivity, zero residue resistance, missing shallow-front minimum path, per-soil frozen-path conductivity, or absence of `tmpadj` surface-temperature synthesis. | Blocks frost-depth heat-flow closure and MOFE advancement until the single-OFE cohort runs 43/43, annual `Total-Soil + frozwt` closure stays at numerical noise, depth enters a physical heat-flow envelope without profile-bound pinning, duration residual materially collapses, and the year-7 boundary effect is explained or eliminated without comparator tuning. | active-defect | `[DIRECT][Ran] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | Closed by FDHP01 Increment Dk at the declared single-OFE ADR-0017 boundary. The D2 layered-store continuation, fine-layer freeze/thaw state machine, capacity/overflow ownership, in-hour resistance feedback, seasonal lower-front heat, residue/shallow-front resistance, fixed frozen-path conductivity refutation, and `hr_tmp`/`tmpadj` surface-temperature synthesis now run with `43/43` clean cohorts and years 2-6 additive storage closure at WAT-publication texture. Dk's residue pre-check found no in-envelope frost projection defect and routed dynamic daily `resdep` lifecycle to residue/decomposition producer scope. | No longer blocks MOFE. Residual items are handoffs: F4 snow density/depth-split magnitude review, `p2` individual attribution, dynamic residue lifecycle exposure, and characterized upper-envelope subgroup deltas reopenable on new source-line evidence. | closed | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
 | GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is explicit, but executable cross-contract comparator vectors for frost-hourly internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled frost vectors remains limited pending SIMIMPL32 and SIMIMPL35. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`) and SIMIMPL29 emits the hourly family, but comparator-tier depth/density/melt vector breadth remains limited for broad climate regimes. | Residual risk is evidence-depth, not missing alias/state publication. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -997,6 +1012,7 @@ publication surfaces.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-12` | `69` | `Codex` | FDHP01 Increment Dk certification: closed/re-stated `GAP-SNOWFREEZE-002`, recorded the residue pre-check disposition, and unblocked MOFE under ADR-0017. |
 | `2026-06-12` | `68` | `Codex` | FDHP01 Increment Dj amendment: bound frost top heat flow to legacy `hr_tmp`/`tmpadj` adjusted surface-temperature synthesis, registered `frost.hourly.surface_temp_c_####`, and recorded Dj's executed-hold cohort outcome. |
 | `2026-06-12` | `67` | `Codex` | FDHP01 Increment Dh amendment: refuted per-soil frozen-path conductivity as an implementation target and bound fixed legacy `kftill`/`kfutil` constants for the frozen tilled/untilled surface path. |
 | `2026-06-12` | `66` | `Codex` | FDHP01 Increment Dg amendment: promoted legacy `resdep` residue resistance and below-freezing `dpfsfl` shallow-front minimum conduction distance into `INV-SNOWFREEZE-006`. |

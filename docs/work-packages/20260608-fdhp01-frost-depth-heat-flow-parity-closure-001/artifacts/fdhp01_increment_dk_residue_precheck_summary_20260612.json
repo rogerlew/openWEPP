@@ -1,0 +1,85 @@
+{
+  "comparison_mode": "local Python; comparator subagent not used per user quota direction",
+  "current_static_vs_legacy_first_max_abs_mm": {
+    "abs_mm": 0.0358593951535795,
+    "prefix": "p4",
+    "value_mm": 0.0358593951535795
+  },
+  "current_static_vs_legacy_first_mismatch_count_abs_gt_0_1mm": 0,
+  "current_static_vs_legacy_frost_active_mode_max_abs_mm": {
+    "abs_mm": 55.53585939515358,
+    "prefix": "p25",
+    "value_mm": 55.53585939515358
+  },
+  "current_static_vs_legacy_frost_active_mode_mismatch_count_abs_gt_0_1mm": 37,
+  "disposition": {
+    "dynamic_residue": "legacy frost consumes dynamic daily resdep; openWEPP frost.runtime_residue_depth_m is static initial projection, so p11 and many corn-management prefixes diverge from the frost-active winter mode. That producer/lifecycle gap is residue/decomposition authority, not a bounded Dk frost-seam projection fix.",
+    "initial_projection": "clean against legacy first winter resdep to winter-output rounding; no in-package frost-seam fix indicated",
+    "lower_residue_subgroup": "not undervalued by current openWEPP static projection; p1/p2/p3/p20/p21/p32 match the 23.0 mm legacy frost-active mode within winter output rounding"
+  },
+  "dj_forced_snow_metric_source": "/home/workdir/openWEPP/docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/fdhp01_increment_dj_forced_snow_depth_metrics_20260612.csv",
+  "dj_outlier_count_above_503_2mm": 13,
+  "dj_outlier_prefixes": [
+    "p1",
+    "p2",
+    "p3",
+    "p8",
+    "p11",
+    "p13",
+    "p20",
+    "p21",
+    "p22",
+    "p23",
+    "p26",
+    "p28",
+    "p32"
+  ],
+  "evidence_mode": "Ran",
+  "group_counts_by_frost_active_mode_round_0_1mm": {
+    "2.0": 2,
+    "2.1": 30,
+    "23.0": 6,
+    "3.1": 4,
+    "5.4": 1
+  },
+  "high_residue_outlier_current_minus_frost_active_mode_mm_values": [],
+  "high_residue_outliers": [],
+  "increment": "Dk",
+  "infile_width_default_effect_max_abs_mm": {
+    "abs_mm": 0.0,
+    "prefix": "p1",
+    "value_mm": 0.0
+  },
+  "infile_width_default_nonzero_count_abs_gt_1e_12mm": 0,
+  "legacy_run_root": "/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd",
+  "legacy_winter_output_root": "/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd/output",
+  "lower_residue_outlier_current_minus_frost_active_mode_mm_values": [
+    0.025850929940453682,
+    0.025850929940453682,
+    0.025850929940453682,
+    0.025850929940453682,
+    0.025850929940453682,
+    0.025850929940453682
+  ],
+  "lower_residue_outliers": [
+    "p1",
+    "p2",
+    "p3",
+    "p20",
+    "p21",
+    "p32"
+  ],
+  "non_outlier_group_counts_by_frost_active_mode_round_0_1mm": {
+    "2.0": 2,
+    "2.1": 24,
+    "3.1": 4
+  },
+  "outlier_group_counts_by_frost_active_mode_round_0_1mm": {
+    "2.1": 6,
+    "23.0": 6,
+    "5.4": 1
+  },
+  "row_count": 43,
+  "same_residue_outlier_current_minus_frost_active_mode_mm_values": [],
+  "same_residue_soil_outliers": []
+}

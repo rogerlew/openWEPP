@@ -1,6 +1,6 @@
 # Kernel Profile Compliance Checklist
 
-Status: executed-hold
+Status: complete
 
 Evidence mode: Static + Ran
 
@@ -41,5 +41,7 @@ Date: 2026-06-11
 All listed Rust gates passed on 2026-06-11. The layered-store
 `algebraic-radium` cohort gate also ran `43/43` prefixes clean and restored
 the annual `Total-Soil + frozwt` identity to numerical noise
-(`1.2683574368566042e-07 mm` max abs residual). Kernel-profile closure is still
-held for D3 because depth/duration parity remains materially off.
+(`1.2683574368566042e-07 mm` max abs residual). Later D3 increments preserve
+the same fail-closed posture while landing the fine-layer state machine and
+heat-flow corrections. Dk makes no production Rust edits and certifies the
+single-OFE boundary on the latest clean Dj cohorts.
