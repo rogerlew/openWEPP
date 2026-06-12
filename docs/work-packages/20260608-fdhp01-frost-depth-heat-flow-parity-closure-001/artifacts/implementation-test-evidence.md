@@ -103,3 +103,13 @@ noise (`1.2683574368566042e-07 mm` max abs residual), and broke the exact
 depth/duration parity gate: max-depth mean `1782.0379909380451 mm` versus
 legacy `414.22093023255815 mm`, median depth correlation
 `-0.27756218032931956`.
+
+Dd diagnostic continuation: a temporary env-gated hook forced only the frost
+snow-depth/density inputs from legacy `H*.winter.dat`, ran `43/43` clean, and
+was removed before rebuilding production. Years 2-6 additive storage closure
+remained at WAT-publication texture (`6.726058817130287e-07 mm` max abs), but
+legacy snow forcing did not certify D3 closure: mean max depth stayed
+`856.817674502367 mm`, `0/43` prefixes were inside the `240..503.2 mm`
+envelope, and median frozen duration residual stayed `+502` days. The
+production rebuild after hook removal restored binary SHA
+`95491b24f36065c28f90ca7e55bfceb39cf14ac2c270ddfd207eb750a2e4a536`.

@@ -436,3 +436,32 @@ Increment Dc1 disposition: landed at `executed-hold`. Dc1 repairs the Dc
 additive-storage leak and preserves D2/p2 closure at WAT-publication numerical
 texture, but D3 remains open. Depth/duration evidence is now held for the F4
 snow-insulation/depth-duration discriminator before MOFE closure.
+
+## D3 Increment Dd Legacy-Snow-Forced Diagnostic Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/PyArrow/Pandas comparisons. |
+| Legacy `H*.winter.dat` generation | Pass, `43/43` pinned-baseline runs exited clean with winter outputs under `/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd/output`. |
+| Legacy snow forcing extraction | Pass, generated `109951` daily rows keyed by prefix, simulation year, and Julian day from hour-24 `snodpt`/`densgt`; maximum legacy snow depth `0.7258 m`, maximum density `350 kg/m3`. |
+| Temporary forced-snow hook | Pass for diagnostic use; env-gated hook replaced only the snow depth/density consumed by frost heat-flow resistance, then was removed before production rebuild. |
+| Diagnostic release build | Pass, diagnostic binary SHA `8cab0ac419cdfbb90bd3506913de166d7d85d1f4697a2023e2d24d29a0113181`. |
+| 43-prefix `algebraic-radium` forced-snow frost-on cohort | Pass execution, `43/43` clean exits; run root `/tmp/fdhp01_increment_dd_forced_snow_cohort_20260612T121500Z`. |
+| WAT outputs | Pass, `43/43`. |
+| Independent annual `Total-Soil + frozwt` closure, years 2-6 | Pass at WAT-publication texture, max abs residual `6.726058817130287e-07 mm` (`p11`, year 4). |
+| p1/p20/p43 closure spot checks | Pass: p1 max abs `2.5357493882438575e-13 mm`; p20 max abs `1.3500311979441904e-13 mm`; p43 year 2 `-1.2079226507921703e-13 mm`. |
+| Profile-bound pinning | Pass under forced snow, `0/43` prefixes pinned; minimum margin `372.60609939367146 mm`. |
+| D3 depth envelope certification | Fail, `0/43` maximum depths inside the legacy `240..503.2 mm` envelope; mean max `856.817674502367 mm`, median max `844.2352603016866 mm`, range `654.0796339074789..1427.3939006063285 mm`. |
+| D3 depth-correlation certification | Directionally improved but not sufficient alone; median correlation `0.7118806632341061`, range `0.4357068574368132..0.8709499689951673`. |
+| D3 frozen-duration certification | Fail, open-minus-legacy median `+502` days, mean `+499.74418604651163` days, range `+462..+558` days. |
+| Days above `200 mm` watch | Fail/watch, full-WAT median `937` days. |
+| Clean-source release rebuild after hook removal | Pass, production binary SHA `95491b24f36065c28f90ca7e55bfceb39cf14ac2c270ddfd207eb750a2e4a536`. |
+| Production source diff after hook removal | Pass; no source diff remains from the temporary forced-snow hook. |
+| `git diff --check` | Pass |
+| `cargo fmt --check` | Pass |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+
+Increment Dd disposition: diagnostic executed at `executed-hold`. Legacy snow
+depth/density is a material contributor, but forced legacy snow does not close
+D3. The remaining depth/duration residual is frost-side under controlled snow
+forcing and needs the next scoped hourly flux/front localization increment.

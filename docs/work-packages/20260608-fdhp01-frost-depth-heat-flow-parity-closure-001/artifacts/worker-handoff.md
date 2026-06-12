@@ -265,11 +265,32 @@ Increment Dc1 result:
   duration over-persists with median open-minus-legacy `+567` days.
 - `SC-SNOWFREEZE-001` v64 is the accepted production boundary.
 
-First actionable item: execute Increment Dd. Run the diagnostic
-legacy-snow-forced frost certification to decide whether the remaining
-depth/duration defect is F4 snow-insulation/depth-density forcing or still
-frost-side. Do not loosen the Db/C1b/C2/Dc1 capacity, overflow, publication,
-seasonal-heat, thaw-feedback, or conservation guards. Do not advance to MOFE
-until the cohort is `43/43`, the year-7 boundary item stays explained or
-eliminated, and the full depth/duration acceptance gate passes or is assigned
-to a documented snow-density handoff with evidence.
+Increment Dd result:
+
+- Codex executed the legacy-snow-forced diagnostic without the comparator
+  subagent per user quota direction. The temporary forced-snow hook was removed
+  before the production rebuild.
+- Legacy winter output generation ran `43/43` clean under
+  `/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd`; the forced openWEPP
+  cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_dd_forced_snow_cohort_20260612T121500Z`.
+- Years 2-6 independent `Total-Soil + frozwt` closure stayed at
+  WAT-publication texture: max abs residual
+  `6.726058817130287e-07 mm`; p43 year 2 is
+  `-1.2079226507921703e-13 mm`.
+- Forced legacy snow removes profile-bound pinning (`0/43` pinned) and improves
+  median depth correlation to `0.7118806632341061`, but it does not close D3:
+  mean max depth is `856.817674502367 mm`, `0/43` prefixes are inside the
+  legacy `240..503.2 mm` envelope, and frozen duration over-persists with
+  median open-minus-legacy `+502` days.
+
+First actionable item: scope and execute the next frost-side localization
+increment under the Dd controlled-snow setup. Compare openWEPP hourly `frzflg`,
+`Qsrf`, `Quf`, surface temperature, snow/residue/frozen resistance, front
+advance/retreat, and fine-layer ice/liquid motion against legacy
+`H*.winter.dat`/source-line state for the first material forced-snow
+divergence. Do not tune snow density/depth, kfactor, latent heat, publication,
+or D2 storage surfaces. Do not advance to MOFE until the cohort is `43/43`, the
+year-7 boundary item stays explained or eliminated, and the full
+depth/duration acceptance gate passes or is assigned to a documented upstream
+snow handoff with evidence.

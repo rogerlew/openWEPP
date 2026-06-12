@@ -576,3 +576,22 @@ package's frost physics independent of snow fidelity:
 - Promotion of the snow density/settling slice is an operator/roadmap
   decision (science-steered), not an autonomous rescope of the Stage-2
   protected boundary.
+
+**Dd execution result (2026-06-12): executed-hold diagnostic complete; F4 is
+not the whole remaining D3 story.** Codex generated legacy `H*.winter.dat` for
+all 43 algebraic-radium prefixes, parsed hour-24 `snodpt`/`densgt` into
+`/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd/legacy_snow_forcing_daily_hour24.csv`,
+ran an env-gated forced-snow openWEPP cohort at
+`/tmp/fdhp01_increment_dd_forced_snow_cohort_20260612T121500Z`, then removed
+the hook and rebuilt production. Execution and D2 conservation stayed clean:
+`43/43` exits, `43/43` WAT outputs, years 2-6 independent
+`Total-Soil + frozwt` max abs residual
+`6.726058817130287e-07 mm`, p43 year 2
+`-1.2079226507921703e-13 mm`. Forced snow removed profile pinning and improved
+timing (`0/43` pinned; median correlation `0.7118806632341061`), but it did
+not close D3: mean max depth `856.817674502367 mm`, range
+`654.0796339074789..1427.3939006063285 mm`, `0/43` prefixes inside the
+`240..503.2 mm` legacy envelope, and median frozen-duration residual `+502`
+days. The next scoped increment is therefore frost-side under the Dd
+controlled-snow setup: localize the remaining hourly flux/front divergence
+with in-process evidence, not snow-density tuning.

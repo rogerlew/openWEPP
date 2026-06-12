@@ -151,6 +151,22 @@ envelope, median depth correlation `0.6415921721982907`, and median frozen
 duration residual `+567` days. The next scope is Dd/F4 legacy-snow-forced
 frost certification, not MOFE closure.
 
+D3 Increment Dd, 2026-06-12: Codex executed the legacy-snow-forced diagnostic
+without the comparator subagent per user quota direction. A temporary
+env-gated hook forced only the snow depth/density consumed by frost from
+legacy `H*.winter.dat` hour-24 rows, then was removed before the production
+rebuild. The forced cohort at
+`/tmp/fdhp01_increment_dd_forced_snow_cohort_20260612T121500Z` ran `43/43`
+clean and preserved years 2-6 independent `Total-Soil + frozwt` closure at
+WAT-publication texture (`6.726058817130287e-07 mm` max abs; p43 year 2
+`-1.2079226507921703e-13 mm`). Dd does not certify F4 as the whole remaining
+D3 story: forced legacy snow removes profile pinning and improves median
+correlation to `0.7118806632341061`, but mean max depth remains
+`856.817674502367 mm`, `0/43` prefixes enter the legacy `240..503.2 mm`
+envelope, and frozen duration still over-persists by median `+502` days. The
+next increment remains frost-side, using the Dd forced-snow setup to localize
+the remaining hourly front/flux divergence.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

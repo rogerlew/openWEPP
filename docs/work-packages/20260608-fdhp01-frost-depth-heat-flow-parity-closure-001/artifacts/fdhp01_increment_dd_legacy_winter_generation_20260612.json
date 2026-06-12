@@ -1,0 +1,264 @@
+{
+  "root": "/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd",
+  "executable": "/workdir/wepp-forest_260430_baseline/release/wepp_260430_hill",
+  "statuses": [
+    {
+      "prefix": "p1",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 3024777
+    },
+    {
+      "prefix": "p2",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2993577
+    },
+    {
+      "prefix": "p3",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 3034377
+    },
+    {
+      "prefix": "p4",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2907177
+    },
+    {
+      "prefix": "p5",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2950377
+    },
+    {
+      "prefix": "p6",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p7",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p8",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p9",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p10",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p11",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 3048777
+    },
+    {
+      "prefix": "p12",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p13",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p14",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p15",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p16",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p17",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p18",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p19",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p20",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 3034377
+    },
+    {
+      "prefix": "p21",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 3024777
+    },
+    {
+      "prefix": "p22",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p23",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2950377
+    },
+    {
+      "prefix": "p24",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p25",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p26",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2950377
+    },
+    {
+      "prefix": "p27",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p28",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p29",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p30",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2952777
+    },
+    {
+      "prefix": "p31",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2950377
+    },
+    {
+      "prefix": "p32",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 3031977
+    },
+    {
+      "prefix": "p33",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p34",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p35",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p36",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p37",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p38",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2940777
+    },
+    {
+      "prefix": "p39",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2943177
+    },
+    {
+      "prefix": "p40",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2935977
+    },
+    {
+      "prefix": "p41",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2947977
+    },
+    {
+      "prefix": "p42",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2945577
+    },
+    {
+      "prefix": "p43",
+      "returncode": 0,
+      "winter_exists": true,
+      "winter_bytes": 2950377
+    }
+  ]
+}

@@ -1,0 +1,366 @@
+{
+  "source_root": "/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd",
+  "forcing_csv": "/tmp/fdhp01_increment_dd_legacy_winter_20260612Tdd/legacy_snow_forcing_daily_hour24.csv",
+  "first_calendar_year": 1990,
+  "last_calendar_year": 1996,
+  "prefix_count": 43,
+  "rows": 109951,
+  "expected_rows_per_prefix": [
+    365,
+    365,
+    366,
+    365,
+    365,
+    365,
+    366
+  ],
+  "stats": [
+    {
+      "prefix": "p1",
+      "numeric_rows": 30240,
+      "hour24_rows": 1260,
+      "nonzero_depth_days": 934,
+      "max_depth_m": 0.7215,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p2",
+      "numeric_rows": 29928,
+      "hour24_rows": 1247,
+      "nonzero_depth_days": 937,
+      "max_depth_m": 0.7156,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p3",
+      "numeric_rows": 30336,
+      "hour24_rows": 1264,
+      "nonzero_depth_days": 934,
+      "max_depth_m": 0.7258,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p4",
+      "numeric_rows": 29064,
+      "hour24_rows": 1211,
+      "nonzero_depth_days": 865,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p5",
+      "numeric_rows": 29496,
+      "hour24_rows": 1229,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p6",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p7",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p8",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p9",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 881,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p10",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 867,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p11",
+      "numeric_rows": 30480,
+      "hour24_rows": 1270,
+      "nonzero_depth_days": 878,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p12",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 870,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p13",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 876,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p14",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 881,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p15",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 870,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p16",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p17",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 880,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p18",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p19",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 870,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p20",
+      "numeric_rows": 30336,
+      "hour24_rows": 1264,
+      "nonzero_depth_days": 934,
+      "max_depth_m": 0.722,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p21",
+      "numeric_rows": 30240,
+      "hour24_rows": 1260,
+      "nonzero_depth_days": 933,
+      "max_depth_m": 0.7187,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p22",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 876,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p23",
+      "numeric_rows": 29496,
+      "hour24_rows": 1229,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p24",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 871,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p25",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p26",
+      "numeric_rows": 29496,
+      "hour24_rows": 1229,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p27",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p28",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 876,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p29",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p30",
+      "numeric_rows": 29520,
+      "hour24_rows": 1230,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p31",
+      "numeric_rows": 29496,
+      "hour24_rows": 1229,
+      "nonzero_depth_days": 876,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p32",
+      "numeric_rows": 30312,
+      "hour24_rows": 1263,
+      "nonzero_depth_days": 934,
+      "max_depth_m": 0.7232000000000001,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p33",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p34",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 876,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p35",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p36",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p37",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p38",
+      "numeric_rows": 29400,
+      "hour24_rows": 1225,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p39",
+      "numeric_rows": 29424,
+      "hour24_rows": 1226,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p40",
+      "numeric_rows": 29352,
+      "hour24_rows": 1223,
+      "nonzero_depth_days": 876,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p41",
+      "numeric_rows": 29472,
+      "hour24_rows": 1228,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p42",
+      "numeric_rows": 29448,
+      "hour24_rows": 1227,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    },
+    {
+      "prefix": "p43",
+      "numeric_rows": 29496,
+      "hour24_rows": 1229,
+      "nonzero_depth_days": 877,
+      "max_depth_m": 0.6432,
+      "max_density_kg_m3": 350.0
+    }
+  ],
+  "max_depth_m": 0.7258,
+  "max_density_kg_m3": 350.0,
+  "median_nonzero_depth_days": 877
+}
