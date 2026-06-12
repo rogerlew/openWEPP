@@ -231,6 +231,22 @@ Evidence and disposition artifacts for
   `fdhp01_increment_di_term_attribution_20260612.csv`,
   `fdhp01_increment_di_max_depth_context_20260612.csv`: compact Di trace
   reductions and Dj scoping evidence.
+- `d3-increment-dj-tmpadj-surface-temperature-20260612.md`: staged Increment
+  Dj landing evidence; records the `hr_tmp`/`tmpadj` surface-temperature port,
+  native and forced-snow cohort results, and retained D3 hold.
+- `fdhp01_increment_dj_native_execution_summary_20260612.json`,
+  `fdhp01_increment_dj_native_run_status_20260612.tsv`,
+  `fdhp01_increment_dj_native_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_dj_native_depth_metrics_20260612.csv`,
+  `fdhp01_increment_dj_native_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_dj_native_activation_summary_20260612.csv`,
+  `fdhp01_increment_dj_forced_snow_execution_summary_20260612.json`,
+  `fdhp01_increment_dj_forced_snow_run_status_20260612.tsv`,
+  `fdhp01_increment_dj_forced_snow_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_dj_forced_snow_depth_metrics_20260612.csv`,
+  `fdhp01_increment_dj_forced_snow_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_dj_forced_snow_activation_summary_20260612.csv`: generated
+  Dj native and forced-snow cohort reports.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

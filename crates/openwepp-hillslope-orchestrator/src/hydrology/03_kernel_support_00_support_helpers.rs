@@ -211,6 +211,7 @@ pub(crate) struct FrostCouplingOutcome {
 pub(crate) struct FrostHourlyState {
     hour: usize,
     frzflg: f64,
+    surface_temp_c: f64,
     qsrf_w_m2: f64,
     quf_w_m2: f64,
     ksrf_w_m_k: f64,
@@ -316,6 +317,7 @@ const WINTER_HOURLY_WIND_ROOT: &str = "winter.hourly.wind_m_s";
 const FROST_HOURLY_QSRF_ROOT: &str = "frost.hourly.qsrf_w_m2";
 const FROST_HOURLY_QUF_ROOT: &str = "frost.hourly.quf_w_m2";
 const FROST_HOURLY_KSRF_ROOT: &str = "frost.hourly.ksrf_w_m_k";
+const FROST_HOURLY_SURFACE_TEMP_ROOT: &str = "frost.hourly.surface_temp_c";
 const FROST_HOURLY_SNOW_DEPTH_ROOT: &str = "frost.hourly.snow_depth_m";
 const FROST_HOURLY_RESIDUE_DEPTH_ROOT: &str = "frost.hourly.residue_depth_m";
 const FROST_HOURLY_TILLED_FROZEN_DEPTH_ROOT: &str = "frost.hourly.tilled_frozen_depth_m";

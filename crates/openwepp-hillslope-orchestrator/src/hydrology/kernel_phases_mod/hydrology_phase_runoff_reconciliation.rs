@@ -1092,6 +1092,13 @@ pub(crate) fn run_runoff_reconciliation(
                     Some(WB11_ZERO_THRESHOLD),
                     None,
                 ));
+                state_updates.push(Self::typed_temperature_writeback_field(
+                    phase_class,
+                    Self::hourly_symbol(FROST_HOURLY_SURFACE_TEMP_ROOT, hourly.hour),
+                    hourly.surface_temp_c,
+                    None,
+                    None,
+                )?);
                 state_updates.push(WritebackField::bounded(
                     Self::hourly_symbol(FROST_HOURLY_SNOW_DEPTH_ROOT, hourly.hour),
                     hourly.snow_depth_m,

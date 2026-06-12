@@ -143,3 +143,15 @@ source marker search found no `OPENWEPP_FDHP01_DF`/`fdhp01_df` traces under
 `fdhp01_increment_df_paired_hourly_excerpt_20260612.csv`. Df did not land
 production physics; it localizes the next implementation to residue-depth frost
 resistance plus the legacy shallow-front `dpfsfl` minimum conduction distance.
+
+Dj implementation continuation: Codex landed the legacy `hr_tmp`/`tmpadj`
+surface-temperature synthesis into active frost top heat flow. The runtime now
+publishes `frost.hourly.surface_temp_c_####`, fails closed on missing required
+hourly radiation/cloud/air forcing, preserves the positive-under-snow cap, and
+projects winter hourly forcing when frost is enabled by `frost.options.wintRed`
+or runtime frost state even on warm/no-snow days. Focused Dj tests passed for
+non-raw-air surface-temperature synthesis, the positive snow cap, and missing
+radiation fail-closed behavior. Native and forced-snow cohorts both ran
+`43/43` clean with years 2-6 additive closure at WAT-publication texture, but
+the forced-snow maximum-depth gate did not improve, so FDHP01 remains
+`executed-hold`.

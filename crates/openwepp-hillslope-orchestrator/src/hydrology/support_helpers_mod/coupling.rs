@@ -1640,6 +1640,292 @@ impl Wb11HydrologyKernel {
         }
     }
 
+    fn tmpadj_snow_conductivity_w_m_k(
+        phase_class: HillslopeKernelPhaseClass,
+        snow_density_kg_m3: f64,
+        ksnowf: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let density_g_cm3 =
+            openwepp_unit_boundary::conversions::kilograms_per_cubic_meter_to_grams_per_cubic_centimeter(
+                snow_density_kg_m3,
+            )
+            .map_err(|error| {
+                Self::unit_conversion_guard_error(
+                    phase_class,
+                    BoundarySymbol::from(SNOW_RUNTIME_DENSITY_KG_M3_SYMBOL),
+                    &error,
+                )
+            })?;
+        let base = if snow_density_kg_m3 < 156.0 {
+            0.023 + (0.234 * density_g_cm3)
+        } else {
+            0.138 - 1.01 * density_g_cm3 + 3.233 * density_g_cm3.powi(2)
+        };
+        Ok((base * ksnowf).max(WB11_ZERO_THRESHOLD))
+    }
+
+    fn require_tmpadj_random_roughness_m(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let rrc_symbol = BoundarySymbol::from("rrc");
+        let rrinit_symbol = BoundarySymbol::from("rrinit");
+        let (symbol, roughness_m) =
+            if let Some(value) =
+                Self::optional_state_scalar_for_symbol(request, phase_class, &rrc_symbol)?
+            {
+                (rrc_symbol, value)
+            } else {
+                (
+                    rrinit_symbol.clone(),
+                    Self::require_state_scalar_for_symbol(request, phase_class, &rrinit_symbol)?,
+                )
+            };
+        Self::require_state_range_for_symbol(phase_class, &symbol, roughness_m, Some(0.0), None)?;
+        Ok(roughness_m)
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn legacy_tmpadj_surface_temperature_c(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        hour: usize,
+        snow_depth_m: f64,
+        snow_density_kg_m3: f64,
+        ksnowf: f64,
+        residue_depth_m: f64,
+        residue_conductivity_w_m_k: f64,
+        depth_summary: FrostDepthSummary,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        const TMPADJ_STEFAN_BOLTZMANN_W_M2_K4: f64 = 5.6697e-8;
+        const TMPADJ_VON_KARMAN: f64 = 0.4;
+        const TMPADJ_AIR_DENSITY_KG_M3: f64 = 1.2;
+        const TMPADJ_AIR_HEAT_CAPACITY_J_KG_K: f64 = 1012.0;
+        const TMPADJ_WIND_MEASUREMENT_HEIGHT_M: f64 = 2.0;
+        const TMPADJ_SURFACE_EMISSIVITY: f64 = 1.0;
+        const TMPADJ_SNOW_ALBEDO: f64 = 0.5;
+
+        let air_symbol = Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour);
+        let hourly_air_temp_c =
+            Self::require_state_scalar_for_symbol(request, phase_class, &air_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &air_symbol,
+            hourly_air_temp_c,
+            Some(-273.16),
+            None,
+        )?;
+
+        let rad_symbol = Self::hourly_symbol(WINTER_HOURLY_RAD_ROOT, hour);
+        let hourly_rad_mj_m2 =
+            Self::require_state_scalar_for_symbol(request, phase_class, &rad_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &rad_symbol,
+            hourly_rad_mj_m2,
+            Some(0.0),
+            None,
+        )?;
+
+        let cloud_symbol = Self::hourly_symbol(WINTER_HOURLY_CLOUD_ROOT, hour);
+        let cloud_fraction =
+            Self::require_state_scalar_for_symbol(request, phase_class, &cloud_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &cloud_symbol,
+            cloud_fraction,
+            Some(0.0),
+            Some(1.0),
+        )?;
+
+        let vwind_symbol = BoundarySymbol::from("vwind");
+        let vwind_m_s =
+            Self::require_state_scalar_for_symbol(request, phase_class, &vwind_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &vwind_symbol,
+            vwind_m_s,
+            Some(0.0),
+            None,
+        )?;
+
+        let salb_symbol = BoundarySymbol::from("salb");
+        let salb = Self::require_state_scalar_for_symbol(request, phase_class, &salb_symbol)?;
+        Self::require_state_range_for_symbol(phase_class, &salb_symbol, salb, Some(0.0), Some(1.0))?;
+
+        let canhgt_symbol = BoundarySymbol::from("canhgt");
+        let canhgt_m =
+            Self::require_state_scalar_for_symbol(request, phase_class, &canhgt_symbol)?;
+        Self::require_state_range_for_symbol(
+            phase_class,
+            &canhgt_symbol,
+            canhgt_m,
+            Some(0.0),
+            None,
+        )?;
+
+        let albedo = if snow_depth_m > 0.01 {
+            TMPADJ_SNOW_ALBEDO
+        } else {
+            salb
+        };
+        let incoming_shortwave_w_m2 = (hourly_rad_mj_m2 / FROST_RUNTIME_SECONDS_PER_HOUR) * 1.0e6;
+        let air_temp_k = hourly_air_temp_c + 273.16;
+        let atmospheric_emissivity = (1.0 - 0.84 * cloud_fraction)
+            * (1.0 - 0.261 * (7.77e-4 * hourly_air_temp_c.powi(2)).exp())
+            + (0.84 * cloud_fraction);
+
+        let mut displacement_m = 0.77 * canhgt_m;
+        if displacement_m >= TMPADJ_WIND_MEASUREMENT_HEIGHT_M {
+            displacement_m = 0.77 * TMPADJ_WIND_MEASUREMENT_HEIGHT_M;
+        }
+        let mut wind_roughness_m = if snow_depth_m < 0.01 && canhgt_m > 0.0 {
+            0.13 * canhgt_m
+        } else if snow_depth_m < 0.01 {
+            Self::require_tmpadj_random_roughness_m(request, phase_class)?
+        } else if snow_depth_m > canhgt_m {
+            0.0002
+        } else {
+            0.13 * (canhgt_m - snow_depth_m)
+        };
+        wind_roughness_m = wind_roughness_m.clamp(0.001, 0.26);
+        let transfer_roughness_m = 0.2 * wind_roughness_m;
+        let convective_heat_transfer_j_m3_k = (TMPADJ_VON_KARMAN.powi(2)
+            * TMPADJ_AIR_DENSITY_KG_M3
+            * TMPADJ_AIR_HEAT_CAPACITY_J_KG_K)
+            / (((TMPADJ_WIND_MEASUREMENT_HEIGHT_M - displacement_m + transfer_roughness_m)
+                / transfer_roughness_m)
+                .ln()
+                * ((TMPADJ_WIND_MEASUREMENT_HEIGHT_M - displacement_m + wind_roughness_m)
+                    / wind_roughness_m)
+                    .ln());
+        let longwave_transfer_w_m2_k = 4.0
+            * TMPADJ_SURFACE_EMISSIVITY
+            * TMPADJ_STEFAN_BOLTZMANN_W_M2_K4
+            * air_temp_k.powi(3);
+        let net_radiation_w_m2 = (1.0 - albedo) * incoming_shortwave_w_m2
+            + (atmospheric_emissivity - TMPADJ_SURFACE_EMISSIVITY)
+                * TMPADJ_STEFAN_BOLTZMANN_W_M2_K4
+                * air_temp_k.powi(4);
+
+        let mut gradient_depth_m = if hourly_air_temp_c < 0.0 {
+            if depth_summary.tfrdp > 0.001 {
+                if depth_summary.thdp > 0.001 {
+                    0.0
+                } else {
+                    depth_summary.tfrdp
+                }
+            } else if depth_summary.frdp > 0.001 {
+                if depth_summary.thdp > 0.001 {
+                    0.0
+                } else {
+                    depth_summary.frdp
+                }
+            } else {
+                0.0
+            }
+        } else if depth_summary.tfrdp > 0.001 {
+            depth_summary.thdp
+        } else if depth_summary.frdp > 0.001 {
+            if depth_summary.thdp > 0.001 {
+                depth_summary.thdp
+            } else {
+                0.0
+            }
+        } else {
+            0.0
+        };
+
+        let (mut tilled_gradient_depth_m, mut untilled_gradient_depth_m) =
+            if gradient_depth_m <= FROST_RUNTIME_TILLAGE_DEPTH_M {
+                (gradient_depth_m, 0.0)
+            } else {
+                (
+                    FROST_RUNTIME_TILLAGE_DEPTH_M,
+                    gradient_depth_m - FROST_RUNTIME_TILLAGE_DEPTH_M,
+                )
+            };
+        if tilled_gradient_depth_m < 0.001 {
+            tilled_gradient_depth_m = 0.0;
+        }
+        if untilled_gradient_depth_m < 0.001 {
+            untilled_gradient_depth_m = 0.0;
+        }
+        if gradient_depth_m < 0.001 {
+            gradient_depth_m = 0.0;
+        }
+
+        let mut system_depth_m = snow_depth_m + residue_depth_m + gradient_depth_m;
+        let snow_conductivity_w_m_k = if snow_depth_m < 0.0001 {
+            1.0
+        } else {
+            Self::tmpadj_snow_conductivity_w_m_k(phase_class, snow_density_kg_m3, ksnowf)?
+        };
+        let residue_conductivity_w_m_k = if residue_depth_m < 0.0001 {
+            1.0
+        } else {
+            residue_conductivity_w_m_k
+        };
+        let mut tilled_conductivity_w_m_k = if tilled_gradient_depth_m < 0.0001 {
+            1.0
+        } else {
+            FROST_RUNTIME_KFTILL_W_M_K
+        };
+        let untilled_conductivity_w_m_k = if untilled_gradient_depth_m < 0.0001 {
+            1.0
+        } else {
+            FROST_RUNTIME_KFUTIL_W_M_K
+        };
+        if system_depth_m < 0.0001 {
+            tilled_conductivity_w_m_k = FROST_RUNTIME_KFTILL_W_M_K;
+            gradient_depth_m = 0.001;
+            tilled_gradient_depth_m = 0.001;
+            system_depth_m = snow_depth_m + residue_depth_m + gradient_depth_m;
+        }
+
+        let numerator = (snow_conductivity_w_m_k
+            * residue_conductivity_w_m_k
+            * tilled_conductivity_w_m_k
+            * untilled_conductivity_w_m_k)
+            * (snow_depth_m + residue_depth_m + gradient_depth_m);
+        let denominator = (snow_conductivity_w_m_k
+            * residue_conductivity_w_m_k
+            * tilled_conductivity_w_m_k
+            * untilled_gradient_depth_m)
+            + (snow_conductivity_w_m_k
+                * residue_conductivity_w_m_k
+                * tilled_gradient_depth_m
+                * untilled_conductivity_w_m_k)
+            + (snow_conductivity_w_m_k
+                * residue_depth_m
+                * tilled_conductivity_w_m_k
+                * untilled_conductivity_w_m_k)
+            + (snow_depth_m
+                * residue_conductivity_w_m_k
+                * tilled_conductivity_w_m_k
+                * untilled_conductivity_w_m_k);
+        let effective_conductivity_w_m_k = if denominator.abs() > 0.0001 {
+            numerator / denominator
+        } else {
+            0.0
+        };
+
+        let turbulent_exchange_w_m2_k =
+            longwave_transfer_w_m2_k + convective_heat_transfer_j_m3_k * vwind_m_s;
+        let surface_temp_c = if system_depth_m > 0.0 {
+            (net_radiation_w_m2 + turbulent_exchange_w_m2_k * hourly_air_temp_c)
+                / (turbulent_exchange_w_m2_k + effective_conductivity_w_m_k / system_depth_m)
+        } else {
+            (net_radiation_w_m2 + turbulent_exchange_w_m2_k * hourly_air_temp_c)
+                / turbulent_exchange_w_m2_k
+        };
+        if surface_temp_c > 0.0 && snow_depth_m > 0.001 {
+            Ok(0.0)
+        } else {
+            Ok(surface_temp_c)
+        }
+    }
+
     pub(crate) fn resolve_active_snow_coupling(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -2165,8 +2451,8 @@ impl Wb11HydrologyKernel {
             None,
         )?;
 
-        let tmax = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
-        let tmin = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
+        let _tmax = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMAX)?;
+        let _tmin = Self::require_state_scalar(request, phase_class, WB14_SYMBOL_TMIN)?;
 
         let frost_depth_symbol = BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL);
         let prior_frdp_m = Self::optional_state_scalar_for_symbol(
@@ -2347,7 +2633,6 @@ impl Wb11HydrologyKernel {
             Some(0.0),
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
-
         let snow_conductivity_w_m_k = if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
             && snow_density_kg_m3 > 0.0
         {
@@ -2382,6 +2667,7 @@ impl Wb11HydrologyKernel {
             qsrf_w_m2: 0.0,
             quf_w_m2: 0.0,
             ksrf_w_m_k: FROST_RUNTIME_KFUTIL_W_M_K,
+            surface_temp_c: 0.0,
             snow_depth_m,
             residue_depth_m,
             tilled_frozen_depth_m: 0.0,
@@ -2392,20 +2678,17 @@ impl Wb11HydrologyKernel {
             let depth_before =
                 Self::derived_frost_depths_from_fine_state(&shadow_fine_state.fine_layers);
             let mut hourly_frdp_m = depth_before.frdp.min(profile_depth_m);
-            let hourly_air_temp_c = Self::resolve_frost_hourly_air_temperature_c(
+            let surface_temp_c = Self::legacy_tmpadj_surface_temperature_c(
                 request,
                 phase_class,
-                tmax,
-                tmin,
                 hourly.hour,
+                snow_depth_m,
+                snow_density_kg_m3,
+                ksnowf,
+                residue_depth_m,
+                conductivity_residue_w_m_k,
+                depth_before,
             )?;
-            let surface_temp_c = if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
-                && hourly_air_temp_c > 0.0
-            {
-                0.0
-            } else {
-                hourly_air_temp_c
-            };
 
             let (resistance_m2_c_w, _, ksrf_w_m_k) = Self::frost_surface_heat_path(
                 depth_before.frdp,
@@ -2417,6 +2700,7 @@ impl Wb11HydrologyKernel {
                 Self::shallow_front_minimum_conduction_path_m(&shadow_fine_state.fine_layers),
             );
             let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
+            hourly.surface_temp_c = surface_temp_c;
             let lower_front_heat_w_m2 =
                 Self::lower_front_heat_w_m2(
                     seasonal_temperature_curve,

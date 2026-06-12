@@ -254,6 +254,33 @@ surface-temperature synthesis into the frost surface-heat path, then rerun the
 forced-snow and native cohort gates without retuning snow, `kfactor`, WAT/D2,
 residue, `dpfsfl`, `kftill`/`kfutil`, or `Qdry`.
 
+D3 Increment Dj, 2026-06-12: Codex landed the pinned legacy
+`hr_tmp`/`tmpadj` surface-temperature synthesis in the frost top heat-flow
+path without the comparator subagent per user quota direction.
+`SC-SNOWFREEZE-001` is now v68. Active frost consumes
+`frost.hourly.surface_temp_c_####`, synthesized from hourly winter air
+temperature, radiation, cloud fraction, wind, albedo, canopy/roughness,
+snow/residue/frost conductance, and the legacy positive-under-snow cap, rather
+than using raw hourly air temperature as the surface driver. Runtime projection
+now emits the required winter hourly air/radiation/cloud forcing when frost is
+enabled by `frost.options.wintRed` or runtime frost state even on warm/no-snow
+days. The native Dj cohort at
+`/tmp/fdhp01_increment_dj_native_cohort_20260612T205827Z` ran `43/43` clean
+with years 2-6 independent `Total-Soil + frozwt` closure at
+`6.17207992173463e-07 mm`; depth remains close but not accepted
+(mean max `506.7933035417255 mm`, `30/43` prefixes inside the legacy envelope,
+median duration residual `+72` days). The forced legacy-snow cohort at
+`/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z` also ran
+`43/43` clean with years 2-6 closure at `5.09157033201646e-07 mm`, but it did
+not pass the forced-snow material-improvement gate: mean max depth moved
+`490.0923199552928 -> 501.3624240499244 mm` relative to Dg forced snow, the
+outlier set above `503.2 mm` stayed unchanged at `13/43`, and median duration
+only improved `+73 -> +61` days. Dj therefore lands the localized authority
+but FDHP01 remains `executed-hold`; the next step must localize the post-Dj
+maximum-depth regression/residual against direct legacy `tmpadj`/`frostn`
+surface-temperature and flux evidence, not retune snow, WAT/D2, residue,
+`dpfsfl`, fixed `kftill`/`kfutil`, or lower-front `Qdry`.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

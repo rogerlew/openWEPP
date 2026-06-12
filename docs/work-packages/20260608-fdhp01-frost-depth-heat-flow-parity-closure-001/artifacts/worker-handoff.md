@@ -432,13 +432,38 @@ Di result:
   not a distinct mechanism in the Di trace.
 - No production physics was changed. FDHP01 remains `executed-hold`.
 
-Updated first actionable item: execute Increment Dj from
-`artifacts/d3-staged-increment-plan.md`: port or expose the pinned legacy
-`hr_tmp`/`tmpadj` `surtmp(hour)` synthesis into the frost surface heat path,
-then rerun the Di representatives, the forced-snow cohort, the native cohort,
-and the independent years 2-6 `Total-Soil + frozwt` closure gate. Do not
-retune snow density/depth, `kfactor`, latent heat, WAT publication, D2
-storage, residue depth, `dpfsfl`, fixed `kftill`/`kfutil`, or lower-front
-`Qdry`. If required `tmpadj` inputs are missing at the frost seam, hold with a
-named missing-input boundary rather than substituting a proxy surface
-temperature.
+Dj result:
+
+- Codex landed the pinned legacy `hr_tmp`/`tmpadj` surface-temperature
+  synthesis into the frost top heat-flow path without the comparator subagent
+  per user quota direction.
+- `SC-SNOWFREEZE-001` is now v68. Active frost consumes
+  `frost.hourly.surface_temp_c_####` synthesized from hourly winter
+  air/radiation/cloud forcing plus wind, albedo, canopy/roughness,
+  snow/residue/frost conductance, and the legacy positive-under-snow cap.
+- Runtime projection now emits required winter hourly air/radiation/cloud
+  forcing whenever frost is enabled by `frost.options.wintRed` or runtime frost
+  state, even on warm/no-snow days.
+- Native cohort:
+  `/tmp/fdhp01_increment_dj_native_cohort_20260612T205827Z`, `43/43` clean,
+  years 2-6 independent `Total-Soil + frozwt` closure
+  `6.17207992173463e-07 mm`, mean max depth `506.7933035417255 mm`, `30/43`
+  prefixes inside the legacy envelope, median duration residual `+72` days.
+- Forced legacy-snow cohort:
+  `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`, `43/43`
+  clean, years 2-6 closure `5.09157033201646e-07 mm`.
+- Dj did not pass the forced-snow material-improvement gate. Relative to Dg
+  forced snow, mean max depth regressed
+  `490.0923199552928 -> 501.3624240499244 mm`, median max regressed
+  `479.356967770298 -> 492.3588252690888 mm`, the outlier set above
+  `503.2 mm` stayed unchanged at `13/43`, and duration improved only
+  `+73 -> +61` days.
+
+Updated first actionable item: localize the post-Dj maximum-depth residual
+with direct legacy `tmpadj`/`frostn` evidence on the unchanged forced-snow
+outlier set (`p1`, `p2`, `p3`, `p8`, `p11`, `p13`, `p20`, `p21`, `p22`,
+`p23`, `p26`, `p28`, `p32`). Compare legacy and openWEPP adjusted surface
+temperature, top heat flux, snow/residue/frost conductance terms, and front
+advance/retreat for the first material post-Dj divergence. Do not retune snow
+density/depth, `kfactor`, latent heat, WAT publication, D2 storage, residue
+depth, `dpfsfl`, fixed `kftill`/`kfutil`, or lower-front `Qdry`.

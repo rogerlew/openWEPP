@@ -58,11 +58,21 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
         "frost.options.frost_file_present",
     )?
     .unwrap_or(0.0);
+    let frost_wint_red = optional_runtime_context_scalar(
+        winter_context_state_surface,
+        "frost.options.wintRed",
+    )?
+    .unwrap_or(0.0);
 
-    if !(is_binary_flag(snow_file_present) && is_binary_flag(frost_file_present)) {
+    if !(is_binary_flag(snow_file_present)
+        && is_binary_flag(frost_file_present)
+        && is_binary_flag(frost_wint_red))
+    {
         return Err(ClimateRuntimeInputError::RuntimeContextSymbolOutOfRange {
-            symbol: "snow.options.snow_file_present / frost.options.frost_file_present".to_string(),
-            value: snow_file_present.max(frost_file_present),
+            symbol:
+                "snow.options.snow_file_present / frost.options.frost_file_present / frost.options.wintRed"
+                    .to_string(),
+            value: snow_file_present.max(frost_file_present).max(frost_wint_red),
             allowed: "{0,1}",
         });
     }
@@ -123,6 +133,8 @@ fn build_simimpl28_hourly_winter_forcing_symbols(
     let winter_trigger_active = runtime_swe > SIMIMPL28_DOMAIN_EPS
         || frost_depth > SIMIMPL28_DOMAIN_EPS
         || frozen_water > SIMIMPL28_DOMAIN_EPS
+        || frost_file_present > SIMIMPL28_DOMAIN_EPS
+        || frost_wint_red > SIMIMPL28_DOMAIN_EPS
         || f64::midpoint(tmax, tmin) < 0.0;
 
     if !winter_trigger_active {

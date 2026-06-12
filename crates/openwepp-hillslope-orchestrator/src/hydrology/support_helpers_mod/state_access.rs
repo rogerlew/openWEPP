@@ -1289,28 +1289,6 @@ impl Wb11HydrologyKernel {
         }
     }
 
-    pub(crate) fn fallback_hourly_air_temperature_c(tmax: f64, tmin: f64, hour: usize) -> f64 {
-        let daily_mean = f64::midpoint(tmax, tmin);
-        let daily_amp = (tmax - tmin) / 2.0;
-        let phase = (std::f64::consts::TAU / 24.0) * (Self::diagnostic_count_to_f64(hour) - 8.0);
-        daily_mean + (daily_amp * phase.sin())
-    }
-
-    pub(crate) fn resolve_frost_hourly_air_temperature_c(
-        request: &HillslopeKernelRequest<'_>,
-        phase_class: HillslopeKernelPhaseClass,
-        tmax: f64,
-        tmin: f64,
-        hour: usize,
-    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
-        let symbol = Self::hourly_symbol(WINTER_HOURLY_AIR_TEMP_ROOT, hour);
-        let Some(air_temp_c) = Self::optional_state_scalar_for_symbol(request, phase_class, &symbol)?
-        else {
-            return Ok(Self::fallback_hourly_air_temperature_c(tmax, tmin, hour));
-        };
-        Ok(air_temp_c)
-    }
-
     #[allow(clippy::too_many_lines)]
     #[allow(clippy::type_complexity)]
     pub(crate) fn wb19_load_layer_state(

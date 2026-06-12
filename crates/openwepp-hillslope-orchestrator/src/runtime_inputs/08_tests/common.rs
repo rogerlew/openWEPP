@@ -88,6 +88,10 @@
             BoundaryValue::scalar(0.0),
         );
         context.insert(
+            BoundarySymbol::from("frost.options.wintRed"),
+            BoundaryValue::scalar(0.0),
+        );
+        context.insert(
             BoundarySymbol::from("snow.options.rst"),
             BoundaryValue::scalar(rst),
         );
@@ -239,4 +243,3 @@
             .unwrap_or_else(|| panic!("{symbol} should be present"))
             .as_f64()
     }
-

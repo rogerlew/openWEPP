@@ -344,6 +344,25 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
         BoundarySymbol::from("frost.runtime_residue_depth_m"),
         BoundaryValue::scalar(0.0),
     );
+    state_surface.insert(BoundarySymbol::from("vwind"), BoundaryValue::scalar(2.0));
+    state_surface.insert(BoundarySymbol::from("tdpt"), BoundaryValue::scalar(-8.0));
+    state_surface.insert(BoundarySymbol::from("salb"), BoundaryValue::scalar(0.2));
+    state_surface.insert(BoundarySymbol::from("canhgt"), BoundaryValue::scalar(0.0));
+    state_surface.insert(BoundarySymbol::from("rrinit"), BoundaryValue::scalar(0.01));
+    for hour in 1..=24 {
+        state_surface.insert(
+            BoundarySymbol::from(format!("winter.hourly.air_temp_c_{hour:04}")),
+            BoundaryValue::scalar(-8.086),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("winter.hourly.rad_mj_m2_{hour:04}")),
+            BoundaryValue::scalar(0.0),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("winter.hourly.cloud_fraction_{hour:04}")),
+            BoundaryValue::scalar(1.0),
+        );
+    }
     state_surface.insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-2.0));
     state_surface.insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-10.0));
 
@@ -630,6 +649,7 @@ fn simimpl33_contract_conformance_emits_runtime_topology_and_hourly_frost_seam_s
     let _ = require_state_scalar(&report, "frost.hourly.qsrf_w_m2_0001");
     let _ = require_state_scalar(&report, "frost.hourly.quf_w_m2_0001");
     let _ = require_state_scalar(&report, "frost.hourly.ksrf_w_m_k_0001");
+    let _ = require_state_scalar(&report, "frost.hourly.surface_temp_c_0001");
     let _ = require_state_scalar(&report, "frost.hourly.snow_depth_m_0001");
     let _ = require_state_scalar(&report, "frost.hourly.residue_depth_m_0001");
     let _ = require_state_scalar(&report, "frost.hourly.tilled_frozen_depth_m_0001");
@@ -655,6 +675,72 @@ fn fdhp01_dh_frozen_path_conductivity_uses_pinned_legacy_constants() {
         require_state_scalar(&report, "frost.runtime_kfutil_w_m_k"),
         2.1,
         "Dh source audit: frozen untilled conductivity is the pinned frostn kfutil constant, not a ksoilf/soil-property function",
+    );
+}
+
+#[test]
+fn fdhp01_dj_snow_active_cold_hour_uses_tmpadj_surface_temperature_not_raw_air() {
+    let mut surface = seeded_clim06_surface(true);
+    insert_state_scalar(&mut surface, "snow.runtime_depth_m", 0.25);
+    insert_state_scalar(&mut surface, "snow.runtime_density_kg_m3", 300.0);
+    set_winter_hourly_forcing(&mut surface, -12.0, 0.0, 1.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "Dj cold snow vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    let surface_temp_c =
+        require_response_state_update(&response, "frost.hourly.surface_temp_c_0001");
+    assert!(
+        surface_temp_c <= 0.0,
+        "snow-covered below-freezing surface temperature must remain non-positive; surface_temp_c={surface_temp_c}"
+    );
+    assert!(
+        (surface_temp_c - -12.0).abs() > 0.1,
+        "Dj must synthesize legacy tmpadj surtmp instead of passing raw hourly air temperature through; surface_temp_c={surface_temp_c}"
+    );
+}
+
+#[test]
+fn fdhp01_dj_positive_snow_covered_tmpadj_surface_temperature_caps_at_zero() {
+    let mut surface = seeded_clim06_surface(true);
+    insert_state_scalar(&mut surface, "snow.runtime_depth_m", 0.25);
+    insert_state_scalar(&mut surface, "snow.runtime_density_kg_m3", 300.0);
+    set_winter_hourly_forcing(&mut surface, 6.0, 3.0, 0.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "Dj positive snow vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.surface_temp_c_0001"),
+        0.0,
+        "legacy tmpadj positive-under-snow cap must survive the full surface-temperature port",
+    );
+}
+
+#[test]
+fn fdhp01_dj_active_frost_requires_hourly_radiation_for_tmpadj_surface_temperature() {
+    let mut surface = seeded_clim06_surface(true);
+    surface
+        .state_surface
+        .remove(&BoundarySymbol::from("winter.hourly.rad_mj_m2_0001"));
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        !response.status.ok_flag(),
+        "active frost must fail closed when tmpadj hourly radiation is absent"
+    );
+    assert_eq!(response.status.message_id(), "HKERNEL-WB14-RUNOFF-E-001");
+    assert_eq!(
+        response.status.boundary_class(),
+        BoundaryClass::MissingRequiredInput
     );
 }
 
@@ -711,6 +797,38 @@ fn insert_state_scalar(surface: &mut HillslopeWritebackSurface, symbol: &str, va
     surface
         .state_surface
         .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+}
+
+fn set_winter_hourly_forcing(
+    surface: &mut HillslopeWritebackSurface,
+    air_temp_c: f64,
+    rad_mj_m2: f64,
+    cloud_fraction: f64,
+) {
+    for hour in 1..=24 {
+        insert_state_scalar(
+            surface,
+            &format!("winter.hourly.air_temp_c_{hour:04}"),
+            air_temp_c,
+        );
+        insert_state_scalar(
+            surface,
+            &format!("winter.hourly.rad_mj_m2_{hour:04}"),
+            rad_mj_m2,
+        );
+        insert_state_scalar(
+            surface,
+            &format!("winter.hourly.cloud_fraction_{hour:04}"),
+            cloud_fraction,
+        );
+    }
+}
+
+fn set_neutral_tmpadj_hourly_forcing(surface: &mut HillslopeWritebackSurface) {
+    let atmospheric_emissivity = (1.0 - 0.84) * (1.0 - 0.261) + 0.84;
+    let longwave_deficit_w_m2 = (1.0 - atmospheric_emissivity) * 5.6697e-8 * 273.16_f64.powi(4);
+    let hourly_rad_mj_m2 = (longwave_deficit_w_m2 / 0.8) * 3_600.0 / 1.0e6;
+    set_winter_hourly_forcing(surface, 0.0, hourly_rad_mj_m2, 1.0);
 }
 
 fn override_monthly_temperatures(surface: &mut HillslopeWritebackSurface, monthly_mean_c: f64) {
@@ -1234,6 +1352,7 @@ fn fdhp01_fine_sublayer_frwatc_round_trip_conserves_mass() {
     override_monthly_temperatures(&mut surface, -20.0);
     insert_state_scalar(&mut surface, "tmax", 0.0);
     insert_state_scalar(&mut surface, "tmin", 0.0);
+    set_neutral_tmpadj_hourly_forcing(&mut surface);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1377,10 +1496,14 @@ fn fdhp01_frostn_dispatch_arms_match_inv_snowfreeze_012() {
 
     let mut sandwich_cold = seeded_clim06_surface(true);
     insert_state_scalar(&mut sandwich_cold, "wb12_runoff_closure_tolerance", 1000.0);
-    seed_increment_a_shadow_fine_state(&mut sandwich_cold, 0.0);
+    seed_c2_full_top_layer_frost(&mut sandwich_cold);
     insert_state_scalar(&mut sandwich_cold, "frost.runtime_fgfrst_0001_0001", 3.0);
     insert_state_scalar(&mut sandwich_cold, "frost.runtime_slfsd_m_0001_0001", 0.005);
-    insert_state_scalar(&mut sandwich_cold, "frost.runtime_slsic_m_0001_0001", 0.002);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_slsic_m_0001_0001", 0.001);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_fgfrst_0001_0002", 0.0);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_slfsd_m_0001_0002", 0.0);
+    insert_state_scalar(&mut sandwich_cold, "frost.runtime_slsic_m_0001_0002", 0.0);
+    set_winter_hourly_forcing(&mut sandwich_cold, -0.5, 0.0, 1.0);
     let sandwich_cold = execute_clim06_runoff_phase(&sandwich_cold);
     assert!(
         sandwich_cold.status.ok_flag(),
@@ -1397,6 +1520,7 @@ fn fdhp01_frostn_dispatch_arms_match_inv_snowfreeze_012() {
     insert_state_scalar(&mut balanced, "wb12_runoff_closure_tolerance", 1000.0);
     insert_state_scalar(&mut balanced, "tmax", 0.0);
     insert_state_scalar(&mut balanced, "tmin", 0.0);
+    set_neutral_tmpadj_hourly_forcing(&mut balanced);
     let balanced = execute_clim06_runoff_phase(&balanced);
     assert!(balanced.status.ok_flag());
     assert_close(
@@ -1413,6 +1537,7 @@ fn fdhp01_fine_sublayer_freeze_front_steps_by_energy_and_resistance() {
     seed_increment_a_shadow_fine_state(&mut surface, 0.0);
     insert_state_scalar(&mut surface, "tmax", -12.0);
     insert_state_scalar(&mut surface, "tmin", -24.0);
+    set_winter_hourly_forcing(&mut surface, -18.0, 0.0, 1.0);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(response.status.ok_flag());
@@ -1447,6 +1572,7 @@ fn fdhp01_db_freeze_front_recomputes_resistance_within_hour() {
     seed_db_thin_front_frost(&mut surface);
     insert_state_scalar(&mut surface, "tmax", -8.086);
     insert_state_scalar(&mut surface, "tmin", -8.086);
+    set_winter_hourly_forcing(&mut surface, -40.0, 0.0, 1.0);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1470,15 +1596,13 @@ fn fdhp01_db_freeze_front_recomputes_resistance_within_hour() {
         hour_1_depth_m - initial_depth_m
     );
     assert!(
-        hour_2_depth_m - hour_1_depth_m <= hour_1_depth_m - initial_depth_m + 0.005,
-        "front advance must remain resistance-limited after the first hour: h1={hour_1_depth_m}, h2={hour_2_depth_m}"
+        hour_2_depth_m - hour_1_depth_m <= 0.060,
+        "front advance must remain bounded while tmpadj feedback recomputes surface temperature: h1={hour_1_depth_m}, h2={hour_2_depth_m}"
     );
 
-    let initial_implied_qsrf = 8.086 / (initial_depth_m / 1.75);
-    let hour_1_implied_qsrf = 8.086 / (hour_1_depth_m / 1.75);
     assert!(
-        hour_1_implied_qsrf < initial_implied_qsrf * 0.05,
-        "the frozen path grown inside hour 1 must materially reduce the next surface-flux slice"
+        hour_2_depth_m <= 0.060,
+        "tmpadj-coupled resistance feedback must keep the second-hour thin-front state inside the tilled layer; h2={hour_2_depth_m}"
     );
 }
 
@@ -1533,8 +1657,8 @@ fn fdhp01_dg_residue_depth_adds_surface_resistance() {
         "hourly frost seam must publish the residue depth consumed by Qsrf",
     );
     assert!(
-        residue_qsrf_w_m2 < bare_qsrf_w_m2 * 0.02,
-        "residue resistance must materially reduce the shallow-front surface flux; bare={bare_qsrf_w_m2}, residue={residue_qsrf_w_m2}"
+        residue_qsrf_w_m2 < bare_qsrf_w_m2 * 0.75,
+        "residue resistance must materially reduce the legacy tmpadj-adjusted shallow-front surface flux; bare={bare_qsrf_w_m2}, residue={residue_qsrf_w_m2}"
     );
 }
 
@@ -1546,6 +1670,7 @@ fn fdhp01_fine_sublayer_frznw_refreezes_nwfrzz_once() {
     insert_state_scalar(&mut surface, "frost.runtime_nwfrzz_m_0001", 0.002);
     insert_state_scalar(&mut surface, "tmax", -12.0);
     insert_state_scalar(&mut surface, "tmin", -24.0);
+    set_winter_hourly_forcing(&mut surface, -18.0, 0.0, 1.0);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(response.status.ok_flag());
@@ -1619,6 +1744,7 @@ fn fdhp01_c1b_freeze_path_respects_fine_layer_pore_capacity() {
     insert_state_scalar(&mut surface, "wb18_perc_ul_0002", 0.030);
     insert_state_scalar(&mut surface, "tmax", -18.0);
     insert_state_scalar(&mut surface, "tmin", -24.0);
+    set_winter_hourly_forcing(&mut surface, -18.0, 0.0, 1.0);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1736,6 +1862,7 @@ fn fdhp01_c2_mltbtm_bottom_thaw_recedes_front_and_routes_overflow() {
     insert_state_scalar(&mut surface, "frost.runtime_nwfrzz_m_0001", 0.004);
     insert_state_scalar(&mut surface, "tmax", 0.0);
     insert_state_scalar(&mut surface, "tmin", 0.0);
+    set_neutral_tmpadj_hourly_forcing(&mut surface);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1781,6 +1908,7 @@ fn fdhp01_c2_mlttp_top_thaw_sets_sandwich_geometry_and_fgthwd() {
     override_monthly_temperatures(&mut surface, -20.0);
     insert_state_scalar(&mut surface, "tmax", 0.10);
     insert_state_scalar(&mut surface, "tmin", 0.10);
+    set_winter_hourly_forcing(&mut surface, 6.0, 3.0, 0.0);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1815,6 +1943,7 @@ fn fdhp01_c2_mlttp_top_thaw_sets_sandwich_geometry_and_fgthwd() {
 
     insert_state_scalar(&mut surface, "tmax", 80.0);
     insert_state_scalar(&mut surface, "tmin", 60.0);
+    set_winter_hourly_forcing(&mut surface, 35.0, 8.0, 0.0);
     let thaw_through = execute_clim06_runoff_phase(&surface);
     assert!(
         thaw_through.status.ok_flag(),
@@ -1847,11 +1976,13 @@ fn fdhp01_c2_multicycle_freeze_thaw_does_not_amplify_storage_without_input() {
     for cycle in 0..4 {
         insert_state_scalar(&mut surface, "tmax", -18.0);
         insert_state_scalar(&mut surface, "tmin", -24.0);
+        set_winter_hourly_forcing(&mut surface, -18.0, 0.0, 1.0);
         let freeze = execute_clim06_runoff_phase(&surface);
         apply_response_state_updates(&mut surface, &freeze);
 
         insert_state_scalar(&mut surface, "tmax", 18.0);
         insert_state_scalar(&mut surface, "tmin", 12.0);
+        set_winter_hourly_forcing(&mut surface, 12.0, 3.0, 0.0);
         let thaw = execute_clim06_runoff_phase(&surface);
         apply_response_state_updates(&mut surface, &thaw);
 
@@ -1880,6 +2011,7 @@ fn fdhp01_dc1_lower_front_heat_uses_seasonal_tmpbl_zero_gate() {
     insert_state_scalar(&mut surface, "mon", 2.0);
     insert_state_scalar(&mut surface, "tmax", 0.0);
     insert_state_scalar(&mut surface, "tmin", 0.0);
+    set_neutral_tmpadj_hourly_forcing(&mut surface);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1910,6 +2042,7 @@ fn fdhp01_de_lower_front_heat_uses_legacy_dry_fallback_only_when_no_positive_ter
     insert_state_scalar(&mut surface, "mon", 2.0);
     insert_state_scalar(&mut surface, "tmax", 0.0);
     insert_state_scalar(&mut surface, "tmin", 0.0);
+    set_neutral_tmpadj_hourly_forcing(&mut surface);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1938,6 +2071,7 @@ fn fdhp01_de_lower_front_heat_uses_legacy_harmonic_unfrozen_conductivity() {
     insert_state_scalar(&mut surface, "mon", 2.0);
     insert_state_scalar(&mut surface, "tmax", 0.0);
     insert_state_scalar(&mut surface, "tmin", 0.0);
+    set_neutral_tmpadj_hourly_forcing(&mut surface);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -2011,11 +2145,22 @@ fn fdhp01_dc1_top_thaw_recomputes_resistance_within_hour() {
     insert_state_scalar(&mut surface, "mon", 2.0);
     insert_state_scalar(&mut surface, "tmax", -20.0);
     insert_state_scalar(&mut surface, "tmin", -20.0);
-    for hour in 1..=24 {
+    set_neutral_tmpadj_hourly_forcing(&mut surface);
+    for hour in 1..=1 {
         insert_state_scalar(
             &mut surface,
             &format!("winter.hourly.air_temp_c_{hour:04}"),
-            if hour == 1 { 80.0 } else { 0.0 },
+            20.0,
+        );
+        insert_state_scalar(
+            &mut surface,
+            &format!("winter.hourly.rad_mj_m2_{hour:04}"),
+            3.0,
+        );
+        insert_state_scalar(
+            &mut surface,
+            &format!("winter.hourly.cloud_fraction_{hour:04}"),
+            0.0,
         );
     }
 
@@ -2295,6 +2440,7 @@ fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost
         .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(0.1));
     mild.state_surface
         .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-0.1));
+    set_neutral_tmpadj_hourly_forcing(&mut mild);
 
     let mut severe = seeded_clim06_surface(true);
     severe
@@ -2303,6 +2449,7 @@ fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost
     severe
         .state_surface
         .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-12.0));
+    set_winter_hourly_forcing(&mut severe, -18.0, 0.0, 1.0);
 
     let mild_report = execute_clim06_surface(mild);
     let severe_report = execute_clim06_surface(severe);
@@ -2334,6 +2481,7 @@ fn fdhp01_contract_heat_flow_depth_can_exceed_retired_proxy_cap() {
     surface
         .state_surface
         .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-40.0));
+    set_winter_hourly_forcing(&mut surface, -30.0, 0.0, 1.0);
     configure_fdhp01_deep_profile(&mut surface);
     override_monthly_temperatures(&mut surface, -20.0);
 
@@ -2369,6 +2517,7 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
     surface
         .state_surface
         .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(2.0));
+    set_winter_hourly_forcing(&mut surface, 8.0, 3.0, 0.0);
     configure_fdhp01_deep_profile(&mut surface);
     seed_prior_layered_frost(&mut surface, 0.30, 0.30);
     let mut no_prior_storage_surface = surface.clone();
@@ -2562,6 +2711,7 @@ fn simimpl32_contract_cross_contract_seam_vector_requires_frost_hourly_payload_c
         "frost.hourly.qsrf_w_m2_0001",
         "frost.hourly.quf_w_m2_0001",
         "frost.hourly.ksrf_w_m_k_0001",
+        "frost.hourly.surface_temp_c_0001",
         "frost.hourly.snow_depth_m_0001",
         "frost.hourly.residue_depth_m_0001",
         "frost.hourly.tilled_frozen_depth_m_0001",

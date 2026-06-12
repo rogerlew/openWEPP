@@ -554,6 +554,46 @@
     }
 
     #[test]
+    fn climate_runtime_surface_with_context_uses_frost_option_trigger_on_warm_days() {
+        let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
+            .expect("strict warm climate fixture should parse");
+        let mut context = simimpl28_winter_context(0.0);
+        context.insert(
+            BoundarySymbol::from("snow.options.snow_file_present"),
+            BoundaryValue::scalar(0.0),
+        );
+        context.insert(
+            BoundarySymbol::from("snow.runtime_swe"),
+            BoundaryValue::scalar(0.0),
+        );
+        context.insert(
+            BoundarySymbol::from("frost.options.frost_file_present"),
+            BoundaryValue::scalar(1.0),
+        );
+        context.insert(
+            BoundarySymbol::from("frost.options.wintRed"),
+            BoundaryValue::scalar(1.0),
+        );
+
+        let surface =
+            build_hillslope_runtime_surface_from_climate_with_context(&climate, 0, &context)
+                .expect("frost-enabled warm day should still project winter hourly forcing");
+
+        for symbol in [
+            "winter.hourly.air_temp_c_0001",
+            "winter.hourly.rad_mj_m2_0001",
+            "winter.hourly.cloud_fraction_0001",
+        ] {
+            assert!(
+                surface
+                    .state_surface
+                    .contains_key(&BoundarySymbol::from(symbol)),
+                "{symbol} should exist when frost option enables tmpadj forcing"
+            );
+        }
+    }
+
+    #[test]
     fn climate_runtime_surface_with_context_rejects_missing_required_winter_symbol() {
         let climate = parse_climate_from_str(VALID_CLIMATE, ClimateParserMode::Strict)
             .expect("strict climate fixture should parse");

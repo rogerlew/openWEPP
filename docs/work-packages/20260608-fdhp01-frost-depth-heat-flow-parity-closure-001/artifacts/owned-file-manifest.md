@@ -28,6 +28,11 @@ Date: 2026-06-12
     stable lower-front heat surrogate in favor of legacy seasonal
     `tmpbl`/`Qdry`, requiring in-hour thaw resistance feedback, and
     authorizing only bounded fine-theta lower-bound roundoff canonicalization.
+    Increment De adds v65 for content-dependent lower-front `Qdry`.
+    Increment Dg adds v66 for legacy `resdep/kres` surface resistance and the
+    below-freezing `dpfsfl` floor. Increment Dh adds v67 for fixed legacy
+    `kftill`/`kfutil`. Increment Dj adds v68 for legacy `hr_tmp`/`tmpadj`
+    adjusted surface-temperature synthesis.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -58,6 +63,9 @@ Date: 2026-06-12
     consuming additional freezing time. Increment Dc1 adds seasonal
     lower-front heat from the legacy monthly temperature wave, in-hour thaw
     resistance feedback, and bounded fine-theta lower-bound canonicalization.
+    Increment De adds content-dependent lower-front `Qdry`; Increment Dg adds
+    residue resistance and the shallow-front `dpfsfl` floor; Increment Dj adds
+    legacy `tmpadj` surface-temperature synthesis.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
@@ -69,13 +77,15 @@ Date: 2026-06-12
     Increment C1b adds `watpdg`/`watbtm` runtime overflow fields and symbols.
     Increment Dc1 replaces the stable lower-front heat constants with seasonal
     lower-front heat, fallback conductivity, damping-depth, and fine-theta
-    boundary constants.
+    boundary constants. Increment Dj adds the hourly frost surface-temperature
+    diagnostic field and symbol root.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
   - Frost writeback bounds now use physical profile depth and persist layer
     frozen-depth/`frzw` state. Increment A writes the shadow aggregate,
     residual, `yst`/`nwfrzz`, and fine-layer diagnostic symbols. Increment B
     writes bounded hourly `frzflg` diagnostics. Increment C1b writes
     `watpdg`/`watbtm` overflow surfaces and bounds aggregate `frzw` by `ul`.
+    Increment Dj writes hourly adjusted surface temperature.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_infiltration_evap.rs`
   - Increment C1b preserves same-pass infiltration lineage from WB12 instead
     of replaying WB14 while reconciling the fine frost state.
@@ -121,8 +131,12 @@ Date: 2026-06-12
   - Added `frdp_mm` to runner trace fixtures.
 - `crates/openwepp-runner/src/constants.rs`
   - Removed retired runner cap constant.
+- `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/06_simimpl28_hourly_forcing.rs`
+  - Increment Dj projects winter hourly air/radiation/cloud forcing whenever
+    frost is enabled by `frost.options.wintRed` or runtime frost state.
 - `crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs`
-  - Added `frdp` alias and unit entry.
+  - Added `frdp` alias and unit entry; Increment Dj adds
+    `frost.hourly.surface_temp_c_{idx4}`.
 - `crates/openwepp-sim-contract/src/units_mod/output_catalog.rs`
   - Added output unit row for `hillslope_wat.frdp`.
 
@@ -142,16 +156,24 @@ Date: 2026-06-12
     non-amplification vectors. Increment Db adds a within-hour freeze-front
     resistance feedback vector that fails on stale start-hour `Qsrf` spending.
     Increment Dc1 adds seasonal lower-front heat, thaw-feedback, and
-    fine-theta boundary vectors.
+    fine-theta boundary vectors. Increment Dj adds `tmpadj` surface-temperature
+    synthesis, positive snow cap, and missing-radiation fail-closed vectors.
+- `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests/common.rs`
+  - Increment Dj seeds `frost.options.wintRed` in winter runtime fixtures.
+- `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/08_tests/climate.rs`
+  - Increment Dj adds a warm/no-snow frost-enabled runtime projection test for
+    hourly winter air/radiation/cloud forcing.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
-  - Required `hillslope_wat.frdp` canonical registry alias.
+  - Required `hillslope_wat.frdp` canonical registry alias; Increment Dj
+    covers the new `frost.hourly.surface_temp_c_0001` required alias through
+    the shared registry list.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v64 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v68 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v64 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v68 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
@@ -306,3 +328,16 @@ Date: 2026-06-12
 - `fdhp01_increment_di_localization_metrics_20260612.csv`
 - `fdhp01_increment_di_term_attribution_20260612.csv`
 - `fdhp01_increment_di_max_depth_context_20260612.csv`
+- `d3-increment-dj-tmpadj-surface-temperature-20260612.md`
+- `fdhp01_increment_dj_native_execution_summary_20260612.json`
+- `fdhp01_increment_dj_native_run_status_20260612.tsv`
+- `fdhp01_increment_dj_native_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_dj_native_depth_metrics_20260612.csv`
+- `fdhp01_increment_dj_native_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_dj_native_activation_summary_20260612.csv`
+- `fdhp01_increment_dj_forced_snow_execution_summary_20260612.json`
+- `fdhp01_increment_dj_forced_snow_run_status_20260612.tsv`
+- `fdhp01_increment_dj_forced_snow_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_dj_forced_snow_depth_metrics_20260612.csv`
+- `fdhp01_increment_dj_forced_snow_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_dj_forced_snow_activation_summary_20260612.csv`

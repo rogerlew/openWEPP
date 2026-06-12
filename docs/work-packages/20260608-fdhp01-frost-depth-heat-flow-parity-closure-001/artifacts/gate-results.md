@@ -572,3 +572,42 @@ production edits and scopes Dj to port/expose legacy `hr_tmp`/`tmpadj`
 surface-temperature synthesis into the frost surface heat path without
 retuning snow, `kfactor`, latent heat, WAT/D2, residue, `dpfsfl`,
 `kftill`/`kfutil`, or `Qdry`.
+
+## D3 Increment Dj Legacy `tmpadj` Surface-Temperature Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/Pandas/PyArrow comparisons. |
+| Contract amendment | Pass, `SC-SNOWFREEZE-001` v68 binds legacy `hr_tmp`/`tmpadj` adjusted surface-temperature synthesis for frost top heat flow and registers `frost.hourly.surface_temp_c_####`. |
+| Production implementation | Pass, active frost consumes synthesized `frost.hourly.surface_temp_c_####` instead of raw hourly air temperature, preserves the positive-under-snow cap, publishes the hourly diagnostic, and projects required winter hourly air/radiation/cloud forcing when frost is enabled. |
+| Diagnostic source-marker cleanup | Pass, `rg -n "OPENWEPP_FDHP01|FDHP01_DD|fdhp01_dd|FORCED_SNOW|MISSING_TRACE" crates tests` found no markers after removing temporary forced-snow/missing-symbol hooks. |
+| `cargo fmt --check` | Pass |
+| `git diff --check` | Pass |
+| Focused runtime projection test | Pass, `cargo test -p openwepp-hillslope-orchestrator climate_runtime_surface_with_context_uses_frost_option_trigger_on_warm_days`. |
+| Focused Dj frost tests | Pass, `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_dj_ -- --nocapture`, `3/3`. |
+| Full frost contract suite | Pass, `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture`, `46/46`. |
+| Contract-version guard tests | Pass, `cargo test -p openwepp --test hphys0319_fixed_baseline_stmtim_observe_contract --test hphys0320_stmtim_start_time_source_line_contract`, `8/8`. |
+| Unit registry gate | Pass, `cargo test -p openwepp --test sim_contract_boundary_unit_registry -- --nocapture`, `14/14`. |
+| First `cargo clippy --workspace --all-targets -- -D warnings` attempt | Failed on a scoped style lint: direct legacy `tmpadj` helper exceeded `clippy::too_many_lines`. The helper was annotated locally with `#[allow(clippy::too_many_arguments, clippy::too_many_lines)]` because it is a source-line transcription boundary. |
+| Final `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass, `advisories ok, bans ok, licenses ok, sources ok`. |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, `2/2`. |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings`. |
+| Clean-source release rebuild after diagnostic hook removal | Pass, `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`; production binary SHA `bec37b276ba9d2d0009c21c8d9f0909b4137d4a178a3451986e51afcfcf8858b`. |
+| Native production cohort | Pass execution, `43/43` clean exits and `43/43` WAT outputs; root `/tmp/fdhp01_increment_dj_native_cohort_20260612T205827Z`. |
+| Native years 2-6 independent `Total-Soil + frozwt` closure | Pass at WAT-publication texture, max abs residual `6.17207992173463e-07 mm` (`p11`, year 6). |
+| Native D3 depth/duration | Not accepted: mean max `506.7933035417255 mm`, median max `497.8858706468047 mm`, `30/43` prefixes inside the legacy `240..503.2 mm` envelope, median depth correlation `0.7630792145889135`, median duration residual `+72` days. |
+| Forced-snow diagnostic cohort | Pass execution, `43/43` clean exits and `43/43` WAT outputs; root `/tmp/fdhp01_increment_dj_forced_snow_cohort_20260612T205827Z`. |
+| Forced-snow years 2-6 independent `Total-Soil + frozwt` closure | Pass at WAT-publication texture, max abs residual `5.09157033201646e-07 mm` (`p11`, year 4). |
+| Forced-snow material-improvement gate | Fail/hold: relative to Dg forced snow, mean max depth regressed `490.0923199552928 -> 501.3624240499244 mm`, median max regressed `479.356967770298 -> 492.3588252690888 mm`, and the outlier set above `503.2 mm` stayed unchanged at `13/43`. |
+| Forced-snow duration movement | Directionally improved but not closing: median open-minus-legacy frozen-duration residual moved `+73 -> +61` days. |
+
+Increment Dj disposition: landed at `executed-hold`. Dj restores the localized
+legacy `tmpadj` surface-temperature seam and keeps D2 storage closed, but it
+does not improve the forced-snow maximum-depth acceptance gate. The next
+bounded increment must localize the post-Dj max-depth residual with direct
+legacy `tmpadj`/`frostn` surface-temperature and top-flux evidence, not retune
+snow, WAT/D2, residue, `dpfsfl`, fixed `kftill`/`kfutil`, or lower-front
+`Qdry`.
