@@ -59,6 +59,13 @@ struct FrostDepthSummary {
     tthawd: f64,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct FrostSeasonalTemperatureCurve {
+    annual_mean_c: f64,
+    amplitude_c: f64,
+    phase_shift_days: f64,
+}
+
 impl Wb11HydrologyKernel {
     pub(crate) fn interval_overlap_duration(
         interval_start: f64,
@@ -135,6 +142,25 @@ impl Wb11HydrologyKernel {
         } else {
             value
         }
+    }
+
+    fn canonicalize_near_lower_bound(value: f64, lower: f64) -> f64 {
+        if value < lower && value >= lower - FROST_RUNTIME_FINE_THETA_BOUND_TOLERANCE {
+            lower
+        } else {
+            value
+        }
+    }
+
+    fn canonicalize_fine_layer_liquid_theta(
+        fine: &mut FrostFineLayerState,
+        water_layer: &FrostLayerWaterState,
+    ) {
+        fine.slsw_theta = Self::canonicalize_near_lower_bound(fine.slsw_theta, water_layer.thetdr);
+        fine.slsw_theta = Self::canonicalize_near_upper_bound(
+            fine.slsw_theta,
+            Self::fine_layer_liquid_theta_capacity(water_layer),
+        );
     }
 
     fn add_unfrozen_liquid_to_fine_layer(
@@ -384,7 +410,7 @@ impl Wb11HydrologyKernel {
                 fine_index,
             );
 
-            let fine = FrostFineLayerState {
+            let mut fine = FrostFineLayerState {
                 layer_index: layer.layer_index,
                 fine_index,
                 fine_layer_thickness_m: layer.fine_layer_thickness_m,
@@ -419,6 +445,7 @@ impl Wb11HydrologyKernel {
                 )?
                 .unwrap_or(0.0),
             };
+            Self::canonicalize_fine_layer_liquid_theta(&mut fine, layer);
             Self::require_shadow_fine_state_domains(phase_class, &fine, layer)?;
             fine_layers.push(fine);
         }
@@ -883,6 +910,177 @@ impl Wb11HydrologyKernel {
         (resistance_m2_c_w, total_frozen_path_m, ksrf_w_m_k)
     }
 
+    fn require_monthly_temperature_vector(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        root: &str,
+    ) -> Result<[f64; 12], Wb11HydrologyKernelGuardError> {
+        let mut monthly = [0.0; 12];
+        for (month_index, value) in monthly.iter_mut().enumerate() {
+            let month = month_index + 1;
+            let symbol = BoundarySymbol::from(format!("{root}_{month:04}"));
+            *value = Self::require_state_scalar_for_symbol(request, phase_class, &symbol)?;
+        }
+        Ok(monthly)
+    }
+
+    fn legacy_tmpfun(
+        annual_mean_c: f64,
+        amplitude_c: f64,
+        monthly_mean_c: &[f64; 12],
+        phase_shift_days: f64,
+    ) -> f64 {
+        let mut square_error = 0.0;
+        for (index, observed) in monthly_mean_c.iter().enumerate() {
+            let tday = 15.0 + Self::diagnostic_count_to_f64(index) * 30.5;
+            let estimated = annual_mean_c
+                + amplitude_c
+                    * ((std::f64::consts::TAU / 365.0) * (tday - phase_shift_days)).sin();
+            square_error += (estimated - observed).powi(2);
+        }
+        (square_error / 12.0).sqrt()
+    }
+
+    fn fit_legacy_tmpcft_curve(monthly_max_c: &[f64; 12], monthly_min_c: &[f64; 12]) -> FrostSeasonalTemperatureCurve {
+        let mut monthly_mean_c = [0.0; 12];
+        let mut annual_mean_c = 0.0;
+        let mut maximum_mean_c = f64::NEG_INFINITY;
+        let mut minimum_mean_c = f64::INFINITY;
+        for (index, value) in monthly_mean_c.iter_mut().enumerate() {
+            *value = f64::midpoint(monthly_max_c[index], monthly_min_c[index]);
+            annual_mean_c += *value;
+            maximum_mean_c = maximum_mean_c.max(*value);
+            minimum_mean_c = minimum_mean_c.min(*value);
+        }
+        annual_mean_c /= 12.0;
+        let amplitude_c = (maximum_mean_c - minimum_mean_c) / 2.0;
+        if amplitude_c <= WB11_ZERO_THRESHOLD {
+            return FrostSeasonalTemperatureCurve {
+                annual_mean_c,
+                amplitude_c,
+                phase_shift_days: 0.0,
+            };
+        }
+
+        let mut phase_shift_days = 0.0;
+        let mut delta_phase_days: f64 = 1.0;
+        let mut iteration = 0;
+        while delta_phase_days.abs() > 0.00001 && iteration < 20 {
+            let mut first_derivative = 0.0;
+            let mut second_derivative = 0.0;
+            iteration += 1;
+            for (index, observed) in monthly_mean_c.iter().enumerate() {
+                let tday = 15.0 + Self::diagnostic_count_to_f64(index) * 30.5;
+                let theta = (std::f64::consts::TAU / 365.0) * (tday - phase_shift_days);
+                first_derivative -=
+                    (annual_mean_c + amplitude_c * theta.sin() - observed) * theta.cos();
+                second_derivative -= (std::f64::consts::TAU / 365.0)
+                    * ((annual_mean_c - observed) * theta.sin()
+                        - amplitude_c * (2.0 * theta).cos());
+            }
+            if second_derivative < 0.0 {
+                phase_shift_days += 365.0 / 2.0;
+            } else if second_derivative.abs() > WB11_ZERO_THRESHOLD {
+                delta_phase_days = -first_derivative / second_derivative;
+                phase_shift_days += delta_phase_days;
+            } else {
+                iteration = 20;
+                break;
+            }
+            phase_shift_days %= 365.0;
+            if phase_shift_days < 0.0 {
+                phase_shift_days += 365.0;
+            }
+        }
+
+        if iteration >= 20 || !phase_shift_days.is_finite() {
+            let mut minimum_error =
+                Self::legacy_tmpfun(annual_mean_c, amplitude_c, &monthly_mean_c, 0.0);
+            phase_shift_days = 0.0;
+            for day in 1..=365 {
+                let candidate = Self::diagnostic_count_to_f64(day);
+                let error =
+                    Self::legacy_tmpfun(annual_mean_c, amplitude_c, &monthly_mean_c, candidate);
+                if error < minimum_error {
+                    minimum_error = error;
+                    phase_shift_days = candidate;
+                }
+            }
+        }
+
+        FrostSeasonalTemperatureCurve {
+            annual_mean_c,
+            amplitude_c,
+            phase_shift_days,
+        }
+    }
+
+    fn require_frost_seasonal_temperature_curve(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<FrostSeasonalTemperatureCurve, Wb11HydrologyKernelGuardError> {
+        let monthly_max_c =
+            Self::require_monthly_temperature_vector(request, phase_class, PL_GROWTH_CLIMATE_OBMAX_ROOT)?;
+        let monthly_min_c =
+            Self::require_monthly_temperature_vector(request, phase_class, PL_GROWTH_CLIMATE_OBMIN_ROOT)?;
+        Ok(Self::fit_legacy_tmpcft_curve(&monthly_max_c, &monthly_min_c))
+    }
+
+    fn require_integral_state_day(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        let day_symbol = BoundarySymbol::from(PL_RUNTIME_DAY_SYMBOL);
+        let day = Self::require_state_scalar_for_symbol(request, phase_class, &day_symbol)?;
+        Self::require_dynamic_state_range(
+            phase_class,
+            day_symbol.clone(),
+            day,
+            Some(1.0),
+            Some(366.0),
+        )?;
+        let rounded = day.round();
+        if (day - rounded).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: day_symbol,
+                value: day,
+                minimum: Some(1.0),
+                maximum: Some(366.0),
+            });
+        }
+        Ok(rounded)
+    }
+
+    fn seasonal_lower_front_temperature_c(
+        seasonal_curve: FrostSeasonalTemperatureCurve,
+        sdate: f64,
+        frdp_m: f64,
+    ) -> f64 {
+        let tmpdp = frdp_m + FROST_RUNTIME_UNFROZEN_LOWER_HEAT_PATH_M;
+        seasonal_curve.annual_mean_c
+            + seasonal_curve.amplitude_c
+                * (-tmpdp / FROST_RUNTIME_SOIL_DAMPING_DEPTH_M).exp()
+                * ((std::f64::consts::TAU / 365.0)
+                    * (sdate - seasonal_curve.phase_shift_days)
+                    - tmpdp / FROST_RUNTIME_SOIL_DAMPING_DEPTH_M)
+                    .sin()
+    }
+
+    fn lower_front_heat_w_m2(
+        seasonal_curve: FrostSeasonalTemperatureCurve,
+        sdate: f64,
+        frdp_m: f64,
+    ) -> f64 {
+        let tmpbl_c = Self::seasonal_lower_front_temperature_c(seasonal_curve, sdate, frdp_m);
+        if tmpbl_c <= 0.0 {
+            0.0
+        } else {
+            FROST_RUNTIME_UNFROZEN_CONDUCTIVITY_FALLBACK_W_M_K * tmpbl_c
+                / FROST_RUNTIME_UNFROZEN_LOWER_HEAT_PATH_M
+        }
+    }
+
     fn freeze_fine_front_step(
         fine_layers: &mut [FrostFineLayerState],
         water_layers: &[FrostLayerWaterState],
@@ -1052,13 +1250,14 @@ impl Wb11HydrologyKernel {
         }
     }
 
-    fn thaw_fine_bottom(
+    fn thaw_fine_bottom_step(
         fine_layers: &mut [FrostFineLayerState],
         exchange_layers: &mut [FrostLayerExchangeState],
         water_layers: &[FrostLayerWaterState],
         mut energy_j_m2: f64,
         watbtm_m: &mut f64,
-    ) -> f64 {
+    ) -> (f64, bool) {
+        let initial_energy_j_m2 = energy_j_m2;
         for index in (0..fine_layers.len()).rev() {
             if energy_j_m2 <= WB11_ZERO_THRESHOLD {
                 break;
@@ -1113,16 +1312,85 @@ impl Wb11HydrologyKernel {
             );
             *watbtm_m += remaining_m;
             energy_j_m2 -= FROST_RUNTIME_LATENT_HEAT_WATER_J_M3 * melted_m;
+            return (energy_j_m2, initial_energy_j_m2 - energy_j_m2 > WB11_ZERO_THRESHOLD);
         }
-        energy_j_m2
+        (energy_j_m2, false)
     }
 
-    fn thaw_fine_top(
+    fn thaw_fine_bottom_with_resistance_feedback(
+        fine_layers: &mut [FrostFineLayerState],
+        exchange_layers: &mut [FrostLayerExchangeState],
+        water_layers: &[FrostLayerWaterState],
+        seasonal_curve: FrostSeasonalTemperatureCurve,
+        sdate: f64,
+        watbtm_m: &mut f64,
+    ) {
+        let mut remaining_seconds = FROST_RUNTIME_SECONDS_PER_HOUR;
+        while remaining_seconds > WB11_ZERO_THRESHOLD {
+            let depth = Self::derived_frost_depths_from_fine_state(fine_layers);
+            let bottom_flux_w_m2 = Self::lower_front_heat_w_m2(seasonal_curve, sdate, depth.frdp);
+            if bottom_flux_w_m2 <= WB11_ZERO_THRESHOLD {
+                break;
+            }
+            let energy_j_m2 = bottom_flux_w_m2 * remaining_seconds;
+            let (remaining_energy_j_m2, thawed) = Self::thaw_fine_bottom_step(
+                fine_layers,
+                exchange_layers,
+                water_layers,
+                energy_j_m2,
+                watbtm_m,
+            );
+            let consumed_j_m2 = energy_j_m2 - remaining_energy_j_m2;
+            if consumed_j_m2 > WB11_ZERO_THRESHOLD {
+                remaining_seconds =
+                    (remaining_seconds - consumed_j_m2 / bottom_flux_w_m2).max(0.0);
+            }
+            if !thawed
+                || consumed_j_m2 <= WB11_ZERO_THRESHOLD
+                || remaining_energy_j_m2 <= WB11_ZERO_THRESHOLD
+            {
+                break;
+            }
+        }
+    }
+
+    fn thaw_surface_heat_path(
+        depth_summary: FrostDepthSummary,
+        snow_depth_m: f64,
+        snow_conductivity_w_m_k: f64,
+        residue_depth_m: f64,
+        residue_conductivity_w_m_k: f64,
+    ) -> f64 {
+        let mut resistance_m2_c_w = 0.0;
+        if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+            && snow_conductivity_w_m_k > WB11_ZERO_THRESHOLD
+        {
+            resistance_m2_c_w += snow_depth_m / snow_conductivity_w_m_k;
+        }
+        if residue_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
+            && residue_conductivity_w_m_k > WB11_ZERO_THRESHOLD
+        {
+            resistance_m2_c_w += residue_depth_m / residue_conductivity_w_m_k;
+        }
+        let thawed_path_m =
+            FROST_RUNTIME_TILLAGE_DEPTH_M.max(depth_summary.frdp) + depth_summary.thdp;
+        if thawed_path_m > WB11_ZERO_THRESHOLD {
+            resistance_m2_c_w += thawed_path_m / FROST_RUNTIME_KFTILL_W_M_K;
+        }
+        if resistance_m2_c_w <= WB11_ZERO_THRESHOLD {
+            FROST_RUNTIME_TILLAGE_DEPTH_M / FROST_RUNTIME_KFTILL_W_M_K
+        } else {
+            resistance_m2_c_w
+        }
+    }
+
+    fn thaw_fine_top_step(
         fine_layers: &mut [FrostFineLayerState],
         exchange_layers: &mut [FrostLayerExchangeState],
         water_layers: &[FrostLayerWaterState],
         mut energy_j_m2: f64,
-    ) -> (f64, f64) {
+    ) -> (f64, f64, bool) {
+        let initial_energy_j_m2 = energy_j_m2;
         let mut watpdg_m = 0.0;
         for index in 0..fine_layers.len() {
             if energy_j_m2 <= WB11_ZERO_THRESHOLD {
@@ -1178,8 +1446,65 @@ impl Wb11HydrologyKernel {
             );
             watpdg_m += remaining_m;
             energy_j_m2 -= FROST_RUNTIME_LATENT_HEAT_WATER_J_M3 * melted_m;
+            return (
+                energy_j_m2,
+                watpdg_m,
+                initial_energy_j_m2 - energy_j_m2 > WB11_ZERO_THRESHOLD,
+            );
         }
-        (energy_j_m2, watpdg_m)
+        (energy_j_m2, watpdg_m, false)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn thaw_fine_top_with_resistance_feedback(
+        fine_layers: &mut [FrostFineLayerState],
+        exchange_layers: &mut [FrostLayerExchangeState],
+        water_layers: &[FrostLayerWaterState],
+        surface_temp_c: f64,
+        snow_depth_m: f64,
+        snow_conductivity_w_m_k: f64,
+        residue_depth_m: f64,
+        residue_conductivity_w_m_k: f64,
+    ) -> f64 {
+        if surface_temp_c <= WB11_ZERO_THRESHOLD {
+            return 0.0;
+        }
+        let mut remaining_seconds = FROST_RUNTIME_SECONDS_PER_HOUR;
+        let mut watpdg_m = 0.0;
+        while remaining_seconds > WB11_ZERO_THRESHOLD {
+            let depth = Self::derived_frost_depths_from_fine_state(fine_layers);
+            let resistance_m2_c_w = Self::thaw_surface_heat_path(
+                depth,
+                snow_depth_m,
+                snow_conductivity_w_m_k,
+                residue_depth_m,
+                residue_conductivity_w_m_k,
+            );
+            let top_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
+            if top_flux_w_m2 <= WB11_ZERO_THRESHOLD {
+                break;
+            }
+            let energy_j_m2 = top_flux_w_m2 * remaining_seconds;
+            let (remaining_energy_j_m2, step_watpdg_m, thawed) = Self::thaw_fine_top_step(
+                fine_layers,
+                exchange_layers,
+                water_layers,
+                energy_j_m2,
+            );
+            watpdg_m += step_watpdg_m;
+            let consumed_j_m2 = energy_j_m2 - remaining_energy_j_m2;
+            if consumed_j_m2 > WB11_ZERO_THRESHOLD {
+                remaining_seconds =
+                    (remaining_seconds - consumed_j_m2 / top_flux_w_m2).max(0.0);
+            }
+            if !thawed
+                || consumed_j_m2 <= WB11_ZERO_THRESHOLD
+                || remaining_energy_j_m2 <= WB11_ZERO_THRESHOLD
+            {
+                break;
+            }
+        }
+        watpdg_m
     }
 
     fn reset_fine_layer_hour_timers(fine_layers: &mut [FrostFineLayerState]) {
@@ -1942,6 +2267,9 @@ impl Wb11HydrologyKernel {
         } else {
             0.0
         };
+        let seasonal_temperature_curve =
+            Self::require_frost_seasonal_temperature_curve(request, phase_class)?;
+        let sdate = Self::require_integral_state_day(request, phase_class)?;
 
         let mut freeze_started = false;
         let mut hourly_state = std::array::from_fn(|hour_index| FrostHourlyState {
@@ -1983,15 +2311,8 @@ impl Wb11HydrologyKernel {
                 conductivity_residue_w_m_k,
             );
             let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
-            let unfrozen_conductivity_w_m_k =
-                (FROST_RUNTIME_KFUTIL_W_M_K * ksoilf).max(WB11_ZERO_THRESHOLD);
-            let lower_front_temp_c = FROST_RUNTIME_STABLE_SOIL_TEMP_C.max(f64::midpoint(tmax, tmin));
-            let lower_front_heat_w_m2 = if lower_front_temp_c > 0.0 {
-                unfrozen_conductivity_w_m_k * lower_front_temp_c
-                    / FROST_RUNTIME_UNFROZEN_HEAT_PATH_M
-            } else {
-                0.0
-            };
+            let lower_front_heat_w_m2 =
+                Self::lower_front_heat_w_m2(seasonal_temperature_curve, sdate, depth_before.frdp);
             let signed_net_flux_w_m2 = signed_surface_flux_w_m2 + lower_front_heat_w_m2;
             hourly.qsrf_w_m2 = (-signed_surface_flux_w_m2).max(0.0);
             hourly.quf_w_m2 = lower_front_heat_w_m2;
@@ -2032,43 +2353,43 @@ impl Wb11HydrologyKernel {
                 if (hourly.frzflg - 2.0).abs() <= WB11_ZERO_THRESHOLD
                     && lower_front_heat_w_m2 > WB11_ZERO_THRESHOLD
                 {
-                    let energy_j_m2 = lower_front_heat_w_m2 * FROST_RUNTIME_SECONDS_PER_HOUR;
-                    Self::thaw_fine_bottom(
+                    Self::thaw_fine_bottom_with_resistance_feedback(
                         &mut shadow_fine_state.fine_layers,
                         &mut shadow_fine_state.layer_state,
                         &layer_water_state,
-                        energy_j_m2,
+                        seasonal_temperature_curve,
+                        sdate,
                         &mut shadow_fine_state.watbtm_m,
                     );
                 } else if (hourly.frzflg - 3.0).abs() <= WB11_ZERO_THRESHOLD {
-                    let top_energy_j_m2 =
-                        signed_surface_flux_w_m2.max(0.0) * FROST_RUNTIME_SECONDS_PER_HOUR;
-                    let (_remaining_top_energy_j_m2, watpdg_m) = Self::thaw_fine_top(
+                    let watpdg_m = Self::thaw_fine_top_with_resistance_feedback(
                         &mut shadow_fine_state.fine_layers,
                         &mut shadow_fine_state.layer_state,
                         &layer_water_state,
-                        top_energy_j_m2,
+                        surface_temp_c.max(0.0),
+                        snow_depth_m,
+                        snow_conductivity_w_m_k,
+                        residue_depth_m,
+                        conductivity_residue_w_m_k,
                     );
                     shadow_fine_state.watpdg_m += watpdg_m;
                     if lower_front_heat_w_m2 > WB11_ZERO_THRESHOLD {
-                        let bottom_energy_j_m2 =
-                            lower_front_heat_w_m2 * FROST_RUNTIME_SECONDS_PER_HOUR;
-                        Self::thaw_fine_bottom(
+                        Self::thaw_fine_bottom_with_resistance_feedback(
                             &mut shadow_fine_state.fine_layers,
                             &mut shadow_fine_state.layer_state,
                             &layer_water_state,
-                            bottom_energy_j_m2,
+                            seasonal_temperature_curve,
+                            sdate,
                             &mut shadow_fine_state.watbtm_m,
                         );
                     }
                 } else if (hourly.frzflg - 4.0).abs() <= WB11_ZERO_THRESHOLD {
-                    let energy_j_m2 =
-                        signed_net_flux_w_m2.max(0.0) * FROST_RUNTIME_SECONDS_PER_HOUR;
-                    Self::thaw_fine_bottom(
+                    Self::thaw_fine_bottom_with_resistance_feedback(
                         &mut shadow_fine_state.fine_layers,
                         &mut shadow_fine_state.layer_state,
                         &layer_water_state,
-                        energy_j_m2,
+                        seasonal_temperature_curve,
+                        sdate,
                         &mut shadow_fine_state.watbtm_m,
                     );
                 }
@@ -2084,6 +2405,15 @@ impl Wb11HydrologyKernel {
                 if fgthwd_flag > 0.0 {
                     hourly_frdp_m = 0.0;
                 }
+            }
+            for fine in &mut shadow_fine_state.fine_layers {
+                let Some(water_layer) = layer_water_state
+                    .iter()
+                    .find(|layer| layer.layer_index == fine.layer_index)
+                else {
+                    continue;
+                };
+                Self::canonicalize_fine_layer_liquid_theta(fine, water_layer);
             }
             hourly.ksrf_w_m_k = ksrf_w_m_k.max(WB11_ZERO_THRESHOLD);
             hourly.tilled_frozen_depth_m = hourly_frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
@@ -2237,6 +2567,10 @@ impl Wb11HydrologyKernel {
             };
             let slsic_capacity_m = Self::fine_layer_ice_capacity_m(water_layer, fine);
             let slsw_theta_capacity = Self::fine_layer_liquid_theta_capacity(water_layer);
+            let slsw_theta = Self::canonicalize_near_upper_bound(
+                Self::canonicalize_near_lower_bound(fine.slsw_theta, water_layer.thetdr),
+                slsw_theta_capacity,
+            );
             fine_layer_diagnostic_state.push(FrostFineLayerDiagnosticState {
                 layer_index: fine.layer_index,
                 fine_index: fine.fine_index,
@@ -2246,10 +2580,7 @@ impl Wb11HydrologyKernel {
                     fine.slsic_m,
                     slsic_capacity_m,
                 ),
-                slsw_theta: Self::canonicalize_near_upper_bound(
-                    fine.slsw_theta,
-                    slsw_theta_capacity,
-                ),
+                slsw_theta,
                 sltime_s: fine.sltime_s,
                 slsic_capacity_m,
                 slsw_theta_capacity,

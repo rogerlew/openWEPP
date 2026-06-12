@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 63
+contract_version: 64
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -915,12 +915,35 @@ updated `Qsrf`, matching `frzng.for:235-240`, `frzng.for:287-305`, and
 capacity gates; it does not authorize thaw, storage, publication, or unit
 conversion changes.
 
+FDHP01 Increment Dc1 binds the lower-front heat term and thaw energy spending
+to the same seasonal/fine-layer authority without reopening the D2 storage
+identity. The stable `7 degC` lower-front surrogate is retired for frost heat
+flow. Bottom heat must instead use the legacy `tmpcft`/`tmpfun` annual monthly
+temperature curve and `frostn.for:386-397`/`frostn.for:458` form:
+`tmpbl = YavgT + YampT * exp(-(frdp + 1.0)/2.0) *
+sin(2*pi/365*(sdate - YpshfT) - (frdp + 1.0)/2.0)`, with `Qdry = 0` when
+`tmpbl <= 0`, otherwise `Qdry = kufz * tmpbl / 1.0`. Until the full
+`bdcons`-weighted harmonic conductivity path is available at the seam,
+openWEPP may use the legacy fallback `kufz = 0.2 W m^-1 degC^-1`, but the
+fallback must be named and guarded; it must not be silently replaced by the
+old `kfutil * ksoilf` surrogate. Top and bottom thaw must spend energy in
+in-hour slices that recompute the active resistance/front geometry after each
+fine-layer retreat, matching the legacy `mlttp`/`mltbtm` resistance-feedback
+shape instead of spending the start-hour flux across multiple fine layers.
+Fine-layer liquid theta values may be canonicalized to the residual lower
+bound only for finite roundoff within `1e-10` volumetric theta at the
+read/post-compute/publication boundary. Material sub-residual values remain a
+typed domain violation. The Dc1 acceptance boundary is conservation-first:
+years 2-6 `Total-Soil + frozwt` closure must remain at the Db WAT-publication
+texture, while depth/duration changes from the known snow-insulation F4 seam
+are recorded but not accepted as D3 closure.
+
 ## Known Gaps
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
 |---|---|---|---|---|
 | GAP-SNOWFREEZE-001 | Per-invariant comparator vectors for hourly winter outputs (`hrmelt`, frost depth/thaw depth, freeze-thaw cycles) are not yet curated. | Limits immediate automated regression depth on hourly-heavy winter internals. | promotable-with-risk | `[DIRECT][Static]` |
-| GAP-SNOWFREEZE-002 | Frost-depth heat-flow executable parity remains open after FDHP01 Increment Db. The D2 layered-store continuation closed additive storage for years 2-6 on all 43 prefixes and cleared `p2`; Da/Db re-pinned the accepted gate to the independent WAT flux ledger at WAT-publication numerical texture (`1.9976620946327017e-07 mm` max abs for years 2-6 after Db). C1b/C2 landed fine-layer capacity/overflow and thaw-arm state-machine ownership without reopening D2. Db then landed `frzng` in-hour surface-resistance feedback: the local cohort runs `43/43` clean, has `0/43` profile-bound pins, and all 43 maximum depths now fall inside the legacy `240..503.2 mm` envelope (mean max `409.16220799389805 mm`, median `407.3294069097544 mm`, range `385.7920154626782..443.990392740042 mm`). D3 remains open because depth correlation is still weak (median `-0.05296014769462692`, range `-0.07638011292463864..0.18461818718568115`) and frozen duration now under-persists (median open-minus-legacy `-452` days, range `-505..-408`). The remaining defect is no longer frozen-water publication, capacity/overflow ownership, missing thaw-arm storage plumbing, unit conversion, or stale in-hour surface resistance; Db localizes it to freeze/thaw seasonal persistence and timing under the fine-layer heat-flow state. | Blocks frost-depth heat-flow closure and MOFE advancement until the single-OFE cohort runs 43/43, annual `Total-Soil + frozwt` closure stays at numerical noise, depth enters a physical heat-flow envelope without profile-bound pinning, duration residual materially collapses, and the year-7 boundary effect is explained or eliminated without comparator tuning. | active-defect | `[DIRECT][Ran] + [INFERENCE][Static]` |
+| GAP-SNOWFREEZE-002 | Frost-depth heat-flow executable parity remains open after FDHP01 Increment Dc1. The D2 layered-store continuation closed additive storage for years 2-6 on all 43 prefixes and cleared `p2`; Da/Db re-pinned the accepted gate to the independent WAT flux ledger at WAT-publication numerical texture. C1b/C2 landed fine-layer capacity/overflow and thaw-arm state-machine ownership without reopening D2. Db landed `frzng` in-hour surface-resistance feedback and temporarily put maximum depths inside the legacy envelope. The failed Dc pass proved that seasonal lower-front heat plus thaw feedback cannot be accepted if it reopens storage. Dc1 then landed the seasonal `tmpbl` lower-front heat, in-hour thaw resistance feedback, and fine-theta lower-bound roundoff handling while restoring the independent years 2-6 `Total-Soil + frozwt` residual to `6.471338602487275e-07 mm` max abs across the clean `43/43` cohort. D3 remains open because the depth/duration surface still fails: mean maximum depth `1146.5109665924424 mm`, median `1110.3558249519133 mm`, range `877.0024741427947..1799.9999999999998 mm`, `1/43` profile-bound pins, `0/43` prefixes inside the `240..503.2 mm` legacy envelope, median depth correlation `0.6415921721982907`, and median frozen-duration residual `+567` days. The remaining defect is no longer frozen-water publication, capacity/overflow ownership, missing thaw-arm storage plumbing, unit conversion, stale in-hour surface resistance, seasonal lower-front heat wiring, thaw feedback, or D2 accounting; Dc1 assigns the next discriminator to the F4 snow-insulation/depth-duration coupling seam. | Blocks frost-depth heat-flow closure and MOFE advancement until the single-OFE cohort runs 43/43, annual `Total-Soil + frozwt` closure stays at numerical noise, depth enters a physical heat-flow envelope without profile-bound pinning, duration residual materially collapses, and the year-7 boundary effect is explained or eliminated without comparator tuning. | active-defect | `[DIRECT][Ran] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-003 | Snow drifting equations are documented in Chapter 3 but explicitly inactive in the August 1995 lineage; active-path authority for openWEPP is unresolved. | Drift-related claims cannot be promoted as active behavior yet. | non-promotable | `[DIRECT][Static]` |
 | GAP-SNOWFREEZE-004 | Cross-contract boundary ownership with `SC-SOIL-001` and `SC-RUNOFFPART-001` is explicit, but executable cross-contract comparator vectors for frost-hourly internals are still incomplete. | Promotable contract authority exists; evidence depth for coupled frost vectors remains limited pending SIMIMPL32 and SIMIMPL35. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GAP-SNOWFREEZE-005 | `Dsavail` alias is fixed (`snow.hourly.depth_available_m`) and SIMIMPL29 emits the hourly family, but comparator-tier depth/density/melt vector breadth remains limited for broad climate regimes. | Residual risk is evidence-depth, not missing alias/state publication. | promotable-with-risk | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -929,6 +952,7 @@ conversion changes.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-12` | `64` | `Codex` | FDHP01 Increment Dc1 amendment: replaced the stable lower-front heat surrogate with legacy seasonal `tmpbl`/`Qdry` authority, required in-hour thaw resistance feedback, and authorized only bounded fine-theta lower-bound roundoff canonicalization while preserving the Db D2 closure gate. |
 | `2026-06-12` | `63` | `Codex` | FDHP01 Increment Db amendment: bound freeze-active `frzng` front advance to in-hour surface-resistance/`Qsrf` recomputation after each fine-layer advance, using Da's p1 trace and legacy `frzng.for` loop provenance. |
 | `2026-06-12` | `62` | `Codex` | FDHP01 Increment C2 amendment: completed thaw-arm state-machine authority for `mltbtm`/`mlttp`, including bottom/top thaw geometry, `nwfrzz` release, `watpdg`/`watbtm` capacity-routed overflow, `fgthwd` thaw-through, and non-amplifying repeated freeze/thaw conservation. |
 | `2026-06-12` | `61` | `Codex` | FDHP01 Increment C1b amendment: set bounded WB18/WB13 deep-percolation publication dust to `1e-11 m` and WB18 scalar/layer storage rebalance to `2e-11 m` so valid roundoff cannot accumulate as storage drift. |

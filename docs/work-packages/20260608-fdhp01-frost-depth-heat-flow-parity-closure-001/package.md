@@ -127,6 +127,30 @@ years 2-6 independent `Total-Soil + frozwt` closure is within
 remains executed-hold; Db must port the legacy in-hour resistance/front-advance
 loop before any D3 acceptance claim.
 
+D3 Increment Db, 2026-06-12: Codex landed the legacy `frzng` in-hour
+resistance feedback. The local `43/43` cohort at
+`/tmp/fdhp01_increment_db_cohort_20260612T051524Z` kept years 2-6 independent
+`Total-Soil + frozwt` closure within `1.9976620946327017e-07 mm`, removed
+profile-bound pinning, and put all 43 maximum depths inside the legacy
+`240..503.2 mm` envelope with mean max `409.16220799389805 mm`. D3 still held
+because depth correlation stayed weak and frozen duration under-persisted by a
+median `-452` days.
+
+D3 Increment Dc/Dc1, 2026-06-12: the first combined seasonal lower-front heat
+and thaw-feedback pass improved timing correlation but reopened D2 accounting
+and depth/duration, so it was backed out. Dc1 then split the work and landed
+only the accounting-preserving boundary: seasonal `tmpbl`/`Qdry`, in-hour thaw
+resistance feedback, and bounded fine-theta lower-bound canonicalization.
+`SC-SNOWFREEZE-001` is now v64. The local `43/43` cohort at
+`/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z` restores years 2-6
+independent `Total-Soil + frozwt` closure to `6.471338602487275e-07 mm` max
+abs, with p43 year 2 at `-1.1013412404281553e-13 mm`. FDHP01 remains
+executed-hold because the depth/duration evidence is still red: mean max depth
+`1146.5109665924424 mm`, one profile pin, `0/43` prefixes inside the legacy
+envelope, median depth correlation `0.6415921721982907`, and median frozen
+duration residual `+567` days. The next scope is Dd/F4 legacy-snow-forced
+frost certification, not MOFE closure.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

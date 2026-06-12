@@ -4,7 +4,7 @@ Status: executed-hold
 
 Evidence mode: Static + Ran
 
-Date: 2026-06-11
+Date: 2026-06-12
 
 ## Handoff
 
@@ -55,6 +55,10 @@ Primary landed behavior:
 - `SC-SNOWFREEZE-001` is now v62 after C2. Top/bottom thaw, sandwich geometry,
   `fgthwd`, `nwfrzz` release, `watpdg`/`watbtm` capacity-routed overflow, and
   non-amplifying repeated freeze/thaw conservation are contract-authorized.
+- `SC-SNOWFREEZE-001` is now v64 after Dc1. Seasonal `tmpbl`/`Qdry`
+  lower-front heat, in-hour thaw resistance feedback, and bounded fine-theta
+  lower-bound roundoff canonicalization are contract-authorized. The stable
+  lower-front heat surrogate remains retired.
 
 Validation status before post-review cohort validation:
 
@@ -236,17 +240,36 @@ Increment Dc result:
 - Years 2-6 independent WAT ledger regressed to max abs
   `0.2706094484356498 mm`; p43 year 2 regressed to
   `-0.24479853886504088 mm`.
-- Depth correlation improved to median `0.6595441080376998`, but depth and
+- Depth correlation improved to median `0.6595441080376979`, but depth and
   duration regressed: mean max depth `1062.5086535449198 mm`, one profile pin,
   `0/43` prefixes inside the `240..503.2 mm` envelope, and median frozen
   duration `+751` days versus legacy.
-- The Dc production, contract, and test edits were backed out. The accepted
-  production boundary remains Db / `SC-SNOWFREEZE-001` v63.
+- The Dc production, contract, and test edits were backed out. At the post-Dc
+  backout boundary, production returned to Db / `SC-SNOWFREEZE-001` v63 until
+  the split Dc1 pass.
 
-First actionable item: split Dc. Reintroduce seasonal lower-front heat as an
-accounting-preserving increment before changing thaw timing again, and do not
-advance unless years 2-6 conservation remains at the repaired independent
-ledger noise floor. Do not loosen the Db/C1b/C2 capacity, overflow,
-publication, or conservation guards. Do not advance to MOFE until the cohort is
-`43/43`, the year-7 boundary item stays explained or eliminated, and the full
-depth/duration acceptance gate passes without comparator tuning.
+Increment Dc1 result:
+
+- Codex landed the split accounting-preserving Dc1 pass without the comparator
+  subagent per user quota direction.
+- The fresh Dc1 cohort at
+  `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z` ran `43/43` clean with
+  `43/43` WAT outputs.
+- Years 2-6 independent `Total-Soil + frozwt` closure returned to
+  WAT-publication texture: max abs residual
+  `6.471338602487275e-07 mm`; p43 year 2 is
+  `-1.1013412404281553e-13 mm`.
+- D3 remains open: mean maximum depth is `1146.5109665924424 mm`, one prefix
+  pins at the profile bound, no prefix is inside the legacy `240..503.2 mm`
+  envelope, median depth correlation is `0.6415921721982907`, and frozen
+  duration over-persists with median open-minus-legacy `+567` days.
+- `SC-SNOWFREEZE-001` v64 is the accepted production boundary.
+
+First actionable item: execute Increment Dd. Run the diagnostic
+legacy-snow-forced frost certification to decide whether the remaining
+depth/duration defect is F4 snow-insulation/depth-density forcing or still
+frost-side. Do not loosen the Db/C1b/C2/Dc1 capacity, overflow, publication,
+seasonal-heat, thaw-feedback, or conservation guards. Do not advance to MOFE
+until the cohort is `43/43`, the year-7 boundary item stays explained or
+eliminated, and the full depth/duration acceptance gate passes or is assigned
+to a documented snow-density handoff with evidence.

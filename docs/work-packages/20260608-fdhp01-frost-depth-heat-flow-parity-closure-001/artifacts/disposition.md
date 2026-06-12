@@ -9,13 +9,14 @@ Date: 2026-06-12
 ## Outcome
 
 FDHP01 is executed but held. The D2 storage/publication defect is closed by the
-layered-state continuation. D3 Increments A/B/C1b/C2/Da/Db landed the
+layered-state continuation. D3 Increments A/B/C1b/C2/Da/Db/Dc1 landed the
 fine-sublayer state, freeze arms, capacity/overflow ownership, thaw arms,
-energy localization, and in-hour freeze-resistance feedback. Db fixes the
-profile-depth runaway and brings maximum depths into the legacy envelope, but
-D3 depth/duration parity remains open under
-`SC-SNOWFREEZE-001#INV-SNOWFREEZE-006` because correlation and frozen-duration
-acceptance are still red.
+energy localization, in-hour freeze-resistance feedback, seasonal lower-front
+heat, and in-hour thaw resistance feedback. Db fixed the profile-depth runaway
+under its surrogate lower-front heat; Dc1 restores seasonal heat and repairs
+the Dc accounting leak, but D3 depth/duration parity remains open under
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-006` because depth envelope, profile pinning,
+and frozen-duration acceptance are red again under the F4 snow-insulation seam.
 
 Static:
 
@@ -56,6 +57,10 @@ Static:
   conservation.
 - `SC-SNOWFREEZE-001` v63 binds freeze-active `frzng` to in-hour
   surface-resistance/`Qsrf` recomputation after each fine-layer front advance.
+- `SC-SNOWFREEZE-001` v64 retires the stable lower-front heat surrogate in
+  favor of legacy seasonal `tmpbl`/`Qdry`, requires in-hour thaw resistance
+  feedback, and authorizes only bounded fine-theta lower-bound roundoff
+  canonicalization.
 - Increment B mutates `slfsd`/`slsic`/`slsw`/`nwfrzz` for freeze-active hours
   (`frzng`/`frznw` lineage) and aggregates per-layer frozen depth/water from
   the same fine state.
@@ -99,6 +104,9 @@ Ran:
   comparisons locally without the comparator subagent per user quota direction.
 - Increment Db 43-prefix cohort execution was clean (`43/43`) at
   `/tmp/fdhp01_increment_db_cohort_20260612T051524Z`; the parent ran
+  comparisons locally without the comparator subagent per user quota direction.
+- Increment Dc1 43-prefix cohort execution was clean (`43/43`) at
+  `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z`; the parent ran
   comparisons locally without the comparator subagent per user quota direction.
 
 ## Closure Evidence
@@ -383,10 +391,39 @@ Ran:
   prefixes inside the `240..503.2 mm` maximum-depth envelope, and median
   open-minus-legacy frozen duration `+751` days.
 - The only acceptance-direction movement was depth correlation, which improved
-  to median `0.6595441080376998`; that result is evidence for the next scoped
+  to median `0.6595441080376979`; that result is evidence for the next scoped
   split, not an acceptance claim because conservation and depth fail.
-- The Dc production, contract, and test edits were backed out. The accepted
-  production boundary remains Increment Db / `SC-SNOWFREEZE-001` v63.
+- The Dc production, contract, and test edits were backed out. At the post-Dc
+  backout boundary, production returned to Increment Db /
+  `SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
+
+## Increment Dc1 Gate Evidence
+
+- Persisted compact reports:
+  - `d3-increment-dc1-accounting-repair-20260612.md`
+  - `fdhp01_increment_dc1_execution_summary_20260612.json`
+  - `fdhp01_increment_dc1_run_status_20260612.tsv`
+  - `fdhp01_increment_dc1_annual_closure_residuals_20260612.csv`
+  - `fdhp01_increment_dc1_depth_metrics_20260612.csv`
+  - `fdhp01_increment_dc1_frozwt_frdp_ratio_20260612.csv`
+  - `fdhp01_increment_dc1_activation_summary_20260612.csv`
+- Dc1 ran without the comparator subagent per user quota direction. The full
+  local cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z`.
+- Years 2-6 `Total-Soil + frozwt` closure returned to WAT-publication texture:
+  max abs residual `6.471338602487275e-07 mm`; p1 max abs
+  `9.41296818268711e-10 mm`; p20 max abs
+  `1.0458300891968975e-13 mm`; p43 year 2
+  `-1.1013412404281553e-13 mm`.
+- Depth/duration remains red and is not Dc1 acceptance evidence: mean maximum
+  depth `1146.5109665924424 mm`, median max `1110.3558249519133 mm`, `1/43`
+  profile-bound pins, `0/43` prefixes inside the legacy `240..503.2 mm`
+  envelope, median depth correlation `0.6415921721982907`, and median frozen
+  duration residual `+567` days.
+- The accepted production boundary is Increment Dc1 / `SC-SNOWFREEZE-001`
+  v64. The next action is the Dd/F4 discriminator: certify whether forcing
+  openWEPP frost with legacy snow depth/density closes depth/duration while
+  preserving Dc1 accounting.
 
 ## D3 Attempt Evidence
 
@@ -419,9 +456,11 @@ The C1 attempt adds that capacity enforcement alone is insufficient unless the
 overflow surfaces are reconciled with the WAT balance identity. C1a supplied
 that accounting specification, C1b lands the water-side infrastructure with
 conservation intact, C2 lands thaw arms without reopening D2, Da localizes the
-stale freeze-resistance defect, and Db fixes that stale in-hour resistance
-feedback. The years 2-6 conservation gate remains the hard stop before any
-depth/duration acceptance claim, now using the repaired independent WAT flux
-ledger. The next required D3 increment is freeze/thaw seasonal persistence and
-timing parity under the fine-layer heat-flow state; do not loosen Db/C1b/C2
-capacity, overflow, publication, or conservation guards.
+stale freeze-resistance defect, Db fixes that stale in-hour resistance
+feedback, failed Dc proves seasonal/thaw timing cannot reopen D2, and Dc1
+lands the accounting-preserving seasonal/thaw split. The years 2-6
+conservation gate remains the hard stop before any depth/duration acceptance
+claim, now using the repaired independent WAT flux ledger. The next required
+D3 increment is the Dd/F4 legacy-snow-forced frost certification; do not
+loosen Db/C1b/C2/Dc1 capacity, overflow, publication, seasonal-heat,
+thaw-feedback, or conservation guards.

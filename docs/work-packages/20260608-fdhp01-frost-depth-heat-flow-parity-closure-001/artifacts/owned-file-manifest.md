@@ -24,7 +24,10 @@ Date: 2026-06-12
     sandwich geometry, `fgthwd`, `nwfrzz` release, and non-amplifying
     repeated freeze/thaw conservation. Increment Db adds v63, binding
     freeze-active `frzng` to in-hour surface-resistance/`Qsrf` recomputation
-    after each fine-layer front advance.
+    after each fine-layer front advance. Increment Dc1 adds v64, retiring the
+    stable lower-front heat surrogate in favor of legacy seasonal
+    `tmpbl`/`Qdry`, requiring in-hour thaw resistance feedback, and
+    authorizing only bounded fine-theta lower-bound roundoff canonicalization.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -52,7 +55,9 @@ Date: 2026-06-12
     scalar/layer egress reconciliation from the owned fine state. Increment Db
     adds in-hour freeze-front resistance feedback so the freeze loop
     recomputes surface resistance after each fine-layer advance before
-    consuming additional freezing time.
+    consuming additional freezing time. Increment Dc1 adds seasonal
+    lower-front heat from the legacy monthly temperature wave, in-hour thaw
+    resistance feedback, and bounded fine-theta lower-bound canonicalization.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
@@ -62,6 +67,9 @@ Date: 2026-06-12
     depth/`frzw` state fields. Increment A adds shadow fine-layer diagnostic
     structs and symbol roots. Increment B adds hourly `frzflg` diagnostics.
     Increment C1b adds `watpdg`/`watbtm` runtime overflow fields and symbols.
+    Increment Dc1 replaces the stable lower-front heat constants with seasonal
+    lower-front heat, fallback conductivity, damping-depth, and fine-theta
+    boundary constants.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
   - Frost writeback bounds now use physical profile depth and persist layer
     frozen-depth/`frzw` state. Increment A writes the shadow aggregate,
@@ -133,15 +141,17 @@ Date: 2026-06-12
     adds bottom-thaw, top-thaw, sandwich geometry, `fgthwd`, and multicycle
     non-amplification vectors. Increment Db adds a within-hour freeze-front
     resistance feedback vector that fails on stale start-hour `Qsrf` spending.
+    Increment Dc1 adds seasonal lower-front heat, thaw-feedback, and
+    fine-theta boundary vectors.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v63 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v64 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v63 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v64 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
@@ -244,3 +254,10 @@ Date: 2026-06-12
 - `fdhp01_increment_dc_depth_metrics_20260612.csv`
 - `fdhp01_increment_dc_frozwt_frdp_ratio_20260612.csv`
 - `fdhp01_increment_dc_activation_summary_20260612.csv`
+- `d3-increment-dc1-accounting-repair-20260612.md`
+- `fdhp01_increment_dc1_execution_summary_20260612.json`
+- `fdhp01_increment_dc1_run_status_20260612.tsv`
+- `fdhp01_increment_dc1_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_dc1_depth_metrics_20260612.csv`
+- `fdhp01_increment_dc1_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_dc1_activation_summary_20260612.csv`

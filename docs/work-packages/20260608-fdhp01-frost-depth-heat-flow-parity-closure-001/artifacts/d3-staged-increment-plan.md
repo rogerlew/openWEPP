@@ -477,11 +477,11 @@ materially: years 2-6 independent additive-storage residual regressed to
 `1062.5086535449198 mm`, one prefix pinned at the profile bound, `0/43`
 prefixes remained inside the `240..503.2 mm` maximum-depth envelope, and frozen
 duration over-persisted by median `+751` days. Depth correlation improved to
-median `0.6595441080376998`, but that improvement is not acceptable while D2
+median `0.6595441080376979`, but that improvement is not acceptable while D2
 closure and the depth envelope fail. See
 `d3-increment-dc-seasonal-thaw-20260612.md` and the
-`fdhp01_increment_dc_*_20260612` reports. The accepted production boundary
-remains Db/`SC-SNOWFREEZE-001` v63.
+`fdhp01_increment_dc_*_20260612` reports. At the post-Dc backout boundary,
+production returned to Db/`SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
 
 ## Dispatch instructions
 
@@ -540,6 +540,16 @@ the leak, D2 ledger at the Db floor (`~2e-7` texture), the p35 fine-theta
 boundary canonicalization handled as a typed, contract-noted bound (not a
 silent clamp). Depth/duration metrics are recorded but NOT gated in Dc1
 (they are known-coupled to F4).
+
+**Dc1 execution result (2026-06-12):** Dc1 landed at `executed-hold`. The
+local parent-run `43/43` cohort at
+`/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z` restores years 2-6
+independent `Total-Soil + frozwt` closure to WAT-publication texture
+(`6.471338602487275e-07 mm` max abs; p43 year 2
+`-1.1013412404281553e-13 mm`). Depth/duration remains red and recorded only:
+mean max depth `1146.5109665924424 mm`, `1/43` profile pins, median
+correlation `0.6415921721982907`, and median frozen-duration residual
+`+567` days. Proceed to Increment Dd/F4; do not claim D3 closure from Dc1.
 
 ## Increment Dd — legacy-snow-forced frost certification (diagnostic)
 

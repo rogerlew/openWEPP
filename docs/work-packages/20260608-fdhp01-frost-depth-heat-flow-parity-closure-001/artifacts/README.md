@@ -154,6 +154,18 @@ Evidence and disposition artifacts for
   `fdhp01_increment_dc_activation_summary_20260612.csv`: generated Dc failed
   attempt cohort and independent ledger reports from
   `/tmp/fdhp01_increment_dc_cohort_20260612T062840Z`.
+- `d3-increment-dc1-accounting-repair-20260612.md`: staged Increment Dc1
+  landing evidence; records the seasonal lower-front heat, in-hour thaw
+  resistance feedback, fine-theta boundary repair, clean local cohort, and
+  retained D3 hold.
+- `fdhp01_increment_dc1_execution_summary_20260612.json`,
+  `fdhp01_increment_dc1_run_status_20260612.tsv`,
+  `fdhp01_increment_dc1_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_dc1_depth_metrics_20260612.csv`,
+  `fdhp01_increment_dc1_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_dc1_activation_summary_20260612.csv`: generated Dc1
+  cohort and independent ledger reports from
+  `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

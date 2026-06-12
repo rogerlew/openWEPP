@@ -395,12 +395,44 @@ D3 remains open because correlation and frozen-duration acceptance still fail.
 | Profile-bound pinning | Fail/regressed, `1/43` prefixes pinned; minimum margin `2.2737367544323206e-13 mm`. |
 | D3 depth envelope acceptance | Fail/regressed, `0/43` maximum depths inside the legacy `240..503.2 mm` envelope; mean max `1062.5086535449198 mm`, median max `1044.4140627263175 mm`, range `763.4002205550781..1799.9999999999998 mm`. |
 | `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.7044204014819017`, median `0.6225055509763039`. |
-| D3 depth-correlation acceptance | Directionally improved, median `0.6595441080376998`, but not accepted because D2 and depth-envelope gates fail. |
+| D3 depth-correlation acceptance | Directionally improved, median `0.6595441080376979`, but not accepted because D2 and depth-envelope gates fail. |
 | D3 frozen-duration acceptance | Fail/regressed, open-minus-legacy median `+751` days, mean `+749.3720930232558` days, range `+724..+794` days. |
 | Days above `200 mm` watch | Fail/regressed, full-WAT median `1306` days. |
 
 Increment Dc disposition: failed and backed out. Dc proves the F1/F2 one-pass
 change can improve timing correlation, but it reopens additive storage and
-depth/duration defects. The production boundary remains Db; the next increment
-must split seasonal lower-front heat from thaw-timing dynamics and preserve the
-Db independent WAT ledger floor before any D3 acceptance claim.
+depth/duration defects. At the post-Dc backout boundary, production returned
+to Db and the next increment had to split seasonal lower-front heat from
+thaw-timing dynamics while preserving the Db independent WAT ledger floor
+before any D3 acceptance claim.
+
+## D3 Increment Dc1 Accounting Repair Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/PyArrow comparisons. |
+| Pre-fix Dc1 red tests | Failed as intended: seasonal lower-front heat still used the `14.7 W/m2` surrogate, one-hour thaw spent stale start-hour resistance, and p35 lower-bound theta roundoff tripped a material guard. |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_dc1_ -- --nocapture` | Pass, 4 tests |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 38 tests |
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass, release binary SHA `95491b24f36065c28f90ca7e55bfceb39cf14ac2c270ddfd207eb750a2e4a536` |
+| `cargo fmt --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass, `advisories ok, bans ok, licenses ok, sources ok` |
+| `cargo test -p openwepp --test hphys0319_fixed_baseline_stmtim_observe_contract` | Pass after `SC-SNOWFREEZE-001` v64 |
+| `cargo test -p openwepp --test hphys0320_stmtim_start_time_source_line_contract` | Pass after `SC-SNOWFREEZE-001` v64 |
+| 43-prefix `algebraic-radium` hourly frost-on cohort | Pass, `43/43` clean exits; run root `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z`. |
+| WAT outputs | Pass, `43/43`. |
+| Independent annual `Total-Soil + frozwt` closure, years 2-6 | Pass at WAT-publication texture, max abs residual `6.471338602487275e-07 mm` (`p11`, year 4). |
+| p1/p20/p43 closure spot checks | Pass: p1 max abs `9.41296818268711e-10 mm`; p20 max abs `1.0458300891968975e-13 mm`; p43 year 2 `-1.1013412404281553e-13 mm`. |
+| Profile-bound pinning | Recorded only for Dc1; still red for D3, `1/43` prefixes pinned and minimum margin `2.2737367544323206e-13 mm`. |
+| D3 depth envelope acceptance | Recorded only for Dc1; fail, `0/43` maximum depths inside the legacy `240..503.2 mm` envelope; mean max `1146.5109665924424 mm`, median max `1110.3558249519133 mm`. |
+| `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.7889919205846698`, median `0.7316780606012344`. |
+| D3 depth-correlation acceptance | Recorded only for Dc1; directionally improved to median `0.6415921721982907` but not accepted while depth/duration fail. |
+| D3 frozen-duration acceptance | Recorded only for Dc1; fail/regressed, open-minus-legacy median `+567` days. |
+| Days above `200 mm` watch | Fail/watch, full-WAT median `1126` days. |
+
+Increment Dc1 disposition: landed at `executed-hold`. Dc1 repairs the Dc
+additive-storage leak and preserves D2/p2 closure at WAT-publication numerical
+texture, but D3 remains open. Depth/duration evidence is now held for the F4
+snow-insulation/depth-duration discriminator before MOFE closure.

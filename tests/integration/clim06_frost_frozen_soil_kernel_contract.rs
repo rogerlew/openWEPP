@@ -20,6 +20,12 @@ NODE IMPOUNDMENT 1 H 0 0 0 C 2 0 0 I 0 0 0
 const CLIM06_TEST_TOLERANCE: f64 = 1.0e-6;
 const EXPECTED_DTHAW: f64 = 0.0;
 const EXPECTED_NFT: f64 = 1.0;
+const DEFAULT_MONTHLY_TMAX_C: [f64; 12] = [
+    5.0, 7.0, 11.0, 16.0, 21.0, 25.0, 27.0, 26.0, 22.0, 16.0, 10.0, 6.0,
+];
+const DEFAULT_MONTHLY_TMIN_C: [f64; 12] = [
+    -4.0, -2.0, 1.0, 5.0, 9.0, 13.0, 15.0, 14.0, 10.0, 5.0, 1.0, -3.0,
+];
 
 #[allow(clippy::too_many_lines)]
 fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
@@ -27,6 +33,24 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
 
     state_surface.insert(BoundarySymbol::from("nsl"), BoundaryValue::scalar(2.0));
     state_surface.insert(BoundarySymbol::from("solthk"), BoundaryValue::scalar(0.3));
+    state_surface.insert(BoundarySymbol::from("day"), BoundaryValue::scalar(15.0));
+    state_surface.insert(BoundarySymbol::from("mon"), BoundaryValue::scalar(1.0));
+    state_surface.insert(BoundarySymbol::from("year"), BoundaryValue::scalar(1.0));
+    for (month_index, (obmaxt, obmint)) in DEFAULT_MONTHLY_TMAX_C
+        .iter()
+        .zip(DEFAULT_MONTHLY_TMIN_C.iter())
+        .enumerate()
+    {
+        let month = month_index + 1;
+        state_surface.insert(
+            BoundarySymbol::from(format!("obmaxt_{month:04}")),
+            BoundaryValue::scalar(*obmaxt),
+        );
+        state_surface.insert(
+            BoundarySymbol::from(format!("obmint_{month:04}")),
+            BoundaryValue::scalar(*obmint),
+        );
+    }
     state_surface.insert(
         BoundarySymbol::from("solwpv"),
         BoundaryValue::scalar(2006.0),
@@ -659,6 +683,13 @@ fn insert_state_scalar(surface: &mut HillslopeWritebackSurface, symbol: &str, va
         .insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
 }
 
+fn override_monthly_temperatures(surface: &mut HillslopeWritebackSurface, monthly_mean_c: f64) {
+    for month in 1..=12 {
+        insert_state_scalar(surface, &format!("obmaxt_{month:04}"), monthly_mean_c);
+        insert_state_scalar(surface, &format!("obmint_{month:04}"), monthly_mean_c);
+    }
+}
+
 fn remove_state_prefixes(surface: &mut HillslopeWritebackSurface, prefixes: &[&str]) {
     surface.state_surface.retain(|symbol, _| {
         !prefixes
@@ -1022,8 +1053,9 @@ fn assert_close(actual: f64, expected: f64, context: &str) {
 fn fdhp01_fine_sublayer_frwatc_round_trip_conserves_mass() {
     let mut surface = seeded_clim06_surface(true);
     seed_increment_a_shadow_fine_state(&mut surface, 0.0);
-    insert_state_scalar(&mut surface, "tmax", -0.252);
-    insert_state_scalar(&mut surface, "tmin", -0.252);
+    override_monthly_temperatures(&mut surface, -20.0);
+    insert_state_scalar(&mut surface, "tmax", 0.0);
+    insert_state_scalar(&mut surface, "tmin", 0.0);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
@@ -1601,6 +1633,126 @@ fn fdhp01_c2_multicycle_freeze_thaw_does_not_amplify_storage_without_input() {
     assert!(
         max_total <= initial_total + 1.0e-5,
         "multi-cycle thaw must not recreate the prior geometric-amplification signature"
+    );
+}
+
+#[test]
+fn fdhp01_dc1_lower_front_heat_uses_seasonal_tmpbl_zero_gate() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    override_monthly_temperatures(&mut surface, -20.0);
+    insert_state_scalar(&mut surface, "day", 32.0);
+    insert_state_scalar(&mut surface, "mon", 2.0);
+    insert_state_scalar(&mut surface, "tmax", 0.0);
+    insert_state_scalar(&mut surface, "tmin", 0.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "cold seasonal tmpbl vector should execute successfully; status={:?}",
+        response.status
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.quf_w_m2_0001"),
+        0.0,
+        "tmpbl <= 0 must zero-gate lower-front qdry",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        0.0,
+        "neutral surface heat plus zero qdry must be balanced",
+    );
+}
+
+#[test]
+fn fdhp01_dc1_lower_front_heat_matches_legacy_monthly_wave_fallback() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    override_monthly_temperatures(&mut surface, 15.0);
+    insert_state_scalar(&mut surface, "day", 32.0);
+    insert_state_scalar(&mut surface, "mon", 2.0);
+    insert_state_scalar(&mut surface, "tmax", 0.0);
+    insert_state_scalar(&mut surface, "tmin", 0.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "warm seasonal tmpbl vector should execute successfully; status={:?}",
+        response.status
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.quf_w_m2_0001"),
+        3.0,
+        "constant 15 degC monthly curve with legacy 0.2 fallback conductivity must publish qdry=3 W/m2",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        4.0,
+        "neutral surface heat plus positive qdry over existing frost must dispatch bottom thaw",
+    );
+}
+
+#[test]
+fn fdhp01_dc1_top_thaw_recomputes_resistance_within_hour() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    override_monthly_temperatures(&mut surface, -20.0);
+    insert_state_scalar(&mut surface, "day", 32.0);
+    insert_state_scalar(&mut surface, "mon", 2.0);
+    insert_state_scalar(&mut surface, "tmax", -20.0);
+    insert_state_scalar(&mut surface, "tmin", -20.0);
+    for hour in 1..=24 {
+        insert_state_scalar(
+            &mut surface,
+            &format!("winter.hourly.air_temp_c_{hour:04}"),
+            if hour == 1 { 80.0 } else { 0.0 },
+        );
+    }
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "top-thaw resistance-feedback vector should execute successfully; status={:?}",
+        response.status
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        3.0,
+        "positive surface heat over existing frost must dispatch top thaw",
+    );
+    let thdp = require_response_state_update(&response, "frost.runtime_thdp_m");
+    assert!(
+        thdp > CLIM06_TEST_TOLERANCE && thdp <= 0.060,
+        "top thaw must recompute resistance within the hour instead of spending start-hour flux across the layer; thdp={thdp}"
+    );
+}
+
+#[test]
+fn fdhp01_dc1_persisted_fine_theta_roundoff_canonicalizes_at_lower_bound() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    override_monthly_temperatures(&mut surface, -20.0);
+    insert_state_scalar(&mut surface, "day", 32.0);
+    insert_state_scalar(&mut surface, "mon", 2.0);
+    insert_state_scalar(&mut surface, "tmax", -5.0);
+    insert_state_scalar(&mut surface, "tmin", -5.0);
+    insert_state_scalar(&mut surface, "thetdr_0002", 0.175);
+    insert_state_scalar(
+        &mut surface,
+        &fine_frost_symbol("frost.runtime_slsw_theta", 2, 6),
+        0.174_999_999_971_669_4,
+    );
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "p35-class lower-bound theta roundoff should canonicalize, status={:?}",
+        response.status
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_slsw_theta_0002_0006"),
+        0.175,
+        "sub-residual lower-bound theta roundoff must publish at the residual bound",
     );
 }
 
