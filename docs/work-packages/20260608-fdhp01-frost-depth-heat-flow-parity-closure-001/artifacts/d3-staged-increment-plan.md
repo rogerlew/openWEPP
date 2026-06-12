@@ -485,7 +485,7 @@ remains Db/`SC-SNOWFREEZE-001` v63.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
@@ -498,3 +498,71 @@ end-to-end."* Required reading order for every increment pass:
 An increment that cannot meet its gates ends exactly like `910ad7f2`:
 backed out, evidence recorded, hold preserved — but the failure is then
 localized to one increment's seam instead of the whole port.
+
+## Dc outcome (2026-06-12, `c979b990`) + F4 — the snow-insulation attribution
+
+Dc failed its gates and was backed out (D2 regressed to `0.27 mm`; depth
+overshot to mean `1063 mm`; duration flipped to `+751` days) — but
+correlation jumping to `0.66` confirmed the seasonal-wave mechanism, and the
+overshoot prompted the decisive analysis.
+
+**F4 (Claude, Ran — legacy `H1.winter.dat` parse vs openWEPP cohort/trace):**
+midwinter p1/H1 comparison: SWE **agrees** (legacy median `64.1 mm` vs
+openWEPP `59.4`), but legacy snow depth is `258 mm` at density `250 kg/m³`
+while openWEPP carries `156 mm` at implied `~381 kg/m³`. Density feeds the
+Sturm conductivity (legacy `~0.088` vs openWEPP `~0.222 W/m/K`), so snow
+insulation is `~2.9` vs `~0.7 m²C/W` — **~4× less in openWEPP**. At −10 °C
+surface that is `qhtout ≈ 2.6` vs `≈ 9 W/m²`: a ~3.5× freeze overdrive that
+integrates to ~1000 mm/winter — quantitatively reproducing the Dc depth
+result. The energy-budget mystery is closed: legacy's frost is arrested by
+snow insulation; openWEPP's snow **density/settling evolution** is too
+dense (Stage-2 lineage, `snowd.for`), even though snow **mass** (SWE)
+conserves correctly. Db's depth agreement was the `14.7 W/m²` floor
+compensating for the missing insulation.
+
+Consequences for sequencing:
+
+1. **The D3 depth/duration acceptance is coupled to snow density/depth
+   fidelity** — a dependency outside this package's envelope (snow
+   magnitude is Stage-2-deferred, protected boundary). The frost state
+   machine itself (A…C2, Db) is structurally sound and conserving.
+2. The coupling must be **proven, then escalated** — not absorbed by
+   tuning frost terms to compensate (that would be the same class of error
+   as the `14.7` floor).
+
+## Increment Dc1 — thaw/seasonal accounting repair (bounded)
+
+Fix the `~0.27 mm` years 2–6 additive-storage leak the Dc thaw/seasonal
+coupling introduced (per the Dc disposition: do not proceed to any timing
+work while that residual exists). Land the seasonal `tmpbl` wave and the
+within-hour thaw feedback **behind the conservation gate**: red tests for
+the leak, D2 ledger at the Db floor (`~2e-7` texture), the p35 fine-theta
+boundary canonicalization handled as a typed, contract-noted bound (not a
+silent clamp). Depth/duration metrics are recorded but NOT gated in Dc1
+(they are known-coupled to F4).
+
+## Increment Dd — legacy-snow-forced frost certification (diagnostic)
+
+The clean discriminator for F4, and the certification gate for this
+package's frost physics independent of snow fidelity:
+
+- Method: diagnostic-only harness (env-gated, not landed) that **forces
+  openWEPP's frost inputs with legacy's snow depth/density series** (parsed
+  from `H*.winter.dat`, on-disk for all 43 prefixes) while leaving all
+  openWEPP frost physics (Db + Dc1) live.
+- Expected outcome if F4 is the whole story: depth falls into the
+  240–503 mm envelope, duration residual collapses, correlation holds at
+  the Dc-demonstrated `~0.66+` level.
+- On that outcome: **the D3 frost port is certified** — FDHP01 can close
+  with an explicit declared boundary: frost physics complete and correct;
+  residual depth/duration divergence attributed with evidence to the snow
+  density/settling model; a defect-shaped handoff names the snow
+  density/depth-split item (NOT melt/partition magnitude — SWE conserves)
+  for promotion from the Stage-2 backlog, mirroring how FDMC01 promoted
+  frost depth when it became load-bearing.
+- If the forced run does NOT close the gap: the residual is frost-side
+  after all; it becomes the next scoped increment with the forced-run
+  evidence as localization.
+- Promotion of the snow density/settling slice is an operator/roadmap
+  decision (science-steered), not an autonomous rescope of the Stage-2
+  protected boundary.
