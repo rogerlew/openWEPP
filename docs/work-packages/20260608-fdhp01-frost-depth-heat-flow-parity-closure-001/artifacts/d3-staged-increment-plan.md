@@ -338,6 +338,22 @@ unit conversion. Then run the full package D3 acceptance gate (depth in the
 collapsing, conservation at noise on an independent ledger) and, on pass, the
 closing obligations (ROADMAP item 1, README 7f, handoff naming MOFE).
 
+Two additional Db obligations (Claude review, 2026-06-12):
+
+- **Strengthen scope test 3 to within-hour.** Its existing across-hour form
+  was green on C2 while the front advanced metres inside a single hour —
+  the red test must assert that one hour of sustained cooling on a
+  thin-front profile advances a bounded, resistance-limited number of
+  sublayers, with `|qhtout|` decaying as the frozen path grows (the
+  y1/d1/h2 `35,603 W/m²` and y5/d83/h2 `1.0e6 W/m²` traces are the
+  regression fixtures).
+- **Re-pin the closure gate explicitly.** The universal rule still says
+  `≤ ~3e-11 mm`, while the repaired independent ledger reads years 2–6 max
+  `1.38e-7 mm`, dispositioned as WAT-publication numerical texture. Db must
+  either restore the `3e-11`-grade floor or amend the universal-rule gate
+  value with that attribution — the rule text and the accepted evidence
+  must not silently disagree.
+
 ## Dispatch instructions
 
 Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db> of
