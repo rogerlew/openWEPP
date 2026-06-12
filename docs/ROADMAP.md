@@ -60,16 +60,18 @@ remains deferred (item 2) and is judged after this closes. The active work-packa
 handoff must name MOFE as its next item for this to bind.
 
 Development substrate (operator decision 2026-06-12):
-`/wc1/runs/ar/arboreal-dendrite/wepp` — a graded OFE ladder (7×1, 5×2, 5×3,
-3×4, 16×5 OFE hillslopes; one 15-OFE hillslope excluded/observe-only), with
-36 legacy outputs on disk. The ladder allows routing closure to be validated
-per OFE count.
+`/wc1/runs/ar/arboreal-dendrite/wepp` — a graded OFE ladder (36 hillslope
+runs: 7×1, 5×2, 5×3, 3×4, 16×5 OFE; `pw0.slp` at 15 OFEs is the
+watershed-representative profile, not a hillslope run), with 36 legacy
+outputs on disk. The ladder allows routing closure to be validated per OFE
+count.
 
 **Comparator posture for this rung (stronger than the default ADR-0017
 flag):** legacy WEPP has *known water-balance defects that grow with OFE
 count, typically appearing above ~10 OFEs* — so the 1-5 development ladder
-is expected legacy-clean (verified, not assumed, in M-A) and the 15-OFE far
-point expected-defective (operator knowledge; corroborated by the
+is expected legacy-clean (verified, not assumed, in M-A); the >10-OFE
+defect domain is unreachable on this cohort and its demonstration is a
+named follow-on (operator knowledge; corroborated by the
 legacy-replay MOFE closure-audit triage at wepppy
 `docs/work-packages/20260502_mofe_flagged_hillslope_triage` — a defect-family
 taxonomy of legacy's own flagged hillslopes). Legacy is therefore a weak flag

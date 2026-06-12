@@ -42,13 +42,13 @@ agent memory `staged-increment-port-template`). Companion scope authority:
    calibration): from the on-disk `H*.wat.dat` outputs, compute legacy's
    own per-element and hillslope-total closure per OFE count (1→5). This
    turns the operator's "legacy degrades with OFE count, typically above
-   ~10 OFEs" into a measured curve. Expected shape (verify, don't assume):
-   clean at 1-5 — which would make legacy a usable flag on the development
-   ladder — defective at the 15-OFE far point; cross-reference the wepppy
-   MOFE triage defect families. The 15-OFE hillslope is included in this
-   measurement (observe-only elsewhere) as the far point of the curve, and
-   is the eventual demonstration target where openWEPP's closure must
-   exceed the legacy ceiling.
+   ~10 OFEs" into a measured curve over the reachable range. Expected
+   shape (verify, don't assume): clean at 1-5, which would make legacy a
+   usable flag for this package; cross-reference the wepppy MOFE triage
+   defect families. **`pw0.slp` (15 OFEs) is the watershed-representative
+   profile, not a hillslope run (operator, 2026-06-12) — it is not part of
+   the cohort.** The >10-OFE defect demonstration is a named follow-on on
+   a high-OFE substrate or the watershed step.
 3. **Routing scope artifact** (`mofe-routing-port-scope.md`, the FDHP01
    scope-artifact shape): legacy state-machine map with lifecycle columns —
    the per-plane loop, runoff → run-on hand-off symbols (`runoff`,
@@ -93,9 +93,9 @@ scope shows separable seams) per M-A sizing.
 
 ## Increment M-D — acceptance on the ladder + closure
 
-- Full-cohort acceptance per OFE count; the 15-OFE hillslope observed and
-  recorded (not gated); totalwatsed3 end-to-end audit on routed output (the
-  WBVAL06/6a deferral resolved or explicitly re-stated).
+- Full-cohort acceptance per OFE count (the 36-run 1-5 ladder);
+  totalwatsed3 end-to-end audit on routed output (the WBVAL06/6a deferral
+  resolved or explicitly re-stated).
 - On pass: package complete; ROADMAP item 1 removed; README narrative
   updated; handoff names the next mechanism; defect-shaped items for
   anything attributed outward (per-OFE-count legacy defect documentation

@@ -17,9 +17,11 @@ WB → frost → MOFE → snow ladder).
 
 `/wc1/runs/ar/arboreal-dendrite/wepp` — a graded OFE ladder:
 
-- 37 hillslopes: 7×1-OFE, 5×2-OFE, 5×3-OFE, 3×4-OFE, 16×5-OFE, plus one
-  15-OFE hillslope (**excluded from acceptance; observe-only**).
-- 36 legacy outputs on disk (`output/H*.wat.dat` etc.).
+- 36 hillslope runs: 7×1-OFE, 5×2-OFE, 5×3-OFE, 3×4-OFE, 16×5-OFE, with
+  36 legacy outputs on disk (`output/H*.wat.dat` etc.).
+- `pw0.slp` (15 OFEs) is the **watershed-representative profile, not a
+  hillslope run** (operator clarification 2026-06-12) — it is not part of
+  this package's cohort or gates.
 - The single-OFE subset is the continuity anchor: those 7 hillslopes must
   reproduce rung-1/rung-2 closure behavior unchanged, so routing error is
   never aliased into the settled vertical balance.
@@ -34,8 +36,10 @@ corroborated by the legacy-replay MOFE closure-audit triage at wepppy
 `docs/work-packages/20260502_mofe_flagged_hillslope_triage/`, which built a
 defect-family taxonomy from legacy's own flagged hillslopes). The 1–5-OFE
 development ladder is therefore **expected legacy-clean** — M-A verifies
-this rather than assumes it — while the 15-OFE hillslope is the
-**expected-defective far point**. Consequences:
+this rather than assumes it. The >10-OFE defect domain is **not reachable
+on this substrate's hillslope cohort** (`pw0` is the watershed profile, not
+a run); demonstrating openWEPP closure beyond the legacy ceiling is a
+follow-on on a high-OFE substrate or the watershed step. Consequences:
 
 - Legacy is a weak flag at low OFE counts and progressively untrustworthy as
   OFE count rises — in exactly the dimension this package builds.
@@ -45,14 +49,14 @@ this rather than assumes it — while the 15-OFE hillslope is the
   identity, all at the noise floor established by the FDHP01 arc.
 - The characterization increment must **measure** legacy's per-OFE-count
   closure from the on-disk outputs, so comparator trust is calibrated with
-  evidence per count rather than assumed. Expected shape: clean at 1–5
-  (making legacy a usable flag on the development ladder), defective at the
-  15-OFE far point. Where legacy fails its own closure, divergence from
-  legacy is *expected* and is not a finding against openWEPP.
-- **The differentiating target**: once the 1–5 ladder closes, openWEPP
-  holding the three identities at high OFE counts (the 15-OFE hillslope,
-  then larger surfaces) where legacy demonstrably cannot is the rung's
-  headline result — openWEPP exceeding, not matching, the legacy ceiling.
+  evidence per count rather than assumed. Expected shape: clean across the
+  1–5 ladder (making legacy a usable flag for this package). Where legacy
+  fails its own closure, divergence from legacy is *expected* and is not a
+  finding against openWEPP.
+- **The differentiating target (follow-on, not this package)**: openWEPP
+  holding the three identities at >10-OFE counts where legacy demonstrably
+  cannot — requires a high-OFE substrate or the watershed step; named in
+  the closure handoff, not gated here.
 - A legacy-vs-openWEPP divergence may still flag an openWEPP defect — but
   only the conservation identities adjudicate.
 
@@ -93,8 +97,6 @@ The staged plan artifact governs increments:
   frost state machine and energetics, snow conservation) are settled; any
   increment that moves single-OFE cohort outputs beyond noise is a hard
   stop. The 7 single-OFE hillslopes are the standing non-regression anchor.
-- **The 15-OFE hillslope is observe-only** (recorded, never gated) until the
-  1–5 ladder closes.
 - **No comparator-match tuning at any OFE count** (see posture above).
 - Snow physics-magnitude (Stage-2), F4 snow density/depth-split, p2-class
   carried items from FDHP01 — out of scope.
