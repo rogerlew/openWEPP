@@ -311,3 +311,36 @@ D2/p2 conservation, but D3 acceptance remains open. The C2 discriminating
 experiment establishes the remaining defect as freeze-side
 energy/resistance/front-advance behavior rather than missing thaw-storage
 plumbing.
+
+## D3 Increment Da Energy Characterization Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/DuckDB comparisons. |
+| Temporary p1 hourly trace | Pass; trace captured at `/tmp/fdhp01_increment_da_trace_20260612T043800Z`, then instrumentation was removed before production rebuild. |
+| Trace-marker source search | Pass; no Da trace marker remains under `crates/`. |
+| `cargo fmt --check` | Pass |
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` after trace removal | Pass, release binary SHA `0b3fed8561232d0de371a195e3f5a5609121ddd2253713b3fb0139add9ec8a4f`. |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 33 tests |
+| 43-prefix `algebraic-radium` hourly frost-on cohort | Pass, `43/43` clean exits; run root `/tmp/fdhp01_increment_da_cohort_20260612T044217Z`. |
+| WAT outputs | Pass, `43/43`. |
+| WAT row equality versus C2 | Pass, `43/43`; Da lands no production physics. |
+| Independent WAT closure ledger repair | Pass; Da table recomputes `RM + Irr - Interception - Q - Ep - Es - Er - Dp - latqcc - Tile` against annual `delta(Total-Soil + frozwt)` instead of reusing a tautological identity. |
+| Independent annual `Total-Soil + frozwt` closure, years 2-6 | Pass at repaired WAT-surface numerical floor, max abs residual `1.3813070645629644e-07 mm` (`p11`, year 5). |
+| p43 year-2 watch item | Cleared as WAT-surface numerical texture, residual `-1.912025027195341e-08 mm`. |
+| p1/p20 closure spot checks, years 2-6 | p1 max abs `1.1812772982011666e-13 mm`; p20 max abs `6.650235917504688e-14 mm`. |
+| Profile-bound pinning | Still unpinned, `0/43` prefixes; minimum margin `5.54557792097421 mm`. |
+| `frozwt/frdp` scalar-signature gate | Still pass, max per-prefix correlation `0.9441102161636825`, median `0.8831449770567324`. |
+| D3 depth envelope acceptance | Still fail; mean max depth `1793.52198510966 mm`, median `1793.649969637327 mm`, max `1794.4544220790258 mm`. |
+| D3 depth-correlation acceptance | Still fail; median correlation `-0.16722397856345997`. |
+| D3 frozen-duration acceptance | Still fail; open-minus-legacy median `111` days. |
+| Days above `200 mm` watch | Still fail/watch; median `815` days. |
+| `git diff --check` | Pass |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+
+Increment Da disposition: landed as diagnostic evidence at `executed-hold`. Da
+localizes the remaining D3 implementation target to the legacy `frzng` in-hour
+front-advance/resistance feedback: resistance must grow and `qhtout` must be
+recomputed after fine-layer front advance inside the hour. It does not support
+a W/m2-to-hour unit conversion defect, missing thaw storage, or low-latent
+energy as the primary root cause.

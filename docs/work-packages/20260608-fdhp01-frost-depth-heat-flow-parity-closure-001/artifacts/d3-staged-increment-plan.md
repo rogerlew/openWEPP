@@ -311,13 +311,32 @@ handling of low-`slsw` layers); (d) flux→energy unit error (W m⁻² × 3600 s
 per hour). Da also repairs the tautological closure ledger and explains or
 clears the p43 `1.9e-8` watch item.
 
+**Da execution result (2026-06-12):** Da landed as diagnostic evidence only,
+with no production physics changes. The temporary p1 trace was removed before
+the production release rebuild and cohort run. Static legacy inspection
+anchors the expected feedback to `frzng.for:235-240` and `:287-335`: within
+the 3600-second freeze loop, every front advance grows `qoutdm` by the newly
+frozen tilled/untilled path and recomputes `qhtout`. The p1 trace isolates the
+openWEPP defect to that missing in-hour resistance growth. On year 1 day 1 hour
+2, depth advances `0.000397484 -> 1.162927773 m` while resistance remains
+`0.000227134 m2 C/W`; projecting the same hour-end frozen path would raise
+resistance to `0.572822749 m2 C/W` and reduce `|qhtout|` from `35602.871` to
+`14.117 W/m2`. The independent WAT closure ledger is repaired: years 2-6 max
+abs residual is `1.3813070645629644e-07 mm`, p43 year 2 is
+`-1.912025027195341e-08 mm`, and both are recorded as WAT-publication numerical
+texture rather than a storage leak. The fresh Da cohort at
+`/tmp/fdhp01_increment_da_cohort_20260612T044217Z` ran `43/43` clean and is
+row-identical to C2, so the D3 acceptance failures carry forward unchanged.
+
 **Db — fix to contract:** correct the established term(s) under
 `INV-SNOWFREEZE-006` authority; red tests from the CRM equations
-(resistance growth with depth; bounded advance on a known profile); then
-the full package D3 acceptance gate (depth in the 240–503 mm envelope as
-flag, correlation up from 0.13, duration residual collapsing, conservation
-at noise on an independent ledger) and, on pass, the closing obligations
-(ROADMAP item 1, README 7f, handoff naming MOFE).
+(resistance growth with depth; bounded advance on a known profile). Db's
+first implementation target is now the legacy `frzng` in-hour
+front-advance/resistance loop, not thaw, storage, capacity, publication, or
+unit conversion. Then run the full package D3 acceptance gate (depth in the
+240-503 mm envelope as flag, correlation up from 0.13, duration residual
+collapsing, conservation at noise on an independent ledger) and, on pass, the
+closing obligations (ROADMAP item 1, README 7f, handoff naming MOFE).
 
 ## Dispatch instructions
 

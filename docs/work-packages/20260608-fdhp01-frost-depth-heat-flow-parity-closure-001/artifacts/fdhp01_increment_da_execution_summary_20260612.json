@@ -1,0 +1,50 @@
+{
+  "closure_formula": "RM + Irr - Interception - Q - Ep - Es - Er - Dp - latqcc - Tile - delta(Total-Soil + frozwt)",
+  "closure_watch_disposition": "cleared as independent WAT-publication numerical floor, not a storage leak; residuals are <= 1.39e-7 mm across years 2-6 and p43 year 2 is -1.912e-8 mm",
+  "cohort_clean_exits": "43/43",
+  "cohort_run_root": "/tmp/fdhp01_increment_da_cohort_20260612T044217Z",
+  "comparison_mode": "local CLI/DuckDB; comparator subagent not used per user quota direction",
+  "da_disposition": "executed-hold; diagnostic localized Db target to freeze-arm within-hour resistance/front-advance loop",
+  "depth_corr_median": -0.16722397856345997,
+  "depth_max_max_mm": 1794.4544220790258,
+  "depth_max_mean_mm": 1793.52198510966,
+  "depth_max_median_mm": 1793.649969637327,
+  "evidence_mode": "Ran",
+  "frozen_days_delta_median_open_minus_legacy": 111.0,
+  "frozwt_frdp_corr_max": 0.9441102161636825,
+  "frozwt_frdp_corr_median": 0.8831449770567324,
+  "generated_artifacts": [
+    "fdhp01_increment_da_run_status_20260612.tsv",
+    "fdhp01_increment_da_annual_closure_residuals_20260612.csv",
+    "fdhp01_increment_da_depth_metrics_20260612.csv",
+    "fdhp01_increment_da_frozwt_frdp_ratio_20260612.csv",
+    "fdhp01_increment_da_activation_summary_20260612.csv",
+    "fdhp01_increment_da_c2_row_equality_20260612.json",
+    "fdhp01_increment_da_p1_hourly_energy_trace_20260612.csv",
+    "fdhp01_increment_da_p1_energy_summary_20260612.json"
+  ],
+  "increment": "Da",
+  "ledger_repair": "independent WAT flux columns versus Total-Soil + frozwt storage delta; no reused flux_balance_mm/storage_delta_mm identity",
+  "max_all_years_abs_residual_mm": 403.1616463035244,
+  "max_all_years_residual_location": {
+    "prefix": "p35",
+    "residual_mm": -403.1616463035244,
+    "year": 1
+  },
+  "max_years_2_to_6_abs_residual_mm": 1.3813070645629644e-07,
+  "max_years_2_to_6_residual_location": {
+    "prefix": "p11",
+    "residual_mm": -1.3813070645629644e-07,
+    "year": 5
+  },
+  "min_margin_to_profile_mm": 5.54557792097421,
+  "open_days_above_200mm_median": 815.0,
+  "p1_worst_years_2_to_6_abs_residual_mm": 1.1812772982011666e-13,
+  "p20_worst_years_2_to_6_abs_residual_mm": 6.650235917504688e-14,
+  "p43_year2_residual_mm": -1.912025027195341e-08,
+  "release_binary_sha256": "0b3fed8561232d0de371a195e3f5a5609121ddd2253713b3fb0139add9ec8a4f",
+  "source_commit": "7c2e6d64",
+  "trace_run_root": "/tmp/fdhp01_increment_da_trace_20260612T043800Z",
+  "wat_outputs": "43/43",
+  "wat_rows_equal_to_c2_prefixes": "43/43"
+}

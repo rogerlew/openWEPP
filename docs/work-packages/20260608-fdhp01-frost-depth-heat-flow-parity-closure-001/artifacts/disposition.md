@@ -286,6 +286,44 @@ Ran:
   reading from the staged plan: thaw-arm storage plumbing is no longer the
   active blocker; front-advance energetics/resistance remain defective.
 
+## Increment Da Gate Evidence
+
+- Persisted compact reports:
+  - `d3-increment-da-energy-characterization-20260612.md`
+  - `fdhp01_increment_da_execution_summary_20260612.json`
+  - `fdhp01_increment_da_run_status_20260612.tsv`
+  - `fdhp01_increment_da_annual_closure_residuals_20260612.csv`
+  - `fdhp01_increment_da_depth_metrics_20260612.csv`
+  - `fdhp01_increment_da_frozwt_frdp_ratio_20260612.csv`
+  - `fdhp01_increment_da_activation_summary_20260612.csv`
+  - `fdhp01_increment_da_c2_row_equality_20260612.json`
+  - `fdhp01_increment_da_p1_hourly_energy_trace_20260612.csv`
+  - `fdhp01_increment_da_p1_energy_summary_20260612.json`
+- Da ran without the comparator subagent per user quota direction. The
+  temporary p1 trace ran at
+  `/tmp/fdhp01_increment_da_trace_20260612T043800Z`, and the production cohort
+  ran `43/43` clean at
+  `/tmp/fdhp01_increment_da_cohort_20260612T044217Z`.
+- The temporary trace instrumentation was removed before the production
+  release rebuild. No Da trace marker remains under `crates/`.
+- Static legacy provenance localizes the missing feedback to `frzng.for`: the
+  3600-second freeze loop updates `qoutdm` by newly frozen tilled/untilled path
+  length and recomputes `qhtout` after front advance.
+- The p1 trace proves openWEPP is missing that in-hour resistance feedback.
+  Year 1 day 1 hour 2 advances `0.000397484 -> 1.162927773 m` while retaining
+  pre-advance resistance `0.000227134 m2 C/W`. Projecting the hour-end frozen
+  path raises resistance to `0.572822749 m2 C/W` and drops `|qhtout|` from
+  `35602.871` to `14.117 W/m2`.
+- The annual closure ledger is repaired. Years 2-6 independent WAT flux versus
+  `Total-Soil + frozwt` storage has max abs residual
+  `1.3813070645629644e-07 mm`; p43 year 2 is
+  `-1.912025027195341e-08 mm`. This clears the p43 watch as WAT-surface
+  numerical texture rather than a storage leak.
+- Da WAT rows are identical to C2 across all 43 prefixes, so D3 acceptance
+  remains unchanged: mean maximum depth `1793.52198510966 mm`, median depth
+  correlation `-0.16722397856345997`, median open-minus-legacy frozen duration
+  `111` days, and median days above `200 mm` `815`.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -316,7 +354,9 @@ capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow handling.
 The C1 attempt adds that capacity enforcement alone is insufficient unless the
 overflow surfaces are reconciled with the WAT balance identity. C1a supplied
 that accounting specification, C1b lands the water-side infrastructure with
-conservation intact, and C2 lands thaw arms without reopening D2. The years 2-6
-conservation gate remains the hard stop before any depth/duration acceptance
-claim. The next required D3 increment is a freeze-arm heat-flow
-resistance/latent-heat audit and repair against the C2 cohort boundary.
+conservation intact, C2 lands thaw arms without reopening D2, and Da localizes
+the remaining D3 blocker to missing in-hour freeze-arm resistance growth. The
+years 2-6 conservation gate remains the hard stop before any depth/duration
+acceptance claim, now using the repaired independent WAT flux ledger. The next
+required D3 increment is Db: port the legacy `frzng` in-hour
+front-advance/`qoutdm`/`qhtout` feedback under `INV-SNOWFREEZE-006`.

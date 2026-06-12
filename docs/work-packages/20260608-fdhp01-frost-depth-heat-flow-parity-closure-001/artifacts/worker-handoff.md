@@ -189,9 +189,32 @@ Increment C2 result:
   median depth correlation is `-0.16722397856345997`, open-minus-legacy frozen
   duration median is `111` days, and median days above `200 mm` is `815`.
 
-First actionable item: scope and execute the freeze-arm heat-flow
-resistance/latent-heat repair isolated by C2. Do not loosen the C1b/C2
-capacity, overflow, publication, or conservation guards. Do not advance to MOFE
-until years 2-6 conservation remains at noise, the cohort is `43/43`, the
-year-7 boundary item stays explained or eliminated, and the full
-depth/duration acceptance gate passes without comparator tuning.
+Increment Da result:
+
+- Codex executed the diagnostic p1 hourly energy characterization without the
+  comparator subagent per user quota direction.
+- The temporary trace ran at
+  `/tmp/fdhp01_increment_da_trace_20260612T043800Z` and was removed before the
+  production rebuild. No Da trace marker remains under `crates/`.
+- Legacy `frzng.for` updates `qoutdm` and recomputes `qhtout` inside the
+  3600-second freeze loop whenever the front advances through fine layers.
+- The p1 trace proves openWEPP is missing that in-hour feedback. Year 1 day 1
+  hour 2 advances `0.000397484 -> 1.162927773 m` while retaining resistance
+  `0.000227134 m2 C/W`; applying the hour-end frozen path gives
+  `0.572822749 m2 C/W` and drops `|qhtout|` from `35602.871` to
+  `14.117 W/m2`.
+- The repaired independent annual WAT ledger closes years 2-6 to
+  `1.3813070645629644e-07 mm`; p43 year 2 is
+  `-1.912025027195341e-08 mm`, cleared as WAT-surface numerical texture.
+- The fresh Da cohort at `/tmp/fdhp01_increment_da_cohort_20260612T044217Z`
+  ran `43/43` clean and is WAT-row-identical to C2.
+
+First actionable item: execute Db by porting the legacy `frzng` in-hour
+front-advance/`qoutdm`/`qhtout` resistance feedback. Add a red test that
+prevents metre-scale one-hour advance under a stale near-zero resistance and
+proves `qhtout` collapses as frozen path length grows. Do not loosen the
+C1b/C2 capacity, overflow, publication, or conservation guards. Do not advance
+to MOFE until years 2-6 conservation remains at the repaired independent
+ledger noise floor, the cohort is `43/43`, the year-7 boundary item stays
+explained or eliminated, and the full depth/duration acceptance gate passes
+without comparator tuning.

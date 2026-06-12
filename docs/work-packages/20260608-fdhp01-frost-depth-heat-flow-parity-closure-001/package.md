@@ -108,6 +108,25 @@ fails: mean maximum depth is `1793.52198510966 mm`, median depth correlation is
 thaw/storage ambiguity but leaves FDHP01 in executed-hold; the next scope is a
 freeze-arm heat-flow resistance/latent-heat audit and repair.
 
+D3 Increment Da, 2026-06-12: Codex executed the freeze-arm energetics
+diagnostic without using the comparator subagent per user quota direction. A
+temporary p1 hourly trace was added, run, and removed before rebuilding the
+production release CLI. Static legacy inspection shows `frzng.for:235-240` and
+`:287-335` update `qoutdm` and recompute `qhtout` inside the 3600-second
+front-advance loop whenever the frozen path grows. The p1 trace proves openWEPP
+is missing that in-hour feedback: year 1 day 1 hour 2 advances from
+`0.000397484 m` to `1.162927773 m` while keeping the pre-advance resistance
+`0.000227134 m2 C/W`; applying the hour-end frozen path raises resistance to
+`0.572822749 m2 C/W` and drops `|qhtout|` from `35602.871` to `14.117 W/m2`.
+Da also replaced the C2 tautological closure ledger with an independent WAT
+flux ledger. The local `43/43` cohort at
+`/tmp/fdhp01_increment_da_cohort_20260612T044217Z` is row-identical to C2,
+years 2-6 independent `Total-Soil + frozwt` closure is within
+`1.3813070645629644e-07 mm`, and the p43 year-2 watch is
+`-1.912025027195341e-08 mm`, cleared as WAT-surface numerical texture. FDHP01
+remains executed-hold; Db must port the legacy in-hour resistance/front-advance
+loop before any D3 acceptance claim.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

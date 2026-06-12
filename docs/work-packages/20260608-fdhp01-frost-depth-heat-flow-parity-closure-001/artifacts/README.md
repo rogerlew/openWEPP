@@ -114,6 +114,22 @@ Evidence and disposition artifacts for
   `fdhp01_increment_c2_frozwt_frdp_ratio_20260612.csv`,
   `fdhp01_increment_c2_activation_summary_20260612.csv`: generated C2 reports
   from `/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z`.
+- `d3-increment-da-energy-characterization-20260612.md`: staged Increment Da
+  diagnostic evidence; records the p1 hourly energy trace, legacy `frzng`
+  in-hour resistance expectation, repaired independent WAT closure ledger, and
+  Db target.
+- `fdhp01_increment_da_execution_summary_20260612.json`,
+  `fdhp01_increment_da_run_status_20260612.tsv`,
+  `fdhp01_increment_da_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_da_depth_metrics_20260612.csv`,
+  `fdhp01_increment_da_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_da_activation_summary_20260612.csv`,
+  `fdhp01_increment_da_c2_row_equality_20260612.json`: generated Da cohort and
+  ledger reports from `/tmp/fdhp01_increment_da_cohort_20260612T044217Z`.
+- `fdhp01_increment_da_p1_hourly_energy_trace_20260612.csv`,
+  `fdhp01_increment_da_p1_energy_summary_20260612.json`: generated Da p1
+  hourly energy trace and reduction from
+  `/tmp/fdhp01_increment_da_trace_20260612T043800Z`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

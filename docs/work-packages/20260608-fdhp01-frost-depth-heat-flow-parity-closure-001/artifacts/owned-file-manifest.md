@@ -214,3 +214,13 @@ Date: 2026-06-12
 - `fdhp01_increment_c2_depth_metrics_20260612.csv`
 - `fdhp01_increment_c2_frozwt_frdp_ratio_20260612.csv`
 - `fdhp01_increment_c2_activation_summary_20260612.csv`
+- `d3-increment-da-energy-characterization-20260612.md`
+- `fdhp01_increment_da_execution_summary_20260612.json`
+- `fdhp01_increment_da_run_status_20260612.tsv`
+- `fdhp01_increment_da_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_da_depth_metrics_20260612.csv`
+- `fdhp01_increment_da_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_da_activation_summary_20260612.csv`
+- `fdhp01_increment_da_c2_row_equality_20260612.json`
+- `fdhp01_increment_da_p1_hourly_energy_trace_20260612.csv`
+- `fdhp01_increment_da_p1_energy_summary_20260612.json`

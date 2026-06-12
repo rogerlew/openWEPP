@@ -1,0 +1,224 @@
+{
+  "c2_run_root": "/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z",
+  "da_run_root": "/tmp/fdhp01_increment_da_cohort_20260612T044217Z",
+  "detail": [
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p1"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p2"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p3"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p4"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p5"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p6"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p7"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p8"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p9"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p10"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p11"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p12"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p13"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p14"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p15"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p16"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p17"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p18"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p19"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p20"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p21"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p22"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p23"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p24"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p25"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p26"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p27"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p28"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p29"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p30"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p31"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p32"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p33"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p34"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p35"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p36"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p37"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p38"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p39"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p40"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p41"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p42"
+    },
+    {
+      "c2_minus_da_rows": 0,
+      "da_minus_c2_rows": 0,
+      "prefix": "p43"
+    }
+  ],
+  "nonzero_differences": [],
+  "prefixes_compared": 43,
+  "wat_row_equal_prefixes": 43
+}
