@@ -514,3 +514,61 @@ production edits and identifies Dg as the next bounded implementation:
 restore the legacy residue-depth frost resistance path and the shallow-front
 minimum conduction distance, then re-run the De forced-snow certification and
 native cohort.
+
+## D3 Increment Dg Residue/Shallow-Front Resistance Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/Pandas/PyArrow comparisons. |
+| Contract amendment | Pass, `SC-SNOWFREEZE-001` v66 binds the legacy `resdep/kres` frost surface-residue path and below-freezing shallow-front `dpfsfl` minimum conduction distance. |
+| Production implementation | Pass, openWEPP consumes legacy residue depth in frost surface resistance and floors below-freezing shallow-front conduction distance to `dg(1)/nfine(1)/2`. |
+| Native production cohort | Pass execution, `43/43` clean exits and `43/43` WAT outputs; root `/tmp/fdhp01_increment_dg_native_cohort_20260612T184601Z`. |
+| Native years 2-6 independent `Total-Soil + frozwt` closure | Pass at WAT-publication texture, max abs residual `6.261351281899863e-07 mm`. |
+| Native D3 depth/duration | Directionally improved but not accepted: mean max `498.08123930883653 mm`, `30/43` prefixes inside the legacy `240..503.2 mm` envelope, median duration residual `+84` days. |
+| Forced-snow diagnostic cohort | Pass execution, `43/43` clean exits and `43/43` WAT outputs; root `/tmp/fdhp01_increment_dg_forced_snow_cohort_20260612T185203Z`. |
+| Forced-snow years 2-6 independent `Total-Soil + frozwt` closure | Pass at WAT-publication texture, max abs residual `5.835723933533821e-07 mm`. |
+| Forced-snow D3 directional gate | Pass directionally: mean max depth `655.9890274782282 -> 490.0923199552928 mm`, envelope membership `0/43 -> 30/43`, median duration residual `+186 -> +73` days. |
+| D3 acceptance | Fail/hold: `13/43` forced-snow prefixes still exceed the `503.2 mm` upper envelope bound. |
+| Clean-source release rebuild after diagnostic hook removal | Pass, production binary SHA `3275db431339402596a27a28d7976062eb4655771e9e159fdf929fa1410883ad`. |
+
+Increment Dg disposition: landed at `executed-hold`. Dg closed the Df
+surface-resistance cut point and improved both native and forced-snow depth,
+but the remaining forced-snow plateau outliers required a new localization.
+
+## D3 Increment Dh Frozen-Path Conductivity Refutation Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local source inspection and artifact comparisons. |
+| Pinned-source inspection | Pass/refutation: `frostn.for:188-193` assigns fixed `kftill = 1.75` and `kfutil = 2.1`; `frostn`/`frzng`/`frznw` consume those fixed constants in the frozen surface path. |
+| Lower-front conductivity attribution | Pass/refutation: the soil-property-dependent `bdcons`/`slsw`/`ksoilf` expression belongs to the lower-front unfrozen `kufzfl` path already handled by De. |
+| Contract amendment | Pass, `SC-SNOWFREEZE-001` v67 binds fixed legacy `kftill`/`kfutil` constants and rejects per-soil frozen-path replacement absent superseding authority. |
+| Production physics edit | None; Dh stopped before production edits because the premise was false. |
+| Focused and full gates | Pass per Dh artifact: `cargo fmt --check`, focused contract tests, `git diff --check`, `wctl doc-lint --path docs`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo deny check`, anti-evasion guards, and `cargo test --workspace`. |
+
+Increment Dh disposition: refutation executed at `executed-hold`. The
+per-soil frozen-path conductivity mechanism is eliminated as source-line-owned
+scope; Dg outliers remain open.
+
+## D3 Increment Di Post-Dg Paired Re-localization Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/Pandas/PyArrow comparisons. |
+| Temporary p8/p20/p2 paired hourly trace | Pass; trace root `/tmp/fdhp01_increment_di_trace_20260612T1302Z`, all three prefixes exited clean, WAT outputs present. |
+| Diagnostic release build with temporary hook | Pass, `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`. |
+| Paired hourly join | Pass; p8 joined `29472` legacy hourly rows, p20 joined `30336`, p2 joined `29928`. |
+| Static legacy source check | Pass; `hr_tmp.for:38-48` calls `tmpadj`, `tmpadj.for:349-364` computes `surtmp(hour)` and caps positive snow-active surface temperature, and `frostn.for:467-480` consumes `surtmp(hour)` for top heat flux. |
+| Term attribution | Pass; dominant residual is missing legacy `hr_tmp`/`tmpadj` surface-temperature synthesis. Deep divergent advance with forced snow present and negative open surface temperature is `0.997852`, `0.999063`, and `1.000000` on p8/p20/p2; median surface-flux share is `1.000000`, `1.000000`, and `0.994355`. |
+| Secondary discriminators | Pass; topology, hourly snow-depth mismatch, lower-front heat, and deep-layer latent cost are not the cut point. |
+| Trace-marker source search after removal | Pass; no `OPENWEPP_FDHP01_DI`, `fdhp01_di`, or `FDHP01_DI` markers remain under `crates/`. |
+| Clean-source release rebuild after hook removal | Pass, production binary SHA `3275db431339402596a27a28d7976062eb4655771e9e159fdf929fa1410883ad`. |
+| `cargo fmt --check` | Pass |
+| `git diff --check` | Pass |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings`. |
+
+Increment Di disposition: diagnostic executed at `executed-hold`. Di leaves no
+production edits and scopes Dj to port/expose legacy `hr_tmp`/`tmpadj`
+surface-temperature synthesis into the frost surface heat path without
+retuning snow, `kfactor`, latent heat, WAT/D2, residue, `dpfsfl`,
+`kftill`/`kfutil`, or `Qdry`.

@@ -870,3 +870,49 @@ citation without reading the cited lines (Claude); Di therefore carries
   plan update. If the attribution lands on F4-coupled or
   legacy-defect-class items rather than openWEPP terms, route to the
   certification decision instead of another fix increment.
+
+**Execution result (2026-06-12):** Di executed as a diagnostic and left no
+production physics edit. A temporary env-gated trace/forced-snow hook was run
+for `p8`, `p20`, and `p2` under the Dg forced-snow setup, then removed before
+package updates. The paired traces localize the remaining plateau residual to
+missing legacy winter surface-temperature synthesis feeding frost surface heat
+flow. In current openWEPP, `surface_temp_c` is the hourly air temperature
+whenever the hour is below freezing; pinned legacy computes `surtmp(hour)`
+through `hr_tmp`/`tmpadj` before `frostn` consumes it. Deep divergent advance
+is surface-path dominated: `0.997852`, `0.999063`, and `1.000000` of the
+advance on `p8`, `p20`, and `p2` occurs with forced snow present and negative
+open surface temperature, and median surface-flux share is `1.000000`,
+`1.000000`, and `0.994355`. Snow-depth timing mismatch is secondary
+(`>10 mm` mismatch explains only `0.085`, `0.140`, and `0.082` of deep
+divergent advance), topology is not the cut point (max depths are inside fine
+cells, not exact boundaries or `tilld`), and lower-front heat/latent cost
+modulate but do not dominate. FDHP01 remains `executed-hold`.
+
+## Increment Dj — legacy winter surface-temperature synthesis for frost
+
+Di scoped Dj to the source-line-owned openWEPP term: the frost surface heat
+path must consume a legacy-equivalent winter surface temperature, not raw
+below-freezing hourly air temperature.
+
+- Method: port or expose the `hr_tmp`/`tmpadj` `surtmp(hour)` synthesis
+  required by pinned legacy (`hr_tmp.for:38-48`, `tmpadj.for:1-7`,
+  `tmpadj.for:349-364`, `frostn.for:467-480`) into the openWEPP frost surface
+  heat path. Preserve the positive-under-snow cap, but do not treat that cap
+  as the whole surface-temperature model. If required meteorological/canopy/
+  cover inputs are missing from the frost seam, add explicit typed projection
+  or hold with a named missing-input boundary rather than substituting an
+  empirical proxy.
+- Protected boundaries: do not retune snow depth/density, `kfactor`, latent
+  heat, WAT publication, D2 storage, residue depth, `dpfsfl`, fixed
+  `kftill`/`kfutil`, or lower-front `Qdry`.
+- Red tests before production acceptance: a focused frost-surface-temperature
+  contract test proving below-freezing snow-active hours no longer use raw
+  hourly air temperature as `surface_temp_c`; a regression that preserves the
+  positive-under-snow cap; and a trace-level target for at least one Di row
+  showing reduced `Qsrf`/advance under snow without changing forced snow
+  inputs.
+- Gates: full Rust closure loop; no diagnostic markers in source; years 2-6
+  independent `Total-Soil + frozwt` closure remains at WAT-publication texture;
+  Dg forced-snow representatives de-plateau in the expected direction; the
+  forced-snow cohort materially improves the `13/43` outlier set without
+  duration regression; native cohort remains non-regressed.

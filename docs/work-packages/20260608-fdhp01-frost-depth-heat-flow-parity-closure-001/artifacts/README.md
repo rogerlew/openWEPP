@@ -166,6 +166,71 @@ Evidence and disposition artifacts for
   `fdhp01_increment_dc1_activation_summary_20260612.csv`: generated Dc1
   cohort and independent ledger reports from
   `/tmp/fdhp01_increment_dc1_cohort_20260612T101238Z`.
+- `d3-increment-dd-legacy-snow-forced-20260612.md`: staged Increment Dd
+  diagnostic evidence; records the legacy snow-forced cohort, F4
+  certification failure, and next frost-side localization boundary.
+- `fdhp01_increment_dd_execution_summary_20260612.json`,
+  `fdhp01_increment_dd_run_status_20260612.tsv`,
+  `fdhp01_increment_dd_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_dd_depth_metrics_20260612.csv`,
+  `fdhp01_increment_dd_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_dd_activation_summary_20260612.csv`,
+  `fdhp01_increment_dd_legacy_winter_generation_20260612.json`,
+  `fdhp01_increment_dd_legacy_snow_forcing_summary_20260612.json`: generated
+  Dd forced-snow and legacy winter reports.
+- `d3-increment-de-qdry-conductivity-20260612.md`: staged Increment De
+  landing evidence; records the content-dependent lower-front `Qdry`
+  conductivity correction, native/forced-snow cohorts, and retained D3 hold.
+- `fdhp01_increment_de_native_execution_summary_20260612.json`,
+  `fdhp01_increment_de_native_run_status_20260612.tsv`,
+  `fdhp01_increment_de_native_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_de_native_depth_metrics_20260612.csv`,
+  `fdhp01_increment_de_native_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_de_native_activation_summary_20260612.csv`,
+  `fdhp01_increment_de_forced_snow_execution_summary_20260612.json`,
+  `fdhp01_increment_de_forced_snow_run_status_20260612.tsv`,
+  `fdhp01_increment_de_forced_snow_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_de_forced_snow_depth_metrics_20260612.csv`,
+  `fdhp01_increment_de_forced_snow_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_de_forced_snow_activation_summary_20260612.csv`: generated
+  De native and forced-snow cohort reports.
+- `d3-increment-df-paired-hourly-localization-20260612.md`: staged Increment
+  Df diagnostic evidence; records the paired p1/p2 hourly trace that localized
+  the first remaining divergence to residue resistance plus the shallow-front
+  minimum path.
+- `fdhp01_increment_df_localization_summary_20260612.json`,
+  `fdhp01_increment_df_term_attribution_20260612.csv`,
+  `fdhp01_increment_df_paired_hourly_excerpt_20260612.csv`: compact Df trace
+  reductions.
+- `d3-increment-dg-residue-shallow-front-20260612.md`: staged Increment Dg
+  landing evidence; records the residue-depth frost resistance path, the
+  below-freezing `dpfsfl` conduction floor, native/forced-snow cohort
+  improvements, and retained outlier set.
+- `fdhp01_increment_dg_native_execution_summary_20260612.json`,
+  `fdhp01_increment_dg_native_run_status_20260612.tsv`,
+  `fdhp01_increment_dg_native_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_dg_native_depth_metrics_20260612.csv`,
+  `fdhp01_increment_dg_native_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_dg_native_activation_summary_20260612.csv`,
+  `fdhp01_increment_dg_forced_snow_execution_summary_20260612.json`,
+  `fdhp01_increment_dg_forced_snow_run_status_20260612.tsv`,
+  `fdhp01_increment_dg_forced_snow_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_dg_forced_snow_depth_metrics_20260612.csv`,
+  `fdhp01_increment_dg_forced_snow_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_dg_forced_snow_activation_summary_20260612.csv`: generated
+  Dg native and forced-snow cohort reports.
+- `d3-increment-dh-frozen-path-conductivity-refutation-20260612.md`: staged
+  Increment Dh refutation evidence; records that pinned legacy uses fixed
+  `kftill`/`kfutil` constants and rejects a per-soil frozen-path conductivity
+  port.
+- `d3-increment-di-post-dg-relocalization-20260612.md`: staged Increment Di
+  diagnostic evidence; records the p8/p20/p2 paired hourly re-localization to
+  missing legacy `hr_tmp`/`tmpadj` surface-temperature synthesis.
+- `fdhp01_increment_di_localization_summary_20260612.json`,
+  `fdhp01_increment_di_localization_metrics_20260612.csv`,
+  `fdhp01_increment_di_term_attribution_20260612.csv`,
+  `fdhp01_increment_di_max_depth_context_20260612.csv`: compact Di trace
+  reductions and Dj scoping evidence.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

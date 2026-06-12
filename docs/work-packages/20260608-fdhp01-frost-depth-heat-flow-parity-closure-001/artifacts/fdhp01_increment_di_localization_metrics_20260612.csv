@@ -1,0 +1,4 @@
+prefix,open_trace_max_depth_mm,legacy_max_depth_mm,rows_deep_positive_residual,rows_deep_divergent_advance,deep_divergent_adv_mm_total,under_snow_negative_surface_advance_share,surface_flux_median_share_abs,surface_freezing_flux_median_w_m2,lower_heat_median_w_m2,snow_abs_diff_gt_10mm_advance_share,max_depth_near_fine_boundary_mm,max_depth_near_tilld_200mm_mm,max_front_layer,max_front_fine,max_front_upper_m,max_front_lower_m,front_slsw_theta_at_max
+p8,530.023646711,440.0,2359,350,44.02335424,0.9978515701351539,1.0,1.663141975761,0.0,0.085,9.97635328900004,330.02364671099997,3.0,7.0,0.52,0.54,0.15745
+p20,574.592447722,374.3,2618,408,50.8203350389993,0.9990632657387339,1.0,1.725177725863,0.0,0.14,5.4075522779999385,374.592447722,3.0,9.0,0.56,0.58,0.165
+p2,609.8523344070001,280.0,2185,976,222.9069023930001,1.0,0.9943548421294819,2.7347635403200004,0.023829207299,0.082,9.852334407000063,409.85233440700006,4.0,1.0,0.6,0.62,0.106425598605

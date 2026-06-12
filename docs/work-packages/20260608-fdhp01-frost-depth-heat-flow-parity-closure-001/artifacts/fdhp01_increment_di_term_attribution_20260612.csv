@@ -1,0 +1,16 @@
+prefix,term,classification,evidence,share_indicator
+p8,legacy_tmpadj_surface_temperature_synthesis,dominant_localized_term,deep divergent advance share with forced snow present + negative open surface temp = 0.997852; open surface_temp_c equals hourly air temp on all sampled rows; legacy hr_tmp calls tmpadj before frostn consumes surtmp,0.9978515701351539
+p8,surface_flux_vs_lower_front_heat,surface_path_dominated,median freezing surface flux 1.663142 W/m2 vs median lower-front heat 0.000000 W/m2; median abs surface-flux share 1.000000,1.0
+p8,hourly_snow_depth_mismatch,secondary_not_primary,>10 mm open/legacy hourly snow-depth mismatch accounts for 0.085 of deep divergent advance,0.085
+p8,discretization_topology_quantization,not_primary,max depth 530.024 mm is 9.976 mm from nearest fine boundary and 330.024 mm from tilld,9.97635328900004
+p8,deep_layer_water_content_latent_cost,secondary_not_cut_point,front slsw_theta at max 0.157450; divergent advance remains surface-flux dominated,0.15745
+p20,legacy_tmpadj_surface_temperature_synthesis,dominant_localized_term,deep divergent advance share with forced snow present + negative open surface temp = 0.999063; open surface_temp_c equals hourly air temp on all sampled rows; legacy hr_tmp calls tmpadj before frostn consumes surtmp,0.9990632657387339
+p20,surface_flux_vs_lower_front_heat,surface_path_dominated,median freezing surface flux 1.725178 W/m2 vs median lower-front heat 0.000000 W/m2; median abs surface-flux share 1.000000,1.0
+p20,hourly_snow_depth_mismatch,secondary_not_primary,>10 mm open/legacy hourly snow-depth mismatch accounts for 0.140 of deep divergent advance,0.14
+p20,discretization_topology_quantization,not_primary,max depth 574.592 mm is 5.408 mm from nearest fine boundary and 374.592 mm from tilld,5.4075522779999385
+p20,deep_layer_water_content_latent_cost,secondary_not_cut_point,front slsw_theta at max 0.165000; divergent advance remains surface-flux dominated,0.165
+p2,legacy_tmpadj_surface_temperature_synthesis,dominant_localized_term,deep divergent advance share with forced snow present + negative open surface temp = 1.000000; open surface_temp_c equals hourly air temp on all sampled rows; legacy hr_tmp calls tmpadj before frostn consumes surtmp,1.0
+p2,surface_flux_vs_lower_front_heat,surface_path_dominated,median freezing surface flux 2.734764 W/m2 vs median lower-front heat 0.023829 W/m2; median abs surface-flux share 0.994355,0.9943548421294819
+p2,hourly_snow_depth_mismatch,secondary_not_primary,>10 mm open/legacy hourly snow-depth mismatch accounts for 0.082 of deep divergent advance,0.082
+p2,discretization_topology_quantization,not_primary,max depth 609.852 mm is 9.852 mm from nearest fine boundary and 409.852 mm from tilld,9.852334407000063
+p2,deep_layer_water_content_latent_cost,secondary_not_cut_point,front slsw_theta at max 0.106426; divergent advance remains surface-flux dominated,0.106425598605

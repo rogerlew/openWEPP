@@ -235,6 +235,25 @@ superseding authority. No production physics changed; FDHP01 remains
 executed-hold with the same Dg forced-snow outlier set requiring a new
 source-line localization.
 
+D3 Increment Di, 2026-06-12: Codex executed the post-Dg paired hourly
+re-localization without the comparator subagent per user quota direction. A
+temporary trace/forced-snow hook was added, run for `p8`, `p20`, and `p2`,
+then removed before package updates. The paired traces localize the remaining
+forced-snow plateau residual to missing legacy winter surface-temperature
+synthesis: current openWEPP feeds below-freezing hourly air temperature
+directly to the frost surface heat path, while pinned legacy computes
+`surtmp(hour)` through `hr_tmp`/`tmpadj` before `frostn` consumes it. On deep
+divergent advance rows, forced snow is present and open `surface_temp_c` is
+negative for `0.997852`, `0.999063`, and `1.000000` of the advance on
+`p8`, `p20`, and `p2`, while median surface-flux share is
+`1.000000`, `1.000000`, and `0.994355`. Topology, hourly snow-depth mismatch,
+lower-front heat, and deep-layer latent cost are secondary discriminators, not
+the cut point. No production physics changed; FDHP01 remains executed-hold.
+The next bounded increment is Dj: port/expose legacy `hr_tmp`/`tmpadj`
+surface-temperature synthesis into the frost surface-heat path, then rerun the
+forced-snow and native cohort gates without retuning snow, `kfactor`, WAT/D2,
+residue, `dpfsfl`, `kftill`/`kfutil`, or `Qdry`.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

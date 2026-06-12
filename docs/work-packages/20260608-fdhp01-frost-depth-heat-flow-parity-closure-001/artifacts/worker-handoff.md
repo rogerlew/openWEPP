@@ -412,12 +412,33 @@ Dh result:
 - No production physics was changed. FDHP01 remains `executed-hold`; the Dg
   forced-snow outlier set remains the active residual.
 
-Updated first actionable item: localize the residual D3 divergence on the Dg
-forced-snow outlier set (`p1`, `p2`, `p3`, `p8`, `p11`, `p13`, `p20`, `p21`,
-`p22`, `p23`, `p26`, `p28`, `p32`) with `kftill`/`kfutil` treated as fixed
-and out of scope. Compare paired hourly openWEPP and legacy front/flux
-trajectories after Dg, focusing on source-line-owned differences in branch
-selection, surface temperature generation, snow/residue inputs, lower-front
-heat, within-hour front advance/retreat, and fine-layer ice/liquid movement.
-Do not retune snow density/depth, kfactor, latent heat, WAT publication, D2
-storage, residue depth, `dpfsfl`, or fixed `kftill`/`kfutil`.
+Di result:
+
+- Codex executed the post-Dg paired hourly re-localization without the
+  comparator subagent per user quota direction.
+- A temporary env-gated trace/forced-snow hook was run for plateau
+  representatives `p8`, `p20`, and `p2`, then removed before package updates.
+- The paired traces localize the residual to missing legacy winter
+  surface-temperature synthesis: openWEPP currently feeds below-freezing
+  hourly air temperature directly into frost surface heat flow, while pinned
+  legacy computes `surtmp(hour)` through `hr_tmp`/`tmpadj` before `frostn`
+  consumes it.
+- Deep divergent advance is surface-path dominated. Forced snow is present and
+  open `surface_temp_c` is negative for `0.997852`, `0.999063`, and
+  `1.000000` of the advance on `p8`, `p20`, and `p2`; median surface-flux
+  share is `1.000000`, `1.000000`, and `0.994355`.
+- Topology, hourly snow-depth mismatch, lower-front heat, and deep-layer
+  latent cost are secondary discriminators. `p2` is larger in magnitude but
+  not a distinct mechanism in the Di trace.
+- No production physics was changed. FDHP01 remains `executed-hold`.
+
+Updated first actionable item: execute Increment Dj from
+`artifacts/d3-staged-increment-plan.md`: port or expose the pinned legacy
+`hr_tmp`/`tmpadj` `surtmp(hour)` synthesis into the frost surface heat path,
+then rerun the Di representatives, the forced-snow cohort, the native cohort,
+and the independent years 2-6 `Total-Soil + frozwt` closure gate. Do not
+retune snow density/depth, `kfactor`, latent heat, WAT publication, D2
+storage, residue depth, `dpfsfl`, fixed `kftill`/`kfutil`, or lower-front
+`Qdry`. If required `tmpadj` inputs are missing at the frost seam, hold with a
+named missing-input boundary rather than substituting a proxy surface
+temperature.
