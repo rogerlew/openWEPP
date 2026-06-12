@@ -210,8 +210,18 @@ publication-safe Daymet CLI audit:
    upper-envelope subgroup deltas. `SC-SNOWFREEZE-001` v69 closes/re-states
    `GAP-SNOWFREEZE-002`; MOFE is now the next ROADMAP item. Package:
    `20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`.
-8. **MOFE** — inter-OFE run-on/run-off routing on a per-element balance already
-   vertically closed and frost-settled.
+8. **MOFE** *(rung 3 — MOFE01 scaffolded 2026-06-12, next to run)* —
+   inter-OFE run-on/run-off routing on the per-element balance now vertically
+   closed and frost-settled (7f complete). Development substrate:
+   `/wc1/runs/ar/arboreal-dendrite/wepp` (graded 1–5-OFE ladder, 37
+   hillslopes; 15-OFE observe-only). Comparator posture is stronger than the
+   ADR-0017 default: legacy has known water-balance defects that grow with
+   OFE count (operator, 2026-06-12; corroborated by the wepppy MOFE
+   closure-audit triage), so acceptance is openWEPP's own three-identity
+   conservation closure (per-element, transfer, hillslope-total) and the
+   characterization increment measures legacy's per-count defect to
+   calibrate comparator trust. Package:
+   `20260612-mofe01-inter-ofe-routing-closure-001/`.
 9. **snow physics-magnitude (Stage 2, deferred)** — the `snowd.for`
    melt/settling/density/partition equation adjudication against external authority
    (CRM Ch. 3.7, WEPP User Doc), behind the protected boundary. Distinct from snow
