@@ -130,6 +130,18 @@ Evidence and disposition artifacts for
   `fdhp01_increment_da_p1_energy_summary_20260612.json`: generated Da p1
   hourly energy trace and reduction from
   `/tmp/fdhp01_increment_da_trace_20260612T043800Z`.
+- `d3-increment-db-freeze-resistance-20260612.md`: staged Increment Db
+  landing evidence; records the in-hour resistance feedback implementation,
+  within-hour red test, local cohort comparison, and remaining duration/
+  correlation hold.
+- `fdhp01_increment_db_execution_summary_20260612.json`,
+  `fdhp01_increment_db_run_status_20260612.tsv`,
+  `fdhp01_increment_db_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_db_depth_metrics_20260612.csv`,
+  `fdhp01_increment_db_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_db_activation_summary_20260612.csv`: generated Db cohort
+  and independent ledger reports from
+  `/tmp/fdhp01_increment_db_cohort_20260612T051524Z`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

@@ -22,7 +22,9 @@ Date: 2026-06-12
     publication surfaces, `watbtm` as WB13 `Dp` lineage, and bounded WB18/WB13
     roundoff handling. Increment C2 adds v62, authorizing top/bottom thaw,
     sandwich geometry, `fgthwd`, `nwfrzz` release, and non-amplifying
-    repeated freeze/thaw conservation.
+    repeated freeze/thaw conservation. Increment Db adds v63, binding
+    freeze-active `frzng` to in-hour surface-resistance/`Qsrf` recomputation
+    after each fine-layer front advance.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -47,7 +49,10 @@ Date: 2026-06-12
     `watpdg`/`watbtm` overflow accounting, and overflow-inclusive shadow
     residual accounting. Increment C2 adds top/bottom thaw arms, sandwich
     geometry, thaw-through handoff, release of thawed `nwfrzz`, and final
-    scalar/layer egress reconciliation from the owned fine state.
+    scalar/layer egress reconciliation from the owned fine state. Increment Db
+    adds in-hour freeze-front resistance feedback so the freeze loop
+    recomputes surface resistance after each fine-layer advance before
+    consuming additional freezing time.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
@@ -126,16 +131,17 @@ Date: 2026-06-12
     fine-front energy, `frznw`, and `watdst` vectors. Increment C1b adds
     capacity, active-`ul`, overflow, and shadow-identity vectors. Increment C2
     adds bottom-thaw, top-thaw, sandwich geometry, `fgthwd`, and multicycle
-    non-amplification vectors.
+    non-amplification vectors. Increment Db adds a within-hour freeze-front
+    resistance feedback vector that fails on stale start-hour `Qsrf` spending.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v62 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v63 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v62 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v63 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
@@ -224,3 +230,10 @@ Date: 2026-06-12
 - `fdhp01_increment_da_c2_row_equality_20260612.json`
 - `fdhp01_increment_da_p1_hourly_energy_trace_20260612.csv`
 - `fdhp01_increment_da_p1_energy_summary_20260612.json`
+- `d3-increment-db-freeze-resistance-20260612.md`
+- `fdhp01_increment_db_execution_summary_20260612.json`
+- `fdhp01_increment_db_run_status_20260612.tsv`
+- `fdhp01_increment_db_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_db_depth_metrics_20260612.csv`
+- `fdhp01_increment_db_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_db_activation_summary_20260612.csv`

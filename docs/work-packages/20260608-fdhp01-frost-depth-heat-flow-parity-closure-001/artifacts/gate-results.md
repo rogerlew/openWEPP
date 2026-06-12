@@ -344,3 +344,35 @@ front-advance/resistance feedback: resistance must grow and `qhtout` must be
 recomputed after fine-layer front advance inside the hour. It does not support
 a W/m2-to-hour unit conversion defect, missing thaw storage, or low-latent
 energy as the primary root cause.
+
+## D3 Increment Db Freeze-Resistance Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/DuckDB comparisons. |
+| Pre-fix within-hour red test | Failed as intended: one cold hour advanced `0.1996 m` on a thin-front profile by spending stale start-hour resistance. |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_db_freeze_front_recomputes_resistance_within_hour -- --nocapture` | Pass after Db implementation |
+| `cargo fmt && cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 34 tests |
+| `cargo fmt --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, 2 tests |
+| Release CLI build/help | Pass, produced `target/release/openwepp-cli-hill`; release binary SHA `b97d1d1112c0d65470fd5f349d5cf96090c708fa34b243f64fdfb18b77530c37`. |
+| 43-prefix `algebraic-radium` hourly frost-on cohort | Pass, `43/43` clean exits; run root `/tmp/fdhp01_increment_db_cohort_20260612T051524Z`. |
+| WAT outputs | Pass, `43/43`. |
+| Independent annual `Total-Soil + frozwt` closure, years 2-6 | Pass at WAT-publication numerical texture, max abs residual `1.9976620946327017e-07 mm` (`p11`, year 6). |
+| p1/p20/p43 closure spot checks | p1 max abs `1.7719159473017498e-13 mm`; p20 max abs `1.3145040611561853e-13 mm`; p43 year 2 `-5.3290705182007514e-14 mm`. |
+| Profile-bound pinning | Pass, `0/43` prefixes pinned; minimum margin `1356.009607259958 mm`. |
+| D3 depth envelope acceptance | Pass, `43/43` maximum depths inside the legacy `240..503.2 mm` envelope; mean max `409.16220799389805 mm`, median max `407.3294069097544 mm`. |
+| `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.8677993973935473`, median `0.7716116121810137`. |
+| D3 depth-correlation acceptance | Fail; median correlation `-0.05296014769462692`, range `-0.07638011292463864..0.18461818718568115`. |
+| D3 frozen-duration acceptance | Fail; open-minus-legacy median `-452` days, mean `-455.3953488372093` days, range `-505..-408` days. |
+| Days above `200 mm` watch | Improved but not closing evidence; median `92` days. |
+| `git diff --check` | Pass |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+
+Increment Db disposition: landed at `executed-hold`. Db closes the stale
+within-hour freeze-resistance defect and fixes the maximum-depth envelope, but
+D3 remains open because correlation and frozen-duration acceptance still fail.

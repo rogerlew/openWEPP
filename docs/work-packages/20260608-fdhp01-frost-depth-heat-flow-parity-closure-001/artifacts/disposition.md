@@ -4,17 +4,18 @@ Status: executed-hold
 
 Evidence mode: Static + Ran
 
-Date: 2026-06-11
+Date: 2026-06-12
 
 ## Outcome
 
 FDHP01 is executed but held. The D2 storage/publication defect is closed by the
-layered-state continuation. D3 Increment A landed the non-driving fine-sublayer
-shadow state and `frwatc` handoff proof surface. D3 Increment B landed
-fine-state-derived depth and the freeze arms. D3 Increment C1b has now landed
-the water-side capacity/overflow infrastructure required before retaining thaw
-arms. D3 depth/duration parity remains open for C2 under
-`SC-SNOWFREEZE-001#INV-SNOWFREEZE-006`.
+layered-state continuation. D3 Increments A/B/C1b/C2/Da/Db landed the
+fine-sublayer state, freeze arms, capacity/overflow ownership, thaw arms,
+energy localization, and in-hour freeze-resistance feedback. Db fixes the
+profile-depth runaway and brings maximum depths into the legacy envelope, but
+D3 depth/duration parity remains open under
+`SC-SNOWFREEZE-001#INV-SNOWFREEZE-006` because correlation and frozen-duration
+acceptance are still red.
 
 Static:
 
@@ -50,6 +51,11 @@ Static:
 - `SC-SNOWFREEZE-001` v60/v61 authorizes Increment C1b fine-layer
   capacity/overflow semantics, `watpdg`/`watbtm` publication surfaces,
   `watbtm` as WB13 `Dp` lineage, and bounded WB18/WB13 roundoff handling.
+- `SC-SNOWFREEZE-001` v62 authorizes top/bottom thaw, sandwich geometry,
+  `fgthwd`, `nwfrzz` release, and non-amplifying repeated freeze/thaw
+  conservation.
+- `SC-SNOWFREEZE-001` v63 binds freeze-active `frzng` to in-hour
+  surface-resistance/`Qsrf` recomputation after each fine-layer front advance.
 - Increment B mutates `slfsd`/`slsic`/`slsw`/`nwfrzz` for freeze-active hours
   (`frzng`/`frznw` lineage) and aggregates per-layer frozen depth/water from
   the same fine state.
@@ -90,6 +96,9 @@ Ran:
   `/tmp/fdhp01_increment_b_final_20260611T193423Z/outputs`.
 - Increment C1b 43-prefix cohort execution was clean (`43/43`) at
   `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z`; the parent ran
+  comparisons locally without the comparator subagent per user quota direction.
+- Increment Db 43-prefix cohort execution was clean (`43/43`) at
+  `/tmp/fdhp01_increment_db_cohort_20260612T051524Z`; the parent ran
   comparisons locally without the comparator subagent per user quota direction.
 
 ## Closure Evidence
@@ -324,6 +333,34 @@ Ran:
   correlation `-0.16722397856345997`, median open-minus-legacy frozen duration
   `111` days, and median days above `200 mm` `815`.
 
+## Increment Db Gate Evidence
+
+- Persisted compact reports:
+  - `d3-increment-db-freeze-resistance-20260612.md`
+  - `fdhp01_increment_db_execution_summary_20260612.json`
+  - `fdhp01_increment_db_run_status_20260612.tsv`
+  - `fdhp01_increment_db_annual_closure_residuals_20260612.csv`
+  - `fdhp01_increment_db_depth_metrics_20260612.csv`
+  - `fdhp01_increment_db_frozwt_frdp_ratio_20260612.csv`
+  - `fdhp01_increment_db_activation_summary_20260612.csv`
+- Db ran without the comparator subagent per user quota direction. The local
+  cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_db_cohort_20260612T051524Z`.
+- The within-hour red test failed before the production fix with one cold hour
+  advancing `0.1996 m`, then passed after the freeze loop recomputed
+  resistance/`Qsrf` after each fine-layer advance.
+- Years 2-6 independent WAT flux versus `Total-Soil + frozwt` storage remains
+  at WAT-publication numerical texture: max abs residual
+  `1.9976620946327017e-07 mm`, p1/p20 spot checks `~1e-13 mm`, p43 year 2
+  `-5.3290705182007514e-14 mm`.
+- Db fixes the stale-resistance depth runaway: `0/43` prefixes pin at the
+  profile bound, all 43 maximum depths are inside the legacy `240..503.2 mm`
+  envelope, mean maximum depth is `409.16220799389805 mm`, and median maximum
+  depth is `407.3294069097544 mm`.
+- D3 acceptance remains held. Median depth correlation is
+  `-0.05296014769462692`, and frozen duration under-persists with median
+  open-minus-legacy `-452` days.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -354,9 +391,10 @@ capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow handling.
 The C1 attempt adds that capacity enforcement alone is insufficient unless the
 overflow surfaces are reconciled with the WAT balance identity. C1a supplied
 that accounting specification, C1b lands the water-side infrastructure with
-conservation intact, C2 lands thaw arms without reopening D2, and Da localizes
-the remaining D3 blocker to missing in-hour freeze-arm resistance growth. The
-years 2-6 conservation gate remains the hard stop before any depth/duration
-acceptance claim, now using the repaired independent WAT flux ledger. The next
-required D3 increment is Db: port the legacy `frzng` in-hour
-front-advance/`qoutdm`/`qhtout` feedback under `INV-SNOWFREEZE-006`.
+conservation intact, C2 lands thaw arms without reopening D2, Da localizes the
+stale freeze-resistance defect, and Db fixes that stale in-hour resistance
+feedback. The years 2-6 conservation gate remains the hard stop before any
+depth/duration acceptance claim, now using the repaired independent WAT flux
+ledger. The next required D3 increment is freeze/thaw seasonal persistence and
+timing parity under the fine-layer heat-flow state; do not loosen Db/C1b/C2
+capacity, overflow, publication, or conservation guards.

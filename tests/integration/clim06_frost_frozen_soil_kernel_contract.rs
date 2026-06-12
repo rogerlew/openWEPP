@@ -833,6 +833,89 @@ fn seed_prior_layered_frost(surface: &mut HillslopeWritebackSurface, depth_m: f6
     insert_state_scalar(surface, "wb18_perc_frzw_0002", (frzw_m - 0.10).max(0.0));
 }
 
+fn seed_db_thin_front_frost(surface: &mut HillslopeWritebackSurface) {
+    configure_fdhp01_frost_only_no_flux(surface);
+    let initial_depth_m = 0.0004;
+    let initial_ice_m = 0.00008;
+    let liquid_theta = 0.2;
+    let top_liquid_m = liquid_theta * (0.100 - initial_depth_m);
+    let bottom_liquid_m = liquid_theta * 0.100;
+    insert_state_scalar(surface, "wb11_soil_water", top_liquid_m + bottom_liquid_m);
+    insert_state_scalar(surface, "wb18_perc_theta_0001", top_liquid_m);
+    insert_state_scalar(surface, "wb18_perc_theta_0002", bottom_liquid_m);
+    insert_state_scalar(surface, "wb18_perc_ul_0001", 0.040);
+    insert_state_scalar(surface, "wb18_perc_ul_0002", 0.040);
+    insert_state_scalar(surface, "frost.runtime_ws_frz", initial_ice_m);
+    insert_state_scalar(surface, "frost.runtime_dfrost", initial_depth_m);
+    insert_state_scalar(surface, "frost.runtime_frdp_m", initial_depth_m);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0001", initial_depth_m);
+    insert_state_scalar(surface, "wb18_perc_frzw_0001", initial_ice_m);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0002", 0.0);
+    insert_state_scalar(surface, "wb18_perc_frzw_0002", 0.0);
+    insert_state_scalar(surface, "frost.runtime_yst_m_0001", top_liquid_m);
+    insert_state_scalar(surface, "frost.runtime_yst_m_0002", bottom_liquid_m);
+    insert_state_scalar(surface, "frost.runtime_nwfrzz_m_0001", 0.0);
+    insert_state_scalar(surface, "frost.runtime_nwfrzz_m_0002", 0.0);
+
+    for fine_index in 1..=10 {
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_fgfrst", 1, fine_index),
+            if fine_index == 1 { 2.0 } else { 0.0 },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slfsd_m", 1, fine_index),
+            if fine_index == 1 {
+                initial_depth_m
+            } else {
+                0.0
+            },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsic_m", 1, fine_index),
+            if fine_index == 1 { initial_ice_m } else { 0.0 },
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsw_theta", 1, fine_index),
+            liquid_theta,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_sltime_s", 1, fine_index),
+            0.0,
+        );
+
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_fgfrst", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slfsd_m", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsic_m", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsw_theta", 2, fine_index),
+            liquid_theta,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_sltime_s", 2, fine_index),
+            0.0,
+        );
+    }
+}
+
 fn seed_c2_full_top_layer_frost(surface: &mut HillslopeWritebackSurface) {
     configure_fdhp01_frost_only_no_flux(surface);
     insert_state_scalar(surface, "wb11_soil_water", 0.020);
@@ -1145,6 +1228,47 @@ fn fdhp01_fine_sublayer_freeze_front_steps_by_energy_and_resistance() {
     assert!(
         hour_2_depth - hour_1_depth <= hour_1_depth - prior_depth + CLIM06_TEST_TOLERANCE,
         "increasing frozen-layer resistance should not accelerate the second hourly increment"
+    );
+}
+
+#[test]
+fn fdhp01_db_freeze_front_recomputes_resistance_within_hour() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_db_thin_front_frost(&mut surface);
+    insert_state_scalar(&mut surface, "tmax", -8.086);
+    insert_state_scalar(&mut surface, "tmin", -8.086);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "Db thin-front vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    let initial_depth_m = 0.0004;
+    let hour_1_depth_m =
+        require_response_state_update(&response, "frost.hourly.tilled_frozen_depth_m_0001");
+    let hour_2_depth_m =
+        require_response_state_update(&response, "frost.hourly.tilled_frozen_depth_m_0002");
+    assert!(
+        hour_1_depth_m > initial_depth_m + CLIM06_TEST_TOLERANCE,
+        "sustained cooling must still advance the thin front"
+    );
+    assert!(
+        hour_1_depth_m - initial_depth_m <= 0.060,
+        "one cold hour must not spend start-hour thin-front resistance across the profile; advanced {} m",
+        hour_1_depth_m - initial_depth_m
+    );
+    assert!(
+        hour_2_depth_m - hour_1_depth_m <= hour_1_depth_m - initial_depth_m + 0.005,
+        "front advance must remain resistance-limited after the first hour: h1={hour_1_depth_m}, h2={hour_2_depth_m}"
+    );
+
+    let initial_implied_qsrf = 8.086 / (initial_depth_m / 1.75);
+    let hour_1_implied_qsrf = 8.086 / (hour_1_depth_m / 1.75);
+    assert!(
+        hour_1_implied_qsrf < initial_implied_qsrf * 0.05,
+        "the frozen path grown inside hour 1 must materially reduce the next surface-flux slice"
     );
 }
 
@@ -1741,28 +1865,28 @@ fn simimpl32_contract_freeze_lineage_vector_requires_temperature_sensitive_frost
 #[test]
 fn fdhp01_contract_heat_flow_depth_can_exceed_retired_proxy_cap() {
     let mut surface = seeded_clim06_surface(true);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.0);
     surface
         .state_surface
-        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-8.0));
+        .insert(BoundarySymbol::from("tmax"), BoundaryValue::scalar(-20.0));
     surface
         .state_surface
-        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-16.0));
-    surface.state_surface.insert(
-        BoundarySymbol::from("frost.runtime_frdp_m"),
-        BoundaryValue::scalar(0.19),
-    );
+        .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-40.0));
     configure_fdhp01_deep_profile(&mut surface);
 
-    let report = execute_clim06_surface(surface);
-    assert!(
-        report.scheduler_report.is_success(),
-        "expected deep frost vector to succeed, scheduler={:?}, phases={:?}",
-        report.scheduler_report,
-        report.phase_reports
-    );
-
-    let dfrost = require_state_scalar(&report, "frost.runtime_dfrost");
-    let frdp = require_state_scalar(&report, "frost.runtime_frdp_m");
+    let mut dfrost = 0.0;
+    let mut frdp = 0.0;
+    for _day in 0..5 {
+        let response = execute_clim06_runoff_phase(&surface);
+        assert!(
+            response.status.ok_flag(),
+            "expected deep frost vector to succeed, status={:?}",
+            response.status
+        );
+        dfrost = require_response_state_update(&response, "frost.runtime_dfrost");
+        frdp = require_response_state_update(&response, "frost.runtime_frdp_m");
+        apply_response_state_updates(&mut surface, &response);
+    }
     assert!(
         dfrost > 0.20 + CLIM06_TEST_TOLERANCE,
         "FDHP01 requires heat-flow frost progression beyond the retired 0.20 m proxy cap"

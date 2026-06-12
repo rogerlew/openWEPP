@@ -209,12 +209,27 @@ Increment Da result:
 - The fresh Da cohort at `/tmp/fdhp01_increment_da_cohort_20260612T044217Z`
   ran `43/43` clean and is WAT-row-identical to C2.
 
-First actionable item: execute Db by porting the legacy `frzng` in-hour
-front-advance/`qoutdm`/`qhtout` resistance feedback. Add a red test that
-prevents metre-scale one-hour advance under a stale near-zero resistance and
-proves `qhtout` collapses as frozen path length grows. Do not loosen the
-C1b/C2 capacity, overflow, publication, or conservation guards. Do not advance
-to MOFE until years 2-6 conservation remains at the repaired independent
-ledger noise floor, the cohort is `43/43`, the year-7 boundary item stays
-explained or eliminated, and the full depth/duration acceptance gate passes
-without comparator tuning.
+Increment Db result:
+
+- Codex executed the `frzng` in-hour resistance feedback implementation
+  without the comparator subagent per user quota direction.
+- The new within-hour red test failed before the runtime fix with one cold
+  hour advancing `0.1996 m`, then passed after Db recomputed resistance/`Qsrf`
+  after each fine-layer front advance.
+- The fresh Db cohort at `/tmp/fdhp01_increment_db_cohort_20260612T051524Z`
+  ran `43/43` clean.
+- The independent years 2-6 WAT ledger remains at WAT-publication numerical
+  texture: max abs residual `1.9976620946327017e-07 mm`; p43 year 2 is
+  `-5.3290705182007514e-14 mm`.
+- Db fixes maximum-depth runaway: `0/43` profile pins, all 43 maximum depths
+  inside the legacy `240..503.2 mm` envelope, mean max
+  `409.16220799389805 mm`, median max `407.3294069097544 mm`.
+- D3 remains open: median depth correlation is `-0.05296014769462692`, and
+  frozen duration under-persists with median open-minus-legacy `-452` days.
+
+First actionable item: target freeze/thaw seasonal persistence and timing
+under the fine-layer heat-flow state. Do not loosen the Db/C1b/C2 capacity,
+overflow, publication, or conservation guards. Do not advance to MOFE until
+years 2-6 conservation remains at the repaired independent ledger noise floor,
+the cohort is `43/43`, the year-7 boundary item stays explained or eliminated,
+and the full depth/duration acceptance gate passes without comparator tuning.

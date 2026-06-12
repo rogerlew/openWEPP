@@ -21,10 +21,17 @@ is committed with its gates green.
 
 ## Universal rules (every increment)
 
-- **D2 hard stop:** the years 2–6 `Total-Soil + frozwt` cohort closure at
-  ≤ ~3e-11 mm is a per-increment gate. Any regression stops the increment;
-  fix or back out *within the increment* — never carry a broken identity
-  into the next.
+- **D2 hard stop:** from Da forward, the accepted gate is the independent
+  WAT flux ledger for years 2–6:
+  `RM + Irr - Interception - Q - Ep - Es - Er - Dp - latqcc - Tile -
+  delta(Total-Soil + frozwt)`. It must remain at the repaired WAT-publication
+  numerical texture established by Da/Db (Da max abs
+  `1.3813070645629644e-07 mm`; Db max abs
+  `1.9976620946327017e-07 mm`; Db p43 year 2
+  `-5.3290705182007514e-14 mm`), with any material regression stopping the
+  increment. If an implementation restores the former
+  `~3e-11 mm` floor, record that improvement; otherwise do not carry a broken
+  identity into the next increment.
 - **Contract-first within each increment:** amend `SC-SNOWFREEZE-001` for
   the increment's symbols/semantics and author that increment's red tests
   (from scope §5) before production edits.
@@ -353,6 +360,24 @@ Two additional Db obligations (Claude review, 2026-06-12):
   either restore the `3e-11`-grade floor or amend the universal-rule gate
   value with that attribution — the rule text and the accepted evidence
   must not silently disagree.
+
+**Db execution result (2026-06-12):** Db landed at `executed-hold`. The
+within-hour red test failed on the pre-fix runtime path with a one-hour
+thin-front advance of `0.1996 m`, then passed after the freeze loop recomputed
+surface resistance and `Qsrf` after each fine-layer front advance. The local
+43-prefix cohort at `/tmp/fdhp01_increment_db_cohort_20260612T051524Z` ran
+`43/43` clean without the comparator subagent. The independent years 2-6 WAT
+ledger remains at WAT-publication numerical texture with max abs residual
+`1.9976620946327017e-07 mm`; p1/p20 spot checks remain `~1e-13 mm` and p43
+year 2 is `-5.3290705182007514e-14 mm`. Db fixes the stale-resistance depth
+runaway: `0/43` prefixes pin at profile depth, all 43 maximum depths fall
+inside the legacy `240..503.2 mm` envelope, and mean/median max depths are
+`409.16220799389805/407.3294069097544 mm`. D3 acceptance still fails because
+depth correlation remains weak (median `-0.05296014769462692`) and frozen
+duration under-persists (median open-minus-legacy `-452` days). The next D3
+increment must target seasonal freeze/thaw persistence and timing under the
+fine-layer state, while preserving the Db/C1b/C2 conservation and capacity
+guards.
 
 ## Dispatch instructions
 
