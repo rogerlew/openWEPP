@@ -270,9 +270,58 @@ kept the old scalar `frozwt/frdp` signature rejected (max correlation
 days above `200 mm` `815`. This selects reading 1 above: freeze-side
 energy/resistance/front-advance behavior is the remaining scoped defect.
 
+## C2 outcome (2026-06-12, `7c2e6d64`) — discriminator resolved: reading 1
+
+C2 landed the full thaw side (top/bottom arms, sandwich geometry,
+thaw-through, overflow routing; `SC-SNOWFREEZE-001` v62) at
+`executed-hold`. The fine-sublayer state machine is now **structurally
+complete** — A, B, C1a, C1b, C2 all landed — and duration moved decisively
+(median frozen-duration residual `+111` days, from −518/−428/+382;
+`frozwt/frdp` max correlation down to `0.944`).
+
+Depth did not move (mean max `1793.52 mm`). Per the recorded C1b
+discriminator, **reading 1 is established**: the freeze-arm energetics
+carry an independent defect. The remaining D3 work is energy/resistance/
+front-advance behavior, not thaw or storage plumbing.
+
+Claude independent-audit notes (Ran, duckdb on the C2 cohort):
+
+- Conservation verified independently of the package ledger: p1/p20 worst
+  annual additive residual `~2e-13 mm`. **p43 is `1.9e-8 mm`** — above the
+  `3e-11` gate; small but real; watch item, plausibly overflow-path
+  rounding on the prefix that previously hit the capacity smoke.
+- **The C2 closure ledger is tautological and must be repaired before it
+  gates anything again:** `flux_balance_mm` equals `storage_delta_mm`
+  bit-for-bit on every row, so `residual_mm ≡ 0.0` by construction. The
+  ledger must recompute flux and storage from independent WAT columns (the
+  C1b-era ledger's `1e-12`-texture values were genuine).
+
+## Increment D — freeze-arm energetics closure (the scoped D3 remainder)
+
+**Da — hourly energy characterization (diagnostic first, per the C1a
+pattern):** instrument one freezing season on p1 (env-gated, not landed):
+hourly `qhtout`/`qdry`/resistance-sum/latent-consumption series against the
+CRM Ch. 3.8 / `frostn.for` expectations. Discriminate the candidate causes
+of ~4.3× depth overshoot and `815` vs `185` days-above-200mm:
+(a) resistance `Σ(dz/k)` (incl. snow/residue `dmfrsn`) not growing with the
+frozen path → `qhtout` stays large at depth; (b) `qdry` opposing heat too
+weak → `mltbtm` never arrests the front in winter; (c) latent term too
+cheap (dry deep sublayers freeze at near-zero energy cost — check legacy's
+handling of low-`slsw` layers); (d) flux→energy unit error (W m⁻² × 3600 s
+per hour). Da also repairs the tautological closure ledger and explains or
+clears the p43 `1.9e-8` watch item.
+
+**Db — fix to contract:** correct the established term(s) under
+`INV-SNOWFREEZE-006` authority; red tests from the CRM equations
+(resistance growth with depth; bounded advance on a known profile); then
+the full package D3 acceptance gate (depth in the 240–503 mm envelope as
+flag, correlation up from 0.13, duration residual collapsing, conservation
+at noise on an independent ledger) and, on pass, the closing obligations
+(ROADMAP item 1, README 7f, handoff naming MOFE).
+
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
