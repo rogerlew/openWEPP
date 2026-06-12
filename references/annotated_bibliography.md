@@ -230,3 +230,139 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: `wbk_route_01_channel_geometry`, `wbk_route_03_wave_propagation`.  
 **Notes / caveats**: This replaces older local v6.4.1 as current-version anchor for Phase-0B.  
 **OAR-6 compliance status**: Sufficient as an engineering-practice companion; not a substitute for domain-specific transmission-loss theory sources.
+## R-17: NRCS NEH Part 630 routing anchors (Chapter 21 + Chapter 17)
+
+**Citation**: USDA NRCS, National Engineering Handbook (NEH) Part 630, Chapter 21 (*Design Hydrographs*) with flood-routing equation anchors from Part 630 Chapter 17 (*Flood Routing*).
+**Local path**: `/workdir/wepp-forest/references/NEH_Part630_Ch21_Hydrologic_Routing.md`
+**Reference quality**: `verified-primary`
+**Topic**: Storage-indication (Modified Puls) level-pool routing equations and routing-table construction authority for impoundment hydrograph routing.
+**Key equations / concepts for WB-34**:
+- `[DIRECT]` Chapter 17 Eq. (17-1) continuity relation `Delta t (I - O) = Delta S`.
+- `[DIRECT]` Chapter 17 Eq. (17-2) expanded continuity form with `I1`, `I2`, `O1`, `O2`, `S1`, `S2`.
+- `[DIRECT]` Chapter 17 Eq. (17-3) storage-indication working form with `(S2/Delta t + O2/2)`.
+- `[DIRECT]` Chapter 17 working-curve requirement: solve with `O2` versus `(S2/Delta t + O2/2)`.
+- `[DIRECT]` Chapter 17 note that WinTR-20 adjusts `Delta t` internally when large-step distortion conditions occur.
+- `[DIRECT]` Chapter 21 explicitly cross-references Chapter 17 for routing through structures.
+**Kernel mapping**: `wbk_imp_03_level_pool_routing`, `wbk_imp_01_stage_area_storage` (working-curve support).
+**Notes / caveats**: Chapter 21 is the design-hydrograph chapter; routing equations are in Chapter 17 and are cross-referenced by Chapter 21.
+**OAR-6 compliance status**: Primary authority for Modified Puls/storage-indication equation family used in WB-34.
+
+## R-18: USDA SCS TR-20 routing documentation
+
+**Citation**: USDA Soil Conservation Service, *Technical Release 20: Computer Program for Project Formulation - Hydrology* (1965 lineage), with WinTR-20 continuity user-guide anchors.
+**Local path**: `/workdir/wepp-forest/references/SCS_TR20_Routing_Documentation.md`
+**Reference quality**: `verified-primary`
+**Topic**: TR-20 routing coefficient workflow, structure working-curve semantics, and time-increment controls for storage routing.
+**Key equations / concepts for WB-34**:
+- `[DIRECT]` TR-20 permits routing coefficient `C` entry and computes modified coefficient `C*` internally for reach routing.
+- `[DIRECT]` TR-20 derives coefficient selection from incremental discharge/area velocity estimates and the main time increment.
+- `[DIRECT]` TR-20 ties structure routing to elevation-discharge-storage tables.
+- `[DIRECT]` TR-20 increment guidance: increment `D` should remain below small-subwatershed `Tc` for hydrograph fidelity; main increment should not be too large relative to `Tp`.
+- `[DIRECT]` WinTR-20 continuity diagnostic for storage routing when required storage-discharge combination exceeds structure working-curve limits.
+**Kernel mapping**: `wbk_imp_03_level_pool_routing`, `wbk_imp_02_storage_discharge`.
+**Notes / caveats**: Legacy TR-20 OCR is imperfect; coefficient and working-curve semantics are directly recoverable and reinforced by WinTR-20 continuity documentation.
+**OAR-6 compliance status**: Primary routing-method companion for `R-17` in WB-34 storage-indication implementation.
+
+## R-19: USBR Design of Small Dams (spillways and outlets)
+
+**Citation**: U.S. Bureau of Reclamation, *Design of Small Dams*, 3rd edition lineage (1987), including chapter-level spillway/outlet equations and errata.
+**Local path**: `/workdir/wepp-forest/references/USBR_Design_of_Small_Dams_Spillways_Outlets.md`
+**Reference quality**: `verified-primary`
+**Topic**: Constitutive discharge equations and coefficient behavior for weirs, spillways, and submerged inlet/orifice control.
+**Key equations / concepts for WB-34**:
+- `[DIRECT]` Ogee/overflow weir equation (Eq. (3)): `Q = C L H_e^(3/2)`.
+- `[DIRECT]` Crest-length adjustment relation associated with Eq. (3).
+- `[DIRECT]` Submerged inlet/orifice control forms (`Q = C A ...`) and equivalent boxed forms for head-defined openings.
+- `[DIRECT]` Coefficient guidance: sharp-crested coefficient about `3.3`; broad-crested theoretical coefficient about `3.087`.
+- `[DIRECT]` Tailwater/submergence effects reduce discharge coefficient; worked examples include `C_s/C_f`-style correction.
+**Kernel mapping**: `wbk_imp_02_storage_discharge`, `wbk_imp_03_level_pool_routing` (discharge-function coupling).
+**Notes / caveats**: OCR superscript/radical rendering is noisy; normalized notation is used with preserved line anchors in the local extract.
+**OAR-6 compliance status**: Primary authority for impoundment outlet/spillway constitutive equations in WB-34.
+
+## R-20: Wang et al. (2018) CPMC accuracy with lateral inflow
+
+**Citation**: Wang, L., S. Lapin, J. Q. Wu, W. J. Elliot, and F. R. Fiedler (2018). *Accuracy of the Muskingum-Cunge method for constant-parameter diffusion-wave channel routing with lateral inflow*. arXiv:1802.04429v1.
+**Local path**: `/workdir/wepp-forest/references/WangL_2018_Accuracy_of_Muskingcum-Cunge_1802.04429v1.pdf`
+**Reference quality**: `verified-primary`
+**Topic**: Order-of-accuracy behavior of constant-parameter Muskingum-Cunge (CPMC) with spatially and temporally variable lateral inflow.
+**Key equations / concepts for WB-35**:
+- `[DIRECT]` CPMC recursion with `C1..C4` (Eq. (2)) is second-order accurate without extra spatial-temporal restrictions.
+- `[DIRECT]` Third-order CPMC requires specific `Delta x` / `Delta t` coupling constraints (Eq. (7), Eq. (8), and dimensionless Eq. (9)).
+- `[DIRECT]` Lateral-inflow treatment drives error behavior: second-order average inflow form (Eq. (12)) versus third-order form (Eq. (11)); simplified averaging (Eq. (14)) ignores spatial derivatives.
+- `[INFERENCE]` Supports WB-35 classification that WEPP `ipeak=4` is a CPMC second-order baseline unless third-order constraints and higher-order lateral-inflow terms are explicitly enforced.
+**Kernel mapping**: `wbk_route_03_wave_propagation`.
+**Notes / caveats**: Local filename retains source typo (`Muskingcum`); content is the 2018 arXiv preprint used for method-order traceability.
+**OAR-6 compliance status**: Primary authority for CPMC order claims and lateral-inflow discretization implications in WB-35.
+
+## R-21: Dun et al. (2009) WEPP forest-application adaptation
+
+**Citation**: Dun, S., J. Q. Wu, W. J. Elliot, P. R. Robichaud, D. C. Flanagan, J. R. Frankenberger, R. E. Brown, and A. C. Xu (2009). *Adapting the Water Erosion Prediction Project (WEPP) model for forest applications*. Journal of Hydrology, 366(1-4), 46-54. https://doi.org/10.1016/j.jhydrol.2008.12.019
+**Local path**: `/workdir/wepp-forest/references/dun2009.pdf`
+**Reference quality**: `verified-primary`
+**Topic**: Forest-hydrology adaptation of WEPP subsurface routines (deep percolation, lateral flow, and hillslope-to-channel transfer) for steep forested watersheds.
+**Key equations / concepts for WEPP forest subsurface-flow adaptation**:
+- `[DIRECT]` Percolation routine (Eq. (1a)-(1e)) computes layer drainage using available water, lower-layer saturation state, and unsaturated conductivity terms.
+- `[DIRECT]` Subsurface lateral-flow routine (Eq. (3a)-(3c)) applies Darcy-law lateral flux with equivalent hydraulic conductivity, profile drainable thickness, slope gradient, and hillslope length.
+- `[DIRECT]` v2008.9 adaptation adds a user-defined restrictive layer for deep percolation and applies a harmonic-mean conductivity substitution in deep-percolation computation (Eq. (1d) term replacement described in text).
+- `[DIRECT]` v2008.9 adds explicit hillslope subsurface-flow transfer to channel flow, including a 24-hour uniform-flow assumption when only subsurface flow occurs.
+- `[DIRECT]` Performance comparison for Hermada watershed: v2004.7 generated negligible/zero watershed runoff, while v2008.9 simulated mean annual discharge of 262 mm versus observed 275 mm; daily Nash-Sutcliffe improved from -0.17 to 0.45.
+- `[INFERENCE]` Supports preserving restrictive-layer and anisotropy controls as first-class behavior in WEPP forest watershed hydrology implementations.
+**Kernel mapping**: `legacy hillslope subsurface hydrology (percolation + lateral flow)`, `hillslope-to-channel runoff transfer`, `watershed discharge aggregation` (`[INFERENCE]`).
+**Notes / caveats**: Paper is calibration/evaluation focused on one 9-ha Idaho watershed and explicitly notes limitations where groundwater-streamflow interaction is important.
+**OAR-6 compliance status**: Primary process authority for forest subsurface-flow behavior and WEPP v2008.9 adaptation rationale; use with channel-routing references when deriving route-kernel constants.
+
+## R-22: Srivastava (2013) dissertation on WEPP groundwater-baseflow integration
+
+**Citation**: Srivastava, A. (2013). *Modeling Hydrological Processes in Three Mountainous Watersheds in the U.S. Pacific Northwest*. Ph.D. dissertation, Washington State University, Pullman, WA.
+**Local path**: `/workdir/wepp-forest/references/Srivastava_Diss2013_14.pdf`
+**Reference quality**: `verified-primary`
+**Topic**: WEPP watershed-hydrology extension using a linear-reservoir groundwater component, with calibration and evaluation in Pacific Northwest forest watersheds.
+**Key equations / concepts for WEPP baseflow and channel-inflow behavior**:
+- `[DIRECT]` Chapter 2 daily linear-reservoir bookkeeping uses Eq. (1)-(3): `Qbi = kb * Si`, `Qsi = ks * Si`, and `Si+1 = Si + (Di - Qbi - Qsi)`, where `Di` is WEPP-simulated deep percolation recharge.
+- `[DIRECT]` Chapter 3 derives an analytical baseflow solution from groundwater continuity plus storage-outflow relations (Eq. (1)-(10)); `kb`, `ks`, and initial storage are estimated with Levenberg-Marquardt least-squares fitting to observed streamflow.
+- `[DIRECT]` WEPP watershed runoff assembly is explicitly described as combining hillslope surface runoff and subsurface lateral flow as channel inflow, then routing to outlet on a daily basis.
+- `[DIRECT]` Priest River results report no simulated surface runoff (2005-2009), with outlet streamflow originating from subsurface lateral flow alone (no-baseflow scenario) or from subsurface lateral flow plus baseflow (with-baseflow scenario).
+- `[DIRECT]` WEPP simulations are run at a daily time step; winter snow accumulation/melt computations down-scale daily climate inputs to hourly values inside the winter routine.
+- `[INFERENCE]` Supports the implementation interpretation that channel inflow can be non-zero even when surface runoff is negligible, via subsurface lateral flow and groundwater baseflow contributions.
+**Kernel mapping**: `legacy hillslope subsurface hydrology (deep percolation + lateral flow)`, `groundwater linear-reservoir baseflow`, `hillslope-to-channel runoff transfer`, `daily water-balance with hourly winter snow routine`.
+**Notes / caveats**: Dissertation aggregates three studies (Priest River, Upper Cedar River, East Deer Creek) and includes both conceptual formulation and calibration/evaluation results; equation numbering and symbols are authoritative in the PDF body.
+**OAR-6 compliance status**: Primary authority for WEPP groundwater-baseflow integration logic and watershed-scale flow-component attribution in forested mountainous basins.
+
+## R-23: Wang (2012) dissertation on channel routing and WEPP integration
+
+**Citation**: Wang, L. (2012). *Channel Routing Using Discrete Hayami Convolution Method with Applications to the Water Erosion Prediction Project (WEPP) Model*. Ph.D. dissertation, Washington State University, Pullman, WA.
+**Local path**: `/workdir/wepp-forest/references/L_Wang_10757974.pdf`
+**Reference quality**: `verified-primary`
+**Topic**: Channel-routing method development and evaluation for watershed modeling, with direct WEPP implementation guidance (LKW, CPMC, MVPMC3), lateral-inflow treatment, and routing input semantics.
+**Key equations / concepts for WEPP channel routing and lateral inflow handling**:
+- `[DIRECT]` Muskingum-Cunge recursion is given in Eq. (2.15): `Q(i+1,j+1) = C1*Q(i,j+1) + C2*Q(i,j) + C3*Q(i+1,j) + C4*Delta x*q`, with `C1..C4` defined from `K`, `X`, and `Delta t`.
+- `[DIRECT]` WEPP hillslope daily hydrograph parameters used for channel-routing inflow include `td`, `tc`, `qp`, `V`, and `Vsb` (subsurface runoff volume with an assumed 24-hour duration); Eq. (2.16) uses a double-exponential form to construct a continuous inflow hydrograph.
+- `[DIRECT]` WEPP routing-option controls: `ipeak=3` (LKW), `ipeak=4` (CPMC), and `ipeak=5` (MVPMC3); `ipeak=1/2` retain modified EPIC/CREAMS behavior; routing outputs for `ipeak>2` require `chan.inp`.
+- `[DIRECT]` Appendix routing code documents the CPMC lateral-only fallback (`qref = 0.5*(qtmin + qtmax)`) for cases with lateral inflow but no inflow from the channel top.
+- `[DIRECT]` Discrete Hayami finding: using point kernel values can incur mass-balance error when the rising limb is too short; center-averaged kernel values preserve unity kernel integration and mass balance.
+- `[DIRECT]` CPMC accuracy finding: general second-order behavior, with third-order accuracy under specific space-time discretization constraints; lateral-inflow discretization materially controls routing accuracy.
+- `[INFERENCE]` Provides implementation-level support for route-γ decisions on hydrograph construction, lateral-inflow averaging, and method selection defaults in WEPP-style daily watershed workflows.
+**Kernel mapping**: `wbk_route_03_wave_propagation`, `wbk_route_04_cascade_composition`, `wbk_route_08_orchestrator_kernel`, `wbk_route_09_inflow_aggregation_kernel`.
+**Notes / caveats**: This dissertation is the primary umbrella source for several derivative artifacts already in the corpus (including chapter-level CPMC accuracy content also represented by `R-20`); use chapter context when citing equation provenance.
+**OAR-6 compliance status**: Primary implementation authority for WEPP channel-routing option semantics (`ipeak`, `chan.inp`) and a core theory-to-code bridge for lateral-inflow routing accuracy.
+
+## R-24: Dun et al. (2010) WEPP frost-simulation subroutine improvements
+
+**Citation**: Dun, S., J. Q. Wu, D. K. McCool, J. R. Frankenberger, and D. C. Flanagan (2010). *Improving Frost-Simulation Subroutines of the Water Erosion Prediction Project (WEPP) Model*. Transactions of the ASABE, 53(5), 1399–1411. https://doi.org/10.13031/2013.34896
+**Local path**: not yet acquired — closed access (ASABE elibrary, AID 34896; confirmed no open-access copy via Unpaywall/Semantic Scholar, 2026-06-12). Acquire via institutional access into `references/copyrighted/dun2010.pdf`; do not vendor.
+**Reference quality**: `verified-primary` (citation/DOI verified against the ASABE Vol. 53 No. 5 TOC; full text not yet read)
+**Topic**: The v2006.5 → v2010.1 rewrite of WEPP's frost simulation: fine-layer soil-profile discretization (10 sublayers/layer), revised thermal/hydraulic parameter computation, hourly freeze/thaw energy balance; validated on Pullman WA and Morris MN plots.
+**Key equations / concepts**: the operative authority lineage for the pinned-baseline frost routines (`frostn`/`frzng`/`frznw`/`mlttp`/`mltbtm`/`frwatc`/`watdst`) that openWEPP's FDHP01 D3 fine-sublayer port implements; CRM eqn [3.8.1]–[3.8.4] energy terms as deployed (note: the eqn [3.8.4] migration-heat middle term is **dead code** in the pinned baseline — `frzng.for` `frzftp = 0.0`; see the frost-heave backlog item).
+**Kernel mapping**: `SC-SNOWFREEZE-001` (`INV-SNOWFREEZE-006`/`-012`), FDHP01 work package (`docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/`), `docs/backlog/20260612-frost-heave-frozen-fringe-impedance-formulation.md`.
+**Notes / caveats**: **Open verification question** (recorded in the frost-heave backlog item): whether the published v2010.1 description claims the soil-water-migration term active — the shipped code disables it. Resolve when the full text is acquired; until then the paper is cited for the discretization/energy-balance lineage only, not for migration-heat behavior.
+**OAR-6 compliance status**: Primary peer-reviewed source for the frost lineage; full-text acquisition pending.
+
+## R-25: Shen (2011) WSU MS thesis — WEPP snow distribution
+
+**Citation**: Shen, D. (2011). *Simulating Snow Distribution Using the Water Erosion Prediction Project (WEPP) Model*. M.S. thesis, Department of Biological Systems Engineering, Washington State University.
+**Local path**: `references/copyrighted/D_Shen_020312.pdf` (cached but previously unindexed — entry added 2026-06-12)
+**Reference quality**: `verified-primary` (thesis PDF on disk; title page verified)
+**Topic**: WEPP snow accumulation/distribution simulation — the WSU lineage adjacent to the snow density/settling behavior implicated in the FDHP01 F4 finding (openWEPP midwinter snow density ~381 kg/m³ vs legacy ~250 at matching SWE → ~4× insulation deficit).
+**Kernel mapping**: snow Stage-2 science review (`docs/backlog/20260605-snow-code-deferred-science-review.md`), F4 snow density/depth-split disposition (FDHP01 staged plan).
+**Notes / caveats**: MS thesis, not peer-reviewed journal text; use as lineage/context alongside `snowd.for` source authority.
+**OAR-6 compliance status**: Supporting source for the snow density/depth-split work; not a primary physics authority on its own.

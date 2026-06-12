@@ -246,8 +246,11 @@ diagnostic before implementation):
   is the migration heat).
 - Dun, S., J.Q. Wu, D.K. McCool, J.R. Frankenberger, D.C. Flanagan (2010).
   Improving frost-simulation subroutines of the WEPP model. Trans. ASABE
-  53(5):1399–1411. (Validation sites Pullman WA, Morris MN; v2006.5 →
-  v2010.1.)
+  53(5):1399–1411. https://doi.org/10.13031/2013.34896 — indexed as
+  **R-24** in `references/annotated_bibliography.md`; closed access,
+  full-text acquisition pending (the eqn 3.8.4 verification question above
+  is parked on that acquisition). (Validation sites Pullman WA, Morris MN;
+  v2006.5 → v2010.1.)
 - Saxton, K.E., W.J. Rawls (2006). Soil water characteristic estimates by
   texture and organic matter for hydrologic solutions. SSSAJ 70:1569–1578
   (`saxfun.for` lineage).
