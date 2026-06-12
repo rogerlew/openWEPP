@@ -485,7 +485,7 @@ production returned to Db/`SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
@@ -595,3 +595,68 @@ not close D3: mean max depth `856.817674502367 mm`, range
 days. The next scoped increment is therefore frost-side under the Dd
 controlled-snow setup: localize the remaining hourly flux/front divergence
 with in-process evidence, not snow-density tuning.
+
+## Dd outcome (2026-06-12, `bc47e426`) + F5 — the residual is `qdry` conductivity
+
+Dd did NOT certify F4 as the whole story: under forced legacy snow, depth
+improved `1146 → 857 mm` mean max but stayed outside the envelope (0/43),
+duration `+567 → +502`. F4 (snow insulation) is real but partial (~25% of
+the gap). Claude trajectory + code analysis of the residual:
+
+- **Trajectory discriminator (Ran):** the divergence is at **onset** —
+  openWEPP carries `199 mm` of frost by mid-December of winter 1 while
+  legacy `H1.winter.dat` shows `0`; legacy peaks that winter at `50 mm`
+  vs openWEPP-forced `621 mm`. Early-season divergence happens *before*
+  deep snow exists, so insulation cannot explain it.
+- **Dead-end disposed (Static):** legacy `qwet` (migration-water heat,
+  eqn 3.8.4 middle term, `frzng.for:381-437`) is **dead code in the pinned
+  baseline** — `saxfun` returns negative potentials (error fallback
+  `−150 m`) and the active `frzftp = 0.0` (the `−100 m` value is commented
+  out) makes the activation condition always false. Do not port it as a
+  live term; record it as a legacy-disabled mechanism (consistent with the
+  known "routines disabled to work around bugs" pattern).
+- **F5 (the established residual, Static):** openWEPP's
+  `lower_front_heat_w_m2` (`coupling.rs:1070-1082`) uses
+  `FROST_RUNTIME_UNFROZEN_CONDUCTIVITY_FALLBACK_W_M_K = 0.2`
+  unconditionally. Legacy computes the **content-dependent harmonic-mean
+  conductivity** over the metre below the front (`frostn.for:430-458`):
+  `k(θ,ρ) = (0.5096 + 7.4493·θ − 8.7484·θ²)·(0.0014139·ρ_bulk − 1.0588)·ksoilf`,
+  giving ≈ `1.0–1.5 W/m/K` for moist soil — `0.2` is only the dry
+  fallback. openWEPP's `qdry` is therefore **5–7× under-powered**, which
+  explains all three residuals simultaneously: autumn `tmpbl ≈ 10 °C`
+  should yield `qdry ≈ 12 W/m²` (suppressing frost onset until January, as
+  legacy shows) vs openWEPP's ~2 (frost onset in November); weak midwinter
+  opposition → ~2× depth; weak spring bottom-melt energy (`mltbtm`
+  consumes `qdry`) → `+502` days over-persistence. One term, three
+  symptoms.
+
+## Increment De — content-dependent `qdry` conductivity
+
+**Objective:** implement legacy's harmonic-mean unfrozen conductivity for
+the lower-front heat path (`frostn.for:430-458` lineage): per-fine-layer
+`k(θ,ρ)` polynomial over the metre below the front, harmonic-mean
+aggregation, `0.2` retained only as the genuine dry fallback; the same
+conductivity feeds the `mltbtm` bottom-thaw energy.
+
+- Red tests: (1) conductivity polynomial fixtures (moist soil ≈ 1.0–1.5,
+  dry → 0.2 fallback); (2) **autumn onset suppression** — with the fitted
+  wave and moist profile, November freeze days produce near-zero net front
+  advance (the H1 trajectory `0 mm` at j350 is the flag fixture);
+  (3) spring bottom-melt strengthens (duration decreases on a fixture
+  winter). Conservation and capacity guards stay green.
+- Gates: red tests green; full Rust closure loop; 43/43 clean; D2 ledger
+  at the accepted texture **with the creep watch** (Db `2.0e-7` →
+  Dc1 `6.5e-7` → Dd `6.7e-7`; another material growth triggers
+  investigation, not acceptance); then **two cohort evaluations**:
+  - **forced legacy snow** (Dd harness): this is the frost-physics
+    certification — depth into the 240–503 mm envelope, duration residual
+    collapsing, correlation holding ≥ the Dc `0.66` level;
+  - **native snow**: recorded for the F4 disposition — the gap between
+    native and forced runs is the measured cost of the snow
+    density/settling defect, which prices the Stage-2 promotion decision
+    (operator call).
+- If the forced-snow run certifies: FDHP01 closes at the declared boundary
+  (frost physics complete; native-snow residual attributed to F4 with
+  paired evidence) with the defect-shaped handoff naming the snow
+  density/depth-split item. If it does not: the next term comes from the
+  same paired-trajectory method that found F5.
