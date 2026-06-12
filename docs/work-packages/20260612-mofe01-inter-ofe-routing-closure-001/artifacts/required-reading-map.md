@@ -37,3 +37,4 @@ artifact (tiers, rationale, read timing); a stale map is a governance defect.
 | UTC | Agent | Change |
 |-----|-------|--------|
 | 2026-06-12 | Claude Code | Initialized at scaffold. |
+| 2026-06-12 | Codex | Executed M-A; read package, staged increment plan, work-package/science/crate/test agent guides, current runner seams, and pinned legacy routing files. |

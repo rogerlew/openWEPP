@@ -64,46 +64,55 @@ agent memory `staged-increment-port-template`). Companion scope authority:
   with file:line citations against the pinned baseline; the legacy
   closure-degradation curve recorded.
 
-## Increment M-B — contract authority + shadow transfer accounting
+## Increment restructure after M-A (2026-06-12)
 
-**Objective:** pin the three conservation identities in contract, and land
-the transfer-accounting state **driving nothing** (shadow), with red tests.
+M-A refuted the shadow-first premise for multi-OFE: current openWEPP
+**fail-closes on all 29 multi-OFE surfaces** (28× `HKERNEL-WB14-RUNOFF-E-003`
+day 2; H34 `E-001` day 1), so there is no multi-OFE behavior to preserve and
+a bit-identical shadow gate has nothing to bite on. The single-OFE anchor
+(7/7 passing) carries the preservation gate instead. Increments now follow
+the scope artifact's port-scope sections (`mofe-routing-port-scope.md`,
+authority for seams/symbols/red tests):
 
-- Amend the routing contract(s) per the M-A scope: inter-OFE transfer
-  invariants, the three identities, per-OFE publication semantics
-  (`UpStrmQ`/`SubRIn`/`QOFE` meaning pinned with legacy provenance where it
-  exists and contract authority where legacy is defective).
-- Shadow: per-element sent/received accounting computed and published as
-  diagnostics, driving no water movement. Gates: bit-identical cohort
-  outputs (state drives nothing); shadow transfer identity holds
-  internally; full Rust closure loop.
+## Increment M-B — hydrology route closure (scope §"M-B hydrology route closure")
 
-## Increment M-C — routing arms (water movement)
+- Contract-first within the increment: pin the three conservation
+  identities (per-element with run-on/run-off, transfer, hillslope-total)
+  and the upstream-carry semantics in the routing contract(s) BEFORE
+  production edits; then the scope's red tests (2-OFE surface carry, 2-OFE
+  lateral handoff, H11/H6/H9/H1 cohort smoke past day 2); then populate
+  `runon_input` from real upstream carry and feed lateral carry to the
+  downstream `SubRIn` path per the scope's seam map.
+- Gates: red tests green; 36/36 execute (fail-closed boundary retired on
+  valid input); the three identities at noise on every executing surface;
+  single-OFE anchor bit-identical; full Rust closure loop.
 
-**Objective:** run-off → run-on movement live, per the scope's seam map —
-likely itself split (M-C1 surface run-on; M-C2 lateral/subsurface if the
-scope shows separable seams) per M-A sizing.
+## Increment M-C — per-OFE WAT publication closure (scope §"M-C WAT publication closure")
 
-- Red tests first (from the scope's definitions): two-element fixtures
-  (sent ≡ received; receiving-element infiltration sees run-on; identity
-  closure under routing), ladder fixtures per count.
-- Gates: all three identities at noise on the 1–5 ladder; single-OFE anchor
-  unchanged; full loop. Directional comparator look is *recorded only*,
-  filtered through the M-A trust calibration.
+- Per-OFE publication semantics pinned in contract (no `UpStrmQ = 0` for
+  downstream OFEs; no `QOFE = Q` aliasing; one row per OFE per day or an
+  explicitly contracted equivalent); handoff-to-printed-precision checks
+  against the M-A calibration (legacy-clean at 1–5, so usable here).
+- Gates: scope red tests; identities still at noise; single-OFE anchor;
+  full loop.
 
-## Increment M-D — acceptance on the ladder + closure
+## Increment M-D — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 
-- Full-cohort acceptance per OFE count (the 36-run 1-5 ladder);
-  totalwatsed3 end-to-end audit on routed output (the WBVAL06/6a deferral
-  resolved or explicitly re-stated).
-- On pass: package complete; ROADMAP item 1 removed; README narrative
-  updated; handoff names the next mechanism; defect-shaped items for
-  anything attributed outward (per-OFE-count legacy defect documentation
-  feeds the wepppy/legacy ecosystem record).
+- Per the scope: implement only if the water seam owns it inseparably;
+  otherwise contract-pin the boundary and emit the follow-on. Operator
+  visibility on whichever way the evidence lands.
+
+## Increment M-E — ladder acceptance + closure
+
+- Full-cohort acceptance per OFE count (36-run 1–5 ladder); totalwatsed3
+  end-to-end audit on routed output (the WBVAL06/6a deferral resolved or
+  explicitly re-stated); package closure obligations (ROADMAP item 1,
+  README narrative, handoff naming the next mechanism + the named >10-OFE
+  far-point follow-on and any erosion-coupling follow-on).
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C…|M-D> of
+Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-D|M-E> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan
