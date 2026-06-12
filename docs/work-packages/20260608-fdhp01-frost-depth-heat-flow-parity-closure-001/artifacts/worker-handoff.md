@@ -52,6 +52,9 @@ Primary landed behavior:
   bounded by total pore capacity, valid overflow is routed through
   `watpdg`/`watbtm`, `watbtm` contributes to WB13 `Dp`, and bounded WB18/WB13
   roundoff canonicalization is contract-authorized.
+- `SC-SNOWFREEZE-001` is now v62 after C2. Top/bottom thaw, sandwich geometry,
+  `fgthwd`, `nwfrzz` release, `watpdg`/`watbtm` capacity-routed overflow, and
+  non-amplifying repeated freeze/thaw conservation are contract-authorized.
 
 Validation status before post-review cohort validation:
 
@@ -170,9 +173,25 @@ Increment C1b result:
 - Depth magnitude did regress as a watch item: mean maximum depth is
   `1791.9747961835646 mm`, still near the profile bound.
 
-First actionable item: execute Increment C2 from the committed C1b boundary.
-Route `mlttp`/`mltbtm`, sandwich frost, thaw-through, and any melt overflow
-through the C1b capacity/overflow path. Do not advance to MOFE until years 2-6
-conservation remains at noise, the cohort is `43/43`, the year-7 boundary item
-is explained or eliminated, and the full depth/duration acceptance gate passes
-without comparator tuning.
+Increment C2 result:
+
+- Codex landed the thaw-arm state machine without the comparator subagent per
+  user quota direction.
+- The authoritative local hourly cohort at
+  `/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z` ran `43/43`
+  clean with `43/43` WAT outputs and `selected_lane=hourly`.
+- Years 2-6 and year-7 `Total-Soil + frozwt` closure remained at the package
+  C1b additive-storage ledger noise floor (`0.0 mm` in the retained annual
+  table).
+- D2/p2 did not reopen, profile-bound pinning remains removed (`0/43` pinned),
+  and `frozwt/frdp` max correlation is `0.9441102161636825`.
+- D3 acceptance still fails: mean maximum depth is `1793.52198510966 mm`,
+  median depth correlation is `-0.16722397856345997`, open-minus-legacy frozen
+  duration median is `111` days, and median days above `200 mm` is `815`.
+
+First actionable item: scope and execute the freeze-arm heat-flow
+resistance/latent-heat repair isolated by C2. Do not loosen the C1b/C2
+capacity, overflow, publication, or conservation guards. Do not advance to MOFE
+until years 2-6 conservation remains at noise, the cohort is `43/43`, the
+year-7 boundary item stays explained or eliminated, and the full
+depth/duration acceptance gate passes without comparator tuning.

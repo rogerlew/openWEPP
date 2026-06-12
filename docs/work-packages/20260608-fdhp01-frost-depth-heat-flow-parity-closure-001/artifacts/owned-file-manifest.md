@@ -4,7 +4,7 @@ Status: executed-hold
 
 Evidence mode: Static
 
-Date: 2026-06-11
+Date: 2026-06-12
 
 ## Contract And Package Evidence
 
@@ -20,7 +20,9 @@ Date: 2026-06-11
     available-liquid handoff boundary. Increment C1b adds v60/v61,
     authorizing fine-layer capacity/overflow semantics, `watpdg`/`watbtm`
     publication surfaces, `watbtm` as WB13 `Dp` lineage, and bounded WB18/WB13
-    roundoff handling.
+    roundoff handling. Increment C2 adds v62, authorizing top/bottom thaw,
+    sandwich geometry, `fgthwd`, `nwfrzz` release, and non-amplifying
+    repeated freeze/thaw conservation.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -43,7 +45,9 @@ Date: 2026-06-11
     debit overdraws at the available-liquid boundary. Increment C1b adds
     capacity-limited fine-layer liquid/ice ownership, downward redistribution,
     `watpdg`/`watbtm` overflow accounting, and overflow-inclusive shadow
-    residual accounting.
+    residual accounting. Increment C2 adds top/bottom thaw arms, sandwich
+    geometry, thaw-through handoff, release of thawed `nwfrzz`, and final
+    scalar/layer egress reconciliation from the owned fine state.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
@@ -120,16 +124,18 @@ Date: 2026-06-11
     layer `frzw` update tests. Increment A adds shadow fine-state round-trip,
     seam identity, and non-driving-output tests. Increment B adds dispatch,
     fine-front energy, `frznw`, and `watdst` vectors. Increment C1b adds
-    capacity, active-`ul`, overflow, and shadow-identity vectors.
+    capacity, active-`ul`, overflow, and shadow-identity vectors. Increment C2
+    adds bottom-thaw, top-thaw, sandwich geometry, `fgthwd`, and multicycle
+    non-amplification vectors.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v61 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v62 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v61 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v62 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
@@ -201,3 +207,10 @@ Date: 2026-06-11
 - `fdhp01_increment_c1b_depth_metrics_20260612.csv`
 - `fdhp01_increment_c1b_frozwt_frdp_ratio_20260612.csv`
 - `fdhp01_increment_c1b_starter_capacity_20260612.json`
+- `d3-increment-c2-thaw-arms-20260612.md`
+- `fdhp01_increment_c2_execution_summary_20260612.json`
+- `fdhp01_increment_c2_run_status_20260612.tsv`
+- `fdhp01_increment_c2_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_c2_depth_metrics_20260612.csv`
+- `fdhp01_increment_c2_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_c2_activation_summary_20260612.csv`

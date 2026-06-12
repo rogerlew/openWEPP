@@ -78,7 +78,8 @@ D3 Increment C1/C1a/C1b, 2026-06-12: the first C1 capacity/redistribution
 attempt and the C1a seam-accounting diagnostic localized the water-side failure
 to fine-state ownership, pore capacity, and missing overflow surfaces. C1b then
 landed the capacity/overflow infrastructure without using the comparator
-subagent per user quota direction. `SC-SNOWFREEZE-001` is now v61. The final
+subagent per user quota direction. `SC-SNOWFREEZE-001` was v61 at that
+boundary. The final
 local `43/43` `algebraic-radium` cohort at
 `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z` keeps years 2-6
 `Total-Soil + frozwt` closure at numerical noise (max abs
@@ -87,9 +88,25 @@ p1/p43 starter traces at zero `frzw > ul` rows, preserves de-pinning
 (`0/43` profile-bound pinned), and keeps `frozwt/frdp` correlation below
 Increment B (max `0.9860178382757524`). The package remains executed-hold
 because the depth watch worsened instead of improving: mean maximum depth is
-`1791.9747961835646 mm`. The next D3 increment is C2: port thaw arms,
-sandwich/thaw-through state, and explain the remaining freeze-side
-energy/resistance depth magnitude before MOFE.
+`1791.9747961835646 mm`. At that boundary, C2 was required to port thaw arms,
+sandwich/thaw-through state, and discriminate whether the remaining depth
+magnitude was thaw-storage plumbing or freeze-side energy/resistance.
+
+D3 Increment C2, 2026-06-12: Codex landed the thaw-arm state-machine increment
+without using the comparator subagent per user quota direction.
+`SC-SNOWFREEZE-001` is now v62. The authoritative local hourly
+`algebraic-radium` cohort at
+`/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z` ran `43/43`
+clean with `43/43` WAT outputs. Years 2-6 and year-7 `Total-Soil + frozwt`
+closure remain at the package C1b ledger noise floor (`0.0 mm` in the retained
+annual table), profile-bound pinning remains removed (`0/43` pinned; minimum
+margin `5.54557792097421 mm`), and the old scalar `frozwt/frdp` signature stays
+rejected (max correlation `0.9441102161636825`). The D3 acceptance gate still
+fails: mean maximum depth is `1793.52198510966 mm`, median depth correlation is
+`-0.16722397856345997`, median open-minus-legacy frozen-duration residual is
+`111` days, and median days above `200 mm` is `815`. C2 therefore closes the
+thaw/storage ambiguity but leaves FDHP01 in executed-hold; the next scope is a
+freeze-arm heat-flow resistance/latent-heat audit and repair.
 
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 

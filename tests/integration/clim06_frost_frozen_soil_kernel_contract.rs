@@ -777,6 +777,20 @@ fn response_fine_layer_sum(
         .sum()
 }
 
+fn response_fine_flag_count(response: &KernelRunResponse, expected_flag: f64) -> usize {
+    (1..=2)
+        .flat_map(|layer_index| {
+            (1..=10).map(move |fine_index| {
+                require_response_state_update(
+                    response,
+                    &fine_frost_symbol("frost.runtime_fgfrst", layer_index, fine_index),
+                )
+            })
+        })
+        .filter(|flag| (*flag - expected_flag).abs() <= CLIM06_TEST_TOLERANCE)
+        .count()
+}
+
 fn layer_frozen_depth_sum(
     report: &openwepp_hillslope_orchestrator::HillslopeKernelExecutionReport,
 ) -> f64 {
@@ -817,6 +831,101 @@ fn seed_prior_layered_frost(surface: &mut HillslopeWritebackSurface, depth_m: f6
         (depth_m - 0.10).max(0.0),
     );
     insert_state_scalar(surface, "wb18_perc_frzw_0002", (frzw_m - 0.10).max(0.0));
+}
+
+fn seed_c2_full_top_layer_frost(surface: &mut HillslopeWritebackSurface) {
+    configure_fdhp01_frost_only_no_flux(surface);
+    insert_state_scalar(surface, "wb11_soil_water", 0.020);
+    insert_state_scalar(surface, "wb18_perc_theta_0001", 0.0);
+    insert_state_scalar(surface, "wb18_perc_theta_0002", 0.020);
+    insert_state_scalar(surface, "wb18_perc_ul_0001", 0.020);
+    insert_state_scalar(surface, "wb18_perc_ul_0002", 0.020);
+    insert_state_scalar(surface, "frost.runtime_frdp_m", 0.100);
+    insert_state_scalar(surface, "frost.runtime_dfrost", 0.100);
+    insert_state_scalar(surface, "frost.runtime_ws_frz", 0.020);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0001", 0.100);
+    insert_state_scalar(surface, "wb18_perc_frzw_0001", 0.020);
+    insert_state_scalar(surface, "wb18_perc_frozen_depth_0002", 0.0);
+    insert_state_scalar(surface, "wb18_perc_frzw_0002", 0.0);
+    insert_state_scalar(surface, "frost.runtime_yst_m_0001", 0.0);
+    insert_state_scalar(surface, "frost.runtime_yst_m_0002", 0.020);
+    insert_state_scalar(surface, "frost.runtime_nwfrzz_m_0001", 0.0);
+    insert_state_scalar(surface, "frost.runtime_nwfrzz_m_0002", 0.0);
+
+    for fine_index in 1..=10 {
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_fgfrst", 1, fine_index),
+            1.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slfsd_m", 1, fine_index),
+            0.010,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsic_m", 1, fine_index),
+            0.002,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsw_theta", 1, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_sltime_s", 1, fine_index),
+            0.0,
+        );
+
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_fgfrst", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slfsd_m", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsic_m", 2, fine_index),
+            0.0,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_slsw_theta", 2, fine_index),
+            0.2,
+        );
+        insert_state_scalar(
+            surface,
+            &fine_frost_symbol("frost.runtime_sltime_s", 2, fine_index),
+            0.0,
+        );
+    }
+}
+
+fn apply_response_state_updates(
+    surface: &mut HillslopeWritebackSurface,
+    response: &KernelRunResponse,
+) {
+    assert!(
+        response.status.ok_flag(),
+        "cannot apply failed response: {:?}",
+        response.status
+    );
+    for field in &response.writeback.state_updates {
+        surface
+            .state_surface
+            .insert(field.symbol.clone(), field.value);
+    }
+    for field in &response.writeback.flux_updates {
+        surface
+            .flux_surface
+            .insert(field.symbol.clone(), field.value);
+    }
 }
 
 fn assert_close(actual: f64, expected: f64, context: &str) {
@@ -1231,6 +1340,147 @@ fn fdhp01_c1b_overflow_routes_to_watbtm_and_closes_shadow_identity() {
 }
 
 #[test]
+fn fdhp01_c2_mltbtm_bottom_thaw_recedes_front_and_routes_overflow() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    insert_state_scalar(&mut surface, "frost.runtime_nwfrzz_m_0001", 0.004);
+    insert_state_scalar(&mut surface, "tmax", 0.0);
+    insert_state_scalar(&mut surface, "tmin", 0.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "bottom-thaw vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        4.0,
+        "positive lower heat with neutral surface heat must dispatch bottom thaw",
+    );
+    assert!(
+        require_response_state_update(&response, "frost.runtime_frdp_m")
+            < 0.100 - CLIM06_TEST_TOLERANCE,
+        "bottom thaw must retreat the lower frost front",
+    );
+    assert!(
+        response_fine_flag_count(&response, 2.0) > 0,
+        "partial bottom thaw must leave an active frost-at-top fine-layer front",
+    );
+    assert!(
+        require_response_state_update(&response, "frost.runtime_nwfrzz_m_0001")
+            < 0.004 - CLIM06_TEST_TOLERANCE,
+        "bottom thaw must release liquid held in the frozen zone",
+    );
+    assert!(
+        require_response_state_update(&response, "frost.runtime_watbtm_m") > CLIM06_TEST_TOLERANCE,
+        "capacity-excess bottom thaw release must route to watbtm",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_frwatc_residual_m"),
+        0.0,
+        "bottom thaw release and overflow must stay in the C1b identity",
+    );
+}
+
+#[test]
+fn fdhp01_c2_mlttp_top_thaw_sets_sandwich_geometry_and_fgthwd() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    insert_state_scalar(&mut surface, "tmax", 0.10);
+    insert_state_scalar(&mut surface, "tmin", 0.10);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "top-thaw vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        3.0,
+        "positive surface heat over existing frost must dispatch top thaw",
+    );
+    assert!(
+        response_fine_flag_count(&response, 3.0) > 0,
+        "partial top thaw must leave an active frost-at-bottom fine-layer front",
+    );
+    assert!(
+        require_response_state_update(&response, "frost.runtime_thdp_m") > CLIM06_TEST_TOLERANCE,
+        "top thaw must publish a positive thawed-from-surface depth",
+    );
+    assert!(
+        require_response_state_update(&response, "frost.runtime_frdp_m")
+            > require_response_state_update(&response, "frost.runtime_thdp_m"),
+        "remaining frost below top thaw must keep bottom frost depth below the thawed surface layer",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_fgthwd_flag"),
+        0.0,
+        "partial top thaw must not mark thaw-through complete",
+    );
+
+    insert_state_scalar(&mut surface, "tmax", 80.0);
+    insert_state_scalar(&mut surface, "tmin", 60.0);
+    let thaw_through = execute_clim06_runoff_phase(&surface);
+    assert!(
+        thaw_through.status.ok_flag(),
+        "thaw-through vector should execute successfully; status={:?}",
+        thaw_through.status
+    );
+    assert_close(
+        require_response_state_update(&thaw_through, "frost.runtime_frdp_m"),
+        0.0,
+        "sufficient top-thaw energy must clear frost depth",
+    );
+    assert_close(
+        require_response_state_update(&thaw_through, "frost.runtime_fgthwd_flag"),
+        1.0,
+        "thaw-through must set fgthwd for early frwatc(0) semantics",
+    );
+}
+
+#[test]
+fn fdhp01_c2_multicycle_freeze_thaw_does_not_amplify_storage_without_input() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_c2_full_top_layer_frost(&mut surface);
+    let initial_total = 0.020
+        + require_response_state_update(
+            &execute_clim06_runoff_phase(&surface),
+            "frost.runtime_frwatc_frozen_water_before_m",
+        );
+
+    let mut max_total = initial_total;
+    for cycle in 0..4 {
+        insert_state_scalar(&mut surface, "tmax", -18.0);
+        insert_state_scalar(&mut surface, "tmin", -24.0);
+        let freeze = execute_clim06_runoff_phase(&surface);
+        apply_response_state_updates(&mut surface, &freeze);
+
+        insert_state_scalar(&mut surface, "tmax", 18.0);
+        insert_state_scalar(&mut surface, "tmin", 12.0);
+        let thaw = execute_clim06_runoff_phase(&surface);
+        apply_response_state_updates(&mut surface, &thaw);
+
+        let total = require_response_state_update(&thaw, "frost.runtime_frwatc_soil_water_after_m")
+            + require_response_state_update(&thaw, "frost.runtime_frwatc_frozen_water_after_m")
+            + require_response_state_update(&thaw, "frost.runtime_watpdg_m")
+            + require_response_state_update(&thaw, "frost.runtime_watbtm_m");
+        max_total = max_total.max(total);
+        assert!(
+            total <= initial_total + 1.0e-5,
+            "cycle {cycle} must not amplify closed-system water storage: initial={initial_total}, total={total}"
+        );
+    }
+    assert!(
+        max_total <= initial_total + 1.0e-5,
+        "multi-cycle thaw must not recreate the prior geometric-amplification signature"
+    );
+}
+
+#[test]
 fn simimpl32_contract_dispatch_trigger_vector_requires_active_frost_hourly_emission() {
     let active = execute_clim06_surface(seeded_clim06_surface(true));
     let inactive = execute_clim06_surface(seeded_clim06_surface(false));
@@ -1585,9 +1835,9 @@ fn fdhp01_contract_warm_heat_flow_thaws_prior_deep_frost() {
         "thaw credit must equal frozen-storage reduction",
     );
     assert_close(
+        liquid_after - liquid_before,
         net_liquid_delta,
-        thaw_credit,
-        "thaw net liquid delta must equal the thaw credit",
+        "thaw net liquid delta must equal the actual frwatc liquid handoff",
     );
     assert_close(
         liquid_after,

@@ -103,6 +103,17 @@ Evidence and disposition artifacts for
   `fdhp01_increment_c1b_starter_capacity_20260612.json`: generated C1b
   reports from `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z`
   and `/tmp/fdhp01_increment_c1b_starter_trace_final14_20260612T035756Z`.
+- `d3-increment-c2-thaw-arms-20260612.md`: staged Increment C2 landing
+  evidence; records the thaw-arm state-machine implementation, local/heavy
+  gates, clean `43/43` hourly cohort, retained D2 conservation, and remaining
+  freeze-side D3 hold.
+- `fdhp01_increment_c2_execution_summary_20260612.json`,
+  `fdhp01_increment_c2_run_status_20260612.tsv`,
+  `fdhp01_increment_c2_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_c2_depth_metrics_20260612.csv`,
+  `fdhp01_increment_c2_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_c2_activation_summary_20260612.csv`: generated C2 reports
+  from `/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

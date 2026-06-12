@@ -257,6 +257,19 @@ acceptance gate.
 - On pass: FDHP01 disposition to complete, `GAP-SNOWFREEZE-002` closed,
   ROADMAP item 1 removed, README 7f updated, handoff names MOFE.
 
+**Execution result (2026-06-12):** C2 landed as `executed-hold`, not package
+closure. The parent model ran local comparisons without the comparator subagent
+per user quota direction. The authoritative hourly cohort at
+`/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z` ran `43/43`
+clean, preserved years 2-6 and year-7 additive closure at the package C1b
+ledger noise floor, kept profile-bound pinning removed (`0/43` pinned), and
+kept the old scalar `frozwt/frdp` signature rejected (max correlation
+`0.9441102161636825`). The D3 acceptance gate still failed: mean maximum depth
+`1793.52198510966 mm`, median depth correlation
+`-0.16722397856345997`, median frozen-duration residual `111` days, and median
+days above `200 mm` `815`. This selects reading 1 above: freeze-side
+energy/resistance/front-advance behavior is the remaining scoped defect.
+
 ## Dispatch instructions
 
 Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2> of

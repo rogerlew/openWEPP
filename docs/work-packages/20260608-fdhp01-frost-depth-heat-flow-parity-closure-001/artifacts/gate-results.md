@@ -274,3 +274,40 @@ redistribution is reconciled with the WAT balance identity. FDHP01 remains
 Increment C1b disposition: landed at `executed-hold`. The water-side
 capacity/overflow gate passes and D2 conservation remains at noise, but D3
 depth/duration acceptance remains open for C2 thaw-arm and state-machine work.
+
+## D3 Increment C2 Thaw-Arm State-Machine Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local DuckDB/CLI cohort comparisons. |
+| `cargo fmt --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass, `advisories ok, bans ok, licenses ok, sources ok` |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, 2 tests |
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass, release binary SHA `0b3fed8561232d0de371a195e3f5a5609121ddd2253713b3fb0139add9ec8a4f`; sidecar SHA `5bfe72bec363900838255730a8cd5ee60144294c1a6640282e774f9e3c2f94a7` |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_c2 -- --nocapture` | Pass |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_d2_contract_frwatc_freeze_exchange_diagnostics_reconcile_liquid_and_frozen_storage -- --nocapture` | Pass |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract fdhp01_c1b_overflow_routes_to_watbtm_and_closes_shadow_identity -- --nocapture` | Pass |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 33 tests |
+| `git diff --check` | Pass |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+| Debug-marker search | Pass for temporary C2/debug-guard marker names; no C2 debug marker remains |
+| 43-prefix `algebraic-radium` hourly frost-on cohort | Pass, `43/43` clean exits; run root `/tmp/fdhp01_increment_c2_cohort_hourly_fix_20260612T035740Z` |
+| Cohort lane check | Pass; retained run used `/wc1/runs/al/algebraic-radium/wepp/runs`, `selected_lane=hourly`, `mode_divergence=false` |
+| Annual `Total-Soil + frozwt` closure, years 2-6 | Pass at the package C1b additive-storage ledger surface, max abs residual `0.0 mm` |
+| Year-7 boundary watch item | Pass at the retained ledger surface, max abs residual `0.0 mm` |
+| Profile-bound pinning directional gate | Pass, `0/43` prefixes pinned; minimum margin `5.54557792097421 mm` |
+| `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.9441102161636825`, median `0.8831449770567324` |
+| D3 depth envelope acceptance | Fail; mean max depth `1793.52198510966 mm`, median `1793.649969637327 mm`, max `1794.4544220790258 mm` |
+| D3 depth-correlation acceptance | Fail; median correlation `-0.16722397856345997`, range `-0.30843972585040713..0.19389645706206324` |
+| D3 frozen-duration acceptance | Fail; open-minus-legacy median `111` days, mean `74.48837209302326` days, range `-293..171` days |
+| Days above `200 mm` watch | Fail/watch; median `815` days |
+
+Increment C2 disposition: landed at `executed-hold`. Thaw-arm, sandwich
+geometry, thaw-through, and overflow routing now run cleanly without reopening
+D2/p2 conservation, but D3 acceptance remains open. The C2 discriminating
+experiment establishes the remaining defect as freeze-side
+energy/resistance/front-advance behavior rather than missing thaw-storage
+plumbing.
