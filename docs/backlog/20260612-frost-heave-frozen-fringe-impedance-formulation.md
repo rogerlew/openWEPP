@@ -60,9 +60,10 @@ import), dev notes, or located literature.
    paper text has not been checked for whether the published model claims
    the term active; flagged as an open verification below.)
 5. **Pattern match**: this is the same legacy lifecycle as the `ksflag`
-   forest-frost disable (provisional change, no recorded why) — see agent
-   memory `legacy-contract-vs-bug` / "routines disabled to work around
-   bugs," and ADR-0017's distrust posture.
+   forest-frost disable (provisional change, no recorded why). The author
+   cited prior agent-memory labels (`legacy-contract-vs-bug` / "routines
+   disabled to work around bugs") for context, but the durable governance
+   reference is ADR-0017's distrust posture.
 
 ## Legacy code analysis (Static, file:line against the pinned baseline)
 
@@ -72,11 +73,12 @@ import), dev notes, or located literature.
   (correct physical guard).
 - `frzng.for:393-394`: `cd frzftp = -50` (commented) / **`frzftp = 0.0`**
   (active).
-- `frzng.for:404-407`: `saxfun` returns the water potential `wtpm` of the
+- `frzng.for:396-403`: `saxfun` returns the water potential `wtpm` of the
   layer below the front. `saxfun.for:34` documents `varwtp` as "soil water
-  potential in meter"; its **error fallbacks return `−150.0`**
-  (`saxfun.for:63-69, 76-82`), establishing the negative-potential (suction
-  as negative metres) convention. A moist layer sits near `−3 m`; dry near
+  potential in meter"; the normal calculation assigns `varwtp = -wtpkpa / 10`
+  (`saxfun.for:123-124`), and the error fallbacks return `−150.0`
+  (`saxfun.for:72-79, 88-93`), establishing the negative-potential (suction as
+  negative metres) convention. A moist layer sits near `−3 m`; dry near
   `−150 m`.
 - `frzng.for:410`: activation condition `if ((frzftp .lt. wtpm) .and.
   (frdp > 0.001))` — i.e. `0.0 < wtpm`. With `wtpm` always negative, the
@@ -94,19 +96,21 @@ qwater = kunsat · (wtpm − frzftp) / 2 / dz_fine        (frzng.for:411-414)
 ```
 
 - With `frzftp = −100 m`, `wtpm = −3 m` (moist), `dz_fine = 1.5 cm`:
-  head gradient ≈ `97 / 0.015 ≈ 6,500`. For moist silt loam
-  (`kunsat ~ 10⁻⁷ m/s`), flux ≈ `3×10⁻⁴ m/s ≈ 1.2 m/hour` of liquid water
-  toward the front — **5–6 orders of magnitude above physical frost-heave
-  migration rates (~mm/day)**.
+  raw head gradient ≈ `97 / 0.015 ≈ 6,500`; after the code's `/2.0` taming
+  factor, the effective gradient is ≈ `3,200`. For moist silt loam
+  (`kunsat ~ 10⁻⁷ m/s`), flux ≈ `3.2×10⁻⁴ m/s ≈ 1.16 m/hour` of liquid
+  water toward the front — tens of thousands of times above mm/day-scale
+  physical frost-heave migration rates.
 - The code's own taming devices concede the problem:
   `/2.0` with the comment "we are using the maximum hydraulic gradient …
-  migration rate slows down due to water depletion" (`frzng.for:406-409`),
+  migration rate slows down due to water depletion" (`frzng.for:405-414`),
   and an hourly **supply cap** that limits extraction to draining the
   adjacent fine layer to wilting point within the hour
   (`frzng.for:419-425`).
 - Even at the cap: draining `(θ − θwp)·dz_fine ≈ 2.25 mm/hour` of water
-  gives `qwet = L·flux ≈ 3.34×10⁸ × 2.25×10⁻³/3600 ≈ 210 W/m²` — roughly
-  **50× a realistic midwinter `qhtout`** (2–6 W/m² under snow). With any
+  gives `qwet = L·flux ≈ 3.35×10⁸ × 2.25×10⁻³/3600 ≈ 209 W/m²` — roughly
+  **50× a realistic midwinter `qhtout`** near 4 W/m² (about 35–105× across a
+  2–6 W/m² under-snow range). With any
   negative `frzftp` the term pegs at its cap every hour: the front can
   never advance, and the profile below desiccates at ~50 mm/day with the
   water teleported to the front as ice (runaway heave, spring water-balance
@@ -221,8 +225,8 @@ diagnostic before implementation):
 6. **Validation surface** — no legacy comparator for this term (it is off
    in the baseline); validation is against the external authority's
    published heave rates/profiles and the level-4/5 physics-suite scheme
-   (memory: `correctness-reanchoring-scheme`), plus non-regression of all
-   FDHP01 gates.
+   (author-cited agent-memory label: `correctness-reanchoring-scheme`), plus
+   non-regression of all FDHP01 gates.
 
 ## Dependencies / sequencing
 
@@ -260,5 +264,6 @@ diagnostic before implementation):
   (Dd outcome + F5 block),
   `d3-increment-dd-legacy-snow-forced-20260612.md`,
   `review_claude_fdhp01_closure_status_and_cohort_validation.md`.
-- Agent memory: `legacy-frost-energy-terms`, `legacy-contract-vs-bug`,
+- Author-cited agent-memory labels, retained as non-authoritative context:
+  `legacy-frost-energy-terms`, `legacy-contract-vs-bug`,
   `contract-first-forced-not-chosen`.
