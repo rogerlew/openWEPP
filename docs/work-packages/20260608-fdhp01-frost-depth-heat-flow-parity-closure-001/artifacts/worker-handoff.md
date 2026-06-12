@@ -294,3 +294,37 @@ or D2 storage surfaces. Do not advance to MOFE until the cohort is `43/43`, the
 year-7 boundary item stays explained or eliminated, and the full
 depth/duration acceptance gate passes or is assigned to a documented upstream
 snow handoff with evidence.
+
+Increment De result:
+
+- Codex landed the legacy content-dependent `Qdry` conductivity correction
+  without the comparator subagent per user quota direction.
+- `SC-SNOWFREEZE-001` is v65; the lower-front heat path now uses the
+  `frostn.for:430-458` fine-layer polynomial/harmonic conductivity with `0.2`
+  only as the dry fallback, and bottom thaw uses the same lower-front
+  conductivity.
+- Full Rust closure and authority guards passed: `cargo fmt --check`,
+  `git diff --check`, `cargo clippy --workspace --all-targets -- -D warnings`,
+  `cargo test --workspace`, `cargo deny check`,
+  `bash tools/release/check_authority_suite_antievasion.sh`, and
+  `cargo test --test auth11_required_suite_obligation_guards_contract`.
+- Native production cohort:
+  `/tmp/fdhp01_increment_de_native_cohort_final_20260612T171358Z`, `43/43`
+  clean, years 2-6 closure `5.474257917248426e-07 mm`, mean max depth
+  `705.505148615878 mm`, median duration residual `+288` days.
+- Forced legacy-snow diagnostic cohort:
+  `/tmp/fdhp01_increment_de_forced_snow_cohort_20260612T171017Z_proper`,
+  `43/43` clean, years 2-6 closure `4.355148297552347e-07 mm`, mean max
+  depth `655.9890274782282 mm`, median depth correlation
+  `0.770042438411068`, median duration residual `+186` days.
+- D3 remains open: forced snow plus De still has `0/43` prefixes inside the
+  legacy `240..503.2 mm` maximum-depth envelope.
+
+Updated first actionable item: scope and execute the next frost-side
+localization increment under the De forced-snow setup. Use paired hourly
+trajectory evidence to locate the first remaining material front/flux
+divergence after content-dependent `Qdry`: openWEPP hourly `frzflg`, `Qsrf`,
+`Quf`, lower-front heat, surface/frozen/residue/snow resistance, front
+advance/retreat, and fine-layer ice/liquid motions against legacy
+`H*.winter.dat` plus source-line state. Do not tune snow density/depth,
+kfactor, latent heat, WAT publication, or D2 storage surfaces.

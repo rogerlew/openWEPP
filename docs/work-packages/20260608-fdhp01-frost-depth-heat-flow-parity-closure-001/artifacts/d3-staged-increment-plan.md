@@ -660,3 +660,21 @@ conductivity feeds the `mltbtm` bottom-thaw energy.
   paired evidence) with the defect-shaped handoff naming the snow
   density/depth-split item. If it does not: the next term comes from the
   same paired-trajectory method that found F5.
+
+**De execution result (2026-06-12):** landed at `executed-hold`. Codex ran the
+cohorts locally without the comparator subagent per user quota direction.
+`SC-SNOWFREEZE-001` v65 and the De tests land the legacy content-dependent
+`Qdry` conductivity and preserve D2 at the accepted WAT-publication texture.
+The final native production cohort at
+`/tmp/fdhp01_increment_de_native_cohort_final_20260612T171358Z` ran `43/43`
+clean, with years 2-6 additive closure max abs
+`5.474257917248426e-07 mm`, mean max depth `705.505148615878 mm`, and median
+duration residual `+288` days. The corrected forced legacy-snow cohort at
+`/tmp/fdhp01_increment_de_forced_snow_cohort_20260612T171017Z_proper` ran
+`43/43` clean, with years 2-6 closure max abs
+`4.355148297552347e-07 mm`, mean max depth `655.9890274782282 mm`, median
+depth correlation `0.770042438411068`, and median duration residual `+186`
+days. De improves the controlled residual but does not certify D3: `0/43`
+prefixes enter the legacy `240..503.2 mm` maximum-depth envelope. The next
+increment remains frost-side under the De forced-snow setup and must locate the
+first remaining hourly front/flux divergence after content-dependent `Qdry`.

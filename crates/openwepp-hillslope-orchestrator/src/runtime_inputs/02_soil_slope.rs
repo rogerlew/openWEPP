@@ -495,6 +495,7 @@ struct CorrectedLayerRuntimeSymbols {
     porosity: f64,
     cpm: f64,
     coca: f64,
+    bulk_density_kg_m3: f64,
     thetfc: f64,
     thetdr: f64,
 }
@@ -506,6 +507,7 @@ struct PrimaryWb11LayerRuntimeSymbols {
     porosity: f64,
     cpm: f64,
     coca: f64,
+    bulk_density_kg_m3: f64,
     thetfc: f64,
     thetdr: f64,
     ssc_m_s: f64,
@@ -690,6 +692,7 @@ fn compute_normalized_wb11_primary_layer_runtime_symbols(
             porosity: corrected_layer.porosity,
             cpm: corrected_layer.cpm,
             coca: corrected_layer.coca,
+            bulk_density_kg_m3: corrected_layer.bulk_density_kg_m3,
             thetfc: corrected_layer.thetfc,
             thetdr: corrected_layer.thetdr,
             ssc_m_s: normalized_conductivity_values[layer_index].ssc_m_s,
@@ -790,6 +793,10 @@ fn publish_primary_wb11_runtime_layer_symbols(
             BoundarySymbol::from(format!("wb19_coca_{layer_index:04}")),
             BoundaryValue::scalar(layer.coca),
         );
+        state_surface.insert(
+            BoundarySymbol::from(format!("wb19_bulk_density_kg_m3_{layer_index:04}")),
+            BoundaryValue::scalar(layer.bulk_density_kg_m3),
+        );
 
         if layer_index == 1 {
             state_surface.insert(BoundarySymbol::from("ssc"), BoundaryValue::scalar(layer.ssc_m_s));
@@ -799,6 +806,10 @@ fn publish_primary_wb11_runtime_layer_symbols(
             );
             state_surface.insert(BoundarySymbol::from("cpm"), BoundaryValue::scalar(layer.cpm));
             state_surface.insert(BoundarySymbol::from("coca"), BoundaryValue::scalar(layer.coca));
+            state_surface.insert(
+                BoundarySymbol::from("bulk_density_kg_m3"),
+                BoundaryValue::scalar(layer.bulk_density_kg_m3),
+            );
         }
     }
 }
@@ -872,6 +883,7 @@ fn compute_normalized_corrected_layer_runtime_symbols_from_legacy_seed(
             porosity: corrected.porosity,
             cpm: corrected.cpm,
             coca: corrected.coca,
+            bulk_density_kg_m3: corrected.bulk_density_kg_m3,
             thetfc: corrected.thetfc,
             thetdr: corrected.thetdr,
         });
@@ -934,6 +946,7 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
         let mut weighted_porosity = 0.0_f64;
         let mut weighted_cpm = 0.0_f64;
         let mut weighted_coca = 0.0_f64;
+        let mut weighted_bulk_density_kg_m3 = 0.0_f64;
         let mut covered_depth_mm = 0.0_f64;
 
         for (normalized_top_mm, normalized_bottom_mm, corrected_layer) in &normalized_intervals {
@@ -948,6 +961,7 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
             weighted_porosity += corrected_layer.porosity * overlap_depth_mm;
             weighted_cpm += corrected_layer.cpm * overlap_depth_mm;
             weighted_coca += corrected_layer.coca * overlap_depth_mm;
+            weighted_bulk_density_kg_m3 += corrected_layer.bulk_density_kg_m3 * overlap_depth_mm;
             covered_depth_mm += overlap_depth_mm;
         }
 
@@ -965,6 +979,7 @@ fn map_corrected_layer_runtime_symbols_to_parser_layers(
             porosity: weighted_porosity / covered_depth_mm,
             cpm: weighted_cpm / covered_depth_mm,
             coca: weighted_coca / covered_depth_mm,
+            bulk_density_kg_m3: weighted_bulk_density_kg_m3 / covered_depth_mm,
             thetfc: weighted_thetfc / covered_depth_mm,
             thetdr: weighted_thetdr / covered_depth_mm,
         });
@@ -979,6 +994,7 @@ struct LegacyCorrectedLayerMoisture {
     porosity: f64,
     cpm: f64,
     coca: f64,
+    bulk_density_kg_m3: f64,
     thetfc: f64,
     thetdr: f64,
 }
@@ -1074,6 +1090,7 @@ fn legacy_correct_layer_moisture(
         porosity: por,
         cpm,
         coca,
+        bulk_density_kg_m3: layer.bulk_density_kg_m3,
         thetfc,
         thetdr,
     })
@@ -1387,8 +1404,9 @@ mod fq1_soil_corrected_layer_coverage_tests {
             porosity: value,
             cpm: value + 0.01,
             coca: value + 0.02,
-            thetfc: value + 0.03,
-            thetdr: value + 0.04,
+            bulk_density_kg_m3: value + 0.03,
+            thetfc: value + 0.04,
+            thetdr: value + 0.05,
         }
     }
 

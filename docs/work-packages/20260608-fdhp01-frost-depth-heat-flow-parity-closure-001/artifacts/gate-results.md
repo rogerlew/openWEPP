@@ -465,3 +465,33 @@ Increment Dd disposition: diagnostic executed at `executed-hold`. Legacy snow
 depth/density is a material contributor, but forced legacy snow does not close
 D3. The remaining depth/duration residual is frost-side under controlled snow
 forcing and needs the next scoped hourly flux/front localization increment.
+
+## D3 Increment De Content-Dependent `qdry` Conductivity Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/DuckDB/Pandas comparisons. |
+| Contract amendment | Pass, `SC-SNOWFREEZE-001` v65 adds legacy `frostn.for:430-458` `Qdry` conductivity authority. |
+| `cargo fmt --check` | Pass |
+| `git diff --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, `40/40` |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass, `advisories ok, bans ok, licenses ok, sources ok` |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract` | Pass |
+| Native production cohort | Pass execution, `43/43` clean exits and `43/43` WAT outputs; root `/tmp/fdhp01_increment_de_native_cohort_final_20260612T171358Z`. |
+| Native years 2-6 independent `Total-Soil + frozwt` closure | Pass at WAT-publication texture, max abs residual `5.474257917248426e-07 mm` (`p11`, year 6). |
+| Native D3 depth/duration | Fail, mean max depth `705.505148615878 mm`, `0/43` prefixes inside the `240..503.2 mm` envelope, median frozen-duration residual `+288` days. |
+| Forced-snow diagnostic hook | Pass for diagnostic use; env-gated hook replaced only snow depth/density consumed by frost heat-flow resistance, then was removed before production rebuild. |
+| Forced-snow diagnostic cohort | Pass execution, `43/43` clean exits and `43/43` WAT outputs; root `/tmp/fdhp01_increment_de_forced_snow_cohort_20260612T171017Z_proper`. |
+| Forced-snow years 2-6 independent `Total-Soil + frozwt` closure | Pass at WAT-publication texture, max abs residual `4.355148297552347e-07 mm` (`p11`, year 4). |
+| Forced-snow D3 depth envelope certification | Fail, `0/43` maximum depths inside the legacy `240..503.2 mm` envelope; mean max `655.9890274782282 mm`, median max `652.3375464029963 mm`, range `558.1869128158116..741.4969698215496 mm`. |
+| Forced-snow D3 frozen-duration certification | Fail, open-minus-legacy median `+186` days, mean `+183.5581395348837` days, range `+116..+300` days. |
+| Forced-snow depth-correlation certification | Directionally improved but not sufficient alone; median correlation `0.770042438411068`. |
+| Clean-source release rebuild after hook removal | Pass, production binary SHA `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`. |
+
+Increment De disposition: landed at `executed-hold`. The F5 conductivity
+correction is real and improves the controlled-snow residual, but it does not
+certify D3. The next increment remains frost-side under De forced-snow forcing
+and must localize the first remaining hourly front/flux divergence.

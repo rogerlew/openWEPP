@@ -1114,6 +1114,10 @@ impl Wb11HydrologyKernel {
         BoundarySymbol::from(format!("thetdr_{layer_index:04}"))
     }
 
+    pub(crate) fn wb19_bulk_density_kg_m3_symbol(layer_index: usize) -> BoundarySymbol {
+        BoundarySymbol::from(format!("wb19_bulk_density_kg_m3_{layer_index:04}"))
+    }
+
     pub(crate) fn require_wb19_dg_scalar(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
@@ -1177,6 +1181,16 @@ impl Wb11HydrologyKernel {
             &Self::wb19_thetdr_symbol(layer_index),
             &Self::wb19_legacy_thetdr_symbol(layer_index),
         )
+    }
+
+    pub(crate) fn require_wb19_bulk_density_kg_m3_scalar(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+    ) -> Result<(BoundarySymbol, f64), Wb11HydrologyKernelGuardError> {
+        let symbol = Self::wb19_bulk_density_kg_m3_symbol(layer_index);
+        let value = Self::require_state_scalar_for_symbol(request, phase_class, &symbol)?;
+        Ok((symbol, value))
     }
 
     pub(crate) fn optional_wb19_thetdr_scalar(

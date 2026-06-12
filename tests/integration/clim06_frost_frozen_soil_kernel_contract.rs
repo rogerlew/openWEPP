@@ -136,6 +136,14 @@ fn seeded_clim06_surface(active_frost: bool) -> HillslopeWritebackSurface {
     );
     state_surface.insert(BoundarySymbol::from("dg_0001"), BoundaryValue::scalar(0.1));
     state_surface.insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.1));
+    state_surface.insert(
+        BoundarySymbol::from("wb19_bulk_density_kg_m3_0001"),
+        BoundaryValue::scalar(1_300.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb19_bulk_density_kg_m3_0002"),
+        BoundaryValue::scalar(1_300.0),
+    );
     state_surface.insert(BoundarySymbol::from("por_0001"), BoundaryValue::scalar(0.8));
     state_surface.insert(BoundarySymbol::from("por_0002"), BoundaryValue::scalar(0.8));
     state_surface.insert(BoundarySymbol::from("cpm_0001"), BoundaryValue::scalar(1.0));
@@ -1021,6 +1029,154 @@ fn seed_c2_full_top_layer_frost(surface: &mut HillslopeWritebackSurface) {
     }
 }
 
+#[allow(clippy::too_many_lines)]
+fn seed_de_full_meter_lower_front_profile(
+    surface: &mut HillslopeWritebackSurface,
+    top_layer_frozen: bool,
+) {
+    configure_fdhp01_frost_only_no_flux(surface);
+    let layer_count = 6usize;
+    let layer_count_f64 = 6.0;
+    let layer_thickness_m = 0.2;
+    let liquid_theta = 0.25;
+    let liquid_storage_m = liquid_theta * layer_thickness_m;
+    let frozen_storage_m = if top_layer_frozen {
+        liquid_storage_m
+    } else {
+        0.0
+    };
+
+    insert_state_scalar(surface, "nsl", layer_count_f64);
+    insert_state_scalar(surface, "solthk", layer_count_f64 * layer_thickness_m);
+    insert_state_scalar(surface, "wb11_soil_water", liquid_storage_m * 5.0);
+    insert_state_scalar(surface, "wb11_field_capacity", 0.5);
+    insert_state_scalar(surface, "wb11_drainable_storage", 0.5);
+    insert_state_scalar(
+        surface,
+        "frost.runtime_frdp_m",
+        if top_layer_frozen {
+            layer_thickness_m
+        } else {
+            0.0
+        },
+    );
+    insert_state_scalar(
+        surface,
+        "frost.runtime_dfrost",
+        if top_layer_frozen {
+            layer_thickness_m
+        } else {
+            0.0
+        },
+    );
+    insert_state_scalar(surface, "frost.runtime_ws_frz", frozen_storage_m);
+
+    for layer_index in 1..=layer_count {
+        let is_frozen_layer = top_layer_frozen && layer_index == 1;
+        let theta_m = if is_frozen_layer {
+            0.0
+        } else {
+            liquid_storage_m
+        };
+        insert_state_scalar(surface, &format!("dg_{layer_index:04}"), layer_thickness_m);
+        insert_state_scalar(
+            surface,
+            &format!("wb19_dg_{layer_index:04}"),
+            layer_thickness_m,
+        );
+        insert_state_scalar(
+            surface,
+            &format!("wb18_perc_dg_{layer_index:04}"),
+            layer_thickness_m,
+        );
+        insert_state_scalar(
+            surface,
+            &format!("wb18_perc_theta_{layer_index:04}"),
+            theta_m,
+        );
+        insert_state_scalar(surface, &format!("wb18_perc_fc_{layer_index:04}"), 0.08);
+        insert_state_scalar(surface, &format!("wb18_perc_ul_{layer_index:04}"), 0.12);
+        insert_state_scalar(surface, &format!("wb18_perc_ssc_{layer_index:04}"), 2.0e-6);
+        insert_state_scalar(surface, &format!("thetfc_{layer_index:04}"), 0.4);
+        insert_state_scalar(surface, &format!("thetdr_{layer_index:04}"), 0.0);
+        insert_state_scalar(surface, &format!("wb19_thetdr_{layer_index:04}"), 0.0);
+        insert_state_scalar(surface, &format!("wb19_thetfc_{layer_index:04}"), 0.4);
+        insert_state_scalar(surface, &format!("wb18_perc_thetfc_{layer_index:04}"), 0.4);
+        insert_state_scalar(
+            surface,
+            &format!("wb19_bulk_density_kg_m3_{layer_index:04}"),
+            1_300.0,
+        );
+        insert_state_scalar(surface, &format!("por_{layer_index:04}"), 0.8);
+        insert_state_scalar(surface, &format!("wb19_por_{layer_index:04}"), 0.8);
+        insert_state_scalar(surface, &format!("cpm_{layer_index:04}"), 1.0);
+        insert_state_scalar(surface, &format!("coca_{layer_index:04}"), 1.0);
+        insert_state_scalar(surface, &format!("wb19_coca_{layer_index:04}"), 1.0);
+        insert_state_scalar(surface, &format!("ssc_{layer_index:04}"), 2.0e-6);
+        insert_state_scalar(
+            surface,
+            &format!("wb19_lateral_ssh_{layer_index:04}"),
+            2.0e-6,
+        );
+        insert_state_scalar(
+            surface,
+            &format!("wb18_perc_frozen_depth_{layer_index:04}"),
+            if is_frozen_layer {
+                layer_thickness_m
+            } else {
+                0.0
+            },
+        );
+        insert_state_scalar(
+            surface,
+            &format!("wb18_perc_frzw_{layer_index:04}"),
+            if is_frozen_layer {
+                frozen_storage_m
+            } else {
+                0.0
+            },
+        );
+        insert_state_scalar(
+            surface,
+            &format!("frost.runtime_yst_m_{layer_index:04}"),
+            theta_m,
+        );
+        insert_state_scalar(
+            surface,
+            &format!("frost.runtime_nwfrzz_m_{layer_index:04}"),
+            0.0,
+        );
+
+        for fine_index in 1..=10 {
+            insert_state_scalar(
+                surface,
+                &fine_frost_symbol("frost.runtime_fgfrst", layer_index, fine_index),
+                if is_frozen_layer { 1.0 } else { 0.0 },
+            );
+            insert_state_scalar(
+                surface,
+                &fine_frost_symbol("frost.runtime_slfsd_m", layer_index, fine_index),
+                if is_frozen_layer { 0.020 } else { 0.0 },
+            );
+            insert_state_scalar(
+                surface,
+                &fine_frost_symbol("frost.runtime_slsic_m", layer_index, fine_index),
+                if is_frozen_layer { 0.005 } else { 0.0 },
+            );
+            insert_state_scalar(
+                surface,
+                &fine_frost_symbol("frost.runtime_slsw_theta", layer_index, fine_index),
+                if is_frozen_layer { 0.0 } else { liquid_theta },
+            );
+            insert_state_scalar(
+                surface,
+                &fine_frost_symbol("frost.runtime_sltime_s", layer_index, fine_index),
+                0.0,
+            );
+        }
+    }
+}
+
 fn apply_response_state_updates(
     surface: &mut HillslopeWritebackSurface,
     response: &KernelRunResponse,
@@ -1544,6 +1700,7 @@ fn fdhp01_c2_mltbtm_bottom_thaw_recedes_front_and_routes_overflow() {
 fn fdhp01_c2_mlttp_top_thaw_sets_sandwich_geometry_and_fgthwd() {
     let mut surface = seeded_clim06_surface(true);
     seed_c2_full_top_layer_frost(&mut surface);
+    override_monthly_temperatures(&mut surface, -20.0);
     insert_state_scalar(&mut surface, "tmax", 0.10);
     insert_state_scalar(&mut surface, "tmin", 0.10);
 
@@ -1665,9 +1822,11 @@ fn fdhp01_dc1_lower_front_heat_uses_seasonal_tmpbl_zero_gate() {
 }
 
 #[test]
-fn fdhp01_dc1_lower_front_heat_matches_legacy_monthly_wave_fallback() {
+fn fdhp01_de_lower_front_heat_uses_legacy_dry_fallback_only_when_no_positive_terms() {
     let mut surface = seeded_clim06_surface(true);
     seed_c2_full_top_layer_frost(&mut surface);
+    insert_state_scalar(&mut surface, "wb19_bulk_density_kg_m3_0001", 700.0);
+    insert_state_scalar(&mut surface, "wb19_bulk_density_kg_m3_0002", 700.0);
     override_monthly_temperatures(&mut surface, 15.0);
     insert_state_scalar(&mut surface, "day", 32.0);
     insert_state_scalar(&mut surface, "mon", 2.0);
@@ -1683,12 +1842,85 @@ fn fdhp01_dc1_lower_front_heat_matches_legacy_monthly_wave_fallback() {
     assert_close(
         require_response_state_update(&response, "frost.hourly.quf_w_m2_0001"),
         3.0,
-        "constant 15 degC monthly curve with legacy 0.2 fallback conductivity must publish qdry=3 W/m2",
+        "constant 15 degC monthly curve with no positive conductivity terms must retain legacy kufz=0.2 fallback",
     );
     assert_close(
         require_response_state_update(&response, "frost.hourly.frzflg_0001"),
         4.0,
         "neutral surface heat plus positive qdry over existing frost must dispatch bottom thaw",
+    );
+}
+
+#[test]
+fn fdhp01_de_lower_front_heat_uses_legacy_harmonic_unfrozen_conductivity() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_de_full_meter_lower_front_profile(&mut surface, true);
+    override_monthly_temperatures(&mut surface, 15.0);
+    insert_state_scalar(&mut surface, "day", 32.0);
+    insert_state_scalar(&mut surface, "mon", 2.0);
+    insert_state_scalar(&mut surface, "tmax", 0.0);
+    insert_state_scalar(&mut surface, "tmin", 0.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "moist harmonic lower-front vector should execute successfully; status={:?}",
+        response.status
+    );
+    let quf_w_m2 = require_response_state_update(&response, "frost.hourly.quf_w_m2_0001");
+    let published_kufz_w_m_k = quf_w_m2 / 15.0;
+    let theta = 0.25_f64;
+    let expected_kufz_w_m_k =
+        (0.5096 + 7.4493 * theta - 8.7484 * theta.powi(2)) * (0.001_413_9 * 1_300.0 - 1.0588);
+    assert!(
+        (published_kufz_w_m_k - expected_kufz_w_m_k).abs() <= 1.0e-6,
+        "Quf must use the legacy frostn.for:430-458 harmonic conductivity path; actual_k={published_kufz_w_m_k}, expected_k={expected_kufz_w_m_k}"
+    );
+    assert!(
+        published_kufz_w_m_k > 1.0 && published_kufz_w_m_k < 1.5,
+        "moist De fixture should be in the expected legacy polynomial conductivity range; k={published_kufz_w_m_k}"
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        4.0,
+        "neutral surface heat plus positive harmonic qdry over existing frost must dispatch bottom thaw",
+    );
+    let final_frdp_m = require_response_state_update(&response, "frost.runtime_frdp_m");
+    assert!(
+        final_frdp_m < 0.2,
+        "harmonic lower-front heat must spend bottom-thaw energy against the frozen front; frdp={final_frdp_m}"
+    );
+}
+
+#[test]
+fn fdhp01_de_lower_front_heat_suppresses_marginal_autumn_freeze_onset() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_de_full_meter_lower_front_profile(&mut surface, false);
+    override_monthly_temperatures(&mut surface, 15.0);
+    insert_state_scalar(&mut surface, "day", 305.0);
+    insert_state_scalar(&mut surface, "mon", 11.0);
+    insert_state_scalar(&mut surface, "tmax", -5.0);
+    insert_state_scalar(&mut surface, "tmin", -5.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "marginal autumn onset vector should execute successfully; status={:?}",
+        response.status
+    );
+    assert!(
+        require_response_state_update(&response, "frost.hourly.quf_w_m2_0001") > 15.0,
+        "moist one-meter lower-front path should materially exceed the retired 0.2 fallback"
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.hourly.frzflg_0001"),
+        0.0,
+        "warm lower-front heat must offset a marginal cold surface hour before frost onset",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_frdp_m"),
+        0.0,
+        "marginal autumn vector must not create scalar frost depth when net heat flow is non-freezing",
     );
 }
 
@@ -2025,6 +2257,7 @@ fn fdhp01_contract_heat_flow_depth_can_exceed_retired_proxy_cap() {
         .state_surface
         .insert(BoundarySymbol::from("tmin"), BoundaryValue::scalar(-40.0));
     configure_fdhp01_deep_profile(&mut surface);
+    override_monthly_temperatures(&mut surface, -20.0);
 
     let mut dfrost = 0.0;
     let mut frdp = 0.0;

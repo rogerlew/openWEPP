@@ -270,3 +270,16 @@ Date: 2026-06-12
 - `fdhp01_increment_dd_activation_summary_20260612.csv`
 - `fdhp01_increment_dd_legacy_winter_generation_20260612.json`
 - `fdhp01_increment_dd_legacy_snow_forcing_summary_20260612.json`
+- `d3-increment-de-qdry-conductivity-20260612.md`
+- `fdhp01_increment_de_native_execution_summary_20260612.json`
+- `fdhp01_increment_de_native_run_status_20260612.tsv`
+- `fdhp01_increment_de_native_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_de_native_depth_metrics_20260612.csv`
+- `fdhp01_increment_de_native_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_de_native_activation_summary_20260612.csv`
+- `fdhp01_increment_de_forced_snow_execution_summary_20260612.json`
+- `fdhp01_increment_de_forced_snow_run_status_20260612.tsv`
+- `fdhp01_increment_de_forced_snow_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_de_forced_snow_depth_metrics_20260612.csv`
+- `fdhp01_increment_de_forced_snow_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_de_forced_snow_activation_summary_20260612.csv`

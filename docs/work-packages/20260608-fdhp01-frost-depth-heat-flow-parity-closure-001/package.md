@@ -167,6 +167,26 @@ envelope, and frozen duration still over-persists by median `+502` days. The
 next increment remains frost-side, using the Dd forced-snow setup to localize
 the remaining hourly front/flux divergence.
 
+D3 Increment De, 2026-06-12: Codex landed the content-dependent `Qdry`
+conductivity correction without the comparator subagent per user quota
+direction. `SC-SNOWFREEZE-001` is now v65, the lower-front heat path uses the
+legacy `frostn.for:430-458` fine-layer polynomial/harmonic conductivity with
+`0.2 W/m/K` only as the dry fallback, and bottom thaw consumes the same
+conductivity. The final native production cohort at
+`/tmp/fdhp01_increment_de_native_cohort_final_20260612T171358Z` ran `43/43`
+clean with years 2-6 independent `Total-Soil + frozwt` closure at
+`5.474257917248426e-07 mm`, but native D3 remains red: mean max depth
+`705.505148615878 mm`, `0/43` prefixes inside the `240..503.2 mm` envelope,
+and median duration residual `+288` days. The corrected forced legacy-snow
+diagnostic at
+`/tmp/fdhp01_increment_de_forced_snow_cohort_20260612T171017Z_proper` ran
+`43/43` clean with years 2-6 closure at `4.355148297552347e-07 mm` and
+improved the controlled residual (mean max `655.9890274782282 mm`, median
+correlation `0.770042438411068`, median duration residual `+186` days), but it
+still failed certification because `0/43` prefixes entered the legacy maximum-
+depth envelope. FDHP01 remains `executed-hold`; the next scope is paired hourly
+front/flux localization under De forced-snow forcing, not MOFE closure.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

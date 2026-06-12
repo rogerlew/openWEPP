@@ -7,6 +7,7 @@ struct FrostLayerWaterState {
     fine_layer_count: usize,
     fine_layer_thickness_m: f64,
     dg_m: f64,
+    bulk_density_kg_m3: f64,
     thetdr: f64,
     theta_m: f64,
     upper_limit_m: f64,
@@ -1067,16 +1068,83 @@ impl Wb11HydrologyKernel {
                     .sin()
     }
 
+    fn unfrozen_soil_conductivity_w_m_k(
+        slsw_theta: f64,
+        bulk_density_kg_m3: f64,
+        ksoilf: f64,
+    ) -> f64 {
+        let moisture_factor = 0.5096 + 7.4493 * slsw_theta - 8.7484 * slsw_theta.powi(2);
+        let density_factor = 0.001_413_9 * bulk_density_kg_m3 - 1.0588;
+        let conductivity_w_m_k = moisture_factor * density_factor * ksoilf;
+        if conductivity_w_m_k.is_finite() && conductivity_w_m_k > WB11_ZERO_THRESHOLD {
+            conductivity_w_m_k
+        } else {
+            0.0
+        }
+    }
+
+    fn lower_front_unfrozen_conductivity_w_m_k(
+        fine_layers: &[FrostFineLayerState],
+        water_layers: &[FrostLayerWaterState],
+        frdp_m: f64,
+        ksoilf: f64,
+    ) -> f64 {
+        let path_top_m = frdp_m.max(0.0);
+        let path_bottom_m = path_top_m + FROST_RUNTIME_UNFROZEN_LOWER_HEAT_PATH_M;
+        let mut cursor_m = 0.0;
+        let mut resistance_m2_c_w = 0.0;
+
+        for fine in fine_layers {
+            let fine_top_m = cursor_m;
+            let fine_bottom_m = fine_top_m + fine.fine_layer_thickness_m;
+            cursor_m = fine_bottom_m;
+
+            let overlap_m =
+                (fine_bottom_m.min(path_bottom_m) - fine_top_m.max(path_top_m)).max(0.0);
+            if overlap_m <= WB11_ZERO_THRESHOLD {
+                continue;
+            }
+            let Some(water_layer) = water_layers
+                .iter()
+                .find(|layer| layer.layer_index == fine.layer_index)
+            else {
+                continue;
+            };
+            let conductivity_w_m_k = Self::unfrozen_soil_conductivity_w_m_k(
+                fine.slsw_theta,
+                water_layer.bulk_density_kg_m3,
+                ksoilf,
+            );
+            if conductivity_w_m_k > WB11_ZERO_THRESHOLD {
+                resistance_m2_c_w += overlap_m / conductivity_w_m_k;
+            }
+        }
+
+        if resistance_m2_c_w > WB11_ZERO_THRESHOLD {
+            1.0 / resistance_m2_c_w
+        } else {
+            FROST_RUNTIME_UNFROZEN_CONDUCTIVITY_FALLBACK_W_M_K
+        }
+    }
+
     fn lower_front_heat_w_m2(
         seasonal_curve: FrostSeasonalTemperatureCurve,
         sdate: f64,
         frdp_m: f64,
+        fine_layers: &[FrostFineLayerState],
+        water_layers: &[FrostLayerWaterState],
+        ksoilf: f64,
     ) -> f64 {
         let tmpbl_c = Self::seasonal_lower_front_temperature_c(seasonal_curve, sdate, frdp_m);
         if tmpbl_c <= 0.0 {
             0.0
         } else {
-            FROST_RUNTIME_UNFROZEN_CONDUCTIVITY_FALLBACK_W_M_K * tmpbl_c
+            Self::lower_front_unfrozen_conductivity_w_m_k(
+                fine_layers,
+                water_layers,
+                frdp_m,
+                ksoilf,
+            ) * tmpbl_c
                 / FROST_RUNTIME_UNFROZEN_LOWER_HEAT_PATH_M
         }
     }
@@ -1323,12 +1391,20 @@ impl Wb11HydrologyKernel {
         water_layers: &[FrostLayerWaterState],
         seasonal_curve: FrostSeasonalTemperatureCurve,
         sdate: f64,
+        ksoilf: f64,
         watbtm_m: &mut f64,
     ) {
         let mut remaining_seconds = FROST_RUNTIME_SECONDS_PER_HOUR;
         while remaining_seconds > WB11_ZERO_THRESHOLD {
             let depth = Self::derived_frost_depths_from_fine_state(fine_layers);
-            let bottom_flux_w_m2 = Self::lower_front_heat_w_m2(seasonal_curve, sdate, depth.frdp);
+            let bottom_flux_w_m2 = Self::lower_front_heat_w_m2(
+                seasonal_curve,
+                sdate,
+                depth.frdp,
+                fine_layers,
+                water_layers,
+                ksoilf,
+            );
             if bottom_flux_w_m2 <= WB11_ZERO_THRESHOLD {
                 break;
             }
@@ -1970,6 +2046,16 @@ impl Wb11HydrologyKernel {
                 Some(0.0),
                 Some(1.0),
             )?;
+
+            let (bulk_density_symbol, bulk_density_kg_m3) =
+                Self::require_wb19_bulk_density_kg_m3_scalar(request, phase_class, layer_index)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &bulk_density_symbol,
+                bulk_density_kg_m3,
+                Some(WB11_ZERO_THRESHOLD),
+                Some(2_650.0),
+            )?;
             let frozen_depth_symbol = Self::wb18_perc_state_symbol("frozen_depth", layer_index);
             let frozen_depth_m = Self::optional_state_scalar_for_symbol(
                 request,
@@ -2002,6 +2088,7 @@ impl Wb11HydrologyKernel {
                 fine_layer_count,
                 fine_layer_thickness_m: dg_m / Self::diagnostic_count_to_f64(fine_layer_count),
                 dg_m,
+                bulk_density_kg_m3,
                 thetdr,
                 theta_m,
                 upper_limit_m,
@@ -2312,7 +2399,14 @@ impl Wb11HydrologyKernel {
             );
             let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
             let lower_front_heat_w_m2 =
-                Self::lower_front_heat_w_m2(seasonal_temperature_curve, sdate, depth_before.frdp);
+                Self::lower_front_heat_w_m2(
+                    seasonal_temperature_curve,
+                    sdate,
+                    depth_before.frdp,
+                    &shadow_fine_state.fine_layers,
+                    &layer_water_state,
+                    ksoilf,
+                );
             let signed_net_flux_w_m2 = signed_surface_flux_w_m2 + lower_front_heat_w_m2;
             hourly.qsrf_w_m2 = (-signed_surface_flux_w_m2).max(0.0);
             hourly.quf_w_m2 = lower_front_heat_w_m2;
@@ -2359,6 +2453,7 @@ impl Wb11HydrologyKernel {
                         &layer_water_state,
                         seasonal_temperature_curve,
                         sdate,
+                        ksoilf,
                         &mut shadow_fine_state.watbtm_m,
                     );
                 } else if (hourly.frzflg - 3.0).abs() <= WB11_ZERO_THRESHOLD {
@@ -2380,6 +2475,7 @@ impl Wb11HydrologyKernel {
                             &layer_water_state,
                             seasonal_temperature_curve,
                             sdate,
+                            ksoilf,
                             &mut shadow_fine_state.watbtm_m,
                         );
                     }
@@ -2390,6 +2486,7 @@ impl Wb11HydrologyKernel {
                         &layer_water_state,
                         seasonal_temperature_curve,
                         sdate,
+                        ksoilf,
                         &mut shadow_fine_state.watbtm_m,
                     );
                 }

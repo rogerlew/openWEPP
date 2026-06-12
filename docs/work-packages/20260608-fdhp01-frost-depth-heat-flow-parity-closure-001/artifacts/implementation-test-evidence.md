@@ -113,3 +113,20 @@ legacy snow forcing did not certify D3 closure: mean max depth stayed
 envelope, and median frozen duration residual stayed `+502` days. The
 production rebuild after hook removal restored binary SHA
 `95491b24f36065c28f90ca7e55bfceb39cf14ac2c270ddfd207eb750a2e4a536`.
+
+De implementation continuation: Codex landed the content-dependent lower-front
+`Qdry` conductivity correction from legacy `frostn.for:430-458`, including the
+parser-derived `wb19_bulk_density_kg_m3_####` seam and the same conductivity
+path for bottom thaw. The full Rust closure loop passed, plus authority
+anti-evasion guards. The final native production cohort at
+`/tmp/fdhp01_increment_de_native_cohort_final_20260612T171358Z` ran `43/43`
+clean with years 2-6 additive storage closure at
+`5.474257917248426e-07 mm`. A temporary forced-snow hook was then used only for
+diagnosis and removed before the final production rebuild. The corrected
+forced-snow cohort at
+`/tmp/fdhp01_increment_de_forced_snow_cohort_20260612T171017Z_proper` ran
+`43/43` clean with years 2-6 closure at `4.355148297552347e-07 mm`; forced
+legacy snow plus De improved mean max depth to `655.9890274782282 mm` and
+median duration residual to `+186` days, but did not certify D3 because `0/43`
+prefixes entered the `240..503.2 mm` envelope. Production binary SHA after hook
+removal is `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`.
