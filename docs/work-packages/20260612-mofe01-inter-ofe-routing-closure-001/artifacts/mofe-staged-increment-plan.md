@@ -41,10 +41,14 @@ agent memory `staged-increment-port-template`). Companion scope authority:
 2. **Legacy per-OFE-count closure measurement** (the comparator-trust
    calibration): from the on-disk `H*.wat.dat` outputs, compute legacy's
    own per-element and hillslope-total closure per OFE count (1→5). This
-   turns the operator's "legacy degrades with OFE count" into a measured
-   curve; cross-reference the wepppy MOFE triage defect families. The
-   15-OFE hillslope is included in this measurement (observe-only
-   elsewhere) as the far point of the curve.
+   turns the operator's "legacy degrades with OFE count, typically above
+   ~10 OFEs" into a measured curve. Expected shape (verify, don't assume):
+   clean at 1-5 — which would make legacy a usable flag on the development
+   ladder — defective at the 15-OFE far point; cross-reference the wepppy
+   MOFE triage defect families. The 15-OFE hillslope is included in this
+   measurement (observe-only elsewhere) as the far point of the curve, and
+   is the eventual demonstration target where openWEPP's closure must
+   exceed the legacy ceiling.
 3. **Routing scope artifact** (`mofe-routing-port-scope.md`, the FDHP01
    scope-artifact shape): legacy state-machine map with lifecycle columns —
    the per-plane loop, runoff → run-on hand-off symbols (`runoff`,

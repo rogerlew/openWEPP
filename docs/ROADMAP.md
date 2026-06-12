@@ -67,8 +67,10 @@ per OFE count.
 
 **Comparator posture for this rung (stronger than the default ADR-0017
 flag):** legacy WEPP has *known water-balance defects that grow with OFE
-count* (operator knowledge; corroborated by the legacy-replay MOFE
-closure-audit triage at wepppy
+count, typically appearing above ~10 OFEs* — so the 1-5 development ladder
+is expected legacy-clean (verified, not assumed, in M-A) and the 15-OFE far
+point expected-defective (operator knowledge; corroborated by the
+legacy-replay MOFE closure-audit triage at wepppy
 `docs/work-packages/20260502_mofe_flagged_hillslope_triage` — a defect-family
 taxonomy of legacy's own flagged hillslopes). Legacy is therefore a weak flag
 at low OFE counts and progressively untrustworthy as OFE count rises — in
