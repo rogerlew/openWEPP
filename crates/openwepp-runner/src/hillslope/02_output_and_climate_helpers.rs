@@ -38,6 +38,8 @@ struct HbpHeaderInput {
     particle_diameter_m: f64,
 }
 
+const WB13_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-11;
+
 fn build_hbp_output(
     output_pass: &Path,
     wb13_rows: &[SimulationOwnedWb13Row],
@@ -916,12 +918,23 @@ fn build_simulation_owned_wb13_row(
             "Er must be >= 0.0, observed {residue_evap_er_m}"
         )));
     }
-    let dp_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "D")?;
-    if dp_m < 0.0 {
+    let base_dp_m = canonicalize_wb13_deep_percolation_source_m(
+        "D",
+        require_runtime_surface_scalar_prefer_flux(runtime_surface, "D")?,
+    )?;
+    let frost_watbtm_m = canonicalize_wb13_deep_percolation_source_m(
+        "frost.runtime_watbtm_m",
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_watbtm_m").unwrap_or(0.0),
+    )?;
+    let frost_watpdg_m =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_watpdg_m").unwrap_or(0.0);
+    if frost_watpdg_m < 0.0 {
         return Err(wb13_simout_failure(format!(
-            "D must be >= 0.0, observed {dp_m}"
+            "frost.runtime_watpdg_m must be >= 0.0, observed {frost_watpdg_m}"
         )));
     }
+    let dp_m =
+        canonicalize_wb13_deep_percolation_publication_m(base_dp_m + frost_watbtm_m)?;
     let latqcc_m = require_runtime_surface_scalar_prefer_flux(runtime_surface, "q")?;
     if latqcc_m < 0.0 {
         return Err(wb13_simout_failure(format!(
@@ -1198,6 +1211,47 @@ fn require_runtime_surface_scalar_prefer_flux(
         )));
     }
     Ok(value)
+}
+
+fn canonicalize_wb13_deep_percolation_source_m(
+    symbol: &str,
+    value: f64,
+) -> Result<f64, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "runtime symbol {symbol} must be finite, observed {value}"
+        )));
+    }
+    if value < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "{symbol} must be >= 0.0, observed {value}"
+        )));
+    }
+    Ok(canonicalize_wb13_deep_percolation_roundoff_m(value))
+}
+
+fn canonicalize_wb13_deep_percolation_publication_m(
+    value: f64,
+) -> Result<f64, HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(wb13_simout_failure(format!(
+            "Dp source sum must be finite, observed {value}"
+        )));
+    }
+    if value < 0.0 {
+        return Err(wb13_simout_failure(format!(
+            "Dp source sum must be >= 0.0, observed {value}"
+        )));
+    }
+    Ok(canonicalize_wb13_deep_percolation_roundoff_m(value))
+}
+
+fn canonicalize_wb13_deep_percolation_roundoff_m(value: f64) -> f64 {
+    if value <= WB13_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M {
+        0.0
+    } else {
+        value
+    }
 }
 
 fn require_runtime_flux_surface_scalar(

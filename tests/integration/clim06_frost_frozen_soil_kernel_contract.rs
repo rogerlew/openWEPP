@@ -792,6 +792,19 @@ fn configure_fdhp01_deep_profile(surface: &mut HillslopeWritebackSurface) {
     insert_state_scalar(surface, "wb11_drainage_fraction", 0.0);
 }
 
+fn configure_fdhp01_frost_only_no_flux(surface: &mut HillslopeWritebackSurface) {
+    insert_state_scalar(surface, "wb11_et_demand", 0.0);
+    insert_state_scalar(surface, "wb11_perc_fraction", 0.0);
+    insert_state_scalar(surface, "wb19_drain_enabled", 0.0);
+    insert_state_scalar(surface, "wb11_lateral_fraction", 0.0);
+    insert_state_scalar(surface, "wb11_drainage_fraction", 0.0);
+    insert_state_scalar(surface, "wb12_rainfall_input", 0.0);
+    insert_state_scalar(surface, "wb12_runon_input", 0.0);
+    insert_state_scalar(surface, "wb12_precip_input", 0.0);
+    insert_state_scalar(surface, "wb12_runoff_closure_tolerance", 1000.0);
+    insert_state_scalar(surface, "wb12_storage_closure_tolerance", 1000.0);
+}
+
 fn seed_prior_layered_frost(surface: &mut HillslopeWritebackSurface, depth_m: f64, frzw_m: f64) {
     insert_state_scalar(surface, "frost.runtime_frdp_m", depth_m);
     insert_state_scalar(surface, "frost.runtime_dfrost", depth_m);
@@ -1078,6 +1091,142 @@ fn fdhp01_watdst_mode_flags_update_depths_and_sltime() {
         require_response_state_update(&response, "frost.runtime_sltime_s_0001_0004"),
         0.0,
         "hourly frost dispatch must reset sltime after watdst accounting",
+    );
+}
+
+#[test]
+fn fdhp01_c1b_rejects_persisted_fine_ice_above_capacity_without_clamping() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_increment_a_shadow_fine_state(&mut surface, 0.0);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0001", 0.020);
+
+    let response = execute_clim06_runoff_phase(&surface);
+
+    assert!(
+        !response.status.ok_flag(),
+        "C1b must fail closed on persisted slsic above ul/dg*slfsd instead of silently clamping; status={:?}",
+        response.status
+    );
+}
+
+#[test]
+fn fdhp01_c1b_freeze_path_respects_fine_layer_pore_capacity() {
+    let mut surface = seeded_clim06_surface(true);
+    configure_fdhp01_frost_only_no_flux(&mut surface);
+    insert_state_scalar(&mut surface, "wb11_soil_water", 0.040);
+    insert_state_scalar(&mut surface, "wb18_perc_theta_0001", 0.020);
+    insert_state_scalar(&mut surface, "wb18_perc_theta_0002", 0.020);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0001", 0.030);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0002", 0.030);
+    insert_state_scalar(&mut surface, "tmax", -18.0);
+    insert_state_scalar(&mut surface, "tmin", -24.0);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "capacity-bound freeze vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    for layer_index in 1..=2 {
+        let ul =
+            require_response_state_update(&response, &format!("wb18_perc_frzw_{layer_index:04}"));
+        assert!(
+            ul <= 0.030 + CLIM06_TEST_TOLERANCE,
+            "aggregate frzw for layer {layer_index} must stay within layer ul, observed {ul}"
+        );
+        for fine_index in 1..=10 {
+            let slfsd = require_response_state_update(
+                &response,
+                &fine_frost_symbol("frost.runtime_slfsd_m", layer_index, fine_index),
+            );
+            let slsic = require_response_state_update(
+                &response,
+                &fine_frost_symbol("frost.runtime_slsic_m", layer_index, fine_index),
+            );
+            let fine_capacity = 0.030 / 0.100 * slfsd;
+            assert!(
+                slsic <= fine_capacity + CLIM06_TEST_TOLERANCE,
+                "fine layer {layer_index}/{fine_index} ice must stay within pore capacity: slsic={slsic}, capacity={fine_capacity}"
+            );
+        }
+    }
+}
+
+#[test]
+fn fdhp01_c1b_capacity_uses_active_ul_above_residual() {
+    let mut surface = seeded_clim06_surface(true);
+    configure_fdhp01_frost_only_no_flux(&mut surface);
+    insert_state_scalar(&mut surface, "wb11_soil_water", 0.070);
+    insert_state_scalar(&mut surface, "thetdr_0001", 0.100);
+    insert_state_scalar(&mut surface, "thetdr_0002", 0.100);
+    insert_state_scalar(&mut surface, "wb18_perc_theta_0001", 0.025);
+    insert_state_scalar(&mut surface, "wb18_perc_theta_0002", 0.025);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0001", 0.030);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0002", 0.030);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "wb18_perc_ul is active storage above residual; capacity must include thetdr before rejecting fine-layer liquid, status={:?}",
+        response.status
+    );
+
+    for layer_index in 1..=2 {
+        let total_capacity_theta = 0.100 + 0.030 / 0.100;
+        for fine_index in 1..=10 {
+            let slsw = require_response_state_update(
+                &response,
+                &fine_frost_symbol("frost.runtime_slsw_theta", layer_index, fine_index),
+            );
+            assert!(
+                slsw <= total_capacity_theta + CLIM06_TEST_TOLERANCE,
+                "fine layer {layer_index}/{fine_index} liquid must use total pore capacity: slsw={slsw}, capacity={total_capacity_theta}"
+            );
+        }
+    }
+}
+
+#[test]
+fn fdhp01_c1b_overflow_routes_to_watbtm_and_closes_shadow_identity() {
+    let mut surface = seeded_clim06_surface(true);
+    configure_fdhp01_frost_only_no_flux(&mut surface);
+    insert_state_scalar(&mut surface, "wb11_soil_water", 0.010);
+    insert_state_scalar(&mut surface, "wb18_perc_theta_0001", 0.005);
+    insert_state_scalar(&mut surface, "wb18_perc_theta_0002", 0.005);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0001", 0.006);
+    insert_state_scalar(&mut surface, "wb18_perc_ul_0002", 0.006);
+    insert_state_scalar(&mut surface, "frost.runtime_yst_m_0001", 0.0);
+    insert_state_scalar(&mut surface, "tmax", -0.25);
+    insert_state_scalar(&mut surface, "tmin", -0.25);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "overflow-routing vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    let watbtm = require_response_state_update(&response, "frost.runtime_watbtm_m");
+    assert!(
+        watbtm > CLIM06_TEST_TOLERANCE,
+        "valid excess fine-layer liquid must route to watbtm instead of hidden storage"
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_shadow_frwatc_residual_m"),
+        0.0,
+        "shadow identity must include routed overflow",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_watpdg_m"),
+        0.0,
+        "freeze-side lower overflow vector must not create surface ponding",
+    );
+    assert_close(
+        require_response_state_update(&response, "frost.runtime_frwatc_soil_water_after_m"),
+        require_response_state_update(&response, "frost.runtime_frwatc_soil_water_before_m")
+            + require_response_state_update(&response, "frost.runtime_frwatc_net_liquid_delta_m"),
+        "frwatc liquid after must include overflow in the net liquid delta",
     );
 }
 

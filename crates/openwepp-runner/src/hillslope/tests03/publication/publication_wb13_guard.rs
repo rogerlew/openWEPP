@@ -261,6 +261,59 @@ use super::super::*;
         );
     }
     #[test]
+    fn fdhp01_c1b_wb13_dp_publication_includes_frost_bottom_overflow() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(0.000_200));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_watbtm_m"),
+            BoundaryValue::scalar(0.000_300),
+        );
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should include frost lower overflow in Dp");
+
+        assert!(
+            (row.wb13_row.dp - 0.5).abs() < 1.0e-12,
+            "Dp must include D plus frost.runtime_watbtm_m"
+        );
+    }
+
+    #[test]
+    fn fdhp01_c1b_wb13_dp_publication_canonicalizes_roundoff_deep_percolation_dust() {
+        let mut runtime_surface = seeded_wb13_runtime_surface_probe();
+        runtime_surface
+            .flux_surface
+            .insert(BoundarySymbol::from("D"), BoundaryValue::scalar(6.0e-12));
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_watbtm_m"),
+            BoundaryValue::scalar(6.0e-12),
+        );
+
+        let row = build_simulation_owned_wb13_row(
+            &runtime_surface,
+            1_000.0,
+            1,
+            1,
+            &canonical_calendar_day_probe(),
+            0.0,
+        )
+        .expect("WB13 publication should canonicalize non-material Dp roundoff");
+
+        assert!(
+            row.wb13_row.dp.abs() < 1.0e-12,
+            "Dp roundoff dust at or below 1e-11 m per source should publish as zero"
+        );
+    }
+    #[test]
     fn hphys0234_wb13_subhyd_publication_prefers_flux_surface_over_stale_state_surface() {
         let mut runtime_surface = seeded_wb13_runtime_surface_probe();
         runtime_surface

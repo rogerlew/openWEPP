@@ -456,3 +456,5 @@ pub(crate) const WB18_PERC_SATURATION_THRESHOLD: f64 = 0.95;
 pub(crate) const WB18_PERC_MIN_FX: f64 = 0.002;
 pub(crate) const WB18_PERC_BI_COEFFICIENT: f64 = 2.655;
 pub(crate) const WB18_PERC_TIMESTEP_S: f64 = 86_400.0;
+pub(crate) const WB18_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M: f64 = 1.0e-11;
+pub(crate) const WB18_STORAGE_ROUNDOFF_TOLERANCE_M: f64 = 2.0e-11;

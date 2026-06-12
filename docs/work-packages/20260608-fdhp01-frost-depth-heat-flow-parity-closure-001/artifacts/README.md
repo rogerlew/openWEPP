@@ -91,6 +91,18 @@ Evidence and disposition artifacts for
   `fdhp01_increment_c1a_seam_ledger_excerpt_20260611.csv`: generated C1a
   ledger summary/excerpt from
   `/tmp/fdhp01_increment_c1a_diagnostic_20260611T231749Z`.
+- `d3-increment-c1b-capacity-overflow-20260612.md`: staged Increment C1b
+  landing evidence; records the capacity/overflow implementation, focused
+  tests, p1/p43 starter capacity trace, clean `43/43` cohort, and remaining
+  C2 depth hold.
+- `fdhp01_increment_c1b_execution_summary_20260612.json`,
+  `fdhp01_increment_c1b_run_status_20260612.tsv`,
+  `fdhp01_increment_c1b_annual_closure_residuals_20260612.csv`,
+  `fdhp01_increment_c1b_depth_metrics_20260612.csv`,
+  `fdhp01_increment_c1b_frozwt_frdp_ratio_20260612.csv`,
+  `fdhp01_increment_c1b_starter_capacity_20260612.json`: generated C1b
+  reports from `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z`
+  and `/tmp/fdhp01_increment_c1b_starter_trace_final14_20260612T035756Z`.
 - `fdhp01_increment_a_pre_current_comparison_20260611.json`: compact old-pre
   vs latest-current comparison summary.
 - `fdhp01_increment_a_current_pair_comparison_20260611.json`: compact

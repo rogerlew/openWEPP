@@ -4,7 +4,7 @@ Status: executed-hold
 
 Evidence mode: Ran
 
-Date: 2026-06-11
+Date: 2026-06-12
 
 ## Required Gates
 
@@ -238,3 +238,39 @@ Increment C1 disposition: failed and backed out. The attempt proves capacity
 enforcement is necessary but insufficient unless `watpdg`/`watbtm`
 redistribution is reconciled with the WAT balance identity. FDHP01 remains
 `executed-hold` at the Increment B boundary.
+
+## D3 Increment C1b Capacity/Overflow Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local DuckDB/CLI cohort comparisons. |
+| `cargo fmt --check` | Pass |
+| `cargo clippy --workspace --all-targets -- -D warnings` | Pass |
+| `cargo test --workspace` | Pass |
+| `cargo deny check` | Pass, `advisories ok, bans ok, licenses ok, sources ok` |
+| `bash tools/release/check_authority_suite_antievasion.sh` | Pass |
+| `cargo test --test auth11_required_suite_obligation_guards_contract -- --nocapture` | Pass, 2 tests |
+| `cargo build --release -p openwepp-runner --bin openwepp-cli-hill` | Pass, release binary SHA `e7135eda1a751d8acb16dbca2096c12d3c10f6589ae84f55ff57efe45ed1f27e` |
+| `git diff --check` | Pass |
+| Debug-marker search | Pass for C1b markers; only pre-existing CLI `eprintln!` paths and an unrelated historical doc mention were found |
+| `wctl doc-lint --path docs` | Pass, `1220 files validated, 0 errors, 0 warnings` |
+| C1b focused CLIM06 capacity/overflow vectors | Pass in `cargo test --workspace`; rejects persisted over-capacity ice, bounds freeze-path ice formation, uses active `ul` capacity, and routes overflow to `watbtm` while closing the shadow identity |
+| C1b focused WB13/WB17/WB18/trace unit vectors | Pass in `cargo test --workspace`; covers WB13 `Dp` overflow publication, WB18 dust canonicalization, scalar/layer roundoff rebalance, positive deep loss, zero root uptake, no WB14 replay, and preferred WB19 geometry in WB18 guard diagnostics |
+| `cargo test --test clim06_frost_frozen_soil_kernel_contract -- --nocapture` | Pass, 30 tests |
+| `cargo test --test hphys0283_snowmelt_infiltration_partition_contract -- --nocapture` | Pass, 1 test |
+| `cargo test --test hphys0285_spring_soil_storage_retention_contract -- --nocapture` | Pass, 3 tests |
+| `cargo test --test hphys0319_fixed_baseline_stmtim_observe_contract -- --nocapture` | Pass, 5 tests after `SC-SNOWFREEZE-001` v61 |
+| `cargo test --test hphys0320_stmtim_start_time_source_line_contract -- --nocapture` | Pass, 3 tests after `SC-SNOWFREEZE-001` v61 |
+| p1/p43 starter capacity trace | Pass; zero `frzw > ul` rows across `1700` trace rows and `15192` layer checks per prefix |
+| 43-prefix `algebraic-radium` frost-on cohort | Pass, `43/43` clean exits; run root `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z` |
+| Annual `Total-Soil + frozwt` closure, years 2-6 | Pass, max abs residual `1.5347723092418164e-12 mm`, mean abs residual `1.0758525853139703e-13 mm` |
+| Year-7 boundary watch item | Pass at noise for C1b, max abs residual `6.963318810448982e-13 mm` |
+| Year-1 initialization residual | Recorded outside the staged gate, max abs residual `1.0505061950725292 mm` |
+| Valid-input capacity guard | Pass, no valid cohort capacity guard trips |
+| Profile-bound pinning directional gate | Pass, `0/43` prefixes pinned; minimum margin `5.824859208653152 mm` |
+| `frozwt/frdp` scalar-signature gate | Pass, max per-prefix correlation `0.9860178382757524`, below Increment B max `0.9861968090242198`; median correlation `0.943746050619941` |
+| D3 depth/duration acceptance | Still open; mean max depth `1791.9747961835646 mm` is worse than Increment B mean `1782.265765656973 mm`, with `45782` frozen days and `42556` days above `200 mm` |
+
+Increment C1b disposition: landed at `executed-hold`. The water-side
+capacity/overflow gate passes and D2 conservation remains at noise, but D3
+depth/duration acceptance remains open for C2 thaw-arm and state-machine work.

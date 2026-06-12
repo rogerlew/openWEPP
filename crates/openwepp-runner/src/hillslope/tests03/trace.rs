@@ -72,6 +72,50 @@ use super::*;
         assert!((row.pe_m.expect("Pe") - 0.004).abs() < 1.0e-12);
         assert!((row.wb11_minus_theta_sum_m.expect("delta") - 0.03).abs() < 1.0e-12);
     }
+
+    #[test]
+    fn fdhp01_c1b_wb18_guard_terms_prefer_wb19_layer_geometry() {
+        let mut surface = HillslopeWritebackSurface::default();
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_fc_0002"),
+            BoundaryValue::scalar(0.028_96),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_ul_0002"),
+            BoundaryValue::scalar(0.051_873_154_5),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_theta_0002"),
+            BoundaryValue::scalar(0.0),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_ssc_0002"),
+            BoundaryValue::scalar(9.17e-6),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb19_dg_0002"),
+            BoundaryValue::scalar(0.20),
+        );
+        surface
+            .state_surface
+            .insert(BoundarySymbol::from("dg_0002"), BoundaryValue::scalar(0.03));
+        surface.state_surface.insert(
+            BoundarySymbol::from("thetdr_0002"),
+            BoundaryValue::scalar(0.1578),
+        );
+        surface.state_surface.insert(
+            BoundarySymbol::from("wb18_perc_frozen_depth_0002"),
+            BoundaryValue::scalar(0.20),
+        );
+
+        let terms = format_wb18_perc_guard_terms(&surface);
+
+        assert!(
+            terms.contains("invalid_layers=none"),
+            "C1b guard diagnostics must validate frozen depth against preferred wb19_dg geometry when present, observed {terms}"
+        );
+    }
+
     #[test]
     fn hphys0259_trace_row_captures_wb19_lateral_diagnostics() {
         let mut surface = HillslopeWritebackSurface::default();

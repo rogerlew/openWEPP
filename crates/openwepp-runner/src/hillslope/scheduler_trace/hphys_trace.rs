@@ -940,7 +940,8 @@ pub(super) fn format_wb18_perc_guard_terms(runtime_surface: &HillslopeWritebackS
                 runtime_surface_symbol_value(runtime_surface, &format!("wb18_perc_ssc_{suffix}"));
             let thetfc = runtime_surface_symbol_value(runtime_surface, &format!("thetfc_{suffix}"));
             let thetdr = runtime_surface_symbol_value(runtime_surface, &format!("thetdr_{suffix}"));
-            let dg = runtime_surface_symbol_value(runtime_surface, &format!("dg_{suffix}"));
+            let dg = runtime_surface_symbol_value(runtime_surface, &format!("wb19_dg_{suffix}"))
+                .or_else(|| runtime_surface_symbol_value(runtime_surface, &format!("dg_{suffix}")));
             let por = runtime_surface_symbol_value(runtime_surface, &format!("por_{suffix}"));
             let cpm = runtime_surface_symbol_value(runtime_surface, &format!("cpm_{suffix}"));
             let frozen_depth = runtime_surface_symbol_value(
@@ -1053,4 +1054,3 @@ pub(super) fn format_wb18_perc_guard_terms(runtime_surface: &HillslopeWritebackS
         invalid_summary
     )
 }
-

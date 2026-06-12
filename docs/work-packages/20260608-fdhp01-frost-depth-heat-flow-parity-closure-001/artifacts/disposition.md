@@ -9,10 +9,11 @@ Date: 2026-06-11
 ## Outcome
 
 FDHP01 is executed but held. The D2 storage/publication defect is closed by the
-layered-state continuation. D3 Increment A has now landed the non-driving
-fine-sublayer shadow state and `frwatc` handoff proof surface. D3 Increment B
-has now landed fine-state-derived depth and the freeze arms, while D3
-depth/duration parity remains open for the thaw-arm pass under
+layered-state continuation. D3 Increment A landed the non-driving fine-sublayer
+shadow state and `frwatc` handoff proof surface. D3 Increment B landed
+fine-state-derived depth and the freeze arms. D3 Increment C1b has now landed
+the water-side capacity/overflow infrastructure required before retaining thaw
+arms. D3 depth/duration parity remains open for C2 under
 `SC-SNOWFREEZE-001#INV-SNOWFREEZE-006`.
 
 Static:
@@ -46,9 +47,16 @@ Static:
   target-depth projection as production authority, and ratifies
   threshold-bounded exchange-debit limiting at the available-liquid handoff
   boundary.
+- `SC-SNOWFREEZE-001` v60/v61 authorizes Increment C1b fine-layer
+  capacity/overflow semantics, `watpdg`/`watbtm` publication surfaces,
+  `watbtm` as WB13 `Dp` lineage, and bounded WB18/WB13 roundoff handling.
 - Increment B mutates `slfsd`/`slsic`/`slsw`/`nwfrzz` for freeze-active hours
   (`frzng`/`frznw` lineage) and aggregates per-layer frozen depth/water from
   the same fine state.
+- Increment C1b keeps fine-layer ice and liquid inside total pore capacity,
+  routes unretained valid liquid through named overflow surfaces, publishes
+  `watbtm` into `Dp`, preserves scalar/layer storage across bounded roundoff,
+  and keeps the C1a capacity boundary from reappearing on the cohort.
 - WAT parquet physical bytes are now deterministic while preserving readable
   Arrow field metadata, so the Increment A bit-identical cohort gate can remain
   literal.
@@ -80,6 +88,9 @@ Ran:
   wrote WAT/HBP/loss outputs under
   `/tmp/frostval01_rerun_20260611T020951Z/outputs`, with CLI manifests under
   `/tmp/fdhp01_increment_b_final_20260611T193423Z/outputs`.
+- Increment C1b 43-prefix cohort execution was clean (`43/43`) at
+  `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z`; the parent ran
+  comparisons locally without the comparator subagent per user quota direction.
 
 ## Closure Evidence
 
@@ -215,6 +226,35 @@ Ran:
   ownership until egress, capacity-bound freezing, explicit `watpdg`/`watbtm`
   identity routing, and wholesale coarse-state recomputation at egress.
 
+## Increment C1b Gate Evidence
+
+- Persisted compact reports:
+  - `d3-increment-c1b-capacity-overflow-20260612.md`
+  - `fdhp01_increment_c1b_execution_summary_20260612.json`
+  - `fdhp01_increment_c1b_run_status_20260612.tsv`
+  - `fdhp01_increment_c1b_annual_closure_residuals_20260612.csv`
+  - `fdhp01_increment_c1b_depth_metrics_20260612.csv`
+  - `fdhp01_increment_c1b_frozwt_frdp_ratio_20260612.csv`
+  - `fdhp01_increment_c1b_starter_capacity_20260612.json`
+- C1b ran without the comparator subagent per user quota direction. The full
+  local cohort ran `43/43` clean at
+  `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z`.
+- Years 2-6 `Total-Soil + frozwt` closure remains at numerical noise: max abs
+  residual `1.5347723092418164e-12 mm`, mean abs
+  `1.0758525853139703e-13 mm`.
+- Year 7 no longer carries the prior B-boundary `1.268e-7 mm` watch magnitude:
+  max abs residual `6.963318810448982e-13 mm`.
+- p1/p43 starter traces scanned the first 100 simulation days with zero
+  `frzw > ul` rows. Minimum margins were `0.020482917898791884 m` on p1 and
+  `0.020378509421531917 m` on p43.
+- Valid-input capacity guards did not trip on the cohort. Profile-bound
+  pinning remains removed (`0/43` pinned), and `frozwt/frdp` max correlation
+  is `0.9860178382757524`, below Increment B's `0.9861968090242198`.
+- The depth watch remains open and sharper: mean maximum depth is
+  `1791.9747961835646 mm`, worse than Increment B's `1782.265765656973 mm`.
+  C2 must handle thaw arms and explain the remaining freeze-side
+  energy/resistance depth magnitude.
+
 ## D3 Attempt Evidence
 
 - A coarse continuous per-layer energy-front attempt was run from dirty commit
@@ -230,8 +270,9 @@ Ran:
   `frwatc.for:89-137`.
 - The coarse-front production/test edit was backed out. `SC-SNOWFREEZE-001`
   v57 remains as the D3 hold amendment, v58 supersedes it for Increment A
-  shadow-state handoff authority, and v59 supersedes it for Increment B active
-  freeze-arm authority.
+  shadow-state handoff authority, v59 supersedes it for Increment B active
+  freeze-arm authority, and v61 supersedes it for Increment C1b capacity/
+  overflow authority.
 
 ## Review Closure
 
@@ -242,6 +283,8 @@ because D3 depth/duration parity is open. The first Increment C attempt shows
 the next pass must not reintroduce top/bottom thaw arms without first porting
 capacity-aware `watdst` redistribution and `watpdg`/`watbtm` overflow handling.
 The C1 attempt adds that capacity enforcement alone is insufficient unless the
-overflow surfaces are reconciled with the WAT balance identity. The years 2-6
-conservation gate remains the hard stop before any depth/duration acceptance
-claim.
+overflow surfaces are reconciled with the WAT balance identity. C1a supplied
+that accounting specification, and C1b now lands the water-side infrastructure
+with conservation intact. The years 2-6 conservation gate remains the hard
+stop before any depth/duration acceptance claim; C2 is the next required D3
+increment.

@@ -17,7 +17,10 @@ Date: 2026-06-11
     fine-state-derived depth and freeze-arm mutation authority, adding
     `frost.hourly.frzflg_####`, retiring scalar target-depth projection, and
     authorizing threshold-bounded exchange-debit limiting at the
-    available-liquid handoff boundary.
+    available-liquid handoff boundary. Increment C1b adds v60/v61,
+    authorizing fine-layer capacity/overflow semantics, `watpdg`/`watbtm`
+    publication surfaces, `watbtm` as WB13 `Dp` lineage, and bounded WB18/WB13
+    roundoff handling.
 - `docs/specifications/science-contracts/contracts/SC-WATBAL-001.md`
   - WAT additive-extension versioning clarification for required `frdp`,
     pinned `Total-Soil + frozwt` storage authority, v151 `frozwt`
@@ -37,7 +40,10 @@ Date: 2026-06-11
     `yst`/`nwfrzz` handoff state. Increment B derives runtime depth from the
     fine-state scan, mutates freeze-active `slfsd`/`slsic`/`slsw`/`nwfrzz`
     through `frzng`/`frznw` lineage, and limits only threshold-sized exchange
-    debit overdraws at the available-liquid boundary.
+    debit overdraws at the available-liquid boundary. Increment C1b adds
+    capacity-limited fine-layer liquid/ice ownership, downward redistribution,
+    `watpdg`/`watbtm` overflow accounting, and overflow-inclusive shadow
+    residual accounting.
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/04_snow_frost_irrigation.rs`
   - Seeded initial `frost.runtime_frwatc_*` diagnostics, including
     `frost.runtime_frwatc_frozen_water_after_m`, so WAT publication has a
@@ -46,11 +52,21 @@ Date: 2026-06-11
   - Frost outcome/profile-depth fields, heat-flow constants, and layer frozen
     depth/`frzw` state fields. Increment A adds shadow fine-layer diagnostic
     structs and symbol roots. Increment B adds hourly `frzflg` diagnostics.
+    Increment C1b adds `watpdg`/`watbtm` runtime overflow fields and symbols.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_runoff_reconciliation.rs`
   - Frost writeback bounds now use physical profile depth and persist layer
     frozen-depth/`frzw` state. Increment A writes the shadow aggregate,
     residual, `yst`/`nwfrzz`, and fine-layer diagnostic symbols. Increment B
-    writes bounded hourly `frzflg` diagnostics.
+    writes bounded hourly `frzflg` diagnostics. Increment C1b writes
+    `watpdg`/`watbtm` overflow surfaces and bounds aggregate `frzw` by `ul`.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_infiltration_evap.rs`
+  - Increment C1b preserves same-pass infiltration lineage from WB12 instead
+    of replaying WB14 while reconciling the fine frost state.
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/kernel_phases_mod/hydrology_phase_plant_percolation.rs`
+  - Increment C1b resolves effective frozen depth from the fine/WB19 state,
+    canonicalizes bounded deep-percolation dust before storage debit, preserves
+    scalar soil water on zero uptake, and rebalances bounded scalar/layer
+    roundoff without hiding real percolation or overflow.
 - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/state_access.rs`
   - Added fine-layer frost diagnostic symbol formatting.
 - `crates/openwepp-hillslope-orchestrator/src/constants.rs`
@@ -70,7 +86,15 @@ Date: 2026-06-11
 - `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`
   - Required runtime `frost.runtime_frdp_m`, bounded it by profile depth, and
     converted it to WAT `frdp`; WAT `frozwt` now requires
-    `frost.runtime_frwatc_frozen_water_after_m`.
+    `frost.runtime_frwatc_frozen_water_after_m`. Increment C1b adds WB13
+    `Dp` publication from `D + frost.runtime_watbtm_m` with bounded source
+    roundoff canonicalization.
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/hphys_trace.rs`
+  - Increment C1b trace guard diagnostics prefer `wb19_dg_####` over legacy
+    `dg_####` when validating WB18 frozen-depth state.
+- `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_seed_and_runtime.rs`
+  - Increment C1b refreshes WB18 frozen-depth state from the fine frost state
+    before downstream hydrology phases.
 - `crates/openwepp-runner/src/hillslope/scheduler_trace/scheduler_publication.rs`
   - Replaced retired cap provenance bound with `solthk` profile bound.
 - `crates/openwepp-runner/src/hillslope/03_tests.rs`
@@ -95,23 +119,31 @@ Date: 2026-06-11
     assertions. The layered continuation added scalar-store rejection and
     layer `frzw` update tests. Increment A adds shadow fine-state round-trip,
     seam identity, and non-driving-output tests. Increment B adds dispatch,
-    fine-front energy, `frznw`, and `watdst` vectors.
+    fine-front energy, `frznw`, and `watdst` vectors. Increment C1b adds
+    capacity, active-`ul`, overflow, and shadow-identity vectors.
 - `tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs`
   - Required WAT `frdp` metadata and dataset version `1.4`.
 - `tests/integration/sim_contract_boundary_unit_registry.rs`
   - Required `hillslope_wat.frdp` canonical registry alias.
 - `tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v59 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v61 and
     `SC-WATBAL-001` v152.
 - `tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs`
-  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v59 and
+  - Updated contract-version expectations for `SC-SNOWFREEZE-001` v61 and
     `SC-WATBAL-001` v152.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13.rs`
   - Proves WAT `frozwt` follows
     `frost.runtime_frwatc_frozen_water_after_m`, not `runtime_ws_frz`.
 - `crates/openwepp-runner/src/hillslope/tests03/publication/publication_wb13_guard.rs`
   - Adds a fail-closed guard for missing
-    `frost.runtime_frwatc_frozen_water_after_m`.
+    `frost.runtime_frwatc_frozen_water_after_m`; Increment C1b adds WB13
+    `watbtm`/`Dp` publication and bounded source-dust tests.
+- `crates/openwepp-runner/src/hillslope/tests03/trace.rs`
+  - Increment C1b adds a WB18 guard-term test for preferred WB19 layer
+    geometry in trace diagnostics.
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/hydrology.rs`
+  - Increment C1b adds WB17/WB18 scalar preservation, positive deep-loss,
+    no-flux rebalance, and roundoff canonicalization regressions.
 
 ## Generated Cohort Evidence
 
@@ -162,3 +194,10 @@ Date: 2026-06-11
 - `d3-increment-c1a-seam-accounting-20260611.md`
 - `fdhp01_increment_c1a_seam_accounting_summary_20260611.json`
 - `fdhp01_increment_c1a_seam_ledger_excerpt_20260611.csv`
+- `d3-increment-c1b-capacity-overflow-20260612.md`
+- `fdhp01_increment_c1b_execution_summary_20260612.json`
+- `fdhp01_increment_c1b_run_status_20260612.tsv`
+- `fdhp01_increment_c1b_annual_closure_residuals_20260612.csv`
+- `fdhp01_increment_c1b_depth_metrics_20260612.csv`
+- `fdhp01_increment_c1b_frozwt_frdp_ratio_20260612.csv`
+- `fdhp01_increment_c1b_starter_capacity_20260612.json`

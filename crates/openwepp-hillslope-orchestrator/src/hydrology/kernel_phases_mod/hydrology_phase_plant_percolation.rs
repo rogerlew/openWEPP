@@ -17,6 +17,14 @@ pub(crate) fn run_plant_root_uptake(
         let phase_class = HillslopeKernelPhaseClass::HydrologyPlantRootUptake;
         let base_et = Self::require_flux_scalar(request, phase_class, WB11_SYMBOL_ET)?;
         Self::require_flux_range(phase_class, WB11_SYMBOL_ET, base_et, Some(0.0), None)?;
+        let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
+        Self::require_state_range(
+            phase_class,
+            WB11_SYMBOL_SOIL_WATER,
+            soil_water,
+            Some(0.0),
+            None,
+        )?;
 
         let etp_symbol = BoundarySymbol::from(WB17_FLUX_SYMBOL_ETP);
         let etp = Self::require_flux_scalar_for_symbol(request, phase_class, &etp_symbol)?;
@@ -104,6 +112,8 @@ pub(crate) fn run_plant_root_uptake(
 
         let profile_depth: f64 = layer_depth.iter().sum();
         let effective_root_depth = root_depth.min(profile_depth);
+        let soil_water_before =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
         let mut layer_potential_uptake = vec![0.0_f64; layer_count];
         let mut layer_actual_uptake = vec![0.0_f64; layer_count];
         let mut transpiration_actual = 0.0;
@@ -174,8 +184,26 @@ pub(crate) fn run_plant_root_uptake(
         let ui: f64 = layer_actual_uptake.iter().sum();
         Self::require_flux_range(phase_class, WB17_SYMBOL_EP, ui, Some(0.0), Some(etp))?;
 
-        let soil_water_after =
-            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &layer_storage)?;
+        let mut soil_water_after = soil_water;
+        if ui > WB11_ZERO_THRESHOLD {
+            soil_water_after = Self::wb18_aggregate_soil_water_after_percolation(
+                request,
+                phase_class,
+                &layer_storage,
+            )?;
+            let storage_uptake_m = soil_water_before - soil_water_after;
+            let storage_correction_m = storage_uptake_m - ui;
+            if storage_correction_m.abs() > f64::EPSILON
+                && let Some(index) = layer_actual_uptake.iter().rposition(|value| *value > 0.0)
+            {
+                layer_storage[index] += storage_correction_m;
+                soil_water_after = Self::wb18_aggregate_soil_water_after_percolation(
+                    request,
+                    phase_class,
+                    &layer_storage,
+                )?;
+            }
+        }
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,
@@ -322,6 +350,13 @@ pub(crate) fn wb18_aggregate_soil_water_after_percolation(
                 &frozen_depth_symbol,
             )?
             .unwrap_or(0.0);
+            let frozen_depth = Self::resolve_effective_wb18_frozen_depth(
+                request,
+                phase_class,
+                layer_index,
+                dg,
+                frozen_depth,
+            )?;
             Self::require_state_range_for_symbol(
                 phase_class,
                 &frozen_depth_symbol,
@@ -330,7 +365,8 @@ pub(crate) fn wb18_aggregate_soil_water_after_percolation(
                 Some(dg),
             )?;
 
-            let layer_soil_water = *layer_theta + thetdr * (dg - frozen_depth);
+            let unfrozen_depth_m = (dg - frozen_depth).max(0.0);
+            let layer_soil_water = *layer_theta + thetdr * unfrozen_depth_m;
             if !layer_soil_water.is_finite() {
                 return Err(Wb11HydrologyKernelGuardError::NonFiniteStateSymbol {
                     phase_class,
@@ -349,6 +385,111 @@ pub(crate) fn wb18_aggregate_soil_water_after_percolation(
             });
         }
         Ok(soil_water_after)
+    }
+
+    fn resolve_effective_wb18_frozen_depth(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+        layer_index: usize,
+        dg: f64,
+        aggregate_frozen_depth_m: f64,
+    ) -> Result<f64, Wb11HydrologyKernelGuardError> {
+        if aggregate_frozen_depth_m <= dg + WB11_ZERO_THRESHOLD {
+            return Ok(aggregate_frozen_depth_m.min(dg));
+        }
+
+        let fine_count_symbol =
+            Self::frost_layer_symbol(FROST_RUNTIME_LAYER_FINE_COUNT_ROOT, layer_index);
+        if let Some(fine_count_raw) =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &fine_count_symbol)?
+        {
+            let rounded = fine_count_raw.round();
+            if (fine_count_raw - rounded).abs() > WB11_ZERO_THRESHOLD || rounded < 1.0 {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fine_count_symbol.clone(),
+                    value: fine_count_raw,
+                    minimum: Some(1.0),
+                    maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
+                });
+            }
+            let fine_count = format!("{rounded:.0}").parse::<usize>().map_err(|_| {
+                Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: fine_count_symbol.clone(),
+                    value: fine_count_raw,
+                    minimum: Some(1.0),
+                    maximum: Some(Self::diagnostic_count_to_f64(usize::MAX)),
+                }
+            })?;
+            let mut fine_frozen_depth_m = 0.0_f64;
+            for fine_index in 1..=fine_count {
+                let slfsd_symbol = Self::frost_fine_layer_symbol(
+                    FROST_RUNTIME_FINE_SLFSD_M_ROOT,
+                    layer_index,
+                    fine_index,
+                );
+                let slfsd_m =
+                    Self::require_state_scalar_for_symbol(request, phase_class, &slfsd_symbol)?;
+                Self::require_state_range_for_symbol(
+                    phase_class,
+                    &slfsd_symbol,
+                    slfsd_m,
+                    Some(0.0),
+                    None,
+                )?;
+                fine_frozen_depth_m += slfsd_m;
+            }
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &Self::wb18_perc_state_symbol("frozen_depth", layer_index),
+                fine_frozen_depth_m,
+                Some(0.0),
+                Some(dg),
+            )?;
+            return Ok(fine_frozen_depth_m.min(dg));
+        }
+
+        let scalar_frost_depth = Self::optional_state_scalar_for_symbol(
+            request,
+            phase_class,
+            &BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
+        )?
+        .or_else(|| {
+            Self::optional_state_scalar_for_symbol(
+                request,
+                phase_class,
+                &BoundarySymbol::from(WB14_SYMBOL_FROST_RUNTIME_DFROST),
+            )
+            .ok()
+            .flatten()
+        });
+        let Some(scalar_frost_depth) = scalar_frost_depth else {
+            return Ok(0.0);
+        };
+        Self::require_dynamic_state_range(
+            phase_class,
+            BoundarySymbol::from(FROST_RUNTIME_FRDP_M_SYMBOL),
+            scalar_frost_depth,
+            Some(0.0),
+            None,
+        )?;
+
+        let mut cumulative_depth_m = 0.0_f64;
+        for prior_layer_index in 1..layer_index {
+            let (prior_dg_symbol, prior_dg) =
+                Self::require_wb19_dg_scalar(request, phase_class, prior_layer_index)?;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &prior_dg_symbol,
+                prior_dg,
+                Some(WB11_ZERO_THRESHOLD),
+                None,
+            )?;
+            cumulative_depth_m += prior_dg;
+        }
+
+        Ok((scalar_frost_depth - cumulative_depth_m).clamp(0.0, dg))
     }
 pub(crate) fn resolve_infiltration_tillage_depth(
         request: &HillslopeKernelRequest<'_>,
@@ -386,7 +527,7 @@ pub(crate) fn resolve_infiltration_tillage_depth(
             Ok(first_layer_depth)
         }
     }
-pub(crate) fn apply_same_pass_infiltration_to_layer_storage(
+    pub(crate) fn apply_same_pass_infiltration_to_layer_storage(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         theta: &mut [f64],
@@ -460,7 +601,64 @@ pub(crate) fn apply_same_pass_infiltration_to_layer_storage(
         }
         Ok(())
     }
-pub(crate) fn apply_post_et_upper_limit_redistribution(
+
+    fn apply_wb18_storage_roundoff_delta_to_layer_storage(
+        phase_class: HillslopeKernelPhaseClass,
+        theta: &mut [f64],
+        delta_m: f64,
+    ) -> Result<(), Wb11HydrologyKernelGuardError> {
+        if delta_m.abs() <= f64::EPSILON {
+            return Ok(());
+        }
+        if theta.is_empty() {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("nsl"),
+                value: 0.0,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+
+        if delta_m > 0.0 {
+            let last_index = theta.len() - 1;
+            theta[last_index] += delta_m;
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &Self::wb18_perc_state_symbol("theta", last_index + 1),
+                theta[last_index],
+                Some(0.0),
+                None,
+            )?;
+            return Ok(());
+        }
+
+        let debit_m = -delta_m;
+        if let Some(index) = theta
+            .iter()
+            .rposition(|storage| *storage + WB11_ZERO_THRESHOLD >= debit_m)
+        {
+            theta[index] = (theta[index] - debit_m).max(0.0);
+            Self::require_state_range_for_symbol(
+                phase_class,
+                &Self::wb18_perc_state_symbol("theta", index + 1),
+                theta[index],
+                Some(0.0),
+                None,
+            )?;
+            return Ok(());
+        }
+
+        Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+            phase_class,
+            symbol: BoundarySymbol::from(WB11_SYMBOL_SOIL_WATER),
+            value: debit_m,
+            minimum: Some(0.0),
+            maximum: Some(theta.iter().sum()),
+        })
+    }
+
+    pub(crate) fn apply_post_et_upper_limit_redistribution(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
         theta: &mut [f64],
@@ -533,18 +731,21 @@ pub(crate) fn apply_post_et_upper_limit_redistribution(
     }
 
     #[allow(clippy::too_many_lines)]
-pub(crate) fn run_percolation(
+    pub(crate) fn run_percolation(
         request: &HillslopeKernelRequest<'_>,
     ) -> Result<KernelRunResponse, Wb11HydrologyKernelGuardError> {
         let phase_class = HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage;
         let soil_water = Self::require_state_scalar(request, phase_class, WB11_SYMBOL_SOIL_WATER)?;
-        Self::require_state_range(
-            phase_class,
-            WB11_SYMBOL_SOIL_WATER,
-            soil_water,
-            Some(0.0),
-            None,
-        )?;
+        let reconcile_legacy_soil_water_from_layers = soil_water < -WB11_ZERO_THRESHOLD;
+        if !reconcile_legacy_soil_water_from_layers {
+            Self::require_state_range(
+                phase_class,
+                WB11_SYMBOL_SOIL_WATER,
+                soil_water.max(0.0),
+                Some(0.0),
+                None,
+            )?;
+        }
 
         // Keep legacy WB11 symbol validation to preserve mixed-lane seam guard
         // posture while WB18 per-layer symbols carry the execution authority.
@@ -656,6 +857,19 @@ pub(crate) fn run_percolation(
             upper_limit.push(layer_ul);
             conductivity.push(layer_ssc);
             layer_depth.push(dg);
+        }
+        let computed_soil_water_before =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &theta)?
+                .max(0.0);
+        if reconcile_legacy_soil_water_from_layers {
+            let reconciled_soil_water = computed_soil_water_before;
+            Self::require_state_range(
+                phase_class,
+                WB11_SYMBOL_SOIL_WATER,
+                reconciled_soil_water.max(0.0),
+                Some(0.0),
+                None,
+            )?;
         }
 
         let same_pass_infiltration = if request
@@ -951,8 +1165,67 @@ pub(crate) fn run_percolation(
             lane_substep_index += 1.0;
         }
 
-        let soil_water_after =
-            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &theta)?;
+        if (0.0..=WB18_DEEP_PERCOLATION_ROUNDOFF_TOLERANCE_M).contains(&percolation_loss) {
+            if percolation_loss > 0.0 {
+                let bottom_index = layer_count - 1;
+                theta[bottom_index] += percolation_loss;
+                per_layer_flux[bottom_index] =
+                    (per_layer_flux[bottom_index] - percolation_loss).max(0.0);
+            }
+            percolation_loss = 0.0;
+        }
+
+        let mut computed_soil_water_after =
+            Self::wb18_aggregate_soil_water_after_percolation(request, phase_class, &theta)?
+                .max(0.0);
+        let same_pass_infiltration_depth = same_pass_infiltration.unwrap_or(0.0);
+        let preserve_scalar_ledger = !reconcile_legacy_soil_water_from_layers
+            && (soil_water.max(0.0) - computed_soil_water_before).abs()
+                <= WB18_STORAGE_ROUNDOFF_TOLERANCE_M;
+        let soil_water_after = if preserve_scalar_ledger {
+            let ledger_soil_water_after =
+                soil_water.max(0.0) + same_pass_infiltration_depth - percolation_loss;
+            if ledger_soil_water_after < -WB11_ZERO_THRESHOLD {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB11_SYMBOL_SOIL_WATER),
+                    value: ledger_soil_water_after,
+                    minimum: Some(0.0),
+                    maximum: None,
+                });
+            }
+            ledger_soil_water_after.max(0.0)
+        } else {
+            computed_soil_water_after
+        };
+        if preserve_scalar_ledger {
+            let storage_roundoff_delta_m = soil_water_after - computed_soil_water_after;
+            if storage_roundoff_delta_m.abs() <= WB18_STORAGE_ROUNDOFF_TOLERANCE_M {
+                Self::apply_wb18_storage_roundoff_delta_to_layer_storage(
+                    phase_class,
+                    &mut theta,
+                    storage_roundoff_delta_m,
+                )?;
+                computed_soil_water_after =
+                    Self::wb18_aggregate_soil_water_after_percolation(
+                        request,
+                        phase_class,
+                        &theta,
+                    )?
+                    .max(0.0);
+            }
+            if (computed_soil_water_after - soil_water_after).abs()
+                > WB18_STORAGE_ROUNDOFF_TOLERANCE_M
+            {
+                return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                    phase_class,
+                    symbol: BoundarySymbol::from(WB11_SYMBOL_SOIL_WATER),
+                    value: computed_soil_water_after,
+                    minimum: Some(soil_water_after - WB18_STORAGE_ROUNDOFF_TOLERANCE_M),
+                    maximum: Some(soil_water_after + WB18_STORAGE_ROUNDOFF_TOLERANCE_M),
+                });
+            }
+        }
         Self::require_state_range(
             phase_class,
             WB11_SYMBOL_SOIL_WATER,

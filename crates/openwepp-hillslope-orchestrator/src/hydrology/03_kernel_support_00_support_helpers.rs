@@ -199,6 +199,8 @@ pub(crate) struct FrostCouplingOutcome {
     shadow_total_water_after_m: f64,
     shadow_wb_delta_m: f64,
     shadow_frwatc_residual_m: f64,
+    watpdg_m: f64,
+    watbtm_m: f64,
     hourly_state: [FrostHourlyState; SIMIMPL29_HOURS_PER_DAY],
     layer_topology_state: Vec<FrostLayerTopologyState>,
     shadow_layer_state: Vec<FrostLayerShadowState>,
@@ -224,6 +226,7 @@ pub(crate) struct FrostLayerTopologyState {
     fine_layer_count: usize,
     fine_layer_thickness_m: f64,
     dg_m: f64,
+    upper_limit_m: f64,
     theta_after_m: f64,
     frozen_depth_m: f64,
     frzw_m: f64,
@@ -250,6 +253,8 @@ pub(crate) struct FrostFineLayerDiagnosticState {
     slsic_m: f64,
     slsw_theta: f64,
     sltime_s: f64,
+    slsic_capacity_m: f64,
+    slsw_theta_capacity: f64,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -338,6 +343,8 @@ const FROST_RUNTIME_SHADOW_TOTAL_WATER_AFTER_SYMBOL: &str =
 const FROST_RUNTIME_SHADOW_WB_DELTA_SYMBOL: &str = "frost.runtime_shadow_wb_delta_m";
 const FROST_RUNTIME_SHADOW_FRWATC_RESIDUAL_SYMBOL: &str =
     "frost.runtime_shadow_frwatc_residual_m";
+const FROST_RUNTIME_WATPDG_SYMBOL: &str = "frost.runtime_watpdg_m";
+const FROST_RUNTIME_WATBTM_SYMBOL: &str = "frost.runtime_watbtm_m";
 const FROST_RUNTIME_SHADOW_ST_ROOT: &str = "frost.runtime_shadow_st_m";
 const FROST_RUNTIME_SHADOW_SOIL_WATER_ROOT: &str = "frost.runtime_shadow_soil_water_m";
 const FROST_RUNTIME_SHADOW_FROZEN_DEPTH_ROOT: &str = "frost.runtime_shadow_frozen_depth_m";

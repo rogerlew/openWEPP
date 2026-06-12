@@ -508,16 +508,15 @@ pub(crate) fn compute_same_pass_wb14_infiltration_lineage(
         )?;
         Ok(Some(cumulative_infiltration))
     }
-pub(crate) fn resolve_wb18_same_pass_infiltration_lineage(
+    pub(crate) fn resolve_wb18_same_pass_infiltration_lineage(
         request: &HillslopeKernelRequest<'_>,
         phase_class: HillslopeKernelPhaseClass,
     ) -> Result<Option<f64>, Wb11HydrologyKernelGuardError> {
-        if Self::wb18_should_reconstruct_same_pass_infiltration_lineage(request, phase_class)? {
-            return Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class);
-        }
-
-        Self::validate_runtime_snow_state_domains(request, phase_class)?;
-
+        let should_reconstruct =
+            Self::wb18_should_reconstruct_same_pass_infiltration_lineage(request, phase_class)?;
+        let reconstruct_zero_infiltration = should_reconstruct
+            && (Self::wb18_same_pass_reconstruction_daily_lane(request, phase_class)?
+                || Self::wb18_storage_target_includes_same_pass_ingress(request, phase_class)?);
         let infiltration_symbol = BoundarySymbol::from(WB12_SYMBOL_INFILTRATION);
         if let Some(infiltration) =
             Self::optional_state_scalar_for_symbol(request, phase_class, &infiltration_symbol)?
@@ -529,10 +528,85 @@ pub(crate) fn resolve_wb18_same_pass_infiltration_lineage(
                 Some(0.0),
                 None,
             )?;
-            return Ok(Some(infiltration));
+            if infiltration > WB11_ZERO_THRESHOLD || !reconstruct_zero_infiltration {
+                Self::validate_runtime_snow_state_domains(request, phase_class)?;
+                return Ok(Some(infiltration));
+            }
         }
 
+        if reconstruct_zero_infiltration {
+            return Self::compute_same_pass_wb14_infiltration_lineage(request, phase_class);
+        }
+
+        Self::validate_runtime_snow_state_domains(request, phase_class)?;
+
         Ok(None)
+    }
+    fn wb18_same_pass_reconstruction_daily_lane(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let lane_substeps_symbol = BoundarySymbol::from("wb18_perc_lane_substeps");
+        let lane_substeps_raw =
+            Self::optional_state_scalar_for_symbol(request, phase_class, &lane_substeps_symbol)?
+                .unwrap_or(1.0);
+        if lane_substeps_raw < 1.0 {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: lane_substeps_symbol.clone(),
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        let lane_substeps = lane_substeps_raw.round();
+        if (lane_substeps_raw - lane_substeps).abs() > WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: lane_substeps_symbol,
+                value: lane_substeps_raw,
+                minimum: Some(1.0),
+                maximum: None,
+            });
+        }
+        Ok((lane_substeps - 1.0).abs() <= WB11_ZERO_THRESHOLD)
+    }
+
+    fn wb18_storage_target_includes_same_pass_ingress(
+        request: &HillslopeKernelRequest<'_>,
+        phase_class: HillslopeKernelPhaseClass,
+    ) -> Result<bool, Wb11HydrologyKernelGuardError> {
+        let Some(initial) = Self::optional_state_scalar(
+            request,
+            phase_class,
+            WB12_SYMBOL_STORAGE_INITIAL,
+        )?
+        else {
+            return Ok(false);
+        };
+        let Some(observed) = Self::optional_state_scalar(
+            request,
+            phase_class,
+            WB12_SYMBOL_STORAGE_OBSERVED,
+        )?
+        else {
+            return Ok(false);
+        };
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_INITIAL,
+            initial,
+            Some(0.0),
+            None,
+        )?;
+        Self::require_state_range(
+            phase_class,
+            WB12_SYMBOL_STORAGE_OBSERVED,
+            observed,
+            Some(0.0),
+            None,
+        )?;
+        Ok(observed > initial + WB11_ZERO_THRESHOLD)
     }
 pub(crate) fn wb18_should_reconstruct_same_pass_infiltration_lineage(
         request: &HillslopeKernelRequest<'_>,

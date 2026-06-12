@@ -201,6 +201,17 @@ freeze-only B boundary, before any thaw arm exists.
   resistance side of the freeze arms has an independent defect; record it
   rather than tuning.
 
+**Execution result (2026-06-12):** C1b landed and passed its water-side gates.
+See `d3-increment-c1b-capacity-overflow-20260612.md` and
+`fdhp01_increment_c1b_execution_summary_20260612.json`. The parent model ran
+the comparator work locally without the comparator subagent per user quota
+direction. The `43/43` cohort exits clean, years 2-6 additive closure remains
+at noise (max abs `1.5347723092418164e-12 mm`), p1/p43 starter traces show
+zero `frzw > ul` rows, and `frozwt/frdp` max correlation remains below
+Increment B. The depth watch did not improve: mean maximum depth is
+`1791.9747961835646 mm`, so C2 inherits both thaw-arm completion and the
+freeze-side energy/resistance depth-magnitude investigation.
+
 ## Increment C2 — thaw arms + sandwich geometry + D3 acceptance
 
 **Objective:** complete the state machine — `mlttp`/`mltbtm`, sandwich

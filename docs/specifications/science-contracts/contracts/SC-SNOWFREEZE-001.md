@@ -4,7 +4,7 @@ title: Snow and Freeze Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 59
+contract_version: 61
 producer_scope:
   - Winter precipitation phase partition surfaces (rain vs snow)
   - Snowpack depth/density/water-equivalent state surfaces
@@ -107,6 +107,8 @@ Out of scope:
 | `Ws_frz` | `m` | Water accumulated in frozen soil (hourly bookkeeping output). | frost routine | infiltration-capacity adjustment / reporting |
 | `Nft` | `count` | Number of freeze-thaw cycles over winter bookkeeping. | frost routine | soil-state/infiltration-capacity coupling |
 | `InfCap_frz` | `m s^-1` | Infiltration capacity of tilled layer/top `0.20 m` (untilled case) under frost routine output; non-SI internal units must be converted at boundary publish. | frost routine | infiltration/runoff component |
+| `watpdg` | `m` | Frost/thaw excess liquid routed to the surface ponding/upper overflow surface when fine-layer storage cannot retain it. | frost routine | water-balance publication and closure identity |
+| `watbtm` | `m` | Frost/thaw excess liquid routed below the active profile when fine-layer storage cannot retain it. | frost routine | water-balance publication and closure identity (`Dp` loss lineage) |
 | `Snow-Water` | `mm` | WB13/hydout snow-water storage publication surface converted from runtime SWE at the output boundary. | winter runtime state publication | WB13/hillslope WAT output |
 | `winter_rad_hourly` | `MJ m^-2 h^-1` | Registry-owned hourly winter radiation forcing surface. | hourly radiation adapter | melt-forcing diagnostics |
 | `winter_air_temp_hourly` | `degC` | Registry-owned hourly winter air-temperature forcing surface. | hourly temperature adapter | melt/frost branch diagnostics |
@@ -838,8 +840,8 @@ state. During freeze-active hours, `frzng`/`frznw` semantics must mutate
 `slfsd`, `slsic`, `slsw`, and `nwfrzz` first; `frdp`, `thdp`, `tfrdp`, and
 `tthawd` are then derived by scanning `fgfrst`/`slfsd` equivalent to
 `watdst.for:300-511`. `frznw` must freeze liquid already held in frozen zones
-before ordinary front extension, respecting `ul/dg * slfsd - slsic` capacity
-and preserving total layer water. When exchange summation would debit more
+before ordinary front extension, respecting `(thetdr + ul/dg) * slfsd - slsic`
+capacity and preserving total layer water. When exchange summation would debit more
 liquid than available by no more than the kernel zero threshold
 (`WB11_ZERO_THRESHOLD`, metres), the freeze debit may be limited to available
 liquid at the handoff boundary; larger overruns are hard domain violations.
@@ -852,6 +854,32 @@ Increment B does not complete `mlttp`/`mltbtm` sandwich and thaw-through
 authority. Any surviving thaw behavior in this increment is a bounded
 carry-over/minimal retreat path and must remain recorded as incomplete until
 Increment C ports the top/bottom thaw arms and closes D3 acceptance.
+
+FDHP01 Increment C1b authorizes the water-side capacity and overflow
+infrastructure required before the thaw arms may be retained. `frwatc(1)` and
+freeze-active `frzng`/`frznw` movement must keep fine-layer ice within
+`(thetdr(i) + ul(i)/dg(i)) * slfsd(j,i) - slsic(j,i)` capacity and fine-layer
+unfrozen liquid within the same total pore capacity
+`slsw(j,i) <= thetdr(i) + ul(i)/dg(i)`. Existing or produced states that
+exceed those capacities beyond roundoff are hard domain violations; production
+code must not silently clamp them. Excess valid incoming liquid must move
+through the `watdst`-owned fine-layer redistribution/overflow path, preserving
+single ownership by the fine state between `frwatc(1)` ingress and
+`frwatc(0)` egress. Unretained lower overflow is published as
+`frost.runtime_watbtm_m` and enters WB13 `Dp`; upper overflow is published as
+`frost.runtime_watpdg_m` and remains an explicit closure surface for the C2
+top-thaw path. WB13 may canonicalize non-negative `D` and
+`frost.runtime_watbtm_m` publication roundoff at or below `1e-11 m` to zero
+before summing `Dp`; WB18 percolation applies the same threshold before state
+debit/publication so zero-published deep-percolation dust cannot remove
+storage. WB18 may also rebalance no-flux scalar/layer storage roundoff at or
+below `2e-11 m` by adjusting layer storage to the preserved incoming
+`wb11_soil_water` scalar; this storage-only tolerance must not canonicalize or
+hide positive deep percolation, frost overflow, negative values, or non-finite
+values. Larger positive values are preserved, and any negative or non-finite
+value remains a typed failure. The internal handoff residual accounts for
+overflow as `after + watpdg + watbtm - before - (st - yst)` so valid overflow
+does not masquerade as a storage leak.
 
 ## Known Gaps
 
@@ -867,6 +895,8 @@ Increment C ports the top/bottom thaw arms and closes D3 acceptance.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-06-12` | `61` | `Codex` | FDHP01 Increment C1b amendment: set bounded WB18/WB13 deep-percolation publication dust to `1e-11 m` and WB18 scalar/layer storage rebalance to `2e-11 m` so valid roundoff cannot accumulate as storage drift. |
+| `2026-06-11` | `60` | `Codex` | FDHP01 Increment C1b amendment: added capacity-bound fine-layer liquid/ice ownership, fail-closed over-capacity guards, and `watpdg`/`watbtm` overflow publication semantics with `watbtm` entering WB13 `Dp` plus bounded deep-percolation roundoff canonicalization at WB18/WB13. |
 | `2026-06-11` | `59` | `Codex` | FDHP01 Increment B amendment: promoted fine-layer `frzng`/`frznw` freeze-arm state as active depth authority, added `frost.hourly.frzflg_####`, required `watdst`-style depth derivation from `fgfrst`/`slfsd`, allowed threshold-bounded exchange-debit limiting at the available-liquid handoff boundary, and retired scalar target-depth projection as production authority. |
 | `2026-06-11` | `58` | `Codex` | FDHP01 Increment A amendment: corrected `INV-SNOWFREEZE-012` from ambiguous hourly `frwatc(1)` ingress to pinned hour-1 daily ingress, and added fine-layer shadow-state aliases plus a required internal handoff conservation residual before the state may drive depth/publication. |
 | `2026-06-11` | `57` | `Codex` | FDHP01 D3 amendment: specified that hourly freeze/thaw energy must move the same layer frozen-depth/frozen-water state that `frwatc` publishes, prohibited post-hoc scalar depth projection into layer stores, and updated `GAP-SNOWFREEZE-002` to the Addendum 3 D3 depth/duration signature after D2/p2 closure. |

@@ -364,6 +364,7 @@ pub(super) fn seed_wb11_runtime_surface_inputs(
             BoundaryValue::scalar(1.0),
         );
     }
+    refresh_wb18_frozen_depth_from_fine_frost_state(runtime_surface, nsl)?;
 
     let wb11_soil_water = require_runtime_surface_scalar(runtime_surface, "wb11_soil_water")?;
     if wb11_soil_water < 0.0 {
@@ -545,6 +546,100 @@ pub(super) fn seed_wb11_runtime_surface_inputs(
         BoundaryValue::scalar(if ealpha_seeded_any_day { 1.0 } else { 0.0 }),
     );
     seed_mofe03_wave2_runtime_surface_inputs(runtime_surface)?;
+
+    Ok(())
+}
+
+fn refresh_wb18_frozen_depth_from_fine_frost_state(
+    runtime_surface: &mut HillslopeWritebackSurface,
+    nsl: usize,
+) -> Result<(), HillslopeCliError> {
+    const FINE_COUNT_ROOT: &str = "frost.runtime_nfine";
+    const FINE_FROZEN_DEPTH_ROOT: &str = "frost.runtime_slfsd_m";
+    const ZERO_THRESHOLD: f64 = 1.0e-10;
+
+    let scalar_frost_depth_m =
+        runtime_surface_symbol_value(runtime_surface, "frost.runtime_frdp_m")
+            .or_else(|| runtime_surface_symbol_value(runtime_surface, "frost.runtime_dfrost"));
+    let mut cumulative_depth_m = 0.0_f64;
+    for layer_index in 1..=nsl {
+        let dg_symbol = format!("wb19_dg_{layer_index:04}");
+        let dg_legacy_symbol = wb13_primary_layer_symbol("dg", layer_index);
+        let dg = runtime_surface_symbol_value(runtime_surface, dg_symbol.as_str())
+            .or_else(|| runtime_surface_symbol_value(runtime_surface, dg_legacy_symbol.as_str()))
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} missing required layer depth {dg_symbol}/{dg_legacy_symbol} for fine frost aggregate refresh"
+                ),
+            })?;
+        if !dg.is_finite() || dg <= ZERO_THRESHOLD {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "wb11_seed",
+                detail: format!(
+                    "{SIMPIPE_GUARD_ID} layer depth for fine frost aggregate refresh must be finite and > 0.0, observed {dg}"
+                ),
+            });
+        }
+
+        let fine_count_symbol = wb13_primary_layer_symbol(FINE_COUNT_ROOT, layer_index);
+        let frozen_depth_m = if let Some(fine_count_raw) =
+            runtime_surface_symbol_value(runtime_surface, fine_count_symbol.as_str())
+        {
+            let fine_count = scalar_to_usize(fine_count_symbol.as_str(), fine_count_raw)?;
+            if fine_count == 0 {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "wb11_seed",
+                    detail: format!(
+                        "{SIMPIPE_GUARD_ID} {fine_count_symbol} must be >= 1 when fine frost state is present"
+                    ),
+                });
+            }
+            let mut fine_frozen_depth_m = 0.0_f64;
+            for fine_index in 1..=fine_count {
+                let slfsd_symbol =
+                    format!("{FINE_FROZEN_DEPTH_ROOT}_{layer_index:04}_{fine_index:04}");
+                let slfsd_m =
+                    require_runtime_surface_scalar(runtime_surface, slfsd_symbol.as_str())?;
+                if !slfsd_m.is_finite() || slfsd_m < -ZERO_THRESHOLD {
+                    return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "wb11_seed",
+                        detail: format!(
+                            "{SIMPIPE_GUARD_ID} {slfsd_symbol} must be finite and >= 0.0, observed {slfsd_m}"
+                        ),
+                    });
+                }
+                fine_frozen_depth_m += slfsd_m.max(0.0);
+            }
+            if fine_frozen_depth_m > dg + ZERO_THRESHOLD {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "wb11_seed",
+                    detail: format!(
+                        "{SIMPIPE_GUARD_ID} fine frost depth sum for layer {layer_index} exceeds layer depth ({fine_frozen_depth_m} > {dg})"
+                    ),
+                });
+            }
+            fine_frozen_depth_m.min(dg)
+        } else if let Some(scalar_frost_depth_m) = scalar_frost_depth_m {
+            if !scalar_frost_depth_m.is_finite() || scalar_frost_depth_m < -ZERO_THRESHOLD {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "wb11_seed",
+                    detail: format!(
+                        "{SIMPIPE_GUARD_ID} scalar frost depth must be finite and >= 0.0 for aggregate refresh, observed {scalar_frost_depth_m}"
+                    ),
+                });
+            }
+            (scalar_frost_depth_m - cumulative_depth_m).clamp(0.0, dg)
+        } else {
+            0.0
+        };
+
+        runtime_surface.state_surface.insert(
+            BoundarySymbol::from(format!("wb18_perc_frozen_depth_{layer_index:04}")),
+            BoundaryValue::scalar(frozen_depth_m),
+        );
+        cumulative_depth_m += dg;
+    }
 
     Ok(())
 }
@@ -1789,4 +1884,3 @@ pub(super) fn day_is_within_julian_window(day_of_year: usize, start_day: usize, 
         day_of_year >= start_day || day_of_year <= end_day
     }
 }
-

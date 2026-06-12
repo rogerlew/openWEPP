@@ -74,6 +74,23 @@ boundary. The next D3 pass must port capacity-aware `watdst` redistribution and
 `watpdg`/`watbtm` overflow handling before `mlttp`/`mltbtm` thaw arms can be
 retained.
 
+D3 Increment C1/C1a/C1b, 2026-06-12: the first C1 capacity/redistribution
+attempt and the C1a seam-accounting diagnostic localized the water-side failure
+to fine-state ownership, pore capacity, and missing overflow surfaces. C1b then
+landed the capacity/overflow infrastructure without using the comparator
+subagent per user quota direction. `SC-SNOWFREEZE-001` is now v61. The final
+local `43/43` `algebraic-radium` cohort at
+`/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z` keeps years 2-6
+`Total-Soil + frozwt` closure at numerical noise (max abs
+`1.5347723092418164e-12 mm`), has zero valid-input capacity guard trips, keeps
+p1/p43 starter traces at zero `frzw > ul` rows, preserves de-pinning
+(`0/43` profile-bound pinned), and keeps `frozwt/frdp` correlation below
+Increment B (max `0.9860178382757524`). The package remains executed-hold
+because the depth watch worsened instead of improving: mean maximum depth is
+`1791.9747961835646 mm`. The next D3 increment is C2: port thaw arms,
+sandwich/thaw-through state, and explain the remaining freeze-side
+energy/resistance depth magnitude before MOFE.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

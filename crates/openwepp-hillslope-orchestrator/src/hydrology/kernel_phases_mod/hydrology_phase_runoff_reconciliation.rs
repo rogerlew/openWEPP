@@ -918,6 +918,18 @@ pub(crate) fn run_runoff_reconciliation(
                 BoundarySymbol::from(FROST_RUNTIME_SHADOW_FRWATC_RESIDUAL_SYMBOL),
                 frost_outcome.shadow_frwatc_residual_m,
             ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_WATPDG_SYMBOL),
+                frost_outcome.watpdg_m,
+                Some(0.0),
+                None,
+            ));
+            state_updates.push(WritebackField::bounded(
+                BoundarySymbol::from(FROST_RUNTIME_WATBTM_SYMBOL),
+                frost_outcome.watbtm_m,
+                Some(0.0),
+                None,
+            ));
             for layer in &frost_outcome.layer_topology_state {
                 state_updates.push(WritebackField::bounded(
                     Self::frost_layer_symbol(FROST_RUNTIME_LAYER_FINE_COUNT_ROOT, layer.layer_index),
@@ -950,7 +962,7 @@ pub(crate) fn run_runoff_reconciliation(
                     Self::wb18_perc_state_symbol("frzw", layer.layer_index),
                     layer.frzw_m,
                     Some(0.0),
-                    None,
+                    Some(layer.upper_limit_m),
                 ));
             }
             for layer in &frost_outcome.shadow_layer_state {
@@ -1032,7 +1044,7 @@ pub(crate) fn run_runoff_reconciliation(
                     ),
                     fine.slsic_m,
                     Some(0.0),
-                    None,
+                    Some(fine.slsic_capacity_m),
                 ));
                 state_updates.push(WritebackField::bounded(
                     Self::frost_fine_layer_symbol(
@@ -1042,7 +1054,7 @@ pub(crate) fn run_runoff_reconciliation(
                     ),
                     fine.slsw_theta,
                     Some(0.0),
-                    None,
+                    Some(fine.slsw_theta_capacity),
                 ));
                 state_updates.push(WritebackField::bounded(
                     Self::frost_fine_layer_symbol(

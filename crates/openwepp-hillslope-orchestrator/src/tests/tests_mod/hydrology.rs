@@ -114,6 +114,268 @@ fn wbval05_wb18_percolation_rejects_invalid_projected_snow_state_before_zero_inf
 }
 
 #[test]
+fn fdhp01_c1b_wb18_consumes_published_infiltration_without_replaying_wb14_frost() {
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("management.initial.params.tillay2_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_infiltration"),
+        BoundaryValue::scalar(0.003),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb12_rainfall_input"),
+        BoundaryValue::scalar(0.025),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_swe"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_depth_m"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_density_kg_m3"),
+        BoundaryValue::scalar(0.0),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("snow.runtime_settle_day_count"),
+        BoundaryValue::scalar(0.0),
+    );
+
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(
+        response.status.message_id(),
+        "HKERNEL-WB11-PERC-OK-001",
+        "WB18 must consume already-published same-pass infiltration instead of replaying WB14 frost/runoff coupling"
+    );
+    let infiltration = state_update_scalar(&response.writeback.state_updates, "wb12_infiltration")
+        .expect("WB18 must carry published infiltration through writeback");
+    assert!(
+        (infiltration - 0.003).abs() < 1.0e-12,
+        "published infiltration must be preserved, observed {infiltration}"
+    );
+}
+
+#[test]
+fn fdhp01_c1b_wb18_canonicalizes_roundoff_deep_loss_before_storage_debit() {
+    let bottom_theta = 0.250_000_000_006;
+    let initial_soil_water = 0.10 + bottom_theta + (0.05 * 0.30) + (0.07 * 0.40);
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(initial_soil_water),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(bottom_theta),
+    );
+
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB18 must publish wb11_soil_water");
+    let bottom_theta_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+            .expect("WB18 must publish layer 2 theta");
+    let deep_loss = flux_update_scalar(&response.writeback.flux_updates, "D")
+        .expect("WB18 must publish deep percolation");
+    let recharge = flux_update_scalar(&response.writeback.flux_updates, "Pe")
+        .expect("WB18 must publish recharge");
+
+    assert!(
+        (soil_water_after - initial_soil_water).abs() < 1.0e-15,
+        "sub-WB13-threshold deep-loss dust must not debit storage, observed {soil_water_after} expected {initial_soil_water}"
+    );
+    assert!(
+        (bottom_theta_after - bottom_theta).abs() < 1.0e-15,
+        "roundoff deep loss must be restored to the bottom layer, observed {bottom_theta_after} expected {bottom_theta}"
+    );
+    assert!(deep_loss.abs() < 1.0e-15);
+    assert!(recharge.abs() < 1.0e-15);
+}
+
+#[test]
+fn fdhp01_c1b_wb18_positive_deep_loss_uses_scalar_ledger_and_rebalances_layers() {
+    let bottom_theta = 0.250_000_000_012;
+    let aggregate_soil_water = 0.10 + bottom_theta + (0.05 * 0.30) + (0.07 * 0.40);
+    let incoming_soil_water = aggregate_soil_water - 1.5e-12;
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(incoming_soil_water),
+    );
+    state_surface.insert(
+        BoundarySymbol::from("wb18_perc_theta_0002"),
+        BoundaryValue::scalar(bottom_theta),
+    );
+
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB18 must publish wb11_soil_water");
+    let theta_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB18 must publish layer 1 theta")
+            + state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+                .expect("WB18 must publish layer 2 theta");
+    let aggregate_after = theta_after + (0.05 * 0.30) + (0.07 * 0.40);
+    let deep_loss = flux_update_scalar(&response.writeback.flux_updates, "D")
+        .expect("WB18 must publish deep percolation");
+    let expected_soil_water_after = incoming_soil_water - deep_loss;
+
+    assert!(
+        deep_loss > 1.0e-11,
+        "test vector must remain above the deep-percolation dust threshold"
+    );
+    assert!(
+        (soil_water_after - expected_soil_water_after).abs() < 1.0e-15,
+        "positive-D WB18 must debit the scalar ledger exactly, observed {soil_water_after} expected {expected_soil_water_after}"
+    );
+    assert!(
+        (aggregate_after - expected_soil_water_after).abs() < 1.0e-15,
+        "positive-D WB18 must rebalance layer roundoff to the scalar ledger, observed {aggregate_after} expected {expected_soil_water_after}"
+    );
+}
+
+#[test]
+fn fdhp01_c1b_wb18_no_flux_preserves_scalar_and_rebalances_layer_roundoff() {
+    let aggregate_soil_water = 0.10 + 0.20 + (0.05 * 0.30) + (0.07 * 0.40);
+    let incoming_soil_water = aggregate_soil_water - 1.2e-11;
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(incoming_soil_water),
+    );
+
+    let flux_surface = BTreeMap::new();
+    let request = HillslopeKernelRequest::with_phase_context(
+        "percolation_deep_seepage",
+        HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+        HillslopeConsumerAdapter::Perc,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB11-PERC-OK-001");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB18 must publish wb11_soil_water");
+    let theta_after =
+        state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0001")
+            .expect("WB18 must publish layer 1 theta")
+            + state_update_scalar(&response.writeback.state_updates, "wb18_perc_theta_0002")
+                .expect("WB18 must publish layer 2 theta");
+    let aggregate_after = theta_after + (0.05 * 0.30) + (0.07 * 0.40);
+    let deep_loss = flux_update_scalar(&response.writeback.flux_updates, "D")
+        .expect("WB18 must publish deep percolation");
+
+    assert!(deep_loss.abs() < 1.0e-15);
+    assert!(
+        (soil_water_after - incoming_soil_water).abs() < 1.0e-15,
+        "no-flux WB18 must preserve incoming scalar, observed {soil_water_after} expected {incoming_soil_water}"
+    );
+    assert!(
+        (aggregate_after - incoming_soil_water).abs() < 1.0e-15,
+        "no-flux WB18 must rebalance layer roundoff with the preserved scalar, observed {aggregate_after} expected {incoming_soil_water}"
+    );
+    assert!(
+        (aggregate_after - aggregate_soil_water).abs() > 1.0e-12,
+        "test vector must expose the pre-existing scalar/layer mismatch"
+    );
+}
+
+#[test]
+fn fdhp01_c1b_wb17_zero_uptake_preserves_incoming_soil_water_scalar() {
+    let aggregate_soil_water = 0.10 + 0.20 + (0.05 * 0.30) + (0.07 * 0.40);
+    let incoming_soil_water = aggregate_soil_water - 1.5e-12;
+    let mut state_surface = hphys0246_wb18_aggregate_state_surface();
+    state_surface.insert(
+        BoundarySymbol::from("wb11_soil_water"),
+        BoundaryValue::scalar(incoming_soil_water),
+    );
+    state_surface.insert(BoundarySymbol::from("rtd"), BoundaryValue::scalar(0.30));
+    state_surface.insert(BoundarySymbol::from("pltol"), BoundaryValue::scalar(0.25));
+
+    let mut flux_surface = BTreeMap::new();
+    flux_surface.insert(BoundarySymbol::from("ET"), BoundaryValue::scalar(0.0));
+    flux_surface.insert(BoundarySymbol::from("Etp"), BoundaryValue::scalar(0.0));
+
+    let request = HillslopeKernelRequest::with_phase_context(
+        "plant_root_uptake",
+        HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
+        HillslopeConsumerAdapter::Watbal,
+        None,
+        &state_surface,
+        &flux_surface,
+    );
+
+    let mut kernel = Wb11HydrologyKernel;
+    let response = kernel.run_hillslope_phase(&request);
+
+    assert_eq!(response.status.message_id(), "HKERNEL-WB17-SWU-OK-001");
+    let soil_water_after =
+        state_update_scalar(&response.writeback.state_updates, "wb11_soil_water")
+            .expect("WB17 must publish wb11_soil_water");
+    let ui = flux_update_scalar(&response.writeback.flux_updates, "Ep")
+        .expect("WB17 must publish actual plant uptake");
+
+    assert!(ui.abs() < 1.0e-15);
+    assert!(
+        (soil_water_after - incoming_soil_water).abs() < 1.0e-15,
+        "zero-uptake WB17 must not convert aggregate recompute dust into storage, observed {soil_water_after} expected {incoming_soil_water}"
+    );
+    assert!(
+        (soil_water_after - aggregate_soil_water).abs() > 1.0e-12,
+        "test vector must expose the scalar/layer mismatch"
+    );
+}
+
+#[test]
 fn hphys0264_pmet_evapotranspiration_consumes_evappm_components_without_pt_repartition() {
     let mut state_surface = BTreeMap::new();
     state_surface.insert(

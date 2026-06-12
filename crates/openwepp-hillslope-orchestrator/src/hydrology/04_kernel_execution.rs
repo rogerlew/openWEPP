@@ -44,10 +44,12 @@ impl HillslopeKernel for Wb11HydrologyKernel {
 
         match response_result {
             Ok(response) => response,
-            Err(error) => KernelRunResponse::new(
-                Self::status_from_guard_error(&error),
-                KernelWritebackPayload::empty(),
-            ),
+            Err(error) => {
+                KernelRunResponse::new(
+                    Self::status_from_guard_error(&error),
+                    KernelWritebackPayload::empty(),
+                )
+            }
         }
     }
 }

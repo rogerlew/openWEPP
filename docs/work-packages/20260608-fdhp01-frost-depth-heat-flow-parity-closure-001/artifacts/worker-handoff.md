@@ -48,6 +48,10 @@ Primary landed behavior:
   diagnostic, scalar target-depth projection is retired as production
   authority, and threshold-bounded exchange-debit limiting is authorized only at
   the available-liquid handoff boundary.
+- `SC-SNOWFREEZE-001` is now v61 after C1b. Fine-layer ice/liquid capacity is
+  bounded by total pore capacity, valid overflow is routed through
+  `watpdg`/`watbtm`, `watbtm` contributes to WB13 `Dp`, and bounded WB18/WB13
+  roundoff canonicalization is contract-authorized.
 
 Validation status before post-review cohort validation:
 
@@ -147,11 +151,28 @@ Increment C1a diagnostic result:
   `watpdg`/`watbtm` identity routing, and wholesale coarse-state recomputation
   at egress.
 
-First actionable item: execute Increment C1b from the committed boundary to the
-C1a accounting specification. Its first gate is passing the p43/p1 day-94
-capacity boundary with no aggregate `frzw > ul` rows and shadow `frwatc`
-residuals at numerical noise; only then re-run the years 2-6 conservation
-cohort. Do not retain prior C1 capacity code, `mlttp`/`mltbtm` thaw arms, or
-advance to MOFE until years 2-6 conservation remains at noise, the cohort is
-`43/43`, and the full depth/duration acceptance gate passes without comparator
-tuning.
+Increment C1b result:
+
+- Codex landed the capacity/overflow infrastructure without the comparator
+  subagent per user quota direction.
+- p1/p43 starter traces over the first 100 simulation days had zero
+  `frzw > ul` rows and minimum margins of `0.020482917898791884 m` and
+  `0.020378509421531917 m`.
+- The local `43/43` cohort at
+  `/tmp/fdhp01_increment_c1b_cohort_final14_20260612T035618Z` ran clean with
+  no valid-input capacity guard trips.
+- Years 2-6 `Total-Soil + frozwt` closure stayed at noise: max abs residual
+  `1.5347723092418164e-12 mm`.
+- Year 7 closure also stayed at noise: max abs residual
+  `6.963318810448982e-13 mm`.
+- Profile-bound pinning did not regress (`0/43` pinned) and `frozwt/frdp` max
+  correlation stayed below Increment B (`0.9860178382757524`).
+- Depth magnitude did regress as a watch item: mean maximum depth is
+  `1791.9747961835646 mm`, still near the profile bound.
+
+First actionable item: execute Increment C2 from the committed C1b boundary.
+Route `mlttp`/`mltbtm`, sandwich frost, thaw-through, and any melt overflow
+through the C1b capacity/overflow path. Do not advance to MOFE until years 2-6
+conservation remains at noise, the cohort is `43/43`, the year-7 boundary item
+is explained or eliminated, and the full depth/duration acceptance gate passes
+without comparator tuning.
