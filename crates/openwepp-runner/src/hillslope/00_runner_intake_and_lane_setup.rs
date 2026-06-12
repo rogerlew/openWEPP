@@ -1067,6 +1067,10 @@ pub fn execute_hillslope_run(
                 detail: error.to_string(),
             }
         })?;
+    let management_residue_depth_m = management_surface
+        .state_surface
+        .get(&BoundarySymbol::from("frost.runtime_residue_depth_m"))
+        .copied();
     let pmetpara_surface = crate::hillslope::intake_lane_setup::build_hillslope_runtime_surface_from_pmetpara(
         &management,
         &mut pmetpara,
@@ -1085,7 +1089,7 @@ pub fn execute_hillslope_run(
         }
     })?;
 
-    let static_runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
+    let mut static_runtime_surface = crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
         crate::hillslope::intake_lane_setup::merge_runtime_surfaces(
             crate::hillslope::intake_lane_setup::merge_runtime_surfaces(management_surface, soil_surface),
             slope_surface,
@@ -1095,6 +1099,12 @@ pub fn execute_hillslope_run(
             pmetpara_surface,
         ),
     );
+    if let Some(residue_depth_m) = management_residue_depth_m {
+        static_runtime_surface.state_surface.insert(
+            BoundarySymbol::from("frost.runtime_residue_depth_m"),
+            residue_depth_m,
+        );
+    }
     if static_runtime_surface.state_surface.is_empty() {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "merged",

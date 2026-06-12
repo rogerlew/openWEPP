@@ -765,3 +765,17 @@ minimum.
   texture, and the forced-snow D3 maximum-depth envelope must move materially
   toward `240..503.2 mm` without duration regression. Native cohort remains
   recorded for the snow handoff cost.
+
+**Execution result (2026-06-12):** Dg landed and passed its directional gate.
+See `d3-increment-dg-residue-shallow-front-20260612.md` and the
+`fdhp01_increment_dg_*_20260612` artifacts. Production restored the legacy
+`resdep/kres` residue resistance path, preserved the management-derived
+`frost.runtime_residue_depth_m` through runner surface merging, and applied
+the below-freezing `dpfsfl` shallow-front conduction floor. The local
+forced-snow cohort stayed `43/43`, years 2-6 additive closure remained at
+WAT-publication texture (`5.835723933533821e-07 mm` max abs), median maximum
+depth moved from De's `652.3375464029963 mm` to `479.356967770298 mm`, and
+median frozen-duration residual improved from `+186` to `+73` days. Full D3
+acceptance remains open: `13/43` forced-snow prefixes still exceed the
+`503.2 mm` upper envelope bound, so FDHP01 remains `executed-hold` pending
+the next residual localization.

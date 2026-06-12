@@ -104,6 +104,17 @@
                 .get(&BoundarySymbol::from("sumsrm_seed")),
             Some(&BoundaryValue::scalar(0.19997))
         );
+        let expected_residue_depth_m =
+            ((1.0_f64 - 0.9).ln() / -2.3) / (0.174 * 100.0);
+        let residue_depth_m = merged_surface
+            .state_surface
+            .get(&BoundarySymbol::from("frost.runtime_residue_depth_m"))
+            .expect("management projection must publish legacy resdep lineage")
+            .as_f64();
+        assert!(
+            (residue_depth_m - expected_residue_depth_m).abs() <= 1.0e-12,
+            "management projection must derive frost residue depth from legacy init1/res_dp lineage; actual={residue_depth_m}, expected={expected_residue_depth_m}"
+        );
         assert_eq!(
             merged_surface.state_surface.get(&BoundarySymbol::from("drset")),
             Some(&BoundaryValue::scalar(0.0))
@@ -621,4 +632,3 @@
             } if (value + 0.1).abs() < 1e-12
         ));
     }
-

@@ -878,9 +878,16 @@ impl Wb11HydrologyKernel {
         snow_conductivity_w_m_k: f64,
         residue_depth_m: f64,
         residue_conductivity_w_m_k: f64,
+        apply_shallow_front_minimum: bool,
+        shallow_front_minimum_path_m: f64,
     ) -> (f64, f64, f64) {
-        let tilled_frozen_depth_m = frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
-        let untilled_frozen_depth_m = (frdp_m - tilled_frozen_depth_m).max(0.0);
+        let effective_frdp_m = if apply_shallow_front_minimum {
+            frdp_m.max(shallow_front_minimum_path_m.max(0.0))
+        } else {
+            frdp_m
+        };
+        let tilled_frozen_depth_m = effective_frdp_m.min(FROST_RUNTIME_TILLAGE_DEPTH_M);
+        let untilled_frozen_depth_m = (effective_frdp_m - tilled_frozen_depth_m).max(0.0);
         let mut resistance_m2_c_w = 0.0;
         let mut total_frozen_path_m = 0.0;
         if snow_depth_m > SIMIMPL29_MIN_CONDUCTIVE_SNOW_DEPTH_M
@@ -909,6 +916,14 @@ impl Wb11HydrologyKernel {
         }
         let ksrf_w_m_k = total_frozen_path_m.max(0.005) / resistance_m2_c_w;
         (resistance_m2_c_w, total_frozen_path_m, ksrf_w_m_k)
+    }
+
+    fn shallow_front_minimum_conduction_path_m(fine_layers: &[FrostFineLayerState]) -> f64 {
+        fine_layers
+            .first()
+            .map(|fine| fine.fine_layer_thickness_m / 2.0)
+            .filter(|path| path.is_finite() && *path > WB11_ZERO_THRESHOLD)
+            .unwrap_or(FROST_RUNTIME_SHALLOW_FRONT_MIN_CONDUCTION_PATH_M)
     }
 
     fn require_monthly_temperature_vector(
@@ -1233,6 +1248,8 @@ impl Wb11HydrologyKernel {
                 snow_conductivity_w_m_k,
                 residue_depth_m,
                 residue_conductivity_w_m_k,
+                surface_temp_c < 0.0,
+                Self::shallow_front_minimum_conduction_path_m(fine_layers),
             );
             let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
             let signed_net_flux_w_m2 = signed_surface_flux_w_m2 + lower_front_heat_w_m2;
@@ -2396,6 +2413,8 @@ impl Wb11HydrologyKernel {
                 snow_conductivity_w_m_k,
                 residue_depth_m,
                 conductivity_residue_w_m_k,
+                surface_temp_c < 0.0,
+                Self::shallow_front_minimum_conduction_path_m(&shadow_fine_state.fine_layers),
             );
             let signed_surface_flux_w_m2 = surface_temp_c / resistance_m2_c_w;
             let lower_front_heat_w_m2 =

@@ -178,6 +178,15 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         }
         let residue_plant = &management.registries.plants[initial_data.iresd - 1];
         let PlantScenarioData::Cropland(residue_plant_cropland) = &residue_plant.data;
+        let residue_depth_m = legacy_initial_residue_depth_m(
+            initial.meta.landuse,
+            residue_plant_cropland.canopy_line[4],
+            residue_plant_cropland.canopy_line[9],
+            inrcov_seed,
+            rilcov_seed,
+            rspace_seed,
+            width_seed,
+        )?;
         let canopy_cover_coeff_seed = validate_projection_non_negative(
             "bb_seed",
             0,
@@ -303,6 +312,10 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
             pl_decomp_ofe_symbol("sumsrm_seed", ofe_index),
             BoundaryValue::scalar(sumsrm),
         );
+        pl_decomp_surface.insert(
+            pl_decomp_ofe_symbol("residue_depth_m_seed", ofe_index),
+            BoundaryValue::scalar(residue_depth_m),
+        );
 
         if let Some(understory) = initial_data.understory_line {
             let usinrcol = understory[0];
@@ -405,6 +418,14 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
             pl_decomp_surface.insert(
                 BoundarySymbol::from("sumsrm_seed"),
                 BoundaryValue::scalar(sumsrm),
+            );
+            pl_decomp_surface.insert(
+                BoundarySymbol::from("frost.runtime_residue_depth_m"),
+                BoundaryValue::scalar(residue_depth_m),
+            );
+            pl_decomp_surface.insert(
+                BoundarySymbol::from("resdep"),
+                BoundaryValue::scalar(residue_depth_m),
             );
         }
     }
@@ -882,6 +903,58 @@ pub fn build_hillslope_pl_runtime_surfaces_from_management(
         pl_growth_surface,
         pl_decomp_surface,
     })
+}
+
+fn legacy_initial_residue_depth_m(
+    landuse: usize,
+    cover_factor: f64,
+    stem_diameter_m: f64,
+    inrcov: f64,
+    rilcov: f64,
+    rspace_m: f64,
+    width_m: f64,
+) -> Result<f64, HillslopeRuntimeInputError> {
+    let cover_factor = validate_projection_positive("cf", 0, 0, cover_factor)?;
+    let stem_diameter_m = validate_projection_non_negative("diam", 0, 0, stem_diameter_m)?;
+    let inrcov = inrcov.min(0.999);
+    let rilcov = rilcov.min(0.999);
+    let rspace_m = if rspace_m <= 0.0 { 1.0 } else { rspace_m };
+    let width_m = width_m.min(rspace_m);
+    let wght1 = (rspace_m - width_m) / rspace_m;
+    let rill_mass_kg_m2 = if rilcov <= 0.0 {
+        0.0
+    } else {
+        (1.0 - rilcov).ln() / -cover_factor
+    };
+    let interrill_mass_kg_m2 = if inrcov <= 0.0 {
+        0.0
+    } else {
+        (1.0 - inrcov).ln() / -cover_factor
+    };
+    let ground_residue_mass_kg_m2 =
+        wght1 * interrill_mass_kg_m2 + (1.0 - wght1) * rill_mass_kg_m2;
+    let conversion_factor = legacy_residue_depth_conversion_factor(landuse, stem_diameter_m);
+    if conversion_factor <= 0.0 {
+        Ok(0.0)
+    } else {
+        Ok(ground_residue_mass_kg_m2 / (conversion_factor * 100.0))
+    }
+}
+
+fn legacy_residue_depth_conversion_factor(landuse: usize, stem_diameter_m: f64) -> f64 {
+    if landuse == 1 {
+        if (0.03..=0.06).contains(&stem_diameter_m) {
+            0.174
+        } else if (0.007..0.03).contains(&stem_diameter_m) {
+            0.6
+        } else if (0.001..0.007).contains(&stem_diameter_m) {
+            0.3
+        } else {
+            0.6
+        }
+    } else {
+        0.6
+    }
 }
 
 #[allow(clippy::too_many_lines)]

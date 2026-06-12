@@ -204,6 +204,24 @@ only and leaves FDHP01 in executed-hold; the next scope is Dg, a bounded
 residue-path plus shallow-front-minimum resistance implementation, followed by
 the De forced-snow certification and native cohort.
 
+D3 Increment Dg, 2026-06-12: Codex landed the legacy residue-depth frost
+surface resistance and below-freezing shallow-front `dpfsfl` conduction floor
+without the comparator subagent per user quota direction. `SC-SNOWFREEZE-001`
+is now v66. The native production cohort at
+`/tmp/fdhp01_increment_dg_native_cohort_20260612T184601Z` ran `43/43` clean
+with years 2-6 independent `Total-Soil + frozwt` closure at
+`6.261351281899863e-07 mm`; mean maximum depth improved to
+`498.08123930883653 mm`, `30/43` prefixes entered the legacy
+`240..503.2 mm` depth envelope, and median duration residual improved to
+`+84` days. The forced legacy-snow diagnostic cohort at
+`/tmp/fdhp01_increment_dg_forced_snow_cohort_20260612T185203Z` also ran
+`43/43` clean with years 2-6 closure at `5.835723933533821e-07 mm`; relative
+to De forced-snow, mean max depth dropped `655.9890274782282 ->`
+`490.0923199552928 mm`, envelope membership improved `0/43 -> 30/43`, and
+median duration residual improved `+186 -> +73` days. Dg passes its
+directional gate but FDHP01 remains executed-hold because `13/43`
+forced-snow prefixes still exceed the `503.2 mm` upper envelope bound.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

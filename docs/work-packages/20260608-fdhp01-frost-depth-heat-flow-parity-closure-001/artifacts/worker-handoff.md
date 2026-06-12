@@ -351,9 +351,54 @@ Increment Df result:
   release SHA
   `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`.
 
-Updated first actionable item: execute Increment Dg from
+Df-to-Dg historical first actionable item, completed by Increment Dg: execute
+Increment Dg from
 `d3-staged-increment-plan.md`. Port the legacy residue-depth frost resistance
 surface and the shallow-front `dpfsfl` minimum conduction distance, add focused
 red tests from the Df p1/p2 fixtures, then run the De forced-snow certification
 and native cohort. Do not tune snow density/depth, kfactor, latent heat, WAT
 publication, or D2 storage surfaces.
+
+Increment Dg result:
+
+- Codex landed the residue-depth frost resistance surface and below-freezing
+  shallow-front `dpfsfl` conduction floor without the comparator subagent per
+  user quota direction.
+- `SC-SNOWFREEZE-001` is now v66. It binds the legacy `resdep/kres` lineage
+  and the shallow-front `dpfsfl = dg(1) / nfine(1) / 2` conduction-distance
+  floor for active below-freezing frost heat paths.
+- The native production cohort at
+  `/tmp/fdhp01_increment_dg_native_cohort_20260612T184601Z` ran `43/43` clean
+  with `43/43` WAT outputs. Years 2-6 independent
+  `Total-Soil + frozwt` closure stayed at WAT-publication texture: max abs
+  residual `6.261351281899863e-07 mm`.
+- Native depth/duration improved materially from De: mean max depth
+  `498.08123930883653 mm`, median max `488.08620069478803 mm`, `30/43`
+  prefixes inside the legacy `240..503.2 mm` envelope, median depth
+  correlation `0.7551022199950611`, and median frozen-duration residual
+  `+84` days.
+- The forced legacy-snow diagnostic cohort at
+  `/tmp/fdhp01_increment_dg_forced_snow_cohort_20260612T185203Z` ran `43/43`
+  clean with `43/43` WAT outputs. Years 2-6 independent closure stayed at
+  `5.835723933533821e-07 mm`.
+- Dg passes its directional forced-snow gate: mean max depth improved
+  `655.9890274782282 -> 490.0923199552928 mm`, median max improved
+  `652.3375464029963 -> 479.356967770298 mm`, envelope membership improved
+  `0/43 -> 30/43`, and median frozen-duration residual improved
+  `+186 -> +73` days.
+- FDHP01 remains `executed-hold`: `13/43` forced-snow prefixes still exceed
+  the `503.2 mm` upper envelope bound (`p1`, `p2`, `p3`, `p8`, `p11`, `p13`,
+  `p20`, `p21`, `p22`, `p23`, `p26`, `p28`, `p32`), so the package D3
+  acceptance boundary is not closed.
+- The temporary forced-snow diagnostic hook was removed before the final
+  production rebuild. Clean-source release binary SHA:
+  `3275db431339402596a27a28d7976062eb4655771e9e159fdf929fa1410883ad`.
+
+Updated first actionable item: localize the residual D3 divergence on the Dg
+forced-snow outlier set (`p1`, `p2`, `p3`, `p8`, `p11`, `p13`, `p20`, `p21`,
+`p22`, `p23`, `p26`, `p28`, `p32`). Compare paired hourly openWEPP and legacy
+front/flux trajectories after Dg, focusing on surface heat, lower-front heat,
+residue/snow/frozen-path resistance, within-hour front advance/retreat, and
+fine-layer ice/liquid movement. Do not retune snow density/depth, kfactor,
+latent heat, WAT publication, D2 storage, residue depth, or the `dpfsfl`
+resistance terms.

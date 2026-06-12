@@ -1461,6 +1461,62 @@ fn fdhp01_db_freeze_front_recomputes_resistance_within_hour() {
 }
 
 #[test]
+fn fdhp01_dg_shallow_front_minimum_limits_surface_flux_without_residue() {
+    let mut surface = seeded_clim06_surface(true);
+    seed_db_thin_front_frost(&mut surface);
+    insert_state_scalar(&mut surface, "frost.runtime_residue_depth_m", 0.0);
+    insert_state_scalar(&mut surface, "tmax", -8.086);
+    insert_state_scalar(&mut surface, "tmin", -8.086);
+
+    let response = execute_clim06_runoff_phase(&surface);
+    assert!(
+        response.status.ok_flag(),
+        "Dg shallow-front vector should execute successfully; status={:?}",
+        response.status
+    );
+
+    let qsrf_w_m2 = require_response_state_update(&response, "frost.hourly.qsrf_w_m2_0001");
+    let dpfsfl_flux_w_m2 = 8.086 / (0.005 / 1.75);
+    assert!(
+        qsrf_w_m2 <= dpfsfl_flux_w_m2 + CLIM06_TEST_TOLERANCE,
+        "below-freezing shallow-front heat flow must use the legacy dpfsfl minimum path even without residue; qsrf={qsrf_w_m2}, limit={dpfsfl_flux_w_m2}"
+    );
+}
+
+#[test]
+fn fdhp01_dg_residue_depth_adds_surface_resistance() {
+    let mut bare_surface = seeded_clim06_surface(true);
+    seed_db_thin_front_frost(&mut bare_surface);
+    insert_state_scalar(&mut bare_surface, "frost.runtime_residue_depth_m", 0.0);
+    insert_state_scalar(&mut bare_surface, "tmax", -8.086);
+    insert_state_scalar(&mut bare_surface, "tmin", -8.086);
+
+    let mut residue_surface = bare_surface.clone();
+    insert_state_scalar(&mut residue_surface, "frost.runtime_residue_depth_m", 0.023);
+
+    let bare_response = execute_clim06_runoff_phase(&bare_surface);
+    let residue_response = execute_clim06_runoff_phase(&residue_surface);
+    assert!(bare_response.status.ok_flag());
+    assert!(residue_response.status.ok_flag());
+
+    let bare_qsrf_w_m2 =
+        require_response_state_update(&bare_response, "frost.hourly.qsrf_w_m2_0001");
+    let residue_qsrf_w_m2 =
+        require_response_state_update(&residue_response, "frost.hourly.qsrf_w_m2_0001");
+    let published_residue_depth_m =
+        require_response_state_update(&residue_response, "frost.hourly.residue_depth_m_0001");
+    assert_close(
+        published_residue_depth_m,
+        0.023,
+        "hourly frost seam must publish the residue depth consumed by Qsrf",
+    );
+    assert!(
+        residue_qsrf_w_m2 < bare_qsrf_w_m2 * 0.02,
+        "residue resistance must materially reduce the shallow-front surface flux; bare={bare_qsrf_w_m2}, residue={residue_qsrf_w_m2}"
+    );
+}
+
+#[test]
 fn fdhp01_fine_sublayer_frznw_refreezes_nwfrzz_once() {
     let mut surface = seeded_clim06_surface(true);
     insert_state_scalar(&mut surface, "wb12_runoff_closure_tolerance", 1000.0);
@@ -1899,8 +1955,8 @@ fn fdhp01_de_lower_front_heat_suppresses_marginal_autumn_freeze_onset() {
     override_monthly_temperatures(&mut surface, 15.0);
     insert_state_scalar(&mut surface, "day", 305.0);
     insert_state_scalar(&mut surface, "mon", 11.0);
-    insert_state_scalar(&mut surface, "tmax", -5.0);
-    insert_state_scalar(&mut surface, "tmin", -5.0);
+    insert_state_scalar(&mut surface, "tmax", -0.01);
+    insert_state_scalar(&mut surface, "tmin", -0.01);
 
     let response = execute_clim06_runoff_phase(&surface);
     assert!(
