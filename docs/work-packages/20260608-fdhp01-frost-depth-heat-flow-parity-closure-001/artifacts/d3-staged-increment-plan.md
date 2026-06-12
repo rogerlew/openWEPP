@@ -485,7 +485,7 @@ production returned to Db/`SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df|Dg|Dh|Di> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df|Dg|Dh|Di|Dj|Dk> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
@@ -963,3 +963,41 @@ Routes (operator decision):
   outside all patterns), and the residual ~25% subset deltas recorded as
   characterized model difference unless future evidence reclassifies
   them. ROADMAP item 1 retires; MOFE unblocks.
+
+## Increment Dk — Route A: residue-producer pre-check, then certification
+## (operator decision 2026-06-12: Route A selected)
+
+**Phase 1 — residue pre-check (bounded, diagnostic):** compare openWEPP's
+`frost.runtime_residue_depth_m` against legacy `resdep` (from
+`H*.winter.dat`, residue column) per prefix/management across the cohort —
+one comparison with existing surfaces. Attribute the lower-residue
+management subgroup's excess overshoot: does openWEPP's residue producer
+undervalue non-Corn managements?
+
+**Phase 2 — conditional, envelope-aware:** if the producer is defective:
+- in-envelope (frost-seam propagation/projection of an upstream value that
+  exists correctly) → bounded fix + rerun the forced-snow representatives;
+- out-of-envelope (the residue/decomposition model itself, a different
+  contract authority) → record as a defect-shaped handoff item with the
+  Phase-1 evidence; do NOT fix in-package (DC boundary).
+If the producer is clean, record that and proceed.
+
+**Phase 3 — certification evaluation and closure:** judge the cohort
+against the package acceptance criteria as written + ADR-0017 (envelope as
+flag): cap retired, depth in physical range, correlation 0.13 → 0.77,
+duration +258 → +73, conservation at noise, activation non-regressed.
+On certification:
+- FDHP01 disposition → complete at the declared boundary; truthful
+  statement of what is closed (frost state machine + energetics on
+  single-OFE) and what is attributed outward.
+- Defect-shaped handoff items: (1) F4 snow density/depth-split (Stage-2
+  promotion decision, priced by the native-vs-forced gap — operator call);
+  (2) p2 individual attribution (ratio 2.18, outside all patterns);
+  (3) any Phase-1/2 residue item; (4) the residual ~25% subset deltas
+  recorded as characterized model difference, reopenable on new evidence.
+- Closing obligations: `GAP-SNOWFREEZE-002` closed/re-stated per the
+  contract; ROADMAP item 1 removed with Current-position update; README
+  7f updated to the certified outcome; worker-handoff names **MOFE** as
+  the next ROADMAP item.
+- Final gates: full Rust closure loop; doc-lint; the certification
+  evidence ledger (native + forced cohorts) committed with the closure.
