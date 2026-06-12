@@ -485,7 +485,7 @@ production returned to Db/`SC-SNOWFREEZE-001` v63 until the split Dc1 pass.
 
 ## Dispatch instructions
 
-Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df> of
+Each Codex dispatch is: *"Execute increment <A|B|C1a|C1b|C2|Da|Db|Dc1|Dd|De|Df|Dg|Dh> of
 `docs/work-packages/20260608-fdhp01-frost-depth-heat-flow-parity-closure-001/artifacts/d3-staged-increment-plan.md`
 end-to-end."* Required reading order for every increment pass:
 
@@ -779,3 +779,48 @@ median frozen-duration residual improved from `+186` to `+73` days. Full D3
 acceptance remains open: `13/43` forced-snow prefixes still exceed the
 `503.2 mm` upper envelope bound, so FDHP01 remains `executed-hold` pending
 the next residual localization.
+
+## Dg outcome (2026-06-12, `9d5f87bf`) + plateau analysis
+
+Dg landed (v66: residue resistance path + `dpfsfl` shallow-front floor) and
+passed its directional gate: forced-snow mean max depth 656 → 490 mm,
+envelope membership 0/43 → **30/43**, duration residual +186 → **+73**
+days. Remaining blocker: 13/43 forced-snow prefixes above the 503.2 mm
+upper envelope.
+
+**Claude distribution analysis (Ran, Dg forced-snow depth metrics):** the
+13 overshoots are quantized into three plateaus, not scattered —
+
+| group | open max | legacy max | ratio | prefixes |
+|---|---|---|---|---|
+| A | 529.8–530.7 mm | ~426–436 | ~1.24 | p8 p13 p22 p23 p26 p28 (+p11 at 1.05) |
+| B | 574.0–576.3 mm | ~374–403 | ~1.42–1.53 | p1 p3 p20 p21 p32 |
+| C | 609.6 mm | 280.0 | **2.18** | p2 alone |
+
+Near-identical open maxima across different prefixes within a group is a
+**per-soil systematic** (the groups match the cohort's distinct soils, cf.
+the five θfc−θdr clusters from addendum 2c). Lead suspect: Df candidate
+(c), correctly set aside as not-first-order then — the frozen-path
+conductivities. openWEPP holds constants (`FROST_RUNTIME_KFTILL_W_M_K`,
+`FROST_RUNTIME_KFUTIL_W_M_K = 2.1`) while legacy computes `kftill`/`kfutil`
+from soil properties (`frostn.for:185-193` lineage). p2 (ratio 2.18,
+legacy 280) is an outlier beyond the soil pattern and needs individual
+trace attention (it is also the prefix with prior distinct hydrology —
+HKERNEL-WB11 history).
+
+## Increment Dh — per-soil frozen-path conductivity (+ p2 outlier)
+
+- Method: short paired-trace confirmation first (Df harness, one prefix
+  per plateau group — e.g. p8, p20, p2 — midwinter deep-front hours where
+  the frozen path dominates resistance), then the bounded fix: port the
+  legacy computed `kftill`/`kfutil` (soil-property-dependent, with
+  provenance), retiring the constants. p2's residual gets its own
+  attribution if the conductivity fix does not collapse it.
+- Red tests: conductivity fixtures per soil group (computed vs constant);
+  the plateau structure is the anti-fixture (post-fix maxima must
+  de-quantize toward each soil's legacy value).
+- Gates: full Rust closure loop; conservation at texture; forced-snow
+  envelope membership materially above 30/43 without duration regression;
+  then — if 43/43 or the residual is attributable solely to F4/p2-class
+  items — proceed to the package certification decision per the Dd/De
+  declared-boundary path.
