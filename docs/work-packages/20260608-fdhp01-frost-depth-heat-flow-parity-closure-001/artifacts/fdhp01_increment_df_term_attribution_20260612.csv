@@ -1,0 +1,9 @@
+prefix,term,classification,evidence,share_indicator
+p1,surface_temperature_synthesis,not_primary_from_available_surface,first material divergence has surface_temp_c=-8.08662 and snow_depth_m=0; winter.dat has no temperature column (ground is ground-drift snow),0.25255872892094744
+p1,positive_surface_temperature_snow_cap,not_first_order,"first material divergence is below-freezing and snow-free: surface_temp_c=-8.08662, open_snow_depth_m=0, legacy_snow_depth_mm=0",0.0
+p1,residue_path_and_minimum_top_frozen_distance,dominant_localized_term,first material divergence open residue_depth_m=0 vs legacy residue_depth_mm=23; estimated legacy top resistance/open resistance ratio=899.29,1.0
+p1,freeze_arm_net_flux_composition,surface_flux_dominated_not_qdry,"first material divergence signed_surface_flux=-15711.6 W/m2, lower_front_heat=0.751354 W/m2, frzflg=1",0.9999521805684829
+p2,surface_temperature_synthesis,not_primary_from_available_surface,first material divergence has surface_temp_c=-7.79175 and snow_depth_m=0; winter.dat has no temperature column (ground is ground-drift snow),0.23376623376623376
+p2,positive_surface_temperature_snow_cap,not_first_order,"first material divergence is below-freezing and snow-free: surface_temp_c=-7.79175, open_snow_depth_m=0, legacy_snow_depth_mm=0",0.0
+p2,residue_path_and_minimum_top_frozen_distance,dominant_localized_term,first material divergence open residue_depth_m=0 vs legacy residue_depth_mm=23; estimated legacy top resistance/open resistance ratio=951.443,1.0
+p2,freeze_arm_net_flux_composition,surface_flux_dominated_not_qdry,"first material divergence signed_surface_flux=-16016.6 W/m2, lower_front_heat=0.717575 W/m2, frzflg=1",0.9999552000442093

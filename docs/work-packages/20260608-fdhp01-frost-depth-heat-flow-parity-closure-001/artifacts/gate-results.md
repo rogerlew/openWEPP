@@ -495,3 +495,22 @@ Increment De disposition: landed at `executed-hold`. The F5 conductivity
 correction is real and improves the controlled-snow residual, but it does not
 certify D3. The next increment remains frost-side under De forced-snow forcing
 and must localize the first remaining hourly front/flux divergence.
+
+## D3 Increment Df Paired Hourly Localization Gates
+
+| Command / Gate | Result |
+|---|---|
+| Comparator-suite runner | Not used; user explicitly requested no comparator subagent because GPT-5.3-Codex-Spark weekly quota was exhausted. Parent ran local CLI/Pandas/PyArrow comparisons. |
+| Legacy winter column source check | Pass; `winter.dat` `ground` is `gdrft` ground-drift snow from `winter.for`, not a surface-temperature column. |
+| Temporary p1/p2 paired hourly trace | Pass; trace root `/tmp/fdhp01_increment_df_trace2_20260612T175406Z`, p1/p2 clean exits, WAT outputs present. |
+| Paired hourly join | Pass; p1 joined `30240` legacy hourly rows, p2 joined `29928` legacy hourly rows. |
+| First material divergence localization | Pass; both p1 and p2 diverge at year 1 day 1 hour 2 while snow-free on both sides. Legacy frost depth `5.0 mm`; openWEPP `42.057866709 mm` on p1 and `41.417581693 mm` on p2. |
+| Term attribution | Pass; dominant seam is surface resistance: openWEPP `residue_depth_m = 0.0` while legacy residue is `23.0 mm`, and openWEPP omits the legacy `dpfsfl` shallow-front minimum conduction distance. |
+| Trace-marker source search after removal | Pass; no `OPENWEPP_FDHP01_DF` or `fdhp01_df` markers remain under `crates/`. |
+| Clean-source release rebuild after hook removal | Pass, production binary SHA `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`. |
+
+Increment Df disposition: diagnostic executed at `executed-hold`. Df leaves no
+production edits and identifies Dg as the next bounded implementation:
+restore the legacy residue-depth frost resistance path and the shallow-front
+minimum conduction distance, then re-run the De forced-snow certification and
+native cohort.

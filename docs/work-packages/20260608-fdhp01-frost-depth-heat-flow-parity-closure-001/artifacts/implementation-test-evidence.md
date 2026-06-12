@@ -130,3 +130,16 @@ legacy snow plus De improved mean max depth to `655.9890274782282 mm` and
 median duration residual to `+186` days, but did not certify D3 because `0/43`
 prefixes entered the `240..503.2 mm` envelope. Production binary SHA after hook
 removal is `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`.
+
+Df diagnostic continuation: Codex added a temporary env-gated p1/p2 forced-snow
+hourly trace, joined it to legacy `H*.winter.dat`, and removed the hook before
+the clean-source production rebuild. The clean rebuild returned the De
+production binary SHA
+`981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`, and a
+source marker search found no `OPENWEPP_FDHP01_DF`/`fdhp01_df` traces under
+`crates/`. Compact evidence is in
+`fdhp01_increment_df_localization_summary_20260612.json`,
+`fdhp01_increment_df_term_attribution_20260612.csv`, and
+`fdhp01_increment_df_paired_hourly_excerpt_20260612.csv`. Df did not land
+production physics; it localizes the next implementation to residue-depth frost
+resistance plus the legacy shallow-front `dpfsfl` minimum conduction distance.

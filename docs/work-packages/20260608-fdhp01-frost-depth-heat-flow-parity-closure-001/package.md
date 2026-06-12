@@ -187,6 +187,23 @@ still failed certification because `0/43` prefixes entered the legacy maximum-
 depth envelope. FDHP01 remains `executed-hold`; the next scope is paired hourly
 front/flux localization under De forced-snow forcing, not MOFE closure.
 
+D3 Increment Df, 2026-06-12: Codex executed the paired hourly front/flux
+localization without the comparator subagent per user quota direction. A
+temporary env-gated forced-snow + hourly trace hook was added, run for p1/p2,
+and removed before the final clean-source production rebuild (release binary
+SHA `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`).
+Static source inspection corrected one candidate: the legacy winter `ground`
+column is ground-drift snow, not temperature. The paired traces localize the
+first material residual to the frost surface-resistance path. On both p1 and
+p2, year 1 day 1 hour 2 is snow-free in both models; legacy frost depth is
+`5.0 mm`, while openWEPP reaches `42.057866709 mm` (p1) and
+`41.417581693 mm` (p2). openWEPP feeds `residue_depth_m = 0.0` into frost on
+those rows while legacy uses `23.0 mm` residue depth, and openWEPP omits the
+legacy shallow-front `dpfsfl` minimum conduction distance. Df is diagnostic
+only and leaves FDHP01 in executed-hold; the next scope is Dg, a bounded
+residue-path plus shallow-front-minimum resistance implementation, followed by
+the De forced-snow certification and native cohort.
+
 Package type: Defect-Closure ExecPlan (DC-ExecPlan)
 
 ## Objective

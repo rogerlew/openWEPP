@@ -719,3 +719,49 @@ nothing on the legacy side.
   bounded fix (same shape as F5 → De).
 - Gates: no production edits; trace removed before commit; evidence
   artifacts + plan update.
+
+**Df execution result (2026-06-12):** executed at `executed-hold`; no
+production edits remain. Codex ran the paired p1/p2 hourly localization locally
+without the comparator subagent per user quota direction. The temporary trace
+root was `/tmp/fdhp01_increment_df_trace2_20260612T175406Z`; compact evidence
+is in `d3-increment-df-paired-hourly-localization-20260612.md`,
+`fdhp01_increment_df_localization_summary_20260612.json`,
+`fdhp01_increment_df_term_attribution_20260612.csv`, and
+`fdhp01_increment_df_paired_hourly_excerpt_20260612.csv`.
+
+The first material divergence occurs on both prefixes at year 1 day 1 hour 2,
+with no snow on either side: legacy frost depth is `5.0 mm`, while openWEPP is
+`42.057866709 mm` on p1 and `41.417581693 mm` on p2. The winter `ground`
+column is ground-drift snow, not temperature. The localized seam is the
+surface resistance path: openWEPP feeds `residue_depth_m = 0.0` into frost
+while legacy uses `23.0 mm` residue depth, and openWEPP also omits the legacy
+`dpfsfl` shallow-front minimum top-frozen conduction distance. The conservative
+legacy resistance estimate at the first divergence is roughly `899x` (p1) and
+`951x` (p2) the openWEPP resistance. Freeze-arm energy is surface-flux
+dominated (`|surface flux| / (|surface| + |lower front|) > 0.99995`), so
+`Qdry`, snow forcing, positive-temperature snow capping, and publication are
+not the first-order residual.
+
+## Increment Dg — residue path + shallow-front minimum resistance
+
+**Objective:** port the legacy frost surface-resistance terms identified by
+Df without reopening D2 storage: (1) publish/propagate the residue depth
+consumed by winter/frost (`resdep` lineage) into
+`frost.runtime_residue_depth_m`; (2) apply legacy `frostn.for` shallow-front
+minimum top-frozen conduction distance (`dpfsfl`, midpoint of the first fine
+layer) whenever the active frost surface heat path is thinner than that
+minimum.
+
+- Authority: legacy `winter.for` writes `resdep(iplane)` into `H*.winter.dat`;
+  legacy `frostn.for` includes residue resistance before frozen-path
+  resistance and floors the frozen conduction distance to `dpfsfl` for
+  below-freezing surface conditions.
+- Red tests: p1/p2 Df fixtures should fail before Dg by showing zero open
+  residue depth and shallow-front resistance below the legacy floor; pass after
+  Dg with positive residue resistance and bounded first-day advance. Include a
+  unit test for the `dpfsfl` minimum independent of residue.
+- Gates: full Rust closure loop if production code changes; De forced-snow
+  cohort must stay `43/43`, years 2-6 additive closure at WAT-publication
+  texture, and the forced-snow D3 maximum-depth envelope must move materially
+  toward `240..503.2 mm` without duration regression. Native cohort remains
+  recorded for the snow handoff cost.

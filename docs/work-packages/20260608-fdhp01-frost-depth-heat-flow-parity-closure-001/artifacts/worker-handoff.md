@@ -320,7 +320,8 @@ Increment De result:
 - D3 remains open: forced snow plus De still has `0/43` prefixes inside the
   legacy `240..503.2 mm` maximum-depth envelope.
 
-Updated first actionable item: scope and execute the next frost-side
+De-to-Df historical first actionable item, completed by Increment Df: scope and
+execute the next frost-side
 localization increment under the De forced-snow setup. Use paired hourly
 trajectory evidence to locate the first remaining material front/flux
 divergence after content-dependent `Qdry`: openWEPP hourly `frzflg`, `Qsrf`,
@@ -328,3 +329,31 @@ divergence after content-dependent `Qdry`: openWEPP hourly `frzflg`, `Qsrf`,
 advance/retreat, and fine-layer ice/liquid motions against legacy
 `H*.winter.dat` plus source-line state. Do not tune snow density/depth,
 kfactor, latent heat, WAT publication, or D2 storage surfaces.
+
+Increment Df result:
+
+- Codex executed the p1/p2 paired hourly localization without the comparator
+  subagent per user quota direction.
+- A temporary env-gated forced-snow + hourly trace hook was run at
+  `/tmp/fdhp01_increment_df_trace2_20260612T175406Z` and removed before the
+  clean-source production rebuild. No `OPENWEPP_FDHP01_DF`/`fdhp01_df` source
+  marker remains under `crates/`.
+- The legacy winter `ground` column is ground-drift snow, not temperature.
+- First material divergence is year 1 day 1 hour 2 on both p1 and p2, before
+  snow is involved: legacy frost depth `5.0 mm`; openWEPP `42.057866709 mm`
+  on p1 and `41.417581693 mm` on p2.
+- The localized seam is surface resistance. openWEPP passes
+  `residue_depth_m = 0.0` to frost while legacy uses `23.0 mm`, and openWEPP
+  omits the legacy shallow-front `dpfsfl` minimum top-frozen conduction
+  distance. At the first divergence, the conservative legacy resistance
+  estimate is roughly `899x` (p1) and `951x` (p2) larger than openWEPP.
+- Df is diagnostic-only; production remains at the De boundary and clean-source
+  release SHA
+  `981da203d9ced9b1d73f049fa3a4b227710862a3dbecaad9d4619f03ae7dd2d5`.
+
+Updated first actionable item: execute Increment Dg from
+`d3-staged-increment-plan.md`. Port the legacy residue-depth frost resistance
+surface and the shallow-front `dpfsfl` minimum conduction distance, add focused
+red tests from the Df p1/p2 fixtures, then run the De forced-snow certification
+and native cohort. Do not tune snow density/depth, kfactor, latent heat, WAT
+publication, or D2 storage surfaces.

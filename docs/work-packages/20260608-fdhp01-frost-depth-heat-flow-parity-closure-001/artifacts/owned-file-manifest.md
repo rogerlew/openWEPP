@@ -283,3 +283,7 @@ Date: 2026-06-12
 - `fdhp01_increment_de_forced_snow_depth_metrics_20260612.csv`
 - `fdhp01_increment_de_forced_snow_frozwt_frdp_ratio_20260612.csv`
 - `fdhp01_increment_de_forced_snow_activation_summary_20260612.csv`
+- `d3-increment-df-paired-hourly-localization-20260612.md`
+- `fdhp01_increment_df_localization_summary_20260612.json`
+- `fdhp01_increment_df_term_attribution_20260612.csv`
+- `fdhp01_increment_df_paired_hourly_excerpt_20260612.csv`
