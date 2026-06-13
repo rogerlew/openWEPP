@@ -1,72 +1,64 @@
-# MOFE01 Kickoff — inter-OFE routing closure (rung 3)
+# MOFE01 Kickoff — increment M-D (per-OFE state architecture design)
 
-Execution mode: staged increments (one per dispatch) per
-`artifacts/mofe-staged-increment-plan.md`. This kickoff governs increment
-**M-A** (characterization + routing scope; no production edits); later
-increments are dispatched by the plan's dispatch line.
+Execution mode: staged increments per `artifacts/mofe-staged-increment-plan.md`.
+This kickoff governs increment **M-D** (per-OFE state architecture design;
+**NO production code, NO contract edits** — a design artifact only). Later
+increments (M-E implementation, M-F publication, M-G erosion, M-H acceptance)
+are dispatched by the plan's dispatch line.
 
 Subagent authorization (REQUIRED, not optional): this prompt explicitly
 authorizes subagent spawning/delegation to `comparator_suite_runner`
-(gpt-5.3-codex-spark) for all heavy batch/closure/comparator runs
-(37-hillslope cohort runs, legacy-output parsing batches, workspace test
-loops) and to review/verification subagents for the dual artifacts.
-**Do NOT run heavy batch work on the parent model** unless the subagent is
-unavailable; record command-level evidence as justification
-(`docs/standards/prompt-wording-guidance.md` §4a). Outputs: compact metrics
-+ artifact paths; no source/contract edits by the runner.
+(gpt-5.3-codex-spark) for any heavy batch/comparator runs and to
+review/verification subagents. M-D is design-only, so heavy runs are unlikely;
+record command-level evidence if the subagent is unavailable
+(`docs/standards/prompt-wording-guidance.md` §4a).
 
-Autonomy: execute the dispatched increment end-to-end per the staged plan
-without asking for direction on intermediate steps. Hard stops: the plan's
-conservation gates, single-OFE anchor, protected boundaries, and the
-no-production-edits rule for M-A. Operator decisions route back per the
-plan.
+Autonomy: execute M-D end-to-end — produce the architecture design artifact —
+without asking for direction on intermediate steps. Hard stop: NO production
+code or contract edits in M-D (design increment).
 
-## The assignment (M-A)
+## The assignment (M-D)
 
-Per `artifacts/mofe-staged-increment-plan.md` increment M-A:
+Per `artifacts/mofe-staged-increment-plan.md` increment M-D, produce
+`artifacts/mofe-per-ofe-state-architecture.md` with all five sections filled,
+`Static:` and file:line-cited against the **current tree**:
 
-1. Characterize openWEPP's current multi-OFE behavior on
-   `/wc1/runs/ar/arboreal-dendrite/wepp` (37 hillslopes; graded 1–5-OFE
-   ladder; 15-OFE observe-only).
-2. Measure legacy's per-OFE-count closure defect from the on-disk
-   `output/H*.wat.dat` (the comparator-trust calibration — see package.md
-   posture: legacy is known-defective in this dimension).
-3. Produce `artifacts/mofe-routing-port-scope.md` — legacy routing
-   state-machine map (**read the cited lines; do not infer from symbol
-   tables** — recorded FDHP01-Dh lesson), openWEPP seam mapping,
-   state-shape proposal with alias table, red-test definitions, sizing.
+1. Target per-OFE daily WB state/flux shape (replacing the aggregate maps at
+   `HillslopeWritebackSurface`, `scheduler.rs:240`).
+2. Sequential OFE execution model (i's daily state → i+1 run-on; topology vs
+   lane iteration over `execute_with_kernel`, `scheduler.rs:501`; legacy
+   `irs`/`rochek` mapping from `mofe-routing-port-scope.md`).
+3. Contract surface for the per-element + transfer identities.
+4. Change map across kernel-contract / scheduler / writeback / publication,
+   with the single-OFE-anchor preservation argument.
+5. Red-test definitions + the M-E sub-increment breakdown and sizing (each
+   sub-increment behind a conservation hard stop; per-element + transfer
+   identities first proven in M-E).
+
+Read the lines, do not infer from symbol tables (Dh lesson). The M-C2 evidence
+(`m-c2-per-ofe-daily-state-scope-evidence.md`) already line-cites the as-is
+seams — start there and the legacy routing map.
+
+## Gate (Gate Evidence Non-Deferral Rule)
+
+M-D's only completion criterion is the design artifact itself — every section
+filled with current-tree citations and an M-E sub-increment plan whose every
+gate is measurable in its own scope. With no production scope, M-D legitimately
+closes `complete` on that evidence. Do NOT begin M-E implementation under the
+M-D dispatch.
 
 ## Required reading
 
-Maintain `artifacts/required-reading-map.md` as a living artifact.
-
-Reading budget (local-repo pre-edit reads, Core + Conditional): ~115,000
-bytes → **OK** (`<=400000`, thresholds per
-`docs/standards/kernel-work-package-preparation.md`). Large SC contracts
-load phase-locally, section-targeted.
-
-Core (always, before edits):
-- `/workdir/openWEPP/AGENTS.md`
-- `/workdir/openWEPP/docs/codex_exec_plans.md`
-- `/workdir/openWEPP/docs/work-packages/README.md`
-- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/package.md`
-- `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
-
-Conditional (triggered — all apply to this package):
-- `docs/defect_closure_execplans.md`
-- `docs/specifications/science-contract-authoring-procedure.md`,
-  `docs/specifications/science-contracts/kernel-process-contract-profile.md`,
-  `docs/specifications/science-contracts/index.md`
-- `docs/decisions/0012-legacy-wepp-260430-baseline-anchor.md`
-
-On-demand (phase-local, touched mechanisms only):
-- `SC-RUNOFFPART-001.md`, `SC-WATBAL-001.md`, `SC-SYSTEM-001.md`
-- ADR-0011/0017/0018; `docs/ROADMAP.md` (item 1, substrate + comparator
-  posture)
-- FDHP01 staged plan + scope artifact (the execution-shape template and its
-  recorded failure modes)
-- wepppy `docs/work-packages/20260502_mofe_flagged_hillslope_triage/`
-  (legacy defect-family taxonomy — calibration evidence, not authority)
-- Legacy pinned baseline `/workdir/wepp-forest_260430_baseline/src/`
-  (per-plane loop / run-on lineage — discovered in M-A, cited by line)
-- Substrate `/wc1/runs/ar/arboreal-dendrite/wepp/`
+- `artifacts/mofe-staged-increment-plan.md` (this plan; the M-D section + universal rules)
+- `package.md` (envelope, comparator posture, conservation identities)
+- `artifacts/mofe-routing-port-scope.md` (legacy routing authority)
+- `artifacts/m-c2-per-ofe-daily-state-scope-evidence.md` (as-is seam citations)
+- `artifacts/m-c-wat-publication-closure-evidence.md` (the architectural finding)
+- `/workdir/openWEPP/AGENTS.md`, `docs/codex_exec_plans.md`,
+  `docs/work-packages/AGENTS.md` (Gate Evidence Non-Deferral Rule),
+  `docs/work-packages/README.md`
+- On-demand: `SC-RUNOFFPART-001`/`SC-WATBAL-001`/`SC-SYSTEM-001` (section-targeted);
+  current-tree `crates/openwepp-hillslope-orchestrator/src/scheduler.rs`,
+  `crates/openwepp-kernel-contract/src/lib_mod/core_types.rs`,
+  `crates/openwepp-runner/src/hillslope/` publication seams; FDHP01
+  `d3-fine-sublayer-port-scope.md` (the design-artifact template)

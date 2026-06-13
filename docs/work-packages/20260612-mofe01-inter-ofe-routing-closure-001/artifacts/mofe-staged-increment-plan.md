@@ -123,28 +123,80 @@ real to publish without it.
   aggregate identity unchanged; single-OFE anchor bit-identical; full loop.
   This is where "routing closure" is first actually proven.
 
-## Increment M-C3 — per-OFE WAT publication
+**M-C2 execution result (2026-06-13): held before production edits** — the
+broad-architecture branch is confirmed. Existing hourly carry arrays are
+transfer/copy-forward state, not per-OFE daily WB output state; the
+scheduler/writeback boundary (`HillslopeWritebackSurface`) is a single
+aggregate state/flux map with no OFE-keyed collection. The "retain + expose"
+narrow path is refuted; a per-OFE dynamic state model + sequential OFE
+execution is required. Per the FDHP01 template (large architecture change →
+design artifact before code), M-C2's hold flows into a design increment
+(M-D) then an implementation sub-arc (M-E), then publication. **Tail
+renumbered 2026-06-13**: the former M-D (erosion) / M-E (acceptance) are now
+M-G / M-H; committed M-C/M-C2 evidence is self-describing and unaffected.
 
-M-C2 execution result (2026-06-13): held before production edits. The existing
-hourly carry arrays are transfer/copy-forward state, not per-OFE daily WB
-output state; the scheduler/writeback boundary remains aggregate scalar maps.
-M-C3 stays blocked until an authoritative per-OFE daily state surface exists.
+## Increment M-D — per-OFE state architecture design (design artifact, NO production code)
 
-- On real per-OFE state (M-C2), publish per-OFE rows: no `UpStrmQ=0` for
+The architectural analog of FDHP01's `d3-fine-sublayer-port-scope.md`:
+produce `artifacts/mofe-per-ofe-state-architecture.md` so the implementation
+lands against a declared shape, not an evolving one. Required deliverable
+sections (all `Static:`, file:line-cited against the current tree — read the
+lines, do not infer from symbol tables, recorded Dh lesson):
+
+1. **Target per-OFE state shape**: the OFE-keyed daily WB state/flux
+   collection that replaces the single aggregate maps at the
+   `HillslopeWritebackSurface` (`scheduler.rs:240`) and
+   `KernelWritebackPayload` (`kernel-contract core_types.rs`) seams; what
+   each per-OFE record holds; lifecycle (per-day rebuild vs persistent).
+2. **Sequential execution model**: how OFE *i*'s completed daily state
+   becomes OFE *i+1*'s run-on/run-off inflow — topology with N nodes vs
+   per-OFE lane iteration over the phase graph (`execute_with_kernel`,
+   `scheduler.rs:501`); where the legacy `irs`/`rochek` continuation logic
+   (from `mofe-routing-port-scope.md`) maps onto it.
+3. **Contract surface**: the per-element identity, the transfer identity
+   (Σ run-off sent ≡ Σ run-on received), and per-OFE daily-state semantics
+   as measurable contract invariants; which existing contracts amend
+   (`SC-RUNOFFPART-001`/`SC-WATBAL-001`/`SC-SYSTEM-001`).
+4. **Kernel-contract / scheduler / writeback / publication change map**:
+   every seam the implementation touches, with the aggregate→per-OFE
+   migration path and the single-OFE-anchor preservation argument.
+5. **Red-test definitions** (per identity, per arm) and the implementation
+   **sub-increment breakdown + sizing** for M-E (each sub-increment behind
+   a conservation hard stop; per-element + transfer identities first proven).
+- Gate (non-deferral compliant): no production edits; the design artifact
+  complete with current-tree file:line citations and a sub-increment plan
+  whose every gate is measurable in its own scope. This is a design
+  increment — its only completion criterion is the artifact, so it can
+  legitimately close `complete`.
+
+## Increment M-E — per-OFE state implementation (sub-arc; routing physics proven here)
+
+- Execute the M-D sub-increment breakdown: contract-first per sub-increment;
+  red tests before code; per-OFE daily WB state retained through the
+  writeback; sequential OFE handoff.
+- Gates (per sub-increment): per-element identity AND transfer identity
+  measurable and at the noise floor on the 1–5 ladder; aggregate identity
+  unchanged; single-OFE anchor bit-identical; full Rust closure loop. **This
+  is where "routing closure" is first actually proven** — no sub-increment
+  closes `complete` until its own identities are evidenced (non-deferral).
+
+## Increment M-F — per-OFE WAT publication
+
+- On real per-OFE state (M-E), publish per-OFE rows: no `UpStrmQ=0` for
   downstream OFEs, no `QOFE=Q` aliasing, one row per OFE per day or an
   explicitly contracted equivalent; handoff-to-printed-precision checks
-  against the M-A calibration (legacy-clean at 1–5, so usable here). This is
-  now a genuine publication of existing state, not synthesis.
+  against the M-A calibration (legacy-clean at 1–5, so usable here). A
+  genuine publication of existing state, not synthesis.
 - Gates: scope red tests; the three identities still at noise; single-OFE
   anchor; full loop.
 
-## Increment M-D — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
+## Increment M-G — erosion `qin`/sediment coupling decision (scope §"M-D erosion qin and sediment coupling")
 
 - Per the scope: implement only if the water seam owns it inseparably;
   otherwise contract-pin the boundary and emit the follow-on. Operator
   visibility on whichever way the evidence lands.
 
-## Increment M-E — ladder acceptance + closure
+## Increment M-H — ladder acceptance + closure
 
 - Full-cohort acceptance per OFE count (36-run 1–5 ladder); totalwatsed3
   end-to-end audit on routed output (the WBVAL06/6a deferral resolved or
@@ -154,7 +206,7 @@ M-C3 stays blocked until an authoritative per-OFE daily state surface exists.
 
 ## Dispatch instructions
 
-Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-C3|M-D|M-E> of
+Each Codex dispatch: *"Execute increment <M-A|M-B|M-C|M-C2|M-D|M-E|M-F|M-G|M-H> of
 `docs/work-packages/20260612-mofe01-inter-ofe-routing-closure-001/artifacts/mofe-staged-increment-plan.md`
 end-to-end."* Required reading order: this plan; `package.md`;
 `mofe-routing-port-scope.md` (once it exists); the FDHP01 staged plan
